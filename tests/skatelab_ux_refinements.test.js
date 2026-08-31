@@ -15,6 +15,8 @@ function state(overrides = {}) {
       surfaceId: 'standard',
       windId: 'calm',
       riderMassKg: 62,
+      rampDepthM: 2.4,
+      landingCompressionM: 0.45,
       bodyPositionId: 'neutral',
       airDrag: true,
       pumps: 3,
@@ -90,7 +92,11 @@ describe('Skate Lab physics-first workbench', () => {
     expect(halfpipe).not.toMatch(/<canvas[^>]*(?:width|height)=/);
     expect(halfpipe).not.toMatch(/<canvas[^>]*tabindex=/);
     expect(halfpipe).toContain('following the curved halfpipe transition');
-    expect(halfpipe).toContain('Bottom load');
+    expect(halfpipe).toContain('tangent-matched wall re-entry');
+    expect(halfpipe).toContain('return to the bottom');
+    expect(halfpipe).toContain('compresses along the surface normal');
+    expect(halfpipe).toContain('board follows the local surface tangent');
+    expect(halfpipe).toContain('Peak transition load');
     expect(gap3d).toContain('Gap-jump projectile simulation in 3D view');
     expect(gap3d).toContain('following a drag-adjusted projectile arc');
     expect(gap3d).toContain('Tailwind');
@@ -114,11 +120,11 @@ describe('Skate Lab physics-first workbench', () => {
     const halfpipe = renderTool('skatelab', state());
     const gap = renderTool('skatelab', state({ mode: 'gap' }));
 
-    for (const id of ['sk-gravity', 'sk-pumps', 'sk-rotation-target', 'sk-spin-rate', 'sk-rider-mass', 'sk-estimate', 'sk-hypothesis']) {
+    for (const id of ['sk-gravity', 'sk-pumps', 'sk-rotation-target', 'sk-spin-rate', 'sk-rider-mass', 'sk-ramp-depth', 'sk-estimate', 'sk-hypothesis']) {
       expect(halfpipe).toContain('for="' + id + '"');
       expect(halfpipe).toContain('id="' + id + '"');
     }
-    for (const id of ['sk-speed', 'sk-angle', 'sk-gap']) {
+    for (const id of ['sk-speed', 'sk-angle', 'sk-gap', 'sk-landing-compression']) {
       expect(gap).toContain('for="' + id + '"');
       expect(gap).toContain('id="' + id + '"');
     }
@@ -178,6 +184,79 @@ describe('Skate Lab physics-first workbench', () => {
     expect(status).not.toContain('Replay');
   });
 
+  it('compares a changed setup with the previous run without duplicating a matching baseline', () => {
+    const halfBaseline = physics.simHalfpipe({
+      pumps: 3,
+      vehicle: 'skate',
+      gravity: 9.81,
+      surfaceId: 'standard',
+      rotationTarget: 360,
+      spinRate: 260,
+      riderMassKg: 62,
+      rampDepthM: 2.4,
+      bodyPositionId: 'neutral',
+    });
+    const unchangedHalf = renderTool('skatelab', state({
+      lastResult: halfBaseline,
+      lastSim: halfBaseline,
+    }));
+    const changedHalf = renderTool('skatelab', state({
+      pumps: 5,
+      lastResult: halfBaseline,
+      lastSim: halfBaseline,
+    }));
+
+    expect(unchangedHalf).not.toContain('sk-trace-previous');
+    expect(unchangedHalf).not.toContain('Compared with the previous run:');
+    expect(changedHalf).toContain('class="sk-trace-previous"');
+    expect(changedHalf).toContain('lavender dashed = previous run');
+    expect(changedHalf).toContain('Compared with the previous run: air height');
+    expect(changedHalf).toContain('peak load +');
+
+    const completedHalf = physics.simHalfpipe({
+      pumps: 5,
+      vehicle: 'skate',
+      gravity: 9.81,
+      surfaceId: 'standard',
+      rotationTarget: 360,
+      spinRate: 260,
+      riderMassKg: 62,
+      rampDepthM: 2.4,
+      bodyPositionId: 'neutral',
+    });
+    const completedComparison = renderTool('skatelab', state({
+      pumps: 5,
+      lastResult: completedHalf,
+      lastSim: completedHalf,
+      previousSim: halfBaseline,
+    }));
+    expect(completedComparison).toContain('class="sk-trace-previous"');
+    expect(completedComparison).toContain('Compared with the previous run: air height');
+
+    const gapBaseline = physics.simGapJump({
+      speedMph: 17,
+      angleDeg: 35,
+      gapFt: 15,
+      riderMassKg: 62,
+      landingCompressionM: 0.45,
+      vehicle: 'skate',
+      gravity: 9.81,
+      windId: 'calm',
+      airDrag: true,
+    });
+    const changedGap = renderTool('skatelab', state({
+      mode: 'gap',
+      landingCompressionM: 0.8,
+      lastResult: gapBaseline,
+      lastSim: gapBaseline,
+    }));
+
+    expect(changedGap).toContain('class="sk-trace-previous"');
+    expect(changedGap).toContain('Compared with the previous run: range');
+    expect(changedGap).toContain('landing load ');
+    expect(changedGap).toContain('The dashed lavender line is the previous run');
+  });
+
   it('renders recent experiments as an accessible table', () => {
     const html = renderTool('skatelab', state({
       experiments: [{
@@ -206,7 +285,7 @@ describe('Skate Lab physics-first workbench', () => {
     expect(html).toContain('data-skatelab-inquiry-panel="true"');
     expect(html).toContain('Physics inquiry and experiment log');
     expect(html).toContain('for="sk-hypothesis"');
-    expect(html).toContain('aria-label="Skate flight hang-time hypothesis"');
+    expect(html).toContain('aria-label="Skate physics investigation hypothesis"');
     expect(html).toContain('Run an experiment to add measured results here.');
   });
 
@@ -216,19 +295,58 @@ describe('Skate Lab physics-first workbench', () => {
 
     expect(halfpipe).toContain('Motion timeline');
     expect(halfpipe).toContain('id="sk-playhead"');
+    expect(halfpipe).toContain('aria-describedby="sk-phase-times"');
+    expect(halfpipe).toContain('id="sk-phase-times"');
+    expect(halfpipe).toContain('Phase timing: start 0.00 seconds');
+    expect(halfpipe).toContain('class="sk-timeline-trace is-load"');
+    expect(halfpipe).toContain('Transition normal load (g)');
+    expect(halfpipe).toContain('Transition normal load trace');
+    expect(halfpipe).toContain('0 g during flight');
+    expect(halfpipe).toContain('transition-load peak before the return to the bottom');
+    expect(halfpipe).toContain('bottom');
+    expect(halfpipe).toContain('lip');
+    expect(halfpipe).toContain('apex');
+    expect(halfpipe).toContain('re-entry');
+    expect(halfpipe).toContain('return');
     expect(halfpipe).toContain('Body position');
     expect(halfpipe).toMatch(/id="sk-body-position-tuck"[^>]*checked/);
     expect(halfpipe).toContain('Effective rotational inertia');
+    expect(halfpipe).toContain('Ramp depth');
+    expect(halfpipe).toContain('Peak transition load');
     expect(gap).toContain('Quadratic air drag');
     expect(gap).toMatch(/id="sk-wind-cross_right"[^>]*checked/);
     expect(gap).toContain('Crosswind right');
     expect(gap).toContain('Landing angle');
     expect(gap).toContain('Lateral drift');
     expect(gap).toContain('Landing load');
+    expect(gap).toContain('Landing absorption');
     expect(gap).toContain('ideal no-drag reference');
-    expect(gap).toContain('estimated landing load');
-    expect(gap).toContain('0.45 m of compression');
-    expect(halfpipe).toContain('Transition: v-bottom');
+    expect(gap).toContain('Support load (g)');
+    expect(gap).toContain('Support load trace');
+    expect(gap).toContain('impulse-matched landing pulse');
+    expect(gap).toContain('smooth half-sine landing pulse');
+    expect(gap).toContain('g peak');
+    expect(gap).toContain('Stopping time:');
+    expect(gap).toContain('vertical energy absorbed');
+    expect(gap).toContain('net vertical impulse');
+    expect(gap).toContain('mean contact force');
+    expect(gap).toContain('for a 0.45 m compression');
+    expect(halfpipe).toContain('Transition depth d =');
+    expect(halfpipe).toContain('φ-surface = −atan2');
+    expect(halfpipe).toContain('φ-flight = φ-lip + ωt');
+    expect(halfpipe).toContain('A tangent-matched re-entry reverses the right-hand transition samples');
+  });
+
+  it('connects geometry and impact controls to the investigation loop', () => {
+    const halfpipe = renderTool('skatelab', state());
+    const gap = renderTool('skatelab', state({ mode: 'gap', landingCompressionM: 0.8 }));
+
+    expect(halfpipe).toContain('vary ramp depth');
+    expect(halfpipe).toContain('will ramp depth change air height, transition load, or both?');
+    expect(gap).toContain('change landing absorption');
+    expect(gap).toContain('how will absorption distance change landing load and stopping time?');
+    expect(gap).toContain('currently 0.80 m in gap mode');
+    expect(gap).not.toContain('landing load estimated from 0.45 m of compression');
   });
 
   it('removes generated-trick and AI-coach dependencies from the active module', () => {
@@ -253,10 +371,35 @@ describe('Skate Lab physics-first workbench', () => {
     expect(source).toContain('sampleHalfpipe(sim, progress)');
     expect(source).toContain('sampleGapJump(sim, progress)');
     expect(source).toContain('function mesh3D');
+    expect(source).toContain('function transitionCanvasRotation');
+    expect(source).toContain("orientationPlane === 'side'");
+    expect(source).toContain('var bodyUp = followsSidePlane');
     expect(source).toContain('trajectoryPointAt(sim.flightPath');
     expect(source).toContain('transitionPointAt(sim.transitionPath');
     expect(source).toContain('sim.idealFlightPath');
     expect(source).toContain('sim.bottomNormalG');
+    expect(source).toContain('sim.peakNormalG');
+    expect(source).toContain('sim.reentryPeakTime');
+    expect(source).toContain('var reverseTransitionTime');
+    expect(source).toContain("phase = reentryTime < Math.min(0.18, reentryDuration * 0.25)");
+    expect(source).toContain('var peakLoadMarker');
+    expect(source).toContain('phaseEvents.map');
+    expect(source).toContain('traceProgressValues');
+    expect(source).toContain("className: 'sk-trace-modeled'");
+    expect(source).toContain("className: 'sk-trace-previous'");
+    expect(source).toContain('var comparisonHalf3D');
+    expect(source).toContain('var comparisonGap3D');
+    expect(source).toContain('function isLandingContactPhase');
+    expect(source).toContain('previousSim: isComparableSimulation(current.lastSim)');
+    expect(source).not.toContain("phase === 'landing'");
+    expect(source).toContain('landingAbsorbedEnergyJ');
+    expect(source).toContain('landingNetImpulseNs');
+    expect(source).toContain('landingPeakG');
+    expect(source).toContain('landingPulse = Math.sin(Math.PI * landingProgress)');
+    expect(source).toContain("phase = afterLandingTime < sim.landingStopTimeS ? 'absorbing the landing' : 'rolling out'");
+    expect(source).toContain('sample.landingSquat');
+    expect(source).toContain('sample.loadSquat');
+    expect(source).toContain("className: 'sk-trace-peak sk-trace-reentry-peak'");
     expect(source).toContain('window.ResizeObserver');
     expect(source).toContain('var dt = 1 / 180');
   });
@@ -267,6 +410,14 @@ describe('Skate Lab physics-first workbench', () => {
     expect(source).toContain('@container(max-width:820px)');
     expect(source).toContain('@container(max-width:520px)');
     expect(source).toContain('min-block-size:40px');
+    expect(source).toContain('html:not(.theme-contrast) .skatelab-shell');
+    expect(source).toContain('--sk-muted:#b6c3d5');
+    expect(source).toContain('background:#0f172a');
+    expect(source).toContain('.sk-timeline-control{position:relative');
+    expect(source).toContain('.sk-timeline-trace{display:block;width:100%');
+    expect(source).toContain('.sk-trace-previous{fill:none');
+    expect(source).toContain('--sk-compare:#c4b5fd');
+    expect(source).toContain('@media(forced-colors:active){.sk-trace-axis');
     expect(source).toContain(':focus-visible');
     expect(source).toContain('@media(prefers-reduced-motion:reduce)');
     expect(source).toContain('@media(forced-colors:active)');

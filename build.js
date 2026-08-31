@@ -931,6 +931,26 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'LiveSessionDockView',
+        filename: 'view_live_session_dock_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'FullPackRunView',
+        filename: 'view_full_pack_run_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ShareSessionSurfaces',
+        filename: 'view_share_session_surfaces_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'VideoStudioHostBridgeView',
+        filename: 'video_studio_host_bridge_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'EndSessionPreview',
         filename: 'view_end_session_preview_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1198,6 +1218,11 @@ const MODULES = [
     {
         name: 'AnchorChartsModule',
         filename: 'anchor_charts_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ImageAssetEditorModule',
+        filename: 'image_asset_editor_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -1610,6 +1635,32 @@ const COMPILE_PAIRS = [
             return fs.readFileSync(path.join(ROOT, 'view_pdf_audit_module.js'), 'utf8');
         },
     },
+    {
+        name: 'ImageAssetEditor',
+        srcPath: path.join(ROOT, 'image_asset_editor_source.jsx'),
+        modPath: path.join(ROOT, 'image_asset_editor_module.js'),
+        publicPath: path.join(ROOT, 'desktop', 'web-app', 'public', 'image_asset_editor_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_image_asset_editor_module.js')], {
+                cwd: ROOT,
+                stdio: 'inherit',
+            });
+            return fs.readFileSync(path.join(ROOT, 'image_asset_editor_module.js'), 'utf8');
+        },
+    },
+    {
+        name: 'MemoryAid',
+        srcPath: path.join(ROOT, 'memory_aid_source.jsx'),
+        modPath: path.join(ROOT, 'memory_aid_module.js'),
+        publicPath: path.join(ROOT, 'desktop', 'web-app', 'public', 'memory_aid_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_memory_aid_module.js')], {
+                cwd: ROOT,
+                stdio: 'inherit',
+            });
+            return fs.readFileSync(path.join(ROOT, 'memory_aid_module.js'), 'utf8');
+        },
+    },
     simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
     simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
     simplePureCompilePair('ReviewDocumentSession', 'review_document_session', 'ReviewDocumentSessionModule'),
@@ -1813,6 +1864,34 @@ const COMPILE_PAIRS = [
         wrap(src) { return require('./_build_mailbox_script_source_module.js').buildMailboxScriptSourceModule(src); },
     },
     {
+        name: 'LiveSessionDockView',
+        srcPath: path.join(ROOT, 'view_live_session_dock_source.jsx'),
+        modPath: path.join(ROOT, 'view_live_session_dock_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_live_session_dock_module.js'),
+        wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('LiveSessionDockView', src); },
+    },
+    {
+        name: 'FullPackRunView',
+        srcPath: path.join(ROOT, 'view_full_pack_run_source.jsx'),
+        modPath: path.join(ROOT, 'view_full_pack_run_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_full_pack_run_module.js'),
+        wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('FullPackRunView', src); },
+    },
+    {
+        name: 'ShareSessionSurfaces',
+        srcPath: path.join(ROOT, 'view_share_session_surfaces_source.jsx'),
+        modPath: path.join(ROOT, 'view_share_session_surfaces_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/view_share_session_surfaces_module.js'),
+        wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('ShareSessionSurfaces', src); },
+    },
+    {
+        name: 'VideoStudioHostBridgeView',
+        srcPath: path.join(ROOT, 'video_studio_host_bridge_source.jsx'),
+        modPath: path.join(ROOT, 'video_studio_host_bridge_module.js'),
+        publicPath: path.join(ROOT, 'desktop/web-app/public/video_studio_host_bridge_module.js'),
+        wrap(src) { return require('./_build_first_wave_view_modules.js').buildFirstWaveModule('VideoStudioHostBridgeView', src); },
+    },
+    {
         name: 'VideoRefPlayer',
         srcPath: path.join(ROOT, 'view_video_ref_player_source.jsx'),
         modPath: path.join(ROOT, 'view_video_ref_player_module.js'),
@@ -1958,8 +2037,10 @@ if (hasFlag('copy-student-shell')) {
         process.exit(1);
     }
 }
-// Keep the generated module, verified inline fallback, and public source mirror
+// Keep the generated module, validation metadata, and public source mirror
 // synchronized with canonical Code.gs before every compile or application build.
+// The installer body intentionally stays out of the startup host; desktop keeps
+// the same generated module locally for offline use.
 syncMailboxScriptArtifacts();
 // Standalone compile mode — run just the compilation step and exit.
 if (args.includes('--compile')) {
@@ -2176,6 +2257,10 @@ const CONTENT_HASH_PINNED = new Set([
     'view_faq_module.js',
     'immersive_reader_module.js',
     'view_simplified_module.js',
+    'view_live_session_dock_module.js',
+    'view_full_pack_run_module.js',
+    'view_share_session_surfaces_module.js',
+    'video_studio_host_bridge_module.js',
 ]);
 const _contentHashCache = {};
 function contentHashPin(filename) {

@@ -78,6 +78,10 @@
 }
 .diss-skip-link:focus { transform: translateY(0); }
 .diss-skip-return { display: inline-flex; width: max-content; min-height: 2.75rem; align-items: center; padding: .55rem .7rem; border: 1px solid #1d4ed8; border-radius: .55rem; background: #eff6ff; color: #1e3a8a; font-size: .75rem; font-weight: 900; }
+.diss-save-status { display: flex; align-items: center; gap: .45rem; min-height: 2.5rem; padding: .55rem .75rem; border: 1px solid #6ee7b7; border-radius: .7rem; background: #ecfdf5; color: #065f46; font-size: .73rem; font-weight: 850; line-height: 1.35; }
+.diss-save-status[data-state="warning"] { border-color: #f59e0b; background: #fffbeb; color: #78350f; }
+.diss-save-status[data-state="error"] { border-color: #fb7185; background: #fff1f2; color: #881337; }
+.diss-save-status__glyph { display: inline-grid; width: 1.25rem; height: 1.25rem; flex: 0 0 1.25rem; place-items: center; border: 1px solid currentColor; border-radius: 999px; font-size: .68rem; font-weight: 950; line-height: 1; }
 .diss-reset-confirm { flex: 1 0 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .45rem; padding: .65rem; border: 2px solid #b91c1c; border-radius: .7rem; background: #fff7ed; color: #7f1d1d; }
 .diss-reset-confirm p { margin: 0; font-size: .72rem; line-height: 1.45; }
 .diss-reset-confirm button { min-height: 2.75rem !important; margin: 0 !important; border: 1px solid #991b1b !important; background: #fff !important; color: #7f1d1d !important; }
@@ -500,15 +504,25 @@
 .diss-split-reference span { margin-top: .12rem; color: #bfdbfe; font-size: .61rem; line-height: 1.35; }
 .diss-evidence { margin-top: .55rem; border-top: 1px solid #cbdcf0; padding-top: .45rem; }
 .diss-evidence summary { cursor: pointer; color: #24517f; font-size: .69rem; font-weight: 850; }
+.diss-evidence__capacity { margin: .45rem 0 0; padding: .42rem .55rem; border: 1px solid #bfdbfe; border-radius: .55rem; background: #eff6ff; color: #244b75; font-size: .64rem; font-weight: 750; line-height: 1.4; }
+.diss-evidence__capacity[data-full="true"] { border-color: #f59e0b; background: #fffbeb; color: #78350f; }
+.diss-evidence__manage { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .45rem; }
+.diss-evidence__manage > button { min-height: 2.75rem; padding: .4rem .58rem; border: 1px solid #b91c1c; border-radius: .5rem; background: #fff; color: #991b1b; font-size: .65rem; font-weight: 850; cursor: pointer; }
+.diss-evidence__confirm { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; padding: .5rem; border: 1px solid #f59e0b; border-radius: .55rem; background: #fffbeb; }
+.diss-evidence__confirm p { flex: 1 0 100%; margin: 0; color: #78350f; font-size: .65rem; font-weight: 750; line-height: 1.4; }
+.diss-evidence__confirm button { min-height: 2.75rem; padding: .4rem .58rem; border: 1px solid #92400e; border-radius: .45rem; background: #fff; color: #78350f; font-size: .65rem; font-weight: 850; cursor: pointer; }
+.diss-evidence__confirm button[data-confirm="true"] { background: #991b1b; color: #fff; }
 .diss-evidence__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: .45rem; margin-top: .5rem; }
 .diss-evidence__item { min-width: 0; padding: .4rem; border: 1px solid #cbdcf0; border-radius: .65rem; background: #fff; }
 .diss-evidence__item[data-reference="true"] { border-color: #0f766e; box-shadow: inset 0 0 0 1px #0f766e; }
 .diss-evidence__item img { display: block; width: 100%; aspect-ratio: 5/6; border-radius: .45rem; background: #0f172a; object-fit: cover; }
 .diss-evidence__item strong, .diss-evidence__item span { display: block; margin-top: .28rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.diss-evidence__item strong { color: #10233f; font-size: .65rem; }
-.diss-evidence__item span { color: #526b87; font-size: .59rem; }
+.diss-evidence__item strong { color: #10233f; font-size: .68rem; }
+.diss-evidence__item span { color: #526b87; font-size: .64rem; }
+.diss-evidence__item .diss-evidence__confirm-copy { margin: .35rem 0 0; color: #78350f; font-size: .64rem; font-weight: 750; line-height: 1.4; }
 .diss-evidence__actions { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .35rem; }
-.diss-evidence__actions button { min-height: 2rem !important; padding: .3rem .42rem; border: 1px solid #91a8c4; border-radius: .45rem; background: #f8fafc; color: #24517f; font-size: .58rem; font-weight: 850; cursor: pointer; }
+.diss-evidence__actions button { min-height: 2.75rem !important; padding: .35rem .46rem; border: 1px solid #91a8c4; border-radius: .45rem; background: #f8fafc; color: #24517f; font-size: .65rem; font-weight: 850; cursor: pointer; }
+.diss-evidence__actions button[data-danger="true"] { border-color: #fda4af; color: #9f1239; }
 .diss-canvas:fullscreen { width: auto !important; height: min(96vh, 1100px) !important; height: min(96dvh, 1100px) !important; max-width: 96vw !important; margin: auto; border-radius: 0 !important; background: #0f172a !important; object-fit: contain; }
 .diss-fullscreen-dock { display: none; }
 .diss-canvas-frame:fullscreen, .diss-canvas-frame[data-allo-fullscreen-active="true"] { display: grid; width: 100vw; width: 100dvw; height: 100vh; height: 100dvh; grid-template-rows: auto minmax(0, 1fr); gap: .5rem; padding: max(.65rem, env(safe-area-inset-top)) max(.65rem, env(safe-area-inset-right)) max(.65rem, env(safe-area-inset-bottom)) max(.65rem, env(safe-area-inset-left)); border: 0; border-radius: 0; background: #07111f; }
@@ -802,10 +816,53 @@
 @media (max-width: 620px) { .diss-living-function { grid-template-columns: 1fr; } .diss-living-function__controls { justify-content: flex-start; } }
 .diss-sidebar { display: grid; width: 100% !important; gap: .8rem; }
 .diss-selection-card { border-color: #9db4cf !important; box-shadow: 0 10px 26px rgba(15,23,42,.07); }
+.diss-selection-nav button { min-width: 2.75rem !important; min-height: 2.75rem !important; }
+.diss-selection-position { display: inline-block; margin-top: .12rem; color: #64748b; font-size: .7rem; font-weight: 800; }
+.diss-observe-first { margin: .65rem 0; padding: .65rem .7rem; border: 1px solid #5eead4; border-left: 4px solid #0f766e; border-radius: .65rem; background: #f0fdfa; }
+.diss-observe-first strong { display: block; color: #115e59; font-size: .75rem; }
+.diss-observe-first p { margin: .22rem 0 0; color: #315f5b; font-size: .73rem; line-height: 1.45; }
+.diss-selection-reference { margin: .65rem 0; border: 1px solid #bfdbfe; background: #f8fbff; }
+.diss-selection-reference.diss-disclosure > summary { min-height: 2.75rem; color: #174d86; font-size: .75rem; }
+.diss-selection-reference__intro { margin: 0 0 .55rem; color: #48647f; font-size: .72rem; line-height: 1.45; }
+.diss-selection-reference__layer { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .45rem; color: #52677f; font-size: .7rem; }
 .diss-selection-summary { margin: .65rem 0; padding: .7rem; border-left: 4px solid #f59e0b; border-radius: .65rem; background: #fff7ed; }
 .diss-selection-summary__label { display: block; color: #9a4d08; font-size: .62rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .diss-selection-summary p { margin: .2rem 0 0; color: #4a3b2b; font-size: .78rem; line-height: 1.48; }
 .diss-evidence-note { width: 100%; min-height: 5rem; margin-top: .4rem; padding: .65rem; border: 1px solid #aebed2; border-radius: .65rem; background: #fff; color: #24364d; resize: vertical; }
+.diss-evidence-coach { margin-top: .65rem; padding: .65rem; border: 1px solid #93c5fd; border-radius: .7rem; background: rgba(255,255,255,.72); }
+.diss-evidence-coach__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; color: #173f6d; font-size: .75rem; }
+.diss-evidence-coach__score { flex: 0 0 auto; padding: .16rem .38rem; border-radius: 999px; background: #dbeafe; color: #1e40af; font-size: .7rem; font-weight: 900; }
+.diss-evidence-coach[data-ready="true"] { border-color: #6ee7b7; background: rgba(236,253,245,.82); }
+.diss-evidence-coach[data-ready="true"] .diss-evidence-coach__score { background: #d1fae5; color: #047857; }
+.diss-evidence-starters { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+.diss-evidence-starters button { min-height: 2.75rem !important; padding: .45rem .6rem; border: 1px solid #93c5fd; border-radius: .5rem; background: #fff; color: #174d86; font-size: .72rem; font-weight: 850; cursor: pointer; }
+.diss-evidence-starters button:hover { border-color: #2563eb; background: #eff6ff; }
+.diss-confidence-scale { min-width: 0; margin: .65rem 0 0; padding: 0; border: 0; }
+.diss-confidence-scale__label { width: 100%; margin: 0; padding: 0; color: #173f6d; font-size: .75rem; font-weight: 900; line-height: 1.4; }
+.diss-confidence-scale__choices { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+.diss-confidence-cue { margin: .45rem 0 0; color: #315d88; font-size: .75rem; line-height: 1.45; }
+.diss-confidence-cue strong { color: #173f6d; }
+.diss-confidence-scale__option { display: flex; min-height: 2.75rem !important; align-items: center; gap: .4rem; padding: .45rem .6rem; border: 1px solid #93c5fd; border-radius: .55rem; background: #fff; color: #174d86; font-size: .72rem; font-weight: 850; cursor: pointer; }
+.diss-confidence-scale__option:hover { border-color: #2563eb; background: #eff6ff; }
+.diss-confidence-scale__option[data-selected="true"] { border-color: #1d4ed8; background: #1d4ed8; color: #fff; }
+.diss-confidence-scale__option input { width: 1rem; height: 1rem; margin: 0; accent-color: #1d4ed8; }
+.diss-evidence-meter { overflow: hidden; height: .38rem; margin-top: .55rem; border-radius: 999px; background: #dbeafe; }
+.diss-evidence-meter span { display: block; height: 100%; border-radius: inherit; background: #2563eb; transition: width .2s ease; }
+.diss-evidence-coach[data-ready="true"] .diss-evidence-meter span { background: #059669; }
+.diss-evidence-checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem .55rem; margin: .55rem 0 0; padding: 0; list-style: none; }
+.diss-evidence-checks li { color: #52677f; font-size: .72rem; line-height: 1.4; }
+.diss-evidence-checks li[data-complete="true"] { color: #047857; font-weight: 800; }
+.diss-evidence-coach__cue { margin: .5rem 0 0; color: #244b75; font-size: .75rem; font-weight: 750; line-height: 1.45; }
+.diss-evidence-coach__note { margin: .3rem 0 0; color: #64748b; font-size: .7rem; line-height: 1.4; }
+.diss-countercheck { margin-top: .65rem; padding: 0; border: 1px dashed #7c3aed; border-radius: .7rem; background: #f5f3ff; color: #4c1d95; }
+.diss-countercheck.diss-disclosure > summary { min-height: 2.75rem; color: #4c1d95; }
+.diss-countercheck p { margin: .25rem 0 .55rem; color: #5b4a78; font-size: .72rem; line-height: 1.45; }
+.diss-countercheck button { min-height: 2.75rem !important; padding: .45rem .6rem; border: 1px solid #8b5cf6; border-radius: .5rem; background: #fff; color: #6d28d9; font-size: .72rem; font-weight: 850; cursor: pointer; }
+.diss-countercheck button:hover { background: #ede9fe; }
+.diss-countercheck button:disabled { cursor: default; opacity: .68; }
+.diss-countercheck__status { margin: .45rem 0 0 !important; color: #5b21b6 !important; font-weight: 750; }
+@media (forced-colors: active) { .diss-confidence-scale__option[data-selected="true"] { border: 3px solid Highlight; background: Canvas; color: CanvasText; } }
+@media (max-width: 460px) { .diss-evidence-checks { grid-template-columns: 1fr; } }
 .diss-science-scope { margin: .55rem 0 0; padding: .55rem .65rem; border: 1px solid #bfdbfe; border-radius: .65rem; background: #eff6ff; color: #294f79; font-size: .75rem; line-height: 1.45; }
 .diss-structure-list button { min-height: 2.7rem !important; }
 .diss-study-card { min-width: 0; }
@@ -870,6 +927,8 @@
   [data-dissection-root] .diss-mission * { color: #000 !important; }
   [data-dissection-root] .diss-workspace { grid-template-columns: 58% 40% !important; gap: 2% !important; }
   [data-dissection-root] .diss-stage, [data-dissection-root] .diss-selection-card, [data-dissection-root] .diss-disclosure { break-inside: avoid; box-shadow: none !important; }
+  [data-dissection-root] .diss-selection-reference > summary { display: none !important; }
+  [data-dissection-root] .diss-selection-reference > .diss-disclosure__body { display: block !important; }
 }
 @media (max-width: 980px) {
   .diss-mission { grid-template-columns: 1fr; }
@@ -914,18 +973,269 @@
 
   // ═══ 🔬 dissection (dissection) ═══
   // ── Dissection Lab Audio System ──
+  var DISSECTION_SAVE_SCHEMA_VERSION = 21;
   var _disAC = null;
-  var _disSaveTimer = null;
-  function disSoundEnabled() { try { return window.__alloDissectionSoundEnabled !== false; } catch (e) { return true; } }
-  function scheduleDissectionSave(key, data) {
+  var _disSaveQueue = Object.create(null);
+  var _disSaveAccess = Object.create(null);
+  var _disLayerPeelTimer = null;
+  var _disLayerTransitionTimer = null;
+  var _disSaveStatus = {
+    state: 'ready',
+    message: 'Progress saves locally on this device.',
+    at: 0
+  };
+  function cancelDissectionLayerTimers() {
+    if (_disLayerPeelTimer) clearTimeout(_disLayerPeelTimer);
+    if (_disLayerTransitionTimer) clearTimeout(_disLayerTransitionTimer);
+    _disLayerPeelTimer = null;
+    _disLayerTransitionTimer = null;
+  }
+  function isPlainDissectionRecord(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+  function inspectDissectionStoredValue(key) {
+    var raw;
     try {
-      if (_disSaveTimer) clearTimeout(_disSaveTimer);
-      _disSaveTimer = setTimeout(function () {
-        try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
-        _disSaveTimer = null;
-      }, 120);
+      raw = localStorage.getItem(key);
+    } catch (e) {
+      return { ok: false, kind: 'storage-unavailable', error: e };
+    }
+    if (raw == null) return { ok: true, kind: 'empty', data: {}, raw: raw };
+    var data;
+    try {
+      data = JSON.parse(raw);
+    } catch (e) {
+      return { ok: false, kind: 'malformed', error: e, raw: raw };
+    }
+    if (!isPlainDissectionRecord(data)) return { ok: false, kind: 'unsafe-shape', raw: raw };
+    if (data.schemaVersion != null) {
+      var version = data.schemaVersion;
+      if (typeof version !== 'number' || !isFinite(version) || Math.floor(version) !== version || version <= 0) {
+        return { ok: false, kind: 'invalid-version', version: version, raw: raw };
+      }
+      if (version > DISSECTION_SAVE_SCHEMA_VERSION) return { ok: false, kind: 'future-version', version: version, raw: raw };
+    }
+    var mapFields = ['exploredOrgans', 'verifiedIdentifications', 'revealedLayers', 'assessmentEvidence', 'completedObjectives', 'organNotes', 'organConfidence', 'procedureByLayer', 'attemptArchive'];
+    for (var mapIndex = 0; mapIndex < mapFields.length; mapIndex++) {
+      var mapField = mapFields[mapIndex];
+      if (data[mapField] != null && !isPlainDissectionRecord(data[mapField])) return { ok: false, kind: 'unsafe-shape', field: mapField, raw: raw };
+    }
+    var arrayFields = ['annotations', 'quizReviewQueue', 'visualEvidence'];
+    for (var arrayIndex = 0; arrayIndex < arrayFields.length; arrayIndex++) {
+      var arrayField = arrayFields[arrayIndex];
+      if (data[arrayField] != null && !Array.isArray(data[arrayField])) return { ok: false, kind: 'unsafe-shape', field: arrayField, raw: raw };
+    }
+    if (Array.isArray(data.annotations) && data.annotations.some(function (annotation) { return !isPlainDissectionRecord(annotation); })) {
+      return { ok: false, kind: 'unsafe-shape', field: 'annotations', raw: raw };
+    }
+    if (Array.isArray(data.visualEvidence) && data.visualEvidence.some(function (entry) { return !isPlainDissectionRecord(entry); })) {
+      return { ok: false, kind: 'unsafe-shape', field: 'visualEvidence', raw: raw };
+    }
+    var procedureLayers = data.procedureByLayer || {};
+    var procedureArrayFields = ['history', 'actionLog', 'cautionLog', 'pins', 'incisionPath', 'extensionPath', 'incisionSamples', 'extensionSamples'];
+    var procedureRecordArrayFields = ['actionLog', 'cautionLog', 'pins', 'incisionPath', 'extensionPath', 'incisionSamples', 'extensionSamples'];
+    var procedureLayerIds = Object.keys(procedureLayers);
+    for (var procedureIndex = 0; procedureIndex < procedureLayerIds.length; procedureIndex++) {
+      var procedureLayer = procedureLayers[procedureLayerIds[procedureIndex]];
+      if (!isPlainDissectionRecord(procedureLayer)) return { ok: false, kind: 'unsafe-shape', field: 'procedureByLayer', raw: raw };
+      for (var procedureArrayIndex = 0; procedureArrayIndex < procedureArrayFields.length; procedureArrayIndex++) {
+        var procedureArrayField = procedureArrayFields[procedureArrayIndex];
+        if (procedureLayer[procedureArrayField] != null && !Array.isArray(procedureLayer[procedureArrayField])) return { ok: false, kind: 'unsafe-shape', field: 'procedureByLayer.' + procedureArrayField, raw: raw };
+      }
+      for (var procedureRecordIndex = 0; procedureRecordIndex < procedureRecordArrayFields.length; procedureRecordIndex++) {
+        var procedureRecordField = procedureRecordArrayFields[procedureRecordIndex];
+        if (Array.isArray(procedureLayer[procedureRecordField]) && procedureLayer[procedureRecordField].some(function (entry) { return !isPlainDissectionRecord(entry); })) return { ok: false, kind: 'unsafe-shape', field: 'procedureByLayer.' + procedureRecordField, raw: raw };
+      }
+    }
+    var attemptArchive = data.attemptArchive || {};
+    var attemptLayerIds = Object.keys(attemptArchive);
+    for (var attemptIndex = 0; attemptIndex < attemptLayerIds.length; attemptIndex++) {
+      var attempts = attemptArchive[attemptLayerIds[attemptIndex]];
+      if (!Array.isArray(attempts) || attempts.some(function (attempt) { return !isPlainDissectionRecord(attempt); })) return { ok: false, kind: 'unsafe-shape', field: 'attemptArchive', raw: raw };
+      for (var archivedAttemptIndex = 0; archivedAttemptIndex < attempts.length; archivedAttemptIndex++) {
+        var archivedAttempt = attempts[archivedAttemptIndex];
+        for (var archivedArrayIndex = 0; archivedArrayIndex < procedureArrayFields.length; archivedArrayIndex++) {
+          var archivedArrayField = procedureArrayFields[archivedArrayIndex];
+          if (archivedAttempt[archivedArrayField] != null && !Array.isArray(archivedAttempt[archivedArrayField])) return { ok: false, kind: 'unsafe-shape', field: 'attemptArchive.' + archivedArrayField, raw: raw };
+        }
+        for (var archivedRecordIndex = 0; archivedRecordIndex < procedureRecordArrayFields.length; archivedRecordIndex++) {
+          var archivedRecordField = procedureRecordArrayFields[archivedRecordIndex];
+          if (Array.isArray(archivedAttempt[archivedRecordField]) && archivedAttempt[archivedRecordField].some(function (entry) { return !isPlainDissectionRecord(entry); })) return { ok: false, kind: 'unsafe-shape', field: 'attemptArchive.' + archivedRecordField, raw: raw };
+        }
+      }
+    }
+    return { ok: true, kind: 'valid', data: data, raw: raw };
+  }
+  function currentDissectionSaveAccess(key) {
+    return _disSaveAccess[key] || { state: 'unknown', issue: null };
+  }
+  function allowDissectionSave(key) {
+    _disSaveAccess[key] = { state: 'writable', issue: null };
+  }
+  function dissectionSaveIssueMessage(issue, specimenName) {
+    var label = specimenName || 'specimen';
+    if (issue && issue.kind === 'future-version') return 'This ' + label + ' save was created by a newer lab version and was preserved unchanged. Saving is paused; use Reset specimen only if you want to replace it.';
+    if (issue && issue.kind === 'storage-unavailable') return 'Saved ' + label + ' progress could not be accessed and was left unchanged. Saving is paused in this temporary session.';
+    return 'Saved ' + label + ' data could not be read safely and was preserved unchanged. Saving is paused; use Reset specimen to start fresh.';
+  }
+  function blockDissectionSave(key, issue, specimenName) {
+    cancelDissectionSave(key);
+    _disSaveAccess[key] = { state: 'blocked', issue: issue || { kind: 'unsafe-shape' } };
+    publishDissectionSaveStatus(issue && issue.kind === 'future-version' ? 'warning' : 'error', dissectionSaveIssueMessage(issue, specimenName));
+  }
+  function prepareDissectionSaveAccess(key, specimenName) {
+    var inspection = inspectDissectionStoredValue(key);
+    if (inspection.ok) {
+      allowDissectionSave(key);
+      publishDissectionSaveStatus('ready', 'Progress saves locally on this device.');
+    } else {
+      blockDissectionSave(key, inspection, specimenName);
+    }
+    return inspection;
+  }
+  function disSoundEnabled() { try { return window.__alloDissectionSoundEnabled !== false; } catch (e) { return true; } }
+  function currentDissectionSaveStatus() { return _disSaveStatus; }
+  function publishDissectionSaveStatus(state, message) {
+    if (_disSaveStatus.state === state && _disSaveStatus.message === message) return;
+    _disSaveStatus = { state: state, message: message, at: Date.now() };
+    try {
+      if (typeof document === 'undefined') return;
+      var statusNodes = document.querySelectorAll('[data-dissection-save-status]');
+      for (var statusIndex = 0; statusIndex < statusNodes.length; statusIndex++) {
+        var statusNode = statusNodes[statusIndex];
+        statusNode.setAttribute('data-state', state);
+        var statusMessage = statusNode.querySelector('[data-dissection-save-message]');
+        var statusGlyph = statusNode.querySelector('[data-dissection-save-glyph]');
+        if (statusMessage) statusMessage.textContent = message;
+        if (statusGlyph) statusGlyph.textContent = state === 'error' ? '\u00D7' : (state === 'warning' ? '!' : '\u2713');
+      }
     } catch (e) {}
   }
+  function tryDissectionStorageWrite(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      return { ok: true, error: null };
+    } catch (e) {
+      return { ok: false, error: e };
+    }
+  }
+  function writeDissectionSave(key, data) {
+    var saveAccess = currentDissectionSaveAccess(key);
+    if (saveAccess.state !== 'writable') return false;
+    // Re-check the bytes at the last responsible moment. Another tab or a
+    // newer app build may have replaced this record after the initial load.
+    var writeInspection = inspectDissectionStoredValue(key);
+    if (!writeInspection.ok) {
+      blockDissectionSave(key, writeInspection, key.indexOf('dissection_progress_') === 0 ? key.slice('dissection_progress_'.length) : 'specimen');
+      return false;
+    }
+    var fullWrite = tryDissectionStorageWrite(key, data);
+    if (fullWrite.ok) {
+      var wasLimited = _disSaveStatus.state === 'warning' || _disSaveStatus.state === 'error';
+      publishDissectionSaveStatus(wasLimited ? 'recovered' : 'saved', wasLimited
+        ? 'Full progress saving has been restored.'
+        : 'Progress saved locally on this device.');
+      return true;
+    }
+
+    // Image data is the largest part of a lab record. If the origin is near its
+    // storage limit, preserve all text/procedure evidence before giving up on
+    // the entire record, and tell the learner exactly what was retained.
+    var evidence = data && Array.isArray(data.visualEvidence) ? data.visualEvidence.filter(function (entry) { return entry && entry.image; }) : [];
+    if (evidence.length > 1) {
+      var newestEvidence = evidence[evidence.length - 1];
+      var reducedData = Object.assign({}, data, {
+        visualEvidence: [newestEvidence],
+        referenceEvidenceId: newestEvidence && newestEvidence.id != null ? newestEvidence.id : null,
+        splitComparison: false
+      });
+      if (tryDissectionStorageWrite(key, reducedData).ok) {
+        publishDissectionSaveStatus('warning', 'Progress saved, but storage is nearly full; only the newest evidence frame was kept. Download important frames and remove older notebook frames to restore full saving.');
+        return true;
+      }
+    }
+    if (evidence.length) {
+      var textOnlyData = Object.assign({}, data, {
+        visualEvidence: [],
+        referenceEvidenceId: null,
+        splitComparison: false
+      });
+      if (tryDissectionStorageWrite(key, textOnlyData).ok) {
+        publishDissectionSaveStatus('warning', 'Progress and notes saved, but evidence images could not be stored. Download important frames and remove notebook frames to restore full saving.');
+        return true;
+      }
+    }
+
+    publishDissectionSaveStatus('error', 'Progress is not saved in this browser. Keep the lab open; copy the lab report or print it to PDF before closing.');
+    return false;
+  }
+  function scheduleDissectionSave(key, data) {
+    if (currentDissectionSaveAccess(key).state !== 'writable') {
+      cancelDissectionSave(key);
+      return false;
+    }
+    try {
+      var previous = _disSaveQueue[key];
+      if (previous && previous.timer) clearTimeout(previous.timer);
+      var pending = { data: data, timer: null };
+      pending.timer = setTimeout(function () {
+        if (_disSaveQueue[key] !== pending) return;
+        writeDissectionSave(key, pending.data);
+        delete _disSaveQueue[key];
+      }, 120);
+      _disSaveQueue[key] = pending;
+      return true;
+    } catch (e) {}
+    return false;
+  }
+  function flushDissectionSave(key) {
+    if (currentDissectionSaveAccess(key).state !== 'writable') {
+      cancelDissectionSave(key);
+      return false;
+    }
+    try {
+      var pending = _disSaveQueue[key];
+      if (!pending) return false;
+      if (pending.timer) clearTimeout(pending.timer);
+      var saved = writeDissectionSave(key, pending.data);
+      if (_disSaveQueue[key] === pending) delete _disSaveQueue[key];
+      return saved;
+    } catch (e) {
+      return false;
+    }
+  }
+  function cancelDissectionSave(key) {
+    try {
+      var pending = _disSaveQueue[key];
+      if (!pending) return false;
+      if (pending.timer) clearTimeout(pending.timer);
+      if (_disSaveQueue[key] === pending) delete _disSaveQueue[key];
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  function flushAllDissectionSaves() {
+    var allSaved = true;
+    try {
+      Object.keys(_disSaveQueue).forEach(function (key) {
+        if (!flushDissectionSave(key)) allSaved = false;
+      });
+    } catch (e) {
+      allSaved = false;
+    }
+    return allSaved;
+  }
+  function bindDissectionSaveLifecycle() {
+    try {
+      if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+      var previousHandler = window.__alloDissectionSavePagehideHandler;
+      if (previousHandler && typeof window.removeEventListener === 'function') window.removeEventListener('pagehide', previousHandler);
+      window.__alloDissectionSavePagehideHandler = flushAllDissectionSaves;
+      window.addEventListener('pagehide', flushAllDissectionSaves);
+    } catch (e) {}
+  }
+  bindDissectionSaveLifecycle();
   function clampDissectionInquiryValue(value, min, max, fallback) {
     var numeric = Number(value);
     if (!isFinite(numeric)) numeric = fallback;
@@ -1124,6 +1434,13 @@ var d = labToolData.dissection || {};
           var updMany = function (patch) {
             setLabToolData(function (p) {
               return Object.assign({}, p, { dissection: Object.assign({}, p.dissection || {}, patch || {}) });
+            });
+          };
+          var updManyForSpecimen = function (expectedSpecimen, patch) {
+            setLabToolData(function (p) {
+              var currentDissection = p.dissection || {};
+              if ((currentDissection.specimen || 'frog') !== expectedSpecimen) return p;
+              return Object.assign({}, p, { dissection: Object.assign({}, currentDissection, patch || {}) });
             });
           };
           try { window.__alloDissectionSoundEnabled = d.soundEnabled !== false; } catch (e) {}
@@ -1822,6 +2139,7 @@ var d = labToolData.dissection || {};
           });
 
           var sel = d.selectedOrgan ? organs.find(function (o) { return o.id === d.selectedOrgan; }) : null;
+          var selectedOrganIndex = sel ? organs.findIndex(function (o) { return o.id === sel.id; }) : -1;
 
           var guidedStep = d.guidedStep || 0;
 
@@ -2028,7 +2346,8 @@ var d = labToolData.dissection || {};
           var relationshipMotion = advancedWorkspace && d.relationshipMotion !== false;
           var focusMode = d.focusMode !== false;
           var parallaxDepth = advancedWorkspace && d.parallaxDepth !== false;
-          var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-6) : [];
+          var evidenceFrameLimit = 6;
+          var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-evidenceFrameLimit) : [];
           var splitComparison = advancedWorkspace && !!d.splitComparison;
           var lightDirection = advancedWorkspace && ['overhead', 'left', 'right', 'raking'].indexOf(d.lightDirection) >= 0 ? d.lightDirection : 'overhead';
           var variationSeed = Number(d.variationSeed) || 1;
@@ -3632,8 +3951,16 @@ var d = labToolData.dissection || {};
               return;
             }
             stopTechniqueCompareReplay();
+            var comparisonMotionReduced = reducedMotionEnabled;
+            try { comparisonMotionReduced = reducedMotionEnabled || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { comparisonMotionReduced = reducedMotionEnabled; }
+            if (comparisonMotionReduced) {
+              updMany({ compareReplayProgress: 1, compareReplayPlaying: false });
+              setProcedureFeedback('Comparison paths shown at the final frame because reduced motion is active.', 'success');
+              return;
+            }
             var progress = 0;
             updMany({ compareReplayProgress: 0, compareReplayPlaying: true });
+            setProcedureFeedback('Comparison replay started. Progress updates stay quiet until playback is paused or complete.', 'working');
             function advanceComparisonReplay() {
               progress = Math.min(1, progress + 0.025);
               upd('compareReplayProgress', progress);
@@ -3643,9 +3970,9 @@ var d = labToolData.dissection || {};
                 setProcedureFeedback('Comparison replay complete. The full current and saved paths are visible.', 'success');
                 return;
               }
-              try { window.__alloDissectionCompareReplayTimer = setTimeout(advanceComparisonReplay, reducedMotionEnabled ? 80 : 125); } catch (e) {}
+              try { window.__alloDissectionCompareReplayTimer = setTimeout(advanceComparisonReplay, 125); } catch (e) {}
             }
-            try { window.__alloDissectionCompareReplayTimer = setTimeout(advanceComparisonReplay, reducedMotionEnabled ? 80 : 125); } catch (e) {}
+            try { window.__alloDissectionCompareReplayTimer = setTimeout(advanceComparisonReplay, 125); } catch (e) {}
           }
           function saveTechniqueAttempt() {
             stopTechniqueCompareReplay();
@@ -3753,6 +4080,37 @@ var d = labToolData.dissection || {};
           function setProcedureFeedback(message, tone) {
             upd('procedureFeedback', { message: message, tone: tone || 'success', at: Date.now() });
             if (typeof announceToSR === 'function') announceToSR(message);
+          }
+          function dissectionConfidenceLabel(level) {
+            var normalized = Number(level);
+            if (normalized === 1) return __alloT('stem.dissection.confidence_not_sure_yet', 'Not sure yet');
+            if (normalized === 2) return __alloT('stem.dissection.confidence_somewhat_sure', 'Somewhat sure');
+            return normalized === 3 ? __alloT('stem.dissection.confidence_confident', 'Confident') : '';
+          }
+          function copyDissectionText(text, successMessage, failureMessage) {
+            function reportCopyFailure() {
+              if (addToast) addToast(failureMessage, 'error');
+              setProcedureFeedback(failureMessage, 'caution');
+            }
+            try {
+              if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                reportCopyFailure();
+                return false;
+              }
+              var copyResult = navigator.clipboard.writeText(text);
+              if (!copyResult || typeof copyResult.then !== 'function') {
+                reportCopyFailure();
+                return false;
+              }
+              Promise.resolve(copyResult).then(function () {
+                if (addToast) addToast(successMessage, 'success');
+                setProcedureFeedback(successMessage, 'success');
+              }, reportCopyFailure);
+              return true;
+            } catch (e) {
+              reportCopyFailure();
+              return false;
+            }
           }
           function procedureOutcomePoint(action, patch) {
             patch = patch || {};
@@ -4926,6 +5284,10 @@ var d = labToolData.dissection || {};
 
           function submitQuizAnswer(answerId) {
             if (!quizQ || d.quizFeedback) return;
+            if (d.practicalMode && (!Number(d.practicalEndsAt) || Date.now() >= Number(d.practicalEndsAt))) {
+              setProcedureFeedback('The timed practical has ended; this response was not recorded.', 'caution');
+              return;
+            }
             var correct = answerId === quizQ.id;
             var retryState = d.quizRetry && d.quizRetry.questionId === quizQ.id ? d.quizRetry : null;
             var firstAttempt = !retryState;
@@ -4975,7 +5337,7 @@ var d = labToolData.dissection || {};
               quizFirstAttemptScore: firstAttemptScore,
               quizFirstAttemptTotal: firstAttemptTotal,
               quizSupportedCount: supportedCount,
-              quizExplanation: d.practicalMode && !correct ? null : quizQ.fn.split('.').slice(0, 2).join('.') + '.',
+              quizExplanation: d.practicalMode ? null : quizQ.fn.split('.').slice(0, 2).join('.') + '.',
               quizRetry: null,
               hoveredOrgan: null,
               quizReviewQueue: reviewQueue,
@@ -5006,16 +5368,19 @@ var d = labToolData.dissection || {};
           function peelCurrentLayer() {
             var fromLayerDef = spec.layers[currentLayerIdx] || spec.layers[0];
             var toLayerDef = spec.layers[currentLayerIdx + 1] || null;
+            var peelingLayerId = activeLayer;
             var prefersReducedLayerMotion = reducedMotionEnabled;
             try { prefersReducedLayerMotion = reducedMotionEnabled || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { prefersReducedLayerMotion = reducedMotionEnabled; }
             var incisionDelay = prefersReducedLayerMotion ? 0 : 500;
+            cancelDissectionLayerTimers();
             sfxDisCut();
             if (window._alloHaptic) window._alloHaptic('break');
-            upd('_incisionAnim', { active: true, startTick: Date.now(), layerName: activeLayer });
+            upd('_incisionAnim', { active: true, startTick: Date.now(), layerName: peelingLayerId });
 
-            setTimeout(function () {
+            _disLayerPeelTimer = setTimeout(function () {
+              _disLayerPeelTimer = null;
               var newRevealed = Object.assign({}, revealedLayers);
-              newRevealed[activeLayer] = true;
+              newRevealed[peelingLayerId] = true;
               var transitionDuration = prefersReducedLayerMotion ? 650 : 1150;
               var layerTransition = toLayerDef ? {
                 active: true, startedAt: Date.now(), duration: transitionDuration, reducedMotion: prefersReducedLayerMotion,
@@ -5030,8 +5395,11 @@ var d = labToolData.dissection || {};
               if (toLayerDef) transitionPatch.activeLayer = toLayerDef.id;
               updMany(transitionPatch);
               if (toLayerDef && typeof canvasNarrate === 'function') canvasNarrate('dissection', 'layerPeel', 'Peeled ' + fromLayerDef.name + ' layer. Now viewing ' + toLayerDef.name + ' layer with ' + ((spec.organs[toLayerDef.id] || []).length) + ' structures.', { debounce: 1000 });
-              if (toLayerDef) setTimeout(function () { upd('_layerTransition', null); }, transitionDuration + 120);
-              awardStemXP('dissection', 3, 'Peeled ' + activeLayer + ' layer');
+              if (toLayerDef) _disLayerTransitionTimer = setTimeout(function () {
+                _disLayerTransitionTimer = null;
+                upd('_layerTransition', null);
+              }, transitionDuration + 120);
+              awardStemXP('dissection', 3, 'Peeled ' + peelingLayerId + ' layer');
               sfxDisReveal();
               if (addToast) addToast('\uD83D\uDD2C +3 XP Layer revealed!', 'success');
             }, incisionDelay);
@@ -5100,11 +5468,17 @@ var d = labToolData.dissection || {};
             if (canvas._dissCleanup) {
               var canvasMotionChanged = canvas._dissMotionReduced !== nextCanvasMotionReduced;
               canvas._dissMotionReduced = nextCanvasMotionReduced;
+              syncCanvasPracticalCountdown(canvas);
               if ((nextCanvasMotionReduced || canvasMotionChanged) && canvas._drawDissectionNow) canvas._drawDissectionNow();
               return;
             }
             if (canvas._dissAnim) { cancelAnimationFrame(canvas._dissAnim); canvas._dissAnim = null; }
             try { if (window.__alloDissectionCanvasCleanup && window.__alloDissectionCanvasCleanup !== canvas._dissCleanup) window.__alloDissectionCanvasCleanup(); } catch (e) {}
+            var dissAlive = true;
+            canvas._dissAlive = true;
+            canvas._dissCleanup = cleanupDissectionCanvas;
+            try { window.__alloDissectionCanvasCleanup = canvas._dissCleanup; } catch (e) {}
+            syncCanvasPracticalCountdown(canvas);
 
             // PL7 HiDPI: crisp rendering on retina displays.
             if (window.StemLab && window.StemLab.setupHiDPI) {
@@ -5120,7 +5494,6 @@ var d = labToolData.dissection || {};
             var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
             var dissTick = 0;
-            var dissAlive = true;
             var dissLastDrawAt = 0;
             var dissFrameCostAverage = 0;
             var dissCanvasInViewport = true;
@@ -5195,7 +5568,9 @@ var d = labToolData.dissection || {};
 
             function cleanupDissectionCanvas() {
               cancelActiveCanvasGesture(null, canvas);
+              cancelDissectionLayerTimers();
               dissAlive = false;
+              canvas._dissAlive = false;
               cancelDissectionFrame();
               if (dissTimeTimer) { clearInterval(dissTimeTimer); dissTimeTimer = null; }
               if (dissScenarioTimer) { clearInterval(dissScenarioTimer); dissScenarioTimer = null; }
@@ -5206,7 +5581,7 @@ var d = labToolData.dissection || {};
               if (canvas._dissReducedOutcomeTimer) { clearTimeout(canvas._dissReducedOutcomeTimer); canvas._dissReducedOutcomeTimer = null; }
               canvas._toolContactPulse = null;
               canvas._toolOutcomePulse = null;
-              try { if (window.__alloDissectionPracticalInterval) { clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalInterval = null; } } catch (e) {}
+              stopCanvasPracticalCountdown(canvas);
               try { if (window.__alloDissectionDemoTimer) { clearTimeout(window.__alloDissectionDemoTimer); window.__alloDissectionDemoTimer = null; } } catch (e) {}
               try { if (window.__alloDissectionReplayTimer) { clearTimeout(window.__alloDissectionReplayTimer); window.__alloDissectionReplayTimer = null; } } catch (e) {}
               try { if (window.__alloDissectionCompareReplayTimer) { clearTimeout(window.__alloDissectionCompareReplayTimer); window.__alloDissectionCompareReplayTimer = null; } } catch (e) {}
@@ -5222,6 +5597,7 @@ var d = labToolData.dissection || {};
               if (!dissAlive) return;
               if (!canvas.isConnected) { cleanupDissectionCanvas(); return; }
               if (isDissectionHidden()) {
+                flushAllDissectionSaves();
                 cancelActiveCanvasGesture('Specimen contact canceled when the lab moved to the background; no action was recorded.', canvas);
                 canvas._livingFunctionLastAt = null;
                 cancelDissectionFrame();
@@ -5427,7 +5803,7 @@ var d = labToolData.dissection || {};
               livingFunctionEnabled = !!d.livingFunctionEnabled;
               livingFunctionPaused = !!d.livingFunctionPaused;
               livingFunctionSpeed = ['slow', 'normal', 'fast'].indexOf(d.livingFunctionSpeed) >= 0 ? d.livingFunctionSpeed : 'normal';
-              visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-6) : [];
+              visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-evidenceFrameLimit) : [];
               splitComparison = !!d.splitComparison;
               procedureByLayer = d.procedureByLayer || {};
               var liveProcedureState = ((d.procedureByLayer || {})[activeLayer]) || {};
@@ -13008,9 +13384,15 @@ var d = labToolData.dissection || {};
 
           // Save current-specimen progress with a short debounce. Each specimen owns
           // its own layer, notes, assessment, and annotation state.
-          if (d._dissLoadedSpec === specimen) {
-            scheduleDissectionSave('dissection_progress_' + specimen, {
-              schemaVersion: 21,
+          var activeDissectionSaveKey = 'dissection_progress_' + specimen;
+          var activeDissectionSaveAccess = currentDissectionSaveAccess(activeDissectionSaveKey);
+          if (d._dissLoadedSpec === specimen && activeDissectionSaveAccess.state === 'unknown') {
+            prepareDissectionSaveAccess(activeDissectionSaveKey, spec.name);
+            activeDissectionSaveAccess = currentDissectionSaveAccess(activeDissectionSaveKey);
+          }
+          if (d._dissLoadedSpec === specimen && activeDissectionSaveAccess.state === 'writable') {
+            scheduleDissectionSave(activeDissectionSaveKey, {
+              schemaVersion: DISSECTION_SAVE_SCHEMA_VERSION,
               exploredOrgans: d.exploredOrgans || {},
               verifiedIdentifications: d.verifiedIdentifications || {},
               revealedLayers: d.revealedLayers || {},
@@ -13093,15 +13475,13 @@ var d = labToolData.dissection || {};
             var loadSpecimenKey = specimen;
             var loadSpecimenDef = spec;
             setTimeout(function () {
-              var data = {};
-              try {
-                var saved = localStorage.getItem('dissection_progress_' + loadSpecimenKey);
-                if (saved) data = JSON.parse(saved) || {};
-              } catch (e) { data = {}; }
+              var loadSaveKey = 'dissection_progress_' + loadSpecimenKey;
+              var loadInspection = prepareDissectionSaveAccess(loadSaveKey, loadSpecimenDef.name);
+              var data = loadInspection.ok ? loadInspection.data : {};
               var savedLayer = data.activeLayer && loadSpecimenDef.layers.some(function (layer) { return layer.id === data.activeLayer; })
                 ? data.activeLayer
                 : ((loadSpecimenDef.layers[0] || {}).id || 'skin');
-              updMany({
+              updManyForSpecimen(loadSpecimenKey, {
                 exploredOrgans: data.exploredOrgans || {},
                 verifiedIdentifications: data.verifiedIdentifications || {},
                 revealedLayers: data.revealedLayers || {},
@@ -14026,8 +14406,7 @@ var d = labToolData.dissection || {};
               var verification = (d.verifiedIdentifications || {})[key];
               return !!(assessmentEvidence[key] && assessmentEvidence[key].correct) || !!(verification && verification.status === 'verified');
             }).length;
-            var requiresEveryVerification = /\b(identify|locate|distinguish)\b/i.test(objective);
-            var understandingGoal = requiresEveryVerification ? targetCount : 1;
+            var understandingGoal = targetCount;
             var observationPct = Math.min(100, Math.round(observedCount / targetCount * 100));
             var recordPct = Math.min(100, Math.round(recordedCount / targetCount * 100));
             var understandingPct = Math.min(100, Math.round(understoodCount / understandingGoal * 100));
@@ -14149,6 +14528,14 @@ var d = labToolData.dissection || {};
               if (target.focus) target.focus();
             }, 0);
             if (message) setProcedureFeedback(message, 'working');
+          }
+          function focusStructureDirectoryItem(organId) {
+            setTimeout(function () {
+              var target = document.getElementById('diss-organ-' + organId) || document.getElementById('diss-organ-search');
+              if (!target) return;
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'nearest', behavior: reducedMotionEnabled ? 'auto' : 'smooth' });
+              if (target.focus) target.focus();
+            }, 0);
           }
           function performPrimaryNextAction() {
             if (nextActionModel.action === 'guided-observation') {
@@ -14321,7 +14708,45 @@ var d = labToolData.dissection || {};
               guidedFeedback && React.createElement("p", { className: "diss-learning-check__feedback", "data-result": guidedFeedback.correct ? "correct" : "incorrect" }, guidedFeedback.message)
             );
           }
+          function evidenceLayerLabel(evidence) {
+            var explicitLabel = evidence && typeof evidence.layerName === 'string' ? evidence.layerName.trim() : '';
+            if (explicitLabel) return explicitLabel;
+            var layerId = evidence && evidence.layer;
+            var matchedLayer = spec.layers.find(function (layer) { return layer && layer.id === layerId; });
+            return matchedLayer ? matchedLayer.name : 'Saved specimen view';
+          }
+          function evidenceViewLabel(evidence) {
+            var explicitView = evidence && typeof evidence.view === 'string' ? evidence.view.trim() : '';
+            return explicitView || 'recorded';
+          }
+          function evidenceConditionLabel(evidence) {
+            var explicitCondition = evidence && typeof evidence.condition === 'string' ? evidence.condition.trim() : '';
+            return explicitCondition || 'saved condition';
+          }
+          function evidenceFileToken(value, fallback) {
+            var token = value == null ? '' : String(value).trim().replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
+            return token || fallback;
+          }
+          function evidenceDomToken(evidenceId) {
+            return evidenceFileToken(evidenceId, 'frame');
+          }
+          function focusEvidenceControl(controlId) {
+            setTimeout(function () {
+              var notebook = document.getElementById('diss-evidence-notebook');
+              if (notebook) notebook.open = true;
+              var target = controlId ? document.getElementById(controlId) : null;
+              if (!target && notebook) target = notebook.querySelector('summary');
+              if (target && typeof target.focus === 'function') target.focus();
+            }, 0);
+          }
           function captureVisualEvidence() {
+            if (visualEvidence.length >= evidenceFrameLimit) {
+              setProcedureFeedback('Evidence notebook is full. Download or remove a frame before capturing another; no saved frame was replaced.', 'caution');
+              if (addToast) addToast('Evidence notebook full — manage frames before capturing.', 'error');
+              if (typeof announceToSR === 'function') announceToSR('Evidence notebook full. No frame was replaced. Download or remove a frame before capturing another.');
+              focusEvidenceControl();
+              return false;
+            }
             try {
               var sourceCanvas = document.querySelector('[data-diss-canvas]');
               if (!sourceCanvas) throw new Error('Canvas unavailable');
@@ -14332,6 +14757,7 @@ var d = labToolData.dissection || {};
               if (!thumbnailContext) throw new Error('Thumbnail canvas unavailable');
               thumbnailContext.drawImage(sourceCanvas, 0, 0, thumbnail.width, thumbnail.height);
               var evidenceId = Date.now();
+              while (visualEvidence.some(function (entry) { return String(entry.id) === String(evidenceId); })) evidenceId += 1;
               var selectedEvidenceOrgan = d.selectedOrgan ? organs.find(function (organ) { return organ.id === d.selectedOrgan; }) : null;
               var evidenceEntry = {
                 id: evidenceId,
@@ -14375,7 +14801,7 @@ var d = labToolData.dissection || {};
                 },
                 specimen: specimen
               };
-              var nextEvidence = visualEvidence.concat([evidenceEntry]).slice(-6);
+              var nextEvidence = visualEvidence.concat([evidenceEntry]);
               updMany({ visualEvidence: nextEvidence, referenceEvidenceId: evidenceId, splitComparison: true });
               setProcedureFeedback('Evidence frame captured. It is now the active reference in split comparison.');
               if (addToast) addToast('Evidence frame captured and opened for comparison.', 'success');
@@ -14390,15 +14816,16 @@ var d = labToolData.dissection || {};
             var evidence = visualEvidence.find(function (entry) { return entry.id === evidenceId; });
             if (!evidence) return;
             updMany({ referenceEvidenceId: evidenceId, splitComparison: true });
-            setProcedureFeedback('Reference frame selected from ' + evidence.layerName + '. Split comparison is on.');
-            if (typeof announceToSR === 'function') announceToSR('Reference frame selected from ' + evidence.layerName + '.');
+            var layerLabel = evidenceLayerLabel(evidence);
+            setProcedureFeedback('Reference frame selected from ' + layerLabel + '. Split comparison is on.');
+            if (typeof announceToSR === 'function') announceToSR('Reference frame selected from ' + layerLabel + '.');
           }
 
           function downloadEvidence(evidence) {
             if (!evidence || !evidence.image) return;
             try {
               var link = document.createElement('a');
-              link.download = specimen + '_' + (evidence.layer || 'evidence') + '_' + evidence.id + '.jpg';
+              link.download = evidenceFileToken(specimen, 'specimen') + '_' + evidenceFileToken(evidence.layer, 'evidence') + '_' + evidenceFileToken(evidence.id, 'frame') + '.jpg';
               link.href = evidence.image; link.click();
               setProcedureFeedback('Evidence frame downloaded as ' + link.download + '.');
               if (addToast) addToast('Evidence frame downloaded.', 'success');
@@ -14408,6 +14835,58 @@ var d = labToolData.dissection || {};
             }
           }
 
+          function requestEvidenceRemoval(evidenceId) {
+            var evidence = visualEvidence.find(function (entry) { return entry.id === evidenceId; });
+            if (!evidence) return;
+            updMany({ evidenceRemovePendingId: evidenceId, evidenceClearPending: false });
+            setProcedureFeedback('Removal confirmation opened for ' + evidenceLayerLabel(evidence) + '. Download the frame first if you need a separate copy.', 'caution');
+            focusEvidenceControl('diss-evidence-confirm-remove-' + evidenceDomToken(evidenceId));
+          }
+          function cancelEvidenceRemoval(evidenceId) {
+            upd('evidenceRemovePendingId', null);
+            setProcedureFeedback('Evidence-frame removal canceled.', 'working');
+            focusEvidenceControl('diss-evidence-remove-' + evidenceDomToken(evidenceId));
+          }
+          function confirmEvidenceRemoval(evidenceId) {
+            var evidence = visualEvidence.find(function (entry) { return entry.id === evidenceId; });
+            if (!evidence) { upd('evidenceRemovePendingId', null); return; }
+            var remainingEvidence = visualEvidence.filter(function (entry) { return entry.id !== evidenceId; });
+            var preferredReferenceId = referenceEvidence ? referenceEvidence.id : null;
+            var nextReference = remainingEvidence.find(function (entry) { return entry.id === preferredReferenceId; }) || remainingEvidence[remainingEvidence.length - 1] || null;
+            cancelDissectionSave('dissection_progress_' + specimen);
+            updMany({
+              visualEvidence: remainingEvidence,
+              referenceEvidenceId: nextReference ? nextReference.id : null,
+              splitComparison: !!(d.splitComparison && nextReference),
+              evidenceRemovePendingId: null,
+              evidenceClearPending: false
+            });
+            var remainingCount = remainingEvidence.length;
+            setProcedureFeedback('Removed the ' + evidenceLayerLabel(evidence) + ' evidence frame. ' + remainingCount + ' frame' + (remainingCount === 1 ? ' remains.' : 's remain.') + ' Saving the smaller notebook now.', 'success');
+            if (typeof announceToSR === 'function') announceToSR('Evidence frame removed. ' + remainingCount + ' frame' + (remainingCount === 1 ? ' remains.' : 's remain.'));
+            focusEvidenceControl();
+          }
+          function requestClearVisualEvidence() {
+            if (!visualEvidence.length) return;
+            updMany({ evidenceClearPending: true, evidenceRemovePendingId: null });
+            setProcedureFeedback('Clear-all confirmation opened. Download any evidence frames you need before continuing.', 'caution');
+            focusEvidenceControl('diss-evidence-confirm-clear');
+          }
+          function cancelClearVisualEvidence() {
+            upd('evidenceClearPending', false);
+            setProcedureFeedback('Clear-all evidence action canceled.', 'working');
+            focusEvidenceControl('diss-evidence-clear-all');
+          }
+          function confirmClearVisualEvidence() {
+            var removedCount = visualEvidence.length;
+            if (!removedCount) { upd('evidenceClearPending', false); return; }
+            cancelDissectionSave('dissection_progress_' + specimen);
+            updMany({ visualEvidence: [], referenceEvidenceId: null, splitComparison: false, evidenceRemovePendingId: null, evidenceClearPending: false });
+            setProcedureFeedback('Cleared ' + removedCount + ' evidence frame' + (removedCount === 1 ? '' : 's') + '. Notes and other specimen progress were preserved; saving the smaller record now.', 'success');
+            if (typeof announceToSR === 'function') announceToSR('All ' + removedCount + ' evidence frames cleared. Notes and other progress were preserved.');
+            focusEvidenceControl();
+          }
+
           function selectSpecimen(sk) {
             var sp = SPECIMENS[sk];
             if (!sp || sk === specimen) return;
@@ -14415,12 +14894,16 @@ var d = labToolData.dissection || {};
               setProcedureFeedback('Specimen selection is locked during an assessment. Return to the lab before changing specimens.', 'caution');
               return;
             }
+            cancelDissectionLayerTimers();
+            // Persist the departing specimen synchronously so the incoming
+            // specimen's debounced save cannot supersede its latest evidence.
+            flushDissectionSave('dissection_progress_' + specimen);
             cancelActiveCanvasGesture('Specimen gesture canceled before changing specimens; no action was recorded.');
             closeTimedPractical();
-            updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null });
+            updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, evidenceRemovePendingId: null, evidenceClearPending: false });
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _viewTransition: null, _layerBrowseTransition: null });
+            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _incisionAnim: null, _layerTransition: null, _viewTransition: null, _layerBrowseTransition: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -14432,7 +14915,9 @@ var d = labToolData.dissection || {};
           }
           function requestSpecimenReset() {
             upd('resetConfirmPending', true);
-            var message = 'Reset confirmation opened. This will remove viewed structures, verified identifications, notes, inquiry records, evidence frames, quiz progress, and technique attempts for ' + spec.name + '.';
+            var message = activeDissectionSaveIssue
+              ? 'Reset confirmation opened. This will permanently delete the protected saved record for ' + spec.name + ' and replace it with a fresh lab.'
+              : 'Reset confirmation opened. This will remove viewed structures, verified identifications, notes, inquiry records, evidence frames, quiz progress, and technique attempts for ' + spec.name + '.';
             setProcedureFeedback(message, 'caution');
             if (typeof announceToSR === 'function') announceToSR(message);
             focusResetControl('diss-reset-confirm');
@@ -14441,13 +14926,28 @@ var d = labToolData.dissection || {};
             upd('resetConfirmPending', false);
             setProcedureFeedback('Specimen reset canceled. Your progress is unchanged.', 'working');
             if (typeof announceToSR === 'function') announceToSR('Specimen reset canceled. Progress is unchanged.');
-            focusResetControl('diss-reset-specimen');
+            focusResetControl(activeDissectionSaveIssue ? 'diss-protected-save-reset' : 'diss-reset-specimen');
           }
           function confirmSpecimenReset() {
+            var resetSaveKey = 'dissection_progress_' + specimen;
+            // A pending pre-reset snapshot must never recreate progress after
+            // the learner confirms deletion. The reset render may then queue a
+            // clean default snapshot for this specimen.
+            cancelDissectionLayerTimers();
+            cancelDissectionSave(resetSaveKey);
+            try {
+              localStorage.removeItem(resetSaveKey);
+            } catch (e) {
+              blockDissectionSave(resetSaveKey, { kind: 'storage-unavailable', error: e }, spec.name);
+              publishDissectionSaveStatus('error', 'The protected ' + spec.name + ' save could not be removed and remains unchanged. Check browser storage access, then try again.');
+              setProcedureFeedback('Reset could not continue because the protected save could not be removed.', 'caution');
+              focusResetControl('diss-reset-confirm');
+              return;
+            }
+            allowDissectionSave(resetSaveKey);
             closeTimedPractical();
-            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false });
-            updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
-            try { localStorage.removeItem('dissection_progress_' + specimen); } catch (e) {}
+            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false, _incisionAnim: null, _layerTransition: null });
+            updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalEndsAt: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], evidenceRemovePendingId: null, evidenceClearPending: false, labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
             if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
             if (typeof announceToSR === 'function') announceToSR('Progress reset for ' + spec.name + '. Accessibility preferences were preserved.');
             focusResetControl('diss-reset-specimen');
@@ -14625,9 +15125,67 @@ var d = labToolData.dissection || {};
           }
 
           function closeTimedPractical() {
-            try { if (window.__alloDissectionPracticalInterval) clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalInterval = null; window.__alloDissectionPracticalScore = 0; } catch (e) {}
+            stopCanvasPracticalCountdown(canvasRefNode);
+            try { window.__alloDissectionPracticalScore = 0; } catch (e) {}
             if (!d.practicalMode) return;
-            updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalTargetIds: [], quizFeedback: null, quizExplanation: null, hoveredOrgan: null, guidedObservationPending: null, guidedObservationFeedback: null, labelMode: d._prePracticalLabelMode || 'show' });
+            updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalEndsAt: 0, practicalTargetIds: [], quizFeedback: null, quizExplanation: null, hoveredOrgan: null, guidedObservationPending: null, guidedObservationFeedback: null, labelMode: d._prePracticalLabelMode || 'show' });
+          }
+          function stopCanvasPracticalCountdown(canvas) {
+            if (canvas && canvas._dissPracticalImmediateTimer) {
+              clearTimeout(canvas._dissPracticalImmediateTimer);
+              canvas._dissPracticalImmediateTimer = null;
+            }
+            if (canvas && canvas._dissPracticalTimer) {
+              clearInterval(canvas._dissPracticalTimer);
+              if (typeof window !== 'undefined' && window.__alloDissectionPracticalInterval === canvas._dissPracticalTimer) window.__alloDissectionPracticalInterval = null;
+              canvas._dissPracticalTimer = null;
+            }
+          }
+          function finishCanvasPractical(canvas, latest, timingUnavailable) {
+            latest = latest || {};
+            var practicalDeadline = Number(latest.practicalEndsAt) || 0;
+            if (canvas && canvas._settledPracticalDeadline === practicalDeadline && practicalDeadline) return;
+            if (canvas) canvas._settledPracticalDeadline = practicalDeadline || -1;
+            stopCanvasPracticalCountdown(canvas);
+            var finalScore = Number(latest.quizScore) || 0;
+            updMany({ practicalTimer: 0, practicalEndsAt: 0, practicalMode: false, quizMode: false, practicalTargetIds: [], quizFeedback: null, quizExplanation: null, hoveredOrgan: null, labelMode: latest._prePracticalLabelMode || 'show' });
+            var completionMessage = timingUnavailable ? 'Timed practical ended because its timing record was unavailable. No additional response was recorded.' : 'Time up! Score: ' + finalScore;
+            if (addToast) addToast(completionMessage, 'info');
+            if (typeof announceToSR === 'function') announceToSR(timingUnavailable ? completionMessage : 'Practical assessment complete. Score ' + finalScore + '.');
+          }
+          function tickCanvasPracticalCountdown(canvas) {
+            if (!canvas || canvas._dissAlive === false || !canvas.isConnected) return;
+            var latest = canvas._drawD || {};
+            if (!latest.practicalMode) {
+              stopCanvasPracticalCountdown(canvas);
+              return;
+            }
+            var practicalDeadline = Number(latest.practicalEndsAt) || 0;
+            if (!practicalDeadline) {
+              finishCanvasPractical(canvas, latest, true);
+              return;
+            }
+            var remaining = Math.max(0, Math.ceil((practicalDeadline - Date.now()) / 1000));
+            if (remaining <= 0) {
+              finishCanvasPractical(canvas, latest, false);
+              return;
+            }
+            if (remaining !== Number(latest.practicalTimer)) upd('practicalTimer', remaining);
+          }
+          function syncCanvasPracticalCountdown(canvas) {
+            if (!canvas) return;
+            var latest = canvas._drawD || {};
+            if (!latest.practicalMode) {
+              stopCanvasPracticalCountdown(canvas);
+              return;
+            }
+            if (!canvas._dissPracticalTimer) {
+              canvas._dissPracticalTimer = setInterval(function () { tickCanvasPracticalCountdown(canvas); }, 1000);
+              try { window.__alloDissectionPracticalInterval = canvas._dissPracticalTimer; } catch (e) {}
+            }
+            if (canvas._dissPracticalImmediateTimer) clearTimeout(canvas._dissPracticalImmediateTimer);
+            canvas._dissPracticalImmediateTimer = null;
+            tickCanvasPracticalCountdown(canvas);
           }
 
           function clearAssessmentTeachingTimers() {
@@ -14695,7 +15253,7 @@ var d = labToolData.dissection || {};
               if (typeof announceToSR === 'function') announceToSR(advancedWorkspace ? 'Free explore mode active.' : 'Procedure practice mode active.');
             }
           }
-          function chooseOrganFromDirectory(org) {
+          function chooseOrganFromDirectory(org, preserveFocus) {
             var exposureState = structureExposureState(org, currentProcedure);
             var evidenceKey = specimen + '|' + org.id;
             var alreadyExplored = !!(d.exploredOrgans || {})[evidenceKey];
@@ -14707,6 +15265,7 @@ var d = labToolData.dissection || {};
             if (exposureState !== 'visible') {
               upd('selectedOrgan', org.id);
               setProcedureFeedback('Reviewing previously recorded evidence for ' + org.name + '. The structure is not currently visible, so no new viewing progress was added.', 'working');
+              if (!preserveFocus) focusDissectionTarget('diss-selection-title');
               return true;
             }
             var explored = Object.assign({}, d.exploredOrgans || {});
@@ -14716,6 +15275,8 @@ var d = labToolData.dissection || {};
             updMany({ selectedOrgan: org.id, exploredOrgans: explored, scenarioCompletedAt: completesStructureScenario ? Date.now() : (Number(d.scenarioCompletedAt) || 0) });
             if (guidedMode && currentGuided && org.id === currentGuided.organId) {
               beginGuidedObservation(org);
+            } else if (!preserveFocus) {
+              focusDissectionTarget('diss-selection-title');
             }
 
 
@@ -14727,6 +15288,9 @@ var d = labToolData.dissection || {};
 
 
           // ── Render ──
+
+          var dissectionSaveStatus = currentDissectionSaveStatus();
+          var activeDissectionSaveIssue = activeDissectionSaveAccess && activeDissectionSaveAccess.state === 'blocked' ? activeDissectionSaveAccess.issue : null;
 
           return React.createElement("div", {
             className: "space-y-3",
@@ -14740,6 +15304,33 @@ var d = labToolData.dissection || {};
           },
             React.createElement("a", { className: "diss-skip-link", href: "#diss-canvas" }, 'Skip to interactive specimen'),
             React.createElement("a", { className: "diss-skip-link", href: "#diss-structure-directory" }, 'Skip to structure directory and notes'),
+
+            React.createElement("div", {
+              className: "diss-save-status",
+              "data-dissection-save-status": true,
+              "data-state": dissectionSaveStatus.state,
+              role: "status",
+              "aria-live": "polite",
+              "aria-atomic": "true"
+            },
+              React.createElement("span", { className: "diss-save-status__glyph", "data-dissection-save-glyph": true, "aria-hidden": "true" }, dissectionSaveStatus.state === 'error' ? '\u00D7' : (dissectionSaveStatus.state === 'warning' ? '!' : '\u2713')),
+              React.createElement("span", { "data-dissection-save-message": true }, dissectionSaveStatus.message)
+            ),
+            activeDissectionSaveIssue && React.createElement("section", {
+              className: "rounded-xl border border-amber-400 bg-amber-50 p-3 text-amber-950",
+              "data-dissection-protected-save": true,
+              role: "region",
+              "aria-labelledby": "diss-protected-save-title"
+            },
+              React.createElement("h3", { id: "diss-protected-save-title", className: "text-sm font-black" }, 'Protected saved progress'),
+              React.createElement("p", { className: "mt-1 text-xs" }, dissectionSaveIssueMessage(activeDissectionSaveIssue, spec.name) + ' Changes in this temporary session will not replace the protected record.'),
+              !d.resetConfirmPending && React.createElement("button", { id: "diss-protected-save-reset", type: "button", className: "mt-2 min-h-11 rounded-lg border border-amber-600 bg-white px-3 py-2 text-xs font-bold", onClick: requestSpecimenReset }, 'Start fresh with confirmed reset'),
+              d.resetConfirmPending && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm mt-2", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
+                React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes the protected saved record and starts a fresh lab. Accessibility preferences are preserved.'),
+                React.createElement("button", { id: "diss-reset-confirm", type: "button", "data-confirm": "true", onClick: confirmSpecimenReset }, 'Confirm reset'),
+                React.createElement("button", { id: "diss-reset-cancel", type: "button", onClick: cancelSpecimenReset }, 'Cancel')
+              )
+            ),
 
             React.createElement("section", { className: "diss-mission", "data-dissection-mission": true, "aria-labelledby": "diss-mission-title" },
               React.createElement("div", { className: "diss-mission__main" },
@@ -14973,11 +15564,13 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
               }, '\u232B Clear annotations'),
 
-              React.createElement("button", { "aria-label": "Capture compressed visual evidence frame",
+              React.createElement("button", { "aria-label": visualEvidence.length >= evidenceFrameLimit ? "Evidence notebook full; manage frames before capturing another" : "Capture compressed visual evidence frame",
+                "aria-describedby": "diss-evidence-capacity",
+                "data-evidence-capture": true,
                 onClick: captureVisualEvidence,
-                title: 'Capture evidence — Save a lightweight frame in the specimen notebook',
+                title: visualEvidence.length >= evidenceFrameLimit ? 'Evidence notebook full — download or remove a frame first' : 'Capture evidence — Save a lightweight frame in the specimen notebook',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
-              }, 'Capture evidence'),
+              }, visualEvidence.length >= evidenceFrameLimit ? 'Evidence full · manage notebook' : 'Capture evidence'),
 
               React.createElement("button", { "aria-label": "Copy accurate lab report to clipboard",
                 onClick: function () {
@@ -15038,31 +15631,22 @@ var d = labToolData.dissection || {};
                     examined.forEach(function (o) {
                       var noteKey = specimen + '|' + o.id;
                       report += '\u2022 ' + o.name + ': ' + o.fn + '\n';
-                      if ((d.organConfidence || {})[noteKey]) report += '  Confidence: ' + (d.organConfidence || {})[noteKey] + '/3\n';
+                      var confidenceRating = Number((d.organConfidence || {})[noteKey]) || 0;
+                      if (confidenceRating) {
+                        report += '  Confidence self-rating: ' + dissectionConfidenceLabel(confidenceRating) + ' (' + confidenceRating + ' of 3)\n';
+                      }
                       if ((d.organNotes || {})[noteKey]) report += '  Evidence note: ' + (d.organNotes || {})[noteKey] + '\n';
                     });
                   });
-                  try {
-                    var copied = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(report) : null;
-                    if (!copied || !copied.then) throw new Error('Clipboard unavailable');
-                    copied.then(function () {
-                      if (addToast) addToast('\uD83D\uDCCB Lab report copied!', 'success');
-                      setProcedureFeedback('Lab report copied to the clipboard.');
-                    }).catch(function () {
-                      if (addToast) addToast('Could not copy the lab report.', 'error');
-                      setProcedureFeedback('The lab report could not be copied in this view.', 'caution');
-                    });
-                  } catch (e) {
-                    if (addToast) addToast('Could not copy the lab report.', 'error');
-                    setProcedureFeedback('The lab report could not be copied in this view.', 'caution');
-                  }
+                  copyDissectionText(report, 'Lab report copied to the clipboard.', 'The lab report could not be copied in this view.');
                 },
+                "aria-label": "Copy lab report to clipboard",
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200"
               }, '\uD83D\uDCCB Lab Report'),
               React.createElement("button", { id: "diss-reset-specimen", "aria-label": "Reset progress for this specimen", "aria-expanded": !!d.resetConfirmPending, "aria-controls": "diss-reset-confirmation", onClick: requestSpecimenReset,
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-700 border border-red-300"
               }, '\u21BA Reset specimen'),
-              d.resetConfirmPending && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
+              d.resetConfirmPending && !activeDissectionSaveIssue && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
                 React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes viewed structures, verified identifications, notes, inquiry records, evidence frames, quiz progress, and technique attempts. Accessibility preferences are preserved.'),
                 React.createElement("button", { id: "diss-reset-confirm", type: "button", "data-confirm": "true", onClick: confirmSpecimenReset }, 'Confirm reset'),
                 React.createElement("button", { id: "diss-reset-cancel", type: "button", onClick: cancelSpecimenReset }, 'Cancel')
@@ -15098,24 +15682,11 @@ var d = labToolData.dissection || {};
                       return;
                     }
                     var previousLabelMode = d.labelMode || 'show';
-                    try { if (window.__alloDissectionPracticalInterval) clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalScore = 0; } catch (e) {}
-                    updMany({ _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizComplete: false, quizReviewMode: false, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: [], practicalTimer: 120, practicalTargetIds: practicalIds, selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
+                    var practicalEndsAt = Date.now() + 120000;
+                    stopCanvasPracticalCountdown(canvasRefNode);
+                    try { window.__alloDissectionPracticalScore = 0; } catch (e) {}
+                    updMany({ _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizComplete: false, quizReviewMode: false, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: [], practicalTimer: 120, practicalEndsAt: practicalEndsAt, practicalTargetIds: practicalIds, selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
                     updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
-                    var remaining = 120;
-                    var practicalTimerId = setInterval(function () {
-                      remaining -= 1;
-                      if (remaining <= 0) {
-                        clearInterval(practicalTimerId);
-                        var finalScore = 0;
-                        try { finalScore = window.__alloDissectionPracticalScore || 0; window.__alloDissectionPracticalInterval = null; } catch (e) {}
-                        updMany({ practicalTimer: 0, practicalMode: false, quizMode: false, practicalTargetIds: [], quizFeedback: null, quizExplanation: null, hoveredOrgan: null, labelMode: previousLabelMode });
-                        if (addToast) addToast('\u23F0 Time up! Score: ' + finalScore, 'info');
-                        if (typeof announceToSR === 'function') announceToSR('Practical assessment complete. Score ' + finalScore + '.');
-                        return;
-                      }
-                      upd('practicalTimer', remaining);
-                    }, 1000);
-                    try { window.__alloDissectionPracticalInterval = practicalTimerId; } catch (e) {}
                   } else closeTimedPractical();
                 },
                 title: 'Practical — timed identification with a specimen hotspot and accessible answer choices',
@@ -15425,12 +15996,12 @@ var d = labToolData.dissection || {};
                       React.createElement("div", { className: "diss-split-reference__header" },
                         React.createElement("div", null,
                           React.createElement("strong", null, 'Reference frame'),
-                          React.createElement("span", null, referenceEvidence.layerName + ' · ' + referenceEvidence.view + ' view')
+                          React.createElement("span", null, evidenceLayerLabel(referenceEvidence) + ' · ' + evidenceViewLabel(referenceEvidence) + ' view')
                         ),
                         React.createElement("button", { type: "button", "aria-label": "Close split comparison", onClick: function () { upd('splitComparison', false); } }, 'Close')
                       ),
-                      React.createElement("img", { src: referenceEvidence.image, alt: spec.name + ' evidence reference, ' + referenceEvidence.layerName + ', ' + referenceEvidence.view + ' view, ' + referenceEvidence.condition + ' condition' }),
-                      React.createElement("p", null, (referenceEvidence.selectedOrganName ? 'Focused on ' + referenceEvidence.selectedOrganName + ' · ' : '') + 'Technique ' + referenceEvidence.techniqueScore + '/100' + (referenceEvidence.opticalQuality != null ? ' · optics ' + referenceEvidence.opticalQuality + '%' : '') + ' · captured ' + (referenceEvidence.capturedAt ? referenceEvidence.capturedAt.slice(0, 16).replace('T', ' ') : 'earlier'))
+                      React.createElement("img", { src: referenceEvidence.image, alt: spec.name + ' evidence reference, ' + evidenceLayerLabel(referenceEvidence) + ', ' + evidenceViewLabel(referenceEvidence) + ' view, ' + evidenceConditionLabel(referenceEvidence) }),
+                      React.createElement("p", null, (referenceEvidence.selectedOrganName ? 'Focused on ' + referenceEvidence.selectedOrganName + ' · ' : '') + (isFinite(Number(referenceEvidence.techniqueScore)) ? 'Technique ' + Math.max(0, Math.min(100, Math.round(Number(referenceEvidence.techniqueScore)))) + '/100' : 'Technique not scored') + (referenceEvidence.opticalQuality != null ? ' · optics ' + referenceEvidence.opticalQuality + '%' : '') + ' · captured ' + (typeof referenceEvidence.capturedAt === 'string' && referenceEvidence.capturedAt ? referenceEvidence.capturedAt.slice(0, 16).replace('T', ' ') : 'earlier'))
                     ) : null
                   ),
 
@@ -15472,19 +16043,45 @@ var d = labToolData.dissection || {};
                 ),
 
                 React.createElement("p", { id: "diss-canvas-equivalent", className: "diss-sr-only" }, 'Every canvas selection and drag action has a keyboard or button alternative. Use the structure directory for equivalent anatomical descriptions, the technique action button instead of drawing a stroke, the pin action button instead of dragging a pin, the probe action button instead of tracing a structure, and the pan controls instead of dragging a zoomed view. When the depth atlas is enabled, surface landmarks use circles, mid-depth landmarks use diamonds, and deep landmarks use double rings.'),
-                React.createElement("details", { className: "diss-evidence", open: splitComparison && !!referenceEvidence },
-                  React.createElement("summary", null, 'Evidence notebook · ' + visualEvidence.length + '/6 frames'),
+                React.createElement("details", { id: "diss-evidence-notebook", className: "diss-evidence", open: splitComparison && !!referenceEvidence },
+                  React.createElement("summary", null, 'Evidence notebook · ' + visualEvidence.length + '/' + evidenceFrameLimit + ' frames'),
+                  React.createElement("p", { id: "diss-evidence-capacity", className: "diss-evidence__capacity", "data-full": visualEvidence.length >= evidenceFrameLimit ? "true" : "false", role: "status", "aria-live": "polite" },
+                    visualEvidence.length >= evidenceFrameLimit
+                      ? 'Notebook full. Download or remove a frame before capturing another; no frame will be replaced automatically.'
+                      : 'Frames use browser storage. Download important frames, and remove frames you no longer need if saving becomes limited.'
+                  ),
+                  visualEvidence.length ? React.createElement("div", { className: "diss-evidence__manage" },
+                    React.createElement("button", { id: "diss-evidence-clear-all", type: "button", "aria-expanded": !!d.evidenceClearPending, "aria-controls": "diss-evidence-clear-confirmation", onClick: requestClearVisualEvidence }, 'Clear all evidence frames'),
+                    d.evidenceClearPending && React.createElement("div", { id: "diss-evidence-clear-confirmation", className: "diss-evidence__confirm", role: "group", "aria-labelledby": "diss-evidence-clear-title" },
+                      React.createElement("p", { id: "diss-evidence-clear-title", role: "status", "aria-live": "polite" }, 'Clear all ' + visualEvidence.length + ' evidence frames? Download any frames you need first. Notes, procedure work, and assessment progress will remain.'),
+                      React.createElement("button", { id: "diss-evidence-confirm-clear", type: "button", "data-confirm": "true", onClick: confirmClearVisualEvidence }, 'Confirm clear frames'),
+                      React.createElement("button", { type: "button", onClick: cancelClearVisualEvidence }, 'Cancel')
+                    )
+                  ) : null,
                   visualEvidence.length ? React.createElement("div", { className: "diss-evidence__grid" },
-                    visualEvidence.map(function (evidence) {
+                    visualEvidence.map(function (evidence, evidenceIndex) {
                       var isReferenceEvidence = !!referenceEvidence && evidence.id === referenceEvidence.id;
-                      return React.createElement("article", { className: "diss-evidence__item", key: evidence.id, "data-reference": isReferenceEvidence ? "true" : "false" },
-                        React.createElement("img", { src: evidence.image, alt: evidence.layerName + ' evidence thumbnail, ' + evidence.view + ' view' }),
-                        React.createElement("strong", null, evidence.layerName),
-                        React.createElement("span", null, evidence.view + ' · ' + evidence.condition + (evidence.selectedOrganName ? ' · ' + evidence.selectedOrganName : '')),
-                        React.createElement("span", null, 'Technique ' + evidence.techniqueScore + '/100' + (evidence.opticalQuality != null ? ' · optics ' + evidence.opticalQuality + '%' : '') + (evidence.capturedAt ? ' · ' + evidence.capturedAt.slice(11, 16) : '')),
+                      var evidenceLayerName = evidenceLayerLabel(evidence);
+                      var evidenceView = evidenceViewLabel(evidence);
+                      var evidenceCondition = evidenceConditionLabel(evidence);
+                      var evidenceTechniqueScore = isFinite(Number(evidence.techniqueScore)) ? Math.max(0, Math.min(100, Math.round(Number(evidence.techniqueScore)))) : null;
+                      var evidenceTime = typeof evidence.capturedAt === 'string' && evidence.capturedAt.length >= 16 ? evidence.capturedAt.slice(11, 16) : '';
+                      var removalPending = d.evidenceRemovePendingId === evidence.id;
+                      var evidenceToken = evidenceDomToken(evidence.id);
+                      return React.createElement("article", { className: "diss-evidence__item", key: String(evidence.id) + '-' + evidenceIndex, "data-evidence-id": String(evidence.id), "data-reference": isReferenceEvidence ? "true" : "false" },
+                        React.createElement("img", { src: evidence.image, alt: spec.name + ' evidence thumbnail, ' + evidenceLayerName + ', ' + evidenceView + ' view' }),
+                        React.createElement("strong", null, evidenceLayerName),
+                        React.createElement("span", null, evidenceView + ' · ' + evidenceCondition + (evidence.selectedOrganName ? ' · ' + evidence.selectedOrganName : '')),
+                        React.createElement("span", null, (evidenceTechniqueScore == null ? 'Technique not scored' : 'Technique ' + evidenceTechniqueScore + '/100') + (evidence.opticalQuality != null ? ' · optics ' + evidence.opticalQuality + '%' : '') + (evidenceTime ? ' · ' + evidenceTime : '')),
+                        removalPending && React.createElement("p", { className: "diss-evidence__confirm-copy", role: "status" }, 'Remove this frame? Download it first if you need a separate copy.'),
                         React.createElement("div", { className: "diss-evidence__actions" },
-                          React.createElement("button", { type: "button", "aria-pressed": isReferenceEvidence, onClick: function () { selectEvidenceReference(evidence.id); } }, isReferenceEvidence ? 'Reference selected' : 'Use as reference'),
-                          React.createElement("button", { type: "button", onClick: function () { downloadEvidence(evidence); }, "aria-label": "Download evidence from " + evidence.layerName }, 'Download')
+                          removalPending
+                            ? React.createElement("button", { id: "diss-evidence-confirm-remove-" + evidenceToken, type: "button", "data-confirm": "true", "data-evidence-confirm-remove-id": String(evidence.id), onClick: function () { confirmEvidenceRemoval(evidence.id); } }, 'Confirm remove')
+                            : React.createElement("button", { type: "button", "aria-label": (isReferenceEvidence ? 'Current reference: ' : 'Use as reference: ') + evidenceLayerName, "aria-pressed": isReferenceEvidence, onClick: function () { selectEvidenceReference(evidence.id); } }, isReferenceEvidence ? 'Reference selected' : 'Use as reference'),
+                          removalPending
+                            ? React.createElement("button", { type: "button", onClick: function () { cancelEvidenceRemoval(evidence.id); } }, 'Cancel')
+                            : React.createElement("button", { type: "button", onClick: function () { downloadEvidence(evidence); }, "aria-label": "Download evidence from " + evidenceLayerName }, 'Download'),
+                          !removalPending && React.createElement("button", { id: "diss-evidence-remove-" + evidenceToken, type: "button", "data-danger": "true", "data-evidence-remove-id": String(evidence.id), onClick: function () { requestEvidenceRemoval(evidence.id); }, "aria-label": "Remove evidence frame " + (evidenceIndex + 1) + ", " + evidenceLayerName }, 'Remove')
                         )
                       );
                     })
@@ -15831,7 +16428,7 @@ var d = labToolData.dissection || {};
                       React.createElement("div", { className: "diss-attempt-comparison__scrub", role: "group", "aria-label": "Comparison replay controls" },
                         React.createElement("label", { htmlFor: "diss-compare-replay-progress" }, 'Replay point'),
                         React.createElement("input", { id: "diss-compare-replay-progress", type: "range", min: 0, max: 100, step: 1, value: compareReplayPercent, onChange: function (event) { setTechniqueCompareReplayProgress(Number(event.target.value) / 100); }, "aria-label": "Scrub comparison replay", "aria-valuetext": compareReplayLabel, "data-diss-compare-progress": true }),
-                        React.createElement("output", { htmlFor: "diss-compare-replay-progress", role: "status", "aria-live": "polite" }, compareReplayPercent + '% · ' + compareReplayLabel),
+                        React.createElement("output", { htmlFor: "diss-compare-replay-progress" }, compareReplayPercent + '% · ' + compareReplayLabel),
                         React.createElement("button", { type: "button", onClick: toggleTechniqueCompareReplay, "aria-pressed": !!d.compareReplayPlaying, "aria-label": d.compareReplayPlaying ? "Pause comparison replay" : "Play comparison replay" }, d.compareReplayPlaying ? 'Pause compare replay' : 'Play compare replay'),
                         React.createElement("button", { type: "button", onClick: function () { setTechniqueCompareReplayProgress(1); }, disabled: compareReplayPercent >= 100, "aria-label": "Show full comparison paths" }, 'Show full paths')
                       ),
@@ -16118,17 +16715,22 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mb-1" },
 
-                    React.createElement("h4", { id: "diss-selection-title", className: "text-base font-black text-slate-800" }, sel.name),
+                    React.createElement("div", { className: "min-w-0" },
+                      React.createElement("h4", { id: "diss-selection-title", tabIndex: -1, className: "text-base font-black text-slate-800" }, sel.name),
+                      React.createElement("span", {
+                        className: "diss-selection-position", role: "status", "aria-live": "polite", "aria-atomic": "true",
+                        "aria-label": sel.name + ', structure ' + (selectedOrganIndex + 1) + ' of ' + organs.length
+                      }, (selectedOrganIndex + 1) + ' of ' + organs.length)
+                    ),
 
-                    React.createElement("div", { className: "flex gap-1" },
+                    React.createElement("div", { className: "diss-selection-nav flex gap-1" },
 
-                      React.createElement("button", { type: "button", "aria-label": "Previous structure", disabled: organs.findIndex(function (o) { return o.id === sel.id; }) <= 0,
+                      React.createElement("button", { type: "button", "aria-label": "Previous structure", disabled: selectedOrganIndex <= 0,
 
                         onClick: function () {
 
-                          var idx = organs.findIndex(function (o) { return o.id === sel.id; });
-
-                          if (idx > 0) chooseOrganFromDirectory(organs[idx - 1]);
+                          var previousOrgan = organs[selectedOrganIndex - 1];
+                          if (previousOrgan) chooseOrganFromDirectory(previousOrgan, true);
 
                         },
 
@@ -16136,13 +16738,12 @@ var d = labToolData.dissection || {};
 
                       }, '\u25C0'),
 
-                      React.createElement("button", { type: "button", "aria-label": "Next structure", disabled: organs.findIndex(function (o) { return o.id === sel.id; }) >= organs.length - 1,
+                      React.createElement("button", { type: "button", "aria-label": "Next structure", disabled: selectedOrganIndex >= organs.length - 1,
 
                         onClick: function () {
 
-                          var idx = organs.findIndex(function (o) { return o.id === sel.id; });
-
-                          if (idx < organs.length - 1) chooseOrganFromDirectory(organs[idx + 1]);
+                          var nextOrgan = organs[selectedOrganIndex + 1];
+                          if (nextOrgan) chooseOrganFromDirectory(nextOrgan, true);
 
                         },
 
@@ -16152,12 +16753,28 @@ var d = labToolData.dissection || {};
                       React.createElement("button", {
                         type: "button",
                         "aria-label": "Back to structure directory",
-                        onClick: function () { upd('selectedOrgan', null); },
+                        onClick: function () {
+                          var closingOrganId = sel.id;
+                          upd('selectedOrgan', null);
+                          focusStructureDirectoryItem(closingOrganId);
+                        },
                         className: "transition-colors w-10 h-10 rounded-lg bg-slate-100 text-slate-700 text-sm hover:bg-slate-200 flex items-center justify-center active:scale-[0.97]"
                       }, '✕')
                     )
                   ),
 
+                  React.createElement("div", { id: 'diss-observe-first-' + sel.id, className: "diss-observe-first", role: "note" },
+                    React.createElement("strong", null, __alloT('stem.dissection.observe_first', 'Observe first')),
+                    React.createElement("p", null, __alloT('stem.dissection.observe_first_prompt', 'Record one visible feature and where it is in the evidence note below. Open the reference whenever you need support, then revise anything the comparison changes.'))
+                  ),
+                  React.createElement("details", {
+                    key: specimen + '|' + sel.id,
+                    className: "diss-selection-reference diss-disclosure",
+                    "data-selection-reference": true
+                  },
+                    React.createElement("summary", null, __alloT('stem.dissection.check_reference', 'Check reference and connections')),
+                    React.createElement("div", { className: "diss-disclosure__body" },
+                      React.createElement("p", { className: "diss-selection-reference__intro" }, __alloT('stem.dissection.reference_context_help', 'Reference context can extend your learning. Base the evidence note on features and anatomical relationships you can observe in this specimen.')),
                   React.createElement("div", { className: "diss-selection-summary" },
                     React.createElement("span", { className: "diss-selection-summary__label" }, __alloT('stem.dissection.specimen_anatomy_and_function', 'Specimen anatomy and function')),
                     React.createElement("p", null, sel.fn)
@@ -16278,12 +16895,9 @@ var d = labToolData.dissection || {};
 
                   // Position info
 
-                  React.createElement("div", { className: "mt-2 flex gap-2 text-[11px] text-slate-600" },
-
-                    React.createElement("span", null, '\uD83D\uDCCD x:' + Math.round(sel.x * 100) + '% y:' + Math.round(sel.y * 100) + '%'),
-
-                    React.createElement("span", null, '\uD83C\uDFF7 ' + (sel.layer || activeLayer))
-
+                  React.createElement("div", { className: "diss-selection-reference__layer" },
+                    React.createElement("strong", null, __alloT('stem.dissection.specimen_layer', 'Specimen layer') + ':'),
+                    React.createElement("span", null, currentLayerDef.name)
                   ),
 
                   // Clinical correlations
@@ -16360,21 +16974,116 @@ var d = labToolData.dissection || {};
 
                     ) : null;
 
-                  })(),
+                  })()
+                    )
+                  ),
 
                   (function () {
                     var evidenceKey = specimen + '|' + sel.id;
                     var noteValue = (d.organNotes || {})[evidenceKey] || '';
                     var confidenceValue = (d.organConfidence || {})[evidenceKey] || 0;
+                    var confidenceChoices = [
+                      { level: 1, label: dissectionConfidenceLabel(1), cue: __alloT('stem.dissection.confidence_not_sure_yet_cue', 'Inspect one more visible feature and its location.') },
+                      { level: 2, label: dissectionConfidenceLabel(2), cue: __alloT('stem.dissection.confidence_somewhat_sure_cue', 'Check one more distinguishing feature or anatomical relationship.') },
+                      { level: 3, label: dissectionConfidenceLabel(3), cue: __alloT('stem.dissection.confidence_confident_cue', 'Check that each claim in your note matches what you actually observed.') }
+                    ];
+                    var selectedConfidence = confidenceChoices.find(function (choice) { return choice.level === confidenceValue; }) || null;
+                    var confidenceHelpId = 'diss-confidence-help-' + sel.id;
+                    var evidenceHelpId = 'diss-evidence-help-' + sel.id;
+                    var observePromptId = 'diss-observe-first-' + sel.id;
+                    var countercheckStatusId = 'diss-countercheck-status-' + sel.id;
+                    var noteText = String(noteValue).trim();
+                    var noteLower = noteText.toLowerCase();
+                    var countercheckStarter = {
+                      id: 'countercheck',
+                      label: __alloT('stem.dissection.countercheck_starter', 'Add a countercheck starter'),
+                      text: __alloT('stem.dissection.countercheck_starter_text', 'I would revise this identification if I observed ')
+                    };
+                    var hasCountercheck = noteLower.indexOf(String(countercheckStarter.text).trim().toLowerCase()) >= 0;
+                    var evidenceChecks = [
+                      { id: 'observation', label: __alloT('stem.dissection.evidence_observation', 'Observable feature'), complete: noteText.length >= 12, cue: __alloT('stem.dissection.evidence_observation_cue', 'Describe a visible color, shape, texture, size, or movement.') },
+                      { id: 'location', label: __alloT('stem.dissection.evidence_location', 'Location or relationship'), complete: /\b(located|location|dorsal|ventral|anterior|posterior|left|right|above|below|beneath|near|between|inside|outside|adjacent|connect(?:s|ed)?|cavity|toward)\b/.test(noteLower) || /\b(?:on|at|within)\s+(?:the\s+)?surface\b/.test(noteLower), cue: __alloT('stem.dissection.evidence_location_cue', 'Add where it is or what structure it touches or connects to.') },
+                      { id: 'reasoning', label: __alloT('stem.dissection.evidence_reasoning', 'Reasoning link'), complete: /\b(because|therefore|supports?|indicates?|shows?|consistent with|so that|which means)\b/.test(noteLower), cue: __alloT('stem.dissection.evidence_reasoning_cue', 'Explain why those observations support this identification.') },
+                      { id: 'confidence', label: __alloT('stem.dissection.evidence_confidence_check', 'Confidence rating'), complete: confidenceValue >= 1 && confidenceValue <= 3, cue: __alloT('stem.dissection.evidence_confidence_cue', 'Choose a confidence level from 1 to 3.') }
+                    ];
+                    var evidenceCompleteCount = evidenceChecks.filter(function (check) { return check.complete; }).length;
+                    var evidenceReady = evidenceCompleteCount === evidenceChecks.length;
+                    var nextEvidenceCheck = evidenceChecks.find(function (check) { return !check.complete; });
+                    var evidenceStarters = [
+                      { id: 'observation', label: __alloT('stem.dissection.evidence_starter_observation', '+ Observation'), text: __alloT('stem.dissection.evidence_starter_observation_text', 'I observed ') },
+                      { id: 'location', label: __alloT('stem.dissection.evidence_starter_location', '+ Location'), text: __alloT('stem.dissection.evidence_starter_location_text', 'It is located ') },
+                      { id: 'reasoning', label: __alloT('stem.dissection.evidence_starter_reasoning', '+ Reasoning'), text: __alloT('stem.dissection.evidence_starter_reasoning_text', 'This supports the identification because ') }
+                    ];
+                    function appendEvidenceStarter(starter) {
+                      if (noteLower.indexOf(String(starter.text).trim().toLowerCase()) >= 0) return;
+                      var separator = noteText ? (/\n$/.test(noteValue) ? '' : '\n') : '';
+                      var notes = Object.assign({}, d.organNotes || {});
+                      notes[evidenceKey] = String(noteValue) + separator + starter.text;
+                      upd('organNotes', notes);
+                      if (starter.id === 'countercheck' && typeof announceToSR === 'function') {
+                        announceToSR(__alloT('stem.dissection.countercheck_starter_added_announcement', 'Countercheck starter added. Finish the sentence in your evidence note.'));
+                      }
+                      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(function () {
+                        var noteField = document.getElementById('diss-note-' + sel.id);
+                        if (noteField) { noteField.focus(); noteField.setSelectionRange(noteField.value.length, noteField.value.length); }
+                      });
+                    }
                     return React.createElement("div", { className: "mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3", "data-dissection-evidence": true },
                       React.createElement("label", { htmlFor: 'diss-note-' + sel.id, className: "block text-xs font-black text-blue-900" }, __alloT('stem.dissection.evidence_note', 'Evidence note')),
-                      React.createElement("p", { className: "text-[11px] text-blue-700 mt-1" }, __alloT('stem.dissection.evidence_note_help', 'Record what you observed, where it is located, and how that evidence supports your identification.')),
-                      React.createElement("textarea", { id: 'diss-note-' + sel.id, className: "diss-evidence-note", rows: 3, value: noteValue, placeholder: __alloT('stem.dissection.evidence_note_placeholder', 'I identified this structure because…'), onChange: function (e) { var notes = Object.assign({}, d.organNotes || {}); notes[evidenceKey] = e.target.value; upd('organNotes', notes); } }),
-                      React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2", role: "group", "aria-label": __alloT('stem.dissection.identification_confidence', 'Identification confidence') },
-                        React.createElement("span", { className: "text-xs font-bold text-blue-900" }, __alloT('stem.dissection.confidence', 'Confidence') + ':'),
-                        [1, 2, 3].map(function (level) {
-                          return React.createElement("button", { type: "button", key: level, "aria-label": 'Confidence ' + level + ' of 3', "aria-pressed": confidenceValue === level, onClick: function () { var confidence = Object.assign({}, d.organConfidence || {}); confidence[evidenceKey] = level; upd('organConfidence', confidence); }, className: "min-w-10 rounded-lg border px-2 py-1 text-xs font-bold " + (confidenceValue === level ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-800 border-blue-300') }, String(level));
+                      React.createElement("p", { id: evidenceHelpId, className: "text-xs text-blue-700 mt-1" }, __alloT('stem.dissection.evidence_note_help', 'Record what you observed, where it is located, and how that evidence supports your identification.')),
+                      React.createElement("div", { className: "diss-evidence-starters", role: "group", "aria-label": __alloT('stem.dissection.evidence_sentence_starters', 'Evidence sentence starters') },
+                        evidenceStarters.map(function (starter) {
+                          return React.createElement("button", { type: "button", key: starter.id, "data-evidence-starter": starter.id, "aria-controls": 'diss-note-' + sel.id, onClick: function () { appendEvidenceStarter(starter); } }, starter.label);
                         })
+                      ),
+                      React.createElement("textarea", { id: 'diss-note-' + sel.id, className: "diss-evidence-note", rows: 3, value: noteValue, "aria-describedby": observePromptId + ' ' + evidenceHelpId, placeholder: __alloT('stem.dissection.evidence_note_placeholder', 'I identified this structure because…'), onChange: function (e) { var notes = Object.assign({}, d.organNotes || {}); notes[evidenceKey] = e.target.value; upd('organNotes', notes); } }),
+                      React.createElement("fieldset", { className: "diss-confidence-scale", "aria-describedby": confidenceHelpId },
+                        React.createElement("legend", { className: "diss-confidence-scale__label" }, __alloT('stem.dissection.confidence_question', 'How sure are you, based on your evidence?')),
+                        React.createElement("div", { className: "diss-confidence-scale__choices" },
+                          confidenceChoices.map(function (choice) {
+                            return React.createElement("label", { key: choice.level, className: "diss-confidence-scale__option", "data-selected": confidenceValue === choice.level },
+                              React.createElement("input", {
+                                type: "radio", name: 'diss-confidence-' + evidenceKey, value: choice.level,
+                                checked: confidenceValue === choice.level, "data-confidence-level": choice.level,
+                                "aria-label": 'Confidence ' + choice.level + ' of 3: ' + choice.label,
+                                onChange: function () { var confidence = Object.assign({}, d.organConfidence || {}); confidence[evidenceKey] = choice.level; upd('organConfidence', confidence); }
+                              }),
+                              React.createElement("span", null, choice.level + ' \u00B7 ' + choice.label)
+                            );
+                          })
+                        )
+                      ),
+                      React.createElement("p", { id: confidenceHelpId, className: "diss-confidence-cue" },
+                        React.createElement("strong", null, __alloT('stem.dissection.confidence_calibration_cue', 'Calibration cue') + ': '),
+                        selectedConfidence ? selectedConfidence.cue : __alloT('stem.dissection.confidence_default_cue', 'Choose based on the evidence in your note, not on how familiar the answer feels.')
+                      ),
+                      React.createElement("div", { className: "diss-evidence-coach", "data-evidence-readiness": evidenceCompleteCount, "data-ready": evidenceReady, role: "group", "aria-label": __alloT('stem.dissection.evidence_quality_coach', 'Evidence quality coach') },
+                        React.createElement("div", { className: "diss-evidence-coach__head" },
+                          React.createElement("strong", null, __alloT('stem.dissection.evidence_self_check', 'Evidence self-check')),
+                          React.createElement("span", { className: "diss-evidence-coach__score" }, evidenceCompleteCount + ' of ' + evidenceChecks.length + ' elements included')
+                        ),
+                        React.createElement("div", { className: "diss-evidence-meter", role: "progressbar", "aria-label": __alloT('stem.dissection.evidence_elements_included', 'Evidence elements included'), "aria-valuemin": 0, "aria-valuemax": evidenceChecks.length, "aria-valuenow": evidenceCompleteCount }, React.createElement("span", { style: { width: Math.round((evidenceCompleteCount / evidenceChecks.length) * 100) + '%' } })),
+                        React.createElement("ul", { className: "diss-evidence-checks" }, evidenceChecks.map(function (check) {
+                          return React.createElement("li", { key: check.id, "data-complete": check.complete }, (check.complete ? '\u2713 ' : '\u25CB ') + check.label);
+                        })),
+                        React.createElement("p", { className: "diss-evidence-coach__cue" }, evidenceReady ? __alloT('stem.dissection.evidence_complete_message', 'Your observation, location or relationship, reasoning, and confidence are included. Compare your note with the reference, revise anything it changes, or try the optional countercheck below.') : __alloT('stem.dissection.evidence_next_prefix', 'Next:') + ' ' + nextEvidenceCheck.cue),
+                        React.createElement("p", { className: "diss-evidence-coach__note" }, __alloT('stem.dissection.evidence_coaching_limit', 'This checklist detects writing elements, not scientific accuracy or a grade. Revise it when new evidence changes your thinking.'))
+                      ),
+                      evidenceReady && React.createElement("details", { className: "diss-countercheck diss-disclosure", "data-evidence-countercheck": true },
+                        React.createElement("summary", null, __alloT('stem.dissection.countercheck_title', 'Optional challenge: test your identification')),
+                        React.createElement("div", { className: "diss-disclosure__body" },
+                          React.createElement("p", null, __alloT('stem.dissection.countercheck_prompt', 'What different feature, location, or connection would make this identification less likely\u2014or suggest a different structure?')),
+                          React.createElement("button", {
+                            type: "button", "data-evidence-countercheck-action": true,
+                            "aria-controls": 'diss-note-' + sel.id, "aria-describedby": countercheckStatusId,
+                            disabled: hasCountercheck, onClick: function () { appendEvidenceStarter(countercheckStarter); }
+                          }, hasCountercheck ? __alloT('stem.dissection.countercheck_starter_added', 'Countercheck starter added') : countercheckStarter.label),
+                          React.createElement("p", { id: countercheckStatusId, className: "diss-countercheck__status" },
+                            hasCountercheck
+                              ? __alloT('stem.dissection.countercheck_finish', 'Finish the countercheck sentence in your evidence note.')
+                              : __alloT('stem.dissection.countercheck_unscored', 'This reflection does not change your 4-of-4 evidence status.')
+                          )
+                        )
                       )
                     );
                   })(),
@@ -16411,11 +17120,11 @@ var d = labToolData.dissection || {};
 
                         if (sel.clinical) text += '\n\nFun Fact: ' + sel.clinical;
 
-                        if (navigator.clipboard) navigator.clipboard.writeText(text);
-
-                        if (addToast) addToast('\uD83D\uDCCB ' + 'Copied' + ' ' + sel.name + ' info!', 'success');
+                        copyDissectionText(text, sel.name + ' information copied to the clipboard.', 'Could not copy ' + sel.name + ' information in this view.');
 
                       },
+
+                      "aria-label": "Copy " + sel.name + " information to clipboard",
 
                       className: "transition-colors px-2 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]"
 
@@ -16434,6 +17143,8 @@ var d = labToolData.dissection || {};
                   React.createElement("h3", { id: "diss-directory-title", className: "text-sm font-black text-slate-800 mb-2" }, (spec.layers[currentLayerIdx] || {}).icon + ' ' + (spec.layers[currentLayerIdx] || {}).name + ' structures (' + organs.length + ')'),
 
                   React.createElement("input", {
+
+                    id: "diss-organ-search",
 
                     type: "text",
 
@@ -16588,7 +17299,7 @@ var d = labToolData.dissection || {};
                     className: "mt-3 rounded-lg border border-blue-300 bg-blue-50 p-2.5 text-blue-900",
                     role: "status",
                     "aria-live": "assertive"
-                  }, 'Response recorded. Correctness remains hidden until practical review.'),
+                  }, 'Response recorded. Correctness and the running score stay hidden while the timed practical is active.'),
 
                   d.quizFeedback && React.createElement("button", { type: "button", "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
 
@@ -16789,11 +17500,11 @@ var d = labToolData.dissection || {};
 
                         cert += masteryComplete ? 'Verified completion criteria met' : 'Practice in progress; completion criteria not yet met';
 
-                        if (navigator.clipboard) navigator.clipboard.writeText(cert);
-
-                        if (addToast) addToast(masteryComplete ? 'Verified completion summary copied.' : 'Practice log copied.', 'success');
+                        copyDissectionText(cert, masteryComplete ? 'Verified completion summary copied to the clipboard.' : 'Practice log copied to the clipboard.', masteryComplete ? 'Could not copy the verified completion summary in this view.' : 'Could not copy the practice log in this view.');
 
                       },
+
+                      "aria-label": masteryComplete ? "Copy verified completion summary to clipboard" : "Copy practice log to clipboard",
 
                       className: "mt-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-green-700 to-emerald-700 text-white"
 

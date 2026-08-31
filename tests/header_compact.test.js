@@ -84,6 +84,17 @@ describe('what collapsing may and may not hide', () => {
     expect(before, 'privacy notice must not sit inside a collapse guard').not.toMatch(/\{!headerCollapsed && \($/);
     expect(SRC.match(/\{piiWarningText\}/g)?.length).toBeGreaterThanOrEqual(2);
   });
+
+  it('wraps compact context and privacy copy instead of clipping it at narrow reflow widths', () => {
+    expect(SRC).toContain('.allo-premium-context-block { min-width: 0; max-width: 21rem; flex: 1 1 auto; }');
+    expect(SRC).toContain('.allo-premium-context-line, .allo-premium-pii-text { overflow-wrap: anywhere; }');
+    expect(SRC).toContain('.allo-premium-appbar-brand { display: contents; }');
+    expect(SRC).toContain('.allo-premium-context-block { order: 99; flex: 0 0 100%; width: 100%; max-width: none; }');
+    expect(SRC).toContain('className="allo-premium-pii-text">{piiWarningText}</span>');
+    expect(SRC).not.toContain('<span className="truncate">{piiWarningText}</span>');
+    expect(SRC).toContain('.allo-premium-brand-name { position: absolute; width: 1px; height: 1px;');
+    expect(SRC).toContain('white-space: nowrap; border: 0; }');
+  });
 });
 
 describe('no scroll-driven motion was introduced', () => {

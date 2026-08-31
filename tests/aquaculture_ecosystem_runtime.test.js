@@ -125,6 +125,12 @@ describe('Aquaculture Ecosystem Builder', () => {
     expect(pairedRecord.textContent).toContain('Paired depth record');
     expect(pairedRecord.textContent).toContain('0.40 mg/L lower');
     expect(pairedRecord.querySelectorAll('tbody tr')).toHaveLength(2);
+    const verificationChoice = host.querySelector('input[value="repeat-baseline"]');
+    expect(verificationChoice).toBeTruthy();
+    expect(findButton(host, 'Return and secure the vessel')).toBeUndefined();
+    await act(async () => { verificationChoice.dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    await act(async () => { findButton(host, 'Check verification response').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    expect(host.textContent).toContain('Verification plan recorded');
     await act(async () => { findButton(host, 'Return and secure the vessel').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
     const reflection = host.querySelector('#aq-guided-reflection');
     await act(async () => { setTextareaValue(reflection, 'I kept the red nun to starboard, stayed in the channel, compared surface and crop-depth samples, and returned safely.'); await Promise.resolve(); });
@@ -133,9 +139,14 @@ describe('Aquaculture Ecosystem Builder', () => {
     expect(saved.completedMissions['mission-1']).toMatchObject({
       mode: 'guided-2d',
       summary: {
+        buoyViolations: 0,
         droppersDeployed: 5,
         surfaceReading: { depth: 'surface', DO: '8.45' },
-        cropDepthReading: { depth: 'crop', DO: '8.05' }
+        cropDepthReading: { depth: 'crop', DO: '8.05' },
+        decisionId: 'repeat-baseline',
+        decisionRecommended: true,
+        recommendedDecisionId: 'repeat-baseline',
+        decisionAttempts: 1
       }
     });
     expect(saved.probeReadings.slice(-2).map((reading) => reading.depth)).toEqual(['surface', 'crop']);

@@ -274,6 +274,77 @@ test.describe('Architecture Studio — real WebGL', () => {
     await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(0);
   });
 
+  test('Pick copies every block property without editing, then Page Up builds on the next floor', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({
+      editorView: 'grid', undoStack: [], blocks: [
+        { x: 0, y: 0, z: 0, shape: 'ramp', material: 'wood', color: '#123456', rotation: 270 },
+      ],
+    }));
+
+    const region = page.locator('#arch-studio-region');
+    await region.focus();
+    await region.press('i');
+    await expect(page.getByRole('button', { name: 'Pick mode' })).toHaveAttribute('aria-pressed', 'true');
+    await page.locator('button[data-arch-cell="0,0,0"]').click();
+
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().mode)).toBe('place');
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({
+      activeShape: 'ramp', activeMaterial: 'wood', activeColor: '#123456', activeRotation: 270,
+    });
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toHaveLength(1);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack)).toEqual([]);
+
+    await region.focus();
+    await region.press('PageUp');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().editLayer)).toBe(1);
+    await page.locator('button[data-arch-cell="1,1,0"]').click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(2);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks[1])).toMatchObject({
+      x: 1, y: 1, z: 0, shape: 'ramp', material: 'wood', color: '#123456', rotation: 270,
+    });
+  });
+
+  test('the selected-block inspector highlights, moves, duplicates, replaces, and deletes in 3D', async ({ page }) => {
+    await mount3d(page, {
+      blocks: [{ x: 0, y: 0, z: 0, shape: 'ramp', material: 'wood', color: '#123456', rotation: 270 }],
+      selectedBlockKey: '0,0,0', undoStack: [],
+    });
+
+    await expect(page.locator('[data-arch-inspector="true"]')).toBeVisible();
+    await expect(page.locator('[data-arch-selection-chip="true"]')).toContainText('Selected X 0');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.selectedCount)).toBe(1);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.selectionOutlineVisible)).toBe(true);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.renderHexes?.[0])).toBe(0x123456);
+
+    await page.getByRole('button', { name: 'Move selected block right along X' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().selectedBlockKey)).toBe('1,0,0');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks[0])).toMatchObject({ x: 1, y: 0, z: 0 });
+
+    await page.getByRole('button', { name: 'Duplicate selected block above' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(2);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().selectedBlockKey)).toBe('1,1,0');
+
+    await page.getByRole('button', { name: 'Door shape' }).click();
+    await page.getByRole('button', { name: 'Use Glass material' }).click();
+    await page.getByRole('button', { name: 'Use 90\u00B0 rotation' }).click();
+    await page.getByRole('button', { name: 'Apply current properties to selected block' }).click();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.find((b: any) => `${b.x},${b.y},${b.z}` === (window as any).__bucket().selectedBlockKey))).toMatchObject({
+      shape: 'door', material: 'glass', color: '#38bdf8', rotation: 90,
+    });
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.renderHexes?.find((hex: number) => hex === 0x38bdf8))).toBe(0x38bdf8);
+
+    const deleteSelected = page.getByRole('button', { name: 'Delete selected block' });
+    await deleteSelected.focus();
+    await deleteSelected.click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(1);
+    await expect(page.locator('[data-arch-inspector="true"]')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.selectedCount)).toBe(0);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.selectionOutlineVisible)).toBe(false);
+    await expect(page.locator('#arch-studio-region')).toBeFocused();
+  });
+
   test('keeps replay read-only in the floor grid and settles elevated imports to ground', async ({ page }) => {
     await page.goto(`${base}/__harness`);
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
@@ -282,12 +353,18 @@ test.describe('Architecture Studio — real WebGL', () => {
       { x: 0, y: 7, z: 0, shape: 'roof', material: 'wood' },
     ];
     await page.evaluate((blocks) => (window as any).__mount({
-      editorView: 'grid', blocks, showReplay: true, replayStep: 0, undoStack: [[]],
+      editorView: 'grid', blocks, showReplay: true, replayStep: 0,
+      undoStack: [[{ x: -1, y: 0, z: 0, shape: 'column', material: 'stone', color: '#94a3b8' }]],
     }), elevated);
 
+    await expect(page.getByRole('grid', { name: /Architecture build grid/ })).toHaveAttribute('aria-readonly', 'true');
+    await expect(page.locator('button[data-arch-cell="-1,0,0"]')).toHaveAccessibleName(/stone column.*read-only construction replay/i);
     await page.locator('button[data-arch-cell="1,0,0"]').click();
     expect(await page.evaluate(() => (window as any).__bucket().blocks)).toHaveLength(2);
     expect(await page.evaluate(() => (window as any).__events.sr)).toContain('Exit construction replay before editing.');
+    await expect(page.getByTitle('Exit construction replay to clear the build')).toBeDisabled();
+    await expect(page.getByTitle('Exit construction replay to apply gravity')).toBeDisabled();
+    await expect(page.getByTitle('Exit construction replay to mirror the build').first()).toBeDisabled();
 
     await page.getByRole('button', { name: /Replay/ }).first().click();
     await page.getByTitle('Apply gravity (drop floating blocks)').click();
@@ -460,6 +537,28 @@ test.describe('Architecture Studio — real WebGL', () => {
     await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
   });
 
+  test('moves focus from the 3D canvas into one arrow-key navigable grid cell', async ({ page }) => {
+    await mount3d(page, { blocks: [] });
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    await canvas.focus();
+    await canvas.press('Enter');
+
+    const grid = page.getByRole('grid', { name: /Architecture build grid/ });
+    await expect(grid).toBeVisible();
+    await expect(grid.locator('[role="gridcell"][tabindex="0"]')).toHaveCount(1);
+    await expect(page.locator('button[data-arch-cell="0,0,0"]')).toBeFocused();
+
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('button[data-arch-cell="1,0,0"]')).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    const destination = page.locator('button[data-arch-cell="1,0,1"]');
+    await expect(destination).toBeFocused();
+    await page.keyboard.press('Enter');
+
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.[0])).toMatchObject({ x: 1, y: 0, z: 1 });
+  });
+
   test('stacks the controls and keeps the build surface usable on a narrow screen', async ({ page }) => {
     await page.setViewportSize({ width: 500, height: 700 });
     await page.goto(`${base}/__harness`);
@@ -524,6 +623,28 @@ test.describe('Architecture Studio — real WebGL', () => {
     const gl = await page.evaluate(() => (window as any).__gl());
     expect(gl.state).toBe('ready');
     expect(gl.contextLost).toBe(false);
+  });
+
+  test('recovers and redraws after a WebGL context loss', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    const supportsLoss = await page.evaluate(() => {
+      const canvas = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const gl = canvas?.getContext('webgl') || canvas?.getContext('experimental-webgl');
+      return !!gl?.getExtension('WEBGL_lose_context');
+    });
+    test.skip(!supportsLoss, 'WEBGL_lose_context is unavailable in this browser');
+
+    await page.evaluate(() => {
+      const canvas = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
+      const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext;
+      const ext = gl.getExtension('WEBGL_lose_context')!;
+      ext.loseContext();
+      setTimeout(() => ext.restoreContext(), 120);
+    });
+
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.state), { timeout: 5_000 }).toBe('ready');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount), { timeout: 5_000 }).toBe(tower().length);
+    expect((await page.evaluate(() => (window as any).__gl())).contextLost).toBe(false);
   });
 
   test('tears the renderer down on unmount', async ({ page }) => {

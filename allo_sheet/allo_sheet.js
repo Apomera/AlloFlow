@@ -1362,10 +1362,23 @@
     return state.canvasDirty;
   }
 
+  function hasPendingCasebookEdits() {
+    return Boolean(
+      casebookUi
+      && typeof casebookUi.hasPendingEdits === 'function'
+      && casebookUi.hasPendingEdits()
+    );
+  }
+
   function confirmLocalReplacement() {
     refreshLocalDirtyState();
-    if (!state.canvasDirty) return true;
-    return window.confirm('This will replace local AlloSheet work that has not been downloaded as CSV or an AlloSheet workspace. Continue?');
+    var pendingCasebookEdits = hasPendingCasebookEdits();
+    if (!state.canvasDirty && !pendingCasebookEdits) return true;
+    return window.confirm(
+      'This will replace local AlloSheet work that has not been downloaded as CSV or an AlloSheet workspace.'
+        + (pendingCasebookEdits ? ' This includes case context that is still being edited.' : '')
+        + ' Continue?'
+    );
   }
 
   function clearUndoState(message) {
@@ -1594,6 +1607,35 @@
     if (casebookUi) casebookUi.refresh();
   }
 
+  function replaceCasebookRecord(tableId, record, kind) {
+    var table = state.localTables.find(function (item) { return item.id === tableId; });
+    if (!table || !record || !record.fields) throw new Error('The casebook table is unavailable.');
+    var index = table.records.findIndex(function (item) { return String(item.id) === String(record.id); });
+    if (index < 0) throw new Error('That casebook record is unavailable.');
+    table.records[index] = record;
+    table.sourceRowCount = table.records.length;
+    table.sourceModified = true;
+    table.dirty = table.savePoint === null
+      ? true
+      : localTableSnapshot(table.columns, table.records) !== table.savePoint;
+    state.canvasDirty = state.localTables.some(function (item) { return item.dirty === true; });
+    bumpDataRevision();
+    resetLocalReviewState(
+      kind === 'case-context'
+        ? 'Case context was updated locally.'
+        : 'A casebook record was updated locally.'
+    );
+    updateLocalTableOption(table);
+    if (currentTableId() === table.id) {
+      state.columns = table.columns;
+      state.records = table.records;
+      renderDataTable();
+    }
+    text(byId('workspaceFileStatus'), 'Casebook changes are not saved automatically. Download the all-table workspace when you are ready to keep them.');
+    text(byId('canvasFileStatus'), 'Local casebook changes are not saved automatically. The all-table workspace keeps the complete casebook.');
+    if (casebookUi) casebookUi.refresh();
+  }
+
   function prepareCasebookAgentRows(recordIds, instruction) {
     if (!state.canvasMode || !state.localTables.length) return;
     if (!activateLocalTable(Casebook.tableIds.observations, { focusCell: false })) return;
@@ -1799,6 +1841,18 @@
   function downloadAllTableWorkspace() {
     if (!state.canvasMode || !state.localTables.length) return;
     clearWorkspaceFileError();
+    if (hasPendingCasebookEdits()) {
+      if (typeof casebookUi.focusPendingEdits === 'function') {
+        casebookUi.focusPendingEdits(
+          'Save or undo the current case-context edits before downloading the all-table workspace.'
+        );
+      }
+      text(
+        byId('workspaceFileStatus'),
+        'Workspace not downloaded. Save or undo the current case-context edits first.'
+      );
+      return;
+    }
     refreshLocalDirtyState();
     var modifiedTableIds = state.localTables.filter(function (table) {
       return table.sourceModified === true || table.dirty === true;
@@ -3464,7 +3518,8 @@
     });
     window.addEventListener('message', onHostMessage);
     window.addEventListener('beforeunload', function (event) {
-      if (state.canvasMode && refreshLocalDirtyState()) {
+      var hasUnsavedLocalWork = state.canvasMode && refreshLocalDirtyState();
+      if (hasUnsavedLocalWork || hasPendingCasebookEdits()) {
         event.preventDefault();
         event.returnValue = '';
         return '';
@@ -3485,6 +3540,7 @@
       confirmReplacement: confirmLocalReplacement,
       installCasebook: installCasebookWorkspace,
       appendRecord: appendCasebookRecord,
+      replaceRecord: replaceCasebookRecord,
       prepareAgentRows: prepareCasebookAgentRows
     });
   }

@@ -1396,6 +1396,7 @@ const _alloValidateMailboxScriptSource = async (candidate) => {
     return sha256 === ALLO_MB_SCRIPT_SHA256 ? candidate.source : '';
 };
 const _alloDecodeMailboxScriptFallback = async () => {
+    if (!ALLO_MB_SCRIPT_FALLBACK_GZIP) return '';
     if (typeof atob !== 'function' || typeof DecompressionStream !== 'function') return '';
     const compressed = Uint8Array.from(atob(ALLO_MB_SCRIPT_FALLBACK_GZIP), char => char.charCodeAt(0));
     const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));
@@ -4809,6 +4810,57 @@ const CDNModuleGate = (function () {
     );
   };
 })();
+
+// Thin host adapters for the first cold-path extraction wave. The adapter is
+// intentionally generic: each real view stays in its CDN module while the host
+// retains a small accessible loading/close surface and a bounded loader retry
+// for the React child-before-parent effect ordering case.
+const _alloCreateFirstWaveCdnView = (moduleKey, loaderName, icon) => function FirstWaveCdnView(props) {
+    const {
+        __alloActive = true,
+        __alloDisplayName = moduleKey,
+        __alloOnClose = null,
+        __alloOverlay = false,
+        ...surfaceProps
+    } = props || {};
+    React.useEffect(() => {
+        if (!__alloActive || (window.AlloModules && window.AlloModules[moduleKey])) return undefined;
+        let attempts = 0;
+        const request = () => {
+            if (window.AlloModules && window.AlloModules[moduleKey]) return true;
+            const loader = window[loaderName];
+            if (typeof loader === 'function') {
+                try { loader(); } catch (_) {}
+                return true;
+            }
+            return false;
+        };
+        if (request()) return undefined;
+        const timer = setInterval(() => {
+            attempts += 1;
+            if (request() || attempts >= 50) clearInterval(timer);
+        }, 100);
+        return () => clearInterval(timer);
+    }, [__alloActive]);
+    return (
+      <CDNModuleGate
+        moduleKey={moduleKey}
+        isOpen={__alloActive}
+        onClose={__alloOnClose}
+        icon={icon}
+        displayName={__alloDisplayName}
+        size={__alloOverlay ? 'modal' : 'inline'}
+      >
+        {(View) => React.createElement(View, surfaceProps)}
+      </CDNModuleGate>
+    );
+};
+
+const LiveSessionDockView = _alloCreateFirstWaveCdnView('LiveSessionDockView', '__alloLazyLiveSessionDockView', '📡');
+const FullPackRunView = _alloCreateFirstWaveCdnView('FullPackRunView', '__alloLazyFullPackRunView', '📦');
+const HomeworkQrDialogView = _alloCreateFirstWaveCdnView('HomeworkQrDialogView', '__alloLazyShareSessionSurfaces', '📱');
+const ClassMailboxSetupView = _alloCreateFirstWaveCdnView('ClassMailboxSetupView', '__alloLazyShareSessionSurfaces', '📬');
+const VideoStudioHostBridgeView = _alloCreateFirstWaveCdnView('VideoStudioHostBridgeView', '__alloLazyVideoStudioHostBridgeView', '🎥');
 
 const LazySimplifiedView = React.memo((props) => {
     const Real = window.AlloModules && window.AlloModules.SimplifiedView;
@@ -11533,10 +11585,61 @@ const AlloFlowContent = () => {
       ? d.describeActivityItem(activity)
       : String((activity && activity.description) || '');
   };
+  const _alloActivityDispatcher = () => (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenDispatcher) || null;
+  const _alloUpdateBrainstormActivity = (index, updater) => {
+    setGeneratedContent(previous => {
+      if (!previous || previous.type !== 'brainstorm' || !Array.isArray(previous.data) || !previous.data[index]) return previous;
+      const activity = previous.data[index];
+      const nextActivity = typeof updater === 'function' ? updater(activity, previous) : activity;
+      if (!nextActivity || nextActivity === activity) return previous;
+      const updatedContent = { ...previous, data: previous.data.map((item, itemIndex) => itemIndex === index ? nextActivity : item) };
+      setHistory(prev => prev.map(item => item.id === previous.id ? updatedContent : item));
+      return updatedContent;
+    });
+  };
+  const _alloStampBrainstormDerivative = (index, kind, patch = {}) => {
+    const dispatcher = _alloActivityDispatcher();
+    if (!dispatcher || typeof dispatcher.stampActivityDerivative !== 'function') return;
+    _alloUpdateBrainstormActivity(index, activity => dispatcher.stampActivityDerivative(
+      activity,
+      generatedContent && generatedContent.id,
+      index,
+      kind,
+      patch
+    ));
+  };
+  const _alloActivityRetryable = (error) => {
+    const message = String(error && error.message || error || '').toLowerCase();
+    const code = String(error && error.code || '').toLowerCase();
+    const status = Number(error && (error.status || error.statusCode || error.httpStatus));
+    if (/401|403|blocked|safety|quota|billing|api key|not configured|permission|forbidden|daily usage/.test(message)
+      || /auth|permission|forbidden|unauthorized|safety|policy|quota|billing/.test(code)) return false;
+    if ([408, 409, 425, 429].includes(status) || status >= 500) return true;
+    return !message || /network|fetch|timeout|timed out|429|502|503|504|overload|parse|json|valid|empty|response|unusable/.test(message);
+  };
+  const _alloRunActivityGeneration = async ({ prompt, jsonMode = false, parse }) => {
+    let currentPrompt = String(prompt || '');
+    let lastError = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const raw = await callGemini(currentPrompt, jsonMode);
+        const value = typeof parse === 'function' ? parse(raw) : raw;
+        if (value == null || (typeof value === 'string' && !value.trim())) throw new Error('Activity generation returned empty output.');
+        return { value, attempts: attempt };
+      } catch (error) {
+        lastError = error;
+        if (attempt >= 2 || !_alloActivityRetryable(error)) throw error;
+        currentPrompt += '\nRECOVERY: Return a complete, plain response that follows the requested format. Do not add commentary or a markdown fence.';
+        await new Promise(resolve => setTimeout(resolve, 350));
+      }
+    }
+    throw lastError || new Error('Activity generation failed.');
+  };
   const handleGenerateGuide = async (index) => {
     const activity = generatedContent && generatedContent.data && generatedContent.data[index];
     if (!activity || activity.guide) return;
     setIsGeneratingGuide(prev => ({ ...prev, [index]: true }));
+    _alloStampBrainstormDerivative(index, 'guide', { status: 'generating', lastError: null });
     try {
       const prompt = `Create a concise step-by-step teacher guide for this activity: "${activity.title}".
         Context:
@@ -11547,14 +11650,24 @@ ${_alloActivityContext(activity)}
         2. Preparation Steps
         3. Step-by-Step Instructions
         Format using simple Markdown.`;
-      const guide = await callGemini(prompt);
-      const newData = [...generatedContent.data];
-      newData[index] = { ...activity, guide };
-      const updatedContent = { ...generatedContent, data: newData };
-      setGeneratedContent(updatedContent);
-      setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+      const generation = await _alloRunActivityGeneration({
+        prompt,
+        parse: raw => {
+          const guide = String(raw || '').trim();
+          if (!guide) throw new Error('Activity guide response was empty.');
+          return guide;
+        }
+      });
+      _alloUpdateBrainstormActivity(index, current => {
+        const dispatcher = _alloActivityDispatcher();
+        const next = { ...current, guide: generation.value };
+        return dispatcher && typeof dispatcher.stampActivityDerivative === 'function'
+          ? dispatcher.stampActivityDerivative(next, generatedContent && generatedContent.id, index, 'guide', { status: 'ready', attempts: generation.attempts, lastError: null, bumpVersion: true, updatedAt: new Date().toISOString() })
+          : next;
+      });
     } catch (e) {
       warnLog('Unhandled error in handleGenerateGuide:', e);
+      _alloStampBrainstormDerivative(index, 'guide', { status: 'failed', lastError: 'Generation failed; retry available.' });
     } finally {
       setIsGeneratingGuide(prev => ({ ...prev, [index]: false }));
     }
@@ -11563,6 +11676,7 @@ ${_alloActivityContext(activity)}
     const activity = generatedContent && generatedContent.data && generatedContent.data[index];
     if (!activity || (activity.rubric && Array.isArray(activity.rubric.criteria) && activity.rubric.criteria.length)) return;
     setIsGeneratingBrainstormRubric(prev => ({ ...prev, [index]: true }));
+    _alloStampBrainstormDerivative(index, 'rubric', { status: 'generating', lastError: null });
     try {
       const prompt = `You are an assessment and UDL specialist. Create a concise analytic rubric for this activity.
 Activity: ${activity.title}
@@ -11583,8 +11697,12 @@ Return ONLY JSON in this shape:
     }
   ]
 }`;
-      const raw = await callGemini(prompt, true);
-      const parsed = JSON.parse(cleanJson(raw));
+      const generation = await _alloRunActivityGeneration({
+        prompt,
+        jsonMode: true,
+        parse: raw => JSON.parse(cleanJson(raw))
+      });
+      const parsed = generation.value;
       const source = parsed && parsed.rubric ? parsed.rubric : parsed;
       const rawCriteria = source && Array.isArray(source.criteria) ? source.criteria.slice(0, 4) : [];
       if (!rawCriteria.length) throw new Error('The rubric response did not include criteria.');
@@ -11616,15 +11734,18 @@ Return ONLY JSON in this shape:
         scale: 4,
         criteria: normalizedCriteria
       };
-      const newData = [...generatedContent.data];
-      newData[index] = { ...activity, rubric };
-      const updatedContent = { ...generatedContent, data: newData };
-      setGeneratedContent(updatedContent);
-      setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+      _alloUpdateBrainstormActivity(index, current => {
+        const dispatcher = _alloActivityDispatcher();
+        const next = { ...current, rubric };
+        return dispatcher && typeof dispatcher.stampActivityDerivative === 'function'
+          ? dispatcher.stampActivityDerivative(next, generatedContent && generatedContent.id, index, 'rubric', { status: 'ready', attempts: generation.attempts, lastError: null, bumpVersion: true, updatedAt: new Date().toISOString() })
+          : next;
+      });
       addToast('Activity rubric created. Review and adapt it before assigning.', 'success');
       return true;
     } catch (e) {
       warnLog('Unhandled error in handleGenerateBrainstormRubric:', e);
+      _alloStampBrainstormDerivative(index, 'rubric', { status: 'failed', lastError: 'Generation failed; retry available.' });
       addToast('The activity rubric could not be created. Please try again.', 'error');
       return false;
     } finally {
@@ -12281,6 +12402,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [alloStudioInitialAction, setAlloStudioInitialAction] = useState(null);
   const [alloStudioInitialFile, setAlloStudioInitialFile] = useState(null);
   const [alloStudioInitialArtwork, setAlloStudioInitialArtwork] = useState(null);
+  const [alloStudioInitialResource, setAlloStudioInitialResource] = useState(null);
   const [isAlloHavenOpen, _setIsAlloHavenOpenRaw] = useState(false);
   // Lazy-load AlloHaven host module + arcade-mode plugins on first open.
   // The host module is the largest single file in the bundle (~1.1 MB), so
@@ -12570,9 +12692,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // and shared with the sidebar MathPanel.
   const [showMathCreate, setShowMathCreate] = useState(false);
   const [modulesReady, setModulesReady] = useState(0);
-  const [mailboxScriptState, setMailboxScriptState] = useState({ status: 'loading', source: '', origin: '' });
+  const [mailboxScriptState, setMailboxScriptState] = useState({ status: 'idle', source: '', origin: '' });
+  const [mailboxScriptRequested, setMailboxScriptRequested] = useState(false);
   const [mailboxScriptRetry, setMailboxScriptRetry] = useState(0);
   useEffect(() => {
+    if (!mailboxScriptRequested) return undefined;
     let cancelled = false;
     let hydrationId = 0;
     const cacheKey = 'alloflow_mailbox_script_' + ALLO_MB_SCRIPT_SHA256;
@@ -12614,7 +12738,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       hydrationId += 1;
       window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
     };
-  }, [mailboxScriptRetry]);
+  }, [mailboxScriptRequested, mailboxScriptRetry]);
   // ── Synchronous global setup: runs DURING render (before first paint) so that
   // child views using window.AlloIcons / window.<IconName> resolve correctly on
   // initial render. Previously these lived only in useEffect, which fires AFTER
@@ -12730,7 +12854,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = 'cc4cfa0e6';
+    var pluginCdnVersion = '1788155899190';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -13089,32 +13213,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=cc4cfa0e6');
-    loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=cc4cfa0e6');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=cc4cfa0e6');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=cc4cfa0e6');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=cc4cfa0e6');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=cc4cfa0e6');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=cc4cfa0e6');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=cc4cfa0e6');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=cc4cfa0e6');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=cc9eb976');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=cc4cfa0e6');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=cc4cfa0e6');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=cc4cfa0e6');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=cc4cfa0e6');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=cc4cfa0e6');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=cc4cfa0e6');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=8405ef04');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=5f7f65c4');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=eac1e2a4');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=cc4cfa0e6');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=cc4cfa0e6');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=cc4cfa0e6');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -13127,41 +13250,41 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=cc4cfa0e6'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=cc4cfa0e6');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=cc4cfa0e6');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=cc4cfa0e6');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     window.__alloLazyBehaviorLens = (function() { var started = false; return function() { if (started) return; started = true;
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=cc4cfa0e6');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=cc4cfa0e6');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=cc4cfa0e6');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=cc4cfa0e6');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=cc4cfa0e6');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
@@ -13173,67 +13296,67 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', './educator_evaluation_module.js'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', './math_create_module.js'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=cc4cfa0e6');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=cc4cfa0e6');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=cc4cfa0e6');
-    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=cc4cfa0e6'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', './reading_library_module.js'); }; })();
     if (window.__alloReadingLibraryRequested) window.__alloLazyReadingLibrary();
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=cc4cfa0e6');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=cc4cfa0e6');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=cc4cfa0e6');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=cc4cfa0e6');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=cc4cfa0e6');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=cc4cfa0e6');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=cc4cfa0e6');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=cc4cfa0e6');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
     window.__alloLazyQuickStartWizard = function() {
-      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=cc4cfa0e6');
+      loadModule('QuickStartWizard', './quickstart_module.js');
     };
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=cc4cfa0e6');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=cc4cfa0e6');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=cc4cfa0e6'); }; })();
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', './learning_web_explorer_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', './visual_panel_module.js'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=cc4cfa0e6');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=cc4cfa0e6');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0be128c6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=cc4cfa0e6');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=cc4cfa0e6');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=cc4cfa0e6');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=cc4cfa0e6');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=cc4cfa0e6');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=cc4cfa0e6');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=cc4cfa0e6');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=cc4cfa0e6'); }; })();
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
     // Large document features stay off the network until a workflow actually
     // needs them. These loaders deliberately have no permanent "requested"
     // latch: the registry owns deduplication and an exact failed-module retry.
@@ -13241,7 +13364,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=cc4cfa0e6');
+      loadModule('DocPipelineModule', './doc_pipeline_module.js');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -13294,50 +13417,55 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloEnsureDocPipeline = function() {
       return window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
     };
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=cc4cfa0e6'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=cc4cfa0e6'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=cc4cfa0e6');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=cc4cfa0e6'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', './view_video_ref_player_module.js'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', './view_end_session_preview_module.js'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', './view_assignment_center_module.js'); }; })();
+    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', './mailbox_script_source_module.js'); }; })();
+    window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', './view_live_session_dock_module.js'); }; })();
+    window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', './view_full_pack_run_module.js'); }; })();
+    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', './view_share_session_surfaces_module.js'); }; })();
+    window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', './video_studio_host_bridge_module.js'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', './view_directions_result_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=cc4cfa0e6');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ae1abf00');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=cc4cfa0e6');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=cc4cfa0e6');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=cc4cfa0e6');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=cc4cfa0e6');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=cc4cfa0e6');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=cc4cfa0e6'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=cc4cfa0e6'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=cc4cfa0e6'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=cc4cfa0e6'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=cc4cfa0e6'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=cc4cfa0e6'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=cc4cfa0e6');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=cc4cfa0e6');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=cc4cfa0e6');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=cc4cfa0e6');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=cc4cfa0e6');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=cc4cfa0e6');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
     window.__alloLazyPdfAuditView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.PdfAuditView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.PdfAuditView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('PdfAuditView');
-      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=cc4cfa0e6');
+      loadModule('PdfAuditView', './view_pdf_audit_module.js');
       return true;
     };
     window.__alloEnsurePdfAuditView = function() {
@@ -13346,14 +13474,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('PdfAuditView', '__alloLazyPdfAuditView', 'PdfAuditView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=cc4cfa0e6');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=cc4cfa0e6');
+    loadModule('SemanticReview', './semantic_review_module.js');
+    loadModule('ReviewDocumentSession', './review_document_session_module.js');
     window.__alloLazyExportPreviewView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.ExportPreviewView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.ExportPreviewView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('ExportPreviewView');
-      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=cc4cfa0e6');
+      loadModule('ExportPreviewView', './view_export_preview_module.js');
       return true;
     };
     window.__alloEnsureExportPreviewView = function() {
@@ -13362,16 +13490,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=cc4cfa0e6');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=cc4cfa0e6');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=cc4cfa0e6');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=cc4cfa0e6');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=cc4cfa0e6');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=cc4cfa0e6');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=cc4cfa0e6');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=cc4cfa0e6');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=cc4cfa0e6');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=cc4cfa0e6');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('AppStyles', './app_styles_module.js');
+    loadModule('LiveAac', './live_aac_module.js');
+    loadModule('SharedActivity', './shared_activity_module.js');
+    loadModule('GuidedModeConfig', './guided_mode_config_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -13392,12 +13520,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=5c185b44');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=cc4cfa0e6');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=cc4cfa0e6');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=cc4cfa0e6');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=cc4cfa0e6');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -13420,22 +13548,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=cc4cfa0e6');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=cc4cfa0e6');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=cc4cfa0e6');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=cc4cfa0e6');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=cc4cfa0e6');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=cc4cfa0e6');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('InstructionalContext', './instructional_context_module.js');
+    loadModule('GenerationMatrix', './generation_matrix_module.js');
+    loadModule('StandardsProvider', './standards_provider_module.js');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=cc4cfa0e6');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=cc4cfa0e6');
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=cc4cfa0e6');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=cc4cfa0e6');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=cc4cfa0e6');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -13450,73 +13578,74 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
     }; })();
     if (window.__alloStandardsSnapshotsRequested) window.__alloLazyStandardsSnapshots();
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=cc4cfa0e6');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=cc4cfa0e6');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=cc4cfa0e6');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=cc4cfa0e6');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=cc4cfa0e6');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=cc4cfa0e6');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=cc4cfa0e6');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=cc4cfa0e6');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=b57c8bf0');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=74d2bdc6');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=cc4cfa0e6');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=cc4cfa0e6');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=cc4cfa0e6');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=cc4cfa0e6');
-    loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=cc4cfa0e6');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=cc4cfa0e6');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=cc4cfa0e6');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=2c43da57');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=cc4cfa0e6');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=cc4cfa0e6');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=cc4cfa0e6');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=cc4cfa0e6');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=cc4cfa0e6');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=cc4cfa0e6');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=cc4cfa0e6');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=cc4cfa0e6');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=cc4cfa0e6');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=cc4cfa0e6');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=cc4cfa0e6');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=bf6237ae'); }; })();
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('MathManipulativeGraderModule', './math_manipulative_grader_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', './view_simplified_module.js'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=cc4cfa0e6');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=cc4cfa0e6');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=cc4cfa0e6');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=cc4cfa0e6');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=cc4cfa0e6');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=cc4cfa0e6');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=50b12072'); }; })();
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', './view_persona_chat_module.js'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=cc4cfa0e6');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=cc4cfa0e6');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=cc4cfa0e6');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=cc4cfa0e6');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=cc4cfa0e6');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=cc4cfa0e6');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=cc4cfa0e6');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=cc4cfa0e6');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=cc4cfa0e6');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=cc4cfa0e6');
-    loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=cc4cfa0e6');
-    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=cc4cfa0e6');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=cc4cfa0e6');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=cc4cfa0e6');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=cc4cfa0e6');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=cc4cfa0e6');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=cc4cfa0e6');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('ImageAssetEditorModule', './image_asset_editor_module.js');
+    loadModule('MemoryAidModule', './memory_aid_module.js');
+    loadModule('AppliedChallengeModule', './applied_challenge_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('ConceptQuestEngineModule', './concept_quest_engine.js');
+    loadModule('ConceptQuestTeacherModule', './concept_quest_teacher_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     window.__alloLazyMathJs = (function() { var started=false; return function() {
       if (started || window.math) return;
       started = true;
@@ -17339,6 +17468,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showSessionStartOptions, setShowSessionStartOptions] = useState(false);
   const [showLiveLessonPrep, setShowLiveLessonPrep] = useState(false);
   const [mbPanelOpen, setMbPanelOpen] = useState(false);
+  useEffect(() => {
+    if (!mbPanelOpen) return;
+    setMailboxScriptRequested(true);
+    try { window.__alloLazyMailboxScriptSource?.(); } catch (_) {}
+  }, [mbPanelOpen]);
   const [liveJoinStatus, setLiveJoinStatus] = useState('');
   const [liveJoinError, setLiveJoinError] = useState(false);
   const [liveJoinRetryable, setLiveJoinRetryable] = useState(false);
@@ -19685,7 +19819,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   const copyMailboxScriptSource = async () => {
     if (mailboxScriptState.status !== 'ready' || !mailboxScriptState.source) {
-      addToast(mailboxScriptState.status === 'loading'
+      setMailboxScriptRequested(true);
+      try { window.__alloLazyMailboxScriptSource?.(); } catch (_) {}
+      addToast(mailboxScriptState.status === 'loading' || mailboxScriptState.status === 'idle'
         ? 'The mailbox script is still being prepared. Please try again in a moment.'
         : 'The mailbox script is unavailable. Retry loading or use the online source link.', 'error');
       return;
@@ -19701,8 +19837,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     copyToClipboard(mailboxScriptState.source);
   };
   const retryMailboxScriptSource = () => {
+    setMailboxScriptRequested(true);
     setMailboxScriptState({ status: 'loading', source: '', origin: '' });
     setMailboxScriptRetry(value => value + 1);
+    try { window.__alloLazyMailboxScriptSource?.(); } catch (_) {}
     try { window.__alloRetryFailedModules?.(); } catch (_) {}
   };
   const [isProcessing, setIsProcessing] = useState(false);
@@ -42594,6 +42732,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const activity = generatedContent?.data[index];
     if (activity.worksheet) return;
     setIsGeneratingWorksheet(prev => ({...prev, [index]: true}));
+    _alloStampBrainstormDerivative(index, 'worksheet', { status: 'generating', lastError: null });
     try {
         const prompt = `Create a printable student worksheet for this activity: "${activity.title}".
         Context:
@@ -42614,14 +42753,24 @@ ${_alloActivityContext(activity)}
         ## New Words
         (3-5 vocabulary terms from this activity, each on its own line followed by a blank line for the student to write a definition)
         Use student-friendly language at the ${gradeLevel} reading level. Keep total length printable on one page.`;
-        const worksheet = await callGemini(prompt);
-        const newData = [...generatedContent?.data];
-        newData[index] = { ...activity, worksheet: worksheet };
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        const generation = await _alloRunActivityGeneration({
+            prompt,
+            parse: raw => {
+                const worksheet = String(raw || '').trim();
+                if (!worksheet) throw new Error('Activity worksheet response was empty.');
+                return worksheet;
+            }
+        });
+        _alloUpdateBrainstormActivity(index, current => {
+            const dispatcher = _alloActivityDispatcher();
+            const next = { ...current, worksheet: generation.value };
+            return dispatcher && typeof dispatcher.stampActivityDerivative === 'function'
+                ? dispatcher.stampActivityDerivative(next, generatedContent && generatedContent.id, index, 'worksheet', { status: 'ready', attempts: generation.attempts, lastError: null, bumpVersion: true, updatedAt: new Date().toISOString() })
+                : next;
+        });
     } catch (e) {
         warnLog("Unhandled error:", e);
+        _alloStampBrainstormDerivative(index, 'worksheet', { status: 'failed', lastError: 'Generation failed; retry available.' });
     } finally {
         setIsGeneratingWorksheet(prev => ({...prev, [index]: false}));
     }
@@ -42630,6 +42779,7 @@ ${_alloActivityContext(activity)}
     const activity = generatedContent?.data[index];
     if (!activity || !activity.worksheet) return;
     setIsGeneratingWorksheetCover(prev => ({...prev, [index]: true}));
+    _alloStampBrainstormDerivative(index, 'cover', { status: 'generating', lastError: null });
     try {
         const prompt = `Friendly, cheerful illustration for a student worksheet titled "${activity.title}". Context: ${_alloActivityContext(activity).slice(0, 300)}. Style: simple flat vector art with soft colors, clean lines, white background, child-friendly, suitable for ${gradeLevel}. Centered single subject or scene. STRICTLY NO TEXT, NO LABELS, NO LETTERS, NO WORDS. Visual only.`;
         let imageUrl = await callImagen(prompt);
@@ -42643,16 +42793,20 @@ ${_alloActivityContext(activity)}
             }
         }
         if (!imageUrl) {
+            _alloStampBrainstormDerivative(index, 'cover', { status: 'failed', lastError: 'Cover generation failed; retry available.' });
             addToast(t('brainstorm.cover_failed') || 'Cover image failed — try again.', 'error');
             return;
         }
-        const newData = [...generatedContent?.data];
-        newData[index] = { ...activity, coverImage: imageUrl };
-        const updatedContent = { ...generatedContent, data: newData };
-        setGeneratedContent(updatedContent);
-        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        _alloUpdateBrainstormActivity(index, current => {
+            const dispatcher = _alloActivityDispatcher();
+            const next = { ...current, coverImage: imageUrl };
+            return dispatcher && typeof dispatcher.stampActivityDerivative === 'function'
+                ? dispatcher.stampActivityDerivative(next, generatedContent && generatedContent.id, index, 'cover', { status: 'ready', attempts: 1, lastError: null, bumpVersion: true, updatedAt: new Date().toISOString() })
+                : next;
+        });
     } catch (e) {
         warnLog("Worksheet cover generation failed:", e);
+        _alloStampBrainstormDerivative(index, 'cover', { status: 'failed', lastError: 'Cover generation failed; retry available.' });
         addToast(t('brainstorm.cover_failed') || 'Cover image failed — try again.', 'error');
     } finally {
         setIsGeneratingWorksheetCover(prev => ({...prev, [index]: false}));
@@ -47939,10 +48093,82 @@ ${_alloActivityContext(activity)}
   const handleBrainstormChange = (index, field, value) => {
     if (!generatedContent || generatedContent.type !== 'brainstorm') return;
     const newData = [...generatedContent?.data];
-    newData[index] = { ...newData[index], [field]: value };
+    const current = newData[index];
+    const next = { ...current, [field]: value };
+    const derivativeKind = field === 'coverImage' ? 'cover' : (['guide', 'worksheet', 'rubric'].includes(field) ? field : null);
+    const dispatcher = _alloActivityDispatcher();
+    newData[index] = derivativeKind && dispatcher && typeof dispatcher.stampActivityDerivative === 'function'
+      ? dispatcher.stampActivityDerivative(next, generatedContent.id, index, derivativeKind, { status: 'edited', bumpVersion: false, updatedAt: new Date().toISOString(), lastError: null })
+      : next;
     const updatedContent = { ...generatedContent, data: newData };
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+  };
+  const handleOpenActivityInStudio = (index) => {
+    if (!generatedContent || generatedContent.type !== 'brainstorm' || !generatedContent.data || !generatedContent.data[index]) return;
+    const activity = generatedContent.data[index];
+    if (!activity.worksheet) return;
+    const dispatcher = _alloActivityDispatcher();
+    const derivatives = dispatcher && typeof dispatcher.normalizeActivityDerivatives === 'function'
+      ? dispatcher.normalizeActivityDerivatives(activity, generatedContent.id, index)
+      : (activity.derivatives || {});
+    const worksheetMeta = derivatives.worksheet || {};
+    setAlloStudioInitialResource({
+      parentResourceId: generatedContent.id,
+      activityIndex: index,
+      artifactId: worksheetMeta.artifactId || (generatedContent.id + '-activity-' + index + '-worksheet'),
+      activityKind: activity.kind || 'idea',
+      title: activity.title || 'Activity worksheet',
+      worksheet: activity.worksheet,
+      guide: activity.guide || '',
+      rubric: activity.rubric || null,
+      coverImage: activity.coverImage || '',
+      sourceRevision: worksheetMeta.contentHash || worksheetMeta.sourceRevision || String(worksheetMeta.version || 0),
+      sourceTitle: generatedContent.title || 'Activities'
+    });
+    setAlloStudioInitialFile(null);
+    setAlloStudioInitialArtwork(null);
+    setAlloStudioInitialAction('worksheet-from-activity');
+    setIsAlloStudioOpen(true);
+  };
+  const handleSaveGeneratedArtifact = (payload) => {
+    if (!payload || payload.artifactType !== 'worksheet' || !payload.parentResourceId || payload.activityIndex == null) return false;
+    const parentId = String(payload.parentResourceId);
+    const index = Math.max(0, Math.round(Number(payload.activityIndex)));
+    const source = generatedContent && generatedContent.id === parentId
+      ? generatedContent
+      : (history || []).find(item => item && item.id === parentId);
+    const activity = source && Array.isArray(source.data) ? source.data[index] : null;
+    if (!activity) return false;
+    const dispatcher = _alloActivityDispatcher();
+    const priorMeta = dispatcher && typeof dispatcher.normalizeActivityDerivatives === 'function'
+      ? dispatcher.normalizeActivityDerivatives(activity, parentId, index).worksheet
+      : (activity.derivatives && activity.derivatives.worksheet) || {};
+    const expectedRevision = priorMeta.contentHash || priorMeta.sourceRevision || String(priorMeta.version || 0);
+    if (payload.sourceRevision != null && String(payload.sourceRevision) !== String(expectedRevision)) {
+      addToast('This worksheet changed in Activities while Page Designer was open. Reopen it before saving.', 'error');
+      return false;
+    }
+    const nextActivityBase = { ...activity, worksheet: String(payload.content || '').trim() };
+    const nextActivity = dispatcher && typeof dispatcher.stampActivityDerivative === 'function'
+      ? dispatcher.stampActivityDerivative(nextActivityBase, parentId, index, 'worksheet', {
+          status: 'edited',
+          bumpVersion: true,
+          updatedAt: new Date().toISOString(),
+          lastError: null,
+          sourceRevision: payload.sourceRevision == null ? null : payload.sourceRevision,
+          pageDesignerDocumentId: payload.documentId || null
+        })
+      : nextActivityBase;
+    const nextMeta = dispatcher && typeof dispatcher.normalizeActivityDerivatives === 'function'
+      ? dispatcher.normalizeActivityDerivatives(nextActivity, parentId, index).worksheet
+      : (nextActivity.derivatives && nextActivity.derivatives.worksheet) || {};
+    const nextRevision = nextMeta.contentHash || nextMeta.sourceRevision || String(nextMeta.version || 0);
+    const updatedContent = { ...source, data: source.data.map((item, itemIndex) => itemIndex === index ? nextActivity : item) };
+    setHistory(prev => prev.map(item => item && item.id === parentId ? updatedContent : item));
+    setGeneratedContent(prev => prev && prev.id === parentId ? updatedContent : prev);
+    addToast('Worksheet saved back to Activities.', 'success');
+    return { ok: true, sourceRevision: String(nextRevision), version: nextMeta.version || 0 };
   };
   const _stripForImmersive = (raw) => {
       let txt = typeof raw === 'string' ? raw : '';
@@ -49620,90 +49846,16 @@ ${_alloActivityContext(activity)}
       />}
       {qrShareModal && (
         <div className="fixed inset-0 bg-slate-950/80 z-[151] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="alloflow-homework-qr-title" aria-describedby="alloflow-homework-qr-description" onClick={() => setQrShareModal(null)}>
-          <div ref={homeworkQrDialogRef} tabIndex={-1} className="bg-gradient-to-b from-violet-50 to-white rounded-3xl shadow-2xl border border-violet-200 p-6 text-center max-w-md w-full relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setQrShareModal(null)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
-            <div className="mx-auto mb-3 w-14 h-14 rounded-2xl bg-violet-700 text-white flex items-center justify-center shadow-lg shadow-violet-200"><ClipboardList size={28}/></div>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-900 mb-2"><BookOpen size={13}/> {t('share_collect.take_home_assignment') || 'Take-home assignment'}</div>
-            <h2 id="alloflow-homework-qr-title" className="text-2xl font-black text-slate-900 mb-1">{qrShareModal.type === 'assignment-pack-hosted' ? 'Hosted homework assignment' : qrShareModal.type === 'assignment-pack' ? 'Self-contained homework assignment' : 'Homework assignment ready'}</h2>
-            <p id="alloflow-homework-qr-description" className="text-sm font-bold text-violet-900 mb-1">{qrShareModal.title}</p>
-            <p className="text-xs text-slate-600 mb-4">{((qrShareModal.resourceCount || 1) === 1 ? (t('share_collect.teacher_prepared_resource_one') || '{count} teacher-prepared resource') : (t('share_collect.teacher_prepared_resource_many') || '{count} teacher-prepared resources')).replace('{count}', String(qrShareModal.resourceCount || 1))} &middot; {qrShareModal.aiPolicy === 'student-byok' ? (t('share_collect.personal_ai_optional') || 'Personal AI optional') : (t('share_collect.student_ai_off') || 'Student AI off')} &middot; {t('share_collect.no_live_session') || 'No live session'}</p>
-            {!qrShareModal.noQr && (
-            <div className="flex justify-center mb-4">
-              <div className="bg-white border-2 border-violet-300 rounded-2xl p-3 w-52 h-52 flex items-center justify-center shadow-sm" aria-label={t('share_collect.qr_aria') || 'Homework assignment QR code'}>
-                {qrShareSvg
-                  ? <div className="w-full h-full [&_svg]:w-full [&_svg]:h-full" dangerouslySetInnerHTML={{ __html: qrShareSvg }} />
-                  : <span className="text-xs font-bold text-violet-700 text-center">{qrShareError ? 'QR unavailable - copy the homework link below' : 'Preparing homework QR...'}</span>}
-              </div>
-            </div>
-            )}
-            {qrShareModal.noQr && (
-              <div className="mb-4 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
-                <p className="text-xs text-amber-900 text-center">{t('share_collect.this_activity_is_too_large_for') || 'This activity is too large for a scannable QR code. The link was copied — paste it into Google Classroom, email, or any message.'}</p>
-              </div>
-            )}
-            {Array.isArray(qrShareModal.resourceTitles) && qrShareModal.resourceTitles.length > 0 && (
-              <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3 text-left">
-                <p className="text-[11px] font-black uppercase tracking-wider text-slate-600 mb-1">{t('share_collect.assignment_contents') || 'Assignment contents'}</p>
-                <ul className="text-xs text-slate-800 space-y-1">{qrShareModal.resourceTitles.slice(0, 5).map((name, index) => <li key={index} className="truncate">{index + 1}. {name}</li>)}</ul>
-                {qrShareModal.resourceTitles.length > 5 && <p className="text-[11px] text-slate-500 mt-1">+{qrShareModal.resourceTitles.length - 5} {t('share_collect.more_resources') || 'more resources'}</p>}
-              </div>
-            )}
-            <div className="mb-3 rounded-xl bg-violet-100 border border-violet-200 px-3 py-2 text-left">
-              <p className="text-xs font-black text-violet-950">{t('share_collect.students_scan_to_open_the_assignment') || 'Students scan to open the assignment on their own time.'}</p>
-              <p className="text-[11px] text-violet-800 mt-0.5">{t('share_collect.this_qr_does_not_join_your') || 'This QR does not join your class, show a session code, or connect to live pacing.'}</p>
-            </div>
-            {qrShareModal.type === 'assignment-pack-hosted' && qrShareModal.sharedActivity && (
-              <details className="mb-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-left">
-                <summary className="cursor-pointer text-xs font-black text-sky-900">{t('share_collect.manage_shared') || 'Manage shared'} {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : qrShareModal.sharedActivity.type === 'survey' ? 'survey' : 'class Word Cloud'}</summary>
-                <p className="mt-2 text-[11px] leading-relaxed text-sky-800">{qrShareModal.sharedActivity.type === 'rating' ? 'Students rate on their own time. Only the anonymous distribution appears after the participation threshold.' : 'Students contribute on their own time. Open this section later from Recent homework links to approve or hide entries.'}</p>
-                <div className="mt-3">
-                  <SharedAssignmentActivityPanel
-                    mode="teacher"
-                    activity={qrShareModal.sharedActivity}
-                    mailbox={{ url: mbConfig?.url, id: qrShareModal.packId, secret: qrShareModal.packSecret }}
-                    admin={mbConfig?.admin || ''}
-                    addToast={addToast}
-                  />
-                </div>
-              </details>
-            )}
-            <p className="text-[11px] text-slate-500 mb-3">{qrShareSvg ? (t('share_collect.ready_to_scan') || 'Ready to scan') : qrShareError ? (t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below') : (t('share_collect.validating_qr_code') || 'Validating QR code...')} &middot; {(t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : (t('share_collect.expires_default_window') || '14 days after creation'))}</p>
-            <div className="mb-2 grid grid-cols-2 gap-2">
-              <button onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
-                {t('share_collect.test_as_student') || 'Test as student'} <ExternalLink size={12}/>
-              </button>
-              <button onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `Teacher-prepared resources · ${qrShareModal.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'} · No live session`)} disabled={!qrShareSvg} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
-                {t('share_collect.print_qr') || 'Print QR'} <Printer size={12}/>
-              </button>
-            </div>
-            <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all">
-              {qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
-            </button>
-            <input aria-label={t('share_collect.link_aria') || 'Selectable homework link'} readOnly value={qrShareModal.url || ''} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-500" />
-            {qrShareModal.type !== 'assignment-pack' && (
-              <button onClick={revokeHomeworkAssignment} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 transition-all">
-                {t('share_collect.revoke_homework_link') || 'Revoke homework link'} <Trash2 size={12}/>
-              </button>
-            )}
-            {qrShareModal.type === 'assignment-pack' && <p className="text-[11px] text-amber-800 mt-2">{t('share_collect.self_contained_links_cannot_be_remotely') || 'Self-contained links cannot be remotely revoked; their built-in expiration still applies.'}</p>}
-            {qrShareModal.type === 'assignment' && (
-              <button onClick={() => { createSelfContainedHomeworkLink(); }} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">
-                {t('share_collect.make_self_contained_version_no_accounts') || 'Make self-contained version (no accounts needed)'} <Share2 size={12}/>
-              </button>
-            )}
-            {(qrShareModal.type === 'assignment' || qrShareModal.type === 'assignment-pack') && (
-              <button onClick={() => { hostPackOnMailbox(); }} disabled={mbBusy} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
-                {mbBusy ? 'Uploading to your mailbox…' : 'Host on Class Mailbox (small QR, images OK)'} <Share2 size={12}/>
-              </button>
-            )}
-            {qrShareModal.type === 'assignment-pack-hosted' ? (
-              <p className="text-[11px] text-slate-500 mt-3">{t('share_collect.the_activity_images_included_is_stored') || 'The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and'} {qrShareModal.aiPolicy === 'student-byok' ? 'may connect their own AI provider for that tab' : 'AI stays off'}. Delete it any time from the "AlloFlow Class Mailbox" Drive folder.</p>
-            ) : qrShareModal.type === 'assignment-pack' ? (
-              <p className="text-[11px] text-slate-500 mt-3">{t('share_collect.the_whole_activity_travels_inside_the') || 'The whole activity travels inside the link — students need no account, nothing is stored online, and'} {qrShareModal.aiPolicy === 'student-byok' ? 'they may connect their own AI provider for that tab' : 'AI stays off'}.{typeof qrShareModal.sizeChars === 'number' ? ` Link size ~${Math.max(1, Math.round(qrShareModal.sizeChars / 1024))} KB${qrShareModal.sizeChars > 8000 ? ' — very long links can be truncated by some apps; Google Classroom and email handle them well.' : '.'}` : ''}</p>
-            ) : (
-              <p className="text-[11px] text-slate-500 mt-3">{qrShareModal.aiPolicy === 'student-byok' ? 'Students open teacher-prepared resources and may connect their own AI provider for that tab.' : 'Students open teacher-prepared resources with AI generation off.'}</p>
-            )}
-          </div>
+          <HomeworkQrDialogView
+        __alloDisplayName="Homework QR"
+        __alloOverlay={false}
+        __alloOnClose={() => setQrShareModal(null)}
+        {...{
+        BookOpen, ClipboardList, Copy, ExternalLink, Printer, Share2, SharedAssignmentActivityPanel, Trash2,
+        X, addToast, copyToClipboard, createSelfContainedHomeworkLink, homeworkQrDialogRef, hostPackOnMailbox, mbBusy, mbConfig,
+        printQrSheet, qrShareError, qrShareModal, qrShareSvg, revokeHomeworkAssignment, setQrShareModal, t, testHomeworkAsStudent
+        }}
+      />
         </div>
       )}
       {showSessionStartOptions && (
@@ -49759,262 +49911,20 @@ ${_alloActivityContext(activity)}
       )}
       {mbPanelOpen && (
         <div ref={mailboxPanelRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label={t('mailbox.live_dialog_aria') || 'Class Mailbox live session'} onClick={() => setMbPanelOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setMbPanelOpen(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
-            <h2 className="text-xl font-black text-slate-900 mb-1">{t('mailbox.live_class_without_accounts') || 'Live class without accounts'} <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 align-middle">beta</span></h2>
-            <p className="text-xs text-slate-600 mb-3">{t('mailbox.runs_from_a_google_apps_script') || 'Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.'}</p>
-            <div className="space-y-2 mb-4">
-              <details className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
-                <summary className="cursor-pointer font-black">{t('mailbox.why_might_google_say_unverified_app') || 'Why might Google say “unverified app” or “unsafe”?'}</summary>
-                <div className="mt-2 space-y-2 leading-relaxed">
-                  <p>{t('mailbox.google_can_show_this_warning_because') || 'Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when'} <b>{t('mailbox.you_created_this_apps_script_project') || 'you created this Apps Script project'}</b>{t('mailbox.pasted_code_from_the_alloflow_copy') || ', pasted code from the AlloFlow copy shown here, and recognize the Google account and project name. Cancel if the prompt is unexpected or belongs to someone else.'}</p>
-                  <p>{t('mailbox.the_script_requests_google_drive_access') || 'The script requests Google Drive access to create the private “AlloFlow Class Mailbox” folder for hosted activities, admin-token recovery, and student submissions. You can review the code before authorizing and revoke access later from your Google Account connections.'}</p>
-                  <a href="https://developers.google.com/apps-script/guides/services/authorization" target="_blank" rel="noopener noreferrer" className="font-bold text-amber-900 underline underline-offset-2">{t('mailbox.google_s_apps_script_authorization_explanation') || 'Google’s Apps Script authorization explanation'}</a>
-                </div>
-              </details>
-              <details className="rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-950">
-                <summary className="cursor-pointer font-black">{t('mailbox.k_12_privacy_ferpa_checklist_is') || 'K–12 privacy / FERPA checklist: is this appropriate for my class?'}</summary>
-                <div className="mt-2 space-y-2 leading-relaxed">
-                  <p><b>{t('mailbox.a_google_account_alone_does_not') || 'A Google account alone does not make a workflow FERPA-compliant.'}</b> {t('mailbox.use_a_school_managed_google_workspace') || 'Use a school-managed Google Workspace for Education account when available, confirm that Apps Script and this workflow are approved by your school or district, and follow local consent, records, security, and retention policies. If your administrator blocks “Anyone” web apps, ask IT rather than bypassing that control with a personal account.'}</p>
-                  <ul className="list-disc ml-4 space-y-1">
-                    <li>{t('mailbox.use_student_codenames_do_not_ask') || 'Use student codenames; do not ask students to enter names, emails, disability information, or other unnecessary identifiers.'}</li>
-                    <li>{t('mailbox.treat_each_qr_link_as_a') || 'Treat each QR/link as a classroom invitation: anyone who receives it can attempt to join or submit until it expires.'}</li>
-                    <li>{t('mailbox.keep_the_admin_token_private_rotate') || 'Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.'}</li>
-                    <li>{t('mailbox.use_only_for_students_and_purposes') || 'Use only for students and purposes approved by your school. This checklist is practical guidance, not a legal determination.'}</li>
-                  </ul>
-                  <a href="https://studentprivacy.ed.gov/frequently-asked-questions" target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-900 underline underline-offset-2">{t('mailbox.u_s_department_of_education_student') || 'U.S. Department of Education student-privacy FAQ'}</a>
-                </div>
-              </details>
-              <details className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
-                <summary className="cursor-pointer font-black">{t('mailbox.what_is_stored_where_and_for') || 'What is stored, where, and for how long?'}</summary>
-                <ul className="mt-2 list-disc ml-4 space-y-1 leading-relaxed">
-                  <li>{t('mailbox.live_messages_and_class_state_bounded') || 'Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.'}</li>
-                  <li>{t('mailbox.session_recovery_marker_and_random_secret') || 'Session recovery marker and random secret: Script Properties for at most 6 hours.'}</li>
-                  <li>{t('mailbox.hosted_homework_and_completed_mailbox_submission') || 'Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.'}</li>
-                  <li>{t('mailbox.admin_token_recovery_note_the_same') || 'Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.'}</li>
-                  <li>{t('mailbox.no_mailbox_content_is_stored_on') || 'No mailbox content is stored on an AlloFlow-operated server.'}</li>
-                </ul>
-              </details>
-<details className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-950">
-                <summary className="cursor-pointer font-black">{t('mailbox.how_do_student_saving_and_submissions') || 'How do student saving and submissions work in each mode?'}</summary>
-                <ul className="mt-2 list-disc ml-4 space-y-1 leading-relaxed">
-                  <li><b>{t('mailbox.mailbox_live_session_or_mailbox_hosted') || 'Mailbox live session or mailbox-hosted homework:'}</b> {t('mailbox.save_submit_uploads_json') || 'Save & Submit uploads the complete student-work JSON automatically to your private Drive mailbox folder. If delivery fails, the student receives a backup download instead.'}</li>
-                  <li><b>{t('mailbox.standard_firebase_live_session') || 'Standard Firebase live session:'}</b> {t('mailbox.live_quiz_answer_content_travels_peer') || 'live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.'}</li>
-                  <li><b>{t('mailbox.self_contained_non_live_homework') || 'Self-contained/non-live homework:'}</b> {t('mailbox.work_stays_on_the_student_device') || 'work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.'}</li>
-                  <li><b>{t('mailbox.teacher_review') || 'Teacher review:'}</b> {t('mailbox.open_drive_alloflow_class_mailbox_download') || 'open Drive → “AlloFlow Class Mailbox,” download the submission JSON files, then use AlloFlow’s Submission Inbox to import, review, and grade them.'}</li>
-                </ul>
-              </details>
-            </div>
-            {!mbConfig && (
-              <div>
-<p className="text-xs text-slate-700 mb-2 font-bold">{t('mailbox.one_time_setup_about_3_5') || 'One-time setup (about 3–5 minutes):'}</p>
-                <ol className="text-xs text-slate-600 list-decimal ml-4 space-y-1.5 mb-3">
-                  <li>{t('mailbox.sign_into_the') || 'Sign into the'} <b>{t('mailbox.school_managed_google_account') || 'school-managed Google account'}</b> {t('mailbox.that_should_own_the_mailbox_and') || 'that should own the mailbox and confirm this use is allowed by your school or district.'}</li>
-                  <li>{t('mailbox.copy_and_review_the_mailbox_script') || 'Copy and review the mailbox script:'} <button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold text-indigo-700 underline underline-offset-2 disabled:cursor-wait disabled:text-slate-500">{mailboxScriptState.status === 'loading' ? 'preparing script code…' : mailboxScriptState.status === 'error' ? 'script unavailable' : 'copy script code'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold text-indigo-700 underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.or') || '(or'} <a href="https://alloflow-cdn.pages.dev/apps_script/session_mailbox/Code.gs" target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-700 underline underline-offset-2">{t('mailbox.view_the_same_source_online') || 'view the same source online'}</a>).</li>
-                  <li>{t('mailbox.open') || 'Open'} <a href="https://script.new" target="_blank" rel="noopener noreferrer" className="font-mono font-bold text-indigo-700 underline underline-offset-2">script.new</a>{t('mailbox.paste_over_the_starter_code_name') || ', paste over the starter code, name it “AlloFlow Class Mailbox,” and save.'}</li>
-                  <li>{t('mailbox.choose_deploy_new_deployment_web_app') || 'Choose Deploy → New deployment → Web app → Execute as'} <b>Me</b> {t('mailbox.access') || '→ access'} <b>{t('mailbox.anyone') || 'Anyone'}</b> {t('mailbox.deploy_review_the_authorization_prompt_if') || '→ Deploy. Review the authorization prompt; if Google shows the unpublished-app warning, use the explanation above before deciding whether to continue.'}</li>
-                  <li>{t('mailbox.copy_the_web_app_url_ending') || 'Copy the web app URL ending in'} <b>/exec</b>{t('mailbox.paste_it_below_then_run_the') || ', paste it below, then run the self-test.'}</li>
-                </ol>
-                <input value={mbUrlInput} onChange={e => setMbUrlInput(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" className="w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono" aria-label={t('mailbox.webapp_url_aria') || 'Class Mailbox web app URL'} />
-                <input value={mbAdminInput} onChange={e => setMbAdminInput(e.target.value)} placeholder={t('mailbox.admin_token_placeholder') || 'Admin token (only when reconnecting from a new device)'} className="w-full text-xs border border-slate-200 rounded-lg p-2 mb-2 font-mono" aria-label={t('mailbox.admin_token_aria') || 'Class Mailbox admin token (optional)'} />
-                <button onClick={connectMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60">
-                  {mbBusy ? 'Testing…' : 'Connect & self-test'}
-                </button>
-              </div>
-            )}
-            {/* Script freshness: the server reports its VERSION on the connect
-                self-test; older deployments keep working (resource push +
-                hand-raise) but lack the session-doc store that powers polls,
-                quiz, groups and Pictionary — tell the teacher how to update
-                (same URL, ~1 minute). */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 19 && (
-              <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. Update it to v18 for current surveys, assignments, live visual-organizer readiness, secure live tools, and automatic student submissions (about 1 minute, the URL stays the same):</p>
-                <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
-                  <li><button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold underline underline-offset-2 disabled:cursor-wait disabled:text-amber-700">{mailboxScriptState.status === 'loading' ? 'Preparing the updated script…' : mailboxScriptState.status === 'error' ? 'Updated script unavailable' : 'Copy the updated script'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'}</li>
-                  <li>{t('mailbox.deploy_manage_deployments_pencil_icon_version') || 'Deploy → Manage deployments → pencil icon → Version:'} <b>{t('mailbox.new_version') || 'New version'}</b> {t('mailbox.deploy') || '→ Deploy.'}</li>
-                  <li>{t('mailbox.press_connect_self_test_again') || 'Press "Connect & self-test" here again — this notice disappears at v13.'}</li>
-                </ol>
-              </div>
-            )}
-            {mbConfig && !mbLive && mbResumable.length > 0 && (
-              <div className="mb-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-emerald-800 mb-2">{mbResumable.length === 1 ? 'A live session is still running:' : mbResumable.length + ' live sessions are still running:'}</p>
-                {mbResumable.map(s => (
-                  <button key={s.c} onClick={() => resumeMailboxLiveSession(s)} className="w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg p-2.5 transition-all mb-1">
-                    <span>{t('mailbox.resume_class') || 'Resume class'} {String(s.c).toUpperCase()}</span>
-                    <span aria-hidden="true">↻</span>
-                  </button>
-                ))}
-                <button onClick={() => setMbResumable([])} className="w-full text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2 mt-1">{t('mailbox.start_a_new_session_instead') || 'Start a new session instead'}</button>
-              </div>
-            )}
-            {mbConfig && !mbLive && (
-              <div>
-                <div className="mb-2 text-[11px] text-slate-500">
-                  <p className="break-all">{t('mailbox.connected_mailbox') || 'Connected mailbox:'} <span className="font-mono">{mbConfig.url}</span></p>
-                  <p className="mt-1 font-semibold text-emerald-700">{t('mailbox.script_v') || 'Script v'}{mbConfig.v || '?'} · {mbConfig.latencyMs || '?'}{t('mailbox.ms_round_trip_security_check_ready') || 'ms round trip · security check ready'}</p>
-                </div>
-                {mbConfig.admin && (
-                  <div className="mb-3 bg-slate-50 border border-slate-200 rounded-lg p-2">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{t('mailbox.admin_token_save_it_like_a') || 'Admin token — save it like a password'}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono text-slate-700 truncate flex-1" title={mbShowAdmin ? mbConfig.admin : 'Hidden'}>
-                        {mbShowAdmin ? mbConfig.admin : '••••••••••••••••••••••••'}
-                      </span>
-                      <button onClick={() => setMbShowAdmin(v => !v)} className="p-1.5 text-slate-600 hover:text-slate-900" title={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'} aria-label={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'}>
-                        {mbShowAdmin ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                      <button onClick={() => copyToClipboard(mbConfig.admin)} className="p-1.5 text-indigo-700 hover:text-indigo-900" title={t('mailbox.copy_admin_token') || 'Copy admin token'} aria-label={t('mailbox.copy_admin_token') || 'Copy admin token'}>
-                        <Copy size={15} />
-                      </button>
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1">{t('mailbox.students_never_receive_this_token_the') || 'Students never receive this token. The QR contains only a one-session join secret.'}</p>
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={rotateMailboxAdmin} disabled={mbBusy || mbResumable.length > 0} className="flex-1 text-[10px] font-bold border border-slate-300 rounded-md px-2 py-1.5 disabled:opacity-50" title={mbResumable.length ? 'Close active sessions before rotating' : 'Invalidate the old admin token'}>{t('mailbox.rotate_token') || 'Rotate token'}</button>
-                      {mbResumable.length > 0 && <button onClick={closeAllMailboxSessions} disabled={mbBusy} className="flex-1 text-[10px] font-bold border border-rose-300 text-rose-700 rounded-md px-2 py-1.5 disabled:opacity-50">{t('mailbox.close_all_sessions') || 'Close all sessions'}</button>}
-                    </div>
-                  </div>
-                )}
-<p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-900">{t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.'}</p>
-                <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
-                  {mbBusy ? 'Starting…' : 'Teach live'}
-                </button>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <button onClick={exportMailboxConfig} className="flex-1 text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">{t('mailbox.save_setup_to_a_file') || 'Save setup to a file'}</button>
-                  <label className="flex-1 cursor-pointer text-center text-[11px] font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900">
-                    {t('mailbox.restore_from_a_file') || 'Restore from a file'}
-                    <input
-                      type="file"
-                      accept="application/json,.json"
-                      className="sr-only"
-                      onChange={(event) => { const file = event.target.files && event.target.files[0]; event.target.value = ''; importMailboxConfig(file); }}
-                    />
-                  </label>
-                </div>
-                <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
-                  {t('mailbox.the_saved_file_holds_an_access') || 'The saved file holds an access key for your mailbox. Keep it somewhere you would keep a password, and it will restore this setup on another device or after storage is cleared.'}
-                </p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => { setMbUrlInput(mbConfig.url); setMbConfig(null); setMbStatus(''); }} className="flex-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">{t('mailbox.change_mailbox') || 'Change mailbox'}</button>
-                  <button onClick={() => { /* Clears the BRIDGE as well as the cache. Without this the hydrate on next load would resurrect a mailbox the teacher just forgot. */ alloPersistMailboxConfig(null); setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">{t('mailbox.forget_mailbox') || 'Forget mailbox'}</button>
-                </div>
-              </div>
-            )}
-            {mbConfig && mbLive && (
-              <div>
-                <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 mb-3 text-center cursor-pointer" onClick={() => copyToClipboard(mbLive.code)} title={t('mailbox.copy_class_code') || 'Copy class code'}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{t('mailbox.class_code_tap_to_copy') || 'Class code (tap to copy)'}</p>
-                  <p className="text-4xl font-black tracking-[0.3em] text-indigo-800">{mbLive.code}</p>
-                </div>
-                {mbQrSvg ? (
-                  <div className="flex justify-center mb-3">
-                    <div className="bg-white border border-slate-200 rounded-xl p-3 w-48 h-48 [&_svg]:w-full [&_svg]:h-full shadow-sm" dangerouslySetInnerHTML={{ __html: mbQrSvg }} />
-                  </div>
-                ) : (
-                  <p className="mb-3 text-center text-xs font-bold text-indigo-700">{t('mailbox.validating_live_session_qr') || 'Validating live-session QR...'}</p>
-                )}
-                <p className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? `Ready to scan · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off'} · Active until you end the session` : 'The class code remains available while the QR loads.'}</p>
-                <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
-                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
-                    {t('mailbox.copy_link') || 'Copy link'} <Copy size={12}/>
-                  </button>
-                  <button onClick={() => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[11px] font-bold text-emerald-900 hover:border-emerald-500">
-                    {t('mailbox.test') || 'Test'} <ExternalLink size={12}/>
-                  </button>
-                  <button onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, `Class Mailbox QR join · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'}`, mbLive.code)} disabled={!mbQrSvg} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-[11px] font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
-                    {t('mailbox.print') || 'Print'} <Printer size={12}/>
-                  </button>
-                  <button onClick={() => { setMbPanelOpen(false); setShowSessionModal(true); }} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-[11px] font-bold text-cyan-900 hover:border-cyan-500">
-                    {t('mailbox.project') || 'Project'} <Maximize size={12}/>
-                  </button>
-                </div>
-                <input aria-label={t('mailbox.join_link_aria') || 'Selectable mailbox live join link'} readOnly value={mbLive.joinUrl || ''} onFocus={event => event.target.select()} className="mb-3 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
-                <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{t('mailbox.connected_students') || 'Connected students ('}{Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
-                  {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">{t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'}</p>}
-                  {Object.entries(mbRoster).map(([uid, s]) => {
-                    const stale = mbNow && s.at && (mbNow - s.at > 150000);
-                    return (
-                      <div key={uid} className={`flex items-center justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`}>
-                        <span className="font-bold truncate">{s.name}{stale ? ' · away?' : ''}</span>
-                        <span className="flex items-center gap-1 shrink-0">
-                          {s.rtc && !stale && <span aria-label={t('mailbox.rtc_aria') || 'real-time connection'} title={t('mailbox.rtc_title') || 'Real-time connection'}>⚡</span>}
-                          {s.hand && <span aria-label={t('mailbox.hand_aria') || 'hand raised'} title={t('mailbox.hand_title') || 'Hand raised'}>✋</span>}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <button onClick={() => setMbMode(m => m === 'sync' ? 'async' : 'sync')} className={`w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`}>
-                  {mbMode === 'sync' ? 'Teacher-led: students follow your screen (tap to switch)' : 'Student-paced: students explore independently (tap to switch)'}
-                </button>
-                <button onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
-                  {t('mailbox.re_send_full_pack_troubleshooting_it') || 'Re-send full pack (troubleshooting — it already syncs automatically)'}
-                </button>
-                <p className="text-[10px] text-slate-400 mb-2 text-center">{t('mailbox.your_resource_pack_shares_to_the') || 'Your resource pack shares to the class automatically, like a regular live session.'}</p>
-                <div className="border-t border-indigo-100 pt-2 mb-2">
-                  {mbDirectionsDraft ? (
-                    <div className="space-y-1 mb-2">
-                      <input value={mbDirectionsDraft.title || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), title: e.target.value }))} placeholder={t('directions.title_placeholder') || "Title (e.g. Tonight's homework)"} aria-label={t('directions.title_aria') || 'Directions title'} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
-                      <textarea value={mbDirectionsDraft.body || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), body: e.target.value }))} placeholder={t('directions.body_placeholder') || 'Directions for students: the steps, and what finished work looks like.'} aria-label={t('directions.body_aria') || 'Directions for students'} rows={3} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
-                      <input value={mbDirectionsDraft.due || ''} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), due: e.target.value }))} placeholder={t('directions.due_placeholder') || 'Due (optional, e.g. Friday)'} aria-label={t('directions.due_aria') || 'Due date'} className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800" />
-                      <button onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-1.5 transition-all disabled:opacity-60">
-                        <Sparkles size={12} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
-                      </button>
-                      <button onClick={() => setShowDirectionsComposer(true)} className="w-full text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 hover:border-amber-400 rounded-lg p-1 transition-all">
-                        🎯 {(mbDirectionsDraft?.choiceBoard?.enabled ? 'Edit goals and activity choices (full composer)' : (mbDirectionsDraft?.objectives?.length ? (t('directions.edit_goals_n', { count: mbDirectionsDraft.objectives.length }) || (mbDirectionsDraft.objectives.length + ' goal(s) — edit in full composer')) : (t('directions.add_goals') || 'Add goals or activity choices (full composer)')))}
-                      </button>
-                      <div className="flex gap-1">
-                        <button onClick={addDirectionsToPack} className="flex-1 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-1.5 transition-all">{t('mailbox.add_to_pack') || 'Add to pack'}</button>
-                        <button onClick={() => setMbDirectionsDraft(null)} className="text-[11px] text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-2 transition-all">{t('mailbox.cancel') || 'Cancel'}</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button onClick={() => setMbDirectionsDraft({})} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all mb-1">
-                      <ClipboardList size={13} /> {t('mailbox.write_assignment_directions') || 'Write assignment directions'}
-                    </button>
-                  )}
-                  <button onClick={sendPackHome} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-50 border border-amber-300 hover:border-amber-400 rounded-lg p-2 transition-all disabled:opacity-60">
-                    <FolderDown size={13} /> {t('mailbox.send_home_saves_on_student_devices') || 'Send home (saves on student devices)'}
-                  </button>
-                  <p className="text-[10px] text-slate-400 mt-1 text-center">{t('mailbox.students_keep_the_pack_directions_on') || 'Students keep the pack + directions on their device for homework — no code needed at home.'}</p>
-                  {Object.keys(mbHwEvidence).length > 0 && (
-                    <div className="border-t border-indigo-100 pt-2 mt-2" role="region" aria-label={t('takehome.evidence_title') || 'Homework check-ins'}>
-                      <p className="text-[10px] font-bold text-indigo-700 mb-1">📥 {t('takehome.evidence_title') || 'Homework check-ins'} <span className="font-normal text-slate-400">({t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade'})</span></p>
-                      {Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => {
-                        // Split the count: goals the device observed vs goals the
-                        // student ticked. Both are formative — but "3 of 4 recorded"
-                        // and "3 of 4 self-checked" are different claims, and the
-                        // panel used to render them identically.
-                        const _obs = ev.objectives.filter(o => o.done && o.confirmed).length;
-                        const _self = ev.objectives.filter(o => o.done && !o.confirmed).length;
-                        return (
-                          <p key={ev.uid + '|' + ev.directionsId} className="text-[10px] text-slate-600 truncate" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label + (o.done ? (o.confirmed ? ' (recorded on device)' : ' (self-checked)') : '')).join('\n')}>
-                            <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
-                            {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
-                            {(_obs > 0 || _self > 0) && (
-                              <span className="text-slate-400">
-                                {' ('}
-                                {_obs > 0 && <span className="text-emerald-700">{_obs + ' ' + (t('takehome.evidence_recorded') || 'recorded')}</span>}
-                                {_obs > 0 && _self > 0 ? ', ' : ''}
-                                {_self > 0 && <span>{_self + ' ' + (t('takehome.evidence_self') || 'self-checked')}</span>}
-                                {')'}
-                              </span>
-                            )}
-                            {ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : ''}
-                            {' · ' + ev.title}
-                          </p>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-                <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">{t('mailbox.end_session') || 'End session'}</button>
-              </div>
-            )}
-            {mbStatus && <p className="text-xs text-slate-600 mt-3">{mbStatus}</p>}
-          </div>
+          <ClassMailboxSetupView
+        __alloDisplayName="Class Mailbox"
+        __alloOverlay={false}
+        __alloOnClose={() => setMbPanelOpen(false)}
+        {...{
+        ClipboardList, Copy, ExternalLink, Eye, EyeOff, FolderDown, Maximize, Printer,
+        Sparkles, X, addDirectionsToPack, alloPersistMailboxConfig, closeAllMailboxSessions, connectMailbox, copyMailboxScriptSource, copyToClipboard,
+        deriveDirectionsDraft, directionsDeriving, exportMailboxConfig, importMailboxConfig, mailboxScriptState, mbAdminInput, mbBusy, mbConfig,
+        mbDirectionsDraft, mbHwEvidence, mbLive, mbMode, mbNow, mbQrSvg, mbResumable, mbRoster,
+        mbShowAdmin, mbStatus, mbUrlInput, openStudentQrPreview, printQrSheet, requestEndLiveSession, resumeMailboxLiveSession, retryMailboxScriptSource,
+        rotateMailboxAdmin, sendPackHome, setMbAdminInput, setMbConfig, setMbDirectionsDraft, setMbMode, setMbPanelOpen, setMbResumable,
+        setMbShowAdmin, setMbStatus, setMbUrlInput, setShowDirectionsComposer, setShowSessionModal, shareFullPackToMailbox, startMailboxLiveSession, t
+        }}
+      />
         </div>
       )}
       {showLiveHostWarning && (
@@ -51277,567 +51187,23 @@ ${_alloActivityContext(activity)}
                 </span>
               </button>
             </div>
-            <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final') ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40 transition-all group">
-                {guidedMode && guidedActiveSteps[guidedStep]?.id === 'package-deliver' && (
-                  <div role="region" aria-labelledby="guided-delivery-panel-title" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
-                    <div id="guided-delivery-panel-title" className="text-sm font-black text-indigo-900">Preview, Package &amp; Deliver</div>
-                    <p className="mt-1 text-[11px] leading-relaxed text-slate-600">Choose formats by purpose. You can use more than one route, for example an accessible Word handout plus a Homework QR.</p>
-                    <div role="list" aria-label={t('a11y.export_families') || 'Available export and delivery families'} className="mt-2 grid gap-2">
-                      {GUIDED_DELIVERY_GROUPS.map(group => (
-                        <div role="listitem" key={group.id} className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-2">
-                          <div className="text-[11px] font-black text-indigo-900">{group.label}</div>
-                          <div className="mt-0.5 text-[10px] leading-relaxed text-slate-600">{group.options.join(' · ')}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="mt-2 text-[10px] leading-relaxed text-slate-500">QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.</p>
-                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <button type="button" onClick={() => openExportPreview('print')} className="min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600">Open Document Builder</button>
-                      <button type="button" onClick={createGuidedHomeworkShare} className="min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-[11px] font-bold text-indigo-800 hover:bg-indigo-50">Create Homework QR</button>
-                      {/* W3 2026-08-16 (N8): the second door to a live CLASS session.
-                          MODE_AUDIT_2026-08-03.md F1 excluded parents and independent
-                          learners from starting one, and gated both header entries
-                          (view_header_source.jsx:586 and :1481) accordingly. This
-                          guided-mode delivery button had no gate, so family mode and
-                          independent mode could still start a class session from the
-                          Preview, Package & Deliver step. Same exclusion as the header. */}
-                      {!isIndependentMode && !isParentMode && (
-                      <button type="button" onClick={() => setShowSessionStartOptions(true)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-900 hover:bg-emerald-100">Teach live</button>
-                      )}
-                      <button type="button" disabled={!((qrShareModal && qrShareModal.url) || (Array.isArray(recentQrShares) && recentQrShares.some(share => share && share.url)))} onClick={() => { const share = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find(item => item && item.url)) || null); if (share?.url) openStudentQrPreview(share.url, 'homework link as a student'); }} className="min-h-10 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50">Test latest student link</button>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center justify-between mb-1 px-3 pt-2 text-white/90">
-                    <div className="flex items-center gap-2">
-                        <input aria-label={t('common.toggle_is_auto_config_enabled')}
-                            data-help-key="fullpack_auto_config"
-                            type="checkbox"
-                            id="autoConfigToggle"
-                            checked={isAutoConfigEnabled}
-                            onChange={(e) => setIsAutoConfigEnabled(e.target.checked)}
-                            className="w-3.5 h-3.5 text-purple-600 rounded cursor-pointer border-transparent focus:ring-offset-transparent focus:ring-white/50"
-                        />
-                        <label htmlFor="autoConfigToggle" className="text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none flex items-center gap-1">
-                            <Sparkles size={10} className="text-yellow-700 fill-current"/> {t('fullpack.auto_configure')}
-                        </label>
-                    </div>
-                    {isAutoConfigEnabled && (
-                        <select aria-label={t('common.selection')}
-                            data-help-key="fullpack_resource_count"
-                            value={resourceCount}
-                            onChange={(e) => setResourceCount(e.target.value)}
-                            className="text-[11px] font-bold text-indigo-800 bg-white/90 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-white border-transparent cursor-pointer shadow-sm"
-                            title={t('fullpack.limit_tooltip')}
-                        >
-                            <option value="Auto">{t('fullpack.option_auto')}</option>
-                            <option value="5">{t('fullpack.option_short')}</option>
-                            <option value="8">{t('fullpack.option_standard')}</option>
-                            <option value="12">{t('fullpack.option_deep')}</option>
-                            <option value="All">{t('fullpack.option_all')}</option>
-                        </select>
-                    )}
-                    {isTeacherMode && !isParentMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && (
-                        <select
-                            value={fullPackTargetGroup}
-                            onChange={(e) => setFullPackTargetGroup(e.target.value)}
-                            aria-label={t('fullpack.group_tooltip') || 'Target group for generation'}
-                            className="text-[11px] font-bold text-purple-800 bg-white/90 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-purple-300 border-transparent cursor-pointer shadow-sm ms-1"
-                            title={t('fullpack.group_tooltip') || 'Generate for a specific group or all groups'}
-                        >
-                            <option value="none">{t('fullpack.group_current') || 'Current Settings'}</option>
-                            <option value="all">{t('fullpack.group_all') || '\u{1F3AF} All Groups'}</option>
-                            {Object.entries(rosterKey.groups).map(([gid, g]) => (
-                                <option key={gid} value={gid}>{g.name}</option>
-                            ))}
-                        </select>
-                    )}
-                </div>
-                {/* X6 (2026-08-17): keyless-shell doorway — same disable-with-doorway
-                    contract as the sidebar generate buttons (AiSetupNotice). */}
-                {!aiCapability.text && (
-                  <button type="button" data-help-key="sidebar_ai_setup_notice"
-                    onClick={() => { try { setShowAIBackendModal(true); } catch (_) {} }}
-                    className="w-full flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-left text-xs font-semibold text-amber-900 hover:bg-amber-100">
-                    <span aria-hidden="true">{'✨'}</span>
-                    <span>{t('sidebar.needs_ai_setup') || 'Needs AI setup'}{' · '}{t('sidebar.needs_ai_setup_cta') || 'Tap to connect an AI, or use AlloFlow inside Gemini Canvas'}</span>
-                  </button>
-                )}
-                <button
-                    aria-label={fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack_aria') || 'Generate full pack from the reviewed plan') : (t('fullpack.action_plan_aria') || 'Plan Full Pack')}
-                    data-help-key="fullpack_generate"
-                    data-testid="full-pack-primary-action"
-                    onClick={() => { selectToolFromCatalog('package-deliver'); return fullPackRun?.status === 'ready' ? handleApproveFullPack() : handlePlanFullPack(); }}
-                    disabled={!hasSourceOrAnalysis || isProcessing || !aiCapability.text} aria-busy={isProcessing}
-                    className={`group w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${fullPackRun?.status === 'ready' ? 'ring-2 ring-indigo-300/80 shadow-md shadow-indigo-200/70' : ''}`}
-                >
-                    <div>
-                        <span className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-700 group-hover:from-indigo-600 group-hover:to-purple-600 flex items-center gap-2">
-                            {isProcessing ? <RefreshCw className="animate-spin text-indigo-600" size={18} /> : <Sparkles size={18} className="text-yellow-600 fill-yellow-600" />}
-                            {fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack') || 'Generate full pack') : (t('fullpack.action_plan') || 'Plan full pack')}
-                        </span>
-                        <span className="text-[11px] text-slate-600 block mt-0.5">{fullPackRun?.status === 'ready' ? (t('fullpack.action_generate_pack_help') || 'Plan reviewed? Generate the full pack with these exact resources.') : (t('fullpack.action_plan_help') || 'Review resources, settings, and estimated generations before creating them.')}</span>
-                    </div>
-                    <span
-                        data-testid="full-pack-next-step-arrow"
-                        aria-hidden="true"
-                        className={`shrink-0 rounded-full transition-all duration-200 motion-reduce:transition-none group-hover:translate-x-1 ${fullPackRun?.status === 'ready' ? 'bg-indigo-100 p-1 ring-4 ring-indigo-300/60 shadow-[0_0_18px_rgba(79,70,229,0.8)] motion-safe:animate-pulse' : ''}`}
-                    >
-                        <ArrowRight size={18} className={fullPackRun?.status === 'ready' ? 'text-indigo-800 drop-shadow-sm' : 'text-indigo-300 group-hover:text-indigo-600'} />
-                    </span>
-                </button>
-                {['running', 'retrying', 'planning'].includes(fullPackRun?.status) && (
-                    <button
-                        type="button"
-                        data-testid="full-pack-stop"
-                        onClick={handleStopFullPack}
-                        className="mt-2 w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 flex items-center justify-center gap-2"
-                        title={t('fullpack.stop_generation') || 'Stop generation'}
-                    >
-                        <StopCircle size={15} />
-                        {t('fullpack.stop_generation') || 'Stop generation'}
-                    </button>
-                )}
-                {fullPackRun && (() => {
-                    const statusLabels = { planning: t('fullpack.status_planning') || 'Planning', ready: t('fullpack.status_ready') || 'Ready for review', queued: t('fullpack.status_queued') || 'Queued', reuse: t('fullpack.status_reuse') || 'Reuse · no AI call', running: t('fullpack.status_running') || 'Generating', retrying: t('fullpack.status_retrying') || 'Retrying', landed: t('fullpack.status_complete') || 'Complete', completed: t('fullpack.status_complete') || 'Complete', partial: t('fullpack.status_partial') || 'Partially complete', failed: t('fullpack.status_failed') || 'Needs attention', interrupted: t('fullpack.status_interrupted') || 'Interrupted', stopped: t('fullpack.status_stopped') || 'Stopped' };
-                    const statusStyles = {
-                        planning: 'border-blue-200 bg-blue-50 text-blue-800',
-                        ready: 'border-indigo-200 bg-indigo-50 text-indigo-800',
-                        queued: 'border-slate-200 bg-slate-50 text-slate-600',
-                        reuse: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-                        running: 'border-blue-200 bg-blue-50 text-blue-800',
-                        retrying: 'border-violet-200 bg-violet-50 text-violet-800',
-                        landed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-                        completed: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-                        partial: 'border-amber-200 bg-amber-50 text-amber-900',
-                        failed: 'border-rose-200 bg-rose-50 text-rose-800',
-                        interrupted: 'border-amber-200 bg-amber-50 text-amber-900',
-                        stopped: 'border-slate-300 bg-slate-100 text-slate-700',
-                    };
-                    const _generationHelpersModule = window.AlloModules && window.AlloModules.GenerationHelpers;
-                    const fullPackEditableTypes = (() => {
-                        const fallback = ['analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames', 'faq', 'timeline', 'persona', 'concept-sort', 'brainstorm', 'quiz', 'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart', 'alignment-report', 'math', 'gemini-bridge'];
-                        const supplied = _generationHelpersModule && typeof _generationHelpersModule.getFullPackEditableResourceTypes === 'function'
-                            ? _generationHelpersModule.getFullPackEditableResourceTypes()
-                            : fallback;
-                        const cleaned = Array.isArray(supplied) ? supplied.map(type => String(type || '').trim()).filter(Boolean) : fallback;
-                        return Array.from(new Set(cleaned.length ? cleaned : fallback));
-                    })();
-                    const buildRows = (run) => {
-                        const resources = run && run.resources || {};
-                        const actual = Object.values(resources);
-                        const selected = run && run.preflight && Array.isArray(run.preflight.selected) ? run.preflight.selected : [];
-                        const used = new Set();
-                        const planned = selected.map((item, index) => {
-                            const stableKey = item && item.uiId ? String(item.uiId) : '';
-                            const match = (stableKey ? actual.find(resource => resource && String(resource.key || '') === stableKey) : null)
-                                || actual.find(resource => resource && resource.type === item.type && Number(resource.index) === Number(item.index == null ? index : item.index));
-                            if (match && match.key) used.add(match.key);
-                            // Keep the reviewed matrix cells attached to the row. Runtime status may
-                            // override display fields, but it must not erase the approved plan.
-                            const reviewedVariants = Array.isArray(item && item.generationVariants) ? item.generationVariants.filter(Boolean) : [];
-                            const reviewedStatus = reviewedVariants.length && reviewedVariants.every(variant => variant.action === 'reuse') ? 'reuse' : 'queued';
-                            return Object.assign({}, item, { key: item.uiId || item.type + '-' + index, uiId: item.uiId || null, type: item.type, index, directive: item.directive || '', status: reviewedStatus }, match || {});
-                        });
-                        actual.forEach(resource => { if (resource && !used.has(resource.key)) planned.push(resource); });
-                        return planned;
-                    };
-                    const groupRuns = Object.values(fullPackRun.groups || {}).filter(Boolean);
-                    const sections = groupRuns.length ? groupRuns : [fullPackRun];
-                    const planSummaries = sections.map(section => section && section.preflight).filter(Boolean);
-                    const planSelected = planSummaries.reduce((sum, plan) => sum + (plan.selected?.length || 0), 0);
-                    const planSkipped = planSummaries.reduce((sum, plan) => sum + (plan.skipped?.length || 0), 0);
-                    const planGenerations = planSummaries.reduce((sum, plan) => sum + (plan.estimatedResourceGenerations || 0), 0);
-                    const planProviderCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.aiCalls || plan.estimatedProviderCalls || plan.estimatedResourceGenerations || 0), 0);
-                    const planReused = planSummaries.reduce((sum, plan) => sum + Math.max(0, Number(plan.generationMatrix?.summary?.actions?.reuse) || 0), 0);
-                    const planImageCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.imageCalls || 0), 0);
-                    const planMinutes = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.estimatedMinutes || 0), 0);
-                    const capacityWarnings = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warnings || [])));
-                    const capacityWarningCodes = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warningCodes || [])));
-                    const capacityProfiles = planSummaries.map(plan => plan.capacity).filter(Boolean);
-                    const providerSummary = Array.from(new Set(capacityProfiles.map(capacity => [capacity.provider, capacity.model].filter(Boolean).join(' · ')).filter(Boolean))).join(', ');
-                    const usesObservedEstimate = capacityProfiles.some(capacity => capacity.estimateBasis === 'observed-device-history');
-                    const localizedCapacityWarnings = capacityWarningCodes.length ? capacityWarningCodes.map(code => ({
-                        'local-serial': t('fullpack.warning_local_serial') || 'Local models run this pack sequentially; keep the app open and consider a smaller pack for faster completion.',
-                        'large-pack': t('fullpack.warning_large_pack') || 'Large pack: provider rate limits are more likely. Consider fewer resources or groups.',
-                        'image-quota': t('fullpack.warning_image_quota') || 'Image generation may extend the run and consume additional provider quota.',
-                    }[code])).filter(Boolean) : capacityWarnings;
-                    const allRows = sections.flatMap(buildRows);
-                    const settled = allRows.filter(row => row && !['queued', 'running', 'retrying'].includes(row.status)).length;
-                    const total = allRows.length;
-                    const retryable = allRows.some(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status) && row.retryable !== false);
-                    const hasFailureDiagnostics = Boolean(fullPackRun.reason) || allRows.some(row => row && (row.reason || ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)));
-                    const completedRows = allRows.filter(row => row && ['landed', 'completed'].includes(row.status)).length;
-                    const progress = total ? Math.round((settled / total) * 100) : 0;
-                    const elapsedSeconds = Math.max(0, Math.round(Number(fullPackRun.elapsedMs || 0) / 1000));
-                    const currentRosterSignature = JSON.stringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
-                        const profile = group?.profile || {};
-                        return { id, name: group?.name || id, gradeLevel: profile.gradeLevel || '', leveledTextLanguage: profile.leveledTextLanguage || '', translationMode: profile.translationMode || '', currentUiLanguage: profile.currentUiLanguage || '', studentInterests: Array.isArray(profile.studentInterests) ? profile.studentInterests : String(profile.studentInterests || ''), dokLevel: profile.dokLevel || '', selectedLanguages: Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : [], targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : [], useEmojis: profile.useEmojis, textFormat: profile.textFormat || '', differentiationRange: profile.differentiationRange || 'None', differentiationTypes: Array.isArray(profile.differentiationTypes) ? profile.differentiationTypes : [], differentiationCustomGrades: Array.isArray(profile.differentiationCustomGrades) ? profile.differentiationCustomGrades : [], imageGenerationStyle: profile.imageGenerationStyle || profile.universalImageStyle || '', imageAspectRatio: profile.imageAspectRatio || '' };
-                    }));
-                    const reviewedGenerationConfig = fullPackRun?.settingsSnapshot?.fullPackGenerationConfig || null;
-                    const currentGenerationConfig = _generationHelpersModule && typeof _generationHelpersModule.getFullPackGenerationConfigSnapshot === 'function'
-                        ? _generationHelpersModule.getFullPackGenerationConfigSnapshot(_alloGenerationHelpersDeps())
-                        : null;
-                    const comparableGenerationConfig = Boolean(reviewedGenerationConfig?.fingerprint && currentGenerationConfig?.fingerprint);
-                    const currentPlanSettings = { gradeLevel, leveledTextLanguage, translationMode, currentUiLanguage, studentInterests, dokLevel, selectedLanguages, targetStandards, useEmojis, textFormat, imageGenerationStyle: universalImageStyle || imageGenerationStyle || '', imageAspectRatio, differentiationRange, differentiationTypes, differentiationCustomGrades, resourceCount, isAutoConfigEnabled, fullPackTargetGroup, rosterSignature: currentRosterSignature, fullPackGenerationConfigFingerprint: comparableGenerationConfig ? currentGenerationConfig.fingerprint : null };
-                    const changeLabels = { gradeLevel: t('fullpack.setting_grade') || 'grade', leveledTextLanguage: t('fullpack.setting_language') || 'language', translationMode: t('fullpack.setting_translation_mode') || 'translation mode', currentUiLanguage: t('fullpack.setting_ui_language') || 'interface language', studentInterests: t('fullpack.setting_interests') || 'interests', dokLevel: t('fullpack.setting_dok') || 'depth of knowledge', selectedLanguages: t('fullpack.setting_translation_languages') || 'translation languages', targetStandards: t('fullpack.setting_standards') || 'standards', useEmojis: t('fullpack.setting_emoji') || 'emoji preference', textFormat: t('fullpack.setting_text_format') || 'text format', imageGenerationStyle: t('fullpack.setting_image_style') || 'image style', imageAspectRatio: t('fullpack.setting_image_aspect') || 'image aspect ratio', differentiationRange: t('fullpack.setting_diff_range') || 'differentiation range', differentiationTypes: t('fullpack.setting_diff_resources') || 'differentiated resources', differentiationCustomGrades: t('fullpack.setting_custom_grades') || 'custom grade levels', resourceCount: t('fullpack.setting_pack_size') || 'pack size', isAutoConfigEnabled: t('fullpack.setting_auto_configure') || 'auto-configure', fullPackTargetGroup: t('fullpack.setting_target_group') || 'target group', rosterSignature: t('fullpack.setting_roster_groups') || 'roster groups', fullPackGenerationConfigFingerprint: t('fullpack.setting_generation_configuration') || 'resource generation configuration' };
-                    const originalPlanSettings = Object.assign({}, fullPackRun.settingsSnapshot || {}, {
-                        fullPackGenerationConfigFingerprint: comparableGenerationConfig ? reviewedGenerationConfig.fingerprint : null,
-                    });
-                    const planChanges = fullPackRun.status === 'ready' ? Object.keys(changeLabels).filter(key => JSON.stringify(originalPlanSettings[key] ?? null) !== JSON.stringify(currentPlanSettings[key] ?? null)) : [];
-                    const formatPlanValue = (value, key) => {
-                        if (key === 'fullPackGenerationConfigFingerprint') return t('fullpack.configuration_snapshot') || 'Reviewed configuration snapshot';
-                        if (value === undefined || value === null || value === '') return t('fullpack.not_set') || 'Not set';
-                        if (typeof value === 'boolean') return value ? (t('fullpack.on') || 'On') : (t('fullpack.off') || 'Off');
-                        if (Array.isArray(value)) return value.length ? value.join(', ') : (t('fullpack.none') || 'None');
-                        const rendered = String(value);
-                        return rendered.length > 120 ? rendered.slice(0, 117) + '...' : rendered;
-                    };
-                    return (
-                        <div data-testid="full-pack-review-panel" className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{fullPackRun.status === 'ready'
-                                ? `${t('fullpack.panel_plan') || 'Full Pack plan'}. ${total} ${t('fullpack.selected') || 'selected'}.`
-                                : `${t('fullpack.panel_progress') || 'Full Pack progress'}. ${settled} of ${total} ${t('fullpack.finished') || 'finished'}.`}</div>
-                            <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
-                                <div>
-                                    <div className="text-[11px] font-black uppercase tracking-wide text-slate-800">{fullPackRun.status === 'ready' ? (t('fullpack.panel_plan') || 'Full Pack plan') : (t('fullpack.panel_progress') || 'Full Pack progress')}</div>
-                                    <div className="mt-0.5 text-[10px] text-slate-600">
-                                        {planSummaries.length ? `${planSelected} ${t('fullpack.selected') || 'selected'} · ${planSkipped} ${t('fullpack.skipped') || 'skipped'} · ~${planGenerations} ${t('fullpack.resource_generations') || 'new generations'} · ${planReused} ${t('fullpack.reused_outputs') || 'existing outputs reused'}` : (t('fullpack.preparing_plan') || 'Preparing generation plan…')}
-                                    </div>
-                                </div>
-                                <span className={`shrink-0 rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`}>
-                                    {statusLabels[fullPackRun.status] || fullPackRun.status}
-                                </span>
-                            </div>
-                            {fullPackRun.persistenceWarning && (
-                                <div data-testid="full-pack-storage-warning" role="status" className="mx-3 mt-2 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-relaxed text-amber-950">
-                                    <AlertTriangle size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
-                                    <div><span className="font-black">{t('blueprint.saved_run_warning') || 'Saved-run warning'}:</span> {fullPackRun.persistenceWarning}</div>
-                                </div>
-                            )}
-                            {fullPackRun.status === 'ready' && planChanges.length > 0 && (
-                                <div role="status" aria-live="polite" className="mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] leading-relaxed text-amber-950">
-                                    <div className="font-black">{t('fullpack.settings_changed') || 'Settings changed after this plan was created'}</div>
-                                    <div className="mt-0.5 break-words">{planChanges.map(key => changeLabels[key]).join(', ')}.</div>
-                                    <div className="mt-1 font-semibold">{t('fullpack.original_plan_help') || 'Generate original plan uses the reviewed settings. Choose Refresh plan to use the current settings.'}</div>
-                                    <details className="mt-2 rounded-lg border border-amber-300 bg-white/70">
-                                        <summary className="cursor-pointer px-2 py-1 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{t('fullpack.review_values') || 'Review original and current values'}</summary>
-                                        <div className="space-y-1 border-t border-amber-200 px-2 py-1.5">
-                                            {planChanges.map(key => (
-                                                <div key={key} className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-1">
-                                                    <span className="min-w-0 break-words"><span className="font-bold">{changeLabels[key]}:</span> {formatPlanValue(originalPlanSettings[key], key)}</span>
-                                                    <span aria-hidden="true">→</span>
-                                                    <span className="min-w-0 break-words">{formatPlanValue(currentPlanSettings[key], key)}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </details>
-                                </div>
-                            )}
-                            {fullPackRun.status === 'ready' && planSummaries.length > 0 && (
-                                <div data-testid="full-pack-capacity" className={'mx-3 mt-2 rounded-xl border px-3 py-2 text-[10px] leading-relaxed ' + (localizedCapacityWarnings.length ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-sky-200 bg-sky-50 text-sky-900')}>
-                                    <div className="flex flex-wrap items-center justify-between gap-1">
-                                        <div className="font-black">{t('fullpack.capacity_preview') || 'Capacity preview'}</div>
-                                        {providerSummary && <div className="flex min-w-0 items-center gap-1 text-[9px] font-semibold"><Cpu size={11} aria-hidden="true" /><span className="truncate">{t('fullpack.provider') || 'Provider'}: {providerSummary}</span></div>}
-                                    </div>
-                                    <div className="mt-2 grid grid-cols-3 gap-1.5" aria-label={t('fullpack.capacity_preview') || 'Capacity preview'}>
-                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Cpu size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{planProviderCalls}</span><span className="min-w-0 truncate">{t('fullpack.provider_calls') || 'provider calls'}</span></div>
-                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><ImageIcon size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">{planImageCalls}</span><span className="min-w-0 truncate">{t('fullpack.image_calls') || 'image calls'}</span></div>
-                                        <div className="flex min-w-0 items-center gap-1 rounded-lg border border-current/15 bg-white/70 px-2 py-1.5"><Clock size={12} aria-hidden="true" className="shrink-0" /><span className="font-black">~{Math.max(1, planMinutes)}</span><span className="min-w-0 truncate">{t('fullpack.minutes') || 'minutes'}</span></div>
-                                    </div>
-                                    <div className="mt-1 text-[9px] opacity-80">{usesObservedEstimate ? (t('fullpack.estimate_observed') || 'Estimate uses recent timings from this device') : (t('fullpack.estimate_defaults') || 'Estimate uses provider defaults')}</div>
-                                    {localizedCapacityWarnings.map((warning, index) => <div key={index} className="mt-1 font-semibold">{warning}</div>)}
-                                </div>
-                            )}
-                            {fullPackRun.status !== 'ready' && total > 0 && (
-                                <div className="px-3 pt-2.5">
-                                    <div className="mb-1 flex justify-between text-[10px] font-bold text-slate-600"><span>{settled} of {total} {t('fullpack.finished') || 'finished'}</span><span>{progress}%</span></div>
-                                    <div className="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label={t('fullpack.progress_aria') || 'Full Pack generation progress'} aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
-                                        <div className="h-full rounded-full bg-indigo-600 transition-[width] motion-reduce:transition-none" style={{ width: `${progress}%` }} />
-                                    </div>
-                                </div>
-                            )}
-                            <div className="max-h-64 space-y-3 overflow-y-auto px-3 py-2.5">
-                                {sections.map((section, sectionIndex) => {
-                                    const rows = buildRows(section);
-                                    const visibleRows = showCompletedFullPackRows ? rows : rows.filter(row => row && !['landed', 'completed'].includes(row.status));
-                                    const sectionGroupId = groupRuns.length > 0 ? section.groupId : null;
-                                    const sectionInstructionalContext = section?.planPayload?.instructionalContext || section?.settingsSnapshot?.instructionalContext || {};
-                                    const sectionAdaptedCount = rows.filter(row => row && row.type === 'simplified').length;
-                                    const sectionAdaptedTextPolicy = ['include', 'omit', 'prohibited'].includes(sectionInstructionalContext.adaptedTextPolicy)
-                                        ? sectionInstructionalContext.adaptedTextPolicy
-                                        : (sectionAdaptedCount > 0 ? 'include' : 'omit');
-                                    const sectionPrimaryTextAccess = sectionInstructionalContext.primaryTextAccess === 'required'
-                                        ? 'required' : 'available';
-                                    const sectionHasPrimary = rows.some(row => row && (row.type === 'analysis' || row.instructionalText?.role === 'primary'))
-                                        || history.some(item => item && (item.type === 'analysis' || item.instructionalText?.role === 'primary'))
-                                        || Boolean(String(inputText || '').trim())
-                                        // A reviewed source fingerprint/length means this plan is anchored
-                                        // to source text even when Analyze Source is not itself a plan row.
-                                        || Number(section?.preflight?.sourceTextChars || 0) > 0
-                                        || Boolean(String(section?.preflight?.sourceFingerprint || '').trim());
-                                    const sectionHasStandards = Boolean(
-                                        (Array.isArray(sectionInstructionalContext?.standardsContext?.standards) && sectionInstructionalContext.standardsContext.standards.length)
-                                        || (Array.isArray(targetStandards) && targetStandards.length)
-                                        || String(sectionInstructionalContext?.standardsContext?.promptText || '').trim()
-                                    );
-                                    const sectionStandardsFrozen = Boolean(section?.preflight?.standardsFingerprint || sectionInstructionalContext.standardsFingerprint);
-                                    return (
-                                        <div key={section.groupId || section.runId || sectionIndex}>
-                                            {groupRuns.length > 0 && <div className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-indigo-800">{section.groupName || `Group ${sectionIndex + 1}`}</div>}
-                                            {fullPackRun.status === 'ready' && (
-                                                <div data-testid="full-pack-text-access-summary" data-group-id={sectionGroupId || ''} role="status" aria-live="polite" className="mb-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-2.5 py-2 text-[10px] leading-relaxed text-indigo-950">
-                                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="font-black">{t('fullpack.text_access_summary') || 'Text access summary'}</div>
-                                                            <div className="mt-0.5">
-                                                                {sectionHasPrimary
-                                                                    ? (sectionPrimaryTextAccess === 'required'
-                                                                        ? (t('fullpack.primary_required') || 'The source text is the required primary text for standards alignment and assessment evidence.')
-                                                                        : (t('fullpack.primary_available') || 'The source text remains available as the primary reference for this pack.'))
-                                                                    : (t('fullpack.primary_missing') || 'No primary/source text is identified in this plan.')}
-                                                            </div>
-                                                            <div className="mt-0.5">
-                                                                {sectionAdaptedCount > 0
-                                                                    ? `${sectionAdaptedCount} ${sectionAdaptedCount === 1 ? (t('fullpack.adapted_companion_one') || 'supplemental Adapted Text companion') : (t('fullpack.adapted_companion_many') || 'supplemental Adapted Text companions')}.`
-                                                                    : (t('fullpack.no_adapted_companion') || 'No Adapted Text companion is included.')}
-                                                                {' '}{t('fullpack.no_inferred_replacement') || 'No primary-text replacement or IEP modification is inferred.'}
-                                                            </div>
-                                                            {sectionStandardsFrozen && <div className="mt-0.5 font-semibold">{t('fullpack.standards_frozen') || 'The standards context is frozen to this reviewed plan.'}</div>}
-                                                        </div>
-                                                        <label className="min-w-[12rem] text-[9px] font-bold uppercase tracking-wide text-indigo-900">
-                                                            <span className="block mb-1">{t('fullpack.adapted_policy') || 'Adapted-text plan policy'}</span>
-                                                            <select
-                                                                data-testid="full-pack-adapted-policy"
-                                                                data-group-id={sectionGroupId || ''}
-                                                                value={sectionAdaptedTextPolicy}
-                                                                onChange={event => handleSetFullPackPlanAdaptedTextPolicy(event.target.value, sectionGroupId)}
-                                                                disabled={sectionAdaptedTextPolicy === 'prohibited'}
-                                                                className="w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 text-[10px] font-bold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                                                aria-label={(t('fullpack.adapted_policy') || 'Adapted-text plan policy') + (section.groupName ? `: ${section.groupName}` : '')}
-                                                            >
-                                                                <option value="include">{t('fullpack.policy_include_adapted') || 'Include supplemental Adapted Text (recommended)'}</option>
-                                                                <option value="omit" disabled={rows.length > 0 && sectionAdaptedCount === rows.length}>{t('fullpack.policy_omit_adapted') || 'Omit Adapted Text'}</option>
-                                                                {sectionAdaptedTextPolicy === 'prohibited' && <option value="prohibited">{t('fullpack.policy_adapted_prohibited') || 'Adaptation prohibited by sourced standard'}</option>}
-                                                            </select>
-                                                            {rows.length > 0 && sectionAdaptedCount === rows.length && <span className="mt-1 block normal-case font-medium tracking-normal">{t('fullpack.keep_non_adapted_first') || 'Add a non-adapted resource before turning this off.'}</span>}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {fullPackRun.status === 'ready' && (
-                                                <div className="mb-2 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2">
-                                                    <label className="min-w-0 flex-1 text-[9px] font-bold uppercase tracking-wide text-slate-700">
-                                                        <span className="mb-1 block">{t('fullpack.add_resource') || 'Add resource'}</span>
-                                                        <select
-                                                            data-testid="full-pack-add-resource-select"
-                                                            data-group-id={sectionGroupId || ''}
-                                                            value={fullPackAddType}
-                                                            onChange={event => setFullPackAddType(event.target.value)}
-                                                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                                        >
-                                                            {fullPackEditableTypes.map(type => {
-                                                                const disabled = (type === 'alignment-report' && !sectionHasStandards)
-                                                                    || (type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited');
-                                                                const label = type === 'simplified' ? (t('common.adapted_text') || 'Adapted text') : (getDefaultTitle(type) || String(type).replace(/-/g, ' '));
-                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : ''}</option>;
-                                                            })}
-                                                        </select>
-                                                    </label>
-                                                    <button
-                                                        type="button"
-                                                        data-testid="full-pack-add-resource"
-                                                        data-group-id={sectionGroupId || ''}
-                                                        onClick={() => handleAddFullPackPlanResource({ type: fullPackAddType, directive: '' }, sectionGroupId)}
-                                                        disabled={!fullPackAddType || (fullPackAddType === 'alignment-report' && !sectionHasStandards)}
-                                                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-                                                    >
-                                                        <Plus size={12} aria-hidden="true" />
-                                                        {t('fullpack.add_resource_action') || 'Add to plan'}
-                                                    </button>
-                                                </div>
-                                            )}
-                                            <div className="space-y-1.5">
-                                                {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-500">{t('fullpack.waiting_group') || 'Waiting to plan this group…'}</div>}
-                                                {rows.length > 0 && visibleRows.length === 0 && <div className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/60 px-2.5 py-2 text-[10px] text-emerald-800">{t('fullpack.completed_hidden') || 'Completed resources are hidden.'}</div>}
-                                                {visibleRows.map((row, index) => {
-                                                    const rowKey = row.key || `${row.type}-${index}`;
-                                                    // Plan rows used to print the raw internal resource id, so the pack
-                                                    // plan told teachers it was going to build "Simplified" (and "dbq",
-                                                    // "sentence frames"). Use the app's own resource names instead.
-                                                    // getDefaultTitle collapses anything it does not know to a generic
-                                                    // "Resource", which would lose more than it gains, so an unknown type
-                                                    // still falls back to its prettified id. row.type ids are ASCII, so
-                                                    // the \b in the title-casing is safe here.
-                                                    const _rowGenericTitle = t('common.resource') || 'Resource';
-                                                    const _rowNamedTitle = getDefaultTitle(row.type);
-                                                    const rowTitle = row.type === 'simplified'
-                                                        ? (t('common.adapted_text') || 'Adapted text')
-                                                        : (_rowNamedTitle && _rowNamedTitle !== _rowGenericTitle)
-                                                          ? _rowNamedTitle
-                                                          : String(row.type || 'resource').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-                                                    const safeRowReason = row.reason ? _alloDiagnosticReason(row.reason) : null;
-                                                    const rowGenerationVariants = Array.isArray(row.generationVariants) ? row.generationVariants : [];
-                                                    const rowNewVariantCount = rowGenerationVariants.filter(variant => variant && variant.action !== 'reuse').length;
-                                                    const rowReuseVariantCount = rowGenerationVariants.filter(variant => variant && variant.action === 'reuse').length;
-                                                    const rowVariantGrades = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.grade).filter(Boolean)));
-                                                    const rowVariantLanguages = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.language).filter(Boolean)));
-                                                    const rowStatus = <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold ${statusStyles[row.status] || statusStyles.queued}`}>{statusLabels[row.status] || row.status || (t('fullpack.status_queued') || 'Queued')}{row.elapsedMs ? ` · ${Math.max(1, Math.round(row.elapsedMs / 1000))}s` : ''}</span>;
-                                                    if (fullPackRun.status === 'ready') {
-                                                        const snapshot = section.settingsSnapshot || originalPlanSettings;
-                                                        const differentiation = section.preflight?.differentiation;
-                                                        const isDifferentiated = Array.isArray(differentiation?.types) && differentiation.types.includes(row.type);
-                                                        const planResourceKey = row.uiId || rowKey;
-                                                        const rowTypeOptions = fullPackEditableTypes.includes(row.type) ? fullPackEditableTypes : [row.type, ...fullPackEditableTypes];
-                                                        return (
-                                                            <details key={rowKey} className="group/plan overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70">
-                                                                <summary className="flex min-w-0 cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
-                                                                    {/* No `capitalize`: rowTitle is now a real, localized resource name, and forcing title case mangles languages that do not capitalize every word. */}
-                                                                    <span className="min-w-0 truncate text-[11px] font-bold text-slate-800">{rowTitle}</span>
-                                                                    <span className="flex shrink-0 items-center gap-1.5">{rowStatus}<ChevronDown size={13} aria-hidden="true" className="text-slate-500 transition-transform motion-reduce:transition-none group-open/plan:rotate-180" /></span>
-                                                                </summary>
-                                                                <div className="space-y-2 border-t border-slate-200 bg-white px-2.5 py-2 text-[10px] leading-relaxed text-slate-700">
-                                                                    <label className="block font-bold text-slate-900">
-                                                                        <span className="mb-1 block">{t('fullpack.resource_type') || 'Resource type'}</span>
-                                                                        <select
-                                                                            data-testid="full-pack-resource-type"
-                                                                            data-resource-key={planResourceKey}
-                                                                            data-group-id={sectionGroupId || ''}
-                                                                            value={row.type}
-                                                                            onChange={event => handleChangeFullPackPlanResourceType(planResourceKey, event.target.value, sectionGroupId)}
-                                                                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                                                            aria-label={(t('fullpack.resource_type') || 'Resource type') + ': ' + rowTitle}
-                                                                        >
-                                                                            {rowTypeOptions.map(type => {
-                                                                                const disabled = type === 'alignment-report' && !sectionHasStandards && type !== row.type;
-                                                                                const label = type === 'simplified' ? (t('common.adapted_text') || 'Adapted text') : (getDefaultTitle(type) || String(type).replace(/-/g, ' '));
-                                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : ''}</option>;
-                                                                            })}
-                                                                        </select>
-                                                                    </label>
-                                                                    <label className="block font-bold text-slate-900">
-                                                                        <span className="mb-1 block">{t('fullpack.instruction') || 'Instruction'}</span>
-                                                                        <textarea
-                                                                            data-testid="full-pack-resource-directive"
-                                                                            data-resource-key={planResourceKey}
-                                                                            data-group-id={sectionGroupId || ''}
-                                                                            rows={2}
-                                                                            maxLength={4000}
-                                                                            value={row.directive || ''}
-                                                                            onChange={event => handleEditFullPackPlanResourceDirective(planResourceKey, event.target.value, sectionGroupId)}
-                                                                            placeholder={t('fullpack.standard_guidance') || 'Standard generation guidance'}
-                                                                            className="w-full resize-y rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-medium leading-relaxed text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                                                            aria-label={(t('fullpack.instruction') || 'Instruction') + ': ' + rowTitle}
-                                                                        />
-                                                                    </label>
-                                                                    <div><span className="font-bold text-slate-900">{t('fullpack.audience') || 'Audience'}:</span> {snapshot.gradeLevel || (t('fullpack.current_grade') || 'Current grade')} · {snapshot.leveledTextLanguage || (t('fullpack.default_language') || 'Default language')}</div>
-                                                                    <div><span className="font-bold text-slate-900">{t('fullpack.differentiation') || 'Differentiation'}:</span> {isDifferentiated ? `${Math.max(1, differentiation.levelCount || 1)} ${t('fullpack.levels') || 'levels'}` : (t('fullpack.single_version') || 'Single version')}</div>
-                                                                    <div data-testid="full-pack-row-generation-impact" className="rounded-lg border border-sky-200 bg-sky-50 px-2 py-1.5 text-sky-950">
-                                                                        <span className="font-bold">{t('fullpack.generation_impact') || 'Generation impact'}:</span>{' '}
-                                                                        {rowGenerationVariants.length
-                                                                            ? (rowReuseVariantCount === rowGenerationVariants.length
-                                                                                ? (t('fullpack.reuse_no_call') || 'Reuse existing output · no AI call')
-                                                                                : `${rowNewVariantCount} ${t('fullpack.new_versions') || 'new'} / ${rowReuseVariantCount} ${t('fullpack.reused_versions') || 'reused'}`)
-                                                                            : (t('fullpack.matrix_refresh_pending') || 'This row will be recalculated before approval.')}
-                                                                        {rowGenerationVariants.length > 0 && (
-                                                                            <ul data-testid="full-pack-generation-cells" className="mt-1 space-y-0.5 border-t border-sky-200 pt-1" aria-label={t('fullpack.generation_cells') || 'Exact generation versions'}>
-                                                                                {rowGenerationVariants.map((variant, variantIndex) => {
-                                                                                    const action = variant.action === 'reuse' ? (t('fullpack.action_reuse') || 'Reuse')
-                                                                                        : variant.action === 'refresh' ? (t('fullpack.action_refresh') || 'Refresh')
-                                                                                        : variant.action === 'variant' ? (t('fullpack.action_variant') || 'New variant')
-                                                                                        : (t('fullpack.action_generate') || 'Generate');
-                                                                                    const coordinates = [variant.grade, variant.language].filter(Boolean).join(' · ') || (t('fullpack.source_wide') || 'Source-wide');
-                                                                                    return <li key={variant.generationIdentity || `${variantIndex}-${coordinates}`} className="flex min-w-0 items-start justify-between gap-2"><span className="min-w-0 break-words">{coordinates}</span><span className="shrink-0 font-bold">{action}{variant.status ? ` · ${variant.status}` : ''}</span></li>;
-                                                                                })}
-                                                                                {row.type === 'glossary' && Array.isArray(snapshot.selectedLanguages) && snapshot.selectedLanguages.length > 0 && (
-                                                                                    <li className="text-sky-800">{t('fullpack.embedded_translations') || 'Embedded translations'}: {snapshot.selectedLanguages.join(', ')}</li>
-                                                                                )}
-                                                                                {row.type === 'glossary' && Number(row.providerWorkEstimate?.glossaryImageCalls) > 0 && (
-                                                                                    <li data-testid="full-pack-glossary-image-impact" className="text-sky-800">
-                                                                                        {t('fullpack.glossary_visuals') || 'Glossary visuals'}: ~{row.providerWorkEstimate.glossaryImageCalls} {t('fullpack.term_images') || 'term images'}
-                                                                                        {Number(row.providerWorkEstimate?.glossaryImageEditCalls) > 0 ? ` + ${row.providerWorkEstimate.glossaryImageEditCalls} ${t('fullpack.image_cleanup_calls') || 'image cleanup calls'}` : ''}
-                                                                                    </li>
-                                                                                )}
-                                                                            </ul>
-                                                                        )}
-                                                                    </div>
-                                                                    {row.type === 'analysis' && index > 0 && <div className="rounded-lg bg-amber-50 px-2 py-1 text-amber-900">{t('fullpack.analysis_first_hint') || 'Analyze Source works best before resources that depend on the source analysis.'}</div>}
-                                                                    {row.type === 'lesson-plan' && index < rows.length - 1 && <div className="rounded-lg bg-amber-50 px-2 py-1 text-amber-900">{t('fullpack.lesson_last_hint') || 'Lesson Plan works best last so it can incorporate earlier resources.'}</div>}
-                                                                    <div className="flex flex-wrap justify-end gap-1.5 pt-1">
-                                                                        <button
-                                                                            type="button"
-                                                                            data-testid="full-pack-move-up"
-                                                                            data-resource-key={planResourceKey}
-                                                                            data-group-id={sectionGroupId || ''}
-                                                                            disabled={index <= 0}
-                                                                            onClick={() => handleMoveFullPackPlanResource(planResourceKey, index - 1, sectionGroupId)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                                                            aria-label={(t('fullpack.move_up') || 'Move up') + ': ' + rowTitle}
-                                                                        >
-                                                                            <ArrowUp size={11} aria-hidden="true" />
-                                                                            {t('fullpack.move_up') || 'Move up'}
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            data-testid="full-pack-move-down"
-                                                                            data-resource-key={planResourceKey}
-                                                                            data-group-id={sectionGroupId || ''}
-                                                                            disabled={index >= rows.length - 1}
-                                                                            onClick={() => handleMoveFullPackPlanResource(planResourceKey, index + 1, sectionGroupId)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                                                                            aria-label={(t('fullpack.move_down') || 'Move down') + ': ' + rowTitle}
-                                                                        >
-                                                                            <ArrowDown size={11} aria-hidden="true" />
-                                                                            {t('fullpack.move_down') || 'Move down'}
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            data-testid="full-pack-remove-plan-row"
-                                                                            data-resource-key={planResourceKey}
-                                                                            data-group-id={sectionGroupId || ''}
-                                                                            disabled={rows.length <= 1}
-                                                                            onClick={() => handleRemoveFullPackPlanResource(planResourceKey, sectionGroupId)}
-                                                                            className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2 py-1 text-[9px] font-bold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-                                                                            aria-label={(t('fullpack.remove_resource_aria') || 'Remove resource from plan') + ': ' + rowTitle}
-                                                                            title={rows.length <= 1 ? (t('fullpack.keep_one_resource') || 'Keep at least one resource in the plan') : (t('fullpack.remove_resource') || 'Remove from plan')}
-                                                                        >
-                                                                            <Trash2 size={11} aria-hidden="true" />
-                                                                            {t('fullpack.remove_resource') || 'Remove from plan'}
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                            </details>
-                                                        );
-                                                    }
-                                                    return (
-                                                        <div key={rowKey} className="flex items-start justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/70 px-2.5 py-2">
-                                                            <div className="min-w-0">
-                                                                <div className="truncate text-[11px] font-bold text-slate-800">{rowTitle}</div>
-                                                                {safeRowReason && <div data-testid="full-pack-failure-reason" data-failure-code={safeRowReason.code} className="mt-0.5 break-words text-[10px] leading-snug text-rose-700">{safeRowReason.summary}</div>}
-                                                            </div>
-                                                            {rowStatus}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            <div data-testid="full-pack-sticky-actions" className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur motion-reduce:backdrop-blur-none">
-                                {elapsedSeconds > 0 && <span className="me-auto text-[9px] font-semibold text-slate-500">{t('fullpack.run') || 'Run'} {fullPackRun.runId?.slice(-8)} · {elapsedSeconds}s</span>}
-                                {completedRows > 0 && <button type="button" data-testid="full-pack-toggle-completed" aria-pressed={!showCompletedFullPackRows} onClick={() => setShowCompletedFullPackRows(value => !value)} className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">{showCompletedFullPackRows ? <EyeOff size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}{showCompletedFullPackRows ? (t('fullpack.hide_completed') || 'Hide completed') : (t('fullpack.show_completed') || 'Show completed')}</button>}
-                                {fullPackRun.status === 'ready' && <button type="button" data-testid="full-pack-refresh-plan" onClick={handlePlanFullPack} className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.refresh_plan') || 'Refresh plan'}</button>}
-                                {retryable && !['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" data-testid="full-pack-retry" onClick={handleRetryFailedFullPack} className="inline-flex items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.retry_failures') || 'Retry failures'}</button>}
-                                {hasFailureDiagnostics && <button type="button" data-testid="full-pack-open-error-log" onClick={handleOpenGenerationErrorLog} className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2"><AlertTriangle size={12} aria-hidden="true" />{t('fullpack.open_error_log') || 'Open error log'}</button>}
-                                <button type="button" data-testid="full-pack-copy-diagnostics" onClick={handleCopyFullPackDiagnostics} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><Copy size={12} aria-hidden="true" />{t('fullpack.copy_diagnostics') || 'Copy diagnostics'}</button>
-                                <button type="button" data-testid="full-pack-download-diagnostics" onClick={handleDownloadFullPackDiagnostics} className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"><Download size={12} aria-hidden="true" />{t('fullpack.download_report') || 'Download report'}</button>
-                                {!['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" onClick={handleDismissFullPackRun} className="rounded-lg px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">{t('fullpack.dismiss') || 'Dismiss'}</button>}
-                            </div>
-                        </div>
-                    );
-                })()}
-            </div>
+            <FullPackRunView
+        __alloDisplayName="Full Pack"
+        __alloOverlay={false}
+        {...{
+        AlertTriangle, ArrowDown, ArrowRight, ArrowUp, ChevronDown, Clock, Copy, Cpu,
+        Download, Eye, EyeOff, GUIDED_DELIVERY_GROUPS, ImageIcon, Plus, RefreshCw, Sparkles,
+        StopCircle, Trash2, _alloDiagnosticReason, _alloGenerationHelpersDeps, aiCapability, createGuidedHomeworkShare, currentUiLanguage, differentiationCustomGrades,
+        differentiationRange, differentiationTypes, dokLevel, fullPackAddType, fullPackRun, fullPackTargetGroup, getDefaultTitle, gradeLevel,
+        guidedActiveSteps, guidedMode, guidedStep, handleAddFullPackPlanResource, handleApproveFullPack, handleChangeFullPackPlanResourceType, handleCopyFullPackDiagnostics, handleDismissFullPackRun,
+        handleDownloadFullPackDiagnostics, handleEditFullPackPlanResourceDirective, handleMoveFullPackPlanResource, handleOpenGenerationErrorLog, handlePlanFullPack, handleRemoveFullPackPlanResource, handleRetryFailedFullPack, handleSetFullPackPlanAdaptedTextPolicy,
+        handleStopFullPack, hasSourceOrAnalysis, history, imageAspectRatio, imageGenerationStyle, inputText, isAutoConfigEnabled, isIndependentMode,
+        isParentMode, isProcessing, isTeacherMode, leveledTextLanguage, openExportPreview, openStudentQrPreview, qrShareModal, recentQrShares,
+        resourceCount, rosterKey, selectToolFromCatalog, selectedLanguages, setFullPackAddType, setFullPackTargetGroup, setIsAutoConfigEnabled, setResourceCount,
+        setShowAIBackendModal, setShowCompletedFullPackRows, setShowSessionStartOptions, showCompletedFullPackRows, studentInterests, t, targetStandards, textFormat,
+        translationMode, universalImageStyle, useEmojis
+        }}
+      />
             <div style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'}} id="tour-tool-alignment" data-help-key="tool_alignment" className="bg-gradient-to-r from-teal-500 to-emerald-500 p-1 rounded-3xl shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 transition-all group">
                 <button
                     data-help-key="tool_alignment"
@@ -53010,7 +52376,7 @@ ${_alloActivityContext(activity)}
                     isGeneratingGuide, isGeneratingBrainstormRubric, isGeneratingWorksheet, isGeneratingWorksheetCover,
                     handleToggleIsEditingBrainstorm, handleBrainstormChange,
                     handleGenerateGuide, handleGenerateBrainstormRubric, handleGenerateWorksheet, handleGenerateWorksheetCover,
-                    getRows, renderFormattedText
+                    handleOpenActivityInStudio, getRows, renderFormattedText
                 })}
                 {adventureState.isReviewingCharacters && adventureState.characters.length > 0 && (
                     <CastLobby
@@ -54187,873 +53553,26 @@ ${_alloActivityContext(activity)}
             </button>
             {showLiveDock && (
               <div role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowLiveDock(false); }} style={{position:'fixed',inset:0,zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:'clamp(1rem, 4vh, 3rem)',background:'rgba(15,23,42,0.58)'}}>
-              <div ref={liveDockPanelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={t('live_dock.title') || 'Live Dashboard'} style={{width:'min(1180px, calc(100vw - 2rem))',maxHeight:'calc(100dvh - 2rem)',boxSizing:'border-box',overflowY:'auto',background:'white',borderRadius:16,border:'1px solid #cbd5e1',boxShadow:'0 24px 72px rgba(15,23,42,0.42)',padding:'1.1rem'}}>
-                <div style={{position:'sticky',top:'-1.1rem',zIndex:4,display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,margin:'-1.1rem -1.1rem 0.7rem',padding:'0.9rem 1.1rem',background:'rgba(255,255,255,0.97)',borderBottom:'1px solid #e2e8f0',borderRadius:'16px 16px 0 0'}}>
-                  <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.95rem'}}>{t('live_dock.title') || 'Live Dashboard'}</div>
-                  <button onClick={() => setShowLiveDock(false)} aria-label={t('common.close') || 'Close'} style={{minWidth:44,minHeight:44,background:'#f1f5f9',border:'none',borderRadius:6,padding:'0.15rem 0.5rem',cursor:'pointer',fontWeight:700}}>✕</button>
-                </div>
-                <button onClick={() => { setShowLiveDock(false); setShowSessionModal(true); }} style={{background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'monospace',fontWeight:800,color:'#1e3a8a',fontSize:'0.85rem'}} aria-label={t('live_dock.session_code_aria') || 'Show session code and projection screen'}>
-                  {(t('live_dock.code_label') || 'Code:') + ' ' + activeSessionCode}
-                </button>
-                {(() => {
-                  // At-a-glance session health (2026-07-20): the question a
-                  // teacher actually has mid-lesson is 'are students getting
-                  // what I share?' — answered from the live roster + the
-                  // session-sync trace, one tap from the full Session log.
-                  try {
-                    const rosterCount = Object.keys((sessionData && sessionData.roster) || {}).length;
-                    const transportLabel = _alloMbBridgeActive() ? (t('live_dock.transport_mailbox') || 'Class Mailbox') : 'Firebase';
-                    const trace = (typeof window !== 'undefined' && window.__alloSessionSyncTrace) || [];
-                    let lastSync = null; let lastProblem = null;
-                    for (let i = trace.length - 1; i >= 0; i--) {
-                      const ev = trace[i];
-                      if (!lastSync && (ev.event === 'sync:write-ok' || ev.event === 'mailbox:pack-cycle')) lastSync = ev;
-                      if (!lastProblem && /REFUSED|write-failed|transport-unavailable/.test(ev.event)) lastProblem = ev;
-                      if (lastSync && lastProblem) break;
-                    }
-                    const problemIsCurrent = lastProblem && (!lastSync || lastProblem.at > lastSync.at);
-                    const ageSec = lastSync ? Math.max(0, Math.round((Date.now() - lastSync.at) / 1000)) : null;
-                    return (
-                      <button type="button" onClick={() => { try { if (window.__alloOpenDiagnosticsLog) window.__alloOpenDiagnosticsLog('session'); } catch (e) {} }}
-                        aria-label={t('live_dock.health_aria') || 'Session health — open the session log'}
-                        style={{display:'flex',alignItems:'center',gap:6,width:'100%',textAlign:'left',padding:'0.4rem 0.55rem',marginBottom:6,borderRadius:8,cursor:'pointer',fontSize:'0.72rem',fontWeight:700,fontFamily:'inherit',border:'1px solid ' + (problemIsCurrent ? '#fecaca' : '#bbf7d0'),background:problemIsCurrent ? '#fef2f2' : '#f0fdf4',color:problemIsCurrent ? '#991b1b' : '#166534'}}>
-                        <span aria-hidden="true">{problemIsCurrent ? '⚠️' : '🟢'}</span>
-                        <span>{rosterCount + ' ' + (rosterCount === 1 ? (t('live_dock.student') || 'student') : (t('live_dock.students') || 'students')) + ' · ' + transportLabel}</span>
-                        <span style={{marginLeft:'auto',fontWeight:600,opacity:0.85}}>
-                          {problemIsCurrent ? (t('live_dock.sync_problem') || 'sync problem — tap') : (lastSync ? ((t('live_dock.synced') || 'synced') + ' ' + (ageSec < 90 ? ageSec + 's' : Math.round(ageSec / 60) + 'm') + ' ' + (t('live_dock.ago') || 'ago')) : (t('live_dock.no_sync_yet') || 'no sync yet'))}
-                        </span>
-                      </button>
-                    );
-                  } catch (e) { return null; }
-                })()}
-                {liveOrganizer && (() => {
-                  const organizerResource = [generatedContent]
-                    .concat(Array.isArray(history) ? history : [])
-                    .concat(Array.isArray(sessionData?.resources) ? sessionData.resources : [])
-                    .find(item => item && String(item.id || '') === String(liveOrganizer.resourceId || '')) || null;
-                  const countBadges = [
-                    { key: 'complete', label: 'complete', color: '#166534', background: '#dcfce7', border: '#86efac' },
-                    { key: 'attempted', label: 'attempted', color: '#9a3412', background: '#ffedd5', border: '#fdba74' },
-                    { key: 'ready', label: 'ready', color: '#3730a3', background: '#e0e7ff', border: '#a5b4fc' },
-                    { key: 'working', label: 'working', color: '#6d28d9', background: '#f5f3ff', border: '#c4b5fd' },
-                    { key: 'loading', label: 'loading', color: '#0e7490', background: '#ecfeff', border: '#67e8f9' },
-                    { key: 'failed', label: 'failed', color: '#b91c1c', background: '#fee2e2', border: '#fca5a5' },
-                    { key: 'pending', label: 'waiting', color: '#475569', background: '#f1f5f9', border: '#cbd5e1' },
-                  ].filter(item => liveOrganizerSummary[item.key] > 0);
-                  return (
-                    <>
-                      <div style={dockGroupLabel}>Live organizer activity</div>
-                      <section role="status" aria-live="polite" aria-label="Live visual organizer activity status" style={{padding:'0.65rem',border:'1px solid #a5b4fc',borderRadius:10,background:'#eef2ff',color:'#312e81'}}>
-                        <div style={{display:'flex',alignItems:'flex-start',gap:8,flexWrap:'wrap'}}>
-                          <span aria-hidden="true" style={{fontSize:'1.1rem'}}>🧩</span>
-                          <div style={{flex:'1 1 180px',minWidth:0}}>
-                            <div style={{fontSize:'0.8rem',fontWeight:900}}>{liveOrganizer.structureType || 'Visual organizer'} is live</div>
-                            <div style={{fontSize:'0.65rem',marginTop:2,color:'#4f46e5'}}>
-                              {liveOrganizerSummary.total
-                                ? `${liveOrganizerSummary.total} student${liveOrganizerSummary.total === 1 ? '' : 's'} in session`
-                                : 'Waiting for students to join'}
-                            </div>
-                          </div>
-                          <div style={{display:'flex',gap:5,flexWrap:'wrap',justifyContent:'flex-end'}}>
-                            <button type="button" disabled={!organizerResource} onClick={() => {
-                              if (!organizerResource) return;
-                              handleRestoreView(organizerResource, { suppressLiveFollow: true });
-                              setShowLiveDock(false);
-                            }} style={{border:'1px solid #818cf8',borderRadius:7,background:'white',color:'#3730a3',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:organizerResource?'pointer':'not-allowed',opacity:organizerResource?1:0.55}}>
-                              Open activity
-                            </button>
-                            {retryableLiveOrganizerUids.length > 0 && (
-                              <button type="button" disabled={interactiveOrganizerRetrying} onClick={() => retryInteractiveOrganizerStudents(retryableLiveOrganizerUids)} style={{border:'1px solid #f59e0b',borderRadius:7,background:'#fffbeb',color:'#92400e',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:interactiveOrganizerRetrying?'wait':'pointer',opacity:interactiveOrganizerRetrying?0.65:1}}>
-                                {interactiveOrganizerRetrying ? 'Retrying…' : `Retry waiting/failed (${retryableLiveOrganizerUids.length})`}
-                              </button>
-                            )}
-                            <button type="button" disabled={interactiveOrganizerSync.status === 'stopping'} onClick={() => broadcastInteractiveOrganizer(null)} style={{border:'1px solid #fca5a5',borderRadius:7,background:'#fff1f2',color:'#b91c1c',padding:'0.3rem 0.5rem',fontSize:'0.68rem',fontWeight:900,cursor:interactiveOrganizerSync.status === 'stopping'?'wait':'pointer',opacity:interactiveOrganizerSync.status === 'stopping'?0.65:1}}>
-                              {interactiveOrganizerSync.status === 'stopping' ? 'Stopping…' : 'Stop for students'}
-                            </button>
-                          </div>
-                        </div>
-                        {countBadges.length > 0 && (
-                          <div aria-label="Student activity launch summary" style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:8}}>
-                            {countBadges.map(item => (
-                              <span key={item.key} style={{border:'1px solid '+item.border,borderRadius:999,background:item.background,color:item.color,padding:'0.12rem 0.38rem',fontSize:'0.64rem',fontWeight:900}}>
-                                {liveOrganizerSummary[item.key]} {item.label}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {interactiveOrganizerSync.error && <p style={{margin:'0.4rem 0 0',fontSize:'0.64rem',color:'#991b1b'}}>The previous activity change failed; this activity remains live.</p>}
-                      </section>
-                    </>
-                  );
-                })()}
-                {window.AlloModules
-                  && window.AlloModules.LiveLessonRun
-                  && window.AlloModules.LiveLessonRun.LiveLessonRunPanel
-                  && React.createElement(window.AlloModules.LiveLessonRun.LiveLessonRunPanel, {
-                    history: getFilteredHistory(),
-                    getStudentSafeResources: _alloStudentSafeResources,
-                    currentItemId: generatedContent && generatedContent.id,
-                    currentResourceId: sessionData && sessionData.currentResourceId,
-                    sessionMode: sessionData && sessionData.mode,
-                    groups: (sessionData && sessionData.groups) || {},
-                    roster: rosterEntries,
-                    activeUnitLabel: activeUnitId === 'all'
-                      ? (t('history.all_units') || 'All resources')
-                      : activeUnitId === 'uncategorized'
-                        ? (t('history.uncategorized') || 'Uncategorized')
-                        : (((Array.isArray(units) ? units : []).find(unit => unit.id === activeUnitId) || {}).name || (t('common.unit') || 'Unit')),
-                    getTitle: item => String(item.title || item.label || getDefaultTitle(item.type)),
-                    getIcon: getIconForType,
-                    onOpenResource: item => {
-                      handleRestoreView(item);
-                      setShowLiveDock(false);
-                    },
-                    onSendToGroup: (groupId, item) => handleSetGroupResource(groupId, item.id),
-                    onSendToStudent: (uid, item) => handleSetStudentResource(uid, item.id),
-                    onSendToStudents: (uids, item) => handleSetStudentsResource(uids, item.id),
-                    onReleaseStudentResources: handleReleaseStudentResources,
-                    activitySnapshots: liveActivitySnapshots,
-                    onOpenActivity: openLiveActivityDashboard,
-                    presenterCuesByResourceId: livePresenterCuesByResourceId,
-                    onChangePresenterCue: updateLivePresenterCue,
-                    onLaunchPreparedInteraction: launchPreparedLiveInteraction,
-                    now: dockNow,
-                    signalFreshMs: LIVE_SIGNAL_FRESH_MS,
-                    t,
-                  })}
-                <div style={dockGroupLabel}>{t('live_dock.group_run') || 'Run'}</div>
-                <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                  <button style={{...dockCardStyle,border:'1px solid #a5b4fc',background:'#eef2ff',color:'#3730a3'}} onClick={() => {
-                    const adventureVoteOptions = activeView === 'adventure'
-                      ? Array.from(new Set((adventureState?.currentScene?.options || [])
-                          .map(option => String(typeof option === 'object' && option?.action ? option.action : option || '').replace(/\s+/g, ' ').trim().slice(0, 180))
-                          .filter(Boolean))).slice(0, 12)
-                      : [];
-                    setLivePollPreset({
-                      type: 'mcq',
-                      prompt: activeView === 'adventure'
-                        ? (t('adventure.class_outcome_vote_prompt') || 'Which outcome should the class choose next?')
-                        : (t('live_dock.call_vote_prompt') || 'Which outcome should we choose?'),
-                      options: adventureVoteOptions.length >= 2 ? adventureVoteOptions.join('\n') : 'Option A\nOption B',
-                      afterSubmitMode: 'wait',
-                    });
-                    setShowLivePollingPanel(true); setShowLiveDock(false);
-                  }}>
-                    <span aria-hidden="true">🗳️</span>{t('live_dock.call_vote') || 'Vote on outcomes'}
-                    <span style={{marginLeft:'auto',fontSize:'0.65rem',fontWeight:800,color:'#4f46e5'}}>{activeView === 'adventure' && (adventureState?.currentScene?.options || []).length >= 2 ? (t('live_dock.current_outcomes') || 'current outcomes') : (t('live_dock.edit_choices') || 'edit choices')}</span>
-                  </button>
-                  <button style={dockCardStyle} onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }}>
-                    <span aria-hidden="true">📊</span>{t('live_dock.poll') || 'Poll'}
-                  </button>
-                  <div style={{...dockCardStyle,cursor:'default',padding:'0.4rem 0.5rem'}}>
-                    <label style={{display:'flex',alignItems:'center',gap:8,minHeight:32,flex:1,cursor:'pointer'}}>
-                      <input
-                        type="checkbox"
-                        checked={liveSessionQaEnabled}
-                        onChange={(event) => {
-                          const enabled = event.target.checked;
-                          setLiveSessionQaEnabled(enabled);
-                          if (enabled) {
-                            setLivePollPreset(null);
-                            setShowLivePollingPanel(true);
-                            setShowLiveDock(false);
-                          }
-                        }}
-                        aria-label={t('live_dock.moderated_qa') || 'Moderated live Q&A'}
-                      />
-                      <span aria-hidden="true">❓</span>
-                      <span>{t('live_dock.moderated_qa') || 'Moderated live Q&A'}</span>
-                      <span style={{fontSize:'0.65rem',fontWeight:800,color:liveSessionQaEnabled?'#15803d':'#64748b'}}>{liveSessionQaEnabled ? (t('common.on') || 'on') : (t('common.off') || 'off')}</span>
-                    </label>
-                    {liveSessionQaEnabled && <button type="button" onClick={() => { setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false); }} aria-label={t('live_dock.moderate_qa') || 'Open Q&A moderation'} style={{border:'1px solid #7dd3fc',borderRadius:6,background:'#f0f9ff',color:'#075985',padding:'0.3rem 0.45rem',fontSize:'0.64rem',fontWeight:900,cursor:'pointer'}}>{t('live_dock.moderate') || 'Moderate'}</button>}
-                  </div>
-                  <button style={dockCardStyle} onClick={() => {
-                    setLivePollPreset({
-                      type: 'rating',
-                      prompt: t('live_dock.quick_check_prompt') || 'How is this landing for you right now?',
-                      ratingMin: 1, ratingMax: 3,
-                      ratingLabels: (t('live_dock.quick_check_labels') || '1 = Confused\n2 = Okay\n3 = Ready'),
-                      afterSubmitMode: 'dismiss',
-                    });
-                    setShowLivePollingPanel(true); setShowLiveDock(false);
-                  }}>
-                    <span aria-hidden="true">⚡</span>{t('live_dock.quick_check') || 'Check understanding'}
-                  </button>
-                  <button style={dockCardStyle} onClick={() => {
-                    setLivePollPreset({
-                      type: 'wordcloud',
-                      prompt: t('live_dock.word_cloud_prompt') || 'What word or short phrase best captures your thinking?',
-                      afterSubmitMode: 'wait',
-                    });
-                    setShowLivePollingPanel(true); setShowLiveDock(false);
-                  }}>
-                    <span aria-hidden="true">☁️</span>{t('live_dock.word_cloud') || 'Word Cloud'}
-                  </button>
-                  <button style={dockCardStyle} onClick={() => {
-                    setLivePollPreset({
-                      type: 'freetext',
-                      prompt: t('live_dock.feedback_response_prompt') || 'Explain your thinking using evidence from the lesson.',
-                      afterSubmitMode: 'wait',
-                      feedbackEnabled: true,
-                      feedbackCriteria: t('live_dock.feedback_response_criteria') || 'Identify one accurate idea, explain it clearly, and support it with relevant evidence.',
-                      feedbackAudienceMode: 'class',
-                    });
-                    setShowLivePollingPanel(true); setShowLiveDock(false);
-                  }}>
-                    <span aria-hidden="true">✍️</span>{t('live_dock.feedback_response') || 'Feedback Response'}
-                  </button>
-                  <button style={dockCardStyle} onClick={() => { setPictionaryPreparedInteraction(null); setPictionaryInitialMode('pictionary'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
-                    <span aria-hidden="true">🎨</span>{t('pictionary.button') || 'Concept Pictionary'}
-                  </button>
-                  <button style={dockCardStyle} onClick={() => { setPictionaryPreparedInteraction(null); setPictionaryInitialMode('sketch'); setShowPictionaryHost(true); setShowLiveDock(false); }}>
-                    <span aria-hidden="true">✏️</span>{t('live_dock.sketch_response') || 'Sketch Response'}
-                  </button>
-                </div>
-                <div style={dockGroupLabel}>{t('live_dock.group_guide') || 'Guide'}</div>
-                <div style={{display:'flex',flexDirection:'column',gap:6}}>
-                  <button type="button" disabled={!generatedContent} style={{...dockCardStyle,opacity:generatedContent?1:0.55,cursor:generatedContent?'pointer':'not-allowed'}} onClick={() => { if (!generatedContent) return; setShowLiveDock(false); handleSetIsZenModeToTrue(); }}>
-                    <span aria-hidden="true">🖥️</span>{t('live_dock.focus_display') || 'Present to class'}
-                    <span style={{marginLeft:'auto',fontSize:'0.65rem',fontWeight:700,color:'#1d4ed8'}}>{t('live_dock.current_view') || 'current view'}</span>
-                  </button>
-                  <button type="button" style={dockCardStyle} onClick={() => { setShowLiveDock(false); handleSetShowStudyTimerModalToTrue(); }}>
-                    <span aria-hidden="true">⏱️</span>{t('a11y.task_timer') || 'Class timer'}
-                    {isStudyTimerRunning ? <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:800,color:'#15803d',fontVariantNumeric:'tabular-nums'}}>{formatTime(studyTimeLeft)}</span> : null}
-                  </button>
-                  <button style={dockCardStyle} onClick={() => toggleSessionMode()}>
-                    <span aria-hidden="true">{sessionData && sessionData.mode === 'sync' ? '🧑‍🏫' : '\uD83C\uDF92'}</span>
-                    {(sessionData && sessionData.mode === 'sync') ? (t('session.teacher_paced') || 'Teacher-led') : (t('session.student_paced') || 'Student-paced')}
-                    <span style={{marginLeft:'auto',fontSize:'0.68rem',fontWeight:700,color:'#1d4ed8'}}>{t('live_dock.toggle') || 'toggle'}</span>
-                  </button>
-                  <button style={dockCardStyle} onClick={() => { setShowLiveDock(false); handleSetShowGroupModalToTrue(); }}>
-                    <span aria-hidden="true">👥</span>{t('groups.manage_button') || 'Groups'}
-                  </button>
-                </div>
-                <div style={dockGroupLabel}>Recognize</div>
-                <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:6,padding:'0.45rem',background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:9}}>
-                  <div style={{gridColumn:'1 / -1',display:'grid',gridTemplateColumns:'1fr auto',gap:6,padding:'0.4rem',borderRadius:7,background:'white',border:'1px solid #86efac'}}>
-                    <button type="button" role="switch" aria-checked={havenRecognitionConfig.enabled} disabled={havenConfigBusy || havenRewardBusy} onClick={() => handleUpdateHavenRecognitionConfig({ enabled: !havenRecognitionConfig.enabled })} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,border:'none',background:'transparent',padding:0,color:'#14532d',fontSize:'0.7rem',fontWeight:900,cursor:havenConfigBusy?'wait':'pointer'}}>
-                      <span>{havenRecognitionConfig.enabled ? 'Recognition enabled' : 'Recognition off'}</span>
-                      <span aria-hidden="true" style={{width:30,height:17,borderRadius:999,background:havenRecognitionConfig.enabled?'#16a34a':'#cbd5e1',padding:2,display:'flex',justifyContent:havenRecognitionConfig.enabled?'flex-end':'flex-start'}}><span style={{width:13,height:13,borderRadius:'50%',background:'white',display:'block'}}></span></span>
-                    </button>
-                    <label style={{display:'flex',alignItems:'center',gap:4,fontSize:'0.66rem',fontWeight:800,color:'#166534'}}>
-                      Session cap
-                      <select value={havenRecognitionConfig.perStudentTokenCap} disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy} onChange={(event) => handleUpdateHavenRecognitionConfig({ perStudentTokenCap: Number(event.target.value) })} aria-label={t('allohaven.token_cap_aria') || 'AlloHaven per-student session token cap'} style={{border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.2rem',fontSize:'0.68rem'}}>
-                        {ALLOHAVEN_RECOGNITION_CAPS.map(cap => <option key={cap} value={cap}>{cap}</option>)}
-                      </select>
-                    </label>
-                    <p style={{gridColumn:'1 / -1',margin:0,fontSize:'0.61rem',lineHeight:1.35,color:'#4d7c0f'}}>{havenRecognitionConfig.enabled ? ('Each student can receive up to ' + havenRecognitionConfig.perStudentTokenCap + ' tokens in this session.') : 'Opt in to use recognition in this session. It remains off by default.'}</p>
-                  </div>
-                  <label style={{display:'flex',flexDirection:'column',gap:3,fontSize:'0.68rem',fontWeight:800,color:'#166534'}}>
-                    Positive progress
-                    <select
-                      value={havenRewardReasonId}
-                      onChange={(event) => setHavenRewardReasonId(event.target.value)}
-                      disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy}
-                      aria-label={t('allohaven.reason_aria') || 'AlloHaven recognition reason'}
-                      style={{minWidth:0,width:'100%',border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.3rem',fontSize:'0.72rem'}}
-                    >
-                      {ALLOHAVEN_CLASSROOM_REWARD_REASONS.filter(reason => reason.id !== 'group_goal').map(reason => (
-                        <option key={reason.id} value={reason.id}>{reason.label}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label style={{display:'flex',flexDirection:'column',gap:3,fontSize:'0.68rem',fontWeight:800,color:'#166534'}}>
-                    Tokens
-                    <select
-                      value={havenRewardAmount}
-                      onChange={(event) => setHavenRewardAmount(Number(event.target.value) === 2 ? 2 : 1)}
-                      disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy}
-                      aria-label={t('allohaven.token_amount_aria') || 'AlloHaven token amount'}
-                      style={{border:'1px solid #86efac',borderRadius:6,background:'white',color:'#14532d',padding:'0.3rem',fontSize:'0.72rem'}}
-                    >
-                      <option value={1}>+1</option>
-                      <option value={2}>+2</option>
-                    </select>
-                  </label>
-                  <p style={{gridColumn:'1 / -1',margin:0,fontSize:'0.64rem',lineHeight:1.35,color:'#3f6212'}}>
-                    Choose a reason, then use the leaf button beside a student. Awards are private; no behavior notes are synced.
-                  </p>
-                  <div style={{gridColumn:'1 / -1',display:'flex',flexWrap:'wrap',gap:5}}>
-                    <button
-                      type="button"
-                      disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy || Object.keys(rosterEntries).length === 0}
-                      onClick={() => handleRecognizeStudents(Object.keys(rosterEntries), 'students')}
-                      aria-label={'Recognize all connected students with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's') + ' each'}
-                      style={{border:'1px solid #15803d',borderRadius:7,background:'#166534',color:'white',padding:'0.3rem 0.48rem',fontSize:'0.68rem',fontWeight:800,cursor:havenRewardBusy?'wait':'pointer',opacity:havenRewardBusy?0.65:1}}
-                    >
-                      {havenRewardBusy ? 'Sending…' : '🌿 Recognize class'}
-                    </button>
-                    {Object.entries((sessionData && sessionData.groups) || {}).map(([groupId, group]) => {
-                      const groupUids = Object.keys(rosterEntries).filter(uid => rosterEntries[uid] && rosterEntries[uid].groupId === groupId);
-                      if (!groupUids.length) return null;
-                      const groupLabel = (group && group.name) || 'Group';
-                      return (
-                        <button
-                          key={'haven-group-' + groupId}
-                          type="button"
-                          disabled={!havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy}
-                          onClick={() => handleRecognizeStudents(groupUids, 'students in ' + groupLabel)}
-                          aria-label={'Recognize ' + groupLabel + ' group, ' + groupUids.length + ' students, with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's') + ' each'}
-                          style={{border:'1px solid #86efac',borderRadius:7,background:'white',color:'#166534',padding:'0.3rem 0.48rem',fontSize:'0.68rem',fontWeight:800,cursor:havenRewardBusy?'wait':'pointer',opacity:havenRewardBusy?0.65:1}}
-                        >
-                          {groupLabel + ' (' + groupUids.length + ')'}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {havenRewardReceipt ? (
-                    <div role="status" aria-live="polite" aria-atomic="true" style={{gridColumn:'1 / -1',padding:'0.38rem 0.45rem',borderRadius:7,background:havenRewardReceipt.partial?'#fffbeb':'#dcfce7',border:'1px solid '+(havenRewardReceipt.partial?'#fde68a':'#86efac'),fontSize:'0.66rem',lineHeight:1.4,color:havenRewardReceipt.partial?'#92400e':'#14532d'}}>
-                      <strong>{havenRewardReceipt.partial ? 'Partial delivery' : 'Last delivery confirmed'}</strong>
-                      {' · ' + havenRewardReceipt.count + ' ' + havenRewardReceipt.scopeLabel}
-                      {' · +' + havenRewardReceipt.amount + ' each · ' + havenRewardReceipt.reasonLabel}
-                      {havenRewardReceipt.skippedCount ? ' · ' + havenRewardReceipt.skippedCount + ' skipped at session cap' : ''}
-                      {' · ' + new Date(havenRewardReceipt.at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}
-                    </div>
-                  ) : null}
-                  {recentHavenRecognition.length > 0 ? (
-                    <div style={{gridColumn:'1 / -1'}}>
-                      <button
-                        type="button"
-                        onClick={() => setShowHavenRewardAudit(value => !value)}
-                        aria-expanded={showHavenRewardAudit}
-                        aria-controls="allohaven-recognition-delivery-audit"
-                        style={{width:'100%',display:'flex',justifyContent:'space-between',alignItems:'center',border:'none',background:'transparent',padding:'0.15rem 0',fontSize:'0.66rem',fontWeight:800,color:'#166534',cursor:'pointer'}}
-                      >
-                        <span>Recent private deliveries ({recentHavenRecognition.length})</span>
-                        <span aria-hidden="true">{showHavenRewardAudit ? '▴' : '▾'}</span>
-                      </button>
-                      {showHavenRewardAudit ? (
-                        <ol id="allohaven-recognition-delivery-audit" aria-label={t('allohaven.recent_deliveries_aria') || 'Recent private AlloHaven recognition deliveries'} style={{listStyle:'none',margin:'0.3rem 0 0',padding:0,display:'flex',flexDirection:'column',gap:3,maxHeight:130,overflowY:'auto'}}>
-                          {recentHavenRecognition.map(event => (
-                            <li key={event.id} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:4,padding:'0.3rem 0.38rem',borderRadius:6,background:'white',border:'1px solid #bbf7d0',fontSize:'0.64rem',color:'#365314'}}>
-                              <span style={{fontWeight:800,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{event.studentName + ' · ' + event.reasonLabel}</span>
-                              <span style={{fontWeight:900}}>+{event.amount}</span>
-                              <time dateTime={new Date(event.at).toISOString()} style={{gridColumn:'1 / -1',color:'#64748b'}}>{new Date(event.at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}</time>
-                            </li>
-                          ))}
-                        </ol>
-                      ) : null}
-                      <p style={{margin:'0.3rem 0 0',fontSize:'0.6rem',lineHeight:1.35,color:'#4d7c0f'}}>Teacher-only delivery audit. No balances, rankings, or behavior notes.</p>
-                    </div>
-                  ) : null}
-                </div>
-                <div style={dockGroupLabel}>Class Goals</div>
-                {(() => {
-                  // Class Goals (docs/GROUP_CONTINGENCY_DESIGN.md, Ring A):
-                  // whole-class interdependent contingencies, earn-only,
-                  // teacher-observed. "Met" fans out ONE private group_goal
-                  // recognition to every connected student through the same
-                  // capped path as Recognize. Goal names never leave this
-                  // device — students only ever see "Class goal achieved."
-                  const goals = normalizeClassGoals(rosterKey && rosterKey.classGoals);
-                  const activeGoals = goals.filter(goal => goal.active);
-                  const saveGoals = (next) => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), classGoals: next }));
-                  const draft = classGoalDraft;
-                  const goalBtnDisabled = !havenRecognitionConfig.enabled || havenConfigBusy || havenRewardBusy || Object.keys(rosterEntries).length === 0;
-                  return (
-                    <div style={{display:'flex',flexDirection:'column',gap:6,padding:'0.45rem',background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:9}}>
-                      <p style={{margin:0,fontSize:'0.61rem',lineHeight:1.35,color:'#0c4a6e'}}>
-                        Whole-class goals, earn-only. Goal names stay on this device; students privately receive “Class goal achieved.”
-                        {!havenRecognitionConfig.enabled ? ' Enable recognition above to award.' : ''}
-                      </p>
-                      {activeGoals.map(goal => {
-                        const teamUids = resolveClassGoalTeamUids(goal, rosterEntries, rosterKey);
-                        const progress = evaluateClassGoalProgress(goal, teamUids, rosterEntries, sessionData);
-                        const teamLabel = goal.team === 'class' ? null
-                          : goal.team.indexOf('group:') === 0
-                            ? (((rosterKey && rosterKey.groups && rosterKey.groups[goal.team.slice(6)]) || {}).name || 'Group')
-                            : 'Pod ' + goal.team.slice(4);
-                        const independent = goal.mode === 'independent';
-                        const checklistOpen = independent && openChecklistGoalId === goal.id;
-                        const markedUids = checklistOpen ? teamUids.filter(uid => checklistMarks[uid]) : [];
-                        const awardDisabled = goalBtnDisabled || teamUids.length === 0;
-                        return (
-                          <div key={goal.id} style={{display:'flex',flexDirection:'column',gap:4,padding:'0.32rem 0.4rem',borderRadius:7,background:'white',border:'1px solid ' + (progress && progress.met ? '#0284c7' : '#bae6fd'),boxShadow:progress && progress.met ? '0 0 0 1px #0284c7' : 'none'}}>
-                            <div style={{display:'grid',gridTemplateColumns:'1fr auto auto',gap:5,alignItems:'center'}}>
-                              <span style={{fontSize:'0.66rem',fontWeight:800,color:'#0c4a6e',overflow:'hidden',textOverflow:'ellipsis'}}>
-                                {goal.label}
-                                <span style={{fontWeight:600,color:'#0369a1'}}>
-                                  {(teamLabel ? ' · ' + teamLabel : '')
-                                    + (independent ? ' · each student' : '')
-                                    + (goal.allowance && !independent ? ' · ok with up to ' + goal.allowance + ' exception' + (goal.allowance === 1 ? '' : 's') : '')
-                                    + (goal.metCount ? ' · met ×' + goal.metCount : '')}
-                                </span>
-                                {progress ? (
-                                  <span style={{display:'block',fontWeight:700,color:progress.met ? '#0369a1' : '#64748b'}}>
-                                    {progress.label + (progress.met ? ' · criterion met — your call' : '')}
-                                  </span>
-                                ) : null}
-                              </span>
-                              {independent ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (checklistOpen) { setOpenChecklistGoalId(null); return; }
-                                    const seeded = {};
-                                    teamUids.forEach(uid => { seeded[uid] = !!(progress && progress.perStudentMet && progress.perStudentMet[uid]); });
-                                    setChecklistMarks(seeded);
-                                    setOpenChecklistGoalId(goal.id);
-                                  }}
-                                  aria-expanded={checklistOpen}
-                                  aria-label={'Open per-student checklist for goal ' + goal.label}
-                                  style={{border:'1px solid #0369a1',borderRadius:7,background:checklistOpen?'#e0f2fe':'#0284c7',color:checklistOpen?'#0369a1':'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
-                                >☑ Checklist</button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  disabled={awardDisabled}
-                                  onClick={() => handleAwardClassGoal(goal.id)}
-                                  title={havenRecognitionConfig.enabled ? 'Criterion met — privately award +' + goal.tokens + ' AlloHaven token' + (goal.tokens === 1 ? '' : 's') + ' to each student on this team.' : 'Enable recognition above first.'}
-                                  aria-label={'Goal met: ' + goal.label + ' — award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + teamUids.length + ' students'}
-                                  style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.28rem 0.45rem',fontSize:'0.66rem',fontWeight:800,cursor:awardDisabled?'not-allowed':'pointer',opacity:awardDisabled?0.55:1}}
-                                >
-                                  🎯 Met · +{goal.tokens}
-                                </button>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => { saveGoals(goals.filter(item => item.id !== goal.id)); if (openChecklistGoalId === goal.id) setOpenChecklistGoalId(null); }}
-                                aria-label={'Remove goal ' + goal.label}
-                                style={{border:'none',background:'transparent',color:'#64748b',fontSize:'0.72rem',fontWeight:900,cursor:'pointer',padding:'0.1rem 0.2rem'}}
-                              >✕</button>
-                            </div>
-                            {checklistOpen ? (
-                              <div style={{display:'flex',flexDirection:'column',gap:4,paddingTop:2,borderTop:'1px dashed #bae6fd'}}>
-                                <p style={{margin:0,fontSize:'0.6rem',color:'#0369a1'}}>
-                                  {progress ? 'Pre-checked from live progress — adjust before awarding.' : 'Mark each student who met this goal.'}
-                                </p>
-                                <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-                                  {teamUids.map(uid => {
-                                    const marked = !!checklistMarks[uid];
-                                    const sName = (rosterEntries[uid] && rosterEntries[uid].name) || 'Student';
-                                    return (
-                                      <button
-                                        key={goal.id + '-' + uid}
-                                        type="button"
-                                        role="checkbox"
-                                        aria-checked={marked}
-                                        aria-label={sName + (marked ? ' — marked as met' : ' — not marked')}
-                                        onClick={() => setChecklistMarks(prev => ({ ...prev, [uid]: !prev[uid] }))}
-                                        style={{border:'1px solid ' + (marked ? '#0369a1' : '#cbd5e1'),borderRadius:999,background:marked?'#e0f2fe':'white',color:marked?'#0c4a6e':'#64748b',padding:'0.2rem 0.45rem',fontSize:'0.63rem',fontWeight:800,cursor:'pointer'}}
-                                      >{(marked ? '☑ ' : '☐ ') + sName}</button>
-                                    );
-                                  })}
-                                  {teamUids.length === 0 ? <span style={{fontSize:'0.62rem',color:'#64748b',fontStyle:'italic'}}>No connected students on this team.</span> : null}
-                                </div>
-                                <button
-                                  type="button"
-                                  disabled={goalBtnDisabled || markedUids.length === 0}
-                                  onClick={() => { handleAwardIndependentGoal(goal.id, markedUids); setOpenChecklistGoalId(null); }}
-                                  aria-label={'Award ' + goal.tokens + ' token' + (goal.tokens === 1 ? '' : 's') + ' to each of ' + markedUids.length + ' marked students'}
-                                  style={{alignSelf:'flex-end',border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:(goalBtnDisabled || markedUids.length === 0)?'not-allowed':'pointer',opacity:(goalBtnDisabled || markedUids.length === 0)?0.55:1}}
-                                >🎯 Award {markedUids.length} · +{goal.tokens} each</button>
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                      {activeGoals.length === 0 && !draft ? (
-                        <p style={{margin:0,fontSize:'0.62rem',color:'#64748b',fontStyle:'italic'}}>No class goals yet — add one to recognize whole-class accomplishments.</p>
-                      ) : null}
-                      {draft ? (
-                        <div style={{display:'flex',flexDirection:'column',gap:4,padding:'0.4rem',borderRadius:7,background:'white',border:'1px solid #bae6fd'}}>
-                          <label style={{display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
-                            Starting point
-                            <select
-                              value={draft.templateId}
-                              onChange={(event) => {
-                                const template = CLASS_GOAL_TEMPLATES.find(item => item.id === event.target.value) || CLASS_GOAL_TEMPLATES[0];
-                                setClassGoalDraft({ ...draft, templateId: template.id, label: template.id === 'custom' ? '' : template.label });
-                              }}
-                              aria-label={t('class_goals.template_aria') || 'Class goal starting template'}
-                              style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
-                            >
-                              {CLASS_GOAL_TEMPLATES.map(template => <option key={template.id} value={template.id}>{template.label}</option>)}
-                            </select>
-                          </label>
-                          <label style={{display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
-                            Goal name (stays on this device)
-                            <input
-                              type="text"
-                              value={draft.label}
-                              maxLength={80}
-                              onChange={(event) => setClassGoalDraft({ ...draft, label: event.target.value })}
-                              placeholder={t('class_goals.name_placeholder') || 'e.g., Lined up ready in under 2 minutes'}
-                              aria-label={t('class_goals.name_aria') || 'Class goal name, kept on this device only'}
-                              style={{border:'1px solid #bae6fd',borderRadius:6,padding:'0.28rem',fontSize:'0.68rem',color:'#0c4a6e'}}
-                            />
-                          </label>
-                          <div style={{display:'flex',gap:6}}>
-                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
-                              How it's earned
-                              <select value={draft.mode} onChange={(event) => setClassGoalDraft({ ...draft, mode: event.target.value === 'independent' ? 'independent' : 'interdependent' })} aria-label={t('class_goals.mode_aria') || 'Whole team together, or each student individually'} style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
-                                <option value="interdependent">Team together</option>
-                                <option value="independent">Each student</option>
-                              </select>
-                            </label>
-                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
-                              Team
-                              <select
-                                value={draft.team}
-                                onChange={(event) => setClassGoalDraft({ ...draft, team: event.target.value })}
-                                aria-label={t('class_goals.scope_aria') || 'Which students this goal covers'}
-                                style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
-                              >
-                                <option value="class">Whole class</option>
-                                {Object.keys((rosterKey && rosterKey.groups) || {}).map(gid => (
-                                  <option key={'goal-team-' + gid} value={'group:' + gid}>{(rosterKey.groups[gid] && rosterKey.groups[gid].name) || 'Group'}</option>
-                                ))}
-                                {(() => {
-                                  const SC = window.AlloModules && window.AlloModules.SeatingChart;
-                                  if (!SC || typeof SC.listPods !== 'function') return null;
-                                  let pods = [];
-                                  try { pods = SC.listPods(rosterKey); } catch(_) { pods = []; }
-                                  return pods.map(pod => <option key={'goal-pod-' + pod.index} value={'pod:' + pod.index}>{pod.label}</option>);
-                                })()}
-                              </select>
-                            </label>
-                          </div>
-                          {(!(window.AlloModules && window.AlloModules.SeatingChart) && rosterKey && rosterKey.seating) ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} }
-                                window.setTimeout(() => setClassGoalDraft(current => current ? { ...current } : current), 900);
-                              }}
-                              style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:6,background:'white',color:'#0369a1',padding:'0.2rem 0.4rem',fontSize:'0.6rem',fontWeight:800,cursor:'pointer'}}
-                            >Load seating pods as teams…</button>
-                          ) : null}
-                          <div style={{display:'flex',gap:6}}>
-                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
-                              Tokens
-                              <select value={draft.tokens} onChange={(event) => setClassGoalDraft({ ...draft, tokens: Number(event.target.value) === 2 ? 2 : 1 })} aria-label={t('class_goals.tokens_aria') || 'Tokens awarded per student when this goal is met'} style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
-                                <option value={1}>+1</option>
-                                <option value={2}>+2</option>
-                              </select>
-                            </label>
-                            <label style={{flex:1,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}} title={t('class_goals.allowance_help') || 'Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.'}>
-                              Allowance
-                              <select value={draft.allowance} onChange={(event) => setClassGoalDraft({ ...draft, allowance: Math.max(0, Math.min(5, Number(event.target.value) || 0)) })} aria-label={t('class_goals.allowance_aria') || 'Exceptions allowed while still meeting the goal'} style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}>
-                                {[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n === 0 ? 'None' : 'Up to ' + n}</option>)}
-                              </select>
-                            </label>
-                          </div>
-                          <div style={{display:'flex',gap:6}}>
-                            <label style={{flex:1.4,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}} title={t('class_goals.criteria_help') || 'App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.'}>
-                              Progress signal
-                              <select
-                                value={draft.trackedMetric}
-                                onChange={(event) => {
-                                  const metric = event.target.value;
-                                  setClassGoalDraft({ ...draft, trackedMetric: metric, trackedThreshold: metric === 'xp_total' ? 500 : 1 });
-                                }}
-                                aria-label={t('class_goals.criteria_aria') || 'Optional app-tracked progress signal for this goal'}
-                                style={{border:'1px solid #bae6fd',borderRadius:6,background:'white',color:'#0c4a6e',padding:'0.25rem',fontSize:'0.68rem'}}
-                              >
-                                <option value="none">Teacher observed (none)</option>
-                                <option value="xp_total">Team session XP reaches…</option>
-                                <option value="responded_each">Everyone responds ≥…</option>
-                              </select>
-                            </label>
-                            {draft.trackedMetric !== 'none' ? (
-                              <label style={{flex:0.6,display:'flex',flexDirection:'column',gap:2,fontSize:'0.64rem',fontWeight:800,color:'#0c4a6e'}}>
-                                {draft.trackedMetric === 'xp_total' ? 'XP' : 'Responses'}
-                                <input
-                                  type="number"
-                                  min={1}
-                                  max={1000000}
-                                  value={draft.trackedThreshold}
-                                  onChange={(event) => setClassGoalDraft({ ...draft, trackedThreshold: Math.max(1, Math.min(1000000, Math.floor(Number(event.target.value) || 1))) })}
-                                  aria-label={draft.trackedMetric === 'xp_total' ? 'XP threshold for this goal' : 'Responses required per student'}
-                                  style={{border:'1px solid #bae6fd',borderRadius:6,padding:'0.25rem',fontSize:'0.68rem',color:'#0c4a6e'}}
-                                />
-                              </label>
-                            ) : null}
-                          </div>
-                          <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
-                            <button type="button" onClick={() => setClassGoalDraft(null)} style={{border:'1px solid #cbd5e1',borderRadius:7,background:'white',color:'#475569',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}>Cancel</button>
-                            <button
-                              type="button"
-                              disabled={!draft.label.trim()}
-                              onClick={() => {
-                                const label = draft.label.trim().slice(0, 80);
-                                if (!label) return;
-                                const requestedGroupId = typeof draft.team === 'string' && draft.team.indexOf('group:') === 0 ? draft.team.slice(6) : '';
-                                const goalTeam = requestedGroupId && !(rosterKey && rosterKey.groups && rosterKey.groups[requestedGroupId])
-                                  ? 'class' : draft.team;
-                                const goal = normalizeClassGoal({
-                                  id: 'goal-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
-                                  label,
-                                  templateId: draft.templateId,
-                                  tokens: draft.tokens,
-                                  allowance: draft.allowance,
-                                  mode: draft.mode,
-                                  team: goalTeam,
-                                  tracked: draft.trackedMetric !== 'none' ? { metric: draft.trackedMetric, threshold: draft.trackedThreshold } : null,
-                                  active: true,
-                                });
-                                if (goal) saveGoals(goals.concat([goal]).slice(0, 20));
-                                setClassGoalDraft(null);
-                              }}
-                              style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer',opacity:!draft.label.trim()?0.5:1}}
-                            >Add goal</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setClassGoalDraft({ templateId: 'transition_smooth', label: 'Smooth transition', tokens: 1, allowance: 1, mode: 'interdependent', team: 'class', trackedMetric: 'none', trackedThreshold: 1 })}
-                          style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:7,background:'white',color:'#0369a1',padding:'0.28rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer'}}
-                        >＋ Add class goal</button>
-                      )}
-                    </div>
-                  );
-                })()}
-                {(() => {
-                  // Students: delivery status (which resource each student is
-                  // actually viewing vs their target) + per-student push of the
-                  // teacher's currently open resource. Precedence for target:
-                  // individual > group > class (sync mode only for class).
-                  const studentUids = Object.keys(rosterEntries);
-                  if (studentUids.length === 0) return null;
-                  const titleFor = (id) => {
-                    if (!id) return null;
-                    const h = (history || []).find(x => x && x.id === id);
-                    return h ? (h.title || getDefaultTitle(h.type)) : null;
-                  };
-                  const targetFor = (entry) => resolveLiveStudentResourceTarget({
-                    entry,
-                    groups: sessionData && sessionData.groups,
-                    currentResourceId: sessionData && sessionData.currentResourceId,
-                    sessionMode: sessionData && sessionData.mode,
-                  });
-                  const canPushCurrent = !!(generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type));
-                  const rows = studentUids
-                    .map(uid => ({ uid, entry: rosterEntries[uid] || {} }))
-                    .sort((a, b) => String(a.entry.name || '').localeCompare(String(b.entry.name || '')));
-                  return (
-                    <>
-                      <div style={dockGroupLabel}>{(t('live_dock.group_students') || 'Students') + ' (' + rows.length + ')'}</div>
-                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:170,overflowY:'auto'}}>
-                        {rows.map(({ uid, entry }) => {
-                          const target = targetFor(entry);
-                          const targetId = target && target.resourceId;
-                          const targetAt = target ? Number(target.resourceAt) : NaN;
-                          const viewing = entry.viewingResourceId || null;
-                          const assigned = !!(targetId && Number.isFinite(targetAt) && targetAt > 0);
-                          const hasAssignmentAck = Object.prototype.hasOwnProperty.call(entry, 'viewingResourceAt');
-                          const onTarget = !!(targetId && viewing === targetId && (!assigned
-                            || (hasAssignmentAck
-                              ? Number(entry.viewingResourceAt) === targetAt
-                              : Number(entry.viewingAt) >= targetAt)));
-                          const deliveryStatusMatches = assigned && Number(entry.viewingResourceAt) === targetAt;
-                          const deliveryStatus = deliveryStatusMatches ? entry.viewingResourceStatus : null;
-                          const statusDot = !targetId
-                            ? { glyph: '.', color: '#94a3b8', label: t('live_dock.status_free') || 'no target' }
-                            : deliveryStatus === 'failed'
-                              ? { glyph: '!', color: '#dc2626', label: 'resource load failed' }
-                              : deliveryStatus === 'loading'
-                                ? { glyph: '~', color: '#0891b2', label: 'resource loading' }
-                                : assigned && onTarget
-                              ? { glyph: 'O', color: '#16a34a', label: t('live_dock.status_opened') || 'opened' }
-                              : assigned && viewing
-                                ? { glyph: 'o', color: '#b45309', label: t('live_dock.status_assigned_elsewhere') || 'assigned · elsewhere' }
-                                : assigned
-                                  ? { glyph: '-', color: '#b45309', label: t('live_dock.status_assigned_pending') || 'assigned · not opened' }
-                                  : onTarget
-                                    ? { glyph: 'O', color: '#16a34a', label: t('live_dock.status_on') || 'on it' }
-                                    : viewing
-                                      ? { glyph: 'o', color: '#b45309', label: t('live_dock.status_elsewhere') || 'elsewhere' }
-                                      : { glyph: '-', color: '#94a3b8', label: t('live_dock.status_unknown') || 'no signal' };
-                          const viewingTitle = titleFor(viewing);
-                          // Presence (2026-07-16): from roster.{uid}.lastSeen heartbeats. Bands are
-                          // generous vs the ~60s beat (>=2 missed = quiet, >=3 = likely gone).
-                          // Freshness re-evaluates whenever any snapshot re-renders the dock —
-                          // heartbeats themselves arrive as snapshots, so it stays current.
-                          const presenceState = classifyLiveRosterPresence({ entry, now: dockNow });
-                          const presence = presenceState.status === 'connected'
-                            ? { color: '#16a34a', label: t('live_dock.presence_here') || 'connected' }
-                            : presenceState.status === 'quiet'
-                              ? { color: '#b45309', label: t('live_dock.presence_quiet') || 'quiet for 2+ min' }
-                              : presenceState.status === 'disconnected'
-                                ? { color: '#dc2626', label: t('live_dock.presence_gone') || 'disconnected?' }
-                                : { color: '#94a3b8', label: t('live_dock.presence_unknown') || 'presence unknown (older app version)' };
-                          const rewardTokensUsed = getAlloHavenSessionRecognitionTokens(entry, havenRewardDraftsRef.current[uid]);
-                          const rewardTokensRemaining = Math.max(0, havenRecognitionConfig.perStudentTokenCap - rewardTokensUsed);
-                          const canRecognizeStudent = havenRecognitionConfig.enabled && rewardTokensRemaining >= havenRewardAmount && !havenConfigBusy && !havenRewardBusy;
-                          const wsAudioState = resolveWordSoundsAudioDeliveryState({ progress: entry.wsProgress, targetAt: assigned ? targetAt : null, now: liveAudioStatusNow });
-                          const wsAudioStatus = wsAudioState.status;
-                          const wsAudioNeedsAttention = wsAudioState.needsAttention;
-                          const wsAudioStalled = wsAudioState.stalled;
-                          const wsAudioBusy = wsAudioState.busy;
-                          const wsAudioLabel = wsAudioStalled ? (t('word_sounds.audio_status_no_response') || 'No audio response — resend')
-                            : wsAudioStatus === 'requested' ? (t('word_sounds.audio_status_requested') || 'Resend requested')
-                              : wsAudioStatus === 'resending' ? (t('word_sounds.audio_status_resending') || 'Resending audio...')
-                                : wsAudioStatus === 'checking' ? (t('word_sounds.audio_status_checking', { ready: entry.wsProgress?.audioReady || 0, total: entry.wsProgress?.audioTotal || 0 }) || ('Checking audio ' + (entry.wsProgress?.audioReady || 0) + '/' + (entry.wsProgress?.audioTotal || 0)))
-                                  : wsAudioStatus === 'blocked' ? (t('word_sounds.audio_status_blocked') || 'Playback blocked — student must tap')
-                                    : wsAudioStatus === 'unsupported' ? (t('word_sounds.audio_status_unsupported') || 'Audio unsupported')
-                                      : wsAudioStatus === 'damaged' ? (t('word_sounds.audio_status_damaged') || 'Audio damaged')
-                                        : (t('word_sounds.audio_status_missing', { ready: entry.wsProgress?.audioReady || 0, total: entry.wsProgress?.audioTotal || 0 }) || ('Audio missing ' + (entry.wsProgress?.audioReady || 0) + '/' + (entry.wsProgress?.audioTotal || 0)));
-                          const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? (t('word_sounds.audio_resend') || 'Resend audio') : wsAudioLabel;
-                          const activeOrganizer = sessionData?.interactiveOrganizer;
-                          const organizerProgress = normalizeLiveOrganizerProgress(entry.organizerProgress);
-                          const organizerProgressIsCurrent = !!(activeOrganizer?.activityId
-                            && organizerProgress?.activityId === activeOrganizer.activityId);
-                          const organizerProgressLabel = !organizerProgressIsCurrent ? null
-                            : organizerProgress.status === 'complete'
-                              ? `Organizer complete${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}`
-                              : organizerProgress.status === 'attempted'
-                                ? `Organizer attempt${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}`
-                                : organizerProgress.status === 'failed'
-                                  ? 'Organizer failed to open'
-                                  : organizerProgress.status === 'ready'
-                                    ? 'Organizer ready'
-                                    : organizerProgress.status === 'loading'
-                                      ? 'Organizer loading'
-                                      : 'Organizer working';
-                          return (
-                            <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.3rem 0.45rem',background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:8,fontSize:'0.75rem'}}>
-                              <span role="img" aria-label={presence.label} title={presence.label} style={{width:8,height:8,borderRadius:'50%',background:presence.color,flexShrink:0,display:'inline-block'}}></span>
-                              <span aria-hidden="true" style={{color:statusDot.color,fontWeight:900}}>{statusDot.glyph}</span>
-                              <span style={{fontWeight:700,color:'#0f172a',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:86}}>{entry.name || 'Student'}</span>
-                              <span style={{color:'#64748b',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',flex:1}}>
-                                {statusDot.label}{viewingTitle ? ' · ' + viewingTitle : ''}
-                              </span>
-                              {entry.wsProgress && entry.wsProgress.total ? (
-                                <span
-                                  title={(t('live_dock.ws_progress_title') || 'Word Sounds practice') + (entry.wsProgress.activity ? ' · ' + entry.wsProgress.activity : '')}
-                                  style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color: entry.wsProgress.done ? '#15803d' : '#6d28d9', background: entry.wsProgress.done ? '#dcfce7' : '#ede9fe', border:'1px solid ' + (entry.wsProgress.done ? '#86efac' : '#ddd6fe'), borderRadius:6, padding:'0.05rem 0.3rem'}}
-                                >🎵 {entry.wsProgress.correct}/{entry.wsProgress.total}{entry.wsProgress.done ? ' ✓' : ''}</span>
-                              ) : null}
-                              {organizerProgressLabel ? (
-                                <span
-                                  title={`Live ${activeOrganizer.structureType || 'visual organizer'} activity`}
-                                  style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:organizerProgress.status === 'complete'?'#15803d':organizerProgress.status === 'attempted'?'#9a3412':organizerProgress.status === 'failed'?'#b91c1c':organizerProgress.status === 'loading'?'#475569':'#3730a3',background:organizerProgress.status === 'complete'?'#dcfce7':organizerProgress.status === 'attempted'?'#ffedd5':organizerProgress.status === 'failed'?'#fee2e2':organizerProgress.status === 'loading'?'#f1f5f9':'#e0e7ff',border:'1px solid '+(organizerProgress.status === 'complete'?'#86efac':organizerProgress.status === 'attempted'?'#fdba74':organizerProgress.status === 'failed'?'#fca5a5':organizerProgress.status === 'loading'?'#cbd5e1':'#a5b4fc'),borderRadius:6,padding:'0.05rem 0.3rem'}}
-                                >{organizerProgressLabel}</span>
-                              ) : null}
-                              {entry.wsProgress && wsAudioNeedsAttention ? (
-                                <span style={{display:'inline-flex',alignItems:'center',gap:4}}>
-                                <button
-                                  type="button"
-                                  disabled={wsAudioBusy}
-                                  aria-label={t('word_sounds.audio_manage_for_student', { student: entry.name || 'student' }) || ('Manage Word Sounds audio for ' + (entry.name || 'student'))}
-                                  title={wsAudioStatus === 'unsupported'
-                                    ? (t('word_sounds.audio_teacher_unsupported_title') || "This learner's browser cannot play the prepared format. Open audio review and regenerate compatible clips.")
-                                    : wsAudioStatus === 'blocked' && !wsAudioStalled
-                                      ? (t('word_sounds.audio_teacher_blocked_title') || 'The learner must tap Try sound again on their device.')
-                                      : (t('word_sounds.audio_teacher_resend_title') || 'Resend prepared audio to this learner, or open audio review if the source pack is incomplete.')}
-                                  onClick={async () => {
-                                    const resourceId = entry.viewingResourceId || entry.resourceId || sessionData?.currentResourceId || null;
-                                    const resource = (generatedContent?.id === resourceId ? generatedContent : history.find(item => item && item.id === resourceId)) || null;
-                                    if (!resource || resource.type !== 'word-sounds') {
-                                      addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');
-                                      return;
-                                    }
-                                    const coverage = getWordSoundsPortableAudioCoverage(resource);
-                                    if (coverage && coverage.complete && wsAudioStatus !== 'unsupported') {
-                                      const resendAt = Date.now();
-                                      await handleSetStudentResource(uid, resource.id, {
-                                        allowIncompleteAudio: true,
-                                        resourceAt: resendAt,
-                                        wsProgress: { ...entry.wsProgress, audioStatus: 'resending', audioDeliveryAt: resendAt, at: resendAt },
-                                      });
-                                      return;
-                                    }
-                                    handleRestoreView(resource, { suppressLiveFollow: true });
-                                    setTimeout(() => {
-                                      setWordSoundsAutoReview(true);
-                                      setIsWordSoundsMode(true);
-                                      setActiveView('word-sounds');
-                                    }, 0);
-                                  }}
-                                  style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:wsAudioBusy?'#1d4ed8':'#9a3412',background:wsAudioBusy?'#dbeafe':'#ffedd5',border:'1px solid '+(wsAudioBusy?'#93c5fd':'#fdba74'),borderRadius:6,padding:'0.05rem 0.3rem',cursor:wsAudioBusy?'wait':'pointer'}}
-                                >{wsAudioPrimaryLabel}</button>
-                                {wsAudioStatus === 'damaged' ? (
-                                  <button
-                                    type="button"
-                                    aria-label={t('word_sounds.audio_review_repair_aria', { student: entry.name || 'student' }) || ('Review and repair audio for ' + (entry.name || 'student'))}
-                                    title={t('word_sounds.audio_review_repair_title') || 'Open the Word Sounds audio review to replace a persistently damaged clip.'}
-                                    onClick={() => {
-                                      const resourceId = entry.viewingResourceId || entry.resourceId || sessionData?.currentResourceId || null;
-                                      const resource = (generatedContent?.id === resourceId ? generatedContent : history.find(item => item && item.id === resourceId)) || null;
-                                      if (!resource || resource.type !== 'word-sounds') {
-                                        addToast(t('word_sounds.audio_open_resource_review_toast') || 'Open the Word Sounds resource, then review its audio.', 'info');
-                                        return;
-                                      }
-                                      handleRestoreView(resource, { suppressLiveFollow: true });
-                                      setTimeout(() => {
-                                        setWordSoundsAutoReview(true);
-                                        setIsWordSoundsMode(true);
-                                        setActiveView('word-sounds');
-                                      }, 0);
-                                    }}
-                                    style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:'#6d28d9',background:'#f5f3ff',border:'1px solid #c4b5fd',borderRadius:6,padding:'0.05rem 0.3rem',cursor:'pointer'}}
-                                  >{t('word_sounds.audio_review') || 'Review audio'}</button>
-                                ) : null}
-                                </span>
-                              ) : null}
-                              {entry.wsProbeResult && entry.wsProbeResult.total ? (
-                                <span
-                                  title={(t('live_dock.ws_probe_title') || 'Word Sounds probe result (saved to records)') + (entry.wsProbeResult.activity ? ' · ' + entry.wsProbeResult.activity : '')}
-                                  style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:'#9a3412',background:'#ffedd5',border:'1px solid #fed7aa',borderRadius:6,padding:'0.05rem 0.3rem'}}
-                                >📊 {entry.wsProbeResult.correct}/{entry.wsProbeResult.total}</span>
-                              ) : null}
-                              {entry.resourceId ? (
-                                <button
-                                  onClick={() => handleSetStudentResource(uid, null)}
-                                  aria-label={(t('live_dock.clear_student_resource_aria') || 'Clear individual resource for') + ' ' + (entry.name || 'student')}
-                                  title={t('live_dock.clear_student_resource') || 'Clear individual resource'}
-                                  style={{background:'white',border:'1px solid #fca5a5',borderRadius:6,padding:'0.05rem 0.35rem',cursor:'pointer',fontSize:'0.68rem',fontWeight:700,color:'#b91c1c'}}
-                                >✕</button>
-                              ) : null}
-                              <button
-                                onClick={() => handleRecognizeStudent(uid)}
-                                disabled={!canRecognizeStudent}
-                                aria-label={'Recognize ' + (entry.name || 'student') + ' with ' + havenRewardAmount + ' AlloHaven token' + (havenRewardAmount === 1 ? '' : 's')}
-                                title={canRecognizeStudent ? (rewardTokensRemaining + ' session recognition tokens remaining') : 'Session recognition is off or the selected amount would exceed this student’s cap'}
-                                style={{background:canRecognizeStudent?'#166534':'#cbd5e1',color:canRecognizeStudent?'white':'#64748b',border:'none',borderRadius:6,padding:'0.05rem 0.38rem',cursor:canRecognizeStudent?'pointer':'not-allowed',fontSize:'0.72rem',fontWeight:800}}
-                              >
-                                <span aria-hidden="true">🌿</span>+{havenRewardAmount}
-                              </button>
-                              <button
-                                onClick={() => canPushCurrent && handleSetStudentResource(uid, generatedContent.id)}
-                                disabled={!canPushCurrent}
-                                aria-label={(t('live_dock.push_student_resource_aria') || 'Send the current resource to') + ' ' + (entry.name || 'student')}
-                                title={canPushCurrent ? (t('live_dock.push_student_resource') || 'Send current resource to this student') : (t('live_dock.push_student_resource_none') || 'Open a student-facing resource first')}
-                                style={{background: canPushCurrent ? '#1e3a8a' : '#e2e8f0', color: canPushCurrent ? 'white' : '#94a3b8', border:'none', borderRadius:6, padding:'0.05rem 0.45rem', cursor: canPushCurrent ? 'pointer' : 'default', fontSize:'0.7rem', fontWeight:800}}
-                              >→</button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </>
-                  );
-                })()}
-                <div style={dockGroupLabel}>{(t('live_dock.group_signals') || 'Signals') + (activeSignals.length > 0 ? ' (' + activeSignals.length + ')' : '')}</div>
-                {activeSignals.length === 0 ? (
-                  <p style={{fontSize:'0.75rem',color:'#64748b',fontStyle:'italic',margin:'0 0 0.2rem 0'}}>{t('live_dock.no_signals') || 'No signals right now.'}</p>
-                ) : (
-                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                    {activeSignals.map(({ uid, entry }) => {
-                      const meta = signalMeta(entry.signal);
-                      return (
-                        <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.35rem 0.5rem',background:'#fffbeb',border:'1px solid #fde68a',borderRadius:8,fontSize:'0.78rem'}}>
-                          <span aria-hidden="true">{meta.emoji}</span>
-                          <span style={{fontWeight:700,color:'#0f172a'}}>{entry.name || 'Student'}</span>
-                          <span style={{color:'#475569'}}>{t('live_signals.' + entry.signal) || meta.label}</span>
-                          <button onClick={() => clearSignal(uid)} aria-label={(t('live_dock.clear_signal_aria') || 'Clear signal from') + ' ' + (entry.name || 'student')} style={{marginLeft:'auto',background:'white',border:'1px solid #e2e8f0',borderRadius:6,padding:'0.05rem 0.4rem',cursor:'pointer',fontSize:'0.7rem',fontWeight:700,color:'#475569'}}>✓</button>
-                        </div>
-                      );
-                    })}
-                    <button onClick={() => activeSignals.forEach(({ uid }) => clearSignal(uid))} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
-                      {t('live_dock.clear_all_signals') || 'Clear all'}
-                    </button>
-                  </div>
-                )}
-                <p style={{fontSize:'0.68rem',color:'#64748b',margin:'0.7rem 0 0 0',lineHeight:1.35}}>
-                  {t('live_dock.privacy_note') || 'Privacy: Poll answers, feedback, drawings and guesses are not written to the live session. Quiz answer content travels peer-to-peer; a degraded connection records submission status only and leaves the answer unscored. Activity Pulse keeps status/count metadata in teacher memory only. Generating feedback sends the selected response without a codename to your configured AI provider. Signals share only a codename + a preset phrase.'}
-                </p>
-              </div>
+              <LiveSessionDockView
+        __alloDisplayName="Live Session Dashboard"
+        __alloOverlay={false}
+        __alloOnClose={() => setShowLiveDock(false)}
+        {...{
+        ALLOHAVEN_CLASSROOM_REWARD_REASONS, ALLOHAVEN_RECOGNITION_CAPS, CLASS_GOAL_TEMPLATES, LIVE_SIGNAL_FRESH_MS, TEACHER_ONLY_TYPES, _alloMbBridgeActive, _alloStudentSafeResources, activeSessionCode,
+        activeSignals, activeUnitId, activeView, addToast, adventureState, broadcastInteractiveOrganizer, checklistMarks, classGoalDraft,
+        classifyLiveRosterPresence, clearSignal, dockCardStyle, dockGroupLabel, dockNow, evaluateClassGoalProgress, formatTime, generatedContent,
+        getAlloHavenSessionRecognitionTokens, getDefaultTitle, getFilteredHistory, getIconForType, getWordSoundsPortableAudioCoverage, handleAwardClassGoal, handleAwardIndependentGoal, handleRecognizeStudent,
+        handleRecognizeStudents, handleReleaseStudentResources, handleRestoreView, handleSetGroupResource, handleSetIsZenModeToTrue, handleSetShowGroupModalToTrue, handleSetShowStudyTimerModalToTrue, handleSetStudentResource,
+        handleSetStudentsResource, handleUpdateHavenRecognitionConfig, havenConfigBusy, havenRecognitionConfig, havenRewardAmount, havenRewardBusy, havenRewardDraftsRef, havenRewardReasonId,
+        havenRewardReceipt, history, interactiveOrganizerRetrying, interactiveOrganizerSync, isStudyTimerRunning, launchPreparedLiveInteraction, liveActivitySnapshots, liveAudioStatusNow,
+        liveDockPanelRef, liveOrganizer, liveOrganizerSummary, livePresenterCuesByResourceId, liveSessionQaEnabled, normalizeClassGoal, normalizeClassGoals, normalizeLiveOrganizerProgress,
+        openChecklistGoalId, openLiveActivityDashboard, recentHavenRecognition, resolveClassGoalTeamUids, resolveLiveStudentResourceTarget, resolveWordSoundsAudioDeliveryState, retryInteractiveOrganizerStudents, retryableLiveOrganizerUids,
+        rosterEntries, rosterKey, sessionData, setActiveView, setChecklistMarks, setClassGoalDraft, setHavenRewardAmount, setHavenRewardReasonId,
+        setIsWordSoundsMode, setLivePollPreset, setLiveSessionQaEnabled, setOpenChecklistGoalId, setPictionaryInitialMode, setPictionaryPreparedInteraction, setRosterKey, setShowHavenRewardAudit,
+        setShowLiveDock, setShowLivePollingPanel, setShowPictionaryHost, setShowSessionModal, setWordSoundsAutoReview, showHavenRewardAudit, signalMeta, studyTimeLeft,
+        t, toggleSessionMode, units, updateLivePresenterCue
+        }}
+      />
               </div>
             )}
           </>
@@ -56652,379 +55171,35 @@ ${_alloActivityContext(activity)}
             })}
         </CDNModuleGate>
 
-        <CDNModuleGate moduleKey="VideoStudio" isOpen={isVideoStudioOpen} onClose={() => setIsVideoStudioOpen(false)} icon="🎥" displayName="Video Studio" t={t}>
-            {(VideoStudio) => React.createElement(VideoStudio, {
-                onClose: () => setIsVideoStudioOpen(false),
-                addToast,
-                t,
-                callGemini: callGemini,
-                history: history,
-                sourceTopic: sourceTopic,
-                onSendTranscriptToFlow: (resource) => {
-                    const transcript = String(resource?.text || resource?.content || resource?.data?.transcript || '').trim();
-                    if (!transcript) throw new Error('Transcript is empty.');
-                    const titleBase = String(resource?.data?.title || resource?.title || 'Video transcript').replace(/\s+transcript$/i, '').trim().slice(0, 120) || 'Video transcript';
-                    const captionCount = Array.isArray(resource?.data?.cues) ? resource.data.cues.length : 0;
-                    const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                    const item = {
-                        id: newId,
-                        type: 'video-transcript',
-                        title: `${titleBase} transcript`,
-                        text: transcript,
-                        content: transcript,
-                        data: {
-                            ...(resource?.data || {}),
-                            title: titleBase,
-                            transcript
-                        },
-                        meta: captionCount ? `${captionCount} caption line${captionCount === 1 ? '' : 's'} from Video Studio` : 'Video Studio transcript',
-                        timestamp: new Date(),
-                        config: {},
-                        source: 'video_studio'
-                    };
-                    setHistory(prev => [...prev, item]);
-                    setInputText(transcript);
-                    setSourceTopic(titleBase);
-                    setGeneratedContent(item);
-                    setActiveSidebarTab('create');
-                    setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
-                    setActiveView('input');
-                    addToast('Transcript sent to Source. Use the existing quiz and support tools from there.', 'success');
-                    return { id: newId };
-                },
-                onSendVideoRefToFlow: (ref) => {
-                    // Save the pack-safe video reference (metadata + thumbnail +
-                    // optional hosted link — never bytes) as a 'video-ref' card.
-                    if (!ref || ref.type !== 'videoRef') throw new Error('Not a video reference.');
-                    const refTitle = String(ref.title || 'Teacher video').slice(0, 120);
-                    const newRefId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-                    const refItem = {
-                        id: newRefId,
-                        type: 'video-ref',
-                        title: refTitle,
-                        text: `${refTitle} — video (${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')})${ref.hostedUrl ? ` — ${ref.hostedUrl}` : ''}`,
-                        content: '',
-                        data: { ...ref },
-                        meta: ref.hostedUrl ? 'Video Studio card · hosted link attached' : 'Video Studio card · re-attach the downloaded file to play',
-                        timestamp: new Date(),
-                        config: {},
-                        source: 'video_studio'
-                    };
-                    setHistory(prev => [...prev, refItem]);
-                    return { id: newRefId };
-                },
-                onGetOfficialTutorial: async (tutorialId) => {
-                    if (tutorialId !== 'text-adaptation') throw new Error('Unknown official tutorial.');
-                    try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {}
-                    let TC = window.AlloModules && window.AlloModules.TutorialCompiler;
-                    for (let waited = 0; !TC && waited < 8000; waited += 100) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        TC = window.AlloModules && window.AlloModules.TutorialCompiler;
-                    }
-                    if (!TC || typeof TC.buildTutorialManifest !== 'function') throw new Error('The tutorial compiler is still loading - wait a moment and try again.');
-                    if (!guidedModeConfigReady) throw new Error('Guided Mode setup is still loading - retry the failed module and try again.');
-                    const manifest = TC.buildTutorialManifest(GUIDED_STEPS, GUIDED_TOUR_MAP, t, { only: ['source-input', 'simplified'], wpm: 150 });
-                    return { generatedFrom: manifest.generatedFrom, steps: manifest.steps };
-                },
-                onRunOfficialTutorial: async (tutorialId, steps, hooks) => {
-                    if (tutorialId !== 'text-adaptation') throw new Error('Unknown official tutorial.');
-                    if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan - stop it first.');
-                    const list = (Array.isArray(steps) ? steps : []).filter(step => step && (step.id === 'source-input' || step.id === 'simplified')).slice(0, 2);
-                    if (list.length !== 2) throw new Error('The Text Adaptation tutorial manifest is incomplete.');
-                    const stopWanted = () => !!(_planRunRef.current.stop || (hooks && hooks.shouldStop && hooks.shouldStop()));
-                    _officialTutorialSnapshotRef.current = _officialTutorialSnapshotRef.current || {
-                        inputText, generatedContent, activeView, gradeLevel, expandedTools: expandedTools.slice()
-                    };
-                    _planRunRef.current = { running: true, stop: false };
-                    const fixtureSource = 'Plants use sunlight, water, and carbon dioxide to make sugar through photosynthesis. Chlorophyll captures light energy in the leaves. The plant stores some sugar and releases oxygen into the air.';
-                    const fixtureAdapted = '## Photosynthesis\n\nPlants make their own food. Leaves capture energy from sunlight. Roots bring in water, and leaves take in carbon dioxide from the air. The plant uses these materials to make sugar for energy. Oxygen is released back into the air.';
-                    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-                    const spotlight = async anchorId => {
-                        let el = null;
-                        for (let attempt = 0; !el && attempt < 20; attempt++) { el = document.getElementById(anchorId); if (!el) await wait(100); }
-                        if (!el) throw new Error('Tutorial target is not visible: ' + anchorId);
-                        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-                        const priorOutline = el.style.outline;
-                        const priorOffset = el.style.outlineOffset;
-                        let cursorMarker = null;
-                        el.style.outline = '4px solid #f59e0b';
-                        el.style.outlineOffset = '5px';
-                        if (!hooks || hooks.cursorEmphasis !== false) {
-                            const rect = el.getBoundingClientRect();
-                            cursorMarker = document.createElement('div');
-                            cursorMarker.setAttribute('aria-hidden', 'true');
-                            cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 38, rect.left + rect.width / 2 - 17)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 38, rect.top + rect.height / 2 - 17)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2);transition:transform .25s ease,opacity .25s ease';
-                            document.body.appendChild(cursorMarker);
-                            requestAnimationFrame(() => { if (cursorMarker) cursorMarker.style.transform = 'scale(.72)'; });
-                        }
-                        await wait(650);
-                        if (cursorMarker) cursorMarker.remove();
-                        el.style.outline = priorOutline;
-                        el.style.outlineOffset = priorOffset;
-                    };
-                    try {
-                        for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) await wait(250);
-                        if (document.visibilityState !== 'visible') return { ok: false, completed: 0, reason: 'The AlloFlow tab never became visible.' };
-                        let completed = 0;
-                        for (let i = 0; i < list.length; i++) {
-                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
-                            const step = list[i];
-                            const actionBeat = (step.beats || []).find(beat => beat.kind === 'action');
-                            const successBeat = (step.beats || []).find(beat => beat.kind === 'success');
-                            if (hooks && hooks.onStep) hooks.onStep(i, 'start', step.label, (actionBeat && actionBeat.text) || step.label);
-                            if (step.id === 'source-input') {
-                                setActiveView('input');
-                                setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
-                                setInputText(fixtureSource);
-                            } else {
-                                setGradeLevel('5th Grade');
-                                setExpandedTools(prev => prev.includes('simplified') ? prev : [...prev, 'simplified']);
-                                setGeneratedContent({ id: 'official-text-adaptation-fixture', type: 'simplified', title: 'Photosynthesis - Grade 5 adaptation', data: fixtureAdapted, timestamp: new Date(), config: { gradeLevel: '5th Grade' }, source: 'official-tutorial' });
-                                setActiveView('simplified');
-                            }
-                            await wait(900);
-                            await spotlight(step.anchorId);
-                            await wait(900);
-                            const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(step.pauseAfter) || 2.2)) * 1000);
-                            for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await wait(Math.min(100, resultHoldMs - held));
-                            if (hooks && hooks.onStep) hooks.onStep(i, 'done', step.label, (successBeat && successBeat.text) || (step.label + ' ready.'));
-                            completed++;
-                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
-                        }
-                        addToast('Official Text Adaptation tutorial finished. Video Studio is wrapping up the recording.', 'success');
-                        return { ok: true, completed };
-                    } finally {
-                        _planRunRef.current = { running: false, stop: false };
-                    }
-                },
-                onCleanupOfficialTutorial: () => {
-                    const snapshot = _officialTutorialSnapshotRef.current;
-                    if (!snapshot) return false;
-                    _officialTutorialSnapshotRef.current = null;
-                    setInputText(snapshot.inputText);
-                    setGeneratedContent(snapshot.generatedContent);
-                    setActiveView(snapshot.activeView);
-                    setGradeLevel(snapshot.gradeLevel);
-                    setExpandedTools(snapshot.expandedTools);
-                    return true;
-                },                onPlanDemo: async (goal, options = {}) => {
-                    // Demo Autopilot planning: reuses AlloBot's planUtterance over
-                    // the live command registry (goal TEXT only goes to Gemini).
-                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
-                    if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function' || typeof AC.validatePlan !== 'function') {
-                        // AlloCommands loads eagerly at app boot — if it's absent the
-                        // script is still arriving (or the CDN failed), so waiting is
-                        // the honest remedy.
-                        throw new Error('The command planner is still loading — wait a moment and try again.');
-                    }
-                    const cleanGoal = String(goal || '').slice(0, 300);
-                    let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal, { demoSafeOnly: true, comprehensiveDemo: true, maxSteps: 16, signal: options.signal || null });
-                    if ((!steps || !steps.length) && typeof AC.routeUtterance === 'function') {
-                        // Single-action demos are legitimate ("show how to open the
-                        // reading library") but planUtterance requires 2+ steps — an
-                        // AlloBot rule we shouldn't loosen globally. Fall back to the
-                        // single-command router and wrap its match as a 1-step plan.
-                        try {
-                            const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true, signal: options.signal || null });
-                            if (m && m.commandId) {
-                                const candidate = [{ commandId: m.commandId, params: m.params || {}, why: '' }];
-                                const report = AC.validatePlan(_alloCmdCtx(), candidate, { demoSafeOnly: true });
-                                if (report && report.ok) steps = candidate;
-                            }
-                        } catch (error) { if (error && error.name === 'AbortError') throw error; }
-                    }
-                    if (!steps || !steps.length) return { steps: [] };
-                    const cmds = AC.buildAlloCommands(_alloCmdCtx(), { includeGated: true });
-                    return { steps: steps.map(s => {
-                        const c = cmds.find(x => x.id === s.commandId);
-                        return { commandId: s.commandId, params: s.params || {}, paramNames: typeof AC.getCommandContract === 'function' ? AC.getCommandContract(c || s.commandId).params : [], why: s.why || '', label: (c && c.label) || s.commandId };
-                    }) };
-                },
-                onValidateDemoPlan: async (steps) => {
-                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
-                    if (!AC || typeof AC.validatePlan !== 'function') throw new Error('The command readiness checker has not loaded.');
-                    return AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
-                },
-                onRunDemoPlan: async (steps, hooks, options) => {
-                    // Demo Autopilot execution: one guarded runPlan call PER STEP so
-                    // the demo breathes between steps (runPlan rechecks when-guards
-                    // and never auto-runs destructive commands). Shares AlloBot's
-                    // single-flight guard so a bot plan and a demo can't interleave.
-                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
-                    const rehearsal = !!(options && options.rehearsal);
-                    if (!AC || typeof AC.runPlan !== 'function' || typeof AC.validatePlan !== 'function') throw new Error('The command runner has not loaded.');
-                    const readiness = AC.validatePlan(_alloCmdCtx(), steps, { demoSafeOnly: true });
-                    if (!readiness || !readiness.ok) {
-                        const blocked = readiness && readiness.items && readiness.items.find(item => item.status === 'block');
-                        return { ok: false, completed: 0, reason: (blocked && ((blocked.label || blocked.commandId) + ': ' + blocked.detail)) || 'This demo plan is not ready to run.' };
-                    }
-                    if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan — stop it first.');
-                    _planRunRef.current = { running: true, stop: false };
-                    const stopWanted = () => (_planRunRef.current.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
-                    const cursorMarkers = new Set();
-                    const emphasizeCursorTarget = (cmd, label) => {
-                        if (!options || options.cursorEmphasis === false) return;
-                        const needle = String(label || (cmd && cmd.label) || '').trim().toLowerCase();
-                        let target = null;
-                        const directId = cmd && (cmd.anchorId || cmd.targetId);
-                        if (directId) target = document.getElementById(String(directId));
-                        if (!target && needle) {
-                            const nodes = Array.from(document.querySelectorAll('button,[role="button"],a,input,textarea,select,[data-tutorial-anchor]')).slice(0, 300);
-                            target = nodes.find(node => {
-                                const r = node.getBoundingClientRect();
-                                if (!r.width || !r.height || r.bottom < 0 || r.right < 0 || r.top > window.innerHeight || r.left > window.innerWidth) return false;
-                                const text = String(node.getAttribute('aria-label') || node.textContent || node.value || '').trim().toLowerCase();
-                                return text && (text === needle || text.includes(needle) || needle.includes(text));
-                            }) || null;
-                        }
-                        if (!target && document.activeElement && document.activeElement !== document.body) target = document.activeElement;
-                        const rect = target && target.getBoundingClientRect ? target.getBoundingClientRect() : { left: window.innerWidth / 2 - 1, top: window.innerHeight / 2 - 1, width: 2, height: 2 };
-                        const marker = document.createElement('div');
-                        marker.setAttribute('aria-hidden', 'true');
-                        marker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:32px;height:32px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 36, rect.left + rect.width / 2 - 16)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 36, rect.top + rect.height / 2 - 16)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.18);transform:scale(1.2);transition:transform .3s ease,opacity .3s ease';
-                        document.body.appendChild(marker);
-                        cursorMarkers.add(marker);
-                        requestAnimationFrame(() => { marker.style.transform = 'scale(.7)'; });
-                        setTimeout(() => { marker.style.opacity = '0'; setTimeout(() => { cursorMarkers.delete(marker); marker.remove(); }, 320); }, 700);
-                    };
-                    try {
-                        if (rehearsal) {
-                            const previewList = (Array.isArray(steps) ? steps : []).slice(0, 8);
-                            let previewCompleted = 0;
-                            for (let i = 0; i < previewList.length; i++) {
-                                if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
-                                const readyItem = readiness.items[i] || {};
-                                const previewLabel = readyItem.label || previewList[i].commandId;
-                                try { if (hooks && hooks.onStep) hooks.onStep(i, 'start', previewLabel, 'Checking: ' + previewLabel + '.'); } catch (_) {}
-                                await new Promise(resolve => setTimeout(resolve, 220));
-                                if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
-                                try { if (hooks && hooks.onStep) hooks.onStep(i, 'done', previewLabel, readyItem.detail || 'Command and prerequisites are ready.'); } catch (_) {}
-                                previewCompleted++;
-                                await new Promise(resolve => setTimeout(resolve, 500));
-                            }
-                            return { ok: true, completed: previewCompleted, rehearsal: true };
-                        }
-                        // The teacher just picked the tab in the share dialog — wait
-                        // until this tab is actually visible before driving it.
-                        for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) {
-                            await new Promise(r => setTimeout(r, 250));
-                        }
-                        if (stopWanted()) return { ok: false, stopped: true, completed: 0, reason: 'Stopped before the demo began.' };
-                        if (document.visibilityState !== 'visible') {
-                            return { ok: false, completed: 0, reason: 'The AlloFlow tab never became visible, so no automatic actions were run.' };
-                        }
-                        addToast('🎬 Demo Autopilot is driving AlloFlow — Video Studio is recording.', 'info');
-                        const list = (Array.isArray(steps) ? steps : []).slice(0, 8);
-                        let completed = 0;
-                        // Post-run objective audit reads these flags: only primitives,
-                        // capped, from the LIVE ctx (the ref tracks renders). Booleans
-                        // like contentLoaded are exactly the evidence "did the goal
-                        // land" needs, and nothing student-authored fits in 60 chars
-                        // of whitelisted primitive — long strings are dropped.
-                        const stateSummaryForAudit = () => {
-                            try {
-                                const liveCtx = _alloCmdCtxRef.current || _alloCmdCtx();
-                                const summary = {};
-                                let kept = 0;
-                                for (const key of Object.keys(liveCtx)) {
-                                    const value = liveCtx[key];
-                                    if (typeof value === 'boolean' || typeof value === 'number' || (typeof value === 'string' && value.length <= 60)) {
-                                        summary[key] = value;
-                                        if (++kept >= 60) break;
-                                    }
-                                }
-                                return summary;
-                            } catch (_) { return null; }
-                        };
-                        for (let i = 0; i < list.length; i++) {
-                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
-                            let completionEvent = null;
-                            // Read the ctx through the REF, like the voice loop does.
-                            // _alloCmdCtx is a plain render-body closure over state
-                            // (generatedContent, inputText, hasSourceOrAnalysis...), and
-                            // this async loop holds the closure from the render that was
-                            // current when Record was pressed. Every step after the first
-                            // therefore saw pre-demo app state, so a plan whose later step
-                            // is unlocked by an earlier one ("make a glossary, then open
-                            // flashcards") passed preflight and then failed mid-recording:
-                            // runPlan rebuilds the menu from ctx and drops commands whose
-                            // when-guard still reads false. The palette re-invokes
-                            // _alloCmdCtx() every render and that assigns _alloCmdCtxRef,
-                            // so the ref tracks live state.
-                            const r = await AC.runPlan(() => (_alloCmdCtxRef.current || _alloCmdCtx()), [list[i]], {
-                                shouldStop: stopWanted,
-                                // Recording runs can afford patience: the default 3-minute
-                                // completion ceiling killed demos whose generation step was
-                                // slow-but-honest (image gen, throttle retries). The popup's
-                                // bridge waits 30 minutes and its continuation flow handles
-                                // genuine timeouts, so give steps 5 minutes here.
-                                timeoutMs: 300000,
-                                signal: options && options.signal,
-                                onStep: (j, phase, cmd, narr) => {
-                                    const label = (cmd && cmd.label) || list[i].commandId;
-                                    if (phase === 'done') completionEvent = { label, narration: narr || '' };
-                                    else {
-                                        emphasizeCursorTarget(cmd, label);
-                                        try { if (hooks && hooks.onStep) hooks.onStep(i, phase, label, narr || ''); } catch (_) {}
-                                    }
-                                }
-                            });
-                            if (!r || !r.ok) {
-                                const failReason = (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.');
-                                const stoppedByTeacher = !!(r && r.stopped);
-                                // Steering juncture: a failed step no longer hard-ends the
-                                // run. The popup pauses the recording (so the pause never
-                                // reaches the video) and asks the teacher retry / skip /
-                                // stop. Bounded: silence for 4 minutes, a stop request, or
-                                // a rejected hook all collapse to the old stop behavior.
-                                if (!stoppedByTeacher && hooks && typeof hooks.onDecision === 'function') {
-                                    const choice = await new Promise(resolve => {
-                                        let done = false;
-                                        let guard = null;
-                                        const finish = v => { if (!done) { done = true; clearInterval(guard); resolve(v === 'retry' || v === 'skip' ? v : 'stop'); } };
-                                        const startedWaiting = Date.now();
-                                        guard = setInterval(() => { if (stopWanted() || Date.now() - startedWaiting > 240000) finish('stop'); }, 250);
-                                        Promise.resolve(hooks.onDecision({ index: i, label: list[i].commandId, reason: failReason, timedOut: !!(r && r.timedOut) })).then(finish, () => finish('stop'));
-                                    });
-                                    if (choice === 'retry') { i--; continue; }
-                                    if (choice === 'skip') continue;
-                                    return { ok: false, completed, stopped: true, timedOut: !!(r && r.timedOut), reason: failReason, stateSummary: stateSummaryForAudit() };
-                                }
-                                return { ok: false, completed, stopped: stoppedByTeacher, timedOut: !!(r && r.timedOut), reason: failReason, stateSummary: stateSummaryForAudit() };
-                            }
-                            const resultHoldMs = Math.round(Math.max(0.5, Math.min(8, Number(list[i].pauseAfter) || 2.2)) * 1000);
-                            for (let held = 0; held < resultHoldMs && !stopWanted(); held += 100) await new Promise(resolve => setTimeout(resolve, Math.min(100, resultHoldMs - held)));
-                            const done = completionEvent || { label: list[i].commandId, narration: 'Step complete.' };
-                            try { if (hooks && hooks.onStep) hooks.onStep(i, 'done', done.label, done.narration); } catch (_) {}
-                            completed++;
-                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
-                        }
-                        addToast('🎉 Demo finished — Video Studio is wrapping up the recording.', 'success');
-                        return { ok: true, completed, stateSummary: stateSummaryForAudit() };
-                    } finally {
-                        cursorMarkers.forEach(marker => { try { marker.remove(); } catch (_) {} });
-                        cursorMarkers.clear();
-                        _planRunRef.current = { running: false, stop: false };
-                    }
-                },
-                onOpenCinematicStudio: () => { setIsVideoStudioOpen(false); setShowCinematicStudio(true); }
-            })}
-        </CDNModuleGate>
+        <VideoStudioHostBridgeView
+        __alloDisplayName="Video Studio"
+        __alloOverlay={true}
+        __alloOnClose={() => setIsVideoStudioOpen(false)}
+        __alloActive={isVideoStudioOpen}
+        {...{
+        CDNModuleGate, GUIDED_STEPS, GUIDED_TOUR_MAP, _alloCmdCtx, _alloCmdCtxRef, _officialTutorialSnapshotRef, _planRunRef, activeView,
+        addToast, callGemini, expandedTools, generatedContent, gradeLevel, guidedModeConfigReady, history, inputText,
+        isVideoStudioOpen, setActiveSidebarTab, setActiveView, setExpandedTools, setGeneratedContent, setGradeLevel, setHistory, setInputText,
+        setIsVideoStudioOpen, setShowCinematicStudio, setSourceTopic, sourceTopic, t
+        }}
+      />
 
         {videoRefPlayerItem && <VideoRefPlayerOverlay item={videoRefPlayerItem} onClose={() => setVideoRefPlayerItem(null)} addToast={addToast} t={t} loadFailed={moduleLoadInfo.failed.includes('VideoRefPlayer')} />}
         {showVideoLibrary && <VideoLibraryOverlay onClose={() => setShowVideoLibrary(false)} t={t} />}
 
-        <CDNModuleGate moduleKey="AlloStudio" isOpen={isAlloStudioOpen} onClose={() => { setIsAlloStudioOpen(false); setAlloStudioInitialAction(null); setAlloStudioInitialFile(null); setAlloStudioInitialArtwork(null); }} icon="🎨" displayName="Page Designer" t={t}>
+        <CDNModuleGate moduleKey="AlloStudio" isOpen={isAlloStudioOpen} onClose={() => { setIsAlloStudioOpen(false); setAlloStudioInitialAction(null); setAlloStudioInitialFile(null); setAlloStudioInitialArtwork(null); setAlloStudioInitialResource(null); }} icon="🎨" displayName="Page Designer" t={t}>
             {(AlloStudio) => React.createElement(AlloStudio, {
-                onClose: () => { setIsAlloStudioOpen(false); setAlloStudioInitialAction(null); setAlloStudioInitialFile(null); setAlloStudioInitialArtwork(null); },
+                onClose: () => { setIsAlloStudioOpen(false); setAlloStudioInitialAction(null); setAlloStudioInitialFile(null); setAlloStudioInitialArtwork(null); setAlloStudioInitialResource(null); },
                 addToast,
                 t,
                 initialRole: 'teacher',
                 initialAction: alloStudioInitialAction,
                 initialFile: alloStudioInitialFile,
                 initialArtwork: alloStudioInitialArtwork,
+                initialResource: alloStudioInitialResource,
                 history: history,
                 resourceHistory: history,
+                onSaveGeneratedArtifact: handleSaveGeneratedArtifact,
                 // Born-accessible tagged PDF (docs/studio_design.md §6): the studio's
                 // reading-order HTML rides the SAME typeset tagged-PDF path the
                 // remediation pipeline uses. Returns false on failure so the studio

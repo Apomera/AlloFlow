@@ -391,7 +391,7 @@ describe('Pets restored-state guards', () => {
     })).toMatchObject({ idx: 2, score: 2, answered: false, lastChoice: null });
 
     const contextCases = api.bodyLanguageContextChallenges();
-    expect(contextCases).toHaveLength(6);
+    expect(contextCases).toHaveLength(7);
     const contextIds = contextCases.slice(0, 4).map((item) => item.id);
     const context = api.normalizeBodyLanguageTransfer({
       idx: 999,

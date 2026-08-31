@@ -375,15 +375,27 @@
     var T = null;
     var state = 'idle';
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var batch = null, groundMesh = null, groundGrid = null, previewMesh = null;
+    var batch = null, groundMesh = null, groundGrid = null, previewMesh = null, selectionMesh = null;
     var customMeshes = [];
     var raycaster = null, pointer = null, latestBlocks = [], latestAllBlocks = [];
     var rafId = 0, capacity = 0, resizeObs = null;
     var pending = null, appliedSig = '', appliedCamSig = '', previewSig = '', dirty = true;
     var gridLineCount = 0;
     var extent = { w: 1, d: 1, h: 1 }, centre = { x: 0, z: 0 };
+    var mountGeneration = 0, contextCanvas = null, contextRestoreTimer = 0;
+
+    function scheduleFrame() {
+      if (!rafId && state === 'ready') rafId = requestAnimationFrame(frame);
+    }
+
+    function invalidate() {
+      dirty = true;
+      scheduleFrame();
+    }
 
     function fail(reason) {
+      if (contextRestoreTimer) { clearTimeout(contextRestoreTimer); contextRestoreTimer = 0; }
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
       state = 'failed';
       if (pending && typeof pending.onFail === 'function') { try { pending.onFail(reason); } catch (e) {} }
     }
@@ -422,7 +434,16 @@
       if (previewMesh.material) previewMesh.material.dispose();
       previewMesh = null;
       previewSig = '';
-      dirty = true;
+      invalidate();
+    }
+
+    function clearSelectionMesh() {
+      if (!selectionMesh) return;
+      if (scene) scene.remove(selectionMesh);
+      if (selectionMesh.geometry) selectionMesh.geometry.dispose();
+      if (selectionMesh.material) selectionMesh.material.dispose();
+      selectionMesh = null;
+      invalidate();
     }
 
     function clearGroundGrid() {
@@ -470,6 +491,8 @@
       scene.add(groundGrid);
       gridLineCount = vertices.length / 6;
       groundMesh.scale.set(Math.max(1, xEnd - xStart) / 400, Math.max(1, zEnd - zStart) / 400, 1);
+      groundMesh.position.x = (xStart + xEnd) / 2;
+      groundMesh.position.z = (zStart + zEnd) / 2;
     }
 
     // The host's voxel batch is ideal for ordinary blocks. Architecture Studio
@@ -518,7 +541,7 @@
       if (nextSig === previewSig) return;
       clearPreview();
       var geometry = mode === 'place' ? makeArchGeometry(shape) : new T.BoxGeometry(1.02, 1.02, 1.02);
-      var color = mode === 'erase' ? 0xef4444 : mode === 'paint' ? 0xc084fc : (options.hex == null ? 0x60a5fa : options.hex);
+      var color = mode === 'erase' ? 0xef4444 : mode === 'paint' ? 0xc084fc : mode === 'pick' ? 0x22d3ee : (options.hex == null ? 0x60a5fa : options.hex);
       previewMesh = new T.Mesh(geometry, new T.MeshBasicMaterial({
         color: color, transparent: true, opacity: mode === 'place' ? 0.42 : 0.55,
         wireframe: true, depthWrite: false
@@ -529,7 +552,7 @@
       previewMesh.renderOrder = 4;
       scene.add(previewMesh);
       previewSig = nextSig;
-      dirty = true;
+      invalidate();
     }
 
     function apply(m) {
@@ -549,6 +572,7 @@
       }
 
       clearCustomMeshes();
+      clearSelectionMesh();
 
       var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, maxY = 0;
       bs.forEach(function (b) {
@@ -586,6 +610,23 @@
         scene.add(mesh);
         customMeshes.push(mesh);
       });
+
+      // Selection is an overlay, not a replacement material. Keeping the
+      // student's true block colour visible makes property edits verifiable.
+      var selected = bs.find(function (b) { return b.selected; });
+      if (selected) {
+        var selectedShape = selected.shape || 'block';
+        selectionMesh = new T.Mesh(makeArchGeometry(selectedShape), new T.MeshBasicMaterial({
+          color: 0xfbbf24, wireframe: true, transparent: true, opacity: 0.96,
+          depthTest: false, depthWrite: false
+        }));
+        var selectedYOffset = selectedShape === 'slab' ? 0.23 : selectedShape === 'dome' ? 0 : 0.5;
+        selectionMesh.position.set(selected.x - centre.x, selected.y + selectedYOffset, selected.z - centre.z);
+        selectionMesh.rotation.y = ((selected.rotation || 0) % 360) * DEG;
+        selectionMesh.scale.set(1.08, 1.08, 1.08);
+        selectionMesh.renderOrder = 5;
+        scene.add(selectionMesh);
+      }
 
       buildPlacementGrid(minX, maxX, minZ, maxZ);
     }
@@ -632,30 +673,71 @@
       renderer.setSize(w, hh, false);
       camera.aspect = w / hh;
       camera.updateProjectionMatrix();
-      dirty = true;
+      invalidate();
     }
 
     function frame() {
-      rafId = requestAnimationFrame(frame);
-      if (state !== 'ready' || !pending) return;
+      if (state !== 'ready' || !pending) { rafId = 0; return; }
       var m = pending;
       try {
         if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; appliedCamSig = ''; }
         var cs = m.rotX + ',' + m.rotY + ',' + m.scale + ',' + (m.blueprintView ? 1 : 0);
         if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
-        if (!dirty) return;
+        if (!dirty) { rafId = 0; return; }
         dirty = false;
         renderer.render(scene, camera);
       } catch (err) {
         console.error('[archStudio] WebGL frame failed, falling back to floor plans', err);
-        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         fail('frame');
+        return;
       }
+      rafId = 0;
+    }
+
+    function handleContextLost(ev) {
+      if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
+      if (state !== 'ready') return;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+      state = 'recovering';
+      if (contextRestoreTimer) clearTimeout(contextRestoreTimer);
+      contextRestoreTimer = setTimeout(function () {
+        contextRestoreTimer = 0;
+        if (state === 'recovering') fail('context-lost');
+      }, 3000);
+    }
+
+    function handleContextRestored() {
+      if (!contextCanvas || contextCanvas !== canvasEl || !renderer || state !== 'recovering') return;
+      if (contextRestoreTimer) { clearTimeout(contextRestoreTimer); contextRestoreTimer = 0; }
+      state = 'ready';
+      appliedSig = ''; appliedCamSig = ''; dirty = true;
+      scheduleFrame();
+      if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e) {} }
+    }
+
+    function attachContextHandlers(el) {
+      if (contextCanvas === el) return;
+      if (contextCanvas) {
+        contextCanvas.removeEventListener('webglcontextlost', handleContextLost, false);
+        contextCanvas.removeEventListener('webglcontextrestored', handleContextRestored, false);
+      }
+      contextCanvas = el;
+      if (contextCanvas) {
+        contextCanvas.addEventListener('webglcontextlost', handleContextLost, false);
+        contextCanvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+      }
+    }
+
+    function detachContextHandlers() {
+      if (!contextCanvas) return;
+      contextCanvas.removeEventListener('webglcontextlost', handleContextLost, false);
+      contextCanvas.removeEventListener('webglcontextrestored', handleContextRestored, false);
+      contextCanvas = null;
     }
 
     return {
       isReady: function () { return state === 'ready'; },
-      submit: function (m) { pending = m; },
+      submit: function (m) { pending = m; scheduleFrame(); },
       pick: function (clientX, clientY) {
         if (state !== 'ready' || !renderer || !camera || !raycaster || !pointer || !canvasEl || !groundMesh) return null;
         var rect = canvasEl.getBoundingClientRect();
@@ -712,6 +794,8 @@
           outlineCount: (batch ? batch.outlinedCount() : 0) + customMeshes.length,
           customShapeCount: customMeshes.length,
           shapeCounts: shapeCounts,
+          selectedCount: latestAllBlocks.filter(function (b) { return b.selected; }).length,
+          selectionOutlineVisible: !!selectionMesh,
           gridLineCount: gridLineCount,
           previewVisible: !!previewMesh,
           renderHexes: latestAllBlocks.map(function (b) { return b.hex; }),
@@ -746,19 +830,20 @@
         });
       },
       mount: function (el) {
-        if (canvasEl === el) return;
+        if (canvasEl === el && (state === 'ready' || state === 'loading' || state === 'recovering')) return;
+        var generation = ++mountGeneration;
         canvasEl = el;
-        if (state === 'ready' || state === 'loading') return;
         state = 'loading';
         var loader = (window.StemLab && window.StemLab.ensureThree)
           ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. The floor plans still work.' })
           : Promise.reject(new Error('no-loader'));
         loader.then(function (three) {
-          if (!canvasEl) return;
+          if (generation !== mountGeneration || canvasEl !== el || state !== 'loading') return;
           T = three;
           try {
-            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+            renderer = new T.WebGLRenderer({ canvas: el, antialias: true, alpha: true });
           } catch (e) { fail('no-webgl'); return; }
+          attachContextHandlers(el);
           renderer.setClearColor(0x000000, 0);
           build();
           resize();
@@ -768,27 +853,34 @@
           } else { window.addEventListener('resize', resize); }
           state = 'ready';
           appliedSig = ''; appliedCamSig = ''; dirty = true;
-          if (!rafId) rafId = requestAnimationFrame(frame);
+          scheduleFrame();
           if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e2) {} }
-        }).catch(function () { fail('cdn'); });
+        }).catch(function () {
+          if (generation === mountGeneration && canvasEl === el && state === 'loading') fail('cdn');
+        });
       },
       unmount: function () {
+        mountGeneration++;
+        state = 'disposing';
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        if (contextRestoreTimer) { clearTimeout(contextRestoreTimer); contextRestoreTimer = 0; }
+        detachContextHandlers();
         if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
         else window.removeEventListener('resize', resize);
         if (scene) {
           if (batch) batch.dispose(scene);
           clearPreview();
+          clearSelectionMesh();
           clearGroundGrid();
           clearCustomMeshes();
           if (groundMesh) { scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
         }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        batch = null; groundMesh = null; groundGrid = null; previewMesh = null; customMeshes = [];
+        batch = null; groundMesh = null; groundGrid = null; previewMesh = null; selectionMesh = null; customMeshes = [];
         renderer = scene = camera = null; canvasEl = null; pending = null;
         raycaster = pointer = null; latestBlocks = []; latestAllBlocks = [];
         capacity = 0; gridLineCount = 0; appliedSig = ''; appliedCamSig = ''; previewSig = '';
-        if (state !== 'failed') state = 'idle';
+        state = 'idle';
       }
     };
   })();
@@ -803,6 +895,9 @@
     var current = Array.isArray(currentBlocks) ? currentBlocks : [];
     edit = edit || {};
     var mode = edit.mode || 'place';
+    // Unknown/read-only tools must never fall through to placement. This also
+    // keeps the eyedropper mode from changing a build if it reaches the reducer.
+    if (mode !== 'place' && mode !== 'erase' && mode !== 'paint') return current;
     var cell = mode === 'place' ? edit.place : edit.block;
     if (!cell || !isFinite(cell.x) || !isFinite(cell.y) || !isFinite(cell.z)) return current;
     var x = Math.round(cell.x), y = Math.round(cell.y), z = Math.round(cell.z);
@@ -856,12 +951,115 @@
     return applySingleArchEdit(next, mirrored);
   }
 
-  function getArchGridAxisBounds(hasBlocks, minValue, maxValue) {
+  function archBlockKey(cell) {
+    if (!cell || !isFinite(cell.x) || !isFinite(cell.y) || !isFinite(cell.z)) return '';
+    return Math.round(cell.x) + ',' + Math.round(cell.y) + ',' + Math.round(cell.z);
+  }
+
+  // Pure reducer for inspector actions. Like applyArchEdit, returning the
+  // original array marks a blocked/no-op action so history stays noise-free.
+  function applyArchBlockAction(currentBlocks, action) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    action = action || {};
+    var sourceKey = archBlockKey(action.cell);
+    if (!sourceKey) return current;
+    var sourceIndex = -1;
+    for (var i = 0; i < current.length; i++) {
+      if (archBlockKey(current[i]) === sourceKey) { sourceIndex = i; break; }
+    }
+    if (sourceIndex < 0) return current;
+    var source = current[sourceIndex];
+
+    if (action.type === 'delete') {
+      return current.filter(function (_, index) { return index !== sourceIndex; });
+    }
+
+    if (action.type === 'move' || action.type === 'duplicate') {
+      var dx = Math.round(Number(action.dx) || 0);
+      var dy = Math.round(Number(action.dy) || 0);
+      var dz = Math.round(Number(action.dz) || 0);
+      if (!dx && !dy && !dz) return current;
+      var target = {
+        x: Math.round(Number(source.x)) + dx,
+        y: Math.round(Number(source.y)) + dy,
+        z: Math.round(Number(source.z)) + dz
+      };
+      if (target.x < ARCH_XZ_MIN || target.x > ARCH_XZ_MAX || target.z < ARCH_XZ_MIN || target.z > ARCH_XZ_MAX
+          || target.y < ARCH_Y_MIN || target.y > ARCH_Y_MAX) return current;
+      var targetKey = archBlockKey(target);
+      if (current.some(function (b, index) { return index !== sourceIndex && archBlockKey(b) === targetKey; })) return current;
+      if (action.type === 'duplicate' && current.length >= ARCH_MAX_BLOCKS) return current;
+      var transformed = Object.assign({}, source, target);
+      if (action.type === 'duplicate') return current.concat([transformed]);
+      return current.map(function (b, index) { return index === sourceIndex ? transformed : b; });
+    }
+
+    if (action.type === 'replace') {
+      var sourceShape = Object.prototype.hasOwnProperty.call(ARCH_SHAPE_IDS, source.shape) ? source.shape : 'block';
+      var sourceMaterial = Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, source.material) ? source.material : 'stone';
+      var shape = action.shape != null && Object.prototype.hasOwnProperty.call(ARCH_SHAPE_IDS, action.shape) ? action.shape : sourceShape;
+      var material = action.material != null && Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, action.material) ? action.material : sourceMaterial;
+      var color = action.color != null ? normalizeArchColor(action.color, material) : normalizeArchColor(source.color, material);
+      var rotation = action.rotation != null ? normalizeArchRotation(action.rotation) : normalizeArchRotation(source.rotation);
+      if (shape === sourceShape && material === sourceMaterial && color === normalizeArchColor(source.color, sourceMaterial)
+          && rotation === normalizeArchRotation(source.rotation)) return current;
+      var replacement = Object.assign({}, source, { shape: shape, material: material, color: color, rotation: rotation });
+      return current.map(function (b, index) { return index === sourceIndex ? replacement : b; });
+    }
+
+    return current;
+  }
+
+  function mergeArchBlocksWithinLimit(currentBlocks, candidateBlocks) {
+    var base = sanitizeArchBlocks(currentBlocks);
+    var candidates = sanitizeArchBlocks(candidateBlocks);
+    var occupied = {}, eligibleCount = 0;
+    base.forEach(function (b) { occupied[archBlockKey(b)] = true; });
+    var room = Math.max(0, ARCH_MAX_BLOCKS - base.length);
+    var additions = [];
+    candidates.forEach(function (b) {
+      var key = archBlockKey(b);
+      if (!key || occupied[key]) return;
+      eligibleCount++;
+      if (additions.length >= room) return;
+      occupied[key] = true;
+      additions.push(b);
+    });
+    return {
+      blocks: base.concat(additions),
+      added: additions.length,
+      skipped: Math.max(0, eligibleCount - additions.length)
+    };
+  }
+
+  function nearestArchOccupiedLayer(currentBlocks, preferredLayer) {
+    var preferred = Math.max(ARCH_Y_MIN, Math.min(ARCH_Y_MAX, Math.round(Number(preferredLayer) || 0)));
+    var layers = {}, best = preferred, bestDistance = Infinity;
+    (Array.isArray(currentBlocks) ? currentBlocks : []).forEach(function (b) {
+      var y = Math.max(ARCH_Y_MIN, Math.min(ARCH_Y_MAX, Math.round(Number(b.y) || 0)));
+      layers[y] = true;
+    });
+    if (layers[preferred] || Object.keys(layers).length === 0) return preferred;
+    Object.keys(layers).forEach(function (key) {
+      var y = Number(key);
+      var distance = Math.abs(y - preferred);
+      if (distance < bestDistance || (distance === bestDistance && y < best)) {
+        best = y;
+        bestDistance = distance;
+      }
+    });
+    return best;
+  }
+
+  function getArchGridAxisBounds(hasBlocks, minValue, maxValue, focusValue) {
     if (!hasBlocks) return [0, 9];
     var lo = Math.max(-64, Math.round(minValue) - 1);
     var hi = Math.min(64, Math.round(maxValue) + 1);
     if (hi - lo + 1 > 32) {
-      var mid = Math.round((minValue + maxValue) / 2);
+      var hasFocus = focusValue != null && isFinite(focusValue);
+      var mid = hasFocus
+        ? Math.max(Math.round(minValue), Math.min(Math.round(maxValue), Math.round(Number(focusValue))))
+        : Math.round((minValue + maxValue) / 2);
       lo = mid - 15; hi = lo + 31;
       if (lo < -64) { lo = -64; hi = -33; }
       if (hi > 64) { hi = 64; lo = 33; }
@@ -872,6 +1070,24 @@
       if (hi - lo + 1 < 10 && hi < 64) hi++;
     }
     return [lo, hi];
+  }
+
+  function moveArchGridCursor(current, key, bounds, ctrlKey) {
+    current = current || {};
+    bounds = bounds || {};
+    var minX = isFinite(bounds.minX) ? Math.round(bounds.minX) : ARCH_XZ_MIN;
+    var maxX = isFinite(bounds.maxX) ? Math.round(bounds.maxX) : ARCH_XZ_MAX;
+    var minZ = isFinite(bounds.minZ) ? Math.round(bounds.minZ) : ARCH_XZ_MIN;
+    var maxZ = isFinite(bounds.maxZ) ? Math.round(bounds.maxZ) : ARCH_XZ_MAX;
+    var x = Math.max(minX, Math.min(maxX, Math.round(Number(current.x) || 0)));
+    var z = Math.max(minZ, Math.min(maxZ, Math.round(Number(current.z) || 0)));
+    if (key === 'ArrowLeft') x = Math.max(minX, x - 1);
+    else if (key === 'ArrowRight') x = Math.min(maxX, x + 1);
+    else if (key === 'ArrowUp') z = Math.max(minZ, z - 1);
+    else if (key === 'ArrowDown') z = Math.min(maxZ, z + 1);
+    else if (key === 'Home') { x = minX; if (ctrlKey) z = minZ; }
+    else if (key === 'End') { x = maxX; if (ctrlKey) z = maxZ; }
+    return { x: x, z: z };
   }
 
   function selectArchDisplayBlocks(currentBlocks, options) {
@@ -900,12 +1116,16 @@
   try { window.__alloArchGL = ArchGL; } catch (e) {}
   try { window.__alloArchEditBlocks = applyArchEdit; } catch (e) {}
   try { window.__alloArchGridAxisBounds = getArchGridAxisBounds; } catch (e) {}
+  try { window.__alloArchMoveGridCursor = moveArchGridCursor; } catch (e) {}
   try { window.__alloArchDisplayBlocks = selectArchDisplayBlocks; } catch (e) {}
   try { window.__alloArchSanitizeBlocks = sanitizeArchBlocks; } catch (e) {}
   try { window.__alloArchSettleBlocks = settleArchBlocks; } catch (e) {}
   try { window.__alloArchUnsupportedKeys = getArchUnsupportedKeys; } catch (e) {}
   try { window.__alloArchChangeCamera = changeArchCamera; } catch (e) {}
   try { window.__alloArchReflectRotation = reflectArchRotation; } catch (e) {}
+  try { window.__alloArchBlockAction = applyArchBlockAction; } catch (e) {}
+  try { window.__alloArchMergeBlocks = mergeArchBlocksWithinLimit; } catch (e) {}
+  try { window.__alloArchNearestLayer = nearestArchOccupiedLayer; } catch (e) {}
 
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
@@ -943,7 +1163,7 @@
     var activeShape = d.activeShape || 'block';
     var activeMaterial = d.activeMaterial || 'stone';
     var activeColor = d.activeColor || '#94a3b8';
-    var mode = d.mode || 'place';
+    var mode = d.mode === 'erase' || d.mode === 'paint' || d.mode === 'pick' ? d.mode : 'place';
     var styleMode = d.styleMode || 'architect';
     var blueprintView = d.blueprintView || false;
     var showAnalysis = d.showAnalysis || false;
@@ -962,6 +1182,8 @@
     var viewLayer = d.viewLayer != null ? d.viewLayer : -1; // -1 = all layers
     var editorView = d.editorView || '3d';
     var editLayer = d.editLayer != null ? Math.max(0, Math.min(31, d.editLayer)) : 0;
+    var gridCursorX = d.gridCursorX != null && isFinite(d.gridCursorX) ? Math.round(Number(d.gridCursorX)) : null;
+    var gridCursorZ = d.gridCursorZ != null && isFinite(d.gridCursorZ) ? Math.round(Number(d.gridCursorZ)) : null;
     var showSlice = d.showSlice || false;
     var sliceZ = d.sliceZ != null ? d.sliceZ : -1;
     var sliceZSelected = d.sliceZSelected === true || (d.sliceZSelected == null && d.sliceZ != null && d.sliceZ >= 0);
@@ -977,6 +1199,9 @@
     var showAI = d.showAI || false;
     var showInquiryLab = d.showInquiryLab || false;
     var soundEnabled = d.soundEnabled != null ? d.soundEnabled : true;
+    var requestedSelectedBlockKey = typeof d.selectedBlockKey === 'string' ? d.selectedBlockKey : '';
+    var selectedBlock = requestedSelectedBlockKey && blocks.find(function (b) { return archBlockKey(b) === requestedSelectedBlockKey; });
+    var selectedBlockKey = selectedBlock ? archBlockKey(selectedBlock) : '';
 
     // ── Shape definitions (12 shapes) ──
     var shapes = [
@@ -1008,8 +1233,16 @@
     var modes = [
       { id: 'place', label: t('stem.archstudio.place', 'Place'), icon: '\u2795' },
       { id: 'erase', label: t('stem.archstudio.erase', 'Erase'), icon: '\u274C' },
-      { id: 'paint', label: t('stem.archstudio.paint', 'Paint'), icon: '\uD83C\uDFA8' }
+      { id: 'paint', label: t('stem.archstudio.paint', 'Paint'), icon: '\uD83C\uDFA8' },
+      { id: 'pick', label: t('stem.archstudio.pick', 'Pick'), icon: '\uD83C\uDFAF' }
     ];
+    var modeVisuals = {
+      place: { bg: 'rgba(34,197,94,.2)', border: '#22c55e', color: '#4ade80', label: '\u2795 Place', action: 'Place' },
+      erase: { bg: 'rgba(239,68,68,.2)', border: '#ef4444', color: '#f87171', label: '\u274C Erase', action: 'Erase' },
+      paint: { bg: 'rgba(168,85,247,.2)', border: '#a855f7', color: '#c084fc', label: '\uD83C\uDFA8 Paint', action: 'Paint' },
+      pick: { bg: 'rgba(34,211,238,.2)', border: '#22d3ee', color: '#67e8f9', label: '\uD83C\uDFAF Pick', action: 'Pick properties' }
+    };
+    var activeModeVisual = modeVisuals[mode] || modeVisuals.place;
 
     // ── Rotation options ──
     var rotations = [
@@ -1028,8 +1261,11 @@
     var matCostLookup = {};
     materials.forEach(function (m) { matColorLookup[m.id] = m.color; matWeightLookup[m.id] = m.weight; matCostLookup[m.id] = m.cost; });
 
-    var archDisplayBlocks = selectArchDisplayBlocks(blocks, {
-      showReplay: showReplay,
+    var archReplayFrame = showReplay && replayStep >= 0 && replayStep < undoStack.length
+      ? undoStack[replayStep]
+      : blocks;
+    var archDisplayBlocks = selectArchDisplayBlocks(archReplayFrame, {
+      showReplay: false,
       replayStep: replayStep,
       undoStack: undoStack,
       viewLayer: viewLayer,
@@ -1077,6 +1313,8 @@
       else upd('rot3d', nextCamera);
     };
     function archHexFor(b) {
+      // Selection is rendered as a separate wireframe outline so material and
+      // analysis colours remain truthful while an object is selected.
       if (showHeatmap && archMaxLoad > 0) {
         var loadKey = b.x + ',' + b.y + ',' + b.z;
         if (archUnsupportedKeys[loadKey]) return 0xef4444;
@@ -1099,6 +1337,7 @@
     var archGlAlt = 'Three-dimensional view of your build: ' + archDisplayBlocks.length
       + (archDisplayBlocks.length === 1 ? ' visible block' : ' visible blocks')
       + (archDisplayBlocks.length !== blocks.length ? ' of ' + blocks.length + ' total' : '')
+      + (selectedBlock ? '. Selected block at X ' + selectedBlock.x + ', Y ' + selectedBlock.y + ', Z ' + selectedBlock.z : '')
       + '. Use the camera controls to look around it.';
     if (archShow3d) {
       ArchGL.submit({
@@ -1106,7 +1345,7 @@
           return {
             x: b.x || 0, y: b.y || 0, z: b.z || 0,
             shape: b.shape || 'block', material: b.material || 'stone',
-            rotation: b.rotation || 0, hex: archHexFor(b)
+            rotation: b.rotation || 0, hex: archHexFor(b), selected: archBlockKey(b) === selectedBlockKey
           };
         }),
         rotX: archRot.rotX, rotY: archRot.rotY, scale: archRot.scale || 1,
@@ -1122,6 +1361,7 @@
             + (b.material || '') + ',' + (b.color || '') + ',' + (b.rotation || 0);
         }).join('|') + '|view:' + (blueprintView ? 'blueprint' : 'perspective')
           + '|style:' + styleMode + '|heat:' + (showHeatmap ? 'on' : 'off')
+          + '|selected:' + selectedBlockKey
       });
     }
     var archGlLive = archShow3d && ArchGL.isReady();
@@ -1293,6 +1533,89 @@
       return stack;
     };
 
+    var requireLiveBuild = function () {
+      if (!showReplay) return true;
+      var message = 'Construction replay is read-only. Exit replay before changing the live build.';
+      if (ctx.addToast) ctx.addToast(message, 'info');
+      if (announceToSR) announceToSR(message);
+      return false;
+    };
+
+    var focusArchStudioRegion = function () {
+      setTimeout(function () {
+        if (typeof document === 'undefined') return;
+        var region = document.getElementById('arch-studio-region');
+        if (region && typeof region.focus === 'function') region.focus();
+      }, 0);
+    };
+
+    var focusArchGridCell = function (x, z) {
+      var attempts = 0;
+      var focusWhenReady = function () {
+        if (typeof document === 'undefined') return;
+        var grid = document.querySelector('[data-arch-grid="true"]');
+        if (!grid) {
+          if (attempts++ < 4) setTimeout(focusWhenReady, 16);
+          return;
+        }
+        var cell = null;
+        if (x != null && z != null) {
+          cell = grid.querySelector('[data-arch-grid-x="' + x + '"][data-arch-grid-z="' + z + '"]');
+          if (!cell && attempts++ < 4) { setTimeout(focusWhenReady, 16); return; }
+        }
+        if (!cell) cell = grid.querySelector('[role="gridcell"][tabindex="0"]') || grid.querySelector('[role="gridcell"]');
+        if (cell && typeof cell.focus === 'function') cell.focus();
+      };
+      setTimeout(focusWhenReady, 0);
+    };
+
+    var openArchGridForKeyboard = function () {
+      upd('editorView', 'grid');
+      focusArchGridCell(gridCursorX, gridCursorZ);
+      if (announceToSR) announceToSR('Floor grid opened. Use arrow keys to move between cells and Enter or Space to use the active tool.');
+    };
+
+    var clearSelectedBlock = function (restoreFocus) {
+      if (!selectedBlock) return false;
+      upd('selectedBlockKey', '');
+      if (announceToSR) announceToSR('Block selection cleared.');
+      if (restoreFocus) focusArchStudioRegion();
+      return true;
+    };
+
+    // Eyedropper workflow: copy every authoring property from an existing
+    // block, then return to Place so the next click can repeat it immediately.
+    // This is intentionally read-only and does not add an undo entry.
+    var pickArchProperties = function (target) {
+      if (showReplay) {
+        if (announceToSR) announceToSR('Exit construction replay before picking a block.');
+        return false;
+      }
+      var cell = target && target.block;
+      var picked = cell && blocks.find(function (b) {
+        return b.x === Math.round(cell.x) && b.y === Math.round(cell.y) && b.z === Math.round(cell.z);
+      });
+      if (!picked) {
+        upd('selectedBlockKey', '');
+        if (announceToSR) announceToSR('Pick mode needs an existing block.');
+        return false;
+      }
+      var pickedShape = Object.prototype.hasOwnProperty.call(ARCH_SHAPE_IDS, picked.shape) ? picked.shape : 'block';
+      var pickedMaterial = Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, picked.material) ? picked.material : 'stone';
+      var pickedRotation = normalizeArchRotation(picked.rotation);
+      upd({
+        activeShape: pickedShape,
+        activeMaterial: pickedMaterial,
+        activeColor: normalizeArchColor(picked.color, pickedMaterial),
+        activeRotation: pickedRotation,
+        selectedBlockKey: archBlockKey(picked),
+        editLayer: Math.max(ARCH_Y_MIN, Math.min(ARCH_Y_MAX, Math.round(picked.y))),
+        mode: 'place'
+      });
+      if (announceToSR) announceToSR('Picked ' + pickedMaterial + ' ' + pickedShape + ' at X ' + picked.x + ', Y ' + picked.y + ', Z ' + picked.z + '. Place mode active.');
+      return true;
+    };
+
     var commitArchEdit = function (target) {
       if (showReplay) {
         if (announceToSR) announceToSR('Exit construction replay before editing.');
@@ -1310,6 +1633,21 @@
       };
       var preview = applyArchEdit(blocks, edit);
       if (preview === blocks) return false;
+      var editCell = mode === 'place' ? edit.place : edit.block;
+      var selectedAfterEdit = '';
+      if (mode !== 'erase') {
+        var changedCells = [editCell];
+        if (symmetryMode && editCell && isFinite(editCell.x) && Math.round(editCell.x) !== 0) {
+          changedCells.push(Object.assign({}, editCell, { x: -Math.round(editCell.x) }));
+        }
+        changedCells.some(function (candidate) {
+          var key = archBlockKey(candidate);
+          var before = blocks.find(function (b) { return archBlockKey(b) === key; });
+          var after = preview.find(function (b) { return archBlockKey(b) === key; });
+          if (after && after !== before) { selectedAfterEdit = key; return true; }
+          return false;
+        });
+      }
 
       if (typeof ctx.setToolData === 'function') {
         ctx.setToolData(function (p) {
@@ -1329,23 +1667,147 @@
             undoStack: history,
             redoStack: [],
             materialsUsed: materialsSeen,
-            stylesUsed: stylesSeen
+            stylesUsed: stylesSeen,
+            selectedBlockKey: selectedAfterEdit
           }) });
         });
       } else {
-        upd({ blocks: preview, undoStack: pushUndo(blocks), redoStack: [] });
+        upd({ blocks: preview, undoStack: pushUndo(blocks), redoStack: [], selectedBlockKey: selectedAfterEdit });
       }
 
       if (soundEnabled) {
         if (mode === 'erase') sfxErase(); else sfxPlace();
       }
-      var cell = mode === 'place' ? edit.place : edit.block;
+      var cell = editCell;
       if (announceToSR && cell) {
         announceToSR((mode === 'place' ? 'Placed ' + activeShape : mode === 'erase' ? 'Removed block' : 'Painted block')
           + ' at X ' + Math.round(cell.x) + ', Y ' + Math.round(cell.y) + ', Z ' + Math.round(cell.z) + '.'
           + (symmetryMode && Math.round(cell.x) !== 0 ? ' Mirrored across X equals zero.' : ''));
       }
       return true;
+    };
+
+    var commitSelectedAction = function (action) {
+      if (showReplay) {
+        if (announceToSR) announceToSR('Exit construction replay before editing the selected block.');
+        return false;
+      }
+      if (!selectedBlock) {
+        if (announceToSR) announceToSR('Pick a block before using the inspector.');
+        return false;
+      }
+      var restoreInspectorFocus = false;
+      try {
+        var focused = typeof document !== 'undefined' ? document.activeElement : null;
+        restoreInspectorFocus = !!(focused && typeof focused.closest === 'function' && focused.closest('[data-arch-inspector="true"]'));
+      } catch (_) {}
+      var sourceSelectedKey = selectedBlockKey;
+      var fullAction = Object.assign({}, action || {}, { cell: {
+        x: selectedBlock.x, y: selectedBlock.y, z: selectedBlock.z
+      } });
+      if (fullAction.type === 'replace') {
+        fullAction.shape = activeShape;
+        fullAction.material = activeMaterial;
+        fullAction.color = activeColor;
+        fullAction.rotation = activeRotation;
+      }
+      var preview = applyArchBlockAction(blocks, fullAction);
+      if (preview === blocks) {
+        var blockedMessage = fullAction.type === 'replace'
+          ? 'The selected block already uses the current shape, material, color, and rotation.'
+          : 'That block action is blocked by the build limits, maximum size, or an occupied destination.';
+        if (ctx.addToast) ctx.addToast(blockedMessage, 'info');
+        if (announceToSR) announceToSR(blockedMessage);
+        return false;
+      }
+
+      var targetCell = { x: selectedBlock.x, y: selectedBlock.y, z: selectedBlock.z };
+      if (fullAction.type === 'move' || fullAction.type === 'duplicate') {
+        targetCell = {
+          x: Math.round(selectedBlock.x) + (Math.round(Number(fullAction.dx)) || 0),
+          y: Math.round(selectedBlock.y) + (Math.round(Number(fullAction.dy)) || 0),
+          z: Math.round(selectedBlock.z) + (Math.round(Number(fullAction.dz)) || 0)
+        };
+      }
+      var nextSelectedKey = fullAction.type === 'delete' ? '' : archBlockKey(targetCell);
+      var nextEditLayer = fullAction.type === 'delete' ? editLayer : Math.max(ARCH_Y_MIN, Math.min(ARCH_Y_MAX, Math.round(targetCell.y)));
+      var transaction = { committed: false, reported: false };
+      var reportCommittedAction = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (soundEnabled) {
+          if (fullAction.type === 'delete') sfxErase(); else sfxPlace();
+        }
+        if (announceToSR) {
+          if (fullAction.type === 'delete') announceToSR('Deleted the selected block.');
+          else if (fullAction.type === 'replace') announceToSR('Applied the current properties to the selected block.');
+          else announceToSR((fullAction.type === 'duplicate' ? 'Duplicated' : 'Moved') + ' selected block to X ' + targetCell.x + ', Y ' + targetCell.y + ', Z ' + targetCell.z + '.');
+        }
+      };
+
+      // Focus recovery should not depend on React's deferred updater timing;
+      // moving focus to the studio remains safe even if a racing delete no-ops.
+      if (fullAction.type === 'delete' && restoreInspectorFocus) focusArchStudioRegion();
+
+      if (typeof ctx.setToolData === 'function') {
+        ctx.setToolData(function (p) {
+          var a = Object.assign({}, p.archStudio || {});
+          if (a.selectedBlockKey !== sourceSelectedKey) return p;
+          var current = a.blocks || [];
+          var liveBlock = current.find(function (b) { return archBlockKey(b) === sourceSelectedKey; });
+          if (!liveBlock) return p;
+          var liveAction = Object.assign({}, fullAction, { cell: liveBlock });
+          var next = applyArchBlockAction(current, liveAction);
+          if (next === current) return p;
+          var history = (a.undoStack || []).slice();
+          history.push(JSON.parse(JSON.stringify(current)));
+          if (history.length > 50) history = history.slice(-50);
+          var materialsSeen = Object.assign({}, a.materialsUsed || {});
+          var stylesSeen = Object.assign({}, a.stylesUsed || {});
+          if (fullAction.type === 'replace') materialsSeen[activeMaterial] = true;
+          stylesSeen[styleMode] = true;
+          transaction.committed = true;
+          return Object.assign({}, p, { archStudio: Object.assign({}, a, {
+            blocks: next,
+            undoStack: history,
+            redoStack: [],
+            selectedBlockKey: nextSelectedKey,
+            editLayer: nextEditLayer,
+            viewLayer: a.viewLayer != null && a.viewLayer >= 0 && fullAction.type !== 'delete' ? nextEditLayer : a.viewLayer,
+            materialsUsed: materialsSeen,
+            stylesUsed: stylesSeen
+          }) });
+        });
+      } else {
+        upd({
+          blocks: preview,
+          undoStack: pushUndo(blocks),
+          redoStack: [],
+          selectedBlockKey: nextSelectedKey,
+          editLayer: nextEditLayer,
+          viewLayer: viewLayer >= 0 && fullAction.type !== 'delete' ? nextEditLayer : viewLayer
+        });
+        transaction.committed = true;
+      }
+      if (transaction.committed) reportCommittedAction();
+      else setTimeout(reportCommittedAction, 0);
+      return true;
+    };
+
+    var revealSelectedBlock = function () {
+      if (!selectedBlock) return;
+      upd({
+        viewLayer: -1,
+        showSlice: false,
+        sliceZSelected: false,
+        filterMaterial: '',
+        filterShape: '',
+        editLayer: Math.max(ARCH_Y_MIN, Math.min(ARCH_Y_MAX, Math.round(selectedBlock.y))),
+        gridCursorX: Math.round(selectedBlock.x),
+        gridCursorZ: Math.round(selectedBlock.z)
+      });
+      if (editorView === 'grid') focusArchGridCell(selectedBlock.x, selectedBlock.z);
+      if (announceToSR) announceToSR('Selected block revealed at X ' + selectedBlock.x + ', Y ' + selectedBlock.y + ', Z ' + selectedBlock.z + '.');
     };
 
     var editAtPointer = function (ev) {
@@ -1355,18 +1817,24 @@
         return;
       }
       var target = ArchGL.pick(ev.clientX, ev.clientY);
-      if (target) commitArchEdit(target);
+      if (target) {
+        if (mode === 'pick') pickArchProperties(target);
+        else commitArchEdit(target);
+      }
       ArchGL.clearPreview();
     };
 
     var editAtGridCell = function (x, z) {
-      commitArchEdit({
+      var target = {
         place: { x: x, y: editLayer, z: z },
         block: { x: x, y: editLayer, z: z }
-      });
+      };
+      if (mode === 'pick') pickArchProperties(target);
+      else commitArchEdit(target);
     };
 
     var doUndo = function () {
+      if (!requireLiveBuild()) return;
       if (!undoStack || undoStack.length === 0) return;
       var stack = undoStack.slice();
       var prev = stack.pop();
@@ -1375,13 +1843,16 @@
       if (redo.length > 50) redo = redo.slice(-50);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: prev, undoStack: stack, redoStack: redo }) });
+        var restoredEditLayer = nearestArchOccupiedLayer(prev, a.editLayer != null ? a.editLayer : editLayer);
+        var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(prev, a.viewLayer) : a.viewLayer;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: prev, undoStack: stack, redoStack: redo, selectedBlockKey: '', editLayer: restoredEditLayer, viewLayer: restoredViewLayer }) });
       });
       if (soundEnabled) sfxUndo();
       if (announceToSR) announceToSR('Undo. ' + (prev ? prev.length : 0) + ' blocks.');
     };
 
     var doRedo = function () {
+      if (!requireLiveBuild()) return;
       if (!redoStack || redoStack.length === 0) return;
       var stack = redoStack.slice();
       var next = stack.pop();
@@ -1390,7 +1861,9 @@
       if (undo.length > 50) undo = undo.slice(-50);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: next, undoStack: undo, redoStack: stack }) });
+        var restoredEditLayer = nearestArchOccupiedLayer(next, a.editLayer != null ? a.editLayer : editLayer);
+        var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(next, a.viewLayer) : a.viewLayer;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: next, undoStack: undo, redoStack: stack, selectedBlockKey: '', editLayer: restoredEditLayer, viewLayer: restoredViewLayer }) });
       });
       if (soundEnabled) sfxRedo();
       if (announceToSR) announceToSR('Redo. ' + (next ? next.length : 0) + ' blocks.');
@@ -1398,11 +1871,12 @@
 
     // Clear all (with undo snapshot)
     var clearAll = function () {
+      if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
       var newUndo = pushUndo(blocks);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [], undoStack: newUndo, redoStack: [] }) });
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [], undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
       });
       if (announceToSR) announceToSR('All blocks cleared.');
     };
@@ -1436,10 +1910,11 @@
     };
 
     var loadBuild = function (item) {
+      if (!requireLiveBuild()) return;
       var newUndo = pushUndo(blocks);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: item.blocks, undoStack: newUndo, redoStack: [] }) });
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: item.blocks, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Loaded: ' + item.name, 'info');
       if (soundEnabled) sfxLoad();
@@ -1462,12 +1937,13 @@
     var templates = makeTemplates();
 
     var loadTemplate = function (tpl) {
+      if (!requireLiveBuild()) return;
       var newBlocks = (tpl.blocks)();
       newBlocks = sanitizeArchBlocks(newBlocks);
       var newUndo = pushUndo(blocks);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: newBlocks, undoStack: newUndo, redoStack: [] }) });
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: newBlocks, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCC2 Template loaded: ' + tpl.name, 'info');
       if (soundEnabled) sfxLoad();
@@ -1478,6 +1954,7 @@
     // ── Mirror / Symmetry ──
     // ══════════════════════════════════════════════════════════════
     var mirrorBuildX = function () {
+      if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
       var newUndo = pushUndo(blocks);
       var mid = (minX + maxX) / 2;
@@ -1490,21 +1967,30 @@
       // Merge: keep original + add non-overlapping mirrored
       var existing = {};
       blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
-      var added = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
-      if (!added.length) {
+      var eligible = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      var mergeResult = mergeArchBlocksWithinLimit(blocks, eligible);
+      var added = mergeResult.added;
+      if (!added) {
+        if (blocks.length >= ARCH_MAX_BLOCKS && ctx.addToast) ctx.addToast('The build already has the maximum of ' + ARCH_MAX_BLOCKS + ' blocks.', 'info');
+        else if (ctx.addToast) ctx.addToast('The build is already mirrored across its X centerline.', 'info');
+        return;
+      }
+      var limited = eligible.length > added;
+      var merged = mergeResult.blocks;
+      if (!merged.length) {
         if (ctx.addToast) ctx.addToast('The build is already mirrored across its X centerline.', 'info');
         return;
       }
-      var merged = blocks.concat(added);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along X axis! +' + added.length + ' blocks', 'info');
+      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along X axis! +' + added + ' blocks' + (limited ? '; maximum reached.' : ''), 'info');
       if (soundEnabled) sfxPlace();
     };
 
     var mirrorBuildZ = function () {
+      if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
       var newUndo = pushUndo(blocks);
       var mid = (minZ + maxZ) / 2;
@@ -1516,17 +2002,25 @@
       });
       var existing = {};
       blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
-      var added = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
-      if (!added.length) {
+      var eligible = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      var mergeResult = mergeArchBlocksWithinLimit(blocks, eligible);
+      var added = mergeResult.added;
+      if (!added) {
+        if (blocks.length >= ARCH_MAX_BLOCKS && ctx.addToast) ctx.addToast('The build already has the maximum of ' + ARCH_MAX_BLOCKS + ' blocks.', 'info');
+        else if (ctx.addToast) ctx.addToast('The build is already mirrored across its Z centerline.', 'info');
+        return;
+      }
+      var limited = eligible.length > added;
+      var merged = mergeResult.blocks;
+      if (!merged.length) {
         if (ctx.addToast) ctx.addToast('The build is already mirrored across its Z centerline.', 'info');
         return;
       }
-      var merged = blocks.concat(added);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along Z axis! +' + added.length + ' blocks', 'info');
+      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along Z axis! +' + added + ' blocks' + (limited ? '; maximum reached.' : ''), 'info');
       if (soundEnabled) sfxPlace();
     };
 
@@ -1577,6 +2071,7 @@
     var quakeResult = d.quakeResult || null;
 
     var runEarthquake = function () {
+      if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
       var newUndo = pushUndo(blocks);
       var intensity = quakeIntensity / 10; // 0.1 - 1.0
@@ -1611,7 +2106,7 @@
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
         return Object.assign({}, p, { archStudio: Object.assign({}, a, {
-          blocks: survivors, undoStack: newUndo, redoStack: [],
+          blocks: survivors, undoStack: newUndo, redoStack: [], selectedBlockKey: '',
           quakeResult: { fallen: fallen, survived: survivors.length, pct: pctSurvived, rating: rating, intensity: quakeIntensity }
         }) });
       });
@@ -1709,6 +2204,7 @@
     };
 
     var importShareCode = function (code) {
+      if (!requireLiveBuild()) return;
       if (!code) return;
       try {
         var trimmedCode = String(code).trim();
@@ -1726,7 +2222,7 @@
         var newUndo = pushUndo(blocks);
         ctx.setToolData(function (p) {
           var a = Object.assign({}, p.archStudio || {});
-          return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: imported, undoStack: newUndo, redoStack: [], importCode: '' }) });
+          return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: imported, undoStack: newUndo, redoStack: [], importCode: '', selectedBlockKey: '' }) });
         });
         if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Imported ' + imported.length + ' blocks' + (skipped ? '; skipped ' + skipped + ' invalid or duplicate entr' + (skipped === 1 ? 'y' : 'ies') : '') + '.', skipped ? 'info' : 'success');
         if (soundEnabled) sfxLoad();
@@ -1759,6 +2255,7 @@
     // ── Copy Region (Duplicate + Offset) ──
     // ══════════════════════════════════════════════════════════════
     var duplicateBuild = function (dx, dy, dz) {
+      if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
       var duped = blocks.map(function (b) {
         return Object.assign({}, b, { x: b.x + dx, y: b.y + dy, z: b.z + dz });
@@ -1766,18 +2263,26 @@
       duped = sanitizeArchBlocks(duped);
       var existing = {};
       blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
-      var added = duped.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
-      if (!added.length) {
+      var eligible = duped.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      var mergeResult = mergeArchBlocksWithinLimit(blocks, eligible);
+      var added = mergeResult.added;
+      if (!added) {
+        if (blocks.length >= ARCH_MAX_BLOCKS && ctx.addToast) ctx.addToast('The build already has the maximum of ' + ARCH_MAX_BLOCKS + ' blocks.', 'info');
+        else if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No blocks could be copied inside the build limits.', 'info');
+        return;
+      }
+      var limited = eligible.length > added;
+      if (!mergeResult.blocks.length) {
         if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No blocks could be copied inside the build limits.', 'info');
         return;
       }
       var newUndo = pushUndo(blocks);
-      var merged = blocks.concat(added);
+      var merged = mergeResult.blocks;
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
         return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Duplicated +' + added.length + ' blocks (offset ' + dx + ',' + dy + ',' + dz + ')', 'info');
+      if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Duplicated +' + added + ' blocks (offset ' + dx + ',' + dy + ',' + dz + ')' + (limited ? '; maximum reached.' : ''), 'info');
       if (soundEnabled) sfxPlace();
     };
 
@@ -1811,8 +2316,13 @@
       redo: doRedo,
       shapes: shapes.map(function (s) { return s.id; }),
       setShape: function (id) { upd('activeShape', id); },
-      modes: ['place', 'erase', 'paint'],
-      setMode: function (id) { upd('mode', id); if (announceToSR) announceToSR((id === 'place' ? 'Place' : id === 'erase' ? 'Erase' : 'Paint') + ' mode activated.'); },
+      modes: modes.map(function (m) { return m.id; }),
+      setMode: function (id) {
+        var chosen = modes.find(function (m) { return m.id === id; });
+        if (!chosen) return;
+        upd('mode', chosen.id);
+        if (announceToSR) announceToSR(chosen.label + ' mode activated.');
+      },
       screenshot: takeScreenshot
     };
 
@@ -1827,6 +2337,7 @@
     // ── Gravity Simulation (drop floating blocks) ──
     // ══════════════════════════════════════════════════════════════
     var applyGravity = function () {
+      if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
       var result = settleArchBlocks(blocks);
       if (result.moved === 0) {
@@ -1836,7 +2347,7 @@
       var newUndo = pushUndo(blocks);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: result.blocks, undoStack: newUndo, redoStack: [] }) });
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: result.blocks, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
       });
       if (ctx.addToast) ctx.addToast('\u2B07\uFE0F Gravity applied! ' + result.moved + ' block' + (result.moved !== 1 ? 's' : '') + ' dropped.', 'info');
       if (announceToSR) announceToSR('Gravity applied. ' + result.moved + ' block' + (result.moved !== 1 ? 's' : '') + ' dropped to the ground or nearest support.');
@@ -1858,6 +2369,7 @@
     ];
 
     var generateRandom = function (presetId) {
+      if (!requireLiveBuild()) return;
       var newUndo = pushUndo(blocks);
       var gen = [];
       var matPool = ['stone', 'brick', 'wood', 'marble', 'metal'];
@@ -1922,7 +2434,7 @@
 
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: gen, undoStack: newUndo, redoStack: [] }) });
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: gen, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83C\uDFB2 Generated ' + gen.length + ' blocks!', 'success');
       if (soundEnabled) sfxLoad();
@@ -1964,7 +2476,7 @@
 
     var startReplay = function () {
       if (!undoStack || undoStack.length === 0) { if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No undo history to replay!', 'error'); return; }
-      upd({ showReplay: true, replayStep: 0 });
+      upd({ showReplay: true, replayStep: 0, selectedBlockKey: '' });
     };
 
     var stepReplay = function (dir) {
@@ -1973,7 +2485,7 @@
       upd('replayStep', next);
     };
 
-    var replayBlocks = replayStep >= 0 && replayStep < replayFrames ? undoStack[replayStep] : blocks;
+    var replayBlocks = archReplayFrame;
     var replayLabel = replayStep >= 0 ? 'Step ' + (replayStep + 1) + '/' + (replayFrames + 1) : '';
 
     var exitReplay = function () { upd({ showReplay: false, replayStep: -1 }); };
@@ -1991,6 +2503,7 @@
     var filterCount = filterActive ? filteredBlocks.length : totalBlocks;
 
     var deleteFiltered = function () {
+      if (!requireLiveBuild()) return;
       if (!filterActive || filteredBlocks.length === 0) return;
       var newUndo = pushUndo(blocks);
       var removeSet = {};
@@ -1998,7 +2511,7 @@
       var remaining = blocks.filter(function (b) { return !removeSet[b.x + ',' + b.y + ',' + b.z]; });
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: remaining, undoStack: newUndo, redoStack: [] }) });
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: remaining, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDDD1\uFE0F Removed ' + filteredBlocks.length + ' matching blocks', 'info');
     };
@@ -2264,46 +2777,113 @@
       } }, glyph);
     };
 
+    var selectedShapeMeta = selectedBlock && (shapes.find(function (s) { return s.id === (selectedBlock.shape || 'block'); }) || shapes[0]);
+    var selectedMaterialMeta = selectedBlock && (materials.find(function (m) { return m.id === (selectedBlock.material || 'stone'); }) || materials[0]);
+    var selectedColorLabel = selectedBlock && normalizeArchColor(selectedBlock.color, selectedBlock.material || 'stone').toUpperCase();
+    var selectedMoves = [
+      { label: 'Move selected block left along X', glyph: '\u2190 X', type: 'move', dx: -1, dy: 0, dz: 0 },
+      { label: 'Move selected block up one floor', glyph: '\u2191 Y', type: 'move', dx: 0, dy: 1, dz: 0 },
+      { label: 'Move selected block right along X', glyph: 'X \u2192', type: 'move', dx: 1, dy: 0, dz: 0 },
+      { label: 'Move selected block backward along Z', glyph: '\u2191 Z', type: 'move', dx: 0, dy: 0, dz: -1 },
+      { label: 'Move selected block down one floor', glyph: '\u2193 Y', type: 'move', dx: 0, dy: -1, dz: 0 },
+      { label: 'Move selected block forward along Z', glyph: 'Z \u2193', type: 'move', dx: 0, dy: 0, dz: 1 }
+    ];
+    var canSelectedAction = function (action) {
+      if (!selectedBlock || showReplay) return false;
+      return applyArchBlockAction(blocks, Object.assign({}, action || {}, { cell: selectedBlock })) !== blocks;
+    };
+
     var renderBuildGrid = function () {
-      var xBounds = getArchGridAxisBounds(blocks.length > 0, minX, maxX);
-      var zBounds = getArchGridAxisBounds(blocks.length > 0, minZ, maxZ);
+      var gridBlocks = showReplay ? archReplayFrame : blocks;
+      var gridHasBlocks = gridBlocks.length > 0;
+      var gridContentMinX = 0, gridContentMaxX = 0, gridContentMinZ = 0, gridContentMaxZ = 0;
+      if (gridHasBlocks) {
+        gridContentMinX = Infinity; gridContentMaxX = -Infinity;
+        gridContentMinZ = Infinity; gridContentMaxZ = -Infinity;
+        gridBlocks.forEach(function (b) {
+          if (b.x < gridContentMinX) gridContentMinX = b.x;
+          if (b.x > gridContentMaxX) gridContentMaxX = b.x;
+          if (b.z < gridContentMinZ) gridContentMinZ = b.z;
+          if (b.z > gridContentMaxZ) gridContentMaxZ = b.z;
+        });
+      }
+      var gridFocusBlock = !showReplay && selectedBlock && selectedBlock.y === editLayer ? selectedBlock : null;
+      var hasGridCursor = gridCursorX != null && gridCursorZ != null;
+      var gridFocusX = hasGridCursor ? gridCursorX : gridFocusBlock ? gridFocusBlock.x : null;
+      var gridFocusZ = hasGridCursor ? gridCursorZ : gridFocusBlock ? gridFocusBlock.z : null;
+      var xBounds = getArchGridAxisBounds(gridHasBlocks, gridContentMinX, gridContentMaxX, gridFocusX);
+      var zBounds = getArchGridAxisBounds(gridHasBlocks, gridContentMinZ, gridContentMaxZ, gridFocusZ);
       var gridMinX = xBounds[0], gridMaxX = xBounds[1];
       var gridMinZ = zBounds[0], gridMaxZ = zBounds[1];
       var cols = gridMaxX - gridMinX + 1;
       var rows = gridMaxZ - gridMinZ + 1;
       var cellPx = Math.max(28, Math.min(48, Math.floor(520 / Math.max(cols, rows, 1))));
+      var cursorX = hasGridCursor
+        ? Math.max(gridMinX, Math.min(gridMaxX, gridCursorX))
+        : gridFocusBlock ? Math.round(gridFocusBlock.x) : Math.max(gridMinX, Math.min(gridMaxX, 0));
+      var cursorZ = hasGridCursor
+        ? Math.max(gridMinZ, Math.min(gridMaxZ, gridCursorZ))
+        : gridFocusBlock ? Math.round(gridFocusBlock.z) : Math.max(gridMinZ, Math.min(gridMaxZ, 0));
+      var cursorBounds = { minX: gridMinX, maxX: gridMaxX, minZ: gridMinZ, maxZ: gridMaxZ };
       var layerMap = {};
-      blocks.forEach(function (b) {
+      gridBlocks.forEach(function (b) {
         if (b.y === editLayer) layerMap[b.x + ',' + b.z] = b;
       });
-      var cells = [];
+      var rowElements = [];
+      var onGridCellKeyDown = function (ev, x, z) {
+        if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight' && ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown'
+          && ev.key !== 'Home' && ev.key !== 'End') return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        var next = moveArchGridCursor({ x: x, z: z }, ev.key, cursorBounds, ev.ctrlKey || ev.metaKey);
+        upd({ gridCursorX: next.x, gridCursorZ: next.z });
+        focusArchGridCell(next.x, next.z);
+      };
       for (var gz = gridMinZ; gz <= gridMaxZ; gz++) {
+        var rowCells = [];
         for (var gx = gridMinX; gx <= gridMaxX; gx++) {
           (function (x, z) {
             var b = layerMap[x + ',' + z];
-            var action = mode === 'place' ? 'place ' + activeShape : mode === 'erase' ? 'remove block' : 'paint block';
-            cells.push(el('button', {
+            var isSelected = !!b && archBlockKey(b) === selectedBlockKey;
+            var cellName = b ? (b.material || 'stone') + ' ' + (b.shape || 'block') : 'Empty cell';
+            var action = showReplay ? 'read-only construction replay' : mode === 'place' ? 'place ' + activeShape : mode === 'erase' ? 'remove block' : mode === 'paint' ? 'paint block' : 'pick block properties';
+            rowCells.push(el('button', {
               key: x + ',' + z,
               type: 'button',
               role: 'gridcell',
+              tabIndex: x === cursorX && z === cursorZ ? 0 : -1,
+              'aria-selected': isSelected,
+              'aria-colindex': x - gridMinX + 1,
+              'data-arch-grid-x': x,
+              'data-arch-grid-z': z,
               'data-arch-cell': x + ',' + editLayer + ',' + z,
-              'aria-label': (b ? (b.shape || 'block') : 'Empty cell') + ' at X ' + x + ', Y ' + editLayer + ', Z ' + z + '; ' + action,
+              'aria-label': cellName + ' at X ' + x + ', Y ' + editLayer + ', Z ' + z + '; ' + action,
+              onFocus: function () {
+                if (gridCursorX !== x || gridCursorZ !== z) upd({ gridCursorX: x, gridCursorZ: z });
+              },
+              onKeyDown: function (ev) { onGridCellKeyDown(ev, x, z); },
               onClick: function () { editAtGridCell(x, z); },
-              title: 'X ' + x + '  Z ' + z + (b ? ' - ' + (b.shape || 'block') : ''),
+              title: 'X ' + x + '  Z ' + z + (b ? ' - ' + (b.shape || 'block') : '') + (isSelected ? ' - selected' : ''),
               style: {
                 width: cellPx, height: cellPx, padding: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 borderRadius: 5,
-                border: b ? '2px solid rgba(255,255,255,.55)' : '1px solid rgba(100,116,139,.55)',
+                border: isSelected ? '3px solid #fbbf24' : b ? '2px solid rgba(255,255,255,.55)' : '1px solid rgba(100,116,139,.55)',
                 background: b ? (b.color || matColorLookup[b.material || 'stone'] || '#94a3b8') : 'rgba(30,41,59,.72)',
                 color: b ? '#fff' : '#64748b',
                 fontSize: b ? Math.max(14, Math.floor(cellPx * 0.42)) : 13,
-                cursor: (mode === 'erase' || mode === 'paint') ? (b ? 'pointer' : 'default') : 'pointer',
-                boxShadow: b ? 'inset 0 0 0 1px rgba(15,23,42,.35)' : 'none'
+                cursor: (mode === 'erase' || mode === 'paint' || mode === 'pick') ? (b ? (mode === 'pick' ? 'copy' : 'pointer') : 'default') : 'pointer',
+                boxShadow: isSelected ? '0 0 0 2px rgba(251,191,36,.35), inset 0 0 0 1px rgba(15,23,42,.35)' : b ? 'inset 0 0 0 1px rgba(15,23,42,.35)' : 'none'
               }
             }, b ? (shapeIconById[b.shape || 'block'] || '\uD83E\uDDF1') : (mode === 'place' ? '+' : '')));
           })(gx, gz);
         }
+        rowElements.push(el('div', {
+          key: 'row-' + gz,
+          role: 'row',
+          'aria-rowindex': gz - gridMinZ + 1,
+          style: { display: 'contents' }
+        }, rowCells));
       }
 
       return el('div', { style: { flex: 1, minHeight: 260, display: 'flex', flexDirection: 'column', padding: '54px 16px 14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 20%, rgba(30,41,59,.9), rgba(15,23,42,1))' } },
@@ -2313,14 +2893,24 @@
           el('button', { type: 'button', disabled: editLayer <= 0, 'aria-label': 'Previous floor', onClick: function () { upd('editLayer', Math.max(0, editLayer - 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer > 0 ? '#e2e8f0' : '#475569', cursor: editLayer > 0 ? 'pointer' : 'default' } }, '\u2212'),
           el('strong', { style: { minWidth: 92, textAlign: 'center', color: '#f8fafc', fontSize: 12 } }, 'Floor Y=' + editLayer),
           el('button', { type: 'button', disabled: editLayer >= 31, 'aria-label': 'Next floor', onClick: function () { upd('editLayer', Math.min(31, editLayer + 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer < 31 ? '#e2e8f0' : '#475569', cursor: editLayer < 31 ? 'pointer' : 'default' } }, '+'),
-          el('span', { style: { color: '#94a3b8', fontSize: 11 } }, mode === 'place' ? 'Select a cell to place ' + activeShape : mode === 'erase' ? 'Select a block to remove it' : 'Select a block to paint it')
+          el('span', { style: { color: '#94a3b8', fontSize: 11 } }, mode === 'place' ? 'Select a cell to place ' + activeShape : mode === 'erase' ? 'Select a block to remove it' : mode === 'paint' ? 'Select a block to paint it' : 'Select a block to copy its shape, material, color, and rotation')
         ),
+        el('div', { id: 'arch-grid-help', style: { margin: '0 auto 7px', color: '#94a3b8', fontSize: 10, textAlign: 'center' } },
+          showReplay ? 'Construction replay is read-only \u2022 Arrow keys move between cells' : 'Arrow keys move between cells \u2022 Enter or Space uses the active tool \u2022 Home and End jump across a row'),
         el('div', { style: { flex: 1, minHeight: 0, overflow: 'auto' } },
-          el('div', { role: 'grid', 'aria-label': 'Architecture build grid, floor ' + editLayer, style: {
+          el('div', {
+            role: 'grid',
+            'data-arch-grid': 'true',
+            'aria-label': 'Architecture build grid, floor ' + editLayer,
+            'aria-describedby': 'arch-grid-help',
+            'aria-readonly': showReplay,
+            'aria-rowcount': rows,
+            'aria-colcount': cols,
+            style: {
             display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', ' + cellPx + 'px)', gap: 3,
             width: 'max-content', margin: '0 auto', padding: 8, borderRadius: 10,
             background: 'rgba(2,6,23,.48)', border: '1px solid rgba(71,85,105,.7)'
-          } }, cells)
+          } }, rowElements)
         )
       );
     };
@@ -2328,20 +2918,50 @@
     // ══════════════════════════════════════════════════════════════
     // ── RENDER ──
     // ══════════════════════════════════════════════════════════════
-    // ── Keyboard shortcuts (WCAG 2.1.1): P/E/A switch mode, R rotates ──
+    // ── Keyboard shortcuts (WCAG 2.1.1): P/E/A/I switch mode, R rotates ──
     function onArchKey(e) {
       var tgt = e.target || {};
       var tn = (tgt.tagName || '').toUpperCase();
       if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
       var k = e.key;
-      if (k === 'p' || k === 'P') { e.preventDefault(); upd('mode', 'place'); if (announceToSR) announceToSR('Place mode.'); }
+      var lower = String(k || '').toLowerCase();
+      var inInspector = !!(typeof tgt.closest === 'function' && tgt.closest('[data-arch-inspector="true"]'));
+      var authoringShortcutSurface = tgt === e.currentTarget || tgt.id === 'arch-studio-canvas'
+        || (typeof tgt.getAttribute === 'function' && tgt.getAttribute('role') === 'gridcell');
+      if ((e.ctrlKey || e.metaKey) && lower === 'z') {
+        e.preventDefault();
+        if (showReplay) { if (announceToSR) announceToSR('Exit construction replay before editing.'); }
+        else if (e.shiftKey) doRedo(); else doUndo();
+      }
+      else if ((e.ctrlKey || e.metaKey) && lower === 'y') {
+        e.preventDefault();
+        if (showReplay) { if (announceToSR) announceToSR('Exit construction replay before editing.'); }
+        else doRedo();
+      }
+      else if (e.ctrlKey || e.metaKey || e.altKey) { return; }
+      else if (k === 'p' || k === 'P') { e.preventDefault(); upd('mode', 'place'); if (announceToSR) announceToSR('Place mode.'); }
       else if (k === 'e' || k === 'E') { e.preventDefault(); upd('mode', 'erase'); if (announceToSR) announceToSR('Erase mode.'); }
       else if (k === 'a' || k === 'A') { e.preventDefault(); upd('mode', 'paint'); if (announceToSR) announceToSR('Paint mode.'); }
+      else if (k === 'i' || k === 'I') { e.preventDefault(); upd('mode', 'pick'); if (announceToSR) announceToSR('Pick properties mode. Select an existing block.'); }
+      else if (k === 'Escape' && selectedBlock && (authoringShortcutSurface || inInspector)) { e.preventDefault(); clearSelectedBlock(inInspector); }
+      else if (k === 'Delete' && selectedBlock && authoringShortcutSurface) { e.preventDefault(); commitSelectedAction({ type: 'delete' }); }
+      else if ((k === 'd' || k === 'D') && selectedBlock && authoringShortcutSurface) { e.preventDefault(); commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }
+      else if (k === 's' || k === 'S') { e.preventDefault(); takeScreenshot(); }
+      else if ((k === 'g' || k === 'G') && authoringShortcutSurface) {
+        e.preventDefault();
+        if (showReplay) { if (announceToSR) announceToSR('Exit construction replay before editing.'); }
+        else applyGravity();
+      }
       else if (k === 'r' || k === 'R') {
         e.preventDefault();
         var nextDeg = (activeRotation + 90) % 360;
         upd('activeRotation', nextDeg);
         if (announceToSR) announceToSR('Rotated to ' + nextDeg + ' degrees.');
+      } else if (k === 'PageUp' || k === 'PageDown') {
+        e.preventDefault();
+        var nextLayer = Math.max(0, Math.min(31, editLayer + (k === 'PageUp' ? 1 : -1)));
+        upd('editLayer', nextLayer);
+        if (announceToSR) announceToSR('Editing floor Y equals ' + nextLayer + '.');
       } else if (k >= '1' && k <= '9') {
         var idx = parseInt(k, 10) - 1;
         if (modes[idx]) {
@@ -2357,7 +2977,7 @@
       id: 'arch-studio-region',
       style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden' },
       role: 'region',
-      'aria-label': t('stem.archstudio.architecture_studio_keyboard_shortcuts', 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, R Rotate.'),
+      'aria-label': t('stem.archstudio.architecture_studio_keyboard_shortcuts', 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, I Pick properties, R Rotate, D Duplicate selected, Delete removes selected, Escape clears selection, Page Up and Page Down change floor.'),
       tabIndex: 0,
       onKeyDown: onArchKey
     },
@@ -2421,15 +3041,15 @@
         pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showFilter', !showFilter); }),
         pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }),
         pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }),
-        el('button', { onClick: applyGravity, disabled: !blocks.length, title: t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
+        el('button', { onClick: applyGravity, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to apply gravity' : t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: !showReplay && blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (!showReplay && blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: !showReplay && blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
         // Screenshot + Sound
-        el('button', { onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
+        el('button', { type: 'button', onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), 'aria-label': t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
         el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         el('div', { style: { flex: 1 } }),
         // Undo / Redo / Clear
-        el('button', { onClick: doUndo, disabled: !undoStack.length, title: t('stem.archstudio.undo_multi_level', 'Undo (multi-level)'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: undoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21A9 Undo' + (undoStack.length ? ' (' + undoStack.length + ')' : '')),
-        el('button', { onClick: doRedo, disabled: !redoStack.length, title: t('stem.archstudio.redo', 'Redo'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: redoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21AA Redo' + (redoStack.length ? ' (' + redoStack.length + ')' : '')),
-        el('button', { onClick: clearAll, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
+        el('button', { onClick: doUndo, disabled: showReplay || !undoStack.length, title: showReplay ? 'Exit construction replay to undo' : t('stem.archstudio.undo_multi_level', 'Undo (multi-level)'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: !showReplay && undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: !showReplay && undoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21A9 Undo' + (undoStack.length ? ' (' + undoStack.length + ')' : '')),
+        el('button', { onClick: doRedo, disabled: showReplay || !redoStack.length, title: showReplay ? 'Exit construction replay to redo' : t('stem.archstudio.redo', 'Redo'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: !showReplay && redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: !showReplay && redoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21AA Redo' + (redoStack.length ? ' (' + redoStack.length + ')' : '')),
+        el('button', { onClick: clearAll, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to clear the build' : 'Clear the live build', style: { background: !showReplay && blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: !showReplay && blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: !showReplay && blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
         el('button', { onClick: saveBuild, disabled: !blocks.length, title: t('stem.archstudio.save_to_gallery', 'Save to gallery'), style: { background: blocks.length ? 'rgba(34,197,94,.2)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22c55e' : '1px solid transparent', color: blocks.length ? '#4ade80' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCBE Save'),
         // Export buttons
         el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG'),
@@ -2450,7 +3070,7 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Mode'),
             el('div', { style: { display: 'flex', gap: 4 } },
               modes.map(function (m) {
-                return el('button', { key: m.id, onClick: function () { upd('mode', m.id); }, style: {
+                return el('button', { key: m.id, type: 'button', 'aria-label': m.label + ' mode', 'aria-pressed': mode === m.id, title: m.label + ' mode' + (m.id === 'pick' ? ' (I)' : ''), onClick: function () { upd('mode', m.id); }, style: {
                   flex: 1, padding: '5px 4px', fontSize: 11, fontWeight: 600,
                   border: mode === m.id ? '2px solid #f59e0b' : '1px solid #475569',
                   borderRadius: 8, background: mode === m.id ? 'rgba(245,158,11,.15)' : 'rgba(30,41,59,.8)',
@@ -2460,12 +3080,50 @@
             )
           ),
 
+          selectedBlock && el('section', {
+            'data-arch-inspector': 'true',
+            'data-arch-selected-key': selectedBlockKey,
+            'aria-label': 'Selected block inspector',
+            style: { padding: 8, borderRadius: 10, border: '1px solid #f59e0b', background: 'rgba(245,158,11,.08)' }
+          },
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 } },
+              el('span', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, flex: 1 } }, '\uD83D\uDCCC Selected Block'),
+              el('button', { type: 'button', 'aria-label': 'Clear selected block', title: 'Deselect (Escape)', onClick: function () { clearSelectedBlock(true); }, style: { minWidth: 28, minHeight: 28, border: '1px solid transparent', borderRadius: 6, background: 'transparent', color: '#fca5a5', cursor: 'pointer', padding: 4, fontSize: 13 } }, '\u2715')
+            ),
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, marginBottom: 5 } },
+              [['X', selectedBlock.x], ['Y', selectedBlock.y], ['Z', selectedBlock.z]].map(function (entry) {
+                return el('div', { key: entry[0], style: { padding: '3px 2px', borderRadius: 5, background: 'rgba(15,23,42,.72)', textAlign: 'center', color: '#e2e8f0', fontSize: 10 } },
+                  el('span', { style: { color: '#94a3b8' } }, entry[0] + ' '), el('strong', null, entry[1]));
+              })
+            ),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, padding: '5px 6px', marginBottom: 5, borderRadius: 6, background: 'rgba(15,23,42,.55)', color: '#cbd5e1', fontSize: 10, lineHeight: 1.35 } },
+              el('span', { 'aria-hidden': 'true', style: { width: 16, height: 16, borderRadius: 3, flexShrink: 0, background: normalizeArchColor(selectedBlock.color, selectedBlock.material || 'stone'), border: '1px solid rgba(255,255,255,.45)' } }),
+              el('span', null, (selectedShapeMeta ? selectedShapeMeta.label : 'Block') + ' \u2022 ' + (selectedMaterialMeta ? selectedMaterialMeta.label : 'Stone') + ' \u2022 Color ' + selectedColorLabel + ' \u2022 ' + normalizeArchRotation(selectedBlock.rotation) + '\u00B0')
+            ),
+            archUnsupportedKeys[selectedBlockKey] && el('div', { role: 'status', style: { marginBottom: 5, padding: '3px 5px', borderRadius: 5, background: 'rgba(239,68,68,.13)', color: '#fca5a5', fontSize: 9, fontWeight: 700 } }, '\u26A0 Floating: move down or add support'),
+            el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Move one cell'),
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 6 } },
+              selectedMoves.map(function (move) {
+                var available = canSelectedAction(move);
+                return el('button', { key: move.label, type: 'button', 'aria-label': move.label, title: move.label, disabled: !available, onClick: function () { commitSelectedAction(move); }, style: {
+                  minHeight: 28, padding: '5px 3px', borderRadius: 5, border: '1px solid ' + (available ? '#64748b' : '#334155'), background: 'rgba(30,41,59,.8)', color: available ? '#e2e8f0' : '#475569', cursor: available ? 'pointer' : 'default', fontSize: 10, fontWeight: 700
+                } }, move.glyph);
+              })
+            ),
+            el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
+              el('button', { type: 'button', 'aria-label': 'Reveal selected block', onClick: revealSelectedBlock, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #38bdf8', background: 'rgba(56,189,248,.1)', color: '#7dd3fc', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, '\uD83D\uDC41 Reveal'),
+              el('button', { type: 'button', 'aria-label': 'Duplicate selected block above', title: 'Duplicate selected block above (D)', disabled: !canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }), onClick: function () { commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.1)', color: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? '#93c5fd' : '#475569', cursor: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 700 } }, '\u2398 Copy \u2191'),
+              el('button', { type: 'button', 'aria-label': 'Apply current properties to selected block', disabled: !canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }), onClick: function () { commitSelectedAction({ type: 'replace' }); }, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #a855f7', background: 'rgba(168,85,247,.1)', color: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? '#d8b4fe' : '#475569', cursor: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 700 } }, '\u2728 Apply'),
+              el('button', { type: 'button', 'aria-label': 'Delete selected block', title: 'Delete selected block (Delete)', disabled: showReplay, onClick: function () { commitSelectedAction({ type: 'delete' }); }, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #ef4444', background: 'rgba(239,68,68,.1)', color: showReplay ? '#475569' : '#fca5a5', cursor: showReplay ? 'default' : 'pointer', fontSize: 10, fontWeight: 700 } }, '\uD83D\uDDD1 Delete')
+            )
+          ),
+
           // Shape palette
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Shapes'),
             el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 } },
               shapes.map(function (s) {
-                return el('button', { key: s.id, onClick: function () { upd('activeShape', s.id); }, style: {
+                return el('button', { key: s.id, type: 'button', 'aria-label': s.label + ' shape', 'aria-pressed': activeShape === s.id, onClick: function () { upd('activeShape', s.id); }, style: {
                   padding: '6px 3px', fontSize: 10, fontWeight: 600,
                   border: activeShape === s.id ? '2px solid #60a5fa' : '1px solid #334155',
                   borderRadius: 8, background: activeShape === s.id ? 'rgba(96,165,250,.12)' : 'transparent',
@@ -2480,7 +3138,7 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD04 Rotation'),
             el('div', { style: { display: 'flex', gap: 3 } },
               rotations.map(function (r) {
-                return el('button', { key: r.deg, onClick: function () { upd('activeRotation', r.deg); }, style: {
+                return el('button', { key: r.deg, type: 'button', 'aria-label': 'Use ' + r.label + ' rotation', 'aria-pressed': activeRotation === r.deg, onClick: function () { upd('activeRotation', r.deg); }, style: {
                   flex: 1, padding: '4px 2px', fontSize: 10, fontWeight: 600,
                   border: activeRotation === r.deg ? '2px solid #f59e0b' : '1px solid #334155',
                   borderRadius: 6, background: activeRotation === r.deg ? 'rgba(245,158,11,.12)' : 'transparent',
@@ -2495,7 +3153,7 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Materials'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               materials.map(function (m) {
-                return el('button', { key: m.id, onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); }, style: {
+                return el('button', { key: m.id, type: 'button', 'aria-label': 'Use ' + m.label + ' material', 'aria-pressed': activeMaterial === m.id, onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); }, style: {
                   display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px', fontSize: 10, fontWeight: 600,
                   border: activeMaterial === m.id ? '2px solid ' + m.color : '1px solid #334155',
                   borderRadius: 8, background: activeMaterial === m.id ? 'rgba(255,255,255,.06)' : 'transparent',
@@ -2513,8 +3171,8 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3 } },
-              ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#94a3b8','#1e293b'].map(function (c) {
-                return el('button', { key: c, onClick: function () { upd('activeColor', c); }, title: c, style: {
+              ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#64748b','#1e293b'].map(function (c) {
+                return el('button', { key: c, type: 'button', onClick: function () { upd('activeColor', c); }, title: c, 'aria-label': 'Use custom color ' + c, 'aria-pressed': activeColor === c, style: {
                   width: 24, height: 24, borderRadius: 5, background: c, cursor: 'pointer',
                   border: activeColor === c ? '3px solid #fff' : '1px solid rgba(255,255,255,.2)',
                   boxShadow: activeColor === c ? '0 0 6px ' + c + '88' : 'none',
@@ -2528,8 +3186,8 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83E\uDE9E Mirror & Symmetry'),
             el('div', { style: { display: 'flex', gap: 3 } },
-              el('button', { onClick: mirrorBuildX, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
-              el('button', { onClick: mirrorBuildZ, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
+              el('button', { type: 'button', onClick: mirrorBuildX, disabled: showReplay || !blocks.length, 'aria-label': 'Mirror entire build across the X axis', title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the X axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
+              el('button', { type: 'button', onClick: mirrorBuildZ, disabled: showReplay || !blocks.length, 'aria-label': 'Mirror entire build across the Z axis', title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the Z axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
               el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, 'aria-pressed': symmetryMode, 'aria-label': 'Symmetry: mirror edits across X equals zero', title: 'Mirror place, paint, and erase edits across X=0', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
             )
           ),
@@ -2626,8 +3284,8 @@
                       el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, item.name),
                       el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
                     ),
-                    el('button', { onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u21E9'),
-                    el('button', { onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
+                    el('button', { type: 'button', 'aria-label': 'Load saved build ' + item.name, title: showReplay ? 'Exit construction replay to load this build' : 'Load ' + item.name, disabled: showReplay, onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: showReplay ? '#475569' : '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700, cursor: showReplay ? 'default' : 'pointer' } }, '\u21E9'),
+                    el('button', { type: 'button', 'aria-label': 'Delete saved build ' + item.name, title: 'Delete ' + item.name, onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
                   );
                 })
               )
@@ -2638,10 +3296,10 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCC2 Templates'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
               templates.map(function (tpl) {
-                return el('button', { key: tpl.id, onClick: function () { loadTemplate(tpl); }, style: {
+                return el('button', { key: tpl.id, disabled: showReplay, title: showReplay ? 'Exit construction replay to load a template' : tpl.name, onClick: function () { loadTemplate(tpl); }, style: {
                   display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 10, fontWeight: 600,
                   border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, background: 'transparent',
-                  color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textAlign: 'left', width: '100%'
+                  color: showReplay ? '#475569' : 'var(--allo-stem-text-soft, #94a3b8)', cursor: showReplay ? 'default' : 'pointer', textAlign: 'left', width: '100%'
                 } },
                   el('span', { style: { fontSize: 16, flexShrink: 0 } }, tpl.icon),
                   el('div', { style: { flex: 1 } },
@@ -2660,10 +3318,10 @@
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 20 } }, quakeIntensity + '/10'),
               el('input', { type: 'range', 'aria-label': t('stem.archstudio.quake_intensity', 'quake intensity'), min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#ef4444' } })
             ),
-            el('button', { onClick: runEarthquake, disabled: !blocks.length, style: {
+            el('button', { onClick: runEarthquake, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to run an earthquake test' : 'Run earthquake test', style: {
               width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none',
-              background: blocks.length ? 'linear-gradient(135deg,#b91c1c,#991b1b)' : 'rgba(71,85,105,.3)',
-              color: blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: blocks.length ? 'pointer' : 'default'
+              background: !showReplay && blocks.length ? 'linear-gradient(135deg,#b91c1c,#991b1b)' : 'rgba(71,85,105,.3)',
+              color: !showReplay && blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: !showReplay && blocks.length ? 'pointer' : 'default'
             } }, '\uD83C\uDF0B Shake! (Intensity ' + quakeIntensity + ')'),
             quakeResult && el('div', { style: { marginTop: 4, padding: '5px 8px', background: quakeResult.pct >= 70 ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)', border: '1px solid ' + (quakeResult.pct >= 70 ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)'), borderRadius: 8, fontSize: 11, color: quakeResult.pct >= 70 ? '#4ade80' : '#fca5a5', lineHeight: 1.4 } },
               quakeResult.rating + ' \u2022 ' + quakeResult.pct + '% survived \u2022 ' + quakeResult.fallen + ' fell'
@@ -2674,9 +3332,9 @@
           el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCB Duplicate Build'),
             el('div', { style: { display: 'flex', gap: 3 } },
-              el('button', { onClick: function () { duplicateBuild(buildW + 1, 0, 0); }, disabled: !blocks.length, title: t('stem.archstudio.copy_to_the_right', 'Copy to the right'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u27A1\uFE0F +X'),
-              el('button', { onClick: function () { duplicateBuild(0, 0, buildD + 1); }, disabled: !blocks.length, title: t('stem.archstudio.copy_forward', 'Copy forward'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B07\uFE0F +Z'),
-              el('button', { onClick: function () { duplicateBuild(0, buildH, 0); }, disabled: !blocks.length, title: t('stem.archstudio.copy_upward', 'Copy upward'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2B06\uFE0F +Y')
+              el('button', { type: 'button', onClick: function () { duplicateBuild(buildW + 1, 0, 0); }, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to duplicate the build' : t('stem.archstudio.copy_to_the_right', 'Copy to the right'), 'aria-label': t('stem.archstudio.copy_to_the_right', 'Copy to the right'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u27A1\uFE0F +X'),
+              el('button', { type: 'button', onClick: function () { duplicateBuild(0, 0, buildD + 1); }, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to duplicate the build' : t('stem.archstudio.copy_forward', 'Copy forward'), 'aria-label': t('stem.archstudio.copy_forward', 'Copy forward'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2B07\uFE0F +Z'),
+              el('button', { type: 'button', onClick: function () { duplicateBuild(0, buildH, 0); }, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to duplicate the build' : t('stem.archstudio.copy_upward', 'Copy upward'), 'aria-label': t('stem.archstudio.copy_upward', 'Copy upward'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2B06\uFE0F +Y')
             )
           ),
 
@@ -2814,9 +3472,9 @@
                 onChange: function (e) { upd('importCode', e.target.value); },
                 style: { flex: 1, padding: '5px 8px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 9 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
               }),
-              el('button', { onClick: function () { importShareCode(d.importCode); }, style: {
+              el('button', { onClick: function () { importShareCode(d.importCode); }, disabled: showReplay, title: showReplay ? 'Exit construction replay to import a build' : 'Import build', style: {
                 padding: '5px 10px', borderRadius: 6, border: 'none',
-                background: 'linear-gradient(135deg,#15803d,#166534)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
+                background: showReplay ? 'rgba(71,85,105,.3)' : 'linear-gradient(135deg,#15803d,#166534)', color: showReplay ? '#475569' : '#fff', fontWeight: 700, fontSize: 11, cursor: showReplay ? 'default' : 'pointer'
               } }, '\u21E9')
             )
           ),
@@ -2825,8 +3483,10 @@
           el('div', { style: { marginTop: 4, padding: '6px 8px', background: 'rgba(15,23,42,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #1e293b)' } },
             el('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
             el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.6 } },
-              el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y Redo'),
-              el('div', null, '1-9 Select shape \u2022 P/E/A Mode (place/erase/paint)'),
+              el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y or Ctrl+Shift+Z Redo'),
+              el('div', null, 'P Place \u2022 E Erase \u2022 A Paint \u2022 I Pick'),
+              el('div', null, '1-4 Modes \u2022 R Rotate \u2022 Page Up/Down Floor'),
+              el('div', null, 'D Duplicate selected \u2022 Delete Remove \u2022 Esc Deselect'),
               el('div', null, 'S Screenshot \u2022 G Gravity')
             )
           ),
@@ -2836,9 +3496,9 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFB2 Random Generator'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
               randomPresets.map(function (preset) {
-                return el('button', { key: preset.id, onClick: function () { generateRandom(preset.id); }, style: {
+                return el('button', { key: preset.id, disabled: showReplay, title: showReplay ? 'Exit construction replay to generate a build' : preset.name, onClick: function () { generateRandom(preset.id); }, style: {
                   display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 8,
-                  background: 'rgba(30,41,59,.5)', border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer', width: '100%', textAlign: 'left'
+                  background: 'rgba(30,41,59,.5)', border: '1px solid var(--allo-stem-border, #334155)', cursor: showReplay ? 'default' : 'pointer', opacity: showReplay ? 0.55 : 1, width: '100%', textAlign: 'left'
                 } },
                   el('span', { style: { fontSize: 14 } }, preset.icon),
                   el('div', null,
@@ -2976,9 +3636,9 @@
             el('div', { style: { padding: '4px 8px', background: filterActive ? 'rgba(96,165,250,.1)' : 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 11, color: filterActive ? '#93c5fd' : '#94a3b8', fontWeight: 600 } },
               '\uD83D\uDD0D ' + filterCount + ' block' + (filterCount !== 1 ? 's' : '') + ' match' + (filterCount === 1 ? 'es' : '')
             ),
-            filterActive && el('button', { onClick: deleteFiltered, style: {
+            filterActive && el('button', { onClick: deleteFiltered, disabled: showReplay, title: showReplay ? 'Exit construction replay to remove matching blocks' : 'Remove matching blocks', style: {
               width: '100%', marginTop: 4, padding: '5px 10px', borderRadius: 6, border: 'none',
-              background: 'linear-gradient(135deg,#b91c1c,#991b1b)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
+              background: showReplay ? 'rgba(71,85,105,.3)' : 'linear-gradient(135deg,#b91c1c,#991b1b)', color: showReplay ? '#475569' : '#fff', fontWeight: 700, fontSize: 11, cursor: showReplay ? 'default' : 'pointer'
             } }, '\uD83D\uDDD1\uFE0F Remove ' + filterCount + ' Matching Blocks')
           ),
 
@@ -3068,7 +3728,7 @@
             'data-a11y-static': 'true',
             'aria-describedby': 'arch-gl-description',
             'aria-label': archGlAlt,
-            style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: showReplay ? 'default' : mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' },
+            style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: showReplay ? 'default' : mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : mode === 'pick' ? 'copy' : 'pointer' },
             onPointerDown: function (ev) {
               ArchGL.clearPreview();
               archDrag.suppressClick = false;
@@ -3114,8 +3774,7 @@
               }
               if (ev.key === 'Enter' || ev.key === ' ') {
                 ev.preventDefault();
-                upd('editorView', 'grid');
-                if (announceToSR) announceToSR('Floor grid opened for keyboard building.');
+                openArchGridForKeyboard();
               }
             },
             onWheel: function (ev) {
@@ -3128,20 +3787,20 @@
             el('div', { style: { textAlign: 'center' } },
               el('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '⚙️'),
               el('div', null, 'Loading 3D engine...'),
-              el('button', { type: 'button', onClick: function () { upd('editorView', 'grid'); }, style: { marginTop: 10, padding: '6px 10px', borderRadius: 7, border: '1px solid #64748b', background: 'rgba(30,41,59,.8)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Build in the floor grid now')
+              el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { marginTop: 10, padding: '6px 10px', borderRadius: 7, border: '1px solid #64748b', background: 'rgba(30,41,59,.8)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Build in the floor grid now')
             )
           ),
           !mainUse3d && renderBuildGrid(),
           mainUse3d && archGlLive && archDisplayBlocks.length === 0 && el('div', { role: 'status', style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none', padding: '8px 12px', borderRadius: 9, background: 'rgba(15,23,42,.78)', border: '1px solid #475569', color: '#e2e8f0', fontSize: 12, fontWeight: 700, textAlign: 'center' } },
-            blocks.length === 0 ? '\uD83E\uDDF1 Click the ground to place your first ' + activeShape : 'No blocks match the current layer, slice, replay, or filter view.'),
+            blocks.length === 0 ? (mode === 'pick' ? '\uD83C\uDFAF There are no blocks to pick yet. Switch to Place to start building.' : '\uD83E\uDDF1 Click the ground to place your first ' + activeShape) : 'No blocks match the current layer, slice, replay, or filter view.'),
           el('p', { id: 'arch-gl-description', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } },
-            'A three-dimensional view of the structure you have built, coloured by material. Click the ground or a block face to build. Drag or use the arrow keys to orbit, scroll or use plus and minus to zoom, and press Home or zero to reset. Press Enter to open the keyboard-authoring floor grid.'),
+            'A three-dimensional view of the structure you have built, coloured by material. Click the ground or a block face to build, or choose Pick to copy an existing block\'s properties. Drag or use the arrow keys to orbit, scroll or use plus and minus to zoom, and press Home or zero to reset. Press Enter to open the keyboard-authoring floor grid, then use arrow keys to move between cells.'),
 
           // Controls overlay (top-right)
           mainUse3d && el('div', { style: { position: 'absolute', top: 8, right: 8, pointerEvents: 'none', background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
-            el('div', { style: { opacity: 0.9 } }, showReplay ? '\u23EA Replay is read-only' : '\uD83D\uDC49 Click \u2014 ' + (mode === 'place' ? 'Place' : mode === 'erase' ? 'Erase' : 'Paint')),
+            el('div', { style: { opacity: 0.9 } }, showReplay ? '\u23EA Replay is read-only' : '\uD83D\uDC49 Click \u2014 ' + activeModeVisual.action),
             archDisplayBlocks.length !== blocks.length && el('div', { style: { color: '#93c5fd', fontWeight: 700 } }, '\uD83D\uDC41 ' + archDisplayBlocks.length + '/' + blocks.length + ' visible'),
             symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
@@ -3167,10 +3826,13 @@
           ),
 
           // Mode indicator (top-left)
-          el('div', { style: { position: 'absolute', top: 8, left: 8, pointerEvents: 'none', background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
-            (mode === 'place' ? '\u2795 Place' : mode === 'erase' ? '\u274C Erase' : '\uD83C\uDFA8 Paint') + ' Mode',
-            activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 11, color: '#fbbf24' } }, activeRotation + '\u00B0')
+          el('div', { style: { position: 'absolute', top: 8, left: 8, pointerEvents: 'none', background: activeModeVisual.bg, border: '1px solid ' + activeModeVisual.border, borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: activeModeVisual.color } },
+            activeModeVisual.label + ' Mode',
+            mode === 'place' && activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 11, color: '#fbbf24' } }, activeRotation + '\u00B0')
           ),
+
+          mainUse3d && selectedBlock && el('div', { 'data-arch-selection-chip': 'true', 'aria-hidden': 'true', style: { position: 'absolute', left: 8, bottom: 8, pointerEvents: 'none', zIndex: 7, maxWidth: 230, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,.9)', border: '1px solid #f59e0b', color: '#fde68a', fontSize: 10, fontWeight: 700 } },
+            '\uD83D\uDCCC Selected X ' + selectedBlock.x + ' \u2022 Y ' + selectedBlock.y + ' \u2022 Z ' + selectedBlock.z + ' \u2022 ' + (selectedShapeMeta ? selectedShapeMeta.label : 'Block')),
 
           // Analysis overlay (right side)
           showAnalysis && totalBlocks > 0 && el('div', { style: { position: 'absolute', top: 70, right: 8, width: 210, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid var(--allo-stem-border, #334155)', zIndex: 10 } },

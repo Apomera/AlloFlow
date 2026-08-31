@@ -210,6 +210,6 @@ describe('AlloBot output state matches audible playback', () => {
     expect(speak).toContain('voice volume is set to zero');
     expect(speak).toContain("AlloBot's device voice did not start");
     expect(speak).toContain("Generated AlloBot audio accepted play() but never started");
-    expect(speak).toContain('cancelAlloBotBrowserSpeech();');
+    expect(speak).toContain('cancelOwnedBrowserSpeech();');
   });
 });

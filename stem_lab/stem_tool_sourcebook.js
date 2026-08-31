@@ -41,12 +41,31 @@
   var YALE_REVALIDATION_CACHE_MS = 5 * 60 * 1000;
   var YALE_REVALIDATION_CACHE_LIMIT = 64;
   var YALE_VERIFIED_RECORD_CACHE = Object.create(null);
+  var RIJKS_PROVIDER = 'Rijksmuseum Open Data';
+  var RIJKS_DATA_API = 'https://data.rijksmuseum.nl';
+  var RIJKS_SEARCH_API = RIJKS_DATA_API + '/search/collection';
+  var RIJKS_OPEN_TERMS = 'https://data.rijksmuseum.nl/policy/';
+  var RIJKS_PUBLIC_DOMAIN_SET_ID = 'https://id.rijksmuseum.nl/260239';
+  var RIJKS_PAGE_CACHE_MS = 5 * 60 * 1000;
+  var RIJKS_PAGE_CACHE_LIMIT = 32;
+  var RIJKS_MAX_LOGICAL_PAGE = 12;
+  var RIJKS_PAGE_CACHE = Object.create(null);
+  var RIJKS_PAGE_CACHE_ORDER = [];
+  var RIJKS_REVALIDATION_CONCURRENCY = 3;
+  var RIJKS_INFO_CACHE_MS = 60 * 60 * 1000;
+  var RIJKS_INFO_CACHE_LIMIT = 128;
+  var RIJKS_INFO_CONCURRENCY = 3;
+  var RIJKS_PREPARATION_BOUND = 2400;
+  var RIJKS_INFO_CACHE = Object.create(null);
+  var RIJKS_INFO_CACHE_ORDER = [];
+  var RIJKS_INFO_INFLIGHT = Object.create(null);
+  var RIJKS_INFO_GENERATION = Object.create(null);
   var MUSEUMS_VICTORIA_PROVIDER = 'Museums Victoria Collections';
   var MUSEUMS_VICTORIA_API = 'https://collections.museumsvictoria.com.au/api';
   var MUSEUMS_VICTORIA_REVALIDATION_CONCURRENCY = 2;
   var LIVE_PROVIDER_NAMES = [
     'Wikimedia Commons', NGA_PROVIDER, SMITHSONIAN_PROVIDER, BHL_PROVIDER, NARA_PROVIDER,
-    SMK_PROVIDER, YALE_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art',
+    SMK_PROVIDER, YALE_PROVIDER, RIJKS_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art',
     'Library of Congress', 'Wellcome Collection', 'Getty Museum Open Content', MUSEUMS_VICTORIA_PROVIDER, 'Openverse'
   ];
   var COMMONS_PROVIDER_PROFILES = Object.create(null);
@@ -104,6 +123,19 @@
       description: 'Prioritize a focal image, tactile textures, a background field, and accents for creative composition.',
       roles: ['focal', 'texture', 'background', 'accent', 'texture', 'flexible', 'reference']
     }
+  };
+  var USAGE_ROLE_SEARCH_PHRASES = {
+    flexible: 'versatile printable visual asset',
+    background: 'subtle printable background texture or visual field',
+    focal: 'strong main visual illustration or photograph',
+    reference: 'clear educational diagram map or technical reference',
+    texture: 'repeatable texture pattern or material surface',
+    accent: 'decorative border header ornament or motif'
+  };
+  var USAGE_PLAN_SEARCH_CONTEXT = {
+    balanced: 'for educational materials or artwork',
+    education: 'for a clear educational resource',
+    artwork: 'for an artwork or creative composition'
   };
 
   function commonsPreview(filename) {
@@ -313,6 +345,10 @@
     {
       id: 'yuag', name: YALE_PROVIDER, mark: 'YUAG', note: 'Nearly 300,000 gallery objects — exact manifest and image-canvas public-domain statements required',
       search: function (q) { return 'https://artgallery.yale.edu/collections/objects?search=' + encodeURIComponent(q || 'open visual material'); }
+    },
+    {
+      id: 'rijks', name: RIJKS_PROVIDER, mark: 'RIJKS', note: 'Keyless open-data search · exact image-level PDM, CC0, or CC BY 4.0 required',
+      search: function (q) { return 'https://www.rijksmuseum.nl/en/search?q=' + encodeURIComponent(q || 'open visual material'); }
     },
     {
       id: 'met', name: 'The Met Open Access', mark: 'MET', note: 'Live public-domain object records',
@@ -731,6 +767,22 @@
     return objectNumber || sourceObjectNumber;
   }
 
+  function isSerializedRijksAsset(item) {
+    if (!item || typeof item !== 'object') return false;
+    if (String(item.provider || '').trim().toLowerCase() === RIJKS_PROVIDER.toLowerCase()) return true;
+    var rijksHosts = {
+      'data.rijksmuseum.nl': true, 'id.rijksmuseum.nl': true,
+      'www.rijksmuseum.nl': true, 'iiif.micr.io': true
+    };
+    var hasRijksHost = [item.sourceUrl, item.imageUrl, item.downloadUrl, item.rijksIiifServiceUrl].some(function (value) {
+      var parsed = parsedSmkHttpsUrl(value);
+      return !!(parsed && rijksHosts[parsed.hostname]);
+    });
+    return hasRijksHost || /^rijks-live-/i.test(String(item.id || ''))
+      || Object.prototype.hasOwnProperty.call(item, 'rijksRecordId')
+      || Object.prototype.hasOwnProperty.call(item, 'rijksIiifServiceUrl');
+  }
+
   function isSerializedSmkAsset(item) {
     if (!item || typeof item !== 'object') return false;
     if (String(item.provider || '').trim().toLowerCase() === SMK_PROVIDER.toLowerCase()) return true;
@@ -761,11 +813,21 @@
   }
 
   function isSerializedSourceVerifiedAsset(item) {
-    return isSerializedMuseumsVictoriaAsset(item) || isSerializedSmkAsset(item) || isSerializedYaleAsset(item);
+    return isSerializedRijksAsset(item) || isSerializedMuseumsVictoriaAsset(item) || isSerializedYaleAsset(item) || isSerializedSmkAsset(item);
   }
 
   function sourceVerifiedAssetIdentityMatches(raw, verified) {
     if (!raw || !verified) return false;
+    if (verified.provider === RIJKS_PROVIDER) {
+      var rawRijksIdentity = rijksIdentityFromAsset(Object.assign({}, raw, { provider: RIJKS_PROVIDER }));
+      var verifiedRijksIdentity = rijksIdentityFromAsset(verified);
+      return !!(rawRijksIdentity && verifiedRijksIdentity
+        && rawRijksIdentity.recordId === verifiedRijksIdentity.recordId
+        && rawRijksIdentity.sourceUrl === verifiedRijksIdentity.sourceUrl
+        && rawRijksIdentity.iiifServiceUrl === verifiedRijksIdentity.iiifServiceUrl
+        && rawRijksIdentity.imageUrl === verifiedRijksIdentity.imageUrl
+        && rawRijksIdentity.downloadUrl === verifiedRijksIdentity.downloadUrl);
+    }
     if (verified.provider === MUSEUMS_VICTORIA_PROVIDER) {
       var rawMuseumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(raw);
       var verifiedMuseumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(verified);
@@ -1429,6 +1491,663 @@
     });
   }
 
+  function normalizedRijksRecordId(value) {
+    var id = String(value || '').trim();
+    return /^\d{1,16}$/.test(id) ? id : '';
+  }
+
+  function rijksSearchTerms(query, requestedKind) {
+    var text = ' ' + plainMetadata(query).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+    var rules = [
+      { term: 'map', pattern: /\b(?:map|maps|mapping|atlas|cartograph(?:y|ic)?|topograph(?:y|ic)?|contour|geograph(?:y|ic)?)\b/ },
+      { term: 'architecture', pattern: /\b(?:architecture|architectural|architect|blueprint|blueprints|building|buildings|floorplan|floorplans)\b/ },
+      { term: 'wood', pattern: /\b(?:wood|wooden|timber|grain|oak|pine|maple|walnut)\b/ },
+      { term: 'textile', pattern: /\b(?:textile|textiles|fabric|fabrics|woven|weaving|cloth|tapestry)\b/ },
+      { term: 'ornament', pattern: /\b(?:ornament|ornamental|pattern|patterns|motif|motifs|decorative|decoration)\b/ },
+      { term: 'anatomy', pattern: /\b(?:anatomy|anatomical|brainwave|brainwaves|nervous|neural|medical|physiology)\b/ },
+      { term: 'plant', pattern: /\b(?:plant|plants|botanical|botany|flower|flowers|leaf|leaves|herbarium)\b/ },
+      { term: 'print', pattern: /\b(?:archive|archival|ephemera|typography|typeface|letterpress|poster|posters|print|prints)\b/ },
+      { term: 'drawing', pattern: /\b(?:drawing|drawings|diagram|diagrams|sketch|sketches|linework|illustration|illustrations)\b/ }
+    ];
+    var kindFallback = {
+      Maps: 'map', Blueprints: 'architecture', Textures: 'wood', Patterns: 'ornament',
+      Science: 'anatomy', Botanical: 'plant', Archival: 'print',
+      'Visual assets': 'drawing', All: 'drawing'
+    };
+    var terms = [];
+    function add(term) {
+      if (term && terms.indexOf(term) === -1) terms.push(term);
+    }
+    rules.forEach(function (rule) {
+      if (rule.pattern.test(text)) add(rule.term);
+    });
+    add(kindFallback[String(requestedKind || '')] || 'drawing');
+    add('drawing');
+    return terms.slice(0, 3);
+  }
+
+  function rijksAggregationRecordId(value) {
+    var match = String(value || '').trim().match(/^https:\/\/id\.rijksmuseum\.nl\/(\d{1,16})#aggregation$/);
+    return match ? normalizedRijksRecordId(match[1]) : '';
+  }
+  function rijksRecordIdFromIdentifier(value) {
+    var match = String(value || '').trim().match(/^https:\/\/id\.rijksmuseum\.nl\/(\d{1,16})(?:#(?:aggregation|object))?$/);
+    return match ? normalizedRijksRecordId(match[1]) : '';
+  }
+
+  function safeRijksSourceUrl(value) {
+    var safe = safeHttpsUrl(value);
+    return /^https:\/\/www\.rijksmuseum\.nl\/(?:en\/collection|nl\/collectie)\/object\/[A-Za-z0-9][A-Za-z0-9._~%\/-]{0,240}$/.test(safe) ? safe : '';
+  }
+
+  function safeRijksIiifServiceUrl(value) {
+    var safe = safeHttpsUrl(value);
+    var match = safe.match(/^https:\/\/iiif\.micr\.io\/([A-Za-z0-9_-]{3,64})\/?$/);
+    return match ? 'https://iiif.micr.io/' + match[1] : '';
+  }
+
+  function rijksIiifInfoUrl(serviceUrl) {
+    var safeService = safeRijksIiifServiceUrl(serviceUrl);
+    return safeService ? safeService + '/info.json' : '';
+  }
+
+  function rijksIiifStringList(value) {
+    return (Array.isArray(value) ? value : []).map(function (entry) {
+      return String(entry || '').trim();
+    }).filter(Boolean);
+  }
+
+  function normalizeRijksIiifInfo(payload, expectedServiceUrl) {
+    if (!payload || typeof payload !== 'object') return null;
+    var expectedService = safeRijksIiifServiceUrl(expectedServiceUrl);
+    var serviceUrl = safeRijksIiifServiceUrl(payload.id);
+    if (!expectedService || serviceUrl !== expectedService
+      || payload['@context'] !== 'http://iiif.io/api/image/3/context.json'
+      || payload.type !== 'ImageService3'
+      || payload.protocol !== 'http://iiif.io/api/image'
+      || payload.profile !== 'level2') return null;
+    var width = Number(payload.width);
+    var height = Number(payload.height);
+    if (!isFinite(width) || Math.floor(width) !== width || width < 1 || width > 100000
+      || !isFinite(height) || Math.floor(height) !== height || height < 1 || height > 100000) return null;
+    var formats = rijksIiifStringList(payload.extraFormats).concat(rijksIiifStringList(payload.formats));
+    var qualities = rijksIiifStringList(payload.extraQualities).concat(rijksIiifStringList(payload.qualities));
+    var features = rijksIiifStringList(payload.extraFeatures);
+    if (formats.indexOf('jpg') === -1 || qualities.indexOf('default') === -1
+      || features.indexOf('cors') === -1 || features.indexOf('sizeByConfinedWh') === -1) return null;
+    var nativeArea = width * height;
+    var maxArea = nativeArea;
+    if (Object.prototype.hasOwnProperty.call(payload, 'maxArea')) {
+      maxArea = Number(payload.maxArea);
+      if (!isFinite(maxArea) || Math.floor(maxArea) !== maxArea || maxArea < 1 || maxArea > 10000000000) return null;
+    }
+    var scale = Math.min(1, Math.sqrt(maxArea / nativeArea));
+    var pixelWidth = Math.floor(width * scale);
+    var pixelHeight = Math.floor(height * scale);
+    if (pixelWidth < 1 || pixelHeight < 1) return null;
+    if (pixelWidth * pixelHeight > maxArea) {
+      if (pixelWidth >= pixelHeight) pixelWidth = Math.max(1, Math.floor(maxArea / pixelHeight));
+      else pixelHeight = Math.max(1, Math.floor(maxArea / pixelWidth));
+    }
+    if (pixelWidth * pixelHeight > maxArea) return null;
+    return {
+      serviceUrl: serviceUrl,
+      infoUrl: rijksIiifInfoUrl(serviceUrl),
+      nativeWidth: width,
+      nativeHeight: height,
+      maxArea: maxArea,
+      pixelWidth: pixelWidth,
+      pixelHeight: pixelHeight
+    };
+  }
+
+  function rijksPreparedRendition(info) {
+    var effectiveWidth = normalizedPixelDimension(info && info.pixelWidth);
+    var effectiveHeight = normalizedPixelDimension(info && info.pixelHeight);
+    if (!effectiveWidth || !effectiveHeight) return null;
+    var scale = Math.min(1, RIJKS_PREPARATION_BOUND / effectiveWidth, RIJKS_PREPARATION_BOUND / effectiveHeight);
+    var pixelWidth = Math.floor(effectiveWidth * scale);
+    var pixelHeight = Math.floor(effectiveHeight * scale);
+    var requestWidth = Math.min(RIJKS_PREPARATION_BOUND, effectiveWidth);
+    var requestHeight = Math.min(RIJKS_PREPARATION_BOUND, effectiveHeight);
+    if (!pixelWidth || !pixelHeight || !requestWidth || !requestHeight) return null;
+    return {
+      pixelWidth: pixelWidth,
+      pixelHeight: pixelHeight,
+      requestWidth: requestWidth,
+      requestHeight: requestHeight
+    };
+  }
+
+  function cloneRijksIiifInfo(info) {
+    return info ? Object.assign({}, info) : null;
+  }
+
+  function removeRijksInfoCacheKey(key) {
+    delete RIJKS_INFO_CACHE[key];
+    RIJKS_INFO_CACHE_ORDER = RIJKS_INFO_CACHE_ORDER.filter(function (candidate) { return candidate !== key; });
+  }
+
+  function pruneRijksInfoCache(nowValue) {
+    var now = Number(nowValue || Date.now());
+    Object.keys(RIJKS_INFO_CACHE).forEach(function (key) {
+      var savedAt = Number(RIJKS_INFO_CACHE[key] && RIJKS_INFO_CACHE[key].savedAt);
+      if (!isFinite(savedAt) || savedAt > now + 300000 || now - savedAt >= RIJKS_INFO_CACHE_MS) removeRijksInfoCacheKey(key);
+    });
+    while (RIJKS_INFO_CACHE_ORDER.length > RIJKS_INFO_CACHE_LIMIT) removeRijksInfoCacheKey(RIJKS_INFO_CACHE_ORDER[0]);
+  }
+
+  function cachedRijksIiifInfo(key) {
+    pruneRijksInfoCache(Date.now());
+    var entry = RIJKS_INFO_CACHE[key];
+    if (!entry || !entry.info) return null;
+    RIJKS_INFO_CACHE_ORDER = RIJKS_INFO_CACHE_ORDER.filter(function (candidate) { return candidate !== key; });
+    RIJKS_INFO_CACHE_ORDER.push(key);
+    return cloneRijksIiifInfo(entry.info);
+  }
+
+  function rememberRijksIiifInfo(key, info) {
+    if (!info) return;
+    RIJKS_INFO_CACHE[key] = { savedAt: Date.now(), info: cloneRijksIiifInfo(info) };
+    RIJKS_INFO_CACHE_ORDER = RIJKS_INFO_CACHE_ORDER.filter(function (candidate) { return candidate !== key; });
+    RIJKS_INFO_CACHE_ORDER.push(key);
+    pruneRijksInfoCache(Date.now());
+  }
+
+  function fetchRijksIiifInfo(serviceUrl, options) {
+    var opts = options || {};
+    var safeService = safeRijksIiifServiceUrl(serviceUrl);
+    var fetchFn = opts.fetch || (typeof window.fetch === 'function' ? window.fetch.bind(window) : null);
+    if (!safeService || !fetchFn) return Promise.reject(new Error('Rijksmuseum IIIF print evidence is unavailable.'));
+    if (opts.bypassCache) {
+      removeRijksInfoCacheKey(safeService);
+      RIJKS_INFO_GENERATION[safeService] = Number(RIJKS_INFO_GENERATION[safeService] || 0) + 1;
+    }
+    var requestGeneration = Number(RIJKS_INFO_GENERATION[safeService] || 0);
+    var cached = opts.bypassCache ? null : cachedRijksIiifInfo(safeService);
+    if (cached) return Promise.resolve(cached);
+    var shareable = !opts.bypassCache && !opts.signal;
+    if (shareable && RIJKS_INFO_INFLIGHT[safeService]) {
+      return RIJKS_INFO_INFLIGHT[safeService].then(cloneRijksIiifInfo);
+    }
+    var requestContext = providerRequestContext(opts.signal, 12000);
+    var requestOptions = Object.assign({}, requestContext.options, {
+      headers: { Accept: 'application/ld+json, application/json;q=0.9' }
+    });
+    var request = fetchFn(rijksIiifInfoUrl(safeService), requestOptions).then(function (response) {
+      if (!response || !response.ok) throw providerHttpError(RIJKS_PROVIDER, response);
+      var rawLength = response.headers && typeof response.headers.get === 'function'
+        ? Number(response.headers.get('content-length')) : 0;
+      if (isFinite(rawLength) && rawLength > 262144) throw new Error('Rijksmuseum returned oversized IIIF print metadata.');
+      return response.json();
+    }).then(function (payload) {
+      return normalizeRijksIiifInfo(payload, safeService);
+    });
+    var completed = request.then(function (info) {
+      requestContext.finish();
+      if (info && Number(RIJKS_INFO_GENERATION[safeService] || 0) === requestGeneration) rememberRijksIiifInfo(safeService, info);
+      return info;
+    }, function (error) {
+      requestContext.finish();
+      throw error;
+    });
+    if (shareable) {
+      RIJKS_INFO_INFLIGHT[safeService] = completed.then(function (info) {
+        delete RIJKS_INFO_INFLIGHT[safeService];
+        return info;
+      }, function (error) {
+        delete RIJKS_INFO_INFLIGHT[safeService];
+        throw error;
+      });
+      return RIJKS_INFO_INFLIGHT[safeService].then(cloneRijksIiifInfo);
+    }
+    return completed.then(cloneRijksIiifInfo);
+  }
+
+  function rijksItemWithoutPrintEvidence(item) {
+    return Object.assign({}, cloneLiveSearchItem(item), {
+      pixelWidth: 0,
+      pixelHeight: 0,
+      pixelDimensionSource: 'unknown',
+      rijksPreparationBoundWidth: 0,
+      rijksPreparationBoundHeight: 0
+    });
+  }
+
+  function enrichRijksPrintEvidence(item, options) {
+    var opts = options || {};
+    var identity = rijksIdentityFromAsset(item);
+    var unknown = rijksItemWithoutPrintEvidence(item);
+    if (!identity) return Promise.resolve(unknown);
+    if (opts.signal && opts.signal.aborted) {
+      var stopped = new Error('Search stopped.');
+      stopped.name = 'AbortError';
+      return Promise.reject(stopped);
+    }
+    return fetchRijksIiifInfo(identity.iiifServiceUrl, opts).then(function (info) {
+      if (opts.signal && opts.signal.aborted) {
+        var cancelled = new Error('Search stopped.');
+        cancelled.name = 'AbortError';
+        throw cancelled;
+      }
+      var prepared = rijksPreparedRendition(info);
+      if (!prepared) return unknown;
+      return Object.assign({}, unknown, {
+        pixelWidth: prepared.pixelWidth,
+        pixelHeight: prepared.pixelHeight,
+        pixelDimensionSource: 'iiif-prepared',
+        rijksPreparationBoundWidth: prepared.requestWidth,
+        rijksPreparationBoundHeight: prepared.requestHeight
+      });
+    }, function (error) {
+      if (opts.signal && opts.signal.aborted) {
+        var cancelled = error instanceof Error ? error : new Error('Search stopped.');
+        cancelled.name = 'AbortError';
+        throw cancelled;
+      }
+      return unknown;
+    });
+  }
+
+  function enrichRijksPrintEvidenceList(items, options) {
+    var list = Array.isArray(items) ? items : [];
+    var opts = options || {};
+    var cancellation = null;
+    return mapWithConcurrency(list, RIJKS_INFO_CONCURRENCY, function (item) {
+      return enrichRijksPrintEvidence(item, opts).catch(function (error) {
+        if (error && error.name === 'AbortError') cancellation = error;
+        throw error;
+      });
+    }).then(function (results) {
+      if (cancellation || (opts.signal && opts.signal.aborted)) {
+        var stopped = cancellation || new Error('Search stopped.');
+        stopped.name = 'AbortError';
+        throw stopped;
+      }
+      return list.map(function (item, index) {
+        return results[index] || rijksItemWithoutPrintEvidence(item);
+      });
+    });
+  }
+
+  function safeRijksImageUrl(value, expectedServiceUrl, expectedSize) {
+    var safe = safeHttpsUrl(value);
+    var match = safe.match(/^https:\/\/iiif\.micr\.io\/([A-Za-z0-9_-]{3,64})\/full\/(!1200,1200|max)\/0\/default\.jpg$/);
+    if (!match) return '';
+    var serviceUrl = 'https://iiif.micr.io/' + match[1];
+    var expectedService = safeRijksIiifServiceUrl(expectedServiceUrl);
+    var size = String(expectedSize || '');
+    if ((expectedService && serviceUrl !== expectedService) || (size && match[2] !== size)) return '';
+    return safe;
+  }
+
+  function rijksIiifServiceFromAsset(item) {
+    if (!item || typeof item !== 'object') return '';
+    var explicitValue = String(item.rijksIiifServiceUrl || '').trim();
+    var explicitService = safeRijksIiifServiceUrl(explicitValue);
+    if (explicitValue && !explicitService) return '';
+    var candidates = explicitService ? [explicitService] : [];
+    [item.imageUrl, item.downloadUrl].forEach(function (value) {
+      var safe = safeRijksImageUrl(value);
+      var markerIndex = safe.indexOf('/full/');
+      if (markerIndex > 0) candidates.push(safe.slice(0, markerIndex));
+    });
+    var services = candidates.map(safeRijksIiifServiceUrl).filter(Boolean);
+    if (!services.length || services.some(function (service) { return service !== services[0]; })) return '';
+    return services[0];
+  }
+
+  function rijksAssetId(recordId, serviceUrl) {
+    var normalizedId = normalizedRijksRecordId(recordId);
+    var safeService = safeRijksIiifServiceUrl(serviceUrl);
+    var match = safeService.match(/^https:\/\/iiif\.micr\.io\/([A-Za-z0-9_-]{3,64})$/);
+    return normalizedId && match ? 'rijks-live-' + normalizedId + '-' + match[1] : '';
+  }
+
+  function rijksIdentityFromAsset(item) {
+    if (!item || String(item.provider || '') !== RIJKS_PROVIDER) return null;
+    var recordId = normalizedRijksRecordId(item.rijksRecordId);
+    var sourceUrl = safeRijksSourceUrl(item.sourceUrl);
+    var iiifServiceUrl = rijksIiifServiceFromAsset(item);
+    var imageUrl = safeRijksImageUrl(item.imageUrl, iiifServiceUrl, '!1200,1200');
+    var downloadUrl = safeRijksImageUrl(item.downloadUrl, iiifServiceUrl, 'max');
+    var expectedId = rijksAssetId(recordId, iiifServiceUrl);
+    if (!recordId || !sourceUrl || !iiifServiceUrl || !imageUrl || !downloadUrl || !expectedId || String(item.id || '') !== expectedId) return null;
+    return {
+      asset: item,
+      recordId: recordId,
+      sourceUrl: sourceUrl,
+      iiifServiceUrl: iiifServiceUrl,
+      imageUrl: imageUrl,
+      downloadUrl: downloadUrl,
+      resolverUrl: RIJKS_DATA_API + '/' + recordId + '?_profile=edm-framed'
+    };
+  }
+
+  function normalizeRijksRights(value) {
+    var raw = typeof value === 'string' ? value.trim() : '';
+    var normalized = raw.charAt(raw.length - 1) === '/' ? raw.slice(0, -1) : raw;
+    if (normalized === 'http://creativecommons.org/publicdomain/mark/1.0' || normalized === 'https://creativecommons.org/publicdomain/mark/1.0') {
+      return {
+        rightsType: 'pd', license: 'Public Domain Mark 1.0', rightsShort: 'Public domain',
+        licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/', rawRightsUrl: raw
+      };
+    }
+    if (normalized === 'http://creativecommons.org/publicdomain/zero/1.0' || normalized === 'https://creativecommons.org/publicdomain/zero/1.0') {
+      return {
+        rightsType: 'cc0', license: 'CC0 1.0', rightsShort: 'CC0',
+        licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/', rawRightsUrl: raw
+      };
+    }
+    if (normalized === 'http://creativecommons.org/licenses/by/4.0' || normalized === 'https://creativecommons.org/licenses/by/4.0') {
+      return {
+        rightsType: 'ccby', license: 'CC BY 4.0', rightsShort: 'CC BY',
+        licenseUrl: 'https://creativecommons.org/licenses/by/4.0/', rawRightsUrl: raw
+      };
+    }
+    return null;
+  }
+
+  function rijksPreferredText(value) {
+    if (typeof value === 'string' || typeof value === 'number') return plainMetadata(value);
+    if (Array.isArray(value)) {
+      for (var index = 0; index < value.length; index += 1) {
+        var arrayText = rijksPreferredText(value[index]);
+        if (arrayText) return arrayText;
+      }
+      return '';
+    }
+    if (!value || typeof value !== 'object') return '';
+    var directKeys = ['en', '@value', 'nl', 'value', 'name', 'label'];
+    for (var directIndex = 0; directIndex < directKeys.length; directIndex += 1) {
+      if (!Object.prototype.hasOwnProperty.call(value, directKeys[directIndex])) continue;
+      var directText = rijksPreferredText(value[directKeys[directIndex]]);
+      if (directText) return directText;
+    }
+    var labelKeys = [
+      'http://www.w3.org/2004/02/skos/core#prefLabel',
+      'http://www.w3.org/2004/02/skos/core#altLabel'
+    ];
+    for (var labelIndex = 0; labelIndex < labelKeys.length; labelIndex += 1) {
+      if (!Object.prototype.hasOwnProperty.call(value, labelKeys[labelIndex])) continue;
+      var labelText = rijksPreferredText(value[labelKeys[labelIndex]]);
+      if (labelText) return labelText;
+    }
+    return '';
+  }
+
+  function rijksLabeledValues(values) {
+    var seen = {};
+    return (Array.isArray(values) ? values : (values == null ? [] : [values])).map(function (entry) {
+      return rijksPreferredText(entry);
+    }).filter(function (text) {
+      var key = text.toLowerCase();
+      if (!text || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  function rijksItemFromEdmRecord(record, query, requestedKind, expectedRecordId) {
+    if (!record || typeof record !== 'object') return null;
+    var recordId = rijksAggregationRecordId(record.id);
+    var expectedId = normalizedRijksRecordId(expectedRecordId);
+    var cho = record.aggregatedCHO && typeof record.aggregatedCHO === 'object' ? record.aggregatedCHO : {};
+    var choRecordId = rijksRecordIdFromIdentifier(cho.id);
+    if (record.type !== 'Aggregation' || !recordId || !choRecordId || (expectedId && recordId !== expectedId) || choRecordId !== recordId) return null;
+    var rights = normalizeRijksRights(record.edmRights);
+    if (!rights || !ALLOWED_RIGHTS[rights.rightsType]) return null;
+    var sourceUrl = safeRijksSourceUrl(record.isShownAt && record.isShownAt.id);
+    var serviceKey = 'http://rdfs.org/sioc/services#has_service';
+    var shownBy = record.isShownBy && typeof record.isShownBy === 'object' ? record.isShownBy : {};
+    var service = shownBy[serviceKey] && typeof shownBy[serviceKey] === 'object' ? shownBy[serviceKey] : {};
+    var conformsToIiif = (Array.isArray(service.conformsTo) ? service.conformsTo : []).some(function (entry) {
+      return entry && entry.id === 'http://iiif.io/api/image';
+    });
+    if (shownBy.type !== 'WebResource'
+      || service.type !== 'http://rdfs.org/sioc/services#Service'
+      || !conformsToIiif) return null;
+    var iiifServiceUrl = safeRijksIiifServiceUrl(service.id);
+    var downloadUrl = safeRijksImageUrl(shownBy.id, iiifServiceUrl, 'max');
+    var objectUrl = record.object && typeof record.object === 'object' ? record.object.id : '';
+    if (!sourceUrl || !iiifServiceUrl || !downloadUrl) return null;
+    if (objectUrl && safeRijksImageUrl(objectUrl, iiifServiceUrl, 'max') !== downloadUrl) return null;
+    var imageUrl = iiifServiceUrl + '/full/!1200,1200/0/default.jpg';
+    if (!safeRijksImageUrl(imageUrl, iiifServiceUrl, '!1200,1200')) return null;
+
+    var title = rijksPreferredText(cho.title) || 'Rijksmuseum object ' + recordId;
+    var creators = rijksLabeledValues(cho.creator);
+    var creator = creators.join('; ') || 'Creator listed on the Rijksmuseum object record';
+    var year = rijksPreferredText(cho.created) || 'See source record';
+    var types = rijksLabeledValues(cho.dcType);
+    var media = rijksLabeledValues(cho.medium);
+    var description = rijksPreferredText(cho.description) || types.concat(media).join(' · ') || 'Openly reusable visual asset from the Rijksmuseum.';
+    if (title.length > 180) title = title.slice(0, 177) + '...';
+    if (creator.length > 160) creator = creator.slice(0, 157) + '...';
+    if (year.length > 80) year = year.slice(0, 77) + '...';
+    if (description.length > 280) description = description.slice(0, 277) + '...';
+    var classification = [query, title, creator, year, description].concat(types, media).join(' ');
+    var rightsNote = rights.rightsType === 'ccby'
+      ? 'The exact Rijksmuseum EDM image record states CC BY 4.0. Attribution is required; verify the linked object record before use.'
+      : 'The exact Rijksmuseum EDM image record states ' + rights.license + '. Verify the linked object record before use.';
+    return {
+      id: rijksAssetId(recordId, iiifServiceUrl),
+      rijksRecordId: recordId,
+      rijksIiifServiceUrl: iiifServiceUrl,
+      title: title,
+      kind: inferMaterialKind(classification, requestedKind),
+      provider: RIJKS_PROVIDER,
+      year: year,
+      creator: creator,
+      description: description,
+      license: rights.license,
+      licenseUrl: rights.licenseUrl,
+      rightsType: rights.rightsType,
+      rightsShort: rights.rightsShort,
+      rightsNote: rightsNote,
+      tags: normalizeWords(classification),
+      accent: ['#e5e1d8', '#4f655e'],
+      sourceUrl: sourceUrl,
+      imageUrl: imageUrl,
+      downloadUrl: downloadUrl,
+      live: true,
+      rightsMetadataSource: 'Rijksmuseum EDM record ' + RIJKS_DATA_API + '/' + recordId + '?_profile=edm-framed; edmRights=' + rights.rawRightsUrl
+    };
+  }
+
+  function decodedRijksQueryValue(value) {
+    try { return decodeURIComponent(String(value || '').replace(/\+/g, ' ')); } catch (_) { return ''; }
+  }
+
+  function safeRijksNextPageUrl(value, expectedQuery) {
+    var safe = safeHttpsUrl(value);
+    var prefix = RIJKS_SEARCH_API + '?';
+    if (!safe || safe.indexOf(prefix) !== 0 || safe.indexOf('#') !== -1 || safe.length > 2400) return '';
+    var pairs = safe.slice(prefix.length).split('&');
+    var params = {};
+    for (var index = 0; index < pairs.length; index += 1) {
+      var separatorIndex = pairs[index].indexOf('=');
+      if (separatorIndex <= 0) return '';
+      var key = decodedRijksQueryValue(pairs[index].slice(0, separatorIndex));
+      var decoded = decodedRijksQueryValue(pairs[index].slice(separatorIndex + 1));
+      if (!key || Object.prototype.hasOwnProperty.call(params, key) || ['description', 'imageAvailable', 'memberOfSetId', 'pageToken'].indexOf(key) === -1) return '';
+      params[key] = decoded;
+    }
+    if (params.description !== expectedQuery || params.imageAvailable !== 'true' || params.memberOfSetId !== RIJKS_PUBLIC_DOMAIN_SET_ID || !/^[A-Za-z0-9+\/_=-]{8,1200}$/.test(params.pageToken || '')) return '';
+    return safe;
+  }
+
+  function removeRijksPageCacheKey(key) {
+    delete RIJKS_PAGE_CACHE[key];
+    RIJKS_PAGE_CACHE_ORDER = RIJKS_PAGE_CACHE_ORDER.filter(function (candidate) { return candidate !== key; });
+  }
+
+  function pruneRijksPageCache(nowValue) {
+    var now = Number(nowValue || Date.now());
+    Object.keys(RIJKS_PAGE_CACHE).forEach(function (key) {
+      var savedAt = Number(RIJKS_PAGE_CACHE[key] && RIJKS_PAGE_CACHE[key].savedAt);
+      if (!isFinite(savedAt) || now - savedAt >= RIJKS_PAGE_CACHE_MS) removeRijksPageCacheKey(key);
+    });
+    while (RIJKS_PAGE_CACHE_ORDER.length > RIJKS_PAGE_CACHE_LIMIT) removeRijksPageCacheKey(RIJKS_PAGE_CACHE_ORDER[0]);
+  }
+
+  function rijksPageCacheEntry(query) {
+    pruneRijksPageCache(Date.now());
+    var key = String(query || '');
+    var entry = RIJKS_PAGE_CACHE[key];
+    if (!entry) {
+      entry = {
+        savedAt: Date.now(),
+        urls: [RIJKS_SEARCH_API + '?description=' + encodeURIComponent(key) + '&imageAvailable=true&memberOfSetId=' + encodeURIComponent(RIJKS_PUBLIC_DOMAIN_SET_ID)]
+      };
+      RIJKS_PAGE_CACHE[key] = entry;
+    }
+    RIJKS_PAGE_CACHE_ORDER = RIJKS_PAGE_CACHE_ORDER.filter(function (candidate) { return candidate !== key; });
+    RIJKS_PAGE_CACHE_ORDER.push(key);
+    while (RIJKS_PAGE_CACHE_ORDER.length > RIJKS_PAGE_CACHE_LIMIT) removeRijksPageCacheKey(RIJKS_PAGE_CACHE_ORDER[0]);
+    return entry;
+  }
+
+  function fetchRijksSearchPage(query, pageValue, fetchFn, signal) {
+    var targetPage = Math.min(RIJKS_MAX_LOGICAL_PAGE, normalizedSearchPage(pageValue));
+    var entry = rijksPageCacheEntry(query);
+    var startPage = targetPage;
+    while (startPage > 0 && !entry.urls[startPage]) startPage -= 1;
+    var requestContext = providerRequestContext(signal, 16000);
+    var requestOptions = Object.assign({}, requestContext.options, { headers: { Accept: 'application/ld+json' } });
+    function fetchPage(pageIndex) {
+      var pageUrl = entry.urls[pageIndex];
+      if (!pageUrl) return Promise.resolve({ orderedItems: [] });
+      return fetchFn(pageUrl, requestOptions).then(function (response) {
+        if (!response || !response.ok) throw providerHttpError(RIJKS_PROVIDER, response);
+        return response.json();
+      }).then(function (payload) {
+        if (!payload || payload.type !== 'OrderedCollectionPage' || !Array.isArray(payload.orderedItems)) {
+          throw new Error('Rijksmuseum returned an unexpected collection-search response.');
+        }
+        var nextUrl = safeRijksNextPageUrl(payload.next && payload.next.id, query);
+        if (nextUrl) entry.urls[pageIndex + 1] = nextUrl;
+        else {
+          Object.keys(entry.urls).forEach(function (key) {
+            if (Number(key) > pageIndex) delete entry.urls[key];
+          });
+        }
+        if (pageIndex >= targetPage) return payload;
+        return nextUrl ? fetchPage(pageIndex + 1) : { orderedItems: [] };
+      });
+    }
+    return fetchPage(startPage).then(function (payload) {
+      requestContext.finish();
+      return payload;
+    }, function (error) {
+      requestContext.finish();
+      throw error;
+    });
+  }
+
+  function fetchRijksEdmRecord(recordId, fetchFn, signal) {
+    var normalizedId = normalizedRijksRecordId(recordId);
+    if (!normalizedId) return Promise.reject(new Error('A Rijksmuseum record is missing a trustworthy persistent identifier.'));
+    var requestContext = providerRequestContext(signal, 12000);
+    var requestOptions = Object.assign({}, requestContext.options, { headers: { Accept: 'application/ld+json' } });
+    var url = RIJKS_DATA_API + '/' + normalizedId + '?_profile=edm-framed';
+    return fetchFn(url, requestOptions).then(function (response) {
+      if (!response || !response.ok) throw providerHttpError(RIJKS_PROVIDER, response);
+      return response.json();
+    }).then(function (payload) {
+      requestContext.finish();
+      return payload;
+    }, function (error) {
+      requestContext.finish();
+      throw error;
+    });
+  }
+
+  function searchRijksLive(query, options) {
+    var opts = options || {};
+    var fetchFn = opts.fetch || (typeof window.fetch === 'function' ? window.fetch.bind(window) : null);
+    if (!fetchFn) return Promise.reject(new Error('Rijksmuseum live search is unavailable in this browser.'));
+    var q = plainMetadata(query).replace(/\s+/g, ' ').trim().slice(0, 140) || 'visual material';
+    var page = normalizedSearchPage(opts.page);
+    if (page > RIJKS_MAX_LOGICAL_PAGE) return Promise.resolve([]);
+    var maximum = liveProviderLimit(RIJKS_PROVIDER, opts.limit);
+    var candidateLimit = Math.min(24, Math.max(maximum, maximum * 2));
+    var searchTerms = rijksSearchTerms(q, opts.kind);
+    function fetchSearchPayload(termIndex) {
+      return fetchRijksSearchPage(searchTerms[termIndex], page, fetchFn, opts.signal).then(function (payload) {
+        if (page === 0 && !payload.orderedItems.length && termIndex + 1 < searchTerms.length) {
+          return fetchSearchPayload(termIndex + 1);
+        }
+        return payload;
+      });
+    }
+    return fetchSearchPayload(0).then(function (payload) {
+      var seen = {};
+      var ids = payload.orderedItems.map(function (entry) {
+        return rijksRecordIdFromIdentifier(entry && entry.id);
+      }).filter(function (id) {
+        if (!id || seen[id]) return false;
+        seen[id] = true;
+        return true;
+      }).slice(0, candidateLimit);
+      return mapWithConcurrency(ids, 3, function (recordId) {
+        return fetchRijksEdmRecord(recordId, fetchFn, opts.signal).then(function (record) {
+          return rijksItemFromEdmRecord(record, q, opts.kind, recordId);
+        }).then(function (item) {
+          return { ok: true, item: item };
+        }, function (error) {
+          return { ok: false, error: error };
+        });
+      });
+    }).then(function (settled) {
+      var failures = settled.filter(function (result) { return result && result.ok === false; });
+      var aborted = failures.filter(function (result) { return result.error && result.error.name === 'AbortError'; })[0];
+      if (aborted) throw aborted.error;
+      var completed = settled.filter(function (result) { return result && result.ok === true; });
+      if (!completed.length && failures.length) throw failures[0].error;
+      var seenIds = {};
+      var admitted = completed.map(function (result) { return result.item; }).filter(Boolean).filter(function (item) {
+        if (seenIds[item.id]) return false;
+        seenIds[item.id] = true;
+        return true;
+      }).slice(0, maximum);
+      return enrichRijksPrintEvidenceList(admitted, {
+        fetch: fetchFn, signal: opts.signal, bypassCache: opts.bypassCache
+      });
+    });
+  }
+
+  function fetchRijksAssetsByIdentities(assets, options) {
+    var opts = options || {};
+    var fetchFn = opts.fetch || (typeof window.fetch === 'function' ? window.fetch.bind(window) : null);
+    if (!fetchFn) return Promise.reject(new Error('Rijksmuseum record verification is unavailable in this browser.'));
+    var identities = (Array.isArray(assets) ? assets : []).map(rijksIdentityFromAsset);
+    if (identities.some(function (identity) { return !identity; })) {
+      return Promise.reject(new Error('A Rijksmuseum asset is missing a trustworthy persistent identifier or IIIF identity.'));
+    }
+    return mapWithConcurrency(identities, RIJKS_REVALIDATION_CONCURRENCY, function (identity) {
+      return fetchRijksEdmRecord(identity.recordId, fetchFn, opts.signal).then(function (record) {
+        var fresh = rijksItemFromEdmRecord(record, identity.asset.title, identity.asset.kind, identity.recordId);
+        if (!fresh) {
+          throw new Error('A Rijksmuseum record no longer has an allowed exact image-rights statement and identity.');
+        }
+        if (!sourceVerifiedAssetIdentityMatches(identity.asset, fresh)) {
+          throw new Error('A Rijksmuseum record has changed its source or IIIF identity since it was saved.');
+        }
+        return fresh;
+      }).then(function (item) {
+        return { ok: true, item: item };
+      }, function (error) {
+        return { ok: false, error: error };
+      });
+    }).then(function (settled) {
+      var failed = settled.filter(function (result) { return !result || result.ok !== true; })[0];
+      if (failed) throw (failed.error || new Error('A Rijksmuseum record could not be revalidated.'));
+      return enrichRijksPrintEvidenceList(settled.map(function (result) { return result.item; }), {
+        fetch: fetchFn, signal: opts.signal, bypassCache: opts.bypassCache
+      });
+    });
+  }
   function metItemFromObject(object, query, requestedKind) {
     if (!object || object.isPublicDomain !== true) return null;
     var imageUrl = safeHttpsUrl(object.primaryImageSmall || object.primaryImage);
@@ -2670,6 +3389,7 @@
   LIVE_PROVIDER_LIMIT_RULES[NARA_PROVIDER] = { min: 4, max: 18, fallback: 18 };
   LIVE_PROVIDER_LIMIT_RULES[SMK_PROVIDER] = { min: 4, max: 24, fallback: 18 };
   LIVE_PROVIDER_LIMIT_RULES[YALE_PROVIDER] = { min: 1, max: 12, fallback: 8 };
+  LIVE_PROVIDER_LIMIT_RULES[RIJKS_PROVIDER] = { min: 2, max: 12, fallback: 8 };
   LIVE_PROVIDER_LIMIT_RULES['The Met Open Access'] = { min: 4, max: 12, fallback: 12 };
   LIVE_PROVIDER_LIMIT_RULES['Art Institute of Chicago'] = { min: 4, max: 12, fallback: 12 };
   LIVE_PROVIDER_LIMIT_RULES['Cleveland Museum of Art'] = { min: 4, max: 24, fallback: 24 };
@@ -2772,7 +3492,8 @@
     if (report.status !== 'ready' && report.status !== 'cached') return false;
     var current = normalizedSearchPage(currentBatch);
     var previous = report.batch == null ? current : normalizedSearchPage(report.batch);
-    return Math.max(current, previous) < 40;
+    var maximumBatch = String(report.provider || '') === RIJKS_PROVIDER ? RIJKS_MAX_LOGICAL_PAGE : 40;
+    return Math.max(current, previous) < maximumBatch;
   }
 
   function providerReportTargetBatch(report, currentBatch, retryFailedBatch) {
@@ -2783,15 +3504,15 @@
   }
 
   var PROVIDER_COVERAGE_ROUTES = {
-    Maps: ['Library of Congress', NARA_PROVIDER, SMITHSONIAN_PROVIDER, MUSEUMS_VICTORIA_PROVIDER, 'Cleveland Museum of Art', 'The Met Open Access', 'Art Institute of Chicago', 'Wikimedia Commons', YALE_PROVIDER, SMK_PROVIDER, 'Openverse'],
-    Blueprints: [MUSEUMS_VICTORIA_PROVIDER, 'Library of Congress', NARA_PROVIDER, SMITHSONIAN_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art', 'Wikimedia Commons', YALE_PROVIDER, 'Openverse'],
-    Archival: ['Library of Congress', NARA_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER, SMITHSONIAN_PROVIDER, 'Wellcome Collection', 'Wikimedia Commons', 'The Met Open Access', 'Art Institute of Chicago', 'Openverse'],
-    Botanical: [BHL_PROVIDER, SMITHSONIAN_PROVIDER, 'Wellcome Collection', 'Wikimedia Commons', YALE_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Openverse'],
-    Science: ['Wellcome Collection', SMITHSONIAN_PROVIDER, BHL_PROVIDER, NARA_PROVIDER, 'Library of Congress', MUSEUMS_VICTORIA_PROVIDER, 'Wikimedia Commons', 'Openverse'],
-    Textures: ['Openverse', 'Wikimedia Commons', 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art', SMK_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
-    Patterns: ['Openverse', 'Wikimedia Commons', 'Art Institute of Chicago', 'Cleveland Museum of Art', 'The Met Open Access', SMK_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
-    'Visual assets': ['Wikimedia Commons', 'Openverse', SMITHSONIAN_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Art Institute of Chicago', YALE_PROVIDER, SMK_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
-    All: ['Wikimedia Commons', 'Openverse', 'Library of Congress', SMITHSONIAN_PROVIDER, NARA_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Art Institute of Chicago', 'Wellcome Collection', BHL_PROVIDER, YALE_PROVIDER, SMK_PROVIDER, MUSEUMS_VICTORIA_PROVIDER]
+    Maps: ['Library of Congress', NARA_PROVIDER, SMITHSONIAN_PROVIDER, MUSEUMS_VICTORIA_PROVIDER, RIJKS_PROVIDER, 'Cleveland Museum of Art', 'The Met Open Access', 'Art Institute of Chicago', 'Wikimedia Commons', YALE_PROVIDER, SMK_PROVIDER, 'Openverse'],
+    Blueprints: [MUSEUMS_VICTORIA_PROVIDER, 'Library of Congress', NARA_PROVIDER, SMITHSONIAN_PROVIDER, RIJKS_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art', 'Wikimedia Commons', YALE_PROVIDER, 'Openverse'],
+    Archival: ['Library of Congress', NARA_PROVIDER, YALE_PROVIDER, RIJKS_PROVIDER, MUSEUMS_VICTORIA_PROVIDER, SMITHSONIAN_PROVIDER, 'Wellcome Collection', 'Wikimedia Commons', 'The Met Open Access', 'Art Institute of Chicago', 'Openverse'],
+    Botanical: [BHL_PROVIDER, RIJKS_PROVIDER, SMITHSONIAN_PROVIDER, 'Wellcome Collection', 'Wikimedia Commons', YALE_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Openverse'],
+    Science: ['Wellcome Collection', SMITHSONIAN_PROVIDER, BHL_PROVIDER, NARA_PROVIDER, 'Library of Congress', MUSEUMS_VICTORIA_PROVIDER, RIJKS_PROVIDER, 'Wikimedia Commons', 'Openverse'],
+    Textures: ['Openverse', 'Wikimedia Commons', RIJKS_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art', SMK_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
+    Patterns: ['Openverse', 'Wikimedia Commons', RIJKS_PROVIDER, 'Art Institute of Chicago', 'Cleveland Museum of Art', 'The Met Open Access', SMK_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
+    'Visual assets': ['Wikimedia Commons', 'Openverse', RIJKS_PROVIDER, SMITHSONIAN_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Art Institute of Chicago', YALE_PROVIDER, SMK_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
+    All: ['Wikimedia Commons', 'Openverse', RIJKS_PROVIDER, 'Library of Congress', SMITHSONIAN_PROVIDER, NARA_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Art Institute of Chicago', 'Wellcome Collection', BHL_PROVIDER, YALE_PROVIDER, SMK_PROVIDER, MUSEUMS_VICTORIA_PROVIDER]
   };
 
   function buildProviderCoverageGuide(reports, items, requestedKind, currentBatch) {
@@ -2929,6 +3650,9 @@
     }
     if (provider === 'All' || provider === YALE_PROVIDER) {
       jobs.push({ provider: YALE_PROVIDER, run: function () { return searchYaleLive(routedQuery, { kind: opts.kind, limit: limitFor(YALE_PROVIDER), page: providerPage, signal: opts.signal }); } });
+    }
+    if (provider === 'All' || provider === RIJKS_PROVIDER) {
+      jobs.push({ provider: RIJKS_PROVIDER, run: function () { return searchRijksLive(routedQuery, { kind: opts.kind, limit: limitFor(RIJKS_PROVIDER), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'The Met Open Access') {
       jobs.push({ provider: 'The Met Open Access', run: function () { return searchMetLive(routedQuery, { kind: opts.kind, limit: limitFor('The Met Open Access'), page: providerPage, signal: opts.signal }); } });
@@ -3423,6 +4147,7 @@
       rightsType: item.rightsType, rightsShort: item.rightsShort, rightsNote: item.rightsNote,
       description: item.description, accent: item.accent || ['#dce8e2', '#466b60'],
       pixelWidth: normalizedPixelDimension(item.pixelWidth), pixelHeight: normalizedPixelDimension(item.pixelHeight),
+      pixelDimensionSource: normalizedPixelDimensionSource(item.pixelDimensionSource),
       tags: Array.isArray(item.tags) ? item.tags.slice(0, 20).map(function (tag) { return String(tag || '').slice(0, 60); }) : [],
       file: String(item.file || '').slice(0, 240), live: item.live === true,
       recommended: item.recommended === true,
@@ -3435,6 +4160,29 @@
       if (!objectNumber || (item.providerRecordId && !providerRecordId)) return null;
       portable.objectNumber = objectNumber;
       if (providerRecordId) portable.providerRecordId = providerRecordId;
+    }
+    if (String(item.provider || '') === RIJKS_PROVIDER) {
+      var rijksIdentity = rijksIdentityFromAsset(item);
+      if (!rijksIdentity) return null;
+      portable.rijksRecordId = rijksIdentity.recordId;
+      portable.rijksIiifServiceUrl = rijksIdentity.iiifServiceUrl;
+      if (portable.pixelDimensionSource === 'iiif-prepared') {
+        var rijksBoundWidth = normalizedRijksPreparationBound(item.rijksPreparationBoundWidth);
+        var rijksBoundHeight = normalizedRijksPreparationBound(item.rijksPreparationBoundHeight);
+        if (portable.pixelWidth && portable.pixelHeight && rijksBoundWidth && rijksBoundHeight
+          && portable.pixelWidth <= rijksBoundWidth && portable.pixelHeight <= rijksBoundHeight) {
+          portable.rijksPreparationBoundWidth = rijksBoundWidth;
+          portable.rijksPreparationBoundHeight = rijksBoundHeight;
+        } else {
+          portable.pixelWidth = 0;
+          portable.pixelHeight = 0;
+          portable.pixelDimensionSource = 'unknown';
+        }
+      } else {
+        portable.pixelWidth = 0;
+        portable.pixelHeight = 0;
+        portable.pixelDimensionSource = 'unknown';
+      }
     }
     if (String(item.provider || '') === MUSEUMS_VICTORIA_PROVIDER) {
       var museumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(item);
@@ -3459,6 +4207,13 @@
   }
 
   function sourcebookImportedDomainAllowed(provider, sourceUrl, imageUrl, downloadUrl) {
+    if (provider === RIJKS_PROVIDER) {
+      var rijksServiceUrl = safeRijksImageUrl(imageUrl).split('/full/')[0];
+      return !!(safeRijksSourceUrl(sourceUrl)
+        && safeRijksIiifServiceUrl(rijksServiceUrl)
+        && safeRijksImageUrl(imageUrl, rijksServiceUrl, '!1200,1200')
+        && safeRijksImageUrl(downloadUrl, rijksServiceUrl, 'max'));
+    }
     if (provider === MUSEUMS_VICTORIA_PROVIDER) {
       return !!(safeMuseumsVictoriaSourceUrl(sourceUrl)
         && safeMuseumsVictoriaMediaUrl(imageUrl)
@@ -3495,6 +4250,10 @@
   }
 
   function sourcebookImportedRightsAllowed(provider, rightsType, licenseUrl) {
+    if (provider === RIJKS_PROVIDER) {
+      var rijksRights = normalizeRijksRights(licenseUrl);
+      return !!(rijksRights && rijksRights.rightsType === rightsType && rijksRights.licenseUrl === licenseUrl);
+    }
     if (provider === MUSEUMS_VICTORIA_PROVIDER) {
       var museumsVictoriaRights = normalizeMuseumsVictoriaMediaRights({ licence: { uri: licenseUrl } });
       return !!(museumsVictoriaRights && museumsVictoriaRights.rightsType === rightsType && museumsVictoriaRights.licenseUrl === licenseUrl);
@@ -3518,7 +4277,8 @@
     if (!ALLOWED_RIGHTS[raw.rightsType] || !String(raw.license || '').trim() || !String(raw.rightsNote || '').trim() || !String(raw.rightsMetadataSource || '').trim()) return null;
     return portableAsset(Object.assign({}, raw, {
       provider: provider, sourceUrl: sourceUrl, imageUrl: imageUrl,
-      downloadUrl: downloadUrl, licenseUrl: licenseUrl
+      downloadUrl: downloadUrl, licenseUrl: licenseUrl,
+      pixelWidth: 0, pixelHeight: 0, pixelDimensionSource: 'unknown'
     }));
   }
 
@@ -3572,9 +4332,13 @@
       if (!sourcebookImportedRightsAllowed(itemProvider, raw.rightsType, licenseUrl)) return null;
       if (!ALLOWED_RIGHTS[raw.rightsType] || !String(raw.license || '').trim() || !String(raw.rightsNote || '').trim() || !String(raw.rightsMetadataSource || '').trim()) return null;
       seen[id] = true;
+      var sourceVerified = isSerializedSourceVerifiedAsset(raw);
       return portableAsset(Object.assign({}, raw, {
         id: id, title: title, provider: itemProvider, sourceUrl: sourceUrl,
-        imageUrl: imageUrl, downloadUrl: downloadUrl, licenseUrl: licenseUrl, live: true
+        imageUrl: imageUrl, downloadUrl: downloadUrl, licenseUrl: licenseUrl, live: true,
+        pixelWidth: sourceVerified ? raw.pixelWidth : 0,
+        pixelHeight: sourceVerified ? raw.pixelHeight : 0,
+        pixelDimensionSource: sourceVerified ? raw.pixelDimensionSource : 'unknown'
       }));
     });
     if (results.some(function (item) { return !item; })) return null;
@@ -3606,16 +4370,23 @@
       if (!sourcebookImportedDomainAllowed(provider, sourceUrl, imageUrl, downloadUrl)) return null;
       if (!sourcebookImportedRightsAllowed(provider, raw.rightsType, licenseUrl)) return null;
       if (!ALLOWED_RIGHTS[raw.rightsType] || !String(raw.license || '').trim() || !String(raw.rightsNote || '').trim() || !String(raw.rightsMetadataSource || '').trim()) return null;
+      var sourceVerified = isSerializedSourceVerifiedAsset(raw);
       var item = portableAsset({
         id: id, title: title, kind: raw.kind, creator: raw.creator, year: raw.year,
         provider: provider, imageUrl: imageUrl, downloadUrl: downloadUrl, sourceUrl: sourceUrl,
         license: raw.license, licenseUrl: licenseUrl, rightsType: raw.rightsType,
         rightsShort: raw.rightsShort, rightsNote: raw.rightsNote, description: raw.description,
         accent: raw.accent, live: false, rightsMetadataSource: raw.rightsMetadataSource,
+        pixelWidth: sourceVerified ? raw.pixelWidth : 0,
+        pixelHeight: sourceVerified ? raw.pixelHeight : 0,
+        pixelDimensionSource: sourceVerified ? raw.pixelDimensionSource : 'unknown',
         objectNumber: raw.objectNumber, providerRecordId: raw.providerRecordId,
         mvRecordPath: raw.mvRecordPath, mvMediaId: raw.mvMediaId,
         yaleLuxId: raw.yaleLuxId, yaleManifestUrl: raw.yaleManifestUrl,
-        yaleIiifServiceUrl: raw.yaleIiifServiceUrl
+        yaleIiifServiceUrl: raw.yaleIiifServiceUrl,
+        rijksRecordId: raw.rijksRecordId, rijksIiifServiceUrl: raw.rijksIiifServiceUrl,
+        rijksPreparationBoundWidth: raw.rijksPreparationBoundWidth,
+        rijksPreparationBoundHeight: raw.rijksPreparationBoundHeight
       });
       if (!item) return null;
       seen[id] = true;
@@ -3653,11 +4424,13 @@
 
   function revalidateImportedSourceVerifiedAssets(assets, options) {
     var candidates = Array.isArray(assets) ? assets : [];
+    var rijksCandidates = [];
     var smkCandidates = [];
     var yaleCandidates = [];
     var museumsVictoriaCandidates = [];
     candidates.forEach(function (item) {
-      if (isSerializedMuseumsVictoriaAsset(item)) museumsVictoriaCandidates.push(item);
+      if (isSerializedRijksAsset(item)) rijksCandidates.push(item);
+      else if (isSerializedMuseumsVictoriaAsset(item)) museumsVictoriaCandidates.push(item);
       else if (isSerializedYaleAsset(item)) yaleCandidates.push(item);
       else if (isSerializedSmkAsset(item)) smkCandidates.push(item);
     });
@@ -3674,18 +4447,36 @@
     var museumsVictoriaVerification = museumsVictoriaCandidates.length
       ? fetchMuseumsVictoriaAssetsByIdentities(museumsVictoriaCandidates, options)
       : Promise.resolve([]);
+    var rijksVerification = rijksCandidates.length
+      ? fetchRijksAssetsByIdentities(rijksCandidates, options)
+      : Promise.resolve([]);
 
-    return Promise.all([smkVerification, yaleVerification, museumsVictoriaVerification]).then(function (verifiedGroups) {
-      var freshSmkItems = verifiedGroups[0];
-      var freshYaleItems = verifiedGroups[1];
-      var freshMuseumsVictoriaItems = verifiedGroups[2];
+    return Promise.all([rijksVerification, smkVerification, yaleVerification, museumsVictoriaVerification]).then(function (verifiedGroups) {
+      var freshRijksItems = verifiedGroups[0];
+      var freshSmkItems = verifiedGroups[1];
+      var freshYaleItems = verifiedGroups[2];
+      var freshMuseumsVictoriaItems = verifiedGroups[3];
+      var rijksCursor = 0;
       var smkCursor = 0;
       var yaleCursor = 0;
       var museumsVictoriaCursor = 0;
       var seenIds = {};
       return candidates.map(function (candidate) {
         var refreshed = candidate;
-        if (isSerializedMuseumsVictoriaAsset(candidate)) {
+        if (isSerializedRijksAsset(candidate)) {
+          var freshRijks = freshRijksItems[rijksCursor++];
+          if (!freshRijks
+            || candidate.licenseUrl !== freshRijks.licenseUrl
+            || candidate.rightsType !== freshRijks.rightsType
+            || !sourceVerifiedAssetIdentityMatches(candidate, freshRijks)) {
+            throw new Error('A Rijksmuseum image has changed identity or rights since it was saved.');
+          }
+          refreshed = portableAsset(Object.assign({}, freshRijks, {
+            recommended: candidate.recommended === true,
+            recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
+          }));
+          if (!refreshed) throw new Error('A Rijksmuseum image could not be normalized after verification.');
+        } else if (isSerializedMuseumsVictoriaAsset(candidate)) {
           var freshMuseumsVictoria = freshMuseumsVictoriaItems[museumsVictoriaCursor++];
           if (!freshMuseumsVictoria
             || candidate.licenseUrl !== freshMuseumsVictoria.licenseUrl
@@ -3773,7 +4564,7 @@
       schema: 'org.owlflow.sourcebook-palette', version: 1, title: 'Saved source-verified assets',
       assets: keys.map(function (id) {
         var raw = source[id];
-        var authoritativeProvider = isSerializedMuseumsVictoriaAsset(raw) ? MUSEUMS_VICTORIA_PROVIDER : (isSerializedYaleAsset(raw) ? YALE_PROVIDER : (isSerializedSmkAsset(raw) ? SMK_PROVIDER : String(raw.provider || '')));
+        var authoritativeProvider = isSerializedRijksAsset(raw) ? RIJKS_PROVIDER : (isSerializedMuseumsVictoriaAsset(raw) ? MUSEUMS_VICTORIA_PROVIDER : (isSerializedYaleAsset(raw) ? YALE_PROVIDER : (isSerializedSmkAsset(raw) ? SMK_PROVIDER : String(raw.provider || ''))));
         return Object.assign({}, raw, { provider: authoritativeProvider, preparation: {} });
       })
     });
@@ -4043,7 +4834,7 @@
     };
   }
 
-  function buildPaletteRoleBoard(items, preparation, planValue) {
+  function buildPaletteRoleBoard(items, preparation, planValue, goalValue) {
     var prepById = preparation && typeof preparation === 'object' ? preparation : {};
     var seen = {};
     var selected = (Array.isArray(items) ? items : []).filter(function (item) {
@@ -4064,7 +4855,11 @@
       if (!planCounts[planId]) planId = 'balanced';
     }
     var plan = USAGE_PLANS[planId];
-    var slots = usagePlanSlots(planId, selected.length);
+    var goal = selected.length;
+    if (goalValue !== undefined && goalValue !== null && String(goalValue).trim()) {
+      goal = Math.max(selected.length, normalizePaletteTarget(goalValue));
+    }
+    var slots = usagePlanSlots(planId, goal);
     var requiredByRole = {};
     var itemsByRole = {};
     USAGE_INTENT_ORDER.slice(1).forEach(function (roleId) {
@@ -4100,6 +4895,7 @@
         required: required,
         count: count,
         missing: Math.max(0, required - count),
+        surplus: Math.max(0, count - required),
         items: itemsByRole[roleId]
       };
     }).filter(function (group) { return group.required > 0 || group.count > 0; });
@@ -4117,6 +4913,8 @@
       planLabel: plan.label,
       description: plan.description,
       total: selected.length,
+      goal: goal,
+      openSlots: Math.max(0, goal - selected.length),
       requiredSlots: requiredSlots,
       coveredSlots: coveredSlots,
       coveragePercent: coveragePercent,
@@ -4124,8 +4922,169 @@
       groups: groups,
       missing: missing,
       missingLabel: missingLabel,
-      summary: plan.label + ' \\u00b7 ' + coveragePercent + '% role coverage' + (missingLabel ? ' \\u00b7 Suggested gaps: ' + missingLabel : '')
+      summary: plan.label + ' \u00b7 ' + coveragePercent + '% role coverage' + (missingLabel ? ' \u00b7 Suggested gaps: ' + missingLabel : '')
     };
+  }
+
+  function preparationProtectsRoleSwap(value) {
+    var prep = normalizedPreparation(value);
+    var manuallyAssigned = prep.usageIntent !== 'auto' && !prep.usagePlan;
+    return manuallyAssigned
+      || prep.mode !== 'fit'
+      || prep.zoom !== 100
+      || prep.x !== 50
+      || prep.y !== 50
+      || prep.tile !== 180
+      || prep.decorative
+      || prep.altTextCustomized
+      || prep.altTextReviewed
+      || !!prep.altText;
+  }
+
+  function planPaletteRoleGapAction(items, preparation, planValue, roleValue, goalValue, protectedIds) {
+    var prepById = preparation && typeof preparation === 'object' ? preparation : {};
+    var roleId = normalizedUsageIntent(roleValue);
+    if (roleId === 'auto') roleId = 'flexible';
+    var board = buildPaletteRoleBoard(items, prepById, planValue, goalValue);
+    var group = board.groups.filter(function (entry) { return entry.id === roleId; })[0] || null;
+    var base = {
+      mode: 'covered',
+      roleId: roleId,
+      planId: board.planId,
+      goal: board.goal,
+      total: board.total,
+      missing: group ? group.missing : 0,
+      count: 0,
+      replaceIds: [],
+      replacements: [],
+      reason: group && group.missing ? '' : 'This role is already covered.'
+    };
+    if (!group || !group.missing) return base;
+    var availableGoalSlots = Math.min(board.openSlots, PALETTE_MAX_ASSETS - board.total);
+    if (availableGoalSlots > 0) {
+      return Object.assign({}, base, {
+        mode: 'add',
+        count: Math.min(group.missing, availableGoalSlots),
+        reason: 'Add only within the selected recommendation goal.'
+      });
+    }
+    var protectedMap = {};
+    (Array.isArray(protectedIds) ? protectedIds : []).forEach(function (id) {
+      id = String(id || '').trim();
+      if (id) protectedMap[id] = true;
+    });
+    var groupById = {};
+    board.groups.forEach(function (entry) { groupById[entry.id] = entry; });
+    var seen = {};
+    var candidates = (Array.isArray(items) ? items : []).map(function (item, index) {
+      if (!item || !item.id || seen[item.id] || !ALLOWED_RIGHTS[item.rightsType]) return null;
+      seen[item.id] = true;
+      var prep = normalizedPreparation(prepById[item.id]);
+      var intent = resolvedUsageIntent(item, prep);
+      var roleGroup = groupById[intent.id];
+      if (!roleGroup || !roleGroup.surplus || protectedMap[item.id] || preparationProtectsRoleSwap(prepById[item.id])) return null;
+      return {
+        id: item.id,
+        title: item.title,
+        roleId: intent.id,
+        roleLabel: (USAGE_INTENTS[intent.id] || USAGE_INTENTS.flexible).shortLabel,
+        surplus: roleGroup.surplus,
+        score: usageRoleScore(item, prep, intent.id),
+        index: index
+      };
+    }).filter(Boolean).sort(function (left, right) {
+      return right.surplus - left.surplus
+        || left.score - right.score
+        || right.index - left.index;
+    });
+    var remainingSurplus = {};
+    board.groups.forEach(function (entry) { remainingSurplus[entry.id] = entry.surplus; });
+    var replacements = [];
+    candidates.forEach(function (candidate) {
+      if (replacements.length >= group.missing || !remainingSurplus[candidate.roleId]) return;
+      replacements.push(candidate);
+      remainingSurplus[candidate.roleId] -= 1;
+    });
+    if (!replacements.length) {
+      return Object.assign({}, base, {
+        mode: 'blocked',
+        reason: 'Every overrepresented asset is manually assigned, prepared, or selected.'
+      });
+    }
+    return Object.assign({}, base, {
+      mode: 'replace',
+      count: replacements.length,
+      replaceIds: replacements.map(function (entry) { return entry.id; }),
+      replacements: replacements,
+      reason: 'Replace overrepresented automatic or Sourcebook-planned assets without changing palette size.'
+    });
+  }
+
+  function applyPaletteRoleReplacements(collectionValue, replaceIdsValue, additionIdsValue) {
+    var seenCollection = {};
+    var collection = (Array.isArray(collectionValue) ? collectionValue : []).map(function (id) {
+      return String(id || '').trim();
+    }).filter(function (id) {
+      if (!id || seenCollection[id]) return false;
+      seenCollection[id] = true;
+      return true;
+    }).slice(0, PALETTE_MAX_ASSETS);
+    var seenReplace = {};
+    var replaceIds = (Array.isArray(replaceIdsValue) ? replaceIdsValue : []).map(function (id) {
+      return String(id || '').trim();
+    }).filter(function (id) {
+      if (!id || seenReplace[id] || collection.indexOf(id) === -1) return false;
+      seenReplace[id] = true;
+      return true;
+    });
+    var seenAddition = {};
+    var additionIds = (Array.isArray(additionIdsValue) ? additionIdsValue : []).map(function (id) {
+      return String(id || '').trim();
+    }).filter(function (id) {
+      if (!id || seenAddition[id] || collection.indexOf(id) !== -1) return false;
+      seenAddition[id] = true;
+      return true;
+    });
+    var count = Math.min(replaceIds.length, additionIds.length);
+    var next = collection.slice();
+    var swaps = [];
+    for (var index = 0; index < count; index += 1) {
+      var collectionIndex = next.indexOf(replaceIds[index]);
+      if (collectionIndex === -1) continue;
+      next[collectionIndex] = additionIds[index];
+      swaps.push({ removedId: replaceIds[index], addedId: additionIds[index], index: collectionIndex });
+    }
+    return { collection: next, swaps: swaps, changed: swaps.length };
+  }
+
+  function buildPaletteRoleSearch(roleValue, items, planValue, seedQuery) {
+    var roleId = normalizedUsageIntent(roleValue);
+    if (roleId === 'auto') roleId = 'flexible';
+    var planId = normalizedUsagePlan(planValue);
+    var subject = String(seedQuery || '').replace(/\s+/g, ' ').trim().slice(0, 90);
+    var generatedContext = Object.keys(USAGE_ROLE_SEARCH_PHRASES).some(function (id) {
+      return subject.toLowerCase().indexOf(USAGE_ROLE_SEARCH_PHRASES[id].toLowerCase()) !== -1;
+    }) || Object.keys(USAGE_PLAN_SEARCH_CONTEXT).some(function (id) {
+      return subject.toLowerCase().indexOf(USAGE_PLAN_SEARCH_CONTEXT[id].toLowerCase()) !== -1;
+    });
+    if (generatedContext) subject = '';
+    if (!subject) {
+      var seenKinds = {};
+      subject = (Array.isArray(items) ? items : []).filter(function (item) {
+        return item && ALLOWED_RIGHTS[item.rightsType];
+      }).map(function (item) {
+        return String(item.kind || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      }).filter(function (kind) {
+        if (!kind || kind === 'visual assets' || seenKinds[kind]) return false;
+        seenKinds[kind] = true;
+        return true;
+      }).slice(0, 2).join(' and ');
+    }
+    return [
+      subject,
+      USAGE_ROLE_SEARCH_PHRASES[roleId],
+      USAGE_PLAN_SEARCH_CONTEXT[planId]
+    ].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim().slice(0, 180);
   }
 
   function accessibilityDescription(item, preparation) {
@@ -4206,10 +5165,26 @@
     return isFinite(number) && number > 0 && number <= 100000 ? number : 0;
   }
 
+  function normalizedPixelDimensionSource(value) {
+    var source = String(value || '');
+    return ['iiif-prepared', 'catalog', 'preview', 'unknown'].indexOf(source) !== -1 ? source : '';
+  }
+
+  function normalizedRijksPreparationBound(value) {
+    var bound = normalizedPixelDimension(value);
+    return bound && bound <= RIJKS_PREPARATION_BOUND ? bound : 0;
+  }
+
   function assetPixelDimensions(item, measured) {
     var catalogWidth = normalizedPixelDimension(item && item.pixelWidth);
     var catalogHeight = normalizedPixelDimension(item && item.pixelHeight);
-    if (catalogWidth && catalogHeight) return { width: catalogWidth, height: catalogHeight, source: 'catalog' };
+    if (catalogWidth && catalogHeight) {
+      return {
+        width: catalogWidth,
+        height: catalogHeight,
+        source: normalizedPixelDimensionSource(item && item.pixelDimensionSource) || 'catalog'
+      };
+    }
     var measuredWidth = normalizedPixelDimension(measured && measured.width);
     var measuredHeight = normalizedPixelDimension(measured && measured.height);
     if (measuredWidth && measuredHeight) return { width: measuredWidth, height: measuredHeight, source: 'preview' };
@@ -4267,6 +5242,12 @@
     } else if (width < 1200 || height < 800) {
       status = 'low'; label = 'Low resolution'; tone = 'rose'; score = -10;
       note = 'Catalog dimensions are best suited to small print placement or on-screen use.';
+    }
+    if (pixels.source === 'iiif-prepared') {
+      if (status === 'ready') note = 'Verified IIIF prepared-rendition dimensions support this output; no larger raster is embedded by Sourcebook.';
+      else if (status === 'low') note = 'Verified IIIF prepared-rendition dimensions are best suited to a smaller print placement or on-screen use.';
+      else if (status === 'caution') note = 'Verified IIIF prepared-rendition dimensions require modest enlargement; inspect fine lines and labels before printing.';
+      else note = 'Verified IIIF prepared-rendition dimensions support moderate-size classroom printing; inspect the prepared preview before printing large.';
     }
     return {
       status: status, label: label, tone: tone, score: score,
@@ -4454,8 +5435,23 @@
     });
   }
 
+  function rijksPreparationImageUrl(item) {
+    var identity = rijksIdentityFromAsset(item);
+    if (!identity) return '';
+    var width = normalizedPixelDimension(item && item.pixelWidth);
+    var height = normalizedPixelDimension(item && item.pixelHeight);
+    var boundWidth = normalizedRijksPreparationBound(item && item.rijksPreparationBoundWidth);
+    var boundHeight = normalizedRijksPreparationBound(item && item.rijksPreparationBoundHeight);
+    if (normalizedPixelDimensionSource(item && item.pixelDimensionSource) !== 'iiif-prepared'
+      || !width || !height || !boundWidth || !boundHeight || width > boundWidth || height > boundHeight) {
+      return identity.imageUrl;
+    }
+    return identity.iiifServiceUrl + '/full/!' + boundWidth + ',' + boundHeight + '/0/default.jpg';
+  }
+
   function resolveFetchableImageUrl(item) {
     var initialUrl = item && String(item.imageUrl || '');
+    if (item && item.provider === RIJKS_PROVIDER) return Promise.resolve(rijksPreparationImageUrl(item));
     if (!item || (item.provider !== 'Wikimedia Commons' && !COMMONS_PROVIDER_PROFILES[item.provider])) return Promise.resolve(initialUrl);
     var filename = String(item.file || '');
     if (!filename) {
@@ -4817,6 +5813,9 @@
           licenseUrl: item.licenseUrl || '',
           rightsType: item.rightsType,
           rightsNote: item.rightsNote,
+          pixelWidth: normalizedPixelDimension(item.pixelWidth),
+          pixelHeight: normalizedPixelDimension(item.pixelHeight),
+          pixelDimensionSource: normalizedPixelDimensionSource(item.pixelDimensionSource),
           attribution: attributionText(item),
           rightsMetadataSource: item.rightsMetadataSource || 'Curated source record',
           preparation: normalizedPreparation(prep[item.id])
@@ -4825,6 +5824,19 @@
           var museumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(item);
           asset.mvRecordPath = museumsVictoriaIdentity ? museumsVictoriaIdentity.recordPath : '';
           asset.mvMediaId = museumsVictoriaIdentity ? museumsVictoriaIdentity.mediaId : '';
+        }
+        if (item.provider === RIJKS_PROVIDER) {
+          var rijksIdentity = rijksIdentityFromAsset(item);
+          asset.rijksRecordId = rijksIdentity ? rijksIdentity.recordId : '';
+          asset.rijksIiifServiceUrl = rijksIdentity ? rijksIdentity.iiifServiceUrl : '';
+          var portableRijks = portableAsset(item);
+          asset.pixelWidth = portableRijks ? portableRijks.pixelWidth : 0;
+          asset.pixelHeight = portableRijks ? portableRijks.pixelHeight : 0;
+          asset.pixelDimensionSource = portableRijks ? portableRijks.pixelDimensionSource : 'unknown';
+          if (portableRijks && portableRijks.pixelDimensionSource === 'iiif-prepared') {
+            asset.rijksPreparationBoundWidth = portableRijks.rijksPreparationBoundWidth;
+            asset.rijksPreparationBoundHeight = portableRijks.rijksPreparationBoundHeight;
+          }
         }
         if (item.provider === SMK_PROVIDER) {
           asset.objectNumber = smkObjectNumberFromAsset(item);
@@ -4900,7 +5912,7 @@
   }
 
   window.SourcebookProviders = {
-    version: 54,
+    version: 58,
     paletteMaxAssets: PALETTE_MAX_ASSETS,
     liveProviderNames: LIVE_PROVIDER_NAMES.slice(),
     providers: PROVIDERS,
@@ -4915,6 +5927,8 @@
     searchNara: searchNaraLive,
     searchSmk: searchSmkLive,
     searchYale: searchYaleLive,
+    searchRijks: searchRijksLive,
+    rijksSearchTerms: rijksSearchTerms,
     searchMet: searchMetLive,
     searchAic: searchAicLive,
     searchCma: searchCmaLive,
@@ -4971,6 +5985,14 @@
     normalizeYaleLuxId: normalizedYaleLuxId,
     yaleIdentityFromAsset: yaleIdentityFromAsset,
     fetchYaleAssets: fetchYaleAssetsByIdentities,
+    normalizeRijksRights: normalizeRijksRights,
+    normalizeRijksRecord: rijksItemFromEdmRecord,
+    normalizeRijksIiifInfo: normalizeRijksIiifInfo,
+    fetchRijksIiifInfo: fetchRijksIiifInfo,
+    enrichRijksPrintEvidence: enrichRijksPrintEvidence,
+    rijksIdentityFromAsset: rijksIdentityFromAsset,
+    rijksPreparationImageUrl: rijksPreparationImageUrl,
+    fetchRijksAssets: fetchRijksAssetsByIdentities,
     revalidateSourceVerifiedAssets: revalidateImportedSourceVerifiedAssets,
     fetchSmkArtwork: fetchSmkArtworkByObjectNumber,
     fetchSmkArtworks: fetchSmkArtworksByObjectNumbers,
@@ -4994,6 +6016,7 @@
     allowsRightsScope: allowedByRightsScope,
     buildAttribution: attributionText,
     normalizePalette: normalizePaletteManifest,
+    normalizePersistedAsset: normalizePersistedNonSmkAsset,
     revalidatePalette: revalidatePaletteManifest,
     buildPalette: buildPaletteManifest,
     normalizeAltText: normalizedAltText,
@@ -5013,6 +6036,9 @@
     summarizeUsageIntents: summarizeUsageIntents,
     planPaletteUsage: planPaletteUsage,
     buildPaletteRoleBoard: buildPaletteRoleBoard,
+    planPaletteRoleGapAction: planPaletteRoleGapAction,
+    applyPaletteRoleReplacements: applyPaletteRoleReplacements,
+    buildPaletteRoleSearch: buildPaletteRoleSearch,
     normalizePreparation: normalizedPreparation,
     preparationDimensions: preparationDimensions,
     preparationDescription: preparationDescription,
@@ -5237,9 +6263,20 @@
       var savedSmkAbortRef = React.useRef(null);
       var trustedSavedSmkSignatureRef = React.useRef('');
       var latestPaletteStateRef = React.useRef(null);
-      latestPaletteStateRef.current = { collection: collection, preparation: preparation, savedAssets: rawSavedAssets, visibleSavedAssets: savedAssets };
+      latestPaletteStateRef.current = {
+        collection: collection,
+        preparation: preparation,
+        savedAssets: rawSavedAssets,
+        visibleSavedAssets: savedAssets,
+        savedSmkVerificationStatus: savedSmkVerificationStatus,
+        paletteTarget: paletteTarget,
+        paletteTitle: storedTitle,
+        checkedPaletteIds: checkedPaletteIds.slice()
+      };
       var inspirationIndexRef = React.useRef(0);
       var sourcebookRootRef = React.useRef(null);
+      var liveStatusRef = React.useRef(null);
+      var roleFillFocusPendingRef = React.useRef(false);
       var mobileDetailDialogRef = React.useRef(null);
       var mobileDetailCloseRef = React.useRef(null);
       var mobileDetailTriggerRef = React.useRef(null);
@@ -5254,6 +6291,27 @@
       if (boardWindowSignatureRef.current !== boardWindowSignature) {
         boardWindowSignatureRef.current = boardWindowSignature;
       }
+
+      React.useEffect(function () {
+        return function () {
+          var activeRequest = liveAbortRef.current;
+          if (activeRequest && activeRequest.controller && typeof activeRequest.controller.abort === 'function') activeRequest.controller.abort();
+          liveAbortRef.current = null;
+          roleFillFocusPendingRef.current = false;
+          ++liveRequestRef.current;
+        };
+      }, []);
+
+      React.useEffect(function () {
+        if (!roleFillFocusPendingRef.current || showingCollection || liveStatus === 'idle') return undefined;
+        var target = liveStatusRef.current;
+        if (!target || typeof target.focus !== 'function') return undefined;
+        roleFillFocusPendingRef.current = false;
+        var timer = window.setTimeout(function () {
+          if (target.isConnected !== false) target.focus();
+        }, 0);
+        return function () { window.clearTimeout(timer); };
+      }, [showingCollection, liveStatus, query]);
 
       React.useEffect(function () {
         if (!storedSmkLiveSession || !storedSmkSessionSignature) return undefined;
@@ -5587,6 +6645,17 @@
         return buildPaletteManifest(collection, preparation, storedTitle, portableSavedAssets);
       }
 
+      function createLatestPaletteUndoSnapshot(latest) {
+        var state = latest && typeof latest === 'object' ? latest : {};
+        var currentCollection = Array.isArray(state.collection) ? state.collection : [];
+        if (!currentCollection.length) return null;
+        if (Object.keys(state.savedAssets || {}).length && state.savedSmkVerificationStatus !== 'ready') return null;
+        var portableSavedAssets = Object.keys(state.visibleSavedAssets || {}).map(function (id) {
+          return portableAsset(state.visibleSavedAssets[id]);
+        }).filter(Boolean);
+        return buildPaletteManifest(currentCollection, state.preparation || {}, state.paletteTitle || storedTitle, portableSavedAssets);
+      }
+
       function restorePaletteUndo() {
         if (!paletteUndo) return;
         var builtInIds = MATERIALS.reduce(function (ids, item) {
@@ -5643,6 +6712,139 @@
         return added;
       }
 
+      function addRoleFillItemsToPalette(items, request) {
+        var roleId = normalizedUsageIntent(request && request.roleId);
+        if (roleId === 'auto') return 0;
+        var planId = normalizedUsagePlan(request && request.planId);
+        var requested = Number(request && request.count || 1);
+        if (!isFinite(requested)) requested = 1;
+        requested = Math.max(1, Math.min(PALETTE_MAX_ASSETS, Math.round(requested)));
+        var latest = latestPaletteStateRef.current || { collection: [], preparation: {}, visibleSavedAssets: {} };
+        var targetSize = Number(request && request.targetSize);
+        if (!isFinite(targetSize)) targetSize = Math.max((latest.collection || []).length, normalizePaletteTarget(latest.paletteTarget));
+        targetSize = Math.max(1, Math.min(PALETTE_MAX_ASSETS, Math.round(targetSize)));
+        var seenReplacement = {};
+        var requestedReplaceIds = (Array.isArray(request && request.replaceIds) ? request.replaceIds : []).map(function (id) {
+          return String(id || '').trim();
+        }).filter(function (id) {
+          if (!id || seenReplacement[id]) return false;
+          seenReplacement[id] = true;
+          return true;
+        }).slice(0, requested);
+        var requestedMode = requestedReplaceIds.length ? 'replace' : 'add';
+        var latestGoal = Math.max((latest.selectedItems || []).length, normalizePaletteTarget(latest.paletteTarget));
+        var latestPlanId = normalizedUsagePlan(latest.paletteRolePlanId);
+        if (targetSize !== latestGoal || latestPlanId !== planId) {
+          toast('The palette goal or visual plan changed while Sourcebook searched. The rights-verified results are open, but nothing was changed automatically.', 'info');
+          announce('Role search results are ready; palette planning changed before automatic placement');
+          return 0;
+        }
+        if (Object.keys(latest.savedAssets || {}).length && latest.savedSmkVerificationStatus !== 'ready') {
+          toast('The role search finished, but saved-source verification must be ready before Sourcebook changes the palette. The rights-verified results are still open for review.', 'info');
+          announce('Role search results are ready; saved-source verification must finish before changing the palette');
+          return 0;
+        }
+        var currentAction = planPaletteRoleGapAction(
+          latest.selectedItems || [],
+          latest.preparation || {},
+          planId,
+          roleId,
+          targetSize,
+          latest.checkedPaletteIds || []
+        );
+        if (currentAction.mode !== requestedMode) {
+          toast('The visual-set gap changed while Sourcebook searched. The rights-verified results are open, but the palette was left as you arranged it.', 'info');
+          announce('Role search results are ready; the visual-set gap changed before automatic placement');
+          return 0;
+        }
+        if (requestedMode === 'replace') {
+          var currentReplaceIds = currentAction.replaceIds.slice(0, requestedReplaceIds.length);
+          var replacementsStable = currentReplaceIds.length === requestedReplaceIds.length && currentReplaceIds.every(function (id, index) {
+            return id === requestedReplaceIds[index];
+          });
+          if (!replacementsStable) {
+            toast('The assets eligible for replacement changed while Sourcebook searched. Your palette was left untouched and the new results are open for review.', 'info');
+            announce('Role search results are ready; protected replacement choices changed');
+            return 0;
+          }
+        }
+        var nextCollection = (latest.collection || []).slice(0, PALETTE_MAX_ASSETS);
+        var nextAssets = Object.assign({}, latest.visibleSavedAssets || {});
+        var nextPreparation = Object.assign({}, latest.preparation || {});
+        var mutationCount = requestedMode === 'replace'
+          ? Math.min(requested, currentAction.count, requestedReplaceIds.length)
+          : Math.min(requested, currentAction.count, targetSize - nextCollection.length, PALETTE_MAX_ASSETS - nextCollection.length);
+        var seen = {};
+        var additions = (Array.isArray(items) ? items : []).filter(function (item) {
+          if (!item || !item.id || seen[item.id] || !ALLOWED_RIGHTS[item.rightsType]) return false;
+          seen[item.id] = true;
+          return nextCollection.indexOf(item.id) === -1;
+        }).slice(0, Math.max(0, mutationCount));
+        if (!additions.length) {
+          toast('No new metadata-supported match was available for that role. The rights-verified results are still open for review.', 'info');
+          announce('No new rights-verified match was available for the requested visual-set role');
+          return 0;
+        }
+        var undoSnapshot = createLatestPaletteUndoSnapshot(latest);
+        if (nextCollection.length && !undoSnapshot) {
+          toast('Sourcebook could not create a dependable undo snapshot, so it left your palette unchanged. The rights-verified results remain open for review.', 'info');
+          announce('Role search results are ready; automatic placement paused because undo was unavailable');
+          return 0;
+        }
+        var roleLabel = (USAGE_INTENTS[roleId] || USAGE_INTENTS.flexible).shortLabel.toLowerCase();
+        if (requestedMode === 'replace') {
+          var replacementResult = applyPaletteRoleReplacements(nextCollection, requestedReplaceIds.slice(0, additions.length), additions.map(function (item) { return item.id; }));
+          if (!replacementResult.changed) {
+            toast('The replacement opportunity changed while Sourcebook searched. Your palette was left untouched.', 'info');
+            announce('Role search results are ready; no safe replacement remained');
+            return 0;
+          }
+          nextCollection = replacementResult.collection;
+          replacementResult.swaps.forEach(function (swap, index) {
+            delete nextAssets[swap.removedId];
+            delete nextPreparation[swap.removedId];
+            var item = additions[index];
+            if (item.live) nextAssets[item.id] = portableAsset(item);
+            nextPreparation[item.id] = Object.assign({}, normalizedPreparation(nextPreparation[item.id]), {
+              usageIntent: roleId,
+              usagePlan: planId
+            });
+          });
+          trustCurrentSavedSmkAssets(nextAssets);
+          patch({
+            collection: nextCollection,
+            savedAssets: nextAssets,
+            preparation: nextPreparation,
+            paletteUndo: undoSnapshot
+          });
+          var removedIds = replacementResult.swaps.map(function (swap) { return swap.removedId; });
+          setCheckedPaletteIds(function (current) {
+            return current.filter(function (id) { return removedIds.indexOf(id) === -1; });
+          });
+          toast('Replaced ' + replacementResult.changed + ' overrepresented asset' + (replacementResult.changed === 1 ? '' : 's') + ' with rights-verified ' + roleLabel + ' material. The palette stays at ' + nextCollection.length + ' assets, and undo is available.', 'success');
+          announce('Replaced ' + replacementResult.changed + ' overrepresented assets for the ' + roleLabel + ' role without growing the palette');
+          return replacementResult.changed;
+        }
+        additions.forEach(function (item) {
+          nextCollection.push(item.id);
+          if (item.live) nextAssets[item.id] = portableAsset(item);
+          nextPreparation[item.id] = Object.assign({}, normalizedPreparation(nextPreparation[item.id]), {
+            usageIntent: roleId,
+            usagePlan: planId
+          });
+        });
+        trustCurrentSavedSmkAssets(nextAssets);
+        patch({
+          collection: nextCollection,
+          savedAssets: nextAssets,
+          preparation: nextPreparation,
+          paletteUndo: undoSnapshot
+        });
+        toast('Added ' + additions.length + ' rights-verified ' + roleLabel + ' asset' + (additions.length === 1 ? '' : 's') + ' within your ' + targetSize + '-asset goal. Undo is available.', 'success');
+        announce('Added ' + additions.length + ' rights-verified assets for the ' + roleLabel + ' role within the palette goal');
+        return additions.length;
+      }
+
       function replacePaletteWithItems(items, message) {
         var eligible = (Array.isArray(items) ? items : []).filter(function (item) {
           return item && ALLOWED_RIGHTS[item.rightsType];
@@ -5670,7 +6872,7 @@
 
       function requestDiscoveryPlan(value, requestedKind) {
         var fallback = buildDiscoveryPlan(value, requestedKind, paletteTarget);
-        var prompt = 'You are Sourcebook, a visual-source research assistant. Turn the user request into 3 short, distinct collection-search queries for Wikimedia Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, The Met, Art Institute of Chicago, Cleveland Museum of Art, the Library of Congress, Wellcome Collection, Getty Museum Open Content, and Openverse. Focus on concrete visual vocabulary, medium, era, subject, and printable usefulness. Do not guess licensing; the app enforces rights separately. The user wants exactly ' + fallback.paletteSize + ' recommendations. Return ONLY JSON: {"queries":["...","...","..."],"paletteSize":' + fallback.paletteSize + ',"reason":"one short sentence"}. User request: ' + JSON.stringify(fallback.query) + '. Material type: ' + JSON.stringify(fallback.kind) + '.';
+        var prompt = 'You are Sourcebook, a visual-source research assistant. Turn the user request into 3 short, distinct collection-search queries for Wikimedia Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum of Art, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse. Focus on concrete visual vocabulary, medium, era, subject, and printable usefulness. Do not guess licensing; the app enforces rights separately. The user wants exactly ' + fallback.paletteSize + ' recommendations. Return ONLY JSON: {"queries":["...","...","..."],"paletteSize":' + fallback.paletteSize + ',"reason":"one short sentence"}. User request: ' + JSON.stringify(fallback.query) + '. Material type: ' + JSON.stringify(fallback.kind) + '.';
         var request;
         try {
           if (typeof ctx.generateText === 'function') request = ctx.generateText(prompt, { jsonMode: true });
@@ -5743,7 +6945,7 @@
           : 'Live search unavailable. Showing curated Sourcebook results.');
       }
 
-      function runLiveSearch(value, requestedKind, shouldAutoPick, providerOverride) {
+      function runLiveSearch(value, requestedKind, shouldAutoPick, providerOverride, roleFillRequest) {
         var next = String(value || '').trim();
         var activeProvider = providerOverride || provider;
         var liveRequest = beginLiveRequest();
@@ -5786,6 +6988,7 @@
         setCanLoadMore(false);
         setLiveMessage(capability.textAi ? 'Gemini is refining the search plan; Sourcebook independently verifies every result\u2019s rights.' : 'No-AI mode: searching public collections, checking item-level rights, and ranking catalog metadata...');
         requestDiscoveryPlan(next, requestedKind || kind).then(function (plan) {
+          if (roleFillRequest) plan = Object.assign({}, plan, { paletteSize: roleFillRequest.count });
           return searchOpenSources(next, {
             kind: requestedKind || kind, provider: activeProvider, rightsScope: rightsScope, queries: plan.queries,
             limit: 24, resultLimit: 48, page: 0, onProgress: providerProgressForBatch(0), signal: liveRequest.signal,
@@ -5832,7 +7035,9 @@
               : 'No result was auto-selected because none had matching catalog metadata.') + (matchQuality.broad ? ' ' + matchQuality.broad + ' broad result' + (matchQuality.broad === 1 ? ' remains' : 's remain') + ' available for exploration.' : ''));
             setDiscoveryNote(nextDiscoveryNote);
             persistLiveBoard(decorated, { query: next, kind: requestedKind || kind, provider: activeProvider, page: 0, canLoadMore: canSearchMore, discoveryPlan: result.plan, discoveryNote: nextDiscoveryNote });
-            if (shouldAutoPick && autoCurate && curation.items.length) {
+            if (roleFillRequest) {
+              addRoleFillItemsToPalette(curation.items, roleFillRequest);
+            } else if (shouldAutoPick && autoCurate && curation.items.length) {
               addItemsToPalette(curation.items, 'Sourcebook selected ' + curation.items.length + ' verified matches and added them to your palette.');
             }
             announce(result.items.length + ' verified live Sourcebook results found; ' + curation.items.length + ' strongest matches selected');
@@ -5935,6 +7140,33 @@
         var next = String(value == null ? draft : value).trim();
         var nextKind = ['All', 'Maps', 'Textures', 'Patterns', 'Blueprints', 'Science', 'Botanical', 'Archival', 'Visual assets'].indexOf(settings.kind) !== -1 ? settings.kind : kind;
         var nextProvider = providerSupportsLiveSearch(settings.provider) ? settings.provider : provider;
+        var roleFill = null;
+        if (settings.roleFill && typeof settings.roleFill === 'object') {
+          var requestedRole = normalizedUsageIntent(settings.roleFill.roleId);
+          var requestedCount = Number(settings.roleFill.count || 1);
+          if (!isFinite(requestedCount)) requestedCount = 1;
+          var normalizedRequestedCount = Math.max(1, Math.min(PALETTE_MAX_ASSETS, Math.round(requestedCount)));
+          var requestedTargetSize = Number(settings.roleFill.targetSize);
+          if (!isFinite(requestedTargetSize)) requestedTargetSize = normalizePaletteTarget(paletteTarget);
+          requestedTargetSize = Math.max(1, Math.min(PALETTE_MAX_ASSETS, Math.round(requestedTargetSize)));
+          var seenReplaceIds = {};
+          var requestedReplaceIds = (Array.isArray(settings.roleFill.replaceIds) ? settings.roleFill.replaceIds : []).map(function (id) {
+            return String(id || '').trim();
+          }).filter(function (id) {
+            if (!id || seenReplaceIds[id]) return false;
+            seenReplaceIds[id] = true;
+            return true;
+          }).slice(0, normalizedRequestedCount);
+          if (requestedRole !== 'auto') {
+            roleFill = {
+              roleId: requestedRole,
+              planId: normalizedUsagePlan(settings.roleFill.planId),
+              count: normalizedRequestedCount,
+              targetSize: requestedTargetSize,
+              replaceIds: requestedReplaceIds
+            };
+          }
+        }
         var nextHistory = normalizeSearchHistory([next].concat(recentSearches));
         setDraft(next);
         setQuery(next);
@@ -5947,7 +7179,7 @@
         patch({ query: next, kind: nextKind, provider: nextProvider, searchHistory: nextHistory });
         var count = searchMaterials(next, nextKind, nextProvider, rightsScope).length;
         announce(count + ' curated Sourcebook results for ' + (next || 'all materials'));
-        runLiveSearch(next, nextKind, true, nextProvider);
+        runLiveSearch(next, nextKind, true, nextProvider, roleFill);
       }
 
       function findSimilarAcrossCollections(item) {
@@ -5980,6 +7212,59 @@
         submitSearch(sharperQuery, { kind: item.kind, provider: 'All' });
         toast('Searching public collections for a sharper alternative to \u201c' + item.title + '\u201d.', 'info');
         announce('Searching for a higher-resolution alternative to ' + item.title);
+      }
+
+      function fillPaletteRoleGap(group) {
+        if (!group || !group.missing || searchActive) return;
+        var latest = latestPaletteStateRef.current || { collection: [], preparation: {}, selectedItems: [] };
+        if (latest.savedSmkVerificationStatus === 'loading' || latest.savedSmkVerificationStatus === 'error') {
+          toast(latest.savedSmkVerificationStatus === 'error'
+            ? 'Retry the saved-source rights check before filling another visual-set role.'
+            : 'Wait for the saved-source rights check to finish before filling another visual-set role.', 'info');
+          announce('Saved-source verification must be ready before role-gap search');
+          return;
+        }
+        var action = planPaletteRoleGapAction(
+          latest.selectedItems || selectedItems,
+          latest.preparation || preparation,
+          paletteRoleBoard.planId,
+          group.id,
+          paletteRoleBoard.goal,
+          latest.checkedPaletteIds || checkedPaletteIds
+        );
+        if (action.mode === 'blocked') {
+          toast('Sourcebook is protecting every overrepresented asset because it is manually assigned, prepared, or selected. Choose an asset to remove or clear its preparation before trying again.', 'info');
+          announce('Role replacement is blocked because all overrepresented assets are protected');
+          return;
+        }
+        if (action.mode === 'covered' || !action.count) {
+          toast('That visual-set role is already covered.', 'info');
+          announce('Requested visual-set role is already covered');
+          return;
+        }
+        var roleQuery = buildPaletteRoleSearch(group.id, latest.selectedItems || selectedItems, paletteRoleBoard.planId, query);
+        if (!roleQuery) return;
+        roleFillFocusPendingRef.current = true;
+        setShowingCollection(false);
+        setBoardFilter('');
+        submitSearch(roleQuery, {
+          kind: 'All',
+          provider: 'All',
+          roleFill: {
+            roleId: group.id,
+            planId: paletteRoleBoard.planId,
+            count: action.count,
+            targetSize: action.goal,
+            replaceIds: action.replaceIds
+          }
+        });
+        if (action.mode === 'replace') {
+          toast('Finding ' + action.count + ' rights-verified ' + group.shortLabel.toLowerCase() + ' asset' + (action.count === 1 ? '' : 's') + ' to replace overrepresented material without growing your ' + action.goal + '-asset palette. Undo will be available.', 'info');
+          announce('Searching public collections for a reversible ' + group.shortLabel.toLowerCase() + ' role replacement');
+        } else {
+          toast('Finding and adding up to ' + action.count + ' rights-verified ' + group.shortLabel.toLowerCase() + ' asset' + (action.count === 1 ? '' : 's') + ' within your ' + action.goal + '-asset goal.', 'info');
+          announce('Searching public collections to fill the ' + group.shortLabel.toLowerCase() + ' visual-set role within the palette goal');
+        }
       }
 
       function clearSearchHistory() {
@@ -6499,6 +7784,7 @@
             var importMessage = added
               ? 'Imported ' + added + ' new verified source' + (added === 1 ? '' : 's') + ' into your palette.'
               : 'Updated the matching verified sources already in your palette.';
+            if (imported.assets.some(function (item) { return item.provider === RIJKS_PROVIDER; })) importMessage += ' Every Rijksmuseum image was rechecked against its current EDM record before import.';
             if (imported.assets.some(function (item) { return item.provider === SMK_PROVIDER; })) importMessage += ' Every SMK Open record was checked against the current SMK API before import.';
             if (skipped) importMessage += ' ' + skipped + ' additional source' + (skipped === 1 ? ' was' : 's were') + ' skipped because the palette limit is ' + PALETTE_MAX_ASSETS + ' assets.';
             toast(importMessage, 'success');
@@ -6566,7 +7852,8 @@
       }).filter(Boolean);
       var paletteAccessibilitySummary = summarizeAccessibilityReview(selectedItems, preparation);
       var paletteUsageSummary = summarizeUsageIntents(selectedItems, preparation);
-      var paletteRoleBoard = buildPaletteRoleBoard(selectedItems, preparation);
+      var paletteRoleBoard = buildPaletteRoleBoard(selectedItems, preparation, '', paletteTarget);
+      latestPaletteStateRef.current.paletteRolePlanId = paletteRoleBoard.planId;
       var nextAccessibilityReviewItem = selectedItems.filter(function (item) {
         return accessibilityReviewStatus(item, preparation[item.id]).status === 'suggested';
       })[0] || null;
@@ -6575,6 +7862,7 @@
       var checkedPaletteItems = selectedItems.filter(function (item) {
         return checkedPaletteIds.indexOf(item.id) !== -1;
       });
+      latestPaletteStateRef.current.selectedItems = selectedItems;
       var exportItems = checkedPaletteItems.length ? checkedPaletteItems : selectedItems;
       var outputPreflightSummary = summarizePalettePreflight(exportItems, preparation, measuredDimensions);
       var outputPreflightRows = palettePreflightRows(exportItems, preparation, measuredDimensions);
@@ -6923,7 +8211,7 @@
               ),
               readiness.width
                 ? h('div', { className: 'mt-3 space-y-1 text-[11px] font-bold leading-relaxed text-[#50645c]' },
-                    h('p', null, readiness.width + ' x ' + readiness.height + ' px - ' + (readiness.dimensionSource === 'catalog' ? 'catalog dimensions' : 'loaded preview measurement')),
+                    h('p', null, readiness.width + ' x ' + readiness.height + ' px - ' + (readiness.dimensionSource === 'iiif-prepared' ? 'verified IIIF prepared-rendition dimensions' : (readiness.dimensionSource === 'catalog' ? 'catalog dimensions' : 'loaded preview measurement'))),
                     h('p', null, readiness.print300),
                     h('p', null, readiness.print150),
                     activePrep.mode !== 'fit' && h('p', null, 'Prepared output: ' + readiness.outputLabel + (readiness.upscale > 1.05 ? ' - ' + readiness.upscale + 'x enlargement' : ' - no material enlargement'))
@@ -7134,7 +8422,7 @@
               h('div', null,
                 h('h1', { className: 'font-serif text-3xl md:text-4xl font-black tracking-tight text-[#17372e]' }, 'Sourcebook'),
                 h('p', { className: 'mt-1 text-sm text-[#426157]' }, 'Describe what you need. Sourcebook searches large public collections, checks item-level rights, and selects a strong starter palette for educational materials or artwork.'),
-                h('p', { className: 'mt-1 text-[11px] font-bold text-[#557168]' }, 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.')
+                h('p', { className: 'mt-1 text-[11px] font-bold text-[#557168]' }, 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, Rijksmuseum Open Data, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.')
               )
             ),
             h('div', { className: 'mt-4 rounded-2xl border border-[#a7c0b5] bg-white/75 px-3.5 py-3 shadow-sm', role: 'status', 'data-sourcebook-ai-mode': capability.mode },
@@ -7229,7 +8517,7 @@
         ),
         query && liveStatus !== 'idle' && h('div', {
           className: 'sb-no-print mb-4 flex items-center gap-3 rounded-xl border px-3 py-2 text-xs font-bold ' + (liveStatus === 'error' ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950'),
-          role: 'status', 'aria-live': 'polite', 'data-sourcebook-live-status': liveStatus
+          ref: liveStatusRef, tabIndex: -1, role: 'status', 'aria-live': 'polite', 'data-sourcebook-live-status': liveStatus
         },
           h('span', { className: 'min-w-0 flex-1' }, liveMessage || 'Searching public collections and checking item-level rights metadata…'),
           searchActive && h('button', { type: 'button', onClick: function () { stopLiveRequest(); }, className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/70 px-3 py-2 text-[11px] font-black', 'aria-label': 'Stop the active Sourcebook search' }, 'Stop search')
@@ -7731,10 +9019,33 @@
                   h('span', {
                     className: 'self-start rounded-full border px-3 py-1.5 text-[10px] font-black ' + (paletteRoleBoard.ready ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900'),
                     'data-sourcebook-role-coverage': paletteRoleBoard.coveragePercent
-                  }, paletteRoleBoard.coveragePercent + '% covered \\u00b7 ' + paletteRoleBoard.planLabel)
+                  }, paletteRoleBoard.coveragePercent + '% covered \u00b7 ' + paletteRoleBoard.total + '/' + paletteRoleBoard.goal + ' assets \u00b7 ' + paletteRoleBoard.planLabel)
                 ),
                 h('div', { className: 'grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': paletteRoleBoard.planLabel + ' visual roles' },
                   paletteRoleBoard.groups.map(function (group) {
+                    var roleAction = planPaletteRoleGapAction(
+                      selectedItems,
+                      preparation,
+                      paletteRoleBoard.planId,
+                      group.id,
+                      paletteRoleBoard.goal,
+                      checkedPaletteIds
+                    );
+                    var roleFillCount = roleAction.count;
+                    var roleFillVerificationBlocked = savedSmkVerificationStatus === 'loading' || savedSmkVerificationStatus === 'error';
+                    var roleFillDisabled = searchActive || roleFillCount < 1 || roleFillVerificationBlocked || roleAction.mode === 'blocked' || roleAction.mode === 'covered';
+                    var roleFillLabel = roleFillVerificationBlocked
+                      ? 'Verify saved sources first'
+                      : (searchActive
+                        ? 'Search in progress'
+                        : (roleAction.mode === 'blocked'
+                          ? 'Choose what to remove'
+                          : (roleAction.mode === 'replace' ? 'Find & replace ' + roleFillCount : 'Find & add ' + roleFillCount)));
+                    var replacementRoleLabels = roleAction.replacements.map(function (entry) {
+                      return entry.roleLabel;
+                    }).filter(function (label, index, all) {
+                      return all.indexOf(label) === index;
+                    }).join(', ');
                     return h('article', {
                       key: group.id,
                       role: 'listitem',
@@ -7762,11 +9073,34 @@
                           );
                         }),
                         group.missing > 0 && h('div', {
-                          className: 'col-span-2 flex min-h-[72px] flex-col items-center justify-center rounded-xl border border-dashed border-amber-400 bg-white px-2 text-center',
-                          'data-sourcebook-role-gap': group.id
+                          className: 'col-span-2 flex min-h-[72px] flex-col items-center justify-center rounded-xl border border-dashed border-amber-400 bg-white px-2 py-2 text-center',
+                          'data-sourcebook-role-gap': group.id,
+                          'data-sourcebook-role-action': roleAction.mode
                         },
                           h('span', { className: 'text-[10px] font-black text-amber-900' }, 'Needs ' + group.missing + ' ' + group.shortLabel.toLowerCase()),
-                          h('span', { className: 'mt-1 text-[8px] font-bold uppercase tracking-[.1em] text-amber-700' }, 'Suggested gap')
+                          h('span', { className: 'mt-1 text-[8px] font-bold uppercase tracking-[.1em] text-amber-700' }, roleAction.mode === 'replace' ? 'Rebalance opportunity' : 'Suggested gap'),
+                          h('button', {
+                            type: 'button',
+                            disabled: roleFillDisabled,
+                            onClick: function () { fillPaletteRoleGap(group); },
+                            className: 'mt-2 min-h-[36px] rounded-lg border border-amber-300 bg-amber-100 px-3 py-1.5 text-[9px] font-black text-amber-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-55',
+                            'data-sourcebook-fill-role': group.id,
+                            'aria-label': roleFillVerificationBlocked
+                              ? 'Verify saved source records before filling this role'
+                              : (roleAction.mode === 'blocked'
+                                ? 'Choose an asset to remove; Sourcebook protects manually assigned, prepared, and selected assets'
+                                : (roleAction.mode === 'replace'
+                                  ? 'Find and replace ' + roleFillCount + ' overrepresented automatic or Sourcebook-planned assets with rights-verified assets for the ' + group.label + ' role; undo will be available'
+                                  : 'Find and add up to ' + roleFillCount + ' rights-verified assets for the ' + group.label + ' role within the palette goal'))
+                          }, roleFillLabel),
+                          h('span', {
+                            className: 'mt-1.5 text-[8px] font-bold leading-snug text-amber-800',
+                            'data-sourcebook-role-action-detail': roleAction.mode
+                          }, roleAction.mode === 'replace'
+                            ? 'Keeps ' + roleAction.goal + ' assets \u00b7 replaces ' + roleFillCount + (replacementRoleLabels ? ' from ' + replacementRoleLabels : '') + ' \u00b7 undo available'
+                            : (roleAction.mode === 'blocked'
+                              ? 'Manual, prepared, and selected assets stay protected.'
+                              : 'Adds only within the ' + roleAction.goal + '-asset goal.'))
                         )
                       ),
                       group.items.length > 4 && h('p', { className: 'mt-2 text-[9px] font-black text-violet-700' }, '+' + (group.items.length - 4) + ' more in this role')
@@ -7775,7 +9109,11 @@
                 ),
                 h('div', { className: 'flex flex-col gap-1 border-t border-violet-100 bg-[#f7f4ff] px-4 py-3 text-[10px] font-bold text-violet-900 sm:flex-row sm:items-center sm:justify-between' },
                   h('span', { 'data-sourcebook-role-gaps': paletteRoleBoard.missing.length }, paletteRoleBoard.ready ? 'All planned roles covered' : 'Suggested gaps: ' + paletteRoleBoard.missingLabel),
-                  h('span', null, 'Advisory only - missing roles never block output.')
+                  h('div', { className: 'flex flex-col gap-0.5 text-left sm:text-right' },
+                    h('span', null, 'Advisory only - missing roles never block output.'),
+                    h('span', { 'data-sourcebook-role-balance-behavior': paletteRoleBoard.total < paletteRoleBoard.goal ? 'add' : 'replace' }, 'Below the goal, Sourcebook adds. At the goal, it replaces only unprepared automatic or Sourcebook-planned assets and provides undo.'),
+                    h('span', { 'data-sourcebook-role-search-mode': capability.textAi ? 'gemini' : 'metadata' }, 'Gap search uses ' + (capability.textAi ? 'Gemini-assisted curation' : 'deterministic metadata ranking') + '; deterministic rights checks stay independent.')
+                  )
                 )
               )
             ),

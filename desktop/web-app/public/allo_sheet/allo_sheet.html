@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:* http://localhost:* https:; frame-ancestors 'self' https://alloflow-cdn.pages.dev;">
   <title>AlloSheet — Agentic Educator Spreadsheet</title>
-  <link rel="stylesheet" href="allo_sheet.css?v=9">
+  <link rel="stylesheet" href="allo_sheet.css?v=11">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to workbook</a>
@@ -440,6 +440,19 @@ Case 2</textarea>
                 Active case
                 <select id="casebookCaseSelect"></select>
               </label>
+              <form id="casebookCaseContextForm" class="casebook-context-form" novalidate>
+                <label>
+                  <span id="casebookCaseContextLabel">Case description / stable context (optional)</span>
+                  <textarea id="casebookCaseContext" rows="4" maxlength="1200" aria-describedby="casebookCaseContextHint casebookCaseContextStatus casebookCaseContextError"></textarea>
+                </label>
+                <p id="casebookCaseContextHint" class="field-hint">Use this for stable setup or background. Changing it does not rewrite earlier observations, and it is not included in agent reflection unless you explicitly select the Cases table.</p>
+                <div class="button-row casebook-context-actions">
+                  <button id="saveCasebookCaseContextButton" type="submit" class="quiet-button" disabled>Save case context</button>
+                  <button id="resetCasebookCaseContextButton" type="button" class="quiet-button" disabled>Undo context edits</button>
+                </div>
+                <p id="casebookCaseContextStatus" class="field-hint" role="status" aria-live="polite" aria-atomic="true"></p>
+                <p id="casebookCaseContextError" class="form-error" role="alert" aria-atomic="true" tabindex="-1" hidden></p>
+              </form>
               <div class="casebook-inline-add">
                 <label>
                   Add another case
@@ -452,6 +465,7 @@ Case 2</textarea>
 
             <section class="casebook-card" aria-labelledby="casebookCaptureTitle">
               <h3 id="casebookCaptureTitle">Log an observation</h3>
+              <p id="casebookLatestObservationSummary" class="field-hint"></p>
               <form id="casebookCaptureForm" novalidate>
                 <label>
                   Observed date and time
@@ -464,6 +478,7 @@ Case 2</textarea>
                 <div class="button-row">
                   <button id="casebookVoiceButton" type="button" class="quiet-button" aria-pressed="false" aria-controls="casebookNarrative" aria-describedby="casebookVoiceDisclosure casebookCaptureStatus casebookCaptureError">Dictate observation</button>
                   <button id="casebookDraftButton" type="submit">Create review draft</button>
+                  <button id="casebookStartAnotherButton" type="button" class="quiet-button" disabled>Start another observation</button>
                 </div>
                 <p id="casebookVoiceDisclosure" class="field-hint">Dictation never saves automatically. Availability and audio processing depend on the voice engine configured in this browser; type instead when policy requires on-device-only capture.</p>
                 <p id="casebookCaptureStatus" class="field-hint" role="status" aria-live="polite" aria-atomic="true"></p>
@@ -478,15 +493,18 @@ Case 2</textarea>
             <p>Check every value. The original narrative is preserved as evidence; your interpretation stays in a separate field.</p>
             <dl class="casebook-draft-context" aria-label="Draft target and observation time">
               <div>
-                <dt>Target</dt>
-                <dd id="casebookDraftCaseLabel"></dd>
+                <dt><label id="casebookDraftCaseLabel" for="casebookDraftCaseSelect">Target case</label></dt>
+                <dd>
+                  <select id="casebookDraftCaseSelect" aria-describedby="casebookDraftCaseContext casebookDraftTargetHint casebookDraftError"></select>
+                  <p id="casebookDraftCaseContext" class="field-hint"></p>
+                </dd>
               </div>
               <div>
                 <dt>Observed</dt>
                 <dd><time id="casebookDraftObservedAt"></time></dd>
               </div>
             </dl>
-            <p class="field-hint">Discard this draft before changing its case or observation time.</p>
+            <p id="casebookDraftTargetHint" class="field-hint">Confirm the target case, especially when a case name was spoken or typed. Discard this draft before changing its observation time.</p>
             <div id="casebookDraftFields" class="casebook-draft-fields"></div>
             <label>
               Qualitative note (recorded evidence)
@@ -511,9 +529,18 @@ Case 2</textarea>
                   <h3 id="casebookTimelineTitle">Observation timeline</h3>
                   <p id="casebookTimelineSummary"></p>
                 </div>
-                <button id="prepareCasebookAgentButton" type="button" class="quiet-button" disabled>Prepare agent reflection</button>
+                <div class="casebook-agent-controls">
+                  <label class="casebook-agent-goal" for="casebookAgentGoal">
+                    Agent help goal
+                    <select id="casebookAgentGoal" aria-describedby="casebookAgentGoalHint">
+                      <option value="brainstorm">Brainstorm next observations</option>
+                      <option value="feedback">Feedback on latest entry</option>
+                    </select>
+                  </label>
+                  <button id="prepareCasebookAgentButton" type="button" class="quiet-button" aria-describedby="casebookAgentGoalHint" disabled>Prepare agent help</button>
+                </div>
               </div>
-              <p class="field-hint">Preparing an agent reflection selects up to three recent entries and moves them to the existing assistant review. Nothing is sent until you inspect the rows and approve that request.</p>
+              <p id="casebookAgentGoalHint" class="field-hint" role="status" aria-live="polite" aria-atomic="true">Brainstorming prepares recent entries for the existing assistant review. Nothing is sent until you inspect the rows, give consent, and approve the request.</p>
               <ol id="casebookTimelineList" class="casebook-timeline-list"></ol>
             </section>
 
@@ -523,6 +550,40 @@ Case 2</textarea>
               <ul id="casebookReflectionList" class="casebook-reflection-list"></ul>
             </section>
           </div>
+
+          <section class="casebook-card casebook-history-card" aria-labelledby="casebookHistoryTitle">
+            <div class="section-heading casebook-history-heading">
+              <div>
+                <h3 id="casebookHistoryTitle">Follow one parameter over time</h3>
+                <p>Review the recorded values for the selected case in observation order.</p>
+              </div>
+              <label class="casebook-history-picker" for="casebookHistoryParameter">
+                Parameter
+                <select id="casebookHistoryParameter" aria-describedby="casebookHistorySummary casebookHistoryBoundary"></select>
+              </label>
+            </div>
+            <p id="casebookHistorySummary" role="status" aria-live="polite" aria-atomic="true">Choose a parameter to review its recorded history.</p>
+            <p id="casebookHistoryBoundary" class="field-hint">This view reports recorded values only. It does not infer a trend, cause, or missing measurement.</p>
+            <div id="casebookHistoryVisual" class="casebook-history-visual" hidden>
+              <svg id="casebookHistorySvg" viewBox="0 0 800 180" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"></svg>
+              <div id="casebookHistoryScale" class="casebook-history-scale" aria-hidden="true">
+                <span id="casebookHistoryScaleFirst">First</span>
+                <span id="casebookHistoryScaleLatest">Latest</span>
+              </div>
+            </div>
+            <div class="table-scroll casebook-history-table-region" tabindex="0" role="region" aria-label="Parameter history table">
+              <table id="casebookHistoryTable">
+                <caption id="casebookHistoryCaption">Choose a parameter to review its recorded history.</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Observed</th>
+                    <th scope="col">Recorded value</th>
+                  </tr>
+                </thead>
+                <tbody id="casebookHistoryBody"></tbody>
+              </table>
+            </div>
+          </section>
 
           <section class="casebook-card" aria-labelledby="casebookCompareTitle">
             <div class="section-heading">
@@ -640,9 +701,9 @@ Case 2</textarea>
   <script src="allo_sheet_adapter.js?v=9"></script>
   <script src="allo_sheet_analysis.js?v=9"></script>
   <script src="allo_sheet_workspace.js?v=9"></script>
-  <script src="allo_sheet_casebook.js?v=1"></script>
+  <script src="allo_sheet_casebook.js?v=3"></script>
   <script src="../voice_module.js?v=740290f90"></script>
-  <script src="allo_sheet_casebook_ui.js?v=1"></script>
-  <script src="allo_sheet.js?v=9"></script>
+  <script src="allo_sheet_casebook_ui.js?v=3"></script>
+  <script src="allo_sheet.js?v=11"></script>
 </body>
 </html>

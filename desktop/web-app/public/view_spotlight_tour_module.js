@@ -22,7 +22,16 @@
   var Sparkles = _lazyIcon('Sparkles');
   var X = _lazyIcon('X');
 
-  function SpotlightTourView(props) {
+  const SPOTLIGHT_TOUR_ANIMATION_CSS = `
+@keyframes spotlight-tour-glow-ring {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 20px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.9), 0 0 40px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(139, 92, 246, 0.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-spotlight-glow-ring="true"] { animation: none !important; }
+}
+`;
+function SpotlightTourView(props) {
   var t = props.t;
   var debugLog = props.debugLog;
   var tourRect = props.tourRect;
@@ -177,7 +186,7 @@
   var popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), preferredLeft));
   var estimatedHeight = Math.min(400, Math.max(0, viewportHeight - 32));
   var popupTop = Math.max(16, Math.min(Math.max(16, viewportHeight - estimatedHeight - 16), tourRect.top));
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, SPOTLIGHT_TOUR_ANIMATION_CSS), /*#__PURE__*/React.createElement("div", {
     "data-help-ignore": "true",
     className: "fixed inset-0 z-[10998] pointer-events-none bg-black/5",
     role: "presentation",
@@ -341,6 +350,7 @@
     d: "M12 21l-12-18h24z"
   }))), /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
+    "data-spotlight-glow-ring": "true",
     className: "fixed pointer-events-none z-[10999] motion-reduce:!animate-none",
     style: {
       top: tourRect.top - 6,
@@ -348,7 +358,7 @@
       width: tourRect.width + 12,
       height: tourRect.height + 12,
       borderRadius: '12px',
-      animation: 'spotlightGlowRing 2s ease-in-out infinite',
+      animation: 'spotlight-tour-glow-ring 2s ease-in-out infinite',
       boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(139, 92, 246, 0.1)'
     }
   })));

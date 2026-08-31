@@ -36,6 +36,12 @@ function underhood(extra) {
   return renderTool(ID, { autoRepair: Object.assign({ view: 'underhood' }, extra || {}) });
 }
 
+function hostFor(html) {
+  const host = document.createElement('div');
+  host.innerHTML = html;
+  return host;
+}
+
 beforeEach(() => {
   resetStemLab();
   loadTool(FILE, ID);
@@ -122,6 +128,41 @@ describe('under-hood tour — content lives in the accessible DOM', () => {
       'Tilt view down', 'Zoom in', 'Zoom out', 'Reset the view']) {
       expect(html, 'missing camera control: ' + label).toContain(label);
     }
+  });
+
+  it('offers explicit focus and whole-bay camera controls for a selected part', () => {
+    const host = hostFor(underhood({ uhSel: 'fusebox', uh3dStatus: 'ready' }));
+    const focus = host.querySelector('[data-ar-bay-action="focus-selected"]');
+    const wholeBay = host.querySelector('[data-ar-bay-action="return-scene"]');
+
+    expect(focus).toBeTruthy();
+    expect(focus.getAttribute('aria-label')).toBe('Focus view on Under-hood fuse box');
+    expect(wholeBay).toBeTruthy();
+    expect(wholeBay.getAttribute('aria-label')).toBe('Return to the whole engine bay');
+    expect(host.querySelector('.ar-bay-viewport').getAttribute('aria-label'))
+      .toContain('F focuses the selected part, zero returns to the whole bay');
+  });
+
+  it('keeps fuse-box and dipstick service actions in the accessible DOM', () => {
+    const closedFuse = hostFor(underhood({ uhSel: 'fusebox' }));
+    const closedFusePanel = closedFuse.querySelector('[data-ar-service-inspection="fusebox"]');
+    const closedFuseAction = closedFuse.querySelector('[data-ar-inspection-action="fusebox"]');
+    expect(closedFusePanel.dataset.arInspectionState).toBe('closed');
+    expect(closedFuseAction.getAttribute('aria-pressed')).toBe('false');
+    expect(closedFuseAction.getAttribute('aria-label')).toBe('Open the under-hood fuse box');
+
+    const openFuse = hostFor(underhood({ uhSel: 'fusebox', uhOpenPart: 'fusebox' }));
+    expect(openFuse.querySelector('[data-ar-service-inspection="fusebox"]')
+      .dataset.arInspectionState).toBe('open');
+    expect(openFuse.querySelector('[data-ar-inspection-action="fusebox"]')
+      .getAttribute('aria-pressed')).toBe('true');
+
+    const pulledStick = hostFor(underhood({ uhSel: 'dipstick', uhOpenPart: 'dipstick' }));
+    expect(pulledStick.querySelector('[data-ar-service-inspection="dipstick"]')
+      .dataset.arInspectionState).toBe('open');
+    expect(pulledStick.querySelector('[data-ar-inspection-action="dipstick"]')
+      .getAttribute('aria-label')).toBe('Return the oil dipstick to its tube');
+    expect(pulledStick.textContent).toContain('MIN/MAX marks');
   });
 
   it('offers a label-everything mode with correct pressed state', () => {

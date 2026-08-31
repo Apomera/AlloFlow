@@ -656,6 +656,76 @@ const d = labToolData.solarSystem || {};
             ]
           };
 
+          function clampSolarDescentProbeValue(probeValue) {
+            var numericValue = Number(probeValue);
+            if (!isFinite(numericValue)) numericValue = 0;
+            return Math.max(0, Math.min(1, numericValue));
+          }
+
+          function getSolarDescentLayerIndex(layers, probeValue) {
+            if (!layers || !layers.length) return -1;
+            var clampedProbeValue = clampSolarDescentProbeValue(probeValue);
+            return Math.min(layers.length - 1, Math.floor(clampedProbeValue * layers.length));
+          }
+
+          // One evidence-based anatomy model feeds both the canvas and the detail cards.
+          // Radii are visual boundaries only; displayed depths are approximate and the
+          // cutaway explicitly discloses that it is not to scale.
+          function getSolarInteriorLayers(planetKey) {
+            if (planetKey === 'Mercury') return [
+              { r: 1.0, color: '#8a7060', label: __alloT('stem.solarsystem.crust_5', 'Crust'), thick: '~35 km', desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered_f', 'Thin silicate crust, heavily cratered from billions of years of impacts'), icon: '\uD83E\uDEA8' },
+              { r: 0.985, color: '#6a5040', label: __alloT('stem.solarsystem.mantle_3', 'Mantle'), thick: '~600 km', desc: __alloT('stem.solarsystem.silicate_rock_mantle_unusually_thin_co', 'Silicate rock mantle — unusually thin compared with Mercury\'s core'), icon: '\uD83C\uDF0B' },
+              { r: 0.76, color: '#f0c040', label: __alloT('stem.solarsystem.iron_core', 'Iron Core'), thick: '~1,850 km radius', desc: __alloT('stem.solarsystem.enormous_iron_core_makes_up_85_of_the_', 'Enormous iron-rich core makes up most of the planet\'s radius'), icon: '\u2B50', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+            ];
+            if (planetKey === 'Venus') return [
+              { r: 1.0, color: '#c9a050', label: __alloT('stem.solarsystem.volcanic_crust', 'Volcanic Crust'), thick: '~30 km', desc: __alloT('stem.solarsystem.basaltic_surface_1_600_volcanoes_but_n', 'Basaltic surface with abundant volcanoes but no Earth-like plate system'), icon: '\uD83C\uDF0B' },
+              { r: 0.985, color: '#a07030', label: __alloT('stem.solarsystem.mantle_4', 'Mantle'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.hot_silicate_rock_may_have_periodic_gl', 'Hot silicate rock; interior structure is inferred from gravity and planetary models'), icon: '\uD83D\uDD25', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.50, color: '#e0b040', label: __alloT('stem.solarsystem.core_3', 'Core'), thick: '~3,000 km radius', desc: __alloT('stem.solarsystem.iron_nickel_core_possibly_liquid_but_n', 'Iron-nickel core, probably at least partly liquid; Venus has no internally generated global magnetic field'), icon: '\uD83E\uDDF2', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+            ];
+            if (planetKey === 'Earth') return [
+              { r: 1.0, color: '#4a8050', label: __alloT('stem.solarsystem.crust_6', 'Crust'), thick: '5–35 km', desc: __alloT('stem.solarsystem.oceanic_crust_thin_dense_basalt_contin', 'Oceanic crust is thin, dense basalt; continental crust is thicker and lighter'), icon: '\uD83C\uDF0D' },
+              { r: 0.995, color: '#c07030', label: __alloT('stem.solarsystem.mantle_5', 'Mantle'), thick: '~2,870 km', desc: __alloT('stem.solarsystem.convecting_rock_drives_plate_tectonics', 'Slowly convecting rock helps drive plate tectonics'), icon: '\uD83C\uDF0B' },
+              { r: 0.55, color: '#d09030', label: __alloT('stem.solarsystem.outer_core_3', 'Outer Core'), thick: '~2,260 km', desc: __alloT('stem.solarsystem.liquid_iron_nickel_convection_here_cre', 'Liquid iron-nickel convection powers Earth\'s magnetic field'), icon: '\uD83E\uDDF2' },
+              { r: 0.191, color: '#f0d060', label: __alloT('stem.solarsystem.inner_core_3', 'Inner Core'), thick: '~1,220 km radius', desc: __alloT('stem.solarsystem.solid_iron_ball_at_5_400_c_as_hot_as_t', 'Solid iron-rich sphere kept solid by immense pressure'), icon: '\u2B50' }
+            ];
+            if (planetKey === 'Mars') return [
+              { r: 1.0, color: '#b04020', label: __alloT('stem.solarsystem.iron_oxide_crust', 'Iron-Oxide Crust'), thick: '~50 km', desc: __alloT('stem.solarsystem.thicker_than_earth_s_crust_iron_oxide_', 'Iron-bearing minerals oxidize at the surface and help give Mars its red color'), icon: '\uD83D\uDD34' },
+              { r: 0.985, color: '#704030', label: __alloT('stem.solarsystem.mantle_6', 'Mantle'), thick: '~1,550 km', desc: __alloT('stem.solarsystem.iron_and_magnesium_rich_silicate_rock_', 'Iron- and magnesium-rich silicate rock'), icon: '\uD83C\uDF0B' },
+              { r: 0.54, color: '#d09040', label: __alloT('stem.solarsystem.liquid_outer_core_mars', 'Liquid Outer Core'), thick: '~1,200 km shell', desc: __alloT('stem.solarsystem.mars_liquid_outer_core_model', 'A liquid iron-rich outer core surrounds the newly detected inner core; why the ancient global dynamo ceased remains modeled'), icon: '\uD83E\uDDF2', modelTag: __alloT('stem.solarsystem.insight_model', 'INSIGHT MODEL') },
+              { r: 0.18, color: '#f2c15c', label: __alloT('stem.solarsystem.solid_inner_core_mars', 'Solid Inner Core'), thick: '~600 km radius', desc: __alloT('stem.solarsystem.mars_solid_inner_core_insight', 'InSight seismic analysis supports a solid inner core about 600 km in radius'), icon: '\u2B50', modelTag: 'INSIGHT 2025' }
+            ];
+            if (planetKey === 'Jupiter') return [
+              { r: 1.0, color: '#d4924f', label: __alloT('stem.solarsystem.cloud_tops_3', 'Cloud Tops'), thick: '~50 km', desc: __alloT('stem.solarsystem.ammonia_ice_crystals_form_the_colored_', 'Ammonia-rich clouds form colored bands and storms'), icon: '\u2601\uFE0F' },
+              { r: 0.985, color: '#b07030', label: __alloT('stem.solarsystem.gaseous_h_3', 'Molecular Hydrogen'), thick: '~21,000 km', desc: __alloT('stem.solarsystem.molecular_hydrogen_gas_deepening_with_', 'Molecular hydrogen becomes denser with depth and pressure'), icon: '\uD83D\uDCA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.68, color: '#a070c0', label: __alloT('stem.solarsystem.metallic_hydrogen', 'Metallic Hydrogen'), thick: '~39,000 km', desc: __alloT('stem.solarsystem.hydrogen_compressed_so_densely_it_cond', 'Hydrogen compressed until it conducts electricity, helping generate Jupiter\'s magnetic field'), icon: '\u26A1', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.18, color: '#e0c040', label: __alloT('stem.solarsystem.rocky_core_6', 'Diffuse Core'), thick: '~10,000 km', desc: __alloT('stem.solarsystem.diffuse_core_of_rock_and_exotic_ices_1', 'A diffuse central region rich in heavier elements, represented schematically'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+            ];
+            if (planetKey === 'Saturn') return [
+              { r: 1.0, color: '#c9a04a', label: __alloT('stem.solarsystem.cloud_tops_4', 'Cloud Tops'), thick: '~50 km', desc: __alloT('stem.solarsystem.golden_ammonia_crystal_clouds_less_tur', 'Golden ammonia-rich cloud bands and storms'), icon: '\u2601\uFE0F' },
+              { r: 0.985, color: '#a08030', label: __alloT('stem.solarsystem.gaseous_h_4', 'Molecular Hydrogen'), thick: '~30,000 km', desc: __alloT('stem.solarsystem.molecular_hydrogen_deepening_under_pre', 'Molecular hydrogen becomes denser under pressure'), icon: '\uD83D\uDCA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.52, color: '#8060b0', label: __alloT('stem.solarsystem.metallic_hydrogen_2', 'Metallic Hydrogen'), thick: '~22,000 km', desc: __alloT('stem.solarsystem.metallic_hydrogen_ocean_saturn_is_so_l', 'Conductive metallic hydrogen helps sustain Saturn\'s magnetic field'), icon: '\u26A1', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.16, color: '#e0b040', label: __alloT('stem.solarsystem.rocky_core_7', 'Diffuse Core'), thick: '~8,000 km', desc: __alloT('stem.solarsystem.dense_ice_rock_core_9_22x_earth_mass', 'A modeled ice-and-rock-rich central region'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+            ];
+            if (planetKey === 'Uranus') return [
+              { r: 1.0, color: '#80d0d0', label: __alloT('stem.solarsystem.methane_atmosphere', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.methane_absorbs_red_light_giving_uranu', 'Methane absorbs red light and contributes to Uranus\'s cyan color'), icon: '\uD83D\uDCA0' },
+              { r: 0.82, color: '#50a0a0', label: __alloT('stem.solarsystem.h_he_envelope_3', 'H\u2082/He Envelope'), thick: '~7,000 km', desc: __alloT('stem.solarsystem.hydrogen_helium_gas_transitioning_to_l', 'Hydrogen-helium envelope transitioning to denser fluid'), icon: '\uD83D\uDCA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.58, color: '#2a5a7a', label: __alloT('stem.solarsystem.superionic_water_ice', 'Hot Ice Mantle'), thick: '~10,000 km', desc: __alloT('stem.solarsystem.uranus_hot_ice_model', 'Models include a hot water-ammonia-rich mantle; experiments suggest carbon may form sinking diamonds at depth'), icon: '\uD83D\uDC8E', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.14, color: '#808060', label: __alloT('stem.solarsystem.rocky_core_8', 'Rocky Core'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.small_silicate_iron_core_about_1x_eart', 'Small silicate-and-iron-rich core represented by interior models'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+            ];
+            if (planetKey === 'Neptune') return [
+              { r: 1.0, color: '#4060c0', label: __alloT('stem.solarsystem.methane_atmosphere_2', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.deepest_blue_in_the_solar_system_winds', 'Methane-rich atmosphere with the solar system\'s fastest measured planetary winds'), icon: '\uD83C\uDF0A' },
+              { r: 0.82, color: '#3050a0', label: __alloT('stem.solarsystem.h_he_envelope_4', 'H\u2082/He Envelope'), thick: '~7,000 km', desc: __alloT('stem.solarsystem.hydrogen_helium_gas_with_extreme_press', 'Hydrogen-helium envelope compressed to extreme pressures'), icon: '\uD83D\uDCA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.58, color: '#1a2060', label: __alloT('stem.solarsystem.superionic_water_diamond_rain', 'Hot Ice Mantle'), thick: '~9,000 km', desc: __alloT('stem.solarsystem.neptune_hot_ice_model', 'Models include a hot water-ammonia-rich mantle; experiments suggest carbon may form sinking diamonds at depth'), icon: '\uD83D\uDC8E', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.16, color: '#606050', label: __alloT('stem.solarsystem.rocky_core_9', 'Rocky Core'), thick: '~4,000 km', desc: __alloT('stem.solarsystem.iron_silicate_core_1_2x_earth_mass_at_', 'Iron-silicate-rich core represented by interior models'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+            ];
+            return [
+              { r: 1.0, color: '#d0c8b0', label: __alloT('stem.solarsystem.nitrogen_ice_2', 'Nitrogen Ice'), thick: '~10 km', desc: __alloT('stem.solarsystem.frozen_n_co_ch_on_the_surface_the_famo', 'Frozen nitrogen, carbon monoxide, and methane cover parts of the surface'), icon: '\u2744\uFE0F' },
+              { r: 0.92, color: '#8090a0', label: __alloT('stem.solarsystem.water_ice_crust_2', 'Water-Ice Crust'), thick: '~300 km', desc: __alloT('stem.solarsystem.rigid_water_ice_bedrock_at_230_c_ice_i', 'Rigid water ice acts as bedrock at Pluto\'s temperatures'), icon: '\uD83E\uDDCA' },
+              { r: 0.65, color: '#4060a0', label: __alloT('stem.solarsystem.subsurface_ocean_2', 'Subsurface Ocean?'), thick: '~100 km', desc: __alloT('stem.solarsystem.scientists_believe_liquid_water_may_ex', 'A buried liquid-water ocean is a plausible but unconfirmed interior model'), icon: '\uD83D\uDCA7', modelTag: __alloT('stem.solarsystem.hypothesis', 'HYPOTHESIS') },
+              { r: 0.50, color: '#605040', label: __alloT('stem.solarsystem.rocky_core_10', 'Rocky Core'), thick: '~850 km', desc: __alloT('stem.solarsystem.silicate_rock_core_makes_up_70_of_plut', 'Silicate-rock-rich core represented by interior models'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+            ];
+          }
+
           // Kepler's laws data — computed after PLANETS array (moved from above)
 
                     // Famous exoplanets for comparison
@@ -1026,10 +1096,10 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos [data-solarsystem-canvas-shell]::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(circle at 50% 46%,transparent 42%,rgba(1,2,8,.18) 78%,rgba(1,2,8,.52) 100%);box-shadow:inset 0 0 54px rgba(37,48,120,.18)}',
               '.solar-cosmos .solar-labels,.solar-cosmos .solar-telemetry,.solar-cosmos .solar-model-note,.solar-cosmos [data-solarsystem-canvas-shell]>button,.solar-cosmos [data-solarsystem-canvas-shell]>.absolute{z-index:4!important}',
               '.solar-cosmos .solar-model-note{position:absolute;top:12px;right:12px;max-width:300px;padding:8px 10px;border:1px solid rgba(165,180,252,.24);border-radius:11px;background:rgba(7,11,28,.76);backdrop-filter:blur(12px);color:#e0e7ff;box-shadow:0 8px 24px rgba(2,6,23,.38);pointer-events:none}',
-              '.solar-cosmos .solar-model-note strong{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#a5f3fc}',
-              '.solar-cosmos .solar-model-note span{display:block;margin-top:3px;font-size:10px;line-height:1.38;color:#cbd5e1}',
+              '.solar-cosmos .solar-model-note strong{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#a5f3fc}',
+              '.solar-cosmos .solar-model-note span{display:block;margin-top:3px;font-size:11px;line-height:1.42;color:#cbd5e1}',
               '.solar-cosmos .solar-model-note .solar-model-layers{margin-top:5px;padding-top:5px;border-top:1px solid rgba(165,180,252,.15);color:#a5f3fc}',
-              '.solar-cosmos .solar-orbit-label--selected::before{content:"TARGET";display:inline-flex;align-items:center;margin:-1px 6px -1px -4px;padding:2px 5px;border-radius:999px;background:#111827;color:#fef08a;font-size:7px;font-weight:900;letter-spacing:.12em;line-height:1}',
+              '.solar-cosmos .solar-orbit-label--selected::before{content:"TARGET";display:inline-flex;align-items:center;margin:-1px 6px -1px -4px;padding:2px 5px;border-radius:999px;background:#111827;color:#fef08a;font-size:8px;font-weight:900;letter-spacing:.12em;line-height:1}',
               '.solar-cosmos .solar-orbit-label--selected{filter:drop-shadow(0 0 7px rgba(250,204,21,.34))}',
               '.solar-cosmos .solar-world-card{position:relative;overflow:hidden;isolation:isolate;min-width:0;width:100%}',
               '.solar-cosmos .solar-world-card::before{content:"";position:absolute;z-index:-1;left:8px;right:8px;top:29px;height:1px;background:linear-gradient(90deg,transparent,rgba(129,140,248,.30),transparent)}',
@@ -1038,15 +1108,16 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-world-thumb::after{content:"";position:absolute;inset:3px 5px 13px 5px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent);filter:blur(1px)}',
               '.solar-cosmos .solar-world-ring{position:absolute;z-index:1;left:0;top:14px;width:36px;height:10px;border:2px solid var(--ring-color);border-radius:50%;transform:rotate(-14deg);box-shadow:0 0 7px var(--planet-glow);pointer-events:none}',
               '.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb{transform:scale(1.12);filter:saturate(1.12)}',
-              '.solar-cosmos .solar-world-kind{display:block;margin-top:2px;font-size:8px;font-weight:800;letter-spacing:.055em;text-transform:uppercase;opacity:.72}',
+              '.solar-cosmos .solar-world-card-name{min-height:25px;line-height:1.2;overflow-wrap:anywhere}',
+              '.solar-cosmos .solar-world-kind{display:block;margin-top:3px;font-size:10px;font-weight:800;letter-spacing:.055em;line-height:1.2;text-transform:uppercase;opacity:.78}',
               '.solar-cosmos .solar-command-primary{display:flex;min-width:0;flex-direction:column;gap:1rem}',
               '.solar-cosmos .solar-world-spotlight{position:relative;isolation:isolate;overflow:hidden;display:flex;flex:1;min-height:430px;flex-direction:column;border:1px solid rgba(129,140,248,.30);border-radius:16px;background:linear-gradient(155deg,#050a1c,#0f172a 56%,#211952);color:#f8fafc;box-shadow:0 18px 42px rgba(2,6,23,.30),inset 0 1px 0 rgba(255,255,255,.05)}',
               '.solar-cosmos .solar-world-spotlight::before{content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;opacity:.72;background:radial-gradient(1px 1px at 7% 16%,#fff,transparent 65%),radial-gradient(1px 1px at 18% 68%,#a5f3fc,transparent 65%),radial-gradient(1.3px 1.3px at 36% 26%,#fde68a,transparent 65%),radial-gradient(1px 1px at 58% 78%,#fff,transparent 65%),radial-gradient(1.2px 1.2px at 79% 18%,#c4b5fd,transparent 65%),radial-gradient(1px 1px at 94% 62%,#fff,transparent 65%)}',
               '.solar-cosmos .solar-world-spotlight::after{content:"";position:absolute;z-index:-1;right:-16%;top:5%;width:72%;height:62%;pointer-events:none;background:radial-gradient(circle,color-mix(in srgb,var(--spotlight-color) 24%,transparent),transparent 68%);filter:blur(9px)}',
               '.solar-cosmos .solar-world-spotlight-header{position:relative;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 16px 0}',
-              '.solar-cosmos .solar-world-spotlight-eyebrow{color:#a5f3fc;font-size:9px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-eyebrow{color:#a5f3fc;font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}',
               '.solar-cosmos .solar-world-spotlight-name{margin-top:3px;color:#fff;font-size:22px;font-weight:950;line-height:1.1;letter-spacing:-.025em;text-shadow:0 0 20px color-mix(in srgb,var(--spotlight-color) 44%,transparent)}',
-              '.solar-cosmos .solar-world-spotlight-kind{flex:0 0 auto;border:1px solid color-mix(in srgb,var(--spotlight-color) 46%,transparent);border-radius:999px;background:color-mix(in srgb,var(--spotlight-color) 13%,rgba(15,23,42,.76));padding:5px 8px;color:#e2e8f0;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-kind{flex:0 0 auto;border:1px solid color-mix(in srgb,var(--spotlight-color) 46%,transparent);border-radius:999px;background:color-mix(in srgb,var(--spotlight-color) 13%,rgba(15,23,42,.76));padding:5px 8px;color:#e2e8f0;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}',
               '.solar-cosmos .solar-world-spotlight-stage{position:relative;z-index:1;flex:1;min-height:260px;overflow:hidden;margin:10px 12px 0;border:1px solid rgba(165,180,252,.15);border-radius:14px;background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--spotlight-color) 15%,transparent),transparent 25%),linear-gradient(180deg,rgba(2,6,23,.38),rgba(15,23,42,.18))}',
               '.solar-cosmos .solar-world-spotlight-stage::after{content:"";position:absolute;inset:auto 7% 13px;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--spotlight-color) 62%,#fff),transparent);opacity:.56}',
               '.solar-cosmos .solar-spotlight-orbit{position:absolute;left:50%;top:50%;border:1px solid rgba(165,180,252,.23);border-radius:50%;transform:translate(-50%,-50%) rotate(-9deg)}',
@@ -1060,17 +1131,31 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-spotlight-moon{position:absolute;z-index:5;width:9px;height:9px;border:1px solid rgba(255,255,255,.72);border-radius:50%;background:#cbd5e1;box-shadow:inset -2px -2px 3px rgba(2,6,23,.62),0 0 8px rgba(226,232,240,.55)}',
               '.solar-cosmos .solar-spotlight-moon--0{left:18%;top:38%}.solar-cosmos .solar-spotlight-moon--1{right:16%;top:62%;width:7px;height:7px}.solar-cosmos .solar-spotlight-moon--2{left:29%;bottom:17%;width:6px;height:6px}',
               '.solar-cosmos .solar-world-spotlight-watermark{position:absolute;z-index:2;left:50%;bottom:15px;max-width:90%;overflow:hidden;color:rgba(226,232,240,.10);font-size:44px;font-weight:950;letter-spacing:.08em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;transform:translateX(-50%)}',
-              '.solar-cosmos .solar-world-spotlight-caption{position:absolute;z-index:6;left:12px;right:12px;bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#cbd5e1;font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-caption{position:absolute;z-index:6;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;color:#cbd5e1;font-size:10px;font-weight:800;letter-spacing:.045em;line-height:1.25;text-transform:uppercase}',
               '.solar-cosmos .solar-world-spotlight-caption span{border-radius:999px;background:rgba(2,6,23,.70);padding:4px 7px;backdrop-filter:blur(8px)}',
               '.solar-cosmos .solar-world-spotlight-stats{position:relative;z-index:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px 12px 0}',
               '.solar-cosmos .solar-world-spotlight-stat{min-width:0;border:1px solid rgba(148,163,184,.18);border-radius:10px;background:rgba(15,23,42,.74);padding:8px;text-align:center}',
-              '.solar-cosmos .solar-world-spotlight-stat-label{color:#94a3b8;font-size:8px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}',
-              '.solar-cosmos .solar-world-spotlight-stat-value{margin-top:3px;overflow:hidden;color:#f8fafc;font-size:11px;font-weight:900;line-height:1.2;text-overflow:ellipsis}',
+              '.solar-cosmos .solar-world-spotlight-stat-label{color:#94a3b8;font-size:10px;font-weight:900;letter-spacing:.09em;line-height:1.2;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-stat-value{margin-top:3px;color:#f8fafc;font-size:12px;font-weight:900;line-height:1.3;overflow-wrap:anywhere}',
               '.solar-cosmos .solar-world-spotlight-environment{position:relative;z-index:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px 12px 12px}',
               '.solar-cosmos .solar-world-spotlight-environment>div{min-width:0;border-left:2px solid var(--spotlight-color);border-radius:8px;background:rgba(15,23,42,.66);padding:8px 9px}',
-              '.solar-cosmos .solar-world-spotlight-environment strong{display:block;color:#a5f3fc;font-size:8px;letter-spacing:.10em;text-transform:uppercase}',
-              '.solar-cosmos .solar-world-spotlight-environment span{display:block;margin-top:3px;color:#cbd5e1;font-size:10px;line-height:1.35}',
+              '.solar-cosmos .solar-world-spotlight-environment strong{display:block;color:#a5f3fc;font-size:10px;letter-spacing:.10em;line-height:1.2;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-environment span{display:block;margin-top:3px;color:#cbd5e1;font-size:11px;line-height:1.42}',
+              '.solar-cosmos .solar-canvas-world-picker{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;margin-top:8px;padding:7px 8px;border:1px solid ' + (isDark ? 'rgba(71,85,105,.72)' : 'rgba(203,213,225,.82)') + ';border-radius:12px;background:' + (isDark ? 'rgba(15,23,42,.62)' : 'rgba(241,245,249,.88)') + '}',
+              '.solar-cosmos .solar-canvas-world-button{position:relative;display:flex;min-width:0;min-height:38px;align-items:center;justify-content:center;gap:5px;line-height:1.15}',
+              '.solar-cosmos .solar-canvas-world-button[data-selected="true"]::after{content:"";position:absolute;right:5px;top:5px;width:6px;height:6px;border:1px solid rgba(255,255,255,.82);border-radius:50%;background:#67e8f9;box-shadow:0 0 8px #67e8f9}',
+              '.solar-cosmos .solar-canvas-world-emoji{flex:0 0 auto;font-size:15px;line-height:1}',
+              '.solar-cosmos .solar-canvas-world-name{min-width:0;overflow-wrap:anywhere}',
+              '.solar-cosmos .solar-canvas-controls button{min-height:36px}',
+              '.solar-cosmos .solar-world-view-tabs{display:grid;width:100%;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px}',
+              '.solar-cosmos .solar-world-view-tab{min-height:40px;white-space:normal;line-height:1.25}',
+              '.solar-cosmos .solar-canvas-controls,.solar-cosmos .solar-canvas-speed-control,.solar-cosmos .solar-canvas-speed-input{min-width:0}',
+              '.solar-cosmos .solar-canvas-speed-input{width:100%;height:14px}',
+              '.solar-cosmos .solar-comparison-track{position:relative}',
+              '.solar-cosmos .solar-earth-reference-marker{position:absolute;top:-2px;bottom:-2px;width:2px;border-radius:999px;background:rgba(255,255,255,.94);box-shadow:0 0 0 1px rgba(15,23,42,.62),0 0 7px rgba(255,255,255,.72)}',
+              '@media(max-width:640px){.solar-cosmos .solar-canvas-controls{gap:4px!important;padding:6px!important}.solar-cosmos .solar-canvas-controls>button{flex:0 1 auto;padding-left:8px!important;padding-right:8px!important}.solar-cosmos .solar-canvas-speed-control{min-width:0;max-width:none!important;min-height:44px;gap:4px!important;padding:0 6px!important}.solar-cosmos .solar-canvas-speed-control>span:first-child{display:none}.solar-cosmos .solar-canvas-speed-control input[type="range"]{min-width:0;height:44px!important}}',
               '@media(max-width:640px){.solar-cosmos .solar-world-spotlight{min-height:0}.solar-cosmos .solar-world-spotlight-stage{flex:none;min-height:190px}.solar-cosmos .solar-spotlight-body-wrap{width:124px;height:124px}.solar-cosmos .solar-spotlight-ring{width:156px;height:44px;border-width:4px}.solar-cosmos .solar-world-spotlight-watermark{font-size:30px}.solar-cosmos .solar-world-spotlight-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.solar-cosmos .solar-world-spotlight-environment{grid-template-columns:1fr}}',
+              '@media(max-width:900px){.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(5,minmax(0,1fr))}}',
               '.solar-cosmos .solar-compare-stage{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:174px;padding:14px 12px 10px;border:1px solid rgba(129,140,248,.28);border-radius:14px;background:radial-gradient(circle at 50% 30%,rgba(67,56,202,.25),transparent 48%),linear-gradient(145deg,#070b1c,#111a34 62%,#081020);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px rgba(2,6,23,.24)}',
               '.solar-cosmos .solar-compare-stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.46;background:radial-gradient(1px 1px at 12% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 41% 14%,#a5f3fc,transparent 60%),radial-gradient(1.5px 1.5px at 72% 32%,#fde68a,transparent 60%),radial-gradient(1px 1px at 91% 12%,#fff,transparent 60%)}',
               '.solar-cosmos .solar-compare-world{position:relative;z-index:1;display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:flex-end;color:#f8fafc;text-align:center}',
@@ -1123,7 +1208,7 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos button:focus-visible,.solar-cosmos summary:focus-visible{outline:3px solid #67e8f9!important;outline-offset:3px}',
               '@media(max-width:640px){.solar-cosmos .solar-tutorial-orbit{height:106px}.solar-cosmos .solar-tutorial-orbit-line--three{width:270px}.solar-cosmos .solar-tutorial-content{padding:16px}.solar-cosmos .solar-tutorial-title{font-size:19px}.solar-cosmos .solar-tutorial-steps{grid-template-columns:1fr;gap:7px;margin-top:13px}.solar-cosmos .solar-tutorial-step{min-height:54px}.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 112px)}}',
               '@media(prefers-reduced-motion:reduce){.solar-cosmos .solar-tutorial-sun,.solar-cosmos .solar-tutorial-planet,.solar-cosmos .solar-tutorial-craft{animation:none!important}.solar-cosmos .solar-tutorial-launch,.solar-cosmos .solar-tutorial-launch::before,.solar-cosmos .solar-tutorial-launch-arrow{transition:none!important}.solar-cosmos .solar-tutorial-launch:hover{transform:none}}',
-              '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{top:auto;left:10px;right:10px;bottom:58px;max-width:none;padding:6px 8px}.solar-cosmos .solar-model-note span{font-size:9px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
+              '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{top:auto;left:10px;right:10px;bottom:66px;max-width:none;padding:7px 9px}.solar-cosmos .solar-model-note span{font-size:10px;line-height:1.38}.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px}.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
               '@media(max-width:640px){.solar-cosmos .rover-hud{top:8px!important;left:8px!important;width:min(220px,calc(100% - 160px))!important;max-width:none!important;max-height:154px!important;overflow:hidden!important;padding:8px 10px!important;border-radius:10px!important}.solar-cosmos .rover-hud #hud-mode{font-size:10px!important;margin-bottom:3px!important}.solar-cosmos .rover-hud #hud-world-context,.solar-cosmos .rover-hud #hud-notable,.solar-cosmos .rover-hud #hud-shortcuts,.solar-cosmos .rover-hud #hud-ocean-panel,.solar-cosmos .rover-hud #hud-atmo-panel{display:none!important}.solar-cosmos .rover-hud #hud-simple-row{gap:1px 6px!important;margin-bottom:3px!important;padding-top:3px!important;font-size:9px!important}.solar-cosmos .rover-hud #hud-science-focus{padding-top:3px!important;margin-bottom:0!important}.solar-cosmos .rover-hud #hud-science-focus>div:nth-child(2){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.solar-cosmos .rover-hud #hud-science-reading{font-size:9px!important}.solar-cosmos [data-drone-fullscreen-toggle],.solar-cosmos [data-rover-sound-toggle],.solar-cosmos [data-drone-compass]{top:8px!important;width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border-radius:10px!important}.solar-cosmos [data-drone-compass]{right:8px!important}.solar-cosmos [data-drone-fullscreen-toggle]{right:56px!important;font-size:20px!important}.solar-cosmos [data-rover-sound-toggle]{right:104px!important;font-size:18px!important}.solar-cosmos [data-drone-depth-gauge]{top:60px!important;right:8px!important;width:24px!important;height:142px!important}.solar-cosmos [data-drone-action-dock]{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;width:auto!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important}.solar-cosmos [data-drone-action-dock] button{min-height:44px!important;padding:4px 2px!important;flex-direction:column!important;justify-content:center!important;gap:1px!important;border-radius:9px!important;font-size:9px!important}.solar-cosmos [data-drone-action-dock] kbd{display:none!important}.solar-cosmos [data-drone-minimap]{right:8px!important;bottom:64px!important;width:84px!important;height:84px!important}.solar-cosmos #rover-traverse-panel{left:8px!important;right:8px!important;bottom:60px!important;width:auto!important;max-height:calc(100% - 128px)!important;padding:0!important;overflow:auto!important;border-radius:10px!important}.solar-cosmos #rover-traverse-panel[data-collapsed="true"]{right:auto!important;width:min(220px,calc(100% - 112px))!important;overflow:hidden!important}.solar-cosmos #rover-traverse-toggle{display:flex!important}.solar-cosmos #rover-traverse-details{padding:0 10px 10px}.solar-cosmos #rover-traverse-panel[data-collapsed="true"] #rover-traverse-details{display:none!important}}',
               '@media(max-width:640px){.solar-cosmos [data-drone-hazard]{top:168px!important;left:8px!important;right:40px!important;width:auto!important;transform:none!important;padding:5px 8px!important;border-radius:7px!important;font-size:9px!important;line-height:1.25!important}.solar-cosmos [data-drone-ticker]{display:none!important}}',
                '@media(prefers-reduced-motion:reduce){.solar-cosmos svg[viewBox],.solar-cosmos .solar-world-thumb,.solar-cosmos .solar-season-bar,.solar-cosmos .solar-moon-moving,.solar-cosmos .solar-moon-phase-disk,.solar-cosmos .solar-evidence-fill,.solar-cosmos .solar-evidence-node,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]){transition:none!important}.solar-cosmos .solar-season-sun,.solar-cosmos .solar-season-beam,.solar-cosmos .solar-signal-line,.solar-cosmos .solar-signal-pulse,.solar-cosmos .solar-drop-ball{animation:none!important}.solar-cosmos .solar-signal-pulse{left:90%;opacity:1}.solar-cosmos .solar-drop-ball{top:146px}.solar-cosmos .solar-evidence-node[data-current="true"],.solar-cosmos .solar-evidence-node[data-recommended="true"]{transform:none}.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]):hover svg{transform:none}}'
@@ -1175,6 +1260,7 @@ const d = labToolData.solarSystem || {};
           var SOLAR_SCIENCE_SOURCES = [
             { label: 'JPL planetary parameters', href: 'https://ssd.jpl.nasa.gov/planets/phys_par.html', note: 'radii, gravity, rotation, and orbital periods' },
             { label: 'NASA Solar System', href: 'https://science.nasa.gov/solar-system/planets/', note: 'planet and moon overviews' },
+            { label: 'Mars InSight inner-core analysis', href: 'https://www.nature.com/articles/s41586-025-09361-9', note: '2025 seismic evidence for a roughly 600 km solid inner core' },
             { label: 'IAU planet definition', href: 'https://www.iau.org/static/resolutions/Resolution_GA26-5-6.pdf', note: 'planet and dwarf-planet classification' }
           ];
           var SOLAR_MODEL_LENSES = {
@@ -1916,6 +2002,41 @@ const d = labToolData.solarSystem || {};
           });
 
           var sel = d.selectedPlanet ? PLANETS.find(p => p.name === d.selectedPlanet) : null;
+          // Interior canvas redraw lifecycle: one observer per mounted cutaway,
+          // with resize and high-density backing-store support.
+          var solarInteriorCanvasRef = React.useRef(null);
+          var solarInteriorDrawRef = React.useRef(null);
+          React.useEffect(function() {
+            if (d.viewTab !== 'interior' || !sel) return;
+            var canvasEl = solarInteriorCanvasRef.current;
+            if (!canvasEl) return;
+            var frameId = 0;
+            var requestInteriorDraw = function() {
+              if (!solarInteriorDrawRef.current) return;
+              if (frameId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frameId);
+              if (typeof requestAnimationFrame === 'function') {
+                frameId = requestAnimationFrame(function() {
+                  frameId = 0;
+                  if (solarInteriorDrawRef.current) solarInteriorDrawRef.current();
+                });
+              } else {
+                solarInteriorDrawRef.current();
+              }
+            };
+            var observer = null;
+            if (typeof ResizeObserver === 'function') {
+              observer = new ResizeObserver(requestInteriorDraw);
+              observer.observe(canvasEl.parentElement || canvasEl);
+            } else if (typeof window !== 'undefined') {
+              window.addEventListener('resize', requestInteriorDraw);
+            }
+            requestInteriorDraw();
+            return function() {
+              if (frameId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frameId);
+              if (observer) observer.disconnect();
+              else if (typeof window !== 'undefined') window.removeEventListener('resize', requestInteriorDraw);
+            };
+          }, [d.viewTab, sel ? sel.key : '']);
 
           // Track planet visits — deferred to avoid setState-during-render
           if (sel && planetsVisited.indexOf(sel.name) === -1) {
@@ -4019,7 +4140,7 @@ const d = labToolData.solarSystem || {};
                               ),
                               React.createElement("span", { className: "h-2 w-2 rounded-full", style: { background: visited ? '#22c55e' : (isDark ? '#475569' : '#cbd5e1') } })
                             ),
-                            React.createElement("div", { className: "mt-1 truncate text-[11px] font-black" }, p.name),
+                            React.createElement("div", { className: "solar-world-card-name mt-1 text-[11px] font-black" }, p.name),
                             React.createElement("span", { className: "solar-world-kind" }, PLANET_KINDS[p.key])
                           );
                         })
@@ -5619,7 +5740,7 @@ const d = labToolData.solarSystem || {};
       ctx.fillStyle = "#a5b4fc"; ctx.font = "800 9px sans-serif";
       ctx.fillText("MAGNIFIED INNER SYSTEM", insetX + 12, insetY + 18);
       ctx.fillStyle = "#94a3b8"; ctx.font = "9px sans-serif";
-      ctx.fillText("One distance scale · bodies enlarged", insetX + 12, insetY + 32);
+      ctx.fillText("One distance scale · markers enlarged", insetX + 12, insetY + 32);
 
       ctx.save(); ctx.beginPath(); ctx.rect(insetX + 7, insetY + 38, 158, insetH - 46); ctx.clip();
       for (var insetOrbitIndex = 0; insetOrbitIndex < innerBodies.length; insetOrbitIndex++) {
@@ -5672,7 +5793,7 @@ const d = labToolData.solarSystem || {};
       viewPresetKey: zoomMode,
       resetKey: resetRequest,
       ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : ""),
-      ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". In full-system view, a magnified inner-system inset plots Mercury through Mars with one common orbital-distance scale while enlarging bodies for visibility. Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; body sizes are " + (scaleMode === "relative" ? "relative with a visibility floor" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card, or pan and zoom to release follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
+      ariaLabel: "Interactive solar system orbit map. Current view is " + canvasViewLabel + ". In full-system view, a magnified inner-system inset plots Mercury through Mars with one common orbital-distance scale while enlarging markers for visibility. Select a world to inspect its orbit; the selected world has an arrow showing motion direction and relative speed plus a shaded equal-time sweep and live speed gauge; the live readout includes elapsed Earth years and day of year; marker sizes are " + (scaleMode === "relative" ? "radius-informed, compressed, and clamped for visibility" : "enlarged for teaching") + "; when comparison is active its orbit uses a dashed path; reduced-motion mode keeps decorative effects still; use the Follow camera toggle in the selected-world card, or pan and zoom to release follow; Enter or Space selects the next world; press Escape to clear selection." + canvasSelectionCue + (paused ? " The orbital clock is paused." : " The orbital clock is playing."),
       onKeyboardInteract: keyboardSelectNextBody,
       onHome: function() { upd("orr_follow", null); },
       onCameraInput: function() { if (followBodyId) upd("orr_follow", null); },
@@ -6650,8 +6771,8 @@ const d = labToolData.solarSystem || {};
           }
 
           // ── Planet dot with glow ──
-          // Teaching mode enlarges small worlds for discovery. Relative mode keeps
-          // the radius ratios visible while retaining a small marker floor.
+          // Teaching mode enlarges small worlds for discovery. Relative mode uses
+          // compressed, radius-informed markers with a visibility floor and ceiling.
           var teachingDotR = b.type === "comet" ? 3 : (b.type === "dwarf" ? 4 : clamp(Math.log(b.R + 1) * 1.2, 4, 10));
           var relativeDotR = b.type === "comet" ? 3 : clamp(Math.sqrt(Math.max(b.R, 1) / 6371) * 3.5, 1.25, 10);
           var dotR = scaleMode === "relative" ? relativeDotR : teachingDotR;
@@ -7504,10 +7625,10 @@ const d = labToolData.solarSystem || {};
       style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", flex: "1 1 100%", minWidth: "0" }
     },
       btn("Reset view", false, function() { updMulti({ orr_time: 0, orr_zoom: "full", orr_sel: null, orr_follow: null, orr_compare: null, orr_focus_body: null, orr_view_reset: resetRequest + 1 }); }, { "aria-label": "Reset orbit time, camera view, and selection" }),
-      h("span", { style: { fontSize: "12px", color: mutedFg } }, "Body size:"),
-      btn("Teaching", scaleMode === "teaching", function() { upd("orr_scale_mode", "teaching"); }, { "aria-label": "Use teaching body sizes, enlarged for visibility", "aria-pressed": scaleMode === "teaching" }),
-      btn("Relative", scaleMode === "relative", function() { upd("orr_scale_mode", "relative"); }, { "aria-label": "Use relative body sizes with a visibility floor", "aria-pressed": scaleMode === "relative" }),
-      h("span", { style: { fontSize: "11px", color: mutedFg, minWidth: "150px" } }, scaleMode === "relative" ? "Ratios preserved \u00b7 markers stay visible" : "Bodies enlarged for discovery"),
+      h("span", { style: { fontSize: "12px", color: mutedFg } }, "Marker size:"),
+      btn("Teaching", scaleMode === "teaching", function() { upd("orr_scale_mode", "teaching"); }, { "aria-label": "Use teaching marker sizes, enlarged for visibility", "aria-pressed": scaleMode === "teaching" }),
+      btn("Comparative", scaleMode === "relative", function() { upd("orr_scale_mode", "relative"); }, { "aria-label": "Use radius-informed marker sizes, compressed and clamped for visibility", "aria-pressed": scaleMode === "relative" }),
+      h("span", { style: { fontSize: "11px", color: mutedFg, minWidth: "150px" } }, scaleMode === "relative" ? "Radius-informed \u00b7 compressed and clamped" : "Markers enlarged for discovery"),
       h("span", { style: { fontSize: "12px", color: mutedFg } }, "Zoom:"),
       btn("Inner", zoomMode === "inner", function() { upd("orr_zoom", "inner"); }, { "aria-pressed": zoomMode === "inner", "aria-label": "Zoom to inner planets" }),
       btn("Full", zoomMode === "full", function() { upd("orr_zoom", "full"); }, { "aria-pressed": zoomMode === "full", "aria-label": "Show the full solar system" }),
@@ -7593,11 +7714,11 @@ const d = labToolData.solarSystem || {};
     var compareStageTarget = compareBodyId ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
     var stageTitle = stageBody ? stageBody.name + " in focus" : "Solar system in motion";
     var innerInsetScaleNote = zoomMode === "full"
-      ? " The magnified inner-system inset uses one common orbital-distance scale for Mercury through Mars; its body disks are enlarged for visibility."
+      ? " The magnified inner-system inset uses one common orbital-distance scale for Mercury through Mars; its markers are enlarged for visibility."
       : "";
     var modelScaleNote = (scaleMode === "relative"
-      ? "Model note: body-size ratios are preserved; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance."
-      : "Model note: bodies are enlarged for visibility; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance.") + innerInsetScaleNote;
+      ? "Model note: marker sizes are radius-informed but compressed and clamped for visibility; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance."
+      : "Model note: markers are enlarged for visibility; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance.") + innerInsetScaleNote;
     var orbitStage = h("div", { className: "orr-orbit-stage", "data-orrery-stage": true },
       h("div", { className: "orr-stage-hud", "aria-live": "polite" },
         h("div", null,
@@ -7606,7 +7727,7 @@ const d = labToolData.solarSystem || {};
         ),
         h("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "6px" } },
           h("span", { className: "orr-stage-chip" }, paused ? "Paused" : "Auto-play"),
-          h("span", { className: "orr-stage-chip" }, scaleMode === "relative" ? "Relative sizes" : "Teaching sizes"),
+          h("span", { className: "orr-stage-chip" }, scaleMode === "relative" ? "Comparative markers" : "Teaching markers"),
           h("span", { className: "orr-stage-chip", style: followStageTarget ? { borderColor: followStageTarget.color + "aa" } : stageBody ? { borderColor: stageBody.color + "88" } : {} }, followStageTarget ? "Following: " + followStageTarget.name : stageBody ? "Focus: " + stageBody.name : "All worlds")
         )
       ),
@@ -7621,7 +7742,7 @@ const d = labToolData.solarSystem || {};
         h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#cbd5e1" : "#64748b" } }), "Orbit paths"),
         h("span", { id: "orrery-live-map-scale", className: "orr-stage-key-item", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" }, "Ruler: " + mapScaleLabel(baseScale)),
         zoomMode === "full" ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "8px", borderRadius: "2px", background: "#1e2b4f", border: "1px solid #93c5fd" } }), "Magnified inner inset") : null,
-        h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: scaleMode === "relative" ? (isDark ? "#fbbf24" : "#b45309") : (isDark ? "#94a3b8" : "#64748b") } }), scaleMode === "relative" ? "Relative body sizes" : "Teaching body sizes"),
+        h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: scaleMode === "relative" ? (isDark ? "#fbbf24" : "#b45309") : (isDark ? "#94a3b8" : "#64748b") } }), scaleMode === "relative" ? "Comparative marker sizes" : "Teaching marker sizes"),
         stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { color: stageBody.color, fontSize: "14px", fontWeight: 800, lineHeight: "8px" } }, "\u2192"), "Velocity vector") : null,
         stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { width: "12px", height: "8px", borderRadius: "2px", background: stageBody.color + "55", border: "1px solid " + stageBody.color + "aa" } }), "Equal-time sweep") : null,
         compareStageTarget ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "0", borderTop: "2px dashed " + compareStageTarget.color } }), "Comparison orbit") : null
@@ -8133,14 +8254,14 @@ const d = labToolData.solarSystem || {};
         ctx.strokeStyle = border; ctx.lineWidth = 1;
         ctx.strokeRect(gx2, gy, gw, gh);
         ctx.fillStyle = fg; ctx.font = "11px sans-serif";
-        ctx.fillText("r \u00d7 v (angular momentum)", gx2, gy - 5);
+        ctx.fillText("r \u00d7 v\u22a5 (specific angular momentum)", gx2, gy - 5);
         ctx.font = "9px sans-serif"; ctx.fillStyle = mutedFg;
         ctx.fillText("Peri", gx2, gy + gh + 12);
         ctx.fillText("Aph", gx2 + gw - 20, gy + gh + 12);
 
-        // r (green) and v (red) curves + L = const (blue dashed)
-        // Normalize: at peri r_min, v_max, L = r*v
-        var L_const = 1 * (1 - e * e); // normalized L²/(GM a)
+        // r (green) and v (red) curves + h = const (blue dashed)
+        // Normalize: at peri r_min, v_max, h = r*v_perpendicular
+        var hSquared = 1 * (1 - e * e); // normalized h²/(GM a)
         ctx.beginPath();
         for (var j2 = 0; j2 <= pts; j2++) {
           var nu_p2 = -PI + TAU * j2 / pts;
@@ -8162,20 +8283,20 @@ const d = labToolData.solarSystem || {};
         }
         ctx.strokeStyle = "#e74c3c"; ctx.lineWidth = 1.5; ctx.stroke();
 
-        // L = const line
-        var Lval = Math.sqrt(L_const);
+        // h = const line
+        var hValue = Math.sqrt(hSquared);
         ctx.beginPath();
-        ctx.moveTo(gx2, gy + gh - (Lval / 2.5) * gh);
-        ctx.lineTo(gx2 + gw, gy + gh - (Lval / 2.5) * gh);
+        ctx.moveTo(gx2, gy + gh - (hValue / 2.5) * gh);
+        ctx.lineTo(gx2 + gw, gy + gh - (hValue / 2.5) * gh);
         ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 2; ctx.setLineDash([5, 3]); ctx.stroke(); ctx.setLineDash([]);
 
         // Legend
         ctx.font = "9px sans-serif";
         ctx.fillStyle = "#27ae60"; ctx.fillText("r", gx2 + gw + 4, gy + 12);
         ctx.fillStyle = "#e74c3c"; ctx.fillText("v", gx2 + gw + 4, gy + 24);
-        ctx.fillStyle = "#3b82f6"; ctx.fillText("L", gx2 + gw + 4, gy + 36);
+        ctx.fillStyle = "#3b82f6"; ctx.fillText("h", gx2 + gw + 4, gy + 36);
 
-        // Current marker on L graph
+        // Current marker on h graph
         var mx2 = gx2 + nuNorm * gw;
         var rCur2 = 1 * (1 - e * e) / (1 + e * Math.cos(nu_now));
         var my2 = gy + gh - (rCur2 / 2.5) * gh;
@@ -8184,9 +8305,9 @@ const d = labToolData.solarSystem || {};
         // Equation
         ctx.fillStyle = fg;
         ctx.font = "13px serif";
-        ctx.fillText("Kepler II:  A line from the Sun to a planet sweeps equal areas in equal times.", 20, H - 10);
+        ctx.fillText("Kepler II:  A line from the Sun to a planet sweeps equal areas in equal times.", 20, H - 26);
         ctx.font = "11px serif"; ctx.fillStyle = mutedFg;
-        ctx.fillText("L = r \u00d7 v\u22a5 = constant  (conservation of angular momentum)", 20, H + 4);
+        ctx.fillText("h = r \u00d7 v\u22a5 = constant  (specific angular momentum)", 20, H - 10);
       }
     });
 
@@ -9665,7 +9786,7 @@ const d = labToolData.solarSystem || {};
 
   // Topic-accent hero band per tab
   var TAB_META = [
-    { accent: "#7c3aed", soft: "rgba(124,58,237,0.10)", title: __alloT('stem.solarsystem.full_orrery_animated_solar_system', "Full orrery — animated solar system"),     hint: __alloT('stem.solarsystem.all_8_planets_to_scale_size_orbit_watc', "All 8 planets to scale (size + orbit). Watch Mercury zip around the Sun ~4 times per Earth-year. Inner planets cluster tight; outer ones sweep huge orbits.") },
+    { accent: "#7c3aed", soft: "rgba(124,58,237,0.10)", title: __alloT('stem.solarsystem.full_orrery_animated_solar_system', "Full orrery — animated solar system"),     hint: __alloT('stem.solarsystem.all_8_planets_to_scale_size_orbit_watc', "Eight planets plus Pluto follow measured orbital shapes and relative speeds. The main map shares one orbital-distance scale; markers are compressed and clamped, and the inner-system inset is magnified.") },
     { accent: "#0ea5e9", soft: "rgba(14,165,233,0.10)", title: __alloT('stem.solarsystem.kepler_i_orbits_are_ellipses', "Kepler I — orbits are ellipses"),          hint: __alloT('stem.solarsystem.every_planet_orbits_in_an_ellipse_with', "Every planet orbits in an ellipse with the Sun at one focus. The other focus is empty space. Earth's orbit is barely-eccentric (e ≈ 0.017).") },
     { accent: "#22c55e", soft: "rgba(34,197,94,0.10)",  title: __alloT('stem.solarsystem.kepler_ii_equal_areas_in_equal_times', "Kepler II — equal areas in equal times"),  hint: __alloT('stem.solarsystem.a_line_from_planet_to_sun_sweeps_equal', "A line from planet to Sun sweeps equal areas in equal times — meaning planets move FASTER near the Sun (perihelion) and SLOWER far away (aphelion).") },
     { accent: "#f59e0b", soft: "rgba(245,158,11,0.10)", title: __alloT('stem.solarsystem.kepler_iii_period_semi_major_axis', "Kepler III — period² ∝ semi-major-axis³"), hint: __alloT('stem.solarsystem.t_a_when_t_is_in_years_and_a_is_in_au_', "T² = a³ when T is in years and a is in AU. Earth's T=1, a=1 makes the math beautifully clean. Doubling orbit size multiplies period by ~2.83.") },
@@ -9897,9 +10018,11 @@ const d = labToolData.solarSystem || {};
 
               // Controls overlay
 
-              React.createElement("div", { className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto", style: { background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', borderRadius: '12px', padding: '6px 10px', border: '1px solid rgba(255,255,255,0.1)' } },
+              React.createElement("div", { "data-solarsystem-canvas-controls": true, role: "group", "aria-label": __alloT('stem.solarsystem.three_d_model_controls', '3D model controls'), className: "solar-canvas-controls absolute bottom-3 left-3 right-3 flex items-center gap-2 pointer-events-auto", style: { background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(12px)', borderRadius: '12px', padding: '6px 10px', border: '1px solid rgba(255,255,255,0.1)' } },
 
-                React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_simulation_playback', "Toggle simulation playback"),
+                React.createElement("button", { "aria-label": paused ? "Play simulation" : "Pause simulation",
+
+                  type: "button", "aria-pressed": !paused, "data-solarsystem-playback-toggle": true,
 
                   onClick: () => upd('paused', !paused),
 
@@ -9908,17 +10031,19 @@ const d = labToolData.solarSystem || {};
 
                 }, paused ? "\u25B6 Play" : "\u23F8 Pause"),
 
-                React.createElement("div", { className: "flex items-center gap-2 flex-1 max-w-[200px] bg-white/10 rounded-lg px-3 py-1.5", style: { border: '1px solid rgba(255,255,255,0.08)' } },
+                React.createElement("div", { "data-solarsystem-speed-control": true, className: "solar-canvas-speed-control flex min-w-0 items-center gap-2 flex-1 max-w-[200px] bg-white/10 rounded-lg px-3 py-1.5", style: { border: '1px solid rgba(255,255,255,0.08)' } },
 
                   React.createElement("span", { className: "text-[11px] text-white/50 font-bold whitespace-nowrap" }, "\u23F1"),
 
-                  React.createElement("input", { type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': __alloT('stem.solarsystem.simulation_speed', 'Simulation speed'), onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "flex-1 accent-indigo-400", style: { height: '14px' } }),
+                  React.createElement("input", { "data-solarsystem-speed-slider": true, type: "range", min: "0.1", max: "10", step: "0.1", value: simSpeed, 'aria-label': __alloT('stem.solarsystem.simulation_speed', 'Simulation speed'), onChange: e => upd('simSpeed', parseFloat(e.target.value)), className: "solar-canvas-speed-input min-w-0 flex-1 accent-indigo-400" }),
 
-                  React.createElement("span", { className: "text-[11px] text-indigo-300 font-bold min-w-[32px] text-right", style: { fontFamily: 'monospace' } }, simSpeed.toFixed(1) + "x")
+                  React.createElement("span", { className: "text-[11px] text-indigo-300 font-bold min-w-[32px] flex-shrink-0 text-right", style: { fontFamily: 'monospace' } }, simSpeed.toFixed(1) + "x")
 
                 ),
 
                 React.createElement("button", { "aria-label": __alloT('stem.solarsystem.reset_view', "Reset View"),
+
+                  type: "button",
 
                   onClick: () => { upd('selectedPlanet', null); stopPlanetAmbience(); const c = document.querySelector('.solar3d-canvas'); if (c) { c.dataset.resetCamera = 'true'; } },
 
@@ -9937,19 +10062,28 @@ const d = labToolData.solarSystem || {};
 
             // Planet buttons row
 
-            !d.orreryMode && React.createElement("div", { className: "flex gap-1.5 mt-2 flex-wrap justify-center", style: { padding: '4px 8px', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(241,245,249,0.8)', borderRadius: '12px' } },
+            !d.orreryMode && React.createElement("div", { "data-solarsystem-canvas-world-picker": true, role: "group", "aria-label": __alloT('stem.solarsystem.select_world_for_3d_model', 'Select a world for the 3D model'), className: "solar-canvas-world-picker" },
 
               PLANETS.map(p => React.createElement("button", { "aria-label": "Select planet: " + p.name,
 
                 key: p.name,
 
+                type: "button",
+
+                "aria-pressed": d.selectedPlanet === p.name,
+
+                "data-selected": d.selectedPlanet === p.name,
+
                 onClick: () => { upd('selectedPlanet', p.name); playPlanetSelect(p.dist || 1); startPlanetAmbience(p.name); const _c3 = document.querySelector('.solar3d-canvas'); if (_c3) { _c3.dataset.flyTo = p.name; } if (typeof canvasNarrate === 'function') { canvasNarrate('solarSystem', 'planet_select', { first: 'Selected ' + p.name + '. ' + p.fact, repeat: p.name + ' selected.', terse: p.name + '.' }, { debounce: 500 }); } },
 
-                className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-lg ring-2 ring-white/30' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm')),
+                className: "solar-canvas-world-button px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (d.selectedPlanet === p.name ? 'text-white shadow-lg ring-2 ring-white/30' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-50 shadow-sm')),
 
                 style: d.selectedPlanet === p.name ? { background: 'linear-gradient(135deg, ' + p.color + ', ' + p.color + 'cc)', textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}
 
-              }, p.emoji + " " + p.name))
+              },
+                React.createElement("span", { className: "solar-canvas-world-emoji", "aria-hidden": "true" }, p.emoji),
+                React.createElement("span", { className: "solar-canvas-world-name" }, p.name)
+              ))
 
             ),
 
@@ -10012,6 +10146,7 @@ const d = labToolData.solarSystem || {};
             // slate-800 / slate-600 header text inside stays readable. The
             // planet-color glow + accent border do the cosmic-mood lift.
             !d.orreryMode && sel && React.createElement("div", {
+              "data-solarsystem-planet-detail": sel.key,
               className: "mt-3 rounded-2xl p-4 animate-in slide-in-from-bottom duration-300",
               style: {
                 position: "relative",
@@ -10062,7 +10197,7 @@ const d = labToolData.solarSystem || {};
 
                 // Mode tabs
 
-                React.createElement("div", { className: "flex w-full flex-wrap gap-1 sm:w-auto sm:justify-end" },
+                React.createElement("div", { "data-solarsystem-world-view-tabs": true, role: "group", "aria-label": __alloT('stem.solarsystem.world_evidence_views', 'World evidence views'), className: "solar-world-view-tabs" },
 
                   ['overview', 'surface', 'interior', 'descent', 'drone'].map(function (tab) {
 
@@ -10080,7 +10215,7 @@ const d = labToolData.solarSystem || {};
 
                     return React.createElement("button", { "aria-label": "Switch to " + tab + " view tab",
 
-                      key: tab, onClick: function () {
+                      key: tab, type: "button", "aria-pressed": (d.viewTab || 'overview') === tab, "data-world-view-tab": tab, "data-active": (d.viewTab || 'overview') === tab, onClick: function () {
                         upd('viewTab', tab); playTabClick();
                         if (tab === 'interior') {
                           tryAward('gas_explorer');
@@ -10094,7 +10229,7 @@ const d = labToolData.solarSystem || {};
                         }
                       },
 
-                      className: "min-w-0 flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all hover:-translate-y-0.5 sm:flex-none sm:px-3 " +
+                      className: "solar-world-view-tab min-w-0 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all hover:-translate-y-0.5 sm:px-3 " +
 
                         ((d.viewTab || 'overview') === tab
                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400/40'
@@ -10116,15 +10251,15 @@ const d = labToolData.solarSystem || {};
 
               (d.viewTab || 'overview') === 'overview' && React.createElement("div", null,
 
-                React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
+                React.createElement("dl", { "data-solarsystem-overview-metrics": sel.key, className: "grid grid-cols-2 md:grid-cols-4 gap-2 mb-3" },
 
-                  [['\uD83C\uDF21', 'Temp', sel.temp], ['\u2600', 'Day', sel.dayLen], ['\uD83C\uDF0D', 'Year', sel.yearLen], ['\uD83D\uDCCF', 'Size', sel.diameter],
+                  [['\uD83C\uDF21', 'Temperature', sel.temp], ['\u2600', 'Day length', sel.dayLen], ['\uD83C\uDF0D', 'Year length', sel.yearLen], ['\uD83D\uDCCF', 'Diameter', sel.diameter],
 
-                  ['\u2696\uFE0F', 'Gravity', sel.gravity || 'Unknown'], ['\uD83C\uDF11', 'Moons', String(sel.moons)], ['\uD83C\uDF2C', 'Atmosphere', (sel.atmosphere || 'Unknown').substring(0, 30)], ['\uD83D\uDCA0', 'Type', sel.terrainType === 'gasgiant' ? 'Gas Giant' : sel.terrainType === 'icegiant' ? 'Ice Giant' : 'Rocky']
+                  ['\u2696\uFE0F', 'Surface gravity', sel.gravity || 'Unknown'], ['\uD83C\uDF11', 'Moons', String(sel.moons)], ['\uD83C\uDF2C', 'Atmosphere', sel.atmosphere || 'Unknown'], ['\uD83D\uDCA0', 'Type', PLANET_KINDS[sel.key] || 'Rocky']
 
                   ].map(function (item) {
 
-                    return React.createElement("div", { key: item[1],
+                    return React.createElement("div", { key: item[1], "data-solar-overview-metric": item[1],
                       className: "rounded-xl p-2.5 text-center border transition-all hover:shadow-lg hover:-translate-y-0.5",
                       style: {
                         background: isDark
@@ -10139,9 +10274,9 @@ const d = labToolData.solarSystem || {};
                       }
                     },
 
-                      React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item[0] + ' ' + item[1]),
+                      React.createElement("dt", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item[0] + ' ' + item[1]),
 
-                      React.createElement("p", { className: "text-xs font-bold mt-0.5 " + (isDark ? 'text-white' : 'text-slate-800') }, item[2])
+                      React.createElement("dd", { className: "text-xs font-bold mt-0.5 break-words " + (isDark ? 'text-white' : 'text-slate-800'), title: item[2] }, item[2])
 
                     );
 
@@ -10150,7 +10285,7 @@ const d = labToolData.solarSystem || {};
                 ),
 
                 // Visual comparison bars — gravity and size relative to Earth
-                React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
+                React.createElement("div", { "data-solarsystem-earth-comparisons": sel.key, className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3" },
                   // Gravity bar \u2014 fill takes the planet's color so the eye
                   // ties bar to body. Card surface matches the 8-tile grid.
                   React.createElement("div", {
@@ -10171,9 +10306,11 @@ const d = labToolData.solarSystem || {};
                       React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_vs_earth', "\u2696\uFE0F Gravity vs Earth")),
                       React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, (GRAVITY_MAP[sel.key] || 1).toFixed(2) + 'g')
                     ),
-                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.key] || 1) * 42) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } })
-                    )
+                    React.createElement("div", { "data-solar-comparison-meter": "gravity", role: "meter", "aria-label": sel.name + " gravity relative to Earth on a zero to three g scale", "aria-valuemin": 0, "aria-valuemax": 3, "aria-valuenow": Number((GRAVITY_MAP[sel.key] || 1).toFixed(2)), "aria-valuetext": (GRAVITY_MAP[sel.key] || 1).toFixed(2) + " times standard Earth gravity", className: "solar-comparison-track w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((GRAVITY_MAP[sel.key] || 1) / 3) * 100) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } }),
+                      React.createElement("span", { className: "solar-earth-reference-marker", "aria-hidden": "true", style: { left: '33.333%' } })
+                    ),
+                    React.createElement("p", { className: "mt-1.5 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_gravity_marker', "Scale 0\u20133g \u00b7 marker = Earth (1g)"))
                   ),
                   // Size bar
                   React.createElement("div", {
@@ -10194,9 +10331,11 @@ const d = labToolData.solarSystem || {};
                       React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.radius_vs_earth', "\uD83D\uDCCF Radius vs Earth")),
                       React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
-                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.key] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } })
-                    )
+                    React.createElement("div", { "data-solar-comparison-meter": "radius", role: "meter", "aria-label": sel.name + " radius relative to Earth on a zero to twelve Earth-radius scale", "aria-valuemin": 0, "aria-valuemax": 12, "aria-valuenow": Number(((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2)), "aria-valuetext": ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + " Earth radii", className: "solar-comparison-track w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (((PLANET_RADII[sel.key] || 6371) / 6371) / 12) * 100) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } }),
+                      React.createElement("span", { className: "solar-earth-reference-marker", "aria-hidden": "true", style: { left: '8.333%' } })
+                    ),
+                    React.createElement("p", { className: "mt-1.5 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_radius_marker', "Scale 0\u201312\u00d7 \u00b7 marker = Earth radius (1\u00d7)"))
                   )
                 ),
 
@@ -10210,17 +10349,17 @@ const d = labToolData.solarSystem || {};
 
                 ),
 
-                sel.notableFeatures && sel.notableFeatures.length > 0 && React.createElement("div", { className: "rounded-lg p-2 border mb-2 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200') },
+                sel.notableFeatures && sel.notableFeatures.length > 0 && React.createElement("div", { "data-solarsystem-notable-features": sel.key, className: "rounded-lg p-2 border mb-2 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200') },
 
                   React.createElement("p", { className: "text-[11px] font-bold mb-1 " + (isDark ? 'text-violet-300' : 'text-violet-700') }, __alloT('stem.solarsystem.notable_features', "\uD83C\uDFAF Notable Features")),
 
-                  React.createElement("div", { className: "grid grid-cols-1 gap-1" },
+                  React.createElement("div", { role: "list", className: "grid grid-cols-1 gap-1" },
 
                     sel.notableFeatures.map(function (feat, fi) {
 
-                      return React.createElement("div", { key: fi, className: "flex items-center gap-1.5 text-[11px] " + (isDark ? 'text-violet-100' : 'text-violet-700') },
+                      return React.createElement("div", { key: fi, role: "listitem", className: "flex items-start gap-1.5 text-[11px] " + (isDark ? 'text-violet-100' : 'text-violet-700') },
 
-                        React.createElement("span", { className: "w-1.5 h-1.5 rounded-full flex-shrink-0 " + (isDark ? 'bg-violet-300' : 'bg-violet-500') }),
+                        React.createElement("span", { "aria-hidden": "true", className: "mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 " + (isDark ? 'bg-violet-300' : 'bg-violet-500') }),
 
                         React.createElement("span", null, feat)
 
@@ -10231,24 +10370,6 @@ const d = labToolData.solarSystem || {};
                   )
 
                 ),
-
-                // Notable features
-
-                sel.notableFeatures && React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
-
-                  React.createElement("p", { className: "text-xs font-bold mb-2 " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.notable_features_2', "\u2B50 Notable Features")),
-
-                  React.createElement("div", { className: "flex flex-wrap gap-1.5" },
-
-                    sel.notableFeatures.map(function (feat, i) {
-
-                      return React.createElement("span", { key: i, className: "px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all hover:scale-105 " + (isDark ? 'bg-indigo-900/40 text-indigo-300 border-indigo-700/50 hover:bg-indigo-800/50' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 hover:shadow-sm') }, feat);
-
-                    })
-
-                  )
-
-                )
 
               ),
 
@@ -10290,7 +10411,7 @@ const d = labToolData.solarSystem || {};
 
                   React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3", style: { position: "relative", zIndex: 1 } }, sel.surfaceDesc || 'Surface data unavailable.'),
 
-                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
+                  React.createElement("div", { "data-solarsystem-surface-conditions": sel.key, className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
 
                     [
 
@@ -11581,7 +11702,7 @@ const d = labToolData.solarSystem || {};
                 ),
 
                 // ── Interactive Depth Exploration Buttons ──
-                React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" },
+                React.createElement("div", { "data-solarsystem-surface-evidence": true, role: "group", "aria-label": __alloT('stem.solarsystem.surface_evidence_categories', 'Surface evidence categories'), className: "flex flex-wrap gap-1.5 mt-2" },
                   [
                     { key: 'moons', icon: '\uD83C\uDF19', label: 'Moons (' + sel.moons + ')', show: sel.moons > 0 },
                     { key: 'atmosphere', icon: '\uD83C\uDF2B\uFE0F', label: __alloT('stem.solarsystem.atmosphere', 'Atmosphere'), show: !!DESCENT_LAYERS[sel.key] },
@@ -11592,6 +11713,8 @@ const d = labToolData.solarSystem || {};
                     var isActive = d.surfaceExplore === btn.key;
                     return React.createElement("button", {
                       key: btn.key,
+                      type: "button",
+                      "aria-pressed": isActive,
                       "aria-label": "Explore " + btn.label + " of " + sel.name,
                       onClick: function() { upd('surfaceExplore', isActive ? null : btn.key); },
                       className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border " +
@@ -11797,22 +11920,20 @@ const d = labToolData.solarSystem || {};
 
               // ── INTERIOR VIEW TAB ──
               (d.viewTab) === 'interior' && sel && React.createElement("div", { className: "space-y-3" },
-                // Hero band: palette matches the planet type. Rocky worlds
-                // get lava (orange / red), ice giants get ice-blue, Pluto gets
-                // pale violet, gas giants get amber. Was always lava
-                // regardless, which read wrong for Uranus / Neptune / Pluto.
                 (function() {
                   var ttype = sel.terrainType;
                   var palette = ttype === 'icegiant' ? { from: 'rgba(56,189,248,0.45)', to: 'rgba(15,23,42,0.95)', accent: '#7dd3fc', textTint: '#bae6fd', icon: "\u2744" }
                               : ttype === 'iceworld' ? { from: 'rgba(167,139,250,0.40)', to: 'rgba(15,23,42,0.95)', accent: '#c4b5fd', textTint: '#ddd6fe', icon: "\u2744" }
                               : ttype === 'gasgiant' ? { from: 'rgba(245,158,11,0.45)', to: 'rgba(127,29,29,0.85)', accent: '#fbbf24', textTint: '#fde68a', icon: "\uD83C\uDF2A\uFE0F" }
                               :                         { from: 'rgba(239,68,68,0.55)', to: 'rgba(127,29,29,0.92)', accent: '#fb923c', textTint: '#fed7aa', icon: "\uD83C\uDF0B" };
-                  var copy = ttype === 'gasgiant' ? "Gas giants have no solid surface. Layers of gas compress into liquid and eventually metallic hydrogen."
-                           : ttype === 'icegiant' ? "Ice giants have a rocky core surrounded by exotic ices, superionic water, and possibly diamond rain."
-                           : ttype === 'iceworld' ? "Pluto has a thin nitrogen/methane atmosphere, a water-ice crust over a rocky core, and possibly a subsurface ocean."
-                           : "Rocky planets have a layered structure: a metal core, a rocky mantle, and a thin crust.";
+                  var copy = ttype === 'gasgiant' ? __alloT('stem.solarsystem.gas_giant_interior_model_copy', 'Gas giants have no solid surface. Gas compresses into dense fluid and electrically conducting metallic hydrogen.')
+                           : ttype === 'icegiant' ? __alloT('stem.solarsystem.ice_giant_interior_model_copy', 'Ice-giant interiors are modeled as gas envelopes over hot water-ammonia-rich mantles and small rocky cores.')
+                           : ttype === 'iceworld' ? __alloT('stem.solarsystem.pluto_interior_model_copy', 'Pluto likely has a water-ice crust over a rocky core; a buried ocean remains a scientific hypothesis.')
+                           : __alloT('stem.solarsystem.rocky_interior_model_copy', 'Rocky worlds have metal-rich cores, rocky mantles, and comparatively thin crusts.');
+                  var modelDisclosure = __alloT('stem.solarsystem.interior_model_disclosure', 'Evidence-based model — boundaries and thicknesses are approximate and not to scale.');
                   return React.createElement("div", {
                     className: "rounded-xl p-4 text-white",
+                    "data-solar-interior-model-note": "true",
                     style: {
                       position: "relative", overflow: "hidden",
                       background: "linear-gradient(135deg," + palette.from + " 0%," + palette.to + " 100%),#0f172a",
@@ -11822,24 +11943,20 @@ const d = labToolData.solarSystem || {};
                   },
                     React.createElement("div", {
                       "aria-hidden": "true",
-                      style: {
-                        position: "absolute", top: "-50px", right: "-50px",
-                        width: "180px", height: "180px", borderRadius: "50%",
-                        background: "radial-gradient(circle," + palette.accent + "44 0%,transparent 70%)",
-                        filter: "blur(8px)", pointerEvents: "none"
-                      }
+                      style: { position: "absolute", top: "-50px", right: "-50px", width: "180px", height: "180px", borderRadius: "50%", background: "radial-gradient(circle," + palette.accent + "44 0%,transparent 70%)", filter: "blur(8px)", pointerEvents: "none" }
                     }),
                     React.createElement("div", { className: "flex items-center gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
-                      React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + palette.accent + "88" } }, palette.icon),
-                      React.createElement("h5", { className: "font-bold text-sm", style: { color: 'var(--allo-stem-text, #ffffff)', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Interior Structure")
+                      React.createElement("span", { "aria-hidden": "true", className: "text-lg", style: { textShadow: "0 0 8px " + palette.accent + "88" } }, palette.icon),
+                      React.createElement("h5", { className: "font-bold text-sm", style: { color: '#ffffff', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, __alloT('stem.solarsystem.interior_structure_title', sel.name + " Interior Structure"))
                     ),
-                    React.createElement("p", { className: "text-xs leading-relaxed", style: { position: "relative", zIndex: 1, color: palette.textTint } }, copy)
+                    React.createElement("p", { className: "text-xs leading-relaxed", style: { position: "relative", zIndex: 1, color: palette.textTint } }, copy),
+                    React.createElement("p", { className: "text-[10px] mt-2 font-bold tracking-wide", style: { position: "relative", zIndex: 1, color: '#f8fafc' } }, modelDisclosure)
                   );
                 })(),
-                // Cutaway canvas
                 React.createElement("div", {
                   className: "relative rounded-xl overflow-hidden border-2 shadow-lg",
                   "data-solar-interior-cutaway": sel.key,
+                  "data-solar-interior-model": "evidence-based-schematic",
                   style: {
                     height: '420px',
                     borderColor: sel.terrainType === 'icegiant' ? 'rgba(125,211,252,0.72)' : sel.terrainType === 'iceworld' ? 'rgba(196,181,253,0.72)' : sel.terrainType === 'gasgiant' ? 'rgba(251,191,36,0.72)' : 'rgba(251,146,60,0.72)',
@@ -11849,332 +11966,229 @@ const d = labToolData.solarSystem || {};
                   React.createElement("canvas", {
                     role: "img",
                     "data-solar-interior-canvas": sel.key,
-                    "aria-label": "Interior cutaway diagram of " + sel.name,
+                    "aria-label": __alloT('stem.solarsystem.interior_canvas_accessible_name', 'Modeled interior cutaway and exterior view of ' + sel.name + '; boundaries and thicknesses are approximate and not to scale. Layer descriptions follow.'),
+                    "aria-describedby": "solar-interior-layer-grid-" + sel.key.toLowerCase(),
                     style: { width: '100%', height: '100%', display: 'block', background: '#0a0a20' },
                     ref: function(canvasEl) {
+                      solarInteriorCanvasRef.current = canvasEl;
                       if (!canvasEl) return;
-                      var ctx2 = canvasEl.getContext('2d');
-                      if (!ctx2) return;
-                      var cw = canvasEl.parentElement.clientWidth || canvasEl.offsetWidth || 600;
-                      var ch = 420;
-                      if (canvasEl.width !== cw) canvasEl.width = cw;
-                      if (canvasEl.height !== ch) canvasEl.height = ch;
-                      // An inline ref re-runs every re-render and the realloc used to clear
-                      // the bitmap each time. It is conditional now, so clear explicitly:
-                      // site 1 only fills much later, site 2 can return before drawing.
-                      ctx2.clearRect(0, 0, cw, ch);
-                      var compactInterior = cw < 560;
-                      canvasEl.setAttribute('data-solar-interior-layout', compactInterior ? 'compact-key' : 'wide-callouts');
-                      var cx = cw / 2;
-                      var cy = compactInterior ? 160 : ch / 2;
-                      var maxR = compactInterior ? Math.min(cw * 0.31, 108) : Math.min(cw, ch) * 0.38;
+                      solarInteriorDrawRef.current = function() {
+                        var activeCanvas = solarInteriorCanvasRef.current;
+                        if (!activeCanvas) return;
+                        var ctx2 = activeCanvas.getContext('2d');
+                        if (!ctx2) return;
+                        var cw = Math.max(1, Math.round(activeCanvas.parentElement.clientWidth || activeCanvas.offsetWidth || 600));
+                        var ch = 420;
+                        var pixelRatio = typeof window !== 'undefined' ? Math.max(1, Math.min(2, Number(window.devicePixelRatio) || 1)) : 1;
+                        var backingWidth = Math.round(cw * pixelRatio);
+                        var backingHeight = Math.round(ch * pixelRatio);
+                        if (activeCanvas.width !== backingWidth) activeCanvas.width = backingWidth;
+                        if (activeCanvas.height !== backingHeight) activeCanvas.height = backingHeight;
+                        ctx2.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+                        ctx2.clearRect(0, 0, cw, ch);
+                        var compactInterior = cw < 760;
+                        activeCanvas.setAttribute('data-solar-interior-layout', compactInterior ? 'compact-key' : 'wide-callouts');
+                        activeCanvas.setAttribute('data-solar-interior-dpr', String(pixelRatio));
+                        var cx = cw / 2;
+                        var cy = compactInterior ? 154 : ch / 2;
+                        var maxR = compactInterior ? Math.min(cw * 0.30, 104) : Math.min(cw, ch) * 0.38;
+                        var layers = getSolarInteriorLayers(sel.key);
 
-                      // Planet interior layers by type
-                      var layers;
-                      if (sel.key === 'Mercury') {
-                        layers = [
-                          { r: 1.0, color: '#8a7060', label: __alloT('stem.solarsystem.crust', 'Crust'), desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered', 'Thin silicate crust, heavily cratered'), thick: '~35 km' },
-                          { r: 0.85, color: '#6a5040', label: __alloT('stem.solarsystem.mantle', 'Mantle'), desc: __alloT('stem.solarsystem.silicate_rock_mantle', 'Silicate rock mantle'), thick: '600 km' },
-                          { r: 0.55, color: '#d4a050', label: __alloT('stem.solarsystem.outer_core', 'Outer Core'), desc: __alloT('stem.solarsystem.liquid_iron_nickel_outer_core', 'Liquid iron-nickel outer core'), thick: '500 km' },
-                          { r: 0.35, color: '#f0c040', label: __alloT('stem.solarsystem.inner_core', 'Inner Core'), desc: __alloT('stem.solarsystem.solid_iron_inner_core_giant_for_mercur', 'Solid iron inner core \u2014 giant for Mercury\'s size!'), thick: '850 km' }
-                        ];
-                      } else if (sel.key === 'Venus') {
-                        layers = [
-                          { r: 1.0, color: '#c9a050', label: __alloT('stem.solarsystem.crust_2', 'Crust'), desc: __alloT('stem.solarsystem.basaltic_volcanic_crust_no_tectonic_pl', 'Basaltic volcanic crust, no tectonic plates'), thick: '30 km' },
-                          { r: 0.95, color: '#a07030', label: __alloT('stem.solarsystem.upper_mantle', 'Upper Mantle'), desc: __alloT('stem.solarsystem.silicate_rock_possible_partial_melt', 'Silicate rock, possible partial melt'), thick: '500 km' },
-                          { r: 0.65, color: '#805020', label: __alloT('stem.solarsystem.lower_mantle', 'Lower Mantle'), desc: __alloT('stem.solarsystem.dense_silicate_rock_under_extreme_pres', 'Dense silicate rock under extreme pressure'), thick: '2,500 km' },
-                          { r: 0.30, color: '#e0b040', label: __alloT('stem.solarsystem.core', 'Core'), desc: __alloT('stem.solarsystem.iron_nickel_core_possibly_liquid_no_ma', 'Iron-nickel core \u2014 possibly liquid (no magnetic field!)'), thick: '3,200 km' }
-                        ];
-                      } else if (sel.key === 'Earth') {
-                        layers = [
-                          { r: 1.0, color: '#4a8050', label: __alloT('stem.solarsystem.crust_3', 'Crust'), desc: __alloT('stem.solarsystem.oceanic_5_km_continental_35_km', 'Oceanic (5 km) + Continental (35 km)'), thick: '5\u201335 km' },
-                          { r: 0.97, color: '#c07030', label: __alloT('stem.solarsystem.upper_mantle_2', 'Upper Mantle'), desc: __alloT('stem.solarsystem.asthenosphere_tectonic_plates_float_he', 'Asthenosphere \u2014 tectonic plates float here'), thick: '670 km' },
-                          { r: 0.70, color: '#903020', label: __alloT('stem.solarsystem.lower_mantle_2', 'Lower Mantle'), desc: __alloT('stem.solarsystem.dense_slow_flowing_rock_drives_convect', 'Dense, slow-flowing rock drives convection'), thick: '2,200 km' },
-                          { r: 0.35, color: '#d09030', label: __alloT('stem.solarsystem.outer_core_2', 'Outer Core'), desc: __alloT('stem.solarsystem.liquid_iron_nickel_creates_magnetic_fi', 'Liquid iron-nickel \u2014 creates magnetic field!'), thick: '2,260 km' },
-                          { r: 0.18, color: '#f0d060', label: __alloT('stem.solarsystem.inner_core_2', 'Inner Core'), desc: __alloT('stem.solarsystem.solid_iron_ball_5_400_c_hot_as_sun_s_s', 'Solid iron ball, 5,400\u00B0C \u2014 hot as Sun\'s surface'), thick: '1,220 km' }
-                        ];
-                      } else if (sel.key === 'Mars') {
-                        layers = [
-                          { r: 1.0, color: '#b04020', label: __alloT('stem.solarsystem.crust_4', 'Crust'), desc: __alloT('stem.solarsystem.iron_oxide_basalt_gives_mars_its_red_c', 'Iron-oxide basalt \u2014 gives Mars its red color'), thick: '50 km' },
-                          { r: 0.90, color: '#704030', label: __alloT('stem.solarsystem.mantle_2', 'Mantle'), desc: __alloT('stem.solarsystem.silicate_rock_iron_magnesium_rich', 'Silicate rock, iron/magnesium-rich'), thick: '1,560 km' },
-                          { r: 0.40, color: '#d09040', label: __alloT('stem.solarsystem.core_2', 'Core'), desc: __alloT('stem.solarsystem.liquid_iron_sulfide_core_no_magnetic_f', 'Liquid iron-sulfide core (no magnetic field!)'), thick: '1,830 km' }
-                        ];
-                      } else if (sel.key === 'Jupiter') {
-                        layers = [
-                          { r: 1.0, color: '#d4924f', label: __alloT('stem.solarsystem.cloud_tops', 'Cloud Tops'), desc: __alloT('stem.solarsystem.ammonia_ice_clouds_colored_bands_storm', 'Ammonia ice clouds, colored bands & storms'), thick: '~50 km' },
-                          { r: 0.95, color: '#b07030', label: __alloT('stem.solarsystem.gaseous_h', 'Gaseous H\u2082'), desc: __alloT('stem.solarsystem.molecular_hydrogen_deepening_to_liquid', 'Molecular hydrogen deepening to liquid'), thick: '~21,000 km' },
-                          { r: 0.65, color: '#7050a0', label: __alloT('stem.solarsystem.liquid_h', 'Liquid H\u2082'), desc: __alloT('stem.solarsystem.hydrogen_compressed_to_liquid_ocean', 'Hydrogen compressed to liquid ocean'), thick: '~20,000 km' },
-                          { r: 0.35, color: '#a070c0', label: __alloT('stem.solarsystem.metallic_h_3', 'Metallic H\u2082'), desc: __alloT('stem.solarsystem.metallic_hydrogen_conducts_electricity', 'Metallic hydrogen conducts electricity \u2014 strongest magnetic field!'), thick: '~19,000 km' },
-                          { r: 0.12, color: '#e0c040', label: __alloT('stem.solarsystem.rocky_core', 'Rocky Core'), desc: __alloT('stem.solarsystem.diffuse_rocky_ice_core_10_20x_earth_s_', 'Diffuse rocky/ice core, 10-20x Earth\'s mass'), thick: '~10,000 km' }
-                        ];
-                      } else if (sel.key === 'Saturn') {
-                        layers = [
-                          { r: 1.0, color: '#c9a04a', label: __alloT('stem.solarsystem.cloud_tops_2', 'Cloud Tops'), desc: __alloT('stem.solarsystem.ammonia_crystals_golden_white_bands', 'Ammonia crystals, golden-white bands'), thick: '~50 km' },
-                          { r: 0.95, color: '#a08030', label: __alloT('stem.solarsystem.gaseous_h_2', 'Gaseous H\u2082'), desc: __alloT('stem.solarsystem.molecular_hydrogen_gas', 'Molecular hydrogen gas'), thick: '~30,000 km' },
-                          { r: 0.55, color: '#6040a0', label: __alloT('stem.solarsystem.liquid_h_2', 'Liquid H\u2082'), desc: __alloT('stem.solarsystem.liquid_hydrogen_layer', 'Liquid hydrogen layer'), thick: '~14,000 km' },
-                          { r: 0.30, color: '#8060b0', label: __alloT('stem.solarsystem.metallic_h_4', 'Metallic H\u2082'), desc: __alloT('stem.solarsystem.metallic_hydrogen_generates_magnetic_f', 'Metallic hydrogen \u2014 generates magnetic field'), thick: '~8,000 km' },
-                          { r: 0.10, color: '#e0b040', label: __alloT('stem.solarsystem.rocky_core_2', 'Rocky Core'), desc: __alloT('stem.solarsystem.ice_rock_core_9_22x_earth_s_mass', 'Ice/rock core, 9-22x Earth\'s mass'), thick: '~8,000 km' }
-                        ];
-                      } else if (sel.key === 'Uranus') {
-                        layers = [
-                          { r: 1.0, color: '#80d0d0', label: __alloT('stem.solarsystem.upper_atmosphere_4', 'Upper Atmosphere'), desc: __alloT('stem.solarsystem.methane_absorbs_red_light_cyan_color', 'Methane absorbs red light \u2192 cyan color'), thick: '~5,000 km' },
-                          { r: 0.80, color: '#50a0a0', label: __alloT('stem.solarsystem.h_he_envelope', 'H\u2082/He Envelope'), desc: __alloT('stem.solarsystem.hydrogen_helium_gas_layer', 'Hydrogen-helium gas layer'), thick: '~7,000 km' },
-                          { r: 0.55, color: '#2a5a7a', label: __alloT('stem.solarsystem.water_ammonia_ice', 'Water/Ammonia Ice'), desc: __alloT('stem.solarsystem.superionic_water_ice_that_conducts_ele', 'Superionic water: ice that conducts electricity!'), thick: '~10,000 km' },
-                          { r: 0.30, color: '#b8d8f8', label: __alloT('stem.solarsystem.diamond_rain_3', 'Diamond Rain'), desc: __alloT('stem.solarsystem.carbon_crushed_into_diamonds_that_sink', 'Carbon crushed into diamonds that sink'), thick: '~3,000 km' },
-                          { r: 0.15, color: '#808060', label: __alloT('stem.solarsystem.rocky_core_3', 'Rocky Core'), desc: __alloT('stem.solarsystem.silicate_iron_core_1x_earth_mass', 'Silicate/iron core, ~1x Earth mass'), thick: '~3,000 km' }
-                        ];
-                      } else if (sel.key === 'Neptune') {
-                        layers = [
-                          { r: 1.0, color: '#4060c0', label: __alloT('stem.solarsystem.upper_atmosphere_5', 'Upper Atmosphere'), desc: __alloT('stem.solarsystem.deep_blue_from_methane_supersonic_2_10', 'Deep blue from methane, supersonic 2,100 km/h winds'), thick: '~5,000 km' },
-                          { r: 0.80, color: '#3050a0', label: __alloT('stem.solarsystem.h_he_envelope_2', 'H\u2082/He Envelope'), desc: __alloT('stem.solarsystem.hydrogen_helium_gas_layer_2', 'Hydrogen-helium gas layer'), thick: '~7,000 km' },
-                          { r: 0.55, color: '#1a2060', label: __alloT('stem.solarsystem.water_ammonia_ice_2', 'Water/Ammonia Ice'), desc: __alloT('stem.solarsystem.superionic_water_mantle', 'Superionic water mantle'), thick: '~10,000 km' },
-                          { r: 0.30, color: '#a0c8e8', label: __alloT('stem.solarsystem.diamond_rain_4', 'Diamond Rain'), desc: __alloT('stem.solarsystem.carbon_atoms_crushed_into_literal_diam', 'Carbon atoms crushed into literal diamonds'), thick: '~3,000 km' },
-                          { r: 0.15, color: '#606050', label: __alloT('stem.solarsystem.rocky_core_4', 'Rocky Core'), desc: __alloT('stem.solarsystem.iron_silicate_core_1_2x_earth_mass', 'Iron-silicate core, ~1.2x Earth mass'), thick: '~4,000 km' }
-                        ];
-                      } else { // Pluto
-                        layers = [
-                          { r: 1.0, color: '#d0c8b0', label: __alloT('stem.solarsystem.nitrogen_ice', 'Nitrogen Ice'), desc: __alloT('stem.solarsystem.frozen_n_co_ch_ice_surface_tombaugh_re', 'Frozen N\u2082/CO/CH\u2084 ice surface (Tombaugh Regio)'), thick: '~10 km' },
-                          { r: 0.92, color: '#8090a0', label: __alloT('stem.solarsystem.water_ice_crust', 'Water Ice Crust'), desc: __alloT('stem.solarsystem.rigid_water_ice_bedrock', 'Rigid water-ice bedrock'), thick: '~300 km' },
-                          { r: 0.65, color: '#4060a0', label: __alloT('stem.solarsystem.subsurface_ocean', 'Subsurface Ocean?'), desc: __alloT('stem.solarsystem.possible_liquid_water_ocean_kept_warm_', 'Possible liquid water ocean kept warm by radioactive decay'), thick: '~100 km' },
-                          { r: 0.50, color: '#605040', label: __alloT('stem.solarsystem.rocky_core_5', 'Rocky Core'), desc: __alloT('stem.solarsystem.silicate_rock_core_70_of_pluto_s_mass', 'Silicate rock core, ~70% of Pluto\'s mass'), thick: '~850 km' }
-                        ];
-                      }
-
-                      // Draw starfield
-                      ctx2.fillStyle = '#0a0a20';
-                      ctx2.fillRect(0, 0, cw, ch);
-                      for (var si = 0; si < 120; si++) {
-                        var sx = (Math.sin(si * 137.508 + 42) * 0.5 + 0.5) * cw;
-                        var sy = (Math.cos(si * 91.3 + 17) * 0.5 + 0.5) * ch;
-                        // Stable brightness prevents the star field from shimmering on state updates.
-                        var starAlpha = 0.18 + (Math.sin(si * 47.71 + 9.2) * 0.5 + 0.5) * 0.48;
-                        ctx2.fillStyle = 'rgba(255,255,255,' + starAlpha.toFixed(3) + ')';
-                        var starSize = si % 17 === 0 ? 1.6 : 1;
-                        ctx2.fillRect(sx, sy, starSize, starSize);
-                      }
-
-                      // Draw half-circle cutaway (right half = full planet, left half = cross-section)
-                      // Full planet right half
-                      for (var li = 0; li < layers.length; li++) {
-                        var lr = layers[li].r * maxR;
-                        ctx2.beginPath();
-                        ctx2.arc(cx, cy, lr, -Math.PI / 2, Math.PI / 2, false);
-                        ctx2.fillStyle = layers[li].color;
-                        ctx2.fill();
-                      }
-
-                      // Cross-section left half (concentric half-circles)
-                      for (var li2 = 0; li2 < layers.length; li2++) {
-                        var lr2 = layers[li2].r * maxR;
-                        ctx2.beginPath();
-                        ctx2.arc(cx, cy, lr2, Math.PI / 2, -Math.PI / 2, false);
-                        ctx2.closePath();
-                        ctx2.fillStyle = layers[li2].color;
-                        ctx2.fill();
-                        // Layer boundary line
-                        if (li2 > 0) {
-                          ctx2.beginPath();
-                          ctx2.arc(cx, cy, lr2, Math.PI / 2, -Math.PI / 2, false);
-                          ctx2.strokeStyle = 'rgba(255,255,255,0.3)';
-                          ctx2.lineWidth = 1;
-                          ctx2.stroke();
+                        ctx2.fillStyle = '#0a0a20';
+                        ctx2.fillRect(0, 0, cw, ch);
+                        for (var si = 0; si < 120; si++) {
+                          var sx = (Math.sin(si * 137.508 + 42) * 0.5 + 0.5) * cw;
+                          var sy = (Math.cos(si * 91.3 + 17) * 0.5 + 0.5) * ch;
+                          var starAlpha = 0.18 + (Math.sin(si * 47.71 + 9.2) * 0.5 + 0.5) * 0.48;
+                          ctx2.fillStyle = 'rgba(255,255,255,' + starAlpha.toFixed(3) + ')';
+                          ctx2.fillRect(sx, sy, si % 17 === 0 ? 1.6 : 1, si % 17 === 0 ? 1.6 : 1);
                         }
-                      }
 
-                      // Center dividing line
-                      ctx2.beginPath();
-                      ctx2.moveTo(cx, cy - layers[0].r * maxR);
-                      ctx2.lineTo(cx, cy + layers[0].r * maxR);
-                      ctx2.strokeStyle = 'rgba(255,255,255,0.6)';
-                      ctx2.lineWidth = 2;
-                      ctx2.stroke();
+                        // Right hemisphere is the observable exterior; left is the modeled cutaway.
+                        var exteriorBase = typeof sel.color === 'string' && sel.color.charAt(0) === '#' ? sel.color : layers[0].color;
+                        ctx2.save();
+                        ctx2.beginPath();
+                        ctx2.arc(cx, cy, maxR, -Math.PI / 2, Math.PI / 2, false);
+                        ctx2.lineTo(cx, cy - maxR);
+                        ctx2.closePath();
+                        ctx2.clip();
+                        var exteriorGradient = ctx2.createRadialGradient(cx + maxR * 0.24, cy - maxR * 0.26, maxR * 0.04, cx, cy, maxR * 1.04);
+                        exteriorGradient.addColorStop(0, '#f8fafc');
+                        exteriorGradient.addColorStop(0.16, exteriorBase);
+                        exteriorGradient.addColorStop(0.70, layers[0].color);
+                        exteriorGradient.addColorStop(1, '#111827');
+                        ctx2.fillStyle = exteriorGradient;
+                        ctx2.fillRect(cx, cy - maxR, maxR + 2, maxR * 2);
+                        if (sel.terrainType === 'gasgiant') {
+                          for (var band = 0; band < 10; band++) {
+                            ctx2.fillStyle = band % 2 ? 'rgba(255,255,255,0.10)' : 'rgba(71,35,20,0.16)';
+                            ctx2.fillRect(cx, cy - maxR + band * maxR * 0.2, maxR + 2, maxR * 0.09);
+                          }
+                        } else if (sel.key === 'Earth') {
+                          ctx2.fillStyle = 'rgba(74,222,128,0.72)';
+                          ctx2.beginPath(); ctx2.ellipse(cx + maxR * 0.30, cy - maxR * 0.18, maxR * 0.18, maxR * 0.29, -0.5, 0, Math.PI * 2); ctx2.fill();
+                          ctx2.beginPath(); ctx2.ellipse(cx + maxR * 0.55, cy + maxR * 0.28, maxR * 0.19, maxR * 0.12, 0.3, 0, Math.PI * 2); ctx2.fill();
+                        } else if (sel.key === 'Mars' || sel.key === 'Mercury') {
+                          ctx2.fillStyle = 'rgba(30,20,18,0.28)';
+                          ctx2.beginPath(); ctx2.arc(cx + maxR * 0.46, cy - maxR * 0.20, maxR * 0.10, 0, Math.PI * 2); ctx2.fill();
+                          ctx2.beginPath(); ctx2.arc(cx + maxR * 0.66, cy + maxR * 0.31, maxR * 0.07, 0, Math.PI * 2); ctx2.fill();
+                        }
+                        ctx2.restore();
+                        ctx2.beginPath();
+                        ctx2.arc(cx, cy, maxR, -Math.PI / 2, Math.PI / 2, false);
+                        ctx2.strokeStyle = 'rgba(255,255,255,0.58)';
+                        ctx2.lineWidth = 1.25;
+                        ctx2.stroke();
 
-                      // Atmospheric glow
-                      var glowGrad = ctx2.createRadialGradient(cx, cy, maxR * 0.95, cx, cy, maxR * 1.12);
-                      glowGrad.addColorStop(0, layers[0].color + '60');
-                      glowGrad.addColorStop(1, 'transparent');
-                      ctx2.fillStyle = glowGrad;
-                      ctx2.fillRect(0, 0, cw, ch);
-
-                      // Wide canvases use leader-line callouts. Compact canvases move the
-                      // labels below the planet so translated names never clip off-screen.
-                      if (compactInterior) {
-                        var legendTop = cy + maxR + 27;
-                        var legendBottom = ch - 8;
-                        var legendRowH = (legendBottom - legendTop) / layers.length;
-                        ctx2.textAlign = 'left';
-                        ctx2.textBaseline = 'middle';
-                        ctx2.font = 'bold 9px sans-serif';
-                        ctx2.fillStyle = 'rgba(165,243,252,0.82)';
-                        ctx2.fillText('LAYER KEY', 12, legendTop - 11);
-                        for (var li3 = 0; li3 < layers.length; li3++) {
-                          var compactLayer = layers[li3];
-                          var legendY = legendTop + (li3 + 0.5) * legendRowH;
-                          if (li3 > 0) {
+                        for (var li = 0; li < layers.length; li++) {
+                          var layerRadius = layers[li].r * maxR;
+                          ctx2.beginPath();
+                          ctx2.arc(cx, cy, layerRadius, Math.PI / 2, -Math.PI / 2, false);
+                          ctx2.closePath();
+                          ctx2.fillStyle = layers[li].color;
+                          ctx2.fill();
+                          if (li > 0) {
                             ctx2.beginPath();
-                            ctx2.moveTo(12, legendY - legendRowH / 2);
-                            ctx2.lineTo(cw - 12, legendY - legendRowH / 2);
-                            ctx2.strokeStyle = 'rgba(148,163,184,0.16)';
+                            ctx2.arc(cx, cy, layerRadius, Math.PI / 2, -Math.PI / 2, false);
+                            ctx2.strokeStyle = 'rgba(255,255,255,0.34)';
                             ctx2.lineWidth = 1;
                             ctx2.stroke();
                           }
-                          ctx2.beginPath();
-                          ctx2.arc(17, legendY, 4.5, 0, Math.PI * 2);
-                          ctx2.fillStyle = compactLayer.color;
-                          ctx2.fill();
-                          ctx2.strokeStyle = 'rgba(255,255,255,0.52)';
-                          ctx2.stroke();
-                          ctx2.font = 'bold 10px sans-serif';
-                          ctx2.fillStyle = '#f8fafc';
-                          ctx2.fillText(compactLayer.label, 30, legendY, Math.max(72, cw - 132));
-                          ctx2.textAlign = 'right';
-                          ctx2.font = '9px sans-serif';
-                          ctx2.fillStyle = '#cbd5e1';
-                          ctx2.fillText(compactLayer.thick, cw - 12, legendY);
-                          ctx2.textAlign = 'left';
                         }
-                      } else {
-                        ctx2.textAlign = 'right';
+
+                        ctx2.beginPath();
+                        ctx2.moveTo(cx, cy - maxR);
+                        ctx2.lineTo(cx, cy + maxR);
+                        ctx2.strokeStyle = 'rgba(255,255,255,0.72)';
+                        ctx2.lineWidth = 2;
+                        ctx2.stroke();
+
+                        var glowGrad = ctx2.createRadialGradient(cx, cy, maxR * 0.95, cx, cy, maxR * 1.13);
+                        glowGrad.addColorStop(0, layers[0].color + '58');
+                        glowGrad.addColorStop(1, 'transparent');
+                        ctx2.fillStyle = glowGrad;
+                        ctx2.fillRect(cx - maxR * 1.2, cy - maxR * 1.2, maxR * 2.4, maxR * 2.4);
+
                         ctx2.textBaseline = 'middle';
-                        var labelTop = cy - maxR * 0.70;
-                        var labelBottom = cy + maxR * 0.70;
-                        for (var li4 = 0; li4 < layers.length; li4++) {
-                          var wideLayer = layers[li4];
-                          var nextR = li4 < layers.length - 1 ? layers[li4 + 1].r : 0;
-                          var midR = ((wideLayer.r + nextR) / 2) * maxR;
-                          var labelY = layers.length > 1 ? labelTop + li4 * (labelBottom - labelTop) / (layers.length - 1) : cy;
-                          var labelX = Math.max(116, cx - maxR - 20);
+                        ctx2.textAlign = 'center';
+                        ctx2.font = 'bold 8px sans-serif';
+                        ctx2.fillStyle = '#fda4af';
+                        ctx2.fillText(__alloT('stem.solarsystem.modeled_cutaway', 'MODELED CUTAWAY'), cx - maxR * 0.52, cy - maxR - 10, maxR * 0.92);
+                        ctx2.fillStyle = '#a5f3fc';
+                        ctx2.fillText(__alloT('stem.solarsystem.exterior', 'EXTERIOR'), cx + maxR * 0.52, cy - maxR - 10, maxR * 0.88);
 
-                          ctx2.beginPath();
-                          ctx2.moveTo(labelX + 5, labelY);
-                          ctx2.lineTo(cx - midR, cy);
-                          ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
-                          ctx2.lineWidth = 1;
-                          ctx2.setLineDash([3, 3]);
-                          ctx2.stroke();
-                          ctx2.setLineDash([]);
-
-                          ctx2.font = 'bold 11px sans-serif';
-                          ctx2.fillStyle = '#fff';
-                          ctx2.fillText(wideLayer.label, labelX, labelY - 7);
-                          ctx2.font = '9px sans-serif';
-                          ctx2.fillStyle = '#cbd5e1';
-                          ctx2.fillText(wideLayer.thick, labelX, labelY + 7);
+                        if (compactInterior) {
+                          var legendTop = cy + maxR + 27;
+                          var legendBottom = ch - 8;
+                          var legendRowH = (legendBottom - legendTop) / layers.length;
+                          ctx2.textAlign = 'left';
+                          ctx2.font = 'bold 9px sans-serif';
+                          ctx2.fillStyle = 'rgba(165,243,252,0.82)';
+                          ctx2.fillText(__alloT('stem.solarsystem.layer_key', 'LAYER KEY'), 12, legendTop - 11);
+                          for (var li2 = 0; li2 < layers.length; li2++) {
+                            var compactLayer = layers[li2];
+                            var legendY = legendTop + (li2 + 0.5) * legendRowH;
+                            if (li2 > 0) {
+                              ctx2.beginPath();
+                              ctx2.moveTo(12, legendY - legendRowH / 2);
+                              ctx2.lineTo(cw - 12, legendY - legendRowH / 2);
+                              ctx2.strokeStyle = 'rgba(148,163,184,0.16)';
+                              ctx2.lineWidth = 1;
+                              ctx2.stroke();
+                            }
+                            ctx2.beginPath();
+                            ctx2.arc(17, legendY, 4.5, 0, Math.PI * 2);
+                            ctx2.fillStyle = compactLayer.color;
+                            ctx2.fill();
+                            ctx2.strokeStyle = 'rgba(255,255,255,0.52)';
+                            ctx2.stroke();
+                            ctx2.font = 'bold 10px sans-serif';
+                            ctx2.fillStyle = '#f8fafc';
+                            ctx2.fillText(compactLayer.label, 30, legendY, Math.max(72, cw - 142));
+                            ctx2.textAlign = 'right';
+                            ctx2.font = '9px sans-serif';
+                            ctx2.fillStyle = '#cbd5e1';
+                            ctx2.fillText(compactLayer.thick, cw - 12, legendY, 104);
+                            ctx2.textAlign = 'left';
+                          }
+                        } else {
+                          ctx2.textAlign = 'right';
+                          var labelTop = cy - maxR * 0.70;
+                          var labelBottom = cy + maxR * 0.70;
+                          var labelX = Math.max(132, cx - maxR - 24);
+                          var labelMaxWidth = Math.max(100, labelX - 18);
+                          for (var li3 = 0; li3 < layers.length; li3++) {
+                            var wideLayer = layers[li3];
+                            var nextR = li3 < layers.length - 1 ? layers[li3 + 1].r : 0;
+                            var midR = ((wideLayer.r + nextR) / 2) * maxR;
+                            var labelY = layers.length > 1 ? labelTop + li3 * (labelBottom - labelTop) / (layers.length - 1) : cy;
+                            ctx2.beginPath();
+                            ctx2.moveTo(labelX + 5, labelY);
+                            ctx2.lineTo(cx - midR, cy);
+                            ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
+                            ctx2.lineWidth = 1;
+                            ctx2.setLineDash([3, 3]);
+                            ctx2.stroke();
+                            ctx2.setLineDash([]);
+                            ctx2.font = 'bold 11px sans-serif';
+                            ctx2.fillStyle = '#fff';
+                            ctx2.fillText(wideLayer.label, labelX, labelY - 7, labelMaxWidth);
+                            ctx2.font = '9px sans-serif';
+                            ctx2.fillStyle = '#cbd5e1';
+                            ctx2.fillText(wideLayer.thick, labelX, labelY + 7, labelMaxWidth);
+                          }
                         }
-                      }
-                      // Title
-                      ctx2.textAlign = 'center';
-                      ctx2.textBaseline = 'alphabetic';
-                      ctx2.font = compactInterior ? 'bold 13px sans-serif' : 'bold 14px sans-serif';
-                      ctx2.fillStyle = '#fff';
-                      ctx2.fillText(sel.name + ' Interior', cx, 24);
-                      ctx2.font = '10px sans-serif';
-                      ctx2.fillStyle = '#aaa';
-                      ctx2.fillText('Cross-section (not to scale)', cx, 40);
+
+                        ctx2.textAlign = 'center';
+                        ctx2.textBaseline = 'alphabetic';
+                        ctx2.font = compactInterior ? 'bold 13px sans-serif' : 'bold 14px sans-serif';
+                        ctx2.fillStyle = '#fff';
+                        ctx2.fillText(__alloT('stem.solarsystem.interior_canvas_title', sel.name + ' Interior'), cx, 22, Math.max(180, cw - 24));
+                        ctx2.font = '10px sans-serif';
+                        ctx2.fillStyle = '#cbd5e1';
+                        ctx2.fillText(__alloT('stem.solarsystem.cross_section_not_to_scale', 'Modeled cross-section — not to scale'), cx, 38, Math.max(180, cw - 24));
+                      };
+                      solarInteriorDrawRef.current();
                     }
                   })
                 ),
-                // Layer details grid
-                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2", "data-solar-interior-layer-grid": "true" },
-                  (function() {
-                    var interiorLayers;
-                    if (sel.key === 'Mercury') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.crust_5', 'Crust'), thick: '~35 km', desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered_f', 'Thin silicate crust, heavily cratered from 4 billion years of impacts'), icon: '\uD83E\uDEA8', color: '#8a7060' },
-                      { label: __alloT('stem.solarsystem.mantle_3', 'Mantle'), thick: '~600 km', desc: __alloT('stem.solarsystem.silicate_rock_mantle_unusually_thin_co', 'Silicate rock mantle \u2014 unusually thin compared to the core'), icon: '\uD83C\uDF0B', color: '#6a5040' },
-                      { label: __alloT('stem.solarsystem.iron_core', 'Iron Core'), thick: '~1,850 km', desc: __alloT('stem.solarsystem.enormous_iron_core_makes_up_85_of_the_', 'Enormous iron core makes up 85% of the planet\'s radius \u2014 the largest core-to-planet ratio in the solar system!'), icon: '\u2B50', color: '#f0c040' }
-                    ];
-                    else if (sel.key === 'Venus') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.volcanic_crust', 'Volcanic Crust'), thick: '~30 km', desc: __alloT('stem.solarsystem.basaltic_surface_1_600_volcanoes_but_n', 'Basaltic surface, 1,600+ volcanoes but no tectonic plates'), icon: '\uD83C\uDF0B', color: '#c9a050' },
-                      { label: __alloT('stem.solarsystem.mantle_4', 'Mantle'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.hot_silicate_rock_may_have_periodic_gl', 'Hot silicate rock. May have periodic global resurfacing events'), icon: '\uD83D\uDD25', color: '#a07030' },
-                      { label: __alloT('stem.solarsystem.core_3', 'Core'), thick: '~3,200 km', desc: __alloT('stem.solarsystem.iron_nickel_core_possibly_liquid_but_n', 'Iron-nickel core, possibly liquid but no magnetic field \u2014 its core likely lacks the churning currents needed to make one!'), icon: '\uD83E\uDDF2', color: '#e0b040' }
-                    ];
-                    else if (sel.key === 'Earth') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.crust_6', 'Crust'), thick: '5\u201335 km', desc: __alloT('stem.solarsystem.oceanic_crust_thin_dense_basalt_contin', 'Oceanic crust (thin, dense basalt) + continental crust (thick, light granite)'), icon: '\uD83C\uDF0D', color: '#4a8050' },
-                      { label: __alloT('stem.solarsystem.mantle_5', 'Mantle'), thick: '~2,870 km', desc: __alloT('stem.solarsystem.convecting_rock_drives_plate_tectonics', 'Convecting rock drives plate tectonics. Upper part (asthenosphere) is partially molten'), icon: '\uD83C\uDF0B', color: '#c07030' },
-                      { label: __alloT('stem.solarsystem.outer_core_3', 'Outer Core'), thick: '~2,260 km', desc: __alloT('stem.solarsystem.liquid_iron_nickel_convection_here_cre', 'Liquid iron-nickel \u2014 convection here creates Earth\'s magnetic field (magnetodynamo)'), icon: '\uD83E\uDDF2', color: '#d09030' },
-                      { label: __alloT('stem.solarsystem.inner_core_3', 'Inner Core'), thick: '~1,220 km', desc: __alloT('stem.solarsystem.solid_iron_ball_at_5_400_c_as_hot_as_t', 'Solid iron ball at 5,400\u00B0C \u2014 as hot as the Sun\'s surface, kept solid by immense pressure'), icon: '\u2B50', color: '#f0d060' }
-                    ];
-                    else if (sel.key === 'Mars') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.iron_oxide_crust', 'Iron-Oxide Crust'), thick: '~50 km', desc: __alloT('stem.solarsystem.thicker_than_earth_s_crust_iron_oxide_', 'Thicker than Earth\'s crust. Iron oxide gives Mars its red color'), icon: '\uD83D\uDD34', color: '#b04020' },
-                      { label: __alloT('stem.solarsystem.mantle_6', 'Mantle'), thick: '~1,560 km', desc: __alloT('stem.solarsystem.iron_and_magnesium_rich_silicate_rock_', 'Iron and magnesium-rich silicate rock, now mostly inactive'), icon: '\uD83C\uDF0B', color: '#704030' },
-                      { label: __alloT('stem.solarsystem.core_4', 'Core'), thick: '~1,830 km', desc: __alloT('stem.solarsystem.liquid_iron_sulfide_mars_lost_its_magn', 'Liquid iron-sulfide. Mars lost its magnetic field ~4 billion years ago when the core stopped convecting'), icon: '\uD83E\uDDF2', color: '#d09040' }
-                    ];
-                    else if (sel.key === 'Jupiter') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.cloud_tops_3', 'Cloud Tops'), thick: '~50 km', desc: __alloT('stem.solarsystem.ammonia_ice_crystals_form_the_colored_', 'Ammonia ice crystals form the colored bands and Great Red Spot'), icon: '\u2601\uFE0F', color: '#d4924f' },
-                      { label: __alloT('stem.solarsystem.gaseous_h_3', 'Gaseous H\u2082'), thick: '~21,000 km', desc: __alloT('stem.solarsystem.molecular_hydrogen_gas_deepening_with_', 'Molecular hydrogen gas deepening with pressure'), icon: '\uD83D\uDCA8', color: '#b07030' },
-                      { label: __alloT('stem.solarsystem.metallic_hydrogen', 'Metallic Hydrogen'), thick: '~39,000 km', desc: __alloT('stem.solarsystem.hydrogen_compressed_so_densely_it_cond', 'Hydrogen compressed so densely it conducts electricity like metal \u2014 generates Jupiter\'s enormous magnetic field'), icon: '\u26A1', color: '#a070c0' },
-                      { label: __alloT('stem.solarsystem.rocky_core_6', 'Rocky Core'), thick: '~10,000 km', desc: __alloT('stem.solarsystem.diffuse_core_of_rock_and_exotic_ices_1', 'Diffuse core of rock and exotic ices, 10-20x Earth\'s mass, at 20,000\u00B0C'), icon: '\uD83E\uDEA8', color: '#e0c040' }
-                    ];
-                    else if (sel.key === 'Saturn') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.cloud_tops_4', 'Cloud Tops'), thick: '~50 km', desc: __alloT('stem.solarsystem.golden_ammonia_crystal_clouds_less_tur', 'Golden ammonia crystal clouds, less turbulent than Jupiter'), icon: '\u2601\uFE0F', color: '#c9a04a' },
-                      { label: __alloT('stem.solarsystem.gaseous_h_4', 'Gaseous H\u2082'), thick: '~30,000 km', desc: __alloT('stem.solarsystem.molecular_hydrogen_deepening_under_pre', 'Molecular hydrogen deepening under pressure'), icon: '\uD83D\uDCA8', color: '#a08030' },
-                      { label: __alloT('stem.solarsystem.metallic_hydrogen_2', 'Metallic Hydrogen'), thick: '~22,000 km', desc: __alloT('stem.solarsystem.metallic_hydrogen_ocean_saturn_is_so_l', 'Metallic hydrogen ocean \u2014 Saturn is so light it could float in water!'), icon: '\u26A1', color: '#8060b0' },
-                      { label: __alloT('stem.solarsystem.rocky_core_7', 'Rocky Core'), thick: '~8,000 km', desc: __alloT('stem.solarsystem.dense_ice_rock_core_9_22x_earth_mass', 'Dense ice/rock core, 9-22x Earth mass'), icon: '\uD83E\uDEA8', color: '#e0b040' }
-                    ];
-                    else if (sel.key === 'Uranus') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.methane_atmosphere', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.methane_absorbs_red_light_giving_uranu', 'Methane absorbs red light, giving Uranus its cyan color. Tilted 97.8\u00B0 on its side!'), icon: '\uD83D\uDCA0', color: '#80d0d0' },
-                      { label: __alloT('stem.solarsystem.h_he_envelope_3', 'H\u2082/He Envelope'), thick: '~7,000 km', desc: __alloT('stem.solarsystem.hydrogen_helium_gas_transitioning_to_l', 'Hydrogen-helium gas transitioning to liquid'), icon: '\uD83D\uDCA8', color: '#50a0a0' },
-                      { label: __alloT('stem.solarsystem.superionic_water_ice', 'Superionic Water/Ice'), thick: '~10,000 km', desc: __alloT('stem.solarsystem.water_in_exotic_superionic_state_ice_t', 'Water in exotic "superionic" state \u2014 ice that conducts electricity! Plus diamond rain'), icon: '\uD83D\uDC8E', color: '#2a5a7a' },
-                      { label: __alloT('stem.solarsystem.rocky_core_8', 'Rocky Core'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.small_silicate_iron_core_about_1x_eart', 'Small silicate/iron core, about 1x Earth mass'), icon: '\uD83E\uDEA8', color: '#808060' }
-                    ];
-                    else if (sel.key === 'Neptune') interiorLayers = [
-                      { label: __alloT('stem.solarsystem.methane_atmosphere_2', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.deepest_blue_in_the_solar_system_winds', 'Pale greenish-blue from methane, just slightly bluer than Uranus. Winds reach 2,100 km/h \u2014 fastest in the solar system!'), icon: '\uD83C\uDF0A', color: '#4060c0' },
-                      { label: __alloT('stem.solarsystem.h_he_envelope_4', 'H\u2082/He Envelope'), thick: '~7,000 km', desc: __alloT('stem.solarsystem.hydrogen_helium_gas_with_extreme_press', 'Hydrogen-helium gas with extreme pressure'), icon: '\uD83D\uDCA8', color: '#3050a0' },
-                      { label: __alloT('stem.solarsystem.superionic_water_diamond_rain', 'Superionic Water/Diamond Rain'), thick: '~13,000 km', desc: __alloT('stem.solarsystem.superionic_water_mantle_where_carbon_a', 'Superionic water mantle where carbon atoms are crushed into literal diamonds that rain down'), icon: '\uD83D\uDC8E', color: '#1a2060' },
-                      { label: __alloT('stem.solarsystem.rocky_core_9', 'Rocky Core'), thick: '~4,000 km', desc: __alloT('stem.solarsystem.iron_silicate_core_1_2x_earth_mass_at_', 'Iron-silicate core, ~1.2x Earth mass at 5,400\u00B0C'), icon: '\uD83E\uDEA8', color: '#606050' }
-                    ];
-                    else interiorLayers = [ // Pluto
-                      { label: __alloT('stem.solarsystem.nitrogen_ice_2', 'Nitrogen Ice'), thick: '~10 km', desc: __alloT('stem.solarsystem.frozen_n_co_ch_on_the_surface_the_famo', 'Frozen N\u2082, CO, CH\u2084 on the surface. The famous heart-shaped Tombaugh Regio is nitrogen ice'), icon: '\u2744\uFE0F', color: '#d0c8b0' },
-                      { label: __alloT('stem.solarsystem.water_ice_crust_2', 'Water Ice Crust'), thick: '~300 km', desc: __alloT('stem.solarsystem.rigid_water_ice_bedrock_at_230_c_ice_i', 'Rigid water-ice bedrock \u2014 at -230\u00B0C, ice is as hard as rock'), icon: '\uD83E\uDDCA', color: '#8090a0' },
-                      { label: __alloT('stem.solarsystem.subsurface_ocean_2', 'Subsurface Ocean?'), thick: '~100 km', desc: __alloT('stem.solarsystem.scientists_believe_liquid_water_may_ex', 'Scientists believe liquid water may exist beneath the ice, kept warm by radioactive decay in the core'), icon: '\uD83D\uDCA7', color: '#4060a0' },
-                      { label: __alloT('stem.solarsystem.rocky_core_10', 'Rocky Core'), thick: '~850 km', desc: __alloT('stem.solarsystem.silicate_rock_core_makes_up_70_of_plut', 'Silicate rock core makes up ~70% of Pluto\'s mass'), icon: '\uD83E\uDEA8', color: '#605040' }
-                    ];
-                    return interiorLayers.map(function(layer, li) {
-                      return React.createElement("article", {
-                        key: li,
-                        "data-solar-interior-layer": layer.label,
-                        className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all hover:-translate-y-0.5",
-                        style: {
-                          background: "linear-gradient(135deg," + layer.color + "38 0%," + layer.color + "18 54%,rgba(7,11,24,0.96) 100%),#0f172a",
-                          borderColor: layer.color + '40',
-                          boxShadow: "0 2px 6px rgba(15,23,42,0.30),inset 0 1px 0 rgba(255,255,255,0.04)"
-                        }
-                      },
-                        // Left accent strip — same pattern as descent layer cards
+                React.createElement("div", {
+                  id: "solar-interior-layer-grid-" + sel.key.toLowerCase(),
+                  role: "list",
+                  className: "grid grid-cols-1 md:grid-cols-2 gap-2",
+                  "data-solar-interior-layer-grid": "true"
+                },
+                  getSolarInteriorLayers(sel.key).map(function(layer, li) {
+                    return React.createElement("article", {
+                      key: li,
+                      role: "listitem",
+                      "data-solar-interior-layer": layer.label,
+                      "data-solar-interior-model-tag": layer.modelTag || "observed-or-constrained",
+                      className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all hover:-translate-y-0.5",
+                      style: {
+                        background: "linear-gradient(135deg," + layer.color + "38 0%," + layer.color + "18 54%,rgba(7,11,24,0.96) 100%),#0f172a",
+                        borderColor: layer.color + '40',
+                        boxShadow: "0 2px 6px rgba(15,23,42,0.30),inset 0 1px 0 rgba(255,255,255,0.04)"
+                      }
+                    },
+                      React.createElement("div", { "aria-hidden": "true", style: { width: 5, flexShrink: 0, background: "linear-gradient(180deg," + layer.color + " 0%," + layer.color + "aa 100%)", boxShadow: "0 0 6px " + layer.color + "aa" } }),
+                      React.createElement("div", { className: "flex items-start gap-3 flex-1 p-3" },
                         React.createElement("div", {
                           "aria-hidden": "true",
-                          style: {
-                            width: 5, flexShrink: 0,
-                            background: "linear-gradient(180deg," + layer.color + " 0%," + layer.color + "aa 100%)",
-                            boxShadow: "0 0 6px " + layer.color + "aa"
-                          }
-                        }),
-                        React.createElement("div", { className: "flex items-start gap-3 flex-1 p-3" },
-                          React.createElement("div", {
-                            className: "w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-0.5",
-                            style: {
-                              background: "radial-gradient(circle," + layer.color + " 0%," + layer.color + "cc 70%," + layer.color + "33 100%)",
-                              boxShadow: "0 0 12px " + layer.color + "aa,inset 0 0 6px " + layer.color + "55"
-                            }
-                          }, layer.icon),
-                          React.createElement("div", { className: "flex-1 min-w-0" },
-                            React.createElement("div", { className: "flex items-center gap-2 mb-1 flex-wrap" },
-                              React.createElement("span", { className: "text-xs font-bold", style: { color: '#f8fafc', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
-                              React.createElement("span", {
-                                className: "text-[10px] px-1.5 py-0.5 rounded font-mono",
-                                style: {
-                                  color: '#f8fafc',
-                                  background: layer.color + '22',
-                                  border: '1px solid ' + layer.color + '55'
-                                }
-                              }, layer.thick)
-                            ),
-                            React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#cbd5e1' } }, layer.desc)
-                          )
+                          className: "w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-0.5",
+                          style: { background: "radial-gradient(circle," + layer.color + " 0%," + layer.color + "cc 70%," + layer.color + "33 100%)", boxShadow: "0 0 12px " + layer.color + "aa,inset 0 0 6px " + layer.color + "55" }
+                        }, layer.icon),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "flex items-center gap-2 mb-1 flex-wrap" },
+                            React.createElement("span", { className: "text-xs font-bold", style: { color: '#f8fafc', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
+                            React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded font-mono", style: { color: '#f8fafc', background: layer.color + '22', border: '1px solid ' + layer.color + '55' } }, layer.thick),
+                            layer.modelTag && React.createElement("span", { className: "text-[9px] px-1.5 py-0.5 rounded font-black tracking-wide", style: { color: '#fef3c7', background: 'rgba(120,53,15,0.72)', border: '1px solid rgba(251,191,36,0.48)' } }, layer.modelTag)
+                          ),
+                          React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#cbd5e1' } }, layer.desc)
                         )
-                      );
-                    });
-                  })()
+                      )
+                    );
+                  })
                 )
               ),
 
@@ -12187,14 +12201,19 @@ const d = labToolData.solarSystem || {};
                     React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Atmospheric Descent")
                   ),
                   React.createElement("p", { className: "text-xs text-indigo-200 leading-relaxed" },
-                    "Experience what a probe would encounter descending through " + sel.name + "'s atmosphere. Click a layer to learn more."
+                    "Experience what a probe would encounter descending through " + sel.name + "'s atmosphere. Click a layer to learn more. The band heights are schematic and show layer sequence, not proportional altitude."
                   )
                 ),
                 // Descent visualization canvas
-                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 shadow-lg " + (isDark ? 'border-indigo-700/60' : 'border-indigo-300'), style: { height: '400px' } },
+                React.createElement("div", {
+                  className: "relative rounded-xl overflow-hidden border-2 shadow-lg " + (isDark ? 'border-indigo-700/60' : 'border-indigo-300'),
+                  "data-solar-descent-stage": sel.key,
+                  style: { height: '400px', background: '#020617' }
+                },
                   React.createElement("canvas", {
                     role: "img",
-                    "aria-label": "Atmospheric descent visualization for " + sel.name,
+                    "data-solar-descent-canvas": sel.key,
+                    "aria-label": "Atmospheric descent visualization for " + sel.name + ". Layer sequence shown schematically; band heights are not proportional to altitude.",
                     style: { width: '100%', height: '100%', display: 'block' },
                     ref: function(canvasEl) {
                       if (!canvasEl) return;
@@ -12214,7 +12233,12 @@ const d = labToolData.solarSystem || {};
                       var padding = 40;
                       var layerAreaH = ch - padding * 2;
                       var layerH = layerAreaH / descentLayers.length;
-                      var probeY = d._descentProbeY != null ? d._descentProbeY : 0;
+                      var probeY = clampSolarDescentProbeValue(d._descentProbeY != null ? d._descentProbeY : 0);
+                      var compactDescent = cw < 560;
+                      var probeLayerIdx = getSolarDescentLayerIndex(descentLayers, probeY);
+                      var activeDescentLayer = descentLayers[probeLayerIdx];
+                      canvasEl.setAttribute('data-solar-descent-layout', compactDescent ? 'compact' : 'wide');
+                      canvasEl.setAttribute('data-solar-descent-active-layer', activeDescentLayer ? activeDescentLayer.name : '');
 
                       // Draw layers from top to bottom (highest altitude first)
                       descentLayers.forEach(function(layer, li) {
@@ -12226,6 +12250,18 @@ const d = labToolData.solarSystem || {};
                         grad.addColorStop(1, nextColor);
                         ctx2.fillStyle = grad;
                         ctx2.fillRect(0, y, cw, layerH);
+                        var layerIsActive = li === probeLayerIdx;
+                        if (layerIsActive) {
+                          var activeBandGlow = ctx2.createLinearGradient(0, y, cw, y);
+                          activeBandGlow.addColorStop(0, 'rgba(255,255,255,0.18)');
+                          activeBandGlow.addColorStop(0.55, 'rgba(255,255,255,0.08)');
+                          activeBandGlow.addColorStop(1, 'rgba(255,255,255,0.02)');
+                          ctx2.fillStyle = activeBandGlow;
+                          ctx2.fillRect(0, y, cw, layerH);
+                          ctx2.strokeStyle = 'rgba(255,255,255,0.82)';
+                          ctx2.lineWidth = 2;
+                          ctx2.strokeRect(1, y + 1, cw - 2, Math.max(1, layerH - 2));
+                        }
 
                         // Layer boundary line
                         if (li > 0) {
@@ -12241,13 +12277,14 @@ const d = labToolData.solarSystem || {};
 
                         // Altitude label on left
                         ctx2.textAlign = 'left';
-                        ctx2.font = 'bold 10px sans-serif';
-                        ctx2.fillStyle = 'rgba(255,255,255,0.9)';
-                        ctx2.fillText((layer.alt >= 0 ? '+' : '') + layer.alt + ' km', 8, y + 14);
+                        ctx2.font = layerIsActive ? 'bold 10px sans-serif' : 'bold 10px sans-serif';
+                        ctx2.fillStyle = layerIsActive ? '#ffffff' : 'rgba(255,255,255,0.9)';
+                        var altitudeText = (layer.alt >= 0 ? '+' : '') + layer.alt + ' km';
+                        ctx2.fillText((layerIsActive ? 'PROBE ' : '') + altitudeText, 8, y + 14);
 
                         // Layer name and description centered
                         ctx2.textAlign = 'center';
-                        ctx2.font = 'bold 12px sans-serif';
+                        ctx2.font = layerIsActive ? 'bold 13px sans-serif' : 'bold 12px sans-serif';
                         ctx2.fillStyle = '#fff';
                         ctx2.fillText(layer.name, cw / 2, y + layerH / 2 - 10);
                         ctx2.font = '10px sans-serif';
@@ -12273,39 +12310,87 @@ const d = labToolData.solarSystem || {};
                         ctx2.fillText(layer.pressure, cw - 10, y + 26);
                       });
 
-                      // Probe indicator (animated)
-                      var probeLayerIdx = Math.min(descentLayers.length - 1, Math.floor(probeY * descentLayers.length));
-                      var probePixelY = padding + probeY * layerAreaH;
+                      // Probe flight path and indicator
+                      var probePixelY = Math.min(ch - padding - 8, padding + probeY * layerAreaH);
+                      var probeX = cw * 0.15;
+                      ctx2.beginPath();
+                      ctx2.moveTo(probeX, padding);
+                      ctx2.lineTo(probeX, probePixelY);
+                      ctx2.strokeStyle = 'rgba(254,240,138,0.72)';
+                      ctx2.lineWidth = 2;
+                      ctx2.setLineDash([4, 4]);
+                      ctx2.stroke();
+                      ctx2.setLineDash([]);
                       // Probe glow
-                      var probeGlow = ctx2.createRadialGradient(cw * 0.15, probePixelY, 0, cw * 0.15, probePixelY, 20);
+                      var probeGlow = ctx2.createRadialGradient(probeX, probePixelY, 0, probeX, probePixelY, 20);
                       probeGlow.addColorStop(0, 'rgba(255,255,100,0.6)');
                       probeGlow.addColorStop(1, 'transparent');
                       ctx2.fillStyle = probeGlow;
-                      ctx2.fillRect(cw * 0.15 - 20, probePixelY - 20, 40, 40);
+                      ctx2.fillRect(probeX - 20, probePixelY - 20, 40, 40);
                       // Probe icon
                       ctx2.textAlign = 'center';
                       ctx2.font = '16px sans-serif';
                       ctx2.fillText('\uD83D\uDEF0\uFE0F', cw * 0.15, probePixelY + 5);
 
-                      // Title
+                      // Title and live probe telemetry
                       ctx2.textAlign = 'center';
+                      ctx2.textBaseline = 'alphabetic';
                       ctx2.font = 'bold 12px sans-serif';
                       ctx2.fillStyle = '#fff';
-                      ctx2.fillText('\u2193 ' + sel.name + ' Atmosphere Descent', cw / 2, 20);
+                      ctx2.fillText(String.fromCharCode(0x2193) + ' ' + sel.name + ' Atmosphere Descent', cw / 2, 18, cw - 24);
+                      ctx2.font = compactDescent ? 'bold 9px sans-serif' : 'bold 10px sans-serif';
+                      ctx2.fillStyle = 'rgba(165,243,252,0.92)';
+                      var activeAltitude = activeDescentLayer ? (activeDescentLayer.alt >= 0 ? '+' : '') + activeDescentLayer.alt + ' km' : '';
+                      var probeReadout = activeDescentLayer ? activeDescentLayer.name + ' ' + String.fromCharCode(0x00b7) + ' ' + activeAltitude : '';
+                      if (!compactDescent && activeDescentLayer) probeReadout += ' ' + String.fromCharCode(0x00b7) + ' ' + activeDescentLayer.temp + ' ' + String.fromCharCode(0x00b7) + ' ' + activeDescentLayer.pressure;
+                      ctx2.fillText(probeReadout, cw / 2, 35, cw - 24);
                     }
-                  }),
-                  // Descent depth slider overlay
-                  React.createElement("div", {
-                    className: "absolute bottom-3 left-3 right-3 flex items-center gap-2 bg-black/50 backdrop-blur rounded-lg px-3 py-2"
-                  },
-                    React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.high', "\u2B06 High")),
+                  })
+                ),
+                // Instrument footer stays below the canvas so the deepest band remains visible.
+                React.createElement("div", {
+                  "data-solar-descent-controls": "true",
+                  className: "rounded-xl border px-3 py-2.5",
+                  style: {
+                    background: 'linear-gradient(135deg,rgba(15,23,42,0.96),rgba(2,6,23,0.98)),#020617',
+                    borderColor: 'rgba(129,140,248,0.42)',
+                    boxShadow: '0 8px 20px rgba(2,6,23,0.28)'
+                  }
+                },
+                  (function() {
+                    var controlLayers = DESCENT_LAYERS[sel.key] || [];
+                    var controlProbeY = clampSolarDescentProbeValue(d._descentProbeY != null ? d._descentProbeY : 0);
+                    var controlLayerIndex = getSolarDescentLayerIndex(controlLayers, controlProbeY);
+                    var controlLayer = controlLayers[controlLayerIndex];
+                    var controlAltitude = controlLayer ? (controlLayer.alt >= 0 ? '+' : '') + controlLayer.alt + ' km' : '';
+                    return React.createElement("div", {
+                      "data-solar-descent-readout": controlLayer ? controlLayer.name : "",
+                      role: "status",
+                      "aria-live": "polite",
+                      className: "flex items-center justify-between gap-2"
+                    },
+                      React.createElement("span", { className: "min-w-0 truncate text-[10px] font-bold text-cyan-100" }, controlLayer ? "PROBE " + String.fromCharCode(0x00b7) + " " + controlLayer.name + " " + String.fromCharCode(0x00b7) + " " + controlAltitude : "Probe ready"),
+                      React.createElement("span", { className: "flex-shrink-0 text-[9px] font-mono text-slate-300" }, controlLayer ? controlLayer.temp + " " + String.fromCharCode(0x00b7) + " " + controlLayer.pressure : "")
+                    );
+                  })(),
+                  React.createElement("div", { className: "mt-2 flex items-center gap-2" },
+                    React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.high', "High")),
                     React.createElement("input", {
-                      type: "range", min: "0", max: "100", value: (d._descentProbeY || 0) * 100, "aria-label": __alloT('stem.solarsystem.descent_depth_slider', "Descent depth slider"),
-                      onChange: function(e) { upd('_descentProbeY', parseInt(e.target.value) / 100); },
+                      type: "range", min: "0", max: "100", step: "1",
+                      value: clampSolarDescentProbeValue(d._descentProbeY != null ? d._descentProbeY : 0) * 100,
+                      "data-solar-descent-slider": "true",
+                      "aria-label": __alloT('stem.solarsystem.descent_depth_slider', "Descent depth slider"),
+                      "aria-valuetext": (function() {
+                        var valueLayers = DESCENT_LAYERS[sel.key] || [];
+                        var valueIndex = getSolarDescentLayerIndex(valueLayers, d._descentProbeY != null ? d._descentProbeY : 0);
+                        var valueLayer = valueLayers[valueIndex];
+                        return valueLayer ? valueLayer.name + ", " + (valueLayer.alt >= 0 ? "+" : "") + valueLayer.alt + " kilometers, temperature " + valueLayer.temp + ", pressure " + valueLayer.pressure : "";
+                      })(),
+                      onChange: function(e) { upd('_descentProbeY', clampSolarDescentProbeValue(parseInt(e.target.value, 10) / 100)); },
                       className: "flex-1 accent-indigo-400",
                       style: { height: '6px' }
                     }),
-                    React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.deep', "\u2B07 Deep"))
+                    React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.deep', "Deep"))
                   )
                 ),
                 // Layer detail cards. Cosmic-chrome pass: each card now has
@@ -12314,24 +12399,28 @@ const d = labToolData.solarSystem || {};
                 // for altitude / temp / pressure, and a stronger active state
                 // (lifted + outer ring + inner highlight). Click anywhere to
                 // jump the probe to that layer.
-                React.createElement("div", { className: "space-y-2.5" },
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2.5", "data-solar-descent-card-grid": "true" },
                   DESCENT_LAYERS[sel.key].map(function(layer, li) {
-                    var isActive = d._descentProbeY != null && Math.floor(d._descentProbeY * DESCENT_LAYERS[sel.key].length) === li;
+                    var descentLayerCount = DESCENT_LAYERS[sel.key].length;
+                    var activeDescentIndex = getSolarDescentLayerIndex(DESCENT_LAYERS[sel.key], d._descentProbeY != null ? d._descentProbeY : 0);
+                    var isActive = activeDescentIndex === li;
                     return React.createElement("div", {
                       key: li,
+                      "data-solar-descent-card": layer.name,
+                      "data-solar-descent-active-layer": isActive ? "true" : "false",
                       className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all cursor-pointer",
                       style: {
                         background: isActive
-                          ? "linear-gradient(135deg," + layer.color + "44 0%," + layer.color + "1a 60%,rgba(15,23,42,0.6) 100%)"
-                          : "linear-gradient(135deg," + layer.color + "1f 0%," + layer.color + "0a 60%,rgba(15,23,42,0.4) 100%)",
+                          ? "linear-gradient(135deg," + layer.color + "4d 0%," + layer.color + "22 56%,rgba(7,11,24,0.96) 100%),#0f172a"
+                          : "linear-gradient(135deg," + layer.color + "30 0%," + layer.color + "12 56%,rgba(7,11,24,0.94) 100%),#0f172a",
                         borderColor: isActive ? layer.color : layer.color + '40',
                         boxShadow: isActive
                           ? "0 0 0 2px " + layer.color + "55, 0 6px 18px " + layer.color + "33, inset 0 1px 0 rgba(255,255,255,0.08)"
                           : "0 1px 3px rgba(15,23,42,0.25), inset 0 1px 0 rgba(255,255,255,0.04)",
                         transform: isActive ? "translateY(-1px)" : "translateY(0)"
                       },
-                      onClick: function() { upd('_descentProbeY', li / DESCENT_LAYERS[sel.key].length); tryAward('atmosphere_descent'); },
-                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('_descentProbeY', li / DESCENT_LAYERS[sel.key].length); tryAward('atmosphere_descent'); } },
+                      onClick: function() { upd('_descentProbeY', (li + 0.5) / descentLayerCount); tryAward('atmosphere_descent'); },
+                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('_descentProbeY', (li + 0.5) / descentLayerCount); tryAward('atmosphere_descent'); } },
                       role: "button", tabIndex: 0, "aria-pressed": isActive ? "true" : "false",
                       "aria-label": layer.name + " at " + (layer.alt >= 0 ? '+' : '') + layer.alt + " km. " + layer.desc + " Temperature " + layer.temp + ". Pressure " + layer.pressure + "."
                     },

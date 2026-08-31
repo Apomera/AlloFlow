@@ -483,6 +483,80 @@
       return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    function exactPhraseRanges(narrative, phrase) {
+      var ranges = [];
+      var pattern = new RegExp(
+        '(^|[^\\p{L}\\p{N}_])(' + escapeRegExp(phrase) + ')(?=$|[^\\p{L}\\p{N}_])',
+        'giu'
+      );
+      var match;
+      while ((match = pattern.exec(narrative)) !== null) {
+        var start = match.index + match[1].length;
+        ranges.push({ start: start, end: start + match[2].length });
+        if (pattern.lastIndex === match.index) pattern.lastIndex += 1;
+      }
+      return ranges;
+    }
+
+    function findCaseMentions(value, cases) {
+      if (typeof value !== 'string') fail('Observation narrative is invalid.');
+      var narrative = safeString(value, 'Observation narrative', LIMITS.maxNarrativeChars, {
+        required: true,
+        trim: true
+      });
+      if (!Array.isArray(cases)) fail('Case list is unavailable.');
+      if (cases.length > LIMITS.maxCases) fail('Case list exceeds ' + LIMITS.maxCases + ' cases.');
+
+      var entries = cases.map(function (caseItem, index) {
+        if (!isPlainObject(caseItem)) fail('Case ' + (index + 1) + ' is invalid.');
+        return {
+          caseItem: caseItem,
+          index: index,
+          id: safeString(caseItem.id, 'Case ID', 120, { required: true, singleLine: true }),
+          name: safeString(caseItem.name, 'Case name', LIMITS.maxCaseNameChars, {
+            required: true,
+            singleLine: true
+          })
+        };
+      });
+      var candidates = [];
+      entries.forEach(function (entry) {
+        var seenPhrases = Object.create(null);
+        [
+          { phrase: entry.name, kind: 'name' },
+          { phrase: entry.id, kind: 'id' }
+        ].forEach(function (candidate) {
+          var phrase = candidate.phrase;
+          if (candidate.kind === 'name' && Array.from(phrase.trim()).length < 2) return;
+          var identity = phrase.toLowerCase();
+          if (seenPhrases[identity]) return;
+          seenPhrases[identity] = true;
+          candidates.push({ entry: entry, phrase: phrase });
+        });
+      });
+      candidates.sort(function (a, b) {
+        return b.phrase.length - a.phrase.length || a.entry.index - b.entry.index;
+      });
+
+      var claimedRanges = [];
+      var matchedEntries = [];
+      candidates.forEach(function (candidate) {
+        exactPhraseRanges(narrative, candidate.phrase).forEach(function (range) {
+          var overlaps = claimedRanges.some(function (claimed) {
+            return range.start < claimed.end && claimed.start < range.end;
+          });
+          if (overlaps) return;
+          claimedRanges.push(range);
+          if (!matchedEntries.some(function (entry) { return entry.caseItem === candidate.entry.caseItem; })) {
+            matchedEntries.push(candidate.entry);
+          }
+        });
+      });
+      return matchedEntries.sort(function (a, b) {
+        return b.name.length - a.name.length || a.index - b.index;
+      }).map(function (entry) { return entry.caseItem; });
+    }
+
     function findParameterPhrase(narrative, parameter) {
       var aliases = parameter.aliases.slice().sort(function (a, b) { return b.length - a.length; });
       var alternation = aliases.map(escapeRegExp).join('|');
@@ -640,6 +714,26 @@
       return { id: id, fields: fields };
     }
 
+    function createCaseContextUpdate(book, caseId, context) {
+      if (!book || !book.definition || !book.tables || !book.tables.cases || !Array.isArray(book.cases)) {
+        fail('Open a valid casebook first.');
+      }
+      var cleanCaseId = safeString(caseId, 'Case', 120, { required: true, singleLine: true });
+      if (!book.cases.some(function (item) { return item.id === cleanCaseId; })) fail('Choose a valid case.');
+      var cleanContext = safeString(context, 'Case context', LIMITS.maxNarrativeChars, { trim: true });
+      var table = book.tables.cases;
+      var contextLabel = tableColumnMap(table).context;
+      if (!contextLabel) fail('The case context column is unavailable.');
+      var record = (table.records || []).find(function (item) {
+        return fieldByKey(table, item, 'case_id') === cleanCaseId;
+      });
+      if (!record || !isPlainObject(record.fields)) fail('The case record is unavailable.');
+      var fields = Object.create(null);
+      Object.keys(record.fields).forEach(function (label) { fields[label] = record.fields[label]; });
+      fields[contextLabel] = cleanContext;
+      return { id: record.id, fields: fields };
+    }
+
     function valueMissing(value) {
       return value === null || value === undefined || String(value).trim() === '';
     }
@@ -694,6 +788,158 @@
       };
     }
 
+    function requireBookCaseParameter(book, caseId, parameterKey) {
+      if (!book || !book.definition || !Array.isArray(book.cases)
+        || !Array.isArray(book.parameters) || !Array.isArray(book.observations)) {
+        fail('Open a valid casebook first.');
+      }
+      var cleanCaseId = safeString(caseId, 'Case', 120, { required: true, singleLine: true });
+      var cleanParameterKey = safeString(parameterKey, 'Parameter', 120, { required: true, singleLine: true });
+      var caseItem = book.cases.find(function (item) {
+        return item && item.id === cleanCaseId;
+      });
+      if (!caseItem) fail('Choose a valid case.');
+      var parameter = book.parameters.find(function (item) {
+        return item && item.key === cleanParameterKey;
+      });
+      if (!parameter) fail('Choose a valid parameter.');
+      return { caseItem: caseItem, parameter: parameter };
+    }
+
+    function publicParameter(parameter) {
+      return {
+        key: parameter.key,
+        label: parameter.label,
+        type: parameter.type,
+        unit: parameter.unit,
+        minimum: parameter.minimum,
+        maximum: parameter.maximum
+      };
+    }
+
+    function buildParameterHistory(book, caseId, parameterKey) {
+      var selected = requireBookCaseParameter(book, caseId, parameterKey);
+      var parameter = selected.parameter;
+      var observations = book.observations.filter(function (observation) {
+        return observation && observation.caseId === selected.caseItem.id;
+      });
+      var missingValueCount = 0;
+      var undatedValueCount = 0;
+      var points = [];
+
+      observations.forEach(function (observation, index) {
+        var values = observation && isPlainObject(observation.values) ? observation.values : Object.create(null);
+        var value = values[parameter.key];
+        if (valueMissing(value)) {
+          missingValueCount += 1;
+          return;
+        }
+        var timestamp = Date.parse(observation.observedAt);
+        if (!Number.isFinite(timestamp)) {
+          undatedValueCount += 1;
+          return;
+        }
+        points.push({
+          observationId: String(observation.id == null ? '' : observation.id),
+          observedAt: String(observation.observedAt),
+          value: value,
+          displayValue: valueText(parameter, value),
+          _timestamp: timestamp,
+          _index: index
+        });
+      });
+
+      points.sort(function (a, b) {
+        return a._timestamp - b._timestamp
+          || a.observationId.localeCompare(b.observationId)
+          || a._index - b._index;
+      });
+      points = points.map(function (point) {
+        return {
+          observationId: point.observationId,
+          observedAt: point.observedAt,
+          value: point.value,
+          displayValue: point.displayValue
+        };
+      });
+
+      var firstPoint = points[0] || null;
+      var latestPoint = points.length ? points[points.length - 1] : null;
+      var firstToLatest = { kind: 'none', difference: null };
+      if (points.length === 1) {
+        firstToLatest.kind = 'single';
+      } else if (points.length > 1) {
+        var firstValue = firstPoint.value;
+        var latestValue = latestPoint.value;
+        if (typeof firstValue === 'number' && Number.isFinite(firstValue)
+          && typeof latestValue === 'number' && Number.isFinite(latestValue)) {
+          firstToLatest.difference = latestValue - firstValue;
+          firstToLatest.kind = firstToLatest.difference === 0
+            ? 'same'
+            : firstToLatest.difference > 0 ? 'higher' : 'lower';
+        } else {
+          firstToLatest.kind = String(firstValue) === String(latestValue) ? 'same' : 'changed';
+        }
+      }
+
+      var numericValues = points.map(function (point) { return point.value; }).filter(function (value) {
+        return typeof value === 'number' && Number.isFinite(value);
+      });
+      var numericRange = numericValues.length ? {
+        min: Math.min.apply(Math, numericValues),
+        max: Math.max.apply(Math, numericValues)
+      } : null;
+
+      return {
+        case: { id: selected.caseItem.id, name: selected.caseItem.name },
+        parameter: publicParameter(parameter),
+        totalObservationCount: observations.length,
+        missingValueCount: missingValueCount,
+        undatedValueCount: undatedValueCount,
+        points: points,
+        firstPoint: firstPoint,
+        latestPoint: latestPoint,
+        firstToLatest: firstToLatest,
+        numericRange: numericRange
+      };
+    }
+
+    function buildAgentReflectionRequest(book, caseId, goal) {
+      if (!book || !book.definition || !Array.isArray(book.cases) || !Array.isArray(book.observations)) {
+        fail('Open a valid casebook first.');
+      }
+      var cleanCaseId = safeString(caseId, 'Case', 120, { required: true, singleLine: true });
+      if (!book.cases.some(function (item) { return item && item.id === cleanCaseId; })) {
+        fail('Choose a valid case.');
+      }
+      if (goal !== 'brainstorm' && goal !== 'feedback') {
+        fail('Choose a valid agent reflection goal.');
+      }
+      var timeline = caseTimeline(book, cleanCaseId);
+      if (!timeline.length) fail('Record an observation before preparing an agent reflection.');
+
+      var recordLimit = goal === 'brainstorm' ? 3 : 1;
+      var recordIds = timeline.slice(0, recordLimit).map(function (observation) {
+        return String(observation.id == null ? '' : observation.id);
+      });
+      var task = goal === 'brainstorm'
+        ? 'Brainstorm 3–5 low-risk, observable next observations or questions. For each, state what it could check and one limitation.'
+        : 'Give neutral feedback on specificity, observability, repeatability, missing context, and evidence versus interpretation. Phrase suggestions for future observations only.';
+      var rules = [
+        'Review only the selected observation rows.',
+        task,
+        'Treat parameter values and the Qualitative note as recorded evidence. Treat Human interpretation as a hypothesis, not fact.',
+        'Identify support, gaps, and limitations. Do not infer causes or hidden traits.',
+        'Return explanation only with an empty changes array. Do not rewrite cells.'
+      ];
+      if (book.definition.privacyMode === 'learner-support') {
+        rules.push('Preserve individual agency. Do not infer diagnosis, disability, placement, grade, ability, motivation, risk, or ranking.');
+      }
+      var instruction = rules.join(' ');
+      if (instruction.length > 800) fail('The agent reflection instruction exceeds 800 characters.');
+      return { goal: goal, recordIds: recordIds, instruction: instruction };
+    }
+
     function buildReflections(book, caseId) {
       var timeline = caseTimeline(book, caseId);
       if (!timeline.length) {
@@ -742,11 +988,15 @@
       normalizeDefinition: normalizeDefinition,
       buildTables: buildTables,
       inspectTables: inspectTables,
+      findCaseMentions: findCaseMentions,
       parseNarrative: parseNarrative,
       createObservation: createObservation,
       createCase: createCase,
+      createCaseContextUpdate: createCaseContextUpdate,
       caseTimeline: caseTimeline,
       buildComparison: buildComparison,
+      buildParameterHistory: buildParameterHistory,
+      buildAgentReflectionRequest: buildAgentReflectionRequest,
       buildReflections: buildReflections,
       fieldByKey: fieldByKey,
       tableColumnMap: tableColumnMap,

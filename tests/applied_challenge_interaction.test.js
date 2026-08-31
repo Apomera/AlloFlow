@@ -115,6 +115,15 @@ async function typeInto(node, value) {
   });
 }
 
+async function chooseOption(node, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+  await act(async () => {
+    setter.call(node, value);
+    node.dispatchEvent(new window.Event('change', { bubbles: true }));
+    await Promise.resolve();
+  });
+}
+
 async function clickButton(label) {
   const button = Array.from(host.querySelectorAll('button')).find((item) => item.textContent.includes(label));
   expect(button, label).toBeTruthy();
@@ -147,6 +156,34 @@ describe('Applied Challenge Studio interactions', () => {
     expect(host.textContent).toContain('2 of 10 sections started');
   });
 
+  it('adds, labels, persists, summarizes, and removes evidence ledger rows', async () => {
+    await renderChallenge();
+    await clickButton('Add evidence row');
+    expect(latest.data.evidenceLedger).toHaveLength(1);
+    expect(latest.data.coachHint).toBe('');
+    expect(latest.data.feedback).toBeNull();
+
+    await typeInto(host.querySelector('[aria-label="Evidence row 1 claim, option, or position"]'), 'A gravity-fed route is worth testing.');
+    await typeInto(host.querySelector('[aria-label="Evidence row 1 evidence or lesson connection"]'), 'The lesson explains that gravity moves water downhill.');
+    await chooseOption(host.querySelector('[aria-label="Evidence row 1 status"]'), 'assumption');
+    await typeInto(host.querySelector('[aria-label="Evidence row 1 tradeoff, constraint, or uncertainty"]'), 'The local slope has not been measured.');
+
+    expect(latest.data.evidenceLedger[0]).toMatchObject({
+      claim: 'A gravity-fed route is worth testing.',
+      evidence: 'The lesson explains that gravity moves water downhill.',
+      status: 'assumption',
+      tradeoff: 'The local slope has not been measured.',
+    });
+    expect(host.textContent).toContain('1 of 1 rows have both a claim and support');
+    expect(host.textContent).toContain('1 assumption');
+
+    const verifiedOption = host.querySelector('[aria-label="Evidence row 1 status"] option[value="verified"]');
+    expect(verifiedOption.disabled).toBe(true);
+    await clickButton('Remove evidence row 1');
+    expect(latest.data.evidenceLedger).toEqual([]);
+    expect(host.textContent).toContain('No ledger rows yet');
+  });
+
   it('requires the teacher to unlock lesson facts before editing them', async () => {
     await renderChallenge({ teacher: true });
     await clickButton('Edit challenge');
@@ -168,6 +205,40 @@ describe('Applied Challenge Studio interactions', () => {
     facts = Array.from(host.querySelectorAll('textarea')).find((item) => item.getAttribute('aria-label') === 'Teacher-checked lesson facts');
     await typeInto(facts, 'A later fact revision.');
     expect(latest.data.brief.factVerified).toBe(false);
+  });
+
+  it('saves one pressure test separately and marks it when the draft changes', async () => {
+    const callGemini = vi.fn(async () => JSON.stringify({
+      challenge: 'What if the selected site has insufficient slope for a gravity-fed route?',
+      whyItMatters: 'The recommendation depends on a condition that has not been measured.',
+      question: 'What evidence or fallback would make the recommendation more resilient?',
+    }));
+    const data = baseData();
+    data.workspace.response = 'Recommend a gravity-fed route after a site feasibility check.';
+    data.coachHint = '';
+    data.feedback = null;
+    await renderChallenge({ data, callGemini });
+    await clickButton('Stress-test my draft');
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(callGemini).toHaveBeenCalledTimes(1);
+    expect(callGemini.mock.calls[0][0]).toContain('strongest alternative, a neglected tradeoff');
+    expect(latest.data.workspace.response).toContain('gravity-fed route');
+    expect(latest.data.stressTest).toMatchObject({
+      challenge: 'What if the selected site has insufficient slope for a gravity-fed route?',
+      whyItMatters: 'The recommendation depends on a condition that has not been measured.',
+      question: 'What evidence or fallback would make the recommendation more resilient?',
+    });
+    expect(latest.data.stressTest.draftFingerprint).toMatch(/^[0-9a-f]{8}$/);
+    expect(host.textContent).toContain('Current draft');
+
+    await typeInto(host.querySelector('#applied-workspace-response'), 'Recommend a measured pilot route with a non-gravity fallback.');
+    expect(latest.data.stressTest.challenge).toContain('insufficient slope');
+    expect(host.textContent).toContain('Created for an earlier draft');
+    expect(host.textContent).toContain('Keep it as part of the revision record');
   });
 
   it('discards feedback created for a draft that changed while AI was responding', async () => {

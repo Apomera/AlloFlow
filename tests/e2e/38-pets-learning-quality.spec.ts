@@ -14,6 +14,7 @@ const contextKeys: Record<string, number> = {
   'bird-eye-pin': 2,
   'dog-belly': 2,
   'dog-wag': 2,
+  'dog-child-rest': 1,
   'cat-tail': 1,
   'rabbit-pain': 2,
 };
@@ -101,6 +102,19 @@ test.describe('Pets Lab learning-quality enhancements', () => {
     }, undefined, { expectCanvas: false });
 
     const panel = page.locator('#pets-body-panel-context');
+    const safety = page.locator('[data-pets-interaction-safety="pause-space-support"]');
+    await expect(safety).toHaveAttribute('aria-labelledby', 'pets-interaction-safety-heading');
+    await expect(safety.getByRole('heading', { name: /Pause · Space · Support/ })).toBeVisible();
+    await expect(safety.locator('[data-pets-interaction-step]')).toHaveCount(3);
+    await expect(safety.locator('[data-pets-child-supervision="active-adult"]')).toContainText(
+      'familiar or family pet',
+    );
+    await expect(safety).toContainText('not a clearance test or a bite countdown');
+    await expect(safety.getByRole('link')).toHaveCount(2);
+    await expect(safety.getByRole('link', { name: /CDC/ })).toHaveAttribute(
+      'href',
+      'https://www.cdc.gov/healthy-pets/about/dogs.html',
+    );
     await panel.getByRole('button', { name: 'Start 4-case context challenge' }).click();
     const question = panel.locator('.petslab-body-context-question-heading');
     await expect(question).toBeFocused();

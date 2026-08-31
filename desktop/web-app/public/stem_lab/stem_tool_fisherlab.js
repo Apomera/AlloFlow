@@ -5743,6 +5743,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     normalizeCoreVoyageCheckpoint: normalizeCoreVoyageCheckpoint,
     createCoreVoyageCheckpoint: createCoreVoyageCheckpoint,
     getCoreVoyageCheckpointSummary: getCoreVoyageCheckpointSummary,
+    serializeCoreVoyageRescue: serializeCoreVoyageRescue,
+    parseCoreVoyageRescue: parseCoreVoyageRescue,
+    getCoreNewestVoyageCheckpoint: getCoreNewestVoyageCheckpoint,
+    getCoreVoyageRescueComparison: getCoreVoyageRescueComparison,
+    getCoreVoyageRescueFilename: getCoreVoyageRescueFilename,
+    getCoreVoyageRescueErrorMessage: getCoreVoyageRescueErrorMessage,
     getCoreAccessibilityPreferences: getCoreAccessibilityPreferences,
     setCoreAccessibilityPreference: setCoreAccessibilityPreference,
     getCoreDialogFocusables: getCoreDialogFocusables,
@@ -13035,6 +13041,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
   var FL_KEY = 'fisherLab.state.v1';
   var CORE_VOYAGE_CHECKPOINT_VERSION = 1;
+  var CORE_VOYAGE_RESCUE_KIND = 'fisherlab-voyage-rescue';
+  var CORE_VOYAGE_RESCUE_VERSION = 1;
+  var CORE_VOYAGE_RESCUE_MAX_BYTES = 262144;
+  function getCoreUtf8ByteLength(value) {
+    var text = String(value);
+    var bytes = 0;
+    for (var i = 0; i < text.length; i += 1) {
+      var code = text.charCodeAt(i);
+      if (code <= 0x7F) bytes += 1;
+      else if (code <= 0x7FF) bytes += 2;
+      else if (code >= 0xD800 && code <= 0xDBFF && i + 1 < text.length && text.charCodeAt(i + 1) >= 0xDC00 && text.charCodeAt(i + 1) <= 0xDFFF) {
+        bytes += 4;
+        i += 1;
+      } else bytes += 3;
+    }
+    return bytes;
+  }
   function isFisherLabRecord(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
@@ -13298,6 +13321,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       elapsed: checkpoint.elapsed
     };
   }
+  function serializeCoreVoyageRescue(value, exportedAt) {
+    var checkpoint = normalizeCoreVoyageCheckpoint(value);
+    if (!checkpoint) return null;
+    var timestamp = Number(exportedAt);
+    if (!isFinite(timestamp) || timestamp <= 0) timestamp = Date.now();
+    var serialized;
+    try {
+      serialized = JSON.stringify({
+        format: CORE_VOYAGE_RESCUE_KIND,
+        version: CORE_VOYAGE_RESCUE_VERSION,
+        exportedAt: Math.floor(timestamp),
+        checkpoint: checkpoint
+      });
+    } catch (_) {
+      return null;
+    }
+    return getCoreUtf8ByteLength(serialized) <= CORE_VOYAGE_RESCUE_MAX_BYTES ? serialized : null;
+  }
+  function parseCoreVoyageRescue(text) {
+    if (typeof text !== 'string') return { ok: false, checkpoint: null, error: 'invalid-file' };
+    var raw = text;
+    if (raw.length > CORE_VOYAGE_RESCUE_MAX_BYTES || getCoreUtf8ByteLength(raw) > CORE_VOYAGE_RESCUE_MAX_BYTES) return { ok: false, checkpoint: null, error: 'file-too-large' };
+    if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+    raw = raw.trim();
+    if (!raw) return { ok: false, checkpoint: null, error: 'invalid-file' };
+    var payload;
+    try {
+      payload = JSON.parse(raw);
+    } catch (_) {
+      return { ok: false, checkpoint: null, error: 'invalid-json' };
+    }
+    if (!isFisherLabRecord(payload) || payload.format !== CORE_VOYAGE_RESCUE_KIND || payload.version !== CORE_VOYAGE_RESCUE_VERSION) {
+      return { ok: false, checkpoint: null, error: 'unsupported-file' };
+    }
+    if (typeof payload.exportedAt !== 'number' || !isFinite(payload.exportedAt) || payload.exportedAt <= 0) {
+      return { ok: false, checkpoint: null, error: 'invalid-file' };
+    }
+    var checkpoint = normalizeCoreVoyageCheckpoint(payload.checkpoint);
+    if (!checkpoint) return { ok: false, checkpoint: null, error: 'invalid-checkpoint' };
+    return { ok: true, checkpoint: checkpoint, error: null, exportedAt: Math.floor(payload.exportedAt) };
+  }
+  function getCoreNewestVoyageCheckpoint(values) {
+    var candidates = Array.isArray(values) ? values : [values];
+    var newest = null;
+    candidates.forEach(function(value) {
+      var checkpoint = normalizeCoreVoyageCheckpoint(value);
+      if (checkpoint && (!newest || checkpoint.savedAt > newest.savedAt)) newest = checkpoint;
+    });
+    return newest;
+  }
+  function getCoreVoyageRescueComparison(value, currentValue) {
+    var checkpoint = normalizeCoreVoyageCheckpoint(value);
+    if (!checkpoint) return null;
+    var current = normalizeCoreVoyageCheckpoint(currentValue);
+    var sameCheckpoint = false;
+    if (current) {
+      try { sameCheckpoint = JSON.stringify(checkpoint) === JSON.stringify(current); } catch (_) {}
+    }
+    var relation = 'no-local';
+    if (current) {
+      if (sameCheckpoint) relation = 'same';
+      else if (checkpoint.savedAt > current.savedAt) relation = 'newer';
+      else if (checkpoint.savedAt < current.savedAt) relation = 'older';
+      else relation = 'same-time';
+    }
+    return {
+      relation: relation,
+      replacesLocal: !!current,
+      sameCheckpoint: sameCheckpoint,
+      checkpoint: getCoreVoyageCheckpointSummary(checkpoint),
+      current: current ? getCoreVoyageCheckpointSummary(current) : null
+    };
+  }
+  function getCoreVoyageRescueFilename(value) {
+    var checkpoint = normalizeCoreVoyageCheckpoint(value);
+    if (!checkpoint) return 'fisherlab-voyage-rescue.json';
+    var dateLabel = 'checkpoint';
+    try { dateLabel = new Date(checkpoint.savedAt).toISOString().slice(0, 10); } catch (_) {}
+    return 'fisherlab-voyage-' + checkpoint.region + '-' + checkpoint.mode + '-' + dateLabel + '.json';
+  }
+  function getCoreVoyageRescueErrorMessage(error) {
+    var messages = {
+      'file-too-large': 'That rescue file is too large to be a Fisher Lab voyage.',
+      'invalid-json': 'That file is not readable JSON.',
+      'unsupported-file': 'That file is not a supported Fisher Lab voyage rescue.',
+      'invalid-checkpoint': 'The rescue file does not contain a safe, consistent voyage checkpoint.',
+      'invalid-file': 'Choose a valid Fisher Lab voyage rescue JSON file.'
+    };
+    return messages[error] || messages['invalid-file'];
+  }
+
   function getCoreAccessibilityPreferences(value) {
     var input = isFisherLabRecord(value) ? value : {};
     return {
@@ -15265,10 +15379,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       keys = Object.create(null);
     }
     function onWindowBlur() {
-      // A keyup can be lost when focus moves to browser chrome or another app.
-      // Release only held commands here so the vessel can coast exactly as it
-      // would after an ordinary keyup; pause/page-exit paths neutralize throttle.
+      // A visible tab can continue advancing while another desktop window has
+      // focus, so treat blur as the same safe boundary as tab suspension.
       releaseHeldControls();
+      pauseForInactivity('window-blur');
     }
     function onKeyDown(e) {
       if (document.activeElement !== canvas) return;
@@ -15298,8 +15412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var views = CAMERA_VIEW_IDS;
         var idx = views.indexOf(boatState.cameraView || 'chase');
         var nextIdx = (idx + 1) % views.length;
-        var nextView = views[nextIdx];
-        boatState.cameraView = nextView;
+        var nextView = setCoreCameraView(views[nextIdx]);
         if (opts.onCameraToggle) opts.onCameraToggle(nextView);
       }
       if (e.key === 'm' || e.key === 'M') {
@@ -15318,6 +15431,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
     var lastHud = {};
+    function publishHudPatch(patch) {
+      lastHud = Object.assign({}, lastHud, patch || {});
+      hudCb(lastHud);
+      return lastHud;
+    }
+    function applyCameraRig(immediate) {
+      var cameraView = boatState.cameraView || 'chase';
+      var rig = getCoreCameraRig(cameraView, {
+        x: boat.position.x, y: boat.position.y, z: boat.position.z,
+        heading: boatState.heading, speed: boatState.speed,
+        shoreZ: shoreLineZ
+      });
+      camera.up.set(rig.up[0], rig.up[1], rig.up[2]);
+      if (rig.follow && !immediate) {
+        camRigEye.set(rig.eye[0], rig.eye[1], rig.eye[2]);
+        camera.position.lerp(camRigEye, reducedMotion ? 0.3 : rig.ease);
+      } else {
+        camera.position.set(rig.eye[0], rig.eye[1], rig.eye[2]);
+      }
+      cameraTarget.set(rig.target[0], rig.target[1], rig.target[2]);
+      camera.lookAt(cameraTarget);
+      if (Math.abs(camera.fov - rig.fov) > 0.05) {
+        camera.fov = immediate ? rig.fov : camera.fov + (rig.fov - camera.fov) * (reducedMotion ? 1 : 0.18);
+        camera.updateProjectionMatrix();
+      }
+      return cameraView;
+    }
+    function repaintHeldScene(patch, refreshCamera) {
+      if (!boatState.paused) return false;
+      if (refreshCamera) applyCameraRig(true);
+      publishHudPatch(patch);
+      scheduleNextFrame(true);
+      return true;
+    }
+    function setCoreTimeOfDay(tod) {
+      boatState.timeOfDay = tod;
+      updateEnvironment(tod, boatState.weather);
+      repaintHeldScene({ timeOfDay: tod }, false);
+      return tod;
+    }
+    function setCoreCameraView(view) {
+      var nextView = CAMERA_VIEW_IDS.indexOf(view) !== -1 ? view : 'chase';
+      boatState.cameraView = nextView;
+      repaintHeldScene({ cameraView: nextView }, true);
+      return nextView;
+    }
+    function setCoreWeather(weather) {
+      boatState.weather = weather;
+      updateEnvironment(boatState.timeOfDay, weather);
+      repaintHeldScene({ weather: weather }, false);
+      return weather;
+    }
     function createCurrentVoyageCheckpoint() {
       if (pendingInteraction || haulActive || boatState.missionComplete || boatState.missionAttemptComplete) return null;
       if (boatState.trafficDecisionMade && !boatState.trafficManeuverComplete) return null;
@@ -15488,12 +15653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       lastCheckpointElapsed = elapsed;
       lastT = performance.now();
       updateEnvironment(boatState.timeOfDay, boatState.weather);
-      var resumeRig = getCoreCameraRig(boatState.cameraView, { x: boatState.pos.x, y: 0, z: boatState.pos.z, heading: boatState.heading, speed: 0, shoreZ: 8.5 });
-      camera.up.set(resumeRig.up[0], resumeRig.up[1], resumeRig.up[2]);
-      camera.fov = resumeRig.fov;
-      camera.updateProjectionMatrix();
-      camera.position.set(resumeRig.eye[0], resumeRig.eye[1], resumeRig.eye[2]);
-      camera.lookAt(resumeRig.target[0], resumeRig.target[1], resumeRig.target[2]);
+      applyCameraRig(true);
       lastHud = {
         speed: 0,
         heading: boatState.heading,
@@ -15569,34 +15729,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       boatState.paused = !!paused;
       releaseHeldControls();
       boatState.throttle = 0;
+      if (boatState.paused) {
+        if (raf !== null) cancelAnimationFrame(raf);
+        raf = null;
+      } else {
+        lastT = performance.now();
+        scheduleNextFrame(false);
+      }
       if (announce) {
         flAnnounce(boatState.paused ? 'Simulation paused.' : 'Simulation resumed. Focus the harbor scene to steer.');
         statusCb({ type: 'system', text: boatState.paused ? 'Simulation paused' : 'Simulation resumed' });
       }
-      hudCb(Object.assign({}, lastHud, { paused: boatState.paused }));
+      publishHudPatch({ paused: boatState.paused });
       if (boatState.paused && announce) emitVoyageCheckpoint('manual-pause', true);
       return true;
     }
-    var pausedForVisibility = false;
+    var pausedForInactivity = false;
+    var inactivityPauseReason = null;
+    function pauseForInactivity(reason) {
+      if (boatState.paused) {
+        releaseHeldControls();
+        return false;
+      }
+      setPaused(true, false);
+      pausedForInactivity = true;
+      inactivityPauseReason = reason;
+      var checkpoint = emitVoyageCheckpoint(reason, true);
+      var pauseText = reason === 'visibility'
+        ? 'Simulation paused because the tab became inactive.'
+        : reason === 'pagehide'
+          ? 'Simulation paused because the page was suspended.'
+          : 'Simulation paused because the window lost focus.';
+      statusCb({
+        type: 'system',
+        text: pauseText + (checkpoint
+          ? ' Safe progress was saved.'
+          : ' The most recent stable checkpoint is unchanged.')
+      });
+      return true;
+    }
+    function onActivityReturn() {
+      if (!pausedForInactivity || document.hidden) return false;
+      if (typeof document.hasFocus === 'function' && !document.hasFocus()) return false;
+      var returnText = inactivityPauseReason === 'visibility'
+        ? 'Tab active - simulation remains paused until you resume'
+        : inactivityPauseReason === 'pagehide'
+          ? 'Page restored - simulation remains paused until you resume'
+          : 'Window active - simulation remains paused until you resume';
+      pausedForInactivity = false;
+      inactivityPauseReason = null;
+      statusCb({ type: 'system', text: returnText });
+      flAnnounce('Harbor simulation remains paused. Press P or use Resume when ready.');
+      return true;
+    }
     function onVisibilityChange() {
       if (document.hidden) {
-        releaseHeldControls();
-        if (!boatState.paused) {
-          emitVoyageCheckpoint('visibility', true);
-          pausedForVisibility = true;
-          setPaused(true, false);
-          statusCb({ type: 'system', text: 'Simulation paused because the tab became inactive' });
-        }
-      } else if (pausedForVisibility) {
-        pausedForVisibility = false;
-        statusCb({ type: 'system', text: 'Tab active - simulation remains paused until you resume' });
-        flAnnounce('Harbor simulation remains paused. Press P or use Resume when ready.');
-      }
+        pauseForInactivity('visibility');
+      } else onActivityReturn();
     }
     document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onActivityReturn);
+    window.addEventListener('pageshow', onActivityReturn);
     function onPageHide() {
-      emitVoyageCheckpoint('pagehide', true);
-      setPaused(true, false);
+      if (!pauseForInactivity('pagehide')) emitVoyageCheckpoint('pagehide', true);
     }
     window.addEventListener('pagehide', onPageHide);
     function soundFogSignal() {
@@ -15642,7 +15837,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       statusCb({ type: 'signal', text: 'Rule 35: one prolonged fog-horn blast sounded (4 seconds)' });
       flAnnounce('Prolonged fog signal made. Visual confirmation: Rule 35 signal logged.');
-      hudCb(Object.assign({}, lastHud, { trafficFogSignalMade: true }));
+      publishHudPatch({ trafficFogSignalMade: true });
     }
     function reportRadarCall(call) {
       if (!boatState.trafficDecisionMade || boatState.trafficTrackHistory.length < 3 || boatState.radarCallMade) {
@@ -15657,7 +15852,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       boatState.stewardshipScore += boatState.radarCallBonus;
       statusCb({ type: result.correct ? 'score' : 'guidance', text: result.correct ? '+' + boatState.radarCallBonus + ' points - radar evidence call confirmed' : 'Radar call review: evidence supports ' + result.expectedLabel });
       flAnnounce(result.correct ? 'Correct radar evidence call. Bonus points earned.' : 'Review the radar plots. Evidence supports ' + result.expectedLabel + '.');
-      hudCb(Object.assign({}, lastHud, { radarCallMade: true, radarCallCorrect: result.correct, radarCallLabel: result.expectedLabel, radarCallBonus: boatState.radarCallBonus }));
+      publishHudPatch({ radarCallMade: true, radarCallCorrect: result.correct, radarCallLabel: result.expectedLabel, radarCallBonus: boatState.radarCallBonus });
     }
     function resolveTrafficEncounter(action) {
       if (boatState.trafficDecisionMade) return;
@@ -15819,10 +16014,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       statusCb({ type: 'system', text: restoredText });
       flAnnounce(restoredText);
       notifyGraphicsContextChange(false, null);
-      scheduleNextFrame();
+      scheduleNextFrame(true);
     }
-    function scheduleNextFrame() {
-      if (alive && !contextLost && raf === null) raf = requestAnimationFrame(tick);
+    function scheduleNextFrame(force) {
+      if (alive && !contextLost && raf === null && (force || !boatState.paused)) raf = requestAnimationFrame(tick);
     }
     canvas.addEventListener('webglcontextlost', onWebGLContextLost, false);
     canvas.addEventListener('webglcontextrestored', onWebGLContextRestored, false);
@@ -15834,10 +16029,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var dt = Math.min(0.08, (now - lastT) / 1000);
       lastT = now;
       if (boatState.paused) {
-        // Same daylight gate as the live path below, or pausing in daylight brings the
-        // white blob straight back on every held frame.
+        // Forced paused paints (initial restore, resize, graphics recovery) render
+        // once, then leave requestAnimationFrame idle until an explicit resume.
         if (!renderFrame()) return;
-        scheduleNextFrame();
         return;
       }
       elapsed += dt;
@@ -16278,30 +16472,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // Update Audio Synth modulation
       updateAudioSynth();
 
-      // ─── Camera rigs. The geometry lives in getCoreCameraRig so all four
-      // views are verifiable without a GL context; this only applies it.
-      var cameraView = boatState.cameraView || 'chase';
-      var rig = getCoreCameraRig(cameraView, {
-        x: boat.position.x, y: boat.position.y, z: boat.position.z,
-        heading: boatState.heading, speed: boatState.speed,
-        shoreZ: shoreLineZ
-      });
-      camera.up.set(rig.up[0], rig.up[1], rig.up[2]);
-      if (rig.follow) {
-        camRigEye.set(rig.eye[0], rig.eye[1], rig.eye[2]);
-        camera.position.lerp(camRigEye, reducedMotion ? 0.3 : rig.ease);
-      } else {
-        camera.position.set(rig.eye[0], rig.eye[1], rig.eye[2]);
-      }
-      cameraTarget.set(rig.target[0], rig.target[1], rig.target[2]);
-      camera.lookAt(cameraTarget);
-      // Per-view field of view, eased rather than snapped. A single 65° lens
-      // across all four rigs was too wide for the overhead ones: straight
-      // channel edges bowed and the boat shrank to a speck in the middle.
-      if (Math.abs(camera.fov - rig.fov) > 0.05) {
-        camera.fov += (rig.fov - camera.fov) * (reducedMotion ? 1 : 0.18);
-        camera.updateProjectionMatrix();
-      }
+      // Camera geometry is shared with held-scene updates. Active voyages keep
+      // the eased follow behavior; paused view changes apply the same rig once.
+      var cameraView = applyCameraRig(false);
 
       var objective = getCoreObjective(boatState, missionProfile, encounterProfile, buoyageCheck);
       var objectiveTarget = rock;
@@ -16431,7 +16604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     restoredFromCheckpoint = applyInitialVoyageCheckpoint();
     if (!restoredFromCheckpoint) emitVoyageCheckpoint('launch', true);
-    scheduleNextFrame();
+    scheduleNextFrame(true);
 
     function onResize() {
       if (!alive || contextLost) return;
@@ -16452,6 +16625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         renderer._alloComposer = null;
         disposeCoreComposerResources(failedComposer);
       }
+      scheduleNextFrame(true);
       return true;
     }
     window.addEventListener('resize', onResize);
@@ -16470,6 +16644,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
         window.removeEventListener('blur', onWindowBlur);
+        window.removeEventListener('focus', onActivityReturn);
+        window.removeEventListener('pageshow', onActivityReturn);
         window.removeEventListener('resize', onResize);
         document.removeEventListener('visibilitychange', onVisibilityChange);
         window.removeEventListener('pagehide', onPageHide);
@@ -16518,11 +16694,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // than trusting the resize event to arrive.
       resize: function() { onResize(); },
       setTimeOfDay: function(tod) {
-        boatState.timeOfDay = tod;
-        updateEnvironment(tod, boatState.weather);
+        return setCoreTimeOfDay(tod);
       },
       setCameraView: function(view) {
-        boatState.cameraView = view;
+        return setCoreCameraView(view);
       },
       toggleSound: function(on) {
         toggleSound(on);
@@ -16556,8 +16731,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         reportRadarCall(call);
       },
       setWeather: function(w) {
-        boatState.weather = w;
-        updateEnvironment(boatState.timeOfDay, w);
+        return setCoreWeather(w);
       },
       restartMission: function() {
         elapsed = 0;
@@ -16705,6 +16879,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var storageFailureActiveRef = useRef(false);
     var voyageSaveStatusHook = useState({ id: stateInit.coreVoyageCheckpoint ? 'saved' : 'idle', savedAt: stateInit.coreVoyageCheckpoint ? stateInit.coreVoyageCheckpoint.savedAt : 0 });
     var voyageSaveStatus = voyageSaveStatusHook[0], setVoyageSaveStatus = voyageSaveStatusHook[1];
+    var voyageRescueStatusHook = useState({ id: 'idle', message: '' });
+    var voyageRescueStatus = voyageRescueStatusHook[0], setVoyageRescueStatus = voyageRescueStatusHook[1];
+    var voyageRescuePreviewHook = useState(null);
+    var voyageRescuePreview = voyageRescuePreviewHook[0], setVoyageRescuePreview = voyageRescuePreviewHook[1];
     var hudHook = useState({});
     var hud = hudHook[0], setHud = hudHook[1];
     var statusHook = useState([]);
@@ -16730,10 +16908,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var stageRef = useRef(null);
     var simBarRef = useRef(null);
     var simLaunchRef = useRef(null);
+    var voyageRescueFileInputRef = useRef(null);
+    var voyageRescueRestoreButtonRef = useRef(null);
+    var voyageRescueConfirmRef = useRef(null);
+    var voyageRescueReadGenerationRef = useRef(0);
     var decisionFocusRef = useRef(null);
     var heldControlKeyboardRef = useRef({});
     var heldControlPulseTimersRef = useRef({});
     var pendingCheckpointRef = useRef(null);
+    var preferredVoyageRescueCheckpointRef = useRef(null);
     var simLifecycleMountedRef = useRef(true);
     var simLoadGenerationRef = useRef(0);
     var simRetryTimerRef = useRef(null);
@@ -17341,6 +17524,191 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         flAnnounce('Autosave retry failed. Keep this tab open and check browser storage settings.');
       }
     }
+    function getLatestVoyageRescueCheckpoint(includeLive) {
+      var preferredCheckpoint = normalizeCoreVoyageCheckpoint(preferredVoyageRescueCheckpointRef.current);
+      if (preferredCheckpoint) return preferredCheckpoint;
+      var liveCheckpoint = null;
+      if (includeLive !== false && harborRef.current && harborRef.current.getCheckpoint) {
+        try { liveCheckpoint = harborRef.current.getCheckpoint(); } catch (_) {}
+      }
+      var pendingState = pendingVoyageWriteRef.current && pendingVoyageWriteRef.current.state;
+      return getCoreNewestVoyageCheckpoint([
+        liveCheckpoint,
+        pendingState && pendingState.coreVoyageCheckpoint,
+        savedVoyageCheckpoint,
+        confirmedVoyageCheckpointRef.current
+      ]);
+    }
+    function downloadVoyageRescue() {
+      var checkpoint = getLatestVoyageRescueCheckpoint(true);
+      var serialized = serializeCoreVoyageRescue(checkpoint, Date.now());
+      if (!checkpoint || !serialized) {
+        var missingMessage = 'No safe voyage checkpoint is available to download yet.';
+        setVoyageRescueStatus({ id: 'error', message: missingMessage });
+        flAnnounce(missingMessage);
+        return false;
+      }
+      var urlApi = window.URL || window.webkitURL;
+      var rescueUrl = null;
+      var anchor = null;
+      try {
+        if (!window.Blob || !urlApi || typeof urlApi.createObjectURL !== 'function' || !document.body) throw new Error('download-unavailable');
+        var blob = new window.Blob([serialized], { type: 'application/json;charset=utf-8' });
+        rescueUrl = urlApi.createObjectURL(blob);
+        anchor = document.createElement('a');
+        anchor.href = rescueUrl;
+        anchor.download = getCoreVoyageRescueFilename(checkpoint);
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        var cleanupAnchor = anchor;
+        var cleanupUrl = rescueUrl;
+        setTimeout(function() {
+          try { if (cleanupAnchor.parentNode) cleanupAnchor.parentNode.removeChild(cleanupAnchor); } catch (_) {}
+          try { if (urlApi.revokeObjectURL) urlApi.revokeObjectURL(cleanupUrl); } catch (_) {}
+        }, 0);
+        setVoyageRescueStatus({ id: 'downloaded', message: 'Voyage rescue file downloaded. Keep it somewhere you can find later.' });
+        flAnnounce('Voyage rescue file downloaded.');
+        return true;
+      } catch (_) {
+        try { if (anchor && anchor.parentNode) anchor.parentNode.removeChild(anchor); } catch (_) {}
+        try { if (rescueUrl && urlApi && urlApi.revokeObjectURL) urlApi.revokeObjectURL(rescueUrl); } catch (_) {}
+        var failureMessage = 'This browser could not create the voyage rescue download.';
+        setVoyageRescueStatus({ id: 'error', message: failureMessage });
+        flAnnounce(failureMessage);
+        return false;
+      }
+    }
+    function previewVoyageRescueText(text) {
+      var parsed = parseCoreVoyageRescue(text);
+      if (!parsed.ok) {
+        var invalidMessage = getCoreVoyageRescueErrorMessage(parsed.error);
+        setVoyageRescuePreview(null);
+        setVoyageRescueStatus({ id: 'error', message: invalidMessage });
+        flAnnounce(invalidMessage);
+        return false;
+      }
+      var checkpoint = parsed.checkpoint;
+      var localCheckpoint = getLatestVoyageRescueCheckpoint(false);
+      var summary = getCoreVoyageCheckpointSummary(checkpoint);
+      var previewMessage = 'Rescue ready to review: ' + summary.regionLabel + ', ' + summary.modeLabel + ', ' + summary.completedObjectives + ' of ' + summary.totalObjectives + ' outbound objectives. No saved progress has changed.';
+      setVoyageRescuePreview({ checkpoint: checkpoint, exportedAt: parsed.exportedAt, localCheckpoint: localCheckpoint });
+      setVoyageRescueStatus({ id: 'preview', message: previewMessage });
+      flAnnounce(previewMessage + ' Review the comparison, then choose Use rescued voyage or Cancel.');
+      return true;
+    }
+    function confirmVoyageRescueRestore() {
+      var preview = voyageRescuePreview;
+      var checkpoint = normalizeCoreVoyageCheckpoint(preview && preview.checkpoint);
+      if (!checkpoint) {
+        var unavailableMessage = 'The rescue preview is no longer valid. Choose the file again.';
+        setVoyageRescuePreview(null);
+        setVoyageRescueStatus({ id: 'error', message: unavailableMessage });
+        flAnnounce(unavailableMessage);
+        return false;
+      }
+      var baselineCheckpoint = normalizeCoreVoyageCheckpoint(preview.localCheckpoint);
+      var currentCheckpoint = getLatestVoyageRescueCheckpoint(false);
+      if (!pendingVoyageWriteRef.current) {
+        var durableState = loadState();
+        currentCheckpoint = normalizeCoreVoyageCheckpoint(durableState && durableState.coreVoyageCheckpoint);
+      }
+      var localChanged = !!baselineCheckpoint !== !!currentCheckpoint;
+      if (!localChanged && baselineCheckpoint && currentCheckpoint) {
+        var baselineComparison = getCoreVoyageRescueComparison(baselineCheckpoint, currentCheckpoint);
+        localChanged = !baselineComparison || !baselineComparison.sameCheckpoint;
+      }
+      if (localChanged) {
+        var changedMessage = 'The local checkpoint changed while this preview was open. The comparison has been refreshed; review it before confirming again.';
+        preferredVoyageRescueCheckpointRef.current = currentCheckpoint;
+        confirmedVoyageCheckpointRef.current = currentCheckpoint;
+        setSavedVoyageCheckpoint(currentCheckpoint);
+        setVoyageSaveStatus({ id: currentCheckpoint ? 'saved' : 'idle', savedAt: currentCheckpoint ? currentCheckpoint.savedAt : 0 });
+        setVoyageRescuePreview(Object.assign({}, preview, { localCheckpoint: currentCheckpoint }));
+        setVoyageRescueStatus({ id: 'preview', message: changedMessage });
+        flAnnounce(changedMessage);
+        return false;
+      }
+      var saved = loadState();
+      saved.region = checkpoint.region;
+      saved.coreVoyageMode = checkpoint.mode;
+      saved.coreVoyageCheckpoint = checkpoint;
+      preferredVoyageRescueCheckpointRef.current = checkpoint;
+      var persisted = commitVoyageState(saved, true);
+      pendingCheckpointRef.current = checkpoint;
+      if (!persisted) setSavedVoyageCheckpoint(checkpoint);
+      setVoyageRescuePreview(null);
+      setRegion(checkpoint.region);
+      setVoyageMode(checkpoint.mode);
+      setTimeOfDayState(checkpoint.environment.timeOfDay);
+      setWeatherState(checkpoint.environment.weather);
+      setCameraViewState(checkpoint.environment.cameraView);
+      setTab('sim');
+      var summary = getCoreVoyageCheckpointSummary(checkpoint);
+      var readyMessage = 'Rescue restored: ' + summary.regionLabel + ', ' + summary.modeLabel + ', ' + summary.completedObjectives + ' of ' + summary.totalObjectives + ' outbound objectives. Choose Resume saved voyage when ready.';
+      setVoyageRescueStatus({ id: 'ready', message: readyMessage });
+      flAnnounce(readyMessage);
+      return true;
+    }
+    function cancelVoyageRescuePreview() {
+      voyageRescueReadGenerationRef.current += 1;
+      setVoyageRescuePreview(null);
+      var cancelledMessage = 'Rescue preview cancelled. Your local checkpoint is unchanged.';
+      setVoyageRescueStatus({ id: 'cancelled', message: cancelledMessage });
+      flAnnounce(cancelledMessage);
+    }
+    function handleVoyageRescueFile(event) {
+      var input = event && event.currentTarget ? event.currentTarget : voyageRescueFileInputRef.current;
+      var file = input && input.files && input.files[0];
+      var readGeneration = voyageRescueReadGenerationRef.current + 1;
+      voyageRescueReadGenerationRef.current = readGeneration;
+      if (input) {
+        try { input.value = ''; } catch (_) {}
+      }
+      if (!file) return;
+      setVoyageRescuePreview(null);
+      if (typeof file.size === 'number' && file.size > CORE_VOYAGE_RESCUE_MAX_BYTES) {
+        var largeMessage = getCoreVoyageRescueErrorMessage('file-too-large');
+        setVoyageRescueStatus({ id: 'error', message: largeMessage });
+        flAnnounce(largeMessage);
+        return;
+      }
+      setVoyageRescueStatus({ id: 'reading', message: 'Reading voyage rescue file...' });
+      function finishRead(text) {
+        if (!simLifecycleMountedRef.current || readGeneration !== voyageRescueReadGenerationRef.current) return;
+        previewVoyageRescueText(typeof text === 'string' ? text : '');
+      }
+      function failRead() {
+        if (!simLifecycleMountedRef.current || readGeneration !== voyageRescueReadGenerationRef.current) return;
+        var readMessage = 'The voyage rescue file could not be read.';
+        setVoyageRescuePreview(null);
+        setVoyageRescueStatus({ id: 'error', message: readMessage });
+        flAnnounce(readMessage);
+      }
+      if (typeof file.text === 'function') {
+        try {
+          Promise.resolve(file.text()).then(finishRead, failRead);
+        } catch (_) {
+          failRead();
+        }
+        return;
+      }
+      var Reader = window.FileReader;
+      if (!Reader) {
+        failRead();
+        return;
+      }
+      try {
+        var reader = new Reader();
+        reader.onload = function() { finishRead(reader.result); };
+        reader.onerror = failRead;
+        reader.onabort = failRead;
+        reader.readAsText(file);
+      } catch (_) {
+        failRead();
+      }
+    }
+
     function clearSimulatorRetryTimer() {
       if (simRetryTimerRef.current == null) return;
       clearTimeout(simRetryTimerRef.current);
@@ -17356,6 +17724,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     function launchSim(checkpoint) {
       if (!simLifecycleMountedRef.current) return;
+      voyageRescueReadGenerationRef.current += 1;
+      preferredVoyageRescueCheckpointRef.current = null;
+      setVoyageRescuePreview(null);
+      setVoyageRescueStatus({ id: 'idle', message: '' });
       updateGraphicsRecovery(false);
       clearSimulatorRetryTimer();
       var launchGeneration = simLoadGenerationRef.current + 1;
@@ -17416,6 +17788,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         flAnnounce('Saved voyage could not be discarded because browser storage is unavailable. Retry autosave and try again.');
         return;
       }
+      preferredVoyageRescueCheckpointRef.current = null;
+      setVoyageRescuePreview(null);
+      setVoyageRescueStatus({ id: 'idle', message: '' });
       flAnnounce('Saved voyage discarded. Start a new voyage when ready.');
       setTimeout(function() {
         var activePanel = document.getElementById('fl-active-panel');
@@ -17527,9 +17902,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }, [sim.active, region, accessibilityPreferences.staticCamera]);
 
     useEffect(function() {
+      if (voyageRescuePreview) focusCoreElement(voyageRescueConfirmRef);
+    }, [voyageRescuePreview]);
+    useEffect(function() {
+      if (voyageRescueStatus.id === 'ready') focusCoreElement(simLaunchRef);
+      else if (voyageRescueStatus.id === 'cancelled') focusCoreElement(voyageRescueRestoreButtonRef);
+    }, [voyageRescueStatus.id]);
+
+    useEffect(function() {
       simLifecycleMountedRef.current = true;
       return function() {
         simLifecycleMountedRef.current = false;
+        voyageRescueReadGenerationRef.current += 1;
         invalidateSimulatorLaunch();
         if (harborRef.current && harborRef.current.getCheckpoint) {
           var finalCheckpoint = harborRef.current.getCheckpoint();
@@ -17581,9 +17965,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }, label);
     }
 
+    function voyageRescueStatusNotice() {
+      if (!voyageRescueStatus.message || (tab === 'sim' && !sim.active && !sim.loading)) return null;
+      var isError = voyageRescueStatus.id === 'error';
+      return h('div', {
+        'data-fisherlab-voyage-rescue-status': voyageRescueStatus.id,
+        role: 'status',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        style: { marginBottom: 12, padding: '9px 11px', borderRadius: 8, border: '1px solid ' + (isError ? '#f87171' : '#38bdf8'), background: isError ? 'rgba(69,10,10,0.9)' : 'rgba(8,47,73,0.9)', color: isError ? '#fee2e2' : '#e0f2fe', fontSize: 10.5, lineHeight: 1.45 }
+      }, voyageRescueStatus.message);
+    }
+
+    function voyageRescueControls() {
+      var checkpoint = getLatestVoyageRescueCheckpoint(false);
+      var defaultStatus = checkpoint ? 'A safe paused checkpoint is ready to download.' : 'Download becomes available after the first safe voyage checkpoint.';
+      var isError = voyageRescueStatus.id === 'error';
+      var preview = voyageRescuePreview;
+      var comparison = preview ? getCoreVoyageRescueComparison(preview.checkpoint, preview.localCheckpoint) : null;
+      var previewSavedLabel = '';
+      var previewExportedLabel = '';
+      var localSavedLabel = '';
+      if (comparison) {
+        try { previewSavedLabel = new Date(comparison.checkpoint.savedAt).toLocaleString(); } catch (_) {}
+        try { previewExportedLabel = new Date(preview.exportedAt).toLocaleString(); } catch (_) {}
+        try { localSavedLabel = comparison.current ? new Date(comparison.current.savedAt).toLocaleString() : ''; } catch (_) {}
+      }
+      var comparisonMessage = '';
+      if (comparison) {
+        if (comparison.relation === 'no-local') comparisonMessage = 'No local voyage checkpoint will be replaced.';
+        else if (comparison.relation === 'same') comparisonMessage = 'This file matches the current local checkpoint.';
+        else if (comparison.relation === 'newer') comparisonMessage = 'This rescue has a later checkpoint timestamp than the local voyage' + (localSavedLabel ? ' saved ' + localSavedLabel : '') + '. Confirming will replace the local checkpoint.';
+        else if (comparison.relation === 'older') comparisonMessage = 'This rescue has an earlier checkpoint timestamp than the local voyage' + (localSavedLabel ? ' saved ' + localSavedLabel : '') + '. Confirming will replace the current local checkpoint.';
+        else comparisonMessage = 'This rescue has the same checkpoint timestamp but different voyage details. Confirming will replace the local checkpoint.';
+      }
+      return h('section', {
+        'data-fisherlab-voyage-files': 'true',
+        'aria-labelledby': 'fl-voyage-files-title',
+        style: { display: 'grid', gap: 9, margin: '0 0 12px', padding: 12, borderRadius: 9, border: '1px solid rgba(56,189,248,0.4)', background: 'linear-gradient(135deg,rgba(8,47,73,0.8),rgba(15,23,42,0.82))', color: '#e0f2fe' }
+      },
+        h('div', null,
+          h('strong', { id: 'fl-voyage-files-title', style: { display: 'block', color: '#bae6fd', fontSize: 12.5 } }, 'Voyage rescue file'),
+          h('span', { style: { display: 'block', marginTop: 3, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Keep a portable backup or move a safe paused checkpoint between devices. The JSON includes voyage position, decisions, and scores; it does not include your field journal or profile.')),
+        h('div', { role: 'group', 'aria-label': 'Voyage rescue file actions', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+          h('button', {
+            type: 'button',
+            className: 'fl-btn',
+            disabled: !checkpoint,
+            title: checkpoint ? 'Download the newest safe paused voyage checkpoint' : 'Complete a safe voyage checkpoint before downloading',
+            onClick: downloadVoyageRescue,
+            style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #7dd3fc', background: checkpoint ? '#075985' : '#334155', color: checkpoint ? '#f0f9ff' : '#94a3b8', fontSize: 11, fontWeight: 900, cursor: checkpoint ? 'pointer' : 'not-allowed', opacity: checkpoint ? 1 : 0.72 }
+          }, 'Download rescue file'),
+          h('button', {
+            type: 'button',
+            ref: voyageRescueRestoreButtonRef,
+            className: 'fl-btn',
+            onClick: function() {
+              var input = voyageRescueFileInputRef.current;
+              if (!input || typeof input.click !== 'function') {
+                var unavailableMessage = 'The file chooser is unavailable in this browser.';
+                setVoyageRescueStatus({ id: 'error', message: unavailableMessage });
+                flAnnounce(unavailableMessage);
+                return;
+              }
+              input.click();
+            },
+            style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(167,243,208,0.65)', background: '#065f46', color: '#ecfdf5', fontSize: 11, fontWeight: 900, cursor: 'pointer' }
+          }, 'Choose rescue file'),
+          h('input', {
+            ref: voyageRescueFileInputRef,
+            type: 'file',
+            accept: '.json,application/json',
+            tabIndex: -1,
+            'aria-label': 'Choose a Fisher Lab voyage rescue JSON file',
+            onChange: handleVoyageRescueFile,
+            style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }
+          })),
+        preview && comparison ? h('aside', {
+          'data-fisherlab-voyage-rescue-preview': 'true',
+          'aria-labelledby': 'fl-voyage-rescue-preview-title',
+          style: { display: 'grid', gap: 7, padding: 11, borderRadius: 8, border: '2px solid ' + (comparison.relation === 'older' || comparison.relation === 'same-time' ? '#fbbf24' : '#34d399'), background: comparison.relation === 'older' || comparison.relation === 'same-time' ? 'rgba(69,26,3,0.72)' : 'rgba(6,78,59,0.58)' }
+        },
+          h('strong', { id: 'fl-voyage-rescue-preview-title', style: { color: '#f8fafc', fontSize: 12 } }, 'Review rescue before replacing progress'),
+          h('span', { style: { color: '#dbeafe', fontSize: 10.5, lineHeight: 1.45 } }, 'Rescue file: ' + comparison.checkpoint.regionLabel + ' - ' + comparison.checkpoint.modeLabel + ' - ' + comparison.checkpoint.completedObjectives + '/' + comparison.checkpoint.totalObjectives + ' outbound objectives - ' + comparison.checkpoint.fuel + '% fuel'),
+          previewSavedLabel ? h('span', { style: { color: '#94a3b8', fontSize: 9.5 } }, 'Rescue checkpoint saved ' + previewSavedLabel + (previewExportedLabel ? ' - file exported ' + previewExportedLabel : '')) : null,
+          comparison.current ? h('span', { style: { color: '#dbeafe', fontSize: 10.5, lineHeight: 1.45 } }, 'Current local: ' + comparison.current.regionLabel + ' - ' + comparison.current.modeLabel + ' - ' + comparison.current.completedObjectives + '/' + comparison.current.totalObjectives + ' outbound objectives - ' + comparison.current.fuel + '% fuel' + (localSavedLabel ? ' - saved ' + localSavedLabel : '')) : null,
+          h('span', { style: { color: comparison.relation === 'older' || comparison.relation === 'same-time' ? '#fde68a' : '#a7f3d0', fontSize: 10.5, fontWeight: 800, lineHeight: 1.45 } }, comparisonMessage),
+          h('span', { style: { color: '#e2e8f0', fontSize: 10, lineHeight: 1.45 } }, 'No saved progress changes until you confirm. Download the current checkpoint first if you want an extra backup.'),
+          h('div', { role: 'group', 'aria-label': 'Confirm voyage rescue', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+            h('button', { type: 'button', ref: voyageRescueConfirmRef, className: 'fl-btn', onClick: confirmVoyageRescueRestore,
+              style: { minHeight: 40, padding: '8px 12px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Use rescued voyage'),
+            h('button', { type: 'button', className: 'fl-btn', onClick: cancelVoyageRescuePreview,
+              style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(226,232,240,0.42)', background: '#334155', color: '#f8fafc', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Cancel'))
+        ) : null,
+        h('p', {
+          'data-fisherlab-voyage-rescue-status': voyageRescueStatus.id,
+          role: 'status',
+          'aria-live': 'polite',
+          'aria-atomic': 'true',
+          style: { margin: 0, color: isError ? '#fecaca' : '#bae6fd', fontSize: 10, lineHeight: 1.45 }
+        }, voyageRescueStatus.message || defaultStatus)
+      );
+    }
+
     function voyageStorageWarning() {
       if (voyageSaveStatus.id !== 'error') return null;
       var hasConfirmedCheckpoint = voyageSaveStatus.savedAt > 0;
+      var hasRescueCheckpoint = !!getLatestVoyageRescueCheckpoint(true);
       return h('aside', {
         'data-fisherlab-voyage-storage': 'error',
         role: 'alert',
@@ -17593,13 +18081,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: { minWidth: 0, flex: '1 1 260px' } },
           h('strong', { id: 'fl-voyage-storage-title', style: { display: 'block', color: '#fecaca', fontSize: 13 } }, 'Voyage autosave unavailable'),
           h('span', { style: { display: 'block', marginTop: 3, fontSize: 10.5, lineHeight: 1.45 } },
-            hasConfirmedCheckpoint ? 'Your last confirmed checkpoint remains available, but newer progress is not saved. Keep this tab open and retry before leaving.' : 'No recovery checkpoint is confirmed. Keep this tab open and retry before refreshing or leaving.')),
-        h('button', {
-          type: 'button',
-          className: 'fl-btn',
-          onClick: retryVoyagePersistence,
-          style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fee2e2', color: '#450a0a', fontSize: 11, fontWeight: 900, cursor: 'pointer' }
-        }, 'Retry autosave')
+            hasConfirmedCheckpoint ? 'Your last confirmed checkpoint remains available, but newer progress is not saved. Retry before leaving, or download a rescue file.' : (hasRescueCheckpoint ? 'Browser recovery is not confirmed. Keep this tab open, download a rescue file, and retry before leaving.' : 'No recovery checkpoint is confirmed. Keep this tab open and retry before refreshing or leaving.'))),
+        h('div', { role: 'group', 'aria-label': 'Voyage storage recovery actions', style: { display: 'flex', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+          h('button', {
+            type: 'button',
+            className: 'fl-btn',
+            onClick: retryVoyagePersistence,
+            style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fee2e2', color: '#450a0a', fontSize: 11, fontWeight: 900, cursor: 'pointer' }
+          }, 'Retry autosave'),
+          hasRescueCheckpoint ? h('button', {
+            type: 'button',
+            className: 'fl-btn',
+            onClick: downloadVoyageRescue,
+            style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #fef3c7', background: '#92400e', color: '#fffbeb', fontSize: 11, fontWeight: 900, cursor: 'pointer' }
+          }, 'Download rescue file') : null)
       );
     }
 
@@ -17621,6 +18116,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { role: 'group', 'aria-label': 'Saved voyage actions', style: { display: 'flex', flex: '1 1 220px', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' } },
           h('button', { type: 'button', ref: simLaunchRef, className: 'fl-btn', onClick: resumeSavedVoyage,
             style: { minHeight: 40, padding: '8px 12px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, '▶ Resume saved voyage'),
+          h('button', { type: 'button', className: 'fl-btn', onClick: downloadVoyageRescue,
+            style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #7dd3fc', background: '#075985', color: '#f0f9ff', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Download rescue file'),
           h('button', { type: 'button', className: 'fl-btn', onClick: discardSavedVoyage,
             style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(226,232,240,0.34)', background: '#334155', color: '#f8fafc', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Discard checkpoint'))
       );
@@ -18911,6 +19408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               })
             )
           ),
+          !sim.active && !sim.loading ? voyageRescueControls() : null,
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'The 3D engine (three.js r128, ~600 KB) loads on demand from cdnjs.'),
             h('button', { type: 'button', ref: savedVoyageCheckpoint ? null : simLaunchRef, className: 'fl-btn',
@@ -22224,6 +22722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return h('div', { className: 'fl-fisherlab-root' + (accessibilityPreferences.largeText ? ' fl-large-text' : ''), 'data-caption-mode': accessibilityPreferences.captionMode ? 'true' : 'false', 'data-static-camera': accessibilityPreferences.staticCamera ? 'true' : 'false', style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
       voyageRecoveryBanner(),
       voyageStorageWarning(),
+      voyageRescueStatusNotice(),
       accessibilityBar(),
       tabBar(),
       h('section', {

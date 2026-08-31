@@ -133,7 +133,7 @@ describe('Art Studio animated stereogram accessibility', () => {
     });
 
     expect(html).toContain('hold Shift with an Arrow key to draw');
-    expect(html).toContain('aria-describedby="artstudio-anim-draw-description artstudio-anim-draw-keyboard-help"');
+    expect(html).toContain('aria-describedby="artstudio-anim-draw-description artstudio-anim-depth-touch-help artstudio-anim-draw-keyboard-help"');
     expect(html).toContain('Shift+ArrowUp');
     expect(html).toContain('focus-visible:ring-4');
     expect(html).toContain('for="artstudio-anim-draw-size"');

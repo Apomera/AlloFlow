@@ -31,14 +31,14 @@ function countBy(values, selector) {
 }
 
 const expectedUnitCounts = {
-  'limits-and-continuity': 10,
-  'differentiation-definition-and-fundamental-properties': 10,
-  'differentiation-composite-implicit-inverse-functions': 10,
-  'contextual-applications-of-differentiation': 10,
-  'analytical-applications-of-differentiation': 10,
-  'integration-and-accumulation-of-change': 10,
-  'differential-equations': 10,
-  'applications-of-integration': 10,
+  'limits-and-continuity': 20,
+  'differentiation-definition-and-fundamental-properties': 20,
+  'differentiation-composite-implicit-inverse-functions': 20,
+  'contextual-applications-of-differentiation': 20,
+  'analytical-applications-of-differentiation': 20,
+  'integration-and-accumulation-of-change': 20,
+  'differential-equations': 20,
+  'applications-of-integration': 20,
 };
 const expectedPractices = new Set(['MP1', 'MP2', 'MP3', 'MP4']);
 const expectedRepresentations = new Set(['analytical', 'tabular', 'verbal', 'graphical-text']);
@@ -53,16 +53,16 @@ const calculatorCounts = countBy(items, (item) => item.calculatorUse);
 const topicCounts = countBy(items.flatMap((item) => item.topicIds || []), (topicId) => topicId);
 const selectedTopicIds = new Set(pack.blueprint?.selectedFrameworkTopicIds || []);
 
-check(pack.id === 'ap-calculus-ab-foundation-pilot' && pack.version === '0.1.0-internal-preview', 'pack-identity', 'Pack identity or version is invalid.');
+check(pack.id === 'ap-calculus-ab-foundation-pilot' && pack.version === '0.2.0-internal-preview', 'pack-identity', 'Pack identity or version is invalid.');
 check(pack.schemaVersion === 1 && pack.itemSchemaVersion === 2, 'pack-schema', 'Pack schema versions are invalid.');
 check(pack.status === 'preview' && pack.visibility === 'internal' && pack.released === false && pack.releaseEligible === false, 'release-boundary', 'Pack must remain an unreleased internal preview.');
-check(items.length === 80, 'item-count', 'The initial seed must contain 80 items.', { actual: items.length, expected: 80 });
+check(items.length === 160, 'item-count', 'The expanded foundation must contain 160 items.', { actual: items.length, expected: 160 });
 check((pack.domains || []).length === 8, 'unit-count', 'The pack must declare eight units.');
-check((pack.sections || []).length === 16 && (pack.sections || []).every((section) => section.itemIds?.length === 5), 'bank-inventory', 'The pack must contain sixteen five-item internal banks.');
+check((pack.sections || []).length === 32 && (pack.sections || []).every((section) => section.itemIds?.length === 5), 'bank-inventory', 'The pack must contain thirty-two five-item internal banks.');
 check(selectedTopicIds.size === 66 && pack.blueprint?.foundationTopicRouteCount === 40, 'topic-blueprint', 'The selected framework-topic and foundation-route inventory is invalid.', { selectedTopics: selectedTopicIds.size, routes: pack.blueprint?.foundationTopicRouteCount });
 
 for (const [unitId, expected] of Object.entries(expectedUnitCounts)) {
-  check(unitCounts[unitId] === expected, 'unit-balance', 'Each unit must contain ten items.', { unitId, actual: unitCounts[unitId] || 0, expected });
+  check(unitCounts[unitId] === expected, 'unit-balance', 'Each unit must contain twenty items.', { unitId, actual: unitCounts[unitId] || 0, expected });
 }
 
 for (const item of items) {
@@ -84,11 +84,11 @@ for (const item of items) {
   check(item.accessibility?.essentialVisual === false && item.accessibility?.textEquivalentProvided === true && item.accessibility?.mathNotationPlainTextCompatible === true && item.accessibility?.linearReadingOrder === true, 'item-accessibility', 'Item accessibility metadata is incomplete.', { itemId: item.id });
 }
 
-check(answerCounts.every((count) => count === 20), 'answer-balance', 'Correct-answer positions must be balanced.', { actual: answerCounts, expected: [20, 20, 20, 20] });
-check(calculatorCounts['calculator-not-required'] === 56 && calculatorCounts['calculator-permitted-practice'] === 24, 'calculator-balance', 'Calculator routing must contain 56 no-calculator and 24 calculator-permitted items.', { actual: calculatorCounts });
+check(answerCounts.every((count) => count === 40), 'answer-balance', 'Correct-answer positions must be balanced.', { actual: answerCounts, expected: [40, 40, 40, 40] });
+check(calculatorCounts['calculator-not-required'] === 112 && calculatorCounts['calculator-permitted-practice'] === 48, 'calculator-balance', 'Calculator routing must contain 112 no-calculator and 48 calculator-permitted items.', { actual: calculatorCounts });
 for (const practiceId of expectedPractices) check((practiceCounts[practiceId] || 0) > 0, 'practice-coverage', 'Every declared practice must be represented.', { practiceId });
 for (const representation of expectedRepresentations) check((representationCounts[representation] || 0) > 0, 'representation-coverage', 'Every declared representation must be represented.', { representation });
-for (const topicId of selectedTopicIds) check((topicCounts[topicId] || 0) >= 2, 'topic-depth', 'Every selected framework topic ID must have at least two routed items.', { topicId, actual: topicCounts[topicId] || 0 });
+for (const topicId of selectedTopicIds) check((topicCounts[topicId] || 0) >= 4, 'topic-depth', 'Every selected framework topic ID must have at least four routed items.', { topicId, actual: topicCounts[topicId] || 0 });
 
 const chapters = library.chapters || [];
 const sections = chapters.flatMap((chapter) => chapter.sections || []);
@@ -97,6 +97,13 @@ const routedItemIds = practiceRoutes.flatMap((route) => route.itemIds || []);
 const chapterIds = new Set(chapters.map((chapter) => chapter.id));
 const sectionIds = new Set(sections.map((section) => section.id));
 const learningObjectiveIds = new Set(library.blueprint?.learningObjectiveCatalog?.map((objective) => objective.id) || []);
+const localTopicRouteIds = new Set(library.blueprint?.learningObjectiveCatalog?.map((objective) => objective.topicRouteId) || []);
+const diagnosticRoutes = library.topicDiagnosticRoutes || [];
+const diagnosticSets = diagnosticRoutes.flatMap((route) => route.diagnosticSets || []);
+const remediationPlaybooks = library.topicRemediationPlaybooks || [];
+const diagnosticRouteIds = new Set(diagnosticRoutes.map((route) => route.id));
+const remediationPlaybookIds = new Set(remediationPlaybooks.map((playbook) => playbook.id));
+const remediationById = new Map(remediationPlaybooks.map((playbook) => [playbook.id, playbook]));
 
 check(library.packId === pack.id && library.version === pack.version && library.status === 'preview' && library.releaseEligible === false, 'library-identity', 'Learning-library identity or release boundary is invalid.');
 check(library.sourceCatalog?.length === 4 && library.sourceCatalog.every((source) => /^https:\/\//.test(source.url || '')), 'source-catalog', 'Learning library must declare four public HTTPS sources.');
@@ -106,7 +113,11 @@ check(practiceRoutes.length === 24 && library.studyRoutes?.length === 4 && libra
 check(library.diagrams?.length === 8 && library.diagramPlacements?.length === 8, 'diagram-inventory', 'Optional reasoning-flow inventory is invalid.');
 check(library.constructedResponseWorkshops?.length === 8, 'workshop-inventory', 'Eight response-planning workshops are required.');
 check(library.summary?.topicRoutes === 40 && learningObjectiveIds.size === 40, 'objective-inventory', 'Forty topic routes and learning objectives are required.');
-check(routedItemIds.length === 80 && new Set(routedItemIds).size === 80 && routedItemIds.every((itemId) => itemIds.has(itemId)), 'practice-route-coverage', 'Section routes must cover every item exactly once.', { routed: routedItemIds.length, unique: new Set(routedItemIds).size });
+check(routedItemIds.length === 160 && new Set(routedItemIds).size === 160 && routedItemIds.every((itemId) => itemIds.has(itemId)), 'practice-route-coverage', 'Section routes must cover every item exactly once.', { routed: routedItemIds.length, unique: new Set(routedItemIds).size });
+check(diagnosticRoutes.length === 40 && diagnosticRouteIds.size === 40 && diagnosticSets.length === 120, 'diagnostic-inventory', 'The library must contain forty unique diagnostic routes and one hundred twenty diagnostic sets.', { routes: diagnosticRoutes.length, sets: diagnosticSets.length });
+check(remediationPlaybooks.length === 40 && remediationPlaybookIds.size === 40, 'remediation-inventory', 'The library must contain forty unique remediation playbooks.', { playbooks: remediationPlaybooks.length });
+check(library.summary?.diagnosticRoutes === 40 && library.summary?.diagnosticSets === 120 && library.summary?.remediationPlaybooks === 40, 'diagnostic-summary', 'Diagnostic and remediation summary counts are invalid.');
+check(pack.diagnosticRouteCount === 40 && pack.diagnosticSetCount === 120 && pack.remediationPlaybookCount === 40, 'diagnostic-pack-counts', 'Pack diagnostic and remediation counts are invalid.');
 
 for (const section of sections) {
   check(section.blocks?.length >= 5 && section.workedExample?.steps?.length >= 2 && section.misconceptionGuidance?.length >= 1, 'section-depth', 'Section lesson content is incomplete.', { sectionId: section.id });
@@ -116,6 +127,33 @@ for (const section of sections) {
 
 for (const item of items) {
   check(chapterIds.has(item.chapterIds?.[0]) && sectionIds.has(item.learningSectionId) && learningObjectiveIds.has(item.learningObjectiveId), 'item-route-resolution', 'Item references an unknown chapter, section, or objective.', { itemId: item.id });
+}
+
+for (const topicRouteId of localTopicRouteIds) {
+  const routeItems = items.filter((item) => item.topicRouteId === topicRouteId);
+  check(routeItems.length === 4, 'four-item-topic-route', 'Each local topic route must contain four items.', { topicRouteId, actual: routeItems.length });
+  check(routeItems.map((item) => item.difficulty).join('|') === 'foundational|moderate|moderate|advanced-foundation', 'topic-difficulty-progression', 'Topic routes must progress from foundation through depth to transfer.', { topicRouteId, actual: routeItems.map((item) => item.difficulty) });
+  check(routeItems.map((item) => item.cognitiveDemand).join('|') === 'low|moderate|moderate|high', 'topic-demand-progression', 'Topic routes must declare the intended cognitive-demand progression.', { topicRouteId, actual: routeItems.map((item) => item.cognitiveDemand) });
+}
+
+for (const route of diagnosticRoutes) {
+  const routeItemIds = route.itemIds || [];
+  const sets = route.diagnosticSets || [];
+  const flattenedSetItems = sets.flatMap((set) => set.itemIds || []);
+  check(routeItemIds.length === 4 && new Set(routeItemIds).size === 4 && routeItemIds.every((itemId) => itemIds.has(itemId)), 'diagnostic-route-items', 'A diagnostic route must contain four unique known items.', { routeId: route.id });
+  check(sets.length === 3 && sets.map((set) => set.stage).join('|') === 'foundation|depth|transfer' && sets.map((set) => set.itemIds?.length).join('|') === '1|2|1', 'diagnostic-stage-shape', 'Diagnostic routes must use ordered one-two-one foundation, depth, and transfer sets.', { routeId: route.id });
+  check(flattenedSetItems.join('|') === routeItemIds.join('|'), 'diagnostic-set-coverage', 'Diagnostic sets must cover the route items exactly once and in order.', { routeId: route.id });
+  check(sets.every((set) => set.unscored === true && set.automatedScoring === false && set.officialScore === false && set.readinessInference === false && set.releaseEligible === false), 'diagnostic-set-boundary', 'Diagnostic sets must remain unscored, non-inferential, and unreleased.', { routeId: route.id });
+  check(route.unscored === true && route.automatedScoring === false && route.officialScore === false && route.readinessInference === false && route.psychometricInference === false && route.releaseEligible === false, 'diagnostic-route-boundary', 'Diagnostic route boundaries are invalid.', { routeId: route.id });
+  const playbook = remediationById.get(route.remediationPlaybookId);
+  check(Boolean(playbook) && playbook?.diagnosticRouteId === route.id, 'diagnostic-remediation-link', 'Diagnostic route must resolve to its remediation playbook.', { routeId: route.id, remediationPlaybookId: route.remediationPlaybookId });
+}
+
+for (const playbook of remediationPlaybooks) {
+  check(diagnosticRouteIds.has(playbook.diagnosticRouteId), 'remediation-diagnostic-link', 'Remediation playbook references an unknown diagnostic route.', { playbookId: playbook.id });
+  check(playbook.steps?.length === 5 && playbook.steps.map((step) => step.phase).join('|') === 'recognize|repair|contrast|practice|retry-transfer-reflect', 'remediation-depth', 'Remediation playbook must contain the five required phases.', { playbookId: playbook.id });
+  check(['foundation', 'depth', 'transfer'].every((stage) => Array.isArray(playbook.retryByStage?.[stage]) && playbook.retryByStage[stage].length >= 1), 'remediation-retry-routing', 'Remediation playbook must provide retry items for every diagnostic stage.', { playbookId: playbook.id });
+  check(playbook.unscored === true && playbook.automatedScoring === false && playbook.officialScore === false && playbook.readinessInference === false && playbook.releaseEligible === false, 'remediation-boundary', 'Remediation playbook must remain unscored, non-inferential, and unreleased.', { playbookId: playbook.id });
 }
 
 for (const route of library.studyRoutes || []) {
@@ -142,14 +180,14 @@ for (const workshop of library.constructedResponseWorkshops || []) {
 }
 
 check(pack.blueprint?.targetExamYear === 2027 && pack.blueprint?.examModeReference === 'hybrid-digital' && /42 multiple-choice questions in 100 minutes/.test(pack.blueprint?.officialSectionOne || '') && /6 free-response questions in 90 minutes/.test(pack.blueprint?.officialSectionTwo || ''), 'exam-format-boundary', 'Current public May 2027 exam-format metadata is incomplete.');
-check(pack.capabilities?.constructedResponseIncluded === false && pack.capabilities?.frqWorkshopsIncluded === true && pack.capabilities?.calculatorRoutingIncluded === true, 'capabilities', 'Pack capability boundaries are invalid.');
+check(pack.capabilities?.constructedResponseIncluded === false && pack.capabilities?.frqWorkshopsIncluded === true && pack.capabilities?.calculatorRoutingIncluded === true && pack.capabilities?.diagnosticRoutingIncluded === true && pack.capabilities?.remediationPlaybooksIncluded === true && pack.capabilities?.readinessInferenceIncluded === false, 'capabilities', 'Pack capability boundaries are invalid.');
 check(pack.rightsPolicy?.secureCollegeBoardContentUsed === false && pack.releaseGates?.releaseEligible === false && library.rightsPolicy?.secureCollegeBoardContentUsed === false && library.releaseGates?.releaseEligible === false, 'rights-release-gates', 'Rights or release gates are invalid.');
 
 const report = {
   schemaVersion: 1,
-  qaVersion: 'ap-calculus-ab-foundation-qa-v1',
+  qaVersion: 'ap-calculus-ab-foundation-qa-v2',
   reportId: 'ap-calculus-ab-foundation-qa',
-  generatedAt: '2026-08-25T00:00:00.000Z',
+  generatedAt: '2026-08-30T00:00:00.000Z',
   packId: pack.id,
   version: pack.version,
   status: findings.length ? 'fail' : 'pass',
@@ -158,7 +196,7 @@ const report = {
   advisories: [
     'Automated QA does not establish AP Calculus AB content validity, fairness, accessibility conformance, rights clearance, production readiness, score meaning, or psychometric quality.',
     'Independent AP Calculus AB subject-expert, rights, accessibility, field-testing, and psychometric review remain release-blocking.',
-    'The 80-item initial seed is not a complete AP exam form or full topic-depth bank.',
+    'The 160-item expanded foundation, its unscored diagnostic routes, and its remediation playbooks are not a complete AP exam form, official score, readiness measure, or psychometrically calibrated bank.',
   ],
   metrics: {
     itemCount: items.length,
@@ -177,6 +215,9 @@ const report = {
     flashcardCount: library.flashcards?.length || 0,
     memoryAidCount: library.memoryAids?.length || 0,
     practiceRouteCount: practiceRoutes.length,
+    diagnosticRouteCount: diagnosticRoutes.length,
+    diagnosticSetCount: diagnosticSets.length,
+    remediationPlaybookCount: remediationPlaybooks.length,
     studyRouteCount: library.studyRoutes?.length || 0,
     quickReferenceCount: library.quickReference?.length || 0,
     diagramCount: library.diagrams?.length || 0,
@@ -184,9 +225,10 @@ const report = {
     constructedResponseWorkshopCount: library.constructedResponseWorkshops?.length || 0,
   },
   coverage: {
-    allSelectedTopicsRepresented: Array.from(selectedTopicIds).every((topicId) => (topicCounts[topicId] || 0) >= 2),
+    allSelectedTopicsRepresented: Array.from(selectedTopicIds).every((topicId) => (topicCounts[topicId] || 0) >= 4),
     allUnitsRepresented: Object.values(unitCounts).every((count) => count > 0),
     everyItemSectionRouted: routedItemIds.length === items.length && new Set(routedItemIds).size === items.length,
+    everyTopicHasDiagnosticAndRemediation: diagnosticRoutes.length === 40 && remediationPlaybooks.length === 40,
   },
   inputs: {
     packSha256: sha256(packPath),

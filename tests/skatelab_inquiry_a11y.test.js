@@ -7,7 +7,7 @@ const publicPath = path.join(process.cwd(), 'desktop/web-app', 'public', 'stem_l
 
 describe('Skate Lab inquiry accessibility', () => {
   it('names the hang-time hypothesis textarea in source and public mirrors', () => {
-    const expected = "'aria-label': __alloT('stem.skatelab.hypothesis_input', 'Skate flight hang-time hypothesis')";
+    const expected = "'aria-label': __alloT('stem.skatelab.hypothesis_input', 'Skate physics investigation hypothesis')";
     for (const file of [sourcePath, publicPath]) expect(fs.readFileSync(file, 'utf8')).toContain(expected);
   });
 

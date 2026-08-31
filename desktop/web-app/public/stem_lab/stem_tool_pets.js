@@ -689,19 +689,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { term: 'Operant conditioning', def: 'Learning by consequences — behavior is shaped by what follows it (reinforcement = increases; punishment = decreases). Foundation of modern pet training. (See BehaviorLab for theory deep-dive.)' },
     { term: 'Classical conditioning', def: 'Learning by association — a previously neutral stimulus becomes meaningful by being paired with something biologically significant (Pavlov\'s bell + food).' },
     { term: 'Shaping', def: 'Reinforcing successive approximations of a target behavior. How dolphins learn complex tricks and how dogs learn "go to mat."' },
-    { term: 'Socialization period', def: 'Developmental window when young animals form lasting impressions of what is safe vs scary. Puppies: 3–14 wk. Kittens: 2–7 wk. Missing this window = lifelong fearfulness.' },
+    { term: 'Socialization period', def: 'A developmental sensitive period when safe, positive experiences can strongly shape later responses. Puppies and kittens benefit from carefully managed early exposure, but a missed or difficult period does not make lifelong fear inevitable; later learning and qualified support can still help.' },
     { term: 'Imprinting', def: 'Rapid learning during a critical period (Lorenz\'s ducklings following the first moving object). Most relevant in birds + ungulates; less so in dogs/cats.' },
     { term: 'Calming signals', def: 'Subtle dog body language used to defuse social tension: lip-licking, yawning, head turn, "whale eye" (showing whites). Misread by humans as random.' },
     { term: 'Allogrooming', def: 'Mutual grooming between social bondmates. Cats only allogroom individuals they trust; bonded rabbits will groom each other.' },
     { term: 'Pheromone', def: 'Chemical signal that triggers behavior in same-species individuals. Cats have facial pheromones (rubbing on furniture = marking ownership in friendly way).' },
     { term: 'Allelomimetic behavior', def: 'Doing what your group does. Dogs are highly allelomimetic with their human family — they copy your routine.' },
     { term: 'Resource guarding', def: 'Defensive behavior over food, toys, resting spots, or people. Normal evolutionary behavior; manageable with training; never punish — it intensifies.' },
-    { term: 'Trigger stacking', def: 'When several mildly-stressful events compound and push an animal over its bite threshold. The bite looks "out of nowhere" but the lead-up was visible.' },
-    { term: 'Bite inhibition', def: 'Soft-mouth control learned in puppyhood from littermates. Puppies removed from litters too early (<8 wk) often have poor bite inhibition.' },
-    { term: 'Obligate carnivore', def: 'Must eat animal protein to obtain certain nutrients (taurine, arginine, vitamin A). Cats + ferrets. Cannot survive on plant-only diets.' },
+    { term: 'Trigger stacking', def: 'When multiple stressors accumulate and reduce an animal\'s ability to cope. A later reaction may seem sudden even when earlier cues were subtle, brief, absent, or missed; this is not a guaranteed countdown to a bite.' },
+    { term: 'Bite inhibition', def: 'Control over bite force develops through early social experience, play feedback, learning, and later training. Early litter experience can matter, but it does not determine one fixed lifelong outcome.' },
+    { term: 'Obligate carnivore', def: 'A species with nutrient requirements shaped by an animal-tissue diet. Cats and ferrets have specific dietary requirements; adequacy depends on the complete formulated diet and life stage, not a single ingredient label.' },
     { term: 'Crepuscular', def: 'Most active at dawn + dusk. Cats, rabbits, ferrets. Explains the 5 AM "zoomies" of indoor cats.' },
     { term: 'Brachycephalic', def: 'Short-skulled breeds (pugs, bulldogs, Persians). Often have breathing problems (BOAS), eye problems, dental crowding, inability to thermoregulate. Result of selective breeding for "cute" features.' },
-    { term: 'AAFCO statement', def: '"Complete and balanced" wording on pet food labels means it meets American Association of Feed Control Officials nutrient requirements for the named life stage.' },
+    { term: 'AAFCO statement', def: 'A dog- or cat-food nutritional-adequacy statement identifies the intended life stage and how a complete-and-balanced claim is substantiated. It is important label evidence, not proof that one food fits every individual.' },
     { term: 'TNR (Trap-Neuter-Return)', def: 'Community cat management: trap feral cats, sterilize, vaccinate, return to colony. Reduces population over generations without killing.' },
     { term: 'Service dog vs ESA', def: 'Service dog = task-trained for a disability (ADA: full public access). Emotional support animal = comfort by presence (FHA + sometimes DOT only; no public access).' }
   ];
@@ -723,7 +723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       truth: 'Rabbits are not low-maintenance pets for a child to manage. They may hide illness, need spacious indoor housing, species-appropriate food and enrichment, and rabbit-experienced veterinary care. An adult must be the primary caregiver, while children participate through supervised, rabbit-respecting interaction.',
       source: 'House Rabbit Society + AVMA Companion Animal' },
     { myth: '"Tail wagging means a happy dog."',
-      truth: 'Tail wagging means AROUSAL — could be happy, anxious, fearful, or about-to-bite. Read full body language: loose body + soft eyes + relaxed mouth = happy. Stiff body + hard eyes + closed mouth + slow high wag = warning. Whale-eye (whites showing) = fear/discomfort, not playfulness.',
+      truth: 'Tail movement reflects arousal, not one specific emotion. A loose body, soft eyes, and relaxed mouth support a comfortable interpretation; a stiff body, fixed stare, closed mouth, or high slow wag support pausing and creating space. Visible eye white can add evidence of discomfort when combined with tension or avoidance, but no single cue proves intent or predicts a bite.',
       source: 'AVSAB + Yin "Low Stress Handling"' },
     { myth: '"You can\'t teach an old dog new tricks."',
       truth: 'Adult and senior dogs learn just fine — sometimes BETTER than puppies because they have longer attention spans + impulse control. Cognitive enrichment is medically recommended for senior dogs to slow age-related cognitive dysfunction (canine analog of dementia).',
@@ -961,7 +961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   ];
   var AI_GROUND_TRUTH = [
     'Dogs: 15,000–40,000 years from Pleistocene wolf. Olfactory ~300M receptors vs 5M human. Lifespan inversely correlated with size (small 14–16 yr; giant 6–8 yr).',
-    'Cats: obligate carnivores requiring taurine, vitamin A, arginine, arachidonic acid from animal protein. Indoor cats live 12–18 yr; cats with outdoor access die younger, though the widely-quoted "outdoor 2–5" figure is rough and leans on feral-colony data rather than owned cats.',
+    'Cats: obligate carnivores with species-specific dietary requirements including taurine, preformed vitamin A, arginine, and arachidonic acid. Adequacy depends on the finished diet and life stage, not a single ingredient identity. Indoor cats live 12–18 yr; cats with outdoor access die younger, though the widely-quoted "outdoor 2–5" figure is rough and leans on feral-colony data rather than owned cats.',
     'Rabbits: not eating plus hunched posture is an urgent emergency signal. Call a rabbit-experienced veterinarian now; do not force-feed or start home treatment unless a veterinarian has assessed blockage risk and specifically instructs it. An adult should be the primary caregiver; children need supervised, rabbit-respecting interaction.',
     'Birds: respiratory air-sac anatomy makes them sensitive to PTFE/Teflon, aerosols, scented candles, and smoke. Many parrots can require care for decades; lifespan varies by species, husbandry, and individual, so successor-care planning matters.',
     'Reptiles: commonly carry and can shed Salmonella while appearing healthy; shedding may be intermittent, so a negative sample does not clear the animal. CDC: no reptiles in households with children under 5. Husbandry (UVB + heat gradient) is a major preventable cause of reptile illness and death.',
@@ -969,6 +969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     'Service-dog program eligibility, availability, wait times, and costs vary. Verify current details directly with an Assistance Dogs International accredited program; an alert dog complements rather than replaces medical monitoring.',
     'Cat house-soiling: sudden changes warrant veterinary evaluation. After medical causes are assessed, review box number, access, location, substrate, cleanliness, and stress; do not punish.',
     'Senior dogs: changes in disorientation, sleep and wake cycles, interactions, house-soiling, activity, or anxiety can fit CCD but overlap with medical, pain, and sensory causes. Veterinary evaluation and longitudinal tracking come before individualized management.',
+    'Body language is probabilistic and context-dependent: no cue guarantees safety or predicts a precise time to bite. Pause interaction, create space and an exit, actively supervise children around every dog including familiar family pets, and seek veterinary or qualified behavior help for pain or repeated fear or aggression.',
     'Common hazard patterns: chocolate can affect multiple species; grape/raisin and macadamia illness are best documented in dogs; xylitol is dog-focused and ferrets may also be at risk; Allium plants affect dogs and cats; true lilies/daylilies are a cat emergency; avocado can severely harm birds and rabbits; overheated PTFE fumes are a bird emergency. These are teaching patterns, not clearance for unlisted species.',
     'Suspected poisoning: call a veterinarian, emergency veterinary hospital, or animal poison service immediately; do not wait for symptoms. Do not induce vomiting or give medication or home remedies unless a veterinarian or animal poison expert directs you.',
     'ASPCA Animal Poison Control: (888) 426-4435 (24/7; consultation fee may apply). Pet Poison Helpline: (855) 764-7661 (24/7). Have the species, weight, product or plant information, estimated amount and time, symptoms, and packaging or a photo ready.',
@@ -2969,6 +2970,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'Reaching through a barrier puts fingers inside the dog\'s defensive space.'
           ],
           why: 'Tail movement must be read with the whole body. Here the high slow wag, hard stare, closed mouth, and stiff legs support backing off.'
+        },
+        {
+          id: 'dog-child-rest',
+          species: 'Dogs',
+          scenario: 'At a family gathering, a young child follows a familiar family dog to his bed. The dog turns his head away, closes his mouth, and goes still as the child leans in for a hug.',
+          question: 'What is the safest adult plan?',
+          choices: [
+            'Allow the hug because the dog already knows the child',
+            'Interrupt calmly, create separation, and give the dog a child-free retreat with active adult supervision',
+            'Ask the child to hold the dog still until he relaxes',
+            'Scold the dog if he growls so he learns not to warn'
+          ],
+          correct: 1,
+          feedback: [
+            'Familiarity does not replace active supervision or make a resting dog available for contact.',
+            'Yes. Stop the pressure, create a protected retreat, and supervise every future interaction actively.',
+            'Restraint removes the dog\'s exit and can increase fear or defensive behavior.',
+            'A growl is safety information. Punishment can suppress a warning without resolving discomfort.'
+          ],
+          why: 'Young children need active adult supervision around all dogs, including familiar family pets. Resting, eating, hiding, illness, pain, and efforts to move away are reasons to prevent contact and give space.'
         },
         {
           id: 'cat-tail',
@@ -7484,12 +7505,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           { signal: 'Play bow (front low, butt up)', meaning: 'Invitation to play / "what comes next is fun"', color: T.ok },
           { signal: 'Tucked tail + low body + ears back', meaning: 'Fear / appeasement — do NOT push interaction', color: T.warm },
           { signal: 'Showing belly with relaxed body', meaning: 'Trust / play (not always "rub me!")', color: T.accentHi },
-          { signal: 'Showing teeth + low growl + freeze', meaning: 'CLEAR warning — bite is the next step if pressure continues', color: T.danger }
+          { signal: 'Showing teeth + low growl + freeze', meaning: 'Strong request for distance — stop pressure and create space; a bite is possible, not predictable on a timer', color: T.danger }
         ]},
         { species: '🐈 Cats', items: [
           { signal: 'Slow blink toward you', meaning: '"Cat kiss" — affection / trust', color: T.ok },
           { signal: 'Tail held straight up (sometimes with curve at tip)', meaning: 'Friendly greeting', color: T.ok },
-          { signal: 'Tail flicking back and forth', meaning: 'Annoyed / about to react — back off', color: T.warm },
+          { signal: 'Tail flicking back and forth', meaning: 'Rising arousal or irritation — pause contact and give space', color: T.warm },
           { signal: 'Pupils dilated wide in normal light', meaning: 'Aroused (could be play, fear, or aggression — read context)', color: T.warm },
           { signal: 'Ears flattened back / sideways', meaning: 'Fear or aggression', color: T.warm },
           { signal: 'Crouched + tail wrapped tight', meaning: 'Stressed / unwell', color: T.warm },
@@ -8654,6 +8675,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'Animals often show posture, facial, and movement cues before stress escalates. Reading the whole body in context helps people give space and seek help; it cannot guarantee that an interaction is safe.')),
+        h('section', {
+          className: 'petslab-interaction-safety',
+          'data-pets-interaction-safety': 'pause-space-support',
+          'aria-labelledby': 'pets-interaction-safety-heading',
+          style: { padding: 15, borderRadius: 12, background: T.cardAlt, border: '2px solid ' + T.accent, marginBottom: 14 }
+        },
+          h('h2', { id: 'pets-interaction-safety-heading', style: { margin: '0 0 6px', color: T.accentHi, fontSize: 17 } },
+            '🛟 Pause · Space · Support'),
+          h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.6 } },
+            'Body language is a prompt for safer action, not a clearance test or a bite countdown.'),
+          h('ol', {
+            'data-pets-interaction-steps': 'three',
+            style: { margin: '0 0 10px', paddingLeft: 22, color: T.text, fontSize: 12, lineHeight: 1.65 }
+          },
+            h('li', { 'data-pets-interaction-step': 'pause' },
+              h('strong', null, 'Pause: '), 'Stop reaching, petting, chasing, or crowding. Do not test the animal\'s tolerance.'),
+            h('li', { 'data-pets-interaction-step': 'space' },
+              h('strong', null, 'Create space: '), 'Step back, preserve an exit or retreat, and never punish a growl or force contact.'),
+            h('li', { 'data-pets-interaction-step': 'support' },
+              h('strong', null, 'Get support: '), 'Use active adult supervision and seek veterinary or qualified behavior help for sudden change, pain, repeated fear, or aggression.')
+          ),
+          h('p', {
+            role: 'note',
+            'data-pets-child-supervision': 'active-adult',
+            style: { margin: '0 0 9px', padding: '9px 10px', borderRadius: 8, background: T.card, color: T.text, fontSize: 12, lineHeight: 1.6 }
+          },
+            h('strong', null, 'Young children + every dog: '),
+            'A familiar or family pet still needs active adult supervision. Prevent contact while a dog is resting, eating, hiding, caring for puppies, ill, in pain, or trying to move away. Separate them when active supervision is not possible.'),
+          h('p', { style: { margin: 0, color: T.muted, fontSize: 10, lineHeight: 1.5 } },
+            'Safety references: ',
+            h('a', { href: 'https://www.cdc.gov/healthy-pets/about/dogs.html', target: '_blank', rel: 'noopener noreferrer' }, 'CDC · Dogs'),
+            ' · ',
+            h('a', { href: 'https://avsab.org/understanding-canine-facial-expressions-body-postures/', target: '_blank', rel: 'noopener noreferrer' }, 'AVSAB · whole-body cues')
+          )
+        ),
         modeBar,
         h('div', {
           id: 'pets-body-panel-' + blMode,
@@ -9212,7 +9268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'q2', icon: '🐈', module: 'cats', strand: 'biology',
         stem: 'Why do cats need taurine in their diet but dogs don\'t?',
         choices: ['Taurine is a vitamin only cats need', 'Cats lost the metabolic ability to synthesize taurine; they\'re obligate carnivores', 'Cats absorb taurine through their paw pads when they walk on natural surfaces', 'Cats convert taurine from sunlight'],
-        correct: 1, why: 'Cats lost the synthesis pathway during their evolution as strict meat-eaters. Without dietary taurine, cats develop dilated cardiomyopathy + retinal degeneration. AAFCO commercial cat foods guarantee minimums.' },
+        correct: 1, why: 'Cats have a species-specific dietary taurine requirement. Severe deficiency can cause dilated cardiomyopathy and retinal degeneration. Evaluate adequacy using the finished food\'s nutritional-adequacy statement and life stage, not one ingredient.' },
       { id: 'q3', icon: '🐺', module: 'training', strand: 'behavior',
         stem: 'What\'s the modern scientific status of "alpha wolf" / dominance theory for dog training?',
         choices: ['Confirmed by recent wolf studies', 'Discredited — wild wolf packs are families, not status hierarchies', 'Only applies to certain breeds', 'Still the standard model used by veterinary associations'],
@@ -11789,7 +11845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var states = [
         { id: 'relaxed', number: '1', color: '#86efac', title: '✓ RELAXED + happy', posture: 'LOOSE',
           cues: ['• Loose, wiggly body', '• Soft eyes (almond-shaped)', '• Open, slightly hanging mouth', '• Tail mid-height, loose wag', '• Ears in neutral position'],
-          action: 'Safe to greet → ask handler first' },
+          action: 'Ask the handler first; let the dog choose.' },
         { id: 'alert', number: '2', color: '#fbbf24', title: '⚠ ALERT / aroused', posture: 'STILL',
           cues: ['• Body still + forward', '• Eyes fixed on something', '• Ears pricked forward', '• Tail high, can be fast wag', '• Closed mouth'],
           action: 'Pause + assess, do NOT approach' },
@@ -11798,7 +11854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           action: 'Give space — do NOT push interaction' },
         { id: 'warning', number: '4', color: '#fca5a5', title: '🛑 WARNING — back off NOW', posture: 'STIFF',
           cues: ['• Stiff body, weight forward', '• Hard, direct stare', '• Closed mouth → showing teeth', '• Tail high + slow stiff wag', '• Low growl, raised hackles'],
-          action: 'A bite is the next step. Slowly create distance.' }
+          action: 'Create distance; a bite is possible, not predictable.' }
       ];
       var poses = {
         relaxed: { bodyY: 60, bodyRy: 28, headX: 132, headY: 48, tail: 'M 42 58 Q 7 42 16 22', ear: 'neutral', mouth: 'open', eye: 'soft', legs: 'normal' },
@@ -11897,10 +11953,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var cueY = narrow ? y + 151 : y + 70;
         var cueStep = narrow ? 18 : 18;
         var narrowActions = {
-          relaxed: ['Safe to greet →', 'ask the handler first'],
+          relaxed: ['Ask the handler first;', 'let the dog choose.'],
           alert: ['Pause + assess;', 'do NOT approach'],
           fearful: ['Give space — do NOT', 'push interaction'],
-          warning: ['A bite may be next;', 'slowly create distance']
+          warning: ['Create distance;', 'a bite is possible.']
         };
         return h('g', { key: cfg.id },
           h('rect', { x: x, y: y, width: width, height: height, rx: 13, fill: 'url(#pets-ethogram-' + cfg.id + suffix + ')', stroke: cfg.color, strokeWidth: 2 }),
@@ -11989,7 +12045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         caption = 'The three-term contingency (antecedent → behavior → consequence) is the foundation of operant conditioning. BehaviorLab simulates this with mice in a Skinner box. The Pets Lab shows what changes when you swap the mouse for a real animal in a real environment.';
       } else if (current === 'bodylang') {
         svg = svgEthogram();
-        caption = 'Most dog bites are predictable from body language minutes in advance. The 4 quadrants here are simplified; real dogs slide between states. Reading the WHOLE body — not just the tail — is the highest-impact skill for any pet-owning household.';
+        caption = 'A dog\'s posture can show discomfort or rising arousal, but cues vary and cannot guarantee safety or predict an exact countdown to a bite. The 4 quadrants are simplified; use the whole body and context to pause, create space, supervise children, and seek qualified help when risk repeats.';
       } else {
         svg = svgSkullCompare();
         caption = 'Tooth shape reveals diet. Dogs have flat-topped molars (can grind plants) and a longer braincase. Cats have only sharp canines + carnassial teeth (slicing only — no grinding) and proportionally larger eye sockets for low-light hunting. Anatomy confirms what biochemistry already shows: cats are obligate carnivores.';

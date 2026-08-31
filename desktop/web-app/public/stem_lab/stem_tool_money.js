@@ -51,7 +51,7 @@ window.StemLab = window.StemLab || {
     color: 'emerald', category: 'math',
     questHooks: [
       { id: 'place_5_coins', label: 'Place 5 coins on the counting mat', icon: '\uD83E\uDE99', check: function(d) { return (d.placed || []).length >= 5; }, progress: function(d) { return (d.placed || []).length + '/5 coins'; } },
-      { id: 'make_change', label: 'Successfully make change for a purchase', icon: '\uD83D\uDCB0', check: function(d) { return d.changeFeedback === 'correct'; }, progress: function(d) { return d.changeFeedback === 'correct' ? 'Done!' : 'Try making change'; } },
+      { id: 'make_change', label: 'Successfully make change for a purchase', icon: '\uD83D\uDCB0', check: function(d) { return d.changeFeedback === 'correct' || !!(d.changeFeedback && d.changeFeedback.ok); }, progress: function(d) { return d.changeFeedback === 'correct' || !!(d.changeFeedback && d.changeFeedback.ok) ? 'Done!' : 'Try making change'; } },
       { id: 'shop_3_items', label: 'Add 3 items to shopping cart', icon: '\uD83D\uDED2', check: function(d) { return (d.cart || []).length >= 3; }, progress: function(d) { return (d.cart || []).length + '/3 items'; } }
     ],
     render: function(ctx) {
@@ -99,6 +99,16 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════════════════════
             const d = labToolData.moneyMath || {};
             const upd = (key, val) => setLabToolData(prev => ({ ...prev, moneyMath: { ...prev.moneyMath, [key]: val } }));
+            var moneyAwardKeys = Object.assign({}, d.moneyAwardKeys || {});
+            var awardMoneyXPOnce = function(activity, fingerprint, points, reason) {
+              var key;
+              try { key = JSON.stringify(fingerprint); } catch (e) { key = String(fingerprint); }
+              if (moneyAwardKeys[activity] === key || typeof awardXP !== 'function') return false;
+              moneyAwardKeys[activity] = key;
+              upd('moneyAwardKeys', Object.assign({}, moneyAwardKeys));
+              awardXP('moneyMath', points, reason);
+              return true;
+            };
 
             const tab = d.tab || 'coins';
             const grade = d.grade || 'elementary';
@@ -331,9 +341,33 @@ window.StemLab = window.StemLab || {
               );
             };
 
-            // ── Approximate exchange rates (for educational use) ──
+            // ── Fixed classroom exchange-rate model (units per 1 USD; not live quotes) ──
             const RATES = { USD: 1, EUR: 0.92, GBP: 0.79, CAD: 1.36, JPY: 149.5, MXN: 17.1, AUD: 1.54, INR: 83.1 };
             const convert = (amount, from, to) => amount / RATES[from] * RATES[to];
+            const currencyFractionDigits = (code) => code === 'JPY' ? 0 : 2;
+            const roundCurrency = (amount, code) => {
+              var factor = Math.pow(10, currencyFractionDigits(code));
+              return Math.round((amount + Number.EPSILON) * factor) / factor;
+            };
+            const currencyUnits = (amount, code) => {
+              var numeric = Number(amount);
+              if (!Number.isFinite(numeric)) return null;
+              return Math.round((numeric + Number.EPSILON) * Math.pow(10, currencyFractionDigits(code)));
+            };
+            const hasCurrencyPrecision = (amount, code) => {
+              if (amount === null || amount === undefined || amount === '') return false;
+              var numeric = Number(amount);
+              return Number.isFinite(numeric) && Math.abs(numeric - roundCurrency(numeric, code)) < 1e-9;
+            };
+            const sameCurrencyAmount = (left, right, code) => {
+              var leftUnits = currencyUnits(left, code);
+              var rightUnits = currencyUnits(right, code);
+              return hasCurrencyPrecision(left, code) && hasCurrencyPrecision(right, code) && leftUnits !== null && rightUnits !== null && leftUnits === rightUnits;
+            };
+            const formatCurrencyAmount = (amount, code) => {
+              var digits = currencyFractionDigits(code);
+              return Number(amount).toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+            };
 
             // ── Grade-specific config ──
             const GRADE_CONFIG = {
@@ -398,17 +432,17 @@ window.StemLab = window.StemLab || {
             var cartLineDetails = cart.map(function (item) {
               var weighted = item.pricePer && item.pricePer !== 'each';
               var quantity = weighted ? (item.weight || 1) : (item.qty || 1);
-              var lineTotal = item.price * quantity;
+              var lineTotal = roundCurrency(item.price * quantity, currency);
               var math = weighted
                 ? quantity + ' ' + item.pricePer + ' \u00D7 ' + fmt(item.price) + '/' + item.pricePer
                 : quantity + ' \u00D7 ' + fmt(item.price);
               return { name: item.name, weighted: weighted, quantity: quantity, math: math, lineTotal: lineTotal, lineTotalLabel: fmt(lineTotal) };
             });
-            var cartTotal = cartLineDetails.reduce(function (sum, line) { return sum + line.lineTotal; }, 0);
+            var cartTotal = roundCurrency(cartLineDetails.reduce(function (sum, line) { return sum + line.lineTotal; }, 0), currency);
             var cartItemCount = cartLineDetails.reduce(function (sum, line) { return sum + (line.weighted ? 1 : line.quantity); }, 0);
             var taxRate = gc.includeTax ? 0.08 : 0;
-            var cartTax = cartTotal * taxRate;
-            var cartGrand = cartTotal + cartTax;
+            var cartTax = roundCurrency(cartTotal * taxRate, currency);
+            var cartGrand = roundCurrency(cartTotal + cartTax, currency);
             var lastReceipt = d.lastReceipt || null;
             var checkoutActive = !!d.checkoutActive;
             var checkoutStep = d.checkoutStep || 'estimate';
@@ -473,8 +507,7 @@ window.StemLab = window.StemLab || {
                 cashAdjustmentLabel: paymentMethod === 'cash' && checkoutCashAdjustment !== 0 ? (checkoutCashAdjustment > 0 ? '+' : '') + fmt(checkoutCashAdjustment) : null,
                 returnedPieces: paymentMethod === 'cash' ? checkoutReturnGroups.map(function (group) { return { label: group.label, count: group.count }; }) : []
               });
-              if (typeof addXP === 'function') addXP(25, 'Money Math: Complete grocery checkout journey');
-              if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 20, 'complete grocery checkout');
+              awardMoneyXPOnce('grocery-checkout', [currency, cartReceiptSnapshot], 20, 'complete grocery checkout');
               if (typeof addToast === 'function') addToast('\uD83C\uDF89 Checkout complete! Total: ' + fmt(cartGrand), 'success');
               upd('lastReceipt', receipt);
               upd('cart', []);
@@ -1347,17 +1380,17 @@ window.StemLab = window.StemLab || {
               // Calculate correct total
               var subtotal = 0;
               items.forEach(function (it) {
-                if (it.weight) subtotal += Math.round(it.price * it.weight * 100) / 100;
-                else subtotal += it.price * it.qty;
+                if (it.weight) subtotal += roundCurrency(it.price * it.weight, currency);
+                else subtotal += roundCurrency(it.price * it.qty, currency);
               });
-              subtotal = Math.round(subtotal * 100) / 100;
+              subtotal = roundCurrency(subtotal, currency);
               var afterCoupon = subtotal;
               if (coupon) {
-                if (coupon.type === 'pct') afterCoupon = Math.round(subtotal * (1 - coupon.val / 100) * 100) / 100;
-                else afterCoupon = Math.round(Math.max(0, subtotal - coupon.val) * 100) / 100;
+                if (coupon.type === 'pct') afterCoupon = roundCurrency(subtotal * (1 - coupon.val / 100), currency);
+                else afterCoupon = roundCurrency(Math.max(0, subtotal - coupon.val), currency);
               }
-              var tax = includeTax ? Math.round(afterCoupon * taxRate * 100) / 100 : 0;
-              var total = Math.round((afterCoupon + tax) * 100) / 100;
+              var tax = includeTax ? roundCurrency(afterCoupon * taxRate, currency) : 0;
+              var total = roundCurrency(afterCoupon + tax, currency);
               // Pick customer
               var cust = CR_CUSTOMERS[Math.floor(Math.random() * CR_CUSTOMERS.length)];
               upd('crCustomer', { name: cust.name, emoji: cust.emoji, items: items, hasTax: includeTax, coupon: coupon, subtotal: subtotal, correctTotal: total, taxAmt: tax, afterCoupon: afterCoupon });
@@ -1396,7 +1429,7 @@ window.StemLab = window.StemLab || {
               var maxTime = Math.max(15, 45 - (crWave - 1) * 5);
               var speedScore = Math.max(0, Math.round(30 * (1 - elapsed / maxTime)));
               var roundScore = accuracyScore + speedScore;
-              var perfect = error < 0.02;
+              var perfect = sameCurrencyAmount(playerVal, correct, currency);
               var newServed = crServed + 1;
               var newScore = crScore + roundScore;
               var newHistory = crHistory.concat([{ score: roundScore, time: elapsed, accuracy: accuracyScore, speed: speedScore, perfect: perfect }]);
@@ -1455,8 +1488,7 @@ window.StemLab = window.StemLab || {
               // XP
               var xpEarned = Math.round(roundScore / 10);
               if (xpEarned > 0) {
-                if (typeof awardStemXP === 'function') awardStemXP('moneyMath', xpEarned, 'cashier rush');
-                if (typeof addXP === 'function') addXP(xpEarned, 'Money Math: Cashier Rush');
+                awardMoneyXPOnce('cashier-rush', [crStartTime, crServed, crCustomer], xpEarned, 'cashier rush');
               }
               var fbMsg = perfect
                 ? '\u2705 Perfect! ' + fmt(correct) + ' \u2014 ' + roundScore + '/100 (' + elapsed + 's) +' + xpEarned + ' XP!'
@@ -1496,7 +1528,7 @@ window.StemLab = window.StemLab || {
               var amount = grade === 'elementary' ? (Math.floor(Math.random() * 9) + 1) * 10 :
                            grade === 'middle' ? Math.floor(Math.random() * 450) + 50 :
                            Math.floor(Math.random() * 4500) + 500;
-              var correctAnswer = Math.round(convert(amount, from, to) * 100) / 100;
+              var correctAnswer = roundCurrency(convert(amount, from, to), to);
               upd('exchFrom', from); upd('exchTo', to); upd('exchAmount', amount);
               upd('exchCorrect', correctAnswer); upd('exchAnswer', null); upd('exchFeedback', null);
             };
@@ -1508,7 +1540,7 @@ window.StemLab = window.StemLab || {
               var taxNote = gc.includeTax ? ' Include sales tax problems (8% rate).' : '';
               var percentNote = gc.includePercent ? ' Include percentage, discount, and tip calculations.' : '';
               var currNote = 'Use ' + cur.name + ' (' + cur.symbol + ').';
-              var convNote = Object.keys(CURRENCIES).length > 1 ? ' Occasionally include currency conversion between two currencies from: USD, EUR, GBP, CAD, JPY, MXN, AUD, INR. Use approximate exchange rates.' : '';
+              var convNote = Object.keys(CURRENCIES).length > 1 ? ' Occasionally include currency conversion between USD, EUR, GBP, CAD, JPY, MXN, AUD, and INR. Use exactly this fixed classroom model (units per 1 USD): USD 1, EUR 0.92, GBP 0.79, CAD 1.36, JPY 149.5, MXN 17.1, AUD 1.54, INR 83.1. Round only the final currency answer.' : '';
               var prompt = 'Generate ONE money math word problem for a ' + levelText + ' level student. ' + currNote + taxNote + percentNote + convNote +
                 '\n\nReturn ONLY valid JSON with NO markdown:\n{"problem":"...","hint":"...","answer":number,"explanation":"step-by-step solution","category":"one of: counting|change|shopping|percent|tax|tip|conversion|budgeting"}';
               if (typeof callGemini === 'function') {
@@ -1626,8 +1658,7 @@ window.StemLab = window.StemLab || {
                 upd('budgetEventResolved', true);
                 upd('budgetEventScore', budgetEventScore + points);
                 upd('budgetEventHistory', budgetEventHistory.concat([{ id: budgetEvent.id, icon: budgetEvent.icon, label: budgetEvent.label, choice: choice, points: points }]).slice(-5));
-                if (typeof addXP === 'function') addXP(points * 3, 'Money Math: Budget surprise decision');
-                if (typeof awardStemXP === 'function') awardStemXP('moneyMath', points * 2, 'budget surprise decision');
+                awardMoneyXPOnce('budget-event', [budgetEvent.id, budgetEventHistory.length], points * 2, 'budget surprise decision');
               }
             };
 
@@ -1695,13 +1726,22 @@ window.StemLab = window.StemLab || {
             };
 
             var genChangeCheck = function () {
-              var price = isJPY ? (Math.floor(Math.random() * 40 + 5) * 100) : (Math.round((Math.random() * gc.maxPrice * 0.7 + 1) * 100) / 100);
-              var overpay = isJPY ? [1000, 5000, 10000] : [5, 10, 20, 50, 100];
-              var paid = overpay.find(function (v) { return v >= price; }) || overpay[overpay.length - 1];
-              var correctChange = Math.round((paid - price) * 100) / 100;
+              var smallestTender = Math.min.apply(null, cur.coins.map(function (coin) { return coin.value; }));
+              var rawPrice = isJPY ? (Math.floor(Math.random() * 40 + 5) * 100) : Math.random() * gc.maxPrice * 0.7 + 1;
+              var price = roundCurrency(Math.max(smallestTender, Math.round(rawPrice / smallestTender) * smallestTender), currency);
+              var tenderValues = cur.coins.concat(cur.bills).map(function (item) { return item.value; }).filter(function (value, index, list) {
+                return list.indexOf(value) === index;
+              }).sort(function (a, b) { return a - b; });
+              var paid = tenderValues.find(function (value) { return value >= price; });
+              if (paid == null) {
+                var largestTender = tenderValues[tenderValues.length - 1] || 1;
+                paid = roundCurrency(Math.ceil(price / largestTender) * largestTender, currency);
+              }
+              var correctChange = roundCurrency(paid - price, currency);
               var isWrong = Math.random() > 0.5;
-              var proposedChange = isWrong ? Math.round((correctChange + (Math.random() > 0.5 ? 1 : -1) * (isJPY ? [10, 50, 100][Math.floor(Math.random() * 3)] : [0.25, 0.50, 1][Math.floor(Math.random() * 3)])) * 100) / 100 : correctChange;
-              if (proposedChange < 0) proposedChange = correctChange;
+              var mistakeValues = cur.coins.map(function (coin) { return coin.value; }).filter(function (value) { return value > 0; });
+              var mistake = mistakeValues[Math.floor(Math.random() * mistakeValues.length)] || (isJPY ? 1 : 0.01);
+              var proposedChange = isWrong ? roundCurrency(correctChange + (Math.random() > 0.5 || correctChange < mistake ? 1 : -1) * mistake, currency) : correctChange;
               upd('ccPrice', price); upd('ccPaid', paid); upd('ccProposed', proposedChange);
               upd('ccCorrectAmt', correctChange); upd('ccIsWrong', proposedChange !== correctChange);
               upd('ccAnswer', null); upd('ccFb', null);
@@ -1723,7 +1763,7 @@ window.StemLab = window.StemLab || {
                 if (disc.type === 'pct') finalPrice = finalPrice * (1 - disc.val / 100);
                 else finalPrice = Math.max(0, finalPrice - disc.val);
               });
-              finalPrice = Math.round(finalPrice * 100) / 100;
+              finalPrice = roundCurrency(finalPrice, currency);
               upd('csOriginal', original); upd('csDiscounts', discounts); upd('csFinal', finalPrice);
               upd('csAnswer', null); upd('csFb', null);
             };
@@ -1745,7 +1785,9 @@ window.StemLab = window.StemLab || {
                 var display = typeof vals[k] === 'number' ? fmt(vals[k]) : vals[k];
                 text = text.replace('{' + k + '}', display);
               });
-              var answers = prob.compute(vals);
+              var answers = prob.compute(vals).map(function (answer) {
+                return Object.assign({}, answer, { val: roundCurrency(answer.val, currency) });
+              });
               upd('spText', text); upd('spAnswers', answers);
               upd('spUserAnswers', answers.map(function () { return null; }));
               upd('spFb', null);
@@ -1755,24 +1797,25 @@ window.StemLab = window.StemLab || {
             var cdTarget = typeof d.cdTarget === 'number' ? d.cdTarget : 0;
             var cdDropped = d.cdDropped || [];
             var cdTotal = cdDropped.reduce(function (s, c) { return s + c; }, 0);
-            var cdRound = Math.round(cdTotal * 100) / 100;
+            var cdRound = roundCurrency(cdTotal, currency);
             var cdStreak = d.cdStreak || 0;
             var cdFb = d.cdFb || null;
             var cdTimer = d.cdTimer || null;
             var cdStartTime = d.cdStartTime || null;
-            var COIN_DENOMS = grade === 'elementary'
-              ? [{ val: 0.01, label: '1¢', emoji: '🟤', color: '#CD7F32', size: 28 }, { val: 0.05, label: '5¢', emoji: '⚪', color: '#A8A9AD', size: 30 }, { val: 0.10, label: '10¢', emoji: '⚪', color: '#C0C0C0', size: 29 }, { val: 0.25, label: '25¢', emoji: '🪙', color: '#FFD700', size: 32 }, { val: 1.00, label: '$1', emoji: '💵', color: '#4CAF50', size: 38 }]
-              : grade === 'middle'
-              ? [{ val: 0.05, label: '5¢', emoji: '⚪', color: '#A8A9AD', size: 28 }, { val: 0.10, label: '10¢', emoji: '⚪', color: '#C0C0C0', size: 29 }, { val: 0.25, label: '25¢', emoji: '🪙', color: '#FFD700', size: 30 }, { val: 1.00, label: '$1', emoji: '💵', color: '#4CAF50', size: 36 }, { val: 5.00, label: '$5', emoji: '💵', color: '#2196F3', size: 38 }, { val: 10.00, label: '$10', emoji: '💵', color: '#FF9800', size: 40 }, { val: 20.00, label: '$20', emoji: '💵', color: '#9C27B0', size: 42 }]
-              : [{ val: 0.10, label: '10¢', emoji: '⚪', color: '#C0C0C0', size: 28 }, { val: 0.25, label: '25¢', emoji: '🪙', color: '#FFD700', size: 30 }, { val: 1.00, label: '$1', emoji: '💵', color: '#4CAF50', size: 34 }, { val: 5.00, label: '$5', emoji: '💵', color: '#2196F3', size: 36 }, { val: 10.00, label: '$10', emoji: '💵', color: '#FF9800', size: 38 }, { val: 20.00, label: '$20', emoji: '💵', color: '#9C27B0', size: 40 }, { val: 50.00, label: '$50', emoji: '💵', color: '#00BCD4', size: 42 }, { val: 100.00, label: '$100', emoji: '💵', color: '#F44336', size: 44 }];
+            var coinDropSource = cur.coins.concat(grade === 'elementary' ? [] : grade === 'middle' ? cur.bills.slice(0, 2) : cur.bills);
+            var COIN_DENOMS = coinDropSource.filter(function (item, index, list) {
+              return item.value > 0 && list.findIndex(function (candidate) { return candidate.value === item.value; }) === index;
+            }).map(function (item, index) {
+              return { val: item.value, label: item.label || item.name, color: item.color || '#d97706', size: Math.max(28, Math.min(42, (item.size || 32) + Math.floor(index / 3) * 2)) };
+            }).sort(function (a, b) { return a.val - b.val; });
             var genCoinDrop = function () {
-              var minT, maxT;
-              if (grade === 'elementary') { minT = 0.25; maxT = 5.00; }
-              else if (grade === 'middle') { minT = 1.00; maxT = 25.00; }
-              else { minT = 5.00; maxT = 100.00; }
-              var target = Math.round((Math.random() * (maxT - minT) + minT) * 100) / 100;
-              // Round to nearest .05 for cleaner values
-              target = Math.round(target * 20) / 20;
+              if (!COIN_DENOMS.length) return;
+              var target = 0;
+              var pieceCount = grade === 'elementary' ? 2 + Math.floor(Math.random() * 4) : 3 + Math.floor(Math.random() * 5);
+              for (var pieceIndex = 0; pieceIndex < pieceCount; pieceIndex++) {
+                target += COIN_DENOMS[Math.floor(Math.random() * COIN_DENOMS.length)].val;
+              }
+              target = roundCurrency(target, currency);
               upd('cdTarget', target); upd('cdDropped', []); upd('cdFb', null);
               upd('cdAnimDrop', null);
               if (challengeMode) upd('cdStartTime', Date.now());
@@ -1859,13 +1902,17 @@ window.StemLab = window.StemLab || {
             };
             // Monthly payment = P * [r(1+r)^n] / [(1+r)^n - 1]
             var loanR = loanRate / 100 / 12;
-            var loanMonthly = loanR > 0 ? loanAmt * (loanR * Math.pow(1 + loanR, loanTerm)) / (Math.pow(1 + loanR, loanTerm) - 1) : loanAmt / loanTerm;
+            var loanHasValidInputs = Number.isFinite(loanAmt) && loanAmt > 0 && Number.isFinite(loanTerm) && loanTerm > 0 && Number.isFinite(loanR) && loanR >= 0;
+            var loanMonthly = loanHasValidInputs ? (loanR > 0 ? loanAmt * (loanR * Math.pow(1 + loanR, loanTerm)) / (Math.pow(1 + loanR, loanTerm) - 1) : loanAmt / loanTerm) : 0;
             var loanTotalPaid = loanMonthly * loanTerm;
             var loanTotalInterest = loanTotalPaid - loanAmt;
+            if (!loanHasValidInputs) { loanTotalPaid = 0; loanTotalInterest = 0; }
+            var loanPrincipalPct = loanHasValidInputs && loanTotalPaid > 0 ? Math.round(loanAmt / loanTotalPaid * 100) : 0;
+            var loanInterestPct = loanHasValidInputs && loanTotalPaid > 0 ? Math.round(loanTotalInterest / loanTotalPaid * 100) : 0;
             // Amortization highlights
             var loanAmort = [];
             var loanBal = loanAmt;
-            for (var mo = 1; mo <= loanTerm; mo++) {
+            for (var mo = 1; loanHasValidInputs && mo <= loanTerm; mo++) {
               var intPmt = loanBal * loanR;
               var prinPmt = loanMonthly - intPmt;
               loanBal = Math.max(0, loanBal - prinPmt);
@@ -1891,7 +1938,9 @@ window.StemLab = window.StemLab || {
             var sgRemaining = Math.max(0, sgTarget - sgHave);
             // With interest: FV = PMT * [((1+r)^n - 1) / r], solve for PMT
             var sgR = sgRate / 100 / 12;
-            var sgMonthlyNeeded = sgR > 0 ? sgRemaining / ((Math.pow(1 + sgR, sgMonths) - 1) / sgR) : sgRemaining / sgMonths;
+            var sgExistingFuture = sgR > 0 ? sgHave * Math.pow(1 + sgR, sgMonths) : sgHave;
+            var sgFutureGap = Math.max(0, sgTarget - sgExistingFuture);
+            var sgMonthlyNeeded = sgR > 0 ? sgFutureGap / ((Math.pow(1 + sgR, sgMonths) - 1) / sgR) : sgFutureGap / sgMonths;
             var sgWeeklyNeeded = sgMonthlyNeeded * 12 / 52;
             var sgDailyNeeded = sgMonthlyNeeded * 12 / 365;
 
@@ -2117,7 +2166,20 @@ window.StemLab = window.StemLab || {
                       return React.createElement("option", { key: entry[0], value: entry[0], style: { color: '#1e293b' } }, entry[1].label);
                     })),
                     // Currency selector
-                    React.createElement("select", { value: currency, onChange: function (e) { upd('currency', e.target.value); upd('placed', []); upd('storeItems', null); upd('cart', []); resetGroceryCheckout(); },
+                    React.createElement("select", { value: currency, onChange: function (e) {
+                      upd('currency', e.target.value);
+                      [
+                        'coinGuess', 'coinGuessFb', 'changePrice', 'changePaid', 'changeAnswer', 'changeFeedback',
+                        'tipBill', 'tipAnswer', 'tipFeedback', 'discOriginal', 'discAnswer', 'discFeedback',
+                        'wpProblem', 'wpAnswer', 'wpFeedback', 'exchFrom', 'exchTo', 'exchAmount', 'exchCorrect', 'exchAnswer', 'exchFeedback',
+                        'fcTarget', 'fcOptimal', 'fcFeedback', 'upItem', 'upA', 'upB', 'upAnswer', 'upFeedback',
+                        'estItems', 'estTotal', 'estAnswer', 'estFb', 'ccPrice', 'ccPaid', 'ccProposed', 'ccCorrectAmt', 'ccIsWrong', 'ccAnswer', 'ccFb',
+                        'csOriginal', 'csDiscounts', 'csFinal', 'csAnswer', 'csFb', 'spText', 'spAnswers', 'spFb',
+                        'cdTarget', 'cdFb', 'cdStartTime', 'budgetIncome', 'budgetEventId', 'budgetEventChoice', 'budgetEventFb'
+                      ].forEach(function (key) { upd(key, null); });
+                      upd('placed', []); upd('cart', []); upd('fcPlaced', []); upd('spUserAnswers', []); upd('cdDropped', []);
+                      upd('storeItems', null); resetGroceryCheckout();
+                    },
                       'aria-label': __alloT('stem.money.currency', 'Currency'),
                       className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 backdrop-blur-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer"
                     }, Object.keys(CURRENCIES).map(function (code) {
@@ -2255,10 +2317,10 @@ window.StemLab = window.StemLab || {
                       React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', "aria-label": "Your guess of the total in " + cur.code, value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); }, className: "px-3 py-2 border border-amber-600 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.check', "Check"), onClick: function () {
                         var guess = d.coinGuess; var actual = boardTotal;
-                        var isRight = typeof guess === 'number' && Math.abs(guess - actual) < (isJPY ? 0.5 : 0.005);
+                        var isRight = sameCurrencyAmount(guess, actual, currency);
                         upd('coinGuessFb', isRight ? { ok: true, msg: '\u2705 Correct! Total is ' + fmt(actual) + '!' } : { ok: false, msg: '\u274C Not quite. The total is ' + fmt(actual) + '. You guessed ' + fmt(guess || 0) + '.' });
-                        if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'coin counting challenge');
-                      }, disabled: d.coinGuess == null, className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg hover:bg-amber-800 transition-all text-xs disabled:opacity-40" }, __alloT('stem.money.check_2', '\u2714 Check'))
+                        if (isRight) awardMoneyXPOnce('coin-counting', [currency, placed.map(function (piece) { return piece.value; })], 10, 'coin counting challenge');
+                      }, disabled: d.coinGuess == null || !!(d.coinGuessFb && d.coinGuessFb.ok), className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg hover:bg-amber-800 transition-all text-xs disabled:opacity-40" }, d.coinGuessFb && d.coinGuessFb.ok ? __alloT('stem.money.solved', '\u2713 Solved') : __alloT('stem.money.check_2', '\u2714 Check'))
                     ),
                     d.coinGuessFb && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.coinGuessFb.ok ? 'text-green-600' : 'text-red-500') }, d.coinGuessFb.msg)
                   ),
@@ -2323,7 +2385,7 @@ window.StemLab = window.StemLab || {
                           React.createElement("div", null,
                             React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.change_due', "Change Due")),
                             React.createElement("p", { className: "text-2xl font-black text-emerald-600" },
-                              changeFeedback ? fmt(Math.round((changePaid - changePrice) * 100) / 100) : "?")
+                              changeFeedback ? fmt(roundCurrency(changePaid - changePrice, currency)) : "?")
                           )
                         )
                       ),
@@ -2332,19 +2394,18 @@ window.StemLab = window.StemLab || {
                         React.createElement("input", { id: "money-change-answer", type: "number", inputMode: "decimal", step: isJPY ? "1" : "0.01", placeholder: cur.symbol + "...",
                           'aria-label': __alloT('stem.money.change_answer_aria', 'Enter the amount of change due'),
                           value: changeAnswer !== null ? changeAnswer : '',
-                          onChange: function (e) { upd('changeAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                          onChange: function (e) { upd('changeAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('changeFeedback', null); },
                           className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-32 focus:ring-2 focus:ring-blue-400 outline-none"
                         }),
                         React.createElement("button", { "aria-label": __alloT('stem.money.check_3', "Check"), onClick: function () {
-                            var correct = Math.round((changePaid - changePrice) * 100) / 100;
-                            var userAns = Math.round((changeAnswer || 0) * 100) / 100;
-                            var isRight = Math.abs(userAns - correct) < 0.005;
+                            var correct = roundCurrency(changePaid - changePrice, currency);
+                            var isRight = sameCurrencyAmount(changeAnswer, correct, currency);
                             upd('changeFeedback', isRight ? { ok: true, msg: '\u2705 Correct! ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) } : { ok: false, msg: '\u274C Not quite. ' + fmt(changePaid) + ' \u2212 ' + fmt(changePrice) + ' = ' + fmt(correct) });
-                            if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Making change');
-                            if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 5, 'making change');
+                            if (isRight) awardMoneyXPOnce('making-change', [currency, changePrice, changePaid], 15, 'making change');
                           },
-                          className: "px-5 py-2 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm"
-                        }, __alloT('stem.money.check_4', "\u2714 Check"))
+                          disabled: !!(changeFeedback && changeFeedback.ok),
+                          className: "px-5 py-2 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm disabled:opacity-50"
+                        }, changeFeedback && changeFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_4', "\u2714 Check"))
                       ),
                       changeFeedback && React.createElement("p", { role: "status", 'aria-live': "polite", className: "text-sm font-bold " + (changeFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, changeFeedback.msg),
                       changeFeedback && React.createElement('section', { 'aria-label': __alloT('stem.money.count_up_change_aria', 'Count up from the price to the amount paid'), className: 'bg-white border-2 border-emerald-200 rounded-xl p-3' },
@@ -2864,12 +2925,11 @@ window.StemLab = window.StemLab || {
                         if (!result) return;
                         if (result.complete) {
                           upd('recipeFb', { ok: true, msg: '\u2705 All ' + result.total + ' ingredients found! Total: ' + fmt(cartGrand) + ' \u2014 +25 XP!' });
-                          if (typeof addXP === 'function') addXP(25, 'Money Math: Recipe shopping complete');
-                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 25, 'recipe shopping');
+                          awardMoneyXPOnce('recipe-shopping', [currency, activeRecipe, recipeServings, scaledIngredients.map(function (ingredient) { return [ingredient.item, ingredient.qty, ingredient.unit]; })], 25, 'recipe shopping');
                         } else {
                           upd('recipeFb', { ok: false, msg: '\u274C Missing ' + result.missing.length + ' item(s): ' + result.missing.join(', ') });
                         }
-                      }, className: "flex-1 px-4 py-2 bg-purple-700 text-white font-bold rounded-xl hover:bg-purple-600 transition-all text-sm shadow-md" }, __alloT('stem.money.check_recipe_cart_2', "\u2714 Check Recipe Cart")),
+                      }, disabled: !!(d.recipeFb && d.recipeFb.ok), className: "flex-1 px-4 py-2 bg-purple-700 text-white font-bold rounded-xl hover:bg-purple-600 transition-all text-sm shadow-md disabled:opacity-50" }, d.recipeFb && d.recipeFb.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_recipe_cart_2', "\u2714 Check Recipe Cart")),
                       React.createElement("button", { "aria-label": __alloT('stem.money.clear_3', "Clear"), onClick: function () { upd('cart', []); upd('recipeFb', null); resetGroceryCheckout(); }, className: "transition-colors px-3 py-2 text-xs text-red-400 hover:text-red-800 font-bold" }, __alloT('stem.money.clear_4', "Clear"))
                     ),
                     d.recipeFb && React.createElement("p", { className: "text-xs font-bold " + (d.recipeFb.ok ? 'text-green-600' : 'text-red-500') }, d.recipeFb.msg)
@@ -3056,20 +3116,18 @@ window.StemLab = window.StemLab || {
                       React.createElement("button", { "aria-label": __alloT('stem.money.check_my_math', "Check My Math"), onClick: function () {
                         var subGuess = d.cartGuessTotal;
                         if (subGuess == null) return;
-                        var tol = isJPY ? 0.5 : 0.015;
-                        var subOk = d.cartGuessSubtotal != null && Math.abs(d.cartGuessSubtotal - cartTotal) < tol + cartTotal * 0.005;
-                        var taxOk = !gc.includeTax || (d.cartGuessTax != null && Math.abs(d.cartGuessTax - cartTax) < tol + cartTax * 0.01);
-                        var totalOk = Math.abs(subGuess - cartGrand) < tol + cartGrand * 0.005;
+                        var subOk = sameCurrencyAmount(d.cartGuessSubtotal, cartTotal, currency);
+                        var taxOk = !gc.includeTax || sameCurrencyAmount(d.cartGuessTax, cartTax, currency);
+                        var totalOk = sameCurrencyAmount(subGuess, cartGrand, currency);
                         var allOk = subOk && taxOk && totalOk;
                         var msg = allOk
                           ? '\u2705 Perfect! Subtotal: ' + fmt(cartTotal) + (gc.includeTax ? ', Tax: ' + fmt(cartTax) : '') + ', Total: ' + fmt(cartGrand) + ' \u2014 +15 XP!'
                           : '\u274C Not quite. Subtotal: ' + fmt(cartTotal) + (gc.includeTax ? ', Tax: ' + fmt(cartTax) : '') + ', Grand Total: ' + fmt(cartGrand);
                         upd('cartCheckoutFb', { ok: allOk, msg: msg });
                         if (allOk) {
-                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'grocery mental math');
-                          if (typeof addXP === 'function') addXP(25, 'Money Math: Mental math grocery checkout');
+                          awardMoneyXPOnce('grocery-mental-math', [currency, cartReceiptSnapshot], 15, 'grocery mental math');
                         }
-                      }, disabled: d.cartGuessTotal == null, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm shadow-md disabled:opacity-40" }, __alloT('stem.money.check_my_math_2', '\uD83E\uDDE0 Check My Math')),
+                      }, disabled: d.cartGuessTotal == null || !!(d.cartCheckoutFb && d.cartCheckoutFb.ok), className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm shadow-md disabled:opacity-40" }, d.cartCheckoutFb && d.cartCheckoutFb.ok ? __alloT('stem.money.solved', '\u2713 Solved') : __alloT('stem.money.check_my_math_2', '\uD83E\uDDE0 Check My Math')),
                       d.cartCheckoutFb && React.createElement("p", { role: 'status', 'aria-live': 'polite', className: "text-xs font-bold " + (d.cartCheckoutFb.ok ? 'text-green-600' : 'text-red-500') }, d.cartCheckoutFb.msg),
                       d.cartCheckoutFb && d.cartCheckoutFb.ok && React.createElement("button", { type: 'button', onClick: function () {
                         upd('checkoutActive', true); upd('checkoutStep', 'payment'); upd('checkoutEstimate', d.cartGuessTotal); upd('weightItemIdx', null);
@@ -3269,18 +3327,19 @@ window.StemLab = window.StemLab || {
                           React.createElement("input", { type: "number", step: isJPY ? "1" : "0.01", placeholder: __alloT('stem.money.your_answer_2', "Your answer..."),
                             'aria-label': __alloT('stem.money.word_problem_answer', 'Word problem answer'),
                             value: d.wpAnswer !== null && d.wpAnswer !== undefined ? d.wpAnswer : '',
-                            onChange: function (e) { upd('wpAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                            onChange: function (e) { upd('wpAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('wpFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-violet-400 outline-none"
                           }),
                           React.createElement("button", { "aria-label": __alloT('stem.money.check_5', "Check"), onClick: function () {
-                              var correct = d.wpProblem.answer;
+                              var correct = typeof d.wpProblem.answer === 'number' ? roundCurrency(d.wpProblem.answer, currency) : d.wpProblem.answer;
                               var userAns = d.wpAnswer;
-                              var isRight = typeof correct === 'number' && typeof userAns === 'number' && Math.abs(userAns - correct) < (correct * 0.02 + 0.01);
+                              var isRight = typeof correct === 'number' && sameCurrencyAmount(userAns, correct, currency);
                               upd('wpFeedback', isRight ? { ok: true, msg: '\u2705 ' + t('stem.dissection.correct') } : { ok: false, msg: '\u274C The answer is ' + (typeof correct === 'number' ? fmt(correct) : correct) });
-                              if (isRight && typeof addXP === 'function') addXP(25, 'Money Math: Word problem solved');
+                              if (isRight) awardMoneyXPOnce('ai-word-problem', [currency, d.wpProblem.problem, correct], 25, 'word problem solved');
                             },
-                            className: "px-5 py-2 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-600 transition-all text-sm"
-                          }, __alloT('stem.money.check_6', "\u2714 Check"))
+                            disabled: !!(d.wpFeedback && d.wpFeedback.ok),
+                            className: "px-5 py-2 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-600 transition-all text-sm disabled:opacity-50"
+                          }, d.wpFeedback && d.wpFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_6', "\u2714 Check"))
                         ),
                         d.wpFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.wpFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.wpFeedback.msg),
                         d.wpFeedback && !d.wpFeedback.ok && d.wpProblem.explanation && React.createElement("div", { className: "bg-slate-50 rounded-xl p-3 border border-slate-400" },
@@ -3297,17 +3356,18 @@ window.StemLab = window.StemLab || {
               // ═══ CURRENCY EXCHANGE TAB ═══
               tab === 'exchange' && React.createElement("div", moneyPanelProps("bg-gradient-to-br from-sky-50 to-cyan-50 rounded-xl p-5 border border-sky-200"),
                 React.createElement("h3", { className: "text-base font-bold text-sky-800 mb-2" }, __alloT('stem.money.currency_exchange_3', "\uD83C\uDF0D Currency Exchange")),
-                React.createElement("p", { className: "text-xs text-sky-500 mb-4" }, __alloT('stem.money.practice_converting_between_world_curr', "Practice converting between world currencies (approximate rates)")),
+                React.createElement("p", { className: "text-xs text-sky-600 mb-4" }, __alloT('stem.money.fixed_classroom_exchange_model', "Practice with a fixed classroom rate model. These are not live market quotes.")),
                 // Exchange rate reference
                 React.createElement("div", { className: "bg-white rounded-xl p-3 border border-sky-100 mb-4" },
-                  React.createElement("p", { className: "text-[11px] font-bold text-sky-700 uppercase mb-2" }, __alloT('stem.money.reference_rates_vs_1_usd', "Reference Rates (vs 1 USD)")),
+                  React.createElement("p", { className: "text-[11px] font-bold text-sky-700 uppercase mb-2" }, __alloT('stem.money.fixed_rates_units_per_usd', "Fixed classroom rates (units per 1 USD)")),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     Object.entries(CURRENCIES).map(function (entry) {
                       return React.createElement("span", { key: entry[0], className: "text-[11px] font-bold px-2 py-1 rounded-full " + (entry[0] === currency ? 'bg-sky-200 text-sky-800' : 'bg-slate-100 text-slate-600') },
-                        entry[1].flag + ' ' + entry[0] + ' = ' + RATES[entry[0]].toFixed(entry[0] === 'JPY' || entry[0] === 'INR' ? 1 : 2)
+                        entry[1].flag + ' 1 USD = ' + RATES[entry[0]].toFixed(entry[0] === 'JPY' || entry[0] === 'INR' ? 1 : 2) + ' ' + entry[0]
                       );
                     })
-                  )
+                  ),
+                  React.createElement("p", { id: "money-exchange-model-note", className: "text-[11px] text-slate-600 mt-2" }, __alloT('stem.money.exchange_model_formula', "Method: amount ÷ the from-currency rate × the to-currency rate. Round only the final result."))
                 ),
                 // Problem area
                 !d.exchFrom
@@ -3331,29 +3391,41 @@ window.StemLab = window.StemLab || {
                           )
                         )
                       ),
+                      React.createElement("p", { id: "money-exchange-rounding-note", className: "text-xs font-semibold text-sky-800" },
+                        d.exchTo === 'JPY'
+                          ? __alloT('stem.money.round_exchange_to_whole_yen', "Round the final answer to the nearest whole yen.")
+                          : __alloT('stem.money.round_exchange_to_cents', "Round the final answer to the nearest cent (2 decimal places).")
+                      ),
                       React.createElement("div", { className: "flex items-center gap-3" },
-                        React.createElement("input", { type: "number", step: "0.01", placeholder: CURRENCIES[d.exchTo].symbol + "...",
+                        React.createElement("input", { type: "number", min: "0", step: d.exchTo === 'JPY' ? "1" : "0.01", placeholder: CURRENCIES[d.exchTo].symbol + "...",
                           'aria-label': __alloT('stem.money.currency_exchange_answer', 'Currency exchange answer'),
-                          value: d.exchAnswer !== null && d.exchAnswer !== undefined ? d.exchAnswer : '',
-                          onChange: function (e) { upd('exchAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                          'aria-describedby': 'money-exchange-model-note money-exchange-rounding-note',
+                          value: d.exchAnswer !== null && d.exchAnswer !== undefined ? String(d.exchAnswer) : '',
+                          onChange: function (e) {
+                            upd('exchAnswer', e.target.value === '' ? null : e.target.value);
+                            upd('exchFeedback', null);
+                          },
                           className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-sky-400 outline-none"
                         }),
                         React.createElement("button", { "aria-label": __alloT('stem.money.check_7', "Check"), onClick: function () {
-                            var correct = d.exchCorrect;
-                            var userAns = d.exchAnswer;
-                            var tolerance = Math.abs(correct) * 0.05 + 0.01;
-                            var isRight = typeof userAns === 'number' && Math.abs(userAns - correct) < tolerance;
-                            upd('exchFeedback', isRight
-                              ? { ok: true, msg: '\u2705 Correct! ' + CURRENCIES[d.exchFrom].symbol + (d.exchAmount).toLocaleString() + ' ' + d.exchFrom + ' \u2248 ' + CURRENCIES[d.exchTo].symbol + correct.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ' + d.exchTo }
-                              : { ok: false, msg: '\u274C The answer is approximately ' + CURRENCIES[d.exchTo].symbol + correct.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' ' + d.exchTo }
+                            var correct = roundCurrency(Number(d.exchCorrect), d.exchTo);
+                            var rawUserAns = d.exchAnswer;
+                            var userAns = rawUserAns === null || rawUserAns === undefined || String(rawUserAns).trim() === '' ? NaN : Number(rawUserAns);
+                            var hasNumericAnswer = Number.isFinite(userAns) && userAns >= 0;
+                            var isRight = hasNumericAnswer && sameCurrencyAmount(rawUserAns, correct, d.exchTo);
+                            upd('exchFeedback', !hasNumericAnswer
+                              ? { ok: false, msg: '\u274C ' + __alloT('stem.money.enter_currency_amount_before_checking', 'Enter a valid non-negative amount before checking.') }
+                              : isRight
+                                ? { ok: true, msg: '\u2705 Correct! ' + CURRENCIES[d.exchFrom].symbol + (d.exchAmount).toLocaleString() + ' ' + d.exchFrom + ' \u2248 ' + CURRENCIES[d.exchTo].symbol + formatCurrencyAmount(correct, d.exchTo) + ' ' + d.exchTo }
+                                : { ok: false, msg: '\u274C The correctly rounded answer is ' + CURRENCIES[d.exchTo].symbol + formatCurrencyAmount(correct, d.exchTo) + ' ' + d.exchTo }
                             );
-                            if (isRight && typeof addXP === 'function') addXP(20, 'Money Math: Currency conversion');
-                            if (isRight && typeof awardStemXP === 'function') awardStemXP('moneyMath', 5, 'currency conversion');
+                            if (isRight) awardMoneyXPOnce('currency-conversion', [d.exchFrom, d.exchTo, d.exchAmount, correct], 5, 'currency conversion');
                           },
-                          className: "px-5 py-2 bg-sky-700 text-white font-bold rounded-xl hover:bg-sky-800 transition-all text-sm"
-                        }, __alloT('stem.money.check_8', "\u2714 Check"))
+                          disabled: !!(d.exchFeedback && d.exchFeedback.ok),
+                          className: "px-5 py-2 bg-sky-700 text-white font-bold rounded-xl hover:bg-sky-800 transition-all text-sm disabled:opacity-50"
+                        }, d.exchFeedback && d.exchFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_8', "\u2714 Check"))
                       ),
-                      d.exchFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.exchFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.exchFeedback.msg),
+                      d.exchFeedback && React.createElement("p", { role: "status", 'aria-live': 'polite', className: "text-sm font-bold " + (d.exchFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.exchFeedback.msg),
                       React.createElement("button", { "aria-label": __alloT('stem.money.next_problem_3', "Next Problem"), onClick: genExchangeProblem,
                         className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs"
                       }, __alloT('stem.money.next_problem_4', "\u21BB Next Problem"))
@@ -3386,21 +3458,21 @@ window.StemLab = window.StemLab || {
                         React.createElement("div", { className: "flex items-center gap-3" },
                           React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.per_person', 'Per person...'),
                             'aria-label': __alloT('stem.money.tip_per_person_answer', 'Tip per person answer'),
-                            value: d.tipAnswer != null ? d.tipAnswer : '', onChange: function (e) { upd('tipAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                            value: d.tipAnswer != null ? d.tipAnswer : '', onChange: function (e) { upd('tipAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('tipFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
                           }),
                           React.createElement("button", { "aria-label": __alloT('stem.money.check_9', "Check"), onClick: function () {
-                              var tipAmt = d.tipBill * (d.tipPct / 100);
-                              var totalWithTip = d.tipBill + tipAmt;
-                              var perPerson = Math.round(totalWithTip / d.tipDiners * 100) / 100;
-                              var isRight = typeof d.tipAnswer === 'number' && Math.abs(d.tipAnswer - perPerson) < 0.02;
+                              var tipAmt = roundCurrency(d.tipBill * (d.tipPct / 100), currency);
+                              var totalWithTip = roundCurrency(d.tipBill + tipAmt, currency);
+                              var perPerson = roundCurrency(totalWithTip / d.tipDiners, currency);
+                              var isRight = sameCurrencyAmount(d.tipAnswer, perPerson, currency);
                               upd('tipFeedback', isRight
                                 ? { ok: true, msg: '\u2705 Correct! Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' = ' + fmt(perPerson) + '/person' }
                                 : { ok: false, msg: '\u274C Tip: ' + fmt(tipAmt) + ' \u2192 Total: ' + fmt(totalWithTip) + ' \u00F7 ' + d.tipDiners + ' = ' + fmt(perPerson) + '/person' }
                               );
-                              if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Tip calculation');
-                            }, className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
-                          }, __alloT('stem.money.check_10', "\u2714 Check"))
+                              if (isRight) awardMoneyXPOnce('tip-calculation', [currency, d.tipBill, d.tipPct, d.tipDiners], 15, 'tip calculation');
+                            }, disabled: !!(d.tipFeedback && d.tipFeedback.ok), className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
+                          }, d.tipFeedback && d.tipFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_10', "\u2714 Check"))
                         ),
                         d.tipFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.tipFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.tipFeedback.msg),
                         React.createElement("button", { "aria-label": __alloT('stem.money.next_problem_5', "Next Problem"), onClick: genTipProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.next_problem_6', "\u21BB Next Problem"))
@@ -3427,21 +3499,20 @@ window.StemLab = window.StemLab || {
                         React.createElement("div", { className: "flex items-center gap-3" },
                           React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: __alloT('stem.money.sale_price_2', 'Sale price...'),
                             'aria-label': __alloT('stem.money.sale_price_answer', 'Sale price answer'),
-                            value: d.discAnswer != null ? d.discAnswer : '', onChange: function (e) { upd('discAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); },
+                            value: d.discAnswer != null ? d.discAnswer : '', onChange: function (e) { upd('discAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('discFeedback', null); },
                             className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-36 focus:ring-2 focus:ring-pink-400 outline-none"
                           }),
                           React.createElement("button", { "aria-label": __alloT('stem.money.check_11', "Check"), onClick: function () {
-                              var discounted = d.discOriginal * (1 - d.discPercent / 100);
-                              var final_ = Math.round((discounted - (d.discCoupon || 0)) * 100) / 100;
-                              if (final_ < 0) final_ = 0;
-                              var isRight = typeof d.discAnswer === 'number' && Math.abs(d.discAnswer - final_) < 0.02;
+                              var discounted = roundCurrency(d.discOriginal * (1 - d.discPercent / 100), currency);
+                              var final_ = roundCurrency(Math.max(0, discounted - (d.discCoupon || 0)), currency);
+                              var isRight = sameCurrencyAmount(d.discAnswer, final_, currency);
                               upd('discFeedback', isRight
                                 ? { ok: true, msg: '\u2705 Correct! ' + fmt(d.discOriginal) + ' \u2212 ' + d.discPercent + '% = ' + fmt(discounted) + (d.discCoupon > 0 ? ' \u2212 ' + fmt(d.discCoupon) + ' coupon' : '') + ' = ' + fmt(final_) }
                                 : { ok: false, msg: '\u274C The sale price is ' + fmt(final_) + '. (' + fmt(d.discOriginal) + ' \u00D7 ' + (100 - d.discPercent) + '%)' + (d.discCoupon > 0 ? ' \u2212 ' + fmt(d.discCoupon) : '') }
                               );
-                              if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Discount calculation');
-                            }, className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm"
-                          }, __alloT('stem.money.check_12', "\u2714 Check"))
+                              if (isRight) awardMoneyXPOnce('discount-calculation', [currency, d.discOriginal, d.discPercent, d.discCoupon || 0], 15, 'discount calculation');
+                            }, disabled: !!(d.discFeedback && d.discFeedback.ok), className: "px-5 py-2 bg-pink-700 text-white font-bold rounded-xl hover:bg-pink-600 transition-all text-sm disabled:opacity-50"
+                          }, d.discFeedback && d.discFeedback.ok ? __alloT('stem.money.solved', "\u2713 Solved") : __alloT('stem.money.check_12', "\u2714 Check"))
                         ),
                         d.discFeedback && React.createElement("p", { className: "text-sm font-bold " + (d.discFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.discFeedback.msg),
                         React.createElement("button", { "aria-label": __alloT('stem.money.next_problem_7', "Next Problem"), onClick: genDiscountProblem, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.next_problem_8', "\u21BB Next Problem"))
@@ -3659,16 +3730,16 @@ window.StemLab = window.StemLab || {
                       React.createElement("div", { className: "flex gap-2" },
                         React.createElement("button", { "aria-label": __alloT('stem.money.check_13', "Check"), onClick: function () {
                           var total = (d.fcPlaced || []).reduce(function (s, v) { return s + v; }, 0);
-                          var totalRound = Math.round(total * 100);
-                          var targetRound = Math.round(d.fcTarget * 100);
+                          var totalRound = currencyUnits(total, currency);
+                          var targetRound = currencyUnits(d.fcTarget, currency);
                           var pieces = (d.fcPlaced || []).length;
                           if (totalRound !== targetRound) { upd('fcFeedback', { ok: false, msg: '\u274C Total is ' + fmt(total) + ' but target is ' + fmt(d.fcTarget) }); }
                           else if (pieces <= d.fcOptimal) {
                             upd('fcFeedback', { ok: true, msg: '\u2705 Perfect! ' + pieces + ' pieces \u2014 optimal solution!' });
-                            if (typeof addXP === 'function') addXP(25, 'Money Math: Fewest coins challenge (optimal!)');
+                            awardMoneyXPOnce('fewest-coins', [currency, d.fcTarget], 25, 'fewest coins challenge (optimal)');
                           } else {
                             upd('fcFeedback', { ok: false, msg: '\u2705 Right amount, but ' + pieces + ' pieces. Can you do it in ' + d.fcOptimal + '?' });
-                            if (typeof addXP === 'function') addXP(10, 'Money Math: Fewest coins challenge');
+                            awardMoneyXPOnce('fewest-coins', [currency, d.fcTarget], 10, 'fewest coins challenge');
                           }
                         }, className: "flex-1 px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-xs" }, __alloT('stem.money.check_14', "\u2714 Check")),
                         React.createElement("button", { "aria-label": __alloT('stem.money.reset_coin_selection', "Reset coin selection"), onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.reset', "\u21BA Reset"))
@@ -3713,7 +3784,7 @@ window.StemLab = window.StemLab || {
                         ? { ok: true, msg: '\u2705 Correct! Option A: ' + fmt(unitA) + '/' + d.upItem.unit + ' vs Option B: ' + fmt(unitB) + '/' + d.upItem.unit }
                         : { ok: false, msg: '\u274C Option ' + correct + ' is cheaper. A: ' + fmt(unitA) + '/' + d.upItem.unit + ' vs B: ' + fmt(unitB) + '/' + d.upItem.unit }
                       );
-                      if (isRight && typeof addXP === 'function') addXP(15, 'Money Math: Unit pricing');
+                      if (isRight) awardMoneyXPOnce('unit-pricing', [currency, d.upItem.name, d.upA, d.upB], 15, 'unit pricing');
                     }, className: "w-full px-4 py-2 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800 transition-all text-sm" }, __alloT('stem.money.check_my_answer_2', "\u2714 Check My Answer")),
                     d.upFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.upFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.upFeedback.msg)
                   )
@@ -3745,8 +3816,7 @@ window.StemLab = window.StemLab || {
                         var ok = Math.abs(d.estAnswer - d.estTotal) < tol + d.estTotal * 0.005;
                         upd('estFb', ok ? { ok: true, msg: '\u2705 Correct! Total is ' + fmt(d.estTotal) + ' \u2014 +10 XP!' } : { ok: false, msg: '\u274C Not quite. The total is ' + fmt(d.estTotal) });
                         if (ok) {
-                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 10, 'estimate total');
-                          if (typeof addXP === 'function') addXP(10, 'Money Math: Receipt estimation');
+                          awardMoneyXPOnce('estimate-total', [currency, d.estItems, d.estTotal], 10, 'estimate total');
                         }
                       }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-all text-sm" }, "\u2714")
                     ),
@@ -3784,8 +3854,7 @@ window.StemLab = window.StemLab || {
                         : { ok: false, msg: '\u274C Nope. Correct change is ' + fmt(d.ccCorrectAmt) + '. The cashier gave ' + fmt(d.ccProposed) + '.' }
                       );
                       if (correct) {
-                        if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 12, 'change check');
-                        if (typeof addXP === 'function') addXP(12, 'Money Math: Change verification');
+                        awardMoneyXPOnce('change-check', [currency, d.ccPrice, d.ccPaid, d.ccProposed], 12, 'change check');
                       }
                     }, className: "w-full px-4 py-2 bg-rose-700 text-white font-bold rounded-xl hover:bg-rose-600 transition-all text-sm" }, __alloT('stem.money.submit_2', "\u2714 Submit")),
                     d.ccFb && React.createElement("p", { className: "text-xs font-bold " + (d.ccFb.ok ? 'text-green-600' : 'text-red-500') }, d.ccFb.msg)
@@ -3815,12 +3884,10 @@ window.StemLab = window.StemLab || {
                       React.createElement("input", { 'aria-label': __alloT('stem.money.final_price', "Final price:"), type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.csAnswer != null ? d.csAnswer : '', onChange: function (e) { upd('csAnswer', e.target.value === '' ? null : parseFloat(e.target.value)); upd('csFb', null); }, className: "flex-1 px-3 py-2 border border-fuchsia-600 rounded-lg text-sm font-bold focus:ring-2 focus:ring-fuchsia-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.gen_structured_problem', "Gen Structured Problem"), onClick: function () {
                         if (d.csAnswer == null) return;
-                        var tol = isJPY ? 0.5 : 0.02;
-                        var ok = Math.abs(d.csAnswer - d.csFinal) < tol + d.csFinal * 0.01;
+                        var ok = sameCurrencyAmount(d.csAnswer, d.csFinal, currency);
                         upd('csFb', ok ? { ok: true, msg: '\u2705 Perfect! Final price: ' + fmt(d.csFinal) + ' \u2014 +15 XP!' } : { ok: false, msg: '\u274C Not quite. Final price is ' + fmt(d.csFinal) + '. Discounts apply sequentially!' });
                         if (ok) {
-                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'coupon stack');
-                          if (typeof addXP === 'function') addXP(15, 'Money Math: Coupon stacking');
+                          awardMoneyXPOnce('coupon-stack', [currency, d.csOriginal, d.csDiscounts, d.csFinal], 15, 'coupon stack');
                         }
                       }, className: "px-4 py-2 bg-fuchsia-700 text-white font-bold rounded-lg hover:bg-fuchsia-600 transition-all text-sm" }, "\u2714")
                     ),
@@ -3842,7 +3909,7 @@ window.StemLab = window.StemLab || {
                       d.spAnswers.map(function (ans, i) {
                         return React.createElement("div", { key: i, className: "flex items-center gap-2" },
                           React.createElement("label", { className: "text-xs font-bold text-cyan-700 w-24" }, ans.label + ':'),
-                          React.createElement("input", { 'aria-label': ans.label, type: "number", step: '0.01', placeholder: '$...', value: d.spUserAnswers && d.spUserAnswers[i] != null ? d.spUserAnswers[i] : '', onChange: function (e) {
+                          React.createElement("input", { 'aria-label': ans.label, type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', value: d.spUserAnswers && d.spUserAnswers[i] != null ? d.spUserAnswers[i] : '', onChange: function (e) {
                             var arr = (d.spUserAnswers || []).slice();
                             arr[i] = e.target.value === '' ? null : parseFloat(e.target.value);
                             upd('spUserAnswers', arr); upd('spFb', null);
@@ -3854,7 +3921,7 @@ window.StemLab = window.StemLab || {
                       var ua = d.spUserAnswers || [];
                       var allOk = true;
                       d.spAnswers.forEach(function (ans, i) {
-                        if (ua[i] == null || Math.abs(ua[i] - ans.val) > 0.02 + ans.val * 0.005) allOk = false;
+                        if (!sameCurrencyAmount(ua[i], ans.val, currency)) allOk = false;
                       });
                       var detail = d.spAnswers.map(function (a) { return a.label + ': ' + fmt(a.val); }).join(', ');
                       upd('spFb', allOk
@@ -3862,8 +3929,7 @@ window.StemLab = window.StemLab || {
                         : { ok: false, msg: '\u274C Not quite. ' + detail }
                       );
                       if (allOk) {
-                        if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 15, 'word problem');
-                        if (typeof addXP === 'function') addXP(15, 'Money Math: Word problem');
+                        awardMoneyXPOnce('structured-word-problem', [currency, d.spText, d.spAnswers], 15, 'word problem');
                       }
                     }, className: "w-full px-4 py-2 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800 transition-all text-sm" }, __alloT('stem.money.check_my_answers_2', "\u2714 Check My Answers")),
                     d.spFb && React.createElement("p", { className: "text-xs font-bold " + (d.spFb.ok ? 'text-green-600' : 'text-red-500') }, d.spFb.msg)
@@ -3913,14 +3979,14 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "flex flex-wrap gap-1.5 justify-center" },
                       COIN_DENOMS.map(function (coin) {
                         var wouldOvershoot = cdRound + coin.val > cdTarget + 0.001;
-                        return React.createElement("button", { "aria-label": "Drop " + coin.label + " coin", key: coin.label, onClick: function () {
+                        return React.createElement("button", { "aria-label": "Add " + coin.label + " denomination", key: coin.label, onClick: function () {
                             if (cdFb) return; // Already solved
                             var newDropped = cdDropped.concat([coin.val]);
-                            var newTotal = Math.round((cdRound + coin.val) * 100) / 100;
+                            var newTotal = roundCurrency(cdRound + coin.val, currency);
                             upd('cdDropped', newDropped);
                             upd('cdAnimDrop', true);
                             setTimeout(function () { upd('cdAnimDrop', false); }, 400);
-                            if (newTotal === cdTarget) {
+                            if (currencyUnits(newTotal, currency) === currencyUnits(cdTarget, currency)) {
                               var timeMsg = '';
                               if (challengeMode && cdStartTime) {
                                 var elapsed = Math.round((Date.now() - cdStartTime) / 1000);
@@ -3928,10 +3994,9 @@ window.StemLab = window.StemLab || {
                               }
                               upd('cdStreak', cdStreak + 1);
                               var bonusXP = 10 + Math.min(cdStreak * 2, 10);
-                              upd('cdFb', { ok: true, msg: '\uD83C\uDF89 Perfect! ' + fmt(cdTarget) + ' in ' + newDropped.length + ' coins' + timeMsg + '! +' + bonusXP + ' XP' });
-                              if (typeof awardStemXP === 'function') awardStemXP('moneyMath', bonusXP, 'coin drop');
-                              if (typeof addXP === 'function') addXP(bonusXP, 'Money Math: Coin Drop');
-                            } else if (newTotal > cdTarget) {
+                              upd('cdFb', { ok: true, msg: '\uD83C\uDF89 Perfect! ' + fmt(cdTarget) + ' in ' + newDropped.length + ' pieces' + timeMsg + '! +' + bonusXP + ' XP' });
+                              awardMoneyXPOnce('coin-drop', [currency, cdTarget, cdStartTime], bonusXP, 'coin drop');
+                            } else if (currencyUnits(newTotal, currency) > currencyUnits(cdTarget, currency)) {
                               upd('cdStreak', 0);
                               upd('cdFb', { ok: false, msg: '\u274C Too much! You put in ' + fmt(newTotal) + ' but needed ' + fmt(cdTarget) + '. Try again!' });
                             }
@@ -4149,6 +4214,7 @@ window.StemLab = window.StemLab || {
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     )
                   ),
+                  !loanHasValidInputs && React.createElement("p", { role: "status", className: "mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900" }, __alloT('stem.money.enter_positive_loan', 'Enter a loan amount greater than zero and a positive term to calculate payments.')),
                   // Results
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4" },
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-rose-100" },
@@ -4158,7 +4224,7 @@ window.StemLab = window.StemLab || {
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-red-200" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.total_interest', "Total Interest")),
                       React.createElement("p", { className: "text-xl font-black text-red-700" }, cur.symbol + Math.round(loanTotalInterest).toLocaleString()),
-                      React.createElement("p", { className: "text-[11px] text-red-600" }, "That's " + Math.round(loanTotalInterest / loanAmt * 100) + "% of the loan!")
+                      React.createElement("p", { className: "text-[11px] text-red-600" }, loanInterestPct + "% of total paid")
                     ),
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-slate-100" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.total_paid', "Total Paid")),
@@ -4169,17 +4235,17 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "mb-4" },
                     React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.money.what_you_re_really_paying', "What you're really paying:")),
                     React.createElement("div", { className: "h-6 rounded-full overflow-hidden flex", "aria-hidden": true },
-                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full" }),
-                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full" })
+                      React.createElement("div", { style: { width: loanPrincipalPct + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full" }),
+                      React.createElement("div", { style: { width: loanInterestPct + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full" })
                     ),
                     React.createElement("div", { className: "mt-2 flex flex-wrap justify-between gap-2 text-[11px] font-bold text-slate-600" },
                       React.createElement("span", { className: "inline-flex items-center gap-1" },
                         React.createElement("span", { className: "inline-block h-3 w-3 rounded-sm", style: { background: '#4f46e5' }, "aria-hidden": true }),
-                        __alloT('stem.money.principal_2', "Principal") + ': ' + Math.round(loanAmt / loanTotalPaid * 100) + '%'
+                        __alloT('stem.money.principal_2', "Principal") + ': ' + loanPrincipalPct + '%'
                       ),
                       React.createElement("span", { className: "inline-flex items-center gap-1" },
                         React.createElement("span", { className: "inline-block h-3 w-3 rounded-sm", style: { background: '#dc2626' }, "aria-hidden": true }),
-                        __alloT('stem.money.interest', "Interest") + ': ' + Math.round(loanTotalInterest / loanTotalPaid * 100) + '%'
+                        __alloT('stem.money.interest', "Interest") + ': ' + loanInterestPct + '%'
                       )
                     )
                   ),
@@ -4312,8 +4378,7 @@ window.StemLab = window.StemLab || {
                         var ok = d.fqAnswer === fq.correct;
                         upd('fqFb', ok ? { ok: true, msg: '\u2705 Correct! ' + fq.explanation } : { ok: false, msg: '\u274C Not quite. ' + fq.explanation });
                         if (ok) {
-                          if (typeof awardStemXP === 'function') awardStemXP('moneyMath', 20, 'finance quiz');
-                          if (typeof addXP === 'function') addXP(20, 'Money Math: Financial literacy quiz');
+                          awardMoneyXPOnce('finance-quiz', [d.fqIdx, fq.q], 20, 'finance quiz');
                         }
                       }, className: "w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-sm" }, __alloT('stem.money.submit_answer_2', "\u2714 Submit Answer")),
                       d.fqFb && React.createElement("div", { className: "rounded-lg p-3 text-xs font-medium leading-relaxed " + (d.fqFb.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700') }, d.fqFb.msg),
@@ -4443,7 +4508,7 @@ window.StemLab = window.StemLab || {
               // ── Educational Footer ──
               React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-200 text-center" },
                 React.createElement("p", { className: "text-[11px] text-emerald-600" }, "\uD83C\uDF1F ", React.createElement("strong", null, __alloT('stem.money.financial_literacy', "Financial literacy")), __alloT('stem.money.is_one_of_the_most_important_life_skil', " is one of the most important life skills. Practice with real-world scenarios to build confidence with money!")),
-                React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, __alloT('stem.money.exchange_rates_are_approximate_and_for', "Exchange rates are approximate and for educational purposes only."))
+                React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, __alloT('stem.money.exchange_rates_are_approximate_and_for', "Exchange activities use a fixed classroom model for reproducible practice, not live market quotes."))
               ),
 
               // ═══ DOLLAR ANATOMY ═══

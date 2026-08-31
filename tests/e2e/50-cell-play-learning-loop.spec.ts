@@ -16,13 +16,13 @@ const mobileHarness = new GlHarness({
   appStyles: true,
 });
 
-const playState = () => ({
+const playState = (predictionSkipped = true) => ({
   cell: {
     mode: 'play',
     selectedOrganism: 'amoeba',
     playAsOrganism: 'amoeba',
     showPlayInstructions: false,
-    playMission: { organismId: 'amoeba', startSuccess: 9 },
+    playMission: { organismId: 'amoeba', startSuccess: 9, predictionSkipped },
     _cellExt: {
       successByOrganism: { amoeba: 9 },
       organismsObserved: ['amoeba'],
@@ -82,20 +82,22 @@ test.afterAll(async () => {
 test.describe.configure({ timeout: 200_000 });
 
 test('mission loop tracks the current run and requires a biology reflection', async ({ page }, testInfo) => {
-  await desktopHarness.mount(page, playState(), undefined, { expectCanvas: false });
+  await desktopHarness.mount(page, playState(false), undefined, { expectCanvas: false });
   await page.locator('[data-cell-mission-checkpoint]').waitFor({ state: 'visible' });
   const predictionStage = page.locator('[data-cell-prediction-stage]');
+  const predictionCheckpoint = page.locator('[data-cell-checkpoint-step="predict"]');
+  const controlCheckpoint = page.locator('[data-cell-checkpoint-step="control"]');
+  const observeCheckpoint = page.locator('[data-cell-checkpoint-step="observe"]');
+  const explainCheckpoint = page.locator('[data-cell-checkpoint-step="explain"]');
   await expect(predictionStage).toHaveAttribute('data-cell-prediction-stage-state', 'ready');
-  await expect(predictionStage.locator('[data-cell-prediction-stage-status]')).toHaveText('Before play');
+  await expect(predictionStage.locator('[data-cell-prediction-stage-status]')).toHaveText('Choose now');
   await expect(predictionStage.locator('[data-cell-prediction-summary]')).toContainText('Prediction question');
-  await expect(predictionStage.locator('[data-cell-prediction-guidance]')).toContainText('before collecting evidence');
+  await expect(predictionStage.locator('[data-cell-prediction-guidance]')).toContainText('predictions are not graded');
   const nextStep = page.locator('[data-cell-next-step]');
-  await expect(nextStep).toHaveAttribute('data-cell-next-step-state', 'continue');
-  await expect(nextStep).toContainText('Continue Amoeba \u00B7 0/3 evidence');
-  await expect(nextStep).toContainText('Goal: Engulf 3 green food particles.');
+  await expect(nextStep).toHaveAttribute('data-cell-next-step-state', 'predict');
+  await expect(nextStep).toContainText('Predict for Amoeba before play');
+  await expect(nextStep).toContainText('Control unlocks after you predict or explicitly skip.');
   await expect(nextStep).toContainText("You'll learn: Touching a particle models phagocytosis");
-  await page.getByRole('button', { name: 'Return to Amoeba mission in the dish' }).click();
-  await expect(page.locator('[data-cell-sim-canvas]')).toBeFocused();
   expect(await page.evaluate(() => (window as any).__toolData.cell.playMission.startSuccess)).toBe(9);
   const initialGuide = await readTargetGuide(page);
   expect(initialGuide.kind).toBe('food');
@@ -105,12 +107,12 @@ test('mission loop tracks the current run and requires a biology reflection', as
   expect(initialGuide.marker.y).toBeLessThanOrEqual(initialGuide.safeRect.bottom);
 
   await expect(page.locator('[data-cell-target-legend]')).toContainText('Green particles');
-  const controlCheckpoint = page.locator('[data-cell-checkpoint-step="control"]');
-  const observeCheckpoint = page.locator('[data-cell-checkpoint-step="observe"]');
-  const explainCheckpoint = page.locator('[data-cell-checkpoint-step="explain"]');
-  await expect(controlCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'current');
-  await expect(controlCheckpoint).toHaveAttribute('aria-current', 'step');
-  await expect(controlCheckpoint.locator('[data-cell-checkpoint-status="control"]')).toHaveText('Now');
+  await expect(predictionCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'current');
+  await expect(predictionCheckpoint).toHaveAttribute('aria-current', 'step');
+  await expect(predictionCheckpoint.locator('[data-cell-checkpoint-status="predict"]')).toHaveText('Choose now');
+  await expect(controlCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'upcoming');
+  await expect(controlCheckpoint).not.toHaveAttribute('aria-current', 'step');
+  await expect(controlCheckpoint.locator('[data-cell-checkpoint-status="control"]')).toHaveText('Next');
   await expect(observeCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'upcoming');
   await expect(observeCheckpoint).not.toHaveAttribute('aria-current', 'step');
   await expect(observeCheckpoint.locator('[data-cell-checkpoint-status="observe"]')).toHaveText('Next');
@@ -119,19 +121,102 @@ test('mission loop tracks the current run and requires a biology reflection', as
   await expect(explainCheckpoint.locator('[data-cell-checkpoint-status="explain"]')).toHaveText('Locked');
   await expect(page.locator('[data-cell-mission-checkpoint] [aria-current="step"]')).toHaveCount(1);
   await expect(page.locator('[data-cell-mission-checkpoint] [data-cell-checkpoint-state="current"]')).toHaveCount(1);
-  await expect(page.locator('[data-cell-mission-checkpoint] [data-cell-checkpoint-status]')).toHaveCount(3);
+  await expect(page.locator('[data-cell-mission-checkpoint] [data-cell-checkpoint-status]')).toHaveCount(4);
+  await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('aria-label', 'Learning step 1 of 4, Predict. Evidence 0 of 3. Make a prediction or choose to start without one.');
+  await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('data-cell-learning-phase', 'predict');
+  await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('data-cell-learning-step', '1');
+  await expect(page.locator('[data-cell-learning-phase-label]')).toHaveText('Predict');
+  await expect(page.locator('[data-cell-predict-cue]')).toHaveText('Choose now');
+  await expect(page.locator('[data-cell-hud-heading]')).toHaveAttribute('data-cell-hud-phase', 'predict');
+  await expect(page.locator('[data-cell-hud-heading]')).toHaveText('Learning loop \u00B7 1/4');
+  await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('data-cell-mission-progress-state', 'predict');
+  const simCanvas = page.locator('[data-cell-sim-canvas]');
+  const controlLock = page.locator('[data-cell-control-lock]');
+  const livePredictTrace = page.locator('[data-cell-control-loop]');
+  await expect(simCanvas).toHaveAttribute('data-cell-sim-state', 'predict');
+  await expect(controlLock).toHaveAccessibleName('Predict or start without a prediction to unlock Amoeba controls');
+  await expect(controlLock).toContainText('Unlock controls');
+  await expect(page.locator('[data-cell-direction-pad]')).toHaveCount(0);
+  await expect(page.locator('[data-cell-target-legend]')).toHaveAttribute('data-cell-target-state', 'locked');
+  await expect(page.locator('[data-cell-target-proximity]')).toHaveAttribute('data-cell-proximity', 'waiting');
+  await expect(page.locator('[data-cell-target-proximity]')).toContainText('PREDICT FIRST');
+  await expect(page.locator('[data-cell-approach-meter]')).toHaveAttribute('data-cell-approach-state', 'locked');
+  await expect(page.locator('[data-cell-approach-meter] [data-cell-step-state="current"]')).toHaveCount(0);
+  await expect(page.locator('[data-cell-approach-meter] [data-cell-step-state="upcoming"]')).toHaveCount(3);
+  await expect(livePredictTrace).toHaveAttribute('data-cell-control-phase', 'locked');
+  await expect(livePredictTrace.locator('[data-cell-control-title]')).toHaveText('1 \u00B7 Predict first');
+  await expect(livePredictTrace.locator('[data-cell-control-input]')).toHaveText('Choose or skip');
+  await expect(livePredictTrace.locator('[data-cell-control-mechanism]')).toHaveText('Controls unlock');
+  await simCanvas.focus();
+  await page.keyboard.down('ArrowRight');
+  await page.waitForTimeout(50);
+  expect(await readControlResponse(page)).toMatchObject({ moving: false, direction: 'idle' });
+  await page.keyboard.up('ArrowRight');
+  expect(await page.evaluate(() => (window as any).__toolData.cell.playMission.firstActionRegistered)).toBeUndefined();
+  await expect(page.locator('[data-cell-explain-handoff]')).toHaveCount(0);
+  await expect(page.locator('[data-cell-explanation-locked]')).toBeVisible();
+  await expect(page.locator('[data-cell-explanation-locked]')).toContainText('Collect 3 targets');
+  expect(await readMissionEvidenceState(page)).toMatchObject({ evidenceAllowed: false, successCount: 0 });
+  await triggerAmoebaSuccesses(page, 1);
+  expect(await page.evaluate(() => (window as any).__toolData.cell._cellExt.successByOrganism.amoeba)).toBe(9);
+  await expect(predictionStage).toHaveAttribute('data-cell-prediction-stage-state', 'ready');
+
+  if (process.env.CELL_VISUAL_QA === '1') {
+    await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-live-phase-predict-desktop.png' : testInfo.outputPath('cell-live-phase-predict-desktop.png') });
+    await page.locator('[data-cell-mission-checkpoint]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-roadmap-predict-desktop.png' : testInfo.outputPath('cell-roadmap-predict-desktop.png') });
+  }
+
+  const predictionAction = predictionStage.locator('[data-cell-prediction-action]');
+  await expect(predictionAction).toHaveAccessibleName('Make an Amoeba prediction before collecting evidence');
+  await controlLock.click();
+  const predictionDialog = page.getByRole('dialog', { name: /60-second mission briefing: Amoeba/ });
+  const firstPrediction = page.getByRole('button', { name: /Prediction option 1: The flexible edge will extend around the particle/ });
+  await expect(predictionDialog).toBeVisible();
+  await expect(firstPrediction).toBeFocused();
+  await expect(page.locator('[data-cell-tutorial-primary]')).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(predictionDialog).toBeVisible();
+  await expect(firstPrediction).toBeFocused();
+  const skipPrediction = page.locator('[data-cell-skip-prediction]');
+  await expect(skipPrediction).toHaveAccessibleName('Start Amoeba mission without a prediction');
+  if (process.env.CELL_VISUAL_QA === '1') {
+    await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-prediction-choice-desktop.png' : testInfo.outputPath('cell-prediction-choice-desktop.png') });
+  }
+  await skipPrediction.click();
+  await expect(predictionDialog).toHaveCount(0);
+  await expect(page.locator('[data-cell-sim-canvas]')).toBeFocused();
+  expect(await page.evaluate(() => (window as any).__toolData.cell.playMission)).toMatchObject({ predictionSkipped: true });
+  await expect(predictionStage).toHaveAttribute('data-cell-prediction-stage-state', 'skipped');
+  await expect(predictionStage.locator('[data-cell-prediction-stage-status]')).toHaveText('Skipped by choice');
+  await expect(predictionCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'skipped');
+  await expect(predictionCheckpoint).not.toHaveAttribute('aria-current', 'step');
+  await expect(controlCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'current');
+  await expect(controlCheckpoint).toHaveAttribute('aria-current', 'step');
+  await expect(controlCheckpoint.locator('[data-cell-checkpoint-status="control"]')).toHaveText('Now');
+  await expect(observeCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'upcoming');
+  await expect(explainCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'locked');
+  await expect(page.locator('[data-cell-mission-checkpoint] [aria-current="step"]')).toHaveCount(1);
+  await expect(page.locator('[data-cell-mission-checkpoint] [data-cell-checkpoint-state="current"]')).toHaveCount(1);
+  await expect(page.locator('[data-cell-mission-checkpoint] [data-cell-checkpoint-status]')).toHaveCount(4);
   await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('aria-label', 'Learning step 2 of 4, Control. Evidence 0 of 3.');
   await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('data-cell-learning-phase', 'control');
   await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('data-cell-learning-step', '2');
   await expect(page.locator('[data-cell-learning-phase-label]')).toHaveText('Control');
   await expect(page.locator('[data-cell-hud-heading]')).toHaveAttribute('data-cell-hud-phase', 'control');
   await expect(page.locator('[data-cell-hud-heading]')).toHaveText('Learning loop \u00B7 2/4');
+  await expect(controlLock).toHaveCount(0);
+  await expect(page.locator('[data-cell-direction-pad]')).toBeVisible();
+  await expect(livePredictTrace).toHaveAttribute('data-cell-control-phase', 'ready');
+  await expect(livePredictTrace.locator('[data-cell-control-title]')).toHaveText('1 \u00B7 First action');
+  await expect(page.locator('[data-cell-target-proximity]')).not.toHaveAttribute('data-cell-proximity', 'waiting');
+  await expect(page.locator('[data-cell-target-proximity]')).not.toContainText('PREDICT FIRST');
   await expect(page.locator('[data-cell-mission-progress]')).toHaveAttribute('data-cell-mission-progress-state', 'collect');
-  await expect(page.locator('[data-cell-sim-canvas]')).toHaveAttribute('data-cell-sim-state', 'active');
-  await expect(page.locator('[data-cell-explain-handoff]')).toHaveCount(0);
+  await expect(simCanvas).toHaveAttribute('data-cell-sim-state', 'active');
+  await expect(nextStep).toHaveAttribute('data-cell-next-step-state', 'continue');
+  await expect(nextStep).toContainText('Continue Amoeba \u00B7 0/3 evidence');
+  await page.getByRole('button', { name: 'Return to Amoeba mission in the dish' }).click();
+  await expect(page.locator('[data-cell-sim-canvas]')).toBeFocused();
   await expect(page.getByText('0/3 evidence', { exact: true })).toBeVisible();
-  await expect(page.locator('[data-cell-explanation-locked]')).toBeVisible();
-  await expect(page.locator('[data-cell-explanation-locked]')).toContainText('Collect 3 targets');
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-live-phase-control-desktop.png' : testInfo.outputPath('cell-live-phase-control-desktop.png') });
     await page.locator('[data-cell-mission-checkpoint]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-roadmap-control-desktop.png' : testInfo.outputPath('cell-roadmap-control-desktop.png') });
@@ -448,7 +533,7 @@ test('live control cue translates input into organism mechanism and result', asy
   const parameciumState: any = playState();
   parameciumState.cell.selectedOrganism = 'paramecium';
   parameciumState.cell.playAsOrganism = 'paramecium';
-  parameciumState.cell.playMission = { organismId: 'paramecium', startSuccess: 0 };
+  parameciumState.cell.playMission = { organismId: 'paramecium', startSuccess: 0, predictionSkipped: true };
   parameciumState.cell._cellExt = {
     successByOrganism: { paramecium: 0 },
     organismsObserved: ['paramecium'],
@@ -660,8 +745,10 @@ test('briefing blocks evidence and light credit requires continuous real elapsed
   expect(blocked).toMatchObject({ evidenceAllowed: false, successCount: 0, lightHoldMs: 0 });
   expect(await page.evaluate(() => (window as any).__toolData.cell._cellExt.successByOrganism.euglena)).toBe(0);
 
-  await page.getByRole('button', { name: 'Continue Euglena mission' }).click();
+  await expect(page.locator('[data-cell-tutorial-primary]')).toBeDisabled();
+  await page.getByRole('button', { name: 'Start Euglena mission without a prediction' }).click();
   await expect(page.locator('[data-cell-play-tutorial-dialog]')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as any).__toolData.cell.playMission.predictionSkipped)).toBe(true);
   await page.evaluate(() => (document.querySelector('[data-cell-sim-canvas]') as any)._cellSimSetSpeed(5));
   await setMissionScenario(page, { insideLight: true, worldTick: 59 });
 
@@ -713,7 +800,7 @@ test('repeated plant labels explain why evidence stays unchanged', async ({ page
     playAsOrganism: 'plantcell',
     showPlayInstructions: false,
     paused: true,
-    playMission: { organismId: 'plantcell', startSuccess: 0 },
+    playMission: { organismId: 'plantcell', startSuccess: 0, predictionSkipped: true },
     _cellExt: { successByOrganism: { plantcell: 0 } },
   } };
   await desktopHarness.mount(page, plantState, undefined, { expectCanvas: false });
@@ -821,7 +908,7 @@ test('target compass adapts to structures, light, target shapes, and reduced mot
     playAsOrganism: 'plantcell',
     showPlayInstructions: false,
     paused: true,
-    playMission: { organismId: 'plantcell', startSuccess: 0 },
+    playMission: { organismId: 'plantcell', startSuccess: 0, predictionSkipped: true },
     _cellExt: { successByOrganism: { plantcell: 0 } },
   } };
   await desktopHarness.mount(page, plantState, undefined, { expectCanvas: false });
@@ -860,7 +947,7 @@ test('target compass adapts to structures, light, target shapes, and reduced mot
     playAsOrganism: 'euglena',
     showPlayInstructions: false,
     paused: true,
-    playMission: { organismId: 'euglena', startSuccess: 0 },
+    playMission: { organismId: 'euglena', startSuccess: 0, predictionSkipped: true },
     _cellExt: { successByOrganism: { euglena: 0 } },
   } };
   await desktopHarness.mount(page, lightState, undefined, { expectCanvas: false });
@@ -877,7 +964,7 @@ test('target compass adapts to structures, light, target shapes, and reduced mot
     playAsOrganism: 'bacterium',
     showPlayInstructions: false,
     paused: true,
-    playMission: { organismId: 'bacterium', startSuccess: 0 },
+    playMission: { organismId: 'bacterium', startSuccess: 0, predictionSkipped: true },
     _cellExt: { successByOrganism: { bacterium: 0 } },
   } };
   await desktopHarness.mount(page, nutrientState, undefined, { expectCanvas: false });
@@ -904,7 +991,7 @@ test('target compass adapts to structures, light, target shapes, and reduced mot
     playAsOrganism: 'wbc',
     showPlayInstructions: false,
     paused: true,
-    playMission: { organismId: 'wbc', startSuccess: 0 },
+    playMission: { organismId: 'wbc', startSuccess: 0, predictionSkipped: true },
     _cellExt: { successByOrganism: { wbc: 0 } },
   } };
   await desktopHarness.mount(page, pathogenState, undefined, { expectCanvas: false });
@@ -991,10 +1078,16 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
   const tutorialScrollBody = page.locator('[data-cell-tutorial-scroll-body]');
   const tutorialActionBar = page.locator('[data-cell-tutorial-action-bar]');
   const mobileTutorialPath = page.locator('[data-cell-tutorial-learning-path]');
+  const tutorialPrimary = page.locator('[data-cell-tutorial-primary]');
+  const skipPrediction = page.locator('[data-cell-skip-prediction]');
   expect(await tutorialScrollBody.evaluate((body) => body.scrollTop)).toBeLessThanOrEqual(1);
   await expect(mobileTutorialPath).toHaveAttribute('data-cell-tutorial-phase', 'predict');
   await expect(mobileTutorialPath.locator('[data-cell-tutorial-step="predict"]')).toHaveAttribute('data-cell-tutorial-step-state', 'current');
-  await expect(page.locator('[data-cell-tutorial-primary]')).toBeInViewport();
+  await expect(tutorialPrimary).toBeDisabled();
+  await expect(tutorialPrimary).toHaveText(/Choose a prediction to start/);
+  await expect(skipPrediction).toHaveAccessibleName('Start Neutrophil (White Blood Cell) mission without a prediction');
+  await expect(tutorialPrimary).toBeInViewport();
+  await expect(skipPrediction).toBeInViewport();
   expect(await page.evaluate(() => {
     const prediction = document.querySelector('[data-cell-prediction-checkpoint]');
     const control = document.querySelector('[data-cell-tutorial-control-map]');
@@ -1060,19 +1153,23 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
   expect(narrowTutorialLayout.actionLeft).toBeGreaterThanOrEqual(narrowTutorialLayout.panelLeft - 1);
   expect(narrowTutorialLayout.actionRight).toBeLessThanOrEqual(narrowTutorialLayout.panelRight + 1);
   expect(narrowTutorialLayout.actionBottom).toBeLessThanOrEqual(narrowTutorialLayout.panelBottom + 1);
-  await expect(tutorialActionBar).toBeInViewport();
+  await expect(tutorialActionBar).toBeInViewport({ ratio: 0.99 });
+  await expect(tutorialPrimary).toBeInViewport({ ratio: 0.99 });
+  await expect(skipPrediction).toBeInViewport({ ratio: 0.99 });
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-control-model-tutorial-320.png' : testInfo.outputPath('cell-control-model-tutorial-320.png') });
   }
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '390px'; });
-  await page.waitForFunction(() => document.documentElement.clientWidth === 390);
   await expect(page.locator('[data-cell-prediction-checkpoint]')).toContainText('What should happen when the immune cell reaches a pathogen?');
   const pathogenPrediction = page.getByRole('button', { name: /Prediction option 1: Pseudopods will extend around the pathogen/ });
   await pathogenPrediction.click();
   await expect(pathogenPrediction).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-cell-prediction-status]')).toContainText('Prediction saved');
+  await expect(tutorialPrimary).toBeEnabled();
+  await expect(skipPrediction).toHaveCount(0);
   await expect(mobileTutorialPath).toHaveAttribute('data-cell-tutorial-phase', 'control');
+  await expect(tutorialPrimary).toHaveAccessibleName('Start Neutrophil (White Blood Cell) mission');
+  await expect(tutorialPrimary).toBeInViewport({ ratio: 0.99 });
+  await expect(pathogenPrediction).toBeInViewport({ ratio: 0.99 });
   await expect(mobileTutorialPath.locator('[data-cell-tutorial-step="predict"]')).toHaveAttribute('data-cell-tutorial-step-state', 'complete');
   await expect(mobileTutorialPath.locator('[data-cell-tutorial-step="control"]')).toHaveAttribute('data-cell-tutorial-step-state', 'current');
   const predictionLayout = await page.evaluate(() => {
@@ -1080,6 +1177,7 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
     const checkpoint = document.querySelector('[data-cell-prediction-checkpoint]') as HTMLElement;
     const controlMap = document.querySelector('[data-cell-tutorial-control-map]') as HTMLElement;
     const panelRect = panel.getBoundingClientRect();
+    const options = Array.from(checkpoint.querySelectorAll('[data-cell-prediction-option]')) as HTMLElement[];
     const checkpointRect = checkpoint.getBoundingClientRect();
     const controlMapRect = controlMap.getBoundingClientRect();
     return {
@@ -1089,6 +1187,10 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
       checkpoint: { left: checkpointRect.left, right: checkpointRect.right },
       controlMap: { left: controlMapRect.left, right: controlMapRect.right },
       checkpointScrollWidth: checkpoint.scrollWidth,
+      options: options.map((option) => {
+        const rect = option.getBoundingClientRect();
+        return { left: rect.left, right: rect.right };
+      }),
       checkpointClientWidth: checkpoint.clientWidth,
       controlMapScrollWidth: controlMap.scrollWidth,
       controlMapClientWidth: controlMap.clientWidth,
@@ -1097,17 +1199,22 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
   expect(predictionLayout.pageScrollWidth).toBeLessThanOrEqual(predictionLayout.viewportWidth + 1);
   expect(predictionLayout.panel.left).toBeGreaterThanOrEqual(0);
   expect(predictionLayout.panel.right).toBeLessThanOrEqual(predictionLayout.viewportWidth + 1);
+  expect(predictionLayout.viewportWidth).toBe(320);
   expect(predictionLayout.checkpoint.left).toBeGreaterThanOrEqual(predictionLayout.panel.left - 1);
   expect(predictionLayout.checkpoint.right).toBeLessThanOrEqual(predictionLayout.panel.right + 1);
   expect(predictionLayout.checkpointScrollWidth).toBeLessThanOrEqual(predictionLayout.checkpointClientWidth + 1);
   expect(predictionLayout.controlMap.left).toBeGreaterThanOrEqual(predictionLayout.panel.left - 1);
   expect(predictionLayout.controlMap.right).toBeLessThanOrEqual(predictionLayout.panel.right + 1);
   expect(predictionLayout.controlMapScrollWidth).toBeLessThanOrEqual(predictionLayout.controlMapClientWidth + 1);
+  for (const option of predictionLayout.options) {
+    expect(option.left).toBeGreaterThanOrEqual(predictionLayout.checkpoint.left - 1);
+    expect(option.right).toBeLessThanOrEqual(predictionLayout.checkpoint.right + 1);
+  }
   expect(await page.evaluate(() => (window as any).__toolData.cell.playMission.predictionText)).toBe('Pseudopods will extend around the pathogen.');
   if (process.env.CELL_VISUAL_QA === '1') {
-    await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-prediction-tutorial-mobile.png' : testInfo.outputPath('cell-prediction-tutorial-mobile.png') });
+    await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-prediction-tutorial-320.png' : testInfo.outputPath('cell-prediction-tutorial-320.png') });
   }
-  await page.locator('[data-cell-tutorial-primary]').click();
+  await tutorialPrimary.click();
   await setMissionScenario(page, { particleOffsets: [[50, 0]], resetRuntime: true });
   await advanceMission(page, 0);
 
@@ -1515,7 +1622,8 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await expect(tutorialHudLabel).toBeVisible();
   const mobileRoadmap = page.locator('[data-cell-mission-checkpoint]');
   const mobileObserveCheckpoint = mobileRoadmap.locator('[data-cell-checkpoint-step="observe"]');
-  await expect(mobileRoadmap.locator('[data-cell-checkpoint-step]')).toHaveCount(3);
+  await expect(mobileRoadmap.locator('[data-cell-checkpoint-step]')).toHaveCount(4);
+  await expect(mobileRoadmap.locator('[data-cell-checkpoint-step="predict"]')).toHaveAttribute('data-cell-checkpoint-state', 'skipped');
   await expect(mobileRoadmap.locator('[data-cell-checkpoint-state="current"]')).toHaveCount(1);
   await expect(mobileObserveCheckpoint).toHaveAttribute('data-cell-checkpoint-state', 'current');
   await expect(mobileObserveCheckpoint).toHaveAttribute('aria-current', 'step');

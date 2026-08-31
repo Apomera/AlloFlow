@@ -1881,6 +1881,92 @@ const describeActivityItem = (item, labels) => {
     return [item.title, item.description, item.connection].filter(Boolean).join('\n');
 };
 
+// Activity derivatives are deliberately small, stable metadata records.
+const ACTIVITY_DERIVATIVE_KINDS = ['guide', 'worksheet', 'rubric', 'cover'];
+const activityDerivativeValue = (activity, kind) => {
+    if (!activity || typeof activity !== 'object') return null;
+    if (kind === 'cover') return activity.coverImage || null;
+    return activity[kind] || null;
+};
+const activityDerivativeHasValue = (activity, kind) => {
+    const value = activityDerivativeValue(activity, kind);
+    if (kind === 'rubric') return !!(value && Array.isArray(value.criteria) && value.criteria.length);
+    return typeof value === 'string' ? !!value.trim() : !!value;
+};
+const activityDerivativeFingerprint = (activity, kind) => {
+    if (!activityDerivativeHasValue(activity, kind)) return null;
+    const value = activityDerivativeValue(activity, kind);
+    let serialized = '';
+    try {
+        serialized = kind === 'rubric' ? JSON.stringify(value) : String(value);
+    } catch (_) {
+        serialized = String(value || '');
+    }
+    let hash = 2166136261;
+    for (let i = 0; i < serialized.length; i += 1) {
+        hash = Math.imul(hash ^ serialized.charCodeAt(i), 16777619);
+    }
+    return (hash >>> 0).toString(36);
+};
+const activityArtifactId = (parentId, index, kind) => {
+    const parent = String(parentId || 'activity').replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 80) || 'activity';
+    const safeIndex = Number.isFinite(Number(index)) ? Math.max(0, Math.round(Number(index))) : 0;
+    return parent + '-activity-' + safeIndex + '-' + kind;
+};
+const normalizeActivityDerivatives = (activity, parentId, index) => {
+    const source = activity && typeof activity === 'object' ? activity : {};
+    const existing = source.derivatives && typeof source.derivatives === 'object' ? source.derivatives : {};
+    const out = {};
+    ACTIVITY_DERIVATIVE_KINDS.forEach(kind => {
+        const prior = existing[kind] && typeof existing[kind] === 'object' ? existing[kind] : {};
+        const hasValue = activityDerivativeHasValue(source, kind);
+        const validStatuses = ['not-created', 'generating', 'ready', 'edited', 'failed'];
+        const status = validStatuses.includes(String(prior.status || ''))
+            ? String(prior.status)
+            : (hasValue ? 'ready' : 'not-created');
+        out[kind] = {
+            artifactId: String(prior.artifactId || activityArtifactId(parentId, index, kind)),
+            kind,
+            format: kind === 'cover' ? 'image' : (kind === 'rubric' ? 'json' : 'markdown'),
+            status,
+            version: Number.isFinite(Number(prior.version)) ? Math.max(0, Math.round(Number(prior.version))) : (hasValue ? 1 : 0),
+            attempts: Number.isFinite(Number(prior.attempts)) ? Math.max(0, Math.round(Number(prior.attempts))) : 0,
+            updatedAt: prior.updatedAt ? String(prior.updatedAt) : null,
+            lastError: prior.lastError ? String(prior.lastError).slice(0, 240) : null,
+            sourceRevision: prior.sourceRevision == null ? null : String(prior.sourceRevision),
+            contentHash: activityDerivativeFingerprint(source, kind),
+            pageDesignerDocumentId: prior.pageDesignerDocumentId ? String(prior.pageDesignerDocumentId) : null,
+        };
+    });
+    return out;
+};
+const stampActivityDerivative = (activity, parentId, index, kind, patch = {}) => {
+    const source = activity && typeof activity === 'object' ? activity : {};
+    if (!ACTIVITY_DERIVATIVE_KINDS.includes(kind)) return source;
+    const derivatives = normalizeActivityDerivatives(source, parentId, index);
+    const prior = derivatives[kind];
+    const hasValue = activityDerivativeHasValue(source, kind);
+    const nextVersion = Number.isFinite(Number(patch.version))
+        ? Math.max(0, Math.round(Number(patch.version)))
+        : (patch.bumpVersion ? prior.version + 1 : prior.version);
+    derivatives[kind] = {
+        ...prior,
+        status: String(patch.status || (hasValue ? prior.status : 'not-created')),
+        version: nextVersion,
+        attempts: Number.isFinite(Number(patch.attempts)) ? Math.max(0, Math.round(Number(patch.attempts))) : prior.attempts,
+        updatedAt: patch.updatedAt == null ? prior.updatedAt : String(patch.updatedAt),
+        lastError: patch.lastError == null ? prior.lastError : String(patch.lastError).slice(0, 240),
+        sourceRevision: patch.sourceRevision == null ? prior.sourceRevision : String(patch.sourceRevision),
+        pageDesignerDocumentId: patch.pageDesignerDocumentId == null ? prior.pageDesignerDocumentId : String(patch.pageDesignerDocumentId),
+    };
+    return { ...source, derivatives };
+};
+const attachActivityDerivativeMetadata = (content, parentId) => Array.isArray(content)
+    ? content.map((item, index) => item && typeof item === 'object'
+        ? { ...item, derivatives: normalizeActivityDerivatives(item, parentId, index) }
+        : item)
+    : content;
+
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
   const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setGenerationStage, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, memoryAidCustomInstructions, memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   const setGenerationStatus = (label, stage = null) => {
@@ -2107,6 +2193,40 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             try { return JSON.parse(candidate); } catch (_) {}
         }
         return fallback;
+    };
+    const retryableStructuredActivityError = (error) => {
+        const message = String(error && error.message || error || '').toLowerCase();
+        const code = String(error && error.code || '').toLowerCase();
+        const status = Number(error && (error.status || error.statusCode || error.httpStatus));
+        if (/401|403|quota|safety|blocked|policy|permission|forbidden|unauthorized/.test(message)
+            || /auth|permission|forbidden|unauthorized|safety|policy|quota/.test(code)) return false;
+        if ([408, 409, 425, 429].includes(status) || status >= 500) return true;
+        return /json|parse|valid|shape|empty|timeout|network|fetch|429|5\d\d|service unavailable|temporarily/.test(message);
+    };
+    const generateStructuredActivityWithRecovery = async (prompt, normalize, stepLabel) => {
+        let lastError = null;
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            throwIfGenerationAborted();
+            try {
+                const recovery = attempt > 1
+                    ? '\n\nRECOVERY: The previous response could not be accepted. Return ONLY a complete JSON object matching the required schema. Do not add markdown fences or commentary.'
+                    : '';
+                const raw = await callGemini(prompt + recovery, true);
+                const value = normalize(parseJsonLenient(raw, null));
+                if (value) return { value, attempts: attempt };
+                lastError = new Error('Structured activity response did not match the required shape.');
+            } catch (error) {
+                if ((error && error.name === 'AbortError') || (generationSignal && generationSignal.aborted)) throw error;
+                lastError = error;
+            }
+            if (attempt < 2 && retryableStructuredActivityError(lastError)) {
+                setGenerationStatus((stepLabel || 'Building activity...') + ' Repairing output...', 'build');
+                await new Promise(resolve => setTimeout(resolve, 350));
+                continue;
+            }
+            break;
+        }
+        throw lastError || new Error('Structured activity generation failed.');
     };
     const unwrapArray = (value, keys = []) => {
         if (Array.isArray(value)) return value;
@@ -4912,9 +5032,12 @@ ${_itemsBlock}`;
                 ${discussionContext}
                 """
              `;
-             const result = await callGemini(prompt, true);
-             const kit = normalizeDiscussionKit(parseJsonLenient(result, null), protocol);
-             if (!kit) throw new Error("Failed to parse Discussion Kit JSON. The AI response was not valid.");
+             const generated = await generateStructuredActivityWithRecovery(
+                 prompt,
+                 raw => normalizeDiscussionKit(raw, protocol),
+                 stepLabel
+             );
+             const kit = generated.value;
              content = [kit];
              metaInfo = `${t('meta.discussion_kit') || 'Discussion Kit'}${usesLocalTextBackend ? ' - Local' : ''}`;
              if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, stepLabel);
@@ -4952,9 +5075,12 @@ ${_itemsBlock}`;
                 ${jigsawContext}
                 """
              `;
-             const result = await callGemini(prompt, true);
-             const activity = normalizeJigsawActivity(parseJsonLenient(result, null), groupSize);
-             if (!activity) throw new Error("Failed to parse Jigsaw JSON. The AI response was not valid.");
+             const generated = await generateStructuredActivityWithRecovery(
+                 prompt,
+                 raw => normalizeJigsawActivity(raw, groupSize),
+                 stepLabel
+             );
+             const activity = generated.value;
              content = [activity];
              metaInfo = `${t('meta.jigsaw_activity') || 'Jigsaw Activity'}${usesLocalTextBackend ? ' - Local' : ''}`;
              if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, stepLabel);
@@ -7329,10 +7455,12 @@ Return ONLY JSON:
       if (type === 'simplified') {
           itemTitle = `Adapted Text (${effectiveGrade})`;
       }
+      const newItemId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+      const storedContent = type === 'brainstorm' ? attachActivityDerivativeMetadata(content, newItemId) : content;
       const newItem = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          id: newItemId,
           type,
-          data: content,
+          data: storedContent,
           meta: metaInfo,
           title: itemTitle,
           timestamp: new Date(),
@@ -7340,7 +7468,7 @@ Return ONLY JSON:
       };
       setHistory(prev => [...prev, newItem]);
       if (switchView || !generatedContent) {
-          setGeneratedContent({ type, data: content, id: newItem.id, config: newItem.config });
+          setGeneratedContent({ type, data: storedContent, id: newItem.id, config: newItem.config });
           setActiveView(type);
           setStickers([]);
       }
@@ -7407,5 +7535,12 @@ window.AlloModules.GenDispatcher = {
   // the shared per-kind serializer (ladder prompts + export both use it).
   normalizeDiscussionKit,
   normalizeJigsawActivity,
-  describeActivityItem
+  describeActivityItem,
+  ACTIVITY_DERIVATIVE_KINDS,
+  activityDerivativeValue,
+  activityDerivativeFingerprint,
+  activityArtifactId,
+  normalizeActivityDerivatives,
+  stampActivityDerivative,
+  attachActivityDerivativeMetadata
 };

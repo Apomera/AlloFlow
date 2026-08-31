@@ -17,7 +17,7 @@ function notesSeed(extra = {}) {
   return Object.assign({
     tab: 'field', factIdx: 0, learningMode: 'guided', fieldView: '2d',
     notebookOpen: false, notebookTrials: [], missionId: 'power_path',
-    missionStarted: false, missionPanelOpen: false, labFocus: false,
+    missionStarted: false, missionPanelOpen: false, labFocus: false, labShellPanel: 'notes',
   }, extra);
 }
 

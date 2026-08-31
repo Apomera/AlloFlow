@@ -458,7 +458,7 @@ var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   dbq: { label: 'Document-Based Question', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'document-packet', notes: 'Exports sources, prompts, and rubric; essay capture is handled by worksheet/submission flows.' },
   'note-taking': { label: 'Note Taking', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'student-work-snapshot', notes: 'Exports the current note snapshot and feedback state.' },
   'anchor-chart': { label: 'Anchor Chart', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'poster-snapshot', notes: 'Exports as a poster-style reference chart.' },
-  'memory-aid': { label: 'Memory Aid Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'memory-aid-workshop', notes: 'Exports teacher-checked facts, models or scaffolds, optional safe visual cues, student work areas, reasoning, and saved feedback.' },
+  'memory-aid': { label: 'Memory Aid Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'memory-aid-workshop', notes: 'Standard HTML exports the full saved reference. Printable student worksheets are cue-first and answer-free; an optional teacher appendix carries the checked facts. Saved recall attempts are never exported.' },
   'applied-challenge': { label: 'Applied Challenge Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'applied-challenge-workshop', notes: 'Exports the challenge brief, lesson-fact review status, supports, persistent student workspace, revision, transfer reflection, and saved feedback without the private source excerpt.' },
   math: { label: 'STEAM Lab', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-launch-summary', notes: 'Main export can include the generated math/STEM summary; full simulations need a dedicated adapter.' },
   'lesson-plan': { label: 'Lesson Plan', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'teacher-plan', notes: 'Exports as a teacher-facing plan.' },
@@ -40699,10 +40699,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               'analogy-pattern': 'Analogy or pattern', 'sequence-cue': 'Sequence cue'
           };
           const modeLabels = { generated: 'AI example', scaffolded: 'Build with support', 'student-authored': 'Student-authored' };
+          const visualSourceLabels = {
+              'ai-generated': 'AI-generated visual',
+              'ai-refined': 'AI-refined visual',
+              uploaded: 'Uploaded visual',
+              legacy: 'Imported or earlier visual'
+          };
+          // The live Memory Aid retrieval loop hides checked facts and creation
+          // supports until the learner has committed a recall response. Preserve
+          // that boundary on paper: the student worksheet pass is cue-first and
+          // answer-free, while the existing teacher pass remains the full
+          // reference in generateFullPackHTML's separately page-broken appendix.
+          // Deliberately never inspect practiceAttempts/retrievalAttempts here;
+          // those records contain learner responses, checks, and timestamps and
+          // are private live-session evidence rather than worksheet content.
+          const recallWorksheet = isWorksheet && !isTeacher;
+          const specificVisualAlt = (value) => {
+              const description = String(value == null ? '' : value).trim().slice(0, 800);
+              return !!description && !/^visual memory cue for\s/i.test(description);
+          };
           const cardsHtml = cards.map((card, index) => {
               const c = card && typeof card === 'object' ? card : {};
               const visualImage = safeDataImage(c.visualImage || c.imageUrl);
               const visualAlt = String(c.visualAlt || ('Visual memory cue for ' + (c.target || 'this memory target'))).trim().slice(0, 800);
+              const visualSource = visualImage && Object.prototype.hasOwnProperty.call(visualSourceLabels, c.visualSource)
+                  ? c.visualSource
+                  : 'legacy';
               const visualReview = c.visualReview && typeof c.visualReview === 'object' ? c.visualReview : {};
               const visualReviewStatus = ['approved', 'needs-revision'].includes(visualReview.status) ? visualReview.status : 'unreviewed';
               const visualReviewLabel = visualReviewStatus === 'approved'
@@ -40740,9 +40762,46 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ? '<figure style="margin:12px 0 0;padding:10px;border:1px solid #f0abfc;border-radius:8px;background:#fdf4ff;break-inside:avoid;">'
                     + '<h4 style="margin:0 0 8px;color:#701a75;">Optional visual cue</h4>'
                     + '<img src="' + escapeHtml(visualImage) + '" alt="' + escapeHtml(visualAlt) + '" style="display:block;max-width:100%;max-height:360px;width:auto;height:auto;margin:0 auto;border-radius:6px;object-fit:contain;" />'
-                    + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>Image description:</strong> ' + escapeHtml(visualAlt) + '</figcaption></figure>'
+                    + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>Source:</strong> ' + visualSourceLabels[visualSource] + '<br><strong>Image description:</strong> ' + escapeHtml(visualAlt) + '</figcaption></figure>'
                     + visualReviewHtml + visualCheckHtml
                   : '';
+              if (recallWorksheet) {
+                  const cue = String(c.studentDraft || c.aiExample || c.example || c.scaffoldStarter || '').trim().slice(0, 6000);
+                  const idBase = ('memory-aid-recall-' + String(item.id || 'resource') + '-' + index)
+                      .replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 140);
+                  const titleId = idBase + '-title';
+                  const cueId = idBase + '-cue';
+                  const responseId = idBase + '-response';
+                  const hasAccessibleVisual = !!visualImage && specificVisualAlt(c.visualAlt);
+                  const recallVisualHtml = hasAccessibleVisual
+                      ? '<figure style="margin:10px 0 0;padding:10px;border:1px solid #a5f3fc;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
+                        + '<img src="' + escapeHtml(visualImage) + '" alt="' + escapeHtml(String(c.visualAlt).trim().slice(0, 800)) + '" style="display:block;max-width:100%;max-height:300px;width:auto;height:auto;margin:0 auto;border-radius:6px;object-fit:contain;" />'
+                        + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>Source:</strong> ' + visualSourceLabels[visualSource] + '<br><strong>Image description:</strong> ' + escapeHtml(String(c.visualAlt).trim().slice(0, 800)) + '</figcaption></figure>'
+                      : visualImage
+                        ? '<p role="note" style="margin:10px 0 0;padding:9px;border:1px solid #fcd34d;border-radius:6px;background:#fffbeb;color:#78350f;font-size:0.88em;"><strong>Visual cue omitted:</strong> A specific image description is needed before this visual can be used in accessible recall practice.</p>'
+                        : '';
+                  const cueBody = cue
+                      ? '<div style="margin-top:7px;white-space:pre-wrap;font-size:1.08em;font-weight:700;line-height:1.55;color:#0f172a;">' + escapeHtml(cue) + '</div>'
+                      : hasAccessibleVisual
+                        ? '<p style="margin:7px 0 0;color:#475569;">Use the visual cue and its description.</p>'
+                        : '<p role="note" style="margin:7px 0 0;color:#78350f;font-weight:700;">No accessible recall cue is available yet. Ask your teacher to add one before practicing.</p>';
+                  return '<article class="memory-aid-recall-sheet" style="margin:0 0 18px;padding:16px;border:1px solid #67e8f9;border-radius:10px;background:#f0fdff;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
+                      + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#0e7490;">Recall practice · facts hidden</p>'
+                      + '<h3 id="' + titleId + '" style="margin:0;color:#164e63;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
+                      + '<p style="margin:8px 0 0;color:#334155;">Use only the cue, record what you remember, then ask your teacher for the checked facts. AI does not grade this practice.</p>'
+                      + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #a5f3fc;border-radius:8px;background:#ecfeff;">'
+                      + '<h4 id="' + cueId + '" style="margin:0;color:#155e75;">Your memory cue</h4>' + cueBody + recallVisualHtml + '</section>'
+                      + '<section role="group" aria-labelledby="' + responseId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
+                      + '<h4 id="' + responseId + '" style="margin:0;color:#0f172a;">What does the cue help you remember?</h4>'
+                      + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">Write everything you can retrieve before seeing the checked facts.</p>'
+                      + ruledLines(6, 'Recall response') + '</section>'
+                      + '<fieldset class="alloflow-response-group" style="margin-top:12px;padding:12px;border:1px solid #a5b4fc;border-radius:8px;background:#eef2ff;">'
+                      + '<legend style="padding:0 5px;font-weight:800;color:#3730a3;">How confident do you feel before checking?</legend>'
+                      + '<label class="alloflow-choice-label">' + fillableCircle() + 'Not sure yet</label>'
+                      + '<label class="alloflow-choice-label">' + fillableCircle() + 'Somewhat confident</label>'
+                      + '<label class="alloflow-choice-label">' + fillableCircle() + 'Confident</label>'
+                      + '</fieldset></article>';
+              }
               const facts = listHtml(c.essentialFacts || c.facts);
               const scaffoldSteps = listHtml(c.scaffoldSteps);
               const coachPrompts = listHtml(c.coachPrompts);

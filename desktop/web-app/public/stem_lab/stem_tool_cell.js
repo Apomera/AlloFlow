@@ -1510,7 +1510,8 @@ var d = labToolData.cell || {};
           cel.playCue = null;
           cel.playMission = {
             organismId: organismId,
-            startSuccess: Number(nextExt.successByOrganism[organismId]) || 0
+            startSuccess: Number(nextExt.successByOrganism[organismId]) || 0,
+            predictionSkipped: false
           };
           nextExt.playModeUsed = true;
           if (nextExt.organismsObserved.indexOf(organismId) === -1) nextExt.organismsObserved.push(organismId);
@@ -1522,7 +1523,7 @@ var d = labToolData.cell || {};
         if (!snapshot || !snapshot.organismId || (snapshot.phase !== 'input' && snapshot.phase !== 'evidence')) return;
         updateCellDataFunctional(function(cel) {
           var mission = cel.playMission && cel.playMission.organismId === snapshot.organismId ? cel.playMission : null;
-          if (!mission || cel.playAsOrganism !== snapshot.organismId || mission.firstActionRegistered) return cel;
+          if (!mission || cel.playAsOrganism !== snapshot.organismId || mission.firstActionRegistered || (!mission.predictionText && !mission.predictionSkipped)) return cel;
           cel.playMission = Object.assign({}, mission, {
             firstActionRegistered: true,
             firstActionKind: snapshot.phase === 'evidence' ? 'interaction' : 'control',
@@ -1548,8 +1549,22 @@ var d = labToolData.cell || {};
           cel.playMission = Object.assign({}, mission, {
             predictionChoice: choiceIndex,
             predictionText: predictionText,
-            predictionPrompt: prediction.prompt
+            predictionPrompt: prediction.prompt,
+            predictionSkipped: false
           });
+          cel._cellExt = nextExt;
+          return cel;
+        });
+      }
+      function recordCellPlayPredictionSkip(organismId) {
+        if (!organismId) return;
+        updateCellDataFunctional(function(cel) {
+          var mission = cel.playMission && cel.playMission.organismId === organismId ? cel.playMission : null;
+          if (!mission) return cel;
+          var nextExt = normalizeCellExt(cel._cellExt);
+          var runSuccessCount = Math.max(0, (Number(nextExt.successByOrganism[organismId]) || 0) - (Number(mission.startSuccess) || 0));
+          if (runSuccessCount > 0 || mission.predictionText) return cel;
+          cel.playMission = Object.assign({}, mission, { predictionSkipped: true });
           cel._cellExt = nextExt;
           return cel;
         });
@@ -1619,11 +1634,13 @@ var d = labToolData.cell || {};
       }
       function recordCanvasXP(xp, label) {
         var amt = Number(xp) || 0;
+        var liveMissionProgress = canvasMissionProgressRef && canvasMissionProgressRef.current ? canvasMissionProgressRef.current : null;
+        if (liveMissionProgress && liveMissionProgress.predictionPending) return;
         updateCellDataFunctional(function(cel) {
           var activeOrganismId = cel.playAsOrganism || cel.selectedOrganism;
           var orgDef = ORGANISMS.find(function (o) { return o.id === activeOrganismId; }) || ORGANISMS.find(function (o) { return o.activity === label; });
           var matchingMission = orgDef && cel.playMission && cel.playMission.organismId === orgDef.id ? cel.playMission : null;
-          if (cel.playAsOrganism && (!matchingMission || cel.showPlayInstructions !== false)) return cel;
+          if (cel.playAsOrganism && (!matchingMission || cel.showPlayInstructions !== false || (!matchingMission.predictionText && !matchingMission.predictionSkipped))) return cel;
           cel.xpEarned = (Number(cel.xpEarned) || 0) + amt;
           if (orgDef) {
             var nextExt = normalizeCellExt(cel._cellExt);
@@ -18242,6 +18259,7 @@ var d = labToolData.cell || {};
           };
           var playTutorialDialogRef = React.useRef(null);
           var playTutorialReturnFocusRef = React.useRef(null);
+          var playTutorialInitialFocusRef = React.useRef(null);
           React.useEffect(function () {
             if (!d.playAsOrganism || d.showPlayInstructions === false) return;
             var dialog = playTutorialDialogRef.current;
@@ -18251,7 +18269,16 @@ var d = labToolData.cell || {};
             if (panel) panel.scrollTop = 0;
             if (scrollBody) scrollBody.scrollTop = 0;
             if (dialog.scrollIntoView) dialog.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
-            dialog.focus({ preventScroll: true });
+            var requestedFocusSelector = playTutorialInitialFocusRef.current;
+            var requestedFocus = requestedFocusSelector ? dialog.querySelector(requestedFocusSelector) : null;
+            playTutorialInitialFocusRef.current = null;
+            if (requestedFocus) {
+              var requestedRegion = requestedFocus.closest('[data-cell-prediction-checkpoint]');
+              if (requestedRegion && requestedRegion.scrollIntoView) requestedRegion.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'nearest' });
+              requestedFocus.focus({ preventScroll: true });
+            } else {
+              dialog.focus({ preventScroll: true });
+            }
           }, [d.playAsOrganism, d.showPlayInstructions]);
           var canvasRefImplRef = React.useRef(null);
           var canvasRefStableRef = React.useRef(null);
@@ -18498,9 +18525,14 @@ var d = labToolData.cell || {};
               var latestMission = canvasMissionProgressRef.current || {};
               return !!(o && (Number(o._missionSuccessCount) >= 3 || (latestMission.evidenceComplete && latestMission.organismId === o.def.id)));
             }
-            function missionEvidenceAllowed() {
-              if (!playAsOrg || !missionEvidenceRuntime.missionActive || missionEvidenceRuntime.organismId !== playAsOrg.def.id) return false;
+            function missionControlsAllowed() {
+              if (!playAsOrg) return false;
               if (typeof document !== 'undefined' && document.querySelector('[data-cell-play-tutorial-dialog]')) return false;
+              var latestMission = canvasMissionProgressRef.current || {};
+              return !(latestMission.organismId === playAsOrg.def.id && latestMission.predictionPending);
+            }
+            function missionEvidenceAllowed() {
+              if (!missionControlsAllowed() || !missionEvidenceRuntime.missionActive || missionEvidenceRuntime.organismId !== playAsOrg.def.id) return false;
               return true;
             }
             function emitMissionCue(o, phase, text, progressPct, targetKey, announcement) {
@@ -18593,6 +18625,7 @@ var d = labToolData.cell || {};
               return { restored: restored, successCount: Number(missionEvidenceRuntime.successCount) || 0 };
             }
             function resolvePlayerInput(def) {
+              if (!missionControlsAllowed()) return { x: 0, y: 0, moving: false, direction: 'idle', glyph: '\u2022' };
               var inputX = (playerKeys['ArrowRight'] || playerKeys['d'] ? 1 : 0) - (playerKeys['ArrowLeft'] || playerKeys['a'] ? 1 : 0);
               var inputY = (playerKeys['ArrowDown'] || playerKeys['s'] ? 1 : 0) - (playerKeys['ArrowUp'] || playerKeys['w'] ? 1 : 0);
               if (def && def.id === 'plantcell') { inputX = 0; inputY = 0; }
@@ -22199,6 +22232,12 @@ var d = labToolData.cell || {};
               if (cellKeyTargetIsFormControl(e.target)) return;
               if (!playAsOrg || !isMovementKey(e.key)) return;
               var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+              if (!missionControlsAllowed()) {
+                playerKeys[key] = false;
+                if (key !== e.key) playerKeys[e.key] = false;
+                if (canvasEl._cellSimPaused) renderStaticFrame();
+                return;
+              }
               playerKeys[key] = e.type === 'keydown';
               if (e.type === 'keydown') world._tooltip = null;
               if (key !== e.key) playerKeys[e.key] = playerKeys[key];
@@ -22216,6 +22255,12 @@ var d = labToolData.cell || {};
             canvasEl._cellSimMoveKey = function (key, pressed) {
               if (!isMovementKey(key)) return;
               var normalizedKey = key.length === 1 ? key.toLowerCase() : key;
+              if (!missionControlsAllowed()) {
+                playerKeys[normalizedKey] = false;
+                if (normalizedKey !== key) playerKeys[key] = false;
+                if (canvasEl._cellSimPaused) renderStaticFrame();
+                return;
+              }
               playerKeys[normalizedKey] = !!pressed;
               if (pressed) world._tooltip = null;
               if (normalizedKey !== key) playerKeys[key] = !!pressed;
@@ -22800,9 +22845,11 @@ var d = labToolData.cell || {};
           var activePlayLifetimeSuccesses = activePlayDef ? (Number((ext.successByOrganism || {})[activePlayDef.id]) || 0) : 0;
           var activePlayMission = activePlayDef && d.playMission && d.playMission.organismId === activePlayDef.id ? d.playMission : null;
           var activePlayPredictionText = activePlayMission && activePlayMission.predictionText ? String(activePlayMission.predictionText) : '';
+          var activePlayPredictionSkipped = !!(activePlayMission && activePlayMission.predictionSkipped);
           var activePlayMissionStart = activePlayMission ? (Number(activePlayMission.startSuccess) || 0) : 0;
           var activePlaySuccesses = activePlayDef && activePlayMission ? Math.max(0, activePlayLifetimeSuccesses - activePlayMissionStart) : 0;
           var activePlayProgress = Math.min(3, activePlaySuccesses);
+          var activePlayPredictionPending = !!(activePlayMission && !activePlayPredictionText && !activePlayPredictionSkipped && activePlayProgress === 0);
           var activeMissionEvidenceComplete = activePlayProgress >= 3;
           var activeExplanationCheck = activePlayTutorial && activePlayTutorial.explanationCheck;
           var activeExplanationChoice = activePlayMission && typeof activePlayMission.explanationChoice === 'number' ? activePlayMission.explanationChoice : null;
@@ -22812,39 +22859,46 @@ var d = labToolData.cell || {};
           var activeMissionComplete = activeMissionEvidenceComplete && activeReflectionComplete;
           var activePlayLearningPhase = activeMissionComplete ? 'complete' :
             activeMissionEvidenceComplete ? 'explain' :
-              activePlayProgress > 0 ? 'observe' : 'control';
+              activePlayProgress > 0 ? 'observe' :
+                activePlayPredictionPending ? 'predict' : 'control';
           var activePlayLearningStep = activePlayLearningPhase === 'complete' ? 4 :
             activePlayLearningPhase === 'explain' ? 4 :
-              activePlayLearningPhase === 'observe' ? 3 : 2;
+              activePlayLearningPhase === 'observe' ? 3 :
+                activePlayLearningPhase === 'control' ? 2 : 1;
           var activePlayLearningPhaseLabel = activePlayLearningPhase === 'complete' ? '\u2713 Complete' :
             activePlayLearningPhase === 'explain' ? 'Explain \u2193' :
-              activePlayLearningPhase === 'observe' ? 'Observe' : 'Control';
+              activePlayLearningPhase === 'observe' ? 'Observe' :
+                activePlayLearningPhase === 'control' ? 'Control' : 'Predict';
           var activePlayHudHeading = activePlayLearningPhase === 'complete' ? 'Learning loop complete' : 'Learning loop \u00B7 ' + activePlayLearningStep + '/4';
           var activePlayProgressAria = activePlayLearningPhase === 'complete' ? 'Learning loop complete. Evidence 3 of 3.' :
-            'Learning step ' + activePlayLearningStep + ' of 4, ' + activePlayLearningPhaseLabel.replace(' \u2193', '') + '. Evidence ' + activePlayProgress + ' of 3.' + (activePlayLearningPhase === 'explain' ? ' Open ' + activePlayDef.label + ' evidence explanation.' : '');
-          var activeControlCheckpointState = activePlayLearningPhase === 'control' ? 'current' : 'complete';
-          var activeObserveCheckpointState = activePlayLearningPhase === 'control' ? 'upcoming' :
+            'Learning step ' + activePlayLearningStep + ' of 4, ' + activePlayLearningPhaseLabel.replace(' \u2193', '') + '. Evidence ' + activePlayProgress + ' of 3.' + (activePlayLearningPhase === 'predict' ? ' Make a prediction or choose to start without one.' : activePlayLearningPhase === 'explain' ? ' Open ' + activePlayDef.label + ' evidence explanation.' : '');
+          var activePredictionCheckpointState = activePlayPredictionPending ? 'current' : activePlayPredictionSkipped ? 'skipped' : 'complete';
+          var activeControlCheckpointState = activePlayLearningPhase === 'predict' ? 'upcoming' :
+            activePlayLearningPhase === 'control' ? 'current' : 'complete';
+          var activeObserveCheckpointState = activePlayLearningPhase === 'predict' || activePlayLearningPhase === 'control' ? 'upcoming' :
             activePlayLearningPhase === 'observe' ? 'current' : 'complete';
           var activeExplainCheckpointState = activePlayLearningPhase === 'complete' ? 'complete' :
             activePlayLearningPhase === 'explain' ? 'current' : 'locked';
-          var activeControlCheckpointLabel = activeControlCheckpointState === 'current' ? 'Now' : '\u2713 Complete';
+          var activeControlCheckpointLabel = activeControlCheckpointState === 'current' ? 'Now' :
+            activeControlCheckpointState === 'complete' ? '\u2713 Complete' : 'Next';
           var activeObserveCheckpointLabel = activeObserveCheckpointState === 'current' ? 'Now \u00B7 ' + activePlayProgress + '/3' :
             activeObserveCheckpointState === 'complete' ? '\u2713 3/3' : 'Next';
           var activeExplainCheckpointLabel = activeExplainCheckpointState === 'current' ? 'Now' : activeExplainCheckpointState === 'complete' ? '\u2713 Complete' : 'Locked';
           canvasMissionProgressRef.current = {
             organismId: activePlayDef ? activePlayDef.id : null,
             progress: activePlayProgress,
+            predictionPending: activePlayPredictionPending,
             evidenceComplete: activeMissionEvidenceComplete,
             missionComplete: activeMissionComplete
           };
-          var activePlayPredictionStageState = activePlayPredictionText ? (activeMissionComplete ? 'reviewed' : activeMissionEvidenceComplete ? 'compare' : 'saved') : activePlayProgress > 0 ? 'skipped' : 'ready';
-          var activePlayPredictionStageLabel = activePlayPredictionStageState === 'reviewed' ? '\u2713 Reviewed' : activePlayPredictionStageState === 'compare' ? 'Compare now' : activePlayPredictionStageState === 'saved' ? '\u2713 Saved before play' : activePlayPredictionStageState === 'skipped' ? 'Not recorded' : 'Before play';
+          var activePlayPredictionStageState = activePlayPredictionText ? (activeMissionComplete ? 'reviewed' : activeMissionEvidenceComplete ? 'compare' : 'saved') : activePlayPredictionSkipped || activePlayProgress > 0 ? 'skipped' : 'ready';
+          var activePlayPredictionStageLabel = activePlayPredictionStageState === 'reviewed' ? '\u2713 Reviewed' : activePlayPredictionStageState === 'compare' ? 'Compare now' : activePlayPredictionStageState === 'saved' ? '\u2713 Saved before play' : activePlayPredictionStageState === 'skipped' ? (activePlayPredictionSkipped ? 'Skipped by choice' : 'Not recorded') : 'Choose now';
           var activePlayPredictionStageGuidance = activePlayPredictionStageState === 'reviewed' ?
             'Evidence and explanation completed the test of this prediction.' :
             activePlayPredictionStageState === 'compare' ? 'Compare this prediction with all 3 observations before you explain.' :
             activePlayPredictionStageState === 'saved' ? 'Keep this prediction fixed while you collect evidence.' :
-            activePlayPredictionStageState === 'skipped' ? (activeMissionComplete ? 'This run used evidence and explanation without a saved prediction. Replay to practice the full cycle.' : 'Use the observations below to explain the biology, or restart to practice the full cycle.') :
-            'Open the briefing to choose what you expect before collecting evidence.';
+            activePlayPredictionStageState === 'skipped' ? (activeMissionComplete ? 'This run used evidence and explanation without a saved prediction. Replay to practice the full cycle.' : activePlayProgress > 0 ? 'Use the observations below to explain the biology, or restart to practice the full cycle.' : 'You chose to start without a prediction. You can still add one until evidence is collected.') :
+            'Choose what you expect before collecting evidence; predictions are not graded.';
           var completedCellMissions = ext.completedMissions || {};
           var completedCellMissionCount = ORGANISMS.filter(function (o) { return !!completedCellMissions[o.id]; }).length;
           var activePlayFeedback = activePlayDef && d.playFeedback && d.playFeedback.organismId === activePlayDef.id ? d.playFeedback : null;
@@ -22854,26 +22908,30 @@ var d = labToolData.cell || {};
           var activePlayControlTrace = activePlayDef && playControlTrace && playControlTrace.organismId === activePlayDef.id ? playControlTrace : null;
           var activePlayFirstActionDone = !!(activePlayProgress > 0 || (activePlayMission && activePlayMission.firstActionRegistered));
           var activePlayFirstActionState = activePlayProgress > 0 ? 'progressing' : activePlayFirstActionDone ? 'registered' : 'waiting';
-          var activePlayControlPhase = activePlayControlTrace ? activePlayControlTrace.phase : 'ready';
+          var activePlayControlPhase = activePlayPredictionPending ? 'locked' : activePlayControlTrace ? activePlayControlTrace.phase : 'ready';
           var activePlayEvidenceMoment = !!(!activeMissionEvidenceComplete && (activePlayCueConsolidated || activePlayControlPhase === 'evidence'));
           var activePlayControlDirection = activePlayControlTrace && ['up', 'left', 'right', 'down'].indexOf(activePlayControlTrace.direction) >= 0 ? activePlayControlTrace.direction : 'idle';
           var activePlayControlMoving = !!(activePlayControlTrace && activePlayControlTrace.moving && activePlayControlDirection !== 'idle');
-          var activePlayControlInput = activePlayControlTrace ? activePlayControlTrace.inputLabel : activePlayControlLoop.input;
-          var activePlayControlMechanism = activePlayControlTrace ? activePlayControlTrace.mechanismLabel : activePlayControlLoop.action;
-          var activePlayControlObservation = activePlayControlTrace ? activePlayControlTrace.observationLabel : activePlayControlLoop.outcome;
+          var activePlayControlInput = activePlayPredictionPending ? 'Choose or skip' : activePlayControlTrace ? activePlayControlTrace.inputLabel : activePlayControlLoop.input;
+          var activePlayControlMechanism = activePlayPredictionPending ? 'Controls unlock' : activePlayControlTrace ? activePlayControlTrace.mechanismLabel : activePlayControlLoop.action;
+          var activePlayControlObservation = activePlayPredictionPending ? activePlayControlLoop.outcome : activePlayControlTrace ? activePlayControlTrace.observationLabel : activePlayControlLoop.outcome;
           var activePlayFirstActionInput = activePlayTutorial && activePlayTutorial.stationary ? 'Select a glowing label' : 'Press / hold a direction';
           var activePlayFirstActionAriaInput = activePlayTutorial && activePlayTutorial.stationary ? 'Select a glowing anatomy label' : 'Press or hold any direction';
-          var activePlayFirstActionPromptActive = activePlayFirstActionState === 'waiting' && activePlayControlPhase === 'ready';
+          var activePlayFirstActionPromptActive = !activePlayPredictionPending && activePlayFirstActionState === 'waiting' && activePlayControlPhase === 'ready';
           var activePlayFirstActionRegisteredReady = activePlayFirstActionState === 'registered' && activePlayControlPhase === 'ready';
           var activePlayControlDisplayInput = activePlayFirstActionPromptActive ? activePlayFirstActionInput : activePlayControlInput;
-          var activePlayControlTitle = activePlayFirstActionPromptActive ? '1 \u00B7 First action' :
+          var activePlayControlTitle = activePlayPredictionPending ? '1 \u00B7 Predict first' :
+            activePlayFirstActionPromptActive ? '1 \u00B7 First action' :
             activePlayFirstActionRegisteredReady ? '\u2713 Input linked' :
             activePlayControlPhase === 'evidence' ? '\u2713 Evidence' : 'Live biology';
-          var activePlayControlLead = activePlayFirstActionPromptActive ? 'Start' :
+          var activePlayControlLead = activePlayPredictionPending ? 'Next' :
+            activePlayFirstActionPromptActive ? 'Start' :
             activePlayFirstActionRegisteredReady ? 'Repeat' :
             activePlayControlPhase === 'evidence' ? 'Done' : activePlayControlPhase === 'input' ? 'Now' : 'Try';
-          var activePlayControlResultLead = activePlayControlPhase === 'evidence' ? 'Evidence' : 'Watch for';
-          var activePlayControlAria = activePlayFirstActionPromptActive ?
+          var activePlayControlResultLead = activePlayPredictionPending ? 'Then watch' : activePlayControlPhase === 'evidence' ? 'Evidence' : 'Watch for';
+          var activePlayControlAria = activePlayPredictionPending ?
+            'Prediction checkpoint. Choose what you expect, or start without a prediction. Controls and evidence unlock after this decision.' :
+            activePlayFirstActionPromptActive ?
             'First action: ' + activePlayFirstActionAriaInput + '. Cell response: ' + activePlayControlMechanism + '. Watch for: ' + activePlayControlObservation + '. This cue will confirm when your input is registered.' :
             activePlayFirstActionRegisteredReady ?
               'First action registered. Repeat the control to steer toward the target. Control: ' + activePlayControlInput + '. Cell response: ' + activePlayControlMechanism + '. Watch for: ' + activePlayControlObservation + '.' :
@@ -22882,13 +22940,16 @@ var d = labToolData.cell || {};
             activePlayControlPhase === 'input' ?
               'Current action: ' + activePlayControlInput + '. Biological mechanism: ' + activePlayControlMechanism + '. Observe: ' + activePlayControlObservation + '.' :
               'Live biology loop: ' + activePlayControlInput + ' \u2192 ' + activePlayControlMechanism + ' \u2192 ' + activePlayControlObservation + '. Try the input, then watch the mechanism and result.';
-          var activePlayControlLoopClass = activePlayFirstActionPromptActive ?
+          var activePlayControlLoopClass = activePlayPredictionPending ?
+            'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-violet-300/60 bg-violet-300/10 px-2 py-1.5 text-[10px] font-bold leading-snug shadow-sm' :
+            activePlayFirstActionPromptActive ?
             'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-amber-300/60 bg-amber-300/10 px-2 py-1.5 text-[10px] font-bold leading-snug shadow-sm' :
             activePlayFirstActionRegisteredReady ?
               'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-emerald-300/40 bg-emerald-400/10 px-2 py-1.5 text-[10px] font-bold leading-snug' :
               'mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 border-t border-white/10 pt-1.5 text-[10px] font-bold leading-snug';
           var activePlayCueLabel = activePlayCue ? (activePlayCue.phase === 'holding' ? 'Holding light' : activePlayCue.phase === 'near' ? 'Target nearby' : activePlayCue.phase === 'paused' ? 'Targets unavailable' : activePlayCue.phase === 'restocked' ? 'Targets ready' : activePlayCue.phase === 'repeat' ? 'Already observed' : activePlayCue.phase === 'reset' ? 'Exposure reset' : activePlayCue.phase === 'overlap' || activePlayCue.phase === 'contact' ? 'Contact check' : activePlayCue.phase === 'evidence' ? 'Evidence recorded' : 'Biology signal') : null;
-          var activePlayTargetProximity = activeMissionComplete ? 'mastered' :
+          var activePlayTargetProximity = activePlayPredictionPending ? 'waiting' :
+            activeMissionComplete ? 'mastered' :
             activeMissionEvidenceComplete ? 'complete' :
             activePlayEvidenceMoment ? 'recorded' :
             activePlayTutorial && activePlayTutorial.stationary ? 'select' :
@@ -22900,7 +22961,7 @@ var d = labToolData.cell || {};
             activePlayCue && (activePlayCue.phase === 'ready' || activePlayCue.phase === 'seeking' || activePlayCue.phase === 'restocked' || activePlayCue.phase === 'reset') ? (activePlayCue.kind === 'light' ? 'outside' : 'far') :
             'locate';
           var activePlayTargetProximityLabels = {
-            locate: 'LOCATE', far: 'FAR', near: 'NEAR', contact: 'CONTACT',
+            waiting: 'PREDICT FIRST', locate: 'LOCATE', far: 'FAR', near: 'NEAR', contact: 'CONTACT',
             inside: 'INSIDE', outside: 'OUTSIDE', select: 'SELECT',
             recorded: 'RECORDED', unavailable: 'UNAVAILABLE', complete: 'EVIDENCE READY', mastered: 'LOOP COMPLETE'
           };
@@ -22909,7 +22970,8 @@ var d = labToolData.cell || {};
           var activePlayTargetDirection = activePlayTargetUsesCueSemantics && activePlayCue.direction ? activePlayCue.direction : ((activePlayTargetProximity === 'contact' || activePlayTargetProximity === 'inside') ? 'here' : null);
           var activePlayTargetDirectionLabel = activePlayTargetUsesCueSemantics && activePlayCue.directionLabel ? activePlayCue.directionLabel : (activePlayTargetDirection === 'here' ? 'here' : '');
           var activePlayTargetDirectionGlyph = (activePlayTargetUsesCueSemantics && activePlayCue.directionGlyph) ? activePlayCue.directionGlyph : (activePlayTargetDirection === 'here' ? '\u25CE' : '');
-          var activePlayTargetInstruction = activePlayTargetProximity === 'mastered' ? 'Replay or compare another organism' :
+          var activePlayTargetInstruction = activePlayTargetProximity === 'waiting' ? 'Choose or skip to unlock controls' :
+            activePlayTargetProximity === 'mastered' ? 'Replay or compare another organism' :
             activePlayTargetProximity === 'recorded' ?
             (activePlayTutorial && activePlayTutorial.stationary ? 'Choose a different structure' : activePlayTutorial && activePlayTutorial.targetKind === 'light' ? 'Begin the next light cycle' : 'Move clear for the next target') :
             activePlayTargetProximity === 'near' ? (activePlayTutorial && activePlayTutorial.targetKind === 'light' ? 'Enter the light zone' : 'Make contact') :
@@ -22921,8 +22983,8 @@ var d = labToolData.cell || {};
             activePlayTargetProximity === 'unavailable' ? 'Reset targets to continue' :
             activePlayTargetProximity === 'complete' ? 'Open Explain 3/3 to finish' : 'Find the nearest target';
           var activePlayTargetStatusText = 'Target status: ' + activePlayTargetProximityLabel + (activePlayTargetDirectionLabel ? '. Direction: ' + activePlayTargetDirectionLabel : '') + '. ' + activePlayTargetInstruction + '.';
-          var activePlayTargetLegendState = activeMissionComplete ? 'mastered' : activeMissionEvidenceComplete ? 'complete' : activePlayEvidenceMoment ? 'recorded' : 'tracking';
-          var activePlayTargetLegendClass = 'absolute z-20 rounded-xl border px-3 py-2 text-white shadow-xl backdrop-blur ' + (activeMissionComplete ? 'border-emerald-300/70 bg-slate-950/90 ring-2 ring-emerald-300/20' : activeMissionEvidenceComplete ? 'border-amber-300/70 bg-slate-950/90 ring-2 ring-amber-300/20' : activePlayEvidenceMoment ? 'border-emerald-300/70 bg-slate-950/90 ring-2 ring-emerald-300/20' : 'border-white/20 bg-slate-950/85');
+          var activePlayTargetLegendState = activePlayPredictionPending ? 'locked' : activeMissionComplete ? 'mastered' : activeMissionEvidenceComplete ? 'complete' : activePlayEvidenceMoment ? 'recorded' : 'tracking';
+          var activePlayTargetLegendClass = 'absolute z-20 rounded-xl border px-3 py-2 text-white shadow-xl backdrop-blur ' + (activePlayPredictionPending ? 'border-violet-300/70 bg-slate-950/90 ring-2 ring-violet-300/20' : activeMissionComplete ? 'border-emerald-300/70 bg-slate-950/90 ring-2 ring-emerald-300/20' : activeMissionEvidenceComplete ? 'border-amber-300/70 bg-slate-950/90 ring-2 ring-amber-300/20' : activePlayEvidenceMoment ? 'border-emerald-300/70 bg-slate-950/90 ring-2 ring-emerald-300/20' : 'border-white/20 bg-slate-950/85');
           var activePlayApproachSteps = activePlayTutorial && activePlayTutorial.stationary ? ['Find label', 'Select', 'Function'] :
             activePlayTutorial && activePlayTutorial.targetKind === 'light' ? ['Find light', 'Enter zone', 'Hold'] :
             ['Locate', 'Approach', 'Contact'];
@@ -22936,7 +22998,9 @@ var d = labToolData.cell || {};
           } else if (activePlayTargetProximity === 'contact') activePlayApproachIndex = 2;
           else if (activePlayTargetProximity === 'near') activePlayApproachIndex = 1;
           var activePlayApproachCurrent = activePlayApproachSteps[activePlayApproachIndex];
-          var activePlayApproachAria = activeMissionComplete ?
+          var activePlayApproachAria = activePlayPredictionPending ?
+            'Mission path locked. Make a prediction or choose to start without one before ' + activePlayApproachSteps.join(', then ') + '.' :
+            activeMissionComplete ?
             'Mission path complete: ' + activePlayApproachSteps.join(', then ') + '. Evidence and explanation matched. Next action: ' + activePlayTargetInstruction + '.' :
             activePlayApproachCycleComplete ?
               'Mission path complete: ' + activePlayApproachSteps.join(', then ') + '. Evidence recorded. Next action: ' + activePlayTargetInstruction + '.' :
@@ -22951,7 +23015,7 @@ var d = labToolData.cell || {};
           var recommendedCellMissionAction = 'start';
           if (activePlayDef && activePlayMission && !activeMissionComplete) {
             recommendedCellMissionDef = activePlayDef;
-            recommendedCellMissionAction = activeMissionEvidenceComplete ? 'explain' : 'continue';
+            recommendedCellMissionAction = activePlayPredictionPending ? 'predict' : activeMissionEvidenceComplete ? 'explain' : 'continue';
           } else if (activeMissionComplete && nextCellMissionDef) {
             recommendedCellMissionDef = nextCellMissionDef;
             recommendedCellMissionAction = 'compare';
@@ -22960,7 +23024,7 @@ var d = labToolData.cell || {};
           }
           var recommendedCellMissionTutorial = cellPlayTutorialFor(recommendedCellMissionDef);
           var recommendedCellMissionProgress = recommendedCellMissionDef && activePlayDef && recommendedCellMissionDef.id === activePlayDef.id && activePlayMission ? activePlayProgress : 0;
-          var recommendedCellMissionEyebrow = recommendedCellMissionAction === 'explain' ? 'Finish the learning loop' : recommendedCellMissionAction === 'continue' ? 'Continue your mission' : recommendedCellMissionAction === 'compare' ? 'Recommended comparison' : 'Recommended starting point';
+          var recommendedCellMissionEyebrow = recommendedCellMissionAction === 'predict' ? 'Start the learning loop' : recommendedCellMissionAction === 'explain' ? 'Finish the learning loop' : recommendedCellMissionAction === 'continue' ? 'Continue your mission' : recommendedCellMissionAction === 'compare' ? 'Recommended comparison' : 'Recommended starting point';
           var activeTargetVisual = activePlayTutorial ? cellPlayTargetVisualFor(activePlayTutorial) : null;
           function rememberCellPlayTutorialOpener() {
             var opener = typeof document !== 'undefined' ? document.activeElement : null;
@@ -22970,7 +23034,11 @@ var d = labToolData.cell || {};
             rememberCellPlayTutorialOpener();
             upd('showPlayInstructions', true);
           }
-          function closeCellPlayTutorial(resumeCanvas) {
+          function openCellPredictionTutorial() {
+            playTutorialInitialFocusRef.current = '[data-cell-prediction-option]:not([disabled])';
+            openCellPlayTutorial();
+          }
+          function finishCellPlayTutorial(resumeCanvas) {
             upd('showPlayInstructions', false);
             var scheduleFocus = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : function (callback) { setTimeout(callback, 0); };
             scheduleFocus(function () {
@@ -22978,6 +23046,14 @@ var d = labToolData.cell || {};
               if (!target || !target.isConnected) target = document.querySelector('[data-cell-sim-canvas]');
               if (target && target.focus) target.focus({ preventScroll: true });
             });
+          }
+          function closeCellPlayTutorial(resumeCanvas) {
+            if (activePlayPredictionPending) {
+              focusCellPlayRegion('[data-cell-prediction-checkpoint]', '[data-cell-prediction-option]:not([disabled])');
+              if (typeof announceToSR === 'function') announceToSR('Choose a prediction, or select Start without prediction.');
+              return;
+            }
+            finishCellPlayTutorial(resumeCanvas);
           }
           function handleCellPlayTutorialKeyDown(e) {
             if (e.key === 'Escape') { e.stopPropagation(); closeCellPlayTutorial(false); return; }
@@ -23072,7 +23148,9 @@ var d = labToolData.cell || {};
           }
           function activateRecommendedCellMission() {
             if (!recommendedCellMissionDef) return;
-            if (recommendedCellMissionAction === 'explain') {
+            if (recommendedCellMissionAction === 'predict') {
+              openCellPredictionTutorial();
+            } else if (recommendedCellMissionAction === 'explain') {
               focusCellPlayRegion('[data-cell-mission-checkpoint]', '[data-cell-explanation-option]');
             } else if (recommendedCellMissionAction === 'continue') {
               focusCellPlayRegion('[data-cell-stage]', '[data-cell-sim-canvas]');
@@ -23465,24 +23543,28 @@ var d = labToolData.cell || {};
               ),
 
               React.createElement("div", { "data-cell-stage-hud": true, className: "absolute left-3 right-3 top-3 z-20 rounded-lg border border-white/10 bg-slate-950/75 px-3 py-2 text-white shadow-lg backdrop-blur", style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', columnGap: '8px', rowGap: '4px' } },
-                React.createElement("div", { "data-cell-hud-heading": true, "data-cell-hud-phase": d.mode === 'play' && activePlayDef ? activePlayLearningPhase : undefined, className: "min-w-0 text-[11px] font-black uppercase tracking-wide " + (d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'explain' ? "text-amber-200" : d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'control' ? "text-cyan-200" : "text-emerald-200") }, d.mode === 'play' && activePlayDef ? activePlayHudHeading : d.mode === 'play' ? "Choose a Cell Mission" : d.quizMode ? "Observation Challenge" : "Living Petri Dish"),
+                React.createElement("div", { "data-cell-hud-heading": true, "data-cell-hud-phase": d.mode === 'play' && activePlayDef ? activePlayLearningPhase : undefined, className: "min-w-0 text-[11px] font-black uppercase tracking-wide " + (d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'predict' ? "text-violet-200" : d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'explain' ? "text-amber-200" : d.mode === 'play' && activePlayDef && activePlayLearningPhase === 'control' ? "text-cyan-200" : "text-emerald-200") }, d.mode === 'play' && activePlayDef ? activePlayHudHeading : d.mode === 'play' ? "Choose a Cell Mission" : d.quizMode ? "Observation Challenge" : "Living Petri Dish"),
                 React.createElement("div", { "data-cell-hud-actions": true, className: "flex flex-wrap justify-end gap-1.5" },
-                  activePlayDef ? React.createElement(activeMissionEvidenceComplete && !activeMissionComplete ? "button" : "span", {
+                  activePlayDef ? React.createElement(activePlayPredictionPending || activeMissionEvidenceComplete && !activeMissionComplete ? "button" : "span", {
                     "data-cell-mission-progress": true,
-                    "data-cell-mission-progress-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : "collect",
+                    "data-cell-mission-progress-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : "collect",
                     "data-cell-learning-phase": activePlayLearningPhase,
                     "data-cell-learning-step": activePlayLearningStep,
                     "data-cell-explain-handoff": activeMissionEvidenceComplete && !activeMissionComplete ? true : undefined,
-                    type: activeMissionEvidenceComplete && !activeMissionComplete ? "button" : undefined,
-                    onClick: activeMissionEvidenceComplete && !activeMissionComplete ? function () { focusCellPlayRegion('[data-cell-mission-checkpoint]', '[data-cell-explanation-option]'); } : undefined,
-                    className: "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-black transition motion-reduce:transition-none " + (activeMissionEvidenceComplete && !activeMissionComplete ? "border-amber-300/70 bg-amber-300/25 text-amber-50 shadow-[0_0_0_2px_rgba(252,211,77,0.14)] hover:bg-amber-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.97]" : activePlayLearningPhase === 'control' ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100" : "border-emerald-300/40 bg-emerald-400/15 text-emerald-100"),
+                    "data-cell-prediction-handoff": activePlayPredictionPending ? true : undefined,
+                    type: activePlayPredictionPending || activeMissionEvidenceComplete && !activeMissionComplete ? "button" : undefined,
+                    onClick: activePlayPredictionPending ? openCellPredictionTutorial : activeMissionEvidenceComplete && !activeMissionComplete ? function () { focusCellPlayRegion('[data-cell-mission-checkpoint]', '[data-cell-explanation-option]'); } : undefined,
+                    className: "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-black transition motion-reduce:transition-none " + (activePlayPredictionPending ? "border-violet-300/70 bg-violet-300/25 text-violet-50 shadow-[0_0_0_2px_rgba(196,181,253,0.14)] hover:bg-violet-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.97]" : activeMissionEvidenceComplete && !activeMissionComplete ? "border-amber-300/70 bg-amber-300/25 text-amber-50 shadow-[0_0_0_2px_rgba(252,211,77,0.14)] hover:bg-amber-300/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.97]" : activePlayLearningPhase === 'control' ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100" : "border-emerald-300/40 bg-emerald-400/15 text-emerald-100"),
                     "aria-label": activePlayProgressAria
                   },
                     React.createElement("span", { "data-cell-learning-phase-label": true }, activePlayLearningPhaseLabel),
-                    [0, 1, 2].map(function (step) {
-                      return React.createElement("span", { key: step, "data-cell-progress-dot": true, className: "h-2 w-2 rounded-full border " + (activePlayLearningPhase === 'control' ? "border-cyan-100/70 " + (step < activePlayProgress ? "bg-cyan-300" : "bg-transparent") : "border-emerald-100/70 " + (step < activePlayProgress ? "bg-emerald-300" : "bg-transparent")), "aria-hidden": "true" });
-                    }),
-                    React.createElement("span", { className: "tabular-nums" }, activePlayProgress + "/3")
+                    activePlayPredictionPending ? React.createElement("span", { "data-cell-predict-cue": true }, "Choose now") :
+                      React.createElement(React.Fragment, null,
+                        [0, 1, 2].map(function (step) {
+                          return React.createElement("span", { key: step, "data-cell-progress-dot": true, className: "h-2 w-2 rounded-full border " + (activePlayLearningPhase === 'control' ? "border-cyan-100/70 " + (step < activePlayProgress ? "bg-cyan-300" : "bg-transparent") : "border-emerald-100/70 " + (step < activePlayProgress ? "bg-emerald-300" : "bg-transparent")), "aria-hidden": "true" });
+                        }),
+                        React.createElement("span", { className: "tabular-nums" }, activePlayProgress + "/3")
+                      )
                   ) : React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100" }, "Observed " + observedCount),
                   React.createElement("span", { className: "hidden rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100 sm:inline-flex" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
                   React.createElement("span", { className: "hidden rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100 sm:inline-flex" }, effectiveCellPaused ? "Paused" : "Running"),
@@ -23515,7 +23597,7 @@ var d = labToolData.cell || {};
 
               React.createElement("canvas", {
 
-                "data-cell-sim-canvas": "", "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy.", "aria-describedby": "cell-sim-status",
+                "data-cell-sim-canvas": "", "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy.", "aria-describedby": "cell-sim-status",
 
                 tabIndex: 0,
 
@@ -23541,13 +23623,13 @@ var d = labToolData.cell || {};
                 ),
                 React.createElement("div", { "data-cell-target-proximity": true, "data-cell-proximity": activePlayTargetProximity, "data-cell-direction": activePlayTargetDirection || "pending", className: "mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 border-t border-white/10 pt-1.5 text-[10px] leading-snug", "aria-label": activePlayTargetStatusText },
                   React.createElement("span", { className: "font-black uppercase tracking-wide text-slate-300" }, "Target status"),
-                  React.createElement("strong", { className: "text-[11px] font-black " + (activePlayTargetProximity === "recorded" || activePlayTargetProximity === "mastered" ? "text-emerald-200" : "text-amber-200") }, activePlayTargetProximityLabel),
+                  React.createElement("strong", { className: "text-[11px] font-black " + (activePlayTargetProximity === "waiting" ? "text-violet-200" : activePlayTargetProximity === "recorded" || activePlayTargetProximity === "mastered" ? "text-emerald-200" : "text-amber-200") }, activePlayTargetProximityLabel),
                   activePlayTargetDirectionLabel && React.createElement("span", { className: "font-black uppercase text-white" }, React.createElement("span", { "aria-hidden": "true" }, activePlayTargetDirectionGlyph + " "), activePlayTargetDirectionLabel),
-                  React.createElement("span", { className: "font-bold text-emerald-200" }, "\u2014 " + activePlayTargetInstruction)
+                  React.createElement("span", { className: "font-bold " + (activePlayTargetProximity === "waiting" ? "text-violet-100" : "text-emerald-200") }, "\u2014 " + activePlayTargetInstruction)
                 ),
-                React.createElement("div", { "data-cell-approach-meter": true, "data-cell-approach-current": activePlayApproachIndex, "data-cell-approach-state": activePlayApproachCycleComplete ? "complete" : "active", role: "list", "aria-label": activePlayApproachAria, className: "mt-1.5 grid grid-cols-3 gap-1" },
+                React.createElement("div", { "data-cell-approach-meter": true, "data-cell-approach-current": activePlayApproachIndex, "data-cell-approach-state": activePlayPredictionPending ? "locked" : activePlayApproachCycleComplete ? "complete" : "active", role: "list", "aria-label": activePlayApproachAria, className: "mt-1.5 grid grid-cols-3 gap-1" },
                   activePlayApproachSteps.map(function (step, index) {
-                    var stepState = activePlayApproachCycleComplete ? 'complete' : index < activePlayApproachIndex ? 'complete' : index === activePlayApproachIndex ? 'current' : 'upcoming';
+                    var stepState = activePlayPredictionPending ? 'upcoming' : activePlayApproachCycleComplete ? 'complete' : index < activePlayApproachIndex ? 'complete' : index === activePlayApproachIndex ? 'current' : 'upcoming';
                     var stepTone = stepState === 'complete' ? 'border-emerald-300/40 bg-emerald-400/20 text-emerald-100' :
                       stepState === 'current' ? 'border-amber-300/60 bg-amber-300/20 text-amber-100 ring-1 ring-amber-300/30' :
                       'border-white/10 bg-white/5 text-slate-400';
@@ -23558,7 +23640,7 @@ var d = labToolData.cell || {};
                   })
                 ),
                 !activeMissionEvidenceComplete && React.createElement("div", { id: "cell-live-biology-loop", "data-cell-control-loop": true, "data-cell-control-phase": activePlayControlPhase, "data-cell-first-action-state": activePlayFirstActionState, role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": activePlayControlAria, className: activePlayControlLoopClass },
-                  React.createElement("span", { "data-cell-control-title": true, className: "mr-0.5 font-black uppercase tracking-wide " + (activePlayFirstActionPromptActive ? "text-amber-200" : activePlayFirstActionRegisteredReady ? "text-emerald-200" : "text-cyan-200") }, activePlayControlTitle),
+                  React.createElement("span", { "data-cell-control-title": true, className: "mr-0.5 font-black uppercase tracking-wide " + (activePlayPredictionPending ? "text-violet-200" : activePlayFirstActionPromptActive ? "text-amber-200" : activePlayFirstActionRegisteredReady ? "text-emerald-200" : "text-cyan-200") }, activePlayControlTitle),
                   React.createElement("span", { className: "inline-flex items-baseline gap-1" },
                     React.createElement("span", { "data-cell-control-lead": true, className: "font-black uppercase text-slate-300" }, activePlayControlLead),
                     React.createElement("strong", { "data-cell-control-input": true, "data-cell-first-action-command": activePlayFirstActionPromptActive ? "true" : "false", className: "font-black uppercase text-white" }, activePlayControlDisplayInput)
@@ -23585,7 +23667,7 @@ var d = labToolData.cell || {};
                   ),
                   activePlayCue.phase === 'paused' && (activePlayCue.kind === 'food' || activePlayCue.kind === 'pathogen') && React.createElement("button", { type: "button", "data-cell-recover-targets": true, onClick: recoverCellMissionTargets, "aria-label": "Reset unavailable mission targets and resume the simulation", className: "mt-2 min-h-9 w-full rounded-lg bg-amber-300 px-3 py-2 text-[10px] font-black text-slate-950 shadow-sm hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" }, "Reset targets & resume"),
                   activePlayCue.announcement && React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, activePlayCue.announcement)
-                ) : !activeMissionEvidenceComplete && !activePlayCue ? React.createElement("p", { "data-cell-target-guide-note": true, className: "mt-1 text-[10px] font-bold leading-snug text-emerald-200" }, activePlayTutorial.stationary ? "Compass names the next structure and where to select it." : "Compass label reads target \u00B7 distance \u00B7 direction.") : null,
+                ) : !activeMissionEvidenceComplete && !activePlayCue ? React.createElement("p", { "data-cell-target-guide-note": true, className: "mt-1 text-[10px] font-bold leading-snug " + (activePlayPredictionPending ? "text-violet-200" : "text-emerald-200") }, activePlayPredictionPending ? "Make the Predict decision; target guidance begins when controls unlock." : activePlayTutorial.stationary ? "Compass names the next structure and where to select it." : "Compass label reads target \u00B7 distance \u00B7 direction.") : null,
                 activeMissionEvidenceComplete && !activeMissionComplete ? React.createElement("div", { "data-cell-evidence-to-explain": true, role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-label": "Evidence set: 3 of 3 observations. " + ((activePlayControlLoop && activePlayControlLoop.evidence) || "Structure produces evidence") + ". Next: open the evidence explanation.", className: "mt-2 rounded-lg border border-amber-300/40 bg-gradient-to-r from-emerald-400/15 to-amber-300/15 p-2" },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
                     React.createElement("strong", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-200" }, "\u2713 Evidence set"),
@@ -23611,7 +23693,13 @@ var d = labToolData.cell || {};
                 )
               ),
 
-              d.playAsOrganism && activePlayTutorial && !activePlayTutorial.stationary && !activeMissionEvidenceComplete && (function () {
+              d.playAsOrganism && activePlayTutorial && activePlayPredictionPending && !activeMissionEvidenceComplete && React.createElement("button", { type: "button", "data-cell-control-lock": true, "data-cell-control-lock-state": "waiting", onClick: openCellPredictionTutorial, "aria-label": "Predict or start without a prediction to unlock " + activePlayDef.label + " controls", className: "absolute left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-0.5 rounded-2xl border border-violet-200/70 bg-slate-950/90 px-4 py-2.5 text-center text-white shadow-2xl backdrop-blur transition motion-reduce:transition-none hover:border-white hover:bg-violet-950/95 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white active:scale-[0.98]", style: { bottom: '44px', width: 'min(240px, calc(100% - 16px))' } },
+                React.createElement("span", { className: "text-[9px] font-black uppercase tracking-widest text-violet-200" }, "1 \u00B7 Predict"),
+                React.createElement("strong", { className: "text-xs font-black text-white" }, "Unlock controls"),
+                React.createElement("span", { className: "text-[9px] font-bold leading-snug text-violet-100" }, "Choose what you expect or start without a prediction.")
+              ),
+
+              d.playAsOrganism && activePlayTutorial && !activePlayTutorial.stationary && !activePlayPredictionPending && !activeMissionEvidenceComplete && (function () {
                 function setPadDirection(key, pressed, event) {
                   if (event) event.preventDefault();
                   var cv = document.querySelector('[data-cell-sim-canvas]');
@@ -23728,6 +23816,8 @@ var d = labToolData.cell || {};
                 var tutorialPrediction = tutorial.prediction;
                 var tutorialPredictionChoice = tutorialMissionMatches && typeof activePlayMission.predictionChoice === 'number' ? activePlayMission.predictionChoice : null;
                 var tutorialPredictionLocked = tutorialMissionMatches && activePlayProgress > 0;
+                var tutorialPredictionSkipped = !!(tutorialMissionMatches && activePlayMission.predictionSkipped);
+                var tutorialPredictionPending = !!(tutorialMissionMatches && tutorialPredictionChoice === null && !tutorialPredictionSkipped && activePlayProgress === 0);
                 var tutorialControlLoop = tutorial.controlLoop || {};
                 var tutorialControlInput = tutorialControlLoop.input || (tutorial.stationary ? 'Select a label' : 'Direction input');
                 var tutorialControlMechanism = tutorialControlLoop.action || tutorial.movement;
@@ -23736,12 +23826,12 @@ var d = labToolData.cell || {};
                 var tutorialControlAria = 'Control model: ' + tutorialControlInput + ', then ' + tutorialControlMechanism + ', then ' + tutorialControlResult + '. Evidence to collect: ' + tutorialControlEvidence + '.';
                 var tutorialFirstActionComplete = !!(tutorialMissionMatches && (activePlayProgress > 0 || activePlayMission.firstActionRegistered));
                 var tutorialReadyToExplain = !!(tutorialMissionMatches && activeMissionEvidenceComplete && !activeReflectionComplete);
-                var tutorialActionText = tutorialReadyToExplain ? 'Go to explanation' : (tutorialPreviouslySeen ? 'Continue mission' : 'Start mission');
-                var tutorialActionLabel = tutorialReadyToExplain ? 'Go to ' + org.label + ' evidence explanation' : (tutorialPreviouslySeen ? 'Continue ' : 'Start ') + org.label + ' mission';
+                var tutorialActionText = tutorialPredictionPending ? 'Choose a prediction to start' : tutorialReadyToExplain ? 'Go to explanation' : (tutorialPreviouslySeen ? 'Continue mission' : 'Start mission');
+                var tutorialActionLabel = tutorialPredictionPending ? 'Choose an ' + org.label + ' prediction to start' : tutorialReadyToExplain ? 'Go to ' + org.label + ' evidence explanation' : (tutorialPreviouslySeen ? 'Continue ' : 'Start ') + org.label + ' mission';
                 var tutorialLearningPhase = activeReflectionComplete ? 'complete' :
                   activeMissionEvidenceComplete ? 'explain' :
                     activePlayProgress > 0 ? 'observe' :
-                      (tutorialFirstActionComplete || tutorialPredictionChoice !== null) ? 'control' : 'predict';
+                      (tutorialFirstActionComplete || tutorialPredictionChoice !== null || tutorialPredictionSkipped) ? 'control' : 'predict';
                 var tutorialLearningSteps = [
                   { key: 'predict', label: 'Predict' },
                   { key: 'control', label: 'Control' },
@@ -23763,7 +23853,7 @@ var d = labToolData.cell || {};
                   var stepIndex = tutorialLearningSteps.findIndex(function(step) { return step.key === stepKey; });
                   if (stepIndex === currentIndex) return 'current';
                   if (stepIndex > currentIndex) return 'upcoming';
-                  if (stepKey === 'predict' && tutorialPredictionChoice === null) return 'skipped';
+                  if (stepKey === 'predict' && tutorialPredictionChoice === null && (tutorialPredictionSkipped || activePlayProgress > 0)) return 'skipped';
                   return 'complete';
                 }
 
@@ -23843,7 +23933,7 @@ var d = labToolData.cell || {};
                               return React.createElement("button", { key: predictionIndex, type: "button", "data-cell-prediction-option": predictionIndex, "aria-pressed": predictionSelected, "aria-label": "Prediction option " + (predictionIndex + 1) + ": " + predictionOption, disabled: tutorialPredictionLocked, onClick: function () { recordCellPlayPrediction(org.id, predictionIndex); }, className: "min-h-10 rounded-lg border px-2.5 py-2 text-left text-[10px] font-bold leading-snug transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 disabled:cursor-not-allowed disabled:opacity-70 " + (predictionSelected ? "border-amber-700 bg-amber-700 text-white" : "border-amber-300 bg-white text-slate-800 hover:border-amber-600 hover:bg-amber-100") }, predictionOption);
                             })
                           ),
-                          React.createElement("p", { "data-cell-prediction-status": true, role: "status", "aria-live": "polite", className: "mt-1.5 text-[10px] leading-snug text-amber-900" }, tutorialPredictionChoice !== null ? "Prediction saved: " + tutorialPrediction.options[tutorialPredictionChoice] + (tutorialPredictionLocked ? " Compare it with the evidence." : " You can revise it until evidence is collected.") : tutorialPredictionLocked ? "Prediction skipped for this attempt. Restart to predict before collecting evidence." : "Choose one. Predictions are not graded; evidence can confirm or revise your thinking.")
+                          React.createElement("p", { "data-cell-prediction-status": true, role: "status", "aria-live": "polite", className: "mt-1.5 text-[10px] leading-snug text-amber-900" }, tutorialPredictionChoice !== null ? "Prediction saved: " + tutorialPrediction.options[tutorialPredictionChoice] + (tutorialPredictionLocked ? " Compare it with the evidence." : " You can revise it until evidence is collected.") : tutorialPredictionLocked ? "Prediction skipped for this attempt. Restart to predict before collecting evidence." : tutorialPredictionSkipped ? "You chose to start without a prediction. You can still add one before evidence is collected." : "Choose one. Predictions are not graded; evidence can confirm or revise your thinking.")
                         )
                       ),
                       // Controls
@@ -23919,11 +24009,12 @@ var d = labToolData.cell || {};
                     // Footer
 
                     React.createElement("div", { "data-cell-tutorial-action-bar": true, className: "flex-shrink-0 space-y-2 border-t border-slate-200 bg-white px-5 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]" },
-                      React.createElement("button", { "data-cell-tutorial-primary": true, "aria-label": tutorialActionLabel,
-                        onClick: function () { recordCellTutorialSeen(org.id); if (tutorialReadyToExplain) { upd('showPlayInstructions', false); focusCellPlayRegion('[data-cell-mission-checkpoint]', '[data-cell-explanation-option]'); } else closeCellPlayTutorial(true); },
-                        className: "w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl",
+                      React.createElement("button", { type: "button", "data-cell-tutorial-primary": true, "aria-label": tutorialActionLabel, disabled: tutorialPredictionPending,
+                        onClick: function () { if (tutorialPredictionPending) return; recordCellTutorialSeen(org.id); if (tutorialReadyToExplain) { upd('showPlayInstructions', false); focusCellPlayRegion('[data-cell-mission-checkpoint]', '[data-cell-explanation-option]'); } else closeCellPlayTutorial(true); },
+                        className: "w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100",
                         style: { background: 'linear-gradient(135deg, ' + org.color + ', ' + org.color + 'cc)' }
                       }, "\uD83D\uDE80 " + tutorialActionText),
+                      tutorialPredictionPending && React.createElement("button", { type: "button", "data-cell-skip-prediction": true, "aria-label": "Start " + org.label + " mission without a prediction", onClick: function () { recordCellPlayPredictionSkip(org.id); recordCellTutorialSeen(org.id); finishCellPlayTutorial(true); }, className: "min-h-10 w-full rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-black text-amber-950 hover:border-amber-500 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Start without prediction"),
                       tutorialCanRestart && React.createElement("button", { type: "button", "data-cell-restart-attempt": true, onClick: function () { launchCellPlayMission(org.id, true); }, className: "w-full rounded-xl border border-slate-500 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-50" }, "Restart current attempt"),
                       tutorialCanRestart && React.createElement("p", { className: "text-center text-[10px] leading-snug text-slate-500" }, "Resets this attempt's 0-3 evidence. Completed mastery remains saved.")
                     )
@@ -23948,23 +24039,24 @@ var d = labToolData.cell || {};
                 )
               ),
               React.createElement("div", { className: "space-y-2 border-t border-slate-100 p-3" },
-                React.createElement("article", { "data-cell-prediction-stage": true, "data-cell-learning-step": "predict", "data-cell-prediction-stage-state": activePlayPredictionStageState, className: "rounded-xl border p-3 " + (activePlayPredictionStageState === 'reviewed' ? "border-emerald-200 bg-emerald-50/70" : activePlayPredictionStageState === 'compare' ? "border-amber-300 bg-amber-50" : activePlayPredictionStageState === 'skipped' ? "border-slate-200 bg-slate-50" : "border-amber-200 bg-amber-50/70") },
+                React.createElement("article", { "data-cell-prediction-stage": true, "data-cell-learning-step": "predict", "data-cell-checkpoint-step": "predict", "data-cell-checkpoint-state": activePredictionCheckpointState, "data-cell-prediction-stage-state": activePlayPredictionStageState, "aria-current": activePredictionCheckpointState === 'current' ? "step" : undefined, className: "rounded-xl border p-3 transition-colors " + (activePredictionCheckpointState === 'current' ? "border-amber-400 bg-amber-50 shadow-sm ring-2 ring-amber-100" : activePlayPredictionStageState === 'reviewed' || activePlayPredictionStageState === 'saved' ? "border-emerald-200 bg-emerald-50/70" : activePlayPredictionStageState === 'compare' ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50") },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activePlayPredictionStageState === 'reviewed' ? "text-emerald-800" : activePlayPredictionStageState === 'skipped' ? "text-slate-600" : "text-amber-800") }, "1  |  Predict"),
-                    React.createElement("span", { "data-cell-prediction-stage-status": true, className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activePlayPredictionStageState === 'reviewed' ? "bg-emerald-700 text-white" : activePlayPredictionStageState === 'compare' ? "bg-amber-700 text-white" : activePlayPredictionStageState === 'skipped' ? "bg-slate-200 text-slate-700" : "bg-amber-200 text-amber-950") }, activePlayPredictionStageLabel)
+                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activePredictionCheckpointState === 'current' || activePlayPredictionStageState === 'compare' ? "text-amber-800" : activePredictionCheckpointState === 'complete' ? "text-emerald-800" : "text-slate-600") }, "1  |  Predict"),
+                    React.createElement("span", { "data-cell-prediction-stage-status": true, "data-cell-checkpoint-status": "predict", className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activePlayPredictionStageState === 'reviewed' || activePlayPredictionStageState === 'saved' ? "bg-emerald-700 text-white" : activePlayPredictionStageState === 'compare' ? "bg-amber-700 text-white" : activePlayPredictionStageState === 'skipped' ? "bg-slate-200 text-slate-700" : "bg-amber-700 text-white") }, activePlayPredictionStageLabel)
                   ),
                   React.createElement("p", { "data-cell-prediction-summary": true, className: "mt-1 text-[11px] font-bold leading-relaxed text-slate-800" },
                     activePlayPredictionText ? React.createElement(React.Fragment, null, React.createElement("strong", null, "Your prediction: "), activePlayPredictionText) :
                       activePlayPredictionStageState === 'ready' ? React.createElement(React.Fragment, null, React.createElement("strong", null, "Prediction question: "), activePlayTutorial.prediction.prompt) :
                         "No prediction was recorded before evidence collection."
                   ),
-                  React.createElement("p", { "data-cell-prediction-guidance": true, className: "mt-1 text-[10px] leading-snug text-slate-600" }, activePlayPredictionStageGuidance)
+                  React.createElement("p", { "data-cell-prediction-guidance": true, className: "mt-1 text-[10px] leading-snug text-slate-600" }, activePlayPredictionStageGuidance),
+                  activePlayPredictionPending && React.createElement("button", { type: "button", "data-cell-prediction-action": true, onClick: openCellPredictionTutorial, "aria-label": "Make an " + activePlayDef.label + " prediction before collecting evidence", className: "mt-2 inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-amber-700 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700 sm:w-auto" }, "Make prediction ", React.createElement("span", { "aria-hidden": true }, "\u2192"))
                 ),
                 React.createElement("div", { className: "grid gap-2 md:grid-cols-3" },
-                React.createElement("article", { "data-cell-checkpoint-step": "control", "data-cell-checkpoint-state": activeControlCheckpointState, "aria-current": activeControlCheckpointState === 'current' ? "step" : undefined, className: "rounded-xl border p-3 transition-colors " + (activeControlCheckpointState === 'current' ? "border-violet-400 bg-violet-50 shadow-sm ring-2 ring-violet-100" : "border-emerald-200 bg-emerald-50/70") },
+                React.createElement("article", { "data-cell-checkpoint-step": "control", "data-cell-checkpoint-state": activeControlCheckpointState, "aria-current": activeControlCheckpointState === 'current' ? "step" : undefined, className: "rounded-xl border p-3 transition-colors " + (activeControlCheckpointState === 'current' ? "border-violet-400 bg-violet-50 shadow-sm ring-2 ring-violet-100" : activeControlCheckpointState === 'complete' ? "border-emerald-200 bg-emerald-50/70" : "border-slate-200 bg-slate-50") },
                   React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1.5" },
-                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activeControlCheckpointState === 'current' ? "text-violet-800" : "text-emerald-800") }, "2  |  Control"),
-                    React.createElement("span", { "data-cell-checkpoint-status": "control", className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activeControlCheckpointState === 'current' ? "bg-violet-700 text-white" : "bg-emerald-700 text-white") }, activeControlCheckpointLabel)
+                    React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activeControlCheckpointState === 'current' ? "text-violet-800" : activeControlCheckpointState === 'complete' ? "text-emerald-800" : "text-slate-500") }, "2  |  Control"),
+                    React.createElement("span", { "data-cell-checkpoint-status": "control", className: "rounded-full px-2 py-0.5 text-[9px] font-black " + (activeControlCheckpointState === 'current' ? "bg-violet-700 text-white" : activeControlCheckpointState === 'complete' ? "bg-emerald-700 text-white" : "bg-slate-200 text-slate-700") }, activeControlCheckpointLabel)
                   ),
                   React.createElement("p", { className: "mt-1 text-xs font-black text-slate-900" }, activePlayTutorial.movement),
                   React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, activePlayTutorial.stationary ? "Inspect and select structure labels." : "Steer with keys or the direction pad.")
@@ -24203,12 +24295,13 @@ var d = labToolData.cell || {};
                     React.createElement("div", { className: "text-[9px] font-black uppercase tracking-[0.18em] text-violet-700" }, recommendedCellMissionEyebrow),
                     React.createElement("h5", { id: "cell-next-step-title", className: "mt-0.5 text-sm font-black text-slate-950" },
                       recommendedCellMissionAction === 'explain' ? "Finish the " + recommendedCellMissionDef.label + " explanation" :
+                      recommendedCellMissionAction === 'predict' ? "Predict for " + recommendedCellMissionDef.label + " before play" :
                       recommendedCellMissionAction === 'continue' ? "Continue " + recommendedCellMissionDef.label + " \u00B7 " + recommendedCellMissionProgress + "/3 evidence" :
                       recommendedCellMissionAction === 'compare' ? "Compare next: " + recommendedCellMissionDef.label :
                       "Start with " + recommendedCellMissionDef.label
                     ),
                     recommendedCellMissionAction === 'compare' && activeStrategyContrast && React.createElement("p", { "data-cell-next-step-reason": true, className: "mt-1 text-[10px] font-bold leading-snug text-violet-800" }, "Why this is next: " + activeStrategyContrast),
-                    React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-slate-700" }, recommendedCellMissionAction === 'explain' ? "Evidence ready: use your 3 observations to choose the biology explanation they support." : "Goal: " + recommendedCellMissionTutorial.objective),
+                    React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-slate-700" }, recommendedCellMissionAction === 'predict' ? "Choose what you expect to observe; Control unlocks after you predict or explicitly skip." : recommendedCellMissionAction === 'explain' ? "Evidence ready: use your 3 observations to choose the biology explanation they support." : "Goal: " + recommendedCellMissionTutorial.objective),
                     React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-slate-600" }, "You'll learn: " + recommendedCellMissionTutorial.connection),
                     React.createElement("p", { className: "mt-1 text-[10px] font-black leading-snug text-cyan-800" }, "Control loop: " + recommendedCellMissionTutorial.controlLoop.input + " \u2192 " + recommendedCellMissionTutorial.controlLoop.action + " \u2192 " + recommendedCellMissionTutorial.controlLoop.outcome)
                   ),
@@ -24216,9 +24309,9 @@ var d = labToolData.cell || {};
                     type: "button",
                     "data-cell-next-step-action": true,
                     onClick: activateRecommendedCellMission,
-                    "aria-label": recommendedCellMissionAction === 'explain' ? "Finish " + recommendedCellMissionDef.label + " explanation" : recommendedCellMissionAction === 'continue' ? "Return to " + recommendedCellMissionDef.label + " mission in the dish" : recommendedCellMissionAction === 'compare' ? "Start recommended comparison: " + recommendedCellMissionDef.label : "Start " + recommendedCellMissionDef.label + " mission",
-                    className: "min-h-11 w-full flex-shrink-0 rounded-xl bg-violet-700 px-4 py-2.5 text-xs font-black text-white shadow-md hover:bg-violet-800 focus-visible:outline focus-visible:outline-4 focus-visible:outline-violet-300 sm:w-auto"
-                  }, recommendedCellMissionAction === 'explain' ? "Finish explanation" : recommendedCellMissionAction === 'continue' ? "Return to dish" : recommendedCellMissionAction === 'compare' ? "Start comparison" : "Start mission")
+                    "aria-label": recommendedCellMissionAction === 'predict' ? "Make an " + recommendedCellMissionDef.label + " prediction before collecting evidence" : recommendedCellMissionAction === 'explain' ? "Finish " + recommendedCellMissionDef.label + " explanation" : recommendedCellMissionAction === 'continue' ? "Return to " + recommendedCellMissionDef.label + " mission in the dish" : recommendedCellMissionAction === 'compare' ? "Start recommended comparison: " + recommendedCellMissionDef.label : "Start " + recommendedCellMissionDef.label + " mission",
+                    className: "min-h-11 w-full flex-shrink-0 rounded-xl px-4 py-2.5 text-xs font-black text-white shadow-md focus-visible:outline focus-visible:outline-4 sm:w-auto " + (recommendedCellMissionAction === 'predict' ? "bg-amber-700 hover:bg-amber-800 focus-visible:outline-amber-300" : "bg-violet-700 hover:bg-violet-800 focus-visible:outline-violet-300")
+                  }, recommendedCellMissionAction === 'predict' ? "Make prediction" : recommendedCellMissionAction === 'explain' ? "Finish explanation" : recommendedCellMissionAction === 'continue' ? "Return to dish" : recommendedCellMissionAction === 'compare' ? "Start comparison" : "Start mission")
                 ) : React.createElement("div", { className: "rounded-lg bg-emerald-50 p-2" },
                   React.createElement("h5", { id: "cell-next-step-title", className: "text-sm font-black text-emerald-900" }, "\u2713 All 11 organism missions mastered"),
                   React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-emerald-800" }, "You completed every Predict \u2192 Control \u2192 Observe \u2192 Explain loop. Choose any organism below to replay and compare its strategy.")

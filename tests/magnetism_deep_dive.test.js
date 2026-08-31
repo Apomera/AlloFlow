@@ -6,7 +6,9 @@ import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './hel
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
+const AXE_PATH = require.resolve(resolve(MODULES_DIR, 'axe-core'));
+const AXE_SOURCE = require(AXE_PATH).source;
+const { JSDOM } = require(resolve(MODULES_DIR, 'jsdom'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -42,6 +44,24 @@ function mountInteractive(cfg, seed, callbacks = {}) {
       host.remove();
     },
   };
+}
+
+async function runSemanticAudit(html, selector) {
+  const fixture = new JSDOM('<!doctype html><html><body><main id="mag-semantic-fixture"></main></body></html>', {
+    runScripts: 'outside-only',
+  });
+  const host = fixture.window.document.querySelector('#mag-semantic-fixture');
+  host.innerHTML = String(html).replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+  fixture.window.eval(AXE_SOURCE);
+  try {
+    return await fixture.window.axe.run(host.querySelector(selector) || host, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
+      rules: { 'color-contrast': { enabled: false } },
+    });
+  } finally {
+    fixture.window.axe.cleanup();
+    fixture.window.close();
+  }
 }
 
 describe('magnetism inverse magnetometer investigation', () => {
@@ -314,22 +334,28 @@ describe('magnetism inverse magnetometer investigation', () => {
     loadTool('stem_lab/stem_tool_magnetism.js', 'magnetism');
     const base = { tab: 'field', fieldView: 'hunt', learningMode: 'guided', magnets: [{ x: -70, y: 0, angle: 0, polarity: 1 }] };
     const standard = renderTool('magnetism', { magnetism: base });
-    expect(standard).toContain('Mission details');
-    expect(standard).toContain('id="mag-mission-details"');
-    expect(standard).toContain('hidden=""');
-    expect(standard).toContain('Focus Lab');
-    expect(standard).toContain('class="mag-guide"');
-    expect(standard).toContain('Learning guide');
-    expect(standard).toContain('Predict → test → explain');
-    expect(standard.indexOf('role="tabpanel"')).toBeLessThan(standard.indexOf('Journey 0/21'));
+    expect(standard).toContain('data-magnetism-adaptive-shell="true"');
+    expect(standard).toContain('data-shell-panel="experiment"');
+    expect(standard).not.toContain('Mission details');
+    expect(standard).not.toContain('class="mag-guide"');
+    expect(standard.indexOf('data-magnetism-adaptive-shell="true"')).toBeLessThan(standard.indexOf('role="tabpanel"'));
 
     const shell = document.createElement('div');
-    shell.innerHTML = standard;
+    shell.innerHTML = renderTool('magnetism', { magnetism: Object.assign({}, base, { labShellPanel: 'guide' }) });
     expect(shell.querySelector('.mag-guide').open).toBe(false);
+    expect(shell.textContent).toContain('Predict → test → explain');
 
-    const focused = renderTool('magnetism', { magnetism: Object.assign({}, base, { labFocus: true }) });
+    const mission = renderTool('magnetism', { magnetism: Object.assign({}, base, { labShellPanel: 'mission' }) });
+    expect(mission).toContain('Mission details');
+    expect(mission).toContain('id="mag-mission-details"');
+    expect(mission).toContain('hidden=""');
+
+    const settings = renderTool('magnetism', { magnetism: Object.assign({}, base, { labShellPanel: 'settings' }) });
+    expect(settings).toContain('Focus Lab');
+
+    const focused = renderTool('magnetism', { magnetism: Object.assign({}, base, { labFocus: true, labShellPanel: 'settings' }) });
     expect(focused).toContain('Exit Focus Lab');
-    expect(focused).toContain('max-width:1040px');
+    expect(focused).toContain('max-width:1180px');
     expect(focused).not.toContain('Mission Control');
     expect(focused).not.toContain('Journey 0/21');
     expect(focused).toContain('Magnetism &amp; Electromagnetism · Focus Lab');
@@ -351,19 +377,9 @@ describe('magnetism inverse magnetometer investigation', () => {
       fieldHuntProbe: { x: 100, y: 0 }, fieldHuntGuess: { x: -60, y: 40 },
       fieldHuntSamples: samples, fieldHuntAnalysis: physics.fieldHuntEstimate(samples), fieldHuntChecked: true,
     } });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-field');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });
 
 describe('magnetism electromagnet fair-test evidence', () => {
@@ -465,19 +481,9 @@ describe('magnetism electromagnet fair-test evidence', () => {
     const html = renderTool('magnetism', { magnetism: {
       tab: 'electro', electroView: '2d', ...baseline, current: 4, electroBaseline: baseline,
     } });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-electro');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });
 
 describe('magnetism generator speed evidence', () => {
@@ -596,19 +602,9 @@ describe('magnetism generator speed evidence', () => {
     const html = renderTool('magnetism', { magnetism: {
       tab: 'induce', induceMode: 'hand', induceTurns: 50, induceSpeedTrials: completeSpeedTrials(),
     } });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-induce');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });
 
 describe('magnetism transformer engineering briefs', () => {
@@ -719,19 +715,9 @@ describe('magnetism transformer engineering briefs', () => {
       tab: 'transformer', xfmrN1: 125, xfmrN2: 25, xfmrAC: true,
       xfmrLoad: 60, xfmrEfficiency: 94, xfmrMission: 0, xfmrMissionWins: {},
     } });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-transformer');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });
 
 describe('magnetism Field Walk navigation evidence', () => {
@@ -873,19 +859,9 @@ describe('magnetism Field Walk navigation evidence', () => {
       tab: 'maze', mazeRound: 0, mazePx: 1, mazePy: 5,
       mazeSteps: 3, mazeTrail: ['0,6', '1,6', '1,5'], mazeWon: false,
     } });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-maze');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });
 
 describe('magnetism Junkyard Crane prediction evidence', () => {
@@ -1035,19 +1011,9 @@ describe('magnetism Junkyard Crane prediction evidence', () => {
       craneDeposited: { nail: true },
       craneItems: { 1: 'foil', 2: 'clip', 3: 'penny', 4: 'nickel', 5: 'ruler', 6: 'cobalt', 7: 'pencil' },
     }) });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-crane');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });
 
 describe('magnetism Materials visual pattern sorter', () => {
@@ -1197,19 +1163,9 @@ describe('magnetism Materials visual pattern sorter', () => {
     const html = renderTool('magnetism', { magnetism: materialSeed({
       matGuesses: { ...perfectGuesses, foil: true }, matRevealed: true, matBest: 7,
     }) });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-materials');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });
 
 describe('magnetism Quiz visual evidence journey', () => {
@@ -1404,18 +1360,8 @@ describe('magnetism Quiz visual evidence journey', () => {
     ];
     for (const seed of states) {
       const html = renderTool('magnetism', { magnetism: seed });
-      const host = document.createElement('main');
-      host.innerHTML = html;
-      document.body.appendChild(host);
-      try {
-        const results = await axe.run(host, {
-          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-          rules: { 'color-contrast': { enabled: false } },
-        });
-        expect(results.violations.map((violation) => violation.id)).toEqual([]);
-      } finally {
-        host.remove();
-      }
+      const results = await runSemanticAudit(html, '#mag-panel-quiz');
+      expect(results.violations.map((violation) => violation.id)).toEqual([]);
     }
   }, 60000);
 });
@@ -1607,17 +1553,7 @@ describe('magnetism Magnetic memory visual experiment', () => {
       domainMaterial: 'hard', domainField: -0.3, domainBranch: 1, domainHistory: true, domainAlign: 0.73,
       domainSaturatedSeen: true, domainRemanenceSeen: true,
     }) });
-    const host = document.createElement('main');
-    host.innerHTML = html;
-    document.body.appendChild(host);
-    try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      host.remove();
-    }
-  }, 60000);
+    const results = await runSemanticAudit(html, '#mag-panel-materials');
+    expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  }, 15000);
 });

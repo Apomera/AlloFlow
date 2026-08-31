@@ -17,7 +17,7 @@ function storySeed(extra = {}) {
   return Object.assign({
     tab: 'field', learningMode: 'guided', fieldView: '2d',
     missionId: 'power_path', missionStarted: false, missionPanelOpen: false,
-    notebookOpen: false, notebookTrials: [], labFocus: false,
+    notebookOpen: false, notebookTrials: [], labFocus: false, labShellPanel: 'overview',
     analyzerMysteryWins: {}, xfmrMissionWins: {},
   }, extra);
 }

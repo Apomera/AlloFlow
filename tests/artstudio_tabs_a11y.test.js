@@ -25,7 +25,7 @@ describe('Art Studio section tabs accessibility', () => {
     expect(source).toContain("role: 'tabpanel', id: 'artstudio-panel-' + tab");
     expect(source).toContain("'aria-labelledby': 'artstudio-tab-' + tab");
     expect(source).toContain('id: "watercolorCanvas"');
-    expect(source).toContain("'aria-describedby': \"artstudio-watercolor-keyboard-help artstudio-watercolor-status\"");
+    expect(source).toContain("'aria-describedby': \"artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status\"");
     expect(source).toContain('var _artStudioWatercolorCache = {');
     expect(source).toContain('captureState: captureState');
     expect(source).toContain('restoreState: restoreState');

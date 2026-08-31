@@ -865,7 +865,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
 
   it('renders every tab under jsdom', () => {
     ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'maze', 'transformer', 'earth', 'quiz'].forEach((tab) => {
-      const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab }));
+      const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab, labShellPanel: 'guide' }));
       expect(html.length).toBeGreaterThan(200);
     });
     expect(mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field' }))).toContain('north (N/red)');
@@ -882,7 +882,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
 
   it('renders an accessible eddy-current brake bench with force, heat, geometry, and control evidence', async () => {
     const bench = physics.eddyBrakeState(1, 4, false, 6, 6);
-    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'induce', induceMode: 'eddy', notebookOpen: true }));
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'induce', induceMode: 'eddy', notebookOpen: true, labShellPanel: 'evidence' }));
     expect(html).toContain('Sliding-plate brake bench');
     expect(html).toContain('Eddy-current sliding-plate brake bench');
     expect(html).toContain('Plate speed');
@@ -925,7 +925,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   }, 30000);
 
   it('renders accessible cross-station Mission Control with live quest progress', async () => {
-    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', missionPanelOpen: true }));
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', missionPanelOpen: true, labShellPanel: 'mission' }));
     expect(html).toContain('Mission Control');
     expect(html).toContain('Choose a design target');
     expect(html).toContain('Power a remote sensor');
@@ -949,13 +949,13 @@ describe('magnetism tool — jsdom mount smoke', () => {
       auditHost.remove();
     }
 
-    const partial = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', coilTouched: true, peakEMF: 0.8, missionStarted: true }));
+    const partial = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', coilTouched: true, peakEMF: 0.8, missionStarted: true, labShellPanel: 'mission' }));
     expect(partial).toContain('2/4 steps');
     expect(partial).toContain('Open next: Tune phase');
     expect(partial).toContain('Done · ');
     expect(partial).toContain('Build field:');
     expect(partial).toContain('Peak induced voltage: 0.80 V.');
-    const complete = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', coilTouched: true, peakEMF: 0.8, genSpeedSeen: true, genPhaseSeen: true, notebookUsed: true, notebookClaim: 'Changing flux creates voltage.', missionStarted: true }));
+    const complete = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', coilTouched: true, peakEMF: 0.8, genSpeedSeen: true, genPhaseSeen: true, notebookUsed: true, notebookClaim: 'Changing flux creates voltage.', missionStarted: true, labShellPanel: 'mission' }));
     expect(complete).toContain('Mission complete');
     expect(complete).toContain('Mission evidence complete');
     expect(complete).toContain('Notebook claim recorded.');    expect(complete).toContain('Lab report');
@@ -965,7 +965,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(complete).toContain('Evidence chain');
     expect(complete).toContain('Claim:');
     expect(complete).toContain('Synthesis:');    const replay = mountWithSeed(cfg, Object.assign({}, BASE, {
-      tab: 'field', missionStarted: true, replaySelectedIndex: 1,
+      tab: 'field', missionStarted: true, replaySelectedIndex: 1, labShellPanel: 'mission',
       notebookTrials: [
         { station: 'Electromagnet', setup: '20 turns, 2 A', result: '4 mT interior field', prediction: 'More turns strengthen the field.' },
         { station: 'Hand generator', setup: '60 turns, magnet moving', result: '0.80 V induced', prediction: 'Faster motion raises voltage.' },
@@ -975,7 +975,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(replay).toContain('Trial 2');
     expect(replay).toContain('Hand generator');
     expect(replay).toContain('Live comparison:');    const metricReplay = mountWithSeed(cfg, Object.assign({}, BASE, {
-      tab: 'electro', turns: 200, current: 4, missionStarted: true, replaySelectedIndex: 1,
+      tab: 'electro', turns: 200, current: 4, missionStarted: true, replaySelectedIndex: 1, labShellPanel: 'mission',
       notebookTrials: [
         { station: 'Electromagnet', setup: '100 turns, 2 A', result: 'field', prediction: 'More turns', metrics: [{ key: 'field_mT', label: 'Center field', value: 5, unit: 'mT', digits: 2, display: '5.00 mT' }] },
         { station: 'Electromagnet', setup: '200 turns, 4 A', result: 'field', prediction: 'More turns', metrics: [{ key: 'field_mT', label: 'Center field', value: 10, unit: 'mT', digits: 2, display: '10.00 mT' }] },
@@ -1265,7 +1265,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   });
 
   it('renders an accessible selector-and-analyzer investigation with notebook evidence', async () => {
-    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'analyzer', notebookOpen: true }));
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'analyzer', notebookOpen: true, labShellPanel: 'evidence' }));
     expect(html).toContain('Velocity selector + mass analyzer');
     expect(html).toContain('v = E/B');
     expect(html).toContain('r = mv/(|q|B)');
@@ -1293,7 +1293,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   }, 60000);
   it('renders an accessible 3D motor torque lab with linked vectors and concept landmarks', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
-      tab: 'motor', motorMode: 'forces', motorView: '3d', motor3dStatus: 'ready', motorAngle: 180, notebookOpen: true,
+      tab: 'motor', motorMode: 'forces', motorView: '3d', motor3dStatus: 'ready', motorAngle: 180, notebookOpen: true, labShellPanel: 'evidence',
     }));
     expect(html).toContain('3D torque lab');
     expect(html).toContain('Interactive three-dimensional DC motor');
@@ -1325,7 +1325,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   it('renders an accessible 3D particle helix lab with mass analysis, pinned comparison, and fallback', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
       tab: 'motor', motorMode: 'particle', chargeView: '3d', charge3dStatus: 'ready',
-      chargeTilt: 45, chargeMass: 2, chargeSign: -1, chargeField: 1, notebookOpen: true,
+      chargeTilt: 45, chargeMass: 2, chargeSign: -1, chargeField: 1, notebookOpen: true, labShellPanel: 'evidence',
       charge3dReference: { chargeSign: -1, fieldSign: 1, speed: 5, field: 4, tilt: 45, mass: 1 },
     }));
     expect(html).toContain('3D helix lab');
@@ -1368,7 +1368,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   it('renders an accessible 3D magnetic-mirror experiment with trapping and escape evidence', () => {
     const trapped = mountWithSeed(cfg, Object.assign({}, BASE, {
       tab: 'motor', motorMode: 'particle', chargeView: '3d', charge3dStatus: 'ready',
-      chargeFieldModel: 'mirror', chargeMirrorRatio: 4, chargeTilt: 60, notebookOpen: true,
+      chargeFieldModel: 'mirror', chargeMirrorRatio: 4, chargeTilt: 60, notebookOpen: true, labShellPanel: 'evidence',
     }));
     expect(trapped).toContain('Magnetic environment');
     expect(trapped).toContain('Uniform field');
@@ -1393,7 +1393,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   });
   it('renders an accessible 3D magnetosphere lab with pressure response, layers, evidence, and fallback', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
-      tab: 'earth', earthView: '3d', earth3dStatus: 'ready', earthSolarWind: 10, notebookOpen: true,
+      tab: 'earth', earthView: '3d', earth3dStatus: 'ready', earthSolarWind: 10, notebookOpen: true, labShellPanel: 'evidence',
     }));
     expect(html).toContain('3D magnetosphere lab');
     expect(html).toContain('Interactive three-dimensional schematic magnetosphere');
@@ -1565,7 +1565,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     const scan = physics.fieldScanSeries([magnet], 'axial', [50, 65, 80, 100, 125, 150, 175], 0, 0)
       .map((row, index) => Object.assign({}, row, { id: index + 1, strength: 1 }));
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
-      tab: 'field', fieldView: 'map', fieldMapSamples: scan, fieldMapUsed: true, notebookOpen: true,
+      tab: 'field', fieldView: 'map', fieldMapSamples: scan, fieldMapUsed: true, notebookOpen: true, labShellPanel: 'evidence',
     }));
     expect(html).toContain('Quantitative Field Mapping Lab');
     expect(html).toContain('Measurement lab');
@@ -1695,7 +1695,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
 
   it('renders a cross-station claim-evidence-reasoning notebook with saved trials', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
-      tab: 'field', notebookOpen: true, notebookPrediction: 'A larger gap will weaken the force.',
+      tab: 'field', notebookOpen: true, labShellPanel: 'evidence', notebookPrediction: 'A larger gap will weaken the force.',
       notebookClaim: 'Force falls rapidly with distance.',
       notebookTrials: [{ station: 'See the field', setup: 'gap 60', result: '1.000× relative pair force', prediction: 'Closer is stronger.' }],
     }));
@@ -1964,12 +1964,12 @@ describe('magnetism tool — journey strip + quiz study loop (R6)', () => {
     });
 
     it('renders the expedition map with fresh-state progress 0/21', () => {
-      const html = mountWithSeed(cfg, Object.assign({}, BASE));
+      const html = mountWithSeed(cfg, Object.assign({}, BASE, { labShellPanel: 'journey' }));
       expect(html).toContain('Journey 0/21');
     });
 
     it('journey chips light up as quests complete', () => {
-      const html = mountWithSeed(cfg, Object.assign({}, BASE, { compassMoved: true, motorRan: true, earthSeen: true }));
+      const html = mountWithSeed(cfg, Object.assign({}, BASE, { compassMoved: true, motorRan: true, earthSeen: true, labShellPanel: 'journey' }));
       expect(html).toContain('Journey 3/21');
     });
 

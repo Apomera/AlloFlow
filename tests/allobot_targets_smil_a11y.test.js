@@ -4,6 +4,54 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync('allobot_source.jsx', 'utf8');
 
 describe('AlloBot target, speech, and SMIL accessibility', () => {
+  it('keeps external-only keyframes in their owning modules', () => {
+    const owners = [
+      ['view_student_save_adventure_source.jsx', 'student-save-history-pulse'],
+      ['word_sounds_module.js', 'word-sounds-wave'],
+      ['view_spotlight_tour_source.jsx', 'spotlight-tour-glow-ring'],
+      ['view_adventure_source.jsx', 'adventure-ken-burns'],
+    ];
+    for (const [path, animationName] of owners) {
+      const ownerSource = readFileSync(path, 'utf8');
+      expect(ownerSource, `${path} should define ${animationName}`).toContain(`@keyframes ${animationName}`);
+      expect(ownerSource.match(new RegExp(animationName, 'g'))?.length || 0).toBeGreaterThan(1);
+    }
+    for (const externalName of ['history-pulse', 'soundwave', 'spotlightGlowRing', 'ken-burns']) {
+      expect(source).not.toContain(`@keyframes ${externalName}`);
+    }
+  });
+
+  it('ships the persistent Help breathing keyframe in the active built stylesheet', () => {
+    const builtHtml = readFileSync('desktop/web-app/public/app/index.html', 'utf8');
+    const cssHref = builtHtml.match(/<link href="\.\/(static\/css\/[^"?]+\.css)" rel="stylesheet"/i)?.[1];
+    expect(cssHref).toBeTruthy();
+    const builtCss = readFileSync(`desktop/web-app/public/app/${cssHref}`, 'utf8');
+    expect(builtCss).toContain('@keyframes help-breathe');
+    expect(builtCss).toMatch(/animation:help-breathe 3s ease-in-out infinite/);
+  });
+
+  it('maps every public and ambient animation to an authored class and keyframe', () => {
+    const supported = ['wave-hello', 'sympathetic-tilt', 'wave', 'backflip', 'shrug', 'look-around'];
+    const mapStart = source.indexOf('const ALLOBOT_ANIMATION_CLASS_BY_NAME');
+    const mapEnd = source.indexOf('});', mapStart);
+    expect(mapStart).toBeGreaterThan(-1);
+    expect(mapEnd).toBeGreaterThan(mapStart);
+    const mapBlock = source.slice(mapStart, mapEnd + 3);
+    const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    for (const name of supported) {
+      const className = `animate-allo-${name}`;
+      expect(mapBlock).toMatch(new RegExp(`["']?${escapeRegex(name)}["']?\\s*:\\s*["']${escapeRegex(className)}["']`));
+      const classRule = source.match(new RegExp(`\\.${escapeRegex(className)}\\s*\\{([^}]*)\\}`));
+      expect(classRule, `${className} should have module-owned animation CSS`).toBeTruthy();
+      const keyframeName = classRule?.[1].match(/animation:\s*([a-zA-Z0-9_-]+)/)?.[1];
+      expect(keyframeName, `${className} should name its keyframe`).toBeTruthy();
+      expect(source).toContain(`@keyframes ${keyframeName}`);
+    }
+
+    expect(source).toContain("const anims = ['wave', 'backflip', 'shrug', 'look-around'];");
+  });
+
   it('keeps every scaled orbit control at least 24 CSS pixels', () => {
     // The four orbit controls used to repeat their sizing inline; they now share
     // one `satelliteBase` string with a mouse and a touch branch. Both branches
@@ -34,11 +82,28 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     }
     expect(source).toContain('width: 32px;');
     expect(source).toContain('min-height: 32px;');
-    expect(source).toContain('@media (hover: none), (pointer: coarse)');
+    expect(source).toContain('@media (hover: none), (pointer: coarse), (any-pointer: coarse)');
     expect(source).toContain('width: 36px;');
     expect(source).toContain('min-height: 36px;');
     expect(source).toContain('data-allobot-satellite-kind="hide"');
     expect(source).toContain("data-allobot-satellite-state={isListening ? 'listening' : 'idle'}");
+  });
+
+  it('owns the native avatar-button reset and full-surface geometry', () => {
+    const avatarActionCss = source.slice(
+      source.indexOf('.allobot-avatar-action {'),
+      source.indexOf('.allobot-control-orbit {'),
+    );
+    for (const declaration of [
+      'position: absolute;', 'inset: 0;', 'width: 100%;', 'height: 100%;',
+      'margin: 0;', 'padding: 0;', 'border: 0;', 'appearance: none;',
+      '-webkit-appearance: none;', 'background: transparent;',
+    ]) {
+      expect(avatarActionCss).toContain(declaration);
+    }
+    expect(source.match(/className="allobot-avatar-action /g)).toHaveLength(2);
+    expect(source).toContain('[data-allobot-avatar-action="open"] { z-index: 10; }');
+    expect(source).toContain('[data-allobot-avatar-action="wake"] { z-index: 50; }');
   });
 
   it('groups satellite controls in a theme-aware visual orbit', () => {
@@ -116,7 +181,7 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     }
     expect(source).toContain("avoidSide === 'left'");
     expect(source).toContain("avoidSide === 'right'");
-    expect(source).toContain("const anchorRect = bubbleRef.current.parentElement?.getBoundingClientRect() || rect;");
+    expect(source).toContain('const anchorRect = bubble.parentElement?.getBoundingClientRect() || authoredRect;');
     expect(source).toContain('avoidSide={accessoryRenderSide}');
     expect(source).toContain("placement.endsWith('-left') ? 'left' : 'right'");
   });
@@ -144,14 +209,19 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
   });
 
   it('announces complete speech without exposing typewriter fragments twice', () => {
-    expect(source).toContain('<span role="status" aria-live="polite" aria-atomic="true" className="sr-only allobot-bubble-live">{isVisible ? text : \'\'}</span>');
-    expect(source).toContain('<span aria-hidden="true" className="allobot-bubble-text">{displayedText}</span>');
-    expect(source).toContain('isVisible && isTruncated && displayedText.length === text?.length');
+    expect(source).toContain('announce = true');
+    expect(source).toContain('<span role="status" aria-live="polite" aria-atomic="true" className="sr-only allobot-bubble-live">{isVisible && announce ? text : \'\'}</span>');
+    expect(source).toContain('<span aria-hidden="true" className="allobot-bubble-text">{renderedText}</span>');
+    expect(source).toContain('isVisible && isTruncated && renderedText.length === text?.length');
+    expect(source).toContain('announce={!!customMessage}');
   });
 
   it('describes the avatar as a movable group and isolates child control keys', () => {
     expect(source).toContain('role="group"');
-    expect(source).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"');
+    expect(source).toContain("aria-keyshortcuts={isSleeping ? undefined : 'ArrowLeft ArrowRight ArrowUp ArrowDown'}");
+    expect(source).toContain('aria-describedby={isSleeping ? undefined : moveInstructionsId}');
     expect(source).toContain('if (e.target !== e.currentTarget) return;');
+    expect(source).toContain('data-allobot-avatar-action="open"');
+    expect(source).toContain('data-allobot-avatar-action="wake"');
   });
 });

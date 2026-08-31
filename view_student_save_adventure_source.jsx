@@ -22,6 +22,17 @@ const StudentSaveThemeFallbackContext = (window.React && window.React.createCont
   : null;
 
 const cx = (...parts) => parts.filter(Boolean).join(' ');
+const STUDENT_SAVE_ANIMATION_CSS = `
+@keyframes student-save-history-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+}
+.student-save-history-pulse { animation: student-save-history-pulse 2s infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .student-save-history-pulse { animation: none; }
+}
+`;
 
 function getStudentSaveThemeStyles(themeContext = {}) {
   const theme = themeContext.theme || 'light';
@@ -172,6 +183,7 @@ function StudentSaveAdventurePanel({
 
   return (
     <>
+      <style>{STUDENT_SAVE_ANIMATION_CSS}</style>
       <section
         className={cx(styles.savePanel, 'rounded-3xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-left-4 shadow-lg')}
         aria-labelledby={saveTitleId}
@@ -198,7 +210,7 @@ function StudentSaveAdventurePanel({
             type="button"
             aria-label={t('student.save_drive')}
             onClick={initiateSaveStudentProject}
-            className={cx('px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryTeal, styles.focusTeal, styles.focusOffset, isSaveActionPulsing ? 'pulse-history shadow-teal-500/50' : '')}
+            className={cx('px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryTeal, styles.focusTeal, styles.focusOffset, isSaveActionPulsing ? 'student-save-history-pulse shadow-teal-500/50' : '')}
           >
             <Download size={14} aria-hidden="true"/> {t('student.save_drive')}
           </button>

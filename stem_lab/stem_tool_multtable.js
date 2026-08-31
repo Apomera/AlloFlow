@@ -82,6 +82,39 @@ window.StemLab = window.StemLab || {
   // ── Memory tricks for the trickiest facts (and a few peripherals) ──
   // Keyed by min-max for commutative dedupe ("6x7" == "7x6").
   function tkey(a, b) { return Math.min(a,b) + 'x' + Math.max(a,b); }
+  function parseWholeAnswer(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return null;
+    var parsed = Number(text);
+    return Number.isSafeInteger(parsed) ? parsed : null;
+  }
+  function missedFactMode(missed) {
+    if (missed && (missed.mode === 'mult' || missed.mode === 'div')) return missed.mode;
+    var a = Number(missed && missed.a), b = Number(missed && missed.b), answer = Number(missed && missed.answer);
+    return Number.isFinite(a) && Number.isFinite(b) && Number.isFinite(answer) &&
+      answer !== a * b && (answer === a || answer === b) ? 'div' : 'mult';
+  }
+  function missedFactDivisor(missed) {
+    var a = Number(missed && missed.a), b = Number(missed && missed.b), divisor = Number(missed && missed.divisor);
+    if (divisor === a || divisor === b) return divisor;
+    var answer = Number(missed && missed.answer);
+    if (answer === a) return b;
+    if (answer === b) return a;
+    return null;
+  }
+  function missedFactIdentity(missed) {
+    var mode = missedFactMode(missed);
+    return mode + ':' + tkey(Number(missed && missed.a), Number(missed && missed.b)) +
+      (mode === 'div' ? ':by-' + missedFactDivisor(missed) : '');
+  }
+  function formatMissedFact(missed) {
+    var a = Number(missed && missed.a), b = Number(missed && missed.b);
+    if (missedFactMode(missed) === 'div') {
+      var divisor = missedFactDivisor(missed);
+      if (divisor != null) return (a * b) + ' \u00F7 ' + divisor + ' = ' + missed.answer;
+    }
+    return a + ' \u00D7 ' + b + ' = ' + missed.answer;
+  }
   var MEMORY_TRICKS = {
     '6x7':  { trick: '"6 times 7 is 42." A jingle works here.',     icon: '🎵' },
     '6x8':  { trick: '6×8 = 48. Tip: 6×8 is 6×(10−2) = 60−12 = 48.', icon: '✂️' },
@@ -417,8 +450,13 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Check answer ──
+      // React may batch two click/Enter activations before _multInputDisabled is
+      // rendered back through ctx. Keep a render-local latch as well so the
+      // same problem cannot score or award twice during that gap.
+      var multSubmissionPending = false;
       function checkMult() {
-        if (!multTableChallenge || inputDisabled) return;
+        if (!multTableChallenge || inputDisabled || multSubmissionPending) return;
+        multSubmissionPending = true;
         // Compute the correct answer based on mode (mult or div)
         var correct;
         if (multTableChallenge.mode === 'div') {
@@ -427,7 +465,7 @@ window.StemLab = window.StemLab || {
         } else {
           correct = multTableChallenge.a * multTableChallenge.b;
         }
-        var ok = parseInt(multTableAnswer) === correct;
+        var ok = parseWholeAnswer(multTableAnswer) === correct;
         announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
 
         // Per-fact mastery tracking (persistent across sessions)
@@ -492,7 +530,11 @@ window.StemLab = window.StemLab || {
         // Speed Run tracking
         var missedUpdate = _mt.missed || [];
         if (_mt.active) {
-          if (!ok) missedUpdate = missedUpdate.concat([{ a: multTableChallenge.a, b: multTableChallenge.b, answer: correct }]);
+          if (!ok) missedUpdate = missedUpdate.concat([{
+            a: multTableChallenge.a, b: multTableChallenge.b, answer: correct,
+            mode: multTableChallenge.mode === 'div' ? 'div' : 'mult',
+            divisor: multTableChallenge.mode === 'div' ? multTableChallenge.divisor : null
+          }]);
           _mtUpd({ score: _mt.score + (ok ? 1 : 0), total: _mt.total + 1, streak: newStreak, missed: missedUpdate, adaptiveHistory: newHistory });
         } else {
           _mtUpd({ streak: newStreak, adaptiveHistory: newHistory });
@@ -631,7 +673,7 @@ window.StemLab = window.StemLab || {
       function getUniqueMissed(missed) {
         var seen = {};
         return (missed || []).filter(function(m) {
-          var key = m.a + 'x' + m.b;
+          var key = missedFactIdentity(m);
           if (seen[key]) return false;
           seen[key] = true;
           return true;
@@ -1312,7 +1354,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 getUniqueMissed(_mt.missed).map(function(m, i) {
                   return h('span', { key: i, className: 'inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-xs font-bold text-red-700' },
-                    m.a + ' \u00D7 ' + m.b + ' = ' + m.answer
+                    formatMissedFact(m)
                   );
                 })
               ),
@@ -1320,8 +1362,9 @@ window.StemLab = window.StemLab || {
                 onClick: function() {
                   var missed = getUniqueMissed(_mt.missed);
                   var pick = missed[Math.floor(Math.random() * missed.length)];
-                  var pMode = quizMode === 'div' ? 'div' : (quizMode === 'mixed' ? (Math.random() < 0.5 ? 'mult' : 'div') : 'mult');
-                  setMultTableChallenge({ a: pick.a, b: pick.b, mode: pMode, divisor: pMode === 'div' ? (Math.random() < 0.5 ? pick.a : pick.b) : null });
+                  var pMode = missedFactMode(pick);
+                  var pDivisor = pMode === 'div' ? missedFactDivisor(pick) : null;
+                  setMultTableChallenge({ a: pick.a, b: pick.b, mode: pMode, divisor: pDivisor });
                   setMultTableAnswer('');
                   setMultTableFeedback(null);
                   setHighlightCell(null);

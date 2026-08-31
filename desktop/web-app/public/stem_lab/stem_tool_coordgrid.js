@@ -365,6 +365,7 @@ window.StemLab = window.StemLab || {
 
       // ── Click handler ──
       var processGridCoordinate = function(x, y) {
+        if (gridChallenge && gridFeedback && gridFeedback.correct) return;
         x = Math.round(Number(x));
         y = Math.round(Number(y));
         if (!Number.isFinite(x) || !Number.isFinite(y)) return;
@@ -435,8 +436,10 @@ window.StemLab = window.StemLab || {
       };
 
       // ── Check answer ──
+      var gridSubmissionPending = false;
       var checkGrid = function() {
-        if (!gridChallenge) return;
+        if (!gridChallenge || gridSubmissionPending || (gridFeedback && gridFeedback.correct)) return;
+        gridSubmissionPending = true;
         if (gridChallenge.type === 'plot') {
           var ok = gridPoints.some(function(p) { return p.x === gridChallenge.target.x && p.y === gridChallenge.target.y; });
           var newStreak = ok ? streak + 1 : 0;
@@ -459,12 +462,18 @@ window.StemLab = window.StemLab || {
 
         } else if (gridChallenge.type === 'slope') {
           var cs = gridChallenge.slopeData;
-          var riseAns = parseInt((gridFeedback && gridFeedback.riseAnswer) || '');
-          var runAns = parseInt((gridFeedback && gridFeedback.runAnswer) || '');
+          var riseText = String((gridFeedback && gridFeedback.riseAnswer) || '').trim();
+          var runText = String((gridFeedback && gridFeedback.runAnswer) || '').trim();
+          var riseNumber = riseText === '' ? NaN : Number(riseText);
+          var runNumber = runText === '' ? NaN : Number(runText);
+          var riseAns = Number.isSafeInteger(riseNumber) ? riseNumber : null;
+          var runAns = Number.isSafeInteger(runNumber) ? runNumber : null;
           var slopeAns = ((gridFeedback && gridFeedback.slopeAnswer) || '').trim();
+          var slopeNumber = slopeAns === '' ? NaN : Number(slopeAns);
           var riseOk = riseAns === cs.rise;
           var runOk = runAns === cs.run;
-          var slopeOk = slopeAns === cs.display || slopeAns === '' + cs.value || (cs.run !== 0 && Math.abs(parseFloat(slopeAns) - cs.value) < 0.01);
+          var slopeOk = slopeAns === cs.display || slopeAns === '' + cs.value ||
+            (cs.run !== 0 && Number.isFinite(slopeNumber) && Math.abs(slopeNumber - cs.value) < 0.01);
           var hinted = gridFeedback && gridFeedback.hinted;
           var allCorrect = riseOk && runOk && slopeOk;
           var newStreak2 = allCorrect ? streak + 1 : 0;
@@ -2130,21 +2139,21 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[11px] font-bold text-red-600 uppercase' }, t('stem.coordgrid.rise_y', 'Rise (\u0394y)')),
-              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.rise_delta_y_vertical_change', 'Rise (delta y) — vertical change'), value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-red-600 rounded-lg text-sm font-bold text-center focus:border-red-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-700' : '') })
+              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.rise_delta_y_vertical_change', 'Rise (delta y) — vertical change'), value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-red-600 rounded-lg text-sm font-bold text-center focus:border-red-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-700' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[11px] font-bold text-blue-600 uppercase' }, t('stem.coordgrid.run_x', 'Run (\u0394x)')),
-              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.run_delta_x_horizontal_change', 'Run (delta x) — horizontal change'), value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-bold text-center focus:border-blue-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-700' : '') })
+              h('input', { type: 'number', placeholder: '?', 'aria-label': t('stem.coordgrid.run_delta_x_horizontal_change', 'Run (delta x) — horizontal change'), value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value, correct: false, msg: null }); }); }, disabled: !!(gridFeedback && (gridFeedback.hinted || gridFeedback.correct)), className: 'px-2 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-bold text-center focus:border-blue-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-700' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.coordgrid.slope_m', 'Slope (m)')),
-              h('input', { type: 'text', placeholder: t('stem.coordgrid.e_g_2_3', 'e.g. 2/3'), 'aria-label': t('stem.coordgrid.slope_as_a_fraction_example_2_3', 'Slope as a fraction (example: 2/3)'), value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, className: 'px-2 py-1.5 border-2 border-amber-600 rounded-lg text-sm font-bold text-center focus:border-amber-500 ' })
+              h('input', { type: 'text', placeholder: t('stem.coordgrid.e_g_2_3', 'e.g. 2/3'), 'aria-label': t('stem.coordgrid.slope_as_a_fraction_example_2_3', 'Slope as a fraction (example: 2/3)'), value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value, correct: false, msg: null }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, disabled: !!(gridFeedback && gridFeedback.correct), className: 'px-2 py-1.5 border-2 border-amber-600 rounded-lg text-sm font-bold text-center focus:border-amber-500 ' })
             )
           ),
           h('div', { className: 'flex gap-2 items-center' },
             !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': t('stem.coordgrid.hint', 'Hint'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-600' }, t('stem.coordgrid.hint_2', '\uD83D\uDCA1 Hint')),
             (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[11px] text-amber-500 italic' }, t('stem.coordgrid.hint_used', '\uD83D\uDCA1 Hint used')),
-            h('button', { 'aria-label': t('stem.coordgrid.check_2', 'Check'), onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800' }, t('stem.coordgrid.check_3', '\u2714 Check'))
+            h('button', { 'aria-label': t('stem.coordgrid.check_2', 'Check'), onClick: checkGrid, disabled: !!(gridFeedback && gridFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-50' }, t('stem.coordgrid.check_3', '\u2714 Check'))
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),
@@ -2157,11 +2166,12 @@ window.StemLab = window.StemLab || {
             h('input', { 'aria-label': t('stem.coordgrid.distance_answer_label', 'Distance answer'),
               type: 'number', step: '0.1', placeholder: t('stem.coordgrid.distance', 'Distance = ?'),
               value: (gridFeedback && gridFeedback.distanceAnswer) || '',
-              onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { distanceAnswer: e.target.value }); }); },
+              onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { distanceAnswer: e.target.value, correct: false, msg: null }); }); },
               onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); },
+              disabled: !!(gridFeedback && gridFeedback.correct),
               className: 'flex-1 px-3 py-2 border border-green-600 rounded-lg text-sm font-mono'
             }),
-            h('button', { 'aria-label': t('stem.coordgrid.check_4', 'Check'), onClick: checkGrid, className: 'px-4 py-2 bg-green-700 text-white font-bold rounded-lg text-sm hover:bg-green-700' }, t('stem.coordgrid.check_5', '\u2714 Check'))
+            h('button', { 'aria-label': t('stem.coordgrid.check_4', 'Check'), onClick: checkGrid, disabled: !!(gridFeedback && gridFeedback.correct), className: 'px-4 py-2 bg-green-700 text-white font-bold rounded-lg text-sm hover:bg-green-700 disabled:opacity-50' }, t('stem.coordgrid.check_5', '\u2714 Check'))
           ),
           // Show midpoint info
           h('div', { className: 'mt-2 text-xs text-purple-600' },
@@ -2176,7 +2186,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 items-center' },
             h('span', { className: 'text-xs text-cyan-600' }, 'Quadrant: ', h('span', { className: 'font-bold' }, getQuadrant(gridChallenge.target.x, gridChallenge.target.y))),
             h('span', { className: 'text-xs text-cyan-600 ml-2' }, 'Points: ', h('span', { className: 'font-bold' }, gridPoints.length)),
-            h('button', { 'aria-label': t('stem.coordgrid.check_6', 'Check'), onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-800' }, t('stem.coordgrid.check_7', '\u2714 Check'))
+            h('button', { 'aria-label': t('stem.coordgrid.check_6', 'Check'), onClick: checkGrid, disabled: !!(gridFeedback && gridFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-800 disabled:opacity-50' }, t('stem.coordgrid.check_7', '\u2714 Check'))
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),

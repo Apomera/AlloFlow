@@ -76,6 +76,23 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(challenger.progress({ solvedChallenges: { bogus: true } })).toBe('0/5 solved');
   });
 
+  it('parses challenge answers with strict punctuation and valid numeric symbols', () => {
+    loadTool(FILE, ID);
+    const pure = window.RatioLabPure;
+
+    expect(pure.parseNumericChallengeAnswer('$1,200.50')).toBe(1200.5);
+    expect(pure.parseNumericChallengeAnswer('25%')).toBe(25);
+    for (const malformed of ['1$2', '1%2', '1,2', '3,:4', '$12%']) {
+      expect(pure.parseNumericChallengeAnswer(malformed)).toBeNull();
+    }
+    expect(pure.challengeIsCorrect({ answer: 24 }, '$24')).toBe(true);
+    expect(pure.challengeIsCorrect({ answer: 24 }, '24%')).toBe(true);
+    expect(pure.challengeIsCorrect({ answer: 12 }, '1$2')).toBe(false);
+    expect(pure.challengeIsCorrect({ answer: 12 }, '1,2')).toBe(false);
+    expect(pure.challengeIsCorrect({ answers: ['3:4', '3/4'] }, '3 : 4')).toBe(true);
+    expect(pure.challengeIsCorrect({ answers: ['3:4', '3/4'] }, '3,:4')).toBe(false);
+  });
+
   it('renders exact fractional percent fills and multiple wholes above 100%', () => {
     loadTool(FILE, ID);
     const fractional = renderTool(ID, { _ratioLab: { mode: 'percent', percentValue: 24.5, percentWhole: 80 } });
@@ -164,6 +181,72 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(html).toContain('max="1000000"');
     expect(html).not.toContain('Infinity');
     expect(html).not.toContain('Both options have the same cost per unit.');
+
+    const overflow = renderTool(ID, {
+      _ratioLab: { mode: 'unitRates', amountA: Number.MIN_VALUE, costA: 1, amountB: 1, costB: 1 },
+    });
+    expect(overflow).toContain('Rate outside model range');
+    expect(overflow).not.toContain('Infinity');
+    expect(overflow).not.toContain('Both options have the same cost per unit.');
+
+    const underflow = window.RatioLabPure.analyzeProportionalPairs([
+      { x: Number.MAX_VALUE, y: Number.MIN_VALUE },
+      { x: Number.MAX_VALUE / 2, y: Number.MIN_VALUE },
+    ]);
+    expect(underflow).toMatchObject({ valid: false, proportional: false, hasUnrepresentableRate: true });
+    expect(underflow.errors).toContain('Coordinate magnitudes are too far apart to calculate a reliable unit rate. Use less extreme values.');
+  });
+
+  it('distinguishes very small unequal unit rates without rounding both displays to zero', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, {
+      _ratioLab: { mode: 'unitRates', amountA: 1_000_000, costA: 1, amountB: 1_000_000, costB: 2 },
+    });
+    expect(html).toContain('Option A has the lower cost per unit.');
+    expect(html).not.toContain('Both options have the same cost per unit.');
+    expect(html).toContain('$0.000001');
+    expect(html).toContain('$0.000002');
+
+    const evidence = window.RatioLabPure.formatUnitRateEvidence([
+      { x: 1, y: 1.0001 }, { x: 1, y: 1.0002 },
+    ]);
+    expect(evidence.digits).toBeGreaterThan(3);
+    expect(new Set(evidence.displays).size).toBe(2);
+
+    const proportional = renderTool(ID, {
+      _ratioLab: { mode: 'proportional', propX: '1000000,1000000', propY: '1,2' },
+    });
+    expect(proportional).toContain('Not proportional');
+    expect(proportional).toContain('0.000001');
+    expect(proportional).toContain('0.000002');
+  });
+
+  it('hides stale models while drafts are invalid and exposes accessible field errors', () => {
+    loadTool(FILE, ID);
+    const ratio = renderTool(ID, {
+      _ratioLab: { mode: 'ratioTable', ratioA: 3, ratioB: 5, ratioFactor: 4, ratioADraft: '3.5' },
+    });
+    expect(ratio).toContain('aria-invalid="true"');
+    expect(ratio).toContain('aria-describedby="ratio-field-error-ratioA"');
+    expect(ratio).toContain('Enter a whole number for First quantity.');
+    expect(ratio).toContain('The equivalent-ratio table is waiting for valid whole-number inputs.');
+    expect(ratio).not.toContain('Scaled ratio');
+
+    const percent = renderTool(ID, {
+      _ratioLab: { mode: 'percent', percentKind: 'findPart', percentValue: 25, percentWhole: 80, percentWholeDraft: '' },
+    });
+    expect(percent).toContain('aria-describedby="ratio-field-error-percentWhole"');
+    expect(percent).toContain('Enter a value for Whole.');
+    expect(percent).toContain('Finish the inputs');
+    expect(percent).not.toContain('data-percent-tape-total');
+
+    document.body.innerHTML = renderTool(ID, {
+      _ratioLab: { mode: 'ratioTable', ratioA: 3.5, ratioB: 101, ratioFactor: 12.7 },
+    });
+    expect(document.querySelector('[aria-label="First quantity"]').value).toBe('4');
+    expect(document.querySelector('[aria-label="Second quantity"]').value).toBe('100');
+    expect(document.querySelector('[aria-label="Scale factor"]').value).toBe('12');
+    expect(document.body.textContent).toContain('48:1200');
   });
 
   it('scopes challenge answers, feedback, and cursors to stable challenge IDs', () => {

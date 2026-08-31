@@ -3155,7 +3155,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     management.comparedThroughDay = sharedManagementDay;
     management.checkpointAligned = dayCheck.matched;
     var plannedChoice = bhComparePlannedManagementChoice(requestedPlan, management);
-    var interpretationReady = matchedCheckpoint && management.status === 'one-change' && plannedChoice.status === 'matched';
+    var planRegistration = bhCompareExperimentPlanRegistration(normalizedNotebook, current.runSerial, baseline.runSerial);
+    var interpretationReady = matchedCheckpoint && management.status === 'one-change' && plannedChoice.status === 'matched' && planRegistration.status === 'matched';
     var status = !controlledSetup ? 'exploratory' : !distinctRuns ? 'same-run' : dayCheck.matched ? 'matched' : 'checkpoint';
     var comparison = {
       baseline: baseline,
@@ -3166,6 +3167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       matchedCheckpoint: matchedCheckpoint,
       management: management,
       plannedChoice: plannedChoice,
+      planRegistration: planRegistration,
       interpretationReady: interpretationReady,
       status: status,
       metrics: BEEHIVE_EXPERIMENT_COMPARE_METRICS.map(function(definition) {
@@ -3185,7 +3187,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     comparison.prediction = bhEvaluateExperimentPrediction(normalizedNotebook, comparison);
     return comparison;
   }
-  var BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION = 3;
+  var BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION = 4;
+  var BEEHIVE_EXPERIMENT_PLAN_REGISTRATION_VERSION = 1;
+  var BEEHIVE_EXPERIMENT_PLAN_REQUIRED_FIELDS = [
+    { id: 'plannedActionId', label: 'management choice' },
+    { id: 'predictedMetricId', label: 'prediction metric' },
+    { id: 'predictedDirection', label: 'expected direction' },
+    { id: 'question', label: 'research question' },
+    { id: 'hypothesis', label: 'hypothesis' },
+    { id: 'changedVariable', label: 'intended change' },
+    { id: 'prediction', label: 'checkpoint prediction' }
+  ];
   var BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS = [
     { id: 'question', label: 'Research question', maxLength: 300 },
     { id: 'hypothesis', label: 'Hypothesis', maxLength: 600 },
@@ -3198,6 +3210,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
   function bhExperimentNotebookValue(value, maxLength) {
     return (typeof value === 'string' ? value : '').slice(0, maxLength);
+  }
+
+  function bhExperimentPlanValues(value) {
+    var source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    var plannedAction = bhExperimentPlanAction(source.plannedActionId);
+    var predictedMetric = bhExperimentPredictionMetric(source.predictedMetricId);
+    var predictedDirection = bhExperimentPredictionDirection(source.predictedDirection);
+    return {
+      plannedActionId: plannedAction ? plannedAction.id : '',
+      predictedMetricId: predictedMetric ? predictedMetric.id : '',
+      predictedDirection: predictedDirection ? predictedDirection.id : '',
+      question: bhExperimentNotebookValue(source.question, 300).trim(),
+      hypothesis: bhExperimentNotebookValue(source.hypothesis, 600).trim(),
+      changedVariable: bhExperimentNotebookValue(source.changedVariable, 300).trim(),
+      prediction: bhExperimentNotebookValue(source.prediction, 600).trim()
+    };
+  }
+
+  function bhExperimentPlanMissing(value) {
+    var plan = bhExperimentPlanValues(value);
+    return BEEHIVE_EXPERIMENT_PLAN_REQUIRED_FIELDS.filter(function(field) { return !String(plan[field.id] || '').trim(); });
+  }
+
+  function bhCreateExperimentPlanRegistration(notebookValue, runSerialValue, baselineRunSerialValue) {
+    var plan = bhExperimentPlanValues(notebookValue);
+    return Object.assign({
+      schemaVersion: BEEHIVE_EXPERIMENT_PLAN_REGISTRATION_VERSION,
+      runSerial: bhExperimentRunSerial(runSerialValue),
+      baselineRunSerial: bhExperimentRunSerial(baselineRunSerialValue),
+      complete: bhExperimentPlanMissing(plan).length === 0
+    }, plan);
+  }
+
+  function bhNormalizeExperimentPlanRegistration(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    if (Number(value.schemaVersion) !== BEEHIVE_EXPERIMENT_PLAN_REGISTRATION_VERSION) return null;
+    var runSerial = Number(value.runSerial);
+    var baselineRunSerial = Number(value.baselineRunSerial);
+    if (!isFinite(runSerial) || runSerial < 1 || !isFinite(baselineRunSerial) || baselineRunSerial < 1) return null;
+    return bhCreateExperimentPlanRegistration(value, runSerial, baselineRunSerial);
+  }
+
+  function bhCompareExperimentPlanRegistration(notebookValue, runSerialValue, baselineRunSerialValue) {
+    var source = notebookValue && typeof notebookValue === 'object' && !Array.isArray(notebookValue) ? notebookValue : {};
+    var currentPlan = bhExperimentPlanValues(source);
+    var registeredPlan = bhNormalizeExperimentPlanRegistration(source.registeredPlan);
+    var runSerial = bhExperimentRunSerial(runSerialValue);
+    var baselineRunSerial = bhExperimentRunSerial(baselineRunSerialValue);
+    var belongsToComparison = !!(registeredPlan && registeredPlan.runSerial === runSerial && registeredPlan.baselineRunSerial === baselineRunSerial);
+    var missing = belongsToComparison ? bhExperimentPlanMissing(registeredPlan) : [];
+    var differences = belongsToComparison ? BEEHIVE_EXPERIMENT_PLAN_REQUIRED_FIELDS.filter(function(field) {
+      return currentPlan[field.id] !== registeredPlan[field.id];
+    }).map(function(field) {
+      return { id: field.id, label: field.label, registered: registeredPlan[field.id], current: currentPlan[field.id] };
+    }) : [];
+    return {
+      status: !belongsToComparison ? 'unregistered' : missing.length ? 'incomplete' : differences.length ? 'changed' : 'matched',
+      runSerial: runSerial,
+      baselineRunSerial: baselineRunSerial,
+      registeredRunSerial: registeredPlan ? registeredPlan.runSerial : null,
+      registeredBaselineRunSerial: registeredPlan ? registeredPlan.baselineRunSerial : null,
+      missing: missing,
+      differences: differences,
+      registeredPlan: belongsToComparison ? registeredPlan : null
+    };
+  }
+
+  function bhExperimentNotebookWithRegisteredPlan(notebookRootValue, runSerialValue, baselineRunSerialValue) {
+    var source = notebookRootValue && typeof notebookRootValue === 'object' && !Array.isArray(notebookRootValue) ? notebookRootValue : {};
+    var root = Object.assign({}, source);
+    var experiment = bhNormalizeExperimentNotebook(source.experiment);
+    experiment.registeredPlan = bhCreateExperimentPlanRegistration(experiment, runSerialValue, baselineRunSerialValue);
+    root.experiment = experiment;
+    return root;
   }
 
   function bhNormalizeExperimentNotebook(value) {
@@ -3220,6 +3306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS.forEach(function(field) {
       normalized[field.id] = bhExperimentNotebookValue(source[field.id], field.maxLength);
     });
+    normalized.registeredPlan = bhNormalizeExperimentPlanRegistration(source.registeredPlan);
     return normalized;
   }
 
@@ -3235,6 +3322,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     function metricDelta(row) {
       var shown = row.precision === 0 ? Math.round(row.delta).toLocaleString() : Number(row.delta).toFixed(row.precision).replace(/\.0$/, '');
       return (row.delta > 0 ? '+' : '') + shown + (row.suffix || '');
+    }
+    function planAuditValue(fieldId, value) {
+      if (fieldId === 'plannedActionId') return (bhExperimentPlanAction(value) || { label: recorded(value) }).label;
+      if (fieldId === 'predictedMetricId') return (bhExperimentPredictionMetric(value) || { label: recorded(value) }).label;
+      if (fieldId === 'predictedDirection') return (bhExperimentPredictionDirection(value) || { label: recorded(value) }).label;
+      return recorded(value).replace(/\s+/g, ' ');
     }
     function managementChoice(action) {
       return action ? 'Day ' + action.day + ': ' + action.label + (action.cost ? ' (' + action.cost + ')' : '') : 'None';
@@ -3252,6 +3345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '- **Planned management choice:** ' + (bhExperimentPlanAction(notebook.plannedActionId) || { label: 'Not selected yet.' }).label,
       '- **Prediction metric:** ' + (bhExperimentPredictionMetric(notebook.predictedMetricId) || { label: 'Not selected yet.' }).label,
       '- **Expected direction:** ' + (bhExperimentPredictionDirection(notebook.predictedDirection) || { label: 'Not selected yet.' }).label,
+      '- **Plan registration:** ' + (notebook.registeredPlan ? 'Recorded before Colony Run ' + notebook.registeredPlan.runSerial + ' against Run A Colony Run ' + notebook.registeredPlan.baselineRunSerial + (notebook.registeredPlan.complete ? ' (complete)' : ' (incomplete)') : 'Not recorded for a Run B yet.'),
       '- **One intended change:** ' + recorded(notebook.changedVariable),
       '- **Checkpoint prediction:** ' + recorded(notebook.prediction),
       '',
@@ -3271,17 +3365,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       lines.push('Run A has not been saved yet. Save a checkpoint before interpreting differences.');
       return lines.join('\n');
     }
-    var statusLabel = comparison.status === 'matched'
-      ? comparison.management.status === 'one-change'
-        ? comparison.plannedChoice.status === 'matched'
-          ? 'Planned comparison ready'
-          : comparison.plannedChoice.status === 'unplanned'
+    var statusLabel;
+    if (comparison.status === 'matched') {
+      if (comparison.management.status === 'one-change') {
+        if (comparison.plannedChoice.status === 'matched') {
+          statusLabel = comparison.planRegistration.status === 'matched'
+            ? 'Protected comparison ready'
+            : comparison.planRegistration.status === 'changed'
+              ? 'Matched checkpoint - plan changed after Run B started'
+              : comparison.planRegistration.status === 'incomplete'
+                ? 'Matched checkpoint - plan incomplete at Run B start'
+                : 'Matched checkpoint - plan timing not recorded';
+        } else {
+          statusLabel = comparison.plannedChoice.status === 'unplanned'
             ? 'Matched checkpoint - planned choice not selected'
-            : 'Matched checkpoint - recorded change differs from plan'
-        : comparison.management.status === 'identical'
+            : 'Matched checkpoint - recorded change differs from plan';
+        }
+      } else {
+        statusLabel = comparison.management.status === 'identical'
           ? 'Matched checkpoint - no recorded choice change'
-          : 'Matched checkpoint - multiple recorded choice changes'
-      : comparison.status === 'same-run' ? 'Same colony run - restart required' : comparison.status === 'checkpoint' ? 'Checkpoint timing differs' : 'Exploratory comparison';
+          : 'Matched checkpoint - multiple recorded choice changes';
+      }
+    } else {
+      statusLabel = comparison.status === 'same-run' ? 'Same colony run - restart required' : comparison.status === 'checkpoint' ? 'Checkpoint timing differs' : 'Exploratory comparison';
+    }
     lines.push('### Run A / Run B evidence');
     lines.push('- **Comparison status:** ' + statusLabel);
     lines.push('- **Run identities:** Colony Run ' + comparison.baseline.runSerial + ' / Colony Run ' + comparison.current.runSerial);
@@ -3293,6 +3400,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     comparison.checks.forEach(function(check) {
       lines.push('| ' + check.label + ' | ' + check.baseline + ' | ' + check.current + ' | ' + (check.matched ? 'Matched' : 'Different') + ' |');
     });
+    lines.push('');
+    lines.push('### Plan-timing audit');
+    lines.push('- **Result:** ' + (comparison.planRegistration.status === 'matched' ? 'Complete plan matches the copy recorded before Run B' : comparison.planRegistration.status === 'changed' ? 'Current plan differs from the copy recorded before Run B' : comparison.planRegistration.status === 'incomplete' ? 'Plan copy recorded before Run B was incomplete' : 'No plan copy is tied to this Run B and saved Run A'));
+    if (comparison.planRegistration.registeredPlan) {
+      lines.push('- **Bound runs:** Run A Colony Run ' + comparison.planRegistration.baselineRunSerial + ' / Run B Colony Run ' + comparison.planRegistration.runSerial);
+    }
+    comparison.planRegistration.missing.forEach(function(field) {
+      lines.push('- **Missing at Run B start:** ' + field.label);
+    });
+    comparison.planRegistration.differences.forEach(function(difference) {
+      lines.push('- **Edited after Run B start - ' + difference.label + ':** Recorded: ' + planAuditValue(difference.id, difference.registered) + ' / Current: ' + planAuditValue(difference.id, difference.current));
+    });
+    lines.push('- **Recovery:** ' + (comparison.planRegistration.status === 'matched' ? 'No timing repair needed.' : 'Complete the current plan and restart Run B to create a new protected copy.'));
     lines.push('');
     lines.push('### Management-choice audit');
     lines.push('- **Recorded-choice result:** ' + (comparison.management.status === 'one-change' ? 'One difference' : comparison.management.status === 'identical' ? 'No differences' : comparison.management.differenceCount + ' differences'));
@@ -3329,8 +3449,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     lines.push('- **Run B recent choices:** ' + managementChoices(comparison.current));
     lines.push('');
     lines.push(comparison.interpretationReady
-      ? '*Interpretation guard: controls, timing, one recorded choice difference, and the planned-choice audit align, but the simulation evidence does not prove causation by itself.*'
-      : comparison.matchedCheckpoint && comparison.management.status === 'one-change' && comparison.plannedChoice.status === 'unplanned'
+      ? '*Interpretation guard: controls, timing, one recorded choice difference, the planned-choice audit, and the pre-run plan copy align, but the simulation evidence does not prove causation by itself.*'
+      : comparison.matchedCheckpoint && comparison.management.status === 'one-change' && comparison.plannedChoice.status === 'matched' && comparison.planRegistration.status !== 'matched'
+        ? '*Interpretation guard: controls, timing, and the recorded management change align, but the current plan was not completely recorded before this Run B. Restart Run B with the current plan before making a causal interpretation.*'
+        : comparison.matchedCheckpoint && comparison.management.status === 'one-change' && comparison.plannedChoice.status === 'unplanned'
         ? '*Interpretation guard: controls, timing, and one recorded difference align, but a structured planned choice was not selected. Record the plan before interpreting the difference.*'
         : comparison.matchedCheckpoint && comparison.management.status === 'one-change'
           ? '*Interpretation guard: controls and timing match, but the recorded change does not match the planned management choice. Treat this as an unplanned result and repeat the trial.*'
@@ -24822,9 +24944,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var nextRunSerial = bhExperimentRunSerial(d.experimentRunSerial) + 1;
             var reset = bhCreateNewColonyState(simulationSeed, nextRunSerial);
             reset.experimentBaseline = experimentBaseline;
+            reset.notebook = bhExperimentNotebookWithRegisteredPlan(d.notebook, nextRunSerial, experimentBaseline.runSerial);
+            var registration = reset.notebook.experiment.registeredPlan;
             updAll(reset);
-            announceBee('Separate Colony Run ' + nextRunSerial + ' started with the same event recipe. Run A and notebook entries remain saved.', false);
-            if (addToast) addToast('Run B started with the same seed.', 'success');
+            announceBee('Separate Colony Run ' + nextRunSerial + ' started with the same event recipe. ' + (registration.complete ? 'The complete plan was recorded before Run B.' : 'The plan was incomplete when Run B began; complete it and restart Run B for a protected comparison.'), false);
+            if (addToast) addToast(registration.complete ? 'Run B started with the plan recorded.' : 'Run B started; plan timing needs revision.', registration.complete ? 'success' : 'warning');
           }
           function clearExperimentBaseline() {
             updAll({ experimentBaseline: null });
@@ -24893,8 +25017,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var comparisonLabel = experimentComparison.status === 'matched' ? 'matched comparison' : experimentComparison.status === 'same-run' ? 'same colony run; restart required' : experimentComparison.status === 'checkpoint' ? 'checkpoint timing differs' : 'exploratory comparison';
             var choiceAuditLabel = experimentComparison.management.status === 'one-change' ? 'one recorded difference' : experimentComparison.management.status === 'identical' ? 'no recorded differences' : experimentComparison.management.differenceCount + ' recorded differences';
             var planAuditLabel = experimentComparison.plannedChoice.status === 'matched' ? 'recorded change matches ' + experimentComparison.plannedChoice.plannedActionLabel : experimentComparison.plannedChoice.status === 'mismatched' ? 'recorded change ' + experimentComparison.plannedChoice.observedActionLabel + ' does not match ' + experimentComparison.plannedChoice.plannedActionLabel : experimentComparison.plannedChoice.status === 'unplanned' ? 'no structured planned choice selected' : 'waiting for one recorded difference';
+            var timingAuditLabel = experimentComparison.planRegistration.status === 'matched' ? 'complete plan recorded before Run B' : experimentComparison.planRegistration.status === 'changed' ? 'current plan differs from the pre-run copy' : experimentComparison.planRegistration.status === 'incomplete' ? 'pre-run copy was incomplete' : 'no plan copy tied to this Run B and Run A';
             var predictionAuditLabel = experimentComparison.prediction.status === 'aligned' ? experimentComparison.prediction.metricLabel + ': ' + experimentComparison.prediction.observedDirectionLabel + '; displayed direction aligned with the prediction' : experimentComparison.prediction.status === 'not-aligned' ? experimentComparison.prediction.metricLabel + ': ' + experimentComparison.prediction.observedDirectionLabel + '; displayed direction did not align with the prediction' : experimentComparison.prediction.status === 'waiting' ? experimentComparison.prediction.metricLabel + ' prediction waiting for a matched checkpoint' : 'no structured metric-and-direction prediction selected';
-            var snapshot = 'Run A Day ' + experimentComparison.baseline.capturedDay + ' vs Run B Day ' + experimentComparison.current.capturedDay + ' (' + comparisonLabel + '). Management-choice audit: ' + choiceAuditLabel + (experimentComparison.matchedCheckpoint ? ' at the matched checkpoint. ' : ' provisionally through Day ' + experimentComparison.management.comparedThroughDay + '. ') + 'Planned-choice audit: ' + planAuditLabel + '. Prediction audit: ' + predictionAuditLabel + '. ' + experimentComparison.metrics.map(function(row) {
+            var snapshot = 'Run A Day ' + experimentComparison.baseline.capturedDay + ' vs Run B Day ' + experimentComparison.current.capturedDay + ' (' + comparisonLabel + '). Management-choice audit: ' + choiceAuditLabel + (experimentComparison.matchedCheckpoint ? ' at the matched checkpoint. ' : ' provisionally through Day ' + experimentComparison.management.comparedThroughDay + '. ') + 'Planned-choice audit: ' + planAuditLabel + '. Plan-timing audit: ' + timingAuditLabel + '. Prediction audit: ' + predictionAuditLabel + '. ' + experimentComparison.metrics.map(function(row) {
               return row.label + ': ' + experimentMetricValue(row, 'baseline') + ' to ' + experimentMetricValue(row, 'current') + ' (' + experimentMetricDelta(row) + ')';
             }).join('; ') + '.';
             var current = String(experimentNotebook.observations || '').trim();
@@ -24926,7 +25051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               hypothesis: { prompt: 'State what you expect and why. A useful frame is: If... then... because...', placeholder: 'If I change..., then... because...' },
               changedVariable: { prompt: 'Explain how you will add, omit, retime, or alter the selected management choice while holding the seed, stock, site, and checkpoint steady.', placeholder: 'For this planned choice, I will change only...' },
               prediction: { prompt: 'Name the checkpoint and at least one measurable outcome.', placeholder: 'At Day..., I predict Run B will...' },
-              observations: { prompt: experimentComparison && experimentComparison.interpretationReady ? 'Cite specific Run A and Run B values. Connect them cautiously to the recorded change that matches your plan.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'unplanned' ? 'The checkpoints and one recorded difference align. Select the planned management choice before interpreting it.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' ? 'The recorded difference does not match the planned choice. Describe it as an unplanned result and avoid attributing an effect.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'identical' ? 'The checkpoints match, but no recorded management choice differs. Record that there is no changed variable yet.' : experimentComparison && experimentComparison.matchedCheckpoint ? 'The checkpoints match, but multiple management choices differ. Describe values without attributing them to one choice.' : experimentComparison && experimentComparison.status === 'same-run' ? 'This is still the same colony run. Start a separate Run B before interpreting differences as repeat-trial evidence.' : experimentComparison ? 'Record what you notice, but identify the unmatched control or timing before interpreting it.' : 'List the metrics you plan to measure after saving Run A.', placeholder: 'I observed that Run A... while Run B...' },
+              observations: { prompt: experimentComparison && experimentComparison.interpretationReady ? 'Cite specific Run A and Run B values. Connect them cautiously to the recorded change that matches your plan.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'matched' && experimentComparison.planRegistration.status !== 'matched' ? (bhExperimentPlanMissing(experimentNotebook).length ? 'The recorded action matches the current plan, but that plan is incomplete. Complete it, then restart Run B before interpreting an effect.' : 'The recorded action matches the current plan, but its timing is not protected. Restart Run B with the complete current plan before interpreting an effect.') : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'unplanned' ? 'The checkpoints and one recorded difference align. Select the planned management choice before interpreting it.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' ? 'The recorded difference does not match the planned choice. Describe it as an unplanned result and avoid attributing an effect.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'identical' ? 'The checkpoints match, but no recorded management choice differs. Record that there is no changed variable yet.' : experimentComparison && experimentComparison.matchedCheckpoint ? 'The checkpoints match, but multiple management choices differ. Describe values without attributing them to one choice.' : experimentComparison && experimentComparison.status === 'same-run' ? 'This is still the same colony run. Start a separate Run B before interpreting differences as repeat-trial evidence.' : experimentComparison ? 'Record what you notice, but identify the unmatched control or timing before interpreting it.' : 'List the metrics you plan to measure after saving Run A.', placeholder: 'I observed that Run A... while Run B...' },
               alternativeExplanation: { prompt: 'What else, including an unmatched control or model limitation, could explain the result?', placeholder: 'Another possible explanation is...' },
               conclusion: { prompt: 'Say whether the evidence supported the hypothesis, how confident you are, and what you would test next.', placeholder: 'The evidence supported / did not support... My confidence is... Next I would...' }
             };
@@ -24963,7 +25088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-indigo-700 text-indigo-200' : 'border-indigo-200 text-indigo-800') }, completed + '/' + notebookItemTotal),
                 h('span', { className: 'text-lg transition-transform group-open:rotate-180 motion-reduce:transition-none', 'aria-hidden': 'true' }, '\u2304')),
               h('div', { className: 'border-t p-3 sm:p-4 ' + (dk ? 'border-indigo-800/60' : 'border-indigo-200') },
-                h('p', { className: 'text-[10px] leading-relaxed ' + bodyTone }, 'Write the plan before changing Run B when possible. Entries save automatically and remain available through colony restarts.'),
+                h('p', { className: 'text-[10px] leading-relaxed ' + bodyTone }, 'Complete the plan before starting Run B. The tool records that version at restart, while later edits remain possible and visible in the timing audit.'),
                 h('fieldset', { 'data-experiment-notebook-phase': 'plan', className: 'mt-3' },
                   h('legend', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, '1. Plan the test'),
                   h('label', { 'data-experiment-planned-action-control': 'true', className: 'mt-2 block rounded-xl border p-3 ' + cardTone },
@@ -25014,8 +25139,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               { id: 'plan', label: 'Plan the test', detail: 'Select the management choice, outcome metric, and expected direction; then explain the question, change, and prediction.', complete: planReady },
               { id: 'baseline', label: 'Save Run A', detail: 'Capture the first colony checkpoint before starting the repeat.', complete: !!experimentBaseline },
               { id: 'repeat', label: 'Start a separate Run B', detail: 'Restart with the same event recipe. Run A and notebook entries stay saved.', complete: !!(experimentComparison && experimentComparison.distinctRuns) },
+              { id: 'registration', label: 'Protect the plan', detail: 'Verify that the complete current plan matches the version recorded before Run B began.', complete: !!(experimentComparison && experimentComparison.planRegistration.status === 'matched') },
               { id: 'checkpoint', label: 'Match the checkpoint', detail: 'Hold seed, stock, site, and timing steady before interpreting differences.', complete: !!(experimentComparison && experimentComparison.matchedCheckpoint) },
-              { id: 'choice', label: 'Verify the planned change', detail: 'Confirm exactly one recorded difference and make sure it matches the selected management choice.', complete: !!(experimentComparison && experimentComparison.interpretationReady) },
+              { id: 'choice', label: 'Verify the planned change', detail: 'Confirm exactly one recorded difference and make sure it matches the selected management choice.', complete: !!(experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'matched') },
               { id: 'prediction', label: 'Check the prediction', detail: 'Compare the selected metric direction with the matched result. Alignment is not proof of cause.', complete: !!(experimentComparison && (experimentComparison.prediction.status === 'aligned' || experimentComparison.prediction.status === 'not-aligned')) },
               { id: 'explain', label: 'Explain the evidence', detail: 'Record observations, an alternative explanation, and a conclusion.', complete: explanationReady }
             ];
@@ -25024,7 +25150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('h5', { id: 'beehive-experiment-protocol-title', className: 'text-[11px] font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Fair-test path'),
                 h('span', { className: 'text-[10px] font-bold ' + bodyTone }, protocolSteps.filter(function(step) { return step.complete; }).length + ' of ' + protocolSteps.length + ' steps ready')),
-              h('ol', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-7' }, protocolSteps.map(function(step, index) {
+              h('ol', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4' }, protocolSteps.map(function(step, index) {
                 var state = step.complete ? 'complete' : index === currentIndex ? 'current' : 'upcoming';
                 var tone = state === 'complete'
                   ? (dk ? 'border-emerald-700/40 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50')
@@ -25121,6 +25247,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + bodyTone }, planDetail)));
           }
 
+          function renderPlanRegistrationAudit() {
+            var audit = experimentComparison.planRegistration;
+            var badgeLabel;
+            var detail;
+            var tone;
+            if (audit.status === 'matched') {
+              badgeLabel = 'Recorded before Run B';
+              detail = 'The complete current plan matches the version recorded before Colony Run ' + audit.runSerial + ' began.';
+              tone = dk ? 'border-emerald-700/45 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60';
+            } else if (audit.status === 'changed') {
+              badgeLabel = 'Plan edited after start';
+              detail = 'The current plan differs in ' + audit.differences.length + ' item' + (audit.differences.length === 1 ? '' : 's') + ' from the version recorded before Run B.';
+              tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
+            } else if (audit.status === 'incomplete') {
+              badgeLabel = 'Incomplete when Run B began';
+              detail = 'The recorded plan was missing ' + audit.missing.map(function(item) { return item.label; }).join(', ') + '. Complete the plan, then restart Run B.';
+              tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
+            } else if (experimentComparison.status === 'same-run') {
+              badgeLabel = 'Records at Run B start';
+              detail = 'Complete the plan first when possible. Starting Run B saves an immutable copy for this timing check.';
+              tone = dk ? 'border-violet-800/50 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60';
+            } else {
+              badgeLabel = 'Timing not recorded';
+              detail = 'This Run B has no plan copy tied to the saved Run A. Complete the current plan and restart Run B to protect the evidence chain.';
+              tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
+            }
+            var issueItems = audit.status === 'changed' ? audit.differences : audit.status === 'incomplete' ? audit.missing : [];
+            return h('section', { 'data-experiment-plan-registration': 'true', 'data-plan-registration-status': audit.status, className: 'mt-3 rounded-xl border p-3 ' + tone, 'aria-labelledby': 'beehive-plan-registration-title' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                h('div', null,
+                  h('h5', { id: 'beehive-plan-registration-title', className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Plan timing check'),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + bodyTone }, detail)),
+                h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, badgeLabel)),
+              issueItems.length > 0 && h('ul', { className: 'mt-2 flex flex-wrap gap-1.5', 'aria-label': audit.status === 'changed' ? 'Plan items edited after Run B began' : 'Plan items missing when Run B began' }, issueItems.map(function(item) {
+                return h('li', { key: item.id, className: 'rounded-full border px-2 py-1 text-[9px] font-bold ' + cardTone }, item.label);
+              })),
+              h('p', { className: 'mt-2 text-[9px] leading-relaxed ' + bodyTone }, 'The recorded copy is never overwritten by editing. Restarting Run B deliberately creates a new copy from the current plan.'));
+          }
+
           function renderPredictionAudit() {
             var audit = experimentComparison.prediction;
             var badgeLabel;
@@ -25186,40 +25351,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 renderExperimentProtocol(),
                 renderExperimentNotebook());
             }
-            var comparisonStatus = experimentComparison.status === 'matched'
-              ? experimentComparison.management.status === 'one-change'
-                ? experimentComparison.plannedChoice.status === 'matched'
-                  ? { label: 'Planned comparison ready', detail: 'Setup, separate runs, checkpoint, one recorded difference, and the selected plan all align. Interpret patterns cautiously and name uncertainty.', tone: dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800' }
-                  : experimentComparison.plannedChoice.status === 'unplanned'
-                    ? { label: 'Choose the planned choice', detail: 'Setup, checkpoint, and one recorded difference align. Select the intended management choice before interpreting the metrics.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
-                    : { label: 'Recorded change differs from plan', detail: 'The sole recorded Run B change is ' + experimentComparison.plannedChoice.observedActionLabel + ', not the selected ' + experimentComparison.plannedChoice.plannedActionLabel + '. Treat this as an unplanned result.', tone: dk ? 'bg-rose-900/60 text-rose-200' : 'bg-rose-100 text-rose-800' }
-                : experimentComparison.management.status === 'identical'
-                  ? { label: 'No changed choice yet', detail: 'Setup and checkpoint match, but the recorded management choices are identical. There is no changed variable to interpret.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
-                  : { label: 'Multiple choices changed', detail: experimentComparison.management.differenceCount + ' recorded choices differ, so the metrics cannot isolate one management change.', tone: dk ? 'bg-rose-900/60 text-rose-200' : 'bg-rose-100 text-rose-800' }
-              : experimentComparison.status === 'same-run'
-                ? { label: 'Restart to create Run B', detail: 'Run A is saved, but both checkpoints still refer to Colony Run ' + experimentComparison.current.runSerial + '. Start a separate Run B before interpreting differences.', tone: dk ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-800' }
-                : experimentComparison.status === 'checkpoint'
-                  ? { label: 'Match the checkpoint', detail: 'The setup and separate runs match, but the timing does not. Advance Run B to Day ' + experimentComparison.baseline.capturedDay + ' before interpreting differences.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
-                  : { label: 'Exploratory comparison', detail: 'One or more controls differ. Notice patterns, but do not treat the differences as proof that a management choice caused them.', tone: dk ? 'bg-sky-900/60 text-sky-200' : 'bg-sky-100 text-sky-800' };
-            var evidencePrompt = experimentComparison.interpretationReady
-              ? experimentComparison.prediction.status === 'aligned'
+            var comparisonStatus;
+            if (experimentComparison.status === 'matched') {
+              if (experimentComparison.management.status === 'one-change') {
+                if (experimentComparison.plannedChoice.status === 'matched') {
+                  comparisonStatus = experimentComparison.planRegistration.status === 'matched'
+                    ? { label: 'Protected comparison ready', detail: 'Setup, separate runs, checkpoint, one recorded difference, planned choice, and the plan recorded before Run B all align.', tone: dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800' }
+                    : experimentComparison.planRegistration.status === 'changed'
+                      ? { label: 'Plan changed after Run B started', detail: 'The recorded action matches the current plan, but that plan differs from the version saved before Run B. Restart with the current plan before interpreting causally.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
+                      : experimentComparison.planRegistration.status === 'incomplete'
+                        ? { label: 'Plan was incomplete at Run B start', detail: 'The action and checkpoint align, but the pre-run plan was incomplete. Complete the current plan and restart Run B.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
+                        : { label: 'Plan timing not recorded', detail: 'The action and checkpoint align, but no plan copy is tied to this Run B and saved Run A. Restart Run B with the current plan.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' };
+                } else if (experimentComparison.plannedChoice.status === 'unplanned') {
+                  comparisonStatus = { label: 'Choose the planned choice', detail: 'Setup, checkpoint, and one recorded difference align. Select the intended management choice before interpreting the metrics.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' };
+                } else {
+                  comparisonStatus = { label: 'Recorded change differs from plan', detail: 'The sole recorded Run B change is ' + experimentComparison.plannedChoice.observedActionLabel + ', not the selected ' + experimentComparison.plannedChoice.plannedActionLabel + '. Treat this as an unplanned result.', tone: dk ? 'bg-rose-900/60 text-rose-200' : 'bg-rose-100 text-rose-800' };
+                }
+              } else if (experimentComparison.management.status === 'identical') {
+                comparisonStatus = { label: 'No changed choice yet', detail: 'Setup and checkpoint match, but the recorded management choices are identical. There is no changed variable to interpret.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' };
+              } else {
+                comparisonStatus = { label: 'Multiple choices changed', detail: experimentComparison.management.differenceCount + ' recorded choices differ, so the metrics cannot isolate one management change.', tone: dk ? 'bg-rose-900/60 text-rose-200' : 'bg-rose-100 text-rose-800' };
+              }
+            } else if (experimentComparison.status === 'same-run') {
+              comparisonStatus = { label: 'Restart to create Run B', detail: 'Run A is saved, but both checkpoints still refer to Colony Run ' + experimentComparison.current.runSerial + '. Start a separate Run B before interpreting differences.', tone: dk ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-800' };
+            } else if (experimentComparison.status === 'checkpoint') {
+              comparisonStatus = { label: 'Match the checkpoint', detail: 'The setup and separate runs match, but the timing does not. Advance Run B to Day ' + experimentComparison.baseline.capturedDay + ' before interpreting differences.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' };
+            } else {
+              comparisonStatus = { label: 'Exploratory comparison', detail: 'One or more controls differ. Notice patterns, but do not treat the differences as proof that a management choice caused them.', tone: dk ? 'bg-sky-900/60 text-sky-200' : 'bg-sky-100 text-sky-800' };
+            }
+            var evidencePrompt;
+            if (experimentComparison.interpretationReady) {
+              evidencePrompt = experimentComparison.prediction.status === 'aligned'
                 ? 'Evidence prompt: The selected metric moved in the predicted direction. Which values support that description, and what alternative explanation remains?'
                 : experimentComparison.prediction.status === 'not-aligned'
                   ? 'Evidence prompt: The selected metric did not move in the predicted direction. Which values show that, and how should the explanation change?'
-                  : 'Planning prompt: Choose one prediction metric and expected direction before evaluating the matched result.'
-              : experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'unplanned'
-                ? 'Protocol prompt: Select the management choice you intended to test, then check whether it matches the recorded Run B change.'
-                : experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change'
-                  ? 'Protocol prompt: The recorded change does not match the plan. Describe it as unplanned evidence, then repeat the trial with the selected choice.'
-                  : experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'identical'
-                    ? 'Protocol prompt: The checkpoints match, but no recorded choice differs. Make one planned management change in a new Run B before interpreting effects.'
-                    : experimentComparison.matchedCheckpoint
-                      ? 'Protocol prompt: Multiple recorded choices differ. Repeat the trial with exactly one changed choice before attributing metric differences.'
-                  : experimentComparison.status === 'same-run'
-                    ? 'Protocol prompt: Start a separate Run B with the same seed. Continuing the same colony is not a repeat trial.'
-                    : experimentComparison.controlledSetup
-                      ? 'Evidence prompt: First reach Day ' + experimentComparison.baseline.capturedDay + '. Why can timing alone change the colony metrics?'
-                      : 'Evidence prompt: Which unmatched control could explain each observed difference besides the management choice?';
+                  : 'Planning prompt: Choose one prediction metric and expected direction before evaluating the matched result.';
+            } else if (experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'matched' && experimentComparison.planRegistration.status !== 'matched') {
+              evidencePrompt = bhExperimentPlanMissing(experimentNotebook).length
+                ? 'Protocol prompt: Complete the current plan, then restart Run B so the tool can record it before outcomes become visible.'
+                : 'Protocol prompt: Restart Run B with the complete current plan so the tool can record it before outcomes become visible.';
+            } else if (experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'unplanned') {
+              evidencePrompt = 'Protocol prompt: Select the management choice you intended to test, then check whether it matches the recorded Run B change.';
+            } else if (experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change') {
+              evidencePrompt = 'Protocol prompt: The recorded change does not match the plan. Describe it as unplanned evidence, then repeat the trial with the selected choice.';
+            } else if (experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'identical') {
+              evidencePrompt = 'Protocol prompt: The checkpoints match, but no recorded choice differs. Make one planned management change in a new Run B before interpreting effects.';
+            } else if (experimentComparison.matchedCheckpoint) {
+              evidencePrompt = 'Protocol prompt: Multiple recorded choices differ. Repeat the trial with exactly one changed choice before attributing metric differences.';
+            } else if (experimentComparison.status === 'same-run') {
+              evidencePrompt = 'Protocol prompt: Start a separate Run B with the same seed. Continuing the same colony is not a repeat trial.';
+            } else if (experimentComparison.controlledSetup) {
+              evidencePrompt = 'Evidence prompt: First reach Day ' + experimentComparison.baseline.capturedDay + '. Why can timing alone change the colony metrics?';
+            } else {
+              evidencePrompt = 'Evidence prompt: Which unmatched control could explain each observed difference besides the management choice?';
+            }
             return h('section', { 'data-beehive-experiment-compare': 'true', 'data-experiment-compare-state': experimentComparison.status, className: 'mt-3 rounded-xl border p-3 ' + cardTone, 'aria-labelledby': 'beehive-experiment-compare-title', 'aria-describedby': 'beehive-experiment-compare-description beehive-experiment-evidence-prompt' },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                 h('div', null,
@@ -25236,6 +25421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'mt-1 break-words text-[9px] leading-relaxed ' + bodyTone }, 'Run A: ' + check.baseline + ' / Run B: ' + check.current));
               })),
               renderManagementChoiceAudit(),
+              renderPlanRegistrationAudit(),
               renderPredictionAudit(),
               h('div', { role: 'region', tabIndex: 0, 'aria-label': 'Scrollable Run A and Run B metric comparison', className: 'mt-3 overflow-x-auto rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-white/10' : 'border-slate-200') },
                 h('table', { 'data-experiment-compare-table': 'true', className: 'w-full min-w-[34rem] border-collapse text-left text-[10px]' },
@@ -25261,6 +25447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('p', { id: 'beehive-experiment-evidence-prompt', 'data-experiment-evidence-prompt': 'true', className: 'mt-3 rounded-lg border p-2 text-[10px] font-bold leading-relaxed ' + (dk ? 'border-sky-700/35 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, evidencePrompt),
               h('div', { className: 'mt-3 flex flex-wrap gap-2' },
                 experimentComparison.status === 'same-run' && h('button', { type: 'button', 'data-experiment-start-run-b': 'true', onClick: startExperimentRunB, className: 'min-h-[44px] rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400', 'aria-label': 'Reset the colony and start a separate Run B with the same seed' }, 'Start separate Run B'),
+                experimentComparison.distinctRuns && experimentComparison.planRegistration.status !== 'matched' && bhExperimentPlanMissing(experimentNotebook).length === 0 && h('button', { type: 'button', 'data-experiment-restart-run-b-plan': 'true', onClick: startExperimentRunB, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400', 'aria-label': 'Restart Run B and record the complete current plan before the new run begins' }, 'Restart Run B with current plan'),
                 day > 0 && h('button', { type: 'button', 'data-experiment-baseline-save': 'replace', onClick: saveExperimentBaseline, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 text-sky-200 hover:bg-sky-950/40' : 'border-sky-300 text-sky-800 hover:bg-sky-50') }, 'Replace Run A with current'),
                 h('button', { type: 'button', 'data-experiment-baseline-clear': 'true', onClick: clearExperimentBaseline, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-slate-700 text-slate-200 hover:bg-slate-800' : 'border-slate-300 text-slate-700 hover:bg-slate-100') }, 'Clear Run A')),
               renderExperimentNotebook());
@@ -25380,7 +25567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           BEEHIVE_DEBUG && console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
-        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '43', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
+        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '44', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
           // Header
           h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
             h('div', { className: 'flex items-center gap-3 min-w-0' },
@@ -27323,8 +27510,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     var nextRunSerial = bhExperimentRunSerial(d.experimentRunSerial) + 1;
                     var reset = bhCreateNewColonyState(simulationSeed, nextRunSerial);
                     reset.experimentBaseline = baseline;
+                    reset.notebook = bhExperimentNotebookWithRegisteredPlan(d.notebook, nextRunSerial, baseline.runSerial);
+                    var registration = reset.notebook.experiment.registeredPlan;
                     updAll(reset);
-                    announceBee('Run A is saved at Day ' + baseline.capturedDay + '. Separate Colony Run ' + nextRunSerial + ' started with the same event recipe, seed ' + simulationSeed + '.', false);
+                    announceBee('Run A is saved at Day ' + baseline.capturedDay + '. Separate Colony Run ' + nextRunSerial + ' started with the same event recipe, seed ' + simulationSeed + '. ' + (registration.complete ? 'The complete plan was recorded before the new run.' : 'The plan was incomplete when the new run began.'), false);
                     if (addToast) addToast('Run A saved. Same seed ready for a controlled comparison.', 'success');
                   },
                   className: 'min-h-[48px] rounded-xl bg-amber-700 px-4 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400'
@@ -27338,8 +27527,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     var nextRunSerial = bhExperimentRunSerial(d.experimentRunSerial) + 1;
                     var reset = bhCreateNewColonyState(nextSeed, nextRunSerial);
                     reset.experimentBaseline = baseline;
+                    reset.notebook = bhExperimentNotebookWithRegisteredPlan(d.notebook, nextRunSerial, baseline.runSerial);
+                    var registration = reset.notebook.experiment.registeredPlan;
                     updAll(reset);
-                    announceBee('Run A is saved at Day ' + baseline.capturedDay + '. Separate Colony Run ' + nextRunSerial + ' started with a different event recipe, seed ' + nextSeed + '.', false);
+                    announceBee('Run A is saved at Day ' + baseline.capturedDay + '. Separate Colony Run ' + nextRunSerial + ' started with a different event recipe, seed ' + nextSeed + '. ' + (registration.complete ? 'The complete plan was recorded before the new run.' : 'The plan was incomplete when the new run began.'), false);
                     if (addToast) addToast('Run A saved. Different seed ready: ' + nextSeed + '.', 'success');
                   },
                   className: 'min-h-[48px] rounded-xl border px-4 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 bg-slate-900 text-sky-200 hover:bg-slate-800' : 'border-sky-300 bg-white text-sky-900 hover:bg-sky-100')
@@ -27865,6 +28056,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION: BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION,
       BEEHIVE_EXPERIMENT_COMPARE_METRICS: BEEHIVE_EXPERIMENT_COMPARE_METRICS,
       BEEHIVE_EXPERIMENT_PREDICTION_DIRECTIONS: BEEHIVE_EXPERIMENT_PREDICTION_DIRECTIONS,
+      BEEHIVE_EXPERIMENT_PLAN_REGISTRATION_VERSION: BEEHIVE_EXPERIMENT_PLAN_REGISTRATION_VERSION,
+      BEEHIVE_EXPERIMENT_PLAN_REQUIRED_FIELDS: BEEHIVE_EXPERIMENT_PLAN_REQUIRED_FIELDS,
+      bhExperimentPlanValues: bhExperimentPlanValues,
+      bhExperimentPlanMissing: bhExperimentPlanMissing,
+      bhCreateExperimentPlanRegistration: bhCreateExperimentPlanRegistration,
+      bhNormalizeExperimentPlanRegistration: bhNormalizeExperimentPlanRegistration,
+      bhCompareExperimentPlanRegistration: bhCompareExperimentPlanRegistration,
+      bhExperimentNotebookWithRegisteredPlan: bhExperimentNotebookWithRegisteredPlan,
       bhExperimentPredictionMetric: bhExperimentPredictionMetric,
       bhExperimentPredictionDirection: bhExperimentPredictionDirection,
       bhEvaluateExperimentPrediction: bhEvaluateExperimentPrediction,

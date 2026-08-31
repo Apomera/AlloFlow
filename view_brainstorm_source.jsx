@@ -6,6 +6,45 @@
 // the shared ladder (guide/worksheet/rubric) still applies to every kind.
 // Shapes are pure data (docs/ACTIVITIES_RESOURCE_DESIGN_2026-08-16.md §D4).
 
+function activityDisplayText(value) {
+  return String(value == null ? '' : value)
+    .replace(/&lt;br\s*\/?&gt;/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/(^|\n)\s*#{1,6}\s+(?=\S)/g, '$1')
+    .replace(/(^|\n)\s*#{1,6}\s*(?=\n|$)/g, '$1')
+    .trim();
+}
+
+function ActivityArtifactSummary(props) {
+  var item = props.item || {};
+  var t = props.t;
+  var definitions = [
+    ['guide', t('brainstorm.teacher_guide') || 'Teacher guide'],
+    ['worksheet', t('brainstorm.student_worksheet') || 'Student worksheet'],
+    ['rubric', t('brainstorm.activity_rubric') || 'Activity rubric'],
+    ['cover', t('brainstorm.cover') || 'Cover image']
+  ];
+  var statusText = { 'not-created': 'not created', generating: 'creating', ready: 'ready', edited: 'edited', failed: 'needs retry' };
+  var readyCount = 0;
+  var pills = definitions.map(function (entry) {
+    var kind = entry[0];
+    var value = kind === 'cover' ? item.coverImage : item[kind];
+    var hasValue = kind === 'rubric' ? !!(value && Array.isArray(value.criteria) && value.criteria.length) : !!(typeof value === 'string' ? value.trim() : value);
+    var meta = item.derivatives && item.derivatives[kind];
+    var status = meta && meta.status ? meta.status : (hasValue ? 'ready' : 'not-created');
+    if (hasValue) readyCount++;
+    return <span key={kind} className="text-[10px] font-bold rounded-full border px-2 py-0.5 border-slate-200 bg-slate-50 text-slate-700">
+      {entry[1]}: {statusText[status] || status}
+    </span>;
+  });
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 mb-3" aria-label={(t('brainstorm.resource_status') || 'Activity resources') + ': ' + readyCount + '/' + definitions.length}>
+      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1">{t('brainstorm.resource_status') || 'Resources'}</span>
+      {pills}
+    </div>
+  );
+}
+
 function DiscussionKitBody(props) {
   var t = props.t;
   var item = props.item;
@@ -30,14 +69,14 @@ function DiscussionKitBody(props) {
   return (
     <div data-help-key="brainstorm_discussion_card">
       <h4 className="font-bold text-lg text-indigo-900 mb-1 flex items-center gap-2">
-        <MessageSquare size={18} className="text-cyan-700 shrink-0"/> {item.title}
+        <MessageSquare size={18} className="text-cyan-700 shrink-0"/> {activityDisplayText(item.title)}
       </h4>
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <span className="text-[11px] font-bold uppercase tracking-wider bg-cyan-50 text-cyan-900 border border-cyan-200 rounded-full px-2.5 py-0.5">{protocolLabel}</span>
-        {item.grouping ? <span className="text-xs text-slate-600">{item.grouping}</span> : null}
+        {item.grouping ? <span className="text-xs text-slate-600">{activityDisplayText(item.grouping)}</span> : null}
       </div>
       {item.openingQuestion ? (
-        <p className="text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 mb-4">{item.openingQuestion}</p>
+        <p className="text-sm font-semibold text-slate-800 bg-cyan-50/60 border border-cyan-100 rounded-lg p-3 mb-4 whitespace-pre-line">{activityDisplayText(item.openingQuestion)}</p>
       ) : null}
       {(Array.isArray(item.questionSets) ? item.questionSets : []).map(function (set, setIdx) {
         var qs = set && Array.isArray(set.questions) ? set.questions : [];
@@ -46,7 +85,7 @@ function DiscussionKitBody(props) {
           <div key={setIdx} className="mb-3">
             <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{depthLabels[set.depth] || set.depth || ''}</h5>
             <ol className="list-decimal ml-5 text-sm text-slate-700 space-y-1">
-              {qs.map(function (q, qIdx) { return <li key={qIdx}>{q}</li>; })}
+              {qs.map(function (q, qIdx) { return <li key={qIdx}>{activityDisplayText(q)}</li>; })}
             </ol>
           </div>
         );
@@ -62,7 +101,7 @@ function DiscussionKitBody(props) {
                 <div key={cat} className="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
                   <strong className="block text-[11px] uppercase tracking-wider text-slate-600 mb-1">{stemLabels[cat]}</strong>
                   <ul className="text-xs text-slate-700 space-y-1">
-                    {list.map(function (s, sIdx) { return <li key={sIdx}>&ldquo;{s}&rdquo;</li>; })}
+                    {list.map(function (s, sIdx) { return <li key={sIdx}>&ldquo;{activityDisplayText(s)}&rdquo;</li>; })}
                   </ul>
                 </div>
               );
@@ -80,7 +119,7 @@ function DiscussionKitBody(props) {
         <div className="text-xs text-slate-600 mb-3">
           <strong className="block uppercase tracking-wider text-[11px] mb-1">{t('brainstorm.look_fors') || 'Participation look-fors'}</strong>
           <ul className="list-disc ml-4 space-y-0.5">
-            {item.lookFors.map(function (l, lIdx) { return <li key={lIdx}>{l}</li>; })}
+            {item.lookFors.map(function (l, lIdx) { return <li key={lIdx}>{activityDisplayText(l)}</li>; })}
           </ul>
         </div>
       ) : null}
@@ -98,7 +137,7 @@ function JigsawBody(props) {
   return (
     <div data-help-key="brainstorm_jigsaw_card">
       <h4 className="font-bold text-lg text-indigo-900 mb-1 flex items-center gap-2">
-        <Users size={18} className="text-emerald-700 shrink-0"/> {item.title}
+        <Users size={18} className="text-emerald-700 shrink-0"/> {activityDisplayText(item.title)}
       </h4>
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <span className="text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-full px-2.5 py-0.5">
@@ -112,7 +151,7 @@ function JigsawBody(props) {
         return (
           <details key={cIdx} className="mb-2 rounded-lg border border-emerald-200 bg-white group">
             <summary className="cursor-pointer list-none px-3 py-2 text-sm font-bold text-emerald-900 flex items-center justify-between hover:bg-emerald-50 rounded-lg">
-              <span>{chunk.label || ((t('brainstorm.expert_group') || 'Expert group') + ' ' + (cIdx + 1))}</span>
+              <span>{activityDisplayText(chunk.label || ((t('brainstorm.expert_group') || 'Expert group') + ' ' + (cIdx + 1)))}</span>
               <span className="text-emerald-700/70 group-open:rotate-180 transition-transform motion-reduce:transition-none" aria-hidden="true">&#9662;</span>
             </summary>
             <div className="px-3 pb-3 pt-1 text-sm text-slate-700">
@@ -121,7 +160,7 @@ function JigsawBody(props) {
                 <div className="bg-emerald-50/60 border border-emerald-100 rounded-lg p-2.5 mb-2">
                   <strong className="block text-[11px] uppercase tracking-wider text-emerald-900 mb-1">{t('brainstorm.teach_back_points') || 'When you teach your group, cover:'}</strong>
                   <ul className="list-disc ml-4 text-xs space-y-0.5">
-                    {keyPoints.map(function (p, pIdx) { return <li key={pIdx}>{p}</li>; })}
+                    {keyPoints.map(function (p, pIdx) { return <li key={pIdx}>{activityDisplayText(p)}</li>; })}
                   </ul>
                 </div>
               ) : null}
@@ -129,7 +168,7 @@ function JigsawBody(props) {
                 <div className="text-xs text-slate-600">
                   <strong className="block uppercase tracking-wider text-[11px] mb-1">{t('brainstorm.teach_back_questions') || 'Check your group understood:'}</strong>
                   <ol className="list-decimal ml-4 space-y-0.5">
-                    {checkQs.map(function (q, qIdx) { return <li key={qIdx}>{q}</li>; })}
+                    {checkQs.map(function (q, qIdx) { return <li key={qIdx}>{activityDisplayText(q)}</li>; })}
                   </ol>
                 </div>
               ) : null}
@@ -153,7 +192,7 @@ function JigsawBody(props) {
         <div className="mb-3">
           <h5 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">{t('brainstorm.accountability_check') || 'Show what you learned (everyone answers)'}</h5>
           <ol className="list-decimal ml-5 text-sm text-slate-700 space-y-1">
-            {checks.map(function (c, aIdx) { return <li key={aIdx}>{c && c.q}</li>; })}
+            {checks.map(function (c, aIdx) { return <li key={aIdx}>{activityDisplayText(c && c.q)}</li>; })}
           </ol>
           {isTeacherMode ? (
             <details className="mt-2">
@@ -161,7 +200,7 @@ function JigsawBody(props) {
                 <ListChecks size={14}/> {t('brainstorm.answer_key') || 'Answer key (teacher only)'}
               </summary>
               <ol className="list-decimal ml-5 text-xs text-slate-600 mt-2 space-y-1">
-                {checks.map(function (c, aIdx) { return <li key={aIdx}>{c && c.answer}</li>; })}
+                {checks.map(function (c, aIdx) { return <li key={aIdx}>{activityDisplayText(c && c.answer)}</li>; })}
               </ol>
             </details>
           ) : null}
@@ -186,6 +225,7 @@ function BrainstormView(props) {
   var handleGenerateBrainstormRubric = props.handleGenerateBrainstormRubric;
   var handleGenerateWorksheet = props.handleGenerateWorksheet;
   var handleGenerateWorksheetCover = props.handleGenerateWorksheetCover;
+  var handleOpenActivityInStudio = props.handleOpenActivityInStudio;
   var getRows = props.getRows;
   var renderFormattedText = props.renderFormattedText;
   return (
@@ -248,14 +288,15 @@ function BrainstormView(props) {
                                  ) : (
                                      <>
                                         <h4 className="font-bold text-lg text-indigo-900 mb-2 flex items-center gap-2">
-                                            <Lightbulb size={18} className="text-yellow-500 fill-current"/> {idea.title}
+                                            <Lightbulb size={18} className="text-yellow-500 fill-current"/> {activityDisplayText(idea.title)}
                                         </h4>
-                                        <p className="text-slate-700 mb-4 text-sm leading-relaxed">{idea.description}</p>
+                                        <p className="text-slate-700 mb-4 text-sm leading-relaxed whitespace-pre-line">{activityDisplayText(idea.description)}</p>
                                         <div className="bg-indigo-50 p-3 rounded-lg text-xs text-indigo-800 font-medium border border-indigo-100 mb-4">
-                                            <strong>{t('brainstorm.label_connection')}:</strong> {idea.connection}
+                                            <strong>{t('brainstorm.label_connection')}:</strong> {activityDisplayText(idea.connection)}
                                         </div>
                                      </>
                                  )}
+                                 <ActivityArtifactSummary item={idea} t={t} />
                                  <div className="border-t border-slate-100 pt-3">
                                      {idea.guide ? (
                                          <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-400" data-help-key="brainstorm_guide">
@@ -301,12 +342,21 @@ function BrainstormView(props) {
                                                          <div className="mb-3 flex justify-center">
                                                              <img
                                                                  src={idea.coverImage}
-                                                                 alt={(t('brainstorm.cover_alt', { title: idea.title })) || `Illustration for ${idea.title}`}
+                                                                 alt={(t('brainstorm.cover_alt', { title: activityDisplayText(idea.title) })) || ('Illustration for ' + activityDisplayText(idea.title))}
                                                                  className="max-h-40 rounded-lg border border-emerald-200 bg-white shadow-sm"
                                                              />
                                                          </div>
                                                      )}
-                                                     <div className="mb-3 flex justify-end">
+                                                     <div className="mb-3 flex justify-end gap-2 flex-wrap">
+                                                         {isTeacherMode && typeof handleOpenActivityInStudio === 'function' ? (
+                                                             <button
+                                                                 onClick={() => handleOpenActivityInStudio(idx)}
+                                                                 className="text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-full transition-colors border border-indigo-200 flex items-center gap-1"
+                                                                 title="Open this worksheet as editable Page Designer objects"
+                                                             >
+                                                                 <Pencil size={11} aria-hidden="true"/> Edit in Page Designer
+                                                             </button>
+                                                         ) : null}
                                                          <button
                                                              onClick={() => handleGenerateWorksheetCover(idx)}
                                                              disabled={isGeneratingWorksheetCover[idx]}
@@ -356,12 +406,12 @@ function BrainstormView(props) {
                                          <details className="mt-3 group">
                                              <summary className="inline-flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 cursor-pointer list-none transition-colors">
                                                  <ListChecks size={14} />
-                                                 {idea.rubric.title || 'Activity Rubric'}
+                                                 {activityDisplayText(idea.rubric.title) || 'Activity Rubric'}
                                                  <span className="text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform">&#9662;</span>
                                              </summary>
                                              <div className="mt-2 overflow-x-auto rounded-lg border border-violet-200" data-help-key="brainstorm_rubric">
                                                  <table className="min-w-[760px] w-full text-xs text-left text-slate-700">
-                                                     <caption className="sr-only">{idea.rubric.title || 'Activity rubric with four performance levels'}</caption>
+                                                     <caption className="sr-only">{activityDisplayText(idea.rubric.title) || 'Activity rubric with four performance levels'}</caption>
                                                      <thead className="bg-violet-50 text-violet-950">
                                                          <tr>
                                                              <th scope="col" className="p-2">Criterion</th>
@@ -375,12 +425,12 @@ function BrainstormView(props) {
                                                      <tbody className="divide-y divide-violet-100 bg-white">
                                                          {idea.rubric.criteria.map((criterion, criterionIndex) => (
                                                              <tr key={criterionIndex} className="align-top">
-                                                                 <th scope="row" className="p-2 font-semibold text-slate-900">{criterion.criterion}</th>
+                                                                 <th scope="row" className="p-2 font-semibold text-slate-900">{activityDisplayText(criterion.criterion)}</th>
                                                                  <td className="p-2">{Number.isFinite(Number(criterion.weight)) ? `${criterion.weight}%` : '--'}</td>
-                                                                 <td className="p-2">{criterion.levels && criterion.levels['4']}</td>
-                                                                 <td className="p-2">{criterion.levels && criterion.levels['3']}</td>
-                                                                 <td className="p-2">{criterion.levels && criterion.levels['2']}</td>
-                                                                 <td className="p-2">{criterion.levels && criterion.levels['1']}</td>
+                                                                 <td className="p-2 whitespace-pre-line">{activityDisplayText(criterion.levels && criterion.levels['4'])}</td>
+                                                                 <td className="p-2 whitespace-pre-line">{activityDisplayText(criterion.levels && criterion.levels['3'])}</td>
+                                                                 <td className="p-2 whitespace-pre-line">{activityDisplayText(criterion.levels && criterion.levels['2'])}</td>
+                                                                 <td className="p-2 whitespace-pre-line">{activityDisplayText(criterion.levels && criterion.levels['1'])}</td>
                                                              </tr>
                                                          ))}
                                                      </tbody>

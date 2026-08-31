@@ -303,12 +303,16 @@
         // this whole lifecycle rather than copying ~200 lines of it. cfg is:
         //   parts      — [{id, label, ...}] used for labels and pick mapping
         //   buildScene — (THREE, api) => { meshes: {id: Group}, picks: [Mesh], anchor: Mesh }
-        //   home       — { yaw, pitch, dist } default camera
+        //   home       — { yaw, pitch, dist, target? } default camera
         makeBayViewer: function (cfg) {
           var S = null;                 // live scene state, null when detached
           var props = { selected: null, onPick: null, onStatus: null, dark: true, contrast: false };
           var status = 'idle';          // idle | loading | ready | failed
           var restoreAttempts = 0;      // WebGL context-loss rebuilds, capped at 1
+          // Focus is deliberately opt-in: a selected part still only highlights
+          // until its tool calls focus(). Kept outside S so a requested focus
+          // survives a theme/content rebuild or a WebGL context restoration.
+          var focusRequest = null;
 
           function setStatus(next) {
             if (status === next) return;
@@ -475,6 +479,12 @@
             selBox.visible = false;
             scene.add(selBox);
 
+            var homeTargetCfg = (cfg.home && cfg.home.target) || {};
+            var homeTarget = new THREE.Vector3(
+              typeof homeTargetCfg.x === 'number' ? homeTargetCfg.x : 0,
+              typeof homeTargetCfg.y === 'number' ? homeTargetCfg.y : 0.30,
+              typeof homeTargetCfg.z === 'number' ? homeTargetCfg.z : 0
+            );
             return {
               THREE: THREE, node: node, renderer: renderer, scene: scene, camera: camera,
               labels: labels, chipCss: chipCss, meshes: meshes, picks: picks, selBox: selBox,
@@ -486,20 +496,115 @@
               wantShadow: wantShadow, trim: trim, partColor: partColor,
               paused: false, io: null,
               yaw: cfg.home.yaw, pitch: cfg.home.pitch, dist: cfg.home.dist,
+              target: homeTarget.clone(), homeTarget: homeTarget,
+              cameraMove: null, focusedId: null,
               dragging: false, lastX: 0, lastY: 0, moved: 0,
               hovered: null, t0: 0, raf: 0, handlers: [],
               reduced: reducedMotion
             };
           }
 
+          function settleCameraMove(keepDistance) {
+            if (!S || !S.cameraMove) return;
+            S.target.copy(S.cameraMove.toTarget);
+            if (!keepDistance) S.dist = S.cameraMove.toDist;
+            S.cameraMove = null;
+          }
+
+          function advanceCameraMove(now) {
+            if (!S || !S.cameraMove) return;
+            var move = S.cameraMove;
+            if (S.reduced || move.duration <= 0) {
+              settleCameraMove(false);
+              return;
+            }
+            var t = Math.max(0, Math.min(1, (now - move.startedAt) / move.duration));
+            // Cubic ease-in/out avoids both a hard launch and the long, floaty tail
+            // of a basic exponential lerp. It also lands on an exact final value.
+            var eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            S.target.copy(move.fromTarget).lerp(move.toTarget, eased);
+            S.dist = move.fromDist + (move.toDist - move.fromDist) * eased;
+            if (t >= 1) settleCameraMove(false);
+          }
+
+          function moveCamera(target, distance, opts, focusedId) {
+            if (!S || !target) return false;
+            opts = opts || {};
+            var nextDist = Math.max(2.6, Math.min(8.5, distance));
+            var duration = typeof opts.duration === 'number'
+              ? Math.max(0, Math.min(2000, opts.duration)) : 460;
+            S.focusedId = focusedId || null;
+            if (S.reduced || opts.immediate === true || duration === 0) {
+              S.target.copy(target);
+              S.dist = nextDist;
+              S.cameraMove = null;
+              return true;
+            }
+            S.cameraMove = {
+              fromTarget: S.target.clone(), toTarget: target.clone(),
+              fromDist: S.dist, toDist: nextDist,
+              startedAt: Date.now(), duration: duration
+            };
+            return true;
+          }
+
+          function focusPart(id, opts) {
+            if (!S || !id || !S.meshes[id]) return false;
+            opts = opts || {};
+            try {
+              S.scene.updateMatrixWorld(true);
+              var box = new S.THREE.Box3().setFromObject(S.meshes[id]);
+              if (box.isEmpty && box.isEmpty()) return false;
+              var sphere = new S.THREE.Sphere();
+              box.getBoundingSphere(sphere);
+              var target = box.getCenter(new S.THREE.Vector3());
+              if (opts.target && typeof opts.target === 'object') {
+                if (typeof opts.target.x === 'number') target.x = opts.target.x;
+                if (typeof opts.target.y === 'number') target.y = opts.target.y;
+                if (typeof opts.target.z === 'number') target.z = opts.target.z;
+              }
+              var vfov = (S.camera.fov || 42) * Math.PI / 180;
+              var hfov = 2 * Math.atan(Math.tan(vfov / 2) * Math.max(0.25, S.camera.aspect || 1));
+              var fitFov = Math.min(vfov, hfov);
+              var padding = typeof opts.padding === 'number'
+                ? Math.max(1, Math.min(3, opts.padding)) : 1.35;
+              var autoDistance = sphere.radius > 0
+                ? (sphere.radius / Math.max(0.12, Math.sin(fitFov / 2))) * padding
+                : 2.6;
+              var distance = typeof opts.distance === 'number' ? opts.distance : autoDistance;
+              // Focusing should never pull farther away than the whole-scene home.
+              distance = Math.max(2.6, Math.min(cfg.home.dist, distance));
+              return moveCamera(target, distance, opts, id);
+            } catch (e) {
+              return false;
+            }
+          }
+
+          function returnToWholeScene(opts, resetOrbit) {
+            if (!S) return false;
+            opts = opts || {};
+            if (resetOrbit) {
+              S.yaw = cfg.home.yaw;
+              S.pitch = cfg.home.pitch;
+            }
+            return moveCamera(S.homeTarget, cfg.home.dist, opts, null);
+          }
+
           function placeCamera() {
             var cy = Math.max(0.12, Math.min(1.35, S.pitch));
+            // Preserve the legacy authored home framing exactly: the old shell
+            // orbited around (0,0,0) while looking slightly upward at y=.30.
+            // Focus translates that whole orbit by target-homeTarget; at home
+            // the delta is zero, so every existing tool keeps identical math.
+            var orbitX = S.target.x - S.homeTarget.x;
+            var orbitY = S.target.y - S.homeTarget.y;
+            var orbitZ = S.target.z - S.homeTarget.z;
             S.camera.position.set(
-              Math.sin(S.yaw) * Math.cos(cy) * S.dist,
-              Math.sin(cy) * S.dist,
-              Math.cos(S.yaw) * Math.cos(cy) * S.dist
+              orbitX + Math.sin(S.yaw) * Math.cos(cy) * S.dist,
+              orbitY + Math.sin(cy) * S.dist,
+              orbitZ + Math.cos(S.yaw) * Math.cos(cy) * S.dist
             );
-            S.camera.lookAt(0, 0.30, 0);
+            S.camera.lookAt(S.target);
           }
 
           // Screen-space position of a part, for the HTML label chip. Returns null
@@ -570,17 +675,34 @@
             }
             if (themeChanged || contentChanged) {
               var node = S.node;
-              var keep = { yaw: S.yaw, pitch: S.pitch, dist: S.dist };
+              var keep = {
+                yaw: S.yaw, pitch: S.pitch, dist: S.dist,
+                target: S.target.clone(), focusedId: S.focusedId
+              };
               teardown();
               if (window.THREE && node && node.isConnected) {
                 start(window.THREE, node);
-                if (S) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
+                if (S) {
+                  S.yaw = keep.yaw;
+                  S.pitch = keep.pitch;
+                  // A focused part must be resolved against the NEW scene. Keeping
+                  // an old Group or Box3 here would point at disposed geometry.
+                  var themeFocusOpts = focusRequest
+                    ? Object.assign({}, focusRequest.opts || {}, { immediate: true }) : null;
+                  if (focusRequest && focusPart(focusRequest.id, themeFocusOpts)) {
+                    // focusPart fitted the rebuilt object.
+                  } else {
+                    S.dist = keep.dist;
+                    S.target.copy(keep.target);
+                  }
+                }
               }
               return;
             }
 
             S.raf = requestAnimationFrame(frame);
             S.t0 += 1;
+            advanceCameraMove(Date.now());
             placeCamera();
 
             var sel = props.selected;
@@ -831,6 +953,9 @@
             });
             on(el, 'wheel', function (ev) {
               ev.preventDefault();
+              // A direct zoom takes control from an in-flight focus animation,
+              // but lands its target on the requested part before applying zoom.
+              settleCameraMove(true);
               S.dist = Math.max(2.6, Math.min(8.5, S.dist + (ev.deltaY > 0 ? 0.4 : -0.4)));
             }, { passive: false });
             el.style.cursor = 'grab';
@@ -860,7 +985,10 @@
               ev.preventDefault();
               console.warn('[AutoRepair] WebGL context lost — attempting one rebuild');
               var node = S ? S.node : null;
-              var keep = S ? { yaw: S.yaw, pitch: S.pitch, dist: S.dist } : null;
+              var keep = S ? {
+                yaw: S.yaw, pitch: S.pitch, dist: S.dist,
+                target: S.target.clone(), focusedId: S.focusedId
+              } : null;
               teardown();
               if (restoreAttempts >= 1 || !node || !node.isConnected) { setStatus('failed'); return; }
               restoreAttempts++;
@@ -869,7 +997,18 @@
                 if (!node.isConnected) return;
                 try {
                   start(window.THREE, node);
-                  if (S && keep) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
+                  if (S && keep) {
+                    S.yaw = keep.yaw;
+                    S.pitch = keep.pitch;
+                    var restoreFocusOpts = focusRequest
+                      ? Object.assign({}, focusRequest.opts || {}, { immediate: true }) : null;
+                    if (focusRequest && focusPart(focusRequest.id, restoreFocusOpts)) {
+                      // Refit the part against the restored WebGL scene.
+                    } else {
+                      S.dist = keep.dist;
+                      S.target.copy(keep.target);
+                    }
+                  }
                 } catch (e) { setStatus('failed'); }
               }, 350);
             }, false);
@@ -1005,6 +1144,16 @@
               S.lvl = null;
               S.builtPhase = (props.phase || 0);
               S.builtSceneKey = (props.sceneKey || '');
+              if (focusRequest) {
+                // Re-resolve the stable id against the newly built mesh map. Never
+                // retain scene objects across this boundary: they were just disposed.
+                if (!focusPart(focusRequest.id, focusRequest.opts)) {
+                  S.focusedId = null;
+                  S.cameraMove = null;
+                  S.target.copy(S.homeTarget);
+                  S.dist = cfg.home.dist;
+                }
+              }
               return true;
             } catch (e) {
               return false;
@@ -1016,6 +1165,7 @@
             if (!built) { setStatus('failed'); return; }
             S = built;
             bind();
+            if (focusRequest) focusPart(focusRequest.id, focusRequest.opts);
             placeCamera();
             setStatus('ready');
             S.raf = requestAnimationFrame(frame);
@@ -1024,7 +1174,15 @@
           return {
             // STABLE identity — never recreate this function.
             attach: function (node) {
-              if (!node) { teardown(); return; }
+              if (!node) {
+                // A real DOM detach means the learner left this viewer. Theme,
+                // content, and context rebuilds call teardown() internally and
+                // retain focusRequest; navigation should not make a later view
+                // reopen already zoomed into an old part.
+                focusRequest = null;
+                teardown();
+                return;
+              }
               if (S && S.node === node) return;
               teardown();
               restoreAttempts = 0;      // fresh visit gets its own context-loss retry
@@ -1044,7 +1202,12 @@
             },
             sync: function (next) {
               props = next || {};
-              if (S && typeof props.reduced === 'boolean') S.reduced = props.reduced;
+              if (S && typeof props.reduced === 'boolean') {
+                S.reduced = props.reduced;
+                // A preference change while the camera is travelling takes effect
+                // immediately; reduced motion never waits out the old animation.
+                if (S.reduced) settleCameraMove(false);
+              }
             },
             nudge: function (dYaw, dPitch) {
               if (!S) return;
@@ -1055,11 +1218,46 @@
             // no way to get closer. Same clamp as the wheel handler.
             zoom: function (delta) {
               if (!S) return;
+              settleCameraMove(true);
               S.dist = Math.max(2.6, Math.min(8.5, S.dist + delta));
             },
+            // Explicitly focus a named part. Omitting partId uses the current
+            // props.selected id, so keyboard/list selection and raycast selection
+            // share the same path. This never moves DOM focus or changes selection.
+            focus: function (partId, opts) {
+              var id = partId || props.selected;
+              if (!id) return false;
+              var known = false;
+              for (var i = 0; i < cfg.parts.length; i++) {
+                if (cfg.parts[i].id === id) { known = true; break; }
+              }
+              if (!known) return false;
+              var safeOpts = Object.assign({}, opts || {});
+              if (safeOpts.target && typeof safeOpts.target === 'object') {
+                safeOpts.target = {
+                  x: safeOpts.target.x, y: safeOpts.target.y, z: safeOpts.target.z
+                };
+              }
+              focusRequest = { id: id, opts: safeOpts };
+              // Queueing before Three.js has loaded is a valid request; start()
+              // resolves it against the real mesh as soon as the scene is ready.
+              return S ? focusPart(id, safeOpts) : true;
+            },
+            // Smoothly re-centre the whole scene while keeping the learner's orbit
+            // angle by default. Pass {resetOrbit:true} for the authored home angle.
+            returnToScene: function (opts) {
+              var safeOpts = Object.assign({}, opts || {});
+              var resetOrbit = safeOpts.resetOrbit === true;
+              delete safeOpts.resetOrbit;
+              focusRequest = null;
+              return S ? returnToWholeScene(safeOpts, resetOrbit) : true;
+            },
             reset: function () {
+              focusRequest = null;
               if (!S) return;
-              S.yaw = cfg.home.yaw; S.pitch = cfg.home.pitch; S.dist = cfg.home.dist;
+              // Preserve the long-standing reset contract: an immediate, exact
+              // authored whole-scene view, now including the orbit target.
+              returnToWholeScene({ immediate: true }, true);
             },
             status: function () { return status; }
           };

@@ -21,6 +21,7 @@ beforeAll(() => {
   act = React.act;
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
+  loadAlloModule('image_asset_editor_module.js');
   loadAlloModule('memory_aid_module.js');
   MemoryAid = window.AlloModules.MemoryAid;
   H = MemoryAid && MemoryAid._testing;
@@ -150,7 +151,9 @@ describe('Memory Aid Studio schema', () => {
     expect(newImage.visualReview.status).toBe('unreviewed');
     const altOnly = H.applyMemoryAidCardPatch(reviewed, { visualAlt: 'A clearer description.' });
     expect(altOnly.visualCheck.alignment).toBe('supports');
-    expect(altOnly.visualReview.status).toBe('approved');
+    expect(altOnly.visualReview.status).toBe('unreviewed');
+    expect(altOnly.visualReview.note).toBe('Checked by the teacher.');
+    expect(altOnly.visualReview.reviewedAt).toBe('');
   });
 
   it('accepts only bounded base64 data images and extracts their edit payload', () => {
@@ -167,6 +170,19 @@ describe('Memory Aid Studio schema', () => {
     }, 0, {}).visualCheck).toBeNull();
     const oversized = 'data:image/png;base64,' + 'A'.repeat(6 * 1024 * 1024);
     expect(H.normalizeMemoryAidImage(oversized)).toBe('');
+  });
+
+  it('preserves supported visual provenance and labels older images conservatively', () => {
+    expect(H.normalizeMemoryAidVisualSource('uploaded', true)).toBe('uploaded');
+    expect(H.normalizeMemoryAidVisualSource('invented-source', true)).toBe('legacy');
+    expect(H.normalizeMemoryAidVisualSource('ai-generated', false)).toBe('');
+    expect(H.normalizeMemoryAidCard({
+      visualImage: 'data:image/png;base64,AAAA',
+      visualSource: 'ai-refined',
+    }, 0, {}).visualSource).toBe('ai-refined');
+    expect(H.normalizeMemoryAidCard({
+      visualImage: 'data:image/png;base64,AAAA',
+    }, 0, {}).visualSource).toBe('legacy');
   });
 
   it('builds visual prompts with fact grounding, source boundaries, and no-text constraints', () => {
@@ -206,19 +222,47 @@ describe('Memory Aid Studio schema', () => {
     expect(prompt).toContain('Solids retain shape.');
     expect(prompt).toContain('advisory AI feedback');
     expect(prompt).toContain('Never claim the image is teacher-approved');
+    expect(prompt).toContain('suggestedAlt');
+    expect(prompt).toContain('describe only what is visibly present');
+    expect(prompt).toContain('Do not begin with "image of"');
     const fence = String.fromCharCode(96).repeat(3);
-    const parsed = H.parseMemoryAidVisualCheck(fence + 'json\n{"alignment":"supports","strength":"A statue is visible.","concern":"None identified.","suggestedChange":"No change suggested."}\n' + fence);
+    const parsed = H.parseMemoryAidVisualCheck(fence + 'json\n{"alignment":"supports","strength":"A statue is visible.","concern":"None identified.","suggestedChange":"No change suggested.","suggestedAlt":"A gray statue stands beside a clear container of water."}\n' + fence);
     expect(parsed).toEqual({
       alignment: 'supports',
       strength: 'A statue is visible.',
       concern: 'None identified.',
       suggestedChange: 'No change suggested.',
+      suggestedAlt: 'A gray statue stands beside a clear container of water.',
       createdAt: '',
     });
     expect(H.parseMemoryAidVisualCheck({ alignment: 'approved' }).alignment).toBe('unclear');
     expect(H.normalizeMemoryAidVisualReview({ status: 'invented', note: 'Keep the note.' })).toMatchObject({
       status: 'unreviewed',
       note: 'Keep the note.',
+    });
+  });
+
+  it('requires a specific visible-detail description before teacher approval', () => {
+    const card = {
+      target: 'States of matter',
+      studentDraft: 'A statue cue.',
+      visualImage: 'data:image/png;base64,AAAA',
+    };
+    expect(H.memoryAidVisualAltReady(card)).toMatchObject({ ok: false });
+    const fallback = H.buildMemoryAidVisualAlt(card);
+    expect(H.memoryAidVisualAltReady({ ...card, visualAlt: fallback })).toMatchObject({ ok: false });
+    expect(H.memoryAidVisualAltReady({ ...card, visualAlt: 'A gray statue stands beside a clear glass of water.' })).toEqual({
+      ok: true,
+      reason: 'Specific image description added. Review it against the visual before approval.',
+    });
+    const repairedLegacy = H.normalizeMemoryAidCard({
+      ...card,
+      visualReview: { status: 'approved', note: 'Retain this guidance.', reviewedAt: '2026-08-28T10:00:00.000Z' },
+    }, 0, {});
+    expect(repairedLegacy.visualReview).toEqual({
+      status: 'unreviewed',
+      note: 'Retain this guidance.',
+      reviewedAt: '',
     });
   });
 
@@ -239,6 +283,81 @@ describe('Memory Aid Studio schema', () => {
     expect(text).toContain('Student explanation.');
     expect(text).not.toContain('<');
     expect(H.memoryAidAudioFilename({ target: 'États: matière!' })).toBe('memory-aid-etats-matiere');
+  });
+
+  it('creates bounded, version-aware recall evidence without putting answers in cue-only audio', () => {
+    const card = {
+      id: 'practice-card',
+      target: 'States of matter',
+      essentialFacts: ['Solids retain shape.', 'Liquids take the container shape.'],
+      studentDraft: 'A statue stays shaped; a guest fits the room.',
+      visualImage: 'data:image/png;base64,AAAA',
+      visualAlt: 'A statue stands beside a glass of water.',
+    };
+    expect(H.memoryAidPracticeReady(card)).toMatchObject({ ok: true });
+    expect(H.memoryAidPracticeReady({ ...card, essentialFacts: [] })).toMatchObject({ ok: false });
+    expect(H.memoryAidPracticeReady({ ...card, studentDraft: '', visualImage: '' })).toMatchObject({ ok: false });
+    expect(H.memoryAidPracticeReady({
+      ...card,
+      studentDraft: '',
+      visualAlt: 'Visual memory cue for States of matter.',
+    })).toMatchObject({ ok: false });
+    expect(H.memoryAidPracticeReady({
+      ...card,
+      studentDraft: '',
+      visualAlt: 'A statue stands beside a clear glass of water.',
+    })).toMatchObject({ ok: true });
+
+    const attempt = H.createMemoryAidPracticeAttempt(card, {
+      response: 'A solid holds its shape and a liquid fits its container.',
+      confidence: 'confident',
+    });
+    expect(attempt).toMatchObject({
+      response: 'A solid holds its shape and a liquid fits its container.',
+      confidence: 'confident',
+      facts: card.essentialFacts,
+      factChecks: ['unrated', 'unrated'],
+    });
+    expect(H.memoryAidPracticeSummary(attempt, card)).toMatchObject({
+      recalled: 0,
+      unrated: 2,
+      total: 2,
+      complete: false,
+      current: true,
+    });
+    expect(H.memoryAidPracticeSummary({
+      ...attempt,
+      factChecks: ['recalled', 'practice'],
+    }, card)).toMatchObject({
+      recalled: 1,
+      needsPractice: 1,
+      unrated: 0,
+      complete: true,
+      current: true,
+    });
+    expect(H.memoryAidPracticeSummary(attempt, {
+      ...card,
+      studentDraft: 'A changed cue.',
+    }).current).toBe(false);
+
+    const cueAudio = H.buildMemoryAidPracticeCueText(card);
+    expect(cueAudio).toContain('A statue stays shaped');
+    expect(cueAudio).toContain('A statue stands beside a glass of water.');
+    expect(cueAudio).not.toContain('Solids retain shape.');
+    expect(cueAudio).not.toContain('Liquids take the container shape.');
+
+    const overflow = Array.from({ length: 8 }, (_, index) => ({
+      ...attempt,
+      id: 'attempt-' + index,
+      response: 'Recall response ' + index,
+    }));
+    const normalized = H.normalizeMemoryAidCard({
+      ...card,
+      practiceAttempts: overflow,
+    }, 0, {});
+    expect(normalized.practiceAttempts).toHaveLength(6);
+    expect(normalized.practiceAttempts[0].response).toBe('Recall response 2');
+    expect(normalized.practiceAttempts[5].response).toBe('Recall response 7');
   });
 
   it('receives the shared image and TTS primitives from the main host', () => {
@@ -350,6 +469,76 @@ describe('Memory Aid Studio interaction integrity', () => {
     expect(forceRestart).toBe(true);
   });
 
+  it('hides answers during recall, uses cue-only TTS, and saves the learner self-check', async () => {
+    const handleNoteUpdate = vi.fn();
+    const handleSpeak = vi.fn();
+    await renderMemoryAid(baseData, { handleNoteUpdate, handleSpeak });
+
+    const practiceContent = host.querySelector('.memory-aid-practice-content');
+    const factRegion = host.querySelector('[aria-label="Teacher-checked facts"]');
+    expect(practiceContent.hidden).toBe(false);
+    expect(factRegion).toBeTruthy();
+
+    const start = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Start recall practice');
+    expect(start).toBeTruthy();
+    expect(start.disabled).toBe(false);
+    await act(async () => start.click());
+
+    expect(practiceContent.hidden).toBe(true);
+    expect(factRegion.closest('.memory-aid-practice-content').hidden).toBe(true);
+    expect(host.textContent).toContain('Facts hidden');
+    expect(Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Listen to this card')).toBeUndefined();
+    expect(handleSpeak).toHaveBeenCalledWith('', 'memory-practice-stop-matter-card', 0, true);
+
+    const listen = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Listen to practice cue');
+    expect(listen).toBeTruthy();
+    await act(async () => listen.click());
+    expect(handleSpeak).toHaveBeenCalledTimes(2);
+    const [cueText, cueContentId] = handleSpeak.mock.calls.at(-1);
+    expect(cueText).toContain('A solid is a statue.');
+    expect(cueText).not.toContain('Solids retain shape.');
+    expect(cueContentId).toBe('memory-practice-matter-card');
+
+    const reveal = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Reveal teacher-checked facts');
+    const response = host.querySelector('[aria-label="Recall response for States of matter"]');
+    expect(reveal.disabled).toBe(true);
+    await act(async () => {
+      const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      valueSetter.call(response, 'A solid keeps its shape.');
+      response.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(reveal.disabled).toBe(false);
+    await act(async () => reveal.click());
+
+    expect(host.textContent).toContain('Compare your recall with the accurate facts');
+    expect(practiceContent.hidden).toBe(true);
+    const revealSave = handleNoteUpdate.mock.calls.filter(call => call[0] === 'cards').at(-1);
+    const revealedCards = revealSave[1](baseData.cards);
+    expect(revealedCards[0].practiceAttempts).toHaveLength(1);
+    expect(revealedCards[0].practiceAttempts[0]).toMatchObject({
+      response: 'A solid keeps its shape.',
+      confidence: 'somewhat',
+      facts: ['Solids retain shape.'],
+      factChecks: ['unrated'],
+    });
+
+    const recalled = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'I recalled this');
+    expect(recalled).toBeTruthy();
+    await act(async () => recalled.click());
+    expect(host.textContent).toContain('Self-check complete: 1 of 1 facts recalled');
+    const checkSave = handleNoteUpdate.mock.calls.filter(call => call[0] === 'cards').at(-1);
+    const checkedCards = checkSave[1](baseData.cards);
+    expect(checkedCards[0].practiceAttempts[0].factChecks).toEqual(['recalled']);
+    expect(H.memoryAidPracticeSummary(checkedCards[0].practiceAttempts[0], checkedCards[0]).current).toBe(true);
+
+    const repeat = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Practice again');
+    await act(async () => repeat.click());
+    expect(host.querySelector('[aria-label="Recall response for States of matter"]').value).toBe('');
+    const exit = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Exit practice');
+    await act(async () => exit.click());
+    expect(practiceContent.hidden).toBe(false);
+  });
+
   it('downloads complete card narration through the shared audio helper', async () => {
     const handleDownloadAudio = vi.fn();
     await renderMemoryAid({
@@ -369,6 +558,54 @@ describe('Memory Aid Studio interaction integrity', () => {
     expect(text).toContain('Student explanation.');
     expect(filename).toBe('memory-aid-states-of-matter');
     expect(contentId).toBe('dl-memory-aid-matter-card');
+  });
+
+  it('keeps a device image local until editing is confirmed, then saves a bounded uploaded visual', async () => {
+    const handleNoteUpdate = vi.fn();
+    const imageTools = window.AlloModules.ImageAssetTools;
+    const originalRenderer = imageTools.renderImageAsset;
+    imageTools.renderImageAsset = vi.fn(async (_source, settings) => ({
+      dataUrl: 'data:image/webp;base64,UklGRgAAAABXRUJQ',
+      mime: 'image/webp',
+      width: 640,
+      height: 640,
+      settings,
+    }));
+    try {
+      await renderMemoryAid(baseData, { handleNoteUpdate });
+      const input = host.querySelector('#memory-visual-upload-matter-card');
+      expect(input).toBeTruthy();
+      expect(input.getAttribute('accept')).toBe('image/png,image/jpeg,image/webp');
+      const file = new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])], 'learner-cue.png', { type: 'image/png' });
+      Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+      await act(async () => {
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        await new Promise(resolvePromise => setTimeout(resolvePromise, 10));
+      });
+      expect(host.textContent).toContain('Position your visual');
+      expect(host.textContent).toContain('learner-cue.png');
+      expect(handleNoteUpdate).not.toHaveBeenCalled();
+
+      const apply = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Use edited image');
+      expect(apply).toBeTruthy();
+      await act(async () => apply.click());
+      expect(imageTools.renderImageAsset).toHaveBeenCalledWith(
+        'data:image/png;base64,iVBORw0KGgo=',
+        expect.objectContaining({ mode: 'fit' }),
+        expect.objectContaining({ maxDimension: 1280, maxOutputChars: 6 * 1024 * 1024 })
+      );
+      const save = handleNoteUpdate.mock.calls.find(call => call[0] === 'cards');
+      expect(typeof save?.[1]).toBe('function');
+      const updated = save[1](baseData.cards);
+      expect(updated[0].visualImage).toBe('data:image/webp;base64,UklGRgAAAABXRUJQ');
+      expect(updated[0].visualSource).toBe('uploaded');
+      expect(updated[0].visualAlt).toContain('Visual memory cue for States of matter');
+      expect(updated[0].visualCheck).toBeNull();
+      expect(updated[0].visualReview.status).toBe('unreviewed');
+      expect(JSON.stringify(updated[0])).not.toContain('learner-cue.png');
+    } finally {
+      imageTools.renderImageAsset = originalRenderer;
+    }
   });
 
   it('generates an opt-in visual through the shared image provider and saves accessible metadata', async () => {
@@ -399,6 +636,7 @@ describe('Memory Aid Studio interaction integrity', () => {
       visualPrompt: 'Show a statue beside a clear container.',
     }]);
     expect(updated[0].visualImage).toBe('data:image/png;base64,AAAA');
+    expect(updated[0].visualSource).toBe('ai-generated');
     expect(updated[0].visualAlt).toContain('Visual memory cue for States of matter');
   });
 
@@ -433,6 +671,7 @@ describe('Memory Aid Studio interaction integrity', () => {
       visualAlt: 'A statue used as a memory cue.',
     }]);
     expect(updated[0].visualImage).toBe('data:image/webp;base64,QkJCQg==');
+    expect(updated[0].visualSource).toBe('ai-refined');
     expect(updated[0].visualAlt).toBe('A statue used as a memory cue.');
   });
 
@@ -443,6 +682,7 @@ describe('Memory Aid Studio interaction integrity', () => {
       strength: 'The statue is a concrete stable-shape cue.',
       concern: 'The liquid fact is not visible.',
       suggestedChange: 'Add a clear container with liquid.',
+      suggestedAlt: 'A gray statue stands alone on a plain background.',
     }));
     const visualCard = {
       ...baseData.cards[0],
@@ -452,13 +692,14 @@ describe('Memory Aid Studio interaction integrity', () => {
     };
     await renderMemoryAid({ ...baseData, cards: [visualCard] }, { handleNoteUpdate, callGeminiVision });
     expect(host.textContent).toContain('Not yet teacher-reviewed');
-    const button = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Check visual against facts');
+    const button = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Check facts + draft description');
     expect(button).toBeTruthy();
     await act(async () => button.click());
     expect(callGeminiVision).toHaveBeenCalledTimes(1);
     const [prompt, rawBase64, mimeType] = callGeminiVision.mock.calls[0];
     expect(prompt).toContain('Solids retain shape.');
     expect(prompt).toContain('Never claim the image is teacher-approved');
+    expect(prompt).toContain('suggestedAlt');
     expect(rawBase64).toBe('QUJDRA==');
     expect(mimeType).toBe('image/png');
     const save = handleNoteUpdate.mock.calls.find(call => call[0] === 'cards');
@@ -466,8 +707,59 @@ describe('Memory Aid Studio interaction integrity', () => {
     expect(updated[0].visualCheck).toMatchObject({
       alignment: 'supports',
       concern: 'The liquid fact is not visible.',
+      suggestedAlt: 'A gray statue stands alone on a plain background.',
     });
     expect(updated[0].visualReview.status).toBe('unreviewed');
+  });
+
+  it('lets a learner adopt an AI description draft while reopening teacher approval', async () => {
+    const handleNoteUpdate = vi.fn();
+    const visualCard = {
+      ...baseData.cards[0],
+      visualImage: 'data:image/png;base64,QUJDRA==',
+      visualAlt: 'An older description.',
+      visualReview: { status: 'approved', note: 'The image was checked.', reviewedAt: '2026-08-29T10:00:00.000Z' },
+      visualCheck: {
+        alignment: 'supports',
+        strength: 'A statue is visible.',
+        concern: 'None identified.',
+        suggestedChange: 'No change suggested.',
+        suggestedAlt: 'A gray statue stands beside a clear glass of water.',
+      },
+    };
+    await renderMemoryAid({ ...baseData, cards: [visualCard] }, { handleNoteUpdate });
+    expect(host.textContent).toContain('Suggested image description');
+    expect(host.textContent).toContain('A gray statue stands beside a clear glass of water.');
+    const useDescription = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Use this description');
+    expect(useDescription).toBeTruthy();
+    await act(async () => useDescription.click());
+    const save = handleNoteUpdate.mock.calls.find(call => call[0] === 'cards');
+    const updated = save[1]([visualCard]);
+    expect(updated[0].visualAlt).toBe('A gray statue stands beside a clear glass of water.');
+    expect(updated[0].visualCheck.alignment).toBe('supports');
+    expect(updated[0].visualReview.status).toBe('unreviewed');
+    expect(updated[0].visualReview.note).toBe('The image was checked.');
+    expect(updated[0].visualReview.reviewedAt).toBe('');
+  });
+
+  it('keeps teacher approval unavailable until a specific image description is reviewed', async () => {
+    const handleNoteUpdate = vi.fn();
+    const visualCard = {
+      ...baseData.cards[0],
+      visualImage: 'data:image/png;base64,QUJDRA==',
+      visualAlt: '',
+      visualReview: { status: 'unreviewed', note: '' },
+    };
+    await renderMemoryAid({ ...baseData, cards: [visualCard] }, { isTeacherMode: true, handleNoteUpdate });
+    const description = host.querySelector('[aria-label^="Image description for"]');
+    const help = host.querySelector('#' + description.getAttribute('aria-describedby'));
+    expect(help.textContent).toContain('specific description of visible details');
+    const approve = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Approve visual');
+    expect(approve).toBeTruthy();
+    expect(approve.disabled).toBe(true);
+    expect(approve.getAttribute('aria-describedby')).toBe(help.id);
+    await act(async () => approve.click());
+    expect(handleNoteUpdate).not.toHaveBeenCalled();
   });
 
   it('lets a teacher approve or request revision independently of AI visual feedback', async () => {
@@ -489,6 +781,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     expect(host.textContent).toContain('This feedback does not replace teacher approval.');
     const approve = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Approve visual');
     expect(approve).toBeTruthy();
+    expect(approve.disabled).toBe(false);
     await act(async () => approve.click());
     const save = handleNoteUpdate.mock.calls.find(call => call[0] === 'cards');
     const updated = save[1]([visualCard]);

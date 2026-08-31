@@ -2,7 +2,6 @@ import { createHash, webcrypto } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
-import { gunzipSync } from 'node:zlib';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -11,7 +10,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const {
     buildMailboxScriptSourceModule,
-    buildMailboxScriptInlineFallback,
 } = require(path.join(ROOT, '_build_mailbox_script_source_module.js'));
 
 const canonicalSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
@@ -19,6 +17,7 @@ const publicSource = fs.readFileSync(path.join(ROOT, 'desktop', 'web-app', 'publ
 const rootModuleSource = fs.readFileSync(path.join(ROOT, 'mailbox_script_source_module.js'), 'utf8');
 const publicModuleSource = fs.readFileSync(path.join(ROOT, 'desktop', 'web-app', 'public', 'mailbox_script_source_module.js'), 'utf8');
 const hostSource = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+const shareSessionSource = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
 const buildSource = fs.readFileSync(path.join(ROOT, 'build.js'), 'utf8');
 
 const canonicalVersion = Number((canonicalSource.match(/var VERSION = (\d+);/) || [])[1]);
@@ -94,16 +93,14 @@ describe('mailbox script source extraction', () => {
         });
     });
 
-    it('keeps the deterministic gzip fallback byte-identical to Code.gs and its metadata', () => {
+    it('keeps validation metadata while leaving the installer body out of the startup host', () => {
         const hostFallback = stringConstant(hostSource, 'ALLO_MB_SCRIPT_FALLBACK_GZIP');
-        const builtFallback = buildMailboxScriptInlineFallback(canonicalSource);
 
-        expect(hostFallback).toBe(builtFallback);
-        expect(gunzipSync(Buffer.from(hostFallback, 'base64')).toString('utf8')).toBe(canonicalSource);
+        expect(hostFallback).toBe('');
         expect(numberConstant(hostSource, 'ALLO_MB_SCRIPT_VERSION')).toBe(canonicalVersion);
         expect(numberConstant(hostSource, 'ALLO_MB_SCRIPT_BYTES')).toBe(canonicalBytes);
         expect(stringConstant(hostSource, 'ALLO_MB_SCRIPT_SHA256')).toBe(canonicalSha256);
-        expect(Buffer.byteLength(hostFallback, 'utf8')).toBeLessThan(canonicalBytes / 2);
+        expect(hostSource).toContain("if (!ALLO_MB_SCRIPT_FALLBACK_GZIP) return '';");
     });
 
     it('rejects stale, mislabeled, and tampered sources before exposing copy state', async () => {
@@ -138,7 +135,7 @@ describe('mailbox script source extraction', () => {
         expect(buildSource).toContain("modPath: path.join(ROOT, 'mailbox_script_source_module.js')");
         expect(buildSource).toContain("publicPath: path.join(ROOT, 'desktop/web-app', 'public', 'mailbox_script_source_module.js')");
         expect(buildSource).toContain("require('./_build_mailbox_script_source_module.js').buildMailboxScriptSourceModule(src)");
-        expect(hostSource).toMatch(/loadModule\('MailboxScriptSource', 'https:\/\/alloflow-cdn\.pages\.dev\/mailbox_script_source_module\.js(?:\?v=[a-z0-9]+)?'\)/);
+        expect(hostSource).toMatch(/window\.__alloLazyMailboxScriptSource = .*loadModule\('MailboxScriptSource', 'https:\/\/alloflow-cdn\.pages\.dev\/mailbox_script_source_module\.js(?:\?v=[a-z0-9]+)?'\)/);
         expect(hostSource).toContain("window.dispatchEvent(new CustomEvent('alloflow:module-registry-changed'))");
     });
 
@@ -164,7 +161,7 @@ describe('mailbox script source extraction', () => {
         expect(hydration).toContain("window.addEventListener('alloflow:module-registry-changed', onModuleChange)");
         expect(hydration).toContain("window.removeEventListener('alloflow:module-registry-changed', onModuleChange)");
         expect(hydration).toContain('cancelled = true;');
-        expect(hydration).toContain('}, [mailboxScriptRetry]);');
+        expect(hydration).toContain('}, [mailboxScriptRequested, mailboxScriptRetry]);');
     });
 
     it('copies only ready validated state and exposes loading, failure, and retry semantics', () => {
@@ -185,11 +182,11 @@ describe('mailbox script source extraction', () => {
         expect(copyHelpers).toContain('window.__alloRetryFailedModules?.()');
 
         expect(hostSource).not.toContain('copyToClipboard(ALLO_MB_SCRIPT_SOURCE)');
-        expect(hostSource.match(/onClick=\{copyMailboxScriptSource\}/g)?.length || 0).toBeGreaterThanOrEqual(2);
-        expect(hostSource.match(/disabled=\{mailboxScriptState\.status !== 'ready'\}/g)?.length || 0).toBeGreaterThanOrEqual(2);
+        expect(shareSessionSource.match(/onClick=\{copyMailboxScriptSource\}/g)?.length || 0).toBeGreaterThanOrEqual(2);
+        expect(shareSessionSource.match(/disabled=\{mailboxScriptState\.status !== 'ready'\}/g)?.length || 0).toBeGreaterThanOrEqual(2);
         expect(hostSource).toContain("mailboxScriptState.status === 'loading'");
-        expect(hostSource).toContain("mailboxScriptState.status === 'error'");
-        expect(hostSource).toContain('onClick={retryMailboxScriptSource}');
+        expect(shareSessionSource).toContain("mailboxScriptState.status === 'error'");
+        expect(shareSessionSource).toContain('onClick={retryMailboxScriptSource}');
     });
 
     it('fails builder generation when Code.gs is empty or missing VERSION', () => {

@@ -788,7 +788,7 @@ describe('AlloSheet security and deployment contracts', () => {
       'allo_sheet_casebook_ui.js',
       'allo_sheet.js',
     ]);
-    expect(document.querySelector('link[rel="stylesheet"]').href).toContain('?v=9');
+    expect(document.querySelector('link[rel="stylesheet"]').href).toContain('?v=11');
     expect(document.querySelector('iframe').getAttribute('sandbox')).toContain('allow-scripts');
     expect(document.querySelector('[role="tablist"]')).not.toBeNull();
     expect(document.querySelector('#artifactReview').getAttribute('role')).toBe('dialog');

@@ -77,6 +77,18 @@ describe('Print Lab workflow surface', () => {
       expect(html).toContain('No primitive recipe yet.');
       expect(html).not.toContain('Part 1');
     });
+
+    const fallback = window.StemLab.printLabPure.normalizePersistedRecipe({
+      name: 'A'.repeat(120), scale: 99, rotY: -90, tint: '#ABCDEF', extra: 'drop me',
+      parts: [{ shape: 'BOX', size: [99, 0.001, 1], stretch: [9, 1, 0], position: [99, -99, 2], rotation: [999, 0, -999], color: '#ABCDEF', privateNote: 'drop me' }],
+    }, {});
+    expect(fallback).toMatchObject({ version: 'p3d/1', scale: 5, rotY: 270, tint: '#abcdef' });
+    expect(fallback.name).toHaveLength(80);
+    expect(fallback.parts[0]).toEqual({
+      shape: 'box', size: [4, 0.02, 1], stretch: [4, 1, 0.1], position: [4, -4, 2], rotation: [360, 0, -360], color: '#abcdef',
+    });
+    expect(fallback).not.toHaveProperty('extra');
+    expect(fallback.parts[0]).not.toHaveProperty('privateNote');
   });
 
   it('keeps preflight advisory and requires the slicer and trained staff review', () => {
@@ -172,11 +184,52 @@ describe('Print Lab import and handoff guardrails', () => {
 
   it('hashes normalized recipes and invalidates stale job artifacts when quote inputs change', () => {
     expect(TOOL_SOURCE).toContain('Printable.sha256Hex(JSON.stringify(clean))');
-    expect(TOOL_SOURCE).toMatch(/replaceDesign\('RECIPE',\s*clean,[\s\S]{0,180}normalizedHash\)/);
+    expect(TOOL_SOURCE).toContain("replaceDesign('RECIPE', clean, null, null, '', 20, recipeReport, normalizedHash, 'modelImport')");
 
-    expect(TOOL_SOURCE).toMatch(/setUnitMm\(next\);\s*setReport\(null\);\s*clearJobArtifacts\(\);/);
+    expect(TOOL_SOURCE).toContain('function invalidateManufacturingEvidence(options)');
+    expect(TOOL_SOURCE).toContain("setGcodeMetadata(null); setGcodeMetadataHash(''); setGcodeBinding('');");
+    expect(TOOL_SOURCE).toContain("persist({ unitMm: next, preflight: null, preflightBinding: '' })");
+    expect(TOOL_SOURCE).toContain('updateRecipe(clean, 20)');
     expect(TOOL_SOURCE).toMatch(/setInfillPercent\(next\);\s*clearJobArtifacts\(\);/);
     expect(TOOL_SOURCE).toMatch(/setSupportPercent\(next\);\s*clearJobArtifacts\(\);/);
+  });
+
+  it('binds persisted preflight and slicer evidence to the exact manufacturing context', () => {
+    const pure = window.StemLab.printLabPure;
+    const profile = pure.normalizePrinterProfile({});
+    const report = pure.normalizePersistedPreflight(PREFLIGHT);
+    const binding = pure.persistedPreflightBinding(RECIPE, 20, profile);
+
+    expect(report).toMatchObject({ status: 'WARN', sourceFormat: 'RECIPE', dimensionsMm: PREFLIGHT.dimensionsMm });
+    expect(binding).toContain('alloflow-print-preflight-binding/1');
+    expect(pure.persistedPreflightBinding(RECIPE, 21, profile)).not.toBe(binding);
+    expect(pure.persistedPreflightBinding(RECIPE, 20, Object.assign({}, profile, { bedWidthMm: 180 }))).not.toBe(binding);
+    expect(pure.normalizePersistedPreflight(Object.assign({}, PREFLIGHT, { sourceFormat: 'STL' }))).toBeNull();
+
+    const trusted = renderTool('printLab', { printLab: { activeTab: 'Preflight', recipe: RECIPE, unitMm: 20, profile, preflight: PREFLIGHT, preflightBinding: binding } });
+    const stale = renderTool('printLab', { printLab: { activeTab: 'Preflight', recipe: RECIPE, unitMm: 21, profile, preflight: PREFLIGHT, preflightBinding: binding } });
+    expect(trusted).toContain('>WARN</span>');
+    expect(stale).not.toContain('>WARN</span>');
+
+    const hash = 'a'.repeat(64);
+    const evidence = pure.manufacturingEvidenceBinding(hash, 'RECIPE', 20, 'PLA', profile);
+    expect(evidence).toContain('alloflow-print-evidence-binding/1');
+    expect(pure.manufacturingEvidenceBinding(hash, 'RECIPE', 20, 'PETG', profile)).not.toBe(evidence);
+    expect(pure.manufacturingEvidenceBinding(hash, 'RECIPE', 25, 'PLA', profile)).not.toBe(evidence);
+    expect(pure.manufacturingEvidenceBinding('not-a-hash', 'RECIPE', 20, 'PLA', profile)).toBe('');
+  });
+
+  it('allows 5 MiB local inspection while enforcing the School Rewards 4 MiB asset gate', () => {
+    const pure = window.StemLab.printLabPure;
+    const borderline = Math.floor(4.5 * 1024 * 1024);
+
+    expect(pure.MAX_FILE_BYTES).toBe(5 * 1024 * 1024);
+    expect(pure.MAX_PORTAL_ASSET_BYTES).toBe(4 * 1024 * 1024);
+    expect(pure.allowedFile({ name: 'borderline.stl', size: borderline })).toMatchObject({ ok: true, format: 'STL' });
+    expect(pure.schoolRewardsAssetCompatibility('STL', borderline)).toMatchObject({ compatible: false, needsAsset: true, maxBytes: 4 * 1024 * 1024 });
+    expect(pure.schoolRewardsAssetCompatibility('GLB', 4 * 1024 * 1024)).toMatchObject({ compatible: true, needsAsset: true });
+    expect(pure.schoolRewardsAssetCompatibility('RECIPE', 0)).toMatchObject({ compatible: true, needsAsset: false });
+    expect(TOOL_SOURCE).toContain("'data-school-rewards-asset-ready': 'false'");
   });
 
   it('prefers slicer-reported grams and gates tickets on a reviewed material estimate', () => {
@@ -187,7 +240,8 @@ describe('Print Lab import and handoff guardrails', () => {
     expect(quoteFallback).toBeGreaterThan(slicerMaterial);
     expect(TOOL_SOURCE).toContain('var pointQuote = Printable && quoteMaterial ? Printable.estimatePointQuote(quoteMaterial, quoteConfig) : null;');
     expect(TOOL_SOURCE).toContain("if (!quoteMaterial || !(Number(quoteMaterial.estimatedGrams) > 0))");
-    expect(TOOL_SOURCE).toContain('disabled: !gcodeMetadata || !gcodeMetadataHash || !quoteMaterial || !materialReviewed');
+    expect(TOOL_SOURCE).toContain('disabled: !gcodeEvidenceCurrent || !quoteMaterial || !materialReviewed');
+    expect(TOOL_SOURCE).toContain('expectedBinding !== gcodeBinding');
     expect(TOOL_SOURCE).toContain('This metadata reports filament length but not mass.');
   });
 });

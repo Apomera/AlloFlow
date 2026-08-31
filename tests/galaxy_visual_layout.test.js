@@ -15,7 +15,7 @@ describe('galaxy visual layout', () => {
     expect(source).toContain("height: 'clamp(360px, 58vw, 620px)'");
     expect(source).toContain("var galaxyControlPanel = d.galaxyControlPanel || 'view';");
     expect(source).toContain('Galaxy control groups');
-    expect(source).toContain("{ key: 'view', icon: '◉', label: 'View' }");
+    expect(source).toContain("{ key: 'view', icon: '◉', label: __alloT('stem.galaxy.control_group_view', 'View') }");
     expect(source).toContain('Explore the science behind the simulation');
 
     const workspace = source.indexOf('Canvas-first workspace');

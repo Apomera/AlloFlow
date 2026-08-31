@@ -79,4 +79,8 @@ describe('AlloCommandPalette modal accessibility', () => {
     expect(stringAttribute(closeButton.openingElement, 'className')).toContain('min-h-11');
     expect(stringAttribute(closeButton.openingElement, 'className')).toContain('min-w-11');
   });
+
+  it('lets the search field shrink so the modal controls reflow at 320px', () => {
+    expect(source).toContain('className="min-w-0 flex-1 text-sm outline-none');
+  });
 });

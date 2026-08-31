@@ -105,32 +105,36 @@ function migrateSchoolRewardsRepositoryV4() {
 
 function getSchoolRewardsBootstrap() {
   var actor = currentActor_(), book = book_(), config = configMap_(book), balanceMap = balancesMap_(book);
-  var students = students_(book).filter(function(student) { return student.active; });
+  var allStudents = students_(book), students = actor.role === 'admin' ? allStudents : allStudents.filter(function(student) { return student.active; });
   students.forEach(function(student) {
     var availability = pointAvailability_(book, student.id, balanceMap);
     student.balance = availability.balance;
     student.reservedPoints = availability.reservedPoints;
     student.availableBalance = availability.availableBalance;
   });
-  var categories = categories_(book).filter(function(category) { return category.active; });
+  var categories = categories_(book);
   var visible = visibleWindow_(book);
   if (actor.role === 'student') {
     var ownStudent = requireStudent_(book, actor.studentId), ownAvailability = pointAvailability_(book, actor.studentId, balanceMap);
     ownStudent = { id: ownStudent.id, firstName: ownStudent.firstName, lastInitial: ownStudent.lastInitial, grade: ownStudent.grade, homeroom: ownStudent.homeroom, active: true, balance: ownAvailability.balance, reservedPoints: ownAvailability.reservedPoints, availableBalance: ownAvailability.availableBalance };
     var ownLedger = ledger_(book).filter(function(entry) { return entry.studentId === actor.studentId; }).slice(-200).reverse().map(studentLedgerEntry_);
-    var ownOrders = orders_(book).filter(function(order) { return order.studentId === actor.studentId; }).slice(-50).reverse().map(function(order) { order.lines = orderLines_(book, order.id); return order; });
+    var ownOrderRows = orders_(book).filter(function(order) { return order.studentId === actor.studentId; }).slice(-50).reverse();
+    var ownOrders = ownOrderRows.map(function(order) { return orderDto_(book, order); });
     return { ok: true, service: SR_SERVICE, version: SR_VERSION, actor: actor,
       config: { schoolName: config.schoolName || 'School', academicYear: config.academicYear || '', levelThresholds: normalizeLevelThresholds_(config.levelThresholds) },
       students: [ownStudent], categories: categories, progress: categoryProgress_(book, actor.studentId, categories, config),
       catalog: visible ? catalog_(book).filter(function(item) { return item.active; }) : [], windows: visible ? [visible] : [],
-      recentLedger: ownLedger, recentOrders: ownOrders };
+      recentLedger: ownLedger, recentOrders: ownOrders, recentReceipts: receiptDtosForOrders_(book, ownOrderRows) };
   }
   if (actor.role !== 'admin') students = students.map(function(student) { return { id: student.id, firstName: student.firstName, lastInitial: student.lastInitial, grade: student.grade, homeroom: student.homeroom, active: student.active, balance: student.balance, reservedPoints: student.reservedPoints, availableBalance: student.availableBalance }; });
+  var catalogItems = catalog_(book), recentOrderRows = actor.role === 'staff' ? [] : orders_(book).slice(-50).reverse();
+  var recentLedgerItems = actor.role === 'cashier' ? [] : ledger_(book).slice(-100).reverse();
+  if (actor.role === 'staff') recentLedgerItems = recentLedgerItems.map(studentLedgerEntry_);
   var result = { ok: true, service: SR_SERVICE, version: SR_VERSION, actor: actor,
     config: { schoolName: config.schoolName || 'School', academicYear: config.academicYear || '', webAppUrl: config.webAppUrl || '', levelThresholds: normalizeLevelThresholds_(config.levelThresholds) },
-    students: students, categories: categories, catalog: catalog_(book).filter(function(item) { return item.active; }),
+    students: students, categories: categories, catalog: actor.role === 'admin' ? catalogItems : catalogItems.filter(function(item) { return item.active; }),
     windows: windows_(book).filter(function(item) { return item.status !== 'ARCHIVED'; }),
-    recentLedger: actor.role === 'cashier' ? [] : ledger_(book).slice(-100).reverse(), recentOrders: actor.role === 'staff' ? [] : orders_(book).slice(-50).reverse(),
+    recentLedger: recentLedgerItems, recentOrders: recentOrderRows.map(function(order) { return orderDto_(book, order); }), recentReceipts: actor.role === 'staff' ? [] : receiptDtosForOrders_(book, recentOrderRows),
     emailSchedule: emailSchedule_(), mailQuota: mailQuota_() };
   if (actor.role === 'admin') result.members = members_(book);
   return result;
@@ -458,7 +462,7 @@ function confirmSchoolRewardsPrintQuote(request) {
     if (item.status !== 'QUOTED') throw srError_('invalid_transition', 'This request does not have a quote awaiting confirmation.');
     if (!item.quoteExpiresAt || new Date(item.quoteExpiresAt).getTime() <= new Date().getTime()) throw srError_('quote_expired', 'This quote has expired. Ask staff to review it again.');
     var windowItem = windowById_(book, item.windowId);
-    if (!windowItem || windowItem.status !== 'OPEN') throw srError_('store_closed', 'A print quote can be confirmed only while the store window is open.');
+    requireOpenWindowNow_(windowItem, 'Print quote confirmation');
     var model = requirePrintModel_(book, item.modelId);
     if (model.contentHash !== item.modelHash) throw srError_('model_changed', 'The quote does not match the current model version.');
     if (pointAvailability_(book, item.studentId).availableBalance < item.quotePoints) throw srError_('insufficient_balance', 'The student does not have enough points available.');
@@ -531,6 +535,7 @@ function fulfillSchoolRewardsPrintRequest(request) {
     if (!hold || ['ACTIVE', 'CAPTURED'].indexOf(hold.status) < 0 || hold.amount !== item.quotePoints) throw srError_('reconciliation', 'The print request point reservation does not reconcile.');
     var model = requirePrintModel_(book, item.modelId);
     if (model.contentHash !== item.modelHash) throw srError_('model_changed', 'The fulfilled print must match the approved model version.');
+    var student = requireStudentRecord_(book, item.studentId);
     var at = now_();
     if (item.status !== 'FULFILLED') { item.status = 'FULFILLING'; item.updatedAt = at; upsertPrintRequestRow_(book, item); }
     var spend = spendForPrintRequest_(book, item.id);
@@ -546,7 +551,7 @@ function fulfillSchoolRewardsPrintRequest(request) {
     if (!lines.length) { sheet_(book, 'OrderLines').appendRow(safeRow_([item.id, model.id, '3D print: ' + model.title + ' (v' + model.version + ')', 1, item.quotePoints, item.quotePoints])); lines = orderLines_(book, item.id); }
     item.status = 'FULFILLED'; item.orderId = item.id; item.fulfilledAt = item.fulfilledAt || at; item.closedAt = at; item.updatedAt = at; upsertPrintRequestRow_(book, item);
     var availability = pointAvailability_(book, item.studentId);
-    var receipt = sendOrderReceiptOnce_(book, requireStudent_(book, item.studentId), { id: item.id, total: item.quotePoints, at: item.fulfilledAt, lines: lines }, availability.availableBalance, 'PURCHASE');
+    var receipt = sendOrderReceiptOnce_(book, student, { id: item.id, total: item.quotePoints, at: item.fulfilledAt, lines: lines }, availability.availableBalance, 'PURCHASE');
     var result = { ok: true, request: printRequestDto_(item), ledgerId: spend.id, balance: after.balance, reservedPoints: availability.reservedPoints, availableBalance: availability.availableBalance, receipt: receipt };
     rememberIdem_(key, operation, result); appendAudit_({ event: 'PRINT_REQUEST_FULFILLED', type: 'print_request', id: item.id, summary: 'Print fulfilled: ' + item.quotePoints + ' points' }, actor); return result;
   });
@@ -560,8 +565,10 @@ function refundSchoolRewardsPrintRequest(request) {
     var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(), item = requirePrintRequest_(book, requestId);
     if (['FULFILLED', 'REFUNDING', 'REFUNDED'].indexOf(item.status) < 0) throw srError_('invalid_transition', 'Only a fulfilled print can be refunded.');
+    assertReceiptDeliverySettled_(book, item.id, 'PURCHASE');
     var spend = spendForPrintRequest_(book, item.id);
     if (!spend || spend.amount !== -item.quotePoints) throw srError_('reconciliation', 'The print request and spending ledger do not reconcile.');
+    var student = requireStudentRecord_(book, item.studentId);
     var at = now_();
     if (item.status !== 'REFUNDED') { item.status = 'REFUNDING'; item.updatedAt = at; upsertPrintRequestRow_(book, item); }
     var refund = refundForPrintRequest_(book, item.id);
@@ -570,7 +577,7 @@ function refundSchoolRewardsPrintRequest(request) {
     var after = rebuildBalanceFromLedger_(book, item.studentId); setOrderStatus_(book, item.id, 'REFUNDED');
     item.status = 'REFUNDED'; item.staffReason = reason; item.closedAt = at; item.updatedAt = at; upsertPrintRequestRow_(book, item);
     var availability = pointAvailability_(book, item.studentId), lines = orderLines_(book, item.id);
-    var receipt = sendOrderReceiptOnce_(book, requireStudent_(book, item.studentId), { id: item.id, total: item.quotePoints, at: at, lines: lines }, availability.availableBalance, 'REFUND');
+    var receipt = sendOrderReceiptOnce_(book, student, { id: item.id, total: item.quotePoints, at: at, lines: lines }, availability.availableBalance, 'REFUND');
     var result = { ok: true, request: printRequestDto_(item), ledgerId: refund.id, restoredPoints: item.quotePoints, balance: after.balance, reservedPoints: availability.reservedPoints, availableBalance: availability.availableBalance, receipt: receipt };
     rememberIdem_(key, operation, result); appendAudit_({ event: 'PRINT_REQUEST_REFUNDED', type: 'print_request', id: item.id, summary: 'Print refunded: ' + item.quotePoints + ' points' }, actor); return result;
   });
@@ -586,11 +593,21 @@ function adminUpsertRewardsStudent(value) {
 }
 function adminBulkUpsertRewardsStudents(values) {
   var actor = requireRole_(['admin']);
-  if (!Array.isArray(values) || !values.length || values.length > 500) throw srError_('bad_roster', 'Upload between 1 and 500 students per batch.');
-  var domain = allowedDomain_(), normalized = values.map(function(value) { return normalizeStudent_(value, domain, text_(value && value.id, 80, '')); }), seen = {};
-  normalized.forEach(function(student) { if (seen[student.email]) throw srError_('duplicate_student', 'The upload contains a duplicate student email: ' + student.email); seen[student.email] = true; });
+  if (!Array.isArray(values) || !values.length || values.length > SR_MAX_BATCH) throw srError_('bad_roster', 'Upload between 1 and ' + SR_MAX_BATCH + ' students per batch.');
   return locked_(function() {
-    var book = book_(), saved = [];
+    var book = book_(), domain = allowedDomain_(), existing = students_(book), byEmail = {}, byId = {}, seenEmails = {}, seenIds = {}, saved = [];
+    existing.forEach(function(student) { byEmail[student.email] = student; byId[student.id] = student; });
+    var normalized = values.map(function(value) {
+      var requestedId = text_(value && value.id, 80, ''), student = normalizeStudent_(value, domain, requestedId);
+      var matchedId = requestedId ? byId[requestedId] : null, matchedEmail = byEmail[student.email];
+      if (matchedEmail && requestedId && matchedEmail.id !== requestedId) throw srError_('duplicate_student', 'That student email is already assigned to another student.');
+      if (matchedId && matchedEmail && matchedId.id !== matchedEmail.id) throw srError_('duplicate_student', 'The supplied student ID and email belong to different roster records.');
+      student.id = requestedId || (matchedEmail ? matchedEmail.id : uuid_());
+      if (seenEmails[student.email]) throw srError_('duplicate_student', 'The upload contains a duplicate student email: ' + student.email);
+      if (seenIds[student.id]) throw srError_('duplicate_student', 'The upload resolves more than once to the same student record.');
+      seenEmails[student.email] = true; seenIds[student.id] = true;
+      return student;
+    });
     normalized.forEach(function(student) { saved.push(upsertStudentRow_(book, student)); });
     appendAudit_({ event: 'STUDENT_ROSTER_IMPORTED', type: 'student_batch', id: uuid_(), summary: saved.length + ' student roster entries imported' }, actor);
     return { ok: true, imported: saved.length, students: saved };
@@ -658,19 +675,21 @@ function adminSetRewardsLevelThresholds(value) {
 }
 function adminUpsertRewardsWindow(value) {
   var actor = requireRole_(['admin']), windowItem = normalizeWindow_(value);
-  return locked_(function() { var book = book_(); if (windowItem.status === 'OPEN') closeOtherWindows_(book, windowItem.id); var saved = upsertWindowRow_(book, windowItem); appendAudit_({ event: 'STORE_WINDOW_UPDATED', type: 'store_window', id: saved.id, summary: 'Store window set to ' + saved.status }, actor); return { ok: true, window: saved }; });
+  return locked_(function() { var book = book_(); if (windowItem.status === 'OPEN' || windowItem.status === 'PREVIEW') closeOtherVisibleWindows_(book, windowItem.id); var saved = upsertWindowRow_(book, windowItem); appendAudit_({ event: 'STORE_WINDOW_UPDATED', type: 'store_window', id: saved.id, summary: 'Store window set to ' + saved.status }, actor); return { ok: true, window: saved }; });
 }
 
 function awardSchoolRewardsPoints(request) {
   var actor = requireRole_(['admin', 'staff']); request = object_(request);
   var studentId = id_(request.studentId, 'student'), amount = integer_(request.amount, 1, SR_MAX_POINTS, 'Points');
-  var reason = text_(request.reason, 180, 'School recognition'), categoryId = optionalId_(request.categoryId, 'category'), key = idemKey_(request.idempotencyKey);
+  var reason = text_(request.reason, 180, ''), categoryId = id_(request.categoryId, 'category'), key = idemKey_(request.idempotencyKey);
+  if (!reason) throw srError_('bad_award', 'Describe what the student did to earn these points.');
+  var operation = printIdemOperation_('award', actor, { studentId: studentId, amount: amount, reason: reason, categoryId: categoryId });
   return locked_(function() {
-    var prior = idemResult_(key, 'award'); if (prior) return prior;
+    var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(); requireStudent_(book, studentId); if (categoryId) requireCategory_(book, categoryId);
     var entry = appendLedger_(book, { studentId: studentId, kind: 'EARN', amount: amount, reason: reason, referenceType: 'award', referenceId: '', reversesId: '', key: key, categoryId: categoryId }, actor);
     var balance = applyBalance_(book, studentId, amount, 0).balance;
-    var result = { ok: true, entry: entry, balance: balance }; rememberIdem_(key, 'award', result);
+    var result = { ok: true, entry: entry, balance: balance }; rememberIdem_(key, operation, result);
     appendAudit_({ event: 'POINTS_AWARDED', type: 'ledger', id: entry.id, summary: 'Points awarded: ' + amount }, actor); return result;
   });
 }
@@ -678,18 +697,20 @@ function awardSchoolRewardsPoints(request) {
 function reverseSchoolRewardsEntry(request) {
   var actor = requireRole_(['admin']); request = object_(request);
   var entryId = id_(request.entryId, 'ledger entry'), key = idemKey_(request.idempotencyKey);
+  var reason = text_(request.reason, 180, 'Administrative correction');
+  var operation = printIdemOperation_('reverse', actor, { entryId: entryId, reason: reason });
   return locked_(function() {
-    var prior = idemResult_(key, 'reverse'); if (prior) return prior;
+    var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(), original = ledgerById_(book, entryId);
     if (!original) throw srError_('not_found', 'Ledger entry was not found.');
     if (original.kind === 'REVERSAL' || reversalExists_(book, entryId)) throw srError_('already_reversed', 'That entry has already been reversed.');
     if (original.kind !== 'EARN') throw srError_('order_refund_required', 'This pilot reverses award entries only. Purchase returns require an order-level refund so inventory and the ledger stay aligned.');
     var delta = -original.amount, before = pointAvailability_(book, original.studentId);
     if (before.availableBalance + delta < 0) throw srError_('points_reserved', 'This correction would consume points reserved for an active print request. Cancel the request first.');
-    var entry = appendLedger_(book, { studentId: original.studentId, kind: 'REVERSAL', amount: delta, reason: text_(request.reason, 180, 'Administrative correction'), referenceType: 'reversal', referenceId: entryId, reversesId: entryId, key: key, categoryId: original.categoryId }, actor);
+    var entry = appendLedger_(book, { studentId: original.studentId, kind: 'REVERSAL', amount: delta, reason: reason, referenceType: 'reversal', referenceId: entryId, reversesId: entryId, key: key, categoryId: original.categoryId }, actor);
     var after = applyBalance_(book, original.studentId, delta, 0);
     var availability = pointAvailability_(book, original.studentId);
-    var result = { ok: true, entry: entry, balance: after.balance, reservedPoints: availability.reservedPoints, availableBalance: availability.availableBalance }; rememberIdem_(key, 'reverse', result);
+    var result = { ok: true, entry: entry, balance: after.balance, reservedPoints: availability.reservedPoints, availableBalance: availability.availableBalance }; rememberIdem_(key, operation, result);
     appendAudit_({ event: 'LEDGER_REVERSED', type: 'ledger', id: entry.id, summary: 'Ledger correction recorded' }, actor); return result;
   });
 }
@@ -698,11 +719,12 @@ function checkoutSchoolRewardsOrder(request) {
   var actor = requireRole_(['admin', 'cashier']); request = object_(request);
   var studentId = id_(request.studentId, 'student'), windowId = id_(request.windowId, 'store window');
   var key = idemKey_(request.idempotencyKey), lines = cart_(request.lines);
+  var operation = printIdemOperation_('checkout', actor, { studentId: studentId, windowId: windowId, lines: lines });
   return locked_(function() {
-    var prior = idemResult_(key, 'checkout'); if (prior) return prior;
+    var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(); requireStudent_(book, studentId);
     var windowItem = windowById_(book, windowId);
-    if (!windowItem || windowItem.status !== 'OPEN') throw srError_('store_closed', 'Checkout is available only while this store window is open.');
+    requireOpenWindowNow_(windowItem, 'Checkout');
     var items = catalog_(book), byId = {}; items.forEach(function(item) { byId[item.id] = item; });
     var total = 0, orderLines = [];
     lines.forEach(function(line) {
@@ -724,7 +746,7 @@ function checkoutSchoolRewardsOrder(request) {
     var availability = pointAvailability_(book, studentId);
     var receipt = sendOrderReceipt_(book, requireStudent_(book, studentId), { id: orderId, total: total, at: at, lines: orderLines }, availability.availableBalance, 'PURCHASE');
     var result = { ok: true, order: { id: orderId, studentId: studentId, windowId: windowId, total: total, status: 'COMPLETED', at: at, lines: orderLines }, ledgerId: entry.id, balance: after.balance, reservedPoints: availability.reservedPoints, availableBalance: availability.availableBalance, receipt: receipt };
-    rememberIdem_(key, 'checkout', result); appendAudit_({ event: 'ORDER_COMPLETED', type: 'order', id: orderId, summary: 'Checkout: ' + total + ' points' }, actor); return result;
+    rememberIdem_(key, operation, result); appendAudit_({ event: 'ORDER_COMPLETED', type: 'order', id: orderId, summary: 'Checkout: ' + total + ' points' }, actor); return result;
   });
 }
 
@@ -732,25 +754,28 @@ function refundSchoolRewardsOrder(request) {
   var actor = requireRole_(['admin']); request = object_(request);
   var orderId = id_(request.orderId, 'order'), key = idemKey_(request.idempotencyKey);
   var reason = text_(request.reason, 180, 'Order refund');
+  var operation = printIdemOperation_('refund', actor, { orderId: orderId, reason: reason });
   return locked_(function() {
-    var prior = idemResult_(key, 'refund'); if (prior) return prior;
+    var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(), order = orderById_(book, orderId);
     if (!order) throw srError_('not_found', 'Order was not found.');
     if (printRequestByOrderId_(book, orderId)) throw srError_('print_refund_required', 'Use the print-request refund so its workflow and point hold remain reconciled.');
     if (order.status !== 'COMPLETED') throw srError_('not_refundable', 'Only a completed order can be refunded.');
+    assertReceiptDeliverySettled_(book, orderId, 'PURCHASE');
     var spend = spendForOrder_(book, orderId);
     if (!spend || spend.amount !== -order.total) throw srError_('reconciliation', 'The order and spending ledger do not reconcile.');
     if (reversalExists_(book, spend.id)) throw srError_('already_refunded', 'That order has already been refunded.');
     var lines = orderLines_(book, orderId);
     if (!lines.length) throw srError_('reconciliation', 'The order has no item lines to restore.');
+    var restorePlan = assertInventoryRestorable_(book, lines), student = requireStudentRecord_(book, order.studentId);
     var entry = appendLedger_(book, { studentId: order.studentId, kind: 'REFUND', amount: order.total, reason: reason, referenceType: 'order_refund', referenceId: orderId, reversesId: spend.id, key: key, categoryId: '' }, actor);
     var balance = applyBalance_(book, order.studentId, 0, -order.total);
-    lines.forEach(function(line) { incrementInventory_(book, line.catalogId, line.quantity); });
+    restorePlan.forEach(function(line) { incrementInventory_(book, line.catalogId, line.quantity); });
     setOrderStatus_(book, orderId, 'REFUNDED');
     var availability = pointAvailability_(book, order.studentId);
-    var receipt = sendOrderReceipt_(book, requireStudent_(book, order.studentId), { id: orderId, total: order.total, at: now_(), lines: lines }, availability.availableBalance, 'REFUND');
+    var receipt = sendOrderReceipt_(book, student, { id: orderId, total: order.total, at: now_(), lines: lines }, availability.availableBalance, 'REFUND');
     var result = { ok: true, orderId: orderId, ledgerId: entry.id, restoredPoints: order.total, balance: balance.balance, reservedPoints: availability.reservedPoints, availableBalance: availability.availableBalance, receipt: receipt };
-    rememberIdem_(key, 'refund', result);
+    rememberIdem_(key, operation, result);
     appendAudit_({ event: 'ORDER_REFUNDED', type: 'order', id: orderId, summary: 'Order refunded: ' + order.total + ' points' }, actor);
     return result;
   });
@@ -787,6 +812,46 @@ function sendSchoolRewardsBalanceStatements(request) {
   return locked_(function() { return sendStatements_(period, limit, actor); });
 }
 
+function resendSchoolRewardsOrderReceipt(request) {
+  var actor = requireRole_(['admin', 'cashier']); request = object_(request);
+  var orderId = id_(request.orderId, 'order'), kind = text_(request.kind, 20, 'PURCHASE').toUpperCase(), key = idemKey_(request.idempotencyKey);
+  if (kind !== 'PURCHASE' && kind !== 'REFUND') throw srError_('bad_receipt', 'Receipt kind must be purchase or refund.');
+  var operation = printIdemOperation_('receipt_resend', actor, { orderId: orderId, kind: kind });
+  return locked_(function() {
+    var prior = idemResult_(key, operation); if (prior) return prior;
+    var book = book_(), order = orderById_(book, orderId);
+    if (!order) throw srError_('not_found', 'Order was not found.');
+    if (kind === 'PURCHASE' && order.status !== 'COMPLETED') throw srError_('bad_receipt', 'A purchase receipt can be resent only while the order is completed.');
+    if (kind === 'REFUND' && order.status !== 'REFUNDED') throw srError_('bad_receipt', 'A refund receipt is available only after the order is refunded.');
+    var sent = sentReceiptForOrder_(book, orderId, kind), previous = latestReceiptForOrder_(book, orderId, kind), availability = pointAvailability_(book, order.studentId), receipt;
+    if (!sent && previous && (previous.status === 'PENDING' || previous.status === 'UNKNOWN')) throw srError_('receipt_uncertain', 'Receipt delivery is uncertain. Verify the managed mailbox before attempting another copy.');
+    if (sent) receipt = { id: sent.id, kind: sent.kind, status: sent.status, sentAt: sent.sentAt, points: kind === 'REFUND' ? order.total : -order.total };
+    else receipt = sendOrderReceipt_(book, requireStudentRecord_(book, order.studentId), { id: order.id, total: order.total, at: kind === 'REFUND' ? (previous && previous.sentAt || now_()) : order.at, lines: orderLines_(book, order.id), balanceLabel: 'Current available balance when this copy was sent' }, availability.availableBalance, kind);
+    var result = { ok: receipt.status === 'SENT', orderId: order.id, receipt: receipt, alreadySent: !!sent };
+    rememberIdem_(key, operation, result);
+    appendAudit_({ event: sent ? 'RECEIPT_ALREADY_SENT' : 'RECEIPT_RESEND_ATTEMPTED', type: 'receipt', id: receipt.id, summary: kind + ' receipt status: ' + receipt.status }, actor);
+    return result;
+  });
+}
+
+function resolveSchoolRewardsReceiptDelivery(request) {
+  var actor = requireRole_(['admin']); request = object_(request);
+  var receiptId = id_(request.receiptId, 'receipt'), status = text_(request.status, 20, '').toUpperCase(), note = text_(request.note, 300, ''), key = idemKey_(request.idempotencyKey);
+  if (status !== 'SENT' && status !== 'FAILED') throw srError_('bad_receipt', 'Resolved receipt status must be sent or failed.');
+  if (!note) throw srError_('reason_required', 'Record how delivery was verified before resolving an uncertain receipt.');
+  var operation = printIdemOperation_('receipt_delivery_resolve', actor, { receiptId: receiptId, status: status, note: note });
+  return locked_(function() {
+    var prior = idemResult_(key, operation); if (prior) return prior;
+    var book = book_(), receipt = receiptById_(book, receiptId);
+    if (!receipt) throw srError_('not_found', 'Receipt attempt was not found.');
+    if (receipt.status !== 'PENDING' && receipt.status !== 'UNKNOWN') throw srError_('bad_receipt', 'Only an uncertain receipt attempt can be resolved manually.');
+    receipt.status = status; receipt.error = status === 'FAILED' ? note : ''; upsertReceiptRow_(book, receipt);
+    var result = { ok: true, receipt: receiptDto_(receipt) }; rememberIdem_(key, operation, result);
+    appendAudit_({ event: 'RECEIPT_DELIVERY_RESOLVED', type: 'receipt', id: receipt.id, summary: 'Uncertain ' + receipt.kind + ' receipt marked ' + status + ': ' + note }, actor);
+    return result;
+  });
+}
+
 function sendSchoolRewardsGuardianDigests(request) {
   var actor = requireRole_(['admin']); request = object_(request);
   var period = text_(request.periodKey, 60, now_().slice(0, 10));
@@ -802,7 +867,7 @@ function sendSchoolRewardsGuardianDigests(request) {
       var emailHash = hash_(guardian.guardianEmail), digestKey = guardian.studentId + '|' + emailHash + '|' + period;
       if (sentKeys[digestKey]) { skipped++; continue; }
       var availability = pointAvailability_(book, student.id), balance = balance_(book, student.id);
-      var positiveProgress = categoryProgress_(book, student.id, categories_(book).filter(function(category) { return category.active; }), config).filter(function(item) { return item.points > 0; }).slice(0, 8);
+      var positiveProgress = categoryProgress_(book, student.id, categories_(book), config).filter(function(item) { return item.points > 0; }).slice(0, 8);
       var digest = guardianDigestBodies_(guardian, student, availability, balance.earned, positiveProgress, config, at), digestId = uuid_(), status = 'SENT', error = '';
       try { MailApp.sendEmail({ to: guardian.guardianEmail, subject: (config.schoolName || 'School') + ' positive rewards update', name: (config.schoolName || 'School') + ' School Rewards', body: digest.body, htmlBody: digest.htmlBody }); sent++; }
       catch (err) { status = 'FAILED'; error = text_(err && err.message, 300, 'Mail send failed'); failed++; }
@@ -847,8 +912,7 @@ function configureSchoolRewardsEmailSchedule(request) {
 }
 
 function runScheduledSchoolRewardsStatements() {
-  var actor = currentActor_();
-  if (actor.role !== 'admin') throw srError_('denied', 'The trigger owner must remain an active administrator.');
+  var actor = scheduledAdminActor_();
   return locked_(function() { return sendStatements_('weekly-' + now_().slice(0, 10), SR_MAX_BATCH, actor); });
 }
 
@@ -877,42 +941,45 @@ function sendStatements_(period, limit, actor) {
   for (var i = 0; i < students.length && sent + failed < cap; i++) {
     var student = students[i], statementKey = student.id + '|' + period;
     if (existing[statementKey]) { skipped++; continue; }
-    var balance = balances[student.id] ? balances[student.id].balance : 0, statementId = uuid_();
+    var availability = pointAvailability_(book, student.id, balances), statementId = uuid_();
     try {
-      MailApp.sendEmail({ to: student.email, subject: (config.schoolName || 'School') + ' rewards balance: ' + balance + ' points', name: (config.schoolName || 'School') + ' School Rewards', body: statementText_(student, balance, asOf, config, windowItem, prizes), htmlBody: statementHtml_(student, balance, asOf, config, windowItem, prizes) });
-      sheet_(book, 'Statements').appendRow(safeRow_([statementId, student.id, period, balance, 'SENT', asOf, ''])); sent++;
+      MailApp.sendEmail({ to: student.email, subject: (config.schoolName || 'School') + ' rewards update', name: (config.schoolName || 'School') + ' School Rewards', body: statementText_(student, availability, asOf, config, windowItem, prizes), htmlBody: statementHtml_(student, availability, asOf, config, windowItem, prizes) });
+      sheet_(book, 'Statements').appendRow(safeRow_([statementId, student.id, period, availability.balance, 'SENT', asOf, ''])); sent++;
     } catch (err) {
-      sheet_(book, 'Statements').appendRow(safeRow_([statementId, student.id, period, balance, 'FAILED', asOf, text_(err && err.message, 300, 'Mail send failed')])); failed++;
+      sheet_(book, 'Statements').appendRow(safeRow_([statementId, student.id, period, availability.balance, 'FAILED', asOf, text_(err && err.message, 300, 'Mail send failed')])); failed++;
     }
   }
   appendAudit_({ event: 'BALANCE_STATEMENTS_SENT', type: 'statement_batch', id: period, summary: sent + ' sent, ' + failed + ' failed' }, actor);
   return { ok: failed === 0, periodKey: period, sent: sent, skipped: skipped, failed: failed, remainingQuota: Math.max(0, quota - sent) };
 }
 function sendOrderReceipt_(book, student, order, balance, kind) {
-  var config = configMap_(book), receiptId = uuid_(), sentAt = now_(), status = 'SENT', error = '';
-  var isRefund = kind === 'REFUND', movement = isRefund ? order.total : -order.total;
+  var config = configMap_(book), receiptId = uuid_(), sentAt = now_(), status = 'PENDING', error = '', target = sheet_(book, 'Receipts');
+  var isRefund = kind === 'REFUND', movement = isRefund ? order.total : -order.total, balanceLabel = text_(order.balanceLabel, 100, 'Available balance after this transaction');
   var subject = (config.schoolName || 'School') + ' rewards ' + (isRefund ? 'refund' : 'purchase') + ' receipt';
   var lines = order.lines || [];
   var plain = ['Hello ' + student.firstName + ',', '', isRefund ? 'Your school store order was refunded.' : 'Your school store purchase is complete.', 'Order: ' + order.id, 'Date: ' + order.at, ''];
   lines.forEach(function(line) { plain.push(line.quantity + ' x ' + line.itemName + ' — ' + line.lineTotal + ' points'); });
-  plain.push('', (isRefund ? 'Points restored: +' : 'Points spent: ') + order.total, 'Available balance: ' + balance + ' points', '', 'Keep this email as your receipt. Contact your school if anything looks incorrect.');
+  plain.push('', (isRefund ? 'Points restored: +' : 'Points spent: ') + order.total, balanceLabel + ': ' + balance + ' points', '', 'Keep this email as your receipt. Contact your school if anything looks incorrect.');
   var htmlLines = lines.map(function(line) { return '<li>' + line.quantity + ' × ' + html_(line.itemName) + ' — <strong>' + line.lineTotal + ' points</strong></li>'; }).join('');
-  var htmlBody = '<div style="font:16px system-ui;line-height:1.55;color:#172033;max-width:620px"><p>Hello ' + html_(student.firstName) + ',</p><h1 style="font-size:22px">' + (isRefund ? 'Refund receipt' : 'School store receipt') + '</h1><p>Order <strong>' + html_(order.id) + '</strong><br>' + html_(order.at) + '</p><ul>' + htmlLines + '</ul><p>' + (isRefund ? 'Points restored: <strong>+' : 'Points spent: <strong>') + order.total + '</strong><br>Available balance: <strong>' + balance + ' points</strong></p><p style="font-size:13px;color:#526079">Keep this email as your receipt. Contact your school if anything looks incorrect.</p></div>';
-  try { MailApp.sendEmail({ to: student.email, subject: subject, name: (config.schoolName || 'School') + ' School Rewards', body: plain.join('\n'), htmlBody: htmlBody }); }
+  var htmlBody = '<div style="font:16px system-ui;line-height:1.55;color:#172033;max-width:620px"><p>Hello ' + html_(student.firstName) + ',</p><h1 style="font-size:22px">' + (isRefund ? 'Refund receipt' : 'School store receipt') + '</h1><p>Order <strong>' + html_(order.id) + '</strong><br>' + html_(order.at) + '</p><ul>' + htmlLines + '</ul><p>' + (isRefund ? 'Points restored: <strong>+' : 'Points spent: <strong>') + order.total + '</strong><br>' + html_(balanceLabel) + ': <strong>' + balance + ' points</strong></p><p style="font-size:13px;color:#526079">Keep this email as your receipt. Contact your school if anything looks incorrect.</p></div>';
+  try { target.appendRow(safeRow_([receiptId, order.id, student.id, kind, student.email, status, sentAt, ''])); }
+  catch (persistError) { return { id: '', kind: kind, status: 'FAILED', sentAt: sentAt, points: movement }; }
+  try { MailApp.sendEmail({ to: student.email, subject: subject, name: (config.schoolName || 'School') + ' School Rewards', body: plain.join('\n'), htmlBody: htmlBody }); status = 'SENT'; }
   catch (err) { status = 'FAILED'; error = text_(err && err.message, 300, 'Mail send failed'); }
-  sheet_(book, 'Receipts').appendRow(safeRow_([receiptId, order.id, student.id, kind, student.email, status, sentAt, error]));
+  try { upsert_(target, 8, receiptId, safeRow_([receiptId, order.id, student.id, kind, student.email, status, sentAt, error])); }
+  catch (persistError) { status = 'UNKNOWN'; }
   return { id: receiptId, kind: kind, status: status, sentAt: sentAt, points: movement };
 }
-function statementText_(student, balance, asOf, config, windowItem, prizes) {
-  var out = ['Hello ' + student.firstName + ',', '', 'Your current school rewards balance is ' + balance + ' points.', 'Balance as of ' + asOf + '.'];
+function statementText_(student, availability, asOf, config, windowItem, prizes) {
+  var out = ['Hello ' + student.firstName + ',', '', 'Here is your private school rewards update.', 'Ledger balance: ' + availability.balance + ' points.', 'Reserved for active requests: ' + availability.reservedPoints + ' points.', 'Available to spend: ' + availability.availableBalance + ' points.', 'Balance as of ' + asOf + '.'];
   if (windowItem) out.push('', windowSentence_(windowItem));
   if (prizes.length) { out.push('', 'Prize preview:'); prizes.forEach(function(item) { out.push('• ' + item.name + ' — ' + item.cost + ' points'); }); }
   out.push('', 'This message is informational. The live ledger at checkout is the official balance. Contact your school if you have a question.'); return out.join('\n');
 }
-function statementHtml_(student, balance, asOf, config, windowItem, prizes) {
+function statementHtml_(student, availability, asOf, config, windowItem, prizes) {
   var catalogPreview = prizes.length ? '<h2 style="font-size:16px">Prize preview</h2><ul>' + prizes.map(function(item) { return '<li>' + html_(item.name) + ' — <strong>' + item.cost + ' points</strong></li>'; }).join('') + '</ul>' : '';
   var windowText = windowItem ? '<p>' + html_(windowSentence_(windowItem)) + '</p>' : '';
-  return '<div style="font:16px system-ui;line-height:1.55;color:#172033;max-width:620px"><p>Hello ' + html_(student.firstName) + ',</p><p>Your current school rewards balance is <strong style="font-size:1.35em">' + balance + ' points</strong>.</p><p style="color:#526079">Balance as of ' + html_(asOf) + '.</p>' + windowText + catalogPreview + '<p style="font-size:13px;color:#526079">This message is informational. The live ledger at checkout is the official balance. Contact your school with questions.</p></div>';
+  return '<div style="font:16px system-ui;line-height:1.55;color:#172033;max-width:620px"><p>Hello ' + html_(student.firstName) + ',</p><h1 style="font-size:22px">Your school rewards update</h1><p>Ledger balance: <strong>' + availability.balance + ' points</strong><br>Reserved for active requests: <strong>' + availability.reservedPoints + ' points</strong><br>Available to spend: <strong style="font-size:1.2em">' + availability.availableBalance + ' points</strong></p><p style="color:#526079">Balance as of ' + html_(asOf) + '.</p>' + windowText + catalogPreview + '<p style="font-size:13px;color:#526079">This message is informational. The live ledger at checkout is the official balance. Contact your school with questions.</p></div>';
 }
 function windowSentence_(item) { if (item.status === 'OPEN') return 'The school store is open now.'; if (item.status === 'PREVIEW') return 'Prize preview is available for ' + item.name + (item.startsAt ? '; shopping begins ' + item.startsAt : '') + '.'; return item.name + ' is ' + item.status.toLowerCase() + '.'; }
 
@@ -925,6 +992,14 @@ function currentActor_() {
   var roster = students_(book_());
   for (var j = 0; j < roster.length; j++) if (roster[j].email === email && roster[j].active) return { email: email, displayName: roster[j].firstName, role: 'student', studentId: roster[j].id };
   throw srError_('denied', 'This managed account is not an active School Rewards member.');
+}
+function scheduledAdminActor_() {
+  if (!configured_()) throw srError_('not_configured', 'School Rewards has not been configured.');
+  var email = normalizeEmail_(Session.getEffectiveUser().getEmail());
+  if (!email || emailDomain_(email) !== allowedDomain_()) throw srError_('denied', 'The trigger owner must use the configured managed domain.');
+  var list = members_(book_());
+  for (var i = 0; i < list.length; i++) if (list[i].email === email && list[i].active && list[i].role === 'admin') return { email: email, displayName: list[i].displayName, role: 'admin' };
+  throw srError_('denied', 'The trigger owner must remain an active administrator.');
 }
 function requireRole_(roles) { var actor = currentActor_(); if (roles.indexOf(actor.role) < 0) throw srError_('denied', 'Your role cannot perform this action.'); return actor; }
 function configured_() { return PropertiesService.getScriptProperties().getProperty('SR_SETUP_STATE') === 'ready'; }
@@ -962,7 +1037,7 @@ function upsertMemberRow_(book, member) { upsert_(sheet_(book, 'Members'), 4, me
 function assertAdminInvariant_(member) { var count = 0; members_(book_()).forEach(function(item) { if (item.email !== member.email && item.role === 'admin' && item.active) count++; }); if (member.role === 'admin' && member.active) count++; if (!count) throw srError_('admin_required', 'At least one active administrator is required.'); }
 
 function students_(book) { return rows_(sheet_(book, 'Students'), 9).map(function(row) { return { id: String(row[0] || ''), firstName: String(row[1] || ''), lastInitial: String(row[2] || ''), grade: String(row[3] || ''), homeroom: String(row[4] || ''), email: normalizeEmail_(row[5]), active: bool_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }); }
-function normalizeStudent_(value, domain, existingId) { value = object_(value); var email = normalizeEmail_(value.email); if (!email || emailDomain_(email) !== domain) throw srError_('bad_student', 'Student email must be a managed address in the configured domain.'); return { id: existingId || text_(value.id, 80, ''), firstName: text_(value.firstName, 80, ''), lastInitial: text_(value.lastInitial, 4, '').slice(0, 1).toUpperCase(), grade: text_(value.grade, 20, ''), homeroom: text_(value.homeroom, 80, ''), email: email, active: value.active !== false }; }
+function normalizeStudent_(value, domain, existingId) { value = object_(value); var email = normalizeEmail_(value.email), firstName = text_(value.firstName, 80, ''); if (!email || emailDomain_(email) !== domain) throw srError_('bad_student', 'Student email must be a managed address in the configured domain.'); if (!firstName) throw srError_('bad_student', 'Student first name is required.'); return { id: existingId || text_(value.id, 80, ''), firstName: firstName, lastInitial: text_(value.lastInitial, 4, '').slice(0, 1).toUpperCase(), grade: text_(value.grade, 20, ''), homeroom: text_(value.homeroom, 80, ''), email: email, active: value.active !== false }; }
 function upsertStudentRow_(book, student) {
   var existing = students_(book), studentId = student.id || uuid_(), createdAt = now_();
   existing.forEach(function(item) { if (item.email === student.email && item.id !== studentId) throw srError_('duplicate_student', 'That student email is already assigned.'); if (item.id === studentId) createdAt = item.createdAt || createdAt; });
@@ -970,7 +1045,9 @@ function upsertStudentRow_(book, student) {
   upsert_(sheet_(book, 'Students'), 9, studentId, safeRow_([saved.id, saved.firstName, saved.lastInitial, saved.grade, saved.homeroom, saved.email, saved.active, saved.createdAt, saved.updatedAt]));
   if (!balancesMap_(book)[studentId]) sheet_(book, 'Balances').appendRow(safeRow_([studentId, 0, 0, 0, now_()])); return saved;
 }
-function requireStudent_(book, studentId) { var list = students_(book); for (var i = 0; i < list.length; i++) if (list[i].id === studentId && list[i].active) return list[i]; throw srError_('not_found', 'Active student was not found.'); }
+function studentById_(book, studentId) { var list = students_(book); for (var i = 0; i < list.length; i++) if (list[i].id === studentId) return list[i]; return null; }
+function requireStudentRecord_(book, studentId) { var student = studentById_(book, studentId); if (!student) throw srError_('not_found', 'Student record was not found.'); return student; }
+function requireStudent_(book, studentId) { var student = requireStudentRecord_(book, studentId); if (student.active) return student; throw srError_('not_found', 'Active student was not found.'); }
 
 function guardians_(book) { return rows_(sheet_(book, 'Guardians'), 9).map(function(row) { return { id: String(row[0] || ''), studentId: String(row[1] || ''), guardianEmail: normalizeEmail_(row[2]), guardianName: String(row[3] || ''), relationship: String(row[4] || ''), active: bool_(row[5]), consentConfirmedAt: cell_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }); }
 function guardianById_(book, guardianId) { var list = guardians_(book); for (var i = 0; i < list.length; i++) if (list[i].id === guardianId) return list[i]; return null; }
@@ -1041,7 +1118,17 @@ function seedHowlCategories_(book) { [
   ['Reflection', 'Notices growth, names next steps, and learns from experience.', '#be185d']
 ].forEach(function(item, index) { upsertCategoryRow_(book, normalizeCategory_({ name: item[0], description: item[1], framework: 'HOWL', color: item[2], sortOrder: (index + 1) * 10 })); }); }
 function normalizeLevelThresholds_(value) { var raw = Array.isArray(value) ? value : String(value == null ? '' : value).split(','); var clean = raw.map(Number).filter(function(number) { return isFinite(number) && Math.floor(number) === number && number >= 0 && number <= 100000; }).sort(function(a, b) { return a - b; }).filter(function(number, index, all) { return !index || number !== all[index - 1]; }); if (!clean.length || clean[0] !== 0) clean.unshift(0); if (clean.length < 2) clean = [0, 25, 75, 150, 300]; return clean.slice(0, 10); }
-function categoryProgress_(book, studentId, categories, config) { var totals = {}, thresholds = normalizeLevelThresholds_(config.levelThresholds); categories.forEach(function(category) { totals[category.id] = 0; }); ledger_(book).forEach(function(entry) { if (entry.studentId === studentId && entry.categoryId && (entry.kind === 'EARN' || entry.kind === 'REVERSAL')) totals[entry.categoryId] = Math.max(0, (totals[entry.categoryId] || 0) + entry.amount); }); return categories.map(function(category) { var points = totals[category.id] || 0, level = 0; thresholds.forEach(function(threshold, index) { if (points >= threshold) level = index; }); var next = level + 1 < thresholds.length ? thresholds[level + 1] : null; return { categoryId: category.id, name: category.name, color: category.color, points: points, level: level, levelName: ['Starting', 'Growing', 'Practicing', 'Leading', 'Flourishing'][Math.min(level, 4)] || ('Level ' + (level + 1)), nextThreshold: next }; }); }
+function categoryProgress_(book, studentId, categories, config) {
+  var totals = {}, thresholds = normalizeLevelThresholds_(config.levelThresholds), levelNames = ['Starting', 'Growing', 'Practicing', 'Leading', 'Flourishing'];
+  categories.forEach(function(category) { totals[category.id] = 0; });
+  ledger_(book).forEach(function(entry) { if (entry.studentId === studentId && entry.categoryId && (entry.kind === 'EARN' || entry.kind === 'REVERSAL')) totals[entry.categoryId] = Math.max(0, (totals[entry.categoryId] || 0) + entry.amount); });
+  return categories.map(function(category) {
+    var points = totals[category.id] || 0, level = 0;
+    thresholds.forEach(function(threshold, index) { if (points >= threshold) level = index; });
+    var current = thresholds[level], next = level + 1 < thresholds.length ? thresholds[level + 1] : null;
+    return { categoryId: category.id, name: category.name, description: category.description, framework: category.framework, color: category.color, active: category.active, points: points, level: level, levelName: levelNames[level] || ('Level ' + (level + 1)), currentThreshold: current, nextThreshold: next, pointsToNext: next == null ? null : Math.max(0, next - points) };
+  }).filter(function(item) { return item.active || item.points > 0; });
+}
 
 function printModels_(book) {
   return rows_(sheet_(book, 'PrintModels'), 31).map(function(row) { return {
@@ -1059,6 +1146,7 @@ function printModelDto_(model, audience) {
   var title = audience === 'community' ? (model.catalogTitle || model.title) : model.title;
   var description = audience === 'community' ? (model.catalogDescription || model.description) : model.description;
   var assetStatus = printModelReadyForQuote_(model) ? 'READY' : model.clientPreflightStatus === 'ASSET_PENDING_REVIEW' ? 'PENDING_REVIEW' : model.clientPreflightStatus === 'ASSET_REJECTED' ? 'REJECTED' : 'HANDOFF_REQUIRED';
+  if (audience === 'community') return { id: model.id, familyId: model.familyId, version: model.version, title: title, description: description, sourceFormat: model.sourceFormat, triangleCount: model.triangleCount, dimensionsMm: { width: model.widthMm, depth: model.depthMm, height: model.heightMm }, aiUse: model.aiUse, publicationStatus: model.publicationStatus, creatorLabel: model.creatorLabel, reusePolicy: model.reusePolicy, assetStatus: assetStatus, createdAt: model.createdAt, updatedAt: model.updatedAt };
   var dto = { id: model.id, familyId: model.familyId, version: model.version, previousVersionId: model.previousVersionId, remixOfModelId: model.remixOfModelId, title: title, description: description, sourceFormat: model.sourceFormat, contentHash: model.contentHash, byteSize: model.byteSize, triangleCount: model.triangleCount, dimensionsMm: { width: model.widthMm, depth: model.depthMm, height: model.heightMm }, unitDeclaration: model.unitDeclaration, clientPreflightStatus: model.clientPreflightStatus, aiUse: model.aiUse, aiDisclosure: model.aiDisclosure, publicationStatus: model.publicationStatus, creatorLabel: model.creatorLabel, reusePolicy: model.reusePolicy, assetStatus: assetStatus, createdAt: model.createdAt, updatedAt: model.updatedAt };
   if (audience === 'owner') dto.clientPreflightJson = model.clientPreflightJson;
   if (audience === 'staff') { dto.ownerStudentId = model.ownerStudentId; dto.clientPreflightJson = model.clientPreflightJson; dto.moderationReason = model.moderationReason; }
@@ -1175,24 +1263,27 @@ function printReservationResult_(book, item, hold) { var availability = pointAva
 function spendForPrintRequest_(book, requestId) { var list = ledger_(book); for (var i = 0; i < list.length; i++) if (list[i].kind === 'SPEND' && list[i].referenceType === 'print_request' && list[i].referenceId === requestId) return list[i]; return null; }
 function refundForPrintRequest_(book, requestId) { var list = ledger_(book); for (var i = 0; i < list.length; i++) if (list[i].kind === 'REFUND' && list[i].referenceType === 'print_request_refund' && list[i].referenceId === requestId) return list[i]; return null; }
 function rebuildBalanceFromLedger_(book, studentId) { var earned = 0, spent = 0; ledger_(book).forEach(function(entry) { if (entry.studentId !== studentId) return; if (entry.kind === 'EARN' || entry.kind === 'REVERSAL') earned += entry.amount; else if (entry.kind === 'SPEND') spent += -entry.amount; else if (entry.kind === 'REFUND') spent -= entry.amount; }); if (earned < 0 || spent < 0 || earned - spent < 0) throw srError_('reconciliation', 'The ledger cannot produce a valid student balance.'); var value = { studentId: studentId, earned: earned, spent: spent, balance: earned - spent, updatedAt: now_() }; upsert_(sheet_(book, 'Balances'), 5, studentId, safeRow_([studentId, value.earned, value.spent, value.balance, value.updatedAt])); return value; }
-function sendOrderReceiptOnce_(book, student, order, availableBalance, kind) { var rows = rows_(sheet_(book, 'Receipts'), 8); for (var i = 0; i < rows.length; i++) if (String(rows[i][1]) === order.id && String(rows[i][3]) === kind) return { id: String(rows[i][0]), kind: kind, status: String(rows[i][5]), sentAt: cell_(rows[i][6]), points: kind === 'REFUND' ? order.total : -order.total }; return sendOrderReceipt_(book, student, order, availableBalance, kind); }
+function sendOrderReceiptOnce_(book, student, order, availableBalance, kind) { var sent = sentReceiptForOrder_(book, order.id, kind); if (sent) return { id: sent.id, kind: kind, status: sent.status, sentAt: sent.sentAt, points: kind === 'REFUND' ? order.total : -order.total }; var previous = latestReceiptForOrder_(book, order.id, kind); if (previous && (previous.status === 'PENDING' || previous.status === 'UNKNOWN')) return { id: previous.id, kind: kind, status: 'UNKNOWN', sentAt: previous.sentAt, points: kind === 'REFUND' ? order.total : -order.total }; return sendOrderReceipt_(book, student, order, availableBalance, kind); }
 
 function printIdemOperation_(base, actor, payload) { return base + ':' + hash_(actor.email).slice(0, 12) + ':' + hash_(stableJson_(payload)).slice(0, 16); }
 function stableJson_(value) { if (value == null) return 'null'; if (typeof value === 'number') return isFinite(value) ? String(value) : 'null'; if (typeof value === 'boolean') return value ? 'true' : 'false'; if (typeof value === 'string') return JSON.stringify(value); if (Array.isArray(value)) return '[' + value.map(stableJson_).join(',') + ']'; if (typeof value === 'object') return '{' + Object.keys(value).sort().map(function(key) { return JSON.stringify(key) + ':' + stableJson_(value[key]); }).join(',') + '}'; return 'null'; }
 function boundedNumber_(value, min, max, label) { var number = Number(value); if (!isFinite(number) || number < min || number > max) throw srError_('bad_number', label + ' must be from ' + min + ' to ' + max + '.'); return number; }
 
 function catalog_(book) { return rows_(sheet_(book, 'Catalog'), 10).map(function(row) { return { id: String(row[0] || ''), name: String(row[1] || ''), description: String(row[2] || ''), cost: number_(row[3]), inventoryLimit: number_(row[4]), remaining: number_(row[5]), active: bool_(row[6]), imageUrl: String(row[7] || ''), createdAt: cell_(row[8]), updatedAt: cell_(row[9]) }; }); }
-function normalizeCatalog_(value) { value = object_(value); var inventory = value.inventoryLimit == null || value.inventoryLimit === '' ? -1 : integer_(value.inventoryLimit, -1, 100000, 'Inventory'); var remaining = value.remaining == null || value.remaining === '' ? inventory : integer_(value.remaining, 0, 100000, 'Remaining inventory'); if (inventory >= 0 && remaining > inventory) throw srError_('bad_catalog', 'Remaining inventory cannot exceed the limit.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 120, ''), description: text_(value.description, 500, ''), cost: integer_(value.cost, 1, 100000, 'Cost'), inventoryLimit: inventory, remaining: inventory < 0 ? -1 : remaining, active: value.active !== false, imageUrl: httpsUrl_(value.imageUrl || '') }; }
-function upsertCatalogRow_(book, item) { if (!item.name) throw srError_('bad_catalog', 'Store item name is required.'); var existing = catalog_(book), itemId = item.id || uuid_(), createdAt = now_(); existing.forEach(function(old) { if (old.id === itemId) createdAt = old.createdAt || createdAt; }); var saved = { id: itemId, name: item.name, description: item.description, cost: item.cost, inventoryLimit: item.inventoryLimit, remaining: item.remaining, active: item.active, imageUrl: item.imageUrl, createdAt: createdAt, updatedAt: now_() }; upsert_(sheet_(book, 'Catalog'), 10, itemId, safeRow_([saved.id, saved.name, saved.description, saved.cost, saved.inventoryLimit, saved.remaining, saved.active, saved.imageUrl, saved.createdAt, saved.updatedAt])); return saved; }
+function normalizeCatalog_(value) { value = object_(value); var inventory = value.inventoryLimit == null || value.inventoryLimit === '' ? -1 : integer_(value.inventoryLimit, -1, 100000, 'Inventory'); var remainingProvided = value.remaining != null && value.remaining !== '', remaining = remainingProvided ? integer_(value.remaining, 0, 100000, 'Remaining inventory') : null; if (inventory >= 0 && remainingProvided && remaining > inventory) throw srError_('bad_catalog', 'Remaining inventory cannot exceed the limit.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 120, ''), description: text_(value.description, 500, ''), cost: integer_(value.cost, 1, 100000, 'Cost'), inventoryLimit: inventory, remaining: inventory < 0 ? -1 : remaining, remainingProvided: remainingProvided, active: value.active !== false, imageUrl: httpsUrl_(value.imageUrl || '') }; }
+function upsertCatalogRow_(book, item) { if (!item.name) throw srError_('bad_catalog', 'Store item name is required.'); var existing = catalog_(book), itemId = item.id || uuid_(), createdAt = now_(), oldItem = null; existing.forEach(function(old) { if (old.id === itemId) { oldItem = old; createdAt = old.createdAt || createdAt; } }); var explicitRemaining = item.remainingProvided === false ? false : item.remaining != null && item.remaining !== '', remaining = item.inventoryLimit < 0 ? -1 : explicitRemaining ? item.remaining : oldItem && oldItem.inventoryLimit >= 0 ? Math.min(oldItem.remaining, item.inventoryLimit) : item.inventoryLimit; var saved = { id: itemId, name: item.name, description: item.description, cost: item.cost, inventoryLimit: item.inventoryLimit, remaining: remaining, active: item.active, imageUrl: item.imageUrl, createdAt: createdAt, updatedAt: now_() }; upsert_(sheet_(book, 'Catalog'), 10, itemId, safeRow_([saved.id, saved.name, saved.description, saved.cost, saved.inventoryLimit, saved.remaining, saved.active, saved.imageUrl, saved.createdAt, saved.updatedAt])); return saved; }
 function decrementInventory_(book, itemId, quantity) { var list = catalog_(book); for (var i = 0; i < list.length; i++) if (list[i].id === itemId) { if (list[i].inventoryLimit >= 0) { list[i].remaining -= quantity; upsertCatalogRow_(book, list[i]); } return; } throw srError_('catalog_changed', 'Store item was not found.'); }
 function incrementInventory_(book, itemId, quantity) { var list = catalog_(book); for (var i = 0; i < list.length; i++) if (list[i].id === itemId) { if (list[i].inventoryLimit >= 0) { if (list[i].remaining + quantity > list[i].inventoryLimit) throw srError_('reconciliation', 'Refund would make inventory exceed its configured limit for ' + list[i].name + '.'); list[i].remaining += quantity; upsertCatalogRow_(book, list[i]); } return; } throw srError_('catalog_changed', 'Store item was not found.'); }
+function assertInventoryRestorable_(book, lines) { var byId = {}, quantities = {}; catalog_(book).forEach(function(item) { byId[item.id] = item; }); lines.forEach(function(line) { var quantity = Number(line.quantity); if (!isFinite(quantity) || Math.floor(quantity) !== quantity || quantity < 1) throw srError_('reconciliation', 'Refund order quantities are invalid.'); quantities[line.catalogId] = (quantities[line.catalogId] || 0) + quantity; }); return Object.keys(quantities).map(function(itemId) { var item = byId[itemId]; if (!item) throw srError_('catalog_changed', 'Refund inventory item was not found.'); if (item.inventoryLimit >= 0 && (item.remaining < 0 || item.remaining > item.inventoryLimit || item.remaining + quantities[itemId] > item.inventoryLimit)) throw srError_('reconciliation', 'Refund would make inventory exceed its configured limit for ' + item.name + '.'); return { catalogId: itemId, quantity: quantities[itemId] }; }); }
 
 function windows_(book) { return rows_(sheet_(book, 'StoreWindows'), 7).map(function(row) { return { id: String(row[0] || ''), name: String(row[1] || ''), startsAt: cell_(row[2]), endsAt: cell_(row[3]), status: String(row[4] || ''), createdAt: cell_(row[5]), updatedAt: cell_(row[6]) }; }); }
 function normalizeWindow_(value) { value = object_(value); var status = text_(value.status, 20, 'DRAFT').toUpperCase(); if (SR_WINDOW_STATES.indexOf(status) < 0) throw srError_('bad_window', 'Store status is not valid.'); var startsAt = iso_(value.startsAt), endsAt = iso_(value.endsAt); if (startsAt && endsAt && startsAt >= endsAt) throw srError_('bad_window', 'Store end must be after its start.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 120, 'Trimester store'), startsAt: startsAt, endsAt: endsAt, status: status }; }
 function upsertWindowRow_(book, value) { var existing = windows_(book), windowId = value.id || uuid_(), createdAt = now_(); existing.forEach(function(old) { if (old.id === windowId) createdAt = old.createdAt || createdAt; }); var saved = { id: windowId, name: value.name, startsAt: value.startsAt, endsAt: value.endsAt, status: value.status, createdAt: createdAt, updatedAt: now_() }; upsert_(sheet_(book, 'StoreWindows'), 7, windowId, safeRow_([saved.id, saved.name, saved.startsAt, saved.endsAt, saved.status, saved.createdAt, saved.updatedAt])); return saved; }
 function windowById_(book, windowId) { var list = windows_(book); for (var i = 0; i < list.length; i++) if (list[i].id === windowId) return list[i]; return null; }
-function closeOtherWindows_(book, keepId) { windows_(book).forEach(function(item) { if (item.id !== keepId && item.status === 'OPEN') { item.status = 'CLOSED'; upsertWindowRow_(book, item); } }); }
-function visibleWindow_(book) { var list = windows_(book); for (var i = 0; i < list.length; i++) if (list[i].status === 'OPEN') return list[i]; for (var j = 0; j < list.length; j++) if (list[j].status === 'PREVIEW') return list[j]; return null; }
+function windowTimeState_(item) { var at = new Date().getTime(), starts = item && item.startsAt ? new Date(item.startsAt).getTime() : null, ends = item && item.endsAt ? new Date(item.endsAt).getTime() : null; if (starts != null && at < starts) return 'NOT_STARTED'; if (ends != null && at >= ends) return 'ENDED'; return 'ACTIVE'; }
+function requireOpenWindowNow_(item, action) { if (!item || item.status !== 'OPEN') throw srError_('store_closed', action + ' is available only while this store window is open.'); var timeState = windowTimeState_(item); if (timeState === 'NOT_STARTED') throw srError_('store_not_started', action + ' is not available before the shopping window starts.'); if (timeState === 'ENDED') throw srError_('store_ended', action + ' is not available after the shopping window ends.'); return item; }
+function closeOtherVisibleWindows_(book, keepId) { windows_(book).forEach(function(item) { if (item.id !== keepId && (item.status === 'OPEN' || item.status === 'PREVIEW')) { item.status = 'CLOSED'; upsertWindowRow_(book, item); } }); }
+function visibleWindow_(book) { var list = windows_(book), candidates = list.filter(function(item) { return item.status === 'OPEN' && windowTimeState_(item) === 'ACTIVE'; }); if (!candidates.length) candidates = list.filter(function(item) { return item.status === 'PREVIEW'; }); candidates.sort(function(left, right) { return String(right.updatedAt).localeCompare(String(left.updatedAt)); }); return candidates[0] || null; }
 
 function ledger_(book) { return rows_(sheet_(book, 'Ledger'), 13).map(function(row) { return { id: String(row[0] || ''), studentId: String(row[1] || ''), kind: String(row[2] || ''), amount: number_(row[3]), reason: String(row[4] || ''), referenceType: String(row[5] || ''), referenceId: String(row[6] || ''), reversesId: String(row[7] || ''), actorEmail: String(row[8] || ''), actorRole: String(row[9] || ''), at: cell_(row[10]), idempotencyKey: String(row[11] || ''), categoryId: String(row[12] || '') }; }); }
 function appendLedger_(book, value, actor) { var entry = { id: uuid_(), studentId: value.studentId, kind: value.kind, amount: value.amount, reason: value.reason, referenceType: value.referenceType, referenceId: value.referenceId, reversesId: value.reversesId, actorEmail: actor.email, actorRole: actor.role, at: now_(), idempotencyKey: value.key, categoryId: value.categoryId || '' }; sheet_(book, 'Ledger').appendRow(safeRow_([entry.id, entry.studentId, entry.kind, entry.amount, entry.reason, entry.referenceType, entry.referenceId, entry.reversesId, entry.actorEmail, entry.actorRole, entry.at, entry.idempotencyKey, entry.categoryId])); return entry; }
@@ -1206,9 +1297,18 @@ function applyBalance_(book, studentId, earnedDelta, spentDelta) { var value = b
 function orders_(book) { return rows_(sheet_(book, 'Orders'), 8).map(function(row) { return { id: String(row[0] || ''), studentId: String(row[1] || ''), windowId: String(row[2] || ''), total: number_(row[3]), status: String(row[4] || ''), actorEmail: String(row[5] || ''), at: cell_(row[6]), idempotencyKey: String(row[7] || '') }; }); }
 function orderById_(book, orderId) { var list = orders_(book); for (var i = 0; i < list.length; i++) if (list[i].id === orderId) return list[i]; return null; }
 function orderLines_(book, orderId) { return rows_(sheet_(book, 'OrderLines'), 6).filter(function(row) { return String(row[0]) === orderId; }).map(function(row) { return { orderId: String(row[0]), catalogId: String(row[1]), itemName: String(row[2]), quantity: number_(row[3]), unitCost: number_(row[4]), lineTotal: number_(row[5]) }; }); }
+function orderDto_(book, order) { return { id: order.id, studentId: order.studentId, windowId: order.windowId, total: order.total, status: order.status, at: order.at, lines: orderLines_(book, order.id) }; }
+function receipts_(book) { return rows_(sheet_(book, 'Receipts'), 8).map(function(row) { return { id: String(row[0] || ''), orderId: String(row[1] || ''), studentId: String(row[2] || ''), kind: String(row[3] || ''), recipientEmail: normalizeEmail_(row[4]), status: String(row[5] || ''), sentAt: cell_(row[6]), error: String(row[7] || '') }; }); }
+function receiptById_(book, receiptId) { var list = receipts_(book); for (var i = 0; i < list.length; i++) if (list[i].id === receiptId) return list[i]; return null; }
+function upsertReceiptRow_(book, receipt) { upsert_(sheet_(book, 'Receipts'), 8, receipt.id, safeRow_([receipt.id, receipt.orderId, receipt.studentId, receipt.kind, receipt.recipientEmail, receipt.status, receipt.sentAt, receipt.error])); }
+function receiptDto_(receipt) { return { id: receipt.id, orderId: receipt.orderId, studentId: receipt.studentId, kind: receipt.kind, status: receipt.status, sentAt: receipt.sentAt }; }
+function receiptDtosForOrders_(book, orderList) { var ids = {}, latest = {}; orderList.forEach(function(order) { ids[order.id] = true; }); receipts_(book).forEach(function(receipt) { if (ids[receipt.orderId]) latest[receipt.orderId + '|' + receipt.kind] = receipt; }); return Object.keys(latest).map(function(key) { return receiptDto_(latest[key]); }).sort(function(left, right) { return String(right.sentAt).localeCompare(String(left.sentAt)); }); }
+function sentReceiptForOrder_(book, orderId, kind) { var list = receipts_(book); for (var i = list.length - 1; i >= 0; i--) if (list[i].orderId === orderId && list[i].kind === kind && list[i].status === 'SENT') return list[i]; return null; }
+function latestReceiptForOrder_(book, orderId, kind) { var list = receipts_(book); for (var i = list.length - 1; i >= 0; i--) if (list[i].orderId === orderId && list[i].kind === kind) return list[i]; return null; }
+function assertReceiptDeliverySettled_(book, orderId, kind) { var receipt = latestReceiptForOrder_(book, orderId, kind); if (receipt && (receipt.status === 'PENDING' || receipt.status === 'UNKNOWN')) throw srError_('receipt_uncertain', 'Resolve the uncertain ' + kind.toLowerCase() + ' receipt delivery before continuing.'); }
 function setOrderStatus_(book, orderId, status) { var order = orderById_(book, orderId); if (!order) throw srError_('not_found', 'Order was not found.'); upsert_(sheet_(book, 'Orders'), 8, orderId, safeRow_([order.id, order.studentId, order.windowId, order.total, status, order.actorEmail, order.at, order.idempotencyKey])); }
 function spendForOrder_(book, orderId) { var list = ledger_(book); for (var i = 0; i < list.length; i++) if (list[i].kind === 'SPEND' && list[i].referenceType === 'order' && list[i].referenceId === orderId) return list[i]; return null; }
-function cart_(value) { if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('bad_cart', 'Choose between 1 and 50 store items.'); var map = {}; value.forEach(function(line) { var itemId = id_(line && line.catalogId, 'catalog item'), quantity = integer_(line && line.quantity, 1, 100, 'Quantity'); map[itemId] = (map[itemId] || 0) + quantity; }); return Object.keys(map).map(function(itemId) { return { catalogId: itemId, quantity: map[itemId] }; }); }
+function cart_(value) { if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('bad_cart', 'Choose between 1 and 50 store items.'); var map = {}; value.forEach(function(line) { var itemId = id_(line && line.catalogId, 'catalog item'), quantity = integer_(line && line.quantity, 1, 100, 'Quantity'); map[itemId] = (map[itemId] || 0) + quantity; }); return Object.keys(map).sort().map(function(itemId) { return { catalogId: itemId, quantity: map[itemId] }; }); }
 function statementKeys_(book) { var map = {}; rows_(sheet_(book, 'Statements'), 7).forEach(function(row) { if (String(row[4]) === 'SENT') map[String(row[1]) + '|' + String(row[2])] = true; }); return map; }
 function emailSchedule_() { var props = PropertiesService.getScriptProperties(); return { enabled: props.getProperty('SR_EMAIL_ENABLED') === 'true', weekday: props.getProperty('SR_EMAIL_WEEKDAY') || 'FRIDAY', hour: number_(props.getProperty('SR_EMAIL_HOUR') || 16) }; }
 function mailQuota_() { try { return Math.max(0, Number(MailApp.getRemainingDailyQuota()) || 0); } catch (_) { return 0; } }

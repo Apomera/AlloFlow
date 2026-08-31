@@ -414,7 +414,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     <div className={cx('fixed inset-0 z-[300] backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300', styles.overlay)}>
       <div
         ref={dialogRef}
-        className={cx('rounded-2xl p-6 max-w-md w-full relative transform transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-300', styles.dialog)}
+        className={cx('rounded-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative transform transition-all motion-reduce:transition-none animate-in motion-reduce:animate-none zoom-in-95 duration-300', styles.dialog)}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -483,7 +483,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         </div>
         <div className={cx('rounded-xl p-4 mb-6', styles.panelSoft)} aria-labelledby={summaryId}>
             <h4 id={summaryId} className={cx('text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2', styles.muted)}>{t('modals.work_summary')}</h4>
-            <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div className={cx('flex items-center gap-2 text-sm', styles.text)}>
                     <CheckSquare size={16} className="text-teal-500" aria-hidden="true"/>
                     <span className="font-bold">{stats.quizzes}</span> {t('modals.summary_quizzes')}

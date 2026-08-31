@@ -172,6 +172,95 @@ describe('Solar System control accessible names', () => {
     expect(source).toContain('"aria-pressed": active');
     expect(source).not.toContain('isNewRoute');
   });
+  it('exposes current world, canvas controls, and evidence-view selection states', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        selectedPlanet: 'stem.solar_sys.earth',
+        viewTab: 'overview',
+        paused: true,
+      },
+    });
+
+    const picker = document.querySelector('[data-solarsystem-canvas-world-picker]');
+    expect(picker?.getAttribute('role')).toBe('group');
+    expect(picker?.getAttribute('aria-label')).toBe('Select a world for the 3D model');
+    const worldButtons = [...(picker?.querySelectorAll('button') || [])];
+    expect(worldButtons).toHaveLength(9);
+    expect(worldButtons.filter((button) => button.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    expect(worldButtons.find((button) => button.getAttribute('aria-pressed') === 'true')?.textContent).toContain('stem.solar_sys.earth');
+    expect(picker?.querySelector('.solar-canvas-world-name')).not.toBeNull();
+
+    const controls = document.querySelector('[data-solarsystem-canvas-controls]');
+    expect(controls?.getAttribute('role')).toBe('group');
+    expect(controls?.getAttribute('aria-label')).toBe('3D model controls');
+    const playback = controls?.querySelector('[data-solarsystem-playback-toggle]');
+    expect(playback?.getAttribute('type')).toBe('button');
+    expect(playback?.getAttribute('aria-label')).toBe('Play simulation');
+    expect(playback?.getAttribute('aria-pressed')).toBe('false');
+    expect(controls?.querySelector('[data-solarsystem-speed-slider]')?.getAttribute('aria-label')).toBe('Simulation speed');
+
+    const views = document.querySelector('[data-solarsystem-world-view-tabs]');
+    expect(views?.getAttribute('role')).toBe('group');
+    expect(views?.getAttribute('aria-label')).toBe('World evidence views');
+    const viewButtons = [...(views?.querySelectorAll('button') || [])];
+    expect(viewButtons.length).toBeGreaterThanOrEqual(4);
+    expect(viewButtons.filter((button) => button.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    expect(views?.querySelector('[data-world-view-tab="overview"]')?.getAttribute('aria-pressed')).toBe('true');
+  });
+  it('renders a semantic Pluto overview with complete facts and scaled Earth references', () => {
+    document.body.innerHTML = renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        selectedPlanet: 'stem.solar_sys.pluto',
+        viewTab: 'overview',
+        paused: true,
+      },
+    });
+
+    const metrics = document.querySelector('[data-solarsystem-overview-metrics]');
+    const metricCards = [...(metrics?.querySelectorAll('[data-solar-overview-metric]') || [])];
+    const metricValue = (label) => metricCards.find((card) => card.getAttribute('data-solar-overview-metric') === label)?.querySelector('dd')?.textContent;
+    expect(metrics?.tagName).toBe('DL');
+    expect(metricCards).toHaveLength(8);
+    expect(metricCards.every((card) => card.querySelector('dt') && card.querySelector('dd'))).toBe(true);
+    expect(metricValue('Diameter')).toBe('2,377 km');
+    expect(metricValue('Type')).toBe('Dwarf world');
+    expect(metricValue('Atmosphere')).toContain('Thin N\u2082 \u2014 freezes and falls as snow');
+
+    const comparisons = document.querySelector('[data-solarsystem-earth-comparisons]');
+    const meters = [...(comparisons?.querySelectorAll('[role="meter"]') || [])];
+    expect(meters).toHaveLength(2);
+    expect(comparisons?.querySelector('[data-solar-comparison-meter="gravity"]')?.getAttribute('aria-valuemax')).toBe('3');
+    expect(comparisons?.querySelector('[data-solar-comparison-meter="radius"]')?.getAttribute('aria-valuemax')).toBe('12');
+    expect(meters.every((meter) => meter.getAttribute('aria-valuetext') && meter.querySelector('.solar-earth-reference-marker'))).toBe(true);
+    expect(document.querySelectorAll('[data-solarsystem-notable-features]')).toHaveLength(1);
+  });
+  it('exposes Surface evidence choices as collapsible toggle buttons', () => {
+    const renderSurface = (surfaceExplore) => renderTool('solarSystem', {
+      solarSystem: {
+        tutorialDismissed: true,
+        selectedPlanet: 'stem.solar_sys.earth',
+        viewTab: 'surface',
+        surfaceExplore,
+        paused: true,
+      },
+    });
+
+    document.body.innerHTML = renderSurface('composition');
+    const evidenceGroup = document.querySelector('[data-solarsystem-surface-evidence]');
+    const evidenceButtons = [...(evidenceGroup?.querySelectorAll('button') || [])];
+    const pressedButtons = evidenceButtons.filter((button) => button.getAttribute('aria-pressed') === 'true');
+    expect(evidenceGroup?.getAttribute('role')).toBe('group');
+    expect(evidenceGroup?.getAttribute('aria-label')).toBe('Surface evidence categories');
+    expect(evidenceButtons.length).toBeGreaterThanOrEqual(4);
+    expect(evidenceButtons.every((button) => button.getAttribute('type') === 'button')).toBe(true);
+    expect(pressedButtons).toHaveLength(1);
+    expect(pressedButtons[0]?.textContent).toContain('Composition');
+
+    document.body.innerHTML = renderSurface(null);
+    expect([...document.querySelectorAll('[data-solarsystem-surface-evidence] button')].every((button) => button.getAttribute('aria-pressed') === 'false')).toBe(true);
+  });
   it('associates Orbit Workshop sliders and groups its body choices', () => {
     document.body.innerHTML = renderTool('solarSystem', {
       solarSystem: { tutorialDismissed: true, orreryMode: true, orr_tab: 4 },

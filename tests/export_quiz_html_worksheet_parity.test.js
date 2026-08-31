@@ -48,6 +48,68 @@ function render(isWorksheet, extraConfig = {}) {
   });
 }
 
+function makeMemoryAidRecallExport() {
+  return {
+    id: 'memory-aid-recall-export',
+    type: 'memory-aid',
+    title: 'Remember Matter',
+    data: {
+      instructions: 'Use the cue before checking the facts.',
+      reflectionLevel: 'quick',
+      reasoningRequired: false,
+      sourceExcerpt: 'PRIVATE RECALL SOURCE EXCERPT',
+      cards: [{
+        target: 'States of matter',
+        essentialFacts: ['PRIVATE CHECKED FACT: Solids retain shape.'],
+        type: 'analogy-pattern',
+        mode: 'generated',
+        aiExample: 'PRIVATE AI MODEL ANSWER',
+        mapping: 'PRIVATE CUE MAPPING',
+        studentDraft: 'A statue stays shaped; a guest fits the room.',
+        studentReasoning: 'PRIVATE STUDENT REASONING',
+        visualImage: 'data:image/png;base64,AAAA',
+        visualSource: 'uploaded',
+        visualAlt: 'A gray statue stands beside a clear glass container.',
+        visualCheck: {
+          alignment: 'supports',
+          strength: 'PRIVATE VISUAL CHECK',
+          concern: 'None identified',
+          suggestedChange: 'No change suggested',
+        },
+        visualReview: { status: 'approved', note: 'PRIVATE TEACHER VISUAL NOTE' },
+        feedback: {
+          strength: 'PRIVATE FEEDBACK STRENGTH',
+          accuracyCheck: 'PRIVATE FEEDBACK ACCURACY',
+          nextStep: 'PRIVATE FEEDBACK NEXT STEP',
+        },
+        practiceAttempts: [{
+          id: 'PRIVATE PRACTICE ID',
+          response: 'PRIVATE RECALL RESPONSE',
+          confidence: 'confident',
+          facts: ['PRIVATE SNAPSHOT FACT'],
+          factChecks: ['recalled'],
+          basisKey: 'PRIVATE BASIS KEY',
+          createdAt: 'PRIVATE PRACTICE TIMESTAMP',
+        }],
+      }, {
+        target: 'Visual-only target',
+        essentialFacts: ['PRIVATE SECOND CHECKED FACT'],
+        type: 'visual-association',
+        mode: 'student-authored',
+        visualImage: 'data:image/png;base64,BBBB',
+        visualSource: 'ai-generated',
+        visualAlt: 'Visual memory cue for the visual-only target.',
+        retrievalAttempts: [{
+          response: 'PRIVATE LEGACY RECALL RESPONSE',
+          facts: ['PRIVATE LEGACY SNAPSHOT FACT'],
+          factChecks: ['practice'],
+          createdAt: 'PRIVATE LEGACY TIMESTAMP',
+        }],
+      }],
+    },
+  };
+}
+
 describe('quiz parity across HTML and printable worksheet exports', () => {
   it('renders every supported item type as a usable, labeled HTML response', () => {
     const html = render(false);
@@ -261,7 +323,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(online).toContain('family=Permanent+Marker');
   });
 
-  it('exports Memory Aid Studio as a fact-grounded worksheet without leaking its source excerpt', () => {
+  it('preserves the full Memory Aid reference in standard HTML without leaking source or practice history', () => {
     const memoryAid = {
       id: 'memory-aid-export',
       type: 'memory-aid',
@@ -281,6 +343,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
           studentPrompt: 'Make this comparison your own.',
           studentDraft: 'My cue',
           visualImage: 'data:image/png;base64,AAAA',
+          visualSource: 'uploaded',
           visualAlt: 'Statue & container cue',
           visualReview: {
             status: 'approved',
@@ -300,6 +363,15 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
             nextStep: 'Add a cue for gases.',
             question: 'What will you remember first?',
           },
+          practiceAttempts: [{
+            id: 'PRIVATE PRACTICE ID',
+            response: 'PRIVATE RECALL RESPONSE',
+            confidence: 'confident',
+            facts: ['PRIVATE SNAPSHOT FACT'],
+            factChecks: ['recalled'],
+            basisKey: 'PRIVATE BASIS KEY',
+            createdAt: 'PRIVATE PRACTICE TIMESTAMP',
+          }],
         }, {
           target: 'Unsafe visual must be omitted',
           essentialFacts: ['The text worksheet must remain usable.'],
@@ -311,7 +383,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
         }],
       },
     };
-    const html = pipeline.generateFullPackHTML([memoryAid], 'Memory export', true, {}, {
+    const html = pipeline.generateFullPackHTML([memoryAid], 'Memory export', false, {}, {
       includeTeacherKey: false,
       annotations: [],
     });
@@ -327,6 +399,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(images).toHaveLength(1);
     expect(images[0].getAttribute('src')).toBe('data:image/png;base64,AAAA');
     expect(images[0].getAttribute('alt')).toBe('Statue & container cue');
+    expect(section.textContent).toContain('Source: Uploaded visual');
     expect(section.textContent).toContain('Image description: Statue & container cue');
     expect(section.textContent).toContain('Teacher approved');
     expect(section.textContent).toContain('The cue matches <facts> after teacher review.');
@@ -337,6 +410,98 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(html).toContain('States &lt;script&gt;alert(1)&lt;/script&gt;');
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).not.toContain('PRIVATE SOURCE EXCERPT SHOULD NOT APPEAR');
+    expect(html).not.toContain('PRIVATE RECALL RESPONSE');
+    expect(html).not.toContain('PRIVATE SNAPSHOT FACT');
+    expect(html).not.toContain('PRIVATE PRACTICE ID');
+    expect(html).not.toContain('PRIVATE BASIS KEY');
+    expect(html).not.toContain('PRIVATE PRACTICE TIMESTAMP');
+  });
+
+  it('renders an answer-free, accessible cue-first Memory Aid student worksheet', () => {
+    const html = pipeline.generateFullPackHTML([makeMemoryAidRecallExport()], 'Memory recall', true, {}, {
+      includeTeacherKey: false,
+      annotations: [],
+    });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const section = doc.querySelector('.memory-aid-export');
+    const sheets = Array.from(section.querySelectorAll('.memory-aid-recall-sheet'));
+
+    expect(sheets).toHaveLength(2);
+    expect(doc.querySelector('.teacher-view')).toBeNull();
+    expect(sheets[0].textContent).toContain('Recall practice · facts hidden');
+    expect(sheets[0].textContent).toContain('A statue stays shaped; a guest fits the room.');
+    expect(sheets[0].textContent).toContain('What does the cue help you remember?');
+    expect(sheets[0].querySelector('.alloflow-ruled-response[data-allo-print-lines="6"]')).not.toBeNull();
+    expect(sheets[0].querySelector('fieldset legend')?.textContent).toBe('How confident do you feel before checking?');
+    expect(sheets[0].querySelectorAll('.alloflow-print-bubble')).toHaveLength(3);
+    expect(sheets[0].textContent).toContain('Not sure yet');
+    expect(sheets[0].textContent).toContain('Somewhat confident');
+    expect(sheets[0].textContent).toContain('Confident');
+
+    for (const sheet of sheets) {
+      const titleId = sheet.getAttribute('aria-labelledby');
+      const responseGroup = sheet.querySelector('[role="group"][aria-labelledby]');
+      expect(titleId).toBeTruthy();
+      expect(doc.getElementById(titleId)).not.toBeNull();
+      expect(responseGroup).not.toBeNull();
+      expect(doc.getElementById(responseGroup.getAttribute('aria-labelledby'))).not.toBeNull();
+    }
+
+    const images = section.querySelectorAll('img');
+    expect(images).toHaveLength(1);
+    expect(images[0].getAttribute('alt')).toBe('A gray statue stands beside a clear glass container.');
+    expect(sheets[1].querySelector('img')).toBeNull();
+    expect(sheets[1].textContent).toContain('Visual cue omitted');
+    expect(sheets[1].textContent).toContain('No accessible recall cue is available yet.');
+
+    for (const privateValue of [
+      'PRIVATE CHECKED FACT', 'PRIVATE SECOND CHECKED FACT', 'PRIVATE AI MODEL ANSWER',
+      'PRIVATE CUE MAPPING', 'PRIVATE STUDENT REASONING', 'PRIVATE VISUAL CHECK',
+      'PRIVATE TEACHER VISUAL NOTE', 'PRIVATE FEEDBACK STRENGTH', 'PRIVATE FEEDBACK ACCURACY',
+      'PRIVATE FEEDBACK NEXT STEP', 'PRIVATE RECALL SOURCE EXCERPT', 'PRIVATE PRACTICE ID',
+      'PRIVATE RECALL RESPONSE', 'PRIVATE SNAPSHOT FACT', 'PRIVATE BASIS KEY',
+      'PRIVATE PRACTICE TIMESTAMP', 'PRIVATE LEGACY RECALL RESPONSE',
+      'PRIVATE LEGACY SNAPSHOT FACT', 'PRIVATE LEGACY TIMESTAMP',
+    ]) {
+      expect(html).not.toContain(privateValue);
+    }
+  });
+
+  it('places the full Memory Aid reference only in the optional teacher appendix', () => {
+    const html = pipeline.generateFullPackHTML([makeMemoryAidRecallExport()], 'Memory recall', true, {}, {
+      includeTeacherKey: true,
+      annotations: [],
+    });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const sections = Array.from(doc.querySelectorAll('.memory-aid-export'));
+    const teacherView = doc.querySelector('.teacher-view');
+
+    expect(sections).toHaveLength(2);
+    expect(teacherView).not.toBeNull();
+    expect(sections[0].querySelectorAll('.memory-aid-recall-sheet')).toHaveLength(2);
+    expect(sections[0].textContent).not.toContain('PRIVATE CHECKED FACT');
+    expect(sections[0].textContent).not.toContain('PRIVATE AI MODEL ANSWER');
+    expect(sections[0].textContent).not.toContain('PRIVATE CUE MAPPING');
+    expect(sections[0].textContent).not.toContain('PRIVATE FEEDBACK STRENGTH');
+
+    const teacherSection = teacherView.querySelector('.memory-aid-export');
+    expect(teacherSection.querySelector('.memory-aid-recall-sheet')).toBeNull();
+    expect(teacherSection.textContent).toContain('PRIVATE CHECKED FACT: Solids retain shape.');
+    expect(teacherSection.textContent).toContain('PRIVATE SECOND CHECKED FACT');
+    expect(teacherSection.textContent).toContain('PRIVATE AI MODEL ANSWER');
+    expect(teacherSection.textContent).toContain('PRIVATE CUE MAPPING');
+    expect(teacherSection.textContent).toContain('PRIVATE STUDENT REASONING');
+    expect(teacherSection.textContent).toContain('PRIVATE FEEDBACK STRENGTH');
+    expect(html.indexOf('PRIVATE CHECKED FACT')).toBeGreaterThan(html.indexOf('class="teacher-view"'));
+
+    for (const privateAttemptValue of [
+      'PRIVATE PRACTICE ID', 'PRIVATE RECALL RESPONSE', 'PRIVATE SNAPSHOT FACT',
+      'PRIVATE BASIS KEY', 'PRIVATE PRACTICE TIMESTAMP', 'PRIVATE LEGACY RECALL RESPONSE',
+      'PRIVATE LEGACY SNAPSHOT FACT', 'PRIVATE LEGACY TIMESTAMP',
+    ]) {
+      expect(html).not.toContain(privateAttemptValue);
+    }
+    expect(html).not.toContain('PRIVATE RECALL SOURCE EXCERPT');
   });
 
   it('exports Applied Challenge Studio as a persistent workspace without leaking its source excerpt', () => {

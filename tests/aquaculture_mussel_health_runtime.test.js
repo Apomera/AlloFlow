@@ -221,6 +221,17 @@ describe('Aquaculture blue-mussel health station', () => {
     expect(heatCrop).toMatchObject({ depth: 'crop', temp: '22.9', DO: '3.85' });
     expect(heatCrop.warnings.join(' ')).toContain('Dissolved oxygen low');
     expect(helpers.describeMissionDepthComparison(freshetSurface, freshetCrop)).toContain('11.3 PSU higher in salinity');
+    expect(helpers.recommendedMissionDecisionId('freshet', freshetSurface, freshetCrop)).toBe('resample-after-mixing');
+    expect(helpers.evaluateMissionDecision('freshet', freshetSurface, freshetCrop, 'declare-closure')).toMatchObject({
+      id: 'declare-closure',
+      recommended: false,
+      recommendedId: 'resample-after-mixing',
+    });
+    expect(helpers.evaluateMissionDecision('freshet', freshetSurface, freshetCrop, 'resample-after-mixing')).toMatchObject({
+      id: 'resample-after-mixing',
+      recommended: true,
+      recommendedId: 'resample-after-mixing',
+    });
     const workspace = helpers.sanitizeMusselHealthWorkspace({
       temperature: 999,
       salinity: -5,
@@ -261,8 +272,18 @@ describe('Aquaculture blue-mussel health station', () => {
       droppersDeployed: 5,
       surfaceReading: { depth: 'surface', temp: '14.1', salinity: '27.2', DO: '8.20', pH: '8.01', chlA: '6.5' },
       cropDepthReading: { depth: 'crop', temp: '13.2', salinity: '27.8', DO: '5.40', pH: '7.82', chlA: '4.2' },
+      decisionId: 'resample-after-mixing',
+      decisionAttempts: 2,
     });
-    expect(missionSummary).toMatchObject({ scenarioId: 'freshet', scenarioName: 'After-rain freshet', tide: 'Ebbing after rain' });
+    expect(missionSummary).toMatchObject({
+      scenarioId: 'freshet',
+      scenarioName: 'After-rain freshet',
+      tide: 'Ebbing after rain',
+      decisionId: 'resample-after-mixing',
+      decisionRecommended: true,
+      recommendedDecisionId: 'resample-after-mixing',
+      decisionAttempts: 2,
+    });
     const comparison = helpers.compareMissionDepthReadings(missionSummary);
     const mappedCrop = helpers.missionReadingToMusselReadings(missionSummary.cropDepthReading, {});
     expect(comparison.metrics.find((metric) => metric.id === 'oxygen').delta).toBe(-2.8);
@@ -424,6 +445,35 @@ describe('Aquaculture blue-mussel health station', () => {
     expect(paired.textContent).toContain('24.8 PSU');
     expect(paired.textContent).toContain('11.3 PSU higher in salinity');
 
+    let checkpoint = host.querySelector('.aq-guided-decision-panel');
+    expect(checkpoint).toBeTruthy();
+    expect(checkpoint.querySelector('h3').textContent).toContain('Choose the best next verification');
+    expect(checkpoint.textContent).toContain('surface is much fresher than crop depth');
+    expect(checkpoint.textContent).toContain('Surface (12.4\u00B0C, 13.5 PSU, DO 8.35 mg/L, pH 7.72)');
+    expect(checkpoint.textContent).toContain('Salinity low');
+    expect(checkpoint.textContent).toContain('pH low');
+    expect(findButton(host, 'Return and secure the vessel')).toBeFalsy();
+
+    await click(checkpoint.querySelector('input[value="declare-closure"]'));
+    await click(findButton(checkpoint, 'Check verification response'));
+    checkpoint = host.querySelector('.aq-guided-decision-panel');
+    expect(checkpoint.querySelector('[role="status"]').textContent).toContain('only current authority notices determine an official closure');
+    expect(checkpoint.querySelector('[role="status"]').textContent).toContain('try another response');
+    expect(findButton(host, 'Return and secure the vessel')).toBeFalsy();
+
+    const checkpointAxe = await axe.run(checkpoint, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      rules: { 'color-contrast': { enabled: false }, region: { enabled: false }, 'scrollable-region-focusable': { enabled: false } },
+    });
+    expect(checkpointAxe.violations.filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([]);
+
+    await click(checkpoint.querySelector('input[value="resample-after-mixing"]'));
+    await click(findButton(checkpoint, 'Check verification response'));
+    const decisionResult = host.querySelector('.aq-guided-decision-result');
+    expect(decisionResult.textContent).toContain('Verification plan recorded');
+    expect(decisionResult.textContent).toContain('Flag the depth gradient and resample both depths as the tide mixes');
+    expect(findButton(host, 'Return and secure the vessel')).toBeTruthy();
+
     await click(findButton(host, 'Return and secure the vessel'));
     await change(host.querySelector('#aq-guided-reflection'), 'I kept red to starboard, stayed in the channel, and compared the freshet at both sample depths.');
     await click(findButton(host, 'Save mission evidence'));
@@ -434,8 +484,16 @@ describe('Aquaculture blue-mussel health station', () => {
       tide: 'Ebbing after rain',
       surfaceReading: { salinity: '13.5' },
       cropDepthReading: { salinity: '24.8' },
+      decisionId: 'resample-after-mixing',
+      decisionLabel: 'Flag the depth gradient and resample both depths as the tide mixes',
+      decisionOutcome: 'This tests whether the freshet signal persists before the crew changes farm practice.',
+      decisionRecommended: true,
+      recommendedDecisionId: 'resample-after-mixing',
+      recommendedDecisionLabel: 'Flag the depth gradient and resample both depths as the tide mixes',
+      decisionAttempts: 2,
     });
     expect(mission.choice).toContain('After-rain freshet');
+    expect(mission.choice).toContain('verification plan: Flag the depth gradient and resample both depths as the tide mixes');
 
     await click(findButton(host, 'Choose another condition'));
     expect(Array.from(briefing.querySelectorAll('.aq-field-scenario-choice')).every((choice) => !choice.disabled)).toBe(true);

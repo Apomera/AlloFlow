@@ -59,6 +59,7 @@
       '@keyframes ws-streak-fire { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }',
       '@keyframes ws-float-up { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-40px) scale(1.5); opacity: 0; } }',
       '@keyframes ws-shake-correct { 0%, 100% { transform: rotate(0deg); } 15% { transform: rotate(-8deg); } 30% { transform: rotate(8deg); } 45% { transform: rotate(-5deg); } 60% { transform: rotate(5deg); } 75% { transform: rotate(-2deg); } }',
+      '@keyframes word-sounds-wave { 0% { height: 4px; } 100% { height: 16px; } }',
       '.ws-confetti { position: absolute; width: 8px; height: 8px; border-radius: 2px; animation: ws-confetti-fall 1.5s ease-out forwards; pointer-events: none; z-index: 100; }',
       '.ws-star { position: absolute; font-size: 20px; animation: ws-star-burst 0.8s ease-out forwards; pointer-events: none; z-index: 100; }',
       '.ws-bounce { animation: ws-bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
@@ -14888,7 +14889,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   style: {
                     height: "4px",
                     animation:
-                      "soundwave 0.6s ease-in-out infinite alternate",
+                      "word-sounds-wave 0.6s ease-in-out infinite alternate",
                   },
                 }),
                       /*#__PURE__*/ React.createElement("div", {
@@ -14896,7 +14897,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   style: {
                     height: "12px",
                     animation:
-                      "soundwave 0.6s ease-in-out infinite alternate 0.2s",
+                      "word-sounds-wave 0.6s ease-in-out infinite alternate 0.2s",
                   },
                 }),
                       /*#__PURE__*/ React.createElement("div", {
@@ -14904,7 +14905,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   style: {
                     height: "8px",
                     animation:
-                      "soundwave 0.6s ease-in-out infinite alternate 0.4s",
+                      "word-sounds-wave 0.6s ease-in-out infinite alternate 0.4s",
                   },
                 }),
               ),

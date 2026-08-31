@@ -26,6 +26,7 @@ const BINDING = table('var BINDING = [');
 const REACTIONS = table('var REACTIONS = [');
 const CHAIN = table('var U238_CHAIN = [');
 const ENRICH = table('var ENRICH_LEVELS = [');
+const EVIDENCE_CLAIMS = table('var EVIDENCE_CLAIMS = [');
 
 beforeEach(() => {
   resetStemLab();
@@ -1312,6 +1313,20 @@ describe('Taking a route', () => {
       const ids = [...html.matchAll(/data-nk-sec=\x22([^\x22]+)\x22/g)].map((m) => m[1]);
       expect(ids, route.id + ' route reading order').toEqual(route.steps);
     }
+  });
+
+  it('assesses only evidence supported by each route and covers every claim collectively', () => {
+    const covered = new Set();
+    const expectedCounts = { safe: 1, me: 1, safety: 2, works: 1, know: 1 };
+    for (const route of NK_PATHS) {
+      const claims = EVIDENCE_CLAIMS.filter((claim) => route.steps.includes(claim.section));
+      expect(claims.length, route.id + ' route evidence count').toBe(expectedCounts[route.id]);
+      for (const claim of claims) {
+        expect(route.steps, route.id + ' omits support for ' + claim.id).toContain(claim.section);
+        covered.add(claim.id);
+      }
+    }
+    expect([...covered].sort()).toEqual(EVIDENCE_CLAIMS.map((claim) => claim.id).sort());
   });
 
   it('still shows the section numbers, so a step is locatable in the document', () => {

@@ -74,7 +74,7 @@ describe('solar system visual science model', () => {
   it('keeps the full-system orrery legible with a scientifically disclosed inner inset', () => {
     expect(source).toContain('function drawOrreryInnerInset(ctx, currentTime)');
     expect(source).toContain('MAGNIFIED INNER SYSTEM');
-    expect(source).toContain('One distance scale \u00b7 bodies enlarged');
+    expect(source).toContain('One distance scale \u00b7 markers enlarged');
     expect(source).toContain('drawOrreryInnerInset(ctx, t)');
     expect(source).toContain('hideMainInnerLabel');
     expect(source).toContain('hideCompressedSmallBodyLabel');
@@ -93,6 +93,59 @@ describe('solar system visual science model', () => {
     expect(source).toContain('className: "solar-world-thumb"');
     expect(source).toContain("ctx.roundRect(captionX, captionY, captionW, 56, 12)");
     expect(source).toContain('Select a feature \\u2022 drag to rotate');
+  });
+
+  it('keeps primary explorer labels readable and responsive without hiding long world names', () => {
+    expect(source).toContain('data-solarsystem-canvas-world-picker');
+    expect(source).toContain('.solar-cosmos .solar-canvas-world-picker{display:grid;grid-template-columns:repeat(9,minmax(0,1fr))');
+    expect(source).toContain('@media(max-width:900px){.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(5,minmax(0,1fr))}}');
+    expect(source).toContain('.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr))');
+    expect(source).toContain('.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}');
+    expect(source).toContain('.solar-cosmos .solar-world-card-name{min-height:25px;line-height:1.2;overflow-wrap:anywhere}');
+    expect(source).toContain('.solar-cosmos .solar-world-spotlight-stat-value{margin-top:3px;color:#f8fafc;font-size:12px');
+    expect(source).toContain('.solar-cosmos .solar-model-note strong{display:block;font-size:10px');
+    expect(source).toContain('.solar-cosmos .solar-model-note span{display:block;margin-top:3px;font-size:11px');
+    expect(source).not.toContain('className: "mt-1 truncate text-[11px] font-black" }, p.name');
+  });
+
+  it('keeps the mobile 3D playback strip shrinkable with full-size touch targets', () => {
+    expect(source).toContain('"data-solarsystem-speed-control": true');
+    expect(source).toContain('className: "solar-canvas-speed-control flex min-w-0 items-center');
+    expect(source).toContain('"data-solarsystem-speed-slider": true');
+    expect(source).toContain('className: "solar-canvas-speed-input min-w-0 flex-1');
+    expect(source).toContain('.solar-cosmos .solar-canvas-controls{gap:4px!important;padding:6px!important}');
+    expect(source).toContain('.solar-cosmos .solar-canvas-speed-control input[type="range"]{min-width:0;height:44px!important}');
+    expect(source).not.toContain('.solar-cosmos .solar-canvas-controls{overflow:hidden');
+  });
+
+  it('makes overview evidence and Earth comparisons explicit on compact screens', () => {
+    const overviewStart = source.indexOf('React.createElement("dl", { "data-solarsystem-overview-metrics": sel.key');
+    const overviewEnd = source.indexOf("(d.viewTab) === 'surface'", overviewStart);
+    const overviewSource = source.slice(overviewStart, overviewEnd);
+
+    expect(overviewStart).toBeGreaterThan(-1);
+    expect(overviewEnd).toBeGreaterThan(overviewStart);
+    expect(overviewSource).toContain('"data-solarsystem-overview-metrics": sel.key');
+    expect(overviewSource).toContain('React.createElement("dl"');
+    expect(overviewSource).toContain("['\\uD83D\\uDCCF', 'Diameter', sel.diameter]");
+    expect(overviewSource).toContain("['\\u2696\\uFE0F', 'Surface gravity', sel.gravity || 'Unknown']");
+    expect(overviewSource).toContain("['\\uD83C\\uDF2C', 'Atmosphere', sel.atmosphere || 'Unknown']");
+    expect(overviewSource).toContain("['\\uD83D\\uDCA0', 'Type', PLANET_KINDS[sel.key] || 'Rocky']");
+    expect(overviewSource).toContain('"data-solarsystem-earth-comparisons": sel.key');
+    expect(overviewSource).toContain('className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3"');
+    expect(overviewSource).toContain('"data-solar-comparison-meter": "gravity", role: "meter"');
+    expect(overviewSource).toContain('"aria-valuemax": 3');
+    expect(overviewSource).toContain('/ 3) * 100');
+    expect(overviewSource).toContain('"data-solar-comparison-meter": "radius", role: "meter"');
+    expect(overviewSource).toContain('"aria-valuemax": 12');
+    expect(overviewSource).toContain('/ 12) * 100');
+    expect(overviewSource).toContain('solar-earth-reference-marker');
+    expect(overviewSource.match(/data-solarsystem-notable-features/g)).toHaveLength(1);
+    expect(overviewSource).not.toContain('notable_features_2');
+    expect(overviewSource).not.toContain('(GRAVITY_MAP[sel.key] || 1) * 42');
+    expect(overviewSource).not.toContain('((PLANET_RADII[sel.key] || 6371) / 6371) * 9');
+    expect(source).toContain('"data-solarsystem-surface-conditions": sel.key');
+    expect(source).toContain('className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2"');
   });
 
   it('fills the mission-control column with a responsive, scientifically disclosed world spotlight', () => {
@@ -137,17 +190,57 @@ describe('solar system visual science model', () => {
     expect(interiorEnd).toBeGreaterThan(interiorStart);
     expect(interiorSource).toContain('"data-solar-interior-cutaway": sel.key');
     expect(interiorSource).toContain('"data-solar-interior-canvas": sel.key');
-    expect(interiorSource).toContain('var compactInterior = cw < 560;');
+    expect(interiorSource).toContain('"data-solar-interior-model": "evidence-based-schematic"');
+    expect(interiorSource).toContain('var compactInterior = cw < 760;');
     expect(interiorSource).toContain("'data-solar-interior-layout', compactInterior ? 'compact-key' : 'wide-callouts'");
+    expect(interiorSource).toContain("'data-solar-interior-dpr', String(pixelRatio)");
+    expect(interiorSource).toContain('ctx2.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);');
     expect(interiorSource).toContain('var legendTop = cy + maxR + 27;');
-    expect(interiorSource).toContain("ctx2.fillText('LAYER KEY', 12, legendTop - 11);");
+    expect(interiorSource).toContain("__alloT('stem.solarsystem.layer_key', 'LAYER KEY')");
     expect(interiorSource).toContain('var labelTop = cy - maxR * 0.70;');
+    expect(interiorSource).toContain('var labelMaxWidth = Math.max(100, labelX - 18);');
+    expect(interiorSource).toContain('Right hemisphere is the observable exterior; left is the modeled cutaway.');
+    expect(interiorSource).toContain("__alloT('stem.solarsystem.modeled_cutaway', 'MODELED CUTAWAY')");
+    expect(interiorSource).toContain("__alloT('stem.solarsystem.exterior', 'EXTERIOR')");
     expect(interiorSource).toContain('grid grid-cols-1 md:grid-cols-2 gap-2');
     expect(interiorSource).toContain('"data-solar-interior-layer": layer.label');
+    expect(interiorSource).toContain('"data-solar-interior-model-tag": layer.modelTag || "observed-or-constrained"');
+    expect(interiorSource).toContain('"aria-describedby": "solar-interior-layer-grid-" + sel.key.toLowerCase()');
     expect(interiorSource).toContain('100%),#0f172a');
-    expect(interiorSource).toContain('Stable brightness prevents the star field from shimmering');
     expect(interiorSource).not.toContain('Math.random()');
+    expect(source).toContain('function getSolarInteriorLayers(planetKey)');
+    expect(source).toContain('new ResizeObserver(requestInteriorDraw)');
+    expect(source).toContain("label: __alloT('stem.solarsystem.solid_inner_core_mars', 'Solid Inner Core')");
+    expect(source).toContain("thick: '~600 km radius'");
+    expect(source).toContain("href: 'https://www.nature.com/articles/s41586-025-09361-9'");
   });
+
+  it('turns atmospheric descent into a clamped instrument corridor', () => {
+    const descentStart = source.indexOf("(d.viewTab) === 'descent'");
+    const descentEnd = source.indexOf("(d.viewTab) === 'drone'", descentStart);
+    const descentSource = source.slice(descentStart, descentEnd);
+
+    expect(descentStart).toBeGreaterThan(-1);
+    expect(descentEnd).toBeGreaterThan(descentStart);
+    expect(source).toContain('function clampSolarDescentProbeValue(probeValue)');
+    expect(source).toContain('function getSolarDescentLayerIndex(layers, probeValue)');
+    expect(source).toContain('Math.min(layers.length - 1, Math.floor(clampedProbeValue * layers.length))');
+    expect(descentSource).toContain('The band heights are schematic and show layer sequence, not proportional altitude.');
+    expect(descentSource).toContain('"data-solar-descent-stage": sel.key');
+    expect(descentSource).toContain('"data-solar-descent-canvas": sel.key');
+    expect(descentSource).toContain('"data-solar-descent-controls": "true"');
+    expect(descentSource).toContain('"data-solar-descent-readout": controlLayer ? controlLayer.name : ""');
+    expect(descentSource).toContain('"data-solar-descent-slider": "true"');
+    expect(descentSource).toContain('"aria-valuetext": (function()');
+    expect(descentSource).toContain('"data-solar-descent-card": layer.name');
+    expect(descentSource).toContain('var activeBandGlow = ctx2.createLinearGradient(0, y, cw, y);');
+    expect(descentSource).toContain("'data-solar-descent-active-layer', activeDescentLayer ? activeDescentLayer.name : ''");
+    expect(descentSource).toContain('var probeReadout = activeDescentLayer ? activeDescentLayer.name');
+    expect(descentSource).toContain("upd('_descentProbeY', (li + 0.5) / descentLayerCount)");
+    expect(descentSource).toContain('100%),#0f172a');
+    expect(descentSource).not.toContain('absolute bottom-3 left-3 right-3');
+  });
+
   it('separates Kepler I geometry callouts from live proof measurements', () => {
     expect(source).toContain('var k1Backdrop = ctx.createRadialGradient');
     expect(source).toContain('function drawK1Tag(text, x, y, color)');

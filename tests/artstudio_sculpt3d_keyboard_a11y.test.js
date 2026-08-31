@@ -13,6 +13,7 @@ import {
 const sourcePath = path.join(process.cwd(), 'stem_lab', 'stem_tool_artstudio.js');
 const publicPath = path.join(process.cwd(), 'desktop', 'web-app', 'public', 'stem_lab', 'stem_tool_artstudio.js');
 const originalMatchMedia = window.matchMedia;
+const originalFileReader = window.FileReader;
 const originalThree = window.THREE;
 const originalAlloModules = window.AlloModules;
 const { act } = React;
@@ -66,9 +67,14 @@ function makePrim3D() {
     ...recipe,
     parts: (recipe.parts || []).map((part) => ({
       size: [0.4, 0.4, 0.4],
+      stretch: [1, 1, 1],
       position: [0, 0.5, 0],
       rotation: [0, 0, 0],
       ...part,
+      size: (part.size || [0.4, 0.4, 0.4]).slice(),
+      stretch: (part.stretch || [1, 1, 1]).slice(),
+      position: (part.position || [0, 0.5, 0]).slice(),
+      rotation: (part.rotation || [0, 0, 0]).slice(),
     })),
   } : null;
   const updatePart = (recipe, index, patch) => {
@@ -82,7 +88,7 @@ function makePrim3D() {
     normalizeRecipe,
     getPreset: () => normalizeRecipe({ name: 'Robot', parts: [{ shape: 'box', color: '#ff0000' }] }),
     buildObject: () => ({ traverse: () => {} }),
-    newPart: (shape) => ({ shape, size: [0.4, 0.4, 0.4], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#ff0000' }),
+    newPart: (shape) => ({ shape, size: [0.4, 0.4, 0.4], stretch: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#ff0000' }),
     addPart: (recipe, shape) => normalizeRecipe({ name: 'Custom', parts: [...(recipe?.parts || []), { shape, color: '#ff0000' }] }),
     updatePart,
     duplicatePart: (recipe, index) => {
@@ -91,6 +97,7 @@ function makePrim3D() {
       next.parts.splice(index + 1, 0, {
         ...source,
         size: source.size.slice(),
+        stretch: source.stretch.slice(),
         position: source.position.slice(),
         rotation: source.rotation.slice(),
       });
@@ -135,6 +142,11 @@ describe('Art Studio Sculpt 3D accessibility', () => {
     vi.restoreAllMocks();
     window.THREE = originalThree;
     window.AlloModules = originalAlloModules;
+    Object.defineProperty(window, 'FileReader', {
+      configurable: true,
+      writable: true,
+      value: originalFileReader,
+    });
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       writable: true,
@@ -170,21 +182,38 @@ describe('Art Studio Sculpt 3D accessibility', () => {
     }, { callGemini: vi.fn() });
 
     expect(html).toContain('3D sculpture preview. Robot with 1 part. Auto-rotation running.');
-    expect(html).toContain('aria-describedby="artstudio-sculpt-keyboard-help"');
+    expect(html).toContain('aria-describedby="artstudio-sculpt-touch-help artstudio-sculpt-keyboard-help"');
     expect(html).toContain('Alt+ArrowUp');
     expect(html).toContain('PageUp PageDown');
     expect(html).toContain('Move sculpture parts');
     expect(html).toContain('Rotate sculpture parts');
     expect(html).toContain('Scale sculpture parts');
+    expect(html).toContain('Transform axis constraint');
+    expect(html).toContain('Transform freely');
+    expect(html).toContain('Constrain transforms to X axis');
     expect(html).toContain('Position snapping');
     expect(html).toContain('Snap positions to 0.25 units');
     expect(html).toContain('Mirror copy axis');
     expect(html).toContain('Mirror across Y axis');
     expect(html).toContain('Mirror copy on X axis');
     expect(html).toContain('Fine-tune selected part');
+    expect(html).toContain('Selected part visibility and locking');
+    expect(html).toContain('Hide selected part');
+    expect(html).toContain('Lock selected part transforms');
+    expect(html).toContain('Selected part name');
+    expect(html).toContain('Selected part surface finish');
+    expect(html).toContain('Gloss selected part finish');
+    expect(html).toContain('Metal selected part finish');
+    expect(html).toContain('Wire selected part finish');
+    expect(html).toContain('Selected part opacity');
+    expect(html).toContain('Stretch / morph');
+    expect(html).toContain('Morph selected part on X axis');
+    expect(html).toContain('Reset selected part stretch');
     expect(html).toContain('Start from or morph a preset');
     expect(html).toContain('role="group" aria-label="3D preview actions"');
     expect(html).toContain('aria-label="Pause 3D preview rotation" aria-pressed="false"');
+    expect(html).toContain('aria-label="Export sculpture JSON model"');
+    expect(html).toContain('aria-label="Import sculpture JSON model"');
     expect(html).toContain('aria-label="Refine sculpture with AI"');
     expect(html).toContain('aria-label="Save sculpture to gallery"');
     expect(html).toContain('role="group" aria-labelledby="artstudio-sculpt-add-label"');
@@ -310,6 +339,122 @@ describe('Art Studio Sculpt 3D accessibility', () => {
     expect(latest.artStudio.sculptRecipe.parts[1].rotation).toEqual([-10, 20, -30]);
     expect(latest.artStudio.sculptSel).toBe(1);
     expect(announce).toHaveBeenCalledWith('Created a mirrored copy of part 1 on the Y axis.');
+  });
+
+  it('names, styles, hides, and locks a part while protecting its transforms', async () => {
+    await mount({
+      sculptInteractMode: 'move',
+      sculptRecipe: { name: 'Custom', parts: [{ shape: 'box', color: '#ff0000', position: [0, 0.5, 0] }] },
+    });
+    let nameInput = host.querySelector('input[aria-label="Selected part name"]');
+    const nativeValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    await act(async () => {
+      nativeValueSetter.call(nameInput, 'Main body');
+      nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].label).toBe('Main body');
+    expect(host.querySelector('button[aria-label^="Part 1:"]').getAttribute('aria-label')).toContain('Main body');
+
+    const gloss = host.querySelector('button[aria-label="Gloss selected part finish"]');
+    await act(async () => {
+      gloss.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].finish).toBe('gloss');
+
+    const opacity = host.querySelector('input[aria-label="Selected part opacity"]');
+    await act(async () => {
+      nativeValueSetter.call(opacity, '40');
+      opacity.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].opacity).toBe(0.4);
+
+    const hide = host.querySelector('button[aria-label="Hide selected part"]');
+    await act(async () => {
+      hide.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].hidden).toBe(true);
+    expect(host.querySelector('canvas').getAttribute('aria-label')).toContain('0 visible');
+
+    const show = host.querySelector('button[aria-label="Show selected part"]');
+    await act(async () => {
+      show.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    const lock = host.querySelector('button[aria-label="Lock selected part transforms"]');
+    await act(async () => {
+      lock.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].locked).toBe(true);
+    expect(host.querySelector('button[aria-label="Right"]').disabled).toBe(true);
+
+    const canvas = host.querySelector('canvas');
+    const positionBefore = latest.artStudio.sculptRecipe.parts[0].position.slice();
+    await act(async () => {
+      canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].position).toEqual(positionBefore);
+    expect(announce).toHaveBeenCalledWith('Part 1 is locked. Use its part controls before transforming it.');
+  });
+
+  it('imports an editable model, preserves undo history, and exports it again', async () => {
+    await mount({
+      sculptRecipe: { name: 'Old form', parts: [{ shape: 'box', color: '#ff0000' }] },
+    });
+    class FakeFileReader {
+      readAsText(file) {
+        this.result = file.contents;
+        this.onload();
+      }
+    }
+    Object.defineProperty(window, 'FileReader', { configurable: true, writable: true, value: FakeFileReader });
+    const input = host.querySelector('input[aria-label="Import sculpture JSON model"]');
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: [{ size: 256, contents: JSON.stringify({ name: 'Loaded form', parts: [{ shape: 'box', color: '#22c55e', stretch: [1.5, 0.75, 2] }] }) }],
+    });
+
+    await act(async () => {
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.name).toBe('Loaded form');
+    expect(latest.artStudio.sculptRecipe.parts[0].stretch).toEqual([1.5, 0.75, 2]);
+    expect(latest.artStudio.sculptUndo.at(-1).name).toBe('Old form');
+    expect(announce).toHaveBeenCalledWith('Imported Loaded form with 1 part.');
+
+    let downloadName = '';
+    vi.spyOn(window.HTMLAnchorElement.prototype, 'click').mockImplementation(function() { downloadName = this.download; });
+    const exportModel = host.querySelector('button[aria-label="Export sculpture JSON model"]');
+    await act(async () => {
+      exportModel.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(downloadName).toBe('loaded-form.sculpture.json');
+    expect(announce).toHaveBeenCalledWith('Editable sculpture model exported as JSON.');
+  });
+
+  it('rejects oversized sculpture model files without replacing the current form', async () => {
+    await mount({
+      sculptRecipe: { name: 'Keep me', parts: [{ shape: 'box', color: '#ff0000' }] },
+    });
+    const input = host.querySelector('input[aria-label="Import sculpture JSON model"]');
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: [{ size: 1024 * 1024 + 1, contents: '{}' }],
+    });
+
+    await act(async () => {
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.name).toBe('Keep me');
+    expect(announce).toHaveBeenCalledWith('That sculpture file is over the 1 MB import limit.');
   });
 
   it('keeps source and active public mirrors identical', () => {

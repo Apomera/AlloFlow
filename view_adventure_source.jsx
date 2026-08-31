@@ -1424,10 +1424,20 @@ function AdventureView(props) {
                         </div>
                         ) : (
                             <div className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl group select-none relative">
+                                <style>{`
+                                  @keyframes adventure-ken-burns {
+                                    0% { transform: scale(1) translate(0, 0); }
+                                    100% { transform: scale(1.1) translate(-1%, -1%); }
+                                  }
+                                  .adventure-ken-burns { animation: adventure-ken-burns 20s ease-in-out infinite alternate; }
+                                  @media (prefers-reduced-motion: reduce) {
+                                    .adventure-ken-burns { animation: none; }
+                                  }
+                                `}</style>
                                 {(adventureState.sceneImage || adventureState.sceneImagePreview) ? (
                                     <img loading="lazy"
                                         src={adventureState.sceneImage || adventureState.sceneImagePreview}
-                                        className={`absolute inset-0 w-full h-full ${immersiveHideUI ? 'object-contain' : 'object-cover'} transition-opacity duration-700 animate-ken-burns motion-reduce:animate-none motion-reduce:transition-none`}
+                                        className={`absolute inset-0 w-full h-full ${immersiveHideUI ? 'object-contain' : 'object-cover'} transition-opacity duration-700 adventure-ken-burns motion-reduce:animate-none motion-reduce:transition-none`}
                                         alt=""
                                     />
                                 ) : (

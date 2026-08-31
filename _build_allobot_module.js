@@ -34,7 +34,7 @@ const entry = `
 // esbuild just needs them declared so JSX compilation succeeds.
 /* global React, useState, useEffect, useRef, useCallback, useMemo, useContext, useImperativeHandle */
 /* global LanguageContext, safeGetItem, safeSetItem, warnLog, debugLog */
-/* global getGlobalAudioContext, isGlobalMuted, Mic, Volume2, VolumeX, Settings, X */
+/* global getGlobalAudioContext, isGlobalMuted, Mic, MicOff, Volume2, VolumeX, Settings, X */
 
 ${source}
 
@@ -99,7 +99,6 @@ const outputCode = `/**
     console.warn('[AlloBotModule] Already loaded — skipping');
     return;
   }
-  window.__alloBotModuleLoaded = true;
 
   // ── React dependencies ──
   var React = window.React;
@@ -131,6 +130,7 @@ const outputCode = `/**
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
   var Mic = _icons.Mic || function() { return null; };
+  var MicOff = _icons.MicOff || function() { return null; };
   var Volume2 = _icons.Volume2 || function() { return null; };
   var VolumeX = _icons.VolumeX || function() { return null; };
   var Settings = _icons.Settings || function() { return null; };
@@ -154,6 +154,9 @@ ${compiledSource}
   window.AlloModules.AlloMicMeter = (typeof AlloMicMeter !== 'undefined') ? AlloMicMeter : null;
   window.AlloModules.AlloBot = AlloBot;
 
+  // Mark the module loaded only after dependency resolution and registration
+  // complete. If React arrives after this script, a later load can retry.
+  window.__alloBotModuleLoaded = true;
   console.log('[AlloBotModule] AlloBot registered successfully');
 })();
 `;

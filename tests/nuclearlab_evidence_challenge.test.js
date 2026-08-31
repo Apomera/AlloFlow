@@ -58,14 +58,6 @@ function buttonNamed(text) {
   return [...host.querySelectorAll('button')].find((button) => button.textContent.trim() === text);
 }
 
-const COMPLETE_EVIDENCE = [
-  'reactor-bomb',
-  'inverse-square',
-  'low-dose-zero',
-  'neutron-layers',
-  'short-count',
-];
-
 function enterText(node, value) {
   const setter = Object.getOwnPropertyDescriptor(
     window.HTMLTextAreaElement.prototype,
@@ -108,17 +100,41 @@ describe('evidence challenge semantics', () => {
     expect(host.querySelector('button[aria-label="Reduce non-essential motion throughout the nuclear lab"]').getAttribute('aria-pressed')).toBe('true');
     expect(buttonNamed('Skip topic controls and start reading')).toBeTruthy();
     expect(host.querySelector('#nksec-halflife').getAttribute('tabindex')).toBe('-1');
-    expect(host.querySelector('style').textContent).toContain('[data-nk-sec]:focus');
-    expect(host.querySelector('style').textContent).toContain('.nk-readable textarea:focus-visible');
+    const adaptations = host.querySelector('style').textContent;
+    expect(adaptations).toContain('[data-nk-sec]:focus');
+    expect(adaptations).toContain('.nk-readable textarea:focus-visible');
+    expect(adaptations).toContain('.nk-index-secondary{display:none!important}');
+    expect(adaptations).toContain('.nk-route-kicker-question{flex-basis:100%}');
   });
 
   it('makes the challenge the final step of every question-led route', () => {
-    for (const route of ['safe', 'me', 'safety', 'works', 'know']) {
+    const routeClaimCounts = { safe: 1, me: 1, safety: 2, works: 1, know: 1 };
+    for (const [route, count] of Object.entries(routeClaimCounts)) {
       host.innerHTML = renderTool('nuclearLab', { _nuclearLab: { nkPath: route } });
-      expect(host.querySelector('#nksec-evidence'), route + ' route omits the challenge').toBeTruthy();
-      expect(host.querySelector('#nksec-evidence nav[aria-label*="route progress"]'), route + ' route has no final progress footer').toBeTruthy();
-      expect(host.querySelector('#nksec-evidence').textContent).toContain('finish the evidence challenge');
+      const evidence = host.querySelector('#nksec-evidence');
+      expect(evidence, route + ' route omits the challenge').toBeTruthy();
+      expect(evidence.querySelector('nav[aria-label*=route]'), route + ' route has no final progress footer').toBeTruthy();
+      expect(evidence.querySelector('legend').textContent).toBe('Claim 1 of ' + count);
+      expect(evidence.querySelectorAll('nav[aria-label*=claims] button')).toHaveLength(count);
+      expect(evidence.querySelector('progress').getAttribute('aria-label'))
+        .toBe('0 of ' + count + ' evidence claims mastered');
+      expect(evidence.textContent).toContain('This route asks only about evidence from the sections you just opened.');
+      expect(evidence.textContent).toContain('finish the evidence challenge');
     }
+  });
+
+  it('falls back to the first relevant claim when saved position came from another route', () => {
+    host.innerHTML = renderTool('nuclearLab', {
+      _nuclearLab: {
+        nkPath: 'safety',
+        evidenceIndex: 4,
+        evidenceClaimId: 'short-count',
+      },
+    });
+    const claim = host.querySelector('#nk-evidence-claim');
+    expect(claim.querySelector('legend').textContent).toBe('Claim 1 of 2');
+    expect(claim.textContent).toContain('doubling the distance cuts the dose rate to one quarter');
+    expect(claim.textContent).not.toContain('One short Geiger count');
   });
 
   it('offers a named, optional route reflection only after evidence mastery', () => {
@@ -128,7 +144,7 @@ describe('evidence challenge semantics', () => {
     host.innerHTML = renderTool('nuclearLab', {
       _nuclearLab: {
         nkPath: 'know',
-        evidenceMastered: COMPLETE_EVIDENCE,
+        evidenceMastered: ['short-count'],
         nkReflections: {
           know: {
             confidence: 'explain',
@@ -162,7 +178,7 @@ describe('evidence challenge semantics', () => {
       host.innerHTML = renderTool('nuclearLab', {
         _nuclearLab: {
           nkPath: 'know',
-          evidenceMastered: COMPLETE_EVIDENCE,
+          evidenceMastered: ['short-count'],
           nkReflections: {
             know: {
               confidence: 'not-a-choice',
@@ -202,7 +218,7 @@ describe('reading adaptation interaction', () => {
 
 describe('evidence challenge interaction', () => {
   it('explains a weak verdict, then lets the learner revise and master it', () => {
-    mount({ nkPath: 'know' });
+    mount({});
     const supported = host.querySelector('input[name="nk-evidence-verdict"][value="supported"]');
     act(() => supported.click());
     act(() => buttonNamed('Check the evidence').click());
@@ -220,10 +236,67 @@ describe('evidence challenge interaction', () => {
     expect(buttonNamed('Next claim →')).toBeTruthy();
   });
 
+  it('keeps keyboard focus and lets each screen-reader event speak once', () => {
+    const announceToSR = vi.fn();
+    mount({ nkPath: 'safety' }, { announceToSR });
+    const supported = host.querySelector('input[name=nk-evidence-verdict][value=supported]');
+    act(() => supported.click());
+
+    const check = buttonNamed('Check the evidence');
+    check.focus();
+    act(() => check.click());
+
+    expect(document.activeElement).toBe(buttonNamed('Check again'));
+    expect(host.querySelector('#nk-evidence-feedback').textContent).toContain('Evidence match');
+    expect(announceToSR, 'live feedback was also announced by hand').not.toHaveBeenCalled();
+    const next = buttonNamed('Next claim →');
+    next.focus();
+    act(() => next.click());
+
+    expect(document.activeElement.id).toBe('nk-evidence-claim');
+    expect(document.activeElement.querySelector('legend').textContent).toBe('Claim 2 of 2');
+    expect(announceToSR, 'focused claim name was also announced by hand').not.toHaveBeenCalled();
+  });
+
+  it('does not show a no-op next control on a one-claim route', () => {
+    mount({ nkPath: 'know' });
+    const uncertain = host.querySelector('input[name=nk-evidence-verdict][value=uncertain]');
+    act(() => uncertain.click());
+    act(() => buttonNamed('Check the evidence').click());
+
+    expect(host.querySelector('#nk-evidence-feedback').textContent).toContain('Evidence match');
+    expect(buttonNamed('Next claim →')).toBeUndefined();
+    expect(buttonNamed('Review claim 1')).toBeUndefined();
+  });
+
+  it('resets only the active route claims and preserves mastery earned elsewhere', () => {
+    let latestToolData;
+    mount({
+      nkPath: 'safety',
+      evidenceChoices: {
+        'inverse-square': 'supported',
+        'short-count': 'uncertain',
+      },
+      evidenceChecked: {
+        'inverse-square': true,
+        'short-count': true,
+      },
+      evidenceMastered: ['inverse-square', 'short-count'],
+    }, {}, (toolData) => {
+      latestToolData = toolData;
+    });
+
+    act(() => buttonNamed('Start over').click());
+
+    expect(latestToolData._nuclearLab.evidenceMastered).toEqual(['short-count']);
+    expect(latestToolData._nuclearLab.evidenceChoices).toEqual({ 'short-count': 'uncertain' });
+    expect(latestToolData._nuclearLab.evidenceChecked).toEqual({ 'short-count': true });
+  });
+
   it('tracks all five claims, celebrates once, and satisfies the quest hook', () => {
     const celebrate = vi.fn();
     const awardXP = vi.fn();
-    mount({ nkPath: 'know' }, { celebrate, awardXP });
+    mount({}, { celebrate, awardXP });
 
     const answers = ['contradicted', 'supported', 'uncertain', 'supported', 'uncertain'];
     for (let i = 0; i < answers.length; i++) {
@@ -250,7 +323,7 @@ describe('evidence challenge interaction', () => {
     let labRenders = 0;
     mount({
       nkPath: 'know',
-      evidenceMastered: COMPLETE_EVIDENCE,
+      evidenceMastered: ['short-count'],
     }, {}, (toolData) => {
       latestToolData = toolData;
       labRenders += 1;

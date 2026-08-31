@@ -5862,8 +5862,13 @@ const LearnerProgressView = React.memo(({
                         {showDiagnostics ? 'Details On' : 'Details'}
                     </button>
                     {onClose && (
-                        <button type="button" onClick={onClose} className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none">
-                            <X size={18} />
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none"
+                            aria-label={t('common.close_dashboard') || t('common.close') || 'Close progress dashboard'}
+                        >
+                            <X aria-hidden="true" size={18} />
                         </button>
                     )}
                 </div>
@@ -5906,7 +5911,7 @@ const LearnerProgressView = React.memo(({
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-indigo-900 shadow-lg relative">
                             <Trophy size={28} className="text-indigo-900 fill-current" />
-                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-700 text-[11px] font-black px-2 py-0.5 rounded-full border border-white">
+                            <div className="absolute -bottom-2 bg-indigo-900 text-yellow-200 text-[11px] font-black px-2 py-0.5 rounded-full border border-white">
                                 Lvl {globalLevel}
                             </div>
                         </div>
@@ -5989,14 +5994,14 @@ const LearnerProgressView = React.memo(({
                     <div className="text-3xl font-black text-slate-800 mb-4">{stats.totalActivities}</div>
                     <div className="grid grid-cols-2 gap-2">
                         {[
-                            { label: 'Quizzes', value: stats.quizCount, icon: '📝', color: 'bg-blue-50 text-blue-700' },
-                            { label: 'Words Practiced', value: stats.wsTotal, icon: '🔤', color: 'bg-purple-50 text-purple-700' },
-                            { label: 'Games', value: stats.gamesPlayed, icon: '🎮', color: 'bg-green-50 text-green-700' },
-                            { label: 'Fluency Tests', value: stats.fluencyTests, icon: '⏱️', color: 'bg-orange-50 text-orange-700' },
+                            { label: 'Quizzes', value: stats.quizCount, icon: '📝', color: 'bg-blue-50 text-blue-800' },
+                            { label: 'Words Practiced', value: stats.wsTotal, icon: '🔤', color: 'bg-purple-50 text-purple-800' },
+                            { label: 'Games', value: stats.gamesPlayed, icon: '🎮', color: 'bg-green-50 text-green-800' },
+                            { label: 'Fluency Tests', value: stats.fluencyTests, icon: '⏱️', color: 'bg-orange-50 text-orange-800' },
                         ].map(item => (
                             <div key={item.label} className={`${item.color} rounded-lg px-3 py-2 text-center`}>
                                 <div className="text-lg font-black">{item.icon} {item.value}</div>
-                                <div className="text-[11px] font-bold uppercase tracking-wider opacity-80">{item.label}</div>
+                                <div className="text-[11px] font-bold uppercase tracking-wider">{item.label}</div>
                             </div>
                         ))}
                     </div>

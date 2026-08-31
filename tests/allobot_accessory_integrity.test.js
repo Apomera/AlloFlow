@@ -261,10 +261,17 @@ describe('AlloBot accessory integrity', () => {
       expect(source).toContain('ALLOBOT_PROP_SAFE_GUTTER');
       expect(source).toContain('accessoryShiftX');
       expect(source).toContain('data-accessory-side');
-      expect(source).toMatch(/addEventListener\(['"]resize['"],\s*syncViewportWidth\)/);
+      expect(source).toContain('data-accessory-preferred-side');
+      expect(source).toContain('accessoryPreferredSide');
+      expect(source).toMatch(/addEventListener\(['"]resize['"],\s*syncViewport\)/);
       for (const [key, side] of entries) {
-        expect(accessoryBlock(source, key), `${key} should declare its preferred ${side} anchor`)
-          .toContain(`side-${side}`);
+        const block = accessoryBlock(source, key);
+        const usesPreferredLiteral = block.includes(`side-${side}`);
+        const usesResponsiveRenderSide = block.includes('side-${accessoryRenderSide');
+        expect(
+          usesPreferredLiteral || usesResponsiveRenderSide,
+          `${key} should render from its preferred ${side} anchor or its responsive side`,
+        ).toBe(true);
       }
     }
   });

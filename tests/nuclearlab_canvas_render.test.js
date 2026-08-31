@@ -242,6 +242,60 @@ describe('every canvas actually draws', () => {
     expect(host.querySelector('button[aria-label="Stop the coolant pumps"]').getAttribute('aria-pressed')).toBe('true');
     expect(rafCallbacks.size, 'reset reactor did not return to its parked state').toBe(0);
   });
+
+  it('exposes objective progress semantically and updates it without a live-region timer', () => {
+    mountInteractive({});
+
+    const objective = host.querySelector('#rx-objective-progress');
+    const meter = host.querySelector('#rx-objective-meter');
+    const canvas = host.querySelector('canvas[aria-label^="Reactor control panel"]');
+    expect(objective, 'objective progress group is missing').toBeTruthy();
+    expect(objective.getAttribute('role')).toBe('group');
+    expect(objective.getAttribute('aria-labelledby')).toBe('rx-objective-heading');
+    expect(objective.querySelector('[aria-live]'), 'the ticking timer must not chatter').toBeNull();
+    expect(meter.tagName).toBe('PROGRESS');
+    expect(meter.max).toBe(60);
+    expect(meter.value).toBe(0);
+    expect(meter.getAttribute('aria-valuetext')).toContain('0 of 60 continuous seconds');
+    expect(canvas.getAttribute('aria-describedby').split(/\s+/))
+      .toEqual(expect.arrayContaining(['rx-live-readings', 'rx-objective-progress']));
+
+    act(() => host.querySelector('button[aria-label="Start the simulation"]').click());
+    // Use the simulator's real frame cadence. Half-second jumps hit its safety
+    // dt clamp and exaggerate the thermal feedback into a test-only oscillation.
+    expect(flushRafFrames(180, 1017, 16.7)).toBeGreaterThan(0);
+    expect(meter.value, 'objective timer did not advance with the physics loop').toBeGreaterThan(0);
+    expect(meter.getAttribute('aria-valuetext')).toMatch(/[1-9]\d* of 60 continuous seconds/);
+
+    act(() => host.querySelector('button[aria-label="Reset the reactor to its starting condition"]').click());
+    flushRaf(8000);
+    expect(meter.value).toBe(0);
+    expect(meter.getAttribute('aria-valuetext')).toContain('0 of 60 continuous seconds');
+  });
+
+  it('starts and resets a station blackout with coolant pumps offline', () => {
+    mountInteractive({});
+    const scenario = (name) => [...host.querySelectorAll('button')].find((button) =>
+      (button.getAttribute('aria-label') || '').startsWith('Run the scenario: ' + name));
+
+    act(() => scenario('Station blackout').click());
+    flushRaf();
+    let pumps = host.querySelector('button[aria-label="Restore the coolant pumps"]');
+    expect(pumps, 'blackout still begins with powered coolant pumps').toBeTruthy();
+    expect(pumps.getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('#rx-objective-progress').dataset.stage).toBe('blackout-scram');
+    expect(host.querySelector('#rx-objective-detail').textContent).toContain('Cooling is offline');
+
+    act(() => host.querySelector('button[aria-label="Reset the reactor to its starting condition"]').click());
+    flushRaf(2000);
+    pumps = host.querySelector('button[aria-label="Restore the coolant pumps"]');
+    expect(pumps, 'blackout reset silently restored grid power').toBeTruthy();
+
+    act(() => scenario('Hold at full power').click());
+    flushRaf(3000);
+    expect(host.querySelector('button[aria-label="Stop the coolant pumps"]'),
+      'ordinary operation did not restore its pumps-on starting state').toBeTruthy();
+  });
 });
 
 describe('route-mounted canvas lifecycle', () => {

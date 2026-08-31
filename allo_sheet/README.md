@@ -185,21 +185,37 @@ uses four ordinary AlloSheet tables:
   column per configured parameter plus separate qualitative evidence, human
   interpretation, and capture-source fields.
 
-Typed text or shared voice dictation produces only a local, editable draft.
-The observer reviews the recognized parameter values, note, interpretation,
-time, and warnings before choosing **Record reviewed entry**; dictation never
-saves automatically and AlloSheet does not retain raw audio. Recorded entries
-feed a per-case timeline, latest-value comparisons across cases, and
-deterministic local questions about patterns, limitations, and useful next
-observations. These local prompts do not establish cause.
+Typed text or shared voice dictation produces only a local, editable draft. If
+the narrative names exactly one different case, its local case name or code is
+used as the proposed target and the mismatch is called out for review. If it
+names multiple cases, the observer must choose the single target explicitly.
+The observer reviews that target, the recognized parameter values, note,
+interpretation, time, and warnings before choosing **Record reviewed entry**;
+dictation never saves automatically and AlloSheet does not retain raw audio.
 
-**Prepare agent reflection** only selects recent observation rows and prepares
-a bounded reflection request. It does not send data or enable AI. The educator
-must still review the selected rows and complete AlloSheet's normal
-selected-value consent step before any values can reach the configured AI
-provider. Agent output remains reflection or brainstorming, not recorded
-evidence, and must not infer a diagnosis, disability, placement, grade, cause,
-or hidden learner trait.
+Each case also has editable stable context for setup or approved background
+information. Updating it does not rewrite earlier observation rows, and it is
+not silently added to an observation-only agent reflection. After an entry is
+recorded, **Start another observation** keeps the same case but copies no prior
+values, notes, or interpretation. Recorded entries feed a per-case timeline,
+an exact parameter-history table, a local numeric visual when appropriate,
+latest-value comparisons across cases, and deterministic local questions about
+patterns, limitations, and useful next observations. Parameter history keeps
+blank values distinct from zero, does not estimate missing measurements, and
+does not treat a recorded difference as a cause, diagnosis, rank, or established
+progress.
+
+**Prepare agent help** offers two explicit goals. **Brainstorm next
+observations** selects up to three recent rows; **Feedback on latest entry**
+selects only the latest row and focuses on specificity, observability,
+repeatability, missing context, and the separation of evidence from human
+interpretation. Neither action sends data or enables AI. The educator must
+still review the selected rows and complete AlloSheet's normal selected-value
+consent step before any values can reach the configured AI provider. The
+prepared instruction contains no case context or copied observation text,
+requests explanation-only output with no cell changes, and applies additional
+learner-support guardrails against diagnosis, disability, placement, grading,
+ranking, or hidden-trait inference.
 
 Casebooks exist only in the current popup until explicitly downloaded as an
 AlloSheet workspace. That file is unencrypted, and every table, including the

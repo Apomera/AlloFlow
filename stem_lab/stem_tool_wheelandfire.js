@@ -175,10 +175,17 @@
     });
   }
   function copyArray(values) { return Array.prototype.slice.call(values || []); }
+  function emptyCoilJoints() {
+    var joints = [];
+    for (var i = 0; i < RING_COUNT; i++) joints.push(null);
+    return joints;
+  }
   function copyVessel(vessel) {
     var copy = Object.assign({}, vessel || {});
     copy.radii = copyArray(vessel && vessel.radii);
     copy.thickness = copyArray(vessel && vessel.thickness);
+    copy.coilJoints = copyArray(vessel && vessel.coilJoints);
+    copy.coilJointMoistureDelta = copyArray(vessel && vessel.coilJointMoistureDelta);
     copy.defects = copyArray(vessel && vessel.defects);
     copy.firingLog = copyArray(vessel && vessel.firingLog);
     copy.materialRecipe = normalizeRecipe(vessel && vessel.materialRecipe);
@@ -226,6 +233,8 @@
       wobble: preset === 'lump' ? 0.48 : 0.14,
       compression: preset === 'lump' ? 0.32 : 0.68,
       coilBond: preset === 'lump' ? 0.72 : 0.84,
+      coilJoints: emptyCoilJoints(),
+      coilJointMoistureDelta: emptyCoilJoints(),
       stage: 'wet',
       collapsed: false,
       defects: [],
@@ -255,6 +264,8 @@
     next.wobble = clamp(finite(next.wobble, 0.3), 0, 1);
     next.compression = clamp(finite(next.compression, 0.55), 0, 1);
     next.coilBond = clamp(finite(next.coilBond, 0.75), 0, 1);
+    if (!Array.isArray(next.coilJoints) || next.coilJoints.length !== RING_COUNT) next.coilJoints = emptyCoilJoints();
+    if (!Array.isArray(next.coilJointMoistureDelta) || next.coilJointMoistureDelta.length !== RING_COUNT) next.coilJointMoistureDelta = emptyCoilJoints();
     next.maturation = clamp(finite(next.maturation, 0), 0, 1);
     next.firedPorosity = typeof next.firedPorosity === 'number' && isFinite(next.firedPorosity) ? clamp(next.firedPorosity, 0.005, 0.45) : null;
     next.materialRecipe = normalizeRecipe(next.materialRecipe);
@@ -263,8 +274,166 @@
     for (var i = 0; i < RING_COUNT; i++) {
       next.radii[i] = clamp(next.radii[i], 1.2, 12.5);
       next.thickness[i] = clamp(next.thickness[i], 0.2, next.radii[i]);
+      next.coilJoints[i] = typeof next.coilJoints[i] === 'number' && isFinite(next.coilJoints[i]) ? clamp(next.coilJoints[i], 0, 1) : null;
+      next.coilJointMoistureDelta[i] = typeof next.coilJointMoistureDelta[i] === 'number' && isFinite(next.coilJointMoistureDelta[i]) ? clamp(next.coilJointMoistureDelta[i], -1, 1) : null;
     }
     return next;
+  }
+  function summarizeCoilMoistureDelta(delta) {
+    if (typeof delta !== 'number' || !isFinite(delta)) return { recorded: false, delta: null, deltaPct: null, mismatch: null, mismatchPct: null, status: 'unrecorded', direction: 'unrecorded', label: 'moisture gap not recorded' };
+    var normalizedDelta = clamp(delta, -1, 1);
+    var mismatch = Math.abs(normalizedDelta);
+    var status = mismatch < 0.08 ? 'matched' : (mismatch < 0.18 ? 'watch' : 'high');
+    var direction = mismatch < 0.005 ? 'matched' : (normalizedDelta > 0 ? 'wetter' : 'drier');
+    return {
+      recorded: true,
+      delta: normalizedDelta,
+      deltaPct: normalizedDelta * 100,
+      mismatch: mismatch,
+      mismatchPct: mismatch * 100,
+      status: status,
+      direction: direction,
+      label: status === 'matched' ? 'closely matched' : (status === 'watch' ? 'watch the moisture gap' : 'high moisture gap')
+    };
+  }
+  function summarizeCoilJoints(vessel) {
+    vessel = normalizeVessel(vessel);
+    var profile = copyArray(vessel.coilJoints);
+    var moistureProfile = copyArray(vessel.coilJointMoistureDelta);
+    var joints = [];
+    var sum = 0;
+    var weakest = null;
+    var worstMoisture = null;
+    var moistureMismatchSum = 0;
+    var moistureRecordedCount = 0;
+    var moistureMatchedCount = 0;
+    var moistureWatchCount = 0;
+    var moistureHighCount = 0;
+    var moistureUnknownCount = 0;
+    var weakCount = 0;
+    var watchCount = 0;
+    var strongCount = 0;
+    for (var i = 0; i < RING_COUNT; i++) {
+      var strength = profile[i];
+      if (typeof strength !== 'number' || !isFinite(strength)) continue;
+      var status = strength < 0.46 ? 'weak' : (strength < 0.68 ? 'watch' : 'strong');
+      if (status === 'weak') weakCount += 1;
+      else if (status === 'watch') watchCount += 1;
+      else strongCount += 1;
+      var moisture = summarizeCoilMoistureDelta(moistureProfile[i]);
+      if (moisture.recorded) {
+        moistureRecordedCount += 1;
+        moistureMismatchSum += moisture.mismatch;
+        if (moisture.status === 'matched') moistureMatchedCount += 1;
+        else if (moisture.status === 'watch') moistureWatchCount += 1;
+        else moistureHighCount += 1;
+      } else moistureUnknownCount += 1;
+      var joint = { ring: i, strength: strength, strengthPct: strength * 100, status: status, moistureDelta: moisture.delta, moistureDeltaPct: moisture.deltaPct, moistureMismatch: moisture.mismatch, moistureMismatchPct: moisture.mismatchPct, moistureStatus: moisture.status, moistureDirection: moisture.direction, moistureLabel: moisture.label };
+      joints.push(joint);
+      sum += strength;
+      if (!weakest || strength < weakest.strength) weakest = joint;
+      if (moisture.recorded && (!worstMoisture || moisture.mismatch > worstMoisture.moistureMismatch)) worstMoisture = joint;
+    }
+    var legacyBond = clamp(finite(vessel.coilBond, 0.75), 0, 1);
+    var average = joints.length ? sum / joints.length : legacyBond;
+    var weakestStrength = weakest ? weakest.strength : legacyBond;
+    var aggregate = joints.length ? clamp(average * 0.72 + weakestStrength * 0.28, 0, 1) : legacyBond;
+    var overallStatus = weakestStrength < 0.46 ? 'weak' : (weakestStrength < 0.68 ? 'watch' : 'strong');
+    var averageMoistureMismatch = moistureRecordedCount ? moistureMismatchSum / moistureRecordedCount : null;
+    var moistureSummary = !joints.length
+      ? ''
+      : (!moistureRecordedCount
+        ? ' Coil-to-body moisture gaps were not recorded for these saved seams.'
+        : ' Largest recorded coil-to-body moisture gap: ' + Math.round(worstMoisture.moistureMismatchPct) + ' points at ring ' + (worstMoisture.ring + 1) + ' (' + (worstMoisture.moistureDirection === 'matched' ? 'closely matched' : 'coil ' + worstMoisture.moistureDirection) + '). Moisture-match count: ' + moistureMatchedCount + ' close, ' + moistureWatchCount + ' watch, ' + moistureHighCount + ' high.');
+    return {
+      profile: profile,
+      moistureProfile: moistureProfile,
+      joints: joints,
+      jointCount: joints.length,
+      average: average,
+      aggregate: aggregate,
+      aggregatePct: aggregate * 100,
+      weakestStrength: weakestStrength,
+      weakestStrengthPct: weakestStrength * 100,
+      weakestRing: weakest ? weakest.ring : null,
+      overallStatus: overallStatus,
+      moistureRecordedCount: moistureRecordedCount,
+      averageMoistureMismatch: averageMoistureMismatch,
+      averageMoistureMismatchPct: averageMoistureMismatch === null ? null : averageMoistureMismatch * 100,
+      worstMoistureMismatch: worstMoisture ? worstMoisture.moistureMismatch : null,
+      worstMoistureMismatchPct: worstMoisture ? worstMoisture.moistureMismatchPct : null,
+      worstMoistureRing: worstMoisture ? worstMoisture.ring : null,
+      worstMoistureDirection: worstMoisture ? worstMoisture.moistureDirection : 'unrecorded',
+      overallMoistureStatus: worstMoisture ? worstMoisture.moistureStatus : 'unrecorded',
+      moistureMatchedCount: moistureMatchedCount,
+      moistureWatchCount: moistureWatchCount,
+      moistureHighCount: moistureHighCount,
+      moistureUnknownCount: moistureUnknownCount,
+      weakCount: weakCount,
+      watchCount: watchCount,
+      strongCount: strongCount,
+      summary: joints.length
+        ? joints.length + ' tracked coil ' + (joints.length === 1 ? 'joint' : 'joints') + '; weakest at ring ' + (weakest.ring + 1) + ' with ' + Math.round(weakest.strength * 100) + '% modeled consolidation. Joint count: ' + weakCount + ' weak, ' + watchCount + ' watch, ' + strongCount + ' strong.' + moistureSummary
+        : 'No individual coil seams are tracked yet; the legacy whole-form bond proxy is ' + Math.round(legacyBond * 100) + '%.',
+      note: 'Joint strength and moisture-match bands are comparative handbuilding signals based on placement support, pressure, body and coil moisture, lubrication, and local consolidation. Clay bodies, joining methods, and community practices vary; these bands are not measured shear strength, a universal recipe, a construction guarantee, or studio safety guidance.'
+    };
+  }
+  function coilJointToolLoad(tool) {
+    var definitions = {
+      paddle: { id: 'paddle-consolidation', label: 'paddle consolidation', mode: 'strengthen', coefficient: 0.18 },
+      smooth: { id: 'surface-blending', label: 'surface blending', mode: 'strengthen', coefficient: 0.11 },
+      belly: { id: 'outward-tension', label: 'outward tension', mode: 'load', coefficient: 0.18 },
+      pull: { id: 'vertical-stretch', label: 'vertical stretch', mode: 'load', coefficient: 0.13 },
+      open: { id: 'opening-shear', label: 'opening shear', mode: 'load', coefficient: 0.10 },
+      collar: { id: 'inward-compression', label: 'inward compression', mode: 'load', coefficient: 0.07 }
+    };
+    return definitions[tool] || { id: 'none', label: 'no modeled seam load', mode: 'none', coefficient: 0 };
+  }
+  function estimateCoilJointResponse(strength, tool, settings) {
+    settings = settings || {};
+    strength = clamp(finite(strength, 0.75), 0, 1);
+    var definition = coilJointToolLoad(tool);
+    var force = clamp(finite(settings.force, finite(settings.pressure, 48) / 100), 0, 1.1);
+    var handSupport = clamp(finite(settings.handSupport, 0), 0, 100) / 100;
+    var moisture = clamp(finite(settings.moisture, 0.78), 0, 1);
+    var plasticity = clamp(finite(settings.plasticity, 0.72), 0.18, 0.92);
+    var weight = clamp(finite(settings.weight, 1), 0, 1);
+    var delta = 0;
+    if (definition.mode === 'strengthen') {
+      delta = force * definition.coefficient * weight * (0.55 + handSupport * 0.45) * (0.88 + moisture * 0.12);
+    } else if (definition.mode === 'load') {
+      var supportFactor = 1 - handSupport * 0.58;
+      var plasticityFactor = 1 / (0.78 + plasticity * 0.22);
+      var moistureFactor = 0.85 + Math.abs(moisture - 0.72) * 0.5;
+      var weaknessFactor = 0.82 + (1 - strength) * 0.25;
+      delta = -force * definition.coefficient * weight * supportFactor * plasticityFactor * moistureFactor * weaknessFactor;
+    }
+    var nextStrength = clamp(strength + delta, 0, 1);
+    var actualDelta = nextStrength - strength;
+    var state = actualDelta > 0.0005 ? 'strengthened' : (actualDelta < -0.0005 ? 'loaded' : 'unchanged');
+    return {
+      tool: tool,
+      loadId: definition.id,
+      loadLabel: definition.label,
+      mode: definition.mode,
+      state: state,
+      strength: strength,
+      nextStrength: nextStrength,
+      delta: actualDelta,
+      deltaPct: actualDelta * 100,
+      force: force,
+      handSupport: handSupport,
+      moisture: moisture,
+      plasticity: plasticity,
+      weight: weight,
+      changed: state !== 'unchanged',
+      summary: state === 'strengthened'
+        ? definition.label + ' raises modeled joint consolidation from ' + Math.round(strength * 100) + '% to ' + Math.round(nextStrength * 100) + '%.'
+        : (state === 'loaded'
+          ? definition.label + ' lowers modeled joint consolidation from ' + Math.round(strength * 100) + '% to ' + Math.round(nextStrength * 100) + '%.'
+          : 'This tool produces no modeled joint-strength change at the sampled seam.'),
+      note: 'Joint response is a comparative local load model. Support, moisture, plasticity, contact distribution, and tool choice moderate the result; it is not measured strain, shear strength, or technique guidance.'
+    };
   }
   function vesselVolume(vessel) {
     var dy = vessel.heightCm / Math.max(1, RING_COUNT - 1);
@@ -1783,6 +1952,7 @@
     vessel = normalizeVessel(vessel);
     settings = settings || {};
     var body = materialProfile(vessel);
+    var coilJointProfile = summarizeCoilJoints(vessel);
     var ringHeight = vessel.heightCm / Math.max(1, RING_COUNT - 1);
     var wetWeakness = clamp((vessel.moisture - 0.72) / 0.28, 0, 1);
     var handSupport = clamp(finite(settings.handSupport, 0), 0, 100) / 100;
@@ -1800,7 +1970,14 @@
       var thick = clamp((wall - 2.6) / 2.6, 0, 1);
       var neighborWall = (vessel.thickness[Math.max(0, i - 1)] + vessel.thickness[Math.min(RING_COUNT - 1, i + 1)]) / 2;
       var irregularity = clamp(Math.abs(wall - neighborWall) / Math.max(0.18, neighborWall) * 0.55, 0, 1);
-      var coilJoint = settings.method === 'coil' ? clamp(1 - vessel.coilBond, 0, 1) : clamp(1 - vessel.coilBond, 0, 1) * 0.18;
+      var trackedJointStrength = coilJointProfile.profile[i];
+      var trackedJointMoistureDelta = coilJointProfile.moistureProfile[i];
+      var localJointMoistureMismatch = typeof trackedJointMoistureDelta === 'number' ? Math.abs(trackedJointMoistureDelta) : 0;
+      var localJointWeakness = typeof trackedJointStrength === 'number'
+        ? clamp(1 - trackedJointStrength, 0, 1)
+        : (coilJointProfile.jointCount ? 0 : clamp(1 - coilJointProfile.aggregate, 0, 1));
+      var coilJoint = settings.method === 'coil' ? localJointWeakness : localJointWeakness * 0.18;
+      var coilMoistureMismatch = settings.method === 'coil' ? localJointMoistureMismatch : localJointMoistureMismatch * 0.18;
       var supportBenefit = handSupport * (thin * 0.1 + overhang * 0.06);
       var signals = [
         { id: 'thin-wall', label: 'thin wall', strength: thin * 0.62 },
@@ -1808,6 +1985,7 @@
         { id: 'thick-section', label: 'thick section', strength: thick * 0.14 },
         { id: 'wall-irregularity', label: 'wall irregularity', strength: irregularity * 0.12 },
         { id: 'coil-joint', label: 'weak coil joint', strength: coilJoint * 0.16 },
+        { id: 'coil-moisture-gap', label: 'coil-to-body moisture gap', strength: coilMoistureMismatch * 0.1 },
         { id: 'wet-clay', label: 'very wet clay', strength: wetWeakness * 0.08 },
         { id: 'low-compression', label: 'low compression', strength: (1 - vessel.compression) * 0.08 },
         { id: 'body-plasticity', label: 'lower body plasticity', strength: (1 - body.plasticity) * 0.08 },
@@ -1818,7 +1996,7 @@
       for (var signalIndex = 1; signalIndex < signals.length; signalIndex++) if (signals[signalIndex].strength > dominantSignal.strength) dominantSignal = signals[signalIndex];
       var risk = clamp(
         thin * 0.62 + overhang * 0.22 + thick * 0.14 + irregularity * 0.12 + wetWeakness * 0.08 +
-        (1 - vessel.compression) * 0.08 + coilJoint * 0.16 + (1 - body.plasticity) * 0.08 + excessLubrication * 0.1 - supportBenefit + (vessel.collapsed ? 0.7 : 0),
+        (1 - vessel.compression) * 0.08 + coilJoint * 0.16 + coilMoistureMismatch * 0.1 + (1 - body.plasticity) * 0.08 + excessLubrication * 0.1 - supportBenefit + (vessel.collapsed ? 0.7 : 0),
         0, 1
       );
       risks.push({
@@ -1830,6 +2008,10 @@
         thickRisk: thick,
         overhangRisk: overhang,
         irregularity: irregularity,
+        coilJointStrength: typeof trackedJointStrength === 'number' ? trackedJointStrength : null,
+        coilJointRisk: coilJoint,
+        coilJointMoistureDelta: typeof trackedJointMoistureDelta === 'number' ? trackedJointMoistureDelta : null,
+        coilJointMoistureMismatch: typeof trackedJointMoistureDelta === 'number' ? localJointMoistureMismatch : null,
         dominantSignalId: dominantSignal.id,
         dominantSignalLabel: dominantSignal.label,
         risk: risk,
@@ -1860,7 +2042,7 @@
       watchCount: watchCount,
       lowerCount: lowerCount,
       summary: 'Ring ' + (critical.index + 1) + ' carries the highest comparative local signal at ' + Math.round(critical.risk * 100) + '%, led by ' + critical.dominantSignalLabel + '. The profile contains ' + highCount + ' high, ' + watchCount + ' watch, and ' + lowerCount + ' lower-signal rings.',
-      note: 'Ring risk combines modeled wall thickness, slope, irregularity, moisture, compression, material, support, and handling inputs. It is not measured stress, failure probability, a safe-thickness limit, or studio safety guidance.'
+      note: 'Ring risk combines modeled wall thickness, slope, irregularity, body moisture, coil-to-body moisture gap, compression, material, support, and handling inputs. It is not measured stress, failure probability, a safe-thickness limit, or studio safety guidance.'
     };
   }
   function analyzeVessel(vessel, settings) {
@@ -1881,10 +2063,11 @@
     var excessLubrication = clamp((lubrication - 0.72) / 0.28, 0, 1);
     var slenderness = vessel.heightCm / Math.max(1, maxRadius * 2);
     var ringHeight = vessel.heightCm / Math.max(1, RING_COUNT - 1);
+    var coilJointProfile = summarizeCoilJoints(vessel);
     var maxOutwardSlope = 0;
     for (var ring = 4; ring < RING_COUNT; ring++) maxOutwardSlope = Math.max(maxOutwardSlope, Math.max(0, vessel.radii[ring] - vessel.radii[ring - 1]) / Math.max(0.1, ringHeight));
     var overhangRisk = clamp((maxOutwardSlope - 0.48) / 1.2, 0, 1);
-    var jointRisk = clamp(1 - vessel.coilBond, 0, 1) * (settings.method === 'coil' ? 1 : 0.35);
+    var jointRisk = clamp(1 - coilJointProfile.aggregate, 0, 1) * (settings.method === 'coil' ? 1 : 0.35);
     var centrifugal = Math.pow(rpm / 100, 2) * (maxRadius / 9) * (0.45 + vessel.heightCm / 36 * 0.7);
     var thinRisk = clamp((0.48 - minWall) / 0.48, 0, 1);
     var wetWeakness = clamp((vessel.moisture - 0.72) / 0.28, 0, 1);
@@ -1918,7 +2101,15 @@
       lubrication: lubrication * 100,
       contactSpan: Math.round(clamp(finite(settings.contactSpan, 9), 3, 11)),
       compression: vessel.compression * 100,
-      coilBond: vessel.coilBond * 100,
+      coilBond: coilJointProfile.aggregatePct,
+      coilJointProfile: coilJointProfile,
+      trackedCoilJointCount: coilJointProfile.jointCount,
+      weakestCoilJoint: coilJointProfile.weakestStrengthPct,
+      weakestCoilJointRing: coilJointProfile.weakestRing,
+      worstCoilMoistureMismatch: coilJointProfile.worstMoistureMismatchPct,
+      worstCoilMoistureMismatchRing: coilJointProfile.worstMoistureRing,
+      worstCoilMoistureDirection: coilJointProfile.worstMoistureDirection,
+      coilMoistureStatus: coilJointProfile.overallMoistureStatus,
       ringRiskProfile: ringRiskProfile,
       criticalRing: ringRiskProfile.criticalRing,
       maxRingRisk: ringRiskProfile.criticalRiskPct,
@@ -1957,7 +2148,7 @@
       if (stats.handSupport < 35 && (stats.minWallCm < 0.68 || stats.overhangRisk >= 18)) add('hand-support', 'Low inside-hand support', Math.round(stats.handSupport) + '% inside support left exterior force less balanced.', 'Repeat the move with more inside-hand support while holding pressure and wheel speed constant.', 70 - stats.handSupport);
       if (stats.lubrication > 78) add('lubrication', 'Excess surface lubrication', Math.round(stats.lubrication) + '% lubrication reduced control and softened the contact zone.', 'Use less water or slip and repeat at the same support, pressure, and wheel speed.', stats.lubrication - 12);
       if (vessel.centered < 65 || vessel.wobble > 0.42) add('centering', 'Centering and wobble', Math.round(vessel.centered) + '% centered with ' + Math.round(vessel.wobble * 100) + '% wobble.', 'Center the clay before repeating the shaping move.', Math.max(100 - vessel.centered, vessel.wobble * 100));
-      if (settings.method === 'coil' && stats.coilBond < 58) add('coil-bond', 'Weak coil consolidation', Math.round(stats.coilBond) + '% modeled coil bond reduced continuity.', 'Paddle or smooth the joint before adding another coil.', 100 - stats.coilBond);
+      if (settings.method === 'coil' && stats.weakestCoilJoint < 58) add('coil-bond', 'Weak coil consolidation', (stats.weakestCoilJointRing === null ? Math.round(stats.coilBond) + '% whole-form bond proxy' : Math.round(stats.weakestCoilJoint) + '% modeled consolidation at ring ' + (stats.weakestCoilJointRing + 1)) + ' reduced continuity.', stats.weakestCoilJointRing === null ? 'Paddle or smooth each joint before adding another coil.' : 'Paddle or smooth ring ' + (stats.weakestCoilJointRing + 1) + ' before adding another coil.', 100 - stats.weakestCoilJoint);
     }
     if (openingFailure) {
       var openingFloor = analyzeOpeningFloor(vessel);
@@ -1967,7 +2158,7 @@
       var dryingRisk = estimateDryingRisk(vessel, settings) * 100;
       add('drying', 'Uneven or aggressive drying', Math.round(dryingRisk) + '% comparative drying-risk signal under the selected humidity and drying speed.', 'Slow drying, support the form, and compare the same geometry under one changed condition.', dryingRisk);
       if (stats.uniformity < 78) add('uniformity', 'Wall-thickness variation', Math.round(stats.uniformity) + '% wall uniformity implies uneven shrinkage demand.', 'Return to a safe wet or leather-hard checkpoint and regularize the wall.', 100 - stats.uniformity);
-      if (defects.indexOf('coil separation') >= 0) add('coil-separation', 'Unconsolidated coil joint', Math.round(stats.coilBond) + '% modeled bond was carried into drying.', 'Compress each joint before the next drying trial.', 100 - stats.coilBond);
+      if (defects.indexOf('coil separation') >= 0) add('coil-separation', 'Unconsolidated coil joint', (typeof vessel.coilSeparationRing === 'number' ? 'The tracked joint at ring ' + (vessel.coilSeparationRing + 1) : (stats.weakestCoilJointRing === null ? Math.round(stats.coilBond) + '% whole-form bond proxy' : 'The weakest tracked joint at ring ' + (stats.weakestCoilJointRing + 1))) + ' was carried into drying.', typeof vessel.coilSeparationRing === 'number' ? 'Consolidate ring ' + (vessel.coilSeparationRing + 1) + ' before the next drying trial.' : 'Compress each joint before the next drying trial.', 100 - stats.weakestCoilJoint);
     }
     if (thermal) {
       if (finite(settings.ramp, 110) > 170) add('ramp', 'Fast heating ramp', Math.round(finite(settings.ramp, 110)) + '°C/h increased the modeled thermal-gradient signal.', 'Save a comparison schedule with a slower ramp.', clamp((finite(settings.ramp, 110) - 130) / 1.7, 0, 100));
@@ -2072,6 +2263,7 @@
     var method = settings.method === 'coil' ? 'coil' : 'wheel';
     var handSupport = clamp(finite(settings.handSupport, 0), 0, 100) / 100;
     var lubrication = clamp(finite(settings.lubrication, 30), 0, 100) / 100;
+    var newCoilMoisture = clamp(finite(settings.coilMoisture, next.moisture * 100), 5, 100) / 100;
     var contactSpan = Math.round(clamp(finite(settings.contactSpan, 9), 3, 11));
     var contactRadius = Math.max(1, Math.floor(contactSpan / 2));
     var excessLubrication = clamp((lubrication - 0.72) / 0.28, 0, 1);
@@ -2083,6 +2275,7 @@
     var preserve = tool !== 'trim' && tool !== 'add-coil';
     var radiusDelta = 0.16 + force * 0.58;
     var i;
+    var jointResponses = [];
 
     if (tool === 'center') {
       var smoothed = copyArray(next.radii);
@@ -2122,7 +2315,6 @@
           var localAverage = (left + next.radii[i] * 2 + right) / 4;
           next.radii[i] = next.radii[i] * (1 - force * 0.35 * weight) + localAverage * force * 0.35 * weight;
           next.compression = clamp(next.compression + force * (tool === 'paddle' ? 0.045 : 0.026) * weight, 0, 1);
-          next.coilBond = clamp(next.coilBond + force * (tool === 'paddle' ? 0.060 : 0.040) * weight, 0, 1);
           next.lastOutcome = tool === 'paddle' ? 'Paddling compressed and regularized the handbuilt wall.' : 'The surface became more continuous without changing the intended form much.';
         } else if (tool === 'trim') {
           if (i < RING_COUNT * 0.34) {
@@ -2132,23 +2324,66 @@
           }
           next.lastOutcome = 'Trimming removed clay from the lower exterior; unlike shaping, that material is no longer in the vessel.';
         }
+        if (method === 'coil' && typeof next.coilJoints[i] === 'number') {
+          var jointResponse = estimateCoilJointResponse(next.coilJoints[i], tool, { force: force, handSupport: handSupport * 100, moisture: next.moisture, plasticity: body.plasticity, weight: weight });
+          if (jointResponse.changed) {
+            next.coilJoints[i] = jointResponse.nextStrength;
+            jointResponses.push(Object.assign({}, jointResponse, { ring: i }));
+          }
+        }
       }
       if (tool === 'add-coil') {
+        var shiftedCoilJoints = emptyCoilJoints();
+        var shiftedCoilJointMoistureDelta = emptyCoilJoints();
+        for (i = 0; i < RING_COUNT; i++) {
+          if (typeof next.coilJoints[i] !== 'number') continue;
+          var shiftedJointRing = Math.max(1, i - 4);
+          shiftedCoilJoints[shiftedJointRing] = typeof shiftedCoilJoints[shiftedJointRing] === 'number'
+            ? Math.min(shiftedCoilJoints[shiftedJointRing], next.coilJoints[i])
+            : next.coilJoints[i];
+          var incomingMoistureDelta = next.coilJointMoistureDelta[i];
+          if (typeof incomingMoistureDelta === 'number' && (typeof shiftedCoilJointMoistureDelta[shiftedJointRing] !== 'number' || Math.abs(incomingMoistureDelta) > Math.abs(shiftedCoilJointMoistureDelta[shiftedJointRing]))) shiftedCoilJointMoistureDelta[shiftedJointRing] = incomingMoistureDelta;
+        }
         for (i = RING_COUNT - 5; i < RING_COUNT; i++) {
           next.radii[i] = clamp(next.radii[i] + force * 0.22, 1.2, 12.5);
           next.thickness[i] = clamp(next.thickness[i] + force * 0.32, 0.22, next.radii[i]);
         }
+        var pressureFit = clamp(1 - Math.abs(pressure - 0.55) / 0.55, 0, 1);
+        var dryPlacementPenalty = clamp((0.48 - next.moisture) / 0.48, 0, 1);
+        var newCoilMoistureMatch = summarizeCoilMoistureDelta(newCoilMoisture - next.moisture);
+        var moistureMismatchPenalty = clamp((newCoilMoistureMatch.mismatch - 0.04) / 0.46, 0, 1);
+        var newJointRing = RING_COUNT - 5;
+        var newJointStrength = clamp(0.26 + handSupport * 0.42 + pressureFit * 0.15 + body.plasticity * 0.08 - excessLubrication * 0.16 - dryPlacementPenalty * 0.16 - moistureMismatchPenalty * 0.22, 0.12, 0.94);
+        shiftedCoilJoints[newJointRing] = newJointStrength;
+        shiftedCoilJointMoistureDelta[newJointRing] = newCoilMoistureMatch.delta;
+        next.coilJoints = shiftedCoilJoints;
+        next.coilJointMoistureDelta = shiftedCoilJointMoistureDelta;
         next.heightCm = clamp(next.heightCm + force * (0.58 + handSupport * 0.18), 5, 38);
         next.compression = clamp(next.compression - force * (0.07 - handSupport * 0.025), 0, 1);
-        next.coilBond = clamp(next.coilBond - force * (0.15 - handSupport * 0.07), 0, 1);
+        next.coilBond = summarizeCoilJoints(next).aggregate;
+        var moisturePlacementNote = newCoilMoistureMatch.status === 'matched'
+          ? 'The new coil and body are closely moisture-matched at a ' + Math.round(newCoilMoistureMatch.mismatchPct) + '-point gap in this comparison.'
+          : 'The new coil is ' + Math.round(newCoilMoistureMatch.mismatchPct) + ' moisture points ' + newCoilMoistureMatch.direction + ' than the body, adding a ' + newCoilMoistureMatch.status + ' drying-seam signal.';
         next.lastOutcome = handSupport >= 0.55
-          ? 'A supported coil added clay mass and height at the rim. Paddle or smooth the joint to consolidate it before drying.'
-          : 'A new coil added clay at the rim, but limited support left a weaker modeled joint. Support, paddle, or smooth it before drying.';
+          ? 'A supported coil added clay mass and height at the rim, creating a tracked joint at ring ' + (newJointRing + 1) + '. ' + moisturePlacementNote + ' Paddle or smooth that joint to consolidate it before drying.'
+          : 'A new coil added clay at the rim, but limited support left a weaker modeled joint at ring ' + (newJointRing + 1) + '. ' + moisturePlacementNote + ' Support, paddle, or smooth it before drying.';
       }
       if (tool === 'open' || tool === 'pull' || tool === 'belly' || tool === 'collar') next.compression = clamp(next.compression + handSupport * force * 0.012, 0, 1);
     }
 
     if (preserve) preserveVolume(next, before);
+    var updatedCoilJoints = summarizeCoilJoints(next);
+    if (updatedCoilJoints.jointCount) next.coilBond = updatedCoilJoints.aggregate;
+    var strengthenedJointResponses = jointResponses.filter(function (response) { return response.state === 'strengthened'; });
+    var loadedJointResponses = jointResponses.filter(function (response) { return response.state === 'loaded'; });
+    if (strengthenedJointResponses.length) {
+      next.lastOutcome = (tool === 'paddle' ? 'Paddling' : 'Smoothing') + ' locally consolidated tracked ' + (strengthenedJointResponses.length === 1 ? 'joint' : 'joints') + ' at ring ' + strengthenedJointResponses.map(function (response) { return response.ring + 1; }).join(', ') + '. Weakest tracked joint is now ' + Math.round(updatedCoilJoints.weakestStrengthPct) + '%.';
+    } else if (loadedJointResponses.length) {
+      var mostLoadedJoint = loadedJointResponses[0];
+      for (var jointResponseIndex = 1; jointResponseIndex < loadedJointResponses.length; jointResponseIndex++) if (loadedJointResponses[jointResponseIndex].delta < mostLoadedJoint.delta) mostLoadedJoint = loadedJointResponses[jointResponseIndex];
+      var loadLabel = mostLoadedJoint.loadLabel.charAt(0).toUpperCase() + mostLoadedJoint.loadLabel.slice(1);
+      next.lastOutcome = (next.lastOutcome || 'The wall changed shape.') + ' ' + loadLabel + ' loaded the tracked joint at ring ' + (mostLoadedJoint.ring + 1) + ' from ' + Math.round(mostLoadedJoint.strength * 100) + '% to ' + Math.round(mostLoadedJoint.nextStrength * 100) + '%. More inside support or a gentler pass reduces this comparative seam load.';
+    }
     if (tool === 'open') {
       var openingFloor = analyzeOpeningFloor(next);
       if (openingFloor.state === 'puncture-risk') {
@@ -2191,7 +2426,10 @@
     var humidity = clamp(finite(settings.humidity, 45), 10, 95) / 100;
     var dryingRate = clamp(finite(settings.dryingRate, 48), 0, 100) / 100;
     var stats = analyzeVessel(vessel, settings);
-    return clamp((100 - stats.uniformity) / 100 * 0.34 + dryingRate * 0.28 + (1 - humidity) * 0.18 + Math.max(0, stats.maxWallCm - 2.2) * 0.08 + (1 - vessel.compression) * 0.12 + (1 - vessel.coilBond) * 0.22, 0, 1);
+    var coilJoints = stats.coilJointProfile;
+    var jointDryingRisk = (1 - coilJoints.aggregate) * 0.16 + (coilJoints.jointCount ? (1 - coilJoints.weakestStrength) * 0.08 : 0);
+    var moistureMismatchRisk = coilJoints.moistureRecordedCount ? coilJoints.worstMoistureMismatch * 0.1 + coilJoints.averageMoistureMismatch * 0.05 : 0;
+    return clamp((100 - stats.uniformity) / 100 * 0.34 + dryingRate * 0.28 + (1 - humidity) * 0.18 + Math.max(0, stats.maxWallCm - 2.2) * 0.08 + (1 - vessel.compression) * 0.12 + jointDryingRisk + moistureMismatchRisk, 0, 1);
   }
   function dryVessel(vessel, settings) {
     var next = normalizeVessel(vessel);
@@ -2199,10 +2437,22 @@
     settings = settings || {};
     var body = materialProfile(next);
     var crackRisk = estimateDryingRisk(next, settings);
+    var coilJoints = summarizeCoilJoints(next);
     var stepShrink = body.shrinkage * (next.stage === 'wet' ? 0.28 : 0.24);
     scaleVessel(next, 1 - stepShrink);
     if (crackRisk > 0.66 && next.defects.indexOf('drying crack') === -1) next.defects.push('drying crack');
-    if (next.coilBond < 0.46 && crackRisk > 0.54 && next.defects.indexOf('coil separation') === -1) next.defects.push('coil separation');
+    var separationJoint = null;
+    var separationScore = -1;
+    coilJoints.joints.forEach(function (joint) {
+      var mismatch = typeof joint.moistureMismatch === 'number' ? joint.moistureMismatch : 0;
+      var susceptible = joint.strength < 0.46 || (mismatch >= 0.18 && joint.strength < 0.62);
+      var score = (1 - joint.strength) + mismatch * 0.55;
+      if (susceptible && score > separationScore) { separationJoint = joint; separationScore = score; }
+    });
+    var legacyCoilSeparation = !coilJoints.jointCount && coilJoints.weakestStrength < 0.46;
+    var coilSeparated = !!(separationJoint || legacyCoilSeparation) && crackRisk > 0.54;
+    if (coilSeparated && next.defects.indexOf('coil separation') === -1) next.defects.push('coil separation');
+    if (coilSeparated && separationJoint) next.coilSeparationRing = separationJoint.ring;
     if (next.stage === 'wet') {
       next.stage = 'leather-hard';
       next.moisture = 0.34;
@@ -2212,6 +2462,9 @@
       next.moisture = 0.018;
       next.lastOutcome = crackRisk > 0.66 ? 'The piece reached bone-dry with visible drying stress.' : 'The piece reached bone-dry and is ready for a cautious bisque firing.';
     }
+    if (coilSeparated) next.lastOutcome += !separationJoint
+      ? ' The low whole-form coil-bond proxy also produced a modeled coil separation.'
+      : ' The drying-sensitive tracked seam at ring ' + (separationJoint.ring + 1) + ' also produced a modeled coil separation' + (typeof separationJoint.moistureMismatchPct === 'number' ? ' with its recorded ' + Math.round(separationJoint.moistureMismatchPct) + '-point coil-to-body moisture gap' : '') + '.';
     return next;
   }
   function estimateDryingHistory(vessel, settings) {
@@ -2242,8 +2495,7 @@
       var newDefects = copyArray(after.defects).filter(function (defect) { return copyArray(before.defects).indexOf(defect) === -1; });
       var dryingMultiplier = 0.78 + result.dryingRate / 100 * 0.32 + (1 - result.humidity / 100) * 0.22;
       var hotspots = analyzeRingRisks(before, settings).map(function (ring) {
-        var reason = ring.thinRisk >= ring.overhangRisk && ring.thinRisk >= ring.irregularity ? 'thin wall' : (ring.overhangRisk >= ring.irregularity ? 'outward overhang' : 'wall irregularity');
-        return { index: ring.index, wallCm: ring.wallCm, riskPct: clamp(ring.risk * dryingMultiplier * 100, 0, 100), reason: reason };
+        return { index: ring.index, wallCm: ring.wallCm, riskPct: clamp(ring.risk * dryingMultiplier * 100, 0, 100), reason: ring.dominantSignalLabel };
       }).sort(function (a, b) { return b.riskPct - a.riskPct; }).slice(0, 3);
       result.segments.push({
         id: before.stage,
@@ -2888,6 +3140,9 @@
     analyzeGlazeOutcome: analyzeGlazeOutcome,
     analyzeFiringSchedule: analyzeFiringSchedule,
     compareMaterialProfiles: compareMaterialProfiles,
+    summarizeCoilMoistureDelta: summarizeCoilMoistureDelta,
+    summarizeCoilJoints: summarizeCoilJoints,
+    estimateCoilJointResponse: estimateCoilJointResponse,
     analyzeRingRisks: analyzeRingRisks,
     summarizeRingRiskProfile: summarizeRingRiskProfile,
     analyzeVessel: analyzeVessel,
@@ -2946,11 +3201,14 @@
       var rpm = method === 'coil' ? 0 : clamp(finite(data.rpm, 58), 0, 120);
       var handSupport = clamp(finite(data.handSupport, 55), 0, 100);
       var lubrication = clamp(finite(data.lubrication, 30), 0, 100);
+      var coilMoisture = clamp(finite(data.coilMoisture, vessel.moisture * 100), 5, 100);
       var contactSpan = Math.round(clamp(finite(data.contactSpan, 9), 3, 11));
       var cameraTilt = clamp(finite(data.cameraTilt, 42), 20, 70);
-      var settings = { pressure: pressure, rpm: rpm, method: method, handSupport: handSupport, lubrication: lubrication, contactSpan: contactSpan };
+      var settings = { pressure: pressure, rpm: rpm, method: method, handSupport: handSupport, lubrication: lubrication, coilMoisture: coilMoisture, contactSpan: contactSpan };
+      var selectedCoilMoistureMatch = summarizeCoilMoistureDelta(coilMoisture / 100 - vessel.moisture);
       var stats = analyzeVessel(vessel, settings);
       var ringRiskProfile = stats.ringRiskProfile;
+      var coilJointProfile = stats.coilJointProfile;
       var openingFloor = analyzeOpeningFloor(vessel);
       var failureSettings = Object.assign({}, settings, { humidity: data.humidity, dryingRate: data.dryingRate, temperature: data.kilnTemp, ramp: data.ramp, soak: data.soak, coolingRate: data.coolingRate, kilnType: data.kilnType, atmosphere: data.atmosphere });
       var failureReport = analyzeFailureContributors(vessel, failureSettings);
@@ -2961,6 +3219,25 @@
       var formingFlow = estimateFormingDisplacement(vessel, formingPreviewVessel, workRing, activeTool);
       var formingPreviewStats = analyzeVessel(formingPreviewVessel, settings);
       var formingPreviewRiskProfile = formingPreviewStats.ringRiskProfile;
+      var formingPreviewCoilJointProfile = formingPreviewStats.coilJointProfile;
+      var formingCoilJointToolLoad = coilJointToolLoad(activeTool);
+      var formingPreviewCoilJointChanges = [];
+      var dominantFormingCoilJointChange = null;
+      for (var coilJointRing = 0; coilJointRing < RING_COUNT; coilJointRing++) {
+        var currentJointStrength = coilJointProfile.profile[coilJointRing];
+        var previewJointStrength = formingPreviewCoilJointProfile.profile[coilJointRing];
+        var currentJointTracked = typeof currentJointStrength === 'number';
+        var previewJointTracked = typeof previewJointStrength === 'number';
+        if (currentJointTracked !== previewJointTracked || (currentJointTracked && Math.abs(previewJointStrength - currentJointStrength) >= 0.002)) {
+          var jointDelta = currentJointTracked && previewJointTracked ? previewJointStrength - currentJointStrength : null;
+          var jointChangeState = !currentJointTracked && previewJointTracked ? 'new' : (currentJointTracked && !previewJointTracked ? 'removed' : (jointDelta > 0 ? 'strengthened' : 'loaded'));
+          var jointChangeMagnitude = jointDelta === null ? (previewJointTracked ? previewJointStrength : currentJointStrength) : Math.abs(jointDelta);
+          var previewJointMoisture = summarizeCoilMoistureDelta(formingPreviewCoilJointProfile.moistureProfile[coilJointRing]);
+          var jointChange = { ring: coilJointRing, before: currentJointTracked ? currentJointStrength : null, after: previewJointTracked ? previewJointStrength : null, delta: jointDelta, deltaPct: jointDelta === null ? null : jointDelta * 100, state: jointChangeState, loadId: formingCoilJointToolLoad.id, loadLabel: formingCoilJointToolLoad.label, magnitude: jointChangeMagnitude, moistureDelta: previewJointMoisture.delta, moistureDeltaPct: previewJointMoisture.deltaPct, moistureMismatch: previewJointMoisture.mismatch, moistureMismatchPct: previewJointMoisture.mismatchPct, moistureStatus: previewJointMoisture.status, moistureDirection: previewJointMoisture.direction };
+          formingPreviewCoilJointChanges.push(jointChange);
+          if (!dominantFormingCoilJointChange || jointChangeMagnitude > dominantFormingCoilJointChange.magnitude) dominantFormingCoilJointChange = jointChange;
+        }
+      }
       var formingPreviewGeometry = profileGeometry(formingPreviewVessel);
       var formingPreviewStabilityDelta = formingPreviewStats.stability - stats.stability;
       var formingPreviewWallDelta = formingPreviewStats.minWallCm - stats.minWallCm;
@@ -2968,8 +3245,8 @@
       var formingPreviewHeightDelta = formingPreviewVessel.heightCm - vessel.heightCm;
       var formingPreviewFloorDelta = formingPreviewFloor.floorThicknessCm - openingFloor.floorThicknessCm;
       var formingPreviewPeakRiskDelta = formingPreviewRiskProfile.criticalRiskPct - ringRiskProfile.criticalRiskPct;
-      var formingPreviewChanged = formingFlow.changed || Math.abs(formingPreviewStabilityDelta) >= 0.05 || Math.abs(formingPreviewWallDelta) >= 0.001 || Math.abs(formingPreviewCapacityDelta) >= 0.05 || Math.abs(formingPreviewHeightDelta) >= 0.01 || (activeTool === 'open' && Math.abs(formingPreviewFloorDelta) >= 0.01) || formingPreviewVessel.collapsed !== vessel.collapsed;
-      var formingPreviewRisky = formingPreviewVessel.collapsed || formingPreviewStats.stability < 48 || formingPreviewStabilityDelta < -6 || formingPreviewStats.minWallCm < 0.45 || (activeTool === 'open' && (formingPreviewFloor.state === 'puncture-risk' || formingPreviewFloor.floorThicknessCm < .5));
+      var formingPreviewChanged = formingFlow.changed || formingPreviewCoilJointChanges.length > 0 || Math.abs(formingPreviewStabilityDelta) >= 0.05 || Math.abs(formingPreviewWallDelta) >= 0.001 || Math.abs(formingPreviewCapacityDelta) >= 0.05 || Math.abs(formingPreviewHeightDelta) >= 0.01 || (activeTool === 'open' && Math.abs(formingPreviewFloorDelta) >= 0.01) || formingPreviewVessel.collapsed !== vessel.collapsed;
+      var formingPreviewRisky = formingPreviewVessel.collapsed || formingPreviewStats.stability < 48 || formingPreviewStabilityDelta < -6 || formingPreviewStats.minWallCm < 0.45 || (method === 'coil' && formingPreviewCoilJointProfile.jointCount && formingPreviewCoilJointProfile.weakestStrength < 0.46) || (activeTool === 'open' && (formingPreviewFloor.state === 'puncture-risk' || formingPreviewFloor.floorThicknessCm < .5));
       function currentDimensionSettings() {
         var body = materialProfile(vessel);
         var kilnType = data.kilnType || 'electric';
@@ -3072,7 +3349,7 @@
       }
       function resetClay(preset, bodyId) {
         var next = makeVessel(bodyId || vessel.clayBody, preset || 'lump');
-        commitVessel(next, (preset === 'lump' ? 'Fresh clay placed on the work surface.' : preset + ' practice blank loaded.'), { clayBody: next.clayBody, recipeDraft: null });
+        commitVessel(next, (preset === 'lump' ? 'Fresh clay placed on the work surface.' : preset + ' practice blank loaded.'), { clayBody: next.clayBody, recipeDraft: null, coilMoisture: next.moisture * 100 });
       }
       function percent(value) { return Math.round(value) + '%'; }
       function metricCard(label, value, note, tone) {
@@ -3285,6 +3562,24 @@
         function ringRiskColor(ringRisk) { return ringRisk.risk >= .67 ? '#fb7185' : (ringRisk.risk >= .4 ? '#fbbf24' : '#a3e635'); }
         function ringRiskWidth(ringRisk) { return ringRisk.risk >= .67 ? 6.5 : (ringRisk.risk >= .4 ? 4.8 : 3.2); }
         function ringRiskDash(ringRisk) { return ringRisk.risk >= .67 ? undefined : (ringRisk.risk >= .4 ? '6 3' : '2 4'); }
+        function coilJointColor(joint) { return joint.status === 'weak' ? '#fb7185' : (joint.status === 'watch' ? '#fbbf24' : '#2dd4bf'); }
+        function coilJointWidth(joint) { return joint.status === 'weak' ? 4.5 : (joint.status === 'watch' ? 3.5 : 2.5); }
+        function coilJointDash(joint) { return joint.status === 'weak' ? '3 6' : (joint.status === 'watch' ? '8 4' : undefined); }
+        function coilMoistureGapColor(joint) { return joint.moistureDirection === 'wetter' ? '#38bdf8' : '#c084fc'; }
+        function coilMoistureGapWidth(joint) { return joint.moistureStatus === 'high' ? 2.8 : 1.8; }
+        var showPredictedCoilJoints = method === 'coil' && data.showFormingPreview !== false && formingPreviewAvailable && formingPreviewCoilJointChanges.some(function (change) { return typeof change.after === 'number'; });
+        var visibleCoilJointChange = showPredictedCoilJoints && dominantFormingCoilJointChange && typeof dominantFormingCoilJointChange.after === 'number' ? dominantFormingCoilJointChange : null;
+        if (showPredictedCoilJoints && !visibleCoilJointChange) {
+          for (var visibleJointIndex = 0; visibleJointIndex < formingPreviewCoilJointChanges.length; visibleJointIndex++) if (typeof formingPreviewCoilJointChanges[visibleJointIndex].after === 'number') { visibleCoilJointChange = formingPreviewCoilJointChanges[visibleJointIndex]; break; }
+        }
+        var coilJointCueColor = visibleCoilJointChange ? (visibleCoilJointChange.state === 'loaded' ? '#fb7185' : (visibleCoilJointChange.state === 'strengthened' ? '#2dd4bf' : '#facc15')) : '#facc15';
+        var coilJointCueText = visibleCoilJointChange ? (visibleCoilJointChange.state === 'new'
+          ? '＋ new seam · ' + Math.round(visibleCoilJointChange.after * 100) + '%' + (typeof visibleCoilJointChange.moistureMismatchPct === 'number' ? ' · gap ' + Math.round(visibleCoilJointChange.moistureMismatchPct) + ' pts' : '')
+          : (visibleCoilJointChange.state === 'loaded' ? '↔ ' : '→← ') + visibleCoilJointChange.loadLabel + ' ' + (visibleCoilJointChange.deltaPct > 0 ? '+' : '−') + Math.abs(visibleCoilJointChange.deltaPct).toFixed(1) + ' pts') : '';
+        var coilJointPreviewSummary = visibleCoilJointChange ? (visibleCoilJointChange.state === 'new'
+          ? 'The next pass creates a new tracked seam at ring ' + (visibleCoilJointChange.ring + 1) + ' with ' + Math.round(visibleCoilJointChange.after * 100) + '% modeled consolidation' + (typeof visibleCoilJointChange.moistureMismatchPct === 'number' ? ' and a recorded ' + Math.round(visibleCoilJointChange.moistureMismatchPct) + '-point moisture gap' : '') + '.'
+          : 'The next pass applies ' + visibleCoilJointChange.loadLabel + ' at ring ' + (visibleCoilJointChange.ring + 1) + ', changing modeled consolidation from ' + Math.round(visibleCoilJointChange.before * 100) + '% to ' + Math.round(visibleCoilJointChange.after * 100) + '%.') : '';
+        var coilSeparationRing = vessel.defects.indexOf('coil separation') >= 0 && typeof vessel.coilSeparationRing === 'number' ? Math.round(clamp(vessel.coilSeparationRing, 0, RING_COUNT - 1)) : null;
         var wheelWobble = potteryWheelWobbleGeometry(vessel.wobble, vessel.centered, method === 'wheel' ? rpm : 0, { depthRatio: wheelDrive.rotation.ry / wheelDrive.rotation.rx });
         var wobblePx = method === 'wheel' ? wheelWobble.amplitudePx : 0;
         var wobbleLabel = vessel.wobble <= .12 && vessel.centered >= 90 ? 'low wobble' : (vessel.wobble <= .28 && vessel.centered >= 70 ? 'visible wobble' : 'strong wobble');
@@ -3295,11 +3590,11 @@
         var targetControlSummary = wholeFormTarget
           ? ', with ' + Math.round(pressure) + ' percent matched brace pressure and ' + Math.round(lubrication) + ' percent lubrication. Inside-hand support, contact span, and work height do not affect this Center pass. '
           : (rimTarget
-            ? ', with ' + Math.round(handSupport) + ' percent rim support and ' + Math.round(lubrication) + ' percent lubrication. Contact span and work height do not affect this Add coil pass. '
+            ? ', with ' + Math.round(handSupport) + ' percent rim support, ' + Math.round(lubrication) + ' percent lubrication, ' + Math.round(vessel.moisture * 100) + ' percent body moisture, and ' + Math.round(coilMoisture) + ' percent new-coil moisture: a ' + Math.round(selectedCoilMoistureMatch.mismatchPct) + '-point gap. Contact span and work height do not affect this Add coil pass. '
             : (lowerZoneTarget
               ? ', with ' + Math.round(handSupport) + ' percent stabilizing support, ' + Math.round(lubrication) + ' percent lubrication, and a ' + contactSpan + ' ring contact span. Upper pointer positions are clamped to the modeled lower trim zone. The selected wall is ' + selectedWallCm.toFixed(2) + ' centimeters, ' + selectedWallState + '. '
               : ', with ' + Math.round(handSupport) + ' percent inside support, ' + Math.round(lubrication) + ' percent lubrication, and a ' + contactSpan + ' ring contact span. Outside touch is ' + Math.round(pressure) + ' percent and inside support is ' + Math.round(handSupport) + ' percent: ' + touchRelationship + '. The selected wall is ' + selectedWallCm.toFixed(2) + ' centimeters, ' + selectedWallState + '. '));
-        var svgLabel = 'Interactive pottery profile: ' + stats.shape + ', ' + vessel.heightCm.toFixed(1) + ' centimeters tall, minimum wall ' + stats.minWallCm.toFixed(2) + ' centimeters, ' + Math.round(stats.stability) + ' percent stability, ' + Math.round(vessel.centered) + ' percent centered with ' + wobbleLabel + ', ' + Math.round(stats.compression) + ' percent compression, stage ' + stageLabel(vessel.stage) + '. Active tool ' + activeTool + ' ' + activeTargetDescription + targetControlSummary + wetFilm.summary + ' ' + wetFilm.note + (formingPreviewAvailable ? ' ' + contactGeometry.summary + ' ' + contactGeometry.note : ' Contact geometry is inactive because the clay is no longer in a modeled forming stage.') + (formingPreviewAvailable && formingPreviewChanged ? ' The dashed profile predicts the next result, with stability changing by ' + formingPreviewStabilityDelta.toFixed(1) + ' points. Clay-flow preview: ' + formingFlow.summary : '') + (openingToolTarget ? ' Opening-floor proxy: ' + openingFloor.summary + ' ' + openingFloor.note : '') + (data.showCrossSection ? ' Wall-risk scan: ' + ringRiskProfile.summary + ' ' + ringRiskProfile.note + (showPredictedRiskPeak ? ' The gold dashed halo marks the predicted peak at ring ' + (previewCriticalRisk.index + 1) + ', ' + Math.round(previewCriticalRisk.risk * 100) + ' percent.' : '') : '') + (method === 'wheel' ? ' ' + displayedSurface.summary + ' ' + displayedSurface.note + ' ' + wheelDrive.summary + ' ' + wheelDrive.note + ' ' + wheelWobble.summary + ' ' + wheelWobble.note : ' The wheel hardware is stationary for handbuilding; no powered pedal response is shown.');
+        var svgLabel = 'Interactive pottery profile: ' + stats.shape + ', ' + vessel.heightCm.toFixed(1) + ' centimeters tall, minimum wall ' + stats.minWallCm.toFixed(2) + ' centimeters, ' + Math.round(stats.stability) + ' percent stability, ' + Math.round(vessel.centered) + ' percent centered with ' + wobbleLabel + ', ' + Math.round(stats.compression) + ' percent compression, stage ' + stageLabel(vessel.stage) + '. Active tool ' + activeTool + ' ' + activeTargetDescription + targetControlSummary + wetFilm.summary + ' ' + wetFilm.note + (formingPreviewAvailable ? ' ' + contactGeometry.summary + ' ' + contactGeometry.note : ' Contact geometry is inactive because the clay is no longer in a modeled forming stage.') + (formingPreviewAvailable && formingPreviewChanged ? ' The dashed profile predicts the next result, with stability changing by ' + formingPreviewStabilityDelta.toFixed(1) + ' points. Clay-flow preview: ' + formingFlow.summary : '') + (openingToolTarget ? ' Opening-floor proxy: ' + openingFloor.summary + ' ' + openingFloor.note : '') + (data.showCrossSection ? ' Wall-risk scan: ' + ringRiskProfile.summary + ' ' + ringRiskProfile.note + (showPredictedRiskPeak ? ' The gold dashed halo marks the predicted peak at ring ' + (previewCriticalRisk.index + 1) + ', ' + Math.round(previewCriticalRisk.risk * 100) + ' percent.' : '') : '') + (method === 'coil' ? ' Coil-joint map: ' + coilJointProfile.summary + ' ' + coilJointProfile.note + (showPredictedCoilJoints ? ' Gold dashed seam ellipses show joints changed by the next modeled pass. ' + coilJointPreviewSummary : '') : '') + (coilSeparationRing !== null ? ' A broken rose seam marks the modeled coil separation at ring ' + (coilSeparationRing + 1) + '.' : '') + (method === 'wheel' ? ' ' + displayedSurface.summary + ' ' + displayedSurface.note + ' ' + wheelDrive.summary + ' ' + wheelDrive.note + ' ' + wheelWobble.summary + ' ' + wheelWobble.note : ' The wheel hardware is stationary for handbuilding; no powered pedal response is shown.');
         function ringFromEvent(event) {
           var rect = event.currentTarget.getBoundingClientRect();
           var ratio = clamp((event.clientY - rect.top) / Math.max(1, rect.height), 0, 1);
@@ -3311,6 +3606,15 @@
           'data-wheel-fire-risk-peak-ring': data.showCrossSection ? criticalRisk.index + 1 : undefined,
           'data-wheel-fire-risk-peak-pct': data.showCrossSection ? (criticalRisk.risk * 100).toFixed(1) : undefined,
           'data-wheel-fire-risk-preview-ring': data.showCrossSection && showPredictedRiskPeak ? previewCriticalRisk.index + 1 : undefined,
+          'data-wheel-fire-coil-joint-map-visible': method === 'coil' ? 'true' : undefined,
+          'data-wheel-fire-coil-joint-count': method === 'coil' ? coilJointProfile.jointCount : undefined,
+          'data-wheel-fire-coil-joint-weakest-ring': method === 'coil' && coilJointProfile.weakestRing !== null ? coilJointProfile.weakestRing + 1 : undefined,
+          'data-wheel-fire-coil-moisture-max-gap': method === 'coil' && coilJointProfile.worstMoistureMismatchPct !== null ? coilJointProfile.worstMoistureMismatchPct.toFixed(1) : undefined,
+          'data-wheel-fire-coil-moisture-max-gap-ring': method === 'coil' && coilJointProfile.worstMoistureRing !== null ? coilJointProfile.worstMoistureRing + 1 : undefined,
+          'data-wheel-fire-coil-joint-load-state': visibleCoilJointChange ? visibleCoilJointChange.state : undefined,
+          'data-wheel-fire-coil-joint-load-ring': visibleCoilJointChange ? visibleCoilJointChange.ring + 1 : undefined,
+          'data-wheel-fire-coil-joint-load-delta': visibleCoilJointChange && visibleCoilJointChange.deltaPct !== null ? visibleCoilJointChange.deltaPct.toFixed(2) : undefined,
+          'data-wheel-fire-coil-separation-ring': coilSeparationRing !== null ? coilSeparationRing + 1 : undefined,
           className: 'w-full min-h-[320px] rounded-2xl border-2 border-amber-300 bg-[#2b211c] ' + (localRingTarget ? 'cursor-crosshair' : 'cursor-pointer'),
           onPointerDown: function (event) {
             if (event.button !== 0) return;
@@ -3425,11 +3729,33 @@
               h('circle', { 'data-wheel-fire-risk-peak-marker': 'current', cx: criticalRiskX, cy: criticalRiskY, r: 8, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.5 }),
               showPredictedRiskPeak ? h('circle', { 'data-wheel-fire-risk-peak-marker': 'predicted', 'data-wheel-fire-risk-preview-ring': previewCriticalRisk.index + 1, 'data-wheel-fire-risk-preview-pct': (previewCriticalRisk.risk * 100).toFixed(1), cx: previewCriticalRiskX, cy: previewCriticalRiskY, r: 12, fill: 'none', stroke: '#facc15', strokeWidth: 2.5, strokeDasharray: '4 3' }) : null
             ) : null,
+            method === 'coil' ? h('g', { 'data-wheel-fire-coil-joint-map': 'true', 'data-wheel-fire-coil-joint-count': coilJointProfile.jointCount, 'data-wheel-fire-coil-joint-preview-count': showPredictedCoilJoints ? formingPreviewCoilJointChanges.length : 0, pointerEvents: 'none', 'aria-hidden': 'true' },
+              coilJointProfile.joints.map(function (joint) {
+                var jointY = geometry.bottom - joint.ring / (RING_COUNT - 1) * geometry.heightPx;
+                var jointRadius = vessel.radii[joint.ring] * geometry.scale + 1.5;
+                return h('ellipse', { key: 'coil-joint-' + joint.ring, 'data-wheel-fire-coil-joint': joint.ring + 1, 'data-wheel-fire-coil-joint-state': joint.status, 'data-wheel-fire-coil-joint-strength': joint.strengthPct.toFixed(1), cx: geometry.center, cy: jointY, rx: jointRadius, ry: Math.max(3, jointRadius * (0.038 + perspectiveDepth * 0.038)), fill: 'none', stroke: coilJointColor(joint), strokeWidth: coilJointWidth(joint), strokeDasharray: coilJointDash(joint), strokeLinecap: 'round', opacity: .98 });
+              }),
+              showPredictedCoilJoints ? formingPreviewCoilJointChanges.filter(function (change) { return typeof change.after === 'number'; }).map(function (change) {
+                var previewJointY = formingPreviewGeometry.bottom - change.ring / (RING_COUNT - 1) * formingPreviewGeometry.heightPx;
+                var previewJointRadius = formingPreviewVessel.radii[change.ring] * formingPreviewGeometry.scale + 5;
+                return h('ellipse', { key: 'preview-coil-joint-' + change.ring, 'data-wheel-fire-coil-joint-preview': change.ring + 1, 'data-wheel-fire-coil-joint-preview-strength': (change.after * 100).toFixed(1), 'data-wheel-fire-coil-joint-preview-state': change.state, 'data-wheel-fire-coil-joint-preview-load': change.loadId, cx: formingPreviewGeometry.center, cy: previewJointY, rx: previewJointRadius, ry: Math.max(4, previewJointRadius * (0.041 + perspectiveDepth * 0.041)), fill: 'none', stroke: '#facc15', strokeWidth: 2.5, strokeDasharray: '4 4', strokeLinecap: 'round', opacity: .96 });
+              }) : null
+            ) : null,
+            visibleCoilJointChange ? h('g', { 'data-wheel-fire-coil-joint-load-cue': visibleCoilJointChange.state, 'data-wheel-fire-coil-joint-load-kind': visibleCoilJointChange.loadId, 'data-wheel-fire-coil-joint-load-ring': visibleCoilJointChange.ring + 1, pointerEvents: 'none', 'aria-hidden': 'true' },
+              h('line', { x1: formingPreviewGeometry.center + formingPreviewVessel.radii[visibleCoilJointChange.ring] * formingPreviewGeometry.scale + 8, y1: formingPreviewGeometry.bottom - visibleCoilJointChange.ring / (RING_COUNT - 1) * formingPreviewGeometry.heightPx, x2: 430, y2: clamp(formingPreviewGeometry.bottom - visibleCoilJointChange.ring / (RING_COUNT - 1) * formingPreviewGeometry.heightPx + 18, 82, 408), stroke: coilJointCueColor, strokeWidth: 2, strokeDasharray: '4 3', opacity: .95 }),
+              h('circle', { cx: formingPreviewGeometry.center + formingPreviewVessel.radii[visibleCoilJointChange.ring] * formingPreviewGeometry.scale + 8, cy: formingPreviewGeometry.bottom - visibleCoilJointChange.ring / (RING_COUNT - 1) * formingPreviewGeometry.heightPx, r: 4, fill: coilJointCueColor }),
+              h('text', { x: 500, y: clamp(formingPreviewGeometry.bottom - visibleCoilJointChange.ring / (RING_COUNT - 1) * formingPreviewGeometry.heightPx + 22, 86, 412), fill: coilJointCueColor, fontSize: 11, fontWeight: 700, textAnchor: 'end' }, coilJointCueText)
+            ) : null,
+            coilSeparationRing !== null ? h('g', { 'data-wheel-fire-coil-separation': coilSeparationRing + 1, pointerEvents: 'none', 'aria-hidden': 'true' },
+              h('ellipse', { cx: geometry.center, cy: geometry.bottom - coilSeparationRing / (RING_COUNT - 1) * geometry.heightPx, rx: vessel.radii[coilSeparationRing] * geometry.scale + 3, ry: Math.max(4, (vessel.radii[coilSeparationRing] * geometry.scale + 3) * (0.04 + perspectiveDepth * 0.04)), fill: 'none', stroke: '#211711', strokeWidth: 9, strokeDasharray: '12 8', strokeLinecap: 'round', opacity: .94 }),
+              h('ellipse', { cx: geometry.center, cy: geometry.bottom - coilSeparationRing / (RING_COUNT - 1) * geometry.heightPx, rx: vessel.radii[coilSeparationRing] * geometry.scale + 3, ry: Math.max(4, (vessel.radii[coilSeparationRing] * geometry.scale + 3) * (0.04 + perspectiveDepth * 0.04)), fill: 'none', stroke: '#fb7185', strokeWidth: 3, strokeDasharray: '12 8', strokeLinecap: 'round', opacity: .98 }),
+              h('text', { x: 500, y: clamp(geometry.bottom - coilSeparationRing / (RING_COUNT - 1) * geometry.heightPx - 12, 72, 400), fill: '#fecdd3', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'coil separation · ring ' + (coilSeparationRing + 1))
+            ) : null,
             data.showFormingPreview !== false && formingPreviewAvailable && formingPreviewChanged ? h('path', { d: formingPreviewGeometry.outer, fill: 'none', stroke: formingPreviewVessel.collapsed ? '#fb7185' : '#fbbf24', strokeWidth: 3, strokeDasharray: '9 6', opacity: .95, pointerEvents: 'none', 'aria-hidden': 'true' }) : null,
             [4, 9, 14, 19, 24, 29, 34].map(function (ring) {
               var y = geometry.bottom - ring / (RING_COUNT - 1) * geometry.heightPx;
               var radius = vessel.radii[ring] * geometry.scale;
-              return h('ellipse', { key: ring, cx: geometry.center, cy: y, rx: radius, ry: Math.max(2.4, radius * (0.035 + perspectiveDepth * 0.035)), fill: 'none', stroke: '#fff1df', strokeWidth: 1, opacity: method === 'coil' ? .3 : .16 });
+              return h('ellipse', { key: ring, cx: geometry.center, cy: y, rx: radius, ry: Math.max(2.4, radius * (0.035 + perspectiveDepth * 0.035)), fill: 'none', stroke: '#fff1df', strokeWidth: 1, opacity: method === 'coil' ? .13 : .16 });
             }),
             localRingTarget ? h('g', { 'data-wheel-fire-local-wall-ruler': 'true', 'aria-hidden': 'true' },
               h('line', { x1: geometry.center + selectedInnerRadius, x2: geometry.center + selectedOuterRadius, y1: selectedY, y2: selectedY, stroke: selectedWallColor, strokeWidth: 5, strokeLinecap: 'round' }),
@@ -3493,7 +3819,7 @@
           localRingTarget ? h('circle', { 'data-wheel-fire-work-ring-marker': 'true', cx: 62, cy: selectedY, r: 9, fill: '#06b6d4', stroke: '#cffafe', strokeWidth: 3 }) : null,
           h('text', { 'data-wheel-fire-surface-speed-label': method === 'wheel' ? 'true' : undefined, 'data-wheel-fire-surface-scope': method === 'wheel' ? (wholeFormTarget ? 'whole-form' : 'selected-ring') : undefined, 'data-wheel-fire-whole-form-kinematics': method === 'wheel' && wholeFormTarget ? 'true' : undefined, 'data-wheel-fire-min-surface-speed': method === 'wheel' && wholeFormTarget ? wholeFormSurface.minSurfaceSpeedCmPerSecond.toFixed(2) : undefined, 'data-wheel-fire-max-surface-speed': method === 'wheel' && wholeFormTarget ? wholeFormSurface.maxSurfaceSpeedCmPerSecond.toFixed(2) : undefined, x: 20, y: 25, fill: '#fef3c7', fontSize: 13, fontWeight: 800 }, method === 'wheel' ? displayedSurface.displayLabel : 'Handbuilding'),
           h('text', { x: 500, y: 25, fill: '#fef3c7', fontSize: 13, textAnchor: 'end' }, data.showCrossSection ? 'Material cutaway' : '3D wheel · ' + Math.round(cameraTilt) + '° tilt'),
-          h('text', { x: 20, y: 45, fill: wetFilm.state === 'excess-film' ? '#fecdd3' : '#cffafe', fontSize: 11, fontWeight: 700 }, wholeFormTarget ? 'Brace pressure ' + Math.round(pressure) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · all ' + RING_COUNT + ' rings' : (rimTarget ? 'Rim support ' + Math.round(handSupport) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · top 5 rings' : (lowerZoneTarget ? 'Trim ring ' + (workRing + 1) + ' · lower zone ' + (activeTarget.minRing + 1) + '–' + (activeTarget.maxRing + 1) + ' · ' + contactSpan + '-ring contact' : (openingToolTarget ? 'Floor proxy ' + openingFloor.floorThicknessCm.toFixed(2) + ' cm · cavity depth ' + openingFloor.cavityDepthCm.toFixed(2) + ' cm · ring ' + (workRing + 1) : 'Support ' + Math.round(handSupport) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · ' + contactSpan + '-ring contact')))),
+          h('text', { x: 20, y: 45, fill: wetFilm.state === 'excess-film' ? '#fecdd3' : '#cffafe', fontSize: 11, fontWeight: 700 }, wholeFormTarget ? 'Brace pressure ' + Math.round(pressure) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · all ' + RING_COUNT + ' rings' : (rimTarget ? 'Rim support ' + Math.round(handSupport) + '% · coil/body gap ' + Math.round(selectedCoilMoistureMatch.mismatchPct) + ' pts · top 5 rings' : (lowerZoneTarget ? 'Trim ring ' + (workRing + 1) + ' · lower zone ' + (activeTarget.minRing + 1) + '–' + (activeTarget.maxRing + 1) + ' · ' + contactSpan + '-ring contact' : (openingToolTarget ? 'Floor proxy ' + openingFloor.floorThicknessCm.toFixed(2) + ' cm · cavity depth ' + openingFloor.cavityDepthCm.toFixed(2) + ' cm · ring ' + (workRing + 1) : 'Support ' + Math.round(handSupport) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · ' + contactSpan + '-ring contact')))),
           method === 'wheel' ? h('text', { x: 500, y: 45, fill: vessel.centered >= 70 ? '#d9f99d' : '#fecdd3', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'Centering ' + Math.round(vessel.centered) + '% · ' + wobbleLabel) : null
         );
       }
@@ -3524,8 +3850,20 @@
         var selectedOpeningTool = selectedTool.id === 'open';
         var selectedTargetRing = selectedTarget.ring;
         var canFocusRiskRing = selectedTarget.mode === 'selected-ring';
+        var selectedCoilMoistureDirectionText = selectedCoilMoistureMatch.direction === 'matched' ? 'closely matched' : 'coil ' + selectedCoilMoistureMatch.direction;
         var selectedRingRisk = ringRiskProfile.rings[selectedTargetRing];
         var previewSelectedRingRisk = formingPreviewRiskProfile.rings[selectedTargetRing];
+        var changedJointReadings = formingPreviewCoilJointChanges.filter(function (change) { return typeof change.after === 'number'; }).map(function (change) {
+          var moistureReading = typeof change.moistureMismatchPct === 'number' ? ' · ' + Math.round(change.moistureMismatchPct) + '-point moisture gap' : '';
+          return 'ring ' + (change.ring + 1) + ' ' + (typeof change.before === 'number' ? Math.round(change.before * 100) + '% → ' : 'new → ') + Math.round(change.after * 100) + '%' + (change.state === 'new' ? moistureReading : ' under ' + change.loadLabel);
+        });
+        var coilJointForecastText = !formingPreviewAvailable
+          ? 'Joint preview is paused because this clay is no longer in an active forming stage.'
+          : (selectedTool.id === 'add-coil'
+            ? 'New coil ' + Math.round(coilMoisture) + '% versus body ' + Math.round(vessel.moisture * 100) + '% gives a ' + Math.round(selectedCoilMoistureMatch.mismatchPct) + '-point gap (' + selectedCoilMoistureDirectionText + ', ' + selectedCoilMoistureMatch.label + '). Next Add coil creates a rim joint at ring 32; earlier seams move lower in the normalized 36-ring profile as height is added. Predicted weakest consolidation: ' + Math.round(formingPreviewCoilJointProfile.weakestStrengthPct) + '%.'
+            : (changedJointReadings.length
+              ? 'Next ' + selectedTool.label + ' pass changes ' + changedJointReadings.join(' · ') + '. Predicted weakest consolidation: ' + Math.round(formingPreviewCoilJointProfile.weakestStrengthPct) + '%.'
+              : (coilJointProfile.jointCount ? 'This work zone does not intersect a tracked seam. Move Paddle or Smooth to a colored seam ellipse to consolidate it.' : 'Add a coil to create the first locally tracked seam.')));
         var applyButtonLabel = selectedGestureMode === 'single-global' ? 'Center whole form' : (selectedGestureMode === 'single-rim' ? 'Add one coil at rim' : (selectedLowerZone ? 'Apply ' + selectedTool.label + ' at lower-zone ring ' + (selectedTargetRing + 1) + ' of ' + (selectedTarget.maxRing + 1) : 'Apply ' + selectedTool.label + ' at work zone ' + (workRing + 1) + ' of ' + RING_COUNT));
         function toolAllowed(tool) { return vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && tool.id === 'trim'); }
         var toolStageNote = vessel.stage === 'wet' ? 'Wet clay accepts the full forming toolkit.' : (vessel.stage === 'leather-hard' ? 'Leather-hard clay only accepts Trim/Scrape in this model.' : 'Shaping is paused after leather-hard; continue in Dry & fire.');
@@ -3538,6 +3876,11 @@
           if (canFocusRiskRing) riskPatch.workRing = ringRiskProfile.criticalRing;
           patchData(riskPatch);
           announce((canFocusRiskRing ? 'Focused' : 'Revealed') + ' the highest comparative wall-risk signal at ring ' + (ringRiskProfile.criticalRing + 1) + ' in the material cutaway.');
+        }
+        function focusWeakestCoilJoint() {
+          if (coilJointProfile.weakestRing === null) return;
+          patchData({ activeTool: 'paddle', workRing: coilJointProfile.weakestRing, showCrossSection: true, showFormingPreview: true });
+          announce('Selected Paddle at the weakest tracked coil joint, ring ' + (coilJointProfile.weakestRing + 1) + ', and opened its consolidation preview.');
         }
         function useSaferTouchSetup() {
           var safer = {
@@ -3557,7 +3900,10 @@
           if (method === 'wheel' && rpm >= 80) reasons.push('high wheel speed');
           if (selectedGestureMode !== 'single-global' && handSupport < 35) reasons.push(selectedGestureMode === 'single-rim' ? 'low rim support' : 'low inside support');
           if (lubrication > 78) reasons.push('excess lubrication');
+          if (selectedGestureMode === 'single-rim' && selectedCoilMoistureMatch.status !== 'matched') reasons.push(Math.round(selectedCoilMoistureMatch.mismatchPct) + '-point coil-to-body moisture gap with the coil ' + selectedCoilMoistureMatch.direction);
           if (selectedGestureMode === 'ring-drag' && contactSpan <= 4) reasons.push('concentrated contact');
+          if (method === 'coil' && dominantFormingCoilJointChange && dominantFormingCoilJointChange.state === 'loaded' && dominantFormingCoilJointChange.deltaPct <= -2) reasons.push(dominantFormingCoilJointChange.loadLabel + ' reduces ring ' + (dominantFormingCoilJointChange.ring + 1) + ' joint consolidation by ' + Math.abs(dominantFormingCoilJointChange.deltaPct).toFixed(1) + ' points');
+          if (method === 'coil' && formingPreviewCoilJointProfile.jointCount && formingPreviewCoilJointProfile.weakestStrength < 0.46) reasons.push('weak tracked seam at ring ' + (formingPreviewCoilJointProfile.weakestRing + 1));
           if (selectedOpeningTool && formingPreviewFloor.state === 'puncture-risk') reasons.push('opening reaches the lowest modeled floor interval');
           var title = formingPreviewVessel.collapsed ? 'Collapse forecast' : (formingPreviewRisky ? 'High-risk forecast' : 'Before you shape');
           var outcome = formingPreviewChanged ? (formingPreviewVessel.lastOutcome || 'The model predicts a measurable profile change.') : 'This setup predicts little measurable change at the selected ring.';
@@ -3573,6 +3919,7 @@
               h('strong', null, 'Opening floor: '), openingFloor.floorThicknessCm.toFixed(2) + ' cm now → ' + formingPreviewFloor.floorThicknessCm.toFixed(2) + ' cm predicted. ',
               Math.abs(formingPreviewFloorDelta) < .01 ? 'This work ring widens the cavity without changing the vertical floor proxy; focus the cavity floor to study opening depth.' : (formingPreviewFloorDelta < 0 ? 'The modeled cavity deepens by ' + Math.abs(formingPreviewFloorDelta).toFixed(2) + ' cm.' : 'The modeled floor proxy increases by ' + formingPreviewFloorDelta.toFixed(2) + ' cm after volume redistribution.')
             ) : null,
+            method === 'coil' ? h('p', { 'data-wheel-fire-coil-joint-forecast': 'true', 'data-wheel-fire-coil-joint-response': dominantFormingCoilJointChange ? dominantFormingCoilJointChange.state : 'unchanged', 'data-wheel-fire-coil-joint-current-weakest': coilJointProfile.weakestStrengthPct.toFixed(1), 'data-wheel-fire-coil-joint-next-weakest': formingPreviewCoilJointProfile.weakestStrengthPct.toFixed(1), 'data-wheel-fire-new-coil-moisture': selectedGestureMode === 'single-rim' ? coilMoisture.toFixed(1) : undefined, 'data-wheel-fire-body-moisture-at-join': selectedGestureMode === 'single-rim' ? (vessel.moisture * 100).toFixed(1) : undefined, 'data-wheel-fire-new-coil-moisture-gap': selectedGestureMode === 'single-rim' ? selectedCoilMoistureMatch.mismatchPct.toFixed(1) : undefined, 'data-wheel-fire-new-coil-moisture-state': selectedGestureMode === 'single-rim' ? selectedCoilMoistureMatch.status : undefined, className: 'text-[11px]' }, h('strong', null, 'Coil joints: '), coilJointForecastText) : null,
             formingPreviewChanged ? h('p', { className: 'text-[11px]' }, h('strong', null, 'Clay-flow preview: '), formingFlow.summary, selectedGestureMode === 'single-global' ? ' The arrow samples ring ' + (formingFlow.sampleRing + 1) + '; Center still acts across all ' + RING_COUNT + ' modeled rings.' : (selectedGestureMode === 'single-rim' ? ' The cue stays at the top five modeled rim rings; pressing or dragging elsewhere does not move the coil target.' : (selectedLowerZone ? ' The cue and work ring stay within lower-exterior rings ' + (selectedTarget.minRing + 1) + '–' + (selectedTarget.maxRing + 1) + '; higher pointer positions clamp to the top of that zone.' : (formingFlow.sampleRing !== formingFlow.requestedRing ? ' The cue is shown at ring ' + (formingFlow.sampleRing + 1) + ', where this tool acts.' : '')))) : null,
             h('p', { className: 'text-[11px]' }, reasonText),
             h('div', { className: 'flex flex-wrap items-center gap-3' },
@@ -3589,7 +3936,7 @@
                 selectedGestureMode === 'single-global'
                   ? h('span', { className: 'block', 'data-wheel-fire-whole-form-help': 'true' }, 'Center target: press once anywhere on the vessel or use Center whole form. The pale cyan band and paired braces represent a whole-form pass, so no local work-ring marker or wall ruler is shown. Orange and teal arrows show matched opposing brace pressure; inside-hand support, contact span, and work height do not affect Center. The dashed amber outline predicts the next profile. Keyboard: press Enter or Space to apply Center.')
                   : (selectedGestureMode === 'single-rim'
-                    ? h('span', { className: 'block', 'data-wheel-fire-rim-target-help': 'true' }, 'Rim target: press once anywhere on the vessel or use Add one coil at rim. The coil and support cues stay at the top five modeled rings, so no local work-ring marker or wall ruler is shown. Hand pressure, rim support, surface lubrication, and clay moisture affect placement; contact span and work height do not. Paddle or smooth the new joint before drying. Keyboard: press Enter or Space to add one coil.')
+                    ? h('span', { className: 'block', 'data-wheel-fire-rim-target-help': 'true' }, 'Rim target: press once anywhere on the vessel or use Add one coil at rim. The coil and support cues stay at the top five modeled rings, so no local work-ring marker or wall ruler is shown. Hand pressure, rim support, surface lubrication, body moisture, and new-coil moisture affect placement; contact span and work height do not. The gap is recorded on that seam when placed. Paddle or smooth the new joint before drying. Keyboard: press Enter or Space to add one coil.')
                     : (selectedLowerZone
                       ? h('span', { className: 'block', 'data-wheel-fire-lower-zone-help': 'true' }, 'Lower trim target: press or drag within the highlighted lower-exterior band. Pointer positions above the band clamp to its top ring, so Trim/Scrape cannot report removing clay from an unaffected upper wall. The blue dashed line and wall ruler show the actual constrained ring; the pale cyan band shows contact span. Trimming removes modeled mass rather than redistributing it. Keyboard: Arrow keys stay within rings ' + (selectedTarget.minRing + 1) + '–' + (selectedTarget.maxRing + 1) + ', then Enter or Space applies the tool.')
                       : (selectedOpeningTool
@@ -3602,7 +3949,9 @@
                     : h('span', { className: 'block mt-1' }, ' In wheel mode, the cyan work-ring ellipse reports local clay speed from 2πr × RPM ÷ 60, so wider rings travel farther each revolution. This is tangential clay speed, not hand speed, relative slip, drag, or force.')),
                 h('span', { className: 'block mt-1' }, selectedGestureMode === 'single-global' ? ' Clay-body moisture and surface lubrication are separate modeled inputs. Center uses the whole-form sheen and splash-pan trace instead of a selected-ring film. Moderate lubrication shows a working film; above 72% it becomes excess film, reduces modeled control, and can produce a comparative splash cue as wheel speed rises. Film width, pan slip, and droplets are schematic—not measured water content, slip volume, spray range, chemistry, or cleanup guidance.' : (selectedGestureMode === 'single-rim' ? ' Clay-body moisture and surface lubrication are separate modeled inputs. Handbuilding keeps the clay sheen but suppresses powered splash-pan accumulation. Lubrication remains a comparative contact-film control, not measured water content, slip volume, material chemistry, or cleanup guidance.' : ' Clay-body moisture and surface lubrication are separate modeled inputs. The clay sheen combines both, while the selected-ring film and splash-pan trace respond to surface lubrication. Moderate lubrication shows a working film; above 72% it becomes excess film, reduces modeled control, and can produce a comparative splash cue as wheel speed rises. Film width, pan slip, and droplets are schematic—not measured water content, slip volume, spray range, chemistry, or cleanup guidance.')),
                 data.showCrossSection ? h('span', { className: 'block mt-1', 'data-wheel-fire-ring-risk-help': 'true' }, ' The material cutaway adds a wall-risk scan along the right profile edge: thin lime dashes mean lower signal, amber dashes mean watch, and a rose solid edge means high. A white circle marks the current peak; a gold dashed halo marks the predicted peak when the next pass changes it. The scan combines wall thickness, slope, irregularity, moisture, compression, material, support, and handling inputs. It is comparative—not measured stress, failure probability, a safe-thickness limit, or studio safety guidance.') : null,
-                h('span', { className: 'block mt-1' }, ' Off-center clay follows one perspective-compressed elliptical wobble path per revolution; reduced-motion settings hold one visible phase. The gold registration mark makes one circuit per modeled revolution (60 divided by RPM). The labeled speed pedal follows selected RPM as a schematic travel cue. The orbit and pedal travel are schematic; they do not model measured displacement, rotation direction, a specific wheel\'s pedal curve, torque, braking, or safe operating technique.')
+                method === 'coil'
+                  ? h('span', { className: 'block mt-1', 'data-wheel-fire-coil-joint-help': 'true' }, ' Tracked coil seams use solid teal for strong consolidation, long amber dashes for watch, and broken rose marks for weak; a gold dashed ellipse predicts a seam created or changed by the next pass. The nearby labeled cue reports new seam, strengthening, or local load. Adding height remaps earlier seams lower in the fixed 36-ring profile. Paddle and Smooth improve only contacted seams; opening, outward expansion, vertical stretch, and inward collaring can load a contacted seam, with inside support and plasticity moderating the modeled change. This is a comparative learning model—not measured joint strength, technique certification, or studio safety guidance.')
+                  : h('span', { className: 'block mt-1' }, ' Off-center clay follows one perspective-compressed elliptical wobble path per revolution; reduced-motion settings hold one visible phase. The gold registration mark makes one circuit per modeled revolution (60 divided by RPM). The labeled speed pedal follows selected RPM as a schematic travel cue. The orbit and pedal travel are schematic; they do not model measured displacement, rotation direction, a specific wheel\'s pedal curve, torque, braking, or safe operating technique.')
               ),
               formingForecast(),
               h('div', { className: 'wheel-fire-stats', role: 'group', 'aria-label': 'Live vessel measurements' },
@@ -3643,13 +3992,23 @@
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Clay moisture describes modeled water in the body; surface lubrication describes added water or slip at contact. A moderate film reduces modeled drag; above 72% it becomes excess and reduces control. A wider contact span distributes the same move across more rings.'),
                 rangeControl('wheel-fire-rpm', 'Wheel speed', rpm, 0, 120, ' RPM', function (value) { patchData({ rpm: value }); }, method !== 'wheel'),
                 rangeControl('wheel-fire-moisture', 'Clay moisture', vessel.moisture * 100, 5, 100, '%', function (value) { var next = copyVessel(vessel); next.moisture = value / 100; next.lastOutcome = 'Clay moisture adjusted for the simulation.'; commitVessel(next, next.lastOutcome); }),
+                selectedGestureMode === 'single-rim' ? h('div', { 'data-wheel-fire-coil-moisture-control': 'true', 'data-wheel-fire-coil-moisture-state': selectedCoilMoistureMatch.status, 'data-wheel-fire-coil-moisture-gap': selectedCoilMoistureMatch.mismatchPct.toFixed(1) },
+                  rangeControl('wheel-fire-coil-moisture', 'New coil moisture', coilMoisture, 5, 100, '%', function (value) { patchData({ coilMoisture: value }); }),
+                  h('p', { role: 'status', 'aria-live': 'polite', className: 'mt-1 text-[11px] text-slate-600' }, 'Body ' + Math.round(vessel.moisture * 100) + '% · new coil ' + Math.round(coilMoisture) + '% · ' + Math.round(selectedCoilMoistureMatch.mismatchPct) + '-point gap · ' + selectedCoilMoistureDirectionText + '. This comparative gap is stored on the new seam at placement; it does not retroactively change on older seams.')
+                ) : null,
                 rangeControl('wheel-fire-height', selectedLowerZone ? 'Trim height (lower ring)' : 'Work height (ring)', workRing + 1, selectedLowerZone ? selectedTarget.minRing + 1 : 1, selectedLowerZone ? selectedTarget.maxRing + 1 : RING_COUNT, ' / ' + (selectedLowerZone ? selectedTarget.maxRing + 1 : RING_COUNT), function (value) { patchData({ workRing: potteryFormingTarget(selectedTool.id, value - 1).ring }); }, selectedGestureMode !== 'ring-drag'),
                 selectedGestureMode === 'single-global' ? h('p', { 'data-wheel-fire-whole-form-controls': 'true', className: 'rounded-lg border border-teal-200 bg-teal-50 p-2 text-[11px] font-bold text-teal-950' }, 'Center target · all ' + RING_COUNT + ' rings. Hand pressure, wheel speed, surface lubrication, and clay moisture affect this pass. Inside-hand support, contact span, and work height are disabled because Center does not use them.') : null,
-                selectedGestureMode === 'single-rim' ? h('p', { 'data-wheel-fire-rim-controls': 'true', className: 'rounded-lg border border-teal-200 bg-teal-50 p-2 text-[11px] font-bold text-teal-950' }, 'Add coil target · top 5 rim rings. Hand pressure, inside support, surface lubrication, and clay moisture affect placement. Contact span and work height are disabled because the target stays at the rim.') : null,
+                selectedGestureMode === 'single-rim' ? h('p', { 'data-wheel-fire-rim-controls': 'true', className: 'rounded-lg border border-teal-200 bg-teal-50 p-2 text-[11px] font-bold text-teal-950' }, 'Add coil target · top 5 rim rings. Hand pressure, inside support, surface lubrication, body moisture, and new-coil moisture affect placement. Current gap: ' + Math.round(selectedCoilMoistureMatch.mismatchPct) + ' points (' + selectedCoilMoistureDirectionText + '). Contact span and work height are disabled because the target stays at the rim. Moisture-match needs differ by clay, joining method, and community practice, so compare trials rather than treating a band as a universal recipe.') : null,
                 selectedLowerZone ? h('p', { 'data-wheel-fire-lower-zone-controls': 'true', className: 'rounded-lg border border-slate-300 bg-slate-50 p-2 text-[11px] font-bold text-slate-800' }, selectedTool.label + ' target · lower exterior rings ' + (selectedTarget.minRing + 1) + '–' + (selectedTarget.maxRing + 1) + '. Pointer, keyboard, slider, preview, and physics all use this same constrained zone; clay removed here is subtracted from modeled mass.') : null,
                 selectedOpeningTool ? h('div', { 'data-wheel-fire-opening-floor-controls': 'true', 'data-wheel-fire-opening-floor-control-state': openingFloor.state, className: 'rounded-lg border p-2 space-y-2 ' + (openingFloor.state === 'puncture-risk' ? 'border-rose-300 bg-rose-50 text-rose-950' : 'border-cyan-300 bg-cyan-50 text-cyan-950') },
                   h('p', { className: 'text-[11px]' }, h('strong', null, 'Opening floor · ' + openingFloor.floorThicknessCm.toFixed(2) + ' cm proxy · ' + openingFloor.cavityDepthCm.toFixed(2) + ' cm cavity. '), openingFloor.label + '. ' + openingFloor.summary),
                   h('button', { type: 'button', 'data-wheel-fire-opening-floor-focus': 'true', onClick: focusOpeningFloor, className: 'rounded-lg border border-cyan-700 bg-white px-3 py-2 text-xs font-black text-cyan-950' }, 'Focus cavity floor · ring ' + (openingFloor.targetRing + 1))
+                ) : null,
+                method === 'coil' ? h('div', { 'data-wheel-fire-coil-joint-controls': 'true', 'data-wheel-fire-coil-joint-control-state': coilJointProfile.overallStatus, 'data-wheel-fire-coil-joint-moisture-state': coilJointProfile.overallMoistureStatus, 'data-wheel-fire-coil-joint-moisture-gap': coilJointProfile.worstMoistureMismatchPct === null ? undefined : coilJointProfile.worstMoistureMismatchPct.toFixed(1), 'data-wheel-fire-coil-joint-count': coilJointProfile.jointCount, 'data-wheel-fire-coil-joint-weakest': coilJointProfile.weakestStrengthPct.toFixed(1), className: 'rounded-lg border p-2 space-y-2 ' + (coilJointProfile.overallStatus === 'weak' ? 'border-rose-300 bg-rose-50 text-rose-950' : (coilJointProfile.overallStatus === 'watch' || coilJointProfile.overallMoistureStatus === 'high' ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-teal-300 bg-teal-50 text-teal-950')) },
+                  h('p', { className: 'text-[11px]' }, h('strong', null, 'Coil-joint map · '), coilJointProfile.summary),
+                  h('p', { 'data-wheel-fire-coil-joint-guidance': 'true', className: 'text-[11px]' }, coilJointForecastText),
+                  h('p', { 'data-wheel-fire-coil-joint-legend': 'true', className: 'text-[11px]' }, 'Seam ellipses: teal solid = strong · amber long-dash = watch · rose broken = weak · gold dashed = predicted changed seam. A dotted outer halo marks a recorded moisture gap: cyan = coil wetter, violet = coil drier. A labeled cue identifies strengthening, loading, or the new seam. Comparative signals only—not measured joint strength or a universal moisture recipe.'),
+                  coilJointProfile.weakestRing !== null && vessel.stage === 'wet' ? h('button', { type: 'button', 'data-wheel-fire-coil-joint-focus': 'true', onClick: focusWeakestCoilJoint, className: 'rounded-lg border border-teal-700 bg-white px-3 py-2 text-xs font-black text-teal-950' }, 'Set Paddle at weakest joint · ring ' + (coilJointProfile.weakestRing + 1)) : null
                 ) : null,
                 h('div', { 'data-wheel-fire-ring-risk-controls': 'true', 'data-wheel-fire-ring-risk-current-peak': ringRiskProfile.criticalRiskPct.toFixed(1), 'data-wheel-fire-ring-risk-preview-peak': formingPreviewRiskProfile.criticalRiskPct.toFixed(1), className: 'rounded-lg border p-2 space-y-2 ' + (ringRiskProfile.criticalRiskPct >= 67 ? 'border-rose-300 bg-rose-50 text-rose-950' : (ringRiskProfile.criticalRiskPct >= 40 ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-lime-300 bg-lime-50 text-lime-950')) },
                   h('p', { className: 'text-[11px]' }, h('strong', null, 'Wall-risk scan · peak ring ' + (ringRiskProfile.criticalRing + 1) + ' at ' + Math.round(ringRiskProfile.criticalRiskPct) + '%. '), ringRiskProfile.criticalStatus + '; strongest signal: ' + ringRiskProfile.criticalSignalLabel + '. Profile count: ' + ringRiskProfile.highCount + ' high · ' + ringRiskProfile.watchCount + ' watch · ' + ringRiskProfile.lowerCount + ' lower.'),
@@ -3778,7 +4137,7 @@
         if (recipeDraft.porosityShift !== 0) recipeTradeoffs.push((recipeDraft.porosityShift > 0 ? 'Higher' : 'Lower') + ' porosity adjustment changes the modeled fired pore pathway and permeability proxy.');
         if (!recipeTradeoffs.length) recipeTradeoffs.push('The preview matches the named body baseline. Add a small assumption, then compare the predicted tradeoff before shaping or firing.');
         function logTrial() {
-          var row = { id: Date.now(), seriesId: activeSeriesId, seriesName: activeSeriesName, method: method, clayBody: vessel.clayBody, tool: activeTool, workRing: workRing, hypothesis: String(data.hypothesis || '').trim().slice(0, 240), observation: String(data.trialObservation || '').trim().slice(0, 240), stage: vessel.stage, materialRecipe: normalizeRecipe(vessel.materialRecipe), rpm: Math.round(rpm), pressure: Math.round(pressure), handSupport: Math.round(handSupport), lubrication: Math.round(lubrication), contactSpan: Math.round(contactSpan), moisture: Math.round(vessel.moisture * 100), minWall: stats.minWallCm.toFixed(2), uniformity: Math.round(stats.uniformity), compression: Math.round(stats.compression), coilBond: Math.round(stats.coilBond), overhang: Math.round(stats.overhangRisk), stability: Math.round(stats.stability), outcome: stats.status };
+          var row = { id: Date.now(), seriesId: activeSeriesId, seriesName: activeSeriesName, method: method, clayBody: vessel.clayBody, tool: activeTool, workRing: workRing, hypothesis: String(data.hypothesis || '').trim().slice(0, 240), observation: String(data.trialObservation || '').trim().slice(0, 240), stage: vessel.stage, materialRecipe: normalizeRecipe(vessel.materialRecipe), rpm: Math.round(rpm), pressure: Math.round(pressure), handSupport: Math.round(handSupport), lubrication: Math.round(lubrication), contactSpan: Math.round(contactSpan), moisture: Math.round(vessel.moisture * 100), minWall: stats.minWallCm.toFixed(2), uniformity: Math.round(stats.uniformity), compression: Math.round(stats.compression), coilBond: Math.round(stats.coilBond), coilJointCount: stats.trackedCoilJointCount, weakestCoilJoint: Math.round(stats.weakestCoilJoint), weakestCoilJointRing: stats.weakestCoilJointRing, overhang: Math.round(stats.overhangRisk), stability: Math.round(stats.stability), outcome: stats.status };
           var nextSeriesLogs = logs.concat([row]).slice(-12);
           var nextLogs = allLogs.filter(function (candidate) { return String(candidate.seriesId || 'series-legacy') !== activeSeriesId; }).concat(nextSeriesLogs);
           patchData({ measurementLog: nextLogs, trialObservation: '', removedMechanicsTrial: null });
@@ -3898,7 +4257,9 @@
           compareInput('contactSpan', 'contact span', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + ' rings'; });
           compareInput('moisture', 'clay moisture', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + '%'; });
           var deltas = [];
-          [['stability', 'stability', ' pts'], ['uniformity', 'wall uniformity', ' pts'], ['minWall', 'minimum wall', ' cm'], ['compression', 'compression', ' pts'], ['coilBond', 'coil bond', ' pts'], ['overhang', 'overhang load', ' pts']].forEach(function (item) {
+          var comparisonMetrics = [['stability', 'stability', ' pts'], ['uniformity', 'wall uniformity', ' pts'], ['minWall', 'minimum wall', ' cm'], ['compression', 'compression', ' pts'], ['coilBond', 'aggregate coil continuity', ' pts'], ['overhang', 'overhang load', ' pts']];
+          if (reference.weakestCoilJoint !== undefined || current.weakestCoilJoint !== undefined) comparisonMetrics.push(['weakestCoilJoint', 'weakest coil joint', ' pts']);
+          comparisonMetrics.forEach(function (item) {
             var before = finite(reference[item[0]], 0);
             var after = finite(current[item[0]], 0);
             if (Math.abs(after - before) >= (item[0] === 'minWall' ? 0.01 : 0.5)) deltas.push(item[1] + ' ' + signed(after - before, item[0] === 'minWall' ? 2 : 1) + item[2]);
@@ -4162,7 +4523,7 @@
               metricCard('Wall uniformity', percent(stats.uniformity), 'Variation across rings'),
               metricCard('Centering', percent(vessel.centered), 'Wobble ' + percent(vessel.wobble * 100)),
               metricCard('Compression', percent(stats.compression), 'Raised by ribs and paddling'),
-              metricCard('Coil bond', percent(stats.coilBond), method === 'coil' ? 'Joint consolidation' : 'Not currently limiting'),
+              metricCard('Coil continuity', percent(stats.coilBond), method === 'coil' ? (stats.trackedCoilJointCount ? 'Weakest ring ' + (stats.weakestCoilJointRing + 1) + ' · ' + percent(stats.weakestCoilJoint) : 'No locally tracked seams yet') : 'Not currently limiting'),
               metricCard('Overhang load', percent(stats.overhangRisk), 'Outward wall slope'),
               metricCard('Collapse risk', percent(stats.risk), 'Deterministic model')
             )
@@ -4253,7 +4614,7 @@
               h('ul', { className: 'list-disc pl-5 text-xs text-slate-700 space-y-2' },
                 h('li', null, 'Opening, pulling, expanding, collaring, centering, and smoothing redistribute approximately the same clay volume.'),
                 h('li', null, 'Adding a coil increases clay mass. Trimming permanently removes it.'),
-                h('li', null, 'New coils begin with weaker joints; paddling or smoothing raises modeled compression and bond quality.'),
+                h('li', null, 'New coils begin with local joints. Paddling or smoothing strengthens a contacted seam; reshaping across it can add outward tension, vertical stretch, opening shear, or inward compression.'),
                 h('li', null, 'Very wet, thin, tall, off-center, poorly consolidated, or strongly overhanging clay becomes less stable—especially at high wheel speed.'),
                 h('li', null, 'This is a teaching model, not a structural certification or kiln-control system.'))
             )
@@ -4268,8 +4629,8 @@
           logs.length ? h('div', { className: 'wheel-fire-advanced overflow-x-auto rounded-xl border border-slate-300 bg-white' },
             h('table', { className: 'w-full text-xs border-collapse' },
               h('caption', { className: 'text-left p-3 font-black text-slate-900' }, 'Measurement log · ' + activeSeriesName),
-              h('thead', null, h('tr', { className: 'bg-slate-100' }, ['Method', 'Tool', 'Ring', 'Recipe', 'RPM', 'Pressure', 'Moisture', 'Min wall', 'Uniformity', 'Compression', 'Bond', 'Overhang', 'Stability', 'Outcome', 'Observation', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-slate-300' }, label); }))),
-              h('tbody', null, logs.map(function (row, index) { var rowRecipe = normalizeRecipe(row.materialRecipe); var ringText = row.workRing === undefined ? 'not recorded' : 'Ring ' + (Number(row.workRing) + 1); return h('tr', { key: trialKey(row, index) }, h('td', { className: 'p-2 border-b whitespace-nowrap' }, row.method === 'coil' ? 'Coil' : 'Wheel'), h('td', { className: 'p-2 border-b whitespace-nowrap' }, row.tool || 'not recorded'), h('td', { className: 'p-2 border-b whitespace-nowrap' }, ringText), h('td', { className: 'p-2 border-b' }, rowRecipe ? (rowRecipe.label || (Math.round(rowRecipe.temperPercent) + '% temper')) : 'named body'), h('td', { className: 'p-2 border-b' }, row.rpm), h('td', { className: 'p-2 border-b' }, row.pressure + '%'), h('td', { className: 'p-2 border-b' }, row.moisture + '%'), h('td', { className: 'p-2 border-b' }, row.minWall + ' cm'), h('td', { className: 'p-2 border-b' }, row.uniformity + '%'), h('td', { className: 'p-2 border-b' }, finite(row.compression, 0) + '%'), h('td', { className: 'p-2 border-b' }, finite(row.coilBond, 0) + '%'), h('td', { className: 'p-2 border-b' }, finite(row.overhang, 0) + '%'), h('td', { className: 'p-2 border-b' }, row.stability + '%'), h('td', { className: 'p-2 border-b' }, row.outcome), h('td', { className: 'p-2 border-b max-w-xs' }, row.observation || 'No field note'), h('td', { className: 'p-2 border-b' }, h('div', { className: 'flex flex-wrap gap-1' }, h('button', { type: 'button', 'data-tooltip': 'Load this trial setup in Shape', 'aria-label': 'Replay Trial ' + (index + 1) + ' in Shape', onClick: function () { replayTrial(row); }, className: 'rounded border border-cyan-400 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-50' }, 'Replay in Shape'), h('button', { type: 'button', 'data-tooltip': 'Remove this trial from the active series; it can be restored immediately', 'aria-label': 'Remove Trial ' + (index + 1) + ' from series', onClick: function () { removeTrial(row, index); }, className: 'rounded border border-rose-300 px-2 py-1 text-[11px] font-bold text-rose-800 hover:bg-rose-50' }, 'Remove from series')))); }))
+              h('thead', null, h('tr', { className: 'bg-slate-100' }, ['Method', 'Tool', 'Ring', 'Recipe', 'RPM', 'Pressure', 'Moisture', 'Min wall', 'Uniformity', 'Compression', 'Coil continuity', 'Overhang', 'Stability', 'Outcome', 'Observation', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-slate-300' }, label); }))),
+              h('tbody', null, logs.map(function (row, index) { var rowRecipe = normalizeRecipe(row.materialRecipe); var ringText = row.workRing === undefined ? 'not recorded' : 'Ring ' + (Number(row.workRing) + 1); var jointText = row.method === 'coil' && finite(row.coilJointCount, 0) > 0 ? finite(row.coilBond, 0) + '% aggregate · weakest ' + finite(row.weakestCoilJoint, 0) + '% at ring ' + (Number(row.weakestCoilJointRing) + 1) : finite(row.coilBond, 0) + '%'; return h('tr', { key: trialKey(row, index) }, h('td', { className: 'p-2 border-b whitespace-nowrap' }, row.method === 'coil' ? 'Coil' : 'Wheel'), h('td', { className: 'p-2 border-b whitespace-nowrap' }, row.tool || 'not recorded'), h('td', { className: 'p-2 border-b whitespace-nowrap' }, ringText), h('td', { className: 'p-2 border-b' }, rowRecipe ? (rowRecipe.label || (Math.round(rowRecipe.temperPercent) + '% temper')) : 'named body'), h('td', { className: 'p-2 border-b' }, row.rpm), h('td', { className: 'p-2 border-b' }, row.pressure + '%'), h('td', { className: 'p-2 border-b' }, row.moisture + '%'), h('td', { className: 'p-2 border-b' }, row.minWall + ' cm'), h('td', { className: 'p-2 border-b' }, row.uniformity + '%'), h('td', { className: 'p-2 border-b' }, finite(row.compression, 0) + '%'), h('td', { className: 'p-2 border-b min-w-[160px]' }, jointText), h('td', { className: 'p-2 border-b' }, finite(row.overhang, 0) + '%'), h('td', { className: 'p-2 border-b' }, row.stability + '%'), h('td', { className: 'p-2 border-b' }, row.outcome), h('td', { className: 'p-2 border-b max-w-xs' }, row.observation || 'No field note'), h('td', { className: 'p-2 border-b' }, h('div', { className: 'flex flex-wrap gap-1' }, h('button', { type: 'button', 'data-tooltip': 'Load this trial setup in Shape', 'aria-label': 'Replay Trial ' + (index + 1) + ' in Shape', onClick: function () { replayTrial(row); }, className: 'rounded border border-cyan-400 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-50' }, 'Replay in Shape'), h('button', { type: 'button', 'data-tooltip': 'Remove this trial from the active series; it can be restored immediately', 'aria-label': 'Remove Trial ' + (index + 1) + ' from series', onClick: function () { removeTrial(row, index); }, className: 'rounded border border-rose-300 px-2 py-1 text-[11px] font-bold text-rose-800 hover:bg-rose-50' }, 'Remove from series')))); }))
             )
           ) : null,
           h('div', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-3 grid md:grid-cols-3 gap-3' },

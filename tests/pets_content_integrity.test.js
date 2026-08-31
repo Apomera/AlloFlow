@@ -379,7 +379,7 @@ describe('Pets Lab - nutrition label literacy prioritizes evidence over marketin
     expect((speciesCards.match(/verify:/g) || [])).toHaveLength(5);
     expect(speciesCards).toMatch(/finished diet/i);
     expect(speciesCards).toMatch(/individual dog/i);
-    expect(SRC).not.toMatch(/Vegan diets? for cats|medical neglect|MUST consume animal protein|single meat-free meal/i);
+    expect(SRC).not.toMatch(/Vegan diets? for cats|medical neglect|MUST consume animal protein|Must eat animal protein|single meat-free meal|AAFCO commercial cat foods guarantee minimums/i);
     expect(SRC).not.toMatch(/Iceberg lettuce is mostly water\s*\+\s*dangerous|AAFCO statement on label\s*=/i);
   });
 
@@ -406,5 +406,39 @@ describe('Pets Lab - nutrition label literacy prioritizes evidence over marketin
     expect(nutrition).toContain('https://www.fda.gov/animal-veterinary/animal-health-literacy/complete-and-balanced-pet-food');
     expect(nutrition).toContain('https://www.aafco.org/consumers/understanding-pet-food/reading-labels/');
     expect(nutrition).toContain('https://wsava.org/wp-content/uploads/2021/04/Selecting-a-pet-food-for-your-pet-updated-2021_WSAVA-Global-Nutrition-Toolkit.pdf');
+  });
+});
+
+describe('Pets Lab - interaction safety treats cues as uncertainty, not prediction', () => {
+  const challenges = sourceBetween('function bodyLanguageContextChallenges()', 'function normalizeBodyLanguageTransfer(');
+  const decoder = sourceBetween('function renderBodyLang()', '// LIFETIME COST CALCULATOR');
+  const diagram = sourceBetween('function svgEthogram()', '// WELFARE & ETHICS');
+  const groundTruth = sourceBetween('var AI_GROUND_TRUTH = [', '// WELFARE & ETHICS DATA');
+
+  it('adds a familiar-family-dog case with active child supervision and a protected retreat', () => {
+    expect((challenges.match(/\bid:\s*'/g) || [])).toHaveLength(7);
+    expect(challenges).toMatch(/id: 'dog-child-rest'/);
+    expect(challenges).toMatch(/familiar family dog/i);
+    expect(challenges).toMatch(/child-free retreat with active adult supervision/i);
+    expect(challenges).toMatch(/Familiarity does not replace active supervision/i);
+    expect(challenges).toMatch(/A growl is safety information/i);
+  });
+
+  it('renders a semantic three-step Pause, Space, Support protocol with primary sources', () => {
+    expect(decoder).toMatch(/data-pets-interaction-safety': 'pause-space-support'/);
+    expect(decoder).toMatch(/aria-labelledby': 'pets-interaction-safety-heading'/);
+    expect((decoder.match(/['"]data-pets-interaction-step['"]\s*:/g) || [])).toHaveLength(3);
+    expect(decoder).toMatch(/not a clearance test or a bite countdown/i);
+    expect(decoder).toMatch(/familiar or family pet still needs active adult supervision/i);
+    expect(decoder).toContain('https://www.cdc.gov/healthy-pets/about/dogs.html');
+    expect(decoder).toContain('https://avsab.org/understanding-canine-facial-expressions-body-postures/');
+  });
+
+  it('removes deterministic bite countdowns from learner and AI-facing guidance', () => {
+    expect(SRC).not.toMatch(/Most dog bites are predictable|minutes in advance|A bite is the next step|about-to-bite|lead-up was visible|Missing this window = lifelong fearfulness|Safe to greet/i);
+    expect(diagram).toMatch(/a bite is possible, not predictable/i);
+    expect(diagram).toMatch(/cannot guarantee safety or predict an exact countdown/i);
+    expect(groundTruth).toMatch(/no cue guarantees safety or predicts a precise time to bite/i);
+    expect(groundTruth).toMatch(/familiar family pets/i);
   });
 });

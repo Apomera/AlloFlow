@@ -2057,6 +2057,8 @@ function AeReleaseReview({ state, onCancel, onConfirm }) {
   const dialogRef = React.useRef(null);
   const [confirmed, setConfirmed] = React.useState(false);
   const busy = state.status === 'sending';
+  const repositoryBlocked = !!state.actionsDisabled;
+  const confirmationBlocked = busy || repositoryBlocked;
   React.useEffect(() => {
     const returnFocus = document.activeElement;
     setConfirmed(false);
@@ -2098,10 +2100,11 @@ function AeReleaseReview({ state, onCancel, onConfirm }) {
       </dl>
       {review.action === 'replace_trashed' && <div className="ae-note ae-danger"><strong>{t("educator_evaluation.replacement_requires_extra_care_fodon6", "Replacement requires extra care.")}</strong> {t("educator_evaluation.the_portal_confirmed_the_previous_file_is_trashed_confirm_20260826", "The portal confirmed the previous file is trashed. Confirm retention or legal-hold requirements before replacement. The prior file will remain trashed and owner-only.")}</div>}
       <div className="ae-note ae-warn"><strong>{t("educator_evaluation.personnel_record_disclosure_6atx3y", "Personnel-record disclosure:")}</strong> {t("educator_evaluation.this_grants_access_to_a_finalized_evaluation_summary_outsi_11y3f9a", "this grants access to a finalized evaluation summary outside the portal. Google may surface Drive access in its own activity or notification interfaces. Verify that the account above belongs to the intended educator.")}</div>
-      <label className="ae-release-confirm"><input ref={firstRef} type="checkbox" checked={confirmed} disabled={busy} onChange={(event) => setConfirmed(event.target.checked)}/><span>{t("educator_evaluation.i_reviewed_the_recipient_and_understand_that_confirming_gr_2h5p2l", "I reviewed the recipient and understand that confirming grants view-only Drive access to this finalized personnel-record summary.")}</span></label>
+      <label className="ae-release-confirm"><input ref={firstRef} type="checkbox" checked={confirmed} disabled={confirmationBlocked} onChange={(event) => setConfirmed(event.target.checked)}/><span>{t("educator_evaluation.i_reviewed_the_recipient_and_understand_that_confirming_gr_2h5p2l", "I reviewed the recipient and understand that confirming grants view-only Drive access to this finalized personnel-record summary.")}</span></label>
       {busy && <div className="ae-note" role="status" aria-live="polite">{t("educator_evaluation.confirming_released_summary_access_wait_20260827", "Confirming released-summary access. Keep this review open until the portal reports the result.")}</div>}
+      {repositoryBlocked && !busy && <div className="ae-note ae-warn" role="status" aria-live="polite">{t('educator_evaluation.release_repository_unavailable_20260830', 'Confirmation is paused until the district repository is saved and any error or concurrent edit is resolved.')}</div>}
       {state.error && <div className="ae-note ae-danger" role="alert">{state.error}</div>}
-      <div className="ae-release-actions"><button type="button" className="ae-btn" disabled={busy} onClick={onCancel}>{t("educator_evaluation.cancel_ew9em3", "Cancel")}</button><button type="button" className="ae-btn ae-btn-primary" disabled={!confirmed || busy} onClick={onConfirm}>{busy ? t("educator_evaluation.confirming_access_5itq6j", 'Confirming access…') : (review.action === 'verify_existing' ? t("educator_evaluation.confirm_and_verify_access_jas4xj", 'Confirm and verify access') : t("educator_evaluation.confirm_and_grant_access_1cd5aju", 'Confirm and grant access'))}</button></div>
+      <div className="ae-release-actions"><button type="button" className="ae-btn" disabled={busy} onClick={onCancel}>{t("educator_evaluation.cancel_ew9em3", "Cancel")}</button><button type="button" className="ae-btn ae-btn-primary" disabled={!confirmed || confirmationBlocked} onClick={onConfirm}>{busy ? t("educator_evaluation.confirming_access_5itq6j", 'Confirming access…') : (review.action === 'verify_existing' ? t("educator_evaluation.confirm_and_verify_access_jas4xj", 'Confirm and verify access') : t("educator_evaluation.confirm_and_grant_access_1cd5aju", 'Confirm and grant access'))}</button></div>
     </section>
   </div>;
 }
@@ -2395,8 +2398,14 @@ function AeRatingComposer({ workspace, teacher, role, updateTeacher, evidenceFin
       : t("educator_evaluation.full_transparency_into_the_arithmetic_these_are_the_only_i_j6bml4", 'Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math.')}</p></div>
       <div>{overall === null ? <span className={'ae-chip ' + (role === 'evaluator' ? 'ae-chip-amber' : 'ae-chip-neutral')}>{role === 'evaluator' ? t("educator_evaluation.draft_1pqt609", 'Draft · ') + missing.length + ' input' + (missing.length === 1 ? '' : 's') + ' missing' : t("educator_evaluation.in_progress_irp8zc", 'In progress · ') + missing.length + ' component' + (missing.length === 1 ? '' : 's') + t("educator_evaluation.still_ahead_in_your_cycle_1c4dt54", ' still ahead in your cycle')}</span> : (AE_ACTIVE_FW.id === 'portland_me' ? <span className="ae-chip ae-chip-blue">{(aePortlandPracticeRating(teacher.ratings.domains) || {}).label}</span> : <span className="ae-chip ae-chip-blue">{aeRoundedScore(overall).toFixed(2)} · {aeBand(overall)}</span>)}</div>
     </div>
-    {role === 'evaluator' && aiReflectionEnabled && <div className="ae-note ae-info" style={{ marginTop: 12 }}><strong>{t("educator_evaluation.second_read_on_your_own_reasoning_1ftxo87", "Second read on your own reasoning")}</strong><p className="ae-help" style={{ marginTop: 4 }}>{t("educator_evaluation.asks_a_model_whether_the_evidence_you_wrote_supports_the_r_77kvu4", "Asks a model whether the evidence you wrote supports the ratings you assigned, and what else it could mean. Advisory only: nothing it says is stored in the record.")}</p><button type="button" className="ae-btn" onClick={askForReflection} disabled={reflection.status === 'working'}>{reflection.status === 'working' ? t("educator_evaluation.checking_vyewnp", 'Checking…') : t("educator_evaluation.ask_for_alternative_readings_1fflejn", 'Ask for alternative readings')}</button>{reflection.status === 'done' && <div style={{ marginTop: 10 }}><p className="ae-help"><strong>{t("educator_evaluation.suggestion_not_a_finding_jom4g2", "Suggestion, not a finding.")}</strong> {t("educator_evaluation.you_decide_what_if_anything_to_change_1tu60ru", "You decide what, if anything, to change.")}</p><pre style={{ whiteSpace: 'pre-wrap', font: 'inherit', margin: 0 }}>{reflection.text}</pre></div>}{reflection.status === 'error' && <p className="ae-help" style={{ marginTop: 8 }}>{reflection.text}</p>}</div>}
-    {evidenceFindings && evidenceFindings.length > 0 && <div className={'ae-note ' + (evidenceFindings.some((item) => item.severity === 'high') ? 'ae-warn' : 'ae-info')} style={{ marginTop: 12 }}><strong>{role === 'evaluator' ? t("educator_evaluation.check_the_evidence_before_you_finalise_h00wya", 'Check the evidence before you finalise') : t("educator_evaluation.what_the_documentation_shows_5puljg", 'What the documentation shows')}</strong><ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>{evidenceFindings.map((item, index) => <li key={item.code + '-' + (item.domainId || index)}>{item.message}</li>)}</ul><p className="ae-help" style={{ marginTop: 8 }}>{role === 'evaluator' ? t("educator_evaluation.counted_from_the_evidence_you_tagged_on_this_device_a_rati_1ej0m2l", 'Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator.') : t("educator_evaluation.counted_from_the_evidence_tagged_to_your_record_you_can_ra_a31vfv", 'Counted from the evidence tagged to your record. You can raise any of these with your evaluator.')}</p></div>}
+    {role === 'evaluator' && aiReflectionEnabled && <div className="ae-note ae-info" style={{ marginTop: 12 }}>
+      <strong>{t("educator_evaluation.second_read_on_your_own_reasoning_1ftxo87", "Second read on your own reasoning")}</strong>
+      <p className="ae-help" style={{ marginTop: 4 }}>{t("educator_evaluation.asks_a_model_whether_the_evidence_you_wrote_supports_the_r_77kvu4", "Asks a model whether the evidence you wrote supports the ratings you assigned, and what else it could mean. Advisory only: nothing it says is stored in the record.")}</p>
+      <button type="button" className="ae-btn" onClick={askForReflection} disabled={reflection.status === 'working'} aria-describedby={reflection.status === 'idle' ? undefined : 'ae-ai-reflection-status-' + teacher.id}>{reflection.status === 'working' ? t("educator_evaluation.checking_vyewnp", 'Checking…') : t("educator_evaluation.ask_for_alternative_readings_1fflejn", 'Ask for alternative readings')}</button>
+      {reflection.status === 'working' && <p id={'ae-ai-reflection-status-' + teacher.id} className="ae-help" style={{ marginTop: 8 }} role="status" aria-live="polite" aria-atomic="true">{t('educator_evaluation.ai_reflection_checking_selected_evidence_20260830', 'Checking this educator’s published evidence. The response will remain scoped to this educator.')}</p>}
+      {reflection.status === 'done' && <div style={{ marginTop: 10 }}><p id={'ae-ai-reflection-status-' + teacher.id} className="ae-help" role="status" aria-live="polite" aria-atomic="true">{t('educator_evaluation.ai_reflection_ready_20260830', 'Alternative reading ready for this educator.')}</p><p className="ae-help" style={{ marginTop: 4 }}><strong>{t("educator_evaluation.suggestion_not_a_finding_jom4g2", "Suggestion, not a finding.")}</strong> {t("educator_evaluation.you_decide_what_if_anything_to_change_1tu60ru", "You decide what, if anything to change.")}</p><pre style={{ whiteSpace: 'pre-wrap', font: 'inherit', margin: 0 }}>{reflection.text}</pre></div>}
+      {reflection.status === 'error' && <p id={'ae-ai-reflection-status-' + teacher.id} className="ae-help" style={{ marginTop: 8 }} role="alert" aria-live="assertive" aria-atomic="true">{reflection.text}</p>}
+    </div>}    {evidenceFindings && evidenceFindings.length > 0 && <div className={'ae-note ' + (evidenceFindings.some((item) => item.severity === 'high') ? 'ae-warn' : 'ae-info')} style={{ marginTop: 12 }}><strong>{role === 'evaluator' ? t("educator_evaluation.check_the_evidence_before_you_finalise_h00wya", 'Check the evidence before you finalise') : t("educator_evaluation.what_the_documentation_shows_5puljg", 'What the documentation shows')}</strong><ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>{evidenceFindings.map((item, index) => <li key={item.code + '-' + (item.domainId || index)}>{item.message}</li>)}</ul><p className="ae-help" style={{ marginTop: 8 }}>{role === 'evaluator' ? t("educator_evaluation.counted_from_the_evidence_you_tagged_on_this_device_a_rati_1ej0m2l", 'Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator.') : t("educator_evaluation.counted_from_the_evidence_tagged_to_your_record_you_can_ra_a31vfv", 'Counted from the evidence tagged to your record. You can raise any of these with your evaluator.')}</p></div>}
     <div className="ae-rating-grid" style={{ marginTop: 12 }}>
       {AE_DOMAINS.map((domain) => <div className="ae-rating-card" key={domain.id} style={{ borderTop: '4px solid ' + domain.color }}>
         <h4>{domain.code}. {aeRubricDisplayLabel(domain.label)} <span className="ae-chip ae-chip-neutral">{AE_ACTIVE_FW.id === 'pa_act13' ? domain.weight + t("educator_evaluation.of_o_and_p_eiuk1e", "% of O&P") : t("educator_evaluation.equal_domain_weight", "equal weight")}</span></h4>
@@ -4251,6 +4260,7 @@ function EducatorEvaluationPanel(props) {
   const [notificationState, setNotificationState] = React.useState({ status: 'idle', key: '', teacherId: '', target: '', recipient: '', recipients: [], review: null, error: '' });
   const [notificationReceipts, setNotificationReceipts] = React.useState({});
   const [releaseShareState, setReleaseShareState] = React.useState({ status: 'idle', error: '', review: null, result: null });
+  const [reflection, setReflection] = React.useState({ status: 'idle', text: '', teacherId: '', requestId: 0 });
   const [actionReview, setActionReview] = React.useState(null);
   const dialogRef = React.useRef(null);
   const workspaceRef = React.useRef(workspace);
@@ -4265,9 +4275,12 @@ function EducatorEvaluationPanel(props) {
   const remoteUserRef = React.useRef(null);
   const remoteInFlightRef = React.useRef(false);
   const notificationRequestRef = React.useRef(false);
+  const releaseRequestRef = React.useRef(false);
+  const reflectionRequestRef = React.useRef({ teacherId: '', requestId: 0 });
   const notificationReceiptRef = React.useRef(null);
   const focusedNotificationReceiptRef = React.useRef('');
   const activeTabRef = React.useRef(tab);
+  const requestCloseRef = React.useRef(null);
   activeTabRef.current = tab;
   const restoreRemoteWorkspaceFocus = React.useCallback(() => {
     requestAnimationFrame(() => {
@@ -4279,6 +4292,8 @@ function EducatorEvaluationPanel(props) {
     });
   }, []);
   const selectedTeacher = workspace.teachers.find((teacher) => teacher.id === selectedTeacherId) || null;
+  const selectedTeacherIdRef = React.useRef(selectedTeacherId);
+  selectedTeacherIdRef.current = selectedTeacherId;
   // Local role switching is normally a read-only visibility preview because it
   // is not authentication. The guided sample is the one deliberate exception:
   // every record is fictional and explicitly marked simulated, so principals
@@ -4292,6 +4307,48 @@ function EducatorEvaluationPanel(props) {
     setOperationNotice({ text: String(message || ''), type: tone, id: Date.now() });
     setLiveMessage({ text: String(message || ''), id: Date.now() });
   }, [addToast]);
+  const requestClose = React.useCallback(() => {
+    if (isRemote) {
+      const savePending = remoteInFlightRef.current
+        || remoteState.status === 'saving'
+        || !!remoteDebounceRef.current
+        || !!remotePendingRef.current
+        || !!remoteQueuedSaveRef.current
+        || !!remoteActiveSaveRef.current;
+      const connectedSaveFailure = !!remoteState.currentUser && ['error', 'conflict'].includes(remoteState.status);
+      if (savePending || connectedSaveFailure) {
+        const message = remoteState.status === 'conflict'
+          ? t('educator_evaluation.close_blocked_resolve_concurrent_edit_20260830', 'Close blocked because a concurrent edit still needs review. Choose which district version to keep before closing.')
+          : (remoteState.status === 'error'
+            ? t('educator_evaluation.close_blocked_remote_change_unconfirmed_20260830', 'Close blocked because the last district change is not confirmed. Review the save error and recover or reload the district copy before closing.')
+            : t('educator_evaluation.close_blocked_remote_save_pending_20260830', 'Close blocked while a district save is still pending. Keep this window open until saving finishes.'));
+        notify(message, 'error');
+        return false;
+      }
+      onClose();
+      return true;
+    }
+    if (showLocalOnboarding || localRecovery) {
+      onClose();
+      return true;
+    }
+    if (localSaveState.status === 'error') {
+      notify(t('educator_evaluation.close_blocked_local_save_error_20260830', 'Close blocked because changes are not saved. Use Retry save or Download emergency backup before closing.'), 'error');
+      return false;
+    }
+    if (['idle', 'saving'].includes(localSaveState.status)) {
+      const result = aeStore(workspaceRef.current);
+      if (!result.ok) {
+        setLocalSaveState({ status: 'error', error: result.error, detail: result.detail || '', savedAt: '' });
+        notify(result.error + ' ' + t('educator_evaluation.close_blocked_use_local_recovery_actions_20260830', 'Close blocked. Use Retry save or Download emergency backup before closing.'), 'error');
+        return false;
+      }
+      setLocalSaveState({ status: 'saved', error: '', savedAt: result.savedAt });
+    }
+    onClose();
+    return true;
+  }, [isRemote, localRecovery, localSaveState.status, notify, onClose, remoteState.currentUser, remoteState.status, showLocalOnboarding]);
+  requestCloseRef.current = requestClose;
   const requestActionReview = React.useCallback((review) => {
     if (!review || typeof review.onConfirm !== 'function') return;
     setActionReview(Object.assign({}, review, { token: aeId('review') }));
@@ -4402,8 +4459,9 @@ function EducatorEvaluationPanel(props) {
   React.useEffect(() => {
     if (!isRemote) return undefined;
     const beforeUnload = (event) => {
-      const pending = remoteInFlightRef.current || remoteState.status === 'saving' || !!remoteDebounceRef.current || !!remotePendingRef.current || !!remoteQueuedSaveRef.current;
-      if (!pending) return;
+      const pending = remoteInFlightRef.current || remoteState.status === 'saving' || !!remoteDebounceRef.current || !!remotePendingRef.current || !!remoteQueuedSaveRef.current || !!remoteActiveSaveRef.current;
+      const unresolved = !!remoteState.currentUser && ['error', 'conflict'].includes(remoteState.status);
+      if (!pending && !unresolved) return;
       event.preventDefault();
       event.returnValue = '';
     };
@@ -4424,7 +4482,7 @@ function EducatorEvaluationPanel(props) {
     (focusable()[0] || dialog).focus();
     const keydown = (event) => {
       if (event.defaultPrevented || !isTopTrap() || dialog.closest('[inert],[aria-hidden="true"]')) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); onClose(); return; }
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); requestCloseRef.current(); return; }
       if (event.key !== 'Tab') return;
       const items = focusable();
       if (!items.length) { event.preventDefault(); dialog.focus(); return; }
@@ -4441,7 +4499,7 @@ function EducatorEvaluationPanel(props) {
       if (index !== -1) trapStack.splice(index, 1);
       if (wasTop && previous && previous !== document.body && previous.isConnected && typeof previous.focus === 'function') previous.focus();
     };
-  }, [standalone, onClose]);
+  }, [standalone]);
 
   const announce = React.useCallback((message) => {
     setLiveMessage((current) => ({ text: '', id: current.id + 1 }));
@@ -4452,6 +4510,7 @@ function EducatorEvaluationPanel(props) {
   const notificationKey = selectedTeacher ? selectedTeacher.id + '|' + notificationTarget : '';
   const notificationReceipt = notificationKey ? (notificationReceipts[notificationKey] || null) : null;
   const notificationActionsDisabled = ['saving', 'error', 'conflict'].includes(remoteState.status);
+  const releaseActionsDisabled = ['loading', 'saving', 'error', 'conflict'].includes(remoteState.status) || !!remoteConflict;
   const notificationBusy = ['reviewing', 'reviewing_recipient', 'sending', 'checking_outcome'].includes(notificationState.status);
 
   const recordNotificationOutcome = React.useCallback((lookup, result) => {
@@ -4693,28 +4752,57 @@ function EducatorEvaluationPanel(props) {
   // in Code.gs). Reloads the district copy afterwards so the record's
   // releasedDoc link appears for both parties.
   const beginReleasedEvaluationReview = React.useCallback(async () => {
-    if (!isRemote || !selectedTeacher || typeof repository.reviewReleasedEvaluation !== 'function' || ['reviewing', 'sending'].includes(releaseShareState.status)) return;
+    const teacherId = selectedTeacher && selectedTeacher.id;
+    if (!isRemote || !teacherId || releaseActionsDisabled || releaseRequestRef.current || typeof repository.reviewReleasedEvaluation !== 'function' || ['reviewing', 'sending'].includes(releaseShareState.status)) return;
+    releaseRequestRef.current = true;
     setReleaseShareState({ status: 'reviewing', error: '', review: null, result: null });
     try {
-      const result = await repository.reviewReleasedEvaluation({ teacherId: selectedTeacher.id });
+      const result = await repository.reviewReleasedEvaluation({ teacherId });
       if (!result || result.ok === false || !result.review || !result.review.token) throw new Error((result && (result.error || result.message)) || t("educator_evaluation.the_release_disclosure_could_not_be_prepared_13mhibq", 'The release disclosure could not be prepared.'));
+      const returnedTeacherId = aeSafeId(result.review.teacherId, '');
+      if (returnedTeacherId && returnedTeacherId !== teacherId) throw new Error(t('educator_evaluation.release_review_educator_mismatch_20260830', 'The district repository returned a disclosure review for a different educator. Nothing was shared.'));
       if (!remoteMountedRef.current) return;
-      setReleaseShareState({ status: 'ready', error: '', review: result.review, result: null });
+      if (selectedTeacherIdRef.current !== teacherId) {
+        const message = t('educator_evaluation.release_review_selection_changed_20260830', 'The selected educator changed while the disclosure review was being prepared. The review was canceled; nothing was shared.');
+        setReleaseShareState({ status: 'idle', error: '', review: null, result: null });
+        announce(message);
+        notify(message, 'info');
+        return;
+      }
+      setReleaseShareState({ status: 'ready', error: '', review: Object.assign({}, result.review, { teacherId }), result: null });
       announce(t("educator_evaluation.released_summary_disclosure_review_opened_nothing_has_been_590j1", 'Released-summary disclosure review opened. Nothing has been shared yet.'));
     } catch (error) {
       if (!remoteMountedRef.current) return;
       const message = String((error && error.message) || error || t("educator_evaluation.the_release_disclosure_could_not_be_prepared_13mhibq", 'The release disclosure could not be prepared.'));
       setReleaseShareState({ status: 'error', error: message, review: null, result: null });
       notify(message, 'error');
+    } finally {
+      releaseRequestRef.current = false;
     }
-  }, [isRemote, selectedTeacher, repository, releaseShareState.status, announce, notify]);
+  }, [isRemote, selectedTeacher, repository, releaseShareState.status, releaseActionsDisabled, announce, notify]);
 
   const shareReleasedEvaluation = React.useCallback(async () => {
     const review = releaseShareState.review;
-    if (!isRemote || !selectedTeacher || !review || typeof repository.shareReleasedEvaluation !== 'function' || releaseShareState.status === 'sending') return;
+    const reviewedTeacherId = aeSafeId(review && review.teacherId, '');
+    if (!isRemote || !review || !reviewedTeacherId || typeof repository.shareReleasedEvaluation !== 'function' || releaseRequestRef.current || releaseShareState.status === 'sending') return;
+    if (selectedTeacherIdRef.current !== reviewedTeacherId) {
+      const message = t('educator_evaluation.release_review_stale_selection_20260830', 'The selected educator no longer matches this disclosure review. The review was canceled; nothing was shared.');
+      setReleaseShareState({ status: 'error', error: message, review: null, result: null });
+      announce(message);
+      notify(message, 'error');
+      return;
+    }
+    if (releaseActionsDisabled) {
+      const message = t('educator_evaluation.release_wait_for_repository_20260830', 'Wait until the district repository is saved and any error or concurrent edit is resolved before sharing a released summary.');
+      setReleaseShareState((current) => ({ ...current, status: 'ready', error: message }));
+      announce(message);
+      notify(message, 'error');
+      return;
+    }
+    releaseRequestRef.current = true;
     setReleaseShareState((current) => ({ ...current, status: 'sending', error: '' }));
     try {
-      const result = await repository.shareReleasedEvaluation({ teacherId: selectedTeacher.id, reviewToken: review.token });
+      const result = await repository.shareReleasedEvaluation({ teacherId: reviewedTeacherId, reviewToken: review.token });
       if (!result || result.ok === false) throw new Error((result && (result.error || result.message)) || t("educator_evaluation.the_released_evaluation_could_not_be_shared_16kckh", 'The released evaluation could not be shared.'));
       if (!remoteMountedRef.current) return;
       const pending = !!result.recoveryPending;
@@ -4730,15 +4818,16 @@ function EducatorEvaluationPanel(props) {
       const message = String((error && error.message) || error || t("educator_evaluation.the_released_evaluation_could_not_be_shared_16kckh", 'The released evaluation could not be shared.'));
       setReleaseShareState((current) => ({ ...current, status: 'ready', error: message }));
       notify(message, 'error');
+    } finally {
+      releaseRequestRef.current = false;
     }
-  }, [isRemote, selectedTeacher, repository, releaseShareState, announce, notify, loadRemoteWorkspace]);
+  }, [isRemote, repository, releaseShareState, releaseActionsDisabled, announce, notify, loadRemoteWorkspace]);
 
   const cancelReleasedEvaluationReview = React.useCallback(() => {
-    if (releaseShareState.status === 'sending') return;
+    if (releaseShareState.status === 'sending' || releaseRequestRef.current) return;
     setReleaseShareState({ status: 'idle', error: '', review: null, result: null });
     announce(t("educator_evaluation.released_summary_review_canceled_nothing_was_shared_pk5bmb", 'Released-summary review canceled. Nothing was shared.'));
   }, [releaseShareState.status, announce]);
-
   const enqueueRemoteSave = React.useCallback((job) => {
     if (!isRemote || !job) return;
     if (remoteInFlightRef.current) {
@@ -5389,40 +5478,49 @@ function EducatorEvaluationPanel(props) {
     aeDownload('evaluation-response-' + selectedTeacher.code + '-' + aeToday() + '.json', 'application/json', JSON.stringify(packet, null, 2));
     commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: t("educator_evaluation.educator_response_packet_created_1dxrsw9", 'Educator response packet created'), entityType: 'evaluation', entityId: selectedTeacher.id }, 'Response packet created');
   };
-  const [reflection, setReflection] = React.useState({ status: 'idle', text: '' });
   const aiReflectionEnabled = !!(workspace.config && workspace.config.aiReflectionEnabled);
   const askForReflection = () => {
-    if (!selectedTeacher) return;
+    const teacherId = selectedTeacher && selectedTeacher.id;
+    if (!teacherId) return;
+    const requestId = (Number(reflectionRequestRef.current.requestId) || 0) + 1;
+    reflectionRequestRef.current = { teacherId, requestId };
+    const setScopedReflection = (status, text) => {
+      const currentRequest = reflectionRequestRef.current;
+      if (!remoteMountedRef.current || selectedTeacherIdRef.current !== teacherId || currentRequest.requestId !== requestId || currentRequest.teacherId !== teacherId) return false;
+      setReflection({ status, text, teacherId, requestId });
+      return true;
+    };
     const ask = typeof window !== 'undefined' ? window.callGemini : null;
     if (typeof ask !== 'function') {
-      setReflection({ status: 'error', text: t("educator_evaluation.no_ai_backend_is_configured_in_this_copy_so_this_stays_una_1bghxda", 'No AI backend is configured in this copy, so this stays unavailable.') });
+      setScopedReflection('error', t("educator_evaluation.no_ai_backend_is_configured_in_this_copy_so_this_stays_una_1bghxda", 'No AI backend is configured in this copy, so this stays unavailable.'));
       return;
     }
     const labels = {};
     AE_RATINGS.forEach((entry) => { labels[String(entry.value)] = entry.label; });
-    const prompt = aeBuildReflectionPrompt(workspace, selectedTeacher.id, AE_DOMAINS, labels);
+    const prompt = aeBuildReflectionPrompt(workspaceRef.current, teacherId, AE_DOMAINS, labels);
     if (!prompt) {
-      setReflection({ status: 'error', text: t("educator_evaluation.there_is_no_published_evidence_yet_for_this_educator_so_th_10adzy7", 'There is no published evidence yet for this educator, so there is nothing to check.') });
+      setScopedReflection('error', t("educator_evaluation.there_is_no_published_evidence_yet_for_this_educator_so_th_10adzy7", 'There is no published evidence yet for this educator, so there is nothing to check.'));
       return;
     }
-    setReflection({ status: 'working', text: '' });
+    setScopedReflection('working', '');
     Promise.resolve()
       .then(() => ask(prompt))
       .then((answer) => {
         const text = typeof answer === 'string' ? answer : (answer && (answer.text || answer.output)) || '';
-        setReflection({ status: text ? 'done' : 'error', text: text || t("educator_evaluation.the_model_returned_nothing_t0z2ap", 'The model returned nothing.') });
+        if (!setScopedReflection(text ? 'done' : 'error', text || t("educator_evaluation.the_model_returned_nothing_t0z2ap", 'The model returned nothing.'))) return;
         if (text) {
           // Record that assistance was used. The answer itself is never written into the record.
           commit(() => {}, {
-            teacherId: selectedTeacher.id, event: 'CONFIG_UPDATED',
+            teacherId, event: 'CONFIG_UPDATED',
             summary: t("educator_evaluation.ai_reflection_requested_on_the_documented_evidence_the_rep_dcuexu", 'AI reflection requested on the documented evidence; the reply was shown to the evaluator and not stored in the record.'),
-            entityType: 'evaluation', entityId: selectedTeacher.id,
+            entityType: 'evaluation', entityId: teacherId,
           }, null);
         }
       })
-      .catch((error) => setReflection({ status: 'error', text: t("educator_evaluation.that_request_failed_1crcmpk", 'That request failed: ') + ((error && error.message) || t("educator_evaluation.unknown_error_1r8cjdv", 'unknown error')) }));
+      .catch((error) => {
+        setScopedReflection('error', t("educator_evaluation.that_request_failed_1crcmpk", 'That request failed: ') + ((error && error.message) || t("educator_evaluation.unknown_error_1r8cjdv", 'unknown error')));
+      });
   };
-
   const exportRubric = () => {
     aeDownload('evaluation-rubric-' + (AE_ACTIVE_FW.versionTag || 'current') + '.json', 'application/json',
       JSON.stringify({
@@ -5647,6 +5745,9 @@ function EducatorEvaluationPanel(props) {
     enqueueRemoteSave({ workspace: aeClone(replay), baseWorkspace, mutation, generation, restoreFocusOnSuccess: true });
   };
   const remotePanelUnavailable = isRemote && ['error', 'conflict'].includes(remoteState.status);
+  const visibleReflection = selectedTeacher && reflection.teacherId === selectedTeacher.id
+    ? reflection
+    : { status: 'idle', text: '', teacherId: selectedTeacher ? selectedTeacher.id : '', requestId: 0 };
   const blockRemoteMutation = (event) => { if (!isRemote || !remotePanelUnavailable) return; event.preventDefault(); event.stopPropagation(); };
   const tabKey = (event, index) => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); let next = index; if (event.key === 'ArrowRight') next = (index + 1) % tabs.length; if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length; if (event.key === 'Home') next = 0; if (event.key === 'End') next = tabs.length - 1; setTab(tabs[next][0]); requestAnimationFrame(() => { const el = document.getElementById('ae-tab-' + tabs[next][0]); if (el) el.focus(); }); };
 
@@ -5708,7 +5809,7 @@ function EducatorEvaluationPanel(props) {
   if (!isRemote && localRecovery) {
     const corrupt = localRecovery.status === 'corrupt';
     const recoveryBody = <div ref={dialogRef} tabIndex={-1} className="ae-workspace" role={standalone ? undefined : 'dialog'} aria-modal={standalone ? undefined : 'true'} aria-labelledby="ae-recovery-title">
-      <header className="ae-top"><div className="ae-brand"><div className="ae-mark" aria-hidden="true">A✓</div><div><h1>{t("educator_evaluation.educator_growth_and_evaluation_1rtfqhx", "Educator Growth & Evaluation")}</h1><p>{t("educator_evaluation.local_workspace_recovery_ut3des", "Local workspace recovery")}</p></div></div>{!standalone && <button type="button" className="ae-close" onClick={onClose} aria-label={t("educator_evaluation.close_educator_growth_and_evaluation_1d9f8pc", "Close Educator Growth and Evaluation")}>×</button>}</header>
+      <header className="ae-top"><div className="ae-brand"><div className="ae-mark" aria-hidden="true">A✓</div><div><h1>{t("educator_evaluation.educator_growth_and_evaluation_1rtfqhx", "Educator Growth & Evaluation")}</h1><p>{t("educator_evaluation.local_workspace_recovery_ut3des", "Local workspace recovery")}</p></div></div>{!standalone && <button type="button" className="ae-close" onClick={requestClose} aria-label={t("educator_evaluation.close_educator_growth_and_evaluation_1d9f8pc", "Close Educator Growth and Evaluation")}>×</button>}</header>
       <main className="ae-main"><div className="ae-page"><section className="ae-card ae-span-12" role="alert"><h2 id="ae-recovery-title">{corrupt ? t("educator_evaluation.your_saved_workspace_needs_recovery_ykrfqg", 'Your saved workspace needs recovery') : t("educator_evaluation.this_browser_is_not_allowing_local_saving_d2k6zc", 'This browser is not allowing local saving')}</h2><p>{corrupt ? t("educator_evaluation.alloflow_stopped_before_replacing_the_unreadable_data_down_rqgdor", 'AlloFlow stopped before replacing the unreadable data. Download the raw copy for recovery, retry after checking browser storage, or explicitly start fresh.') : t("educator_evaluation.no_personnel_records_have_been_written_retry_after_enablin_1yi6xpu", 'No personnel records have been written. Retry after enabling site storage, or continue only as a temporary session and export before closing.')}</p>{localRecovery.error && <p className="ae-sub">{t("educator_evaluation.technical_detail_o968s9", "Technical detail:")} {localRecovery.error}</p>}<div className="ae-actions" style={{ marginTop: 16 }}><button type="button" className="ae-btn ae-btn-primary" onClick={retryLocalRecovery}>{t("educator_evaluation.try_storage_again_1hhjsxj", "Try storage again")}</button>{corrupt && <button type="button" className="ae-btn" onClick={downloadDamagedWorkspace}>{t("educator_evaluation.download_damaged_raw_copy_g5mzhx", "Download damaged raw copy")}</button>}{!corrupt && <button type="button" className="ae-btn" onClick={continueTemporarySession}>{t("educator_evaluation.continue_without_saving_1qelfse", "Continue without saving")}</button>}<button type="button" className="ae-btn ae-btn-danger" onClick={startFreshAfterRecovery}>{localRecoveryResetArmed ? t("educator_evaluation.confirm_permanently_start_fresh_1o1dz7m", 'Confirm: permanently start fresh') : t("educator_evaluation.start_a_new_blank_workspace_1vw2z4x", 'Start a new blank workspace')}</button>{localRecoveryResetArmed && <button type="button" className="ae-btn" onClick={() => setLocalRecoveryResetArmed(false)}>{t("educator_evaluation.cancel_reset_4y3d64", "Cancel reset")}</button>}</div>{localRecoveryResetArmed && <div className="ae-note ae-danger" style={{ marginTop: 12 }}><strong>{t("educator_evaluation.this_removes_the_unreadable_saved_copy_from_browser_storag_5rpjrj", "This removes the unreadable saved copy from browser storage.")}</strong> {t("educator_evaluation.download_it_first_if_recovery_may_be_needed_8neirt", "Download it first if recovery may be needed.")}</div>}</section></div></main>
       <footer className="ae-footer"><span>{t("educator_evaluation.unreadable_data_is_never_overwritten_automatically_1h8swm6", "Unreadable data is never overwritten automatically.")}</span><span>{t("educator_evaluation.local_recovery_gate_14ahzui", "Local recovery gate")}</span></footer>
     </div>;
@@ -5718,11 +5819,11 @@ function EducatorEvaluationPanel(props) {
   if (isRemote && (remoteState.status === 'loading' || (remoteState.status === 'error' && !remoteState.currentUser))) {
     const failed = remoteState.status === 'error';
     const gateBody = <div ref={dialogRef} tabIndex={-1} className="ae-workspace" role={standalone ? undefined : 'dialog'} aria-modal={standalone ? undefined : 'true'} aria-labelledby="ae-title" aria-busy={failed ? undefined : 'true'}>
-      <header className="ae-top"><div className="ae-brand"><div className="ae-mark" aria-hidden="true">A✓</div><div><h1 id="ae-title">{t("educator_evaluation.educator_growth_and_evaluation_1rtfqhx", "Educator Growth & Evaluation")}</h1><p>{t("educator_evaluation.district_authenticated_portal_11fu2p9", "District-authenticated portal")}</p></div></div>{!standalone && <button type="button" className="ae-close" onClick={onClose} aria-label={t("educator_evaluation.close_educator_growth_and_evaluation_1d9f8pc", "Close Educator Growth and Evaluation")}>×</button>}</header>
+      <header className="ae-top"><div className="ae-brand"><div className="ae-mark" aria-hidden="true">A✓</div><div><h1 id="ae-title">{t("educator_evaluation.educator_growth_and_evaluation_1rtfqhx", "Educator Growth & Evaluation")}</h1><p>{t("educator_evaluation.district_authenticated_portal_11fu2p9", "District-authenticated portal")}</p></div></div>{!standalone && <button type="button" className="ae-close" onClick={requestClose} aria-label={t("educator_evaluation.close_educator_growth_and_evaluation_1d9f8pc", "Close Educator Growth and Evaluation")}>×</button>}</header>
       <main className="ae-main"><div className="ae-page"><section className="ae-card" role={failed ? 'alert' : 'status'} aria-live={failed ? 'assertive' : 'polite'}><h2>{failed ? t("educator_evaluation.the_secure_workspace_could_not_be_opened_11le516", 'The secure workspace could not be opened') : t("educator_evaluation.loading_your_district_evaluation_workspace_10ffvdf", 'Loading your district evaluation workspace')}</h2><p>{failed ? remoteState.error : t("educator_evaluation.verifying_your_managed_google_account_and_assigned_records_puo0o7", 'Verifying your managed Google account and assigned records…')}</p>{failed && <p className="ae-sub">{t("educator_evaluation.if_you_should_have_access_ask_the_district_administrator_w_u6wtg6", "If you should have access, ask the district administrator who set up this portal to add your account. Access is granted by the district, not by this page.")}</p>}{failed && <div className="ae-actions" style={{ marginTop: 14 }}><button type="button" className="ae-btn ae-btn-primary" onClick={loadRemoteWorkspace}>{t("educator_evaluation.try_again_982hh6", "Try again")}</button></div>}</section></div></main>
       <footer className="ae-footer"><span>{t("educator_evaluation.records_remain_hidden_until_identity_and_assignments_are_v_18ueigm", "Records remain hidden until identity and assignments are verified.")}</span><span>{t("educator_evaluation.district_apps_script_repository_17ovdjg", "District Apps Script repository")}</span></footer>
     </div>;
-    return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget) onClose(); }}><AeStyles/>{gateBody}</div>;
+    return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget) requestClose(); }}><AeStyles/>{gateBody}</div>;
   }
   const body = <div ref={dialogRef} tabIndex={-1} className="ae-workspace" role={standalone ? undefined : 'dialog'} aria-modal={standalone ? undefined : 'true'} aria-labelledby="ae-title">
     <header className="ae-top">
@@ -5730,7 +5831,7 @@ function EducatorEvaluationPanel(props) {
       <div className="ae-top-actions">{!isRemote && !workspace.educatorPacketMode && <div className="ae-role" aria-label={workspace.config.sampleMode ? t("educator_evaluation.switch_between_evaluator_and_fictional_educator_rehearsal__mc8xtz", 'Switch between evaluator and fictional educator rehearsal roles') : t("educator_evaluation.view_this_workspace_as_evaluator_or_preview_the_educator_e_llqinz", 'View this workspace as evaluator or preview the educator experience')}><button type="button" aria-pressed={role === 'evaluator'} onClick={() => setRole('evaluator')}>{t("educator_evaluation.evaluator_125q2ii", "Evaluator")}</button><button type="button" aria-pressed={role === 'teacher'} onClick={() => setRole('teacher')}>{workspace.config.sampleMode ? t("educator_evaluation.fictional_educator_2qs1sj", 'Fictional educator') : t("educator_evaluation.educator_preview_jftn00", 'Educator preview')}</button></div>}{!isRemote && workspace.config.sampleMode && <button type="button" className="ae-btn" onClick={() => setTourStep(0)}>{t("educator_evaluation.replay_tour_19pruns", "Replay tour")}</button>}<a className="ae-btn" data-help-key="ae_manual_link" /* Extensionless, matching the Setup-tab link and the district Portal. That
    link is real but lives inside a tab; this one is reachable from every tab,
    which is the point of putting it in the header (2026-08-17). */
-href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank" rel="noopener noreferrer" aria-label={t("educator_evaluation.user_manual_opens_in_a_new_tab_1t3w65", "User manual (opens in a new tab)")} title={t("educator_evaluation.how_to_run_a_full_evaluation_cycle_set_up_the_district_por_162ju8s", "How to run a full evaluation cycle, set up the district portal, and read the released summary")}>{t("educator_evaluation.manual_1wu7r43", "Manual")}</a>{!standalone && <button type="button" className="ae-close" onClick={onClose} aria-label={t("educator_evaluation.close_educator_growth_and_evaluation_1d9f8pc", "Close Educator Growth and Evaluation")}>×</button>}</div>
+href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank" rel="noopener noreferrer" aria-label={t("educator_evaluation.user_manual_opens_in_a_new_tab_1t3w65", "User manual (opens in a new tab)")} title={t("educator_evaluation.how_to_run_a_full_evaluation_cycle_set_up_the_district_por_162ju8s", "How to run a full evaluation cycle, set up the district portal, and read the released summary")}>{t("educator_evaluation.manual_1wu7r43", "Manual")}</a>{!standalone && <button type="button" className="ae-close" onClick={requestClose} aria-label={t("educator_evaluation.close_educator_growth_and_evaluation_1d9f8pc", "Close Educator Growth and Evaluation")}>×</button>}</div>
     </header>
     {isRemote ? <div className={'ae-local-banner ae-remote-banner ' + (['error', 'conflict'].includes(remoteState.status) ? 'ae-sync-error' : '')} role={['error', 'conflict'].includes(remoteState.status) ? 'alert' : 'status'} aria-live="polite">
       <strong>{t("educator_evaluation.district_google_account_13vzcv9", "District Google account")}</strong>{' '}
@@ -5738,7 +5839,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
       {['saved', 'reconciliation'].includes(remoteState.status) && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>{t("educator_evaluation.refresh_28r6qc", "Refresh")}</button>}
       {remoteState.status === 'error' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>{t("educator_evaluation.reload_district_copy_1ttxu4v", "Reload district copy")}</button>}
       {typeof repository.reviewNotification === 'function' && typeof repository.sendNotification === 'function' && typeof repository.getNotificationOutcome === 'function' && <button type="button" className="ae-btn" disabled={!selectedTeacher || notificationBusy || notificationActionsDisabled || !!notificationReceipt} onClick={() => beginNotificationReview('')}>{notificationReceipt ? (notificationReceipt.status === 'completed' ? t('educator_evaluation.notice_completed_do_not_resend_20260827', 'Notice sent · do not resend') : t('educator_evaluation.notice_outcome_locked_20260827', 'Notice outcome locked · review receipt')) : (notificationBusy ? t('educator_evaluation.preparing_notice_review_20260827', 'Preparing notice review…') : (role === 'teacher' ? t("educator_evaluation.email_evaluator_a_portal_notice_1jtlxcv", 'Email evaluator a portal notice') : t("educator_evaluation.email_educator_a_portal_notice_1ybg2qd", 'Email educator a portal notice')))}</button>}
-      {role !== 'teacher' && typeof repository.reviewReleasedEvaluation === 'function' && typeof repository.shareReleasedEvaluation === 'function' && <button type="button" className="ae-btn" title={selectedTeacher && !selectedTeacher.finalizedAt ? t("educator_evaluation.available_after_the_educator_cycle_is_finalized_1ekn2no", 'Available after the educator cycle is finalized.') : t("educator_evaluation.opens_a_required_recipient_and_disclosure_review_before_an_hr9ktn", 'Opens a required recipient and disclosure review before any Drive access changes.')} disabled={!selectedTeacher || !selectedTeacher.finalizedAt || ['reviewing', 'sending', 'recovery'].includes(releaseShareState.status) || remoteState.status === 'saving'} onClick={beginReleasedEvaluationReview}>{releaseShareState.status === 'reviewing' ? t("educator_evaluation.preparing_disclosure_review_wyzexi", 'Preparing disclosure review…') : (selectedTeacher && selectedTeacher.releasedDoc ? t("educator_evaluation.review_released_summary_access_vjbyn9", 'Review released-summary access') : t("educator_evaluation.review_and_share_released_summary_7v8a6n", 'Review & share released summary'))}</button>}
+      {role !== 'teacher' && typeof repository.reviewReleasedEvaluation === 'function' && typeof repository.shareReleasedEvaluation === 'function' && <button type="button" className="ae-btn" title={selectedTeacher && !selectedTeacher.finalizedAt ? t("educator_evaluation.available_after_the_educator_cycle_is_finalized_1ekn2no", 'Available after the educator cycle is finalized.') : t("educator_evaluation.opens_a_required_recipient_and_disclosure_review_before_an_hr9ktn", 'Opens a required recipient and disclosure review before any Drive access changes.')} disabled={!selectedTeacher || !selectedTeacher.finalizedAt || ['reviewing', 'sending', 'recovery'].includes(releaseShareState.status) || releaseActionsDisabled} onClick={beginReleasedEvaluationReview}>{releaseShareState.status === 'reviewing' ? t("educator_evaluation.preparing_disclosure_review_wyzexi", 'Preparing disclosure review…') : (selectedTeacher && selectedTeacher.releasedDoc ? t("educator_evaluation.review_released_summary_access_vjbyn9", 'Review released-summary access') : t("educator_evaluation.review_and_share_released_summary_7v8a6n", 'Review & share released summary'))}</button>}
       {releaseShareState.status === 'recovery' && <span className="ae-chip ae-chip-amber" title={t("educator_evaluation.drive_access_changed_but_the_district_repository_has_not_c_7bvux9", "Drive access changed, but the district repository has not confirmed its pointer and audit commit. Do not retry the release.")}>{t("educator_evaluation.release_recovery_required_ss5zne", "Release recovery required")}</span>}
       {selectedTeacher && selectedTeacher.releasedDoc && /^https:\/\/docs\.google\.com\//.test(selectedTeacher.releasedDoc.url || '') && <a className="ae-btn" href={selectedTeacher.releasedDoc.url} target="_blank" rel="noopener noreferrer" title={role === 'teacher' ? undefined : t("educator_evaluation.if_drive_denies_access_use_review_released_summary_access__136y052", 'If Drive denies access, use Review released-summary access to restore authorized viewer access without creating a duplicate.')} onClick={() => { if (role === 'teacher' && typeof repository.recordReleasedSummaryOpened === 'function' && !selectedTeacher.releasedDoc.openedAt) { repository.recordReleasedSummaryOpened({ teacherId: selectedTeacher.id }).then(() => loadRemoteWorkspace()).catch((error) => notify(t("educator_evaluation.the_summary_opened_but_the_portal_could_not_record_the_lin_k35egu", 'The summary opened, but the portal could not record the link-open receipt: ') + String((error && error.message) || error), 'error')); } }}>{role === 'teacher' ? t("educator_evaluation.open_your_released_evaluation_summary_1yimcof", 'Open your released evaluation summary') : t("educator_evaluation.open_current_summary_drive_1m35ntz", 'Open current summary (Drive)')}</a>}
       {role !== 'teacher' && selectedTeacher && selectedTeacher.releasedDoc && selectedTeacher.releasedDoc.openedAt && <span className="ae-chip ae-chip-good" title={t("educator_evaluation.records_that_the_educator_clicked_the_portal_link_it_canno_1t6ii2b", "Records that the educator clicked the portal link. It cannot claim the document was read.")}>{t("educator_evaluation.summary_link_opened_6cxhka", "Summary link opened")} {aeDateTime(selectedTeacher.releasedDoc.openedAt)}</span>}
@@ -5769,7 +5870,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
     <nav className="ae-tabs" role="tablist" aria-label={t("educator_evaluation.evaluation_workspace_sections_bfw4o2", "Evaluation workspace sections")}>{tabs.map(([id, label], index) => <button type="button" role="tab" key={id} id={'ae-tab-' + id} aria-selected={tab === id} aria-controls="ae-panel" tabIndex={tab === id ? 0 : -1} className="ae-tab" onClick={() => setTab(id)} onKeyDown={(event) => tabKey(event, index)}>{label}</button>)}</nav>
     <main className="ae-main" onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
       <div id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={remotePanelUnavailable ? 'true' : undefined} inert={remotePanelUnavailable ? '' : undefined}>
-      {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} updateTeacher={updateTeacher} setTab={setTab} readOnlyPreview={localTeacherPreview} isRemote={isRemote} requestActionReview={requestActionReview}/>}
+      {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={visibleReflection} updateTeacher={updateTeacher} setTab={setTab} readOnlyPreview={localTeacherPreview} isRemote={isRemote} requestActionReview={requestActionReview}/>}
       {tab === 'trends' && <AeTrends workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} isRemote={isRemote} repository={repository}/>}
       {tab === 'staff' && <AeStaff workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} addTeacher={addTeacher} addTeachersBulk={addTeachersBulk} isRemote={isRemote} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')}/>}
       {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} updateWalkthroughDraft={updateWalkthroughDraft} discardWalkthroughDraft={discardWalkthroughDraft} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} addTeacher={addTeacher} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')} isRemote={isRemote} readOnlyPreview={localTeacherPreview} requestActionReview={requestActionReview}/>}
@@ -5785,5 +5886,5 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
   const releaseReviewOpen = isRemote && !!releaseShareState.review;
   const actionReviewOpen = !!actionReview;
   const modalOpen = (!isRemote && showLocalOnboarding) || notificationReviewOpen || releaseReviewOpen || actionReviewOpen;
-  return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget && !modalOpen) onClose(); }}><AeStyles/><div aria-hidden={modalOpen ? 'true' : undefined} inert={modalOpen ? '' : undefined}><AeActionReviewContext.Provider value={requestActionReview}>{body}</AeActionReviewContext.Provider></div>{!isRemote && showLocalOnboarding && <AeLocalOnboarding onChoose={chooseLocalStart}/>} {notificationReviewOpen && <AeNotificationReview state={notificationState} onRecipientChange={(recipient) => setNotificationState((current) => Object.assign({}, current, { recipient }))} onContinue={() => beginNotificationReview(notificationState.recipient, notificationState.repeatPrior === true)} onCancel={cancelNotificationReview} onConfirm={confirmNotification} actionsDisabled={notificationActionsDisabled}/>} {releaseReviewOpen && <AeReleaseReview state={releaseShareState} onCancel={cancelReleasedEvaluationReview} onConfirm={shareReleasedEvaluation}/>} {actionReviewOpen && <AeActionReview review={actionReview} onCancel={cancelActionReview} onConfirm={confirmActionReview}/>}</div>;
+  return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget && !modalOpen) requestClose(); }}><AeStyles/><div aria-hidden={modalOpen ? 'true' : undefined} inert={modalOpen ? '' : undefined}><AeActionReviewContext.Provider value={requestActionReview}>{body}</AeActionReviewContext.Provider></div>{!isRemote && showLocalOnboarding && <AeLocalOnboarding onChoose={chooseLocalStart}/>} {notificationReviewOpen && <AeNotificationReview state={notificationState} onRecipientChange={(recipient) => setNotificationState((current) => Object.assign({}, current, { recipient }))} onContinue={() => beginNotificationReview(notificationState.recipient, notificationState.repeatPrior === true)} onCancel={cancelNotificationReview} onConfirm={confirmNotification} actionsDisabled={notificationActionsDisabled}/>} {releaseReviewOpen && <AeReleaseReview state={Object.assign({}, releaseShareState, { actionsDisabled: releaseActionsDisabled })} onCancel={cancelReleasedEvaluationReview} onConfirm={shareReleasedEvaluation}/>} {actionReviewOpen && <AeActionReview review={actionReview} onCancel={cancelActionReview} onConfirm={confirmActionReview}/>}</div>;
 }

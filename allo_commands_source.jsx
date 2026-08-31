@@ -5672,7 +5672,7 @@ const AlloCommandPalette = ({ ctx }) => {
             }}
             placeholder={getCommandAudience(ctx) === 'student' ? (t('student.actions_search') || 'Try “read directions”, “check my progress”, or “save my work”…') : t('palette.placeholder', 'Type a command — “bigger text”, “educator hub”, “read this page”…')}
             aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="allo-palette-list" aria-describedby="allo-palette-status" aria-activedescendant={selectedCommandId ? ('allo-cmd-' + selectedCommandId) : undefined}
-            className="flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500" />
+            className="min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500" />
           <button type="button" onClick={toggleSelectedFavorite} disabled={!selectedCommand || selectedCommand.available === false} aria-pressed={selectedIsFavorite}
              aria-label={(selectedIsFavorite ? t('palette.remove_selected_favorite', 'Remove selected command from favorites') : t('palette.pin_selected_favorite', 'Pin selected command to favorites')) + (selectedCommand ? ': ' + selectedCommand.label : '')}
              title={selectedIsFavorite ? t('palette.remove_favorite', 'Remove from favorites') : t('palette.pin_favorite', 'Pin to favorites')}

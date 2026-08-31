@@ -438,6 +438,464 @@ describe('Fisher Lab voyage checkpoint schema', () => {
   });
 });
 
+describe('Fisher Lab voyage rescue files', () => {
+  it('round-trips a versioned portable checkpoint with a deterministic safe filename', () => {
+    const {
+      createCoreVoyageCheckpoint,
+      getCoreVoyageRescueFilename,
+      parseCoreVoyageRescue,
+      serializeCoreVoyageRescue
+    } = window.__FisherLabCore;
+    const checkpoint = createCoreVoyageCheckpoint(voyageInput());
+    const serialized = serializeCoreVoyageRescue(checkpoint, 1_800_000_000_987);
+    const envelope = JSON.parse(serialized);
+
+    expect(envelope).toMatchObject({
+      format: 'fisherlab-voyage-rescue',
+      version: 1,
+      exportedAt: 1_800_000_000_987,
+      checkpoint
+    });
+    expect(getCoreVoyageRescueFilename(checkpoint)).toBe('fisherlab-voyage-chesapeake-guided-2023-11-14.json');
+
+    const parsed = parseCoreVoyageRescue('\uFEFF \n' + serialized);
+    expect(parsed).toEqual({
+      ok: true,
+      checkpoint,
+      error: null,
+      exportedAt: 1_800_000_000_987
+    });
+    expect(parsed.checkpoint).not.toBe(checkpoint);
+    parsed.checkpoint.pose.x = 999;
+    expect(parseCoreVoyageRescue(serialized).checkpoint.pose.x).toBe(12.5);
+  });
+
+  it('rejects malformed, oversized, unsupported, and inconsistent rescue envelopes', () => {
+    const {
+      createCoreVoyageCheckpoint,
+      getCoreVoyageRescueErrorMessage,
+      parseCoreVoyageRescue,
+      serializeCoreVoyageRescue
+    } = window.__FisherLabCore;
+    const checkpoint = createCoreVoyageCheckpoint(voyageInput());
+    const valid = JSON.parse(serializeCoreVoyageRescue(checkpoint, 1_800_000_000_000));
+
+    expect(parseCoreVoyageRescue(null)).toMatchObject({ ok: false, error: 'invalid-file' });
+    expect(parseCoreVoyageRescue(' \n ')).toMatchObject({ ok: false, error: 'invalid-file' });
+    expect(parseCoreVoyageRescue('{')).toMatchObject({ ok: false, error: 'invalid-json' });
+    expect(parseCoreVoyageRescue(JSON.stringify({ ...valid, format: 'not-fisher-lab' }))).toMatchObject({ ok: false, error: 'unsupported-file' });
+    expect(parseCoreVoyageRescue(JSON.stringify({ ...valid, version: 2 }))).toMatchObject({ ok: false, error: 'unsupported-file' });
+    expect(parseCoreVoyageRescue(JSON.stringify({ ...valid, exportedAt: 0 }))).toMatchObject({ ok: false, error: 'invalid-file' });
+    expect(parseCoreVoyageRescue(JSON.stringify({ ...valid, checkpoint: { ...checkpoint, version: 99 } }))).toMatchObject({ ok: false, error: 'invalid-checkpoint' });
+    expect(parseCoreVoyageRescue('\u00e9'.repeat(131_073))).toMatchObject({ ok: false, error: 'file-too-large' });
+    expect(parseCoreVoyageRescue(' '.repeat(262_144) + JSON.stringify(valid))).toMatchObject({ ok: false, error: 'file-too-large' });
+    expect(getCoreVoyageRescueErrorMessage('invalid-checkpoint')).toContain('safe, consistent voyage checkpoint');
+    expect(getCoreVoyageRescueErrorMessage('unknown')).toContain('valid Fisher Lab voyage rescue');
+  });
+
+  it('selects the newest valid checkpoint without returning a shared reference', () => {
+    const {
+      createCoreVoyageCheckpoint,
+      getCoreNewestVoyageCheckpoint
+    } = window.__FisherLabCore;
+    const older = createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_100 }));
+    const newer = createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_900 }));
+    const selected = getCoreNewestVoyageCheckpoint([
+      { ...newer, version: 99 },
+      older,
+      null,
+      newer
+    ]);
+
+    expect(selected).toEqual(newer);
+    expect(selected).not.toBe(newer);
+    selected.pose.z = 500;
+    expect(newer.pose.z).toBe(-24.25);
+    expect(getCoreNewestVoyageCheckpoint([])).toBeNull();
+  });
+
+  it('compares rescue and local checkpoints without exposing mutable state', () => {
+    const {
+      createCoreVoyageCheckpoint,
+      getCoreVoyageRescueComparison
+    } = window.__FisherLabCore;
+    const savedAt = 1_700_000_000_500;
+    const current = createCoreVoyageCheckpoint(voyageInput({ savedAt }));
+    const later = createCoreVoyageCheckpoint(voyageInput({ savedAt: savedAt + 500 }));
+    const earlier = createCoreVoyageCheckpoint(voyageInput({ savedAt: savedAt - 500 }));
+    const sameTimeDifferent = createCoreVoyageCheckpoint(voyageInput({
+      savedAt,
+      pose: { x: 18.25, z: -24.25, heading: -Math.PI / 2 }
+    }));
+
+    expect(getCoreVoyageRescueComparison(current, null)).toMatchObject({
+      relation: 'no-local',
+      replacesLocal: false,
+      sameCheckpoint: false,
+      current: null,
+      checkpoint: { savedAt }
+    });
+    expect(getCoreVoyageRescueComparison(current, current)).toMatchObject({
+      relation: 'same',
+      replacesLocal: true,
+      sameCheckpoint: true
+    });
+    expect(getCoreVoyageRescueComparison(later, current)).toMatchObject({
+      relation: 'newer',
+      replacesLocal: true,
+      sameCheckpoint: false
+    });
+    expect(getCoreVoyageRescueComparison(earlier, current).relation).toBe('older');
+    expect(getCoreVoyageRescueComparison(sameTimeDifferent, current).relation).toBe('same-time');
+    expect(getCoreVoyageRescueComparison({ ...current, version: 99 }, current)).toBeNull();
+
+    const comparison = getCoreVoyageRescueComparison(current, later);
+    comparison.checkpoint.fuel = 0;
+    expect(window.__FisherLabCore.getCoreVoyageCheckpointSummary(current).fuel).toBe(72);
+  });
+
+  it('previews a validated rescue before explicitly restoring it', async () => {
+    const checkpoint = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput());
+    const serialized = window.__FisherLabCore.serializeCoreVoyageRescue(checkpoint, 1_800_000_000_000);
+    const config = window.StemLab._registry.fisherLab;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const Component = function() { return config.render({ React }); };
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+      const simTab = Array.from(host.querySelectorAll('[role="tab"]')).find((button) => button.textContent.includes('3D Sim'));
+      expect(simTab).toBeTruthy();
+      await React.act(async () => {
+        simTab.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+      });
+
+      const controls = host.querySelector('[data-fisherlab-voyage-files="true"]');
+      const input = controls && controls.querySelector('input[type="file"]');
+      expect(controls).toBeTruthy();
+      expect(input?.getAttribute('accept')).toBe('.json,application/json');
+      const file = { size: serialized.length, text: vi.fn(() => Promise.resolve(serialized)) };
+      Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+
+      await React.act(async () => {
+        input.dispatchEvent(new window.Event('change', { bubbles: true }));
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      const preview = host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]');
+      const confirmButton = preview && Array.from(preview.querySelectorAll('button')).find((button) => button.textContent.includes('Use rescued voyage'));
+      expect(file.text).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toBeNull();
+      expect(host.querySelector('[data-fisherlab-voyage-recovery="true"]')).toBeNull();
+      expect(preview?.textContent).toContain('No local voyage checkpoint will be replaced');
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-status="preview"]')?.textContent).toContain('No saved progress has changed');
+      expect(confirmButton).toBeTruthy();
+      expect(document.activeElement).toBe(confirmButton);
+
+      await React.act(async () => {
+        confirmButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toEqual(checkpoint);
+      expect(host.querySelector('[data-fisherlab-voyage-recovery="true"]')).toBeTruthy();
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]')).toBeNull();
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-status="ready"]')?.textContent).toContain('Choose Resume saved voyage');
+      const resumeButton = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Resume saved voyage'));
+      expect(document.activeElement).toBe(resumeButton);
+      expect(input.value).toBe('');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('keeps a later local checkpoint untouched when rescue preview is cancelled', async () => {
+    const localCheckpoint = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_900 }));
+    const rescueCheckpoint = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_100 }));
+    const serialized = window.__FisherLabCore.serializeCoreVoyageRescue(rescueCheckpoint, 1_800_000_000_000);
+    window.localStorage.setItem(STATE_KEY, JSON.stringify({
+      region: localCheckpoint.region,
+      coreVoyageMode: localCheckpoint.mode,
+      coreVoyageCheckpoint: localCheckpoint
+    }));
+    const config = window.StemLab._registry.fisherLab;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const Component = function() { return config.render({ React }); };
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+      const simTab = Array.from(host.querySelectorAll('[role="tab"]')).find((button) => button.textContent.includes('3D Sim'));
+      await React.act(async () => {
+        simTab.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+      });
+      const input = host.querySelector('[data-fisherlab-voyage-files="true"] input[type="file"]');
+      Object.defineProperty(input, 'files', {
+        configurable: true,
+        value: [{ size: serialized.length, text: () => Promise.resolve(serialized) }]
+      });
+      await React.act(async () => {
+        input.dispatchEvent(new window.Event('change', { bubbles: true }));
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      const preview = host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]');
+      expect(preview?.textContent).toContain('Rescue file:');
+      expect(preview?.textContent).toContain('Current local:');
+      expect(preview?.textContent).toContain('earlier checkpoint timestamp');
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toEqual(localCheckpoint);
+      const cancelButton = Array.from(preview.querySelectorAll('button')).find((button) => button.textContent === 'Cancel');
+
+      await React.act(async () => {
+        cancelButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toEqual(localCheckpoint);
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]')).toBeNull();
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-status="cancelled"]')?.textContent).toContain('unchanged');
+      expect(document.activeElement?.textContent).toContain('Choose rescue file');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it("ignores an earlier selection's asynchronous read after a newer selection finishes", async () => {
+    const firstCheckpoint = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_900 }));
+    const secondCheckpoint = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_100 }));
+    const firstSerialized = window.__FisherLabCore.serializeCoreVoyageRescue(firstCheckpoint, 1_800_000_000_100);
+    const secondSerialized = window.__FisherLabCore.serializeCoreVoyageRescue(secondCheckpoint, 1_800_000_000_200);
+    let resolveFirst;
+    let resolveSecond;
+    const firstRead = new Promise((resolve) => { resolveFirst = resolve; });
+    const secondRead = new Promise((resolve) => { resolveSecond = resolve; });
+    const config = window.StemLab._registry.fisherLab;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const Component = function() { return config.render({ React }); };
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+      const simTab = Array.from(host.querySelectorAll('[role="tab"]')).find((button) => button.textContent.includes('3D Sim'));
+      await React.act(async () => {
+        simTab.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+      });
+      let input = host.querySelector('[data-fisherlab-voyage-files="true"] input[type="file"]');
+      Object.defineProperty(input, 'files', {
+        configurable: true,
+        value: [{ size: firstSerialized.length, text: () => firstRead }]
+      });
+      await React.act(async () => {
+        input.dispatchEvent(new window.Event('change', { bubbles: true }));
+        await Promise.resolve();
+      });
+
+      input = host.querySelector('[data-fisherlab-voyage-files="true"] input[type="file"]');
+      Object.defineProperty(input, 'files', {
+        configurable: true,
+        value: [{ size: secondSerialized.length, text: () => secondRead }]
+      });
+      await React.act(async () => {
+        input.dispatchEvent(new window.Event('change', { bubbles: true }));
+        await Promise.resolve();
+      });
+      await React.act(async () => {
+        resolveSecond(secondSerialized);
+        await secondRead;
+        await Promise.resolve();
+      });
+      await React.act(async () => {
+        resolveFirst(firstSerialized);
+        await firstRead;
+        await Promise.resolve();
+      });
+
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toBeNull();
+      const preview = host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]');
+      const confirmButton = Array.from(preview.querySelectorAll('button')).find((button) => button.textContent.includes('Use rescued voyage'));
+      await React.act(async () => {
+        confirmButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+      });
+
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint.savedAt).toBe(secondCheckpoint.savedAt);
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-status="ready"]')).toBeTruthy();
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('refreshes the comparison instead of overwriting a checkpoint changed during preview', async () => {
+    const initialLocal = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_100 }));
+    const changedLocal = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_500 }));
+    const rescueCheckpoint = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput({ savedAt: 1_700_000_000_900 }));
+    const serialized = window.__FisherLabCore.serializeCoreVoyageRescue(rescueCheckpoint, 1_800_000_000_000);
+    window.localStorage.setItem(STATE_KEY, JSON.stringify({
+      region: initialLocal.region,
+      coreVoyageMode: initialLocal.mode,
+      coreVoyageCheckpoint: initialLocal
+    }));
+    const config = window.StemLab._registry.fisherLab;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const Component = function() { return config.render({ React }); };
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+      const simTab = Array.from(host.querySelectorAll('[role="tab"]')).find((button) => button.textContent.includes('3D Sim'));
+      await React.act(async () => {
+        simTab.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+      });
+      const input = host.querySelector('[data-fisherlab-voyage-files="true"] input[type="file"]');
+      Object.defineProperty(input, 'files', {
+        configurable: true,
+        value: [{ size: serialized.length, text: () => Promise.resolve(serialized) }]
+      });
+      await React.act(async () => {
+        input.dispatchEvent(new window.Event('change', { bubbles: true }));
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      window.localStorage.setItem(STATE_KEY, JSON.stringify({
+        region: changedLocal.region,
+        coreVoyageMode: changedLocal.mode,
+        coreVoyageCheckpoint: changedLocal
+      }));
+      let confirmButton = Array.from(host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]').querySelectorAll('button')).find((button) => button.textContent.includes('Use rescued voyage'));
+      await React.act(async () => {
+        confirmButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toEqual(changedLocal);
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]')).toBeTruthy();
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-status="preview"]')?.textContent).toContain('changed while this preview was open');
+
+      confirmButton = Array.from(host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]').querySelectorAll('button')).find((button) => button.textContent.includes('Use rescued voyage'));
+      await React.act(async () => {
+        confirmButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+      });
+
+      expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toEqual(rescueCheckpoint);
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-preview="true"]')).toBeNull();
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('downloads the saved checkpoint and revokes the temporary object URL', async () => {
+    const checkpoint = window.__FisherLabCore.createCoreVoyageCheckpoint(voyageInput());
+    window.localStorage.setItem(STATE_KEY, JSON.stringify({
+      region: checkpoint.region,
+      coreVoyageMode: checkpoint.mode,
+      coreVoyageCheckpoint: checkpoint
+    }));
+
+    const originalCreateObjectURL = window.URL.createObjectURL;
+    const originalRevokeObjectURL = window.URL.revokeObjectURL;
+    const createObjectURL = vi.fn(() => 'blob:fisherlab-rescue');
+    const revokeObjectURL = vi.fn();
+    Object.defineProperty(window.URL, 'createObjectURL', { configurable: true, writable: true, value: createObjectURL });
+    Object.defineProperty(window.URL, 'revokeObjectURL', { configurable: true, writable: true, value: revokeObjectURL });
+    let downloadedAnchor = null;
+    const clickSpy = vi.spyOn(window.HTMLAnchorElement.prototype, 'click').mockImplementation(function() {
+      downloadedAnchor = this;
+    });
+    const config = window.StemLab._registry.fisherLab;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const Component = function() { return config.render({ React }); };
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+      const downloadButton = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Download rescue file'));
+      expect(downloadButton).toBeTruthy();
+
+      await React.act(async () => {
+        downloadButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(createObjectURL).toHaveBeenCalledTimes(1);
+      expect(createObjectURL.mock.calls[0][0]).toBeInstanceOf(window.Blob);
+      expect(downloadedAnchor?.download).toBe('fisherlab-voyage-chesapeake-guided-2023-11-14.json');
+      expect(downloadedAnchor?.href).toBe('blob:fisherlab-rescue');
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:fisherlab-rescue');
+      expect(host.querySelector('[data-fisherlab-voyage-rescue-status="downloaded"]')?.textContent).toContain('downloaded');
+    } finally {
+      clickSpy.mockRestore();
+      if (originalCreateObjectURL === undefined) delete window.URL.createObjectURL;
+      else Object.defineProperty(window.URL, 'createObjectURL', { configurable: true, writable: true, value: originalCreateObjectURL });
+      if (originalRevokeObjectURL === undefined) delete window.URL.revokeObjectURL;
+      else Object.defineProperty(window.URL, 'revokeObjectURL', { configurable: true, writable: true, value: originalRevokeObjectURL });
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('wires strict file acceptance, visible status, and stale-read invalidation', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+
+    expect(source).toContain("'data-fisherlab-voyage-files': 'true'");
+    expect(source).toContain("accept: '.json,application/json'");
+    expect(source).toContain("'data-fisherlab-voyage-rescue-status': voyageRescueStatus.id");
+    expect(source).toContain("'data-fisherlab-voyage-rescue-preview': 'true'");
+    expect(source).toContain('No saved progress changes until you confirm.');
+    expect(source).toContain('function confirmVoyageRescueRestore()');
+    expect(source).toContain('readGeneration !== voyageRescueReadGenerationRef.current');
+    expect(source).toContain('voyageRescueReadGenerationRef.current += 1;');
+    expect(source).toContain('urlApi.revokeObjectURL(cleanupUrl)');
+    expect(source).toContain('it does not include your field journal or profile');
+  });
+});
+
 describe('Fisher Lab voyage recovery lifecycle', () => {
   it('checkpoints only stable boundaries and restores paused at neutral throttle', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
@@ -457,6 +915,12 @@ describe('Fisher Lab voyage recovery lifecycle', () => {
     expect(engine).toContain("window.removeEventListener('pagehide', onPageHide);");
     expect(engine).toContain("window.addEventListener('blur', onWindowBlur);");
     expect(engine).toContain("window.removeEventListener('blur', onWindowBlur);");
+    expect(engine).toContain("pauseForInactivity('window-blur');");
+    expect(engine).toContain("window.addEventListener('focus', onActivityReturn);");
+    expect(engine).toContain("window.removeEventListener('focus', onActivityReturn);");
+    expect(engine).toContain("window.addEventListener('pageshow', onActivityReturn);");
+    expect(engine).toContain("window.removeEventListener('pageshow', onActivityReturn);");
+    expect(engine).toContain("if (!pauseForInactivity('pagehide')) emitVoyageCheckpoint('pagehide', true);");
     expect(engine).toContain('releaseHeldControls();');
     expect(engine).toContain("clearVoyageCheckpoint('mission-complete');");
     expect(restore).toContain('boatState.speed = 0;');
@@ -547,6 +1011,7 @@ describe('Fisher Lab autosave failure recovery', () => {
       });
 
       expect(host.querySelector('[data-fisherlab-voyage-storage="error"]')).toBeTruthy();
+      expect(Array.from(host.querySelectorAll('[data-fisherlab-voyage-storage="error"] button')).some((button) => button.textContent.includes('Download rescue file'))).toBe(true);
       expect(host.querySelector('[data-fisherlab-voyage-recovery="true"]')).toBeTruthy();
       expect(JSON.parse(window.localStorage.getItem(STATE_KEY)).coreVoyageCheckpoint).toEqual(checkpoint);
 

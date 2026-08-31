@@ -53,6 +53,16 @@
 > key under its own teacher-only-labeled section instead of answers sitting
 > beside questions in flattener soup. doc_pipeline notes row update filed to
 > L8 via CROSS_LANE_REQUESTS (their file). Tests 47/47 + build smoke + gates.
+>
+> **§10 LINKED ARTIFACT CONTINUITY (2026-08-31).** Activity derivatives now
+> carry a deterministic contentHash alongside their human-readable version.
+> Page Designer worksheet handoff uses that fingerprint as its
+> optimistic-concurrency token, so inline Activity edits are detected without
+> incrementing the user-facing version on every keystroke. A successful
+> save-back returns the new token to Page Designer, allowing repeated saves
+> in one session. Resource shelf cues, imported Studio objects, decks, and
+> durable worksheet documents preserve parentResourceId, activityIndex,
+> activityKind, artifactType, artifactId, and sourceRevision.
 
 ## 1. Summary
 

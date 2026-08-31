@@ -633,6 +633,111 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  .ar-cold-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
       '}',
 
+      '.ar-damage-shell { width: 100%; max-width: 1140px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-damage-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: end; margin-bottom: 14px; padding: clamp(17px, 3vw, 24px); border-radius: 16px; overflow: hidden; }',
+      '.ar-damage-hero-copy { min-width: 0; max-width: 760px; }',
+      '.ar-damage-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-damage-title { margin: 7px 0 7px; font-size: clamp(24px, 3.5vw, 34px); line-height: 1.08; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-damage-hero-copy p { overflow-wrap: anywhere; }',
+      '.ar-damage-case-progress { min-width: 220px; padding: 12px; border-radius: 12px; }',
+      '.ar-damage-case-progress-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 11px; font-weight: 850; }',
+      '.ar-damage-progress-track { height: 10px; overflow: hidden; border-radius: 999px; }',
+      '.ar-damage-progress-fill { height: 100%; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-damage-workbench { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.72fr); gap: 14px; align-items: stretch; margin-bottom: 14px; }',
+      '.ar-damage-scene-card, .ar-damage-observation, .ar-damage-question, .ar-damage-next, .ar-damage-result-card { border-radius: 15px; overflow: hidden; }',
+      '.ar-damage-scene-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 14px 15px 10px; flex-wrap: wrap; }',
+      '.ar-damage-scene-head h2, .ar-damage-observation h2 { margin: 0; font-size: 17px; line-height: 1.3; }',
+      '.ar-damage-scene-head p { margin: 4px 0 0; font-size: 11px; line-height: 1.45; }',
+      '.ar-damage-concept-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 8px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.05em; }',
+      '.ar-damage-view-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; padding: 0 15px 12px; }',
+      '.ar-damage-view-button { min-width: 0; min-height: 46px; display: flex !important; align-items: center !important; justify-content: center !important; gap: 7px !important; padding: 8px !important; text-align: center !important; font-size: 11px !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-damage-view-button:hover { transform: translateY(-1px); }',
+      '.ar-damage-scene { position: relative; min-height: 340px; margin: 0 15px; border-radius: 14px; overflow: hidden; isolation: isolate; background: radial-gradient(circle at 50% 12%, rgba(148,163,184,.2), transparent 42%), linear-gradient(180deg, rgba(15,23,42,.98), rgba(2,6,23,.98)); }',
+      '.ar-damage-scene::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: linear-gradient(rgba(148,163,184,.11) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.11) 1px, transparent 1px); background-size: 34px 34px; transform: perspective(520px) rotateX(64deg) translateY(42%); transform-origin: center bottom; opacity: .72; }',
+      '.ar-damage-scene::after { content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none; background: linear-gradient(90deg, rgba(255,255,255,.045), transparent 24%, transparent 76%, rgba(255,255,255,.035)); box-shadow: inset 0 0 55px rgba(2,6,23,.62); }',
+      '.ar-damage-scene-perspective { position: absolute; inset: 0; display: grid; place-items: center; perspective: 1100px; }',
+      '.ar-damage-scene-frame { width: min(96%, 700px); transform-style: preserve-3d; transform: rotateX(3deg) rotateY(-3deg) translateZ(0); transition: transform 220ms ease, opacity 180ms ease, filter 180ms ease; }',
+      '.ar-damage-vehicle-svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 24px 20px rgba(0,0,0,.35)); }',
+      '.ar-damage-car-shell, .ar-damage-system-layer, .ar-damage-hotspot { transition: opacity 180ms ease, filter 180ms ease, transform 220ms ease; transform-origin: center; }',
+      '.ar-damage-system-layer { opacity: .14; }',
+      '.ar-damage-hotspot-wave { transform-origin: center; animation: arDamagePulse 1.8s ease-out infinite; }',
+      '.ar-damage-scan-line { position: absolute; z-index: 4; left: 8%; right: 8%; top: 18%; height: 2px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(251,191,36,.9), transparent); box-shadow: 0 0 16px rgba(251,191,36,.78); animation: arDamageScan 3.2s ease-in-out infinite; }',
+      '.ar-damage-scene[data-ar-damage-mode=systems] .ar-damage-car-shell { opacity: .44; filter: saturate(.7); }',
+      '.ar-damage-scene[data-ar-damage-mode=systems] .ar-damage-system-layer { opacity: .92; }',
+      '.ar-damage-scene[data-ar-damage-mode=closeup] .ar-damage-scene-frame { transform: rotateX(8deg) rotateY(-9deg) scale(.82) translateX(-16%); opacity: .28; filter: blur(1px); }',
+      '.ar-damage-closeup { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; pointer-events: none; opacity: 0; transform: translateZ(60px) scale(.82); transition: opacity 180ms ease, transform 220ms ease; }',
+      '.ar-damage-scene[data-ar-damage-mode=closeup] .ar-damage-closeup { opacity: 1; transform: translateZ(60px) scale(1); }',
+      '.ar-damage-specimen-orbit { position: relative; width: 148px; height: 148px; display: grid; place-items: center; transform-style: preserve-3d; margin-bottom: 12px; }',
+      '.ar-damage-specimen-ring { position: absolute; inset: 12px; border: 2px solid rgba(251,191,36,.52); border-radius: 50%; box-shadow: 0 0 22px rgba(245,158,11,.25); transform: rotateX(66deg) rotateZ(-12deg); }',
+      '.ar-damage-specimen-ring:nth-child(2) { inset: 28px 2px; border-color: rgba(125,211,252,.45); transform: rotateY(68deg) rotateZ(18deg); }',
+      '.ar-damage-specimen-core { position: relative; z-index: 2; width: 78px; height: 78px; display: grid; place-items: center; border-radius: 22px; font-size: 39px; background: linear-gradient(145deg, rgba(255,255,255,.22), rgba(15,23,42,.92)); border: 1px solid rgba(255,255,255,.36); box-shadow: 0 18px 35px rgba(0,0,0,.4), inset 0 1px rgba(255,255,255,.35); transform: translateZ(32px) rotate(-2deg); }',
+      '.ar-damage-closeup strong { max-width: 360px; color: white; font-size: 17px; line-height: 1.25; text-shadow: 0 2px 10px rgba(0,0,0,.7); }',
+      '.ar-damage-closeup span:last-child { margin-top: 5px; color: #cbd5e1; font-size: 11px; font-weight: 750; line-height: 1.4; }',
+      '.ar-damage-stage-footer { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; padding: 12px 15px 15px; }',
+      '.ar-damage-readout { min-width: 0; padding: 9px; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-damage-readout span { display: block; font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }',
+      '.ar-damage-readout strong { display: block; margin-top: 3px; font-size: 11px; line-height: 1.35; }',
+      '.ar-damage-observation { display: flex; flex-direction: column; padding: 15px; overflow-wrap: anywhere; }',
+      '.ar-damage-case-index { display: inline-flex; align-self: flex-start; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; }',
+      '.ar-damage-observation-copy { margin: 12px 0 0; font-size: 13px; line-height: 1.62; }',
+      '.ar-damage-observation-note { margin-top: auto; padding-top: 12px; font-size: 11px; line-height: 1.5; border-top: 1px solid; }',
+      '.ar-damage-questions { display: grid; grid-template-columns: 1fr; gap: 10px; }',
+      '.ar-damage-question { padding: 14px; overflow-wrap: anywhere; }',
+      '.ar-damage-question-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }',
+      '.ar-damage-question-number { width: 29px; height: 29px; flex: 0 0 29px; display: grid; place-items: center; border-radius: 9px; font-size: 11px; font-weight: 950; }',
+      '.ar-damage-question h3 { margin: 0; font-size: 14px; line-height: 1.45; }',
+      '.ar-damage-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }',
+      '.ar-damage-option { width: 100%; min-width: 0; min-height: 48px; display: flex !important; align-items: flex-start !important; gap: 8px !important; padding: 10px !important; text-align: left !important; font-size: 12px !important; line-height: 1.45 !important; overflow-wrap: anywhere; }',
+      '.ar-damage-option-letter { width: 23px; height: 23px; flex: 0 0 23px; display: grid; place-items: center; border-radius: 7px; font-size: 10px; font-weight: 950; }',
+      '.ar-damage-option[data-ar-option-state=correct] { box-shadow: inset 4px 0 0 currentColor; }',
+      '.ar-damage-option[data-ar-option-state=incorrect] { box-shadow: inset 4px 0 0 currentColor; }',
+      '.ar-damage-next { margin-top: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }',
+      '.ar-damage-next p { margin: 0; font-size: 11px; line-height: 1.45; }',
+      '.ar-damage-result-card { transform-style: preserve-3d; box-shadow: 0 22px 45px rgba(15,23,42,.14); }',
+      '.ar-damage-result-donut { filter: drop-shadow(0 12px 16px rgba(15,23,42,.18)); transform: perspective(500px) rotateX(8deg) rotateY(-8deg); }',
+      '@keyframes arDamagePulse { 0% { opacity: .82; transform: scale(.72); } 72%, 100% { opacity: 0; transform: scale(1.7); } }',
+      '@keyframes arDamageScan { 0%, 100% { transform: translateY(0); opacity: .2; } 50% { transform: translateY(215px); opacity: .9; } }',
+      '@media (max-width: 900px) {',
+      '  .ar-damage-hero { grid-template-columns: 1fr; align-items: start; }',
+      '  .ar-damage-case-progress { min-width: 0; }',
+      '  .ar-damage-workbench { grid-template-columns: 1fr; }',
+      '  .ar-damage-observation-note { margin-top: 14px; }',
+      '}',
+      '@media (max-width: 620px) {',
+      '  .ar-damage-shell { padding: 10px; }',
+      '  .ar-damage-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-damage-view-controls, .ar-damage-stage-footer, .ar-damage-options { grid-template-columns: 1fr; }',
+      '  .ar-damage-scene { min-height: 300px; margin-inline: 10px; }',
+      '  .ar-damage-scene-head, .ar-damage-stage-footer { padding-inline: 10px; }',
+      '  .ar-damage-view-controls { padding-inline: 10px; }',
+      '  .ar-damage-scene[data-ar-damage-mode=closeup] .ar-damage-scene-frame { transform: rotateX(6deg) rotateY(-6deg) scale(.74) translateX(-12%); }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-damage-progress-fill, .ar-damage-view-button, .ar-damage-scene-frame, .ar-damage-car-shell, .ar-damage-system-layer, .ar-damage-hotspot, .ar-damage-closeup { transition: none !important; }',
+      '  .ar-damage-hotspot-wave, .ar-damage-scan-line { animation: none !important; }',
+      '  .ar-damage-view-button:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-damage-hero, .ar-damage-case-progress, .ar-damage-scene-card, .ar-damage-view-button, .ar-damage-scene, .ar-damage-readout, .ar-damage-observation, .ar-damage-question, .ar-damage-option, .ar-damage-next, .ar-damage-result-card { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-damage-view-button[data-ar-view-state=active], .ar-damage-option[data-ar-option-state=correct], .ar-damage-option[data-ar-option-state=incorrect] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-damage-view-button:focus-visible, .ar-damage-option:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-damage-progress-fill, .ar-damage-hotspot-core, .ar-damage-question-number, .ar-damage-option-letter { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-damage-car-shell path, .ar-damage-car-shell ellipse, .ar-damage-car-shell rect { fill: Canvas !important; stroke: CanvasText !important; }',
+      '  .ar-damage-system-layer, .ar-damage-hotspot { stroke: Highlight !important; }',
+      '  .ar-damage-scan-line { display: none !important; }',
+      '}',
+      '@media print {',
+      '  .ar-damage-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-damage-shell, .ar-damage-shell * { color: black !important; }',
+      '  .ar-damage-shell [role=navigation], .ar-damage-view-controls, .ar-damage-next, .ar-damage-scan-line { display: none !important; }',
+      '  .ar-damage-workbench { grid-template-columns: 1fr 1fr !important; }',
+      '  .ar-damage-scene-frame, .ar-damage-result-donut { transform: none !important; filter: none !important; }',
+      '  .ar-damage-scene { background: white !important; }',
+      '  .ar-damage-scene::before, .ar-damage-scene::after { display: none !important; }',
+      '  .ar-damage-hero, .ar-damage-case-progress, .ar-damage-scene-card, .ar-damage-observation, .ar-damage-question, .ar-damage-result-card { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-damage-scene-card, .ar-damage-observation, .ar-damage-question, .ar-damage-result-card { break-inside: avoid; page-break-inside: avoid; }',
+      '}',
+
       '.ar-diagnose-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
       '.ar-diagnose-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
       '.ar-diagnose-hero-copy { min-width: 0; max-width: 760px; }',
@@ -647,6 +752,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '.ar-diagnose-overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }',
       '.ar-diagnose-channel { min-width: 0; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; }',
       '.ar-diagnose-channel-icon { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 8px; border-radius: 11px; font-size: 22px; }',
+      '.ar-diagnose-scanner { min-width: 0; margin-bottom: 12px; padding: 14px; border-radius: 14px; overflow: hidden; }',
+      '.ar-diagnose-scanner-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }',
+      '.ar-diagnose-scanner-head > div { min-width: 0; }',
+      '.ar-diagnose-scanner-head h2 { margin: 0 0 4px; font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }',
+      '.ar-diagnose-scanner-head p { margin: 0; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }',
+      '.ar-diagnose-scanner-chip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }',
+      '.ar-diagnose-scanner-grid { display: grid; grid-template-columns: minmax(0, 1.38fr) minmax(250px, .62fr); gap: 12px; align-items: stretch; }',
+      '.ar-diagnose-scanner-stage { position: relative; min-width: 0; min-height: 350px; overflow: hidden; border-radius: 13px; perspective: 1100px; isolation: isolate; background: radial-gradient(circle at 71% 28%, rgba(56,189,248,.18), transparent 28%), linear-gradient(155deg, #1e293b 0%, #0f172a 48%, #020617 100%); }',
+      '.ar-diagnose-scanner-stage::before { content: ""; position: absolute; z-index: 0; left: -18%; right: -18%; bottom: -29%; height: 67%; opacity: .34; background-image: linear-gradient(rgba(148,163,184,.36) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.36) 1px, transparent 1px); background-size: 30px 30px; transform: rotateX(61deg); transform-origin: center top; }',
+      '.ar-diagnose-scanner-stage::after { content: ""; position: absolute; z-index: 1; inset: 0; pointer-events: none; box-shadow: inset 0 0 72px rgba(2,6,23,.72); border-radius: inherit; }',
+      '.ar-diagnose-scanner-frame { position: absolute; z-index: 1; inset: 14px 16px 8px; display: grid; place-items: center; transform-style: preserve-3d; transform: rotateX(3deg) rotateY(-3deg); transition: transform 220ms ease; }',
+      '.ar-diagnose-scanner-stage:hover .ar-diagnose-scanner-frame { transform: rotateX(1deg) rotateY(-1deg) translateZ(6px); }',
+      '.ar-diagnose-scanner-svg { width: 100%; height: 100%; min-height: 318px; overflow: visible; filter: drop-shadow(0 18px 18px rgba(2,6,23,.52)); }',
+      '.ar-diagnose-scanner-systems { opacity: .94; }',
+      '.ar-diagnose-scanner-sound-wave { transform-box: fill-box; transform-origin: center; animation: arDiagnoseSignal 2.2s ease-in-out infinite; }',
+      '.ar-diagnose-scanner-fluid-drop { animation: arDiagnoseFluid 2.6s ease-in-out infinite; }',
+      '.ar-diagnose-scanner-beam { position: absolute; z-index: 2; top: 11%; bottom: 11%; left: 9%; width: 2px; pointer-events: none; opacity: .8; background: linear-gradient(180deg, transparent, #7dd3fc 16%, #f8fafc 50%, #7dd3fc 84%, transparent); box-shadow: 0 0 14px #38bdf8, 0 0 34px rgba(56,189,248,.6); animation: arDiagnoseScan 4.8s ease-in-out infinite; }',
+      '.ar-diagnose-scanner-hotspots { position: absolute; z-index: 3; inset: 0; pointer-events: none; }',
+      '.ar-diagnose-scanner-target { position: absolute; min-width: 132px; min-height: 52px; display: flex !important; align-items: center !important; gap: 8px !important; padding: 6px 9px !important; border-radius: 12px !important; text-align: left !important; pointer-events: auto; box-shadow: 0 9px 22px rgba(2,6,23,.36); transition: transform 160ms ease, box-shadow 160ms ease; }',
+      '.ar-diagnose-scanner-target:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(2,6,23,.46); }',
+      '.ar-diagnose-scanner-target[data-ar-diagnose-scanner-target=obd] { top: 13%; left: 34%; }',
+      '.ar-diagnose-scanner-target[data-ar-diagnose-scanner-target=listen] { top: 40%; right: 4%; }',
+      '.ar-diagnose-scanner-target[data-ar-diagnose-scanner-target=fluid] { right: 8%; bottom: 5%; }',
+      '.ar-diagnose-scanner-target[data-ar-diagnose-scanner-target=visual] { left: 4%; bottom: 8%; }',
+      '.ar-diagnose-scanner-marker { position: relative; width: 31px; height: 31px; flex: 0 0 31px; display: grid; place-items: center; border-radius: 999px; font-size: 15px; font-weight: 950; }',
+      '.ar-diagnose-scanner-marker::after { content: ""; position: absolute; inset: -5px; border: 2px solid currentColor; border-radius: inherit; opacity: .32; animation: arDiagnosePulse 2.2s ease-out infinite; }',
+      '.ar-diagnose-scanner-target-copy { min-width: 0; display: block; }',
+      '.ar-diagnose-scanner-target-copy strong, .ar-diagnose-scanner-target-copy small { display: block; overflow-wrap: anywhere; }',
+      '.ar-diagnose-scanner-target-copy strong { font-size: 11px; line-height: 1.25; }',
+      '.ar-diagnose-scanner-target-copy small { margin-top: 2px; font-size: 9px; line-height: 1.25; }',
+      '.ar-diagnose-scanner-rail { min-width: 0; display: grid; gap: 8px; align-content: stretch; }',
+      '.ar-diagnose-scanner-readout { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px; align-items: center; padding: 10px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-diagnose-scanner-readout-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 9px; font-size: 17px; }',
+      '.ar-diagnose-scanner-readout-copy { min-width: 0; }',
+      '.ar-diagnose-scanner-readout-copy strong { display: block; font-size: 12px; line-height: 1.25; }',
+      '.ar-diagnose-scanner-readout-copy span, .ar-diagnose-scanner-readout-copy small { display: block; margin-top: 2px; font-size: 10px; line-height: 1.35; }',
+      '@keyframes arDiagnoseScan { 0%, 100% { left: 9%; opacity: .22; } 50% { left: 87%; opacity: .9; } }',
+      '@keyframes arDiagnosePulse { 0% { transform: scale(.8); opacity: .5; } 75%, 100% { transform: scale(1.32); opacity: 0; } }',
+      '@keyframes arDiagnoseSignal { 0%, 100% { opacity: .34; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }',
+      '@keyframes arDiagnoseFluid { 0%, 100% { transform: translateY(-2px); opacity: .58; } 50% { transform: translateY(5px); opacity: 1; } }',
       '.ar-diagnose-master-detail { display: grid; grid-template-columns: minmax(260px, 0.86fr) minmax(0, 1.14fr); gap: 14px; align-items: start; }',
       '.ar-diagnose-picker { min-width: 0; display: flex; flex-direction: column; gap: 8px; }',
       '.ar-diagnose-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
@@ -683,6 +828,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '.ar-diagnose-shell button { min-height: 44px; }',
       '@media (max-width: 860px) {',
       '  .ar-diagnose-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-diagnose-scanner-grid { grid-template-columns: 1fr; }',
+      '  .ar-diagnose-scanner-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
       '  .ar-diagnose-master-detail { grid-template-columns: 1fr; }',
       '  .ar-diagnose-detail { position: static; }',
       '}',
@@ -691,24 +838,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  .ar-diagnose-hero { flex-direction: column; padding: 15px; border-radius: 13px; }',
       '  .ar-diagnose-mode-chip { max-width: none; }',
       '  .ar-diagnose-overview-grid, .ar-diagnose-picker-grid, .ar-diagnose-report, .ar-diagnose-answers { grid-template-columns: 1fr; }',
+      '  .ar-diagnose-scanner { padding: 10px; }',
+      '  .ar-diagnose-scanner-head { flex-direction: column; }',
+      '  .ar-diagnose-scanner-grid, .ar-diagnose-scanner-rail { grid-template-columns: 1fr; }',
+      '  .ar-diagnose-scanner-stage { min-height: 300px; }',
+      '  .ar-diagnose-scanner-frame { inset: 8px 4px 3px; }',
+      '  .ar-diagnose-scanner-svg { min-height: 292px; }',
+      '  .ar-diagnose-scanner-target { min-width: 48px; min-height: 48px; padding: 5px !important; border-radius: 999px !important; }',
+      '  .ar-diagnose-scanner-target-copy { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }',
+      '  .ar-diagnose-scanner-target[data-ar-diagnose-scanner-target=obd] { top: 15%; left: 38%; }',
+      '  .ar-diagnose-scanner-target[data-ar-diagnose-scanner-target=listen] { top: 43%; right: 3%; }',
+      '  .ar-diagnose-scanner-target[data-ar-diagnose-scanner-target=fluid] { right: 8%; bottom: 9%; }',
       '  .ar-diagnose-fact-wide { grid-column: auto; }',
       '  .ar-diagnose-detail { padding: 13px; }',
       '  .ar-diagnose-option-actions { justify-content: flex-start; }',
       '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-diagnose-scanner-frame, .ar-diagnose-scanner-target { transition: none !important; }',
+      '  .ar-diagnose-scanner-beam, .ar-diagnose-scanner-marker::after, .ar-diagnose-scanner-sound-wave, .ar-diagnose-scanner-fluid-drop { animation: none !important; }',
+      '  .ar-diagnose-scanner-stage:hover .ar-diagnose-scanner-frame, .ar-diagnose-scanner-target:hover { transform: none !important; }',
+      '}',
       '@media (forced-colors: active) {',
-      '  .ar-diagnose-hero, .ar-diagnose-intro, .ar-diagnose-channel, .ar-diagnose-option, .ar-diagnose-detail, .ar-diagnose-fact, .ar-diagnose-score, .ar-diagnose-question, .ar-diagnose-feedback { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-diagnose-hero, .ar-diagnose-intro, .ar-diagnose-channel, .ar-diagnose-scanner, .ar-diagnose-scanner-stage, .ar-diagnose-scanner-target, .ar-diagnose-scanner-readout, .ar-diagnose-option, .ar-diagnose-detail, .ar-diagnose-fact, .ar-diagnose-score, .ar-diagnose-question, .ar-diagnose-feedback { border: 2px solid CanvasText !important; box-shadow: none !important; }',
       '  .ar-diagnose-option[data-ar-option-state="selected"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
       '  .ar-diagnose-tab[data-ar-tab-state="active"] { border-color: Highlight !important; outline: 3px solid Highlight !important; outline-offset: 2px; }',
-      '  .ar-diagnose-tab:focus-visible, .ar-diagnose-detail-jump:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
-      '  .ar-diagnose-option-state, .ar-diagnose-answer-marker, .ar-diagnose-detail-jump { border: 1px solid CanvasText !important; }',
+      '  .ar-diagnose-tab:focus-visible, .ar-diagnose-detail-jump:focus-visible, .ar-diagnose-scanner-target:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-diagnose-option-state, .ar-diagnose-answer-marker, .ar-diagnose-detail-jump, .ar-diagnose-scanner-marker { border: 1px solid CanvasText !important; }',
+      '  .ar-diagnose-scanner-marker { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-diagnose-scanner-vehicle path, .ar-diagnose-scanner-vehicle rect, .ar-diagnose-scanner-vehicle ellipse { fill: Canvas !important; stroke: CanvasText !important; }',
+      '  .ar-diagnose-scanner-systems, .ar-diagnose-scanner-scan-tool, .ar-diagnose-scanner-fluid-trace { stroke: Highlight !important; }',
+      '  .ar-diagnose-scanner-beam { display: none !important; }',
       '}',
       '@media print {',
       '  .ar-diagnose-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
       '  .ar-diagnose-shell, .ar-diagnose-shell * { color: black !important; }',
-      '  .ar-diagnose-tabs, .ar-diagnose-picker, .ar-diagnose-empty, .ar-diagnose-detail-jump, .ar-diagnose-quiz[data-ar-diagnose-quiz="idle"], .ar-diagnose-quiz[data-ar-diagnose-quiz="question"], .ar-diagnose-quiz button { display: none !important; }',
+      '  .ar-diagnose-tabs, .ar-diagnose-picker, .ar-diagnose-empty, .ar-diagnose-detail-jump, .ar-diagnose-scanner-hotspots, .ar-diagnose-scanner-beam, .ar-diagnose-quiz[data-ar-diagnose-quiz="idle"], .ar-diagnose-quiz[data-ar-diagnose-quiz="question"], .ar-diagnose-quiz button { display: none !important; }',
       '  .ar-diagnose-master-detail { display: block !important; }',
       '  .ar-diagnose-detail { position: static !important; break-inside: avoid; page-break-inside: avoid; }',
-      '  .ar-diagnose-channel, .ar-diagnose-fact, .ar-diagnose-hero, .ar-diagnose-intro, .ar-diagnose-detail, .ar-diagnose-feedback, .ar-diagnose-score { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-diagnose-scanner, .ar-diagnose-scanner-stage, .ar-diagnose-scanner-readout, .ar-diagnose-channel, .ar-diagnose-fact, .ar-diagnose-hero, .ar-diagnose-intro, .ar-diagnose-detail, .ar-diagnose-feedback, .ar-diagnose-score { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-diagnose-scanner { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-diagnose-scanner-frame { transform: none !important; filter: none !important; }',
+      '  .ar-diagnose-scanner-stage::before, .ar-diagnose-scanner-stage::after { display: none !important; }',
       '  .ar-diagnose-shell .ar-severity-badge, .ar-diagnose-shell .ar-diagnose-mode-chip, .ar-diagnose-shell .ar-diagnose-score-chip { background: white !important; color: black !important; border: 1px solid black !important; }',
       '}',
 
@@ -1140,6 +1310,270 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  .ar-usedcar-progress-fill, .ar-usedcar-walk-list::before { background: black !important; opacity: 1; }',
       '}',
 
+      '.ar-tire-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-tire-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .44fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-tire-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-tire-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }',
+      '.ar-tire-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -.025em; overflow-wrap: anywhere; }',
+      '.ar-tire-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-tire-hero-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-tire-hero-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-tire-hero-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-tire-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; padding: 6px; border-radius: 13px; }',
+      '.ar-tire-tab { min-width: 0; min-height: 52px; display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; padding: 9px 10px !important; overflow-wrap: anywhere; transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease; }',
+      '.ar-tire-tab:hover { transform: translateY(-1px); }',
+      '.ar-tire-tab-icon { font-size: 18px; line-height: 1; }',
+      '.ar-tire-tab-copy { min-width: 0; }',
+      '.ar-tire-tab-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
+      '.ar-tire-tab-note { display: block; margin-top: 2px; font-size: 9px; font-weight: 700; line-height: 1.3; opacity: .84; }',
+      '.ar-tire-lab { min-width: 0; margin-bottom: 14px; padding: 14px; border-radius: 15px; overflow: hidden; }',
+      '.ar-tire-lab-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }',
+      '.ar-tire-lab-head > div { min-width: 0; }',
+      '.ar-tire-lab-head h2 { margin: 0 0 4px; font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }',
+      '.ar-tire-lab-head p { margin: 0; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }',
+      '.ar-tire-lab-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }',
+      '.ar-tire-lab-grid { display: grid; grid-template-columns: minmax(0, 1.42fr) minmax(250px, .58fr); gap: 12px; align-items: stretch; }',
+      '.ar-tire-stage { position: relative; min-width: 0; min-height: 380px; overflow: hidden; border-radius: 13px; perspective: 1100px; isolation: isolate; background: radial-gradient(circle at 32% 42%, rgba(56,189,248,.16), transparent 31%), linear-gradient(155deg, #1e293b 0%, #0f172a 52%, #020617 100%); }',
+      '.ar-tire-stage::before { content: ""; position: absolute; z-index: 0; left: -18%; right: -18%; bottom: -31%; height: 68%; opacity: .28; background-image: linear-gradient(rgba(148,163,184,.38) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.38) 1px, transparent 1px); background-size: 30px 30px; transform: rotateX(61deg); transform-origin: center top; }',
+      '.ar-tire-stage::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 76px rgba(2,6,23,.76); }',
+      '.ar-tire-frame { position: absolute; z-index: 1; inset: 12px; display: grid; place-items: center; transform-style: preserve-3d; transform: rotateX(4deg) rotateY(-5deg); transition: transform 220ms ease; }',
+      '.ar-tire-stage:hover .ar-tire-frame { transform: rotateX(2deg) rotateY(-2deg) translateZ(7px); }',
+      '.ar-tire-svg { width: 100%; height: 100%; min-height: 350px; overflow: visible; filter: drop-shadow(0 19px 20px rgba(2,6,23,.58)); }',
+      '.ar-tire-model { transform-box: fill-box; transform-origin: center; }',
+      '.ar-tire-tread-band { animation: arTireBreathe 3.4s ease-in-out infinite; }',
+      '.ar-tire-mode-layer { opacity: 0; transition: opacity 180ms ease; pointer-events: none; }',
+      '.ar-tire-stage[data-ar-tire-mode=sizing] .ar-tire-mode-layer[data-ar-tire-layer=sizing], .ar-tire-stage[data-ar-tire-mode=types] .ar-tire-mode-layer[data-ar-tire-layer=types], .ar-tire-stage[data-ar-tire-mode=rotation] .ar-tire-mode-layer[data-ar-tire-layer=rotation], .ar-tire-stage[data-ar-tire-mode=replace] .ar-tire-mode-layer[data-ar-tire-layer=replace] { opacity: 1; }',
+      '.ar-tire-scan { position: absolute; z-index: 2; top: 9%; bottom: 9%; left: 11%; width: 2px; pointer-events: none; opacity: .8; background: linear-gradient(180deg, transparent, #7dd3fc 16%, #f8fafc 50%, #7dd3fc 84%, transparent); box-shadow: 0 0 14px #38bdf8, 0 0 34px rgba(56,189,248,.58); animation: arTireScan 5.2s ease-in-out infinite; }',
+      '.ar-tire-readouts { min-width: 0; display: grid; gap: 8px; align-content: stretch; }',
+      '.ar-tire-readout { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px; align-items: center; padding: 11px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-tire-readout-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; font-size: 18px; }',
+      '.ar-tire-readout-copy { min-width: 0; }',
+      '.ar-tire-readout-copy span, .ar-tire-readout-copy strong, .ar-tire-readout-copy small { display: block; }',
+      '.ar-tire-readout-copy span { font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }',
+      '.ar-tire-readout-copy strong { margin-top: 3px; font-size: 12px; line-height: 1.32; }',
+      '.ar-tire-readout-copy small { margin-top: 3px; font-size: 10px; line-height: 1.4; }',
+      '.ar-tire-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',
+      '.ar-tire-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-tire-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-tire-section-head > div { min-width: 0; max-width: 780px; }',
+      '.ar-tire-section h2 { margin: 0; font-size: 19px; line-height: 1.3; }',
+      '.ar-tire-section-intro { margin: 5px 0 0; font-size: 13px; line-height: 1.58; }',
+      '.ar-tire-section-chip { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.3; }',
+      '.ar-tire-code { margin-bottom: 12px; padding: 13px; border-radius: 11px; text-align: center; font-family: monospace; font-size: clamp(19px, 4vw, 28px); font-weight: 950; letter-spacing: .08em; overflow-wrap: anywhere; }',
+      '.ar-tire-size-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-tire-size-part { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 11px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-tire-size-code { min-width: 48px; padding: 6px 8px; border-radius: 7px; text-align: center; font-family: monospace; font-size: 16px; font-weight: 950; }',
+      '.ar-tire-size-part strong { display: block; font-size: 12px; line-height: 1.35; }',
+      '.ar-tire-size-part p { margin: 4px 0 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-tire-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }',
+      '.ar-tire-choice { min-width: 0; min-height: 72px; display: flex !important; align-items: center !important; gap: 10px !important; padding: 11px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-tire-type, .ar-tire-rotation, .ar-tire-replace { min-height: 72px; }',
+      '.ar-tire-choice:hover { transform: translateY(-1px); }',
+      '.ar-tire-choice-icon { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border-radius: 10px; font-size: 20px; }',
+      '.ar-tire-choice-copy { min-width: 0; }',
+      '.ar-tire-choice-copy strong, .ar-tire-choice-copy small { display: block; }',
+      '.ar-tire-choice-copy strong { font-size: 12px; line-height: 1.35; }',
+      '.ar-tire-choice-copy small { margin-top: 3px; font-size: 9px; line-height: 1.35; }',
+      '.ar-tire-detail { min-width: 0; padding: 15px; border-radius: 13px; overflow-wrap: anywhere; }',
+      '.ar-tire-detail h3 { margin: 0 0 10px; font-size: 17px; line-height: 1.35; }',
+      '.ar-tire-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-tire-fact { min-width: 0; padding: 10px; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-tire-fact-wide { grid-column: 1 / -1; }',
+      '.ar-tire-fact strong { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 900; letter-spacing: .045em; text-transform: uppercase; }',
+      '.ar-tire-fact p { margin: 0; font-size: 12px; line-height: 1.52; }',
+      '.ar-tire-shell button { min-height: 44px; }',
+      '@keyframes arTireScan { 0%, 100% { left: 11%; opacity: .2; } 50% { left: 88%; opacity: .9; } }',
+      '@keyframes arTireBreathe { 0%, 100% { opacity: .72; } 50% { opacity: 1; } }',
+      '@media (max-width: 900px) {',
+      '  .ar-tire-hero, .ar-tire-lab-grid { grid-template-columns: 1fr; }',
+      '  .ar-tire-hero-stats { max-width: 520px; }',
+      '  .ar-tire-readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }',
+      '  .ar-tire-readout { grid-template-columns: 1fr; align-content: start; }',
+      '}',
+      '@media (max-width: 620px) {',
+      '  .ar-tire-shell { padding: 10px; }',
+      '  .ar-tire-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-tire-hero-stats { grid-template-columns: 1fr; width: 100%; max-width: none; }',
+      '  .ar-tire-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 5px; }',
+      '  .ar-tire-tab { flex-direction: column; gap: 4px !important; padding: 8px 5px !important; text-align: center !important; }',
+      '  .ar-tire-tab-note { display: none; }',
+      '  .ar-tire-lab { padding: 10px; }',
+      '  .ar-tire-lab-head { flex-direction: column; }',
+      '  .ar-tire-stage { min-height: 300px; }',
+      '  .ar-tire-frame { inset: 4px; }',
+      '  .ar-tire-svg { min-height: 292px; }',
+      '  .ar-tire-readouts, .ar-tire-size-list, .ar-tire-choice-grid, .ar-tire-detail-grid { grid-template-columns: 1fr; }',
+      '  .ar-tire-readout { grid-template-columns: auto minmax(0, 1fr); }',
+      '  .ar-tire-fact-wide { grid-column: auto; }',
+      '  .ar-tire-section { padding: 13px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-tire-tab, .ar-tire-frame, .ar-tire-mode-layer, .ar-tire-choice { transition: none !important; }',
+      '  .ar-tire-scan, .ar-tire-tread-band { animation: none !important; }',
+      '  .ar-tire-stage:hover .ar-tire-frame, .ar-tire-tab:hover, .ar-tire-choice:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-tire-hero, .ar-tire-hero-stat, .ar-tire-tabs, .ar-tire-tab, .ar-tire-lab, .ar-tire-stage, .ar-tire-readout, .ar-tire-section, .ar-tire-code, .ar-tire-size-part, .ar-tire-choice, .ar-tire-detail, .ar-tire-fact { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-tire-tab[data-ar-tab-state=active], .ar-tire-choice[aria-pressed=true] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-tire-tab:focus-visible, .ar-tire-choice:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-tire-readout-icon, .ar-tire-choice-icon, .ar-tire-size-code { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-tire-model path, .ar-tire-model circle, .ar-tire-model ellipse, .ar-tire-model rect { fill: Canvas !important; stroke: CanvasText !important; }',
+      '  .ar-tire-mode-layer { stroke: Highlight !important; }',
+      '  .ar-tire-scan { display: none !important; }',
+      '}',
+      '@media print {',
+      '  .ar-tire-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-tire-shell, .ar-tire-shell * { color: black !important; }',
+      '  .ar-tire-tabs, .ar-tire-scan { display: none !important; }',
+      '  .ar-tire-panel[hidden] { display: block !important; }',
+      '  .ar-tire-panel + .ar-tire-panel { margin-top: 16px; }',
+      '  .ar-tire-frame { transform: none !important; filter: none !important; }',
+      '  .ar-tire-stage::before, .ar-tire-stage::after { display: none !important; }',
+      '  .ar-tire-hero, .ar-tire-hero-stat, .ar-tire-lab, .ar-tire-stage, .ar-tire-readout, .ar-tire-section, .ar-tire-code, .ar-tire-size-part, .ar-tire-choice, .ar-tire-detail, .ar-tire-fact { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-tire-lab, .ar-tire-section, .ar-tire-size-part, .ar-tire-choice, .ar-tire-detail { break-inside: avoid; page-break-inside: avoid; }',
+      '}',
+
+      '.ar-walk-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-walk-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(245px, .38fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-walk-hero-copy { min-width: 0; max-width: 735px; }',
+      '.ar-walk-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }',
+      '.ar-walk-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -.025em; overflow-wrap: anywhere; }',
+      '.ar-walk-hero-progress { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 11px; border-radius: 13px; }',
+      '.ar-walk-progress-ring { width: 86px; height: 86px; display: grid; place-items: center; border-radius: 999px; position: relative; }',
+      '.ar-walk-progress-ring::after { content: ""; position: absolute; inset: 9px; border-radius: inherit; background: var(--ar-walk-ring-center); }',
+      '.ar-walk-progress-ring strong { position: relative; z-index: 1; font-size: 20px; font-weight: 950; }',
+      '.ar-walk-progress-copy { min-width: 0; }',
+      '.ar-walk-progress-copy strong, .ar-walk-progress-copy span { display: block; }',
+      '.ar-walk-progress-copy strong { font-size: 13px; line-height: 1.35; }',
+      '.ar-walk-progress-copy span { margin-top: 4px; font-size: 10px; line-height: 1.4; }',
+      '.ar-walk-progress-track { height: 10px; margin-top: 8px; overflow: hidden; border-radius: 999px; }',
+      '.ar-walk-progress-fill { height: 100%; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-walk-workbench { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(270px, .55fr); gap: 14px; align-items: stretch; margin-bottom: 14px; }',
+      '.ar-walk-scene-card, .ar-walk-detail { min-width: 0; border-radius: 15px; overflow: hidden; }',
+      '.ar-walk-scene-card { padding: 14px; }',
+      '.ar-walk-scene-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 11px; }',
+      '.ar-walk-scene-head h2 { margin: 0 0 4px; font-size: 18px; line-height: 1.3; }',
+      '.ar-walk-scene-head p { margin: 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-walk-scene-chip { flex: 0 0 auto; display: inline-flex; padding: 5px 8px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }',
+      '.ar-walk-scene { position: relative; min-width: 0; min-height: 500px; overflow: hidden; border-radius: 13px; perspective: 1100px; isolation: isolate; background: radial-gradient(circle at 52% 44%, rgba(56,189,248,.14), transparent 31%), linear-gradient(155deg, #1e293b 0%, #0f172a 52%, #020617 100%); }',
+      '.ar-walk-scene::before { content: ""; position: absolute; z-index: 0; inset: -18%; opacity: .23; background-image: linear-gradient(rgba(148,163,184,.34) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.34) 1px, transparent 1px); background-size: 34px 34px; transform: rotateX(58deg); transform-origin: center center; }',
+      '.ar-walk-scene::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 82px rgba(2,6,23,.78); }',
+      '.ar-walk-frame { position: absolute; z-index: 1; inset: 26px 46px; display: grid; place-items: center; transform-style: preserve-3d; transform: rotateX(6deg) rotateZ(-2deg); transition: transform 220ms ease; }',
+      '.ar-walk-scene:hover .ar-walk-frame { transform: rotateX(3deg) rotateZ(0deg) translateZ(8px); }',
+      '.ar-walk-svg { width: 100%; height: 100%; min-height: 430px; overflow: visible; filter: drop-shadow(0 20px 22px rgba(2,6,23,.6)); }',
+      '.ar-walk-route { stroke-dasharray: 10 8; animation: arWalkRoute 7s linear infinite; }',
+      '.ar-walk-beam { position: absolute; z-index: 2; top: 8%; bottom: 8%; left: 10%; width: 2px; pointer-events: none; opacity: .75; background: linear-gradient(180deg, transparent, #7dd3fc 18%, #f8fafc 50%, #7dd3fc 82%, transparent); box-shadow: 0 0 14px #38bdf8, 0 0 30px rgba(56,189,248,.56); animation: arWalkScan 5.4s ease-in-out infinite; }',
+      '.ar-walk-hotspots { position: absolute; z-index: 3; inset: 0; pointer-events: none; }',
+      '.ar-walk-hotspot { position: absolute; min-width: 112px; min-height: 48px; display: flex !important; align-items: center !important; gap: 7px !important; padding: 6px 8px !important; border-radius: 999px !important; text-align: left !important; pointer-events: auto; box-shadow: 0 8px 20px rgba(2,6,23,.38); transition: transform 140ms ease, box-shadow 140ms ease; }',
+      '.ar-walk-hotspot:hover { transform: translateY(-2px); box-shadow: 0 11px 26px rgba(2,6,23,.48); }',
+      '.ar-walk-hotspot-marker { width: 31px; height: 31px; flex: 0 0 31px; display: grid; place-items: center; border-radius: 999px; font-family: monospace; font-size: 11px; font-weight: 950; }',
+      '.ar-walk-hotspot-copy { min-width: 0; display: block; }',
+      '.ar-walk-hotspot-copy strong, .ar-walk-hotspot-copy small { display: block; overflow-wrap: anywhere; }',
+      '.ar-walk-hotspot-copy strong { font-size: 9px; line-height: 1.25; }',
+      '.ar-walk-hotspot-copy small { margin-top: 2px; font-size: 8px; line-height: 1.25; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="1"] { top: 10%; right: 8%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="2"] { top: 34%; right: 2%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="3"] { right: 7%; bottom: 16%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="4"] { right: 31%; bottom: 3%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="5"] { left: 8%; bottom: 15%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="6"] { top: 43%; left: 2%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="7"] { top: 11%; left: 7%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="8"] { top: 2%; left: 38%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="9"] { top: 43%; left: 40%; }',
+      '.ar-walk-hotspot[data-ar-walk-hotspot="10"] { right: 2%; bottom: 2%; }',
+      '.ar-walk-detail { padding: 16px; align-self: stretch; }',
+      '.ar-walk-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }',
+      '.ar-walk-detail-step { width: 45px; height: 45px; flex: 0 0 45px; display: grid; place-items: center; border-radius: 12px; font-family: monospace; font-size: 14px; font-weight: 950; }',
+      '.ar-walk-detail-heading { min-width: 0; flex: 1; }',
+      '.ar-walk-detail-kicker { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }',
+      '.ar-walk-detail h2 { margin: 0; font-size: 18px; line-height: 1.35; overflow-wrap: anywhere; }',
+      '.ar-walk-detail-block { padding: 11px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-walk-detail-block + .ar-walk-detail-block { margin-top: 9px; }',
+      '.ar-walk-detail-block strong { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 900; letter-spacing: .045em; text-transform: uppercase; }',
+      '.ar-walk-detail-block p { margin: 0; font-size: 12px; line-height: 1.55; }',
+      '.ar-walk-detail-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }',
+      '.ar-walk-detail-action { width: 100%; min-width: 0; min-height: 50px; overflow-wrap: anywhere; }',
+      '.ar-walk-detail-undo { grid-column: 1 / -1; width: 100%; min-height: 44px; }',
+      '.ar-walk-checklist { min-width: 0; padding: 16px; border-radius: 15px; }',
+      '.ar-walk-checklist-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-walk-checklist-head h2 { margin: 0 0 4px; font-size: 19px; line-height: 1.3; }',
+      '.ar-walk-checklist-head p { margin: 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-walk-reset { flex: 0 0 auto; min-height: 44px; }',
+      '.ar-walk-step-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-walk-step { min-width: 0; min-height: 112px; display: grid !important; grid-template-columns: auto minmax(0, 1fr); gap: 10px !important; align-items: start !important; padding: 12px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-walk-step:hover { transform: translateY(-1px); }',
+      '.ar-walk-step-marker { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; font-family: monospace; font-size: 11px; font-weight: 950; }',
+      '.ar-walk-step-copy { min-width: 0; }',
+      '.ar-walk-step-top { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-bottom: 5px; }',
+      '.ar-walk-step-top strong { min-width: 0; font-size: 13px; line-height: 1.35; }',
+      '.ar-walk-step-state { flex: 0 0 auto; display: inline-flex; padding: 3px 6px; border-radius: 999px; font-size: 8px; font-weight: 900; line-height: 1.3; text-transform: uppercase; }',
+      '.ar-walk-step-label { display: block; margin-top: 7px; font-size: 9px; font-weight: 900; letter-spacing: .045em; line-height: 1.3; text-transform: uppercase; }',
+      '.ar-walk-step-copy p { margin: 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-walk-step-check { margin-top: 6px !important; }',
+      '.ar-walk-step-flag { margin-top: 5px !important; }',
+      '.ar-walk-status { display: block; margin-top: 9px; font-size: 11px; line-height: 1.45; }',
+      '.ar-walk-flag-summary { margin-top: 14px; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-walk-flag-summary h3 { margin: 0 0 7px; font-size: 14px; line-height: 1.4; }',
+      '.ar-walk-flag-summary p { margin: 0 0 8px; font-size: 11px; line-height: 1.5; }',
+      '.ar-walk-flag-list { margin: 0; padding-left: 20px; display: grid; gap: 5px; font-size: 11px; line-height: 1.45; }',
+      '.ar-walk-complete { margin-top: 14px; padding: 15px; border-radius: 13px; text-align: center; }',
+      '.ar-walk-complete strong { display: block; font-size: 17px; line-height: 1.35; }',
+      '.ar-walk-complete span { display: block; margin-top: 4px; font-size: 12px; line-height: 1.5; }',
+      '.ar-walk-shell button { min-height: 44px; }',
+      '@keyframes arWalkRoute { to { stroke-dashoffset: -72; } }',
+      '@keyframes arWalkScan { 0%, 100% { left: 10%; opacity: .2; } 50% { left: 89%; opacity: .88; } }',
+      '@media (max-width: 900px) {',
+      '  .ar-walk-hero, .ar-walk-workbench { grid-template-columns: 1fr; }',
+      '  .ar-walk-hero-progress { max-width: 520px; }',
+      '  .ar-walk-detail { min-height: 0; }',
+      '}',
+      '@media (max-width: 620px) {',
+      '  .ar-walk-shell { padding: 10px; }',
+      '  .ar-walk-hero { grid-template-columns: 1fr; padding: 13px; }',
+      '  .ar-walk-scene-card, .ar-walk-detail, .ar-walk-checklist { padding: 13px; }',
+      '  .ar-walk-hero-progress { grid-template-columns: 70px minmax(0, 1fr); }',
+      '  .ar-walk-progress-ring { width: 70px; height: 70px; }',
+      '  .ar-walk-scene-head { flex-direction: column; }',
+      '  .ar-walk-scene-chip { align-self: flex-start; }',
+      '  .ar-walk-scene { min-height: 390px; }',
+      '  .ar-walk-frame { inset: 15px 9px; }',
+      '  .ar-walk-svg { min-height: 350px; }',
+      '  .ar-walk-hotspot { width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 6px !important; justify-content: center !important; }',
+      '  .ar-walk-hotspot-marker { width: 30px; height: 30px; flex-basis: 30px; }',
+      '  .ar-walk-hotspot-copy { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }',
+      '  .ar-walk-hotspot-copy small { display: none; }',
+      '  .ar-walk-step-grid, .ar-walk-detail-actions { grid-template-columns: 1fr; }',
+      '  .ar-walk-detail-undo { grid-column: auto; }',
+      '  .ar-walk-checklist-head { flex-direction: column; }',
+      '  .ar-walk-reset { width: 100%; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-walk-progress-fill, .ar-walk-frame, .ar-walk-hotspot, .ar-walk-step { transition: none !important; }',
+      '  .ar-walk-route, .ar-walk-beam { animation: none !important; }',
+      '  .ar-walk-scene:hover .ar-walk-frame, .ar-walk-hotspot:hover, .ar-walk-step:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-walk-hero, .ar-walk-hero-progress, .ar-walk-scene-card, .ar-walk-scene, .ar-walk-detail, .ar-walk-detail-block, .ar-walk-checklist, .ar-walk-step, .ar-walk-hotspot, .ar-walk-flag-summary, .ar-walk-complete { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-walk-progress-track { border: 1px solid CanvasText !important; background: Canvas !important; }',
+      '  .ar-walk-progress-fill, .ar-walk-hotspot-marker, .ar-walk-step-marker, .ar-walk-detail-step { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-walk-hotspot[aria-pressed="true"], .ar-walk-step[aria-current="step"], .ar-walk-step[data-ar-walk-step-state="flagged"] { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-walk-hotspot:focus-visible, .ar-walk-step:focus-visible, .ar-walk-detail-action:focus-visible, .ar-walk-reset:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-walk-svg [data-ar-walk-object="vehicle"] * { fill: Canvas !important; stroke: CanvasText !important; }',
+      '  [data-ar-walk-object="inspection-route"] { stroke: Highlight !important; }',
+      '  .ar-walk-beam { display: none !important; }',
+      '}',
+      '@media print {',
+      '  .ar-walk-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-walk-shell, .ar-walk-shell * { color: black !important; }',
+      '  .ar-walk-hotspots, .ar-walk-beam, .ar-walk-detail-actions, .ar-walk-reset, [data-ar-walk-print-hide="true"] { display: none !important; }',
+      '  .ar-walk-scene::before, .ar-walk-scene::after { display: none !important; }',
+      '  .ar-walk-frame, .ar-walk-scene:hover .ar-walk-frame { transform: none !important; }',
+      '  .ar-walk-route { animation: none !important; }',
+      '  .ar-walk-hero, .ar-walk-hero-progress, .ar-walk-scene-card, .ar-walk-scene, .ar-walk-detail, .ar-walk-detail-block, .ar-walk-checklist, .ar-walk-step, .ar-walk-flag-summary, .ar-walk-complete { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-walk-scene-card, .ar-walk-detail, .ar-walk-checklist, .ar-walk-step, .ar-walk-flag-summary, .ar-walk-complete { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-walk-step-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '}',
+
       '.ar-ev-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
       '.ar-ev-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
       '.ar-ev-hero-copy { min-width: 0; max-width: 720px; }',
@@ -1455,7 +1889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  background-size: 22px 22px;',
       '  transform: skewX(-10deg) scale(1.15);',
       '}',
-      '.ar-menu-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }',
+      '.ar-menu-hero-top { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(340px, .78fr); align-items: center; gap: 24px; }',
       '.ar-menu-hero-copy { max-width: 720px; }',
       '.ar-menu-hero-title { margin: 8px 0 8px; font-size: clamp(26px, 4vw, 38px); line-height: 1.08; letter-spacing: -0.025em; }',
       '.ar-menu-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }',
@@ -1479,8 +1913,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '.ar-menu-module-card { min-height: 148px; position: relative; overflow: hidden; }',
       '.ar-menu-progress-track { width: 100%; height: 6px; overflow: hidden; border-radius: 999px; }',
       '.ar-menu-progress-fill { height: 100%; border-radius: inherit; transition: width 300ms ease; }',
+      '.ar-menu-bay { min-width: 0; padding: 10px; border-radius: 16px; backdrop-filter: blur(8px); box-shadow: 0 18px 38px rgba(15,23,42,.16); }',
+      '.ar-menu-bay-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }',
+      '.ar-menu-bay-head strong { display: block; font-size: 12px; line-height: 1.3; }',
+      '.ar-menu-bay-head span { display: block; margin-top: 2px; font-size: 9px; line-height: 1.35; }',
+      '.ar-menu-bay-chip { flex: 0 0 auto; display: inline-flex !important; align-items: center; min-height: 26px; margin-top: 0 !important; padding: 4px 7px; border-radius: 999px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }',
+      '.ar-menu-bay-scene { position: relative; min-height: 290px; overflow: hidden; border-radius: 13px; isolation: isolate; perspective: 1000px; background: radial-gradient(circle at 50% 8%, rgba(148,163,184,.22), transparent 39%), linear-gradient(180deg, #172033, #020617); }',
+      '.ar-menu-bay-scene::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; box-shadow: inset 0 0 34px rgba(2,6,23,.72); background: linear-gradient(90deg, rgba(255,255,255,.035), transparent 25%, transparent 75%, rgba(255,255,255,.025)); }',
+      '.ar-menu-bay-frame { position: absolute; inset: 0; display: grid; place-items: center; transform-style: preserve-3d; transform: rotateX(2.5deg) rotateY(-2.5deg) translateZ(0); transition: transform 220ms ease; }',
+      '.ar-menu-bay-svg { display: block; width: 100%; height: 100%; min-height: 290px; overflow: visible; filter: drop-shadow(0 20px 18px rgba(0,0,0,.32)); }',
+      '.ar-menu-bay-car, .ar-menu-bay-lift, .ar-menu-bay-cart { transition: transform 220ms ease, opacity 180ms ease, filter 180ms ease; transform-origin: center; }',
+      '.ar-menu-bay-hotspots { position: absolute; inset: 0; z-index: 6; pointer-events: none; }',
+      '.ar-menu-bay-hotspot { position: absolute; min-height: 44px; max-width: 152px; display: flex !important; align-items: center !important; gap: 7px !important; padding: 7px 9px !important; border-radius: 10px !important; text-align: left !important; pointer-events: auto; box-shadow: 0 8px 18px rgba(2,6,23,.42); transition: transform 140ms ease, box-shadow 140ms ease; }',
+      '.ar-menu-bay-hotspot:hover { transform: translateY(-2px) scale(1.015); box-shadow: 0 12px 23px rgba(2,6,23,.5); }',
+      '.ar-menu-bay-hotspot[data-ar-menu-bay-target=underhood] { top: 32%; right: 5%; }',
+      '.ar-menu-bay-hotspot[data-ar-menu-bay-target=tyre] { right: 5%; bottom: 10%; }',
+      '.ar-menu-bay-hotspot[data-ar-menu-bay-target=repairbay] { left: 4%; top: 48%; }',
+      '.ar-menu-bay-hotspot-marker { position: relative; width: 25px; height: 25px; flex: 0 0 25px; display: grid; place-items: center; border-radius: 999px; font-size: 12px; font-weight: 950; }',
+      '.ar-menu-bay-hotspot-marker::after { content: ""; position: absolute; inset: -5px; border: 2px solid currentColor; border-radius: inherit; animation: arMenuBayPulse 1.9s ease-out infinite; }',
+      '.ar-menu-bay-hotspot-copy { min-width: 0; }',
+      '.ar-menu-bay-hotspot-copy strong { display: block; font-size: 10px; line-height: 1.25; }',
+      '.ar-menu-bay-hotspot-copy small { display: block; margin-top: 2px; font-size: 8px; font-weight: 800; line-height: 1.25; }',
+      '.ar-menu-bay-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 7px 8px; border-radius: 9px; font-size: 9px; font-weight: 800; line-height: 1.35; }',
+      '.ar-menu-bay-live { display: inline-flex; align-items: center; gap: 6px; }',
+      '.ar-menu-bay-live::before { content: ""; width: 7px; height: 7px; flex: 0 0 7px; border-radius: 999px; background: currentColor; box-shadow: 0 0 0 4px rgba(16,185,129,.16); }',
+      '@keyframes arMenuBayPulse { 0% { opacity: .78; transform: scale(.72); } 75%, 100% { opacity: 0; transform: scale(1.42); } }',
+      '@media (max-width: 900px) {',
+      '  .ar-menu-hero-top { grid-template-columns: 1fr; align-items: start; }',
+      '  .ar-menu-bay { width: 100%; max-width: 720px; box-sizing: border-box; }',
+      '}',
       '@media (max-width: 700px) {',
       '  .ar-menu-hero-top { display: block; }',
+      '  .ar-menu-bay { margin-top: 18px; }',
       '  .ar-menu-quick-grid { grid-template-columns: 1fr; }',
       '  .ar-menu-quick-card { min-height: 104px; }',
       '}',
@@ -1490,12 +1954,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  .ar-menu-stats { grid-template-columns: 1fr; }',
       '  .ar-menu-stat { display: flex; align-items: baseline; gap: 8px; }',
       '  .ar-menu-stat-label { margin-top: 0; }',
+      '  .ar-menu-bay { padding: 8px; border-radius: 12px; }',
+      '  .ar-menu-bay-scene, .ar-menu-bay-svg { min-height: 260px; }',
+      '  .ar-menu-bay-hotspot { max-width: 124px; padding: 6px !important; }',
+      '  .ar-menu-bay-hotspot-copy small { display: none; }',
+      '  .ar-menu-bay-hotspot[data-ar-menu-bay-target=underhood] { right: 3%; }',
+      '  .ar-menu-bay-hotspot[data-ar-menu-bay-target=tyre] { right: 3%; bottom: 7%; }',
+      '  .ar-menu-bay-hotspot[data-ar-menu-bay-target=repairbay] { left: 3%; top: 50%; }',
       '  .ar-menu-category-button { align-items: flex-start !important; }',
       '  .ar-menu-module-grid { grid-template-columns: 1fr; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-menu-bay-frame, .ar-menu-bay-car, .ar-menu-bay-lift, .ar-menu-bay-cart, .ar-menu-bay-hotspot { transition: none !important; }',
+      '  .ar-menu-bay-hotspot-marker::after { animation: none !important; }',
+      '  .ar-menu-bay-hotspot:hover { transform: none !important; }',
       '}',
       '@media (forced-colors: active) {',
       '  .ar-menu-hero::after { display: none; }',
       '  .ar-menu-icon-well, .ar-menu-stat { border: 1px solid CanvasText !important; }',
+      '  .ar-menu-bay, .ar-menu-bay-scene, .ar-menu-bay-hotspot, .ar-menu-bay-footer { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-menu-bay-hotspot:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-menu-bay-hotspot-marker { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-menu-bay-car path, .ar-menu-bay-car ellipse, .ar-menu-bay-car rect, .ar-menu-bay-lift path, .ar-menu-bay-lift rect, .ar-menu-bay-cart path, .ar-menu-bay-cart rect, .ar-menu-bay-cart circle { fill: Canvas !important; stroke: CanvasText !important; }',
       '}',
       '.ar-stripe-anim {',
       '  background-image: repeating-linear-gradient(45deg, rgba(245,158,11,0.35) 0 8px, rgba(245,158,11,0.10) 8px 16px);',
@@ -4296,6 +4776,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       sev: { q: 'Action?', a: ['Replace plug, drive on', 'Replace plug AND diagnose root cause — running plugs hot will continue burning new plugs + can damage the piston / valve seats.', 'Adjust the gap wider so the spark jumps cooler, then re-check the plugs in a thousand miles; a wider gap lowers the tip temperature enough to stop the blistering', 'No action'], correct: 1 } }
   ];
 
+  // Dimensional vehicle-location metadata for the Damage ID inspection studio.
+  // Coordinates target the conceptual three-quarter vehicle diagram below;
+  // authored case wording and scoring remain in DAMAGE_CASES.
+  var DAMAGE_SCENE_META = {
+    d1:  { icon: '🛢️', kind: 'fluid',      system: 'Lubrication',       zone: 'Upper engine',          depth: 'Under hood',       x: 450, y: 139 },
+    d2:  { icon: '◉',  kind: 'brake',      system: 'Braking',           zone: 'Front brake rotor',     depth: 'Behind wheel',     x: 475, y: 213 },
+    d3:  { icon: '🛞', kind: 'tire',       system: 'Tires + alignment', zone: 'Front tire contact',    depth: 'Road surface',     x: 475, y: 220 },
+    d4:  { icon: '🌡️', kind: 'cooling',    system: 'Cooling',           zone: 'Radiator + upper hose', depth: 'Front engine bay', x: 516, y: 145 },
+    d5:  { icon: '🔋', kind: 'electrical', system: 'Starting + charge', zone: 'Battery terminals',     depth: 'Under hood',       x: 469, y: 125 },
+    d6:  { icon: '🌧️', kind: 'visibility', system: 'Visibility',        zone: 'Driver wiper sweep',    depth: 'Glass surface',    x: 368, y: 101 },
+    d7:  { icon: '🛢️', kind: 'fluid',      system: 'Fuel + lubrication',zone: 'Oil sump + dipstick',   depth: 'Inside engine',    x: 443, y: 157 },
+    d8:  { icon: '🛑', kind: 'brake',      system: 'Braking',           zone: 'Front brake assembly',  depth: 'Behind wheel',     x: 475, y: 213 },
+    d9:  { icon: '🔧', kind: 'structure',  system: 'Vehicle structure', zone: 'Frame rail',            depth: 'Underbody',        x: 316, y: 205 },
+    d10: { icon: '⚙️', kind: 'drive',      system: 'Accessory drive',   zone: 'Serpentine belt path',  depth: 'Front engine bay', x: 451, y: 145 },
+    d11: { icon: '💨', kind: 'exhaust',    system: 'Fuel + exhaust',    zone: 'Tailpipe outlet',       depth: 'Rear underbody',   x: 103, y: 195 },
+    d12: { icon: '🦶', kind: 'hydraulic',  system: 'Brake hydraulics',  zone: 'Pedal + master cylinder', depth: 'Cabin firewall', x: 390, y: 128 },
+    d13: { icon: '🌀', kind: 'tire',       system: 'Tire structure',    zone: 'Front tire sidewall',   depth: 'Outer casing',     x: 475, y: 213 },
+    d14: { icon: '🫧', kind: 'fluid',      system: 'Engine sealing',    zone: 'Oil fill + dipstick',   depth: 'Inside engine',    x: 446, y: 145 },
+    d15: { icon: '⚡', kind: 'ignition',   system: 'Ignition',          zone: 'Cylinder 3 spark plug', depth: 'Cylinder head',    x: 440, y: 132 }
+  };
+
   // ─────────────────────────────────────────────────────────
   // SECTION 9.96: REPAIR ROI CALCULATOR — keep-or-sell decision tool
   // Inputs: vehicle value, repair cost, age (years), mileage, looming issues.
@@ -4499,10 +5000,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   ];
 
   // ─────────────────────────────────────────────────────────
-  // SECTION 9.97B: PRE-DRIVE WALK-AROUND — 60-second daily check
+  // SECTION 9.97B: PRE-DRIVE WALK-AROUND — quick daily check
   // The professional habit of walking around your vehicle once a day before
-  // first drive. Catches 90% of "dropped my keys + can't unlock my car" or
-  // "didn't notice the flat" or "headlight burned out yesterday" surprises.
+  // the first drive. The route keeps the check deliberate and repeatable.
   // ─────────────────────────────────────────────────────────
   var WALK_AROUND_STEPS = [
     { n: 1, area: 'Right front corner', icon: '↗️',
@@ -4512,14 +5012,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       check: 'Side-view mirror present + intact? Door panel dented or scraped (recent)? Anything wedged near the wheel?',
       flag: 'Missing or broken mirror = inspection-illegal in Maine. Address before driving.' },
     { n: 3, area: 'Right rear corner', icon: '↘️',
-      check: 'Tire condition + lugs. Brake light bulb visible (test by pressing the brake pedal with a phone reflection or a buddy).',
+      check: 'Tire condition + lugs. Brake light works (test with a reflection or a helper standing safely beside the vehicle, never behind it).',
       flag: 'Burnt brake light = $5 fix at parts store + 5 min. Don\'t put it off.' },
     { n: 4, area: 'Rear / tailgate', icon: '⬇️',
       check: 'License plate present + lit? Bumper hanging? Trunk closed? Backup camera lens clean?',
       flag: 'Plate missing = ticket. Trunk ajar = potential lost cargo + electrical drain.' },
     { n: 5, area: 'Left rear corner', icon: '↙️',
-      check: 'Tire + lugs. Brake light. Reverse light works (with someone in driver seat, key on, in reverse).',
-      flag: 'Same as right rear.' },
+      check: 'Tire + lugs. Brake light. To check the reverse light, stay on level ground, set the parking brake, keep a foot firmly on the brake, and have a helper stand beside—not behind—the vehicle.',
+      flag: 'Low tire, missing lug, failed brake light, or failed reverse light needs attention before the trip.' },
     { n: 6, area: 'Left side / driver door', icon: '⬅️',
       check: 'Mirror present? Door condition? Anything under the front-left wheel area (drips)?',
       flag: 'Drips = identify before driving (oil = diagnose; coolant = check temp gauge; trans fluid = check level).' },
@@ -5126,7 +5626,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // not a rules-lawyer gotcha. Text mirrors the under-hood safety copy.
   var RB_RUNNING_HAZARD = {
     belt: 'You just put your hands next to a spinning belt and pulleys. Sleeves, hair, and jewellery get pulled in faster than you can react. Engine OFF before any belt inspection — always.',
-    radiator: 'You opened a pressurized cooling system at operating temperature. Releasing that pressure lets superheated coolant flash to steam and spray. In a real bay this is a burn that scars. Let it go cold, and use the overflow tank for routine level checks.'
+    radiator: 'You opened a pressurized cooling system at operating temperature. Releasing that pressure lets superheated coolant flash to steam and spray. In a real bay this is a burn that scars. Let it go cold, and use the overflow tank for routine level checks.',
+    dipstick: 'You tried to check the oil with the engine running. The reading is unreliable while oil is circulating, and your hands are now beside hot, moving parts. Shut it off, park level, wait a few minutes, then pull, wipe, re-seat, and read the dipstick.',
+    fusebox: 'You opened the high-current fuse box with the engine running. Shut the engine off before pulling or inspecting an under-hood fuse so a live circuit cannot arc or restart unexpectedly.'
   };
 
   // Illustrative shop ballpark in US dollars, parts + labour, kept in ONE
@@ -5944,6 +6446,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var meshes = {};
     var picks = [];
     var engineRunning = !!(api.sceneProps && api.sceneProps.engineRunning);
+    var repairCaseId = api.sceneProps && typeof api.sceneProps.caseId === 'string'
+      ? api.sceneProps.caseId
+      : '';
+    var openPart = api.sceneProps && typeof api.sceneProps.openPart === 'string'
+      ? api.sceneProps.openPart
+      : '';
     var coolingFan = null;
     var beltPulleys = [];
     var alternatorRotor = null;
@@ -6333,6 +6841,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       hoodWorkLight.position.set(0, -0.22, 0.36);
       hood.add(hoodWorkLight);
     }
+    // A low-poly service-information decal gives the raised hood the layered,
+    // maintained look of a real shop vehicle without adding a bitmap texture.
+    var hoodServiceDecal = new THREE.Group();
+    hoodServiceDecal.name = 'hood-service-information-decal';
+    var hoodDecalPlate = new THREE.Mesh(
+      new THREE.BoxGeometry(0.58, 0.012, 0.34),
+      api.trim(api.contrast ? 0xffffff : 0xe8edf2, 14)
+    );
+    hoodDecalPlate.name = 'hood-service-decal-plate';
+    hoodServiceDecal.add(hoodDecalPlate);
+    var hoodDecalInk = api.trim(api.contrast ? 0x000000 : 0x25313f, 8);
+    var hoodDecalWarning = new THREE.Mesh(
+      new THREE.BoxGeometry(0.50, 0.008, 0.045),
+      api.trim(api.contrast ? 0x000000 : 0xd97706, 38)
+    );
+    hoodDecalWarning.name = 'hood-service-decal-warning-band';
+    hoodDecalWarning.position.set(0, -0.010, -0.115);
+    hoodServiceDecal.add(hoodDecalWarning);
+    [0.34, 0.42, 0.29].forEach(function (decalLineLength, decalLineIndex) {
+      var hoodDecalLine = new THREE.Mesh(
+        new THREE.BoxGeometry(decalLineLength, 0.008, 0.018),
+        hoodDecalInk
+      );
+      hoodDecalLine.name = 'hood-service-decal-line-' + decalLineIndex;
+      hoodDecalLine.position.set(-0.06 + decalLineLength * 0.08, -0.010, -0.035 + decalLineIndex * 0.070);
+      hoodServiceDecal.add(hoodDecalLine);
+    });
+    hoodServiceDecal.position.set(0.78, -0.078, -0.10);
+    hood.add(hoodServiceDecal);
+
     hood.position.set(0, 1.52, -1.66);
     hood.rotation.x = -0.20;
     if (api.wantShadow) {
@@ -6348,8 +6886,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     api.scene.add(hoodStrut);
 
     // Visible radiator fan makes the Repair Bay engine state meaningful.
+    // Open fan shroud, motor and mounts: the open centre preserves the fan and
+    // radiator fins while making the cooling pack read as a supported assembly.
+    var fanShroud = new THREE.Group();
+    fanShroud.name = 'radiator-fan-shroud';
+    var fanShroudMat = api.trim(api.contrast ? 0xffffff : 0x26313d, 20);
+    var fanShroudRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.39, 0.038, 9, 34), fanShroudMat);
+    fanShroudRing.name = 'radiator-fan-shroud-ring';
+    fanShroud.add(fanShroudRing);
+    [
+      [-0.43, 0.29], [0.43, 0.29],
+      [-0.43, -0.29], [0.43, -0.29]
+    ].forEach(function (mountSpec, shroudMountIndex) {
+      var shroudMount = new THREE.Mesh(
+        new THREE.BoxGeometry(0.16, 0.075, 0.05), fanShroudMat);
+      shroudMount.name = 'radiator-fan-shroud-mount-' + shroudMountIndex;
+      shroudMount.position.set(mountSpec[0], mountSpec[1], 0);
+      fanShroud.add(shroudMount);
+      var shroudFastener = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.018, 0.018, 0.018, 10), steelMat);
+      shroudFastener.name = 'radiator-fan-shroud-fastener-' + shroudMountIndex;
+      shroudFastener.rotation.x = Math.PI / 2;
+      shroudFastener.position.set(mountSpec[0], mountSpec[1], 0.034);
+      fanShroud.add(shroudFastener);
+    });
+    var fanMotor = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.115, 0.105, 0.13, 18),
+      api.trim(api.contrast ? 0xffffff : 0x3d4855, 38)
+    );
+    fanMotor.name = 'radiator-fan-motor';
+    fanMotor.rotation.x = Math.PI / 2;
+    fanMotor.position.z = -0.075;
+    fanShroud.add(fanMotor);
+    var fanConnector = new THREE.Mesh(
+      new THREE.BoxGeometry(0.13, 0.075, 0.075),
+      api.trim(api.contrast ? 0xffffff : 0x171f2a, 14)
+    );
+    fanConnector.name = 'radiator-fan-electrical-connector';
+    fanConnector.position.set(0.16, -0.10, -0.075);
+    fanShroud.add(fanConnector);
+    fanShroud.position.set(0, 0.22, 0.90);
+    fanShroud.traverse(function (node) {
+      if (node.isMesh && api.wantShadow) node.castShadow = true;
+    });
+    api.scene.add(fanShroud);
+
     coolingFan = new THREE.Group();
     coolingFan.name = 'radiator-cooling-fan';
+    coolingFan.userData.faultState = repairCaseId === 'overheat' ? 'failed-stopped' : 'operational';
     var fanMat = api.trim(api.contrast ? 0xffffff : 0x202936, 24);
     coolingFan.add(new THREE.Mesh(
       new THREE.TorusGeometry(0.31, 0.025, 8, 28), fanMat));
@@ -6497,6 +7082,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
       if (p.shape === 'cyl') {
         group.add(new THREE.Mesh(new THREE.CylinderGeometry(p.size[0], p.size[1], p.size[2], 20), mat));
+        if (p.id === 'oilcap') {
+          var oilCapGrip = new THREE.Mesh(
+            new THREE.TorusGeometry(p.size[0] * 1.01, 0.012, 7, 24),
+            api.trim(api.contrast ? 0xffffff : 0x9a5d08, 34)
+          );
+          oilCapGrip.name = 'oil-cap-grip-ring';
+          oilCapGrip.rotation.x = Math.PI / 2;
+          oilCapGrip.position.y = p.size[2] * 0.43;
+          group.add(oilCapGrip);
+          var oilCanMark = new THREE.Group();
+          oilCanMark.name = 'oil-cap-oil-can-symbol';
+          var oilCanInk = api.trim(api.contrast ? 0x000000 : 0x2b210f, 8);
+          var oilCanBody = new THREE.Mesh(
+            new THREE.BoxGeometry(0.075, 0.010, 0.045), oilCanInk);
+          oilCanBody.name = 'oil-cap-symbol-body';
+          oilCanMark.add(oilCanBody);
+          var oilCanSpout = new THREE.Mesh(
+            new THREE.BoxGeometry(0.050, 0.010, 0.016), oilCanInk);
+          oilCanSpout.name = 'oil-cap-symbol-spout';
+          oilCanSpout.position.set(0.052, 0, -0.012);
+          oilCanSpout.rotation.y = -0.34;
+          oilCanMark.add(oilCanSpout);
+          var oilCanHandle = new THREE.Mesh(
+            new THREE.TorusGeometry(0.022, 0.006, 5, 14, Math.PI * 1.3),
+            oilCanInk
+          );
+          oilCanHandle.name = 'oil-cap-symbol-handle';
+          oilCanHandle.rotation.x = Math.PI / 2;
+          oilCanHandle.position.set(-0.030, 0, -0.020);
+          oilCanMark.add(oilCanHandle);
+          oilCanMark.position.y = p.size[2] * 0.56;
+          group.add(oilCanMark);
+          if (repairCaseId === 'headgasket') {
+            var capSludge = new THREE.Mesh(
+              new THREE.TorusGeometry(p.size[0] * 0.84, 0.018, 7, 22),
+              api.trim(api.contrast ? 0xffff00 : 0xb98a54, 18)
+            );
+            capSludge.name = 'oil-cap-milky-sludge';
+            capSludge.rotation.x = Math.PI / 2;
+            capSludge.position.y = -p.size[2] * 0.54;
+            group.add(capSludge);
+            for (var sludgeIndex = 0; sludgeIndex < 5; sludgeIndex++) {
+              var sludgeAngle = sludgeIndex / 5 * Math.PI * 2;
+              var sludgeClump = new THREE.Mesh(
+                new THREE.SphereGeometry(0.018 + (sludgeIndex % 2) * 0.006, 7, 5),
+                api.trim(api.contrast ? 0xffff00 : 0xc69a63, 20)
+              );
+              sludgeClump.name = 'oil-cap-sludge-clump-' + sludgeIndex;
+              sludgeClump.position.set(
+                Math.cos(sludgeAngle) * p.size[0] * 0.77,
+                -p.size[2] * 0.58,
+                Math.sin(sludgeAngle) * p.size[0] * 0.77
+              );
+              group.add(sludgeClump);
+            }
+          }
+        }
         if (p.id === 'alternator') {
           group.rotation.z = Math.PI / 2;
           // Cooling fins + the pulley nose the belt actually wraps.
@@ -6527,11 +7169,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           alternatorRotor = alternatorPulley;
         }
       } else if (p.shape === 'belt') {
+        var beltSurfaceMat = repairCaseId === 'squeal'
+          ? new THREE.MeshPhongMaterial({
+              color: api.contrast ? 0xffffff : 0x2b2d33,
+              shininess: api.contrast ? 0 : 96,
+              specular: api.contrast ? 0x000000 : 0xd7dbe2
+            })
+          : mat;
         var beltMesh = new THREE.Mesh(
-          new THREE.TorusGeometry(p.size[0], p.size[2], 12, 44), mat);
+          new THREE.TorusGeometry(p.size[0], p.size[2], 12, 44), beltSurfaceMat);
         beltMesh.name = 'serpentine-belt-loop';
         beltMesh.rotation.y = Math.PI / 2;
         group.add(beltMesh);
+        if (repairCaseId === 'squeal') {
+          var glazedBeltSurface = new THREE.Mesh(
+            new THREE.TorusGeometry(p.size[0] * 1.002, p.size[2] * 1.035, 12, 44),
+            new THREE.MeshPhongMaterial({
+              color: api.contrast ? 0xffff00 : 0x4b4f58,
+              transparent: !api.contrast,
+              opacity: api.contrast ? 1 : 0.34,
+              shininess: api.contrast ? 0 : 118,
+              specular: api.contrast ? 0x000000 : 0xffffff
+            })
+          );
+          glazedBeltSurface.name = 'glazed-belt-surface';
+          glazedBeltSurface.rotation.y = Math.PI / 2;
+          group.add(glazedBeltSurface);
+          [-0.72, -0.08, 0.60].forEach(function (crackAngle, beltCrackIndex) {
+            var beltCrack = new THREE.Mesh(
+              new THREE.BoxGeometry(0.020, 0.064, 0.010),
+              api.trim(api.contrast ? 0x000000 : 0xc7b89f, 10)
+            );
+            beltCrack.name = 'worn-belt-crack-' + beltCrackIndex;
+            beltCrack.position.set(
+              -p.size[2] * 1.08,
+              Math.cos(crackAngle) * p.size[0],
+              Math.sin(crackAngle) * p.size[0]
+            );
+            beltCrack.rotation.x = -crackAngle;
+            group.add(beltCrack);
+          });
+        }
         // Ribs. The copy tells students to look for cracks ACROSS the ribs,
         // so the ribs need to be visible rather than implied.
         for (var rb = 0; rb < 5; rb++) {
@@ -6593,27 +7271,170 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         );
         batteryLabel.position.set(0, p.size[1] * 0.525, 0.03);
         group.add(batteryLabel);
-        var posT = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.09, 12), api.trim(0xdc2626, 40));
+        var batteryTray = new THREE.Mesh(
+          new THREE.BoxGeometry(p.size[0] * 1.08, 0.035, p.size[2] * 1.10),
+          api.trim(api.contrast ? 0xffffff : 0x171f27, 16)
+        );
+        batteryTray.name = 'battery-support-tray';
+        batteryTray.position.y = -p.size[1] * 0.54;
+        group.add(batteryTray);
+        var posT = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.055, 0.055, 0.09, 12),
+          api.trim(api.contrast ? 0xffffff : 0xdc2626, 40)
+        );
+        posT.name = 'battery-positive-post';
         posT.position.set(-p.size[0] * 0.28, p.size[1] * 0.55, 0);
         group.add(posT);
-        var negT = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.09, 12), api.trim(0x0f172a, 40));
+        var negT = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.055, 0.055, 0.09, 12),
+          api.trim(api.contrast ? 0xffffff : 0x0f172a, 40)
+        );
+        negT.name = 'battery-negative-post';
         negT.position.set(p.size[0] * 0.28, p.size[1] * 0.55, 0);
         group.add(negT);
+        var positiveClamp = new THREE.Mesh(
+          new THREE.TorusGeometry(0.069, 0.013, 7, 22),
+          api.trim(api.contrast ? 0xffff00 : 0xb8c0ca, 60)
+        );
+        positiveClamp.name = 'battery-positive-terminal-clamp';
+        positiveClamp.rotation.x = Math.PI / 2 + (repairCaseId === 'nocrank' ? -0.14 : 0);
+        positiveClamp.position.set(
+          posT.position.x + (repairCaseId === 'nocrank' ? 0.026 : 0),
+          p.size[1] * 0.59,
+          repairCaseId === 'nocrank' ? 0.012 : 0
+        );
+        group.add(positiveClamp);
+        var negativeClamp = new THREE.Mesh(
+          new THREE.TorusGeometry(0.069, 0.013, 7, 22),
+          api.trim(api.contrast ? 0xffffff : 0x8d98a6, 54)
+        );
+        negativeClamp.name = 'battery-negative-terminal-clamp';
+        negativeClamp.rotation.x = Math.PI / 2;
+        negativeClamp.position.set(negT.position.x, p.size[1] * 0.59, 0);
+        group.add(negativeClamp);
+        var clampBolt = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.017, 0.017, 0.070, 10),
+          api.trim(api.contrast ? 0xffffff : 0x6b7280, 52)
+        );
+        clampBolt.name = 'battery-positive-clamp-bolt';
+        clampBolt.rotation.z = Math.PI / 2;
+        clampBolt.position.set(positiveClamp.position.x + 0.065, positiveClamp.position.y, positiveClamp.position.z);
+        group.add(clampBolt);
+        var positivePolarity = new THREE.Group();
+        positivePolarity.name = 'battery-positive-polarity-mark';
+        var positiveInk = api.trim(api.contrast ? 0xffff00 : 0xef4444, 44);
+        positivePolarity.add(new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.010, 0.020), positiveInk));
+        positivePolarity.add(new THREE.Mesh(new THREE.BoxGeometry(0.020, 0.010, 0.085), positiveInk));
+        positivePolarity.position.set(-p.size[0] * 0.28, p.size[1] * 0.53, -p.size[2] * 0.34);
+        group.add(positivePolarity);
+        var negativePolarity = new THREE.Mesh(
+          new THREE.BoxGeometry(0.085, 0.010, 0.020),
+          api.trim(api.contrast ? 0xffffff : 0xcbd5e1, 24)
+        );
+        negativePolarity.name = 'battery-negative-polarity-mark';
+        negativePolarity.position.set(p.size[0] * 0.28, p.size[1] * 0.53, -p.size[2] * 0.34);
+        group.add(negativePolarity);
+        if (repairCaseId === 'nocrank') {
+          var corrosionMat = api.trim(api.contrast ? 0xffff00 : 0x9bd3d1, 16);
+          for (var corrosionIndex = 0; corrosionIndex < 6; corrosionIndex++) {
+            var corrosionAngle = corrosionIndex / 6 * Math.PI * 2;
+            var corrosionClump = new THREE.Mesh(
+              new THREE.SphereGeometry(0.020 + (corrosionIndex % 2) * 0.007, 7, 5),
+              corrosionMat
+            );
+            corrosionClump.name = 'positive-terminal-corrosion-' + corrosionIndex;
+            corrosionClump.position.set(
+              posT.position.x + Math.cos(corrosionAngle) * 0.072,
+              p.size[1] * (0.58 + (corrosionIndex % 3) * 0.018),
+              Math.sin(corrosionAngle) * 0.070
+            );
+            group.add(corrosionClump);
+          }
+        }
       } else if (p.shape === 'dipstick') {
-        group.add(new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, p.size[1], 10), mat));
+        var dipstickPulled = openPart === 'dipstick';
+        var stickAssembly = new THREE.Group();
+        stickAssembly.name = 'dipstick-pull-assembly';
+        var bladeLength = p.size[1] * 1.26;
+        var blade = new THREE.Mesh(
+          new THREE.BoxGeometry(0.020, bladeLength, 0.008),
+          api.trim(api.contrast ? 0xffffff : 0xb9c2cd, 58)
+        );
+        blade.name = 'dipstick-blade';
+        blade.position.y = -p.size[1] * 0.08;
+        stickAssembly.add(blade);
         var loop = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.020, 8, 18), mat);
+        loop.name = 'dipstick-loop-handle';
         loop.position.y = p.size[1] * 0.5 + 0.05;
         loop.rotation.x = Math.PI / 2;
-        group.add(loop);
-        // The tube it seats into.
+        stickAssembly.add(loop);
+
+        // The actual readable end: two stamped marks and a case-aware oil film.
+        // Healthy oil sits between MIN and MAX, the oil-pressure case barely
+        // wets the tip, and the head-gasket case coats it in opaque tan foam.
+        var bladeBottom = blade.position.y - bladeLength * 0.5;
+        var minY = bladeBottom + 0.075;
+        var maxY = bladeBottom + 0.145;
+        var dipstickMarkMat = api.trim(api.contrast ? 0x000000 : 0x475569, 20);
+        var minMark = new THREE.Mesh(new THREE.BoxGeometry(0.050, 0.010, 0.012), dipstickMarkMat);
+        minMark.name = 'dipstick-min-mark';
+        minMark.position.y = minY;
+        stickAssembly.add(minMark);
+        var maxMark = new THREE.Mesh(new THREE.BoxGeometry(0.050, 0.010, 0.012), dipstickMarkMat);
+        maxMark.name = 'dipstick-max-mark';
+        maxMark.position.y = maxY;
+        stickAssembly.add(maxMark);
+        var milkyOil = repairCaseId === 'headgasket';
+        var lowOil = repairCaseId === 'oilpressure';
+        var oilFilmHeight = lowOil ? 0.042 : 0.116;
+        var oilFilm = new THREE.Mesh(
+          new THREE.BoxGeometry(0.028, oilFilmHeight, 0.013),
+          new THREE.MeshPhongMaterial({
+            color: api.contrast ? 0xffff00 : (milkyOil ? 0xd9c3a2 : 0xb96b16),
+            transparent: !api.contrast,
+            opacity: api.contrast ? 1 : (milkyOil ? 0.92 : 0.84),
+            shininess: milkyOil ? 12 : 72,
+            specular: api.contrast ? 0x000000 : (milkyOil ? 0x554431 : 0xf7b65b)
+          })
+        );
+        oilFilm.name = 'dipstick-oil-film';
+        oilFilm.userData.faultState = milkyOil ? 'milky'
+          : (lowOil ? 'below-low' : 'normal');
+        oilFilm.position.y = bladeBottom + oilFilmHeight * 0.5;
+        oilFilm.position.z = 0.006;
+        stickAssembly.add(oilFilm);
+        if (milkyOil) {
+          for (var foamIndex = 0; foamIndex < 4; foamIndex++) {
+            var foamBead = new THREE.Mesh(
+              new THREE.SphereGeometry(0.010 + (foamIndex % 2) * 0.003, 7, 5),
+              api.trim(api.contrast ? 0xffff00 : 0xf1dfbf, 18)
+            );
+            foamBead.name = 'dipstick-milky-foam-' + foamIndex;
+            foamBead.position.set(
+              foamIndex % 2 ? 0.010 : -0.010,
+              bladeBottom + 0.026 + foamIndex * 0.022,
+              0.012
+            );
+            stickAssembly.add(foamBead);
+          }
+        }
+        stickAssembly.position.y = dipstickPulled ? 0.38 : 0;
+        stickAssembly.rotation.z = dipstickPulled ? -0.18 : 0;
+        stickAssembly.userData.inspectionState = dipstickPulled ? 'pulled' : 'seated';
+        group.add(stickAssembly);
+
+        // The tube stays fixed while the handle and blade pull out together.
         var tube = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, p.size[1] * 0.55, 10), api.trim(0x475569, 24));
+        tube.name = 'dipstick-guide-tube';
         tube.position.y = -p.size[1] * 0.28;
         group.add(tube);
       } else if (p.shape === 'tank') {
         group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
         var fluidHex = p.id === 'coolant' ? 0xf06f86 : (p.id === 'brake' ? 0xd9a441 : 0x3b9be8);
+        var lowCoolantEvidence = repairCaseId === 'headgasket' && p.id === 'coolant';
+        var fluidFillRatio = lowCoolantEvidence ? 0.14 : 0.38;
         var fluid = new THREE.Mesh(
-          new THREE.BoxGeometry(p.size[0] * 0.82, p.size[1] * 0.38, p.size[2] * 0.82),
+          new THREE.BoxGeometry(p.size[0] * 0.82, p.size[1] * fluidFillRatio, p.size[2] * 0.82),
           new THREE.MeshPhongMaterial({
             color: api.contrast ? 0xffffff : fluidHex,
             transparent: !api.contrast,
@@ -6622,7 +7443,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             specular: 0xe7f5ff
           })
         );
-        fluid.position.y = -p.size[1] * 0.22;
+        fluid.name = lowCoolantEvidence ? 'coolant-below-min-level' : p.id + '-fluid-volume';
+        fluid.position.y = lowCoolantEvidence ? -p.size[1] * 0.39 : -p.size[1] * 0.22;
         group.add(fluid);
         var meniscus = new THREE.Mesh(
           new THREE.BoxGeometry(p.size[0] * 0.84, 0.012, p.size[2] * 0.84),
@@ -6635,7 +7457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           })
         );
         meniscus.name = p.id + '-fluid-meniscus';
-        meniscus.position.y = fluid.position.y + p.size[1] * 0.19;
+        meniscus.position.y = fluid.position.y + p.size[1] * fluidFillRatio * 0.5;
         group.add(meniscus);
         if (p.id === 'brake') {
           var booster = new THREE.Mesh(
@@ -6658,15 +7480,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         capGrip.rotation.x = Math.PI / 2;
         capGrip.position.y = p.size[1] * 0.5 + 0.085;
         group.add(capGrip);
+        if (p.id === 'coolant') {
+          var coolantWarningCollar = new THREE.Mesh(
+            new THREE.TorusGeometry(p.size[0] * 0.41, 0.008, 6, 22),
+            api.trim(api.contrast ? 0xffff00 : 0xf59e0b, 46)
+          );
+          coolantWarningCollar.name = 'coolant-cold-warning-collar';
+          coolantWarningCollar.rotation.x = Math.PI / 2;
+          coolantWarningCollar.position.y = p.size[1] * 0.5 + 0.090;
+          group.add(coolantWarningCollar);
+        }
+        if (p.id === 'washer') {
+          var washerCapMark = new THREE.Group();
+          washerCapMark.name = 'washer-cap-spray-symbol';
+          var washerMarkMat = api.trim(api.contrast ? 0x000000 : 0xe0f2fe, 12);
+          var washerScreen = new THREE.Mesh(
+            new THREE.BoxGeometry(0.090, 0.009, 0.018), washerMarkMat);
+          washerScreen.name = 'washer-cap-symbol-screen';
+          washerCapMark.add(washerScreen);
+          [-0.035, 0, 0.035].forEach(function (sprayX, sprayIndex) {
+            var sprayJet = new THREE.Mesh(
+              new THREE.BoxGeometry(0.012, 0.009, 0.038), washerMarkMat);
+            sprayJet.name = 'washer-cap-spray-jet-' + sprayIndex;
+            sprayJet.position.set(sprayX, 0, -0.035);
+            sprayJet.rotation.y = sprayX * 4;
+            washerCapMark.add(sprayJet);
+          });
+          washerCapMark.position.y = p.size[1] * 0.5 + 0.091;
+          group.add(washerCapMark);
+        }
         // MIN / MAX bands — the thing the "read it against the lines" copy
         // is asking the student to find.
-        [[0.30, 0x94a3b8], [-0.16, 0x94a3b8]].forEach(function (bd) {
+        [[0.30, 0x94a3b8], [-0.16, 0x94a3b8]].forEach(function (bd, levelBandIndex) {
           var band = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 1.02, 0.012, p.size[2] * 0.30), api.trim(bd[1], 6));
+          band.name = p.id + '-level-band-' + (levelBandIndex === 0 ? 'max' : 'min');
           band.position.set(0, p.size[1] * bd[0], p.size[2] * 0.5);
           group.add(band);
         });
       } else {
-        group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
+        var fuseboxOpen = p.id === 'fusebox' && openPart === 'fusebox';
+        if (fuseboxOpen) {
+          var fuseboxBase = new THREE.Mesh(
+            new THREE.BoxGeometry(p.size[0], p.size[1] * 0.58, p.size[2]),
+            mat
+          );
+          fuseboxBase.name = 'fusebox-lower-housing';
+          fuseboxBase.position.y = -p.size[1] * 0.18;
+          group.add(fuseboxBase);
+        } else {
+          group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
+        }
         if (p.id === 'radiator') {
           // Fin stack. Reads as "the finned panel behind the grille."
           for (var fi = 0; fi < 26; fi++) {
@@ -6674,6 +7537,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             f.position.set(-p.size[0] * 0.46 + fi * (p.size[0] * 0.037), 0, 0.01);
             group.add(f);
           }
+          var radiatorTankMat = api.trim(api.contrast ? 0xffffff : 0x293544, 24);
+          [-1, 1].forEach(function (tankSide, radiatorTankIndex) {
+            var radiatorSideTank = new THREE.Mesh(
+              new THREE.BoxGeometry(0.12, p.size[1] * 0.96, 0.18),
+              radiatorTankMat
+            );
+            radiatorSideTank.name = 'radiator-side-tank-' + (radiatorTankIndex === 0 ? 'left' : 'right');
+            radiatorSideTank.position.set(tankSide * p.size[0] * 0.51, 0, 0);
+            group.add(radiatorSideTank);
+          });
+          [-1, 1].forEach(function (railSide, radiatorRailIndex) {
+            var radiatorRail = new THREE.Mesh(
+              new THREE.BoxGeometry(p.size[0] * 0.94, 0.055, 0.18),
+              api.trim(api.contrast ? 0xffffff : 0x6e7b8c, 42)
+            );
+            radiatorRail.name = 'radiator-' + (radiatorRailIndex === 0 ? 'lower' : 'upper') + '-support-rail';
+            radiatorRail.position.set(0, railSide * p.size[1] * 0.53, 0);
+            group.add(radiatorRail);
+          });
+          [-0.82, 0.82].forEach(function (supportX, radiatorSupportIndex) {
+            var radiatorSupportTab = new THREE.Mesh(
+              new THREE.BoxGeometry(0.20, 0.065, 0.19),
+              radiatorTankMat
+            );
+            radiatorSupportTab.name = 'radiator-upper-mount-' + radiatorSupportIndex;
+            radiatorSupportTab.position.set(supportX, p.size[1] * 0.66, 0);
+            group.add(radiatorSupportTab);
+            var radiatorMountBolt = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.020, 0.020, 0.020, 10),
+              api.trim(api.contrast ? 0xffffff : 0xaab4c2, 64)
+            );
+            radiatorMountBolt.name = 'radiator-mount-fastener-' + radiatorSupportIndex;
+            radiatorMountBolt.position.set(supportX, p.size[1] * 0.70, 0);
+            group.add(radiatorMountBolt);
+          });
+          var fillerNeck = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.070, 0.070, 0.090, 16),
+            api.trim(api.contrast ? 0xffffff : 0x8b97a5, 62)
+          );
+          fillerNeck.name = 'radiator-filler-neck';
+          fillerNeck.position.set(p.cap ? p.cap[0] : 0.75, p.size[1] * 0.58, 0);
+          group.add(fillerNeck);
+          var drainCock = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.024, 0.024, 0.080, 10),
+            api.trim(api.contrast ? 0xffffff : 0x374151, 22)
+          );
+          drainCock.name = 'radiator-drain-cock';
+          drainCock.position.set(-p.size[0] * 0.39, -p.size[1] * 0.63, 0);
+          group.add(drainCock);
         }
         if (p.id === 'engine') {
           // Valve cover (where the oil filler cap lives) + intake plenum.
@@ -6769,17 +7681,161 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           }
         }
         if (p.id === 'fusebox') {
-          for (var relayRidge = 0; relayRidge < 4; relayRidge++) {
-            var ridge = new THREE.Mesh(
-              new THREE.BoxGeometry(p.size[0] * 0.72, 0.018, 0.018),
-              api.trim(0x475569, 18)
+          if (fuseboxOpen) {
+            // Hinged lid with the circuit map on its underside. The lid pivot
+            // is named so real-WebGL tests can assert the inspection state.
+            var fuseLid = new THREE.Group();
+            fuseLid.name = 'fusebox-lid-pivot';
+            fuseLid.position.set(0, p.size[1] * 0.31, -p.size[2] * 0.50);
+            fuseLid.rotation.x = -1.12;
+            var fuseLidShell = new THREE.Mesh(
+              new THREE.BoxGeometry(p.size[0] * 1.05, 0.045, p.size[2] * 1.04),
+              api.trim(api.contrast ? 0xffffff : 0x151b24, 20)
             );
-            ridge.position.set(
-              0,
-              p.size[1] * 0.51,
-              -p.size[2] * 0.26 + relayRidge * p.size[2] * 0.17
+            fuseLidShell.name = 'fusebox-lid-shell';
+            fuseLidShell.position.z = p.size[2] * 0.52;
+            fuseLid.add(fuseLidShell);
+            var fuseMap = new THREE.Mesh(
+              new THREE.BoxGeometry(p.size[0] * 0.78, 0.012, p.size[2] * 0.70),
+              api.trim(api.contrast ? 0x000000 : 0xd5d9df, 8)
             );
-            group.add(ridge);
+            fuseMap.name = 'fusebox-lid-map';
+            fuseMap.position.set(0, -0.029, p.size[2] * 0.52);
+            fuseLid.add(fuseMap);
+            for (var mapCellIndex = 0; mapCellIndex < 8; mapCellIndex++) {
+              var mapCell = new THREE.Mesh(
+                new THREE.BoxGeometry(0.042 + (mapCellIndex % 3) * 0.010, 0.006, 0.020),
+                api.trim(api.contrast ? 0xffffff : 0x4b5563, 10)
+              );
+              mapCell.name = 'fusebox-map-cell-' + mapCellIndex;
+              mapCell.position.set(
+                -p.size[0] * 0.25 + (mapCellIndex % 4) * p.size[0] * 0.17,
+                -0.038,
+                p.size[2] * (0.30 + Math.floor(mapCellIndex / 4) * 0.22)
+              );
+              fuseLid.add(mapCell);
+            }
+            group.add(fuseLid);
+
+            var fuseTray = new THREE.Mesh(
+              new THREE.BoxGeometry(p.size[0] * 0.88, 0.026, p.size[2] * 0.84),
+              api.trim(api.contrast ? 0xffffff : 0x343d49, 16)
+            );
+            fuseTray.name = 'fusebox-fuse-tray';
+            fuseTray.position.y = p.size[1] * 0.10;
+            group.add(fuseTray);
+
+            var fuseSpecs = [
+              { id: 'headlamp', amp: 10, color: 0xef4444, x: -0.13, z: -0.09 },
+              { id: 'fuel-pump', amp: 15, color: 0x3b82f6, x: -0.05, z: -0.09 },
+              { id: 'cooling-fan', amp: 30, color: 0x22c55e, x: 0.05, z: -0.09 },
+              { id: 'ignition', amp: 20, color: 0xfacc15, x: 0.13, z: -0.09 },
+              { id: 'abs', amp: 25, color: 0xf8fafc, x: -0.09, z: 0.015 },
+              { id: 'main', amp: 40, color: 0xf59e0b, x: 0.01, z: 0.015 }
+            ];
+            fuseSpecs.forEach(function (fuseSpec) {
+              var fuseAssembly = new THREE.Group();
+              var isFanFuse = fuseSpec.id === 'cooling-fan';
+              var blownFuse = isFanFuse && repairCaseId === 'overheat';
+              fuseAssembly.name = isFanFuse
+                ? 'fusebox-cooling-fan-fuse'
+                : 'fusebox-' + fuseSpec.id + '-fuse-' + fuseSpec.amp + 'a';
+              fuseAssembly.userData.amperage = fuseSpec.amp;
+              fuseAssembly.userData.faultState = blownFuse ? 'blown' : 'intact';
+              fuseAssembly.position.set(fuseSpec.x, p.size[1] * 0.16, fuseSpec.z);
+              var fuseBody = new THREE.Mesh(
+                new THREE.BoxGeometry(isFanFuse ? 0.060 : 0.050, 0.070, 0.052),
+                new THREE.MeshPhongMaterial({
+                  color: api.contrast ? 0xffffff : fuseSpec.color,
+                  transparent: !api.contrast,
+                  opacity: api.contrast ? 1 : 0.78,
+                  shininess: api.contrast ? 0 : 74,
+                  specular: api.contrast ? 0x000000 : 0xffffff
+                })
+              );
+              fuseBody.name = fuseAssembly.name + '-body';
+              fuseAssembly.add(fuseBody);
+              [-1, 1].forEach(function (bladeSide, fuseBladeIndex) {
+                var fuseBlade = new THREE.Mesh(
+                  new THREE.BoxGeometry(0.010, 0.040, 0.018),
+                  api.trim(api.contrast ? 0x000000 : 0xc4cbd4, 70)
+                );
+                fuseBlade.name = fuseAssembly.name + '-blade-' + fuseBladeIndex;
+                fuseBlade.position.set(bladeSide * 0.017, -0.050, 0);
+                fuseAssembly.add(fuseBlade);
+              });
+              var linkMat = api.trim(api.contrast ? 0xffff00 : 0xd8dee7, 84);
+              if (blownFuse) {
+                [-1, 1].forEach(function (linkSide) {
+                  var brokenLink = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.017, 0.008, 0.010),
+                    linkMat
+                  );
+                  brokenLink.name = 'fusebox-cooling-fan-fuse-link-broken-' + (linkSide < 0 ? 'left' : 'right');
+                  brokenLink.position.set(linkSide * 0.017, 0.010 + Math.abs(linkSide) * 0.002, 0.029);
+                  brokenLink.rotation.z = linkSide * 0.30;
+                  fuseAssembly.add(brokenLink);
+                });
+                var fuseScorch = new THREE.Mesh(
+                  new THREE.SphereGeometry(0.010, 7, 5),
+                  api.trim(api.contrast ? 0xffff00 : 0x2a1d18, 4)
+                );
+                fuseScorch.name = 'fusebox-cooling-fan-fuse-scorch';
+                fuseScorch.position.set(0, 0.012, 0.030);
+                fuseAssembly.add(fuseScorch);
+              } else {
+                var fuseLink = new THREE.Mesh(
+                  new THREE.BoxGeometry(0.044, 0.008, 0.010),
+                  linkMat
+                );
+                fuseLink.name = isFanFuse
+                  ? 'fusebox-cooling-fan-fuse-link-intact'
+                  : fuseAssembly.name + '-link-intact';
+                fuseLink.position.set(0, 0.010, 0.029);
+                fuseAssembly.add(fuseLink);
+              }
+              group.add(fuseAssembly);
+            });
+
+            // Square relays and the small puller clipped inside the box make
+            // the inspection look like the real service operation it teaches.
+            for (var fuseRelayIndex = 0; fuseRelayIndex < 3; fuseRelayIndex++) {
+              var fuseRelay = new THREE.Mesh(
+                new THREE.BoxGeometry(0.070, 0.075, 0.070),
+                api.trim(api.contrast ? 0xffffff : 0x252d38, 18)
+              );
+              fuseRelay.name = 'fusebox-relay-' + fuseRelayIndex;
+              fuseRelay.position.set(-0.10 + fuseRelayIndex * 0.10, p.size[1] * 0.17, 0.105);
+              group.add(fuseRelay);
+            }
+            var fusePuller = new THREE.Group();
+            fusePuller.name = 'fusebox-fuse-puller';
+            var pullerMat = api.trim(api.contrast ? 0xffff00 : 0xe8edf4, 36);
+            [-1, 1].forEach(function (pullerSide) {
+              var pullerArm = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.060, 0.014), pullerMat);
+              pullerArm.position.x = pullerSide * 0.025;
+              fusePuller.add(pullerArm);
+            });
+            var pullerBridge = new THREE.Mesh(new THREE.BoxGeometry(0.064, 0.014, 0.014), pullerMat);
+            pullerBridge.position.y = 0.030;
+            fusePuller.add(pullerBridge);
+            fusePuller.position.set(0.13, p.size[1] * 0.18, 0.02);
+            fusePuller.rotation.y = 0.30;
+            group.add(fusePuller);
+          } else {
+            for (var relayRidge = 0; relayRidge < 4; relayRidge++) {
+              var ridge = new THREE.Mesh(
+                new THREE.BoxGeometry(p.size[0] * 0.72, 0.018, 0.018),
+                api.trim(0x475569, 18)
+              );
+              ridge.name = 'fusebox-lid-ridge-' + relayRidge;
+              ridge.position.set(
+                0,
+                p.size[1] * 0.51,
+                -p.size[2] * 0.26 + relayRidge * p.size[2] * 0.17
+              );
+              group.add(ridge);
+            }
           }
         }
         if (p.id === 'airbox') {
@@ -6822,7 +7878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       anchor: floor,
       frame: engineRunning && !api.reduced ? function (now) {
         var spin = (now * 0.0062) % (Math.PI * 2);
-        if (coolingFan) {
+        if (coolingFan && repairCaseId !== 'overheat') {
           coolingFan.rotation.z = spin;
         }
         for (var pulleyIndex = 0; pulleyIndex < beltPulleys.length; pulleyIndex++) {
@@ -6856,7 +7912,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // its 2D path, which is already the tested fallback.
   var NULL_VIEWER = {
     attach: function () {}, sync: function () {}, nudge: function () {},
-    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+    zoom: function () {}, focus: function () {}, returnToScene: function () {},
+    reset: function () {}, status: function () { return 'failed'; }
   };
   function makeViewer(cfg) {
     var mk = window.StemLab && window.StemLab.makeBayViewer;
@@ -7139,9 +8196,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       choices: ['No rotation needed', 'Front-to-rear straight; rear crosses to opposite front (front tires wear faster, this evens them out)', 'X-pattern only', 'Replace all four tires every year, because rotation only spreads the wear and front-drive cars chew through a set in 12 months anyway'],
       correct: 1, why: 'FWD: F-left → R-left, F-right → R-right, R-left → F-right, R-right → F-left. Rear crosses to opposite front. AWD uses X-pattern. Directional tires can\'t cross at all.' },
     { id: 'q54', icon: '🚗',
-      stem: 'A pre-drive walk-around takes about 60 seconds and catches what kind of issue?',
+      stem: 'What kind of issue can a quick pre-drive walk-around reveal?',
       choices: ['Engine internals', 'Tire flat or low, missing lug nuts, burnt-out lights, fluid drip on the ground, hood unlatched, mirror missing — surprise issues that would otherwise become highway emergencies', 'Computer software', 'Future repairs: the walk-around is a chance to spot rust bubbles, small chips, and worn trim early so they can be scheduled before they grow, which is where most of its value lies; the safety items are better left to the annual inspection'],
-      correct: 1, why: 'Pro drivers + truckers walk around their vehicles before EVERY drive. 60 seconds catches 90% of "I would have wished I noticed before driving" surprises. Especially valuable in winter when problems hide.' },
+      correct: 1, why: 'A consistent perimeter check can reveal visible tire, light, leak, latch, and mirror concerns before a trip. Take enough time to inspect each station deliberately, especially when winter conditions can hide problems.' },
     { id: 'q55', icon: '📚',
       stem: 'If you\'re NEW to this tool, what\'s the smart way to work through this many modules?',
       choices: ['Random tabs', 'Use the Recommended Learning Path — 4-week curated walkthrough with weekly themes (Know your car / Diagnose / Hands-on safe / Savvy + career)', 'Try to do everything in one day: the modules are short, and a single long session keeps the vocabulary fresh across all of them instead of forgetting the early ones by week four', 'Skip everything'],
@@ -7446,7 +8503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               { id: 'firstcar', icon: '🚗', label: __alloT('stem.autorepair.first_car_start_here', 'First car? Start here'), desc: __alloT('stem.autorepair.just_bought_your_first_car_30_day_week', 'Just bought your first car. 30-day week-by-week plan.') },
               { id: 'underhood', icon: '🔎', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)'), desc: __alloT('stem.autorepair.spin_the_engine_bay_find_all_12_parts', 'Spin the engine bay. Find all 12 parts and learn what each one looks like.') },
               { id: 'tyre', icon: '🛞', label: __alloT('stem.autorepair.change_a_tyre_menu', 'Change a tyre (3D)'), desc: __alloT('stem.autorepair.13_steps_in_order_get_the_order_wrong', '13 steps, in order. Get the order wrong and the wheel just spins — or worse.') },
-              { id: 'walk', icon: '🚶', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around'), desc: __alloT('stem.autorepair.60_second_daily_check_the_professional', '60-second daily check. The professional habit.') },
+              { id: 'walk', icon: '🚶', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around'), desc: __alloT('stem.autorepair.quick_pre_drive_check_the_professional', 'A quick pre-drive check. The professional habit.') },
               { id: 'vin', icon: '🆔', label: __alloT('stem.autorepair.vin_decoder', 'VIN decoder'), desc: __alloT('stem.autorepair.17_character_vin_parse_free_recall_loo', '17-character VIN parse + free recall lookup.') },
               { id: 'maint', icon: '📅', label: __alloT('stem.autorepair.maintenance_schedule', 'Maintenance schedule'), desc: __alloT('stem.autorepair.personalized_from_your_odometer', 'Personalized from your odometer.') },
               { id: 'log', icon: '📓', label: __alloT('stem.autorepair.service_log', 'Service log'), desc: __alloT('stem.autorepair.record_your_own_maintenance_history', 'Record your own maintenance history.') },
@@ -7516,10 +8573,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var rbSolved = 0;
         REPAIR_CASES.forEach(function (c) { if (rbDoneRec[c.id] && rbDoneRec[c.id].verdict === 'correct') rbSolved++; });
         var tcSteps = (d.tcDone || []).length;
+        var menuWalkChecked = d.walkChecked && typeof d.walkChecked === 'object' && !Array.isArray(d.walkChecked) ? d.walkChecked : {};
+        var menuWalkFlags = d.walkFlags && typeof d.walkFlags === 'object' && !Array.isArray(d.walkFlags) ? d.walkFlags : {};
+        var walkResolvedCount = WALK_AROUND_STEPS.filter(function(step) {
+          return menuWalkChecked[step.n] === true || menuWalkFlags[step.n] === true;
+        }).length;
         var moduleProgress = {
           underhood: uhSeenCount > 0 ? uhSeenCount + '/' + UNDER_HOOD_PARTS.length : null,
           repairbay: Object.keys(rbDoneRec).length > 0 ? rbSolved + '/' + REPAIR_CASES.length : null,
-          tyre: tcSteps > 0 ? tcSteps + '/' + TIRE_STEPS.length : null
+          tyre: tcSteps > 0 ? tcSteps + '/' + TIRE_STEPS.length : null,
+          walk: walkResolvedCount > 0 ? walkResolvedCount + '/' + WALK_AROUND_STEPS.length : null
         };
 
         function parseMenuProgress(value) {
@@ -7580,6 +8643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         });
 
         var resumeOptions = [
+          { id: 'walk', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around') },
           { id: 'underhood', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)') },
           { id: 'repairbay', label: __alloT('stem.autorepair.repair_bay_menu', 'Repair Bay (3D)') },
           { id: 'tyre', label: __alloT('stem.autorepair.change_a_tyre_menu', 'Change a tyre (3D)') }
@@ -7596,6 +8660,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var primaryLabel = resumeTarget
           ? __alloT('stem.autorepair.continue_learning', 'Continue learning') + ': ' + resumeTarget.label
           : __alloT('stem.autorepair.start_the_4_week_learning_path', 'Start the 4-week learning path');
+
+        var bayTargets = [
+          { id: 'underhood', icon: '🔎', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)'), shortLabel: 'Engine bay', tone: categoryTones.owning },
+          { id: 'tyre', icon: '🛞', label: __alloT('stem.autorepair.change_a_tyre_menu', 'Change a tyre (3D)'), shortLabel: 'Wheel station', tone: categoryTones.owning },
+          { id: 'repairbay', icon: '🔧', label: __alloT('stem.autorepair.repair_bay_menu', 'Repair Bay (3D)'), shortLabel: 'Diagnostic cart', tone: categoryTones['diagnose-cat'] }
+        ].map(function(target) {
+          var progress = parseMenuProgress(moduleProgress[target.id]);
+          target.progress = progress;
+          target.status = progress
+            ? (progress.current === progress.maximum ? 'Complete' : progress.current + '/' + progress.maximum + ' complete')
+            : 'Start 3D practice';
+          return target;
+        });
+
+        function renderMenuBay() {
+          var bayBodyTop = isContrast ? '#ffffff' : (isDark ? '#64748b' : '#e2e8f0');
+          var bayBodySide = isContrast ? '#000000' : (isDark ? '#1e293b' : '#94a3b8');
+          var bayGlass = isContrast ? '#000000' : '#0f172a';
+          return h('aside', { className: 'ar-menu-bay', 'data-ar-menu-bay': true, 'data-ar-print-hide': 'true',
+            'aria-label': 'Interactive 3D service bay shortcuts', style: { background: statBackground, border: '1px solid ' + T.borderSoft } },
+            h('div', { className: 'ar-menu-bay-head' },
+              h('div', null,
+                h('strong', { style: { color: T.text } }, 'Interactive service bay'),
+                h('span', { style: { color: T.muted } }, 'Choose a station inside the model.')
+              ),
+              h('span', { className: 'ar-menu-bay-chip', style: { color: T.text, background: T.cardAlt, border: '1px solid ' + T.border } }, '3D practice map')
+            ),
+            h('div', { className: 'ar-menu-bay-scene', 'data-ar-menu-bay-scene': true },
+              h('div', { className: 'ar-menu-bay-frame' },
+                h('svg', { className: 'ar-menu-bay-svg', viewBox: '0 0 520 320', preserveAspectRatio: 'xMidYMid meet', role: 'img',
+                  'aria-labelledby': 'ar-menu-bay-svg-title ar-menu-bay-svg-desc' },
+                  h('title', { id: 'ar-menu-bay-svg-title' }, 'Three-dimensional automotive service bay with a vehicle on a two-post lift'),
+                  h('desc', { id: 'ar-menu-bay-svg-desc' }, 'A perspective garage scene shows an open engine bay, front wheel station, lift, diagnostic screen, and tool cart. Three overlaid buttons open the matching hands-on modules.'),
+                  h('defs', null,
+                    h('linearGradient', { id: 'ar-menu-bay-wall', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: isContrast ? '#000000' : '#334155' }),
+                      h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#111827' })
+                    ),
+                    h('linearGradient', { id: 'ar-menu-bay-floor', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#334155' }),
+                      h('stop', { offset: '100%', stopColor: '#020617' })
+                    ),
+                    h('linearGradient', { id: 'ar-menu-bay-body', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: bayBodyTop }),
+                      h('stop', { offset: '62%', stopColor: bayBodySide }),
+                      h('stop', { offset: '100%', stopColor: '#334155' })
+                    ),
+                    h('linearGradient', { id: 'ar-menu-bay-glass', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#bae6fd', stopOpacity: .9 }),
+                      h('stop', { offset: '100%', stopColor: bayGlass, stopOpacity: .98 })
+                    ),
+                    h('radialGradient', { id: 'ar-menu-bay-wheel', cx: '38%', cy: '34%', r: '68%' },
+                      h('stop', { offset: '0%', stopColor: '#64748b' }),
+                      h('stop', { offset: '48%', stopColor: '#1e293b' }),
+                      h('stop', { offset: '100%', stopColor: '#020617' })
+                    )
+                  ),
+                  h('rect', { x: 8, y: 8, width: 504, height: 188, rx: 16, fill: 'url(#ar-menu-bay-wall)', stroke: '#64748b', strokeWidth: 2 }),
+                  h('path', { d: 'M8 183 H512 L520 320 H0 Z', fill: 'url(#ar-menu-bay-floor)' }),
+                  h('g', { opacity: .25, fill: 'none', stroke: '#94a3b8', strokeWidth: 1 },
+                    h('path', { d: 'M35 183 L0 320 M95 183 L67 320 M155 183 L133 320 M215 183 L200 320 M275 183 L267 320 M335 183 L333 320 M395 183 L400 320 M455 183 L467 320' }),
+                    h('path', { d: 'M18 215 H503 M12 252 H509 M6 293 H515' })
+                  ),
+                  h('g', { 'aria-hidden': 'true' },
+                    h('rect', { x: 66, y: 25, width: 150, height: 9, rx: 4.5, fill: '#fef3c7', opacity: .9 }),
+                    h('rect', { x: 304, y: 25, width: 150, height: 9, rx: 4.5, fill: '#fef3c7', opacity: .9 }),
+                    h('path', { d: 'M70 47 H450', stroke: '#475569', strokeWidth: 5 }),
+                    h('path', { d: 'M110 47 V74 M410 47 V74', stroke: '#64748b', strokeWidth: 4 })
+                  ),
+                  h('g', { className: 'ar-menu-bay-lift', 'data-ar-menu-bay-object': 'lift' },
+                    h('rect', { x: 73, y: 57, width: 22, height: 199, rx: 5, fill: '#334155', stroke: '#94a3b8', strokeWidth: 2 }),
+                    h('rect', { x: 425, y: 57, width: 22, height: 199, rx: 5, fill: '#334155', stroke: '#94a3b8', strokeWidth: 2 }),
+                    h('rect', { x: 66, y: 250, width: 36, height: 9, rx: 3, fill: '#475569', stroke: '#94a3b8' }),
+                    h('rect', { x: 418, y: 250, width: 36, height: 9, rx: 3, fill: '#475569', stroke: '#94a3b8' }),
+                    h('path', { d: 'M84 205 L190 232 M436 205 L336 232 M84 205 L185 190 M436 205 L341 190', fill: 'none', stroke: '#64748b', strokeWidth: 8, strokeLinecap: 'round' }),
+                    h('circle', { cx: 190, cy: 232, r: 8, fill: '#111827', stroke: '#94a3b8', strokeWidth: 2 }),
+                    h('circle', { cx: 336, cy: 232, r: 8, fill: '#111827', stroke: '#94a3b8', strokeWidth: 2 }),
+                    h('rect', { x: 431, y: 82, width: 11, height: 28, rx: 3, fill: T.accent, stroke: '#fef3c7' })
+                  ),
+                  h('g', { className: 'ar-menu-bay-cart', 'data-ar-menu-bay-object': 'diagnostic-cart' },
+                    h('rect', { x: 19, y: 179, width: 50, height: 63, rx: 5, fill: '#7f1d1d', stroke: '#fca5a5', strokeWidth: 2 }),
+                    h('path', { d: 'M24 194 H64 M24 207 H64 M24 220 H64', stroke: '#fca5a5', strokeWidth: 2 }),
+                    h('circle', { cx: 29, cy: 248, r: 6, fill: '#020617', stroke: '#94a3b8' }),
+                    h('circle', { cx: 59, cy: 248, r: 6, fill: '#020617', stroke: '#94a3b8' }),
+                    h('rect', { x: 22, y: 119, width: 45, height: 39, rx: 5, fill: '#0f172a', stroke: '#7dd3fc', strokeWidth: 2 }),
+                    h('path', { d: 'M30 145 L38 136 L46 140 L58 128', fill: 'none', stroke: '#34d399', strokeWidth: 3, strokeLinecap: 'round' }),
+                    h('path', { d: 'M45 158 V179 M34 179 H57 M67 141 C92 145 99 164 123 171', fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 })
+                  ),
+                  h('g', { className: 'ar-menu-bay-car', 'data-ar-menu-bay-object': 'vehicle' },
+                    h('ellipse', { cx: 279, cy: 254, rx: 177, ry: 23, fill: 'rgba(2,6,23,.7)' }),
+                    h('ellipse', { cx: 174, cy: 224, rx: 34, ry: 38, fill: 'url(#ar-menu-bay-wheel)', stroke: '#94a3b8', strokeWidth: 4 }),
+                    h('ellipse', { cx: 385, cy: 224, rx: 34, ry: 38, fill: 'url(#ar-menu-bay-wheel)', stroke: '#94a3b8', strokeWidth: 4 }),
+                    h('ellipse', { cx: 174, cy: 224, rx: 15, ry: 18, fill: '#cbd5e1', stroke: '#475569', strokeWidth: 4 }),
+                    h('ellipse', { cx: 385, cy: 224, rx: 15, ry: 18, fill: '#cbd5e1', stroke: '#475569', strokeWidth: 4 }),
+                    h('path', { d: 'M100 210 C110 178 136 166 181 160 L220 116 C236 98 254 92 282 92 L337 92 C359 93 372 104 386 124 L419 160 C448 165 466 179 473 201 L467 217 L422 222 C417 194 401 181 383 181 C361 181 347 198 344 224 L214 224 C210 198 194 181 174 181 C151 181 135 199 132 223 L105 219 Z', fill: 'url(#ar-menu-bay-body)', stroke: isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 3 }),
+                    h('path', { d: 'M226 118 C240 102 255 100 281 100 L332 100 C349 101 361 110 372 127 L396 157 L193 157 Z', fill: 'url(#ar-menu-bay-glass)', stroke: '#94a3b8', strokeWidth: 2 }),
+                    h('path', { d: 'M281 101 V158 M193 158 H419 M288 163 V217 M378 161 L369 215', fill: 'none', stroke: 'rgba(226,232,240,.68)', strokeWidth: 2 }),
+                    h('path', { d: 'M411 159 L465 103 L478 108 L433 169 Z', fill: 'url(#ar-menu-bay-body)', stroke: '#cbd5e1', strokeWidth: 3 }),
+                    h('path', { d: 'M420 162 L455 126 M430 164 L467 132', stroke: '#7dd3fc', strokeWidth: 3 }),
+                    h('rect', { x: 408, y: 166, width: 45, height: 24, rx: 6, fill: '#1e293b', stroke: '#7dd3fc', strokeWidth: 2 }),
+                    h('path', { d: 'M416 173 H445 M416 181 H438', stroke: '#fbbf24', strokeWidth: 2 }),
+                    h('path', { d: 'M461 184 L486 188 L483 202 L468 203', fill: '#f8fafc', stroke: '#fbbf24', strokeWidth: 2 })
+                  )
+                )
+              ),
+              h('div', { className: 'ar-menu-bay-hotspots', 'aria-label': 'Service bay stations' },
+                bayTargets.map(function(target) {
+                  return h('button', { key: target.id, type: 'button', 'data-ar-focusable': true,
+                    className: 'ar-menu-bay-hotspot', 'data-ar-menu-bay-target': target.id,
+                    'data-ar-menu-bay-progress': target.progress ? target.progress.percent : 0,
+                    'aria-label': 'Open ' + target.label + ' — ' + target.status,
+                    onClick: function() { setView(target.id); },
+                    style: Object.assign({}, btnSecondary(), { background: T.card, color: T.text, border: '2px solid ' + target.tone.accent }) },
+                    h('span', { className: 'ar-menu-bay-hotspot-marker', 'aria-hidden': 'true', style: { background: target.tone.accent, color: isDark || isContrast ? '#000000' : '#ffffff' } }, target.icon),
+                    h('span', { className: 'ar-menu-bay-hotspot-copy' },
+                      h('strong', null, target.shortLabel),
+                      h('small', { style: { color: T.muted } }, target.status)
+                    )
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'ar-menu-bay-footer', 'data-ar-menu-bay-status': true, style: { color: T.muted, background: T.cardAlt, border: '1px solid ' + T.border } },
+              h('span', { className: 'ar-menu-bay-live', style: { color: T.good } }, '3 practice bays ready'),
+              h('span', null, 'Progress saves automatically')
+            )
+          );
+        }
 
         var heroBackground = isContrast
           ? T.card
@@ -7656,12 +8848,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 ),
                 h('div', { className: 'ar-menu-actions' },
                   h('button', {
+                    type: 'button',
                     'data-ar-focusable': true,
                     'data-ar-primary-action': primaryTarget,
                     onClick: function() { setView(primaryTarget); },
                     style: btnPrimary({ minHeight: 44, color: isDark || isContrast ? '#0f172a' : '#ffffff' })
                   }, primaryLabel, h('span', { 'aria-hidden': 'true' }, ' →')),
                   h('button', {
+                    type: 'button',
                     'data-ar-focusable': true,
                     'aria-label': __alloT('stem.autorepair.view_badge_gallery', 'View badge gallery') + ' — ' + badgeCount + ' ' + __alloT('stem.autorepair.badges_earned_lower', 'badges earned'),
                     onClick: function() { setView('badges'); },
@@ -7672,7 +8866,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     h('span', { style: { marginLeft: 7, fontWeight: 900, color: T.accentHi } }, String(badgeCount))
                   )
                 )
-              )
+              ),
+              renderMenuBay()
             ),
             h('div', { className: 'ar-menu-stats', 'aria-label': __alloT('stem.autorepair.learning_status', 'Learning status') },
               menuStat(totalModules, __alloT('stem.autorepair.modules_to_explore', 'modules to explore'), '▦'),
@@ -7915,8 +9110,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
       // DIAGNOSE view — 4 sub-modes (obd / listen / fluid / visual)
       function renderDiagnose() {
-        var dxView = d.dxView || 'overview';
         var DX_TAB_IDS = ['overview', 'obd', 'listen', 'listenQuiz', 'fluid', 'visual'];
+        var requestedDxView = typeof d.dxView === 'string' ? d.dxView : 'overview';
+        var dxView = DX_TAB_IDS.indexOf(requestedDxView) >= 0 ? requestedDxView : 'overview';
         var DX_MODE_META = {
           overview: { icon: '\uD83D\uDD0D', label: 'Overview', desc: 'Build a repeatable four-channel diagnostic habit before replacing parts.' },
           obd: { icon: '\uD83D\uDD0C', label: 'OBD-II codes', desc: 'Treat a code as evidence, then verify the likely cause before buying a part.' },
@@ -7972,7 +9168,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function tabBtn(id, label) {
           var active = dxView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             id: 'autorepair-diagnose-tab-' + id,
             'data-ar-diagnose-tab': id,
             'data-ar-tab-state': active ? 'active' : 'inactive',
@@ -8095,12 +9291,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
+        function renderDxScanner(channels) {
+          var bodyTop = isContrast ? '#ffffff' : (isDark ? '#94a3b8' : '#f8fafc');
+          var bodySide = isContrast ? '#000000' : (isDark ? '#334155' : '#94a3b8');
+          var glassTone = isContrast ? '#000000' : '#0f172a';
+          function channelTone(id) {
+            if (isContrast) return T.accentHi;
+            if (isDark) return { obd: '#38bdf8', listen: '#c084fc', fluid: '#fbbf24', visual: '#34d399' }[id];
+            return { obd: '#0369a1', listen: '#7e22ce', fluid: '#a16207', visual: '#047857' }[id];
+          }
+          return h('section', {
+            className: 'ar-diagnose-scanner',
+            'data-ar-diagnose-scanner': true,
+            'aria-labelledby': 'autorepair-diagnose-scanner-title',
+            style: { background: T.card, border: '1px solid ' + T.border }
+          },
+            h('div', { className: 'ar-diagnose-scanner-head' },
+              h('div', null,
+                h('h2', { id: 'autorepair-diagnose-scanner-title', style: { color: T.text } }, 'Dimensional diagnostic scanner'),
+                h('p', { style: { color: T.muted } }, 'Select a vehicle zone to open its evidence channel, then verify the clue before replacing a part.')
+              ),
+              h('span', { className: 'ar-diagnose-scanner-chip', style: { color: T.text, background: T.cardAlt, border: '1px solid ' + T.border } }, 'Conceptual 3D guide')
+            ),
+            h('div', { className: 'ar-diagnose-scanner-grid' },
+              h('div', { className: 'ar-diagnose-scanner-stage', 'data-ar-diagnose-scanner-scene': true },
+                h('div', { className: 'ar-diagnose-scanner-beam', 'aria-hidden': 'true' }),
+                h('div', { className: 'ar-diagnose-scanner-frame' },
+                  h('svg', { className: 'ar-diagnose-scanner-svg', viewBox: '0 0 620 340', preserveAspectRatio: 'xMidYMid meet', role: 'img',
+                    'aria-labelledby': 'autorepair-diagnose-scanner-svg-title autorepair-diagnose-scanner-svg-desc' },
+                    h('title', { id: 'autorepair-diagnose-scanner-svg-title' }, 'Three-dimensional vehicle diagnostic scanner'),
+                    h('desc', { id: 'autorepair-diagnose-scanner-svg-desc' }, 'A perspective vehicle model reveals the engine, chassis, data connection, sound waves, and fluid traces. Four overlaid buttons open the related diagnostic channel.'),
+                    h('defs', null,
+                      h('linearGradient', { id: 'ar-diagnose-body', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: bodyTop }),
+                        h('stop', { offset: '58%', stopColor: bodySide }),
+                        h('stop', { offset: '100%', stopColor: '#1e293b' })
+                      ),
+                      h('linearGradient', { id: 'ar-diagnose-glass', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#bae6fd', stopOpacity: .9 }),
+                        h('stop', { offset: '100%', stopColor: glassTone, stopOpacity: .98 })
+                      ),
+                      h('radialGradient', { id: 'ar-diagnose-wheel', cx: '38%', cy: '34%', r: '68%' },
+                        h('stop', { offset: '0%', stopColor: '#64748b' }),
+                        h('stop', { offset: '48%', stopColor: '#1e293b' }),
+                        h('stop', { offset: '100%', stopColor: '#020617' })
+                      ),
+                      h('filter', { id: 'ar-diagnose-glow', x: '-80%', y: '-80%', width: '260%', height: '260%' },
+                        h('feGaussianBlur', { stdDeviation: '3.5', result: 'blur' }),
+                        h('feMerge', null, h('feMergeNode', { 'in': 'blur' }), h('feMergeNode', { 'in': 'SourceGraphic' }))
+                      )
+                    ),
+                    h('ellipse', { cx: 330, cy: 285, rx: 230, ry: 28, fill: 'rgba(2,6,23,.68)' }),
+                    h('g', { className: 'ar-diagnose-scanner-vehicle', 'data-ar-diagnose-scanner-object': 'vehicle' },
+                      h('ellipse', { cx: 188, cy: 247, rx: 40, ry: 45, fill: 'url(#ar-diagnose-wheel)', stroke: '#94a3b8', strokeWidth: 4 }),
+                      h('ellipse', { cx: 188, cy: 247, rx: 17, ry: 20, fill: '#cbd5e1', stroke: '#475569', strokeWidth: 5 }),
+                      h('ellipse', { cx: 482, cy: 247, rx: 40, ry: 45, fill: 'url(#ar-diagnose-wheel)', stroke: '#94a3b8', strokeWidth: 4 }),
+                      h('ellipse', { cx: 482, cy: 247, rx: 17, ry: 20, fill: '#cbd5e1', stroke: '#475569', strokeWidth: 5 }),
+                      h('path', { d: 'M92 224 C105 188 139 171 201 164 L250 107 C270 84 294 76 330 76 L399 76 C428 77 446 91 463 116 L501 164 C538 170 560 186 568 215 L560 236 L526 242 C518 207 501 190 481 190 C451 190 435 212 431 246 L239 246 C234 211 215 190 190 190 C162 190 143 212 139 245 L103 239 Z', fill: 'url(#ar-diagnose-body)', stroke: isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 3 }),
+                      h('path', { d: 'M260 109 C278 90 296 87 328 87 L393 87 C414 88 431 99 444 119 L471 160 L217 160 Z', fill: 'url(#ar-diagnose-glass)', stroke: '#94a3b8', strokeWidth: 2 }),
+                      h('path', { d: 'M328 88 V161 M217 161 H502 M336 166 V239 M450 164 L440 238', fill: 'none', stroke: 'rgba(226,232,240,.72)', strokeWidth: 2 }),
+                      h('path', { d: 'M110 208 C203 197 444 197 553 210', fill: 'none', stroke: 'rgba(255,255,255,.34)', strokeWidth: 3 }),
+                      h('path', { d: 'M552 199 L583 204 L579 222 L561 224', fill: '#f8fafc', stroke: '#fbbf24', strokeWidth: 2 }),
+                      h('path', { d: 'M95 211 L76 217 L79 231 L105 232', fill: '#ef4444', stroke: '#fca5a5', strokeWidth: 2 })
+                    ),
+                    h('g', { className: 'ar-diagnose-scanner-systems', 'data-ar-diagnose-scanner-object': 'systems', fill: 'none', stroke: '#7dd3fc', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' },
+                      h('rect', { x: 435, y: 150, width: 74, height: 55, rx: 11, fill: 'rgba(14,116,144,.18)' }),
+                      h('path', { d: 'M448 164 H495 M448 177 H495 M448 190 H482 M509 165 H536 V205 M188 231 H486 M237 225 L286 205 H397 L444 224' }),
+                      h('circle', { cx: 188, cy: 247, r: 27 }),
+                      h('circle', { cx: 482, cy: 247, r: 27 }),
+                      h('rect', { x: 360, y: 177, width: 42, height: 28, rx: 5 }),
+                      h('path', { d: 'M369 177 V167 M392 177 V167 M296 189 C332 164 389 158 435 169 M297 201 C340 213 394 214 435 190' })
+                    ),
+                    h('g', { className: 'ar-diagnose-scanner-scan-tool', 'data-ar-diagnose-scanner-object': 'scan-tool', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round' },
+                      h('rect', { x: 27, y: 119, width: 58, height: 76, rx: 8, fill: '#0f172a' }),
+                      h('rect', { x: 35, y: 129, width: 42, height: 33, rx: 4, fill: '#082f49' }),
+                      h('path', { d: 'M41 151 L48 143 L55 147 L69 136', stroke: '#34d399' }),
+                      h('circle', { cx: 45, cy: 179, r: 4, fill: '#38bdf8' }),
+                      h('circle', { cx: 58, cy: 179, r: 4, fill: '#fbbf24' }),
+                      h('circle', { cx: 71, cy: 179, r: 4, fill: '#34d399' }),
+                      h('path', { d: 'M85 172 C122 171 137 190 176 200 C220 211 256 191 302 194', strokeDasharray: '6 5' }),
+                      h('rect', { x: 299, y: 187, width: 18, height: 13, rx: 3, fill: '#0f172a' })
+                    ),
+                    h('g', { 'aria-hidden': 'true', fill: 'none', stroke: '#c084fc', strokeWidth: 3, strokeLinecap: 'round' },
+                      h('path', { className: 'ar-diagnose-scanner-sound-wave', d: 'M527 133 Q543 145 527 157' }),
+                      h('path', { className: 'ar-diagnose-scanner-sound-wave', d: 'M540 124 Q564 145 540 166', opacity: .72 }),
+                      h('path', { className: 'ar-diagnose-scanner-sound-wave', d: 'M147 219 Q132 234 147 249', opacity: .72 })
+                    ),
+                    h('g', { className: 'ar-diagnose-scanner-fluid-trace', 'data-ar-diagnose-scanner-object': 'fluid-trace', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' },
+                      h('path', { d: 'M443 207 C434 228 422 246 418 268', strokeDasharray: '6 5' }),
+                      h('path', { className: 'ar-diagnose-scanner-fluid-drop', d: 'M417 266 C407 280 408 289 418 293 C428 289 429 280 417 266 Z', fill: '#fbbf24', fillOpacity: .74 }),
+                      h('ellipse', { cx: 418, cy: 301, rx: 35, ry: 7, fill: '#fbbf24', fillOpacity: .22 })
+                    ),
+                    h('g', { 'aria-hidden': 'true', fill: 'none', stroke: '#34d399', strokeWidth: 2.5, strokeLinecap: 'round', filter: 'url(#ar-diagnose-glow)' },
+                      h('path', { d: 'M105 256 H541', strokeDasharray: '10 8', opacity: .72 }),
+                      h('path', { d: 'M123 270 L191 253 M540 270 L482 253', opacity: .58 })
+                    )
+                  )
+                ),
+                h('div', { className: 'ar-diagnose-scanner-hotspots', role: 'group', 'aria-label': 'Diagnostic scanner channels' },
+                  channels.map(function(channel) {
+                    var tone = channelTone(channel.id);
+                    return h('button', { key: channel.id, type: 'button', 'data-ar-focusable': true, className: 'ar-diagnose-scanner-target',
+                      'data-ar-diagnose-scanner-target': channel.id,
+                      'aria-label': 'Open ' + channel.name + ' diagnostic channel. Vehicle zone: ' + channel.zone + '. Evidence cue: ' + channel.cue + '.',
+                      onClick: function() { upd('dxView', channel.id); arAnnounce(channel.name + ' diagnostic channel opened.'); },
+                      style: Object.assign({}, btnSecondary(), { background: T.card, color: T.text, border: '2px solid ' + tone }) },
+                      h('span', { className: 'ar-diagnose-scanner-marker', 'aria-hidden': 'true', style: { background: tone, color: isDark || isContrast ? '#000000' : '#ffffff' } }, channel.icon),
+                      h('span', { className: 'ar-diagnose-scanner-target-copy' },
+                        h('strong', null, channel.shortName),
+                        h('small', { style: { color: T.muted } }, channel.zone)
+                      )
+                    );
+                  })
+                )
+              ),
+              h('div', { className: 'ar-diagnose-scanner-rail', 'data-ar-diagnose-scanner-readouts': true },
+                channels.map(function(channel) {
+                  var tone = channelTone(channel.id);
+                  return h('div', { key: channel.id, className: 'ar-diagnose-scanner-readout', 'data-ar-diagnose-scanner-readout': channel.id,
+                    style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('span', { className: 'ar-diagnose-scanner-readout-icon', 'aria-hidden': 'true', style: { background: T.card, color: tone, border: '1px solid ' + tone } }, channel.icon),
+                    h('span', { className: 'ar-diagnose-scanner-readout-copy' },
+                      h('strong', { style: { color: T.text } }, channel.shortName),
+                      h('span', { style: { color: tone } }, channel.zone),
+                      h('small', { style: { color: T.muted } }, channel.cue)
+                    )
+                  );
+                })
+              )
+            )
+          );
+        }
+
         function dxOverview() {
           var channels = [
-            { id: 'obd', icon: '\uD83D\uDD0C', name: __alloT('stem.autorepair.obd_ii_computer', 'OBD-II (computer)'), desc: __alloT('stem.autorepair.plug_in_scanner_read_codes_catches_any', 'Plug in scanner. Read codes. Catches anything the engine computer flagged.') },
-            { id: 'listen', icon: '\uD83D\uDC42', name: __alloT('stem.autorepair.listen', 'Listen'), desc: __alloT('stem.autorepair.squeals_clicks_knocks_rattles_each_has', 'Squeals, clicks, knocks, rattles. Each has a story. Old-school but unbeatable.') },
-            { id: 'fluid', icon: '\uD83D\uDEE2\uFE0F', name: __alloT('stem.autorepair.fluids', 'Fluids'), desc: __alloT('stem.autorepair.color_smell_level_tells_you_about_cool', 'Color, smell, level. Tells you about cooling, lubrication, transmission, brakes.') },
-            { id: 'visual', icon: '\uD83D\uDC41\uFE0F', name: __alloT('stem.autorepair.visual', 'Visual'), desc: __alloT('stem.autorepair.belts_hoses_leaks_lines_tires_maine_un', 'Belts, hoses, leaks, lines, tires. Maine: undercarriage rust above all.') }
+            { id: 'obd', icon: '\uD83D\uDD0C', shortName: 'OBD-II data', zone: 'Cabin data link', cue: 'Stored codes + live data', name: __alloT('stem.autorepair.obd_ii_computer', 'OBD-II (computer)'), desc: __alloT('stem.autorepair.plug_in_scanner_read_codes_catches_any', 'Plug in scanner. Read codes. Catches anything the engine computer flagged.') },
+            { id: 'listen', icon: '\uD83D\uDC42', shortName: 'Sound pattern', zone: 'Engine + chassis', cue: 'When, where, load, speed', name: __alloT('stem.autorepair.listen', 'Listen'), desc: __alloT('stem.autorepair.squeals_clicks_knocks_rattles_each_has', 'Squeals, clicks, knocks, rattles. Each has a story. Old-school but unbeatable.') },
+            { id: 'fluid', icon: '\uD83D\uDEE2\uFE0F', shortName: 'Fluid trace', zone: 'Engine + underbody', cue: 'Location, color, smell, level', name: __alloT('stem.autorepair.fluids', 'Fluids'), desc: __alloT('stem.autorepair.color_smell_level_tells_you_about_cool', 'Color, smell, level. Tells you about cooling, lubrication, transmission, brakes.') },
+            { id: 'visual', icon: '\uD83D\uDC41\uFE0F', shortName: 'Visual sweep', zone: 'Whole vehicle', cue: 'Leaks, wear, rust, loose parts', name: __alloT('stem.autorepair.visual', 'Visual'), desc: __alloT('stem.autorepair.belts_hoses_leaks_lines_tires_maine_un', 'Belts, hoses, leaks, lines, tires. Maine: undercarriage rust above all.') }
           ];
           return h('div', { 'data-ar-diagnose-overview': true },
             h('section', {
@@ -8114,6 +9442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
                 __alloT('stem.autorepair.real_techs_use_4_senses_1_tool_each_fi', 'Real techs use 4 senses + 1 tool. Each finds different problems. Get fluent in all four.'))
             ),
+            renderDxScanner(channels),
             h('div', { className: 'ar-diagnose-overview-grid' },
               channels.map(function(channel) {
                 return h('article', {
@@ -12468,22 +13797,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // DAMAGE ID view — game where user identifies what they\'re seeing
       // ─────────────────────────────────────────
       function renderDamage() {
-        var idx = d.damageIdx || 0;
-        var answers = d.damageAnswers || {};
+        var requestedIdx = Number.isInteger(d.damageIdx) ? d.damageIdx : 0;
+        var idx = requestedIdx >= 0 && requestedIdx <= DAMAGE_CASES.length ? requestedIdx : 0;
+        var answerSource = d.damageAnswers && typeof d.damageAnswers === 'object' && !Array.isArray(d.damageAnswers)
+          ? d.damageAnswers
+          : {};
+        var answers = {};
+        DAMAGE_CASES.forEach(function(c) {
+          ['part', 'cause', 'sev'].forEach(function(kind) {
+            var key = c.id + '_' + kind;
+            var value = answerSource[key];
+            if (Number.isInteger(value) && value >= 0 && value < c[kind].a.length) answers[key] = value;
+          });
+        });
+        var DAMAGE_VIEW_IDS = ['vehicle', 'systems', 'closeup'];
+        var requestedDamageView = typeof d.damageView === 'string' ? d.damageView : 'vehicle';
+        var damageView = DAMAGE_VIEW_IDS.indexOf(requestedDamageView) >= 0 ? requestedDamageView : 'vehicle';
         var theCase = DAMAGE_CASES[idx];
 
-        if (!theCase) {
+        function damageResult(currentAnswers) {
           var score = 0;
           var total = 0;
           DAMAGE_CASES.forEach(function(c) {
             ['part', 'cause', 'sev'].forEach(function(k) {
               total++;
-              var key = c.id + '_' + k;
-              if (answers[key] === c[k].correct) score++;
+              if (currentAnswers[c.id + '_' + k] === c[k].correct) score++;
             });
           });
-          var pct = Math.round((score / total) * 100);
-          if (pct >= 80) awardBadge('damage-id-ace', 'Damage ID Ace');
+          return { score: score, total: total, pct: Math.round((score / total) * 100) };
+        }
+
+        if (!theCase) {
+          var result = damageResult(answers);
+          var score = result.score;
+          var total = result.total;
+          var pct = result.pct;
           var tier = pct >= 90 ? 'ace' : pct >= 80 ? 'strong' : pct >= 60 ? 'baseline' : 'review';
           var tierColor = tier === 'ace' ? '#fbbf24' : tier === 'strong' ? T.good : tier === 'baseline' ? T.warn : T.bad;
           var tierIcon = tier === 'ace' ? '🏆' : tier === 'strong' ? '🎓' : tier === 'baseline' ? '🚧' : '📚';
@@ -12507,12 +13855,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               perQ.push({ caseId: c.id, kind: k, correct: answers[c.id + '_' + k] === c[k].correct });
             });
           });
-          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-            backBar('🔬 Damage ID — complete'),
-            h('div', { style: { borderRadius: 14, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: T.card } },
+          return h('main', { className: 'ar-damage-shell', 'data-ar-damage-shell': true, 'data-ar-damage-state': 'complete', style: { color: T.text } },
+            backBar('🔬 Damage ID — complete', 'Damage ID results navigation'),
+            h('div', { className: 'ar-damage-result-card', 'data-ar-damage-result': tier, style: { border: '2px solid ' + tierColor, background: T.card } },
               h('div', { style: { padding: 18, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
                 // Score donut
-                h('div', { style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
+                h('div', { className: 'ar-damage-result-donut', style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
                   h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
                     'aria-label': 'Score: ' + score + ' out of ' + total
                   },
@@ -12527,7 +13875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 ),
                 h('div', { style: { flex: 1, minWidth: 220 } },
                   h('div', { style: { fontSize: 30, marginBottom: 4 }, 'aria-hidden': 'true' }, tierIcon),
-                  h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                  h('h1', { style: { margin: '0 0 6px', fontSize: 22, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
                   h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, tierMsg)
                 )
               ),
@@ -12541,7 +13889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       style: {
                         width: 14, height: 14, borderRadius: 3,
                         background: q.correct ? T.good : T.bad,
-                        border: '1.5px solid ' + (q.correct ? '#15803d' : '#7f1d1d'),
+                        border: '1.5px solid ' + (q.correct ? T.good : T.bad),
                         boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
                       },
                       'aria-label': q.caseId + ' ' + q.kind + (q.correct ? ' correct' : ' incorrect')
@@ -12551,10 +13899,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               ),
               pct >= 80 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.good, fontWeight: 700, borderTop: '1px solid ' + T.border } }, __alloT('stem.autorepair.badge_earned_damage_id_ace', '🏅 Badge earned: Damage ID Ace')),
               h('div', { style: { padding: '12px 18px', borderTop: '1px solid ' + T.border } },
-                h('button', { 'data-ar-focusable': true, onClick: function() { updMulti({ damageIdx: 0, damageAnswers: {} }); }, style: btnPrimary() }, __alloT('stem.autorepair.restart_2', '🔄 Restart'))
+                h('button', { type: 'button', 'data-ar-focusable': true, onClick: function() { updMulti({ damageIdx: 0, damageAnswers: {}, damageView: 'vehicle' }); }, style: btnPrimary() }, __alloT('stem.autorepair.restart_2', '🔄 Restart'))
               )
             ),
             disclaimerFooter()
+          );
+        }
+
+        var sceneMeta = DAMAGE_SCENE_META[theCase.id] || {
+          icon: '🔬', kind: 'general', system: 'Vehicle system', zone: 'Inspection area', depth: 'Concept view', x: 310, y: 150
+        };
+        var bodyTop = isContrast ? '#ffffff' : (isDark ? '#64748b' : '#e2e8f0');
+        var bodySide = isContrast ? '#000000' : (isDark ? '#1e293b' : '#94a3b8');
+        var glassTone = isContrast ? '#000000' : '#0f172a';
+        var answeredCount = Object.keys(answers).length;
+        var totalQuestions = DAMAGE_CASES.length * 3;
+        var progressPct = Math.round((answeredCount / totalQuestions) * 100);
+
+        function damageViewButton(id, icon, label) {
+          var active = damageView === id;
+          return h('button', { type: 'button', key: id, 'data-ar-focusable': true,
+            className: 'ar-damage-view-button',
+            'data-ar-damage-view': id,
+            'data-ar-view-state': active ? 'active' : 'inactive',
+            'aria-pressed': active ? 'true' : 'false',
+            onClick: function() {
+              upd('damageView', id);
+              arAnnounce(label + ' inspection view selected.');
+            },
+            style: Object.assign({}, btnSecondary(), {
+              background: active ? T.accent : T.cardAlt,
+              color: active ? onStrongFill : T.text,
+              border: '2px solid ' + (active ? T.accent : T.border),
+              fontWeight: active ? 850 : 700
+            })
+          },
+            h('span', { 'aria-hidden': 'true' }, icon),
+            h('span', null, label)
+          );
+        }
+
+        function renderDamageStage() {
+          return h('section', { className: 'ar-damage-scene-card', 'data-ar-damage-scene-card': true,
+            'aria-labelledby': 'autorepair-damage-scene-heading', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-damage-scene-head' },
+              h('div', null,
+                h('h2', { id: 'autorepair-damage-scene-heading', style: { color: T.text } }, 'Dimensional inspection view'),
+                h('p', { style: { color: T.muted } }, 'Move from vehicle location to system context to a focused specimen.')
+              ),
+              h('span', { className: 'ar-damage-concept-chip', style: { color: T.text, background: T.cardAlt, border: '1px solid ' + T.border } }, 'Conceptual 3D guide')
+            ),
+            h('div', { className: 'ar-damage-view-controls', role: 'group', 'aria-label': 'Damage visualization view' },
+              damageViewButton('vehicle', '🚘', 'Vehicle'),
+              damageViewButton('systems', '🩻', 'System x-ray'),
+              damageViewButton('closeup', '🔍', 'Part close-up')
+            ),
+            h('div', { className: 'ar-damage-scene', 'data-ar-damage-scene': true,
+              'data-ar-damage-mode': damageView, 'data-ar-damage-kind': sceneMeta.kind, 'data-ar-damage-zone': sceneMeta.zone },
+              h('div', { className: 'ar-damage-scan-line', 'aria-hidden': 'true' }),
+              h('div', { className: 'ar-damage-scene-perspective' },
+                h('div', { className: 'ar-damage-scene-frame' },
+                  h('svg', { className: 'ar-damage-vehicle-svg', viewBox: '0 0 620 300', role: 'img',
+                    'aria-labelledby': 'autorepair-damage-svg-title autorepair-damage-svg-desc' },
+                    h('title', { id: 'autorepair-damage-svg-title' }, 'Three-quarter vehicle inspection model with highlighted ' + sceneMeta.zone),
+                    h('desc', { id: 'autorepair-damage-svg-desc' }, 'A conceptual vehicle diagram highlights the ' + sceneMeta.zone + ' in the ' + sceneMeta.system + ' system. Use the view controls for an x-ray or close-up.'),
+                    h('defs', null,
+                      h('linearGradient', { id: 'ar-damage-body-gradient', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: bodyTop }),
+                        h('stop', { offset: '55%', stopColor: bodySide }),
+                        h('stop', { offset: '100%', stopColor: '#334155' })
+                      ),
+                      h('linearGradient', { id: 'ar-damage-glass-gradient', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#bae6fd', stopOpacity: isContrast ? 1 : .9 }),
+                        h('stop', { offset: '100%', stopColor: glassTone, stopOpacity: .98 })
+                      ),
+                      h('radialGradient', { id: 'ar-damage-wheel-gradient', cx: '40%', cy: '35%', r: '66%' },
+                        h('stop', { offset: '0%', stopColor: '#64748b' }),
+                        h('stop', { offset: '46%', stopColor: '#1e293b' }),
+                        h('stop', { offset: '100%', stopColor: '#020617' })
+                      ),
+                      h('filter', { id: 'ar-damage-hotspot-glow', x: '-100%', y: '-100%', width: '300%', height: '300%' },
+                        h('feGaussianBlur', { stdDeviation: '4', result: 'blur' }),
+                        h('feMerge', null, h('feMergeNode', { 'in': 'blur' }), h('feMergeNode', { 'in': 'SourceGraphic' }))
+                      )
+                    ),
+                    h('ellipse', { cx: 318, cy: 242, rx: 236, ry: 31, fill: 'rgba(2,6,23,.62)' }),
+                    h('g', { className: 'ar-damage-car-shell', 'data-ar-damage-car-shell': true },
+                      h('g', { 'aria-hidden': 'true' },
+                        h('ellipse', { cx: 171, cy: 213, rx: 42, ry: 47, fill: 'url(#ar-damage-wheel-gradient)', stroke: '#94a3b8', strokeWidth: 4 }),
+                        h('ellipse', { cx: 171, cy: 213, rx: 18, ry: 22, fill: '#cbd5e1', stroke: '#475569', strokeWidth: 5 }),
+                        h('ellipse', { cx: 476, cy: 213, rx: 42, ry: 47, fill: 'url(#ar-damage-wheel-gradient)', stroke: '#94a3b8', strokeWidth: 4 }),
+                        h('ellipse', { cx: 476, cy: 213, rx: 18, ry: 22, fill: '#cbd5e1', stroke: '#475569', strokeWidth: 5 })
+                      ),
+                      h('path', { d: 'M78 192 C90 158 125 142 190 135 L239 82 C257 62 279 54 314 54 L386 54 C414 55 431 69 448 92 L488 135 C526 141 552 158 560 185 L553 204 L516 210 C510 172 494 155 474 154 C444 153 427 174 424 211 L222 211 C216 175 198 155 174 154 C145 153 126 175 123 210 L89 205 Z', fill: 'url(#ar-damage-body-gradient)', stroke: isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 3 }),
+                      h('path', { d: 'M247 84 C263 67 280 64 311 64 L379 64 C399 65 415 76 428 94 L455 131 L205 131 Z', fill: 'url(#ar-damage-glass-gradient)', stroke: '#94a3b8', strokeWidth: 2 }),
+                      h('path', { d: 'M311 65 L311 132 M205 132 L487 136 M319 137 L319 204 M434 136 L424 204', fill: 'none', stroke: 'rgba(226,232,240,.72)', strokeWidth: 2 }),
+                      h('path', { d: 'M96 176 C184 166 427 165 546 176', fill: 'none', stroke: 'rgba(255,255,255,.35)', strokeWidth: 3 }),
+                      h('path', { d: 'M548 168 L574 172 L570 190 L552 191', fill: '#f8fafc', stroke: '#fbbf24', strokeWidth: 2 }),
+                      h('path', { d: 'M82 177 L66 182 L69 196 L90 197', fill: T.bad, stroke: T.bad, strokeWidth: 2 }),
+                      h('rect', { x: 340, y: 149, width: 22, height: 5, rx: 2.5, fill: '#cbd5e1' })
+                    ),
+                    h('g', { className: 'ar-damage-system-layer', 'data-ar-damage-system-layer': true, fill: 'none', stroke: '#7dd3fc', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' },
+                      h('rect', { x: 411, y: 116, width: 76, height: 52, rx: 12 }),
+                      h('path', { d: 'M425 128 H474 M425 140 H474 M425 152 H462 M487 131 H521 V166' }),
+                      h('rect', { x: 456, y: 105, width: 36, height: 24, rx: 4 }),
+                      h('path', { d: 'M465 105 V97 M483 105 V97 M159 199 H488 M206 193 L260 176 H392 L443 194 M116 198 H76' }),
+                      h('circle', { cx: 171, cy: 213, r: 29 }),
+                      h('circle', { cx: 476, cy: 213, r: 29 }),
+                      h('path', { d: 'M365 106 L390 126 L411 117 M350 115 Q382 94 408 105' })
+                    ),
+                    h('g', { className: 'ar-damage-hotspot', 'data-ar-damage-hotspot': true,
+                      transform: 'translate(' + sceneMeta.x + ' ' + sceneMeta.y + ')', filter: 'url(#ar-damage-hotspot-glow)' },
+                      h('circle', { className: 'ar-damage-hotspot-wave', cx: 0, cy: 0, r: 24, fill: 'none', stroke: T.accent, strokeWidth: 4 }),
+                      h('circle', { cx: 0, cy: 0, r: 16, fill: T.accent, fillOpacity: .2, stroke: T.accent, strokeWidth: 3 }),
+                      h('circle', { className: 'ar-damage-hotspot-core', cx: 0, cy: 0, r: 6, fill: T.accent })
+                    )
+                  )
+                )
+              ),
+              h('div', { className: 'ar-damage-closeup', 'data-ar-damage-closeup': sceneMeta.kind, 'aria-hidden': damageView === 'closeup' ? 'false' : 'true' },
+                h('div', { className: 'ar-damage-specimen-orbit', 'aria-hidden': 'true' },
+                  h('span', { className: 'ar-damage-specimen-ring' }),
+                  h('span', { className: 'ar-damage-specimen-ring' }),
+                  h('span', { className: 'ar-damage-specimen-core' }, sceneMeta.icon)
+                ),
+                h('strong', null, sceneMeta.zone),
+                h('span', null, sceneMeta.system + ' · ' + sceneMeta.depth)
+              )
+            ),
+            h('div', { className: 'ar-damage-stage-footer', 'data-ar-damage-readouts': true },
+              [
+                { label: 'System', value: sceneMeta.system },
+                { label: 'Vehicle zone', value: sceneMeta.zone },
+                { label: 'Inspection depth', value: sceneMeta.depth }
+              ].map(function(readout) {
+                return h('div', { key: readout.label, className: 'ar-damage-readout', 'data-ar-damage-readout': readout.label.toLowerCase().replace(/\s+/g, '-'), style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('span', { style: { color: T.muted } }, readout.label),
+                  h('strong', { style: { color: T.text } }, readout.value)
+                );
+              })
+            )
           );
         }
 
@@ -12563,46 +14047,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var sevKey = theCase.id + '_sev';
         var answeredAll = answers[partKey] != null && answers[causeKey] != null && answers[sevKey] != null;
 
-        function answerFor(key, q, correct) {
+        function answerFor(key, kind, q, questionNumber) {
           var picked = answers[key];
           var submitted = picked != null;
-          return h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
-            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.accentHi } }, q.q),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+          var kindLabel = kind === 'part' ? 'Identify the part' : (kind === 'cause' ? 'Trace the cause' : 'Make the safety call');
+          return h('article', { className: 'ar-damage-question', 'data-ar-damage-question': kind,
+            'data-ar-question-state': submitted ? 'answered' : 'open', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-damage-question-head' },
+              h('span', { className: 'ar-damage-question-number', 'aria-hidden': 'true', style: { background: T.accent, color: onStrongFill } }, questionNumber),
+              h('div', null,
+                h('span', { style: { display: 'block', marginBottom: 2, color: T.muted, fontSize: 9, fontWeight: 900, letterSpacing: '.06em', textTransform: 'uppercase' } }, kindLabel),
+                h('h3', { style: { color: T.text } }, q.q)
+              )
+            ),
+            h('div', { className: 'ar-damage-options' },
               q.a.map(function(opt, i) {
                 var isPicked = picked === i;
                 var isCorrect = i === q.correct;
-                var bg, border, color;
-                if (submitted) {
-                  if (isCorrect) { bg = '#064e3b'; border = T.good; color = '#d1fae5'; }
-                  else if (isPicked) { bg = '#7f1d1d'; border = T.bad; color = '#fee2e2'; }
-                  else { bg = T.bg; border = T.border; color = T.muted; }
-                } else if (isPicked) {
-                  bg = T.accent; border = T.accent; color = '#0f172a';
-                } else { bg = T.bg; border = T.border; color = T.text; }
-                return h('button', { key: i, 'data-ar-focusable': true,
-                  'aria-label': opt, disabled: submitted,
-                  onClick: function() { var nv = Object.assign({}, answers); nv[key] = i; upd('damageAnswers', nv); },
-                  style: { padding: 10, borderRadius: 6, background: bg, color: color, border: '1px solid ' + border, cursor: submitted ? 'default' : 'pointer', textAlign: 'left', fontSize: 12, lineHeight: 1.5 } },
-                  String.fromCharCode(65 + i) + '. ' + opt
+                var optionState = !submitted ? 'available' : (isCorrect ? 'correct' : (isPicked ? 'incorrect' : 'locked'));
+                var tone = optionState === 'correct' ? T.good : (optionState === 'incorrect' ? T.bad : T.border);
+                var stateLabel = optionState === 'correct' ? 'Correct answer. ' : (optionState === 'incorrect' ? 'Your answer, incorrect. ' : '');
+                return h('button', { key: i, type: 'button', 'data-ar-focusable': true,
+                  className: 'ar-damage-option',
+                  'data-ar-damage-option': i,
+                  'data-ar-option-state': optionState,
+                  'aria-label': stateLabel + opt,
+                  'aria-pressed': isPicked ? 'true' : 'false',
+                  disabled: submitted,
+                  onClick: function() {
+                    var nv = Object.assign({}, answers);
+                    nv[key] = i;
+                    upd('damageAnswers', nv);
+                    arAnnounce(kindLabel + ' answer selected.');
+                  },
+                  style: Object.assign({}, btnSecondary(), { background: optionState === 'available' ? T.cardAlt : T.card, color: optionState === 'locked' ? T.muted : T.text, border: '2px solid ' + tone, cursor: submitted ? 'default' : 'pointer', opacity: 1 }) },
+                  h('span', { className: 'ar-damage-option-letter', 'aria-hidden': 'true', style: { background: optionState === 'correct' ? T.good : (optionState === 'incorrect' ? T.bad : T.cardAlt), color: optionState === 'correct' || optionState === 'incorrect' ? onStrongFill : T.text, border: '1px solid ' + tone } }, String.fromCharCode(65 + i)),
+                  h('span', null, opt)
                 );
               })
             )
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🔬 Damage ID'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } }, 'Case ' + (idx + 1) + ' of ' + DAMAGE_CASES.length),
-            h('h3', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.6 } }, '👁️ What you see: ' + theCase.visual)
+        return h('main', { className: 'ar-damage-shell', 'data-ar-damage-shell': true,
+          'data-ar-damage-state': 'active', 'data-ar-damage-case': theCase.id, 'data-ar-damage-mode': damageView, style: { color: T.text } },
+          backBar('🔬 Damage ID', 'Damage ID navigation'),
+          h('header', { className: 'ar-damage-hero', 'data-ar-damage-hero': true,
+            'aria-labelledby': 'autorepair-damage-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-damage-hero-copy' },
+              h('span', { className: 'ar-damage-eyebrow', style: { color: T.accentHi } }, '🔬 Visual diagnostic studio'),
+              h('h1', { id: 'autorepair-damage-title', className: 'ar-damage-title', style: { color: T.text } }, 'Read the vehicle, not just the code'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.58 } }, 'Locate the symptom in context, inspect the system beneath it, then identify the part, cause, and safest next action.')
+            ),
+            h('div', { className: 'ar-damage-case-progress', 'data-ar-damage-progress-card': true, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-damage-case-progress-head' },
+                h('span', { style: { color: T.text } }, 'Case ' + (idx + 1) + ' of ' + DAMAGE_CASES.length),
+                h('span', { style: { color: T.accentHi } }, answeredCount + ' / ' + totalQuestions + ' calls')
+              ),
+              h('div', { role: 'progressbar', className: 'ar-damage-progress-track', 'data-ar-damage-progressbar': true,
+                'aria-valuemin': '0', 'aria-valuemax': String(totalQuestions), 'aria-valuenow': String(answeredCount),
+                'aria-valuetext': answeredCount + ' of ' + totalQuestions + ' diagnostic calls complete',
+                style: { background: T.card, border: '1px solid ' + T.border } },
+                h('div', { className: 'ar-damage-progress-fill', style: { width: progressPct + '%', background: T.good } })
+              )
+            )
           ),
-          answerFor(partKey, theCase.part),
-          answerFor(causeKey, theCase.cause),
-          answerFor(sevKey, theCase.sev),
-          answeredAll && h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 10 } },
-            h('button', { 'data-ar-focusable': true, onClick: function() { upd('damageIdx', idx + 1); }, style: btnPrimary() },
-              idx + 1 < DAMAGE_CASES.length ? '→ Next case' : '🎉 Finish')
+          h('div', { className: 'ar-damage-workbench', 'data-ar-damage-workbench': true },
+            renderDamageStage(),
+            h('aside', { className: 'ar-damage-observation', 'data-ar-damage-observation': true,
+              'aria-labelledby': 'autorepair-damage-observation-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('span', { className: 'ar-damage-case-index', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, 'Case ' + (idx + 1) + ' · ' + sceneMeta.system),
+              h('h2', { id: 'autorepair-damage-observation-title', style: { marginTop: 12, color: T.text } }, 'What you see'),
+              h('p', { className: 'ar-damage-observation-copy', style: { color: T.text } }, theCase.visual),
+              h('p', { className: 'ar-damage-observation-note', style: { color: T.muted, borderColor: T.border } }, 'The dimensional model is a location and system guide. Base your answer on the exact observation above, then verify real vehicles with service information and hands-on inspection.')
+            )
+          ),
+          h('section', { 'data-ar-damage-questions': true, 'aria-labelledby': 'autorepair-damage-questions-title' },
+            h('h2', { id: 'autorepair-damage-questions-title', style: { margin: '0 0 10px', color: T.text, fontSize: 18 } }, 'Make the three diagnostic calls'),
+            h('div', { className: 'ar-damage-questions' },
+              answerFor(partKey, 'part', theCase.part, 1),
+              answerFor(causeKey, 'cause', theCase.cause, 2),
+              answerFor(sevKey, 'sev', theCase.sev, 3)
+            )
+          ),
+          answeredAll && h('div', { className: 'ar-damage-next', 'data-ar-damage-next': true, style: { background: T.cardAlt, border: '2px solid ' + T.accent } },
+            h('p', { style: { color: T.muted } }, idx + 1 < DAMAGE_CASES.length ? 'All three calls are locked. Continue when you are ready.' : 'All 45 diagnostic calls are complete. Finish to see your result.'),
+            h('button', { type: 'button', 'data-ar-focusable': true, onClick: function() {
+              if (idx + 1 === DAMAGE_CASES.length) {
+                var finalResult = damageResult(answers);
+                if (finalResult.pct >= 80) awardBadge('damage-id-ace', 'Damage ID Ace');
+              }
+              upd('damageIdx', idx + 1);
+            }, style: btnPrimary() }, idx + 1 < DAMAGE_CASES.length ? 'Next case →' : 'Finish & score 🎉')
           ),
           disclaimerFooter()
         );
@@ -14005,7 +15541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       // TIRE DEEP DIVE view
       // ─────────────────────────────────────────
-      function renderTires() {
+      function renderTiresLegacy() {
         var tView = d.tView || 'sizing';
         function tabBtn(id, label) {
           var active = tView === id;
@@ -14160,54 +15696,775 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         );
       }
 
+      function renderTires() {
+        var TIRE_TAB_IDS = ['sizing', 'types', 'rotation', 'replace'];
+        var requestedTView = typeof d.tView === 'string' ? d.tView : 'sizing';
+        var tView = TIRE_TAB_IDS.indexOf(requestedTView) >= 0 ? requestedTView : 'sizing';
+        var requestedType = typeof d.tTypePicked === 'string' ? d.tTypePicked : null;
+        var pickedType = requestedType ? TIRE_TYPES.find(function(item) { return item.type === requestedType; }) : null;
+        var requestedRotation = typeof d.tRotPicked === 'string' ? d.tRotPicked : null;
+        var pickedRotation = requestedRotation ? TIRE_ROTATION_PATTERNS.find(function(item) { return item.drive === requestedRotation; }) : null;
+        var requestedReplacement = Number.isInteger(d.tReplacePicked) ? d.tReplacePicked : null;
+        var pickedReplacement = requestedReplacement != null && requestedReplacement >= 0 && requestedReplacement < TIRE_REPLACEMENT_RULES.length ? TIRE_REPLACEMENT_RULES[requestedReplacement] : null;
+        var TIRE_TABS = {
+          sizing: { icon: '📏', label: 'Sizing', note: TIRE_SIZE_DECODER.parts.length + ' sidewall codes' },
+          types: { icon: '❄️', label: 'Types', note: TIRE_TYPES.length + ' compounds' },
+          rotation: { icon: '🔄', label: 'Rotation', note: TIRE_ROTATION_PATTERNS.length + ' patterns' },
+          replace: { icon: '🚩', label: 'Replace', note: TIRE_REPLACEMENT_RULES.length + ' warning signs' }
+        };
+        var TIRE_SCENE_META = {
+          sizing: { icon: '📏', lesson: 'Sidewall decoder', focus: TIRE_SIZE_DECODER.example, check: 'Match width, aspect ratio, construction, wheel diameter, load, and speed rating.' },
+          types: { icon: pickedType ? pickedType.icon : '❄️', lesson: 'Compound + tread', focus: pickedType ? pickedType.type : 'Choose one of ' + TIRE_TYPES.length + ' tire types', check: pickedType ? pickedType.verdict : 'Compare cold grip, warm-weather wear, noise, and Maine conditions.' },
+          rotation: { icon: pickedRotation ? pickedRotation.icon : '🔄', lesson: 'Wear balancing', focus: pickedRotation ? pickedRotation.drive : 'Choose a drivetrain', check: pickedRotation ? pickedRotation.pattern : 'Drive layout and tread direction determine the safe movement pattern.' },
+          replace: { icon: '🚩', lesson: 'Condition scan', focus: pickedReplacement ? pickedReplacement.rule : 'Choose one of ' + TIRE_REPLACEMENT_RULES.length + ' warning signs', check: pickedReplacement ? pickedReplacement.verdict : 'Inspect tread depth, sidewall structure, age, repairs, and wear shape.' }
+        };
+        var sceneMeta = TIRE_SCENE_META[tView];
+
+        function tireTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % TIRE_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + TIRE_TAB_IDS.length) % TIRE_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = TIRE_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
+
+        function tireTab(id) {
+          var active = tView === id;
+          var meta = TIRE_TABS[id];
+          return h('button', { key: id, type: 'button', 'data-ar-focusable': true, role: 'tab',
+            id: 'autorepair-tire-tab-' + id,
+            'aria-controls': 'autorepair-tire-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            className: 'ar-tire-tab',
+            'data-ar-tire-tab': id,
+            'data-ar-tab-state': active ? 'active' : 'inactive',
+            onKeyDown: function(e) { tireTabKeyDown(e, TIRE_TAB_IDS.indexOf(id)); },
+            onClick: function() { upd('tView', id); arAnnounce(meta.label + ' tire lesson opened.'); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, border: '2px solid ' + (active ? T.accent : T.border), fontWeight: active ? 850 : 700, boxShadow: active ? '0 7px 16px rgba(15,23,42,.12)' : 'none' })
+          },
+            h('span', { className: 'ar-tire-tab-icon', 'aria-hidden': 'true' }, meta.icon),
+            h('span', { className: 'ar-tire-tab-copy' },
+              h('span', { className: 'ar-tire-tab-label' }, meta.label),
+              h('span', { className: 'ar-tire-tab-note' }, active ? 'Current station' : meta.note)
+            )
+          );
+        }
+
+        function renderTireLab() {
+          var tireRubber = isContrast ? '#ffffff' : '#111827';
+          var tireEdge = isContrast ? '#ffffff' : '#475569';
+          var rimFace = isContrast ? '#000000' : (isDark ? '#94a3b8' : '#e2e8f0');
+          var sceneAccent = isContrast ? T.accentHi : '#38bdf8';
+          var typeLabel = pickedType ? pickedType.type : 'Compound selector';
+          return h('section', { className: 'ar-tire-lab', 'data-ar-tire-lab': true,
+            'aria-labelledby': 'autorepair-tire-lab-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-tire-lab-head' },
+              h('div', null,
+                h('h2', { id: 'autorepair-tire-lab-title', style: { color: T.text } }, 'Dimensional tire lab'),
+                h('p', { style: { color: T.muted } }, 'Switch stations to inspect sidewall data, tread compound, rotation geometry, and replacement evidence on one model.')
+              ),
+              h('span', { className: 'ar-tire-lab-chip', style: { color: T.text, background: T.cardAlt, border: '1px solid ' + T.border } }, 'Conceptual 3D guide')
+            ),
+            h('div', { className: 'ar-tire-lab-grid' },
+              h('div', { className: 'ar-tire-stage', 'data-ar-tire-scene': true, 'data-ar-tire-mode': tView },
+                h('div', { className: 'ar-tire-scan', 'aria-hidden': 'true' }),
+                h('div', { className: 'ar-tire-frame' },
+                  h('svg', { className: 'ar-tire-svg', viewBox: '0 0 620 350', preserveAspectRatio: 'xMidYMid meet', role: 'img',
+                    'aria-labelledby': 'autorepair-tire-svg-title autorepair-tire-svg-desc' },
+                    h('title', { id: 'autorepair-tire-svg-title' }, 'Three-dimensional tire model in ' + TIRE_TABS[tView].label + ' mode'),
+                    h('desc', { id: 'autorepair-tire-svg-desc' }, 'A dimensional wheel and tire reveal sidewall codes, tread compound, four-wheel rotation geometry, and a tread-depth replacement gauge. The active lesson controls the highlighted overlay.'),
+                    h('defs', null,
+                      h('radialGradient', { id: 'ar-tire-rubber', cx: '35%', cy: '30%', r: '72%' },
+                        h('stop', { offset: '0%', stopColor: '#64748b' }),
+                        h('stop', { offset: '34%', stopColor: tireEdge }),
+                        h('stop', { offset: '72%', stopColor: tireRubber }),
+                        h('stop', { offset: '100%', stopColor: '#020617' })
+                      ),
+                      h('radialGradient', { id: 'ar-tire-rim', cx: '38%', cy: '34%', r: '70%' },
+                        h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                        h('stop', { offset: '52%', stopColor: rimFace }),
+                        h('stop', { offset: '100%', stopColor: '#475569' })
+                      ),
+                      h('filter', { id: 'ar-tire-glow', x: '-80%', y: '-80%', width: '260%', height: '260%' },
+                        h('feGaussianBlur', { stdDeviation: '3', result: 'blur' }),
+                        h('feMerge', null, h('feMergeNode', { 'in': 'blur' }), h('feMergeNode', { 'in': 'SourceGraphic' }))
+                      )
+                    ),
+                    h('ellipse', { cx: 244, cy: 307, rx: 164, ry: 23, fill: 'rgba(2,6,23,.68)' }),
+                    h('g', { className: 'ar-tire-model', 'data-ar-tire-object': 'tire' },
+                      h('ellipse', { cx: 230, cy: 177, rx: 137, ry: 143, fill: 'url(#ar-tire-rubber)', stroke: tireEdge, strokeWidth: 5 }),
+                      h('ellipse', { cx: 244, cy: 177, rx: 85, ry: 91, fill: '#0f172a', stroke: '#64748b', strokeWidth: 4 }),
+                      h('path', { d: 'M101 135 C133 96 167 76 211 65 M91 174 C128 135 164 112 202 104 M96 222 C132 181 168 158 204 148 M119 266 C149 224 178 204 211 192', fill: 'none', stroke: '#64748b', strokeWidth: 9, strokeLinecap: 'round', opacity: .72 })
+                    ),
+                    h('g', { className: 'ar-tire-model', 'data-ar-tire-object': 'rim' },
+                      h('ellipse', { cx: 244, cy: 177, rx: 72, ry: 78, fill: 'url(#ar-tire-rim)', stroke: '#cbd5e1', strokeWidth: 3 }),
+                      h('ellipse', { cx: 244, cy: 177, rx: 23, ry: 25, fill: '#334155', stroke: '#94a3b8', strokeWidth: 3 }),
+                      h('path', { d: 'M244 100 L258 151 L304 133 L270 169 L313 194 L265 190 L276 239 L251 200 L216 237 L230 192 L178 198 L222 173 L185 137 L231 151 Z', fill: 'none', stroke: '#475569', strokeWidth: 10, strokeLinejoin: 'round' }),
+                      h('circle', { cx: 244, cy: 177, r: 6, fill: '#e2e8f0' })
+                    ),
+                    h('g', { className: 'ar-tire-tread-band', 'data-ar-tire-object': 'tread', fill: 'none', stroke: '#94a3b8', strokeWidth: 5, strokeLinecap: 'round' },
+                      h('path', { d: 'M159 57 L172 78 M195 42 L204 68 M236 35 L237 63 M277 41 L270 68 M315 56 L301 80' }),
+                      h('path', { d: 'M143 278 L158 256 M181 303 L192 278 M224 316 L227 288 M269 312 L262 284 M309 294 L296 270' })
+                    ),
+                    h('g', { className: 'ar-tire-mode-layer', 'data-ar-tire-layer': 'sizing', 'data-ar-tire-object': 'sidewall', fill: 'none', stroke: sceneAccent, strokeWidth: 2.5, strokeLinecap: 'round' },
+                      h('path', { d: 'M318 103 C365 72 390 68 420 68 M333 173 H420 M317 247 C365 274 390 278 420 278' }),
+                      h('circle', { cx: 318, cy: 103, r: 5, fill: sceneAccent }),
+                      h('circle', { cx: 333, cy: 173, r: 5, fill: sceneAccent }),
+                      h('circle', { cx: 317, cy: 247, r: 5, fill: sceneAccent }),
+                      h('text', { x: 432, y: 72, fill: '#f8fafc', stroke: 'none', fontSize: 14, fontWeight: 900, fontFamily: 'monospace' }, 'P215 / 65'),
+                      h('text', { x: 432, y: 178, fill: '#f8fafc', stroke: 'none', fontSize: 14, fontWeight: 900, fontFamily: 'monospace' }, 'R17'),
+                      h('text', { x: 432, y: 283, fill: '#f8fafc', stroke: 'none', fontSize: 14, fontWeight: 900, fontFamily: 'monospace' }, '98T')
+                    ),
+                    h('g', { className: 'ar-tire-mode-layer', 'data-ar-tire-layer': 'types', fill: 'none', stroke: '#c084fc', strokeWidth: 3, strokeLinecap: 'round', filter: 'url(#ar-tire-glow)' },
+                      h('path', { d: 'M332 91 Q387 54 444 87 T551 86' }),
+                      h('path', { d: 'M335 263 Q389 226 443 259 T551 258' }),
+                      h('circle', { cx: 438, cy: 173, r: 54, fill: 'rgba(192,132,252,.12)' }),
+                      h('text', { x: 438, y: 168, textAnchor: 'middle', fill: '#f8fafc', stroke: 'none', fontSize: 22 }, pickedType ? pickedType.icon : '❄️'),
+                      h('text', { x: 438, y: 192, textAnchor: 'middle', fill: '#f8fafc', stroke: 'none', fontSize: 11, fontWeight: 900 }, typeLabel)
+                    ),
+                    h('g', { className: 'ar-tire-mode-layer', 'data-ar-tire-layer': 'rotation', 'data-ar-tire-object': 'rotation-map', fill: 'none', stroke: '#34d399', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' },
+                      h('rect', { x: 376, y: 54, width: 170, height: 242, rx: 50, fill: 'rgba(16,185,129,.08)' }),
+                      h('rect', { x: 394, y: 76, width: 31, height: 58, rx: 12, fill: '#111827' }),
+                      h('rect', { x: 497, y: 76, width: 31, height: 58, rx: 12, fill: '#111827' }),
+                      h('rect', { x: 394, y: 217, width: 31, height: 58, rx: 12, fill: '#111827' }),
+                      h('rect', { x: 497, y: 217, width: 31, height: 58, rx: 12, fill: '#111827' }),
+                      h('path', { d: pickedRotation && pickedRotation.drive.indexOf('Directional') === 0 ? 'M409 142 V207 M512 142 V207' : (pickedRotation && pickedRotation.drive.indexOf('All-wheel') === 0 ? 'M416 140 L504 211 M506 140 L418 211' : 'M410 142 L506 211 M512 142 L416 211') }),
+                      h('text', { x: 461, y: 183, textAnchor: 'middle', fill: '#f8fafc', stroke: 'none', fontSize: 11, fontWeight: 900 }, pickedRotation ? pickedRotation.icon : 'SELECT')
+                    ),
+                    h('g', { className: 'ar-tire-mode-layer', 'data-ar-tire-layer': 'replace', 'data-ar-tire-object': 'wear-gauge', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' },
+                      h('path', { d: 'M353 79 H541 M353 271 H541' }),
+                      h('rect', { x: 386, y: 105, width: 122, height: 139, rx: 16, fill: 'rgba(251,191,36,.1)' }),
+                      h('path', { d: 'M420 126 V222 M444 126 V222 M468 126 V222' }),
+                      h('path', { d: 'M405 164 H484', stroke: '#ef4444', strokeWidth: 6 }),
+                      h('path', { d: 'M524 118 C548 134 548 158 524 174 C548 190 548 214 524 230', stroke: '#ef4444' }),
+                      h('text', { x: 447, y: 263, textAnchor: 'middle', fill: '#f8fafc', stroke: 'none', fontSize: 11, fontWeight: 900 }, pickedReplacement ? 'INSPECT' : '2/32 MIN')
+                    )
+                  )
+                )
+              ),
+              h('div', { className: 'ar-tire-readouts', 'data-ar-tire-readouts': true },
+                [
+                  { id: 'lesson', icon: sceneMeta.icon, label: 'Lab station', value: sceneMeta.lesson, detail: TIRE_TABS[tView].note },
+                  { id: 'focus', icon: '🎯', label: 'Current focus', value: sceneMeta.focus, detail: 'Selection updates the model and lesson evidence.' },
+                  { id: 'field-check', icon: '🔎', label: 'Field check', value: 'Verify before buying or driving', detail: sceneMeta.check }
+                ].map(function(readout) {
+                  return h('div', { key: readout.id, className: 'ar-tire-readout', 'data-ar-tire-readout': readout.id, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('span', { className: 'ar-tire-readout-icon', 'aria-hidden': 'true', style: { background: T.card, border: '1px solid ' + T.accent } }, readout.icon),
+                    h('span', { className: 'ar-tire-readout-copy' },
+                      h('span', { style: { color: T.accentHi } }, readout.label),
+                      h('strong', { style: { color: T.text } }, readout.value),
+                      h('small', { style: { color: T.muted } }, readout.detail)
+                    )
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function tireFact(label, copy, tone, wide) {
+          return h('div', { className: 'ar-tire-fact' + (wide ? ' ar-tire-fact-wide' : ''), style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+            h('strong', { style: { color: tone || T.accentHi } }, label),
+            h('p', { style: { color: T.text } }, copy)
+          );
+        }
+
+        function sizingLesson() {
+          return h('div', { 'data-ar-tire-sizing': true },
+            h('section', { className: 'ar-tire-section', 'aria-labelledby': 'autorepair-tire-sizing-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-tire-section-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-tire-sizing-title', style: { color: T.text } }, '📏 Decode any tire size'),
+                  h('p', { className: 'ar-tire-section-intro', style: { color: T.muted } }, 'Read the sidewall as a specification sheet. Every character controls fit, load, handling, or safe operating speed.')
+                ),
+                h('span', { className: 'ar-tire-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, TIRE_SIZE_DECODER.parts.length + ' identifiers')
+              ),
+              h('div', { className: 'ar-tire-code', 'aria-label': 'Example tire size ' + TIRE_SIZE_DECODER.example, style: { color: T.accentHi, background: T.bg, border: '2px solid ' + T.accent } }, TIRE_SIZE_DECODER.example),
+              h('div', { className: 'ar-tire-size-list', role: 'list', 'aria-label': 'Tire sidewall code parts' },
+                TIRE_SIZE_DECODER.parts.map(function(part) {
+                  return h('article', { key: part.code, role: 'listitem', className: 'ar-tire-size-part', 'data-ar-tire-size-part': part.code, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('span', { className: 'ar-tire-size-code', style: { color: T.accentHi, background: T.card, border: '1px solid ' + T.accent } }, part.code),
+                    h('div', null,
+                      h('strong', { style: { color: T.text } }, part.name),
+                      h('p', { style: { color: T.muted } }, part.detail)
+                    )
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function typesLesson() {
+          return h('div', { 'data-ar-tire-types': true },
+            h('section', { className: 'ar-tire-section', 'aria-labelledby': 'autorepair-tire-types-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+              h('div', { className: 'ar-tire-section-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-tire-types-title', style: { color: T.text } }, '❄️ Tire compound + tread'),
+                  h('p', { className: 'ar-tire-section-intro', style: { color: T.muted } }, 'Choose a tire family to compare its rubber, tread, seasonal grip, and Maine-specific tradeoffs.')
+                ),
+                h('span', { className: 'ar-tire-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, TIRE_TYPES.length + ' tire types')
+              ),
+              h('div', { className: 'ar-tire-choice-grid', role: 'group', 'aria-label': 'Tire type choices' },
+                TIRE_TYPES.map(function(item) {
+                  var selected = pickedType && pickedType.type === item.type;
+                  return h('button', { key: item.type, type: 'button', 'data-ar-focusable': true,
+                    className: 'ar-tire-choice ar-tire-type',
+                    'data-ar-tire-type': item.type,
+                    'aria-controls': 'autorepair-tire-type-detail',
+                    'aria-pressed': selected ? 'true' : 'false',
+                    'aria-label': item.type + '. ' + item.bestFor,
+                    onClick: function() {
+                      upd('tTypePicked', selected ? null : item.type);
+                      arAnnounce(selected ? item.type + ' selection cleared.' : item.type + ' tire selected.');
+                    },
+                    style: Object.assign({}, btnSecondary(), { background: selected ? T.accent : T.cardAlt, color: selected ? onStrongFill : T.text, border: '2px solid ' + (selected ? T.accent : T.border), fontWeight: selected ? 850 : 700 })
+                  },
+                    h('span', { className: 'ar-tire-choice-icon', 'aria-hidden': 'true', style: { background: selected ? T.card : T.bg, border: '1px solid ' + T.border } }, item.icon),
+                    h('span', { className: 'ar-tire-choice-copy' },
+                      h('strong', null, item.type),
+                      h('small', { style: { color: selected ? T.text : T.muted } }, selected ? 'Viewing compound profile' : item.treadwear)
+                    )
+                  );
+                })
+              )
+            ),
+            h('article', { id: 'autorepair-tire-type-detail', className: 'ar-tire-detail', 'data-ar-tire-detail': 'types', 'data-ar-detail-state': pickedType ? 'active' : 'empty', 'aria-labelledby': 'autorepair-tire-type-detail-title', style: { background: T.card, border: '2px solid ' + (pickedType ? T.accent : T.border) } },
+              h('h3', { id: 'autorepair-tire-type-detail-title', style: { color: T.text } }, pickedType ? pickedType.icon + ' ' + pickedType.type : 'Choose a tire type'),
+              pickedType ? h('div', { className: 'ar-tire-detail-grid' },
+                tireFact('Best for', pickedType.bestFor, T.accentHi, true),
+                tireFact('Maine advantages', pickedType.mainePros, T.good, false),
+                tireFact('Maine tradeoffs', pickedType.maineCons, T.bad, false),
+                tireFact('Treadwear', pickedType.treadwear, T.warn, false),
+                tireFact('Field verdict', pickedType.verdict, T.accentHi, true)
+              ) : h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, 'Select a compound above. The model and evidence report will update together.')
+            )
+          );
+        }
+
+        function rotationLesson() {
+          return h('div', { 'data-ar-tire-rotations': true },
+            h('section', { className: 'ar-tire-section', 'aria-labelledby': 'autorepair-tire-rotation-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+              h('div', { className: 'ar-tire-section-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-tire-rotation-title', style: { color: T.text } }, '🔄 Rotation geometry'),
+                  h('p', { className: 'ar-tire-section-intro', style: { color: T.muted } }, 'Choose the drivetrain or tread direction. The chassis overlay shows the movement logic that balances wear without reversing a directional tire.')
+                ),
+                h('span', { className: 'ar-tire-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, TIRE_ROTATION_PATTERNS.length + ' patterns')
+              ),
+              h('div', { className: 'ar-tire-choice-grid', role: 'group', 'aria-label': 'Tire rotation patterns' },
+                TIRE_ROTATION_PATTERNS.map(function(item) {
+                  var selected = pickedRotation && pickedRotation.drive === item.drive;
+                  return h('button', { key: item.drive, type: 'button', 'data-ar-focusable': true,
+                    className: 'ar-tire-choice ar-tire-rotation',
+                    'data-ar-tire-rotation': item.drive,
+                    'aria-controls': 'autorepair-tire-rotation-detail',
+                    'aria-pressed': selected ? 'true' : 'false',
+                    'aria-label': item.drive + '. ' + item.pattern,
+                    onClick: function() {
+                      upd('tRotPicked', selected ? null : item.drive);
+                      arAnnounce(selected ? item.drive + ' rotation selection cleared.' : item.drive + ' rotation selected.');
+                      if (!selected) awardBadge('tire-pro', 'Tire Pro');
+                    },
+                    style: Object.assign({}, btnSecondary(), { background: selected ? T.accent : T.cardAlt, color: selected ? onStrongFill : T.text, border: '2px solid ' + (selected ? T.accent : T.border), fontWeight: selected ? 850 : 700 })
+                  },
+                    h('span', { className: 'ar-tire-choice-icon', 'aria-hidden': 'true', style: { background: selected ? T.card : T.bg, border: '1px solid ' + T.border } }, item.icon),
+                    h('span', { className: 'ar-tire-choice-copy' },
+                      h('strong', null, item.drive),
+                      h('small', { style: { color: selected ? T.text : T.muted } }, selected ? 'Viewing path on chassis' : item.pattern)
+                    )
+                  );
+                })
+              )
+            ),
+            h('article', { id: 'autorepair-tire-rotation-detail', className: 'ar-tire-detail', 'data-ar-tire-detail': 'rotation', 'data-ar-detail-state': pickedRotation ? 'active' : 'empty', 'aria-labelledby': 'autorepair-tire-rotation-detail-title', style: { background: T.card, border: '2px solid ' + (pickedRotation ? T.accent : T.border) } },
+              h('h3', { id: 'autorepair-tire-rotation-detail-title', style: { color: T.text } }, pickedRotation ? pickedRotation.icon + ' ' + pickedRotation.drive : 'Choose a rotation pattern'),
+              pickedRotation ? h('div', { className: 'ar-tire-detail-grid' },
+                tireFact('Movement pattern', pickedRotation.pattern, T.accentHi, true),
+                tireFact('Why it works', pickedRotation.detail, T.good, true),
+                tireFact('Service interval', pickedRotation.interval, T.warn, true)
+              ) : h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, 'Select the vehicle layout above to map its safe tire movement and service interval.')
+            )
+          );
+        }
+
+        function replacementLesson() {
+          return h('div', { 'data-ar-tire-replacements': true },
+            h('section', { className: 'ar-tire-section', 'aria-labelledby': 'autorepair-tire-replace-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+              h('div', { className: 'ar-tire-section-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-tire-replace-title', style: { color: T.text } }, '🚩 Replacement evidence'),
+                  h('p', { className: 'ar-tire-section-intro', style: { color: T.muted } }, 'Inspect one warning sign at a time. Any single structural failure can override remaining tread depth.')
+                ),
+                h('span', { className: 'ar-tire-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, TIRE_REPLACEMENT_RULES.length + ' conditions')
+              ),
+              h('div', { className: 'ar-tire-choice-grid', role: 'group', 'aria-label': 'Tire replacement warning signs' },
+                TIRE_REPLACEMENT_RULES.map(function(item, index) {
+                  var selected = pickedReplacement === item;
+                  return h('button', { key: item.rule, type: 'button', 'data-ar-focusable': true,
+                    className: 'ar-tire-choice ar-tire-replace',
+                    'data-ar-tire-replace': index,
+                    'aria-controls': 'autorepair-tire-replace-detail',
+                    'aria-pressed': selected ? 'true' : 'false',
+                    'aria-label': item.rule + '. ' + item.verdict,
+                    onClick: function() {
+                      upd('tReplacePicked', selected ? null : index);
+                      arAnnounce(selected ? item.rule + ' selection cleared.' : item.rule + ' replacement evidence selected.');
+                    },
+                    style: Object.assign({}, btnSecondary(), { background: selected ? T.accent : T.cardAlt, color: selected ? onStrongFill : T.text, border: '2px solid ' + (selected ? T.accent : T.border), fontWeight: selected ? 850 : 700 })
+                  },
+                    h('span', { className: 'ar-tire-choice-icon', 'aria-hidden': 'true', style: { background: selected ? T.card : T.bg, border: '1px solid ' + (selected ? T.accent : T.border) } }, '🚩'),
+                    h('span', { className: 'ar-tire-choice-copy' },
+                      h('strong', null, item.rule),
+                      h('small', { style: { color: selected ? T.text : T.muted } }, selected ? 'Viewing replacement verdict' : 'Open inspection evidence')
+                    )
+                  );
+                })
+              )
+            ),
+            h('article', { id: 'autorepair-tire-replace-detail', className: 'ar-tire-detail', 'data-ar-tire-detail': 'replace', 'data-ar-detail-state': pickedReplacement ? 'active' : 'empty', 'aria-labelledby': 'autorepair-tire-replace-detail-title', style: { background: T.card, border: '2px solid ' + (pickedReplacement ? T.bad : T.border) } },
+              h('h3', { id: 'autorepair-tire-replace-detail-title', style: { color: T.text } }, pickedReplacement ? '🚩 ' + pickedReplacement.rule : 'Choose a replacement warning'),
+              pickedReplacement ? h('div', { className: 'ar-tire-detail-grid' },
+                tireFact('What to inspect', pickedReplacement.detail, T.accentHi, true),
+                tireFact('Maine field verdict', pickedReplacement.verdict, T.bad, true)
+              ) : h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, 'Select a condition above to reveal its inspection method and replacement boundary.')
+            )
+          );
+        }
+
+        function tirePanel(id, content) {
+          var active = tView === id;
+          return h('section', { role: 'tabpanel', id: 'autorepair-tire-panel-' + id,
+            'aria-labelledby': 'autorepair-tire-tab-' + id,
+            tabIndex: active ? 0 : -1,
+            hidden: active ? undefined : true,
+            className: 'ar-tire-panel',
+            'data-ar-tire-panel': id,
+            'data-ar-panel-state': active ? 'active' : 'inactive'
+          }, content);
+        }
+
+        return h('main', { className: 'ar-tire-shell', 'data-ar-tire-shell': true, 'data-ar-tire-view': tView, style: { color: T.text } },
+          backBar('🛞 Tire deep dive', 'Tire Deep Dive navigation'),
+          h('header', { className: 'ar-tire-hero', 'data-ar-tire-hero': true, 'aria-labelledby': 'autorepair-tire-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-tire-hero-copy' },
+              h('span', { className: 'ar-tire-eyebrow', style: { color: T.accentHi } }, '🛞 Fit · grip · wear · safety'),
+              h('h1', { id: 'autorepair-tire-title', className: 'ar-tire-title', style: { color: T.text } }, 'Tire Deep Dive'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.65 } }, 'Learn to read a sidewall, choose the right compound, rotate by drivetrain, and recognize replacement evidence before grip disappears.')
+            ),
+            h('div', { className: 'ar-tire-hero-stats', 'aria-label': 'Tire lab contents' },
+              [
+                { value: TIRE_SIZE_DECODER.parts.length, label: 'sidewall codes' },
+                { value: TIRE_TYPES.length, label: 'tire compounds' },
+                { value: TIRE_REPLACEMENT_RULES.length, label: 'replace signals' }
+              ].map(function(stat) {
+                return h('div', { key: stat.label, className: 'ar-tire-hero-stat', 'data-ar-tire-stat': stat.label, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.text } }, stat.value),
+                  h('span', { style: { color: T.muted } }, stat.label)
+                );
+              })
+            )
+          ),
+          h('div', { role: 'tablist', 'aria-label': 'Tire Lab stations', 'aria-orientation': 'horizontal', className: 'ar-tire-tabs', 'data-ar-tire-tabs': true, style: { background: T.card, border: '1px solid ' + T.border } },
+            TIRE_TAB_IDS.map(tireTab)
+          ),
+          renderTireLab(),
+          tirePanel('sizing', sizingLesson()),
+          tirePanel('types', typesLesson()),
+          tirePanel('rotation', rotationLesson()),
+          tirePanel('replace', replacementLesson()),
+          disclaimerFooter()
+        );
+      }
+
       // ─────────────────────────────────────────
       // PRE-DRIVE WALK-AROUND view
       // ─────────────────────────────────────────
-      function renderWalkAround() {
-        var checked = d.walkChecked || {};
-        var done = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
-        var total = WALK_AROUND_STEPS.length;
-        var pct = Math.round((done / total) * 100);
-        if (done === total) awardBadge('walkaround-pro', 'Walk-Around Pro');
+      function renderWalkScene(active, checked, flags, selectStep) {
+        var focusPoints = {
+          1: [435, 112], 2: [438, 203], 3: [430, 320], 4: [310, 370], 5: [190, 320],
+          6: [180, 210], 7: [188, 112], 8: [310, 84], 9: [310, 202], 10: [500, 350]
+        };
+        var point = focusPoints[active] || focusPoints[1];
+        var activeFlagged = flags[active] === true;
+        var activeChecked = checked[active] === true || activeFlagged;
+        var glowColor = activeFlagged ? T.bad : (activeChecked ? T.good : '#7dd3fc');
+        var gradId = 'ar-walk-body-gradient-' + (isContrast ? 'contrast' : (isDark ? 'dark' : 'light'));
+        var glassId = 'ar-walk-glass-gradient-' + (isContrast ? 'contrast' : (isDark ? 'dark' : 'light'));
+        var glowId = 'ar-walk-focus-glow-' + (isContrast ? 'contrast' : (isDark ? 'dark' : 'light'));
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🚶 Pre-drive walk-around'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.60_second_daily_check', '🚶 60-second daily check')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.pro_drivers_truckers_walk_around_their', 'Pro drivers + truckers walk around their vehicles before EVERY drive. 60 seconds catches 90% of "I would have wished I noticed before driving" surprises. Especially valuable in Maine winter when problems hide.')),
-            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.build_the_habit', 'Build the habit: ')), __alloT('stem.autorepair.use_this_once_today_as_a_checklist_aft', 'use this once today as a checklist; after a week you\'ll do it from memory in under a minute. '),
-              h('strong', { style: { color: T.accentHi } }, 'Done: '), done + ' / ' + total + ' (' + pct + '%)'),
-            done < total && h('button', { 'data-ar-focusable': true,
-              style: Object.assign({}, btnGhost(), { marginTop: 8 }),
-              'aria-label': __alloT('stem.autorepair.reset_walk_around', 'Reset walk-around'),
-              onClick: function() { upd('walkChecked', {}); }
-            }, __alloT('stem.autorepair.reset_2', '↺ Reset'))
+        return h('div', { className: 'ar-walk-scene', 'data-ar-walk-scene': 'true' },
+          h('div', { className: 'ar-walk-beam', 'aria-hidden': 'true' }),
+          h('div', { className: 'ar-walk-frame' },
+            h('svg', {
+              className: 'ar-walk-svg', viewBox: '0 0 620 440', role: 'img',
+              'aria-labelledby': 'ar-walk-scene-title ar-walk-scene-desc',
+              xmlns: 'http://www.w3.org/2000/svg'
+            },
+              h('title', { id: 'ar-walk-scene-title' }, 'Dimensional vehicle walk-around route'),
+              h('desc', { id: 'ar-walk-scene-desc' }, 'A top-down three-quarter vehicle with ten numbered inspection stations following a clockwise perimeter route, then the cabin and first-motion check.'),
+              h('defs', null,
+                h('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '1', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: isContrast ? '#ffffff' : '#e2e8f0' }),
+                  h('stop', { offset: '45%', stopColor: isContrast ? '#ffffff' : '#94a3b8' }),
+                  h('stop', { offset: '100%', stopColor: isContrast ? '#ffffff' : '#475569' })),
+                h('linearGradient', { id: glassId, x1: '0', y1: '0', x2: '0', y2: '1' },
+                  h('stop', { offset: '0%', stopColor: '#bae6fd', stopOpacity: '.92' }),
+                  h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: '.9' })),
+                h('radialGradient', { id: glowId },
+                  h('stop', { offset: '0%', stopColor: glowColor, stopOpacity: '.5' }),
+                  h('stop', { offset: '100%', stopColor: glowColor, stopOpacity: '0' }))
+              ),
+              h('g', { 'data-ar-walk-object': 'ground', 'aria-hidden': 'true' },
+                h('ellipse', { cx: 310, cy: 356, rx: 170, ry: 43, fill: '#020617', opacity: '.58' }),
+                h('path', { d: 'M74 386 H546', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '18 14', opacity: '.48' }),
+                h('path', { d: 'M92 416 H528', stroke: '#334155', strokeWidth: 1, opacity: '.7' })
+              ),
+              h('path', {
+                'data-ar-walk-object': 'inspection-route', className: 'ar-walk-route',
+                d: 'M435 80 C518 105 544 205 505 302 C470 390 390 416 300 414 C196 412 109 367 94 274 C78 177 113 95 193 70 C266 45 369 47 435 80 Z',
+                fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeLinecap: 'round', opacity: '.82'
+              }),
+              h('g', { 'data-ar-walk-object': 'vehicle' },
+                h('path', { d: 'M247 94 Q310 62 373 94 L400 137 L414 299 Q415 344 375 376 Q310 394 245 376 Q205 344 206 299 L220 137 Z', fill: 'url(#' + gradId + ')', stroke: '#f8fafc', strokeWidth: 3 }),
+                h('path', { d: 'M233 136 Q310 104 387 136 L399 184 L221 184 Z', fill: '#cbd5e1', opacity: '.72' }),
+                h('path', { d: 'M221 190 H399 L406 293 Q310 313 214 293 Z', fill: '#64748b', opacity: '.58' }),
+                h('path', { d: 'M216 299 Q310 321 408 299 L405 333 Q310 365 211 333 Z', fill: '#334155', opacity: '.72' }),
+                h('path', { d: 'M232 118 Q310 88 388 118', fill: 'none', stroke: '#ffffff', strokeWidth: 3, opacity: '.72' }),
+                h('path', { d: 'M224 173 H396 M216 296 H406 M241 365 H379', fill: 'none', stroke: '#e2e8f0', strokeWidth: 2, opacity: '.55' }),
+                h('path', { d: 'M211 213 H409', fill: 'none', stroke: '#0f172a', strokeWidth: 2, opacity: '.58' }),
+                h('rect', { x: 203, y: 190, width: 12, height: 42, rx: 5, fill: '#94a3b8', stroke: '#e2e8f0', strokeWidth: 2 }),
+                h('rect', { x: 405, y: 190, width: 12, height: 42, rx: 5, fill: '#94a3b8', stroke: '#e2e8f0', strokeWidth: 2 }),
+                h('path', { d: 'M279 354 H341', stroke: '#020617', strokeWidth: 7, strokeLinecap: 'round' }),
+                h('circle', { cx: 310, cy: 348, r: 5, fill: '#94a3b8' })
+              ),
+              h('g', { 'data-ar-walk-object': 'tires', fill: '#020617', stroke: '#94a3b8', strokeWidth: 2 },
+                [[197, 132], [197, 285], [399, 132], [399, 285]].map(function(p, i) {
+                  return h('g', { key: 'wheel-' + i },
+                    h('rect', { x: p[0], y: p[1], width: 24, height: 60, rx: 9 }),
+                    h('circle', { cx: p[0] + 12, cy: p[1] + 30, r: 8, fill: '#64748b', stroke: '#e2e8f0' }),
+                    h('circle', { cx: p[0] + 12, cy: p[1] + 30, r: 2.5, fill: '#f8fafc', stroke: 'none' })
+                  );
+                })
+              ),
+              h('g', { 'data-ar-walk-object': 'lights' },
+                h('path', { d: 'M236 103 Q255 91 274 86 L279 112 L241 124 Z', fill: active === 7 ? '#fef08a' : '#fde68a', stroke: '#ffffff', strokeWidth: 2 }),
+                h('path', { d: 'M346 86 Q365 91 384 103 L379 124 L341 112 Z', fill: active === 1 ? '#fef08a' : '#fde68a', stroke: '#ffffff', strokeWidth: 2 }),
+                h('path', { d: 'M235 345 L274 359 L270 375 Q246 370 228 358 Z', fill: active === 5 ? '#fecaca' : '#ef4444', stroke: '#fecaca', strokeWidth: 2 }),
+                h('path', { d: 'M346 359 L385 345 L392 358 Q374 370 350 375 Z', fill: active === 3 ? '#fecaca' : '#ef4444', stroke: '#fecaca', strokeWidth: 2 }),
+                h('rect', { x: 290, y: 365, width: 40, height: 10, rx: 3, fill: active === 4 ? '#ffffff' : '#e2e8f0', stroke: '#0f172a', strokeWidth: 2 })
+              ),
+              h('g', { 'data-ar-walk-object': 'cabin' },
+                h('path', { d: 'M249 149 Q310 119 371 149 L384 260 Q310 282 236 260 Z', fill: 'url(#' + glassId + ')', stroke: '#bae6fd', strokeWidth: 3 }),
+                h('path', { d: 'M246 181 H374 M242 230 H378', stroke: '#7dd3fc', strokeWidth: 2, opacity: '.62' }),
+                h('path', { d: 'M310 136 V269', stroke: '#475569', strokeWidth: 3, opacity: '.8' }),
+                h('circle', { cx: 274, cy: 224, r: 15, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 3 }),
+                h('circle', { cx: 274, cy: 224, r: 5, fill: active === 9 ? T.good : '#94a3b8' }),
+                h('path', { d: 'M341 218 h24 v14 h-24 z', fill: '#0f172a', stroke: active === 9 ? '#38bdf8' : '#94a3b8', strokeWidth: 2 })
+              ),
+              h('g', { 'aria-hidden': 'true', transform: 'translate(' + point[0] + ' ' + point[1] + ')' },
+                h('circle', { r: 58, fill: 'url(#' + glowId + ')' }),
+                h('circle', { r: 25, fill: 'none', stroke: glowColor, strokeWidth: 3, strokeDasharray: '5 4' }),
+                h('circle', { r: 14, fill: glowColor, stroke: '#ffffff', strokeWidth: 2 }),
+                h('text', { x: 0, y: 4, textAnchor: 'middle', fill: activeFlagged && !isDark ? '#ffffff' : '#000000', fontSize: 11, fontWeight: 900 }, active)
+              ),
+              h('g', { 'aria-hidden': 'true', opacity: active === 10 ? '1' : '.36' },
+                h('path', { d: 'M454 342 C487 331 521 334 548 352', fill: 'none', stroke: '#7dd3fc', strokeWidth: 4, strokeLinecap: 'round' }),
+                h('path', { d: 'M520 326 Q552 350 520 374', fill: 'none', stroke: '#fbbf24', strokeWidth: 3 }),
+                h('path', { d: 'M534 315 Q577 350 534 385', fill: 'none', stroke: '#fbbf24', strokeWidth: 2 })
+              )
+            )
           ),
-          h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          h('div', { className: 'ar-walk-hotspots', role: 'group', 'aria-label': 'Vehicle inspection stations', 'data-ar-walk-print-hide': 'true' },
             WALK_AROUND_STEPS.map(function(s) {
-              var isChecked = !!checked[s.n];
-              return h('div', { key: s.n, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
-                'aria-label': 'Step ' + s.n + ': ' + s.area + (isChecked ? ' (checked)' : ''),
-                'aria-pressed': isChecked ? 'true' : 'false',
-                onClick: function() {
-                  var nv = Object.assign({}, checked); nv[s.n] = !nv[s.n];
-                  upd('walkChecked', nv);
-                },
-                style: { textAlign: 'left', padding: 12, borderRadius: 8, background: isChecked ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isChecked ? T.good : T.border), color: T.text, cursor: 'pointer' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
-                  h('span', { 'aria-hidden': 'true', style: { background: isChecked ? T.good : T.dim, color: '#0f172a', borderRadius: 999, width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 } }, s.n),
-                  h('span', { style: { fontSize: 22 } }, s.icon),
-                  h('strong', { style: { fontSize: 14, color: isChecked ? '#d1fae5' : T.text, flex: 1 } }, s.area),
-                  isChecked && h('span', { style: { fontSize: 16, color: T.good } }, '✓')
-                ),
-                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } },
-                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.check_2', '👀 Check: ')), s.check),
-                h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, padding: 6, borderRadius: 4, background: T.bg } },
-                  h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.flag', '🚩 Flag: ')), s.flag)
-              ));
+              var isFlagged = flags[s.n] === true;
+              var isChecked = checked[s.n] === true || isFlagged;
+              var isActive = s.n === active;
+              var stateLabel = isFlagged ? 'Flagged' : (isChecked ? 'Inspected' : (isActive ? 'Current' : 'Open'));
+              var markerBg = isFlagged ? T.bad : (isChecked ? T.good : (isActive ? T.accent : T.dim));
+              return h('button', {
+                key: 'walk-hotspot-' + s.n, type: 'button', className: 'ar-walk-hotspot',
+                'data-ar-focusable': true, 'data-ar-walk-hotspot': String(s.n),
+                'data-ar-walk-hotspot-state': isActive ? 'current' : (isFlagged ? 'flagged' : (isChecked ? 'checked' : 'upcoming')),
+                'aria-pressed': isActive ? 'true' : 'false',
+                'aria-label': 'Step ' + s.n + ': ' + s.area + '. ' + stateLabel + '. Select for inspection details.',
+                onClick: function() { selectStep(s.n); },
+                style: Object.assign({}, btnGhost(), {
+                  background: isActive ? T.panel : T.card,
+                  borderColor: isFlagged ? T.bad : (isChecked ? T.good : (isActive ? T.accent : T.border)),
+                  color: T.text
+                })
+              },
+                h('span', { className: 'ar-walk-hotspot-marker', 'aria-hidden': 'true', style: { background: markerBg, color: onStrongFill } }, isFlagged ? '!' : (isChecked ? '✓' : s.n)),
+                h('span', { className: 'ar-walk-hotspot-copy', 'aria-hidden': 'true' },
+                  h('strong', null, s.area),
+                  h('small', null, stateLabel))
+              );
             })
+          )
+        );
+      }
+
+      function renderWalkAround() {
+        // Scene hooks returned by renderWalkScene: data-ar-walk-scene,
+        // data-ar-walk-object, and data-ar-walk-hotspot.
+        var checked = d.walkChecked && typeof d.walkChecked === 'object' && !Array.isArray(d.walkChecked) ? d.walkChecked : {};
+        var flags = d.walkFlags && typeof d.walkFlags === 'object' && !Array.isArray(d.walkFlags) ? d.walkFlags : {};
+        var total = WALK_AROUND_STEPS.length;
+        var resolvedSteps = WALK_AROUND_STEPS.filter(function(s) {
+          return checked[s.n] === true || flags[s.n] === true;
+        });
+        var flaggedSteps = WALK_AROUND_STEPS.filter(function(s) { return flags[s.n] === true; });
+        var done = resolvedSteps.length;
+        var complete = done === total;
+        var pct = total ? Math.max(0, Math.min(100, Math.round((done / total) * 100))) : 0;
+        var validFocus = Number.isInteger(d.walkFocus) && d.walkFocus >= 1 && d.walkFocus <= total;
+        var firstOpen = WALK_AROUND_STEPS.filter(function(s) {
+          return checked[s.n] !== true && flags[s.n] !== true;
+        })[0];
+        var focusN = validFocus ? d.walkFocus : (firstOpen ? firstOpen.n : 1);
+        var focusStep = WALK_AROUND_STEPS.filter(function(s) { return s.n === focusN; })[0] || WALK_AROUND_STEPS[0];
+        var focusedFlagged = flags[focusN] === true;
+        var focusedResolved = checked[focusN] === true || focusedFlagged;
+        var walkState = complete ? 'complete' : (done > 0 ? 'active' : 'empty');
+        var detailAreaId = 'ar-walk-detail-area-' + focusN;
+        var detailCheckId = 'ar-walk-detail-check-' + focusN;
+        var detailFlagId = 'ar-walk-detail-flag-' + focusN;
+        var heroBg = isContrast ? T.bg : (isDark
+          ? 'linear-gradient(135deg, #1e293b 0%, #172033 58%, #0f172a 100%)'
+          : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 58%, #e0f2fe 100%)');
+
+        function copyStrictMap(source) {
+          var result = {};
+          WALK_AROUND_STEPS.forEach(function(s) {
+            if (source[s.n] === true) result[s.n] = true;
+          });
+          return result;
+        }
+
+        function nextOpenAfter(from, nextChecked, nextFlags) {
+          for (var offset = 1; offset <= total; offset++) {
+            var index = (from - 1 + offset) % total;
+            var candidate = WALK_AROUND_STEPS[index];
+            if (nextChecked[candidate.n] !== true && nextFlags[candidate.n] !== true) return candidate.n;
+          }
+          return from;
+        }
+
+        function selectStep(n) {
+          upd('walkFocus', n);
+          var selected = WALK_AROUND_STEPS[n - 1];
+          arAnnounce('Step ' + n + ' selected: ' + selected.area + '.');
+        }
+
+        function recordOutcome(shouldFlag) {
+          var nextChecked = copyStrictMap(checked);
+          var nextFlags = copyStrictMap(flags);
+          var doneBefore = WALK_AROUND_STEPS.filter(function(s) {
+            return nextChecked[s.n] === true || nextFlags[s.n] === true;
+          }).length;
+          if (shouldFlag) {
+            nextFlags[focusN] = true;
+            delete nextChecked[focusN];
+          } else {
+            nextChecked[focusN] = true;
+            delete nextFlags[focusN];
+          }
+          var doneAfter = WALK_AROUND_STEPS.filter(function(s) {
+            return nextChecked[s.n] === true || nextFlags[s.n] === true;
+          }).length;
+          var nextFocus = nextOpenAfter(focusN, nextChecked, nextFlags);
+          updMulti({ walkChecked: nextChecked, walkFlags: nextFlags, walkFocus: nextFocus });
+          arAnnounce('Step ' + focusN + (shouldFlag ? ' flagged for attention. ' : ' inspected with no issue. ') + doneAfter + ' of ' + total + ' stations recorded.');
+          if (doneBefore < total && doneAfter === total) awardBadge('walkaround-pro', 'Walk-Around Pro');
+        }
+
+        function undoFocused() {
+          var nextChecked = copyStrictMap(checked);
+          var nextFlags = copyStrictMap(flags);
+          delete nextChecked[focusN];
+          delete nextFlags[focusN];
+          updMulti({ walkChecked: nextChecked, walkFlags: nextFlags, walkFocus: focusN });
+          arAnnounce('Step ' + focusN + ' marked not yet inspected.');
+        }
+
+        function resetWalk() {
+          updMulti({ walkChecked: {}, walkFlags: {}, walkFocus: 1 });
+          arAnnounce('Walk-around reset. Step 1 selected.');
+        }
+
+        return h('main', {
+          className: 'ar-walk-shell', 'data-ar-walk-shell': 'true',
+          'data-ar-walk-state': walkState, 'data-ar-walk-active': String(focusN),
+          style: { color: T.text }
+        },
+          backBar('🚶 Pre-drive walk-around', 'Pre-drive Walk-Around navigation'),
+          h('header', {
+            className: 'ar-walk-hero', 'data-ar-walk-hero': 'true',
+            'aria-labelledby': 'ar-walk-title',
+            style: { background: heroBg, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : '0 16px 35px rgba(15,23,42,.12)' }
+          },
+            h('div', { className: 'ar-walk-hero-copy' },
+              h('span', { className: 'ar-walk-eyebrow', style: { color: T.accentHi } }, '360° inspection route'),
+              h('h1', { id: 'ar-walk-title', className: 'ar-walk-title', style: { color: T.text } }, 'Make one deliberate lap before you drive'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } },
+                'Select each station on the vehicle, read what to inspect, then record either no visible issue or a concern to revisit. The route moves to the next open station automatically.')
+            ),
+            h('div', {
+              className: 'ar-walk-hero-progress', 'data-ar-walk-progress': 'true',
+              role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(total),
+              'aria-valuenow': String(done), 'aria-valuetext': done + ' of ' + total + ' inspection stations recorded',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('div', {
+                className: 'ar-walk-progress-ring', 'aria-hidden': 'true',
+                style: { background: 'conic-gradient(' + T.good + ' 0 ' + pct + '%, ' + T.borderSoft + ' ' + pct + '% 100%)', '--ar-walk-ring-center': T.card }
+              }, h('strong', { style: { color: T.text } }, pct + '%')),
+              h('div', { className: 'ar-walk-progress-copy' },
+                h('strong', { style: { color: T.text } }, complete ? 'Lap recorded' : (done ? 'Keep moving around the vehicle' : 'Begin at the right-front corner')),
+                h('span', { style: { color: T.muted } }, done + ' of ' + total + ' stations · ' + flaggedSteps.length + ' flagged'),
+                h('div', { className: 'ar-walk-progress-track', 'aria-hidden': 'true', style: { background: T.borderSoft } },
+                  h('div', { className: 'ar-walk-progress-fill', style: { width: pct + '%', background: T.good } })),
+                h('span', { className: 'ar-walk-status', 'data-ar-walk-status': 'true', role: 'status', 'aria-live': 'polite', style: { color: T.muted } },
+                  complete ? 'All stations recorded. Review any flags before deciding whether to drive.' : 'Current station: ' + focusN + ', ' + focusStep.area + '.')
+              )
+            )
+          ),
+          h('section', {
+            id: 'ar-walk-lab', className: 'ar-walk-workbench ar-walk-lab',
+            'data-ar-walk-lab': 'true', 'aria-labelledby': 'ar-walk-lab-title'
+          },
+            h('article', { className: 'ar-walk-scene-card', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-walk-scene-head' },
+                h('div', null,
+                  h('h2', { id: 'ar-walk-lab-title', style: { color: T.text } }, 'Guided perimeter lap'),
+                  h('p', { style: { color: T.muted } }, 'Choose a numbered hotspot to inspect that part of the vehicle.')),
+                h('span', { className: 'ar-walk-scene-chip', style: { background: T.cardAlt, border: '1px solid ' + T.border, color: T.accentHi } },
+                  complete ? '10 / 10 recorded' : 'Station ' + focusN + ' active')
+              ),
+              renderWalkScene(focusN, checked, flags, selectStep)
+            ),
+            h('aside', {
+              className: 'ar-walk-detail', 'data-ar-walk-detail': String(focusN),
+              'aria-labelledby': detailAreaId,
+              style: { background: T.card, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : '0 12px 28px rgba(15,23,42,.1)' }
+            },
+              h('div', { className: 'ar-walk-detail-head' },
+                h('span', { className: 'ar-walk-detail-step', 'aria-hidden': 'true', style: { background: focusedFlagged ? T.bad : (focusedResolved ? T.good : T.accent), color: onStrongFill } }, focusStep.icon),
+                h('div', { className: 'ar-walk-detail-heading' },
+                  h('span', { className: 'ar-walk-detail-kicker', style: { color: T.accentHi } }, 'Station ' + focusN + ' of ' + total),
+                  h('h2', { id: detailAreaId, style: { color: T.text } }, focusStep.area))
+              ),
+              h('div', { className: 'ar-walk-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.borderSoft } },
+                h('strong', { style: { color: T.accentHi } }, 'Look for'),
+                h('p', { id: detailCheckId, style: { color: T.text } }, focusStep.check)),
+              h('div', { className: 'ar-walk-detail-block', style: { background: isContrast ? T.bg : (isDark ? '#3f2a0c' : '#fffbeb'), border: '1px solid ' + T.warn } },
+                h('strong', { style: { color: T.warn } }, 'Flag when'),
+                h('p', { id: detailFlagId, style: { color: T.text } }, focusStep.flag)),
+              h('div', { className: 'ar-walk-detail-actions', 'data-ar-walk-print-hide': 'true' },
+                focusedResolved
+                  ? h('button', {
+                      type: 'button', className: 'ar-walk-detail-undo', 'data-ar-walk-action': 'undo', 'data-ar-focusable': true,
+                      onClick: undoFocused, style: btnGhost({ color: T.text })
+                    }, '↺ Mark not inspected')
+                  : [
+                      h('button', {
+                        key: 'walk-no-issue', type: 'button', className: 'ar-walk-detail-action',
+                        'data-ar-walk-action': 'no-issue', 'data-ar-focusable': true,
+                        onClick: function() { recordOutcome(false); },
+                        style: btnPrimary({ background: T.good, borderColor: T.good, color: onStrongFill })
+                      }, '✓ Inspected — no issue'),
+                      h('button', {
+                        key: 'walk-flag', type: 'button', className: 'ar-walk-detail-action',
+                        'data-ar-walk-action': 'flag', 'data-ar-focusable': true,
+                        onClick: function() { recordOutcome(true); },
+                        style: btnSecondary({ background: T.card, borderColor: T.bad, color: T.bad })
+                      }, '⚑ Flag an issue')
+                    ]
+              ),
+              h('p', { style: { margin: '10px 0 0', color: T.muted, fontSize: 10.5, lineHeight: 1.5 } },
+                focusedFlagged ? 'This station is retained in the flag summary below.' : (focusedResolved ? 'This station is recorded. Undo it to inspect again.' : 'Selecting a hotspot only opens details; it does not mark the station complete.'))
+            )
+          ),
+          h('section', {
+            className: 'ar-walk-checklist', 'aria-labelledby': 'ar-walk-checklist-title',
+            style: { background: T.card, border: '1px solid ' + T.border }
+          },
+            h('div', { className: 'ar-walk-checklist-head' },
+              h('div', null,
+                h('h2', { id: 'ar-walk-checklist-title', style: { color: T.text } }, 'All ten inspection stations'),
+                h('p', { style: { color: T.muted } }, 'Review the full safety language here; selecting a card opens its station above.')),
+              done > 0 && h('button', {
+                type: 'button', className: 'ar-walk-reset', 'data-ar-walk-reset': 'true',
+                'data-ar-walk-print-hide': 'true', 'data-ar-focusable': true,
+                onClick: resetWalk, style: btnGhost({ color: T.text })
+              }, complete ? '↺ Start another walk-around' : '↺ Reset walk-around')
+            ),
+            h('div', { className: 'ar-walk-step-grid', role: 'list' },
+              WALK_AROUND_STEPS.map(function(s) {
+                var isFlagged = flags[s.n] === true;
+                var isResolved = checked[s.n] === true || isFlagged;
+                var isCurrent = !complete && s.n === focusN;
+                var stepState = isCurrent ? 'current' : (isFlagged ? 'flagged' : (isResolved ? 'checked' : 'upcoming'));
+                var stepStateLabel = isCurrent
+                  ? (isFlagged ? 'Current · flagged' : (isResolved ? 'Current · inspected' : 'Current'))
+                  : (isFlagged ? 'Flagged' : (isResolved ? 'Inspected' : 'Not yet inspected'));
+                var areaId = 'ar-walk-step-area-' + s.n;
+                var checkId = 'ar-walk-step-check-' + s.n;
+                var flagId = 'ar-walk-step-flag-' + s.n;
+                var stateId = 'ar-walk-step-state-' + s.n;
+                var stateColor = isFlagged ? T.bad : (isResolved ? T.good : (isCurrent ? T.accent : T.dim));
+                var stepBg = isContrast ? T.bg : (isFlagged ? (isDark ? '#3f1218' : '#fef2f2') : (isResolved ? (isDark ? '#052e2b' : '#ecfdf5') : T.cardAlt));
+                return h('button', {
+                  key: 'walk-step-' + s.n, type: 'button', className: 'ar-walk-step',
+                  role: 'listitem', 'data-ar-walk-step': String(s.n), 'data-ar-walk-step-state': stepState,
+                  'data-ar-focusable': true, 'aria-pressed': isResolved ? 'true' : 'false',
+                  'aria-current': isCurrent ? 'step' : undefined,
+                  'aria-labelledby': areaId + ' ' + stateId,
+                  'aria-describedby': checkId + ' ' + flagId,
+                  onClick: function() { selectStep(s.n); },
+                  style: { background: stepBg, border: '1px solid ' + stateColor, borderRadius: 11, color: T.text, cursor: 'pointer' }
+                },
+                  h('span', { className: 'ar-walk-step-marker', 'aria-hidden': 'true', style: { background: stateColor, color: onStrongFill } }, isFlagged ? '!' : (isResolved ? '✓' : s.n)),
+                  h('span', { className: 'ar-walk-step-copy' },
+                    h('span', { className: 'ar-walk-step-top' },
+                      h('strong', { id: areaId, className: 'ar-walk-step-area', style: { color: T.text } }, s.icon + ' ' + s.area),
+                      h('span', { id: stateId, className: 'ar-walk-step-state', style: { color: stateColor, border: '1px solid ' + stateColor } }, stepStateLabel)),
+                    h('span', { className: 'ar-walk-step-label', style: { color: T.accentHi } }, 'Check'),
+                    h('p', { id: checkId, className: 'ar-walk-step-check', style: { color: T.text } }, s.check),
+                    h('span', { className: 'ar-walk-step-label', style: { color: T.warn } }, 'Flag'),
+                    h('p', { id: flagId, className: 'ar-walk-step-flag', style: { color: T.muted } }, s.flag)
+                  )
+                );
+              })
+            ),
+            flaggedSteps.length > 0 && h('aside', {
+              className: 'ar-walk-flag-summary', 'data-ar-walk-flag-summary': 'true',
+              'aria-labelledby': 'ar-walk-flag-title',
+              style: { background: isContrast ? T.bg : (isDark ? '#3f1218' : '#fef2f2'), border: '1px solid ' + T.bad }
+            },
+              h('h3', { id: 'ar-walk-flag-title', style: { color: T.bad } }, '⚑ ' + flaggedSteps.length + ' item' + (flaggedSteps.length === 1 ? '' : 's') + ' flagged for attention'),
+              h('p', { style: { color: T.text } }, 'A completed lap records observations; it does not certify the vehicle as safe. Resolve concerns or ask a qualified person before driving.'),
+              h('ul', { className: 'ar-walk-flag-list' }, flaggedSteps.map(function(s) {
+                return h('li', { key: 'walk-flag-summary-' + s.n, style: { color: T.text } }, h('strong', null, s.area + ': '), s.flag);
+              }))
+            ),
+            complete && h('div', {
+              className: 'ar-walk-complete', 'data-ar-walk-complete': 'true',
+              style: { background: isContrast ? T.bg : (isDark ? '#052e2b' : '#ecfdf5'), border: '1px solid ' + T.good }
+            },
+              h('strong', { style: { color: T.good } }, '✓ Walk-Around Pro — all ten stations recorded'),
+              h('span', { style: { color: T.text } }, flaggedSteps.length
+                ? 'Review the flagged concerns before deciding whether to drive.'
+                : 'No visible issue was recorded, but this quick check is not a mechanical safety certification.')
+            )
           ),
           disclaimerFooter()
         );
@@ -14242,6 +16499,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           else if (k === 'ArrowDown') V.nudge(0, -0.10);
           else if (k === '+' || k === '=') V.zoom(-0.4);
           else if (k === '-' || k === '_') V.zoom(0.4);
+          else if ((k === 'f' || k === 'F') && cfg.selected) {
+            V.focus(cfg.selected);
+            arAnnounce('Focused the 3D view on ' + (cfg.selectedLabel || cfg.selected));
+          }
           else if (k === '0') { V.reset(); arAnnounce('View reset'); }
           else handled = false;
           if (handled) { e.preventDefault(); e.stopPropagation(); }
@@ -14250,10 +16511,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           ref: V.attach,
           className: 'ar-bay-viewport',
           'data-ar-bay-state': cfg.engineState || 'inspection',
+          'data-ar-selected-part': cfg.selected || '',
           tabIndex: 0,
           role: 'group',
           'data-ar-focusable': true,
-          'aria-label': cfg.label + '. Interactive 3D view. Arrow keys rotate, plus and minus zoom, zero resets. All of this content is also in the parts list.',
+          'aria-label': cfg.label + '. Interactive 3D view. Arrow keys rotate, plus and minus zoom, zero resets. F focuses the selected part, zero returns to the whole bay. All of this content is also in the parts list.',
           onKeyDown: onKey,
           style: {
             position: 'relative', width: '100%', height: cfg.height || 340,
@@ -14272,19 +16534,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var V = (cfg && cfg.viewer) || UH3D;
         var st3 = (V.status() === 'failed') ? 'failed' : (d.uh3dStatus || 'idle');
         var live = st3 === 'ready';
-        function ctl(aria, glyph, fn) {
+        function ctl(aria, glyph, fn, action, title) {
           return h('button', { key: aria, 'data-ar-focusable': true, 'aria-label': aria,
+            'data-ar-bay-action': action || null,
+            title: title || aria,
             disabled: !live, onClick: fn,
             style: btnGhost({ opacity: live ? 1 : 0.45, cursor: live ? 'pointer' : 'not-allowed', minWidth: 34 }) }, glyph);
         }
         return h('div', { className: 'ar-bay-controls' },
-          ctl('Rotate view left', '⟲', function () { V.nudge(-0.28, 0); }),
-          ctl('Rotate view right', '⟳', function () { V.nudge(0.28, 0); }),
-          ctl('Tilt view up', '▲', function () { V.nudge(0, 0.16); }),
-          ctl('Tilt view down', '▼', function () { V.nudge(0, -0.16); }),
-          ctl('Zoom in', '＋', function () { V.zoom(-0.5); }),
-          ctl('Zoom out', '－', function () { V.zoom(0.5); }),
-          ctl('Reset the view', '⌂', function () { V.reset(); arAnnounce('View reset'); }),
+          ctl('Rotate view left', '⟲', function () { V.nudge(-0.28, 0); }, 'rotate-left'),
+          ctl('Rotate view right', '⟳', function () { V.nudge(0.28, 0); }, 'rotate-right'),
+          ctl('Tilt view up', '▲', function () { V.nudge(0, 0.16); }, 'tilt-up'),
+          ctl('Tilt view down', '▼', function () { V.nudge(0, -0.16); }, 'tilt-down'),
+          ctl('Zoom in', '＋', function () { V.zoom(-0.5); }, 'zoom-in'),
+          ctl('Zoom out', '－', function () { V.zoom(0.5); }, 'zoom-out'),
+          cfg && cfg.selected && ctl(
+            'Focus view on ' + (cfg.selectedLabel || cfg.selected),
+            '◎ Focus',
+            function () {
+              V.focus(cfg.selected);
+              arAnnounce('Focused the 3D view on ' + (cfg.selectedLabel || cfg.selected));
+            },
+            'focus-selected'
+          ),
+          ctl('Return to the whole engine bay', '⌂', function () {
+            if (V.returnToScene) V.returnToScene(); else V.reset();
+            arAnnounce('Returned to the whole engine bay');
+          }, 'return-scene', 'Reset the view'),
           cfg && cfg.extra
         );
       }
@@ -14302,6 +16578,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var seen = d.uhSeen || {};
         var st = d.uh3dStatus || 'idle';
         var showAllLabels = !!d.uhAllLabels;
+        var openPart = (d.uhOpenPart === 'fusebox' || d.uhOpenPart === 'dipstick')
+          ? d.uhOpenPart
+          : '';
         var selPart = null;
         for (var pi = 0; pi < UNDER_HOOD_PARTS.length; pi++) {
           if (UNDER_HOOD_PARTS[pi].id === sel) { selPart = UNDER_HOOD_PARTS[pi]; break; }
@@ -14315,10 +16594,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           }
           var nextSeen = Object.assign({}, seen);
           nextSeen[id] = true;
-          updMulti({ uhSel: id, uhSeen: nextSeen });
+          updMulti({
+            uhSel: id,
+            uhSeen: nextSeen,
+            uhOpenPart: openPart === id ? openPart : null
+          });
           arAnnounce(lbl + ' selected. Details below the viewer.');
           if (Object.keys(nextSeen).length >= UNDER_HOOD_PARTS.length) {
             awardBadge('underhood-tour', __alloT('stem.autorepair.under_hood_navigator', 'Under-Hood Navigator'));
+          }
+        }
+
+        function toggleServiceInspection(id) {
+          var opening = openPart !== id;
+          upd('uhOpenPart', opening ? id : null);
+          if (id === 'fusebox') {
+            arAnnounce(opening
+              ? 'Fuse box opened. The lid map, relays, puller, and fuses are visible in the 3D view.'
+              : 'Fuse box closed.');
+          } else {
+            arAnnounce(opening
+              ? 'Oil dipstick pulled. The MIN and MAX marks and oil film are visible in the 3D view.'
+              : 'Oil dipstick returned to its tube.');
           }
         }
 
@@ -14329,6 +16626,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           showAllLabels: showAllLabels,
           dark: isDark,
           contrast: isContrast,
+          sceneKey: 'underhood-inspection-' + (openPart || 'closed'),
+          sceneProps: { openPart: openPart },
           onPick: pick,
           onStatus: function (next) { upd('uh3dStatus', next); }
         });
@@ -14376,6 +16675,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 label: __alloT('stem.autorepair.uh_viewer_label', 'Engine bay, 3D'),
                 height: 340,
                 engineState: 'inspection',
+                selected: sel,
+                selectedLabel: selPart ? selPart.label : sel,
                 failText: viewerNote,
                 loadText: viewerNote
               }),
@@ -14386,6 +16687,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('span', null, 'DRIVER SIDE ▶')
               ),
               bayControls({
+                selected: sel,
+                selectedLabel: selPart ? selPart.label : sel,
                 extra: [
                   h('button', { key: 'lbl', 'data-ar-focusable': true,
                     'aria-pressed': showAllLabels ? 'true' : 'false',
@@ -14400,12 +16703,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       fontWeight: showAllLabels ? 700 : 400
                     }) }, __alloT('stem.autorepair.uh_label_all', '🏷 Label all')),
                   sel && h('button', { key: 'clr', 'data-ar-focusable': true, 'aria-label': 'Clear selection',
-                    onClick: function () { upd('uhSel', null); arAnnounce('Selection cleared'); },
+                    onClick: function () {
+                      updMulti({ uhSel: null, uhOpenPart: null });
+                      if (UH3D.returnToScene) UH3D.returnToScene();
+                      arAnnounce('Selection cleared and the whole bay restored');
+                    },
                     style: btnGhost() }, __alloT('stem.autorepair.uh_clear', '✕ Clear'))
                 ]
               }),
               h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.uh_hint', 'Drag or arrow keys to spin · scroll or + / − to zoom · 0 resets · tap a part to select it. Everything the 3D view shows is also in the parts list.'))
+                __alloT('stem.autorepair.uh_hint', 'Drag or arrow keys to spin · scroll or + / − to zoom · F focuses · 0 returns to the whole bay · tap a part to select it. Everything the 3D view shows is also in the parts list.'))
             ),
 
             // ── Parts list — the accessible, always-present path ──
@@ -14446,6 +16753,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 style: { marginTop: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
                 h('h2', { style: { margin: '0 0 2px', fontSize: 17, color: T.accentHi } },
                   h('span', { 'aria-hidden': 'true' }, selPart.icon + ' '), selPart.label),
+                (selPart.id === 'fusebox' || selPart.id === 'dipstick') && h('div', {
+                  'data-ar-service-inspection': selPart.id,
+                  'data-ar-inspection-state': openPart === selPart.id ? 'open' : 'closed',
+                  style: {
+                    marginTop: 10, padding: 11, borderRadius: 9,
+                    background: T.cardAlt,
+                    border: '1px solid ' + (openPart === selPart.id ? T.good : T.border)
+                  }
+                },
+                  h('div', { style: { fontSize: 11.5, color: T.text, lineHeight: 1.55, marginBottom: 8 } },
+                    openPart === selPart.id
+                      ? (selPart.id === 'fusebox'
+                        ? 'Inspection view open: the underside map, relays, fuse puller, and individual blade fuses are exposed.'
+                        : 'Inspection view open: the metal blade, MIN/MAX marks, and the oil film on the tip are exposed.')
+                      : (selPart.id === 'fusebox'
+                        ? 'Lift the lid to reveal the fuse map and the protected circuits underneath.'
+                        : 'Pull the dipstick to reveal the actual level marks and oil condition.')),
+                  h('button', {
+                    'data-ar-focusable': true,
+                    'data-ar-inspection-action': selPart.id,
+                    'aria-pressed': openPart === selPart.id ? 'true' : 'false',
+                    'aria-label': openPart === selPart.id
+                      ? (selPart.id === 'fusebox' ? 'Close the under-hood fuse box' : 'Return the oil dipstick to its tube')
+                      : (selPart.id === 'fusebox' ? 'Open the under-hood fuse box' : 'Pull the oil dipstick'),
+                    onClick: function () { toggleServiceInspection(selPart.id); },
+                    style: btnSecondary({ width: '100%' })
+                  },
+                    openPart === selPart.id
+                      ? (selPart.id === 'fusebox' ? 'Close fuse box' : 'Return dipstick')
+                      : (selPart.id === 'fusebox' ? 'Open fuse box' : 'Pull dipstick'))
+                ),
                 fact('📍', __alloT('stem.autorepair.uh_where', 'Where to look'), selPart.where),
                 fact('❓', __alloT('stem.autorepair.uh_what', 'What it does'), selPart.what),
                 fact('✅', __alloT('stem.autorepair.uh_check', 'How to check it'), selPart.check),
@@ -14497,7 +16835,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 var rec = done[c.id];
                 return h('button', { key: c.id, 'data-ar-focusable': true,
                   'aria-label': 'Open case: ' + c.title + (rec ? ' — previously graded ' + rec.grade : ''),
-                  onClick: function () { updMulti({ rbCase: c.id, rbEngine: 'off', rbFound: {}, rbSel: null, rbVerdict: null, rbViolations: [], rbNotes: '' }); arAnnounce('Case opened: ' + c.title); },
+                  onClick: function () { updMulti({ rbCase: c.id, rbEngine: 'off', rbFound: {}, rbSel: null, rbOpenPart: null, rbVerdict: null, rbViolations: [], rbNotes: '' }); arAnnounce('Case opened: ' + c.title); },
                   style: { textAlign: 'left', padding: 13, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + (rec && rec.verdict === 'correct' ? T.good : T.border), color: T.text, cursor: 'pointer' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, c.icon),
@@ -14516,6 +16854,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var engine = d.rbEngine || 'off';
         var found = d.rbFound || {};
         var sel = d.rbSel || null;
+        var openPart = (d.rbOpenPart === 'fusebox' || d.rbOpenPart === 'dipstick')
+          ? d.rbOpenPart
+          : '';
         var verdict = d.rbVerdict || null;
         var violations = d.rbViolations || [];
 
@@ -14542,7 +16883,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function inspect(pid) {
           if (verdict) return;
           var f = kase.findings[pid];
-          var patch = { rbSel: pid };
+          var serviceInspection = pid === 'fusebox' || pid === 'dipstick';
+          var patch = {
+            rbSel: pid,
+            rbOpenPart: serviceInspection ? pid : null
+          };
+          // Opening a fuse box or pulling a dipstick is a physical service
+          // action, not a passive glance. Record the unsafe attempt, but do
+          // not expose the evidence until the learner shuts the engine off.
+          if (engine === 'running' && serviceInspection && RB_RUNNING_HAZARD[pid]) {
+            logViolation(RB_RUNNING_HAZARD[pid]);
+            updMulti({ rbSel: pid, rbOpenPart: null });
+            arAnnounce('Inspection blocked. Shut the engine off before ' +
+              (pid === 'fusebox' ? 'opening the fuse box.' : 'pulling the dipstick.'));
+            return;
+          }
           if (!f) {
             updMulti(patch);
             arAnnounce('Nothing relevant to this complaint on the ' + pid);
@@ -14600,8 +16955,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         UH3D.sync({
           selected: sel, marks: marks, dark: isDark, contrast: isContrast,
-          sceneKey: 'repair-bay-' + engine,
-          sceneProps: { engineRunning: engine === 'running' },
+          sceneKey: 'repair-bay-' + kase.id + '-' + engine + '-' + (openPart || 'closed'),
+          sceneProps: { engineRunning: engine === 'running', caseId: kase.id, openPart: openPart },
           onPick: inspect,
           onStatus: function (n) { upd('uh3dStatus', n); }
         });
@@ -14610,6 +16965,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var chosen = null;
         for (var qi = 0; qi < kase.choices.length; qi++) { if (kase.choices[qi].id === verdict) { chosen = kase.choices[qi]; break; } }
         var selFinding = sel ? kase.findings[sel] : null;
+        var selectedPartLabel = sel;
+        for (var selectedPartIndex = 0; selectedPartIndex < UNDER_HOOD_PARTS.length; selectedPartIndex++) {
+          if (UNDER_HOOD_PARTS[selectedPartIndex].id === sel) {
+            selectedPartLabel = UNDER_HOOD_PARTS[selectedPartIndex].label;
+            break;
+          }
+        }
         var rec = done[kase.id];
 
         function panel(title, body, tone) {
@@ -14622,7 +16984,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { role: 'main', 'aria-label': 'Repair Bay case: ' + kase.title, style: { padding: 20, maxWidth: 1060, margin: '0 auto', color: T.text } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
             h('button', { 'data-ar-focusable': true, 'aria-label': 'Back to case list',
-              onClick: function () { updMulti({ rbCase: null, rbSel: null }); }, style: btnGhost() }, __alloT('stem.autorepair.rb_cases', '← Cases')),
+              onClick: function () {
+                updMulti({ rbCase: null, rbSel: null, rbOpenPart: null });
+                if (UH3D.returnToScene) UH3D.returnToScene();
+              }, style: btnGhost() }, __alloT('stem.autorepair.rb_cases', '← Cases')),
             h('h1', { style: { margin: 0, fontSize: 17, color: T.text } },
               h('span', { 'aria-hidden': 'true' }, kase.icon + ' '), kase.title)
           ),
@@ -14644,7 +17009,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               'aria-label': engine === 'running' ? 'Shut the engine off' : 'Start the engine',
               onClick: function () {
                 var next = engine === 'running' ? 'off' : 'running';
-                upd('rbEngine', next);
+                updMulti({
+                  rbEngine: next,
+                  rbOpenPart: next === 'running' ? null : openPart
+                });
                 // Some cases need the engine run to produce evidence but are
                 // being damaged by running. That is a caution, not a
                 // violation — punishing a student for gathering required
@@ -14667,24 +17035,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 label: __alloT('stem.autorepair.rb_viewer_label', 'Engine bay for this case, 3D'),
                 height: 300,
                 engineState: engine,
+                selected: sel,
+                selectedLabel: selectedPartLabel,
                 failText: __alloT('stem.autorepair.rb_3d_failed', '3D bay unavailable — inspect using the buttons below. Nothing in this case needs the 3D view.'),
                 loadText: __alloT('stem.autorepair.rb_3d_loading', 'Loading the bay…')
               }),
-              bayControls(null),
+              bayControls({ selected: sel, selectedLabel: selectedPartLabel }),
               h('div', { className: 'ar-bay-hint', style: { fontSize: 10.5, lineHeight: 1.5 } },
                 __alloT('stem.autorepair.rb_3d_hint', 'Click a part in the bay to inspect it, or use the buttons — they do the same thing. Green = already inspected.')),
               selFinding && h('div', { style: { marginTop: 8, padding: 11, borderRadius: 8, background: T.card, border: '1px solid ' + (selFinding.key ? T.good : T.border) } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
-                  __alloT('stem.autorepair.rb_you_see', 'You see — '), (function () { for (var i = 0; i < UNDER_HOOD_PARTS.length; i++) { if (UNDER_HOOD_PARTS[i].id === sel) return UNDER_HOOD_PARTS[i].label; } return sel; })()),
+                  __alloT('stem.autorepair.rb_you_see', 'You see — '), selectedPartLabel),
                 h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.6 } }, selFinding.text),
                 selFinding.key && h('div', { style: { marginTop: 5, fontSize: 11, fontWeight: 700, color: T.good } }, __alloT('stem.autorepair.rb_key_evidence', '✓ Counts as key evidence')),
+                (sel === 'fusebox' || sel === 'dipstick') && h('div', {
+                  'data-ar-service-inspection': sel,
+                  'data-ar-inspection-state': openPart === sel ? 'open' : 'closed',
+                  style: {
+                    marginTop: 8, padding: 9, borderRadius: 7,
+                    background: T.cardAlt,
+                    border: '1px solid ' + (openPart === sel ? T.good : T.border)
+                  }
+                },
+                  h('div', { style: { fontSize: 11, color: T.text, lineHeight: 1.5, marginBottom: 6 } },
+                    openPart === sel
+                      ? (sel === 'fusebox'
+                        ? 'Lid raised: the fuse map, relays, puller, and the fan-circuit fuse are visible.'
+                        : 'Blade pulled: MIN/MAX marks and the case-specific oil film are visible.')
+                      : (sel === 'fusebox' ? 'Fuse box closed.' : 'Dipstick returned to its guide tube.')),
+                  h('button', {
+                    'data-ar-focusable': true,
+                    'data-ar-inspection-action': sel,
+                    disabled: engine === 'running' || !!verdict,
+                    'aria-pressed': openPart === sel ? 'true' : 'false',
+                    'aria-label': engine === 'running'
+                      ? 'Shut the engine off before using this inspection'
+                      : (openPart === sel
+                        ? (sel === 'fusebox' ? 'Close the under-hood fuse box' : 'Return the oil dipstick')
+                        : (sel === 'fusebox' ? 'Re-open the under-hood fuse box' : 'Pull the oil dipstick again')),
+                    onClick: function () {
+                      var nextOpen = openPart === sel ? null : sel;
+                      upd('rbOpenPart', nextOpen);
+                      arAnnounce(nextOpen
+                        ? (sel === 'fusebox' ? 'Fuse box opened' : 'Oil dipstick pulled')
+                        : (sel === 'fusebox' ? 'Fuse box closed' : 'Oil dipstick returned'));
+                    },
+                    style: btnSecondary({
+                      width: '100%',
+                      opacity: (engine === 'running' || verdict) ? 0.5 : 1
+                    })
+                  },
+                    openPart === sel
+                      ? (sel === 'fusebox' ? 'Close fuse box' : 'Return dipstick')
+                      : (sel === 'fusebox' ? 'Re-open fuse box' : 'Pull dipstick again'))
+                ),
                 // A student who does not yet know what an alternator IS cannot
                 // reason about "no bearing play." The reference is one module
                 // away; make it one tap away instead of a dead end.
                 h('button', { 'data-ar-focusable': true,
                   'aria-label': 'Look this part up in the under-hood tour, then come back to the case',
                   onClick: function () {
-                    updMulti({ view: 'underhood', uhSel: sel, uhFrom: 'repairbay' });
+                    updMulti({
+                      view: 'underhood',
+                      uhSel: sel,
+                      uhOpenPart: openPart === sel ? sel : null,
+                      uhFrom: 'repairbay'
+                    });
                     arAnnounce('Opened the under-hood reference for this part');
                   },
                   style: btnGhost({ marginTop: 8, fontSize: 11 }) },

@@ -113,3 +113,16 @@ code {
     [data-help-key='bot_mute_btn'] { bottom: -12px !important; right: -12px !important; }
     [data-help-key='bot_mic_btn'] { bottom: -12px !important; left: -12px !important; }
 }
+
+/* The floating Help control exists even when AlloBot is hidden, so its
+   breathing cue must be owned by the persistent host stylesheet. */
+@keyframes help-breathe {
+    0%, 100% {
+        box-shadow: 0 0 4px 1px rgba(99, 102, 241, 0.15);
+        transform: translateY(-50%) scale(1);
+    }
+    50% {
+        box-shadow: 0 0 8px 3px rgba(99, 102, 241, 0.25);
+        transform: translateY(-50%) scale(1.05);
+    }
+}

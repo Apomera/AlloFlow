@@ -1036,6 +1036,96 @@
       brief: 'The reactor scrams correctly and fission stops — and the core still makes about 6.5% of full power from decaying fission products. That is what flooded generators cost Fukushima. Restore any cooling you can.' }
   ];
 
+  // Turn the simulator's internal scoring state into learner-facing progress.
+  // Keeping this pure makes every phase deterministic to test, while the live
+  // panel can write its result directly to the DOM without re-rendering the
+  // entire twenty-one-section lab on every physics tick.
+  function rxScenarioProgress(s, scen) {
+    s = s || {};
+    var id = scen && scen.id ? scen.id : (scen || 'steady');
+    var power = typeof s.power === 'number' ? s.power : 100;
+    var hold = typeof s.holdOk === 'number' ? Math.max(0, s.holdOk) : 0;
+    var verdict = s.verdict || null;
+    function whole(value, max) {
+      return Math.floor(Math.max(0, Math.min(max, value)));
+    }
+    function ended(value, max) {
+      return {
+        stage: verdict && verdict.ok ? 'complete' : 'ended',
+        value: verdict && verdict.ok ? max : Math.max(0, Math.min(max, value)),
+        max: max,
+        label: verdict && verdict.ok ? 'Objective complete' : 'Run ended',
+        detail: verdict && verdict.ok
+          ? 'The scenario objective is complete.'
+          : 'Reset the reactor to try this objective again.'
+      };
+    }
+
+    if (id === 'xenon') {
+      var phase = typeof s.phase === 'number' ? s.phase : 0;
+      var xenonValue = phase <= 0 ? 0 : (phase === 1 ? 1 + Math.min(1, hold / 90) : 2);
+      if (verdict) return ended(xenonValue, 3);
+      if (phase <= 0) {
+        return {
+          stage: 'xenon-lower', value: 0, max: 3,
+          label: 'Step 1 of 3 · Lower reactor power',
+          detail: 'Power is ' + Math.round(power) + '%. Reach 20% or lower.'
+        };
+      }
+      if (phase === 1 && power > 20) {
+        return {
+          stage: 'xenon-reset', value: 1, max: 3,
+          label: 'Step 2 of 3 · Return to low power',
+          detail: 'The continuous hold reset. Reach 20% or lower to restart the 90-second timer.'
+        };
+      }
+      if (phase === 1) {
+        return {
+          stage: 'xenon-hold', value: 1 + Math.min(1, hold / 90), max: 3,
+          label: 'Step 2 of 3 · Hold at low power',
+          detail: whole(hold, 90) + ' of 90 continuous seconds at or below 20%.'
+        };
+      }
+      return {
+        stage: 'xenon-recover', value: 2, max: 3,
+        label: 'Step 3 of 3 · Recover reactor power',
+        detail: 'Power is ' + Math.round(power) + '%. Reach above 80%.'
+      };
+    }
+
+    if (id === 'blackout') {
+      var blackoutValue = s.scrammed ? 1 + Math.min(1, hold / 120) : 0;
+      if (verdict) return ended(blackoutValue, 2);
+      if (!s.scrammed) {
+        return {
+          stage: 'blackout-scram', value: 0, max: 2,
+          label: 'Step 1 of 2 · Stop the chain reaction',
+          detail: 'Cooling is offline. Press SCRAM before the fuel overheats.'
+        };
+      }
+      return {
+        stage: 'blackout-cool', value: 1 + Math.min(1, hold / 120), max: 2,
+        label: 'Step 2 of 2 · Remove decay heat',
+        detail: whole(hold, 120) + ' of 120 seconds below 1,200 °C. Restore cooling to survive the hold.'
+      };
+    }
+
+    var inBand = power >= 95 && power <= 105;
+    if (verdict) return ended(hold, 60);
+    if (!inBand) {
+      return {
+        stage: 'steady-reset', value: 0, max: 60,
+        label: 'Enter the 95–105% power band',
+        detail: 'The continuous timer is at 0 of 60 seconds. Move the rods to return to the target band.'
+      };
+    }
+    return {
+      stage: 'steady-hold', value: Math.min(60, hold), max: 60,
+      label: 'Hold inside the 95–105% power band',
+      detail: whole(hold, 60) + ' of 60 continuous seconds in range.'
+    };
+  }
+
   function rxDecayHeat(p0, secs) {
     // Wigner-Way approximation, valid from about 10 s after shutdown
     return p0 * 0.065 * Math.pow(Math.max(secs, 10), -0.2) / Math.pow(10, -0.2);
@@ -1272,6 +1362,10 @@
       // Route buttons swap whole sections in one React commit. Remember the
       // requested destination so focus moves only after that section exists.
       var nkPendingTargetRef = React.useRef(null);
+      // Advancing the evidence challenge removes its Next button. Remember
+      // that transition so focus can move into the newly rendered claim rather
+      // than falling back to the document body.
+      var nkEvidencePendingFocusRef = React.useRef(false);
       var stGuess = React.useState('');
       var ageGuess = stGuess[0], setAgeGuess = stGuess[1];
       var stShown = React.useState(false);
@@ -1301,24 +1395,23 @@
 
       // ── 21. evidence challenge ──
       // Persist choices per claim so learners can move around without losing
-      // their reasoning. "Mastered" means the evidence has been checked with
-      // feedback; it is progress, not a timed score or a one-shot judgement.
-      var evidenceIndex = nkClamp(
+      // their reasoning. Mastered means the best-supported verdict was reached
+      // after feedback; it is progress, not a timed score or a one-shot grade.
+      var evidenceSavedIndex = nkClamp(
         typeof d.evidenceIndex === 'number' ? Math.floor(d.evidenceIndex) : 0,
         0, EVIDENCE_CLAIMS.length - 1);
-      var evidenceClaim = EVIDENCE_CLAIMS[evidenceIndex];
+      var evidenceRequestedId = typeof d.evidenceClaimId === 'string'
+        ? d.evidenceClaimId
+        : EVIDENCE_CLAIMS[evidenceSavedIndex].id;
       var evidenceChoices = d.evidenceChoices && typeof d.evidenceChoices === 'object' ? d.evidenceChoices : {};
       var evidenceCheckedMap = d.evidenceChecked && typeof d.evidenceChecked === 'object' ? d.evidenceChecked : {};
-      var evidenceChoice = evidenceChoices[evidenceClaim.id] || '';
-      var evidenceIsChecked = !!evidenceCheckedMap[evidenceClaim.id];
-      var evidenceCorrect = evidenceIsChecked && evidenceChoice === evidenceClaim.verdict;
       var evidenceMastered = Array.isArray(d.evidenceMastered)
         ? d.evidenceMastered.filter(function (id, i, all) {
             return all.indexOf(id) === i && EVIDENCE_CLAIMS.some(function (claim) { return claim.id === id; });
           })
         : [];
-      var evidenceVerdict = EVIDENCE_VERDICTS.filter(function (v) { return v.id === evidenceClaim.verdict; })[0];
-      var evidenceComplete = evidenceMastered.length === EVIDENCE_CLAIMS.length;
+      // Global mastery remains cumulative across routes and still powers the
+      // five-claim quest and one-time XP award below.
 
       // ── 1. decay ──
       var isoId = d.isoId || 'c14';
@@ -2040,11 +2133,13 @@
       var rxRef = React.useRef(null);
       var rxCanvasRef = React.useRef(null);
       var rxTelemetryRef = React.useRef(null);
+      var rxObjectiveRef = React.useRef(null);
       var rxAnim = React.useRef(0);
       var rxWakeRef = React.useRef(function () {});
+      var rxInitialScenario = d.rxScenario || 'steady';
       var stRx = React.useState({
         running: false, verdict: null, rodStep: 50, hotStep: 0,
-        pumps: true, scrammed: false
+        pumps: rxInitialScenario !== 'blackout', scrammed: false
       });
       var rxUi = stRx[0], setRxUi = stRx[1];
       var rxUiRef = React.useRef(rxUi);
@@ -2059,18 +2154,18 @@
       }
 
       var rxMode = d.rxMode || 'modern';
-      var rxScenario = d.rxScenario || 'steady';
+      var rxScenario = rxInitialScenario;
       var rxModeObj = RX_MODES.filter(function (m) { return m.id === rxMode; })[0] || RX_MODES[0];
       var rxScenObj = RX_SCENARIOS.filter(function (s) { return s.id === rxScenario; })[0] || RX_SCENARIOS[0];
 
-      function rxFresh() {
+      function rxFresh(scenarioId) {
         return {
-          rods: 50, pumps: true, scrammed: false, power: 100, t: RX_T_REF + 30,
+          rods: 50, pumps: scenarioId !== 'blackout', scrammed: false, power: 100, t: RX_T_REF + 30,
           xe: 1, iod: 1, elapsed: 0, sinceScram: 0, holdOk: 0, phase: 0, peakT: RX_T_REF + 30,
           verdict: null, lastSync: 0
         };
       }
-      if (!rxRef.current) rxRef.current = rxFresh();
+      if (!rxRef.current) rxRef.current = rxFresh(rxScenario);
 
       function rxReactivity(s, mode) {
         // Rod worth, solved rather than guessed. Three conditions fix it:
@@ -2110,6 +2205,30 @@
         put('rx-live-state', s.verdict
           ? (s.verdict.ok ? 'Scenario complete' : 'Run ended')
           : (s.scrammed ? 'Scrammed — decay heat only' : (running ? 'Running' : 'Paused')));
+      }
+
+      function rxWriteObjective(s, scen) {
+        var root = rxObjectiveRef.current;
+        if (!root) return;
+        var progress = rxScenarioProgress(s, scen);
+        function put(id, value) {
+          var node = root.querySelector('#' + id);
+          if (node && node.textContent !== value) node.textContent = value;
+        }
+        put('rx-objective-step', progress.label);
+        put('rx-objective-detail', progress.detail);
+        var meter = root.querySelector('#rx-objective-meter');
+        if (meter) {
+          meter.max = progress.max;
+          meter.value = progress.value;
+          meter.setAttribute('aria-valuetext', progress.detail);
+        }
+        var previousStage = root.dataset.stage || '';
+        if (previousStage && previousStage !== progress.stage &&
+            typeof announceToSR === 'function') {
+          announceToSR(progress.label + '. ' + progress.detail);
+        }
+        root.dataset.stage = progress.stage;
       }
 
       function rxStep(s, dt, mode, scen) {
@@ -2163,7 +2282,14 @@
             else s.holdOk = 0;
           } else if (scen.id === 'xenon') {
             if (s.phase === 0 && s.power <= 20) { s.phase = 1; s.holdOk = 0; }
-            else if (s.phase === 1) { s.holdOk += dt; if (s.holdOk >= 90) s.phase = 2; }
+            else if (s.phase === 1) {
+              // The goal says HOLD at low power, not merely touch 20% once.
+              // Any excursion above the target restarts the continuous timer.
+              if (s.power <= 20) {
+                s.holdOk += dt;
+                if (s.holdOk >= 90) s.phase = 2;
+              } else s.holdOk = 0;
+            }
             else if (s.phase === 2 && s.power >= 80) s.verdict = { ok: true, why: 'You climbed back out. Notice how many rods it took — and that at Chernobyl pulling that many left almost no shutdown margin, which is exactly the state the reactor was in.' };
           } else if (scen.id === 'blackout') {
             if (s.scrammed) { s.holdOk += dt; if (s.holdOk >= 120 && s.t < RX_T_CLAD) s.verdict = { ok: true, why: 'Two minutes of decay heat removed. At Fukushima this went on for days with no power, and that is the whole accident in one sentence.' }; }
@@ -2332,6 +2458,7 @@
               s.lastSync = ts;
               var runningNow = el.dataset.running === 'on' && !s.verdict;
               rxWriteTelemetry(s, r, runningNow);
+              rxWriteObjective(s, scen);
               var ui = rxUiRef.current;
               if (rodStep !== ui.rodStep || hotStep !== ui.hotStep || (!!s.verdict) !== (!!ui.verdict) ||
                   s.pumps !== ui.pumps || s.scrammed !== ui.scrammed || runningNow !== ui.running) {
@@ -2407,18 +2534,25 @@
         Object.keys(patch).forEach(function (k) { s[k] = patch[k]; });
         rxWakeRef.current();
       }
-      function rxRestart() {
-        rxRef.current = rxFresh();
+      function rxRestart(scenarioId) {
+        var targetScenario = scenarioId || rxScenario;
+        var fresh = rxFresh(targetScenario);
+        rxRef.current = fresh;
         rxPatchUi({
           running: false, verdict: null, rodStep: 50, hotStep: 0,
-          pumps: true, scrammed: false
+          pumps: fresh.pumps, scrammed: false
         });
         rxWakeRef.current();
-        if (typeof announceToSR === 'function') announceToSR('Reactor reset to 50% rods, full power, pumps running.');
+        if (typeof announceToSR === 'function') {
+          announceToSR(targetScenario === 'blackout'
+            ? 'Station blackout reset to 50% rods, full power, coolant pumps offline.'
+            : 'Reactor reset to 50% rods, full power, pumps running.');
+        }
       }
       var rxRead = rxRef.current;
       var rxReadR = rxReactivity(rxRead, rxModeObj);
       var rxReadRhoPcm = rxReadR.total * 1e5;
+      var rxObjective = rxScenarioProgress(rxRead, rxScenObj);
       var rxReadState = rxUi.verdict
         ? (rxUi.verdict.ok ? 'Scenario complete' : 'Run ended')
         : (rxUi.scrammed ? 'Scrammed — decay heat only' : (rxUi.running ? 'Running' : 'Paused'));
@@ -2554,10 +2688,14 @@
         // Spread the children as separate arguments. Passing the array itself
         // makes React treat them as a dynamic LIST and warn that every one needs
         // a key — they are static siblings, not a list.
-        return h.apply(null, ['div', { className: 'rounded-xl border p-3 mt-3', style: {
+        return h.apply(null, ['div', { className: 'nk-section-card rounded-xl border p-3 mt-4', style: {
           borderColor: accent + '55',
-          background: isDark ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.92)',
-          boxShadow: '0 1px 2px rgba(15,23,42,0.05), 0 12px 28px -22px rgba(15,23,42,0.5)'
+          borderLeft: '4px solid ' + accent,
+          backgroundColor: isDark ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.96)',
+          backgroundImage: 'linear-gradient(135deg, ' + accent + (isDark ? '18' : '12') + ' 0%, transparent 38%)',
+          boxShadow: isDark
+            ? 'inset 0 1px 0 rgba(255,255,255,0.035), 0 16px 34px -26px rgba(0,0,0,0.85)'
+            : 'inset 0 1px 0 rgba(255,255,255,0.9), 0 16px 34px -26px rgba(15,23,42,0.55)'
         } }].concat(children));
       };
       // Same card, plus the anchor the topic index jumps to. scroll-margin keeps
@@ -2582,17 +2720,37 @@
         // open the drawer, find the next one. Sections on the active route now
         // carry their own step footer, so it can be followed straight through.
         var footer = nkRouteFooter(id, accent);
-        var node = card.apply(null, [accent].concat(footer ? children.concat([footer]) : children));
+        var routeAt = typeof nkPath !== 'undefined' && nkPath ? nkPath.steps.indexOf(id) : -1;
+        var routeKickerId = routeAt >= 0 ? 'nk-route-step-' + id : undefined;
+        var routeKicker = routeAt >= 0 ? h('div', {
+          id: routeKickerId,
+          'data-nk-route-step': id,
+          className: 'nk-route-kicker flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3 pb-2.5',
+          style: { borderBottom: '1px solid ' + accent + '44' }
+        },
+          h('span', {
+            className: 'nk-route-kicker-badge inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide',
+            style: { background: accent + '20', border: '1px solid ' + accent + '66', color: ink(accent) }
+          }, nkPath.icon + ' Route step ' + (routeAt + 1) + ' of ' + nkPath.steps.length),
+          h('span', {
+            className: 'nk-route-kicker-question min-w-0 text-[11px] font-bold',
+            style: { color: isDark ? '#cbd5e1' : '#475569' }
+          }, nkPath.q)
+        ) : null;
+        var body = routeKicker ? [routeKicker].concat(children) : children;
+        var node = card.apply(null, [accent].concat(footer ? body.concat([footer]) : body));
         return React.cloneElement(node, {
           key: 'nksec-' + id,
           id: 'nksec-' + id,
           'data-nk-sec': id,
+          className: node.props.className + (routeAt >= 0 ? ' nk-route-section' : ''),
           // A programmatically focused div does not inherit the name of a child
           // heading. Give the focus destination an explicit accessible name.
           // Short routes can also be useful landmarks; the 22-section full lab
           // uses groups so landmark navigation does not become another long list.
           role: nkPath ? 'region' : 'group',
           'aria-labelledby': hasHeading ? headingId : undefined,
+          'aria-describedby': routeKickerId,
           // tabIndex -1 so nkGoTo can move FOCUS here, not just the viewport.
           // Scrolling alone left a keyboard user's focus back on the index
           // button: the page moved, the next Tab went to the next index button,
@@ -2612,7 +2770,16 @@
       // Tailwind's preflight resets heading size and weight to inherit, so the
       // classes below still decide how it looks and nothing moves visually.
       var heading = function (accent, text) {
-        return h('h4', { className: 'text-xs font-black mb-2', style: { color: ink(accent) } }, text);
+        return h('h4', {
+          className: 'nk-section-heading font-black mb-3 pb-2',
+          style: {
+            color: ink(accent),
+            fontSize: '0.875rem',
+            lineHeight: '1.35rem',
+            letterSpacing: '-0.01em',
+            borderBottom: '1px solid ' + accent + '44'
+          }
+        }, text);
       };
       var pill = function (on, accent, label, onClick, aria, itemKey) {
         return h('button', {
@@ -2803,6 +2970,43 @@
       var nkGroup = d.nkGroup || 'all';
       var nkPathId = d.nkPath || null;
       var nkPath = nkPathId ? NK_PATHS.filter(function (p) { return p.id === nkPathId; })[0] : null;
+      // A short route should assess the evidence it actually taught. Global
+      // browsing keeps all five claims; a question route keeps only claims
+      // whose supporting section is present on that route. Mastery itself stays
+      // global, so work carries across routes and the five-claim quest remains.
+      function nkEvidenceClaimsFor(route) {
+        return route
+          ? EVIDENCE_CLAIMS.filter(function (claim) {
+              return route.steps.indexOf(claim.section) !== -1;
+            })
+          : EVIDENCE_CLAIMS;
+      }
+      function nkEvidenceCompleteFor(route, mastered) {
+        var claims = nkEvidenceClaimsFor(route);
+        return claims.length > 0 && claims.every(function (claim) {
+          return mastered.indexOf(claim.id) !== -1;
+        });
+      }
+      var evidenceClaims = nkEvidenceClaimsFor(nkPath);
+      // Route definitions are regression-tested to prevent this fallback. It is
+      // still safer than crashing an old saved session if a future route is
+      // accidentally published without a supporting evidence claim.
+      if (!evidenceClaims.length) evidenceClaims = EVIDENCE_CLAIMS;
+      var evidenceIndex = evidenceClaims.findIndex(function (claim) {
+        return claim.id === evidenceRequestedId;
+      });
+      if (evidenceIndex < 0) evidenceIndex = 0;
+      var evidenceClaim = evidenceClaims[evidenceIndex];
+      var evidenceChoice = evidenceChoices[evidenceClaim.id] || '';
+      var evidenceIsChecked = !!evidenceCheckedMap[evidenceClaim.id];
+      var evidenceCorrect = evidenceIsChecked && evidenceChoice === evidenceClaim.verdict;
+      var evidenceVerdict = EVIDENCE_VERDICTS.filter(function (v) {
+        return v.id === evidenceClaim.verdict;
+      })[0];
+      var activeEvidenceMastered = evidenceClaims.filter(function (claim) {
+        return evidenceMastered.indexOf(claim.id) !== -1;
+      });
+      var activeEvidenceComplete = activeEvidenceMastered.length === evidenceClaims.length;
       // A route should resume rather than forget. Store only section ids from
       // that route, in route order, and keep completion separate from exposure:
       // every step must have opened AND the evidence challenge must be mastered.
@@ -2842,7 +3046,7 @@
         var before = nkRouteProgressFor(route);
         var afterCount = before.count + (before.seen.indexOf(sectionId) === -1 ? 1 : 0);
         var willComplete = !before.complete
-          && evidenceComplete
+          && nkEvidenceCompleteFor(route, evidenceMastered)
           && afterCount === route.steps.length;
 
         setToolData(function (prev) {
@@ -2861,17 +3065,19 @@
             });
           }
 
-          var masteredCount = EVIDENCE_CLAIMS.filter(function (claim) {
-            return Array.isArray(base.evidenceMastered)
-              && base.evidenceMastered.indexOf(claim.id) !== -1;
-          }).length;
+          var mastered = Array.isArray(base.evidenceMastered)
+            ? base.evidenceMastered.filter(function (id, i, all) {
+                return all.indexOf(id) === i
+                  && EVIDENCE_CLAIMS.some(function (claim) { return claim.id === id; });
+              })
+            : [];
           var completed = Array.isArray(base.pathsCompleted)
             ? base.pathsCompleted.filter(function (id, i, all) {
                 return all.indexOf(id) === i && NK_PATHS.some(function (item) { return item.id === id; });
               })
             : [];
           var completionChanged = seen.length === route.steps.length
-            && masteredCount === EVIDENCE_CLAIMS.length
+            && nkEvidenceCompleteFor(route, mastered)
             && completed.indexOf(routeId) === -1;
           if (!seenChanged && !completionChanged) return prev;
 
@@ -2991,6 +3197,17 @@
         nkPendingTargetRef.current = null;
         nkGoTo(pending);
       }, [nkPathId]);
+      // Next is intentionally revealed only after feedback. Because that button
+      // unmounts when the next unchecked claim appears, explicitly carry focus
+      // into the newly rendered, named fieldset.
+      React.useEffect(function () {
+        if (!nkEvidencePendingFocusRef.current || typeof document === 'undefined') return;
+        var target = document.getElementById('nk-evidence-claim');
+        if (!target) return;
+        nkEvidencePendingFocusRef.current = false;
+        try { target.focus({ preventScroll: true }); }
+        catch (e) { try { target.focus(); } catch (e2) {} }
+      }, [evidenceClaim.id]);
       // ── Scroll-spy ───────────────────────────────────────────────────────
       // Twenty-one sections and a very long page. Once the index folds
       // there is nothing telling a reader where in the document they are, and
@@ -3114,7 +3331,7 @@
               }, routeProgress.complete
                 ? '✓ Route complete'
                 : (routeProgress.count < routeProgress.total
-                  ? (evidenceComplete
+                  ? (activeEvidenceComplete
                     ? 'Open every route step to complete this route'
                     : 'Open every route step and finish the evidence challenge')
                   : 'Finish the evidence challenge to complete this route'))
@@ -3200,15 +3417,19 @@
       // marks a topic as engaged. The quest hooks still measure real interaction.
       var nkIndex = h('nav', {
         'aria-label': 'Nuclear lab topics',
-        className: 'rounded-xl border px-2.5 py-2 mt-1',
+        'data-nk-open': nkOpen ? 'true' : 'false',
+        className: 'nk-topic-nav rounded-xl border px-2.5 py-2 mt-1',
         style: {
           position: 'sticky', top: 0, zIndex: 30,
           borderColor: 'rgba(167,139,250,0.4)',
           background: isDark ? 'rgba(15,23,42,0.97)' : 'rgba(255,255,255,0.97)',
-          backdropFilter: 'blur(6px)'
+          backdropFilter: 'blur(6px)',
+          boxShadow: isDark
+            ? '0 12px 30px -24px rgba(0,0,0,0.9)'
+            : '0 12px 30px -24px rgba(15,23,42,0.5)'
         }
       },
-        h('div', { className: 'flex flex-wrap items-center gap-2' },
+        h('div', { className: 'nk-index-header flex flex-wrap items-center gap-2' },
           h('button', {
             type: 'button',
             'aria-expanded': nkOpen ? 'true' : 'false',
@@ -3225,45 +3446,59 @@
               color: isDark ? '#c4b5fd' : '#6d28d9',
               border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(167,139,250,0.35)')
             }
-          }, '🧭 Routes · ' + NK_SECTIONS.length + ' ' + (nkOpen ? '▾' : '▸')),
+          }, '🧭 Routes & display ' + (nkOpen ? '▾' : '▸')),
           nkPath && !nkOpen
-            ? h('span', { className: 'text-[11px] font-bold', style: { color: ink('#22d3ee') } },
-                (nkActiveRouteProgress.complete ? '✓ ' : '')
-                + nkPath.icon + ' ' + nkPath.q
-                + ' · ' + nkActiveRouteProgress.count + '/' + nkActiveRouteProgress.total)
+            ? h('div', {
+                className: 'nk-mobile-route-summary flex flex-1 min-w-0 items-center gap-2',
+                style: { color: ink('#22d3ee') }
+              },
+                h('span', { className: 'nk-mobile-route-label min-w-0 text-[11px] font-bold' },
+                  (nkActiveRouteProgress.complete ? '✓ ' : '') + nkPath.icon + ' ' + nkPath.q),
+                h('progress', {
+                  value: nkActiveRouteProgress.count,
+                  max: nkActiveRouteProgress.total,
+                  'aria-label': nkPath.q + ': ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' steps opened',
+                  className: 'nk-mobile-route-meter flex-shrink-0',
+                  style: { width: '4rem', height: '0.375rem', accentColor: '#22d3ee' }
+                }),
+                h('span', { className: 'nk-mobile-route-count text-[10px] font-black flex-shrink-0' },
+                  ' · ' + nkActiveRouteProgress.count + '/' + nkActiveRouteProgress.total)
+              )
             : null,
-          h('label', { htmlFor: 'nk-topic-search', className: 'sr-only' }, 'Search topics'),
-          h('input', {
-            id: 'nk-topic-search', type: 'search', value: d.nkQuery || '',
-            placeholder: 'Search topics…',
-            'aria-label': 'Search the ' + NK_SECTIONS.length + ' topics by name or keyword',
-            onChange: function (e) { upd({ nkQuery: e.target.value, nkPath: null }); },
-            className: 'flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[11px]',
-            style: {
-              background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
-              color: isDark ? '#e2e8f0' : '#1e293b',
-              border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
-            }
-          }),
-          h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
-            nkPath
-              ? (nkActiveRouteProgress.complete
-                ? 'route complete'
-                : 'route: ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' opened')
-              : (nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length)),
-          h('div', { role: 'group', 'aria-label': 'Reading display options', className: 'flex flex-wrap gap-1' },
-            nkDisplayToggle(nkLargeText, 'A+ Text', 'Use larger text throughout the nuclear lab', function () {
-              upd({ nkLargeText: !nkLargeText });
-              if (typeof announceToSR === 'function') announceToSR('Larger text ' + (!nkLargeText ? 'on.' : 'off.'));
+          h('div', { className: 'nk-index-secondary' },
+            h('label', { htmlFor: 'nk-topic-search', className: 'sr-only' }, 'Search topics'),
+            h('input', {
+              id: 'nk-topic-search', type: 'search', value: d.nkQuery || '',
+              placeholder: 'Search topics…',
+              'aria-label': 'Search the ' + NK_SECTIONS.length + ' topics by name or keyword',
+              onChange: function (e) { upd({ nkQuery: e.target.value, nkPath: null }); },
+              className: 'min-h-11 flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[11px]',
+              style: {
+                background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)',
+                color: isDark ? '#e2e8f0' : '#1e293b',
+                border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
+              }
             }),
-            nkDisplayToggle(nkReduceMotion, nkReduceMotion ? 'Motion: low' : 'Motion: standard', 'Reduce non-essential motion throughout the nuclear lab', function () {
-              upd({ nkReduceMotion: !nkReduceMotion });
-              if (typeof announceToSR === 'function') announceToSR('Low motion ' + (!nkReduceMotion ? 'on.' : 'off.'));
-            }),
-            nkDisplayToggle(nkShowChartData, 'Chart data', 'Display numerical data tables beneath charts', function () {
-              upd({ nkShowChartData: !nkShowChartData });
-              if (typeof announceToSR === 'function') announceToSR('Chart data tables ' + (!nkShowChartData ? 'shown.' : 'hidden.'));
-            })
+            h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
+              nkPath
+                ? (nkActiveRouteProgress.complete
+                  ? 'route complete'
+                  : 'route: ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' opened')
+                : (nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length)),
+            h('div', { role: 'group', 'aria-label': 'Reading display options', className: 'flex flex-wrap gap-1' },
+              nkDisplayToggle(nkLargeText, 'A+ Text', 'Use larger text throughout the nuclear lab', function () {
+                upd({ nkLargeText: !nkLargeText });
+                if (typeof announceToSR === 'function') announceToSR('Larger text ' + (!nkLargeText ? 'on.' : 'off.'));
+              }),
+              nkDisplayToggle(nkReduceMotion, nkReduceMotion ? 'Motion: low' : 'Motion: standard', 'Reduce non-essential motion throughout the nuclear lab', function () {
+                upd({ nkReduceMotion: !nkReduceMotion });
+                if (typeof announceToSR === 'function') announceToSR('Low motion ' + (!nkReduceMotion ? 'on.' : 'off.'));
+              }),
+              nkDisplayToggle(nkShowChartData, 'Chart data', 'Display numerical data tables beneath charts', function () {
+                upd({ nkShowChartData: !nkShowChartData });
+                if (typeof announceToSR === 'function') announceToSR('Chart data tables ' + (!nkShowChartData ? 'shown.' : 'hidden.'));
+              })
+            )
           )
         ),
         // Collapsible body. The header row above stays put so the index is
@@ -3415,10 +3650,13 @@
         h('style', null,
           '.nk-readable button:focus-visible,.nk-readable input:focus-visible,.nk-readable textarea:focus-visible,.nk-readable select:focus-visible,.nk-readable a:focus-visible{outline:3px solid var(--nk-focus)!important;outline-offset:3px}' +
           '.nk-readable [data-nk-sec]:focus{outline:3px solid var(--nk-focus);outline-offset:3px}' +
+          '.nk-readable .nk-evidence-claim:focus{outline:3px solid var(--nk-focus);outline-offset:3px}' +
           '.nk-readable .nk-skip-link{position:absolute;left:-9999px;top:.5rem;z-index:60;min-height:44px;padding:.5rem .75rem;border-radius:.5rem;background:#fbbf24;color:#0b1020;font-weight:800;border:2px solid #0b1020}' +
           '.nk-readable .nk-skip-link:focus{left:.5rem}' +
           '.nk-readable[data-nk-large-text="true"] .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
           '.nk-readable[data-nk-large-text="true"] .text-\\[10px\\]{font-size:.8rem!important;line-height:1.2rem!important}' +
+          '.nk-readable[data-nk-large-text="true"] .nk-section-heading{font-size:1rem!important;line-height:1.5rem!important}' +
+          '.nk-readable .nk-index-secondary{display:contents}' +
           '.nk-readable[data-nk-reduce-motion="true"]{animation:none!important}' +
           '.nk-readable[data-nk-reduce-motion="true"] *,.nk-readable[data-nk-reduce-motion="true"] *::before,.nk-readable[data-nk-reduce-motion="true"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}' +
           '@media (prefers-reduced-motion:reduce){.nk-readable{animation:none!important}.nk-readable *,.nk-readable *::before,.nk-readable *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
@@ -3432,6 +3670,13 @@
           '.nk-readable .nk-slider input{grid-column:1/-1;grid-row:2;width:100%;min-width:0}' +
           '.nk-readable .nk-slider output{grid-column:2;grid-row:1;width:auto!important;min-width:0}' +
           '.nk-readable .nk-route-progress{flex-basis:100%;order:2}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="false"] .nk-index-secondary{display:none!important}' +
+          '.nk-readable .nk-mobile-route-summary{min-width:0;overflow:hidden}' +
+          '.nk-readable .nk-mobile-route-label{display:block;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="true"] .nk-index-secondary{display:flex!important;flex:1 0 100%;flex-wrap:wrap;align-items:center;gap:.375rem}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="true"] .nk-index-secondary>input{flex:1 0 100%;min-height:44px}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="true"] #nk-index-body{max-height:35vh!important}' +
+          '.nk-readable .nk-route-kicker-question{flex-basis:100%}' +
           '}'),
 
         nkVisible.length ? h('button', {
@@ -4787,7 +5032,7 @@
             h('div', { className: 'rounded-xl overflow-hidden border', style: { borderColor: 'rgba(52,211,153,0.4)', height: '260px' } },
               h('canvas', { ref: rxCanvasRef, role: 'img',
                 'data-a11y-static': 'true',
-                'aria-describedby': 'rx-live-readings',
+                'aria-describedby': 'rx-live-readings rx-objective-progress',
                 'aria-label': 'Reactor control panel showing a power trace, fuel temperature, net reactivity in pcm and xenon level. Use the controls below; every reading is also given as text under the panel.',
                 style: { width: '100%', height: '100%', display: 'block' } }))
           ),
@@ -4817,7 +5062,10 @@
             RX_SCENARIOS.map(function (s) {
               return pill(rxScenario === s.id, '#34d399', s.name, function () {
                 upd({ rxScenario: s.id });
-                rxRestart();
+                // Pass the destination explicitly: tool-data updates are async,
+                // so closing over rxScenario here would reset the NEW scenario
+                // with the OLD one's starting conditions for one whole commit.
+                rxRestart(s.id);
                 if (typeof beep === 'function') beep();
               }, 'Run the scenario: ' + s.name + '. ' + s.goal);
             })
@@ -4825,11 +5073,42 @@
           h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             h('b', null, rxScenObj.goal + ' '), rxScenObj.brief),
 
+          h('div', {
+            id: 'rx-objective-progress', ref: rxObjectiveRef,
+            role: 'group', 'aria-labelledby': 'rx-objective-heading',
+            'data-stage': rxObjective.stage,
+            className: 'mt-2 rounded-lg border p-2.5',
+            style: {
+              borderColor: 'rgba(52,211,153,0.48)',
+              background: isDark ? 'rgba(6,78,59,0.2)' : 'rgba(236,253,245,0.92)'
+            }
+          },
+            h('p', {
+              id: 'rx-objective-heading', className: 'text-[10px] font-black uppercase tracking-wide',
+              style: { color: isDark ? '#6ee7b7' : '#047857' }
+            }, 'Objective progress'),
+            h('p', {
+              id: 'rx-objective-step', className: 'mt-1 text-[11px] font-black',
+              style: { color: isDark ? '#d1fae5' : '#065f46' }
+            }, rxObjective.label),
+            h('progress', {
+              id: 'rx-objective-meter', value: rxObjective.value, max: rxObjective.max,
+              'aria-labelledby': 'rx-objective-step',
+              'aria-describedby': 'rx-objective-detail',
+              'aria-valuetext': rxObjective.detail,
+              className: 'mt-2 w-full h-3', style: { accentColor: '#059669' }
+            }),
+            h('output', {
+              id: 'rx-objective-detail', className: 'block mt-1 text-[11px] leading-relaxed',
+              style: { color: isDark ? '#d1fae5' : '#166534' }
+            }, rxObjective.detail)
+          ),
+
           h('div', { className: 'mt-2 flex flex-wrap gap-1' },
             RX_MODES.map(function (m) {
               return pill(rxMode === m.id, m.id === 'rbmk' ? '#f87171' : '#60a5fa', m.name, function () {
                 upd({ rxMode: m.id });
-                rxRestart();
+                rxRestart(rxScenario);
                 if (typeof beep === 'function') beep();
                 if (typeof announceToSR === 'function') announceToSR(m.name + '. ' + m.blurb);
               }, 'Switch the core to ' + m.name);
@@ -4928,32 +5207,37 @@
         sec('evidence', '#22d3ee',
           heading(ink('#22d3ee'), '🔎 21. Evidence challenge: what does the evidence earn?'),
           h('p', { id: 'nk-evidence-intro', className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Classify each claim using only the evidence given. There is no timer and no penalty for revising an answer. “Not settled” is a full scientific verdict when the evidence cannot distinguish the possibilities.'),
+            'Classify each claim using only the evidence given. There is no timer and no penalty for revising an answer. “Not settled” is a full scientific verdict when the evidence cannot distinguish the possibilities.'
+              + (nkPath ? ' This route asks only about evidence from the sections you just opened.' : '')),
 
           h('div', { className: 'flex flex-wrap items-center gap-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.45)', background: isDark ? 'rgba(8,47,73,0.3)' : 'rgba(236,254,255,0.9)' } },
-            h('span', { className: 'text-[11px] font-black', style: { color: ink('#22d3ee') } }, 'Evidence mastery'),
+            h('span', { className: 'text-[11px] font-black', style: { color: ink('#22d3ee') } },
+              nkPath ? 'Route evidence' : 'Evidence mastery'),
             h('progress', {
-              value: evidenceMastered.length, max: EVIDENCE_CLAIMS.length,
-              'aria-label': evidenceMastered.length + ' of ' + EVIDENCE_CLAIMS.length + ' evidence claims mastered',
+              value: activeEvidenceMastered.length, max: evidenceClaims.length,
+              'aria-label': activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' evidence claims mastered',
               className: 'flex-1 min-w-[8rem] h-3', style: { accentColor: '#0891b2' }
             }),
             h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              evidenceMastered.length + ' of ' + EVIDENCE_CLAIMS.length + ' mastered')
+              activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' mastered')
           ),
 
           h('nav', { 'aria-label': 'Evidence challenge claims', className: 'mt-2' },
             h('ol', { className: 'flex flex-wrap gap-1.5' },
-              EVIDENCE_CLAIMS.map(function (claim, i) {
+              evidenceClaims.map(function (claim, i) {
                 var current = i === evidenceIndex;
                 var mastered = evidenceMastered.indexOf(claim.id) !== -1;
                 return h('li', { key: claim.id },
                   h('button', {
                     type: 'button',
                     'aria-current': current ? 'step' : undefined,
-                    'aria-label': 'Claim ' + (i + 1) + ' of ' + EVIDENCE_CLAIMS.length + (mastered ? ', mastered' : ', not yet mastered'),
+                    'aria-label': 'Claim ' + (i + 1) + ' of ' + evidenceClaims.length + (mastered ? ', mastered' : ', not yet mastered'),
                     onClick: function () {
-                      upd({ evidenceIndex: i });
-                      if (typeof announceToSR === 'function') announceToSR('Claim ' + (i + 1) + ' of ' + EVIDENCE_CLAIMS.length + '.');
+                      upd({
+                        evidenceIndex: EVIDENCE_CLAIMS.indexOf(claim),
+                        evidenceClaimId: claim.id
+                      });
+                      if (typeof announceToSR === 'function') announceToSR('Claim ' + (i + 1) + ' of ' + evidenceClaims.length + '.');
                     },
                     className: 'min-h-11 min-w-11 px-3 py-2 rounded-lg text-[11px] font-black',
                     style: current
@@ -4965,12 +5249,14 @@
           ),
 
           h('fieldset', {
+            id: 'nk-evidence-claim',
+            tabIndex: -1,
             'aria-describedby': 'nk-evidence-intro nk-evidence-feedback',
-            className: 'mt-2 rounded-xl border p-3',
+            className: 'nk-evidence-claim mt-2 rounded-xl border p-3',
             style: { borderColor: 'rgba(34,211,238,0.45)', background: isDark ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.96)' }
           },
             h('legend', { className: 'px-1 text-xs font-black', style: { color: ink('#22d3ee') } },
-              'Claim ' + (evidenceIndex + 1) + ' of ' + EVIDENCE_CLAIMS.length),
+              'Claim ' + (evidenceIndex + 1) + ' of ' + evidenceClaims.length),
             h('p', { className: 'text-sm font-black leading-relaxed', style: { color: isDark ? '#fff' : '#1e293b' } },
               '“' + evidenceClaim.claim + '”'),
             h('p', { className: 'text-[10px] mt-1 mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
@@ -5034,7 +5320,7 @@
 
             h('div', { className: 'mt-2 flex flex-wrap gap-2' },
               h('button', {
-                type: 'button', disabled: !evidenceChoice || evidenceIsChecked,
+                type: 'button', disabled: !evidenceChoice,
                 'aria-describedby': 'nk-evidence-feedback',
                 onClick: function () {
                   var correct = evidenceChoice === evidenceClaim.verdict;
@@ -5043,10 +5329,11 @@
                   var mastered = evidenceMastered;
                   var firstMastery = correct && mastered.indexOf(evidenceClaim.id) === -1;
                   if (firstMastery) mastered = mastered.concat([evidenceClaim.id]);
-                  var evidenceNowComplete = firstMastery && mastered.length === EVIDENCE_CLAIMS.length;
-                  var firstCompletion = evidenceNowComplete && !d.evidenceAwarded;
-                  var routeCompletes = evidenceNowComplete
+                  var globalEvidenceNowComplete = firstMastery && mastered.length === EVIDENCE_CLAIMS.length;
+                  var firstCompletion = globalEvidenceNowComplete && !d.evidenceAwarded;
+                  var routeCompletes = correct
                     && nkPath
+                    && nkEvidenceCompleteFor(nkPath, mastered)
                     && nkActiveRouteProgress.count === nkActiveRouteProgress.total
                     && !nkActiveRouteProgress.complete;
                   var patch = {
@@ -5056,11 +5343,12 @@
                   };
                   if (routeCompletes) patch.pathsCompleted = nkPathsCompleted.concat([nkPath.id]);
                   upd(patch);
-                  if (typeof announceToSR === 'function') {
-                    announceToSR((correct
-                      ? 'Evidence match. ' + evidenceClaim.takeaway
-                      : 'Take another look. Best verdict: ' + evidenceVerdict.label + '.')
-                      + (routeCompletes ? ' Route complete: ' + nkPath.q : ''));
+                  // The feedback paragraph is already a polite atomic status.
+                  // Repeating that same prose through the host announcer makes
+                  // screen readers speak every verdict twice. Only completion
+                  // is distinct information that is not in that live region.
+                  if (routeCompletes && typeof announceToSR === 'function') {
+                    announceToSR('Route complete: ' + nkPath.q + '.');
                   }
                   if (firstCompletion && !d.evidenceAwarded) {
                     if (typeof celebrate === 'function') celebrate();
@@ -5068,26 +5356,50 @@
                   }
                 },
                 className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
-                style: { background: '#0e7490', color: '#fff', border: '1px solid #0e7490', opacity: (!evidenceChoice || evidenceIsChecked) ? 0.55 : 1 }
-              }, evidenceIsChecked ? 'Evidence checked' : 'Check the evidence'),
-              evidenceIsChecked ? h('button', {
+                style: { background: '#0e7490', color: '#fff', border: '1px solid #0e7490', opacity: !evidenceChoice ? 0.55 : 1 }
+              }, evidenceIsChecked ? 'Check again' : 'Check the evidence'),
+              evidenceIsChecked && evidenceClaims.length > 1 ? h('button', {
                 type: 'button',
                 onClick: function () {
                   var next = evidenceIndex + 1;
-                  if (next >= EVIDENCE_CLAIMS.length) {
-                    next = EVIDENCE_CLAIMS.findIndex(function (claim) { return evidenceMastered.indexOf(claim.id) === -1; });
+                  if (next >= evidenceClaims.length) {
+                    next = evidenceClaims.findIndex(function (claim) {
+                      return evidenceMastered.indexOf(claim.id) === -1;
+                    });
                     if (next < 0) next = 0;
                   }
-                  upd({ evidenceIndex: next });
-                  if (typeof announceToSR === 'function') announceToSR('Claim ' + (next + 1) + ' of ' + EVIDENCE_CLAIMS.length + '.');
+                  var nextClaim = evidenceClaims[next];
+                  nkEvidencePendingFocusRef.current = nextClaim.id !== evidenceClaim.id;
+                  upd({
+                    evidenceIndex: EVIDENCE_CLAIMS.indexOf(nextClaim),
+                    evidenceClaimId: nextClaim.id
+                  });
+                  // Focus moves to the newly named fieldset after this commit;
+                  // announcing its claim number here would say it twice.
                 },
                 className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
                 style: { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
-              }, evidenceIndex < EVIDENCE_CLAIMS.length - 1 ? 'Next claim →' : (evidenceComplete ? 'Review claim 1' : 'Review an unfinished claim')) : null,
+              }, evidenceIndex < evidenceClaims.length - 1 ? 'Next claim →' : (activeEvidenceComplete ? 'Review claim 1' : 'Review an unfinished claim')) : null,
               h('button', {
                 type: 'button',
                 onClick: function () {
-                  upd({ evidenceIndex: 0, evidenceChoices: {}, evidenceChecked: {}, evidenceMastered: [] });
+                  var resetChoices = Object.assign({}, evidenceChoices);
+                  var resetChecked = Object.assign({}, evidenceCheckedMap);
+                  var resetIds = evidenceClaims.map(function (claim) { return claim.id; });
+                  resetIds.forEach(function (id) {
+                    delete resetChoices[id];
+                    delete resetChecked[id];
+                  });
+                  var firstClaim = evidenceClaims[0];
+                  upd({
+                    evidenceIndex: EVIDENCE_CLAIMS.indexOf(firstClaim),
+                    evidenceClaimId: firstClaim.id,
+                    evidenceChoices: resetChoices,
+                    evidenceChecked: resetChecked,
+                    evidenceMastered: evidenceMastered.filter(function (id) {
+                      return resetIds.indexOf(id) === -1;
+                    })
+                  });
                   if (typeof announceToSR === 'function') announceToSR('Evidence challenge reset.');
                 },
                 className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
@@ -5096,17 +5408,19 @@
             )
           ),
 
-          evidenceComplete ? h('aside', {
+          activeEvidenceComplete ? h('aside', {
             role: 'note', 'aria-label': 'Evidence challenge complete',
             className: 'mt-3 rounded-lg border p-2.5',
             style: { borderColor: 'rgba(52,211,153,0.65)', background: isDark ? 'rgba(6,78,59,0.28)' : 'rgba(236,253,245,0.96)' }
           },
             h('p', { className: 'text-[11px] font-black', style: { color: ink('#059669') } }, '✓ Challenge complete'),
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#d1fae5' : '#065f46' } },
-              'You separated direct support, contradiction, and uncertainty across all five claims. Revisit any number above to compare the reasoning again.')
+              nkPath
+                ? 'You judged the evidence taught on this route. That mastery also carries into the full five-claim challenge.'
+                : 'You separated direct support, contradiction, and uncertainty across all five claims. Revisit any number above to compare the reasoning again.')
           ) : null,
 
-          evidenceComplete ? h(NKReflectionEditor, {
+          activeEvidenceComplete ? h(NKReflectionEditor, {
             key: 'nk-reflection-' + nkReflectionKey,
             React: React,
             routeKey: nkReflectionKey,

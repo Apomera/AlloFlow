@@ -81,16 +81,31 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('.orr-stage-tip{left:10px;right:10px;bottom:10px;max-width:none;text-align:left;line-height:1.35}');
     });
   });
-  it('offers honest body-size modes and collision-safe Orrery labels', () => {
+  it('offers disclosed marker-size modes and collision-safe Orrery labels', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('var scaleMode = d.orr_scale_mode === "relative" ? "relative" : "teaching";');
       expect(source).toContain('function placeOrbitLabel(sx, sy, dotR, pillW, pillH)');
       expect(source).toContain('var relativeDotR =');
-      expect(source).toContain('Body size:');
-      expect(source).toContain('Use relative body sizes with a visibility floor');
-      expect(source).toContain('Relative body sizes');
+      expect(source).toContain('Marker size:');
+      expect(source).toContain('Use radius-informed marker sizes, compressed and clamped for visibility');
+      expect(source).toContain('Comparative marker sizes');
+      expect(source).toContain('Math.sqrt(Math.max(b.R, 1) / 6371) * 3.5');
+      expect(source).toContain('marker sizes are radius-informed but compressed and clamped for visibility');
+      expect(source).toContain('Eight planets plus Pluto follow measured orbital shapes and relative speeds.');
+      expect(source).not.toContain('body-size ratios are preserved');
+      expect(source).not.toContain('All 8 planets to scale (size + orbit)');
+    });
+  });
+  it('keeps both Kepler II evidence lines inside the canvas and names specific angular momentum accurately', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+
+      expect(source).toContain('ctx.fillText("Kepler II:  A line from the Sun to a planet sweeps equal areas in equal times.", 20, H - 26);');
+      expect(source).toContain('ctx.fillText("h = r \\u00d7 v\\u22a5 = constant  (specific angular momentum)", 20, H - 10);');
+      expect(source).toContain('r \\u00d7 v\\u22a5 (specific angular momentum)');
+      expect(source).not.toContain('angular momentum)", 20, H + 4');
     });
   });
   it('adds labeled orbit timeline landmarks and a live phase context', () => {

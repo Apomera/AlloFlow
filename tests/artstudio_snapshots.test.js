@@ -54,6 +54,7 @@ describe('Art Studio snapshots', () => {
     toast = vi.fn();
     const canvasContext = makeCanvasContext();
     vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(canvasContext);
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/webp;base64,study-preview');
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 1);
     host = document.createElement('div');
     document.body.appendChild(host);
@@ -106,7 +107,7 @@ describe('Art Studio snapshots', () => {
       root.render(React.createElement(Harness));
       await Promise.resolve();
     });
-    const save = host.querySelector('button[aria-label="Snapshot"]');
+    const save = host.querySelector('button[aria-label="Save current study"]');
     await act(async () => {
       save.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       await Promise.resolve();
@@ -115,7 +116,13 @@ describe('Art Studio snapshots', () => {
     expect(latestSnapshots).toHaveLength(1);
     const snapshot = latestSnapshots[0];
     expect(snapshot.tool).toBe('artStudio');
-    expect(snapshot.label).toBe('Art Studio - Stereogram');
+    expect(snapshot.label).toBe('Art Studio · Stereogram');
+    expect(snapshot.artStudioStudy).toMatchObject({
+      schemaVersion: 1,
+      sourceTab: 'stereogram',
+      stepIndex: null,
+      previewSrc: 'data:image/webp;base64,study-preview',
+    });
     expect(snapshot.data.tab).toBe('stereogram');
     expect(snapshot.data.stereoAnimKeyframes).toHaveLength(12);
     expect(snapshot.data.stereoAnimKeyframes[0].marker).toBe(1);
@@ -129,7 +136,7 @@ describe('Art Studio snapshots', () => {
       stereoAnimAiGenerating: false,
       stereoAnimAiMotionStatus: '',
     });
-    expect(toast).toHaveBeenCalledWith('📸 Art snapshot saved!', 'success');
+    expect(toast).toHaveBeenCalledWith('📸 Study saved on your Process Shelf!', 'success');
   });
 
   for (const hostFile of HOSTS) {

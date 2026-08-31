@@ -29,6 +29,20 @@ const REAL_SKY_SAVED_VIEW_STRINGS = {
   real_sky_observation_view_link_copy_failed: 'Atlas view link could not be copied. Open this observation in the atlas and try Copy current view link.',
   real_sky_report_view_link: 'Atlas view link',
 };
+const REAL_SKY_VIEWPORT_CONTROL_STRINGS = {
+  control_group_view: 'View',
+  control_group_motion: 'Motion',
+  control_group_time: 'Time',
+  control_group_discover: 'Discover',
+  real_sky_keyboard_controls: 'Keyboard atlas controls',
+  real_sky_pan_left: 'Pan atlas left',
+  real_sky_pan_up: 'Pan atlas up',
+  real_sky_pan_down: 'Pan atlas down',
+  real_sky_pan_right: 'Pan atlas right',
+  real_sky_zoom_out: 'Zoom atlas out',
+  real_sky_zoom_in: 'Zoom atlas in',
+  real_sky_reset_view: 'Reset to selected target',
+};
 
 function buttonOpeningTag(html, label) {
   const labelAt = html.indexOf(label);
@@ -64,7 +78,7 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
     expect(source).toContain('data-galaxy-real-sky-current-survey');
     expect(source).toContain('realSkyAladinIsCurrent');
     expect(source).toContain('el.isConnected && el._galaxyAladin === aladin && el._galaxyAladinSignature === signature');
-    expect(source).toContain('if (!realSkyAladinIsCurrent()) return;');
+    expect(source).toContain('if (realSkyAladinIsCurrent()) synchronizationReady = finishRealSkyObservationRestore');
     expect(source).toContain('saveRealSkyObservation');
     expect(source).toContain('REAL_SKY_OBSERVATION_LIMIT = 8');
     expect(source).toContain('realSkyNotebookFull');
@@ -132,6 +146,15 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
     Object.keys(REAL_SKY_SAVED_VIEW_STRINGS).forEach((key) => {
       expect(source).toContain('stem.galaxy.' + key);
     });
+    Object.keys(REAL_SKY_VIEWPORT_CONTROL_STRINGS).forEach((key) => {
+      expect(source).toContain('stem.galaxy.' + key);
+    });
+    expect(source).toContain('data-galaxy-real-sky-viewport-controls');
+    expect(source).toContain('data-galaxy-real-sky-viewport-action');
+    expect(source).toContain('controlRealSkyViewport');
+    expect(source).toContain('realSkyExternalLinkRef');
+    expect(source).not.toMatch(/stem\.galaxy\.control_group_'\s*\+\s*panel\.key/);
+    expect(source).not.toMatch(/stem\.galaxy\.control_panel_'\s*\+\s*panel\.key/);
     expect(source).toContain('maxLength: REAL_SKY_NOTE_MAX_LENGTH');
     expect(source).toContain('autoFocus: true');
     expect(source).toContain('stem.galaxy.real_sky_observation_edit_aria');
@@ -153,17 +176,32 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
     expect(source).toContain('applyRealSkyAladinCoordinates');
     expect(source).toContain('applyRealSkyObservationRestore');
     expect(source).toContain('realSkyPendingViewRef');
+    expect(source).toContain('realSkyViewportRef');
+    expect(source).toContain('readRealSkyAladinViewport');
+    expect(source).toContain("aladin.on('positionChanged', binding.positionChanged)");
+    expect(source).toContain("aladin.on('zoomChanged', binding.zoomChanged)");
+    expect(source).toContain("typeof binding.instance.off === 'function'");
+    expect(source).toContain('data-galaxy-real-sky-viewport-readout');
+    expect(source).toContain('"aria-live": "off"');
     expect(source).toMatch(/searchParams\.getAll\(['"]target['"]\)/);
     expect(source).toMatch(/searchParams\.getAll\(['"]fov['"]\)/);
     expect(source).toMatch(/searchParams\.getAll\(['"]survey['"]\)/);
     expect(source).toContain('data-galaxy-real-sky-observation-open-button');
     expect(source).toContain('gotoRaDec');
+    expect(source).toContain('getSize');
+    expect(source).toContain('pix2world');
+    expect(source).toContain('buildRealSkyViewportAladinUrl');
+    expect(source).toContain('[eE][+-]?');
     expect(source).toMatch(/setFo[Vv]/);
     const openAt = source.indexOf('var openRealSkyObservation');
     const reportAt = source.indexOf('var buildRealSkyObservationReport', openAt);
     expect(openAt).toBeGreaterThan(-1);
     expect(reportAt).toBeGreaterThan(openAt);
     expect(source.slice(openAt, reportAt)).toContain('parseRealSkyObservationExactView');
+    const reportEnd = source.indexOf('var fallbackCopyRealSkyText', reportAt);
+    expect(reportEnd).toBeGreaterThan(reportAt);
+    expect(source.slice(reportAt, reportEnd)).toContain('var entryExactView = parseRealSkyObservationExactView(entry, entrySurvey)');
+    expect(source.slice(reportAt, reportEnd)).toContain('var coordinateViewport = entryExactView || entryTarget');
   });
 
   it('keeps an exact same-metadata viewport actionable while its legacy preset is current', () => {
@@ -209,7 +247,7 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
 
   it('keeps saved-view restoration inside the existing Galaxy localization namespace', () => {
     const catalog = JSON.parse(readFileSync('dev-tools/i18n/stem_galaxy_en.json', 'utf8'));
-    expect(Object.keys(catalog)).toHaveLength(628);
+    expect(Object.keys(catalog)).toHaveLength(640);
     [
       'real_sky_observation_open',
       'real_sky_observation_open_aria',
@@ -218,7 +256,8 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
       'real_sky_observation_opened',
       'real_sky_observation_opened_comparison',
       'real_sky_observation_open_unavailable',
-    ].forEach((key) => expect(Object.prototype.hasOwnProperty.call(catalog, key)).toBe(true));
+    ].concat(Object.keys(REAL_SKY_VIEWPORT_CONTROL_STRINGS))
+      .forEach((key) => expect(Object.prototype.hasOwnProperty.call(catalog, key)).toBe(true));
   });
   it('keeps the canonical and desktop Galaxy sources byte-identical', () => {
     expect(sha256(readFileSync(GALAXY_PATHS[1], 'utf8'))).toBe(sha256(readFileSync(GALAXY_PATHS[0], 'utf8')));
@@ -237,8 +276,10 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
     localePairs.forEach(({ canonical, deployed }) => {
       expect(sha256(deployed)).toBe(sha256(canonical));
       expect(canonical).not.toContain(',\\n{');
-      Object.keys(REAL_SKY_SAVED_VIEW_STRINGS).forEach((key) => {
-        expect(canonical.split('"' + key + '"')).toHaveLength(2);
+      [REAL_SKY_SAVED_VIEW_STRINGS, REAL_SKY_VIEWPORT_CONTROL_STRINGS].forEach((strings) => {
+        Object.keys(strings).forEach((key) => {
+          expect(canonical.split('"' + key + '"')).toHaveLength(2);
+        });
       });
     });
 
@@ -248,8 +289,10 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
     ]);
     expect(sha256(deployedUi)).toBe(sha256(canonicalUi));
     expect(canonicalUi).not.toContain(',\\n{');
-    Object.keys(REAL_SKY_SAVED_VIEW_STRINGS).forEach((key) => {
-      expect(canonicalUi.split('"' + key + '"')).toHaveLength(2);
+    [REAL_SKY_SAVED_VIEW_STRINGS, REAL_SKY_VIEWPORT_CONTROL_STRINGS].forEach((strings) => {
+      Object.keys(strings).forEach((key) => {
+        expect(canonicalUi.split('"' + key + '"')).toHaveLength(2);
+      });
     });
   }, 30000);
 
@@ -281,6 +324,16 @@ describe('Galaxy Real Sky evidence workflow contracts', () => {
     });
   });
 
+  it('keeps viewport-control and panel strings exact and placeholder-free in the Galaxy catalog', () => {
+    const rawCatalog = readFileSync('dev-tools/i18n/stem_galaxy_en.json', 'utf8');
+    const catalog = JSON.parse(rawCatalog);
+    const actual = Object.fromEntries(Object.keys(REAL_SKY_VIEWPORT_CONTROL_STRINGS).map((key) => [key, catalog[key]]));
+    expect(actual).toEqual(REAL_SKY_VIEWPORT_CONTROL_STRINGS);
+    Object.entries(actual).forEach(([key, value]) => {
+      expect(rawCatalog.split('"' + key + '"')).toHaveLength(2);
+      expect(Array.from(value.matchAll(/\{([^}]+)\}/g))).toHaveLength(0);
+    });
+  });
   it('keeps notebook-capacity strings exact and placeholder-safe in the Galaxy catalog', () => {
     const catalog = JSON.parse(readFileSync('dev-tools/i18n/stem_galaxy_en.json', 'utf8'));
     const actual = Object.fromEntries(Object.keys(REAL_SKY_CAPACITY_STRINGS).map((key) => [key, catalog[key]]));
@@ -854,6 +907,7 @@ describe('Galaxy Real Sky evidence workflow rendering', () => {
     expect(external.getAttribute('aria-controls')).toBe('galaxy-real-sky-aladin');
     expect(external.getAttribute('aria-describedby')).toBe(hint.id);
     expect(external.className).toContain('focus-visible:ring-2');
+    expect(dom.querySelector('[data-galaxy-real-sky-static-disclosure="true"]')).toBeNull();
   });
 
   it('keeps the atlas busy only while its connection is in progress', () => {
@@ -880,6 +934,7 @@ describe('Galaxy Real Sky evidence workflow rendering', () => {
     expect(reload.className).toContain('cursor-wait');
     expect(dom.querySelector('[data-galaxy-real-sky-retry="true"]')).toBeNull();
     expect(dom.querySelector('[data-galaxy-real-sky-static-preview="true"]')).toBeNull();
+    expect(dom.querySelector('[data-galaxy-real-sky-static-disclosure="true"]')).toBeNull();
     expect(dom.querySelector('#galaxy-real-sky-recovery-hint')).toBeNull();
   });
 
@@ -893,15 +948,37 @@ describe('Galaxy Real Sky evidence workflow rendering', () => {
     }));
     const atlas = dom.querySelector('#galaxy-real-sky-aladin');
     const reload = dom.querySelector('[data-galaxy-real-sky-reload="true"]');
+    const disclosure = dom.querySelector('[data-galaxy-real-sky-static-disclosure="true"]');
+    const summary = disclosure.querySelector('summary');
+    const image = disclosure.querySelector('[data-galaxy-real-sky-static-disclosure-image="true"]');
+    const fallbackStatus = disclosure.querySelector('[data-galaxy-real-sky-static-disclosure-status="true"]');
+    const viewportReadout = dom.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
 
     expect(atlas.getAttribute('aria-busy')).toBe('false');
     expect(atlas.getAttribute('aria-describedby')).toBe('galaxy-real-sky-caption');
     expect(dom.querySelector('[data-galaxy-live-survey-badge="true"]')).not.toBeNull();
+    expect(viewportReadout.textContent).toBe('RA 10.6847° · Dec 41.2692° · FoV 4.2°');
+    expect(viewportReadout.getAttribute('data-galaxy-real-sky-viewport-source')).toBe('preset');
+    expect(viewportReadout.getAttribute('aria-live')).toBe('off');
     expect(reload.textContent).toContain('Retry atlas');
     expect(reload.getAttribute('aria-disabled')).toBe('false');
     expect(reload.getAttribute('aria-controls')).toBe(atlas.id);
     expect(reload.getAttribute('aria-describedby')).toBe('galaxy-real-sky-reload-hint');
     expect(dom.querySelector('[data-galaxy-real-sky-static-preview="true"]')).toBeNull();
+    expect(disclosure.open).toBe(false);
+    expect(summary.textContent).toContain('Snapshot · M31 · Optical');
+    expect(summary.className).toContain('min-h-[44px]');
+    expect(summary.className).toContain('focus-visible:ring-2');
+    expect(image.hasAttribute('src')).toBe(false);
+    expect(image.getAttribute('data-src')).toBe(
+      'https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=960&height=640&projection=TAN&fov=4.2&ra=10.6847&dec=41.2692&coordsys=icrs&format=jpg',
+    );
+    expect(image.getAttribute('alt')).toBe('Andromeda Galaxy · Optical · Snapshot');
+    expect(image.getAttribute('referrerpolicy')).toBe('no-referrer');
+    expect(image.getAttribute('crossorigin')).toBe('anonymous');
+    expect(fallbackStatus.hidden).toBe(true);
+    expect(fallbackStatus.getAttribute('role')).toBe('status');
+    expect(fallbackStatus.getAttribute('aria-live')).toBe('polite');
   });
 
   it.each([
@@ -938,7 +1015,7 @@ describe('Galaxy Real Sky evidence workflow rendering', () => {
       },
     });
     const dom = renderedDom(html);
-    const expectedUrl = 'https://aladin.cds.unistra.fr/AladinLite/?target=Stephan%20Quintet&fov=0.45&survey=P%2FallWISE%2Fcolor';
+    const expectedUrl = 'https://aladin.cds.unistra.fr/AladinLite/?target=339.014%2033.975&fov=0.45&survey=P%2FallWISE%2Fcolor';
     const headerLink = dom.querySelector('[data-galaxy-real-sky-external-link="header"]');
     const recoveryLink = dom.querySelector('[data-galaxy-real-sky-external-link="recovery"]');
     const copyButton = dom.querySelector('[data-galaxy-real-sky-copy-view-link="true"]');

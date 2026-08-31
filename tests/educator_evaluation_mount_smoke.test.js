@@ -328,9 +328,9 @@ describe('EducatorEvaluationPanel', () => {
     expect(statementSection.textContent).toContain('Preview only. The educator can write this statement');
   });
 
-  it('routes close-button, backdrop, and Escape requests through onClose', () => {
+  it('flushes local work before routing close-button, backdrop, and Escape requests through onClose', () => {
     const onClose = vi.fn();
-    const container = mountPanel({ onClose });
+    const container = mountPanel({ onClose }, SourceEducatorEvaluationPanel);
 
     click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -344,6 +344,46 @@ describe('EducatorEvaluationPanel', () => {
       }));
     });
     expect(onClose).toHaveBeenCalledTimes(3);
+  });
+
+  it('blocks every in-app close route when a local save fails and points to recovery actions', () => {
+    const workspace = sampleWorkspaceFixture();
+    workspace.config.sampleMode = false;
+    localStorage.setItem('allo_educator_evaluation_workspace_v1', JSON.stringify(workspace));
+    const onClose = vi.fn();
+    const container = mountPanel({ startMode: null, onClose }, SourceEducatorEvaluationPanel);
+    const originalSetItem = window.Storage.prototype.setItem;
+    const storageSpy = vi.spyOn(window.Storage.prototype, 'setItem').mockImplementation(function setItem(key, value) {
+      if (key === 'allo_educator_evaluation_workspace_v1') throw new window.DOMException('Storage quota reached', 'QuotaExceededError');
+      return originalSetItem.call(this, key, value);
+    });
+
+    try {
+      click(container.querySelector('#ae-tab-staff'));
+      clickButton(container, '+ Add educator');
+      const addCard = container.querySelector('[aria-labelledby="ae-add-educator-title"]');
+      const fields = addCard.querySelectorAll('input');
+      enterInput(fields[0], 'Unsaved Educator');
+      enterInput(fields[1], 'T-UNSAVED');
+      clickButton(container, 'Save educator');
+
+      click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+      expect(onClose).not.toHaveBeenCalled();
+      expect(container.textContent).toContain('Close blocked. Use Retry save or Download emergency backup before closing.');
+      expect(container.textContent).toContain('Retry save');
+      expect(container.textContent).toContain('Download emergency backup');
+
+      click(container.querySelector('.ae-overlay'));
+      act(() => {
+        document.dispatchEvent(new window.KeyboardEvent('keydown', {
+          key: 'Escape', bubbles: true, cancelable: true,
+        }));
+      });
+      expect(onClose).not.toHaveBeenCalled();
+      expect(container.textContent).toContain('Close blocked because changes are not saved.');
+    } finally {
+      storageSpy.mockRestore();
+    }
   });
 
   it('keeps every local and sample record hidden until remote identity verification finishes', async () => {
@@ -1000,6 +1040,126 @@ describe('EducatorEvaluationPanel', () => {
     expect(reviewNotification).toHaveBeenCalledTimes(1);
     expect(sendNotification).toHaveBeenCalledTimes(1);
   });
+  it('discards an AI reflection that returns after the evaluator switches educators and audits only the current request', async () => {
+    const sample = sampleWorkspaceFixture();
+    const firstTeacher = sample.teachers[0];
+    const secondTeacher = sample.teachers[1];
+    sample.config.aiReflectionEnabled = true;
+    sample.walkthroughs.push(
+      {
+        id: 'ai-scope-first',
+        teacherId: firstTeacher.id,
+        createdAt: '2026-08-20T12:00:00.000Z',
+        date: '2026-08-20',
+        startedAt: '2026-08-20T12:00:00.000Z',
+        durationMin: 8,
+        announced: 'unannounced',
+        lessonPhase: 'middle',
+        subject: 'First scope',
+        evidence: 'FIRST EDUCATOR AI EVIDENCE',
+        interpretation: '',
+        componentTags: ['1a'],
+        publishedAt: '2026-08-20T13:00:00.000Z',
+        version: 1,
+      },
+      {
+        id: 'ai-scope-second',
+        teacherId: secondTeacher.id,
+        createdAt: '2026-08-21T12:00:00.000Z',
+        date: '2026-08-21',
+        startedAt: '2026-08-21T12:00:00.000Z',
+        durationMin: 8,
+        announced: 'unannounced',
+        lessonPhase: 'middle',
+        subject: 'Second scope',
+        evidence: 'SECOND EDUCATOR AI EVIDENCE',
+        interpretation: '',
+        componentTags: ['2a'],
+        publishedAt: '2026-08-21T13:00:00.000Z',
+        version: 1,
+      },
+    );
+    let resolveFirst;
+    let resolveSecond;
+    const previousCallGemini = window.callGemini;
+    window.callGemini = vi.fn()
+      .mockImplementationOnce(() => new Promise((resolveRequest) => { resolveFirst = resolveRequest; }))
+      .mockImplementationOnce(() => new Promise((resolveRequest) => { resolveSecond = resolveRequest; }));
+    const saveWorkspace = vi.fn((payload) => Promise.resolve({
+      ok: true,
+      revision: 42,
+      workspace: payload.workspace,
+    }));
+    const repository = {
+      bootstrap: vi.fn().mockResolvedValue({
+        ok: true,
+        workspace: sample,
+        revision: 41,
+        currentUser: { email: 'principal@district.example', role: 'evaluator' },
+        deployment: { kind: 'apps-script' },
+      }),
+      saveWorkspace,
+    };
+
+    try {
+      const container = mountPanel({ repository }, SourceEducatorEvaluationPanel);
+      await flushRemote();
+
+      clickButton(container, 'Ask for alternative readings');
+      await flushRemote();
+      expect(window.callGemini).toHaveBeenCalledTimes(1);
+      expect(window.callGemini.mock.calls[0][0]).toContain('FIRST EDUCATOR AI EVIDENCE');
+
+      const educatorSelect = Array.from(container.querySelectorAll('label'))
+        .find((label) => label.textContent.includes('Selected educator'))
+        .querySelector('select');
+      act(() => {
+        Simulate.change(educatorSelect, { target: { value: secondTeacher.id } });
+      });
+      const currentButton = Array.from(container.querySelectorAll('button'))
+        .find((button) => button.textContent.includes('Ask for alternative readings'));
+      expect(currentButton).toBeTruthy();
+      expect(currentButton.disabled).toBe(false);
+
+      click(currentButton);
+      await flushRemote();
+      expect(window.callGemini).toHaveBeenCalledTimes(2);
+      expect(window.callGemini.mock.calls[1][0]).toContain('SECOND EDUCATOR AI EVIDENCE');
+      const workingCard = Array.from(container.querySelectorAll('.ae-note.ae-info'))
+        .find((card) => card.textContent.includes('Second read on your own reasoning'));
+      expect(workingCard.querySelector('[role="status"]').textContent).toContain('scoped to this educator');
+
+      await act(async () => {
+        resolveSecond('CURRENT SECOND EDUCATOR RESPONSE');
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      await flushRemote();
+      expect(container.textContent).toContain('CURRENT SECOND EDUCATOR RESPONSE');
+      expect(container.textContent).toContain('Alternative reading ready for this educator.');
+
+      await act(async () => {
+        resolveFirst('STALE FIRST EDUCATOR RESPONSE');
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      await flushRemote();
+      expect(container.textContent).not.toContain('STALE FIRST EDUCATOR RESPONSE');
+      expect(container.textContent).toContain('CURRENT SECOND EDUCATOR RESPONSE');
+
+      await flushRemoteDebounce();
+      expect(saveWorkspace).toHaveBeenCalledTimes(1);
+      expect(saveWorkspace.mock.calls[0][0].mutation).toMatchObject({
+        teacherId: secondTeacher.id,
+        event: 'CONFIG_UPDATED',
+        entityType: 'evaluation',
+        entityId: secondTeacher.id,
+      });
+    } finally {
+      if (previousCallGemini === undefined) delete window.callGemini;
+      else window.callGemini = previousCallGemini;
+    }
+  }, 15000);
   it('reviews the authoritative recipient before granting released-summary access', async () => {
     const sample = sampleWorkspaceFixture();
     sample.teachers[0].finalizedAt = '2026-08-12T12:00:00.000Z';
@@ -1034,11 +1194,17 @@ describe('EducatorEvaluationPanel', () => {
       reviewReleasedEvaluation,
       shareReleasedEvaluation,
     };
-    const container = mountPanel({ repository });
+    const container = mountPanel({ repository }, SourceEducatorEvaluationPanel);
     await flushRemote();
 
-    clickButton(container, 'Review & share released summary');
+    const releaseButton = Array.from(container.querySelectorAll('button'))
+      .find((button) => button.textContent.includes('Review & share released summary'));
+    act(() => {
+      releaseButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+      releaseButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
     await flushRemote();
+    expect(reviewReleasedEvaluation).toHaveBeenCalledTimes(1);
     expect(reviewReleasedEvaluation).toHaveBeenCalledWith({ teacherId: sample.teachers[0].id });
     expect(shareReleasedEvaluation).not.toHaveBeenCalled();
     const dialog = container.querySelector('[aria-labelledby="ae-release-title"]');
@@ -1050,11 +1216,70 @@ describe('EducatorEvaluationPanel', () => {
     const confirmation = dialog.querySelector('input[type="checkbox"]');
     act(() => { Simulate.change(confirmation, { target: { checked: true } }); });
     expect(dialog.querySelector('.ae-release-actions .ae-btn-primary').disabled).toBe(false);
-    clickButton(container, 'Confirm and grant access');
+    const confirmButton = Array.from(container.querySelectorAll('button'))
+      .find((button) => button.textContent.includes('Confirm and grant access'));
+    act(() => {
+      confirmButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+      confirmButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
     await flushRemote();
+    expect(shareReleasedEvaluation).toHaveBeenCalledTimes(1);
     expect(shareReleasedEvaluation).toHaveBeenCalledWith({ teacherId: sample.teachers[0].id, reviewToken: 'release-review-123' });
   });
 
+  it('cancels a released-summary confirmation when the selected educator no longer matches its review', async () => {
+    const sample = sampleWorkspaceFixture();
+    const reviewedTeacher = sample.teachers[0];
+    const otherTeacher = sample.teachers[1];
+    reviewedTeacher.finalizedAt = '2026-08-12T12:00:00.000Z';
+    reviewedTeacher.cycleStatus = 'finalized';
+    const shareReleasedEvaluation = vi.fn();
+    const repository = {
+      bootstrap: vi.fn().mockResolvedValue({
+        ok: true,
+        workspace: sample,
+        revision: 22,
+        currentUser: { email: 'principal@district.example', role: 'evaluator' },
+        deployment: { kind: 'apps-script' },
+      }),
+      saveWorkspace: vi.fn(),
+      reviewReleasedEvaluation: vi.fn().mockResolvedValue({
+        ok: true,
+        review: {
+          token: 'release-review-stale',
+          educatorName: reviewedTeacher.name,
+          recipient: 'teacher.one@district.example',
+          finalizedAt: reviewedTeacher.finalizedAt,
+          action: 'create',
+          actorWillReceiveAccess: true,
+        },
+      }),
+      shareReleasedEvaluation,
+    };
+    const container = mountPanel({ repository }, SourceEducatorEvaluationPanel);
+    await flushRemote();
+
+    clickButton(container, 'Review & share released summary');
+    await flushRemote();
+    const educatorSelect = Array.from(container.querySelectorAll('label'))
+      .find((label) => label.textContent.includes('Selected educator'))
+      .querySelector('select');
+    act(() => {
+      Simulate.change(educatorSelect, { target: { value: otherTeacher.id } });
+    });
+
+    const dialog = container.querySelector('[aria-labelledby="ae-release-title"]');
+    act(() => {
+      Simulate.change(dialog.querySelector('input[type="checkbox"]'), { target: { checked: true } });
+    });
+    clickButton(container, 'Confirm and grant access');
+    await flushRemote();
+
+    expect(shareReleasedEvaluation).not.toHaveBeenCalled();
+    expect(container.querySelector('[aria-labelledby="ae-release-title"]')).toBeNull();
+    expect(container.textContent).toContain('selected educator no longer matches this disclosure review');
+    expect(container.textContent).toContain('nothing was shared');
+  });
   it('serializes a latest profile snapshot when another edit lands during an active remote save', async () => {
     const sample = sampleWorkspaceFixture();
     sample.config.sampleMode = false;
@@ -1320,8 +1545,9 @@ describe('EducatorEvaluationPanel', () => {
     expect(reviewAnnualRollover).toHaveBeenCalledTimes(2);
   }, 20000);
 
-  it('warns before closing only while a remote save remains unconfirmed', async () => {
+  it('warns before closing and blocks every in-app close route while a remote save remains unconfirmed', async () => {
     const sample = sampleWorkspaceFixture();
+    const onClose = vi.fn();
     const repository = {
       bootstrap: vi.fn().mockResolvedValue({
         ok: true,
@@ -1332,7 +1558,7 @@ describe('EducatorEvaluationPanel', () => {
       }),
       saveWorkspace: vi.fn(() => new Promise(() => {})),
     };
-    const container = mountPanel({ repository });
+    const container = mountPanel({ repository, onClose }, SourceEducatorEvaluationPanel);
     await flushRemote();
 
     const savedEvent = new window.Event('beforeunload', { cancelable: true });
@@ -1352,5 +1578,66 @@ describe('EducatorEvaluationPanel', () => {
     const savingEvent = new window.Event('beforeunload', { cancelable: true });
     window.dispatchEvent(savingEvent);
     expect(savingEvent.defaultPrevented).toBe(true);
+
+    click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+    click(container.querySelector('.ae-overlay'));
+    act(() => {
+      document.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Escape', bubbles: true, cancelable: true,
+      }));
+    });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Close blocked while a district save is still pending.');
+  });
+
+  it('keeps failed remote changes recoverable across in-app close and browser-unload attempts', async () => {
+    const sample = sampleWorkspaceFixture();
+    const onClose = vi.fn();
+    const repository = {
+      bootstrap: vi.fn().mockResolvedValue({
+        ok: true,
+        workspace: sample,
+        revision: 18,
+        currentUser: { email: 'principal@district.example', role: 'admin' },
+        deployment: { kind: 'apps-script' },
+      }),
+      saveWorkspace: vi.fn().mockRejectedValue(new Error('District write failed.')),
+    };
+    const container = mountPanel({ repository, onClose }, SourceEducatorEvaluationPanel);
+    await flushRemote();
+
+    click(container.querySelector('#ae-tab-staff'));
+    clickButton(container, '+ Add educator');
+    const addCard = container.querySelector('[aria-labelledby="ae-add-educator-title"]');
+    const fields = addCard.querySelectorAll('input');
+    enterInput(fields[0], 'Recovery Educator');
+    enterInput(fields[1], 'T-RECOVERY');
+    clickButton(container, 'Save educator');
+    await flushRemote();
+    await flushRemote();
+
+    expect(container.textContent).toContain('Last change is not confirmed: District write failed.');
+    const failedEvent = new window.Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(failedEvent);
+    expect(failedEvent.defaultPrevented).toBe(true);
+    click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Close blocked because the last district change is not confirmed.');
+  });
+
+  it('still allows closing an initial remote failure gate because no edits were accepted', async () => {
+    const onClose = vi.fn();
+    const repository = {
+      bootstrap: vi.fn().mockRejectedValue(new Error('Managed identity unavailable.')),
+      saveWorkspace: vi.fn(),
+    };
+    const container = mountPanel({ repository, onClose }, SourceEducatorEvaluationPanel);
+    await flushRemote();
+
+    const failedEvent = new window.Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(failedEvent);
+    expect(failedEvent.defaultPrevented).toBe(false);
+    click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

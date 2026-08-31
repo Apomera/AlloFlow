@@ -5,6 +5,7 @@ const path = require('path');
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_student_save_adventure_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_student_save_adventure_module.js');
+const PUBLIC_OUTPUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'view_student_save_adventure_module.js');
 const TMP = path.join(ROOT, '_tmp_student_save_adventure_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 const source = fs.readFileSync(SOURCE, 'utf-8');
@@ -42,4 +43,6 @@ ${compiled}
 })();
 `;
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
-console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);
+fs.mkdirSync(path.dirname(PUBLIC_OUTPUT), { recursive: true });
+fs.writeFileSync(PUBLIC_OUTPUT, outputCode, 'utf-8');
+console.log(`Built ${OUTPUT} and ${PUBLIC_OUTPUT} (${outputCode.split('\n').length} lines)`);

@@ -54,6 +54,16 @@ function makeCanvasContext() {
   });
 }
 
+function setControlValue(control, value) {
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    'value',
+  ).set;
+  setter.call(control, String(value));
+  control.dispatchEvent(new window.Event('input', { bubbles: true }));
+  control.dispatchEvent(new window.Event('change', { bubbles: true }));
+}
+
 function seed() {
   return {
     skatelab: {
@@ -64,6 +74,8 @@ function seed() {
       surfaceId: 'standard',
       windId: 'calm',
       riderMassKg: 62,
+      rampDepthM: 2.4,
+      landingCompressionM: 0.45,
       bodyPositionId: 'neutral',
       airDrag: true,
       pumps: 3,
@@ -151,7 +163,36 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.textContent).toContain('2D side view');
     expect(container.querySelector('canvas')?.getAttribute('aria-label')).toContain('2D view');
     expect(container.querySelector('#sk-playhead')).not.toBeNull();
+    expect(container.querySelector('#sk-playhead')?.getAttribute('aria-describedby')).toBe('sk-phase-times');
+    expect(container.querySelector('#sk-phase-times')?.textContent).toContain('bottom');
+    expect(container.querySelector('#sk-phase-times')?.textContent).toContain('re-entry');
+    expect(container.querySelector('#sk-phase-times')?.textContent).toContain('return');
+    expect(container.querySelector('.sk-timeline-trace')?.getAttribute('role')).toBe('img');
+    expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
+      .toContain('Transition normal load trace');
+    expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
+      .toContain('tangent-matched wall re-entry');
+    expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
+      .toContain('return to the bottom');
+    expect(container.querySelector('.sk-trace-reentry-peak')).not.toBeNull();
+    expect(container.querySelector('.sk-trace-modeled')?.getAttribute('d')).toMatch(/^M /);
+    expect(container.querySelector('#sk-ramp-depth')?.value).toBe('2.4');
     expect(container.querySelector('.sk-live-telemetry')?.getAttribute('aria-label')).toContain('Live motion telemetry');
+    expect(container.querySelector('.sk-live-telemetry')?.getAttribute('aria-label')).toContain('degrees of trick rotation');
+    expect(container.querySelector('#sk-canvas-summary')?.textContent).toContain('board follows the local surface tangent');
+    expect(contextCalls.some((ctx) => ctx.fillText.mock.calls.some((call) => String(call[0]).startsWith('peak ')))).toBe(true);
+
+    const halfpipePlayhead = container.querySelector('#sk-playhead');
+    await act(async () => {
+      setControlValue(halfpipePlayhead, 100);
+    });
+    expect(halfpipePlayhead?.value).toBe('100');
+    expect(container.querySelector('.sk-live-telemetry')?.textContent)
+      .toContain('compressing on the return');
+    expect(container.querySelector('.sk-live-telemetry')?.textContent)
+      .toContain('° trick');
+    expect(container.querySelector('.sk-live-telemetry')?.textContent)
+      .toMatch(/[1-9][0-9]*(?:\.[0-9])? g load/);
 
     const orbit = [...container.querySelectorAll('button')]
       .find((button) => button.textContent === '3D orbit view');
@@ -172,10 +213,21 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.textContent).toContain('Horizontal range');
     expect(container.textContent).toContain('Launch Jump');
     expect(container.querySelector('#sk-air-drag')?.checked).toBe(true);
+    expect(container.querySelector('#sk-landing-compression')?.value).toBe('0.45');
+    expect(container.querySelector('#sk-phase-times')?.textContent).toContain('roll');
+    expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
+      .toContain('Support load trace');
+    expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
+      .toContain('0 g in free flight');
+    expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
+      .toContain('smooth half-sine landing pulse');
     expect(container.querySelector('#sk-wind-cross_right')).not.toBeNull();
     expect(container.textContent).toContain('Landing angle');
     expect(container.textContent).toContain('Lateral drift');
     expect(container.textContent).toContain('Landing load');
+    expect(container.textContent).toContain('vertical energy absorbed');
+    expect(container.textContent).toContain('net vertical impulse');
+    expect(container.textContent).toContain('mean contact force');
     expect(container.textContent).toContain('ideal no-drag reference');
 
     const launch = container.querySelector('[data-skatelab-launch="true"]');
@@ -189,7 +241,31 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.textContent).toContain('Recent Skate Lab experiments');
     expect(container.querySelectorAll('.sk-table tbody tr')).toHaveLength(1);
     expect(container.querySelector('#sk-playhead')?.value).toBe('100');
+    expect(container.querySelector('.sk-live-telemetry')?.textContent)
+      .toContain('rolling out');
+    expect(container.querySelector('.sk-live-telemetry')?.textContent)
+      .toMatch(/1(?:\.0)? g support/);
     expect(contextCalls.some((ctx) => ctx.fillText.mock.calls.length > 0)).toBe(true);
+
+    const landingCompression = container.querySelector('#sk-landing-compression');
+    await act(async () => {
+      setControlValue(landingCompression, 0.8);
+    });
+
+    expect(container.querySelector('.sk-trace-previous')).not.toBeNull();
+    expect(container.querySelector('.sk-stage-legend')?.textContent)
+      .toContain('lavender dashed = previous run');
+    expect(container.querySelector('#sk-canvas-summary')?.textContent)
+      .toContain('Compared with the previous run:');
+
+    await act(async () => {
+      launch.click();
+    });
+
+    expect(container.querySelectorAll('.sk-table tbody tr')).toHaveLength(2);
+    expect(container.querySelector('.sk-trace-previous')).not.toBeNull();
+    expect(container.querySelector('#sk-canvas-summary')?.textContent)
+      .toContain('Compared with the previous run:');
   });
 });
 

@@ -7681,20 +7681,22 @@
             onClick: function() {
               var eng = window[engineKey];
               if (!eng) return;
-              var worldData = { title: __alloT('stem.geometryworld.student_build', 'Student Build'), blocks: [] };
-              Object.keys(eng.blocks).forEach(function(key) {
-                var m = eng.blocks[key];
-                if (m && m.userData.gridPos) {
-                  worldData.blocks.push({ x: m.userData.gridPos.x, y: m.userData.gridPos.y, z: m.userData.gridPos.z, type: m.userData.blockType });
-                }
-              });
+              var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+              if (!builderPure || typeof builderPure.editableWorld !== 'function' || typeof builderPure.normalizeEditableWorld !== 'function') {
+                if (addToast) addToast('The safe editable-world helper is still loading. Try Save again in a moment.', 'info');
+                return;
+              }
+              var checkedWorld = builderPure.normalizeEditableWorld(builderPure.editableWorld(eng));
+              if (!checkedWorld.ok) { if (addToast) addToast(checkedWorld.error, 'error'); return; }
+              var worldData = checkedWorld.value;
+              worldData.title = __alloT('stem.geometryworld.student_build', 'Student Build');
               var json = JSON.stringify(worldData, null, 2);
               var blob = new Blob([json], { type: 'application/json' });
               var a = document.createElement('a');
               a.href = URL.createObjectURL(blob); a.download = 'geometry_world_' + new Date().toISOString().slice(0, 10) + '.json';
               document.body.appendChild(a); a.click(); document.body.removeChild(a);
               URL.revokeObjectURL(a.href);
-              if (addToast) addToast('\uD83D\uDCBE World exported!', 'success');
+              if (addToast) addToast('\uD83D\uDCBE Saved ' + checkedWorld.summary.blockCount + ' editable student blocks', 'success');
             },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCBE Save'),
@@ -7837,22 +7839,39 @@
               input.onchange = function(ev) {
                 var file = ev.target.files && ev.target.files[0];
                 if (!file) return;
+                if (Number(file.size) > 2 * 1024 * 1024) { if (addToast) addToast('Geometry World JSON files are limited to 2 MiB.', 'error'); return; }
                 var reader = new FileReader();
                 reader.onload = function(e2) {
                   try {
                     var worldData = JSON.parse(e2.target.result);
                     var eng = window[engineKey];
                     if (eng) {
-                      // Check if it's a full lesson (has structures/npcs) or a raw block export
-                      if (worldData.structures || worldData.npcs) {
+                      var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+                      var isEditableWorld = worldData && worldData.schema === 'alloflow-geometry-world/2';
+                      var isLegacyBlockWorld = worldData && !worldData.structures && !worldData.npcs && Array.isArray(worldData.blocks);
+                      if (isEditableWorld || isLegacyBlockWorld) {
+                        if (!builderPure || typeof builderPure.normalizeEditableWorld !== 'function' || typeof builderPure.restoreEditableWorld !== 'function') throw new Error('The safe editable-world helper is still loading. Try Load again in a moment.');
+                        var checked;
+                        if (isEditableWorld && typeof builderPure.parseEditableWorldText === 'function') checked = builderPure.parseEditableWorldText(e2.target.result, file.size);
+                        else checked = builderPure.normalizeEditableWorld({
+                          schema: 'alloflow-geometry-world/2',
+                          title: worldData.title || 'Imported legacy build',
+                          blocks: worldData.blocks.filter(function(b) { return b && b.type !== 'grass'; }).map(function(b) {
+                            return { x: b.x, y: b.y, z: b.z, type: b.type || 'stone', shape: b.shape || 'cube', rotation: b.rotation == null ? 0 : b.rotation };
+                          })
+                        });
+                        if (!checked.ok) throw new Error(checked.error);
+                        var bounds = checked.summary.bounds;
+                        var promptText = 'Open "' + checked.value.title + '" with ' + checked.summary.blockCount + ' student blocks (bounds ' + bounds.width + ' x ' + bounds.depth + ' x ' + bounds.height + ')? This replaces the current world and cannot be undone.';
+                        if (typeof window.confirm === 'function' && !window.confirm(promptText)) { if (addToast) addToast('World import canceled. The current world was not changed.', 'info'); return; }
+                        var restored = builderPure.restoreEditableWorld(eng, checked.value);
+                        if (!restored.ok) throw new Error(restored.error);
+                        upd({ activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [], blocksPlaced: restored.placedCount });
+                        if (addToast) addToast('\uD83C\uDF0D Opened ' + restored.placedCount + ' validated student blocks', 'success');
+                      } else if (worldData.structures || worldData.npcs) {
                         eng.loadLesson(worldData);
                         if (addToast) addToast('\uD83C\uDF0D Loaded: ' + (worldData.title || 'World'), 'success');
-                      } else if (worldData.blocks) {
-                        eng.clearWorld();
-                        eng.scene.background.setRGB(0.53, 0.81, 0.92);
-                        worldData.blocks.forEach(function(b) { eng.placeBlock(b.x, b.y, b.z, b.type || 'stone', b.shape, b.rotation); });
-                        if (addToast) addToast('\uD83C\uDF0D Loaded ' + worldData.blocks.length + ' blocks', 'success');
-                      }
+                      } else throw new Error('This JSON file is neither a Geometry World lesson nor an editable world.');
                       if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
                     }
                   } catch (err) {

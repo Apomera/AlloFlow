@@ -19,7 +19,7 @@ function coachSeed(extra = {}) {
     askInput: '', askAnswer: '', askLoading: false,
     notebookOpen: false, notebookTrials: [], labFocus: false,
     missionId: 'power_path', missionStarted: false, missionPanelOpen: false,
-    analyzerMysteryWins: {}, xfmrMissionWins: {},
+    labShellPanel: 'coach', analyzerMysteryWins: {}, xfmrMissionWins: {},
   }, extra);
 }
 

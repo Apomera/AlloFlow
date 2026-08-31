@@ -34,13 +34,14 @@ describe('Prim3D.normalizeRecipe (untrusted JSON → safe recipe)', () => {
     expect(r.parts.some((p) => p.shape === 'dragon')).toBe(false);
   });
 
-  it('clamps sizes/positions, falls back on bad colors, truncates long names', () => {
+  it('clamps sizes, stretches, and positions; falls back on bad colors; and truncates long names', () => {
     const r = P.normalizeRecipe({
       name: 'x'.repeat(200),
-      parts: [{ shape: 'box', size: [999, -5, 'nope'], position: [99, -99, 0], rotation: [720, 0, 0], color: 'red' }],
+      parts: [{ shape: 'box', size: [999, -5, 'nope'], stretch: [9, 0.01, 'nope'], position: [99, -99, 0], rotation: [720, 0, 0], color: 'red' }],
     });
     expect(r.name.length).toBe(80);
     expect(r.parts[0].size).toEqual([4, 0.02, 0.4]);              // clamped hi / clamped lo / default
+    expect(r.parts[0].stretch).toEqual([4, 0.1, 1]);
     expect(r.parts[0].position[0]).toBe(4);
     expect(r.parts[0].position[1]).toBe(-4);
     expect(r.parts[0].rotation[0]).toBe(360);
@@ -51,6 +52,21 @@ describe('Prim3D.normalizeRecipe (untrusted JSON → safe recipe)', () => {
     expect(P.normalizeRecipe(null)).toBe(null);
     expect(P.normalizeRecipe({ parts: [] })).toBe(null);
     expect(P.normalizeRecipe({ parts: [{ shape: 'blob' }] })).toBe(null);
+  });
+
+  it('adds neutral stretch values to legacy recipes', () => {
+    const r = P.normalizeRecipe({ parts: [{ shape: 'sphere', size: [0.3] }] });
+    expect(r.parts[0].stretch).toEqual([1, 1, 1]);
+  });
+
+  it('validates part labels, finish, opacity, visibility, and locking', () => {
+    const r = P.normalizeRecipe({ parts: [
+      { shape: 'sphere', label: `  Head\u0000${'x'.repeat(60)}  `, finish: 'GLOSS', opacity: 0.05, hidden: true, locked: true },
+      { shape: 'box', finish: 'sparkle', opacity: 'clear', hidden: 1, locked: 'yes' },
+    ] });
+    expect(r.parts[0].label).toBe(`Head ${'x'.repeat(35)}`);
+    expect(r.parts[0]).toMatchObject({ finish: 'gloss', opacity: 0.15, hidden: true, locked: true });
+    expect(r.parts[1]).toMatchObject({ finish: 'standard', opacity: 1, hidden: false, locked: false });
   });
 });
 
@@ -142,7 +158,7 @@ describe('Prim3D voice-directed stretch (HandWaver point→line→plane→solid 
 describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
   function threeStub() {
     function Group() { this.children = []; this.userData = {}; this.scale = { setScalar: () => {} }; this.add = (c) => this.children.push(c); }
-    function Mesh(geo, mat) { this.geo = geo; this.mat = mat; this.position = { set: () => {} }; this.rotation = { set: () => {} }; }
+    function Mesh(geo, mat) { this.geo = geo; this.mat = mat; this.position = { set: () => {} }; this.rotation = { set: () => {} }; this.scale = { set: (...values) => { this.appliedStretch = values; } }; }
     const geo = function () { return {}; };
     return {
       Group, Mesh,
@@ -160,6 +176,21 @@ describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
     expect(g.children.length).toBe(2);
     expect(g.userData.prim3dName).toBe('Robot');
     expect(g.children.map((mesh) => mesh.userData.prim3dPartIndex)).toEqual([0, 1]);
+  });
+  it('applies persistent per-axis stretch to every primitive mesh', () => {
+    const g = P.buildObject(threeStub(), { parts: [
+      { shape: 'sphere', size: [0.3], stretch: [2, 0.5, 1.5], color: '#f59e0b' },
+    ] });
+    expect(g.children[0].appliedStretch).toEqual([2, 0.5, 1.5]);
+  });
+  it('skips hidden parts and applies validated surface material settings', () => {
+    const g = P.buildObject(threeStub(), { parts: [
+      { shape: 'box', hidden: true, label: 'Hidden base' },
+      { shape: 'sphere', label: 'Glass head', finish: 'gloss', opacity: 0.4, color: '#22c55e' },
+    ] });
+    expect(g.children).toHaveLength(1);
+    expect(g.children[0].userData).toMatchObject({ prim3dPartIndex: 1, prim3dPartLabel: 'Glass head' });
+    expect(g.children[0].mat.opts).toMatchObject({ roughness: 0.16, metalness: 0.05, opacity: 0.4, transparent: true, depthWrite: false, wireframe: false });
   });
   it('returns null for empty/invalid recipes', () => {
     expect(P.buildObject(threeStub(), { parts: [{ shape: 'nope' }] })).toBe(null);
@@ -241,9 +272,10 @@ describe('Prim3D recipe editing ops (hand-built sculpting seams)', () => {
 
   it('duplicatePart inserts a visible copy; removePart of the last part returns null', () => {
     const r = seed();
-    const dup = P.duplicatePart(r, 0);
+    const protectedRecipe = P.updatePart(r, 0, { label: 'Base', finish: 'metal', opacity: 0.5, hidden: true, locked: true });
+    const dup = P.duplicatePart(protectedRecipe, 0);
     expect(dup.parts).toHaveLength(3);
-    expect(dup.parts[1].shape).toBe('box');
+    expect(dup.parts[1]).toMatchObject({ shape: 'box', label: 'Base copy', finish: 'metal', opacity: 0.5, hidden: false, locked: false });
     expect(dup.parts[1].position[0]).toBeCloseTo(0.2, 6);
     const one = P.removePart(r, 1);
     expect(one.parts).toHaveLength(1);

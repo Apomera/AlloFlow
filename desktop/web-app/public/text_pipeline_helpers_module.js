@@ -248,6 +248,8 @@ const processMathHTML = (text) => {
     // Math notation doesn't legitimately contain raw <, >, or & — LaTeX uses
     // \lt, \gt, \amp etc. — so escaping breaks only attacker input, not real math.
     let content = String(text)
+        .replace(/&lt;br\s*\/?&gt;/gi, '\\newline')
+        .replace(/<br\s*\/?>/gi, '\\newline')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');

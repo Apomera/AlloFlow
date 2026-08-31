@@ -7,6 +7,7 @@
   if (window.StemLab.isRegistered && window.StemLab.isRegistered('printLab')) return;
 
   var MAX_FILE_BYTES = 5 * 1024 * 1024;
+  var MAX_PORTAL_ASSET_BYTES = 4 * 1024 * 1024;
   var MAX_GCODE_BYTES = 25 * 1024 * 1024;
   var GEOMETRY_EDGE_CLEARANCE_MM = 5;
   var DEFAULT_PRINTER_PROFILE = { name: 'School printer', bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250, planningClearanceMm: GEOMETRY_EDGE_CLEARANCE_MM, nozzleMm: 0.4, maxTriangles: 250000, maxBytes: MAX_FILE_BYTES };
@@ -60,8 +61,105 @@
       });
       if (!valid) return null;
       var normalizer = P3D || (window.AlloModules && window.AlloModules.Prim3D);
-      return normalizer && typeof normalizer.normalizeRecipe === 'function' ? normalizer.normalizeRecipe(candidate) : JSON.parse(JSON.stringify(candidate));
+      if (normalizer && typeof normalizer.normalizeRecipe === 'function') return normalizer.normalizeRecipe(candidate);
+      return {
+        version: 'p3d/1',
+        name: safeText(candidate.name, 80),
+        parts: candidate.parts.slice(0, 24).map(function (part) {
+          var stretch = Array.isArray(part.stretch) ? part.stretch : [1, 1, 1];
+          return {
+            shape: String(part.shape).toLowerCase(),
+            size: [clamp(part.size[0], 0.02, 4, 0.4), clamp(part.size[1], 0.02, 4, 0.4), clamp(part.size[2], 0.02, 4, 0.4)],
+            stretch: [clamp(stretch[0], 0.1, 4, 1), clamp(stretch[1], 0.1, 4, 1), clamp(stretch[2], 0.1, 4, 1)],
+            position: [clamp(part.position[0], -4, 4, 0), clamp(part.position[1], -4, 8, 0.5), clamp(part.position[2], -4, 4, 0)],
+            rotation: [clamp(part.rotation[0], -360, 360, 0), clamp(part.rotation[1], -360, 360, 0), clamp(part.rotation[2], -360, 360, 0)],
+            color: part.color && /^#[0-9a-f]{6}$/i.test(String(part.color)) ? String(part.color).toLowerCase() : '#818cf8'
+          };
+        }),
+        scale: clamp(candidate.scale, 0.25, 5, 1),
+        rotY: ((Number(candidate.rotY) || 0) % 360 + 360) % 360,
+        tint: candidate.tint && /^#[0-9a-f]{6}$/i.test(String(candidate.tint)) ? String(candidate.tint).toLowerCase() : null
+      };
     } catch (_) { return null; }
+  }
+
+  function normalizePrinterProfile(candidate) {
+    candidate = candidate && typeof candidate === 'object' && !Array.isArray(candidate) ? candidate : {};
+    return {
+      name: safeText(candidate.name || DEFAULT_PRINTER_PROFILE.name, 80) || DEFAULT_PRINTER_PROFILE.name,
+      bedWidthMm: clamp(candidate.bedWidthMm, 50, 1000, DEFAULT_PRINTER_PROFILE.bedWidthMm),
+      bedDepthMm: clamp(candidate.bedDepthMm, 50, 1000, DEFAULT_PRINTER_PROFILE.bedDepthMm),
+      bedHeightMm: clamp(candidate.bedHeightMm, 50, 1000, DEFAULT_PRINTER_PROFILE.bedHeightMm),
+      planningClearanceMm: clamp(candidate.planningClearanceMm, 0, 50, DEFAULT_PRINTER_PROFILE.planningClearanceMm),
+      nozzleMm: clamp(candidate.nozzleMm, 0.1, 2, DEFAULT_PRINTER_PROFILE.nozzleMm),
+      maxTriangles: Math.round(clamp(candidate.maxTriangles, 1000, 10000000, DEFAULT_PRINTER_PROFILE.maxTriangles)),
+      maxBytes: Math.round(clamp(candidate.maxBytes, 65536, MAX_FILE_BYTES, DEFAULT_PRINTER_PROFILE.maxBytes))
+    };
+  }
+
+  function canonicalJson(value) {
+    if (value === null || typeof value !== 'object') return JSON.stringify(value);
+    if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
+    return '{' + Object.keys(value).sort().map(function (key) { return JSON.stringify(key) + ':' + canonicalJson(value[key]); }).join(',') + '}';
+  }
+
+  function persistedPreflightBinding(recipe, unitMm, profile) {
+    var clean = normalizePersistedRecipe(recipe);
+    if (!clean) return '';
+    return canonicalJson({
+      schema: 'alloflow-print-preflight-binding/1',
+      sourceFormat: 'RECIPE',
+      recipe: clean,
+      unitMm: clamp(unitMm, 0.01, 1000, 20),
+      printerProfile: normalizePrinterProfile(profile)
+    });
+  }
+
+  function normalizePersistedPreflight(candidate) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || candidate.sourceFormat !== 'RECIPE' || ['PASS', 'WARN', 'FAIL'].indexOf(candidate.status) < 0) return null;
+    var dimensions = candidate.dimensionsMm;
+    if (!dimensions || ['width', 'depth', 'height'].some(function (key) { return typeof dimensions[key] !== 'number' || !isFinite(dimensions[key]) || dimensions[key] < 0; })) return null;
+    var issues = Array.isArray(candidate.issues) ? candidate.issues.slice(0, 50).map(function (item) {
+      if (!item || typeof item !== 'object') return null;
+      var severity = ['ERROR', 'WARNING', 'INFO'].indexOf(item.severity) >= 0 ? item.severity : 'WARNING';
+      return { code: safeText(item.code, 80) || 'PERSISTED_FINDING', severity: severity, message: safeText(item.message, 500) };
+    }).filter(Boolean) : [];
+    return {
+      status: candidate.status,
+      sourceFormat: 'RECIPE',
+      byteSize: Math.round(clamp(candidate.byteSize, 0, MAX_FILE_BYTES, 0)),
+      triangleCount: Math.round(clamp(candidate.triangleCount, 0, 10000000, 0)),
+      meshCount: Math.round(clamp(candidate.meshCount, 0, 1000000, 0)),
+      dimensionsMm: { width: dimensions.width, depth: dimensions.depth, height: dimensions.height },
+      volumeMm3UpperBound: clamp(candidate.volumeMm3UpperBound, 0, 1000000000000, 0),
+      degenerateTriangles: Math.round(clamp(candidate.degenerateTriangles, 0, 10000000, 0)),
+      openEdges: Math.round(clamp(candidate.openEdges, 0, 10000000, 0)),
+      unitDeclaration: safeText(candidate.unitDeclaration, 80),
+      issues: issues
+    };
+  }
+
+  function manufacturingEvidenceBinding(modelHash, sourceFormat, unitMm, materialId, profile) {
+    var hash = String(modelHash || '').trim().toLowerCase();
+    if (!/^[0-9a-f]{64}$/.test(hash)) return '';
+    return canonicalJson({
+      schema: 'alloflow-print-evidence-binding/1',
+      modelSha256: hash,
+      sourceFormat: ['RECIPE', 'STL', 'GLB'].indexOf(sourceFormat) >= 0 ? sourceFormat : '',
+      unitMm: clamp(unitMm, 0.01, 1000, 20),
+      materialId: safeText(materialId, 40),
+      printerProfile: normalizePrinterProfile(profile)
+    });
+  }
+
+  function schoolRewardsAssetCompatibility(sourceFormat, byteLength) {
+    var format = String(sourceFormat || '').toUpperCase();
+    var needsAsset = format === 'STL' || format === 'GLB';
+    var bytes = Math.max(0, Math.round(Number(byteLength) || 0));
+    if (!needsAsset) return { compatible: true, needsAsset: false, byteLength: bytes, maxBytes: MAX_PORTAL_ASSET_BYTES };
+    if (!bytes) return { compatible: false, needsAsset: true, byteLength: 0, maxBytes: MAX_PORTAL_ASSET_BYTES, reason: 'The imported model file is not available in this session.' };
+    if (bytes > MAX_PORTAL_ASSET_BYTES) return { compatible: false, needsAsset: true, byteLength: bytes, maxBytes: MAX_PORTAL_ASSET_BYTES, reason: 'This model is larger than the School Rewards 4 MiB upload limit.' };
+    return { compatible: true, needsAsset: true, byteLength: bytes, maxBytes: MAX_PORTAL_ASSET_BYTES };
   }
 
   function sourceExtension(name) {
@@ -633,6 +731,7 @@
 
   window.StemLab.printLabPure = {
     MAX_FILE_BYTES: MAX_FILE_BYTES,
+    MAX_PORTAL_ASSET_BYTES: MAX_PORTAL_ASSET_BYTES,
     MAX_GCODE_BYTES: MAX_GCODE_BYTES,
     GEOMETRY_EDGE_CLEARANCE_MM: GEOMETRY_EDGE_CLEARANCE_MM,
     DEFAULT_PRINTER_PROFILE: Object.assign({}, DEFAULT_PRINTER_PROFILE),
@@ -644,6 +743,11 @@
     sourceExtension: sourceExtension,
     normalizeRewardsPortalUrl: normalizeRewardsPortalUrl,
     normalizePersistedRecipe: normalizePersistedRecipe,
+    normalizePrinterProfile: normalizePrinterProfile,
+    normalizePersistedPreflight: normalizePersistedPreflight,
+    persistedPreflightBinding: persistedPreflightBinding,
+    manufacturingEvidenceBinding: manufacturingEvidenceBinding,
+    schoolRewardsAssetCompatibility: schoolRewardsAssetCompatibility,
     sanitizeGeometryWorldSource: sanitizeGeometryWorldSource,
     inspectGeometryWorldBinaryStl: inspectGeometryWorldBinaryStl,
     scaledGeometryWorldDimensions: scaledGeometryWorldDimensions,
@@ -672,6 +776,10 @@
       var pendingHandoff = pendingHandoffRef.current;
       var initialRecipe = pendingHandoff ? null : normalizePersistedRecipe(stored.recipe);
       var initialFormat = pendingHandoff ? pendingHandoff.format : 'RECIPE';
+      var initialUnitMm = pendingHandoff ? pendingHandoff.unitMm : clamp(stored.unitMm, 0.01, 1000, 20);
+      var initialProfile = normalizePrinterProfile(stored.profile);
+      var persistedReport = pendingHandoff ? null : normalizePersistedPreflight(stored.preflight);
+      var initialReport = initialRecipe && persistedReport && stored.preflightBinding === persistedPreflightBinding(initialRecipe, initialUnitMm, initialProfile) ? persistedReport : null;
       var _tab = React.useState(pendingHandoff ? 'Design' : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design')), activeTab = _tab[0], setActiveTab = _tab[1];
       var _ready = React.useState(!!(window.AlloModules && window.AlloModules.PrintableModel && window.AlloModules.Prim3D)), runtimeReady = _ready[0], setRuntimeReady = _ready[1];
       var _runtimeError = React.useState(''), runtimeError = _runtimeError[0], setRuntimeError = _runtimeError[1];
@@ -681,8 +789,8 @@
       var _glb = React.useState(null), glbRoot = _glb[0], setGlbRoot = _glb[1];
       var _sourceName = React.useState(pendingHandoff ? pendingHandoff.sourceName : ''), sourceName = _sourceName[0], setSourceName = _sourceName[1];
       var _hash = React.useState(''), contentHash = _hash[0], setContentHash = _hash[1];
-      var _unit = React.useState(pendingHandoff ? pendingHandoff.unitMm : clamp(stored.unitMm, 0.01, 1000, 20)), unitMm = _unit[0], setUnitMm = _unit[1];
-      var _report = React.useState(pendingHandoff ? null : (stored.preflight || null)), report = _report[0], setReport = _report[1];
+      var _unit = React.useState(initialUnitMm), unitMm = _unit[0], setUnitMm = _unit[1];
+      var _report = React.useState(initialReport), report = _report[0], setReport = _report[1];
       var _status = React.useState(pendingHandoff ? 'Loaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.' : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
       var _revision = React.useState(0), revision = _revision[0], setRevision = _revision[1];
       var _subject = React.useState(''), aiSubject = _subject[0], setAiSubject = _subject[1];
@@ -694,7 +802,7 @@
       var _note = React.useState(stored.studentNote || ''), studentNote = _note[0], setStudentNote = _note[1];
       var _aiUse = React.useState(stored.aiUse || 'NONE'), aiUse = _aiUse[0], setAiUse = _aiUse[1];
       var _aiDisclosure = React.useState(stored.aiDisclosure || ''), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
-      var _profile = React.useState(Object.assign({}, DEFAULT_PRINTER_PROFILE, stored.profile || {})), profile = _profile[0], setProfile = _profile[1];
+      var _profile = React.useState(initialProfile), profile = _profile[0], setProfile = _profile[1];
       var _material = React.useState(stored.materialId || 'PLA'), materialId = _material[0], setMaterialId = _material[1];
       var _infill = React.useState(clamp(stored.infillPercent, 0, 100, 20)), infillPercent = _infill[0], setInfillPercent = _infill[1];
       var _support = React.useState(clamp(stored.supportPercent, 0, 200, 10)), supportPercent = _support[0], setSupportPercent = _support[1];
@@ -702,6 +810,7 @@
       var _repair = React.useState(null), repairResult = _repair[0], setRepairResult = _repair[1];
       var _gcode = React.useState(null), gcodeMetadata = _gcode[0], setGcodeMetadata = _gcode[1];
       var _gcodeHash = React.useState(''), gcodeMetadataHash = _gcodeHash[0], setGcodeMetadataHash = _gcodeHash[1];
+      var _gcodeBinding = React.useState(''), gcodeBinding = _gcodeBinding[0], setGcodeBinding = _gcodeBinding[1];
       var _ticket = React.useState(null), jobTicket = _ticket[0], setJobTicket = _ticket[1];
       var _profileReviewed = React.useState(false), profileReviewed = _profileReviewed[0], setProfileReviewed = _profileReviewed[1];
       var _materialReviewed = React.useState(false), materialReviewed = _materialReviewed[0], setMaterialReviewed = _materialReviewed[1];
@@ -711,6 +820,8 @@
       var _simJob = React.useState(''), simulatorJobKey = _simJob[0], setSimulatorJobKey = _simJob[1];
       var _schedule = React.useState(null), simulatedSchedule = _schedule[0], setSimulatedSchedule = _schedule[1];
       var simulatorRef = React.useRef(null);
+      var contextRevisionRef = React.useRef(0);
+      var operationTokensRef = React.useRef(Object.create(null));
 
       var savedSculpts = (ctx.toolData && ctx.toolData.geoSandbox && ctx.toolData.geoSandbox.savedSculpts) || {};
       var savedNames = Object.keys(savedSculpts).sort();
@@ -734,7 +845,16 @@
         if (!pendingHandoff) return;
         // Persist only small form defaults. The STL bytes and editable source model
         // intentionally remain in component memory and disappear when Print Lab closes.
-        persist({ activeTab: 'Design', recipe: null, unitMm: pendingHandoff.unitMm, preflight: null, title: pendingHandoff.title, description: pendingHandoff.description });
+        persist({ activeTab: 'Design', recipe: null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description });
+      }, []);
+
+      React.useEffect(function () {
+        return function () {
+          contextRevisionRef.current += 1;
+          ['modelImport', 'gcodeImport', 'ai', 'repair', 'ticket', 'handoff', 'export'].forEach(function (kind) {
+            operationTokensRef.current[kind] = (operationTokensRef.current[kind] || 0) + 1;
+          });
+        };
       }, []);
 
       React.useEffect(function () {
@@ -746,14 +866,54 @@
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(message);
       }
 
+      function beginOperation(kind) {
+        var next = (operationTokensRef.current[kind] || 0) + 1;
+        operationTokensRef.current[kind] = next;
+        return next;
+      }
+
+      function cancelOperation(kind) {
+        operationTokensRef.current[kind] = (operationTokensRef.current[kind] || 0) + 1;
+      }
+
+      function beginDesignOperation(kind) {
+        ['modelImport', 'ai', 'repair'].forEach(function (other) { if (other !== kind) cancelOperation(other); });
+        if (kind !== 'ai') setAiBusy(false);
+        return { token: beginOperation(kind), revision: contextRevisionRef.current };
+      }
+
+      function operationIsCurrent(kind, token, startedRevision) {
+        return operationTokensRef.current[kind] === token && (startedRevision == null || contextRevisionRef.current === startedRevision);
+      }
+
+      function bumpContextRevision() {
+        contextRevisionRef.current += 1;
+        setRevision(contextRevisionRef.current);
+      }
+
       function clearJobArtifacts() {
+        cancelOperation('ticket');
         setJobTicket(null); setSimulatorSnapshot(null); setSimulatorJobKey(''); setSimulatedSchedule(null); simulatorRef.current = null;
+      }
+
+      function invalidateManufacturingEvidence(options) {
+        options = options || {};
+        ['modelImport', 'gcodeImport', 'ai', 'repair', 'ticket', 'handoff', 'export'].forEach(function (kind) {
+          if (kind !== options.preserveOperation) cancelOperation(kind);
+        });
+        bumpContextRevision();
+        setGcodeMetadata(null); setGcodeMetadataHash(''); setGcodeBinding('');
+        setProfileReviewed(false); setMaterialReviewed(false); setAiBusy(false);
+        if (options.clearReport !== false) setReport(null);
+        if (options.clearRepair !== false) setRepairResult(null);
+        clearJobArtifacts();
       }
 
       function applyUnitScale(value, message) {
         var next = clamp(value, 0.01, 1000, unitMm);
-        setUnitMm(next); setReport(null); clearJobArtifacts(); setRevision(function (current) { return current + 1; });
-        persist({ unitMm: next, preflight: null });
+        invalidateManufacturingEvidence();
+        setUnitMm(next);
+        persist({ unitMm: next, preflight: null, preflightBinding: '' });
         if (message) announce(message);
       }
 
@@ -769,21 +929,26 @@
         var target = document.getElementById('print-lab-tab-' + TABS[next].toLowerCase()); if (target) target.focus();
       }
 
-      function replaceDesign(nextFormat, nextRecipe, nextBytes, nextRoot, nextName, nextUnit, nextReport, nextHash) {
+      function replaceDesign(nextFormat, nextRecipe, nextBytes, nextRoot, nextName, nextUnit, nextReport, nextHash, preserveOperation) {
+        var cleanUnit = clamp(nextUnit, 0.01, 1000, nextFormat === 'RECIPE' ? 20 : 1);
+        var persistedNextReport = nextFormat === 'RECIPE' ? normalizePersistedPreflight(nextReport) : null;
+        var nextPreflightBinding = persistedNextReport ? persistedPreflightBinding(nextRecipe, cleanUnit, profile) : '';
+        invalidateManufacturingEvidence({ preserveOperation: preserveOperation });
         setFormat(nextFormat); setRecipe(nextRecipe || null); setFileBytes(nextBytes || null); setGlbRoot(nextRoot || null); setSourceName(nextName || '');
-        setUnitMm(nextUnit); setReport(nextReport || null); setContentHash(nextHash || ''); setRevision(function (value) { return value + 1; });
-        setRepairResult(null); clearJobArtifacts();
-        persist({ recipe: nextFormat === 'RECIPE' ? nextRecipe : null, unitMm: nextUnit, preflight: nextReport || null });
+        setUnitMm(cleanUnit); setReport(nextReport || null); setContentHash(nextHash || '');
+        persist({ recipe: nextFormat === 'RECIPE' ? nextRecipe : null, unitMm: cleanUnit, preflight: persistedNextReport, preflightBinding: nextPreflightBinding });
       }
 
-      function updateRecipe(next) {
+      function updateRecipe(next, nextUnitMm, preserveOperation) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
         var clean = P3D ? P3D.normalizeRecipe(next) : next;
+        if (!clean) { announce('That primitive recipe is not valid.'); return; }
+        var cleanUnit = clamp(nextUnitMm == null ? unitMm : nextUnitMm, 0.01, 1000, 20);
+        invalidateManufacturingEvidence({ preserveOperation: preserveOperation });
         setRecipe(clean); setFormat('RECIPE'); setFileBytes(null); setGlbRoot(null); setSourceName(''); setReport(null); setContentHash('');
+        setUnitMm(cleanUnit);
         setSourceContext(null);
-        setRepairResult(null); clearJobArtifacts();
-        setRevision(function (value) { return value + 1; });
-        persist({ recipe: clean, unitMm: unitMm, preflight: null });
+        persist({ recipe: clean, unitMm: cleanUnit, preflight: null, preflightBinding: '' });
       }
 
       function addPrimitive(shape) {
@@ -800,7 +965,7 @@
         if (!selectedSaved || !savedSculpts[selectedSaved]) return;
         var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = P3D && P3D.normalizeRecipe(savedSculpts[selectedSaved]);
         if (!clean) { announce('That saved Geometry Sandbox design is not a valid primitive recipe.'); return; }
-        setUnitMm(20); updateRecipe(clean); setTitle(clean.name || selectedSaved); announce('Loaded “' + selectedSaved + '” from Geometry Sandbox.');
+        updateRecipe(clean, 20); setTitle(clean.name || selectedSaved); announce('Loaded “' + selectedSaved + '” from Geometry Sandbox.');
       }
 
       function downloadGeometryWorldSource() {
@@ -831,7 +996,8 @@
           : format === 'STL' ? Printable.inspectStl(fileBytes, unitMm, profile)
           : Printable.inspectGlb(fileBytes, unitMm, profile);
         if (format === 'GLB' && glbRoot) next = inspectObjectCapabilities(glbRoot, next);
-        setReport(next); persist({ preflight: next, profile: profile, unitMm: unitMm });
+        setReport(next);
+        persist({ preflight: format === 'RECIPE' ? next : null, preflightBinding: format === 'RECIPE' ? persistedPreflightBinding(recipe, unitMm, profile) : '', profile: profile, unitMm: unitMm });
         announce(next.status === 'FAIL' ? 'Preflight found blocking items. Review the report.' : next.status === 'WARN' ? 'Preflight completed with staff-review warnings.' : 'Preflight completed without a blocking geometry error. Staff and slicer review are still required.');
         return next;
       }
@@ -848,10 +1014,12 @@
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
         if (!Printable || !repairResult || !repairResult.ok || !repairResult.buffer) return;
         var bytes = new Uint8Array(repairResult.buffer);
+        var operation = beginDesignOperation('repair'), token = operation.token, startedRevision = operation.revision;
         Printable.sha256Hex(bytes).then(function (hash) {
-          replaceDesign('STL', null, bytes, null, 'repaired-model.stl', unitMm, repairResult.report, hash);
+          if (!operationIsCurrent('repair', token, startedRevision)) return;
+          replaceDesign('STL', null, bytes, null, 'repaired-model.stl', unitMm, repairResult.report, hash, 'repair');
           announce('The conservative repair candidate is now the local working copy. Its analysis remains advisory.');
-        }).catch(function () { announce('The repaired candidate hash could not be calculated.'); });
+        }).catch(function () { if (operationIsCurrent('repair', token, startedRevision)) announce('The repaired candidate hash could not be calculated.'); });
       }
 
       function downloadRepairCandidate() {
@@ -862,19 +1030,23 @@
       }
 
       function setProfileField(key, value) {
-        var next = Object.assign({}, profile); next[key] = Number(value); setProfile(next); setProfileReviewed(false); setReport(null); clearJobArtifacts(); persist({ profile: next, preflight: null });
+        var raw = Object.assign({}, profile); raw[key] = Number(value);
+        var next = normalizePrinterProfile(raw);
+        invalidateManufacturingEvidence();
+        setProfile(next); persist({ profile: next, preflight: null, preflightBinding: '' });
       }
 
       function importFile(event) {
         var file = event.target.files && event.target.files[0]; event.target.value = '';
         var accepted = allowedFile(file); if (!accepted.ok) { announce(accepted.message); return; }
         if (!runtimeReady) { announce('The local inspection engine is still loading.'); return; }
-        setSourceContext(null);
+        var operation = beginDesignOperation('modelImport'), token = operation.token, startedRevision = operation.revision;
         var Printable = window.AlloModules.PrintableModel, P3D = window.AlloModules.Prim3D;
         announce('Reading ' + accepted.format + ' locally…');
         readBytes(file).then(function (bytes) {
           return Printable.sha256Hex(bytes).then(function (hash) { return { bytes: bytes, hash: hash }; });
         }).then(function (loaded) {
+          if (!operationIsCurrent('modelImport', token, startedRevision)) return null;
           var bytes = loaded.bytes, hash = loaded.hash;
           if (accepted.format === 'RECIPE') {
             var parsed;
@@ -884,25 +1056,36 @@
             if (!clean) throw new Error('The JSON file does not contain a supported primitive recipe.');
             var recipeReport = Printable.inspectRecipe(clean, 20, profile);
             return Printable.sha256Hex(JSON.stringify(clean)).then(function (normalizedHash) {
-              replaceDesign('RECIPE', clean, null, null, '', 20, recipeReport, normalizedHash);
+              if (!operationIsCurrent('modelImport', token, startedRevision)) return;
+              setSourceContext(null);
+              replaceDesign('RECIPE', clean, null, null, '', 20, recipeReport, normalizedHash, 'modelImport');
               setTitle(clean.name || safeText(file.name.replace(/\.json$/i, ''), 100));
+              announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
             });
           } else if (accepted.format === 'STL') {
             var stlReport = Printable.inspectStl(bytes, 1, profile);
-            replaceDesign('STL', null, bytes, null, file.name, 1, stlReport, hash);
+            setSourceContext(null);
+            replaceDesign('STL', null, bytes, null, file.name, 1, stlReport, hash, 'modelImport');
+            announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
           } else {
             var glbReport = Printable.inspectGlb(bytes, 10, profile);
-            if (hasBlockingIssue(glbReport)) { replaceDesign('GLB', null, bytes, null, file.name, 10, glbReport, hash); return null; }
+            if (hasBlockingIssue(glbReport)) {
+              setSourceContext(null);
+              replaceDesign('GLB', null, bytes, null, file.name, 10, glbReport, hash, 'modelImport');
+              announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
+              return null;
+            }
             return ensureThree().then(function (THREE) { return parseGlb(THREE, bytes); }).then(function (root) {
+              if (!operationIsCurrent('modelImport', token, startedRevision)) { disposeObject(root, true); return; }
               glbReport = inspectObjectCapabilities(root, glbReport);
-              replaceDesign('GLB', null, bytes, root, file.name, 10, glbReport, hash);
+              setSourceContext(null);
+              replaceDesign('GLB', null, bytes, root, file.name, 10, glbReport, hash, 'modelImport');
+              announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
             });
           }
           return null;
-        }).then(function () {
-          announce('Import inspected locally. Confirm scale and review Preflight before submitting.');
         }).catch(function (error) {
-          announce(error && error.message ? error.message : 'The model could not be imported.');
+          if (operationIsCurrent('modelImport', token, startedRevision)) announce(error && error.message ? error.message : 'The model could not be imported.');
         });
       }
 
@@ -911,19 +1094,25 @@
         var accepted = allowedGcodeFile(file); if (!accepted.ok) { announce(accepted.message); return; }
         var Printable = window.AlloModules && window.AlloModules.PrintableModel;
         if (!Printable) { announce('The local metadata reader is still loading.'); return; }
+        var token = beginOperation('gcodeImport'), startedRevision = contextRevisionRef.current;
         announce('Reading allowlisted G-code comments locally. Toolpath commands will not be interpreted.');
-        readBytes(file).then(function (bytes) {
+        var metadataPromise = readBytes(file).then(function (bytes) {
           var parsed = Printable.parseGcodeMetadata(bytes);
           if (!parsed.ok) throw new Error(parsed.errors.join(' '));
           return Printable.hashGcodeMetadata(parsed.value).then(function (hash) { return { value: parsed.value, hash: hash }; });
-        }).then(function (result) {
-          setGcodeMetadata(result.value); setGcodeMetadataHash(result.hash); clearJobArtifacts();
+        });
+        Promise.all([metadataPromise, currentModelHash()]).then(function (results) {
+          if (!operationIsCurrent('gcodeImport', token, startedRevision)) return;
+          var result = results[0], modelHash = results[1];
+          var binding = manufacturingEvidenceBinding(modelHash, format, unitMm, materialId, profile);
+          if (!binding) throw new Error('The active model could not be bound to this slicer evidence.');
+          setGcodeMetadata(result.value); setGcodeMetadataHash(result.hash); setGcodeBinding(binding); clearJobArtifacts();
           if (result.value.estimatedTimeSeconds > 0) {
             var next = Object.assign({}, quoteConfig, { estimatedMinutes: Math.round(result.value.estimatedTimeSeconds / 6) / 10 });
             setQuoteConfig(next); persist({ quoteConfig: next });
           }
           announce('Slicer comment metadata imported locally. No G-code command was stored or executed.');
-        }).catch(function (error) { announce(error && error.message ? error.message : 'G-code comment metadata could not be read.'); });
+        }).catch(function (error) { if (operationIsCurrent('gcodeImport', token, startedRevision)) announce(error && error.message ? error.message : 'G-code comment metadata could not be read.'); });
       }
 
       function callRecipeAi(kind) {
@@ -931,14 +1120,16 @@
         if (!P3D || typeof ctx.callGemini !== 'function') { announce('AI assistance is not configured. Manual primitive tools remain available.'); return; }
         var prompt = kind === 'refine' ? P3D.buildRefinePrompt(recipe, aiRefinement) : P3D.buildRecipePrompt(aiSubject);
         if ((kind === 'refine' && !aiRefinement.trim()) || (kind !== 'refine' && !aiSubject.trim())) { announce('Describe what you want the modeling assistant to do.'); return; }
+        var operation = beginDesignOperation('ai'), token = operation.token, startedRevision = operation.revision;
         setAiBusy(true); announce(kind === 'refine' ? 'Preparing an AI-assisted revision…' : 'Preparing an AI-assisted primitive recipe…');
         Promise.resolve(ctx.callGemini(prompt, false, false, 0.5)).then(function (response) {
+          if (!operationIsCurrent('ai', token, startedRevision)) return;
           var next = P3D.parseRecipe(aiText(response));
           if (!next) throw new Error('The modeling response did not contain a valid primitive recipe.');
-          updateRecipe(next); setTitle(next.name || title); setAiUse('ASSISTED');
+          updateRecipe(next, unitMm, 'ai'); setTitle(next.name || title); setAiUse('ASSISTED');
           if (!aiDisclosure) setAiDisclosure(kind === 'refine' ? 'AI helped revise a primitive-based model from my instruction.' : 'AI proposed a primitive-based starting model that I reviewed and can edit.');
           announce('AI-assisted recipe ready. Review every part and run Preflight.');
-        }).catch(function (error) { announce(error && error.message ? error.message : 'AI modeling was unavailable.'); }).then(function () { setAiBusy(false); });
+        }).catch(function (error) { if (operationIsCurrent('ai', token, startedRevision)) announce(error && error.message ? error.message : 'AI modeling was unavailable.'); }).then(function () { if (operationIsCurrent('ai', token, startedRevision)) setAiBusy(false); });
       }
 
       var chosenMaterial = materialById(materialId);
@@ -954,6 +1145,9 @@
       var geometryScaleRecommendation = geometryWorldScaleRecommendation(sourceContext && sourceContext.summary, profile, unitMm, geometryPlanningClearanceMm);
       var geometryOrientationAdvice = geometryWorldOrientationAdvice(sourceContext && sourceContext.summary, profile, unitMm, geometryPlanningClearanceMm);
       var geometryClearanceFit = geometryPrinterFit && (!geometryScaleRecommendation || !geometryScaleRecommendation.needsReduction);
+      var gcodeEvidenceCurrent = !!(gcodeMetadata && gcodeMetadataHash && gcodeBinding);
+      var rewardsAssetCompatibility = schoolRewardsAssetCompatibility(format, fileBytes && fileBytes.byteLength);
+      var rewardsAssetSizeLabel = rewardsAssetCompatibility.byteLength ? (Math.round(rewardsAssetCompatibility.byteLength / 1024 / 1024 * 100) / 100) + ' MiB' : 'No local file';
 
       function setQuoteConfigField(key, value) {
         var next = Object.assign({}, quoteConfig); next[key] = Number(value); setQuoteConfig(next); clearJobArtifacts(); persist({ quoteConfig: next });
@@ -967,10 +1161,17 @@
 
       function createJobTicket() {
         if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce('Complete model analysis before creating a job ticket.'); return; }
-        if (!gcodeMetadata || !gcodeMetadataHash) { announce('Import comment metadata from the approved school slicer before creating a job ticket.'); return; }
+        if (!gcodeEvidenceCurrent) { announce('Import comment metadata from the approved school slicer for this exact model, scale, material, and printer profile before creating a job ticket.'); return; }
         if (!quoteMaterial || !(Number(quoteMaterial.estimatedGrams) > 0)) { announce('The reviewed slicer handoff must include a positive material mass in grams before creating a job ticket.'); return; }
         if (!profileReviewed || !materialReviewed) { announce('Confirm the reviewed material and printer profile first.'); return; }
+        var token = beginOperation('ticket'), startedRevision = contextRevisionRef.current;
         currentModelHash().then(function (hash) {
+          if (!operationIsCurrent('ticket', token, startedRevision)) return null;
+          var expectedBinding = manufacturingEvidenceBinding(hash, format, unitMm, materialId, profile);
+          if (!expectedBinding || expectedBinding !== gcodeBinding) {
+            setGcodeMetadata(null); setGcodeMetadataHash(''); setGcodeBinding('');
+            throw new Error('The slicer evidence no longer matches the exact active model, scale, material, and printer profile. Import it again.');
+          }
           return Printable.createPrintJobTicket({
             modelHash: hash, sourceFormat: format, unitDeclaration: format === 'RECIPE' ? '1 recipe unit = ' + unitMm + ' mm' : '1 source unit = ' + unitMm + ' mm', dimensionsMm: report.dimensionsMm,
             material: { key: materialId, name: chosenMaterial.name, densityGPerCm3: chosenMaterial.density, reviewed: true },
@@ -978,8 +1179,11 @@
             advisoryEstimate: { materialGrams: quoteMaterial.estimatedGrams, printMinutes: quoteConfig.estimatedMinutes, pointQuote: pointQuote && pointQuote.totalPoints, method: quoteMaterial.method || 'staff-review-required' },
             gcodeMetadataHash: gcodeMetadataHash, createdAt: new Date().toISOString()
           });
-        }).then(function (ticket) { setJobTicket(ticket); setSimulatorSnapshot(null); setSimulatorJobKey(''); setSimulatedSchedule(null); simulatorRef.current = null; announce('Created a privacy-minimized local job ticket. It contains no G-code commands and does not authorize printing.'); })
-          .catch(function (error) { announce(error && error.message ? error.message : 'The job ticket could not be created.'); });
+        }).then(function (ticket) {
+          if (!ticket || !operationIsCurrent('ticket', token, startedRevision)) return;
+          setJobTicket(ticket); setSimulatorSnapshot(null); setSimulatorJobKey(''); setSimulatedSchedule(null); simulatorRef.current = null;
+          announce('Created a privacy-minimized local job ticket. It contains no G-code commands and does not authorize printing.');
+        }).catch(function (error) { if (operationIsCurrent('ticket', token, startedRevision)) announce(error && error.message ? error.message : 'The job ticket could not be created.'); });
       }
 
       function downloadJobTicket() {
@@ -1023,8 +1227,10 @@
       function downloadHandoff() {
         if (!Printable) { announce('The handoff engine is still loading.'); return; }
         var activeReport = report || runPreflight(); if (!activeReport || activeReport.status === 'FAIL') { chooseTab('Preflight'); announce('Resolve blocking preflight items before creating a handoff.'); return; }
+        var token = beginOperation('handoff'), startedRevision = contextRevisionRef.current;
         var hashPromise = contentHash ? Promise.resolve(contentHash) : Printable.sha256Hex(format === 'RECIPE' ? JSON.stringify(recipe || {}) : fileBytes);
         hashPromise.then(function (hash) {
+          if (!operationIsCurrent('handoff', token, startedRevision)) return;
           var genericName = format === 'RECIPE' ? '' : 'student-model.' + format.toLowerCase();
           var serialized = Printable.serializeSubmission({
             title: title, description: description, sourceFormat: format, originalFilename: genericName,
@@ -1035,12 +1241,14 @@
           var name = Printable.safeFilename(title || 'student-model') + '.alloflow-print.json';
           downloadBlob(new Blob([serialized], { type: 'application/json' }), name);
           announce('Downloaded a privacy-minimized staff-review handoff. The model file itself was not embedded.');
-        }).catch(function (error) { announce(error && error.message ? error.message : 'The handoff could not be created.'); });
+        }).catch(function (error) { if (operationIsCurrent('handoff', token, startedRevision)) announce(error && error.message ? error.message : 'The handoff could not be created.'); });
       }
 
       function exportStl() {
         if (!Printable || !report || report.status === 'FAIL') { chooseTab('Preflight'); announce('Run preflight and resolve blocking items before exporting STL.'); return; }
+        var token = beginOperation('export'), startedRevision = contextRevisionRef.current;
         ensureThree().then(function (THREE) {
+          if (!operationIsCurrent('export', token, startedRevision)) return;
           var object = makeModelObject(THREE, format, recipe, fileBytes, glbRoot, unitMm);
           if (!object) throw new Error('There is no model ready to export.');
           centerAndGround(THREE, object);
@@ -1049,7 +1257,7 @@
           if (!buffer) throw new Error('The model did not contain exportable triangles.');
           downloadBlob(new Blob([buffer], { type: 'model/stl' }), Printable.safeFilename(title || 'student-model') + '.stl');
           announce('STL exported. Re-open it in the school’s slicer to confirm orientation, supports, scale, and machine settings.');
-        }).catch(function (error) { announce(error && error.message ? error.message : 'STL export was unavailable.'); });
+        }).catch(function (error) { if (operationIsCurrent('export', token, startedRevision)) announce(error && error.message ? error.message : 'STL export was unavailable.'); });
       }
 
       function field(label, value, onChange, options) {
@@ -1324,15 +1532,15 @@
           h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'materials-science-title' },
             h('h2', { id: 'materials-science-title', className: 'text-lg font-black text-white' }, 'Materials are systems, not labels'),
             h('p', { className: 'mt-1 max-w-4xl text-sm leading-6 text-slate-300' }, 'Compare performance, print conditions, waste, expected lifetime, additives, and the disposal route that actually exists. Reducing size, avoiding failed prints, repairing designs, and reusing parts usually matter before changing a material name.'),
-            h('div', { className: 'mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3' }, MATERIALS.map(function (item) { return h('button', { key: item.id, type: 'button', onClick: function () { setMaterialId(item.id); setMaterialReviewed(false); clearJobArtifacts(); persist({ materialId: item.id }); }, 'aria-pressed': materialId === item.id ? 'true' : 'false', className: 'min-h-[150px] rounded-2xl border p-4 text-left ' + (materialId === item.id ? 'border-cyan-300 bg-cyan-950/50' : 'border-slate-700 bg-slate-950') }, h('span', { className: 'block text-base font-black text-white' }, item.name), h('span', { className: 'mt-2 block text-xs leading-5 text-slate-200' }, item.summary), h('span', { className: 'mt-2 block text-[11px] leading-5 text-amber-100' }, item.lifecycle)); }))
+            h('div', { className: 'mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3' }, MATERIALS.map(function (item) { return h('button', { key: item.id, type: 'button', onClick: function () { if (item.id !== materialId) invalidateManufacturingEvidence({ clearReport: false, clearRepair: false }); setMaterialId(item.id); persist({ materialId: item.id }); }, 'aria-pressed': materialId === item.id ? 'true' : 'false', className: 'min-h-[150px] rounded-2xl border p-4 text-left ' + (materialId === item.id ? 'border-cyan-300 bg-cyan-950/50' : 'border-slate-700 bg-slate-950') }, h('span', { className: 'block text-base font-black text-white' }, item.name), h('span', { className: 'mt-2 block text-xs leading-5 text-slate-200' }, item.summary), h('span', { className: 'mt-2 block text-[11px] leading-5 text-amber-100' }, item.lifecycle)); }))
           ),
           h('section', { className: 'grid gap-4 rounded-2xl border border-slate-700 bg-slate-900 p-4 lg:grid-cols-[minmax(0,1fr)_320px]', 'aria-labelledby': 'material-estimate-title' },
             h('div', null,
               h('h2', { id: 'material-estimate-title', className: 'text-base font-black text-white' }, 'Advisory material estimate'),
               h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'This is a learning estimate from primitive volume, infill, density, and a support allowance. The receiving slicer determines the real toolpath, time, supports, and mass.'),
               h('div', { className: 'mt-3 grid gap-3 sm:grid-cols-2' },
-                field('Infill (%)', infillPercent, function (value) { var next = clamp(value, 0, 100, 20); setInfillPercent(next); clearJobArtifacts(); persist({ infillPercent: next }); }, { type: 'number', min: 0, max: 100, step: 1 }),
-                field('Support allowance (%)', supportPercent, function (value) { var next = clamp(value, 0, 200, 10); setSupportPercent(next); clearJobArtifacts(); persist({ supportPercent: next }); }, { type: 'number', min: 0, max: 200, step: 1 })
+                field('Infill (%)', infillPercent, function (value) { var next = clamp(value, 0, 100, 20); cancelOperation('handoff'); setInfillPercent(next); clearJobArtifacts(); persist({ infillPercent: next }); }, { type: 'number', min: 0, max: 100, step: 1 }),
+                field('Support allowance (%)', supportPercent, function (value) { var next = clamp(value, 0, 200, 10); cancelOperation('handoff'); setSupportPercent(next); clearJobArtifacts(); persist({ supportPercent: next }); }, { type: 'number', min: 0, max: 200, step: 1 })
               )
             ),
             h('div', { className: 'rounded-xl bg-slate-950 p-4' },
@@ -1351,11 +1559,11 @@
             h('h2', { id: 'submission-details-title', className: 'text-lg font-black text-white' }, 'Prepare a staff-review handoff'),
             h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Describe the object, not the student. Do not enter a full name, email, student ID, or other personal information. The package is not a purchase and does not deduct points.'),
             h('div', { className: 'mt-3 space-y-3' },
-              field('Model title', title, function (value) { setTitle(value); persist({ title: safeText(value, 100) }); }),
-              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'What is it for?'), h('textarea', { value: description, maxLength: 500, rows: 3, onChange: function (event) { setDescription(event.target.value); persist({ description: safeText(event.target.value, 500) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
-              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Design note for the reviewer'), h('textarea', { value: studentNote, maxLength: 300, rows: 3, onChange: function (event) { setStudentNote(event.target.value); persist({ studentNote: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
-              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'AI participation'), h('select', { value: aiUse, onChange: function (event) { setAiUse(event.target.value); persist({ aiUse: event.target.value }); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-white' }, h('option', { value: 'NONE' }, 'No AI assistance'), h('option', { value: 'ASSISTED' }, 'AI assisted part of the design'), h('option', { value: 'MOSTLY_AI' }, 'AI created most of the starting geometry'))),
-              aiUse !== 'NONE' && h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Explain the AI contribution'), h('textarea', { value: aiDisclosure, maxLength: 300, rows: 2, onChange: function (event) { setAiDisclosure(event.target.value); persist({ aiDisclosure: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' }))
+              field('Model title', title, function (value) { cancelOperation('handoff'); setTitle(value); persist({ title: safeText(value, 100) }); }),
+              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'What is it for?'), h('textarea', { value: description, maxLength: 500, rows: 3, onChange: function (event) { cancelOperation('handoff'); setDescription(event.target.value); persist({ description: safeText(event.target.value, 500) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
+              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Design note for the reviewer'), h('textarea', { value: studentNote, maxLength: 300, rows: 3, onChange: function (event) { cancelOperation('handoff'); setStudentNote(event.target.value); persist({ studentNote: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
+              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'AI participation'), h('select', { value: aiUse, onChange: function (event) { cancelOperation('handoff'); setAiUse(event.target.value); persist({ aiUse: event.target.value }); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-white' }, h('option', { value: 'NONE' }, 'No AI assistance'), h('option', { value: 'ASSISTED' }, 'AI assisted part of the design'), h('option', { value: 'MOSTLY_AI' }, 'AI created most of the starting geometry'))),
+              aiUse !== 'NONE' && h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Explain the AI contribution'), h('textarea', { value: aiDisclosure, maxLength: 300, rows: 2, onChange: function (event) { cancelOperation('handoff'); setAiDisclosure(event.target.value); persist({ aiDisclosure: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' }))
             ),
             h('div', { className: 'mt-5 rounded-2xl border border-violet-700 bg-slate-950 p-4', 'aria-labelledby': 'job-ticket-title' },
               h('h3', { id: 'job-ticket-title', className: 'text-base font-black text-white' }, 'Job Ticket'),
@@ -1377,7 +1585,7 @@
               ),
               h('label', { className: 'mt-3 flex min-h-[40px] items-center gap-2 text-xs text-slate-200' }, h('input', { type: 'checkbox', checked: materialReviewed, onChange: function (event) { setMaterialReviewed(event.target.checked); clearJobArtifacts(); } }), 'Reviewer confirmed the exact material selection'),
               h('label', { className: 'flex min-h-[40px] items-center gap-2 text-xs text-slate-200' }, h('input', { type: 'checkbox', checked: profileReviewed, onChange: function (event) { setProfileReviewed(event.target.checked); clearJobArtifacts(); } }), 'Reviewer confirmed the receiving printer profile'),
-              h('button', { type: 'button', disabled: !gcodeMetadata || !gcodeMetadataHash || !quoteMaterial || !materialReviewed || !profileReviewed || !report || report.status === 'FAIL', onClick: createJobTicket, className: 'mt-2 min-h-[44px] w-full rounded-xl bg-violet-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Create alloflow-print-job/1 ticket'),
+              h('button', { type: 'button', disabled: !gcodeEvidenceCurrent || !quoteMaterial || !materialReviewed || !profileReviewed || !report || report.status === 'FAIL', onClick: createJobTicket, className: 'mt-2 min-h-[44px] w-full rounded-xl bg-violet-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Create alloflow-print-job/1 ticket'),
               jobTicket && h('button', { type: 'button', onClick: downloadJobTicket, className: 'mt-2 min-h-[44px] w-full rounded-xl border border-violet-400 px-4 text-sm font-black text-violet-100' }, 'Download Job Ticket'),
               h('p', { className: 'mt-2 text-[11px] leading-5 text-amber-100' }, 'The ticket includes a deterministic SHA-256 digest of its normalized payload, excluding the integrity field. It can reveal later edits, but it is not a signature, authenticity proof, staff authorization, or server approval. It contains no commands, credentials, account identifier, or student identifier and does not authorize a physical print.')
             )
@@ -1385,11 +1593,15 @@
           h('aside', { className: 'space-y-3 rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'handoff-summary-title' },
             h('h2', { id: 'handoff-summary-title', className: 'text-base font-black text-white' }, 'Handoff summary'),
             h('dl', { className: 'space-y-2 text-xs' },
-              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Model bytes embedded', 'No']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-400' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
+              [['Format', format], ['Preflight', report ? report.status : 'Not run'], ['Scale', unitMm + ' mm per unit'], ['Material study', chosenMaterial.name], ['Model bytes embedded', 'No'], ['School Rewards asset', rewardsAssetCompatibility.compatible ? (rewardsAssetCompatibility.needsAsset ? rewardsAssetSizeLabel + ' ready' : 'Recipe included') : rewardsAssetSizeLabel + ' too large']].map(function (row) { return h('div', { key: row[0], className: 'flex justify-between gap-3 border-b border-slate-800 pb-2' }, h('dt', { className: 'text-slate-400' }, row[0]), h('dd', { className: 'text-right font-bold text-white' }, row[1])); })
             ),
             h('p', { className: 'rounded-xl border border-cyan-800 bg-cyan-950/30 p-3 text-[11px] leading-5 text-cyan-100' }, 'The .alloflow-print.json file contains the design recipe when applicable, a generic source-file label, a content hash, scale declaration, AI disclosure, and the advisory report. It contains no account identifier and performs no network submission.'),
+            !rewardsAssetCompatibility.compatible && h('div', { className: 'rounded-xl border border-amber-500 bg-amber-950/35 p-3 text-[11px] leading-5 text-amber-100', role: 'alert', 'data-school-rewards-asset-ready': 'false' },
+              h('strong', { className: 'block text-xs text-white' }, 'Reduce the model before opening School Rewards'),
+              h('p', { className: 'mt-1' }, rewardsAssetCompatibility.reason + ' Current local file: ' + rewardsAssetSizeLabel + '; portal maximum: 4 MiB. The 5 MiB local inspection allowance is intentionally larger so staff can inspect and simplify a borderline file without uploading it.')
+            ),
             h('button', { type: 'button', disabled: !title.trim() || !report || report.status === 'FAIL', onClick: downloadHandoff, className: 'min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Download review handoff'),
-            rewardsPortalUrl && h('button', { type: 'button', onClick: function () { try { var popup = window.open(rewardsPortalUrl, '_blank', 'noopener,noreferrer'); if (popup) popup.opener = null; } catch (_) { announce('The School Rewards portal could not open.'); } }, className: 'min-h-[44px] w-full rounded-xl border border-emerald-400 bg-emerald-950/30 px-4 text-sm font-black text-emerald-100' }, 'Open School Rewards portal'),
+            rewardsPortalUrl && h('button', { type: 'button', disabled: !rewardsAssetCompatibility.compatible, 'data-school-rewards-asset-ready': rewardsAssetCompatibility.compatible ? 'true' : 'false', onClick: function () { try { var popup = window.open(rewardsPortalUrl, '_blank', 'noopener,noreferrer'); if (popup) popup.opener = null; } catch (_) { announce('The School Rewards portal could not open.'); } }, className: 'min-h-[44px] w-full rounded-xl border border-emerald-400 bg-emerald-950/30 px-4 text-sm font-black text-emerald-100 disabled:cursor-not-allowed disabled:border-slate-600 disabled:text-slate-400' }, 'Open School Rewards portal'),
             !rewardsPortalUrl && h('p', { className: 'text-[11px] leading-5 text-slate-300' }, 'Connect the Google Education School Rewards portal in AlloFlow Project Settings to open it directly from this step.'),
             h('button', { type: 'button', disabled: !report || report.status === 'FAIL', onClick: exportStl, className: 'min-h-[44px] w-full rounded-xl border border-cyan-400 px-4 text-sm font-black text-cyan-100 disabled:opacity-50' }, 'Optional STL export'),
             h('p', { className: 'text-[11px] leading-5 text-amber-100' }, 'The receiving school workflow must pair the handoff with the original GLB/STL when needed, verify the content hash, inspect the slicer preview, approve a point quote, and only then create a store request.'),

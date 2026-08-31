@@ -939,12 +939,18 @@
     return { issues: issues, counts: counts };
   }
 
+  function stWorksheetObjectText(object) {
+    return Array.isArray(object && object.runs)
+      ? object.runs.map(function (run) { return run && run.text != null ? String(run.text) : ''; }).join('')
+      : '';
+  }
+
   function stExportWorksheetData(doc) {
     var out = { title: doc.title || 'Worksheet', instructions: '', questions: [] };
     var current = null;
     doc.objects.forEach(function (o) {
       if (!o || o.type !== 'text') return;
-      var text = String((o.runs && o.runs[0] && o.runs[0].text) || '').trim();
+      var text = stWorksheetObjectText(o).trim();
       if (!text) return;
       if (o.role === 'heading1') out.title = text;
       else if (o.role === 'heading2' && /^\d+[\.)]\s*/.test(text)) {
@@ -957,6 +963,79 @@
       }
     });
     return out;
+  }
+
+  function stExportWorksheetMarkdown(doc) {
+    if (!doc || !Array.isArray(doc.objects)) return '';
+    var lines = [];
+    doc.objects.filter(function (o) { return o && o.type === 'text'; }).forEach(function (o) {
+      var raw = stWorksheetObjectText(o)
+        .replace(/&lt;br\s*\/?&gt;/gi, '\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .trim();
+      if (!raw) return;
+      var prefix = o.role === 'heading1' ? '# ' : (o.role === 'heading2' ? '## ' : '');
+      lines.push(prefix + raw);
+    });
+    return lines.join('\n\n');
+  }
+
+  // Build an editable Studio document from an Activity worksheet. The source
+  // markdown is intentionally converted into ordinary text objects so every
+  // line remains editable, auditable in the process ledger, and exportable
+  // through the same worksheet bridge as a document created from a template.
+  function stActivityWorksheetDocFromResource(resource, options) {
+    resource = resource && typeof resource === 'object' ? resource : {};
+    var now = Number(options && options.now) || Date.now();
+    var title = stCleanText(resource.title || 'Activity worksheet', 160) || 'Activity worksheet';
+    var doc = stCreateDoc('letter-portrait', title, now);
+    stAppend(doc, { type: 'doc.template', template: 'activity-worksheet' }, 'import', now);
+    var source = String(resource.worksheet || '')
+      .replace(/&lt;br\s*\/?&gt;/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n');
+    var lines = source.split('\n');
+    var page = 0;
+    var y = 42;
+    var addText = function (role, text, height, size) {
+      var value = String(text || '').trim();
+      if (!value) return;
+      if (y + height > doc.canvas.h - 48 && page < ST_MAX_PAGES - 1) {
+        stAppend(doc, { type: 'page.add' }, 'import', now);
+        page++;
+        y = 42;
+      }
+      var object = stMakeText(role, value, { x: 56, y: y, w: doc.canvas.w - 112, h: height }, { size: size });
+      if (page > 0) object.page = page;
+      stAppend(doc, { type: 'object.add', object: object }, 'import', now);
+      y += height + (role === 'body' ? 10 : 8);
+    };
+    addText('heading1', title, 58, 30);
+    lines.forEach(function (line, lineIndex) {
+      var value = String(line || '')
+        .replace(/<br\s*\/?>/gi, '')
+        .replace(/^\s*#{1,6}\s*/, '')
+        .trim();
+      if (!value) { y += 8; return; }
+      var heading = String(line || '').match(/^\s*#{1,6}\s+/);
+      var numbered = value.match(/^(\d+)[\.)]\s+(.+)/);
+      if (heading && lineIndex > 0) addText('heading2', value, 42, 20);
+      else if (numbered) addText('heading2', numbered[1] + '. ' + numbered[2], 44, 18);
+      else addText('body', value, Math.max(34, Math.min(110, 26 + Math.ceil(value.length / 85) * 18)), 15);
+    });
+    doc.provenance = {
+      origin: 'activity-worksheet',
+      artifactId: stCleanText(resource.artifactId || '', 140),
+      artifactType: 'worksheet',
+      parentResourceId: stCleanText(resource.parentResourceId || '', 140),
+      activityIndex: Number.isFinite(Number(resource.activityIndex)) ? Math.max(0, Math.round(Number(resource.activityIndex))) : null,
+      activityKind: stCleanText(resource.activityKind || 'idea', 40),
+      sourceTitle: stCleanText(resource.sourceTitle || '', 140),
+      sourceType: 'activity-worksheet',
+      sourceRevision: resource.sourceRevision == null ? null : String(resource.sourceRevision)
+    };
+    return doc;
   }
 
   // Worksheet BRIDGE (doc §11): turn the VISUAL worksheet into a LINEAR,
@@ -1001,7 +1080,13 @@
         prompt: stCleanText(cue.prompt || text || label, 700),
         sourceType: stCleanText(cue.sourceType || cue.type || 'resource', 50),
         sourceTitle: stCleanText(cue.sourceTitle || '', 140),
-        sourceIndex: Math.max(0, Math.round(Number(cue.sourceIndex) || 0))
+        sourceIndex: Math.max(0, Math.round(Number(cue.sourceIndex) || 0)),
+        parentResourceId: stCleanText(cue.parentResourceId || '', 90),
+        activityIndex: cue.activityIndex == null ? null : Math.max(0, Math.round(Number(cue.activityIndex) || 0)),
+        activityKind: stCleanText(cue.activityKind || '', 40),
+        artifactType: stCleanText(cue.artifactType || '', 40),
+        artifactId: stCleanText(cue.artifactId || '', 140),
+        sourceRevision: cue.sourceRevision == null ? null : String(cue.sourceRevision)
       });
     };
     list.forEach(function (item, idx) {
@@ -1010,6 +1095,40 @@
       var title = stCleanText(item.title || item.name || item.label || type || 'Resource', 140);
       var data = item.data != null ? item.data : item.content;
       var baseId = stCleanText(item.id || item.resourceId || ('history-' + idx), 60);
+      var artifactHolder = data && typeof data === 'object' && !Array.isArray(data)
+        ? Object.assign({}, item, data)
+        : item;
+      if (type !== 'brainstorm') {
+        ['guide', 'worksheet', 'rubric', 'cover'].forEach(function (artifactType) {
+          var value = artifactType === 'cover' ? artifactHolder.coverImage : artifactHolder[artifactType];
+          var hasValue = artifactType === 'rubric'
+            ? !!(value && Array.isArray(value.criteria) && value.criteria.length)
+            : !!(typeof value === 'string' ? value.trim() : value);
+          if (!hasValue) return;
+          var derivatives = artifactHolder.derivatives && typeof artifactHolder.derivatives === 'object' ? artifactHolder.derivatives : {};
+          var meta = derivatives[artifactType] && typeof derivatives[artifactType] === 'object' ? derivatives[artifactType] : {};
+          var artifactText = artifactType === 'rubric'
+            ? value.criteria.map(function (criterion) {
+                return stCleanText(criterion && (criterion.criterion || criterion.name), 100) + ': ' + stCleanText(criterion && criterion.levels && (criterion.levels['4'] || criterion.levels.exceeds), 360);
+              }).join('\n')
+            : (artifactType === 'cover' ? title + ' cover image' : stCleanText(value, 620));
+          push({
+            id: String(meta.artifactId || (baseId + '-' + artifactType)),
+            kind: 'lesson-' + artifactType,
+            label: title + ' · ' + artifactType,
+            text: artifactText,
+            imageSrc: artifactType === 'cover' ? value : null,
+            prompt: artifactType === 'cover' ? ('Use the cover image for ' + title) : artifactText,
+            sourceType: type || 'resource',
+            sourceTitle: title,
+            sourceIndex: idx,
+            parentResourceId: baseId,
+            artifactType: artifactType,
+            artifactId: String(meta.artifactId || ''),
+            sourceRevision: meta.contentHash || meta.sourceRevision || (meta.version == null ? null : meta.version)
+          });
+        });
+      }
       if (type === 'glossary' && Array.isArray(data)) {
         data.slice(0, 80).forEach(function (g, gi) {
           var term = stCleanText(g && (g.term || g.word || g.label), 120);
@@ -1064,6 +1183,56 @@
             sourceType: type,
             sourceTitle: title,
             sourceIndex: idx
+          });
+        });
+      } else if (type === 'brainstorm' && Array.isArray(data)) {
+        data.slice(0, 40).forEach(function (activity, ai) {
+          if (!activity || typeof activity !== 'object') return;
+          var activityTitle = stCleanText(activity.title || ('Activity ' + (ai + 1)), 140) || ('Activity ' + (ai + 1));
+          var activityText = stCleanText(activity.description || activity.connection || activity.openingQuestion || activity.homeGroupTask || activity.synthesisOrganizer || activityTitle, 620);
+          push({
+            id: baseId + '-activity-' + ai,
+            kind: 'activity',
+            label: activityTitle,
+            text: activityText,
+            prompt: activityText,
+            sourceType: type,
+            sourceTitle: title,
+            sourceIndex: idx,
+            parentResourceId: baseId,
+            activityIndex: ai,
+            activityKind: activity.kind || 'idea'
+          });
+          var derivatives = activity.derivatives && typeof activity.derivatives === 'object' ? activity.derivatives : {};
+          ['guide', 'worksheet', 'rubric', 'cover'].forEach(function (artifactType) {
+            var value = artifactType === 'cover' ? activity.coverImage : activity[artifactType];
+            var hasValue = artifactType === 'rubric'
+              ? !!(value && Array.isArray(value.criteria) && value.criteria.length)
+              : !!(typeof value === 'string' ? value.trim() : value);
+            if (!hasValue) return;
+            var meta = derivatives[artifactType] && typeof derivatives[artifactType] === 'object' ? derivatives[artifactType] : {};
+            var artifactText = artifactType === 'rubric'
+              ? value.criteria.map(function (criterion) {
+                  return stCleanText(criterion && (criterion.criterion || criterion.name), 100) + ': ' + stCleanText(criterion && criterion.levels && (criterion.levels['4'] || criterion.levels.exceeds), 360);
+                }).join('\n')
+              : (artifactType === 'cover' ? activityTitle + ' cover image' : stCleanText(value, 620));
+            push({
+              id: String(meta.artifactId || (baseId + '-activity-' + ai + '-' + artifactType)),
+              kind: 'activity-' + artifactType,
+              label: activityTitle + ' · ' + artifactType,
+              text: artifactText,
+              imageSrc: artifactType === 'cover' ? value : null,
+              prompt: artifactType === 'cover' ? ('Use the cover image for ' + activityTitle) : artifactText,
+              sourceType: type,
+              sourceTitle: title,
+              sourceIndex: idx,
+              parentResourceId: baseId,
+              activityIndex: ai,
+              activityKind: activity.kind || 'idea',
+              artifactType: artifactType,
+              artifactId: String(meta.artifactId || ''),
+              sourceRevision: meta.contentHash || meta.sourceRevision || (meta.version == null ? null : meta.version)
+            });
           });
         });
       } else {
@@ -1125,6 +1294,22 @@
     if (text && text.length > 180) return choose('anchor-section', 'Longer text works best as a section block.');
     return choose('smart-card', 'Adds a balanced editable card from this source.');
   }
+  function stResourceCueProvenance(cue) {
+    cue = cue || {};
+    return {
+      origin: 'resource-history',
+      resourceId: stCleanText(cue.id, 90),
+      sourceTitle: stCleanText(cue.sourceTitle, 140),
+      sourceType: stCleanText(cue.sourceType || cue.kind, 50),
+      parentResourceId: stCleanText(cue.parentResourceId, 140),
+      activityIndex: Number.isFinite(Number(cue.activityIndex)) ? Math.max(0, Math.round(Number(cue.activityIndex))) : null,
+      activityKind: stCleanText(cue.activityKind, 40),
+      artifactType: stCleanText(cue.artifactType, 40),
+      artifactId: stCleanText(cue.artifactId, 140),
+      sourceRevision: cue.sourceRevision == null ? null : String(cue.sourceRevision)
+    };
+  }
+
   function stObjectsFromResourceCue(cue, options) {
     cue = cue || {};
     options = options || {};
@@ -1142,12 +1327,7 @@
     else if (insertAs === 'captioned-image') kind = imageSrc ? 'image' : 'section';
     else if (insertAs === 'anchor-section') kind = 'section';
     else if (insertAs === 'source-note') kind = 'source-note';
-    var source = {
-      origin: 'resource-history',
-      resourceId: stCleanText(cue.id, 90),
-      sourceTitle: stCleanText(cue.sourceTitle, 140),
-      sourceType: stCleanText(cue.sourceType || cue.kind, 50)
-    };
+    var source = stResourceCueProvenance(cue);
     var objects = [];
     var add = function (object) {
       object.provenance = source;
@@ -1283,7 +1463,7 @@
       var text = stCleanText(cue.text || cue.definition || cue.prompt, 900);
       var bodyText = text && text !== label ? text : '';
       var imageSrc = stSafeDataImage(cue.imageSrc || cue.image || cue.imageUrl || cue.src || cue.dataUrl);
-      var provenance = { origin: 'resource-history', resourceId: stCleanText(cue.id, 90), sourceTitle: stCleanText(cue.sourceTitle, 140), sourceType: stCleanText(cue.sourceType || cue.kind, 50) };
+      var provenance = stResourceCueProvenance(cue);
       var mk = function (obj) { obj.page = page; obj.provenance = provenance; stAppend(d, { type: 'object.add', object: obj }, 'import', now); };
       mk(stMakeText('heading2', label, { x: 96, y: 56, w: cw - 192, h: 80 }, { size: 36 }));
       if (imageSrc) {
@@ -4230,6 +4410,24 @@
     var t = props.t || function () { return ''; };
     var TT = function (k, fb) { try { var s = t(k); return s || fb; } catch (_) { return fb; } };
     var addToast = props.addToast || function () {};
+    var hasLinkedActivityWorksheet = !!(props.initialResource && typeof props.onSaveGeneratedArtifact === 'function');
+    var linkedRevisionRef = React.useRef(props.initialResource && props.initialResource.sourceRevision != null
+      ? String(props.initialResource.sourceRevision)
+      : null);
+    React.useEffect(function () {
+      if (!props.initialResource) {
+        linkedRevisionRef.current = null;
+        return;
+      }
+      linkedRevisionRef.current = props.initialResource.sourceRevision == null
+        ? null
+        : String(props.initialResource.sourceRevision);
+    }, [
+      props.initialResource && props.initialResource.parentResourceId,
+      props.initialResource && props.initialResource.activityIndex,
+      props.initialResource && props.initialResource.artifactId,
+      props.initialResource && props.initialResource.sourceRevision
+    ]);
 
     var _docRef = React.useRef(null);
     var _tick = React.useState(0); var setTick = _tick[1];
@@ -4610,6 +4808,18 @@
       setView('edit'); clearSelection(); bump();
       addToast('📽️ ' + TT('studio.deck_built', 'Deck drafted: a title slide plus one slide per resource. Reorder, edit, then export to PowerPoint.') + (built.skipped ? ' (' + built.skipped + ' ' + TT('studio.deck_skipped', 'resources beyond the page limit were left out') + ')' : ''), 'success');
       stAnnounce(TT('studio.a11y_deck_built', 'Deck drafted from resources') + ': ' + built.used);
+    };
+    var buildActivityWorksheet = function () {
+      if (!props.initialResource) {
+        addToast('The Activity worksheet could not be opened.', 'error');
+        return;
+      }
+      var built = stActivityWorksheetDocFromResource(props.initialResource, { now: Date.now() });
+      _docRef.current = built;
+      setPageIndex(0);
+      setView('edit'); clearSelection(); bump();
+      addToast('Worksheet opened as editable Page Designer text objects.', 'success');
+      stAnnounce('Activity worksheet opened in Page Designer');
     };
     var insertArtworkFromTool = function (artwork) {
       var source = artwork && stSafeDataImage(artwork.src, ST_MAX_IMAGE_SRC_LENGTH);
@@ -5595,6 +5805,30 @@
       addToast(TT('studio.saved', '💾 Saved. The file includes your full process history — it stays on this device.'), 'success');
       if (!recent.ok) addToast(TT('studio.recent_save_failed', 'Recent-project shelf could not update, but your file downloaded.'), 'info');
     };
+    var saveLinkedArtifact = function () {
+      if (!hasLinkedActivityWorksheet) {
+        addToast('This document is not linked to an Activity worksheet.', 'info');
+        return;
+      }
+      var resource = props.initialResource;
+      var result = props.onSaveGeneratedArtifact({
+        artifactType: 'worksheet',
+        artifactId: resource.artifactId || '',
+        parentResourceId: resource.parentResourceId || '',
+        activityIndex: resource.activityIndex,
+        sourceRevision: linkedRevisionRef.current != null ? linkedRevisionRef.current : resource.sourceRevision,
+        documentId: 'allostudio-' + String(doc && doc.createdAt || Date.now()),
+        content: stExportWorksheetMarkdown(doc)
+      });
+      if (result === false || (result && result.ok === false)) {
+        addToast('The worksheet was not saved back to Activities. Reopen it if the source changed.', 'error');
+        return;
+      }
+      if (result && typeof result === 'object' && result.sourceRevision != null) {
+        linkedRevisionRef.current = String(result.sourceRevision);
+      }
+      addToast('Worksheet changes saved back to Activities.', 'success');
+    };
     var saveToPortfolio = function () {
       var result = stSavePortfolioArtifact(doc, { now: new Date().toISOString() });
       if (result.ok) {
@@ -5661,6 +5895,9 @@
       if (props.initialAction === 'deck-from-resources') {
         initialActionRef.current = true;
         buildDeckFromResources();
+      } else if (props.initialAction === 'worksheet-from-activity' && props.initialResource) {
+        initialActionRef.current = true;
+        buildActivityWorksheet();
       } else if ((props.initialAction === 'insert-visual-asset' || props.initialAction === 'insert-artstudio-artwork') && props.initialArtwork) {
         initialActionRef.current = true;
         insertArtworkFromTool(props.initialArtwork);
@@ -5668,7 +5905,7 @@
         initialActionRef.current = true;
         onImportPptxFile({ target: { files: [props.initialFile], value: '' } });
       }
-    }, [props.initialAction, props.initialFile, props.initialArtwork]);
+    }, [props.initialAction, props.initialFile, props.initialArtwork, props.initialResource]);
 
     // ── styles ──
     var S = {
@@ -6645,6 +6882,8 @@
           h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'),
           h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'),
           h('span', { style: S.headerSpacer }),
+          hasLinkedActivityWorksheet ? h('span', { style: { fontSize: '10px', color: C.muted, whiteSpace: 'nowrap' }, title: 'This document is linked to an Activity worksheet.' }, '🔗 Activity worksheet') : null,
+          hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg }), onClick: saveLinkedArtifact, title: 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
           h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
           h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', border: '1px solid #1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),
@@ -6756,6 +6995,9 @@
           h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')),
           h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')),
           h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')),
+          hasLinkedActivityWorksheet
+            ? h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent, background: C.selectedBg }), onClick: saveLinkedArtifact, title: 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity')
+            : null,
           h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'),
           h('button', { style: S.tool, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.save_portfolio', 'Save to Portfolio')),
           altFailures.length ? h('span', { style: { fontSize: '11px', color: errorTone.fg, background: errorTone.bg, border: '1px solid ' + errorTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } },
@@ -7115,7 +7357,10 @@
   AlloStudio.stAnalyzeDoc = stAnalyzeDoc;
   AlloStudio.stContrastRatio = stContrastRatio;
   AlloStudio.stExportWorksheetData = stExportWorksheetData;
+  AlloStudio.stExportWorksheetMarkdown = stExportWorksheetMarkdown;
+  AlloStudio.stResourceCueProvenance = stResourceCueProvenance;
   AlloStudio.stExportWorksheetHtml = stExportWorksheetHtml;
+  AlloStudio.stActivityWorksheetDocFromResource = stActivityWorksheetDocFromResource;
   AlloStudio.stCropBox = stCropBox;
   AlloStudio.stScrubObjectSrc = stScrubObjectSrc;
   AlloStudio.stExportProcessMarkdown = stExportProcessMarkdown;

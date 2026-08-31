@@ -28,6 +28,8 @@ import { GlHarness } from './helpers/stem_gl_harness';
  *   5. Switching between the two viewer instances leaves exactly one canvas.
  *   6. The tyre scene actually changes as the procedure advances — the car has
  *      to visibly lift, which is the entire reason that module is 3D.
+ *   7. Repair cases rebuild truthful evidence geometry, including a failed fan
+ *      that stays stopped while the rest of the running engine remains animated.
  */
 
 const harness = new GlHarness({
@@ -42,6 +44,84 @@ const harness = new GlHarness({
   probes: `
     window.__hostShell = function () {
       return !!(window.StemLab && typeof window.StemLab.makeBayViewer === 'function');
+    };
+    // Capture the latest real scene without adding a production debug API.
+    // Object-name probes are more stable than pixel coordinates under SwiftShader.
+    (function () {
+      var RealWebGLRenderer = THREE.WebGLRenderer;
+      window.__arRenderedScenes = [];
+      function ProbedWebGLRenderer() {
+        var renderer = Reflect.construct(
+          RealWebGLRenderer,
+          Array.prototype.slice.call(arguments)
+        );
+        var originalRender = renderer.render;
+        renderer.render = function (scene, camera) {
+          window.__arLatestScene = scene;
+          window.__arLatestCamera = camera;
+          if (scene && window.__arRenderedScenes.indexOf(scene) === -1) {
+            window.__arRenderedScenes.push(scene);
+          }
+          return originalRender.apply(renderer, arguments);
+        };
+        return renderer;
+      }
+      ProbedWebGLRenderer.prototype = RealWebGLRenderer.prototype;
+      THREE.WebGLRenderer = ProbedWebGLRenderer;
+    })();
+    window.__sceneObjectState = function (name) {
+      var scenes = window.__arRenderedScenes || [];
+      var object = null;
+      for (var sceneIndex = scenes.length - 1; sceneIndex >= 0 && !object; sceneIndex--) {
+        var scene = scenes[sceneIndex];
+        object = scene && scene.getObjectByName && scene.getObjectByName(name);
+      }
+      if (!object) return null;
+      return {
+        name: object.name,
+        position: { x: object.position.x, y: object.position.y, z: object.position.z },
+        rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z },
+        scale: { x: object.scale.x, y: object.scale.y, z: object.scale.z },
+        faultState: object.userData && object.userData.faultState || null,
+        inspectionState: object.userData && object.userData.inspectionState || null,
+        visible: object.visible !== false
+      };
+    };
+    window.__partCameraState = function (partId) {
+      var scene = window.__arLatestScene;
+      var camera = window.__arLatestCamera;
+      if (!scene || !camera) return null;
+      var part = null;
+      scene.traverse(function (object) {
+        if (!part && object && object.isGroup && object.userData &&
+            object.userData.partId === partId) part = object;
+      });
+      if (!part) return null;
+      scene.updateMatrixWorld(true);
+      camera.updateMatrixWorld(true);
+      var center = new THREE.Box3().setFromObject(part).getCenter(new THREE.Vector3());
+      var projected = center.clone().project(camera);
+      return {
+        camera: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+        center: { x: center.x, y: center.y, z: center.z },
+        ndc: { x: projected.x, y: projected.y, z: projected.z },
+        distance: camera.position.distanceTo(center)
+      };
+    };
+    window.__sceneProbeSummary = function () {
+      return (window.__arRenderedScenes || []).map(function (scene) {
+        var names = [];
+        if (scene && scene.traverse) {
+          scene.traverse(function (object) {
+            if (object && object.name) names.push(object.name);
+          });
+        }
+        return {
+          type: scene && scene.type || null,
+          childCount: scene && scene.children ? scene.children.length : 0,
+          namedObjects: names.slice(0, 80)
+        };
+      });
     };
     // Sweep the canvas for a pick. Geometry positions are an implementation
     // detail, so hunt rather than hard-code a hit point that would rot.
@@ -191,6 +271,138 @@ test.describe('Auto Repair Shop — 3D modules on real WebGL', () => {
 
     expect(Buffer.compare(before, after),
       'running the engine did not animate the fan, belt or pulleys').not.toBe(0);
+  });
+
+  test('repair cases render truthful evidence and the failed cooling fan stays stopped', async ({ page }) => {
+    await harness.mount(page, {
+      autoRepair: { view: 'repairbay', rbCase: 'overheat', rbEngine: 'running' }
+    });
+
+    const sceneSummary = await page.evaluate(() => (window as any).__sceneProbeSummary());
+    const fanShroudState = await page.evaluate(
+      () => (window as any).__sceneObjectState('radiator-fan-shroud'));
+    expect(fanShroudState, 'Rendered scene inventory: ' + JSON.stringify(sceneSummary))
+      .not.toBeNull();
+    expect(await page.evaluate(() => (window as any).__sceneObjectState('radiator-fan-motor')))
+      .not.toBeNull();
+    expect(await page.evaluate(() => (window as any).__sceneObjectState('radiator-side-tank-left')))
+      .not.toBeNull();
+
+    const stoppedBefore = await page.evaluate(
+      () => (window as any).__sceneObjectState('radiator-cooling-fan'));
+    await page.waitForTimeout(360);
+    const stoppedAfter = await page.evaluate(
+      () => (window as any).__sceneObjectState('radiator-cooling-fan'));
+    expect(stoppedBefore?.faultState).toBe('failed-stopped');
+    expect(stoppedAfter?.rotation.z).toBeCloseTo(stoppedBefore?.rotation.z ?? 0, 7);
+
+    await page.evaluate(() => (window as any).__ctx.updateMulti(
+      'autoRepair', { rbCase: 'charging', rbEngine: 'running' }));
+    await page.waitForFunction(
+      () => (window as any).__sceneObjectState('radiator-cooling-fan')?.faultState === 'operational');
+    const spinningBefore = await page.evaluate(
+      () => (window as any).__sceneObjectState('radiator-cooling-fan'));
+    await page.waitForTimeout(360);
+    const spinningAfter = await page.evaluate(
+      () => (window as any).__sceneObjectState('radiator-cooling-fan'));
+    expect(Math.abs((spinningAfter?.rotation.z ?? 0) - (spinningBefore?.rotation.z ?? 0)))
+      .toBeGreaterThan(0.1);
+
+    await page.evaluate(() => (window as any).__ctx.updateMulti(
+      'autoRepair', { rbCase: 'nocrank', rbEngine: 'off' }));
+    await page.waitForFunction(
+      () => !!(window as any).__sceneObjectState('positive-terminal-corrosion-0'));
+
+    await page.evaluate(() => (window as any).__ctx.update(
+      'autoRepair', 'rbCase', 'squeal'));
+    await page.waitForFunction(
+      () => !!(window as any).__sceneObjectState('glazed-belt-surface'));
+
+    await page.evaluate(() => (window as any).__ctx.update(
+      'autoRepair', 'rbCase', 'headgasket'));
+    await page.waitForFunction(
+      () => !!(window as any).__sceneObjectState('coolant-below-min-level'));
+    expect(await page.evaluate(
+      () => (window as any).__sceneObjectState('oil-cap-milky-sludge'))).not.toBeNull();
+
+    const errors = await page.evaluate(() => (window as any).__events.errors);
+    expect(errors, 'errors while rebuilding case evidence scenes').toEqual([]);
+  });
+
+  test('an open overheat fuse box exposes a blown fuse and supports camera focus and return', async ({ page }) => {
+    await harness.mount(page, {
+      autoRepair: {
+        view: 'repairbay', rbCase: 'overheat', rbEngine: 'off',
+        rbSel: 'fusebox', rbFound: { 'p:fusebox': true }, rbOpenPart: null
+      }
+    });
+
+    const open = page.getByRole('button', { name: 'Re-open the under-hood fuse box' });
+    await expect(open).toBeEnabled();
+    await open.click();
+    await page.waitForFunction(() =>
+      (window as any).__sceneObjectState('fusebox-cooling-fan-fuse')?.faultState === 'blown');
+
+    expect(await page.evaluate(() => (window as any).__sceneObjectState('fusebox-lid-pivot')))
+      .not.toBeNull();
+    expect(await page.evaluate(() => (window as any).__sceneObjectState('fusebox-lid-map')))
+      .not.toBeNull();
+    expect(await page.evaluate(() => (window as any).__sceneObjectState('fusebox-fuse-tray')))
+      .not.toBeNull();
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('fusebox-cooling-fan-fuse')?.faultState)).toBe('blown');
+
+    const home = await page.evaluate(() => (window as any).__partCameraState('fusebox'));
+    await page.getByRole('button', { name: 'Focus view on Under-hood fuse box' }).click();
+    await expect.poll(async () => {
+      const state = await page.evaluate(() => (window as any).__partCameraState('fusebox'));
+      return state ? Math.hypot(state.ndc.x, state.ndc.y) : 99;
+    }).toBeLessThan(0.06);
+    const focused = await page.evaluate(() => (window as any).__partCameraState('fusebox'));
+    expect(Math.hypot(
+      focused.camera.x - home.camera.x,
+      focused.camera.y - home.camera.y,
+      focused.camera.z - home.camera.z
+    )).toBeGreaterThan(0.2);
+
+    await page.getByRole('button', { name: 'Return to the whole engine bay' }).click();
+    await expect.poll(async () => {
+      const state = await page.evaluate(() => (window as any).__partCameraState('fusebox'));
+      return state ? Math.hypot(
+        state.camera.x - home.camera.x,
+        state.camera.y - home.camera.y,
+        state.camera.z - home.camera.z
+      ) : 99;
+    }).toBeLessThan(0.08);
+    expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('a pulled dipstick carries case-specific milky and below-low oil evidence', async ({ page }) => {
+    await harness.mount(page, {
+      autoRepair: {
+        view: 'repairbay', rbCase: 'headgasket', rbEngine: 'off',
+        rbSel: 'dipstick', rbFound: { 'p:dipstick': true }, rbOpenPart: null
+      }
+    });
+
+    await page.getByRole('button', { name: 'Pull the oil dipstick again' }).click();
+    await page.waitForFunction(() =>
+      (window as any).__sceneObjectState('dipstick-pull-assembly')?.inspectionState === 'pulled');
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('dipstick-oil-film')?.faultState)).toBe('milky');
+    expect(await page.evaluate(() => (window as any).__sceneObjectState('dipstick-min-mark')))
+      .not.toBeNull();
+    expect(await page.evaluate(() => (window as any).__sceneObjectState('dipstick-max-mark')))
+      .not.toBeNull();
+
+    await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'rbCase', 'oilpressure'));
+    await page.waitForFunction(() =>
+      (window as any).__sceneObjectState('dipstick-oil-film')?.faultState === 'below-low');
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('dipstick-oil-film')?.faultState)).toBe('below-low');
+    expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
   test('reduced motion freezes engine animation without removing the scene', async ({ page }) => {

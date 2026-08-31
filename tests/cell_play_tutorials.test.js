@@ -147,19 +147,24 @@ describe('cell simulator organism play tutorials', () => {
         selectedOrganism: 'amoeba',
         playAsOrganism: 'amoeba',
         showPlayInstructions: true,
+        playMission: { organismId: 'amoeba', startSuccess: 0, predictionSkipped: false },
       } });
       expect(html).toContain('data-cell-control-loop="true"');
       expect(html).toContain('id="cell-live-biology-loop"');
-      expect(html).toContain('First action: Press or hold any direction. Cell response: Pseudopods extend. Watch for: Cell crawls. This cue will confirm when your input is registered.');
+      expect(html).toContain('Prediction checkpoint. Choose what you expect, or start without a prediction. Controls and evidence unlock after this decision.');
       expect(html).toContain('data-cell-first-action-state="waiting"');
       expect(html).toContain('data-cell-control-title="true"');
-      expect(html).toContain('>1 \u00B7 First action</span>');
-      expect(html).toContain('data-cell-first-action-command="true"');
-      expect(html).toContain('data-cell-control-phase="ready"');
+      expect(html).toContain('>1 \u00B7 Predict first</span>');
+      expect(html).toContain('data-cell-first-action-command="false"');
+      expect(html).toContain('data-cell-control-phase="locked"');
       expect(html).toContain('data-cell-control-input="true"');
-      expect(html).toContain('>Press / hold a direction</strong>');
+      expect(html).toContain('>Choose or skip</strong>');
       expect(html).toContain('data-cell-control-mechanism="true"');
+      expect(html).toContain('>Controls unlock</strong>');
       expect(html).toContain('data-cell-control-observation="true"');
+      expect(html).toContain('data-cell-control-lock="true"');
+      expect(html).toContain('Predict or start without a prediction to unlock Amoeba controls');
+      expect(html).not.toContain('data-cell-direction-pad="true"');
       expect(html).toContain('data-cell-play-tutorial-dialog="true"');
       expect(html).toContain('data-cell-tutorial-control-map="true"');
       expect(html).toContain('aria-label="Control model: Direction input, then Pseudopods extend, then Cell crawls. Evidence to collect: Pseudopods \u2192 engulfment."');
@@ -178,6 +183,11 @@ describe('cell simulator organism play tutorials', () => {
       expect(html).toContain('data-cell-play-tutorial-dialog="true" role="dialog" aria-modal="true" aria-labelledby="cell-playinstr-title" tabindex="-1"');
       expect(html).not.toMatch(/data-cell-play-tutorial-dialog="true"[^>]*autofocus/);
       expect(html).not.toMatch(/data-cell-tutorial-primary="true"[^>]*autofocus/);
+      expect(html).toMatch(/data-cell-tutorial-primary="true"[^>]*disabled=""/);
+      expect(html).toContain('Choose a prediction to start');
+      expect(html).toContain('data-cell-skip-prediction="true"');
+      expect(html).toContain('Start without prediction');
+      expect(html).toContain('Start Amoeba mission without a prediction');
       expect(readFileSync(filePath, 'utf8')).toContain("if (panel) panel.scrollTop = 0;");
       expect(readFileSync(filePath, 'utf8')).toContain("if (scrollBody) scrollBody.scrollTop = 0;");
       expect(readFileSync(filePath, 'utf8')).toContain("dialog.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'center' })");
@@ -206,15 +216,14 @@ describe('cell simulator organism play tutorials', () => {
       expect(html).toContain('Prediction option 1: The flexible edge will extend around the particle.');
       expect(html).toContain('Predictions are not graded; evidence can confirm or revise your thinking.');
       expect(html).toContain('Engulf 3 green food particles.');
-      expect(html).toContain('data-cell-direction-pad="true"');
-      expect(html).toContain('data-cell-active-direction="idle"');
-      expect(html).toContain('aria-describedby="cell-live-biology-loop"');
-      expect(html).toContain('data-cell-pad-readout="true"');
-      expect(html).toContain('data-cell-pad-state="start"');
-      expect(html).toContain('>Start</span>');
-      expect(html).toContain('data-cell-move="ArrowRight"');
-      expect(html).toContain('data-cell-move-active="false"');
-      expect(html).toContain('aria-pressed="false"');
+      expect(html).toContain('data-cell-control-lock-state="waiting"');
+      expect(html).toContain('>Unlock controls</strong>');
+      expect(html).toContain('Choose what you expect or start without a prediction.');
+      expect(html).toContain('data-cell-target-state="locked"');
+      expect(html).toContain('data-cell-proximity="waiting"');
+      expect(html).toContain('PREDICT FIRST');
+      expect(html).toContain('data-cell-approach-state="locked"');
+      expect(html).toContain('data-cell-step-state="upcoming"');
       expect(html).toContain('data-cell-play-hud="true"');
       expect(html).toContain('aria-label="Open Amoeba mission tutorial"');
       expect(html).toContain('data-cell-stage-hud="true"');
@@ -234,27 +243,36 @@ describe('cell simulator organism play tutorials', () => {
       expect(html).toContain('data-cell-ultra-narrow-style="true"');
       expect(html).toContain('data-cell-approach-meter="true"');
       expect(html).toContain('data-cell-approach-current="0"');
-      expect(html).toContain('Mission path: Locate, then Approach, then Contact. Current step: Locate.');
-      expect(html).toContain('aria-label="Locate, current step"');
+      expect(html).toContain('Mission path locked. Make a prediction or choose to start without one before Locate, then Approach, then Contact.');
+      expect(html).toContain('aria-label="Locate, upcoming"');
       expect(html).toContain('data-cell-target-guide-note="true"');
       expect(html).toContain('data-cell-target-proximity="true"');
-      expect(html).toContain('data-cell-proximity="locate"');
-      expect(html).toContain('Compass label reads target \u00B7 distance \u00B7 direction.');
+      expect(html).toContain('data-cell-proximity="waiting"');
+      expect(html).toContain('Make the Predict decision; target guidance begins when controls unlock.');
       expect(html).toContain('data-cell-mission-progress="true"');
-      expect(html).toContain('data-cell-mission-progress-state="collect"');
-      expect(html).toContain('data-cell-learning-phase="control"');
-      expect(html).toContain('data-cell-learning-step="2"');
-      expect(html).toContain('data-cell-hud-phase="control"');
-      expect(html).toContain('Learning loop \u00B7 2/4');
-      expect(html).toContain('aria-label="Learning step 2 of 4, Control. Evidence 0 of 3."');
-      expect(html).toContain('data-cell-learning-phase-label="true">Control</span>');
+      expect(html).toContain('data-cell-mission-progress-state="predict"');
+      expect(html).toContain('data-cell-learning-phase="predict"');
+      expect(html).toContain('data-cell-learning-step="1"');
+      expect(html).toContain('data-cell-hud-phase="predict"');
+      expect(html).toContain('Learning loop \u00B7 1/4');
+      expect(html).toContain('aria-label="Learning step 1 of 4, Predict. Evidence 0 of 3. Make a prediction or choose to start without one."');
+      expect(html).toContain('data-cell-learning-phase-label="true">Predict</span>');
+      expect(html).toContain('data-cell-predict-cue="true">Choose now</span>');
+      expect(html).toContain('data-cell-prediction-handoff="true"');
+      const initialPredictionCheckpoint = checkpointHtml(html, 'predict');
       const initialControlCheckpoint = checkpointHtml(html, 'control');
       const initialObserveCheckpoint = checkpointHtml(html, 'observe');
       const initialExplainCheckpoint = checkpointHtml(html, 'explain');
-      expect(initialControlCheckpoint).toContain('data-cell-checkpoint-state="current"');
-      expect(initialControlCheckpoint).toContain('aria-current="step"');
+      expect(initialPredictionCheckpoint).toContain('data-cell-checkpoint-state="current"');
+      expect(initialPredictionCheckpoint).toContain('aria-current="step"');
+      expect(initialPredictionCheckpoint).toContain('data-cell-checkpoint-status="predict"');
+      expect(initialPredictionCheckpoint).toContain('>Choose now</span>');
+      expect(initialPredictionCheckpoint).toContain('data-cell-prediction-action="true"');
+      expect(initialPredictionCheckpoint).toContain('Make prediction');
+      expect(initialControlCheckpoint).toContain('data-cell-checkpoint-state="upcoming"');
+      expect(initialControlCheckpoint).not.toContain('aria-current="step"');
       expect(initialControlCheckpoint).toContain('data-cell-checkpoint-status="control"');
-      expect(initialControlCheckpoint).toContain('>Now</span>');
+      expect(initialControlCheckpoint).toContain('>Next</span>');
       expect(initialObserveCheckpoint).toContain('data-cell-checkpoint-state="upcoming"');
       expect(initialObserveCheckpoint).not.toContain('aria-current="step"');
       expect(initialObserveCheckpoint).toContain('data-cell-checkpoint-status="observe"');
@@ -263,17 +281,17 @@ describe('cell simulator organism play tutorials', () => {
       expect(initialExplainCheckpoint).not.toContain('aria-current="step"');
       expect(initialExplainCheckpoint).toContain('data-cell-checkpoint-status="explain"');
       expect(initialExplainCheckpoint).toContain('>Locked</span>');
-      expect(html).toContain('data-cell-sim-state="active"');
+      expect(html).toContain('data-cell-sim-state="predict"');
       expect(html).not.toContain('data-cell-explain-handoff="true"');
       expect(html).toContain('data-cell-mission-checkpoint="true"');
       expect(html).toContain('data-cell-prediction-stage="true"');
       expect(html).toContain('data-cell-learning-step="predict"');
       expect(html).toContain('data-cell-prediction-stage-state="ready"');
       expect(html).toContain('data-cell-prediction-stage-status="true"');
-      expect(html).toContain('Before play');
+      expect(html).toContain('Choose now');
       expect(html).toContain('Prediction question:');
       expect(html).toContain('What visible change should occur when food is captured?');
-      expect(html).toContain('Open the briefing to choose what you expect before collecting evidence.');
+      expect(html).toContain('Choose what you expect before collecting evidence; predictions are not graded.');
       expect(html).toContain('1  |  Predict');
       expect(html).toContain('2  |  Control');
       expect(html).toContain('3  |  Observe');
@@ -324,10 +342,12 @@ describe('cell simulator organism play tutorials', () => {
       expect(html).toContain('0 / 11 missions complete');
       expect(html).toContain('aria-labelledby="cell-organism-chooser-title"');
       expect(html).toContain('data-cell-next-step="true"');
-      expect(html).toContain('data-cell-next-step-state="start"');
+      expect(html).toContain('data-cell-next-step-state="predict"');
       expect(html).toContain('data-cell-recommended-organism="amoeba"');
-      expect(html).toContain('Start with Amoeba');
-      expect(html).toContain('Goal: Engulf 3 green food particles.');
+      expect(html).toContain('Predict for Amoeba before play');
+      expect(html).toContain('Control unlocks after you predict or explicitly skip.');
+      expect(html).toContain('aria-label="Make an Amoeba prediction before collecting evidence"');
+      expect(html).toContain('>Make prediction</button>');
       expect(html).toContain('Touching a particle models phagocytosis');
       expect(html).toContain('Control loop: Direction input \u2192 Pseudopods extend \u2192 Cell crawls');
       expect(html).toContain('data-cell-organism-option="amoeba"');
@@ -641,7 +661,7 @@ describe('cell simulator organism play tutorials', () => {
       selectedOrganism: 'euglena',
       playAsOrganism: 'euglena',
       showPlayInstructions: false,
-      playMission: { organismId: 'euglena', startSuccess: 0 },
+      playMission: { organismId: 'euglena', startSuccess: 0, predictionSkipped: true },
       playCue: {
         organismId: 'euglena',
         kind: 'light',

@@ -391,7 +391,7 @@
   "explain_in_your_own_words": "Explain in your own words...",
   "inquiry_widget_no_score_no_reveal_no_a": "Inquiry widget — no score, no reveal, no answer dump. T = √(a³/M) per Kepler III with M in solar masses, a in AU, T in years. Vis-viva used for v at perihelion / aphelion.",
   "full_orrery_animated_solar_system": "Full orrery — animated solar system",
-  "all_8_planets_to_scale_size_orbit_watc": "All 8 planets to scale (size + orbit). Watch Mercury zip around the Sun ~4 times per Earth-year. Inner planets cluster tight; outer ones sweep huge orbits.",
+  "all_8_planets_to_scale_size_orbit_watc": "Eight planets plus Pluto follow measured orbital shapes and relative speeds. The main map shares one orbital-distance scale; markers are compressed and clamped, and the inner-system inset is magnified.",
   "kepler_i_orbits_are_ellipses": "Kepler I — orbits are ellipses",
   "every_planet_orbits_in_an_ellipse_with": "Every planet orbits in an ellipse with the Sun at one focus. The other focus is empty space. Earth's orbit is barely-eccentric (e ≈ 0.017).",
   "kepler_ii_equal_areas_in_equal_times": "Kepler II — equal areas in equal times",

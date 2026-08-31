@@ -421,6 +421,33 @@ describe('Kokoro local loader resilience', () => {
     expect(revokeObjectURL).toHaveBeenCalledTimes(2);
   });
 
+  it('lets a multi-chunk chain handle stop silently and revoke every owned URL', async () => {
+    const api = loadKokoro();
+    await api.init();
+    createObjectURL.mockClear();
+    revokeObjectURL.mockClear();
+    const worker = FakeWorker.instances[0];
+
+    const firstPromise = api.speakStreaming('Stop this multi-chunk stream quietly. '.repeat(8), 'af_heart', 1);
+    const request = worker.messages.find((item) => item.type === 'generate_stream');
+    worker.emit({ type: 'stream_chunk', id: request.id, buffer: new ArrayBuffer(8), index: 0, total: 2 });
+    worker.emit({ type: 'stream_chunk', id: request.id, buffer: new ArrayBuffer(8), index: 1, total: 2 });
+    worker.emit({ type: 'stream_done', id: request.id, total: 2, expectedTotal: 2, elapsed: 2 });
+
+    const firstUrl = await firstPromise;
+    const firstAudio = new FakeAudio(firstUrl);
+    const done = vi.fn();
+    const handle = api.chainPlay(firstAudio, 1, 1, done);
+
+    expect(handle.stop(false)).toBe(true);
+    expect(handle.stop(false)).toBe(false);
+    expect(firstAudio.paused).toBe(true);
+    expect(done).not.toHaveBeenCalled();
+    expect(api.ownsUrl(firstUrl)).toBe(false);
+    expect(api.streamQueueLength).toBe(0);
+    expect(revokeObjectURL).toHaveBeenCalledTimes(2);
+  });
+
   it('rejects worker failures, retries cleanly, and cancels pending generation', async () => {
     FakeWorker.autoInit = false;
     const api = loadKokoro();

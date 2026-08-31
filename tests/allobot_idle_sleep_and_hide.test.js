@@ -50,11 +50,12 @@ describe('AlloBot idle sleep', () => {
     const silence = source.slice(source.indexOf('const silenceSpeech = useCallback('), source.indexOf('const fallAsleep = useCallback('));
     expect(silence).toContain('speechRequestAbortRef.current?.abort()');
     expect(silence).toContain('currentAudioRef.current.pause()');
-    // Scoped, not global (L7/A3): cancelAlloBotBrowserSpeech() only calls
+    // Scoped, not global (L7/A3): cancelOwnedBrowserSpeech(true) only calls
     // speechSynthesis.cancel() when AlloBot itself owns the current utterance.
     // The bare global call used to take Read This Page and the voice loop down
     // with it, which is what made "hide the bot" read as "turn off TTS".
-    expect(silence).toContain('cancelAlloBotBrowserSpeech()');
+    expect(silence).toContain('speechGenerationRef.current += 1;');
+    expect(silence).toContain('cancelOwnedBrowserSpeech(true)');
     expect(silence).toContain('releaseAlloBotAudioUrl(lastAudioUrlRef.current)');
     const fall = source.slice(source.indexOf('const fallAsleep = useCallback('), source.indexOf('// The corner "X"'));
     expect(fall).toContain('isSleepingRef.current = true;');
@@ -63,9 +64,32 @@ describe('AlloBot idle sleep', () => {
 
   it('stops audio when the bot is unmounted mid-sentence', () => {
     // Hiding the bot drops the component; a detached <audio> keeps playing.
-    expect(source).toContain('useEffect(() => () => {');
-    const cleanup = source.slice(source.indexOf('useEffect(() => () => {'));
-    expect(cleanup.slice(0, 600)).toContain('currentAudioRef.current.pause()');
+    const marker = source.indexOf('// Hiding the bot unmounts');
+    const cleanup = source.slice(marker, source.indexOf('const latestPositionRef', marker));
+    expect(marker).toBeGreaterThan(-1);
+    expect(cleanup).toContain('speechGenerationRef.current += 1;');
+    expect(cleanup).toContain('currentAudioRef.current.pause()');
+    expect(cleanup).toContain('cancelOwnedBrowserSpeech(true)');
+  });
+
+  it('owns and tears down every flight Web Audio node', () => {
+    for (const copy of [source, moduleSource, publicModule]) {
+      expect(copy).toMatch(/const isFlightActive\s*=\s*!motionDisabled\s*&&\s*!isSleeping\s*&&\s*!isDocumentHidden/);
+    }
+    const flight = source.slice(
+      source.indexOf('const flightAudioNodesRef = useRef(null);'),
+      source.indexOf('const movementTimersRef = useRef([]);'),
+    );
+    expect(flight).toContain('flightAudioNodesRef.current = null;');
+    expect(flight).toContain('nodes.noise?.stop?.(0)');
+    expect(flight).toContain('nodes.osc?.stop?.(0)');
+    expect(flight).toContain('node?.disconnect?.()');
+    expect(flight).toContain('flightAudioNodesRef.current = { noise, noiseFilter, noiseGain, osc, oscGain };');
+    expect(flight).toContain('return stopFlightAudio;');
+    expect(flight).toContain('[isFlightActive, soundEnabled, isDocumentHidden, stopFlightAudio]');
+    const mute = source.slice(source.indexOf('const handleGlobalMute ='), source.indexOf('const fallAsleep = useCallback('));
+    expect(mute).toContain('silenceSpeech();');
+    expect(mute).toContain('stopFlightAudio();');
   });
 
   it('naps after three idle minutes and treats work in progress as activity', () => {
@@ -133,7 +157,7 @@ describe('AlloBot dismissal', () => {
 
 describe('AlloBot orbit controls on touch', () => {
   it('resolves the pointer type instead of relying on a hover variant alone', () => {
-    expect(source).toContain("const QUERY = '(hover: none), (pointer: coarse)';");
+    expect(source).toContain("const QUERY = '(hover: none), (pointer: coarse), (any-pointer: coarse)';");
     expect(source).toContain('const coarsePointer = useAlloCoarsePointer();');
   });
 

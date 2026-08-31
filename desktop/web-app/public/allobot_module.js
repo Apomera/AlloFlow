@@ -28,7 +28,6 @@
     console.warn('[AlloBotModule] Already loaded — skipping');
     return;
   }
-  window.__alloBotModuleLoaded = true;
 
   // ── React dependencies ──
   var React = window.React;
@@ -60,6 +59,7 @@
   // ── Lucide icons from host app ──
   var _icons = window.AlloIcons || {};
   var Mic = _icons.Mic || function() { return null; };
+  var MicOff = _icons.MicOff || function() { return null; };
   var Volume2 = _icons.Volume2 || function() { return null; };
   var VolumeX = _icons.VolumeX || function() { return null; };
   var Settings = _icons.Settings || function() { return null; };
@@ -69,6 +69,18 @@
   // COMPILED COMPONENTS
   // ═══════════════════════════════════════════════════════════════
 
+const ensureAlloBotAudioContextRunning = (ctx) => {
+  if (!ctx || ctx.state === "closed") return false;
+  if (!ctx.state || ctx.state === "running") return true;
+  try {
+    const resumeResult = ctx.resume?.();
+    resumeResult?.catch?.(() => {
+    });
+  } catch (_) {
+    return false;
+  }
+  return ctx.state === "running";
+};
 const ALLOBOT_BUBBLE_CSS = `
   .allobot-speech-bubble {
       --allobot-bubble-bg: #FFFFFF;
@@ -218,38 +230,44 @@ const ALLOBOT_BUBBLE_CSS = `
   .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="large"] { left: 32px; }
   .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="small"] { left: 20px; }
 `;
-const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = "speech", disableAnimations = false, theme = "light", avoidSide = null }) => {
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = "speech", disableAnimations = false, isDocumentHidden = false, theme = "light", avoidSide = null, announce = true }) => {
   const { t } = useContext(LanguageContext);
   const bubbleRef = useRef(null);
+  const completedTextRef = useRef(null);
+  const soundEnabledRef = useRef(!!soundEnabled);
+  soundEnabledRef.current = !!soundEnabled;
   const [placement, setPlacement] = useState("top-right");
+  const [bubbleMaxWidth, setBubbleMaxWidth] = useState(200);
   const [displayedText, setDisplayedText] = useState("");
   useEffect(() => {
-    if (!isVisible || !text) {
+    const normalizedText = typeof text === "string" ? text : text == null ? "" : String(text);
+    if (!isVisible || !normalizedText) {
+      completedTextRef.current = null;
       setDisplayedText("");
       if (onTyping) onTyping(false);
       return;
     }
-    setDisplayedText("");
-    if (onTyping) onTyping(true);
-    const chars = Array.from(text);
-    if (disableAnimations) {
-      setDisplayedText(text);
+    if (disableAnimations || isDocumentHidden || completedTextRef.current === normalizedText) {
+      completedTextRef.current = normalizedText;
+      setDisplayedText(normalizedText);
       if (onTyping) onTyping(false);
       return;
     }
+    completedTextRef.current = null;
+    setDisplayedText("");
+    if (onTyping) onTyping(true);
+    const chars = Array.from(normalizedText);
     let i = 0;
     const speed = 30;
     const timer = setInterval(() => {
       if (i < chars.length) {
         const char = chars[i];
         setDisplayedText((prev) => prev + char);
-        if (soundEnabled && i % 3 === 0 && !isGlobalMuted()) {
+        const tabIsVisible = typeof document === "undefined" || document.visibilityState !== "hidden";
+        if (soundEnabledRef.current && !isDocumentHidden && tabIsVisible && i % 3 === 0 && !isGlobalMuted()) {
           try {
             const ctx = getGlobalAudioContext();
-            if (ctx) {
-              if (ctx.state === "suspended") {
-                ctx.resume();
-              }
+            if (ensureAlloBotAudioContextRunning(ctx)) {
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();
               osc.connect(gain);
@@ -268,38 +286,52 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
         i++;
       } else {
         clearInterval(timer);
+        completedTextRef.current = normalizedText;
         if (onTyping) onTyping(false);
       }
     }, speed);
     return () => {
       clearInterval(timer);
     };
-  }, [text, isVisible, onTyping, soundEnabled, disableAnimations]);
+  }, [text, isVisible, onTyping, disableAnimations, isDocumentHidden]);
   React.useLayoutEffect(() => {
     if (!isVisible || !bubbleRef.current) return;
     const resolvePlacement = () => {
       if (!bubbleRef.current) return;
-      const rect = bubbleRef.current.getBoundingClientRect();
-      const anchorRect = bubbleRef.current.parentElement?.getBoundingClientRect() || rect;
+      const bubble = bubbleRef.current;
+      bubble.style.maxWidth = "";
+      const authoredRect = bubble.getBoundingClientRect();
+      const anchorRect = bubble.parentElement?.getBoundingClientRect() || authoredRect;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const viewportGutter = 10;
-      const bubbleFootprint = rect.height + (variant === "thought" ? 32 : 16);
       const topRoom = anchorRect.top - viewportGutter;
       const bottomRoom = viewportHeight - anchorRect.bottom - viewportGutter;
-      const newVert = topRoom >= bubbleFootprint || topRoom >= bottomRoom ? "top" : "bottom";
       const preferredAttachment = avoidSide === "left" ? "left" : avoidSide === "right" ? "right" : variant === "thought" ? "left" : "right";
       const alternateAttachment = preferredAttachment === "left" ? "right" : "left";
-      const thoughtOffset = variant === "thought" && newVert === "top" ? 48 : 0;
-      const availableByAttachment = {
-        left: viewportWidth - viewportGutter - (anchorRect.left + thoughtOffset),
-        right: anchorRect.right - thoughtOffset - viewportGutter
+      const evaluatePlacement = (vertical) => {
+        const thoughtOffset = variant === "thought" && vertical === "top" ? 48 : 0;
+        const availableByAttachment = {
+          left: viewportWidth - viewportGutter - (anchorRect.left + thoughtOffset),
+          right: anchorRect.right - thoughtOffset - viewportGutter
+        };
+        let horizontal = preferredAttachment;
+        if (authoredRect.width > availableByAttachment[preferredAttachment] && (authoredRect.width <= availableByAttachment[alternateAttachment] || availableByAttachment[alternateAttachment] > availableByAttachment[preferredAttachment])) {
+          horizontal = alternateAttachment;
+        }
+        const maxWidth = Math.min(200, Math.max(1, Math.floor(availableByAttachment[horizontal])));
+        bubble.style.maxWidth = `${maxWidth}px`;
+        const wrappedRect = bubble.getBoundingClientRect();
+        const footprint = wrappedRect.height + (variant === "thought" ? 32 : 16);
+        const room = vertical === "top" ? topRoom : bottomRoom;
+        return { vertical, horizontal, maxWidth, footprint, room, fits: room >= footprint };
       };
-      let newHoriz = preferredAttachment;
-      if (rect.width > availableByAttachment[preferredAttachment] && (rect.width <= availableByAttachment[alternateAttachment] || availableByAttachment[alternateAttachment] > availableByAttachment[preferredAttachment])) {
-        newHoriz = alternateAttachment;
-      }
-      setPlacement(`${newVert}-${newHoriz}`);
+      const topCandidate = evaluatePlacement("top");
+      const bottomCandidate = evaluatePlacement("bottom");
+      const chosen = topCandidate.fits ? topCandidate : bottomCandidate.fits ? bottomCandidate : topCandidate.room - topCandidate.footprint >= bottomCandidate.room - bottomCandidate.footprint ? topCandidate : bottomCandidate;
+      bubble.style.maxWidth = `${chosen.maxWidth}px`;
+      setBubbleMaxWidth(chosen.maxWidth);
+      setPlacement(`${chosen.vertical}-${chosen.horizontal}`);
     };
     resolvePlacement();
     window.addEventListener("resize", resolvePlacement);
@@ -325,6 +357,7 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
   const renderThoughtTrail = () => {
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "data-allobot-thought-dot": "large", className: "allobot-thought-dot" }), /* @__PURE__ */ React.createElement("div", { "data-allobot-thought-dot": "small", className: "allobot-thought-dot" }));
   };
+  const renderedText = disableAnimations && isVisible ? text : displayedText;
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, ALLOBOT_BUBBLE_CSS), /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -336,6 +369,7 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
       "data-allobot-bubble-attachment": placement.endsWith("-left") ? "left" : "right",
       "data-allobot-bubble-state": isVisible ? "visible" : "hidden",
       "data-allobot-bubble-motion": disableAnimations ? "static" : "animated",
+      style: { maxWidth: `${bubbleMaxWidth}px` },
       className: `
             allobot-speech-bubble absolute ${posClasses[placement]}
             bg-white text-indigo-900 text-xs font-bold px-4 py-3
@@ -346,12 +380,15 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
             ${isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2"}
         `
     },
-    /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only allobot-bubble-live" }, isVisible ? text : ""),
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "allobot-bubble-text" }, displayedText),
-    isVisible && isTruncated && displayedText.length === text?.length && /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only allobot-bubble-live" }, isVisible && announce ? text : ""),
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "allobot-bubble-text" }, renderedText),
+    isVisible && isTruncated && renderedText.length === text?.length && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
+        onTouchStart: (e) => e.stopPropagation(),
+        onPointerDown: (e) => e.stopPropagation(),
+        onMouseDown: (e) => e.stopPropagation(),
         onClick: (e) => {
           e.stopPropagation();
           if (onReadMore) onReadMore();
@@ -849,7 +886,7 @@ const useAlloMotionDisabled = (disableAnimations) => {
   return !!disableAnimations || !!prefersReducedMotion;
 };
 const useAlloCoarsePointer = () => {
-  const QUERY = "(hover: none), (pointer: coarse)";
+  const QUERY = "(hover: none), (pointer: coarse), (any-pointer: coarse)";
   const [coarse, setCoarse] = useState(() => {
     try {
       return !!(typeof window !== "undefined" && window.matchMedia && window.matchMedia(QUERY).matches);
@@ -923,20 +960,56 @@ const isAlloBotTtsOff = () => {
     return false;
   }
 };
-let _alloBotOwnsBrowserSpeech = false;
-const alloBotClaimBrowserSpeech = () => {
-  _alloBotOwnsBrowserSpeech = true;
+let _alloBotBrowserSpeechOwner = null;
+const alloBotClaimBrowserSpeech = (owner) => {
+  _alloBotBrowserSpeechOwner = owner || null;
 };
-const alloBotReleaseBrowserSpeech = () => {
-  _alloBotOwnsBrowserSpeech = false;
+const alloBotReleaseBrowserSpeech = (owner) => {
+  if (_alloBotBrowserSpeechOwner === owner) _alloBotBrowserSpeechOwner = null;
 };
-const cancelAlloBotBrowserSpeech = () => {
-  if (!_alloBotOwnsBrowserSpeech) return false;
-  _alloBotOwnsBrowserSpeech = false;
+const alloBotCanQueueBrowserSpeech = () => {
+  try {
+    const synth = window.speechSynthesis;
+    return !!synth && !_alloBotBrowserSpeechOwner && !synth.speaking && !synth.pending;
+  } catch (_) {
+    return false;
+  }
+};
+const cancelAlloBotBrowserSpeech = (owner) => {
+  if (!owner || _alloBotBrowserSpeechOwner !== owner) return false;
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth) return false;
+    if (synth.pending) {
+      owner.cancelRequested = true;
+      try {
+        owner.utterance.volume = 0;
+      } catch (_) {
+      }
+      return false;
+    }
+  } catch (_) {
+    return false;
+  }
+  _alloBotBrowserSpeechOwner = null;
   try {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
   } catch (_) {
   }
+  return true;
+};
+const alloBotDetachBrowserSpeechOwner = (owner, runAfterRelease = false) => {
+  if (!owner) return false;
+  const afterRelease = owner.afterRelease;
+  owner.afterRelease = null;
+  try {
+    owner.utterance.onstart = null;
+    owner.utterance.onend = null;
+    owner.utterance.onerror = null;
+  } catch (_) {
+  }
+  alloBotReleaseBrowserSpeech(owner);
+  if (runAfterRelease && typeof afterRelease === "function") afterRelease();
   return true;
 };
 const alloBotTipText = (value, maxLength = 90) => String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
@@ -1208,7 +1281,7 @@ const EDUCATOR_EVENT_TIP_KEYS = Object.freeze({
   "udl-advice": "bot_events.educator_support_ready"
 });
 const buildStudentEventTip = (latest, topic, t) => {
-  const type = latest?.type || "";
+  const type = typeof latest?.type === "string" ? latest.type : "";
   const data = latest?.data;
   const topicName = alloBotTipText(topic || latest?.topic || data?.topic || latest?.title);
   const questions = alloBotTipList(data?.questions || (Array.isArray(data) && type === "faq" ? data : []));
@@ -1286,7 +1359,7 @@ const buildStudentEventTip = (latest, topic, t) => {
   return t(STUDENT_EVENT_TIP_KEYS[type] || "bot_events.student_resource_ready");
 };
 const buildEducatorEventTip = (latest, topic, t) => {
-  const type = latest?.type || "";
+  const type = typeof latest?.type === "string" ? latest.type : "";
   const data = latest?.data;
   const questions = alloBotTipList(data?.questions || (Array.isArray(data) && type === "quiz" ? data : []));
   const terms = alloBotTipList(Array.isArray(data) && type === "glossary" ? data : data?.terms);
@@ -1696,7 +1769,38 @@ const ALLOBOT_DEFAULT_ACCESSORY_PROFILE = Object.freeze({
   depth: "none"
 });
 const ALLOBOT_AVATAR_WIDTH = 64;
+const ALLOBOT_VIEWPORT_GUTTER = 10;
+const ALLOBOT_POSITION_EXTENT = ALLOBOT_AVATAR_WIDTH + ALLOBOT_VIEWPORT_GUTTER;
 const ALLOBOT_PROP_SAFE_GUTTER = 46;
+const ALLOBOT_ANIMATION_CLASS_BY_NAME = Object.freeze({
+  "wave-hello": "animate-allo-wave-hello",
+  "sympathetic-tilt": "animate-allo-sympathetic-tilt",
+  wave: "animate-allo-wave",
+  backflip: "animate-allo-backflip",
+  shrug: "animate-allo-shrug",
+  "look-around": "animate-allo-look-around"
+});
+const clampAlloBotPosition = (candidate, viewportWidth, viewportHeight, fallback = { x: 24, y: 20 }) => {
+  const width = Number.isFinite(viewportWidth) && viewportWidth > 0 ? viewportWidth : 1024;
+  const height = Number.isFinite(viewportHeight) && viewportHeight > 0 ? viewportHeight : 768;
+  const fallbackX = Number.isFinite(fallback?.x) ? fallback.x : 24;
+  const fallbackY = Number.isFinite(fallback?.y) ? fallback.y : 20;
+  const rawX = candidate && Number.isFinite(candidate.x) ? candidate.x : fallbackX;
+  const rawY = candidate && Number.isFinite(candidate.y) ? candidate.y : fallbackY;
+  const maxRight = Math.max(ALLOBOT_VIEWPORT_GUTTER, width - ALLOBOT_POSITION_EXTENT);
+  const maxTop = Math.max(ALLOBOT_VIEWPORT_GUTTER, height - ALLOBOT_POSITION_EXTENT);
+  return {
+    x: Math.min(maxRight, Math.max(ALLOBOT_VIEWPORT_GUTTER, rawX)),
+    y: Math.min(maxTop, Math.max(ALLOBOT_VIEWPORT_GUTTER, rawY))
+  };
+};
+const getAlloBotEventPoint = (event, changed = false) => {
+  const touchList = changed ? event?.changedTouches : event?.touches;
+  const touch = touchList && touchList.length > 0 ? touchList[0] : null;
+  const clientX = Number(touch ? touch.clientX : event?.clientX);
+  const clientY = Number(touch ? touch.clientY : event?.clientY);
+  return Number.isFinite(clientX) && Number.isFinite(clientY) ? { x: clientX, y: clientY } : null;
+};
 const ALLOBOT_HELD_ITEM_GRIP = Object.freeze({
   pointer: { x: 90, y: 65 },
   pencil: { x: 90, y: 65 },
@@ -1729,12 +1833,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const stopTouch = (e) => e.stopPropagation();
   const satelliteIconSize = coarsePointer ? 16 : 12;
   const { t } = useContext(LanguageContext);
+  const moveInstructionsId = React.useId();
   const [position, setPosition] = useState(() => {
+    const fallback = { x: 24, y: 20 };
     try {
       const saved = safeGetItem("allo_bot_pos_v2");
-      return saved ? JSON.parse(saved) : { x: 24, y: 20 };
+      const parsed = saved ? JSON.parse(saved) : fallback;
+      const width = typeof window !== "undefined" ? window.innerWidth : 1024;
+      const height = typeof window !== "undefined" ? window.innerHeight : 768;
+      return clampAlloBotPosition(parsed, width, height, fallback);
     } catch (e) {
-      return { x: 24, y: 20 };
+      return fallback;
     }
   });
   const [viewportWidth, setViewportWidth] = useState(() => {
@@ -1746,10 +1855,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   });
   useEffect(() => {
     if (typeof window === "undefined") return void 0;
-    const syncViewportWidth = () => setViewportWidth(window.innerWidth || 1024);
-    syncViewportWidth();
-    window.addEventListener("resize", syncViewportWidth);
-    return () => window.removeEventListener("resize", syncViewportWidth);
+    const syncViewport = () => {
+      const width = window.innerWidth || 1024;
+      const height = window.innerHeight || 768;
+      setViewportWidth(width);
+      setPosition((current) => {
+        const next = clampAlloBotPosition(current, width, height);
+        return next.x === current.x && next.y === current.y ? current : next;
+      });
+    };
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    return () => window.removeEventListener("resize", syncViewport);
   }, []);
   const [keyboardMoveStatus, setKeyboardMoveStatus] = useState("");
   const [isHovered, setIsHovered] = useState(false);
@@ -1767,17 +1884,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [resetHoverGaze]);
-  const [pulseScale, setPulseScale] = useState(1);
-  useEffect(() => {
-    if (motionDisabled) {
-      setPulseScale(1);
-      return;
-    }
-    const pulseInterval = setInterval(() => {
-      setPulseScale((prev) => prev === 1 ? 1.02 : 1);
-    }, 2e3);
-    return () => clearInterval(pulseInterval);
-  }, [motionDisabled]);
   const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
   const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
@@ -1831,7 +1937,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const _aimX = aimAt ? aimAt.x : null;
   const _aimY = aimAt ? aimAt.y : null;
   useEffect(() => {
-    if (_aimX === null || _aimY === null) {
+    if (_aimX === null || _aimY === null || isDocumentHidden) {
       setAimAngle(45);
       try {
         if (typeof window !== "undefined") window.__alloBotMuzzle = null;
@@ -1862,7 +1968,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       stopped = true;
       if (timer) clearTimeout(timer);
     };
-  }, [_aimX, _aimY]);
+  }, [_aimX, _aimY, isDocumentHidden]);
   useEffect(() => {
     if (motionDisabled || !isHovered) {
       setEyePosition({ x: 0, y: 0 });
@@ -1935,7 +2041,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const generationStage = normalizedGenerationStageSignal || generationStageFromStep;
   const [generationPhase, setGenerationPhase] = useState(0);
   useEffect(() => {
-    if (effectiveMood !== "thinking" || motionDisabled) {
+    if (effectiveMood !== "thinking" || motionDisabled || generationMotionPaused) {
       setGenerationPhase(0);
       return void 0;
     }
@@ -1943,7 +2049,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       setGenerationPhase((previous) => (previous + 1) % 3);
     }, 3200);
     return () => clearInterval(phaseTimer);
-  }, [effectiveMood, motionDisabled]);
+  }, [effectiveMood, motionDisabled, generationMotionPaused]);
   const generationAnimationPhase = generationStage === "analyze" ? 0 : generationStage === "build" ? 1 : generationStage === "finalize" ? 2 : generationPhase;
   const generationProgressDasharray = generationProgressFraction === null ? ["18 82", "26 74", "12 88"][generationAnimationPhase] : "100 100";
   const generationPackSlotCount = isFullPackGeneration ? Math.min(6, Math.max(3, Number.isFinite(generationProgressTotal) ? Math.round(generationProgressTotal) : 4)) : 0;
@@ -1972,11 +2078,43 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const [reactions, setReactions] = useState([]);
   const [bursts, setBursts] = useState([]);
   const [localIsFlying, setLocalIsFlying] = useState(false);
+  const propFlightOwnedRef = useRef(false);
+  const [propFlightInterrupted, setPropFlightInterrupted] = useState(false);
   const [isLanding, setIsLanding] = useState(false);
   const [moveDuration, setMoveDuration] = useState(700);
   const [isCelebrating, setIsCelebrating] = useState(false);
   const speechGenerationRef = useRef(0);
   const speechRequestAbortRef = useRef(null);
+  const browserSpeechOwnerRef = useRef(null);
+  const ownedTimeoutsRef = useRef(/* @__PURE__ */ new Set());
+  const scheduleOwnedTimeout = useCallback((callback, delay) => {
+    const safeDelay = Number.isFinite(Number(delay)) ? Math.max(0, Number(delay)) : 0;
+    const timeoutId = setTimeout(() => {
+      ownedTimeoutsRef.current.delete(timeoutId);
+      callback();
+    }, safeDelay);
+    ownedTimeoutsRef.current.add(timeoutId);
+    return timeoutId;
+  }, []);
+  const cancelOwnedTimeout = useCallback((timeoutId) => {
+    if (timeoutId == null) return;
+    clearTimeout(timeoutId);
+    ownedTimeoutsRef.current.delete(timeoutId);
+  }, []);
+  const cancelOwnedBrowserSpeech = useCallback((releaseToken = false) => {
+    const owner = browserSpeechOwnerRef.current;
+    const cancelled = cancelAlloBotBrowserSpeech(owner);
+    if (cancelled) browserSpeechOwnerRef.current = null;
+    else if (releaseToken && owner) {
+      alloBotDetachBrowserSpeechOwner(owner);
+      if (browserSpeechOwnerRef.current === owner) browserSpeechOwnerRef.current = null;
+    }
+    return cancelled;
+  }, []);
+  useEffect(() => () => {
+    ownedTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+    ownedTimeoutsRef.current.clear();
+  }, []);
   const prevDragPos = useRef({ x: 0, y: 0 });
   const [dragRotation, setDragRotation] = useState(0);
   const [velocity, setVelocity] = useState({ dx: 0, dy: 0 });
@@ -2003,33 +2141,59 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const [antennaAction, setAntennaAction] = useState(null);
   const [wobbleState, setWobbleState] = useState({ active: false, deg: 0 });
   const lastRotationRef = useRef(0);
-  const isFlightActive = !motionDisabled && (isFlying || localIsFlying);
+  const isFlightActive = !motionDisabled && !isSleeping && !isDocumentHidden && (isFlying && !propFlightInterrupted || localIsFlying);
   useEffect(() => {
-    if (isFlying && motionDisabled) {
+    if (!isFlying && propFlightInterrupted) setPropFlightInterrupted(false);
+  }, [isFlying, propFlightInterrupted]);
+  useEffect(() => {
+    const stopOwnedPropFlight = () => {
+      if (!propFlightOwnedRef.current) return;
+      propFlightOwnedRef.current = false;
+      setLocalIsFlying(false);
+      setIsLanding(false);
+    };
+    if (!isFlying) {
+      stopOwnedPropFlight();
+      return;
+    }
+    if (motionDisabled || isSleeping) {
+      propFlightOwnedRef.current = false;
       setLocalIsFlying(false);
       setIsLanding(false);
       setMoveDuration(0);
       return;
     }
-    if (isFlying && !isSleeping) {
+    if (propFlightInterrupted) {
+      stopOwnedPropFlight();
+      return;
+    }
+    if (isFlying) {
+      const flightTimers = [];
+      const later = (callback, delay) => {
+        const timeoutId = scheduleOwnedTimeout(callback, delay);
+        flightTimers.push(timeoutId);
+        return timeoutId;
+      };
       const startX = 5;
       const startY = 90;
       const endX = position.x || 24;
       const endY = position.y || 20;
-      setPosition({ x: startX, y: startY });
+      setPosition(clampAlloBotPosition({ x: startX, y: startY }, window.innerWidth, window.innerHeight));
+      propFlightOwnedRef.current = true;
       setLocalIsFlying(true);
       setMoveDuration(2e3);
-      const flyTimer = setTimeout(() => {
-        setPosition({ x: endX, y: endY });
-        setTimeout(() => {
+      later(() => {
+        setPosition(clampAlloBotPosition({ x: endX, y: endY }, window.innerWidth, window.innerHeight));
+        later(() => {
+          propFlightOwnedRef.current = false;
           setLocalIsFlying(false);
           setIsLanding(true);
-          setTimeout(() => setIsLanding(false), 600);
+          later(() => setIsLanding(false), 600);
         }, 2e3);
       }, 100);
-      return () => clearTimeout(flyTimer);
+      return () => flightTimers.forEach(cancelOwnedTimeout);
     }
-  }, [isFlying, motionDisabled]);
+  }, [isFlying, propFlightInterrupted, motionDisabled, isSleeping, scheduleOwnedTimeout, cancelOwnedTimeout]);
   const getHeldItem = () => {
     if (holdingPointer) return "flashlight";
     if (isFlightActive || isSleeping) return null;
@@ -2101,6 +2265,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const dragStartRef = useRef({ x: 0, y: 0 });
   const startPosRef = useRef({ x: 0, y: 0 });
   const currentAudioRef = useRef(null);
+  const currentAudioChainRef = useRef(null);
+  const stopCurrentAudioChain = useCallback((notifyDone = true) => {
+    const chain = currentAudioChainRef.current;
+    currentAudioChainRef.current = null;
+    if (!chain || typeof chain.stop !== "function") return false;
+    try {
+      return !!chain.stop(notifyDone);
+    } catch (_) {
+      return false;
+    }
+  }, []);
   const audioPlaybackStartedRef = useRef(false);
   const lastAudioUrlRef = useRef(null);
   const authFailedRef = useRef(false);
@@ -2109,11 +2284,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     soundEnabledRef.current = soundEnabled;
     if (!soundEnabled) {
       const wasPlaying = audioPlaybackStartedRef.current;
+      speechGenerationRef.current += 1;
+      setCustomMessage(null);
+      setIsTruncated(false);
+      setInternalMood(null);
       audioPlaybackStartedRef.current = false;
       try {
         speechRequestAbortRef.current?.abort();
       } catch (_) {
       }
+      speechRequestAbortRef.current = null;
+      stopCurrentAudioChain();
       if (currentAudioRef.current) {
         try {
           currentAudioRef.current.pause();
@@ -2125,18 +2306,25 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         releaseAlloBotAudioUrl(lastAudioUrlRef.current);
         lastAudioUrlRef.current = null;
       }
-      cancelAlloBotBrowserSpeech();
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current);
+        speechTimeoutRef.current = null;
+      }
+      cancelOwnedBrowserSpeech(true);
       setIsTalking(false);
       if (wasPlaying && onSpeechEnd) onSpeechEnd();
     }
-  }, [soundEnabled, onSpeechEnd]);
+  }, [soundEnabled, onSpeechEnd, cancelOwnedBrowserSpeech, stopCurrentAudioChain]);
   useEffect(() => () => {
     const wasPlaying = audioPlaybackStartedRef.current;
+    speechGenerationRef.current += 1;
     audioPlaybackStartedRef.current = false;
     try {
       speechRequestAbortRef.current?.abort();
     } catch (_) {
     }
+    speechRequestAbortRef.current = null;
+    stopCurrentAudioChain();
     if (currentAudioRef.current) {
       try {
         currentAudioRef.current.pause();
@@ -2148,17 +2336,39 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       releaseAlloBotAudioUrl(lastAudioUrlRef.current);
       lastAudioUrlRef.current = null;
     }
-    if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
-    cancelAlloBotBrowserSpeech();
-    if (wasPlaying && onSpeechEnd) onSpeechEnd();
-  }, [onSpeechEnd]);
-  useEffect(() => {
-    try {
-      safeSetItem("allo_bot_pos_v2", JSON.stringify(position));
-    } catch (e) {
-      warnLog("localStorage write failed", e);
+    if (speechTimeoutRef.current) {
+      clearTimeout(speechTimeoutRef.current);
+      speechTimeoutRef.current = null;
     }
+    cancelOwnedBrowserSpeech(true);
+    if (wasPlaying && onSpeechEnd) onSpeechEnd();
+  }, [onSpeechEnd, cancelOwnedBrowserSpeech, stopCurrentAudioChain]);
+  const latestPositionRef = useRef(position);
+  const positionPersistenceTimerRef = useRef(null);
+  useEffect(() => {
+    latestPositionRef.current = position;
+    if (positionPersistenceTimerRef.current) clearTimeout(positionPersistenceTimerRef.current);
+    positionPersistenceTimerRef.current = setTimeout(() => {
+      positionPersistenceTimerRef.current = null;
+      try {
+        safeSetItem("allo_bot_pos_v2", JSON.stringify(latestPositionRef.current));
+      } catch (e) {
+        warnLog("localStorage write failed", e);
+      }
+    }, 150);
+    return () => {
+      if (positionPersistenceTimerRef.current) clearTimeout(positionPersistenceTimerRef.current);
+      positionPersistenceTimerRef.current = null;
+    };
   }, [position]);
+  useEffect(() => () => {
+    if (positionPersistenceTimerRef.current) clearTimeout(positionPersistenceTimerRef.current);
+    positionPersistenceTimerRef.current = null;
+    try {
+      safeSetItem("allo_bot_pos_v2", JSON.stringify(latestPositionRef.current));
+    } catch (e) {
+    }
+  }, []);
   useEffect(() => {
     let timer, innerTimer;
     const scheduleBlink = () => {
@@ -2171,7 +2381,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         }, 150);
       }, delay);
     };
-    if (isSleeping || motionDisabled) {
+    if (isSleeping || motionDisabled || isDocumentHidden) {
       setBlinkScale(1);
       return () => {
         clearTimeout(timer);
@@ -2183,7 +2393,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       clearTimeout(timer);
       clearTimeout(innerTimer);
     };
-  }, [isSleeping, motionDisabled]);
+  }, [isSleeping, motionDisabled, isDocumentHidden]);
   useEffect(() => {
     if (effectiveMood === "thinking") {
       if (!generationSessionActiveRef.current) {
@@ -2271,31 +2481,61 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     return () => clearInterval(interval);
   }, [isTalking, motionDisabled]);
   useEffect(() => {
-    if (isSleeping || motionDisabled || isFlightActive || effectiveMood === "thinking") {
+    if (isSleeping || motionDisabled || isDocumentHidden || isFlightActive || effectiveMood === "thinking") {
       setAntennaAction(null);
       return;
     }
+    let actionTimer = null;
     const timer = setInterval(() => {
       if (Math.random() > 0.3) return;
+      if (actionTimer) clearTimeout(actionTimer);
       const actionRoll = Math.random();
       if (actionRoll < 0.5) {
         setAntennaAction("bounce");
-        setTimeout(() => setAntennaAction(null), 1900);
+        actionTimer = setTimeout(() => {
+          actionTimer = null;
+          setAntennaAction(null);
+        }, 1900);
       } else {
         setAntennaAction("signal");
-        setTimeout(() => setAntennaAction(null), 4e3);
+        actionTimer = setTimeout(() => {
+          actionTimer = null;
+          setAntennaAction(null);
+        }, 4e3);
       }
     }, 5e3);
-    return () => clearInterval(timer);
-  }, [isSleeping, motionDisabled, isFlightActive, effectiveMood]);
+    return () => {
+      clearInterval(timer);
+      if (actionTimer) clearTimeout(actionTimer);
+    };
+  }, [isSleeping, motionDisabled, isDocumentHidden, isFlightActive, effectiveMood]);
+  const flightAudioNodesRef = useRef(null);
+  const stopFlightAudio = useCallback(() => {
+    const nodes = flightAudioNodesRef.current;
+    flightAudioNodesRef.current = null;
+    if (!nodes) return;
+    try {
+      nodes.noise?.stop?.(0);
+    } catch (_) {
+    }
+    try {
+      nodes.osc?.stop?.(0);
+    } catch (_) {
+    }
+    [nodes.noise, nodes.noiseFilter, nodes.noiseGain, nodes.osc, nodes.oscGain].forEach((node) => {
+      try {
+        node?.disconnect?.();
+      } catch (_) {
+      }
+    });
+  }, []);
   useEffect(() => {
-    if (isFlightActive && soundEnabled && !isGlobalMuted()) {
+    stopFlightAudio();
+    if (isFlightActive && soundEnabled && !isDocumentHidden && !isGlobalMuted()) {
       try {
         const ctx = getGlobalAudioContext();
         if (!ctx) return;
-        if (ctx.state === "suspended") {
-          ctx.resume();
-        }
+        if (!ensureAlloBotAudioContextRunning(ctx)) return;
         const now = ctx.currentTime;
         const bufferSize = ctx.sampleRate * 2;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -2316,8 +2556,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         noise.connect(noiseFilter);
         noiseFilter.connect(noiseGain);
         noiseGain.connect(ctx.destination);
-        noise.start(now);
-        noise.stop(now + 1.3);
         const osc = ctx.createOscillator();
         osc.type = "triangle";
         osc.frequency.setValueAtTime(200, now);
@@ -2328,54 +2566,58 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         oscGain.gain.exponentialRampToValueAtTime(1e-3, now + 1);
         osc.connect(oscGain);
         oscGain.connect(ctx.destination);
+        flightAudioNodesRef.current = { noise, noiseFilter, noiseGain, osc, oscGain };
+        noise.start(now);
+        noise.stop(now + 1.3);
         osc.start(now);
         osc.stop(now + 1.3);
       } catch (e) {
+        stopFlightAudio();
         warnLog("Flight sound error", e);
       }
     }
-  }, [isFlightActive, soundEnabled]);
-  useEffect(() => {
-    return () => {
-      try {
-        speechRequestAbortRef.current?.abort();
-      } catch (_) {
-      }
-      if (currentAudioRef.current) {
-        currentAudioRef.current.pause();
-      }
-      if (lastAudioUrlRef.current) {
-        releaseAlloBotAudioUrl(lastAudioUrlRef.current);
-      }
-    };
-  }, []);
+    return stopFlightAudio;
+  }, [isFlightActive, soundEnabled, isDocumentHidden, stopFlightAudio]);
+  const movementTimersRef = useRef([]);
+  const imperativeAnimationTimerRef = useRef(null);
+  const clearMovementTimers = useCallback(() => {
+    movementTimersRef.current.forEach(cancelOwnedTimeout);
+    movementTimersRef.current = [];
+  }, [cancelOwnedTimeout]);
+  const scheduleMovementTimeout = useCallback((callback, delay) => {
+    let timeoutId = null;
+    timeoutId = scheduleOwnedTimeout(() => {
+      movementTimersRef.current = movementTimersRef.current.filter((id) => id !== timeoutId);
+      callback();
+    }, delay);
+    movementTimersRef.current.push(timeoutId);
+    return timeoutId;
+  }, [scheduleOwnedTimeout]);
+  useEffect(() => clearMovementTimers, [clearMovementTimers]);
   const moveTo = useCallback((targetX, targetY, duration = 1e3) => {
     if (isSleeping) return;
-    const newRight = window.innerWidth - targetX - 32;
-    const newTop = Math.max(10, targetY);
+    clearMovementTimers();
+    const safeDuration = Number.isFinite(Number(duration)) ? Math.max(0, Number(duration)) : 1e3;
+    const newRight = Number.isFinite(Number(targetX)) ? window.innerWidth - Number(targetX) - 32 : NaN;
+    const newTop = Number.isFinite(Number(targetY)) ? Number(targetY) : NaN;
+    const target = clampAlloBotPosition({ x: newRight, y: newTop }, window.innerWidth, window.innerHeight, position);
     if (motionDisabled) {
       setMoveDuration(0);
       setLocalIsFlying(false);
       setIsLanding(false);
-      setPosition({
-        x: Math.max(10, newRight),
-        y: newTop
-      });
+      setPosition(target);
       return;
     }
-    setMoveDuration(duration);
+    setMoveDuration(safeDuration);
     setLocalIsFlying(true);
     setIsLanding(false);
-    setPosition({
-      x: Math.max(10, newRight),
-      y: newTop
-    });
-    setTimeout(() => {
+    setPosition(target);
+    scheduleMovementTimeout(() => {
       setLocalIsFlying(false);
       setIsLanding(true);
-      setTimeout(() => setIsLanding(false), 1e3);
-    }, duration);
-  }, [isSleeping, motionDisabled]);
+      scheduleMovementTimeout(() => setIsLanding(false), 1e3);
+    }, safeDuration);
+  }, [isSleeping, motionDisabled, position, clearMovementTimers, scheduleMovementTimeout]);
   const triggerReaction = useCallback((emoji) => {
     if (motionDisabled) return;
     const id = Date.now() + Math.random();
@@ -2391,12 +2633,21 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       debugLog("AlloBot: asleep \u2014 suppressing speech:", safeText.slice(0, 60));
       return;
     }
+    try {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        debugLog("AlloBot: hidden tab - suppressing speech:", safeText.slice(0, 60));
+        return;
+      }
+    } catch (_) {
+    }
+    const configuredVolume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
+    const canAttemptAudio = !isSilent && soundEnabledRef.current && !authFailedRef.current && configuredVolume > 0 && !isGlobalMuted() && !isAlloBotTtsOff();
     const now = Date.now();
-    if (!isSilent && safeText === lastGlobalSpeech.text && now - lastGlobalSpeech.time < 2e3) {
+    if (canAttemptAudio && safeText === lastGlobalSpeech.text && now - lastGlobalSpeech.time < 2e3) {
       warnLog("AlloBot: Suppressing duplicate speech:", safeText);
       return;
     }
-    if (!isSilent) {
+    if (canAttemptAudio) {
       lastGlobalSpeech.text = safeText;
       lastGlobalSpeech.time = now;
     }
@@ -2414,6 +2665,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     speechRequestAbortRef.current = speechRequestController;
     const myGenId = speechGenerationRef.current;
     audioPlaybackStartedRef.current = false;
+    stopCurrentAudioChain();
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current = null;
@@ -2423,10 +2675,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       lastAudioUrlRef.current = null;
     }
     if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
-    cancelAlloBotBrowserSpeech();
+    cancelOwnedBrowserSpeech();
     if (!motionDisabled) {
       setWobbleState({ active: true, deg: 3 });
-      setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
+      scheduleOwnedTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
     }
     let cleanText = safeText.replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1").replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, "").replace(/\[Source\s+\d+\]/gi, "").replace(/\[\d+\]/g, "").replace(/\*\*/g, "").replace(/\*/g, "").replace(/__|\_/g, "").replace(/^#+\s/gm, "").replace(/`/g, "").replace(/\s+/g, " ").trim();
     const ttsText = cleanText;
@@ -2448,6 +2700,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     setIsTruncated(truncated);
     let speechStarted = false;
     let stateReset = false;
+    let ownedAudioChain = null;
     const markSpeechStarted = () => {
       if (stateReset || speechStarted || myGenId !== speechGenerationRef.current) return false;
       speechStarted = true;
@@ -2459,6 +2712,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     const resetState = () => {
       if (stateReset) return;
       stateReset = true;
+      if (currentAudioChainRef.current === ownedAudioChain) currentAudioChainRef.current = null;
       if (myGenId !== speechGenerationRef.current) return;
       setCustomMessage(null);
       setIsTruncated(false);
@@ -2470,7 +2724,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       if (speechStarted && onSpeechEnd) onSpeechEnd();
     };
     let audioStarted = false;
-    const configuredVolume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
     const reportPlaybackFailure = (message) => {
       warnLog(message);
       try {
@@ -2479,15 +2732,44 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       } catch (_) {
       }
     };
-    if (!isSilent && soundEnabledRef.current && !authFailedRef.current && configuredVolume > 0) {
+    if (canAttemptAudio) {
       let cloudSuccess = false;
       let browserQueued = false;
       const playBrowserFallback = () => {
-        if (browserQueued || stateReset || myGenId !== speechGenerationRef.current || isGlobalMuted() || isAlloBotTtsOff()) return false;
+        if (browserQueued) return true;
+        if (stateReset || myGenId !== speechGenerationRef.current || isGlobalMuted() || isAlloBotTtsOff()) return false;
         try {
           if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== "function" || !ttsText) return false;
-          cancelAlloBotBrowserSpeech();
+          const previousOwner = browserSpeechOwnerRef.current;
+          cancelOwnedBrowserSpeech();
+          if (!alloBotCanQueueBrowserSpeech()) {
+            if (previousOwner && previousOwner.cancelRequested && _alloBotBrowserSpeechOwner === previousOwner) {
+              browserQueued = true;
+              audioStarted = true;
+              cloudSuccess = true;
+              const retryLatestResponse = () => {
+                if (stateReset || myGenId !== speechGenerationRef.current) return;
+                browserQueued = false;
+                audioStarted = false;
+                if (!playBrowserFallback()) {
+                  reportPlaybackFailure("AlloBot waited for other device narration, but its response could not start.");
+                  resetState();
+                }
+              };
+              previousOwner.afterRelease = retryLatestResponse;
+              scheduleOwnedTimeout(() => {
+                if (previousOwner.afterRelease !== retryLatestResponse) return;
+                previousOwner.afterRelease = null;
+                if (stateReset || myGenId !== speechGenerationRef.current) return;
+                reportPlaybackFailure("AlloBot waited for other device narration, but its response could not start.");
+                resetState();
+              }, 8e3);
+              return true;
+            }
+            return false;
+          }
           const utter = new SpeechSynthesisUtterance(ttsText);
+          const browserOwner = { generation: myGenId, utterance: utter, started: false, cancelRequested: false, afterRelease: null };
           let browserStarted = false;
           browserQueued = true;
           utter.rate = Math.max(0.1, Math.min(10, Number(voiceSpeed) || 1));
@@ -2502,31 +2784,60 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           } catch (_) {
           }
           utter.onstart = () => {
+            browserOwner.started = true;
+            if (stateReset || myGenId !== speechGenerationRef.current || _alloBotBrowserSpeechOwner !== browserOwner) {
+              if (browserOwner.cancelRequested && _alloBotBrowserSpeechOwner === browserOwner) return;
+              alloBotReleaseBrowserSpeech(browserOwner);
+              if (browserSpeechOwnerRef.current === browserOwner) browserSpeechOwnerRef.current = null;
+              return;
+            }
             browserStarted = true;
             markSpeechStarted();
           };
+          const releaseBrowserOwner = () => {
+            alloBotReleaseBrowserSpeech(browserOwner);
+            if (browserSpeechOwnerRef.current === browserOwner) browserSpeechOwnerRef.current = null;
+            const afterRelease = browserOwner.afterRelease;
+            browserOwner.afterRelease = null;
+            if (typeof afterRelease === "function") afterRelease();
+          };
           utter.onend = () => {
-            alloBotReleaseBrowserSpeech();
+            releaseBrowserOwner();
             resetState();
           };
           utter.onerror = () => {
-            alloBotReleaseBrowserSpeech();
-            reportPlaybackFailure("AlloBot couldn't play the spoken response. Check Voice volume and your device audio output.");
+            releaseBrowserOwner();
+            if (myGenId === speechGenerationRef.current) {
+              reportPlaybackFailure("AlloBot couldn't play the spoken response. Check Voice volume and your device audio output.");
+            }
             resetState();
           };
-          alloBotClaimBrowserSpeech();
+          browserSpeechOwnerRef.current = browserOwner;
+          alloBotClaimBrowserSpeech(browserOwner);
           window.speechSynthesis.speak(utter);
           audioStarted = true;
           cloudSuccess = true;
-          setTimeout(() => {
-            if (stateReset || browserStarted || myGenId !== speechGenerationRef.current) return;
-            cancelAlloBotBrowserSpeech();
+          scheduleOwnedTimeout(() => {
+            if (browserStarted) return;
+            const requestIsStale = stateReset || myGenId !== speechGenerationRef.current;
+            const cancelled = cancelAlloBotBrowserSpeech(browserOwner);
+            if (cancelled && browserSpeechOwnerRef.current === browserOwner) browserSpeechOwnerRef.current = null;
+            if (!cancelled) {
+              alloBotDetachBrowserSpeechOwner(browserOwner, requestIsStale);
+              if (browserSpeechOwnerRef.current === browserOwner) browserSpeechOwnerRef.current = null;
+            }
+            if (requestIsStale) return;
             reportPlaybackFailure("AlloBot's device voice did not start. Check Voice volume and your device audio output.");
             resetState();
           }, 8e3);
           debugLog("AlloBot: Using browser TTS fallback");
           return true;
         } catch (fallbackErr) {
+          const owner = browserSpeechOwnerRef.current;
+          if (owner && owner.generation === myGenId && !owner.started) {
+            alloBotReleaseBrowserSpeech(owner);
+            browserSpeechOwnerRef.current = null;
+          }
           warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
           return false;
         }
@@ -2543,6 +2854,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           debugLog(`\u{1F3A4} AlloBot TTS request (${timeoutMs}ms timeout, kokoro=${_hasKokoro})...`);
           let timeoutId = null;
           let timedOut = false;
+          let requestAborted = false;
+          let abortListener = null;
           const timeoutPromise = new Promise((resolve) => {
             timeoutId = setTimeout(() => {
               timedOut = true;
@@ -2553,6 +2866,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
               resolve(null);
             }, timeoutMs);
           });
+          const abortPromise = new Promise((resolve) => {
+            const signal = speechRequestController?.signal;
+            if (!signal) return;
+            abortListener = () => {
+              requestAborted = true;
+              resolve(null);
+            };
+            if (signal.aborted) abortListener();
+            else signal.addEventListener("abort", abortListener, { once: true });
+          });
           const language = document?.documentElement?.lang || navigator?.language || "English";
           const audioPromise = Promise.resolve(onGenerateAudio(ttsText, selectedVoice, voiceSpeed, {
             maxRetries: 0,
@@ -2562,13 +2885,19 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             reason: "allobot-speech"
           }));
           audioPromise.then((lateUrl) => {
-            if (timedOut) releaseAlloBotAudioUrl(lateUrl);
+            if (timedOut || requestAborted) releaseAlloBotAudioUrl(lateUrl);
           }, () => {
           });
           try {
-            return await Promise.race([audioPromise, timeoutPromise]);
+            return await Promise.race([audioPromise, timeoutPromise, abortPromise]);
           } finally {
             if (timeoutId) clearTimeout(timeoutId);
+            if (abortListener) {
+              try {
+                speechRequestController?.signal?.removeEventListener("abort", abortListener);
+              } catch (_) {
+              }
+            }
           }
         };
         try {
@@ -2583,7 +2912,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             releaseAlloBotAudioUrl(audioUrl);
             return;
           }
-          if (!soundEnabledRef.current) {
+          let playbackContextBlocked = false;
+          try {
+            playbackContextBlocked = isSleepingRef.current || isGlobalMuted() || isAlloBotTtsOff() || typeof document !== "undefined" && document.visibilityState === "hidden";
+          } catch (_) {
+          }
+          if (!soundEnabledRef.current || playbackContextBlocked) {
             releaseAlloBotAudioUrl(audioUrl);
             setIsTalking(false);
             resetState();
@@ -2596,13 +2930,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             audio.volume = configuredVolume;
             currentAudioRef.current = audio;
             let generatedStarted = false;
+            let generatedFailureHandled = false;
             if (window._kokoroTTS && window._kokoroTTS.chainPlay) {
-              window._kokoroTTS.chainPlay(audio, voiceSpeed, voiceVolume, resetState);
+              ownedAudioChain = window._kokoroTTS.chainPlay(audio, voiceSpeed, voiceVolume, resetState);
+              currentAudioChainRef.current = ownedAudioChain;
             } else {
               audio.onended = resetState;
             }
             const handleAudioError = (e) => {
-              if (stateReset || myGenId !== speechGenerationRef.current) return;
+              if (stateReset || generatedFailureHandled || myGenId !== speechGenerationRef.current) return;
+              generatedFailureHandled = true;
               warnLog("Bot audio error/interrupted", e);
               const shouldInvalidate = !e || e.name !== "NotAllowedError" && e.name !== "AbortError";
               if (shouldInvalidate) {
@@ -2617,6 +2954,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
                 audio.pause();
               } catch (_) {
               }
+              stopCurrentAudioChain(false);
               if (!playBrowserFallback()) {
                 reportPlaybackFailure("AlloBot couldn't play the generated voice. Check Voice volume and your device audio output.");
                 resetState();
@@ -2630,7 +2968,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             await audio.play().then(() => {
               cloudSuccess = true;
               audioStarted = true;
-              setTimeout(() => {
+              scheduleOwnedTimeout(() => {
                 if (stateReset || generatedStarted || myGenId !== speechGenerationRef.current || currentAudioRef.current !== audio) return;
                 handleAudioError(new Error("Generated AlloBot audio accepted play() but never started"));
               }, 8e3);
@@ -2641,44 +2979,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         }
       }
       if (!cloudSuccess && myGenId === speechGenerationRef.current && !isGlobalMuted() && !isAlloBotTtsOff()) {
-        if (!playBrowserFallback()) {
-          try {
-            if (window.speechSynthesis && ttsText && ttsText.length > 0) {
-              cancelAlloBotBrowserSpeech();
-              const utter = new SpeechSynthesisUtterance(ttsText);
-              utter.rate = Math.max(0.1, Math.min(10, Number(voiceSpeed) || 1));
-              utter.volume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
-              const browserLanguage = document?.documentElement?.lang || navigator?.language || "";
-              if (browserLanguage) utter.lang = browserLanguage;
-              try {
-                const baseLanguage = String(browserLanguage).toLowerCase().split("-")[0];
-                const voices = window.speechSynthesis.getVoices?.() || [];
-                const matchingVoice = voices.find((v) => String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage);
-                if (matchingVoice) utter.voice = matchingVoice;
-              } catch (_) {
-              }
-              utter.onend = () => {
-                alloBotReleaseBrowserSpeech();
-                resetState();
-              };
-              utter.onerror = () => {
-                alloBotReleaseBrowserSpeech();
-                resetState();
-              };
-              alloBotClaimBrowserSpeech();
-              window.speechSynthesis.speak(utter);
-              audioStarted = true;
-              cloudSuccess = true;
-              debugLog("AlloBot: Using browser TTS fallback");
-            } else {
-              warnLog("AlloBot: No browser TTS available \u2014 text bubble only");
-              setIsTalking(false);
-            }
-          } catch (fallbackErr) {
-            warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
-            setIsTalking(false);
-          }
-        }
+        playBrowserFallback();
       }
     } else if (!isSilent && soundEnabledRef.current && configuredVolume <= 0) {
       reportPlaybackFailure("AlloBot voice volume is set to zero. Raise Voice volume in Settings to hear responses.");
@@ -2687,7 +2988,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       const duration = Math.min(9e4, 4e3 + cleanText.length * 80);
       speechTimeoutRef.current = setTimeout(resetState, duration);
     }
-  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio, motionDisabled, onSpeechStart, onSpeechEnd]);
+  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio, motionDisabled, onSpeechStart, onSpeechEnd, cancelOwnedBrowserSpeech, stopCurrentAudioChain, scheduleOwnedTimeout]);
   const handleTypingState = useCallback((isTyping) => {
     if (isTyping) {
       setIsTalking(true);
@@ -2731,7 +3032,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const silenceSpeech = useCallback(() => {
     setCustomMessage(null);
     setIsTruncated(false);
+    setInternalMood(null);
     const wasPlaying = audioPlaybackStartedRef.current;
+    speechGenerationRef.current += 1;
     setIsTalking(false);
     audioPlaybackStartedRef.current = false;
     try {
@@ -2739,6 +3042,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     } catch (_) {
     }
     speechRequestAbortRef.current = null;
+    stopCurrentAudioChain();
     if (currentAudioRef.current) {
       try {
         currentAudioRef.current.pause();
@@ -2754,9 +3058,23 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       clearTimeout(speechTimeoutRef.current);
       speechTimeoutRef.current = null;
     }
-    cancelAlloBotBrowserSpeech();
+    cancelOwnedBrowserSpeech(true);
     if (wasPlaying && onSpeechEnd) onSpeechEnd();
-  }, [onSpeechEnd]);
+  }, [onSpeechEnd, cancelOwnedBrowserSpeech, stopCurrentAudioChain]);
+  useEffect(() => {
+    if (isDocumentHidden) silenceSpeech();
+  }, [isDocumentHidden, silenceSpeech]);
+  useEffect(() => {
+    const handleGlobalMute = (event) => {
+      const muted = typeof event?.detail?.muted === "boolean" ? event.detail.muted : isGlobalMuted();
+      if (muted) {
+        silenceSpeech();
+        stopFlightAudio();
+      }
+    };
+    window.addEventListener("alloflow-mute-changed", handleGlobalMute);
+    return () => window.removeEventListener("alloflow-mute-changed", handleGlobalMute);
+  }, [silenceSpeech, stopFlightAudio]);
   const fallAsleep = useCallback(() => {
     if (isSleepingRef.current) return;
     isSleepingRef.current = true;
@@ -2869,50 +3187,86 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       setIsTalking(false);
     },
     playAnimation: (animName, durationMs = 1200) => {
-      if (motionDisabled) return;
-      setIdleAnimation(animName);
-      setTimeout(() => setIdleAnimation(null), durationMs);
+      if (motionDisabled) return false;
+      const safeName = typeof animName === "string" ? animName.trim() : "";
+      if (!ALLOBOT_ANIMATION_CLASS_BY_NAME[safeName]) {
+        warnLog("AlloBot ignored unsupported animation:", safeName || typeof animName);
+        return false;
+      }
+      const safeDuration = Number.isFinite(Number(durationMs)) ? Math.max(0, Number(durationMs)) : 1200;
+      if (imperativeAnimationTimerRef.current) cancelOwnedTimeout(imperativeAnimationTimerRef.current);
+      setIdleAnimation(safeName);
+      imperativeAnimationTimerRef.current = scheduleOwnedTimeout(() => {
+        imperativeAnimationTimerRef.current = null;
+        setIdleAnimation(null);
+      }, safeDuration);
+      return true;
     },
     flyTo: (targetX, targetY, duration = 2e3) => {
+      clearMovementTimers();
+      const safeDuration = Number.isFinite(Number(duration)) ? Math.max(0, Number(duration)) : 2e3;
+      const target = clampAlloBotPosition({
+        x: Number(targetX),
+        y: Number(targetY)
+      }, window.innerWidth, window.innerHeight, position);
       if (motionDisabled) {
         setMoveDuration(0);
         setLocalIsFlying(false);
         setIsLanding(false);
-        setPosition({ x: targetX, y: targetY });
+        setPosition(target);
         return;
       }
       setLocalIsFlying(true);
-      setMoveDuration(duration);
-      setTimeout(() => {
-        setPosition({ x: targetX, y: targetY });
-        setTimeout(() => {
+      setIsLanding(false);
+      setMoveDuration(safeDuration);
+      scheduleMovementTimeout(() => {
+        setPosition(target);
+        scheduleMovementTimeout(() => {
           setLocalIsFlying(false);
           setIsLanding(true);
-          setTimeout(() => setIsLanding(false), 600);
-        }, duration);
+          scheduleMovementTimeout(() => setIsLanding(false), 600);
+        }, safeDuration);
       }, 50);
     }
   }));
   const lastSummonTimeRef = useRef(0);
+  const introTimerRef = useRef(null);
+  const introClaimedRef = useRef(false);
   useEffect(() => {
-    if (canPlayIntro && !isTalking && !customMessage && !introFiredGlobal && t("bot_events.intro_greeting") !== "bot_events.intro_greeting") {
+    if (!hasSeenBotIntro && canPlayIntro && !isTalking && !customMessage && !introFiredGlobal && t("bot_events.intro_greeting") !== "bot_events.intro_greeting") {
       if (!introFiredGlobal) {
         introFiredGlobal = true;
         window.__introFiredAt = Date.now();
-        setTimeout(() => {
+        introClaimedRef.current = true;
+        introTimerRef.current = scheduleOwnedTimeout(() => {
+          introTimerRef.current = null;
+          introClaimedRef.current = false;
           const welcomeMsg = t("sidebar.ai_guide_welcome");
           if (welcomeMsg && welcomeMsg !== "sidebar.ai_guide_welcome") {
             speak(welcomeMsg);
           }
           if (!motionDisabled) {
             setIdleAnimation("wave-hello");
-            setTimeout(() => setIdleAnimation(null), 2500);
+            scheduleOwnedTimeout(() => setIdleAnimation(null), 2500);
           }
           if (onBotIntroSeen) onBotIntroSeen();
         }, 2500);
       }
     }
-  }, [canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t, motionDisabled]);
+    return () => {
+      if (!introTimerRef.current) return;
+      cancelOwnedTimeout(introTimerRef.current);
+      introTimerRef.current = null;
+      if (introClaimedRef.current) {
+        introClaimedRef.current = false;
+        introFiredGlobal = false;
+        try {
+          window.__introFiredAt = 0;
+        } catch (_) {
+        }
+      }
+    };
+  }, [hasSeenBotIntro, canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t, motionDisabled, scheduleOwnedTimeout, cancelOwnedTimeout]);
   useEffect(() => {
     const onCelebrate = (e) => {
       if (motionDisabled) return;
@@ -2925,21 +3279,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       }
       if (kind === "backflip") {
         setIsCelebrating(true);
-        setTimeout(() => setIsCelebrating(false), 1300);
+        scheduleOwnedTimeout(() => setIsCelebrating(false), 1300);
       }
     };
     window.addEventListener("alloflow:bot-celebrate", onCelebrate);
     return () => window.removeEventListener("alloflow:bot-celebrate", onCelebrate);
-  }, [motionDisabled]);
+  }, [motionDisabled, scheduleOwnedTimeout]);
   const handleKeyDown = (e) => {
     if (e.target !== e.currentTarget) return;
-    if (e.key === "Enter" || e.key === " ") {
-      if (isSleeping) {
-        e.preventDefault();
-        summon();
-      }
-      return;
-    }
     const movement = {
       ArrowLeft: { x: 1, y: 0, label: "left" },
       ArrowRight: { x: -1, y: 0, label: "right" },
@@ -2950,27 +3297,27 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     e.preventDefault();
     const step = e.shiftKey ? 40 : 10;
     setPosition((current) => {
-      const maxRight = Math.max(10, window.innerWidth - 74);
-      const maxTop = Math.max(10, window.innerHeight - 74);
-      return {
-        x: Math.min(maxRight, Math.max(10, current.x + movement.x * step)),
-        y: Math.min(maxTop, Math.max(10, current.y + movement.y * step))
-      };
+      return clampAlloBotPosition({
+        x: current.x + movement.x * step,
+        y: current.y + movement.y * step
+      }, window.innerWidth, window.innerHeight, current);
     });
     setKeyboardMoveStatus(`AlloBot moved ${movement.label}${e.shiftKey ? " by a larger step" : ""}.`);
   };
   const pendingSpeechTimerRef = useRef(null);
   const recentTipHistoryRef = useRef([]);
   useEffect(() => {
-    if (!history || history.length === 0) return;
+    if (!Array.isArray(history) || history.length === 0) return;
     const latest = history[history.length - 1];
+    if (!latest || typeof latest !== "object") return;
     if (latest.id && !spokenEventIds.has(latest.id)) {
-      spokenEventIds.add(latest.id);
       if (pendingSpeechTimerRef.current) {
         clearTimeout(pendingSpeechTimerRef.current);
         pendingSpeechTimerRef.current = null;
       }
       pendingSpeechTimerRef.current = setTimeout(() => {
+        pendingSpeechTimerRef.current = null;
+        spokenEventIds.add(latest.id);
         if (isTalkingRef.current || isSystemAudioActive || introFiredGlobal && Date.now() - (window.__introFiredAt || 0) < 8e3) {
           debugLog("AlloBot: Skipping event tip, intro cooldown or already talking.");
           return;
@@ -2984,12 +3331,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         } else if (isEducatorMode) {
           message = buildEducatorEventTip(latest, topic, t);
         } else if (type === "quiz") {
-          const questions = latest.data?.questions || [];
+          const questions = alloBotTipList(latest.data?.questions).filter((q) => q && typeof q === "object");
           const qCount = questions.length;
-          const questionTexts = questions.map((q) => q.question || q.text || "").filter(Boolean);
+          const questionTexts = questions.map((q) => alloBotTipText(q?.question || q?.text, 300)).filter(Boolean);
           const hotWords = ["analyze", "evaluate", "compare", "contrast", "explain why", "justify", "predict", "infer", "synthesize"];
           const hotQuestions = questions.filter((q) => {
-            const qText = (q.question || q.text || "").toLowerCase();
+            const qText = alloBotTipText(q?.question || q?.text, 300).toLowerCase();
             return hotWords.some((w) => qText.includes(w));
           });
           const difficulties = [...new Set(questions.map((q) => q.difficulty).filter(Boolean))];
@@ -3006,9 +3353,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           }
           message = msg;
         } else if (type === "glossary") {
-          const terms = Array.isArray(latest.data) ? latest.data : [];
+          const terms = alloBotTipList(latest.data);
           const termCount = terms.length;
-          const termNames = terms.map((t2) => t2.term || t2.word || "").filter(Boolean);
+          const termNames = terms.map((term) => alloBotTipText(term?.term || term?.word || term)).filter(Boolean);
           const complexTerms = termNames.filter((t2) => t2.length > 8 || t2.includes(" "));
           let msg = `I found ${termCount} key terms${topicStr}.`;
           if (complexTerms.length > 0 && complexTerms.length <= 3) {
@@ -3020,8 +3367,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           msg += ` Running a quick quality check on your glossary...`;
           message = msg;
         } else if (type === "simplified") {
-          const level = latest.data?.gradeLevel;
-          const text = typeof latest.data === "string" ? latest.data : latest.data?.text || "";
+          const level = alloBotTipText(latest.data?.gradeLevel, 50);
+          const text = typeof latest.data === "string" ? latest.data : typeof latest.data?.text === "string" ? latest.data.text : "";
           const sentenceCount = (text.match(/[.!?]+/g) || []).length;
           const wordCount = text.split(/\s+/).filter(Boolean).length;
           let msg = level ? `This text has been adapted to a ${level} level.` : `This text has been adapted for easier reading.`;
@@ -3033,16 +3380,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           message = msg;
         } else if (type === "adventure") {
           const scene = latest.data?.scene || latest.data;
-          const optionCount = scene?.options?.length || 0;
+          const optionCount = alloBotTipList(scene?.options).length;
           if (optionCount > 0) {
             message = `Adventure awaits${topicStr}! You have ${optionCount} choices to begin. Every decision shapes your story, so choose wisely!`;
           } else {
             message = `Adventure awaits! I've set up a simulation${topicStr}. Watch your health and inventory!`;
           }
         } else if (type === "analysis") {
-          const rawLevel = latest.data?.readingLevel?.range;
-          const conceptCount = latest.data?.keyConcepts?.length || latest.data?.concepts?.length || 0;
-          const vocabCount = latest.data?.vocabulary?.length || latest.data?.tier2Words?.length || 0;
+          const rawLevel = alloBotTipText(latest.data?.readingLevel?.range, 50);
+          const conceptCount = alloBotTipList(latest.data?.keyConcepts || latest.data?.concepts).length;
+          const vocabCount = alloBotTipList(latest.data?.vocabulary || latest.data?.tier2Words).length;
           const level = rawLevel ? rawLevel.replace(/[-–—]/g, " to ").replace(/\s*,\s*/g, " to ") : rawLevel;
           let msg = level ? t("bot_events.feedback_analysis_result", { level }) || `I've analyzed the text. It reads at a ${level} level.` : `I've analyzed the text${topicStr}.`;
           if (conceptCount > 0) msg += ` I identified ${conceptCount} key concepts.`;
@@ -3066,8 +3413,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           const actCount = Array.isArray(activities) ? activities.length : 0;
           message = actCount > 0 ? `Brainstorming complete! I found ${actCount} creative activities${topicStr} that connect learning to real-world applications!` : `Brainstorming complete! I've found some creative activities to connect${topicStr} to the real world.`;
         } else if (type === "concept-sort") {
-          const categories = latest.data?.categories || [];
-          const itemCount = latest.data?.items?.length || 0;
+          const categories = alloBotTipList(latest.data?.categories);
+          const itemCount = alloBotTipList(latest.data?.items).length;
           message = categories.length > 0 ? `Time to categorize! Sort ${itemCount > 0 ? itemCount + " items" : "the items"} into ${categories.length} groups${topicStr}. Drag and drop to test your understanding!` : `Time to categorize! Drag and drop the items to sort${topicStr} correctly.`;
         } else if (type === "math") {
           const problems = latest.data?.problems || latest.data?.equations || [];
@@ -3098,6 +3445,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   }, [history, speak, t, isTalking, isStudentMode, isEducatorMode, isSystemAudioActive, topic]);
   useEffect(() => {
     let ambientTimer;
+    let ambientAnimationTimer;
     let fallbackTimer;
     let lastActivityTime = Date.now();
     let hasSpokenFallback = false;
@@ -3108,14 +3456,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       const latestText = history && Array.isArray(history) && history.find((h) => h && h.type === "simplified");
       const tipTopic = alloBotTipText(topic || latestText && latestText.topic || typeof generatedContent !== "undefined" && generatedContent && generatedContent.topic || "");
       const glossaryEntry = history && Array.isArray(history) && history.find((h) => h && h.type === "glossary");
-      const glossaryTerms = glossaryEntry && glossaryEntry.data && glossaryEntry.data.terms || [];
+      const glossaryTerms = alloBotTipList(glossaryEntry?.data?.terms);
       const resourceCount = history && Array.isArray(history) ? history.length : 0;
       const allTypes = ["quiz", "glossary", "adventure", "lesson-plan", "image", "timeline", "brainstorm"];
       const missingTypes = allTypes.filter((tp) => !has(tp));
       const suggestion = missingTypes.length > 0 ? missingTypes[Math.floor(Math.random() * missingTypes.length)].replace("-", " ") : "review game";
-      const randomWord = glossaryTerms.length > 0 ? glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)].term || glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)] : "";
-      const term1 = glossaryTerms.length > 0 ? glossaryTerms[0].term || glossaryTerms[0] : "";
-      const term2 = glossaryTerms.length > 1 ? glossaryTerms[1].term || glossaryTerms[1] : "";
+      const randomTerm = glossaryTerms.length > 0 ? glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)] : null;
+      const randomWord = alloBotTipText(randomTerm?.term || randomTerm?.word || randomTerm);
+      const term1 = alloBotTipText(glossaryTerms[0]?.term || glossaryTerms[0]?.word || glossaryTerms[0]);
+      const term2 = alloBotTipText(glossaryTerms[1]?.term || glossaryTerms[1]?.word || glossaryTerms[1]);
       if (isStudentMode) {
         tips.push(...buildStudentIdleTips({ activeView, history, topic: tipTopic, t }));
       } else if (isEducatorMode) {
@@ -3146,7 +3495,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           tips.push(t("tips.adventure_context_fallback") || t("tips.adventure_context"));
         }
       } else if (activeView === "input") {
-        if (history.length === 0) {
+        if (resourceCount === 0) {
         } else {
           if (tipTopic) {
             tips.push(t("tips.input_next", { count: resourceCount, topic: tipTopic, suggestion }));
@@ -3184,7 +3533,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     const scheduleAmbientAction = () => {
       const delay = 6e4 + Math.random() * 6e4;
       ambientTimer = setTimeout(() => {
-        if (isDragging || isTalkingRef.current || customMessage || isIdleDisabled || isSleeping) {
+        if (isDocumentHidden || isDragging || isTalkingRef.current || customMessage || isIdleDisabled || isSleeping) {
           scheduleAmbientAction();
           return;
         }
@@ -3192,7 +3541,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           const anims = ["wave", "backflip", "shrug", "look-around"];
           const action = anims[Math.floor(Math.random() * anims.length)];
           setIdleAnimation(action);
-          setTimeout(() => setIdleAnimation(null), 2e3);
+          if (ambientAnimationTimer) clearTimeout(ambientAnimationTimer);
+          ambientAnimationTimer = setTimeout(() => {
+            ambientAnimationTimer = null;
+            setIdleAnimation(null);
+          }, 2e3);
         }
         if (Math.random() < 0.3) {
           const tip = getRandomTip();
@@ -3224,61 +3577,90 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     scheduleAmbientAction();
     return () => {
       clearTimeout(ambientTimer);
+      if (ambientAnimationTimer) clearTimeout(ambientAnimationTimer);
       clearInterval(fallbackTimer);
       window.removeEventListener("mousemove", resetInactivity);
       window.removeEventListener("keydown", resetInactivity);
       window.removeEventListener("click", resetInactivity);
       window.removeEventListener("scroll", resetInactivity);
     };
-  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, isStudentMode, isEducatorMode, topic, t, motionDisabled]);
+  }, [speak, isDocumentHidden, isDragging, isTalking, isSystemAudioActive, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, isStudentMode, isEducatorMode, topic, t, motionDisabled]);
+  const resetDragInteraction = useCallback(() => {
+    setIsDragging(false);
+    setIsSquashed(false);
+    setDragRotation(0);
+  }, []);
   const handleMouseDown = (e) => {
+    const isTouchEvent = e?.touches != null;
+    if (!isTouchEvent && (typeof e?.button === "number" && e.button !== 0 || e?.isPrimary === false)) return;
+    const point = getAlloBotEventPoint(e);
+    if (!point) return;
     e.preventDefault();
+    let visualPosition = position;
+    try {
+      const rect = containerRef.current?.getBoundingClientRect?.();
+      if (rect && rect.width > 0 && rect.height > 0 && Number.isFinite(rect.right) && Number.isFinite(rect.top)) {
+        visualPosition = clampAlloBotPosition({
+          x: window.innerWidth - rect.right,
+          y: rect.top
+        }, window.innerWidth, window.innerHeight, position);
+      }
+    } catch (_) {
+    }
+    clearMovementTimers();
+    if (isFlying) setPropFlightInterrupted(true);
+    setLocalIsFlying(false);
+    setIsLanding(false);
+    setMoveDuration(0);
+    setPosition(visualPosition);
     setIsDragging(true);
     setIsSquashed(true);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    dragStartRef.current = { x: clientX, y: clientY };
-    startPosRef.current = { ...position };
-    prevDragPos.current = { x: clientX, y: clientY };
+    dragStartRef.current = point;
+    startPosRef.current = visualPosition;
+    prevDragPos.current = point;
   };
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging) return;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const deltaX = dragStartRef.current.x - clientX;
-      const deltaY = clientY - dragStartRef.current.y;
-      const velocityX = clientX - prevDragPos.current.x;
+      const point = getAlloBotEventPoint(e);
+      if (!point) return;
+      if (e.touches && e.cancelable) e.preventDefault();
+      const deltaX = dragStartRef.current.x - point.x;
+      const deltaY = point.y - dragStartRef.current.y;
+      const velocityX = point.x - prevDragPos.current.x;
       const rotation = Math.max(-20, Math.min(20, velocityX * -0.5));
       setDragRotation(rotation);
-      prevDragPos.current = { x: clientX, y: clientY };
-      setPosition({
-        x: Math.max(10, startPosRef.current.x + deltaX),
-        y: Math.max(10, startPosRef.current.y + deltaY)
-      });
+      prevDragPos.current = point;
+      setPosition(clampAlloBotPosition({
+        x: startPosRef.current.x + deltaX,
+        y: startPosRef.current.y + deltaY
+      }, window.innerWidth, window.innerHeight, startPosRef.current));
     };
     const handleMouseUp = (e) => {
-      setIsDragging(false);
-      setIsSquashed(false);
-      setDragRotation(0);
-      const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-      const dist = Math.hypot(clientX - dragStartRef.current.x, clientY - dragStartRef.current.y);
+      const point = getAlloBotEventPoint(e, true);
+      resetDragInteraction();
+      if (!point) return;
+      const dist = Math.hypot(point.x - dragStartRef.current.x, point.y - dragStartRef.current.y);
       if (dist < 5 && onClick) onClick();
     };
+    const handleDragCancel = () => resetDragInteraction();
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
       window.addEventListener("touchmove", handleMouseMove, { passive: false });
       window.addEventListener("touchend", handleMouseUp);
+      window.addEventListener("touchcancel", handleDragCancel);
+      window.addEventListener("blur", handleDragCancel);
     }
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
       window.removeEventListener("touchmove", handleMouseMove);
       window.removeEventListener("touchend", handleMouseUp);
+      window.removeEventListener("touchcancel", handleDragCancel);
+      window.removeEventListener("blur", handleDragCancel);
     };
-  }, [isDragging, onClick]);
+  }, [isDragging, onClick, resetDragInteraction]);
   const moodConfig = {
     idle: { gradFrom: "#818CF8", gradTo: "#4338CA", eye: "#22D3EE", mouth: "#22D3EE", glow: "#6366F1", msg: t("bot.mood_idle") },
     happy: { gradFrom: "#34D399", gradTo: "#059669", eye: "#FFFFFF", mouth: "#FFFFFF", glow: "#10B981", msg: t("bot.mood_happy") },
@@ -3658,7 +4040,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), completionCheck);
     }
   };
-  return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("bot.assistant_landmark") || "AlloBot assistant" }, /* @__PURE__ */ React.createElement("p", { id: "allobot-move-instructions", className: "sr-only" }, t("bot.move_instructions") || "Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, keyboardMoveStatus), /* @__PURE__ */ React.createElement("style", null, `
+  return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("bot.assistant_landmark") || "AlloBot assistant" }, /* @__PURE__ */ React.createElement("p", { id: moveInstructionsId, className: "sr-only" }, t("bot.move_instructions") || "Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, keyboardMoveStatus), /* @__PURE__ */ React.createElement("style", null, `
         /* Orbit controls own their essential geometry and state colors so the
            external Allobot module remains polished in desktop/embedded hosts
            that do not provide the app's Tailwind bundle. Tailwind utilities
@@ -3753,6 +4135,28 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             cursor: pointer;
             z-index: 50;
         }
+        .allobot-avatar-action {
+            position: absolute;
+            inset: 0;
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            border-radius: 9999px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        [data-allobot-avatar-action="open"] { z-index: 10; }
+        [data-allobot-avatar-action="wake"] { z-index: 50; }
         .allobot-control-orbit {
             --allobot-orbit-current: var(--allobot-control-orbit, rgba(79, 70, 229, 0.56));
             position: absolute;
@@ -3827,7 +4231,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             border-color: var(--allobot-satellite-listening-border, #F87171);
             box-shadow: var(--allobot-satellite-listening-shadow, 0 0 0 3px rgba(239, 68, 68, 0.35));
         }
-        @media (hover: none), (pointer: coarse) {
+        @media (hover: none), (pointer: coarse), (any-pointer: coarse) {
             .allobot-satellite-control {
                 width: 36px;
                 height: 36px;
@@ -3845,17 +4249,19 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed \u2014 defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
-        @keyframes allo-wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-20deg); } 75% { transform: rotate(20deg); } }
+        @keyframes allo-wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 55% { transform: rotate(6deg); } 80% { transform: rotate(-3deg); } }
+        @keyframes allo-shrug {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            35% { transform: translateY(-3px) rotate(-3deg); }
+            65% { transform: translateY(-3px) rotate(3deg); }
+        }
+        @keyframes allo-look-around {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-3px) rotate(-2deg); }
+            65% { transform: translateX(3px) rotate(2deg); }
+        }
         @keyframes allo-puff { 0% { transform: scale(1); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.5); opacity: 0; filter: blur(4px); } }
         @keyframes jetpack-flame { 0%, 100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.7; transform: scaleY(0.85); } }
-        @keyframes history-pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
-        }
-        .pulse-history {
-            animation: history-pulse 2s infinite;
-        }
         @keyframes bot-fly-tilt {
             0%, 100% { transform: rotate(12deg) translateY(0px) scale(0.9, 1.1); }
             50% { transform: rotate(12deg) translateY(-10px) scale(0.92, 1.08); }
@@ -3879,50 +4285,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         .animate-wind-streak { animation: wind-streak 0.6s linear infinite; }
         @keyframes tap-pointer {
             0%, 100% { transform: rotate(0deg); }
-        @keyframes help-glow-pulse {
-            0%, 100% {
-                box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.6),
-                            0 0 15px 4px rgba(59, 130, 246, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 15px 4px rgba(59, 130, 246, 0.9),
-                            0 0 25px 8px rgba(59, 130, 246, 0.5),
-                            inset 0 0 10px rgba(59, 130, 246, 0.2);
-            }
-        }
-        @keyframes help-breathe {
-            0%, 100% {
-                box-shadow: 0 0 4px 1px rgba(99, 102, 241, 0.15);
-                transform: translateY(-50%) scale(1);
-            }
-            50% {
-                box-shadow: 0 0 8px 3px rgba(99, 102, 241, 0.25);
-                transform: translateY(-50%) scale(1.05);
-            }
-        }
-        @keyframes stemTutorialGlow {
-            0%, 100% { box-shadow: 0 0 10px 2px rgba(99, 102, 241, 0.3), 0 0 20px 4px rgba(99, 102, 241, 0.15); }
-            50% { box-shadow: 0 0 20px 6px rgba(99, 102, 241, 0.6), 0 0 40px 10px rgba(99, 102, 241, 0.3); }
-        }
-        @keyframes spotlightGlowRing {
-            0%, 100% { box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 20px rgba(139, 92, 246, 0.3); }
-            50% { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.9), 0 0 40px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(139, 92, 246, 0.1); }
-        }
-        @keyframes soundwave {
-    0% { height: 4px; }
-    100% { height: 16px; }
-}
-.help-mode-interactive {
-            position: relative;
-            animation: help-glow-pulse 2s ease-in-out infinite;
-            cursor: help !important;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        .help-mode-interactive:hover {
-            animation-duration: 1s; /* Speed up on hover */
-            z-index: 10;
-        }
             50% { transform: rotate(-12deg); }
         }
         @keyframes float-reaction {
@@ -4002,7 +4364,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         .animate-zzz { animation: zzz-float 2.5s infinite linear; }
         .animate-allo-float { animation: allo-float 3s ease-in-out infinite; }
         .animate-allo-puff { animation: allo-puff 0.4s ease-out forwards; }
+        .animate-allo-wave { animation: allo-wave 0.9s ease-in-out 1; transform-origin: center bottom; }
         .animate-allo-backflip { animation: allo-backflip 1.2s ease-in-out 1; }
+        .animate-allo-shrug { animation: allo-shrug 0.9s ease-in-out 1; transform-origin: center bottom; }
+        .animate-allo-look-around { animation: allo-look-around 1.1s ease-in-out 1; transform-origin: center bottom; }
         .animate-jetpack-flame { animation: jetpack-flame 0.1s ease-in-out infinite; transform-origin: top; }
         .animate-bot-fly-tilt { animation: bot-fly-tilt 2s ease-in-out infinite; }
         .animate-bot-land { animation: bot-land 0.5s ease-out forwards; }
@@ -4034,7 +4399,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             75% { transform: rotate(-6deg); }
             90% { transform: rotate(3deg); }
         }
-        .animate-wave-hello { animation: wave-hello 1.2s ease-in-out; transform-origin: 70px 50px; }
+        .animate-allo-wave-hello { animation: wave-hello 1.2s ease-in-out; transform-origin: 70px 50px; }
         @keyframes happy-nod {
             0%, 100% { transform: translateY(0) scale(1); }
             25% { transform: translateY(-6px) scale(1.05); }
@@ -4047,7 +4412,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             30% { transform: rotate(-5deg); }
             70% { transform: rotate(2deg); }
         }
-        .animate-sympathetic-tilt { animation: sympathetic-tilt 0.8s ease-in-out; }
+        .animate-allo-sympathetic-tilt { animation: sympathetic-tilt 0.8s ease-in-out; transform-origin: center bottom; }
         @keyframes voice-wave {
             0%, 100% { transform: scaleY(0.4); opacity: 0.7; }
             50% { transform: scaleY(1.3); opacity: 1; }
@@ -4060,13 +4425,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             animation: hologram-spin 8s linear infinite;
             transform-origin: center;
             transform-box: fill-box;
-        }
-        @keyframes ken-burns {
-            0% { transform: scale(1.0) translate(0, 0); }
-            100% { transform: scale(1.1) translate(-1%, -1%); }
-        }
-        .animate-ken-burns {
-            animation: ken-burns 20s ease-in-out infinite alternate;
         }
         .sr-only {
             position: absolute;
@@ -4176,13 +4534,21 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
 @keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
 .allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  [data-allobot-control-surface="true"],
+  [data-allobot-control-surface="true"] *,
+  [data-allobot-control-surface="true"]::before,
+  [data-allobot-control-surface="true"]::after,
+  [data-allobot-control-surface="true"] *::before,
+  [data-allobot-control-surface="true"] *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  [class*="animate-"], [class*="transition-"] {
+  [data-allobot-control-surface="true"][class*="animate-"],
+  [data-allobot-control-surface="true"][class*="transition-"],
+  [data-allobot-control-surface="true"] [class*="animate-"],
+  [data-allobot-control-surface="true"] [class*="transition-"] {
     animation: none !important;
     transition: none !important;
   }
@@ -4192,15 +4558,23 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   transition: none !important;
 }
 /* WCAG 2.4.7 Focus Visible \u2014 ensure all interactive elements show focus */
-*:focus-visible {
+[data-allobot-control-surface="true"]:focus-visible,
+[data-allobot-control-surface="true"] *:focus-visible {
   outline: 2px solid #6366f1 !important;
   outline-offset: 2px !important;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25) !important;
 }
-[role="button"]:focus-visible, button:focus-visible, a:focus-visible,
-input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid #6366f1 !important;
-  outline-offset: 2px !important;
+@media (forced-colors: active) {
+  [data-allobot-control-surface="true"]:focus-visible,
+  [data-allobot-control-surface="true"] *:focus-visible {
+    outline-color: Highlight !important;
+    box-shadow: none !important;
+  }
+  [data-allobot-control-surface="true"] .allobot-satellite-control,
+  [data-allobot-control-surface="true"] .allobot-control-orbit {
+    border-color: ButtonText;
+    forced-color-adjust: auto;
+  }
 }
 `), /* @__PURE__ */ React.createElement(
     "div",
@@ -4212,11 +4586,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
       "data-allobot-control-visibility": coarsePointer ? "persistent" : "reveal",
       "data-allobot-control-live": isListening ? "true" : "false",
       "data-allobot-body-state": bodyVisualState,
-      tabIndex: 0,
+      tabIndex: isSleeping ? void 0 : 0,
       "data-help-key": "bot_avatar",
-      "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown",
-      "aria-describedby": "allobot-move-instructions",
-      "aria-label": isSleeping ? t("bot.aria_sleeping") : t("bot.aria_active"),
+      "aria-keyshortcuts": isSleeping ? void 0 : "ArrowLeft ArrowRight ArrowUp ArrowDown",
+      "aria-describedby": isSleeping ? void 0 : moveInstructionsId,
+      "aria-label": isSleeping ? void 0 : t("bot.aria_active"),
       onKeyDown: handleKeyDown,
       className: `fixed z-[10000] group ${motionDisabled ? "allobot-motion-disabled" : ""} ${isDragging ? "cursor-grabbing" : "cursor-grab"} ${isSleeping ? "opacity-60 grayscale-[0.5]" : ""} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`,
       style: {
@@ -4227,7 +4601,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
         zIndex: showStemLab ? 10500 : void 0,
         top: `${position.y}px`,
         right: `${position.x}px`,
-        transform: motionDisabled ? "translateY(0px) scale(1)" : `translateY(${isHovered && !isDragging && !isSleeping ? "-5px" : "0px"}) scale(${isSquashed ? "1.1, 0.9" : String(pulseScale)})`,
+        transform: motionDisabled ? "translateY(0px) scale(1)" : `translateY(${isHovered && !isDragging && !isSleeping ? "-5px" : "0px"}) scale(${isSquashed ? "1.1, 0.9" : "1"})`,
         touchAction: "none",
         transition: motionDisabled ? "none" : isDragging || isSquashed ? "transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)" : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`
       },
@@ -4235,26 +4609,21 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
         if (!coarsePointer && (e.pointerType || "mouse") !== "touch") setIsHovered(true);
       },
       onPointerLeave: resetHoverGaze,
-      onPointerCancel: resetHoverGaze,
+      onPointerCancel: () => {
+        resetHoverGaze();
+        resetDragInteraction();
+      },
       onMouseDown: (e) => {
-        if (isSleeping) {
-          summon();
-        } else {
-          handleMouseDown(e);
-        }
+        if (!isSleeping) handleMouseDown(e);
       },
       onTouchStart: (e) => {
-        if (isSleeping) {
-          summon();
-        } else {
-          handleMouseDown(e);
-        }
+        if (!isSleeping) handleMouseDown(e);
       }
     },
     /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: motionDisabled ? "" : `${isDragging ? "" : isFlightActive ? "animate-bot-fly-tilt" : isLanding ? "animate-bot-land" : idleAnimation ? `animate-allo-${idleAnimation}` : isSleeping ? "" : "animate-allo-float"} ${isPoofing ? "animate-allo-puff" : ""}`,
+        className: motionDisabled ? "" : `${isDragging ? "" : isFlightActive ? "animate-bot-fly-tilt" : isLanding ? "animate-bot-land" : idleAnimation ? ALLOBOT_ANIMATION_CLASS_BY_NAME[idleAnimation] || "" : isSleeping ? "" : "animate-allo-float"} ${isPoofing ? "animate-allo-puff" : ""}`,
         style: motionDisabled ? isSleeping ? { transform: "translateY(10px)" } : void 0 : isDragging ? { transform: `rotate(${dragRotation}deg)`, transition: "transform 0.2s ease-out" } : isSleeping ? { transform: "translateY(10px)" } : void 0
       },
       /* @__PURE__ */ React.createElement(
@@ -4265,11 +4634,13 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           isTruncated: !!customMessage && isTruncated,
           onReadMore,
           onTyping: handleTypingState,
-          soundEnabled: soundEnabled && !isSleeping,
+          soundEnabled: soundEnabled && !isSleeping && !isDocumentHidden,
           variant: effectiveMood === "thinking" && !isTalking ? "thought" : "speech",
           disableAnimations: motionDisabled,
+          isDocumentHidden,
           theme,
-          avoidSide: accessoryRenderSide
+          avoidSide: accessoryRenderSide,
+          announce: !!customMessage
         }
       ),
       !motionDisabled && reactions.map((r) => /* @__PURE__ */ React.createElement(
@@ -4328,7 +4699,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             "aria-label": onHide ? t("toolbar.hide_bot") : t("bot.sleep_aria")
           },
           /* @__PURE__ */ React.createElement(X, { size: satelliteIconSize, strokeWidth: 3 })
-        ), /* @__PURE__ */ React.createElement(
+        ), onVoiceSettingsClick && /* @__PURE__ */ React.createElement(
           "button",
           {
             "data-help-key": "bot_settings_btn",
@@ -4337,7 +4708,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             onClick: (e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (onVoiceSettingsClick) onVoiceSettingsClick();
+              onVoiceSettingsClick();
             },
             onTouchStart: stopTouch,
             onPointerDown: (e) => e.stopPropagation(),
@@ -4364,7 +4735,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             onMouseDown: (e) => e.stopPropagation(),
             className: `${satellitePos.br} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? "bg-slate-100 text-slate-600 border-slate-200" : "bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100"}`,
             title: soundEnabled ? t("bot.mute_on_title") : t("bot.mute_off_title"),
-            "aria-label": soundEnabled ? t("bot.mute_on_aria") : t("bot.mute_off_aria")
+            "aria-label": soundEnabled ? t("bot.mute_on_aria") : t("bot.mute_off_aria"),
+            "aria-pressed": !soundEnabled
           },
           soundEnabled ? /* @__PURE__ */ React.createElement(Volume2, { size: satelliteIconSize, strokeWidth: 3 }) : /* @__PURE__ */ React.createElement(VolumeX, { size: satelliteIconSize, strokeWidth: 3 })
         ), onMicClick && /* @__PURE__ */ React.createElement(
@@ -4382,32 +4754,41 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             onTouchStart: stopTouch,
             onPointerDown: (e) => e.stopPropagation(),
             onMouseDown: (e) => e.stopPropagation(),
-            "aria-pressed": isListening ? "true" : "false",
+            "aria-pressed": !!isListening,
             className: `${satellitePos.bl} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${isListening ? "bg-red-700 text-white border-red-400 ring-2 ring-offset-1 ring-red-500 animate-pulse motion-reduce:animate-none" : "bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100"}`,
             title: isListening ? t("bot.mic_stop_title") : t("bot.mic_start_title"),
             "aria-label": isListening ? t("bot.mic_stop_aria") : t("bot.mic_start_aria")
           },
           isListening ? /* @__PURE__ */ React.createElement(Mic, { size: satelliteIconSize, strokeWidth: 3 }) : /* @__PURE__ */ React.createElement(MicOff, { size: satelliteIconSize, strokeWidth: 3 })
         )),
-        isSleeping && /* @__PURE__ */ React.createElement(
-          "div",
+        !isSleeping && onClick && /* @__PURE__ */ React.createElement(
+          "button",
           {
-            role: "button",
-            tabIndex: 0,
-            className: "absolute inset-0 z-50 cursor-pointer flex items-center justify-center group-hover:bg-white/10 rounded-full transition-colors motion-reduce:transition-none",
+            type: "button",
+            "data-allobot-avatar-action": "open",
+            className: "allobot-avatar-action absolute inset-0 z-10 rounded-full bg-transparent focus:outline-none",
+            "aria-label": t("bot.chat_aria") || t("bot.aria_active"),
+            onClick: (e) => {
+              e.stopPropagation();
+              if (e.detail === 0) onClick();
+            }
+          }
+        ),
+        isSleeping && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "data-allobot-avatar-action": "wake",
+            "aria-label": t("bot.aria_sleeping"),
+            title: t("bot.wake_title"),
+            className: "allobot-avatar-action absolute inset-0 z-50 cursor-pointer flex items-center justify-center group-hover:bg-white/10 rounded-full transition-colors motion-reduce:transition-none",
+            onPointerDown: (e) => e.stopPropagation(),
+            onMouseDown: (e) => e.stopPropagation(),
+            onTouchStart: (e) => e.stopPropagation(),
             onClick: (e) => {
               e.stopPropagation();
               summon();
-            },
-            onKeyDown: (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                e.stopPropagation();
-                summon();
-              }
-            },
-            title: t("bot.wake_title"),
-            "aria-label": t("bot.wake_title")
+            }
           }
         ),
         /* @__PURE__ */ React.createElement("svg", { width: "64", height: "64", viewBox: "0 0 100 100", fill: "none", xmlns: "http://www.w3.org/2000/svg", className: "select-none overflow-visible", "aria-hidden": "true" }, activeView === "image" && !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement("g", { transform: "translate(110, 30) scale(0.85) rotate(8)", className: "animate-in fade-in zoom-in-95 duration-500", opacity: "0.95" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "38", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "22", y: "8", width: "4", height: "52", rx: "2", fill: "#78350F", transform: "rotate(-4 24 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "12", width: "45", height: "32", rx: "3", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "15", width: "39", height: "26", rx: "2", fill: "#FEFCE8", stroke: "#E5E7EB", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "24", r: "4", fill: "#60A5FA", opacity: "0.7" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "22", r: "3", fill: "#F472B6", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "36", cy: "32", r: "3", fill: "#34D399", opacity: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "22", cy: "33", rx: "5", ry: "3", fill: "#FCD34D", opacity: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "42", width: "50", height: "4", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" })), !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement(
@@ -5377,7 +5758,30 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               ))),
               effectiveAccessory === "hard-hat" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M25 26 Q25 6 50 4 Q75 6 75 26 Z", fill: "#F59E0B", stroke: "#D97706", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z", fill: "#D97706", stroke: "#B45309", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M38 8 Q50 5 62 8", stroke: "#FCD34D", strokeWidth: "2", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "5", fill: "#374151", stroke: "#1F2937", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "3", fill: "#FEF3C7", opacity: "0.9" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "7", fill: "#FEF3C7", opacity: "0.15" })),
               effectiveAccessory === "sleep-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52", fill: "#6366F1", stroke: "#4F46E5", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M35 18 Q50 12 65 18", stroke: "#818CF8", strokeWidth: "2.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M40 12 Q52 7 64 14", stroke: "#818CF8", strokeWidth: "2", fill: "none", opacity: "0.4" }), /* @__PURE__ */ React.createElement("circle", { cx: "74", cy: "52", r: "6", fill: "#C4B5FD", stroke: "#A78BFA", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "50", r: "2", fill: "white", opacity: "0.4" }), /* @__PURE__ */ React.createElement("path", { d: "M28 24 Q50 28 72 22", stroke: "#4338CA", strokeWidth: "2.5", fill: "none" })),
-              effectiveAccessory === "microscope" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-28, 8)", "data-accessory-placement": "side-left", "data-accessory-name": "Microscope" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "8", cy: "82", rx: "14", ry: "4", fill: "#334155" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "78", width: "12", height: "4", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "38", width: "4", height: "42", rx: "1", fill: "#64748B" }), /* @__PURE__ */ React.createElement("path", { d: "M8 40 Q8 32 16 28", stroke: "#64748B", strokeWidth: "4", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "22", width: "6", height: "18", rx: "2", fill: "#94A3B8", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11", y: "18", width: "10", height: "6", rx: "2", fill: "#334155" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "18", rx: "5", ry: "2", fill: "#1e293b" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "17", rx: "2", ry: "1", fill: "white", opacity: "0.3" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "40", width: "4", height: "5", rx: "1", fill: "#334155" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "3", fill: "#93c5fd", opacity: "0.5", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "4", y: "48", width: "22", height: "3", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "8", y: "47", width: "12", height: "2", rx: "0.5", fill: "rgba(219, 234, 254, 0.6)", stroke: "#93c5fd", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "3", fill: "#64748B", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "1.5", fill: "#94a3b8" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "6", fill: "rgba(147, 197, 253, 0.15)" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.25;0.1", dur: motionDisabled ? "indefinite" : "3s", repeatCount: "indefinite" }))),
+              effectiveAccessory === "microscope" && /* @__PURE__ */ React.createElement(
+                "g",
+                {
+                  className: "animate-in fade-in slide-in-from-left-3 duration-500",
+                  transform: accessoryRenderSide === "right" ? "translate(-32, 8) scale(-1 1)" : "translate(8, 8)",
+                  "data-accessory-placement": `side-${accessoryRenderSide || "left"}`,
+                  "data-accessory-name": "Microscope"
+                },
+                /* @__PURE__ */ React.createElement("ellipse", { cx: "8", cy: "82", rx: "14", ry: "4", fill: "#334155" }),
+                /* @__PURE__ */ React.createElement("rect", { x: "2", y: "78", width: "12", height: "4", rx: "1", fill: "#475569" }),
+                /* @__PURE__ */ React.createElement("rect", { x: "6", y: "38", width: "4", height: "42", rx: "1", fill: "#64748B" }),
+                /* @__PURE__ */ React.createElement("path", { d: "M8 40 Q8 32 16 28", stroke: "#64748B", strokeWidth: "4", fill: "none", strokeLinecap: "round" }),
+                /* @__PURE__ */ React.createElement("rect", { x: "13", y: "22", width: "6", height: "18", rx: "2", fill: "#94A3B8", stroke: "#475569", strokeWidth: "1" }),
+                /* @__PURE__ */ React.createElement("rect", { x: "11", y: "18", width: "10", height: "6", rx: "2", fill: "#334155" }),
+                /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "18", rx: "5", ry: "2", fill: "#1e293b" }),
+                /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "17", rx: "2", ry: "1", fill: "white", opacity: "0.3" }),
+                /* @__PURE__ */ React.createElement("rect", { x: "14", y: "40", width: "4", height: "5", rx: "1", fill: "#334155" }),
+                /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "3", fill: "#93c5fd", opacity: "0.5", stroke: "#475569", strokeWidth: "1" }),
+                /* @__PURE__ */ React.createElement("rect", { x: "4", y: "48", width: "22", height: "3", rx: "1", fill: "#475569" }),
+                /* @__PURE__ */ React.createElement("rect", { x: "8", y: "47", width: "12", height: "2", rx: "0.5", fill: "rgba(219, 234, 254, 0.6)", stroke: "#93c5fd", strokeWidth: "0.5" }),
+                /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "3", fill: "#64748B", stroke: "#475569", strokeWidth: "1" }),
+                /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "1.5", fill: "#94a3b8" }),
+                /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "6", fill: "rgba(147, 197, 253, 0.15)" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.25;0.1", dur: motionDisabled ? "indefinite" : "3s", repeatCount: "indefinite" }))
+              ),
               effectiveAccessory === "historian" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-22, 38)", "data-accessory-placement": "side-left", "data-accessory-name": "History Sources" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "14", cy: "48", rx: "18", ry: "3", fill: "#7C2D12", opacity: "0.25" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-14 6 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "-4", y: "14", width: "20", height: "26", rx: "1", fill: "#FEF3C7", stroke: "#92400E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "20", x2: "12", y2: "20", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "24", x2: "12", y2: "24", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "28", x2: "10", y2: "28", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "32", x2: "12", y2: "32", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "36", x2: "9", y2: "36", stroke: "#78350F", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "4", y: "12", width: "20", height: "26", rx: "1", fill: "#FFFBEB", stroke: "#7C2D12", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "20", cy: "16", r: "2", fill: "#DC2626", stroke: "#7F1D1D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M19 15 L21 15 M20 14 L20 16", stroke: "#FECACA", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "22", x2: "17", y2: "22", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "26", x2: "18", y2: "26", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "30", x2: "15", y2: "30", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "34", x2: "17", y2: "34", stroke: "#7C2D12", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(14 22 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "12", y: "14", width: "20", height: "26", rx: "1", fill: "#FED7AA", stroke: "#9A3412", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "20", x2: "28", y2: "20", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "24", x2: "28", y2: "24", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "28", x2: "26", y2: "28", stroke: "#9A3412", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 22 8 Q 30 -2 34 -10", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 20 10 Q 28 0 34 -10 Q 32 -2 28 6 Q 24 10 20 10 Z", fill: "#0F172A", stroke: "#1F2937", strokeWidth: "0.5", opacity: "0.85" }, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", values: "0 22 8;3 22 8;0 22 8;-3 22 8;0 22 8", dur: motionDisabled ? "indefinite" : "6s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("circle", { cx: "22", cy: "9", r: "1.4", fill: "#1E40AF" }))),
               effectiveAccessory === "teacher-stack" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-20, 34)", "data-accessory-placement": "side-left", "data-accessory-name": "Teacher Resource Stack" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "3.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "40", width: "34", height: "11", rx: "1.5", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.2", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "45", x2: "24", y2: "45", stroke: "#B45309", strokeWidth: "0.7", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "30", width: "32", height: "11", rx: "1.5", fill: "#34D399", stroke: "#047857", strokeWidth: "1.2", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "35", x2: "26", y2: "35", stroke: "#047857", strokeWidth: "0.7", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "1", y: "20", width: "32", height: "11", rx: "1.5", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.2", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "25", x2: "25", y2: "25", stroke: "#1D4ED8", strokeWidth: "0.7", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(17, 9)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 3 C -7 3 -9 9 -6 14 C -4 17 -2 18 0 17 C 2 18 4 17 6 14 C 9 9 7 3 0 3 Z", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 Q -1 6 0 7 Q 1 6 0 4 Z", fill: "#B91C1C", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 L 0 -2", stroke: "#7C2D12", strokeWidth: "1.6", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z", fill: "#22C55E", stroke: "#15803D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-2.5", cy: "8", rx: "1.8", ry: "3", fill: "#fff", opacity: "0.45", transform: "rotate(-20 -2.5 8)" })))),
               effectiveAccessory === "scholar-specs" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.0s" } }, /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "62", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 47 48 Q 50 45 53 48", stroke: "#1F2937", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 29 47 Q 24 45 22 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 71 47 Q 76 45 78 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "35", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "59", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(-26, 56)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 28 0 L 28 18 L 0 18 Z", fill: "#FFFBEB", stroke: "#78350F", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 14 0 L 14 18", stroke: "#78350F", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "4", x2: "11", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "7", x2: "12", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "10", x2: "10", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "13", x2: "11", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "4", x2: "25", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "7", x2: "24", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "10", x2: "25", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "13", x2: "23", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M -2 0 L 30 0 L 30 -2 L -2 -2 Z", fill: "#7C2D12", stroke: "#451A03", strokeWidth: "0.8" })))),
@@ -5426,5 +5830,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   window.AlloModules.AlloMicMeter = (typeof AlloMicMeter !== 'undefined') ? AlloMicMeter : null;
   window.AlloModules.AlloBot = AlloBot;
 
+  // Mark the module loaded only after dependency resolution and registration
+  // complete. If React arrives after this script, a later load can retry.
+  window.__alloBotModuleLoaded = true;
   console.log('[AlloBotModule] AlloBot registered successfully');
 })();

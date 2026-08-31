@@ -116,6 +116,60 @@ function yaleManifest(overrides = {}) {
   };
 }
 
+function rijksEdmRecord(recordId = '20022259', options = {}) {
+  const {
+    serviceToken = 'LnWLG',
+    edmRights = 'http://creativecommons.org/publicdomain/mark/1.0/',
+    sourceUrl = `https://www.rijksmuseum.nl/en/collection/object/Object-${recordId}--246531cc26c680798f6ced3c71e9d274`,
+    ...overrides
+  } = options;
+  const service = `https://iiif.micr.io/${serviceToken}`;
+  return {
+    id: `https://id.rijksmuseum.nl/${recordId}#aggregation`,
+    type: 'Aggregation',
+    aggregatedCHO: {
+      id: `https://id.rijksmuseum.nl/${recordId}`,
+      type: 'ProvidedCHO',
+      title: { en: `Rijksmuseum source ${recordId}` },
+      creator: [{ 'http://www.w3.org/2004/02/skos/core#prefLabel': [{ '@language': 'en', '@value': 'Open collection maker' }] }],
+      created: [{ '@language': 'en', '@value': 'circa 1820' }],
+      dcType: [{ 'http://www.w3.org/2004/02/skos/core#prefLabel': [{ '@language': 'en', '@value': 'design drawing' }] }],
+      medium: [{ 'http://www.w3.org/2004/02/skos/core#prefLabel': [{ '@language': 'en', '@value': 'ink on paper' }] }],
+      description: { en: 'A precise historical design with useful line, grain, and texture detail.' }
+    },
+    isShownAt: { id: sourceUrl },
+    isShownBy: {
+      id: service + '/full/max/0/default.jpg',
+      type: 'WebResource',
+      'http://rdfs.org/sioc/services#has_service': {
+        id: service,
+        type: 'http://rdfs.org/sioc/services#Service',
+        conformsTo: [{ id: 'http://iiif.io/api/image' }]
+      }
+    },
+    object: { id: service + '/full/max/0/default.jpg', type: 'WebResource' },
+    edmRights,
+    ...overrides
+  };
+}
+
+function rijksIiifInfo(serviceToken = 'LnWLG', overrides = {}) {
+  return {
+    '@context': 'http://iiif.io/api/image/3/context.json',
+    id: `https://iiif.micr.io/${serviceToken}`,
+    type: 'ImageService3',
+    protocol: 'http://iiif.io/api/image',
+    profile: 'level2',
+    width: 14645,
+    height: 12158,
+    maxArea: 17550000,
+    extraFormats: ['jpg', 'png', 'webp'],
+    extraQualities: ['default', 'gray', 'color'],
+    extraFeatures: ['cors', 'regionByPct', 'regionByPx', 'regionSquare', 'sizeByConfinedWh', 'sizeByW', 'sizeByH', 'sizeByPct'],
+    ...overrides
+  };
+}
+
 function museumsVictoriaMedia(id, licenceUri, shortName, rightsStatement, overrides = {}) {
   const mediaId = String(id);
   return {
@@ -1189,6 +1243,530 @@ describe('Sourcebook initial feature contract', () => {
     expect(requests).toBe(4);
   });
 
+  it('admits Rijksmuseum images only from the exact framed EDM image-rights statement and trusted identities', () => {
+    const window = loadSourcebook();
+    const providers = window.SourcebookProviders;
+    expect(providers.normalizeRijksRights('http://creativecommons.org/publicdomain/mark/1.0/'))
+      .toMatchObject({ rightsType: 'pd', licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/' });
+    expect(providers.normalizeRijksRights('https://creativecommons.org/publicdomain/zero/1.0'))
+      .toMatchObject({ rightsType: 'cc0', license: 'CC0 1.0' });
+    expect(providers.normalizeRijksRights('https://creativecommons.org/licenses/by/4.0/'))
+      .toMatchObject({ rightsType: 'ccby', license: 'CC BY 4.0' });
+    [
+      'https://rightsstatements.org/vocab/InC/1.0/',
+      'https://creativecommons.org/licenses/by-nc/4.0/',
+      'https://creativecommons.org/licenses/by-nd/4.0/',
+      'https://creativecommons.org/licenses/by-sa/4.0/',
+      'https://creativecommons.org/publicdomain/mark/1.0/?forged=true',
+      'https://creativecommons.org.evil.test/publicdomain/mark/1.0/',
+      ''
+    ].forEach((rights) => expect(providers.normalizeRijksRights(rights)).toBeNull());
+
+    const record = rijksEdmRecord();
+    const item = providers.normalizeRijksRecord(record, 'historical geometric design', 'Patterns', '20022259');
+    expect(item).toMatchObject({
+      id: 'rijks-live-20022259-LnWLG',
+      rijksRecordId: '20022259',
+      rijksIiifServiceUrl: 'https://iiif.micr.io/LnWLG',
+      provider: 'Rijksmuseum Open Data',
+      title: 'Rijksmuseum source 20022259',
+      creator: 'Open collection maker',
+      kind: 'Patterns',
+      rightsType: 'pd',
+      sourceUrl: 'https://www.rijksmuseum.nl/en/collection/object/Object-20022259--246531cc26c680798f6ced3c71e9d274',
+      imageUrl: 'https://iiif.micr.io/LnWLG/full/!1200,1200/0/default.jpg',
+      downloadUrl: 'https://iiif.micr.io/LnWLG/full/max/0/default.jpg'
+    });
+    expect(item.rightsMetadataSource).toContain('edmRights=http://creativecommons.org/publicdomain/mark/1.0/');
+
+    const restricted = rijksEdmRecord('20022259', {
+      edmRights: 'https://rightsstatements.org/vocab/InC/1.0/',
+      metadataRights: 'https://creativecommons.org/publicdomain/zero/1.0/'
+    });
+    expect(providers.normalizeRijksRecord(restricted, 'design', 'Patterns', '20022259')).toBeNull();
+    expect(providers.normalizeRijksRecord(
+      rijksEdmRecord('20022259', { id: 'https://id.rijksmuseum.nl/20022260#aggregation' }),
+      'design', 'Patterns', '20022259'
+    )).toBeNull();
+    expect(providers.normalizeRijksRecord(
+      rijksEdmRecord('20022259', { id: 'https://id.rijksmuseum.nl/20022259#object' }),
+      'design', 'Patterns', '20022259'
+    )).toBeNull();
+    expect(providers.normalizeRijksRecord(
+      rijksEdmRecord('20022259', { type: 'Collection' }),
+      'design', 'Patterns', '20022259'
+    )).toBeNull();
+    expect(providers.normalizeRijksRecord(
+      rijksEdmRecord('20022259', {
+        aggregatedCHO: { ...record.aggregatedCHO, id: 'https://evil.example/20022259' }
+      }),
+      'design', 'Patterns', '20022259'
+    )).toBeNull();
+    expect(providers.normalizeRijksRecord(
+      rijksEdmRecord('20022259', { isShownAt: { id: 'https://evil.example/object/20022259' } }),
+      'design', 'Patterns', '20022259'
+    )).toBeNull();
+    expect(providers.normalizeRijksRecord(
+      rijksEdmRecord('20022259', {
+        isShownBy: {
+          ...record.isShownBy,
+          'http://rdfs.org/sioc/services#has_service': {
+            ...record.isShownBy['http://rdfs.org/sioc/services#has_service'],
+            id: 'https://iiif.micr.io/ChangedToken'
+          }
+        }
+      }),
+      'design', 'Patterns', '20022259'
+    )).toBeNull();
+    expect(providers.normalizeRijksRecord(
+      rijksEdmRecord('20022259', {
+        object: { id: 'https://iiif.micr.io/ContradictoryToken/full/max/0/default.jpg' }
+      }),
+      'design', 'Patterns', '20022259'
+    )).toBeNull();
+  });
+
+  it('accepts only exact Rijksmuseum IIIF v3 print evidence, applies maxArea, and coalesces trusted lookups', async () => {
+    let infoRequests = 0;
+    const window = loadSourcebook(async (url, options) => {
+      infoRequests += 1;
+      expect(String(url)).toBe('https://iiif.micr.io/LnWLG/info.json');
+      expect(options).toMatchObject({ mode: 'cors', credentials: 'omit' });
+      expect(options.headers.Accept).toContain('application/ld+json');
+      return {
+        ok: true,
+        headers: { get: () => '2048' },
+        json: async () => rijksIiifInfo()
+      };
+    });
+    const providers = window.SourcebookProviders;
+    const normalized = providers.normalizeRijksIiifInfo(rijksIiifInfo(), 'https://iiif.micr.io/LnWLG');
+    expect(normalized).toMatchObject({
+      serviceUrl: 'https://iiif.micr.io/LnWLG',
+      infoUrl: 'https://iiif.micr.io/LnWLG/info.json',
+      nativeWidth: 14645,
+      nativeHeight: 12158,
+      maxArea: 17550000,
+      pixelWidth: 4597,
+      pixelHeight: 3817
+    });
+    expect(normalized.pixelWidth * normalized.pixelHeight).toBeLessThanOrEqual(normalized.maxArea);
+
+    const noLimit = rijksIiifInfo();
+    delete noLimit.maxArea;
+    expect(providers.normalizeRijksIiifInfo(noLimit, 'https://iiif.micr.io/LnWLG'))
+      .toMatchObject({ pixelWidth: 14645, pixelHeight: 12158 });
+    expect(providers.normalizeRijksIiifInfo(
+      rijksIiifInfo('LnWLG', { maxArea: 200000000 }), 'https://iiif.micr.io/LnWLG'
+    )).toMatchObject({ pixelWidth: 14645, pixelHeight: 12158 });
+
+    [
+      rijksIiifInfo('Hostile'),
+      rijksIiifInfo('LnWLG', { '@context': 'https://evil.example/context.json' }),
+      rijksIiifInfo('LnWLG', { type: 'ImageService2' }),
+      rijksIiifInfo('LnWLG', { protocol: 'https://evil.example/image' }),
+      rijksIiifInfo('LnWLG', { profile: 'level1' }),
+      rijksIiifInfo('LnWLG', { width: 0 }),
+      rijksIiifInfo('LnWLG', { maxArea: 0 }),
+      rijksIiifInfo('LnWLG', { maxArea: 1 }),
+      rijksIiifInfo('LnWLG', { extraFormats: ['png'] }),
+      rijksIiifInfo('LnWLG', { extraQualities: ['gray'] }),
+      rijksIiifInfo('LnWLG', { extraFeatures: ['sizeByConfinedWh'] })
+    ].forEach((payload) => {
+      expect(providers.normalizeRijksIiifInfo(payload, 'https://iiif.micr.io/LnWLG')).toBeNull();
+    });
+
+    const [first, second] = await Promise.all([
+      providers.fetchRijksIiifInfo('https://iiif.micr.io/LnWLG'),
+      providers.fetchRijksIiifInfo('https://iiif.micr.io/LnWLG')
+    ]);
+    expect(infoRequests).toBe(1);
+    first.pixelWidth = 1;
+    expect(second.pixelWidth).toBe(4597);
+    const cached = await providers.fetchRijksIiifInfo('https://iiif.micr.io/LnWLG');
+    expect(infoRequests).toBe(1);
+    expect(cached.pixelWidth).toBe(4597);
+  });
+
+  it('keeps a fresh Rijksmuseum IIIF cache refresh from being overwritten by an older in-flight lookup', async () => {
+    const pending = [];
+    let requests = 0;
+    const window = loadSourcebook(async () => {
+      requests += 1;
+      if (requests <= 2) return new Promise((resolve) => pending.push(resolve));
+      return {
+        ok: true,
+        headers: { get: () => '2048' },
+        json: async () => rijksIiifInfo('LnWLG', { width: 3000, height: 2000, maxArea: 6000000 })
+      };
+    });
+    const providers = window.SourcebookProviders;
+    const older = providers.fetchRijksIiifInfo('https://iiif.micr.io/LnWLG');
+    const refreshed = providers.fetchRijksIiifInfo('https://iiif.micr.io/LnWLG', { bypassCache: true });
+    expect(pending).toHaveLength(2);
+    pending[1]({
+      ok: true,
+      headers: { get: () => '2048' },
+      json: async () => rijksIiifInfo()
+    });
+    await expect(refreshed).resolves.toMatchObject({ nativeWidth: 14645, pixelWidth: 4597 });
+    pending[0]({
+      ok: true,
+      headers: { get: () => '2048' },
+      json: async () => rijksIiifInfo('LnWLG', { width: 8000, height: 6000, maxArea: 48000000 })
+    });
+    await expect(older).resolves.toMatchObject({ nativeWidth: 8000, pixelWidth: 8000 });
+    await expect(providers.fetchRijksIiifInfo('https://iiif.micr.io/LnWLG'))
+      .resolves.toMatchObject({ nativeWidth: 14645, pixelWidth: 4597 });
+    expect(requests).toBe(2);
+  });
+
+  it('searches keyless Rijksmuseum public-domain-set pages, follows only their opaque cursor, and bounds resolution', async () => {
+    const query = 'historical wood grain';
+    const recordIds = Array.from({ length: 8 }, (_, index) => String(20031001 + index));
+    const nextUrl = 'https://data.rijksmuseum.nl/search/collection?description=wood'
+      + '&imageAvailable=true&memberOfSetId=' + encodeURIComponent('https://id.rijksmuseum.nl/260239')
+      + '&pageToken=opaque%2Btoken%2Fvalue%3D%3D';
+    const requests = [];
+    const window = loadSourcebook(async (url, options) => {
+      const href = String(url);
+      requests.push({ url: href, options });
+      const parsed = new URL(href);
+      if (parsed.pathname === '/search/collection') {
+        if (!parsed.searchParams.has('pageToken')) {
+          return { ok: true, json: async () => ({ type: 'OrderedCollectionPage', orderedItems: [], next: { id: nextUrl } }) };
+        }
+        return {
+          ok: true,
+          json: async () => ({
+            type: 'OrderedCollectionPage',
+            orderedItems: [
+              { id: `https://id.rijksmuseum.nl/${recordIds[0]}` },
+              { id: `https://id.rijksmuseum.nl/${recordIds[0]}` },
+              ...recordIds.slice(1).map((id) => ({ id: `https://id.rijksmuseum.nl/${id}` }))
+            ]
+          })
+        };
+      }
+      const infoMatch = parsed.pathname.match(/^\/RijksToken(\d+)\/info\.json$/);
+      if (infoMatch) {
+        return {
+          ok: true,
+          headers: { get: () => '2048' },
+          json: async () => rijksIiifInfo('RijksToken' + infoMatch[1])
+        };
+      }
+      const match = parsed.pathname.match(/^\/(\d+)$/);
+      if (!match) return { ok: false, status: 404, headers: { get: () => '' } };
+      const index = recordIds.indexOf(match[1]);
+      return {
+        ok: true,
+        json: async () => rijksEdmRecord(match[1], {
+          serviceToken: 'RijksToken' + match[1],
+          edmRights: index >= 0 && index < 4
+            ? 'http://creativecommons.org/publicdomain/mark/1.0/'
+            : 'https://rightsstatements.org/vocab/InC/1.0/'
+        })
+      };
+    });
+    const results = Array.from(await window.SourcebookProviders.searchRijks(query, {
+      kind: 'Textures', page: 1, limit: 4
+    }));
+    expect(results).toHaveLength(4);
+    expect(results.every((item) => item.provider === 'Rijksmuseum Open Data' && item.rightsType === 'pd')).toBe(true);
+    expect(results.every((item) => item.pixelWidth === 2400 && item.pixelHeight === 1992
+      && item.pixelDimensionSource === 'iiif-prepared'
+      && item.rijksPreparationBoundWidth === 2400 && item.rijksPreparationBoundHeight === 2400)).toBe(true);
+    expect(results.every((item) => window.SourcebookProviders.printReadiness(item, { mode: 'fit' }).status === 'ready')).toBe(true);
+    expect(requests).toHaveLength(14);
+    const first = new URL(requests[0].url);
+    expect(first.origin + first.pathname).toBe('https://data.rijksmuseum.nl/search/collection');
+    expect(first.searchParams.get('description')).toBe('wood');
+    expect(first.searchParams.get('imageAvailable')).toBe('true');
+    expect(first.searchParams.get('memberOfSetId')).toBe('https://id.rijksmuseum.nl/260239');
+    expect(first.searchParams.has('key') || first.searchParams.has('apiKey')).toBe(false);
+    expect(requests[1].url).toBe(nextUrl);
+    const edmRequests = requests.filter((request) => new URL(request.url).searchParams.get('_profile') === 'edm-framed');
+    const infoRequests = requests.filter((request) => /\/RijksToken\d+\/info\.json$/.test(new URL(request.url).pathname));
+    expect(edmRequests).toHaveLength(8);
+    expect(infoRequests).toHaveLength(4);
+    expect(infoRequests.map((request) => request.url).sort()).toEqual(
+      recordIds.slice(0, 4).map((id) => `https://iiif.micr.io/RijksToken${id}/info.json`).sort()
+    );
+    expect(edmRequests.every((request) =>
+      new URL(request.url).searchParams.get('_profile') === 'edm-framed'
+      && request.options.mode === 'cors'
+      && request.options.credentials === 'omit'
+      && request.options.headers.Accept === 'application/ld+json'
+    )).toBe(true);
+    expect(infoRequests.every((request) => request.options.mode === 'cors'
+      && request.options.credentials === 'omit')).toBe(true);
+
+    let hostileRequests = 0;
+    const hostileWindow = loadSourcebook(async () => {
+      hostileRequests += 1;
+      return {
+        ok: true,
+        json: async () => ({
+          type: 'OrderedCollectionPage',
+          orderedItems: [{ id: 'https://id.rijksmuseum.nl/20031001' }],
+          next: { id: 'https://evil.example/search/collection?pageToken=forged' }
+        })
+      };
+    });
+    await expect(hostileWindow.SourcebookProviders.searchRijks(query, {
+      kind: 'Textures', page: 1, limit: 4
+    })).resolves.toHaveLength(0);
+    expect(hostileRequests).toBe(1);
+
+    let transportRequests = 0;
+    const transportWindow = loadSourcebook(async (url) => {
+      transportRequests += 1;
+      const parsed = new URL(String(url));
+      if (parsed.pathname === '/search/collection') {
+        return {
+          ok: true,
+          json: async () => ({
+            type: 'OrderedCollectionPage',
+            orderedItems: [{ id: 'https://id.rijksmuseum.nl/20031001' }]
+          })
+        };
+      }
+      return { ok: false, status: 429, headers: { get: () => '2' } };
+    });
+    await expect(transportWindow.SourcebookProviders.searchRijks(query, {
+      kind: 'Textures', page: 0, limit: 4
+    })).rejects.toMatchObject({ status: 429 });
+    expect(transportRequests).toBe(2);
+
+    const malformedWindow = loadSourcebook(async () => ({
+      ok: true, json: async () => ({ orderedItems: [] })
+    }));
+    await expect(malformedWindow.SourcebookProviders.searchRijks(query, {
+      kind: 'Textures', page: 0, limit: 4
+    })).rejects.toThrow(/unexpected collection-search response/i);
+
+    const posterRequests = [];
+    const posterWindow = loadSourcebook(async (url) => {
+      posterRequests.push(String(url));
+      return { ok: true, json: async () => ({ type: 'OrderedCollectionPage', orderedItems: [] }) };
+    });
+    await expect(posterWindow.SourcebookProviders.searchRijks('posters', {
+      kind: 'All', page: 0, limit: 2
+    })).resolves.toHaveLength(0);
+    expect(new URL(posterRequests[0]).searchParams.get('description')).toBe('print');
+  });
+
+  it('keeps rights-safe Rijksmuseum results when IIIF print evidence is unavailable or untrustworthy', async () => {
+    const cases = [
+      {
+        name: 'service outage',
+        infoResponse: { ok: false, status: 503, headers: { get: () => '' } }
+      },
+      {
+        name: 'mismatched identity',
+        infoResponse: { ok: true, headers: { get: () => '2048' }, json: async () => rijksIiifInfo('DifferentToken') }
+      },
+      {
+        name: 'invalid dimensions',
+        infoResponse: { ok: true, headers: { get: () => '2048' }, json: async () => rijksIiifInfo('LnWLG', { width: 0 }) }
+      }
+    ];
+    for (const scenario of cases) {
+      const requests = [];
+      const window = loadSourcebook(async (url) => {
+        const href = String(url);
+        requests.push(href);
+        const parsed = new URL(href);
+        if (parsed.pathname === '/search/collection') {
+          return {
+            ok: true,
+            json: async () => ({
+              type: 'OrderedCollectionPage',
+              orderedItems: [{ id: 'https://id.rijksmuseum.nl/20022259' }]
+            })
+          };
+        }
+        if (parsed.pathname === '/20022259') return { ok: true, json: async () => rijksEdmRecord() };
+        if (parsed.pathname === '/LnWLG/info.json') return scenario.infoResponse;
+        return { ok: false, status: 404, headers: { get: () => '' } };
+      });
+      const results = Array.from(await window.SourcebookProviders.searchRijks('architectural plan', {
+        kind: 'Blueprints', page: 0, limit: 1
+      }));
+      expect(results, scenario.name).toHaveLength(1);
+      expect(results[0], scenario.name).toMatchObject({
+        provider: 'Rijksmuseum Open Data',
+        rightsType: 'pd',
+        pixelWidth: 0,
+        pixelHeight: 0,
+        pixelDimensionSource: 'unknown'
+      });
+      expect(window.SourcebookProviders.printReadiness(results[0], { mode: 'fit' }).status).toBe('unknown');
+      expect(requests.filter((href) => href.endsWith('/LnWLG/info.json'))).toHaveLength(1);
+    }
+  });
+
+  it('uses a bounded verified Rijksmuseum rendition for preparation without weakening saved identity', async () => {
+    const window = loadSourcebook(async (url) => ({
+      ok: true,
+      headers: { get: () => '2048' },
+      json: async () => rijksIiifInfo('LnWLG')
+    }));
+    const item = window.SourcebookProviders.normalizeRijksRecord(
+      rijksEdmRecord(), 'historical design', 'Blueprints', '20022259'
+    );
+    await expect(window.SourcebookProviders.resolveFetchableImageUrl(item))
+      .resolves.toBe('https://iiif.micr.io/LnWLG/full/!1200,1200/0/default.jpg');
+    const enriched = await window.SourcebookProviders.enrichRijksPrintEvidence(item, { bypassCache: true });
+    expect(enriched).toMatchObject({
+      pixelWidth: 2400,
+      pixelHeight: 1992,
+      pixelDimensionSource: 'iiif-prepared',
+      rijksPreparationBoundWidth: 2400,
+      rijksPreparationBoundHeight: 2400
+    });
+    await expect(window.SourcebookProviders.resolveFetchableImageUrl(enriched))
+      .resolves.toBe('https://iiif.micr.io/LnWLG/full/!2400,2400/0/default.jpg');
+    expect(window.SourcebookProviders.rijksIdentityFromAsset(enriched)).toMatchObject({
+      imageUrl: 'https://iiif.micr.io/LnWLG/full/!1200,1200/0/default.jpg',
+      downloadUrl: 'https://iiif.micr.io/LnWLG/full/max/0/default.jpg'
+    });
+    expect(window.SourcebookProviders.rijksIdentityFromAsset({
+      ...enriched,
+      imageUrl: 'https://iiif.micr.io/LnWLG/full/!2400,2400/0/default.jpg'
+    })).toBeNull();
+    await expect(window.SourcebookProviders.resolveFetchableImageUrl({
+      ...enriched,
+      pixelDimensionSource: 'iiif-info',
+      pixelWidth: 99999,
+      pixelHeight: 99999
+    })).resolves.toBe('https://iiif.micr.io/LnWLG/full/!1200,1200/0/default.jpg');
+    await expect(window.SourcebookProviders.resolveFetchableImageUrl({
+      ...enriched,
+      rijksIiifServiceUrl: 'https://evil.example/iiif/LnWLG'
+    })).resolves.toBe('');
+    expect(window.SourcebookProviders.printReadiness(enriched, { mode: 'fit' })).toMatchObject({
+      status: 'ready', width: 2400, height: 1992, dimensionSource: 'iiif-prepared'
+    });
+    const dataUrl = 'data:image/jpeg;base64,AAAA';
+    expect(window.SourcebookProviders.buildPageDesignerArtwork(enriched, { mode: 'fit' }, dataUrl))
+      .toMatchObject({ sourcePixelWidth: 2400, sourcePixelHeight: 1992, printReadiness: 'Print ready' });
+    expect(window.SourcebookProviders.buildSourcePackage(enriched, { mode: 'fit' }, dataUrl))
+      .toContain('Print ready - 2400 x 1992 px');
+    const palette = window.SourcebookProviders.buildPalette([enriched.id], {}, 'Verified Rijks rendition', [enriched]);
+    expect(palette.assets[0]).toMatchObject({
+      pixelWidth: 2400,
+      pixelHeight: 1992,
+      pixelDimensionSource: 'iiif-prepared',
+      rijksPreparationBoundWidth: 2400,
+      rijksPreparationBoundHeight: 2400
+    });
+  });
+
+  it('restores saved Rijksmuseum sources only after exact authoritative rights and identity revalidation', async () => {
+    const requests = [];
+    let currentRights = 'http://creativecommons.org/publicdomain/mark/1.0/';
+    let currentServiceToken = 'LnWLG';
+    let infoUnavailable = false;
+    const window = loadSourcebook(async (url, options) => {
+      const href = String(url);
+      requests.push({ url: href, options });
+      if (href === `https://iiif.micr.io/${currentServiceToken}/info.json`) {
+        if (infoUnavailable) return { ok: false, status: 503, headers: { get: () => '' } };
+        return {
+          ok: true,
+          headers: { get: () => '2048' },
+          json: async () => rijksIiifInfo(currentServiceToken)
+        };
+      }
+      return {
+        ok: true,
+        json: async () => rijksEdmRecord('20022259', {
+          serviceToken: currentServiceToken,
+          edmRights: currentRights
+        })
+      };
+    });
+    const item = window.SourcebookProviders.normalizeRijksRecord(
+      rijksEdmRecord(), 'historical design', 'Blueprints', '20022259'
+    );
+    const now = Date.UTC(2026, 7, 31, 12, 0, 0);
+    const session = window.SourcebookProviders.buildLiveSession([item], {
+      query: 'historical design', kind: 'Blueprints', provider: 'Rijksmuseum Open Data', rightsScope: 'pd'
+    }, now);
+    session.results[0].title = 'FORGED SAVED RIJKSMUSEUM TITLE';
+    session.results[0].pixelWidth = 99999;
+    session.results[0].pixelHeight = 99999;
+    session.results[0].pixelDimensionSource = 'iiif-prepared';
+    session.results[0].rijksPreparationBoundWidth = 2400;
+    session.results[0].rijksPreparationBoundHeight = 2400;
+    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
+    const restored = await window.SourcebookProviders.revalidateLiveSession(session, {
+      nowValue: now + 1000, bypassCache: true
+    });
+    expect(restored.results[0]).toMatchObject({
+      title: 'Rijksmuseum source 20022259',
+      rijksRecordId: '20022259',
+      rijksIiifServiceUrl: 'https://iiif.micr.io/LnWLG',
+      rightsType: 'pd',
+      pixelWidth: 2400,
+      pixelHeight: 1992,
+      pixelDimensionSource: 'iiif-prepared',
+      rijksPreparationBoundWidth: 2400,
+      rijksPreparationBoundHeight: 2400
+    });
+    expect(restored.results[0].title).not.toContain('FORGED');
+    expect(requests).toHaveLength(2);
+    expect(requests[0].url).toBe('https://data.rijksmuseum.nl/20022259?_profile=edm-framed');
+    expect(requests[1].url).toBe('https://iiif.micr.io/LnWLG/info.json');
+
+    requests.length = 0;
+    infoUnavailable = true;
+    const restoredWithoutInfo = await window.SourcebookProviders.revalidateLiveSession(session, {
+      nowValue: now + 1000, bypassCache: true
+    });
+    expect(restoredWithoutInfo.results[0]).toMatchObject({
+      rightsType: 'pd', pixelWidth: 0, pixelHeight: 0, pixelDimensionSource: 'unknown'
+    });
+    expect(requests).toHaveLength(2);
+    infoUnavailable = false;
+
+    requests.length = 0;
+    const palette = window.SourcebookProviders.buildPalette([item.id], {}, 'Rijksmuseum design source', [item]);
+    expect(palette.assets[0]).toMatchObject({
+      rijksRecordId: '20022259', rijksIiifServiceUrl: 'https://iiif.micr.io/LnWLG'
+    });
+    expect(window.SourcebookProviders.normalizePalette(palette)).toBeNull();
+    const restoredPalette = await window.SourcebookProviders.revalidatePalette(palette, { bypassCache: true });
+    expect(restoredPalette.assets[0]).toMatchObject({
+      title: 'Rijksmuseum source 20022259', provider: 'Rijksmuseum Open Data', rightsType: 'pd',
+      pixelWidth: 2400, pixelHeight: 1992, pixelDimensionSource: 'iiif-prepared',
+      rijksPreparationBoundWidth: 2400, rijksPreparationBoundHeight: 2400
+    });
+    expect(requests).toHaveLength(2);
+
+    requests.length = 0;
+    currentRights = 'https://rightsstatements.org/vocab/InC/1.0/';
+    await expect(window.SourcebookProviders.revalidatePalette(palette, { bypassCache: true }))
+      .rejects.toThrow(/allowed exact image-rights|changed identity or rights/i);
+    expect(requests).toHaveLength(1);
+    expect(requests[0].url).toContain('_profile=edm-framed');
+
+    currentRights = 'http://creativecommons.org/publicdomain/mark/1.0/';
+    currentServiceToken = 'ChangedToken';
+    await expect(window.SourcebookProviders.revalidatePalette(palette))
+      .rejects.toThrow(/changed.*identity|source or IIIF identity/i);
+    await expect(window.SourcebookProviders.fetchRijksAssets([item]))
+      .rejects.toThrow(/changed.*identity|source or IIIF identity/i);
+
+    const malformed = { ...item, rijksRecordId: 'not-a-record-id' };
+    const beforeMalformed = requests.length;
+    await expect(window.SourcebookProviders.fetchRijksAssets([malformed]))
+      .rejects.toThrow(/trustworthy persistent identifier|IIIF identity/i);
+    expect(requests).toHaveLength(beforeMalformed);
+  });
+
   it('admits Museums Victoria images only from exact media-level PDM, CC0, or CC BY 4.0 records', () => {
     const window = loadSourcebook();
     const items = Array.from(window.SourcebookProviders.normalizeMuseumsVictoriaRecord(
@@ -1723,7 +2301,7 @@ describe('Sourcebook initial feature contract', () => {
       expect(host.querySelector('[data-sourcebook-result-card="aic-live-91001"] [data-sourcebook-card-rights="pd"]')).toBeTruthy();
       expect(host.querySelector('[data-sourcebook-provider-batch="Art Institute of Chicago"]')?.textContent).toContain('Collection batch 2 / 2 loaded on board');
       expect(host.querySelector('[data-sourcebook-live-status="ready"]')?.textContent).toContain('added 1 new rights-verified asset');
-      expect(host.textContent).toContain('open to search one collection deeper');
+      expect(host.textContent).toContain('still has an unexplored batch');
       expect(latestState.provider).toBe('All');
       expect(latestState.liveSession.results.map((item) => item.id)).toEqual(expect.arrayContaining(['commons-live-777', 'aic-live-91000', 'aic-live-91001']));
       expect(latestState.liveSession.results.every((item) => item.rightsType === 'pd')).toBe(true);
@@ -1739,17 +2317,30 @@ describe('Sourcebook initial feature contract', () => {
     }
   });
 
-  it('presents only known live provider identities and exposes Yale and Museums Victoria through the central registry', () => {
+  it('presents only known live provider identities and exposes Yale, Rijksmuseum, and Museums Victoria through the central registry', () => {
     const window = loadSourcebook();
-    expect(window.SourcebookProviders.version).toBe(54);
+    expect(window.SourcebookProviders.version).toBe(58);
     expect(window.SourcebookProviders.providerPresentation('Yale University Art Gallery Open Access')).toEqual({
       name: 'Yale University Art Gallery Open Access', mark: 'YUAG', known: true
     });
+    expect(window.SourcebookProviders.providerPresentation('Rijksmuseum Open Data')).toEqual({
+      name: 'Rijksmuseum Open Data', mark: 'RIJKS', known: true
+    });
+    expect(Array.from(window.SourcebookProviders.rijksSearchTerms('historic blueprint with strong linework', 'Blueprints'))[0]).toBe('architecture');
+    expect(Array.from(window.SourcebookProviders.rijksSearchTerms('contour maps for geography', 'Maps'))[0]).toBe('map');
+    expect(Array.from(window.SourcebookProviders.rijksSearchTerms('historical wood grain', 'Textures'))[0]).toBe('wood');
     expect(window.SourcebookProviders.providerPresentation('Museums Victoria Collections')).toEqual({
       name: 'Museums Victoria Collections', mark: 'MV', known: true
     });
+    expect(Array.from(window.SourcebookProviders.liveProviderNames)).toContain('Rijksmuseum Open Data');
     expect(Array.from(window.SourcebookProviders.liveProviderNames)).toContain('Museums Victoria Collections');
+    expect(window.SourcebookProviders.liveProviderLimit('Rijksmuseum Open Data', 999)).toBe(12);
     expect(window.SourcebookProviders.liveProviderLimit('Museums Victoria Collections', 999)).toBe(24);
+    expect(window.SourcebookProviders.providerReportCanSearchDeeper({
+      provider: 'Rijksmuseum Open Data', status: 'ready', batch: 12
+    }, 12)).toBe(false);
+    ['searchRijks', 'rijksSearchTerms', 'normalizeRijksRights', 'normalizeRijksRecord', 'rijksIdentityFromAsset', 'fetchRijksAssets']
+      .forEach((name) => expect(typeof window.SourcebookProviders[name]).toBe('function'));
     expect(pluginSource).toContain('data-sourcebook-more-from-provider');
     expect(pluginSource).toContain("'More from ' + providerPresentation(item.provider).name");
     expect(pluginSource).toContain("var focusedQuery = buildSimilarSearch(item) || String(item.title || '').trim() || String(query || '').trim();");
@@ -2929,12 +3520,16 @@ describe('Sourcebook initial feature contract', () => {
     expect(session.results).toHaveLength(2);
     expect(session.results[0].recommended).toBe(true);
     expect(session.results[0].recommendationSource).toBe('Gemini visual pick');
+    session.results[0].pixelWidth = 100000;
+    session.results[0].pixelHeight = 100000;
+    session.results[0].pixelDimensionSource = 'catalog';
 
     const restored = window.SourcebookProviders.normalizeLiveSession(session, now + 60000);
     expect(restored.query).toBe('layered contour maps');
     expect(restored.page).toBe(3);
     expect(restored.paletteTarget).toBe(8);
     expect(restored.results).toHaveLength(2);
+    expect(restored.results[0]).toMatchObject({ pixelWidth: 0, pixelHeight: 0, pixelDimensionSource: 'unknown' });
     expect(window.SourcebookProviders.normalizeLiveSession(session, now + (8 * 24 * 60 * 60 * 1000))).toBeNull();
     expect(window.SourcebookProviders.normalizeLiveSession({
       ...session, results: [{ ...session.results[0], rightsType: 'unknown' }]
@@ -3186,10 +3781,17 @@ describe('Sourcebook initial feature contract', () => {
         altText: 'Topographic contour lines', altTextCustomized: true, altTextReviewed: true
       }
     }, 'Imported geography set');
+    manifest.assets[0].pixelWidth = 100000;
+    manifest.assets[0].pixelHeight = 100000;
+    manifest.assets[0].pixelDimensionSource = 'catalog';
     const imported = window.SourcebookProviders.normalizePalette(manifest);
     expect(imported).toMatchObject({ schema: 'org.owlflow.sourcebook-palette', version: 1, title: 'Imported geography set' });
     expect(imported.assets).toHaveLength(2);
     expect(imported.assets.every((asset) => ['pd', 'cc0', 'ccby'].includes(asset.rightsType))).toBe(true);
+    expect(imported.assets[0]).toMatchObject({ pixelWidth: 0, pixelHeight: 0, pixelDimensionSource: 'unknown' });
+    expect(window.SourcebookProviders.normalizePersistedAsset({
+      ...manifest.assets[0], pixelWidth: 100000, pixelHeight: 100000, pixelDimensionSource: 'catalog'
+    })).toMatchObject({ pixelWidth: 0, pixelHeight: 0, pixelDimensionSource: 'unknown' });
     expect(imported.preparation[items[0].id]).toMatchObject({
       mode: 'tile', aspect: 'banner', tile: 120, usageIntent: 'reference', usagePlan: 'education', decorative: false,
       altText: 'Topographic contour lines', altTextCustomized: true, altTextReviewed: true
@@ -3309,7 +3911,7 @@ describe('Sourcebook initial feature contract', () => {
       ready: true,
       missing: [],
       missingLabel: '',
-      summary: 'Educational set \\u00b7 100% role coverage'
+      summary: 'Educational set \u00b7 100% role coverage'
     });
     expect(Array.from(board.groups).map((group) => ({
       id: group.id, required: group.required, count: group.count, missing: group.missing
@@ -3326,6 +3928,19 @@ describe('Sourcebook initial feature contract', () => {
       focal: ['role-focal'],
       reference: ['role-map'],
       accent: ['role-accent']
+    });
+
+    const goalBoard = window.SourcebookProviders.buildPaletteRoleBoard(items, planned.preparation, 'education', 6);
+    expect(goalBoard).toMatchObject({
+      planId: 'education',
+      total: 4,
+      goal: 6,
+      openSlots: 2,
+      requiredSlots: 6,
+      coveredSlots: 4,
+      coveragePercent: 67,
+      ready: false,
+      missingLabel: 'Reference 1, Texture 1'
     });
 
     const referenceOnly = Object.fromEntries(items.map((item) => [item.id, { usageIntent: 'reference', usagePlan: 'education' }]));
@@ -3348,7 +3963,7 @@ describe('Sourcebook initial feature contract', () => {
     })).toMatchObject({ planId: 'balanced', total: 1 });
 
     const report = window.SourcebookProviders.palettePreflightReport(items, planned.preparation, {}, 'Teaching visuals');
-    expect(report).toContain('Visual set (advisory): Educational set \\u00b7 100% role coverage');
+    expect(report).toContain('Visual set (advisory): Educational set \u00b7 100% role coverage');
     expect(report).toContain('Visual-set guidance never blocks output.');
     const images = Object.fromEntries(items.map((item) => [item.id, 'data:image/png;base64,AAAA']));
     const packageHtml = window.SourcebookProviders.buildPalettePackage(items, planned.preparation, 'Teaching visuals', images);
@@ -3356,6 +3971,123 @@ describe('Sourcebook initial feature contract', () => {
     expect(packageHtml).toContain('data-sourcebook-role-coverage="100"');
     expect(packageHtml).toContain('Visual set map (advisory)');
     expect(packageHtml).toContain('Missing roles never block output.');
+  });
+
+  it('plans goal-aware role additions and reversible protected replacements', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const items = Array.from({ length: 6 }, (_, index) => ({
+      ...base,
+      id: 'rebalance-reference-' + index,
+      title: 'Technical reference map ' + index,
+      kind: 'Maps'
+    }));
+    const preparation = Object.fromEntries(items.map((item) => [
+      item.id, { usageIntent: 'reference', usagePlan: 'education' }
+    ]));
+
+    const addAction = window.SourcebookProviders.planPaletteRoleGapAction(
+      items.slice(0, 4),
+      Object.fromEntries(items.slice(0, 4).map((item) => [item.id, preparation[item.id]])),
+      'education',
+      'texture',
+      6,
+      []
+    );
+    expect(addAction).toMatchObject({
+      mode: 'add', roleId: 'texture', planId: 'education', goal: 6, total: 4, missing: 1, count: 1
+    });
+    expect(Array.from(addAction.replaceIds)).toEqual([]);
+
+    const protectedPreparation = {
+      ...preparation,
+      [items[1].id]: { usageIntent: 'reference' },
+      [items[2].id]: { usageIntent: 'reference', usagePlan: 'education', mode: 'crop', zoom: 130 }
+    };
+    const replaceAction = window.SourcebookProviders.planPaletteRoleGapAction(
+      items,
+      protectedPreparation,
+      'education',
+      'texture',
+      6,
+      [items[0].id]
+    );
+    expect(replaceAction).toMatchObject({
+      mode: 'replace', roleId: 'texture', planId: 'education', goal: 6, total: 6, missing: 1, count: 1
+    });
+    expect(Array.from(replaceAction.replaceIds)).toEqual([items[5].id]);
+    expect(Array.from(replaceAction.replaceIds)).not.toEqual(expect.arrayContaining([
+      items[0].id, items[1].id, items[2].id
+    ]));
+
+    const unknownIgnored = window.SourcebookProviders.planPaletteRoleGapAction(
+      items.concat([{ ...base, id: 'unknown-rebalance', rightsType: 'unknown', kind: 'Maps' }]),
+      protectedPreparation,
+      'education',
+      'texture',
+      6,
+      [items[0].id]
+    );
+    expect(unknownIgnored.total).toBe(6);
+
+    const blocked = window.SourcebookProviders.planPaletteRoleGapAction(
+      items,
+      preparation,
+      'education',
+      'texture',
+      6,
+      items.map((item) => item.id)
+    );
+    expect(blocked).toMatchObject({
+      mode: 'blocked', count: 0,
+      reason: 'Every overrepresented asset is manually assigned, prepared, or selected.'
+    });
+    expect(Array.from(blocked.replaceIds)).toEqual([]);
+
+    const originalIds = items.map((item) => item.id);
+    const replacement = window.SourcebookProviders.applyPaletteRoleReplacements(
+      originalIds,
+      Array.from(replaceAction.replaceIds),
+      ['new-texture']
+    );
+    expect(replacement.changed).toBe(1);
+    expect(Array.from(replacement.collection)).toHaveLength(originalIds.length);
+    expect(Array.from(replacement.collection)[5]).toBe('new-texture');
+    expect(Array.from(replacement.swaps).map((swap) => ({
+      removedId: swap.removedId, addedId: swap.addedId, index: swap.index
+    }))).toEqual([{ removedId: items[5].id, addedId: 'new-texture', index: 5 }]);
+
+    const unchanged = window.SourcebookProviders.applyPaletteRoleReplacements(
+      originalIds,
+      ['missing-id'],
+      ['unused-addition']
+    );
+    expect(unchanged.changed).toBe(0);
+    expect(Array.from(unchanged.collection)).toEqual(originalIds);
+  });
+
+  it('builds concise role-aware searches from reuse-allowed palette context', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const items = [
+      { ...base, id: 'gap-map', kind: 'Maps' },
+      { ...base, id: 'gap-archive', kind: 'Archival' },
+      { ...base, id: 'gap-blocked', kind: 'Science', rightsType: 'unknown' }
+    ];
+    const referenceQuery = window.SourcebookProviders.buildPaletteRoleSearch(
+      'reference', items, 'education', '  plate   tectonics  '
+    );
+    expect(referenceQuery).toBe('plate tectonics clear educational diagram map or technical reference for a clear educational resource');
+    expect(window.SourcebookProviders.buildPaletteRoleSearch(
+      'accent', items, 'balanced', ''
+    )).toBe('maps and archival decorative border header ornament or motif for educational materials or artwork');
+    expect(window.SourcebookProviders.buildPaletteRoleSearch(
+      'unknown', items, 'artwork', '  botanical   study  '
+    )).toBe('botanical study versatile printable visual asset for an artwork or creative composition');
+    expect(window.SourcebookProviders.buildPaletteRoleSearch(
+      'accent', items, 'balanced', referenceQuery
+    )).toBe('maps and archival decorative border header ornament or motif for educational materials or artwork');
+    expect(referenceQuery.length).toBeLessThanOrEqual(180);
   });
 
   it('creates sanitized, metadata-grounded accessibility descriptions without inventing visual claims', () => {
@@ -3645,7 +4377,7 @@ describe('Sourcebook initial feature contract', () => {
       mode: 'tile', aspect: 'banner', tile: 140, usageIntent: 'texture',
       altText: 'Contour lines for a mountain region.', altTextCustomized: true
     }, dataUrl);
-    expect(window.SourcebookProviders.version).toBe(54);
+    expect(window.SourcebookProviders.version).toBe(58);
     expect(html).toContain('<!doctype html>');
     expect(html).toContain(`<img src="${dataUrl}"`);
     expect(html).toContain('download="contour-map-line-drawing.png"');
@@ -3863,10 +4595,34 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'data-sourcebook-role-group': group.id");
     expect(pluginSource).toContain("'data-sourcebook-role-asset': roleItem.id");
     expect(pluginSource).toContain("'data-sourcebook-role-gap': group.id");
+    expect(pluginSource).toContain("'data-sourcebook-fill-role': group.id");
+    expect(pluginSource).toContain('function buildPaletteRoleSearch');
+    expect(pluginSource).toContain('function addRoleFillItemsToPalette');
+    expect(pluginSource).toContain('function fillPaletteRoleGap(group)');
+    expect(pluginSource).toContain('targetSize: action.goal');
+    expect(pluginSource).toContain('replaceIds: action.replaceIds');
+    expect(pluginSource).toContain('runLiveSearch(next, nextKind, true, nextProvider, roleFill)');
+    expect(pluginSource).toContain('addRoleFillItemsToPalette(curation.items, roleFillRequest)');
+    expect(pluginSource).toContain('savedSmkVerificationStatus: savedSmkVerificationStatus');
+    expect(pluginSource).toContain("roleFillVerificationBlocked = savedSmkVerificationStatus === 'loading' || savedSmkVerificationStatus === 'error'");
+    expect(pluginSource).toContain('roleFillFocusPendingRef.current = true');
+    expect(pluginSource).toContain('ref: liveStatusRef, tabIndex: -1');
+    expect(pluginSource).toContain('var activeRequest = liveAbortRef.current');
+    expect(pluginSource).toContain('++liveRequestRef.current');
+    expect(pluginSource).toContain('deterministic rights checks stay independent.');
     expect(pluginSource).toContain('group.items.slice(0, 4)');
     expect(pluginSource).toContain('inspectSourcebookItem(roleItem)');
     expect(pluginSource).toContain("'Advisory only - missing roles never block output.'");
-    expect(pluginSource).toContain('buildPaletteRoleBoard(selectedItems, preparation)');
+    expect(pluginSource).toContain("buildPaletteRoleBoard(selectedItems, preparation, '', paletteTarget)");
+    expect(pluginSource).toContain('function planPaletteRoleGapAction');
+    expect(pluginSource).toContain('function applyPaletteRoleReplacements');
+    expect(pluginSource).toContain('function createLatestPaletteUndoSnapshot');
+    expect(pluginSource).toContain("'data-sourcebook-role-action': roleAction.mode");
+    expect(pluginSource).toContain("'data-sourcebook-role-action-detail': roleAction.mode");
+    expect(pluginSource).toContain("'Find & replace ' + roleFillCount");
+    expect(pluginSource).toContain('paletteUndo: undoSnapshot');
+    expect(pluginSource).toContain('currentAction = planPaletteRoleGapAction');
+    expect(pluginSource).toContain("'data-sourcebook-role-balance-behavior'");
     expect(pluginSource).toContain("buttonLabel: 'Plan for teaching'");
     expect(pluginSource).toContain("buttonLabel: 'Plan for artwork'");
     expect(pluginSource).toContain("buttonLabel: 'Balance roles'");
@@ -4008,6 +4764,10 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'U.S. National Archives'");
     expect(pluginSource).toContain("'Media contributed by the National Archives and Records Administration'");
     expect(pluginSource).toContain("'SMK Open'");
+    expect(pluginSource).toContain("'Rijksmuseum Open Data'");
+    expect(pluginSource).toContain("RIJKS_PUBLIC_DOMAIN_SET_ID = 'https://id.rijksmuseum.nl/260239'");
+    expect(pluginSource).toContain("'?_profile=edm-framed'");
+    expect(pluginSource).toContain('normalizeRijksRights(record.edmRights)');
     expect(pluginSource).toContain("'[public_domain:true],[has_image:true]'");
     expect(pluginSource).toContain("'qfields=titles,content_subject,tags,techniques,materials,medium'");
     expect(pluginSource).toContain("LIVE_PROVIDER_NAMES.length + ' collections'");

@@ -8,16 +8,17 @@ Schema v4 extends the private 3D Print Lab workflow with hash-verified GLB/STL i
 
 - managed Google Workspace identity; no student code names, shared PINs, or bearer links
 - server-enforced `admin`, `staff`, `cashier`, and roster-derived student access
-- configurable HOWL or school-defined recognition categories and a required student-facing explanation
-- private category growth levels based on lifetime net awards; purchases do not reduce demonstrated growth
-- staff point awards with duplicate-request protection
+- editable HOWL or school-defined recognition categories and a required student-facing explanation; inactive categories cannot receive new awards
+- private category growth levels based on lifetime net awards; purchases do not reduce demonstrated growth, and deactivated categories remain visible in history
+- staff point awards with payload-bound duplicate-request protection
 - an append-only ledger, cached balances, reversal entries, a script lock, and a tamper-evident audit chain
-- a prize catalog with point cost, image, active state, and finite or unlimited inventory
-- trimester windows with `DRAFT`, `PREVIEW`, `OPEN`, `CLOSED`, and `ARCHIVED` states
+- an editable prize catalog with point cost, image, active state, and explicit finite-stock preservation/restocking; student cards show affordability and load images lazily with no referrer
+- same-record trimester windows with `DRAFT`, `PREVIEW`, `OPEN`, `CLOSED`, and `ARCHIVED` states; configured start/end times gate spending
 - cashier checkout that atomically rechecks the open window, current spendable balance, and inventory
-- purchase and refund receipts sent to the managed student address and recorded in the repository
+- itemized purchase and refund receipts shown in the portal, with each delivery attempt recorded before sending to reduce duplicate-email risk
 - administrator-only full-order refunds that restore points and finite inventory
-- CSV roster import, aggregate reconciliation, and optional private balance emails
+- administrator editing, deactivation, and reactivation of students and staff, with the last active administrator protected
+- fully validated CSV roster reimports that update existing students by normalized managed email, plus aggregate reconciliation and optional private balance emails that distinguish ledger, reserved, and available points
 - a Print Lab model registry, private asset quarantine/review, linked revisions, point quotes, reservations, status tracking, fulfillment receipts, and print-specific refunds
 - an opt-in, staff-moderated school model catalog with consent, reuse terms, reporting, unpublishing, and recipe remix lineage
 - administrator-reviewed guardian mappings and bounded positive-progress digests that omit staff notes and transaction-level reasons
@@ -81,7 +82,7 @@ availableBalance = ledger balance - sum(ACTIVE point holds)
 - A print refund writes one reversing `REFUND`, updates the linked order and request, and records/sends the refund receipt.
 - The ordinary order-refund endpoint rejects print-linked orders so the request, hold, order, and ledger cannot drift apart.
 
-All mutation calls require an idempotency key and run under the repository lock. The content hash stored on a request pins review and fulfillment to the registered model version.
+All mutation calls require an idempotency key and run under the repository lock. Core award, correction, checkout, and refund keys are bound to the authenticated actor and normalized request payload, so a key cannot silently be reused for a different amount, student, reason, or cart. The content hash stored on a print request pins review and fulfillment to the registered model version.
 
 ## Fresh deployment
 
@@ -132,12 +133,12 @@ Rerunning setup does not copy or replace the existing ledger, balances, orders, 
 
 ## Recommended trimester operation
 
-1. Keep the store window `DRAFT` while prizes and print policy are being prepared.
-2. Use `PREVIEW` to show prize information and accept private print submissions without allowing quote confirmation.
+1. Create one trimester window record and keep it `DRAFT` while prizes and print policy are being prepared. Edit that same record for later state transitions.
+2. Use `PREVIEW` to show prize information and accept private print submissions without allowing quote confirmation. Making a window `PREVIEW` or `OPEN` closes any older visible window.
 3. Award points throughout the trimester with a brief, neutral explanation.
 4. Staff first resolve pending GLB/STL assets, then review printable requests and record the approved material, printer profile, slicer/preflight summary, estimates, expiration, and quote. If staff records an `OVERRIDE` decision, a reason is required; client approval never replaces staff review.
-5. Set the window to `OPEN` for shopping and student quote confirmation. Only one window can remain open.
-6. Cashiers complete normal store purchases. Trained Print Lab staff manage the separate print queue and mark a job fulfilled only after the exact approved model version has been delivered.
+5. Set the same window to `OPEN` for shopping and student quote confirmation. If start/end times are configured, checkout and quote confirmation fail closed outside them.
+6. Cashiers review the student, itemized cart, points before/after, and final confirmation before completing a purchase. A failed email does not reverse checkout; give the student the on-screen receipt. Never automatically resend a `PENDING` or `UNKNOWN` attempt. An administrator must check the managed mailbox and use the audited delivery-resolution action to mark it `SENT` or `FAILED`; only confirmed failures can be retried, and successful receipts are not duplicated. After a refund, the purchase receipt cannot be resent; recovery applies to the refund receipt. Trained Print Lab staff manage the separate print queue and mark a job fulfilled only after the exact approved model version has been delivered.
 7. Send guardian digests only from reviewed active mappings and within the school's communication policy; digest content is deliberately less detailed than the authenticated student view.
 8. Close and reconcile the window, verify the audit chain, inspect the privacy-minimized district summary, then archive after review.
 

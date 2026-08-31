@@ -118,7 +118,11 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
       expect(source).toContain('__alloGeometryWorldPendingBuild');
       expect(source).toContain('function restorePendingEditableBuild(ctx, engine)');
       expect(source).toContain("engine.logEvent('print_lab_return'");
-      expect(source).toContain("schema: 'alloflow-geometry-world/2'");
+      expect(source).toContain("EDITABLE_WORLD_SCHEMA = 'alloflow-geometry-world/2'");
+      expect(source).toContain('function parseEditableWorldText(text, declaredBytes)');
+      expect(source).toContain('function restoreEditableWorld(engine, candidate)');
+      expect(source).toContain('Replace current sandbox');
+      expect(source).toContain('MAX_EDITABLE_WORLD_BYTES');
     });
   });
 
@@ -231,6 +235,76 @@ describe('Geometry World bridge runtime behavior', () => {
     new DataView(nonFiniteBytes.buffer).setFloat32(96, Number.NaN, true);
     expect(pure.readPendingLocalHandoff(pendingHandoff({ bytes: nonFiniteBytes }))).toBeNull();
     expect(pure.scaledGeometryWorldDimensions(accepted.summary, 5)).toEqual({ width: 5, depth: 10, height: 15, label: '5 × 10 × 15 mm' });
+  });
+
+  it('validates editable-world files completely before replacing the sandbox', () => {
+    loadBuilderWithCore();
+    const pure = window.StemLab.geometryWorldBuilderPure;
+    const validWorld = {
+      schema: 'alloflow-geometry-world/2',
+      title: 'Bridge model',
+      blocks: [
+        { x: -1, y: 1, z: 0, type: 'wood', shape: 'cube', rotation: 0 },
+        { x: 0, y: 1, z: 0, type: 'gold', shape: 'quarter', rotation: 3 },
+      ],
+    };
+    const checked = pure.parseEditableWorldText(JSON.stringify(validWorld));
+
+    expect(checked).toMatchObject({
+      ok: true,
+      value: { schema: 'alloflow-geometry-world/2', title: 'Bridge model' },
+      summary: { blockCount: 2, bounds: { width: 2, depth: 1, height: 1 } },
+    });
+    expect(pure.parseEditableWorldText('{bad json')).toMatchObject({ ok: false });
+    expect(pure.parseEditableWorldText(JSON.stringify(validWorld), pure.MAX_EDITABLE_WORLD_BYTES + 1)).toMatchObject({ ok: false });
+    expect(pure.normalizeEditableWorld(Object.assign({}, validWorld, { schema: 'unknown' }))).toMatchObject({ ok: false });
+    expect(pure.normalizeEditableWorld(Object.assign({}, validWorld, { blocks: validWorld.blocks.concat(validWorld.blocks[0]) }))).toMatchObject({ ok: false, error: expect.stringContaining('two blocks') });
+    expect(pure.normalizeEditableWorld(Object.assign({}, validWorld, { blocks: [{ x: 0, y: 0, z: 0, type: 'grass', shape: 'cube', rotation: 0 }] }))).toMatchObject({ ok: false });
+
+    const engine = {
+      blocks: { old: { userData: { blockType: 'wood', _measurementLayer: 'student' } } },
+      loadLesson: vi.fn(function (lesson) {
+        this.blocks = {};
+        this._currentLesson = lesson;
+        for (let x = -12; x <= 12; x += 1) for (let z = -12; z <= 12; z += 1) this.blocks[`${x},0,${z}`] = { userData: { blockType: 'grass', _lessonBlock: true, _measurementLayer: 'lesson' } };
+      }),
+      placeBlock(x, y, z, type, shape, rotation) {
+        this.blocks[`${x},${y},${z}`] = { userData: { blockType: type, shape, rotation, gridPos: { x, y, z }, _measurementLayer: 'student' } };
+      },
+      _undoStack: [{ action: 'old' }],
+      _redoStack: [{ action: 'old' }],
+    };
+
+    const rejected = pure.restoreEditableWorld(engine, Object.assign({}, validWorld, { schema: 'unknown' }));
+    expect(rejected.ok).toBe(false);
+    expect(engine.loadLesson).not.toHaveBeenCalled();
+    expect(engine.blocks).toHaveProperty('old');
+
+    const restored = pure.restoreEditableWorld(engine, checked.value);
+    expect(restored).toMatchObject({ ok: true, placedCount: 2 });
+    expect(engine.loadLesson).toHaveBeenCalledWith(expect.objectContaining({ sandbox: true }));
+    expect(Object.keys(engine.blocks)).toHaveLength(627);
+    expect(engine.blocksPlaced).toBe(2);
+    expect(engine._undoStack).toEqual([]);
+    expect(engine._redoStack).toEqual([]);
+  });
+
+  it('saves only student-authored blocks in the editable-world schema', () => {
+    loadBuilderWithCore();
+    const pure = window.StemLab.geometryWorldBuilderPure;
+    const mesh = (x, y, z, type, layer) => ({ userData: { gridPos: { x, y, z }, blockType: type, shape: 'cube', rotation: 0, _measurementLayer: layer } });
+    const world = pure.editableWorld({ blocks: {
+      '0,0,0': mesh(0, 0, 0, 'grass', 'lesson'),
+      '0,1,0': mesh(0, 1, 0, 'stone', 'lesson'),
+      '1,1,0': mesh(1, 1, 0, 'wood', 'student'),
+    } });
+
+    expect(world).toEqual({
+      schema: 'alloflow-geometry-world/2',
+      title: 'Geometry World editable build',
+      coordinateSystem: 'x-right,y-up,z-depth',
+      blocks: [{ x: 1, y: 1, z: 0, type: 'wood', shape: 'cube', rotation: 0 }],
+    });
   });
 
   it('renders a validated Geometry World handoff in Print Lab with editable provenance', () => {

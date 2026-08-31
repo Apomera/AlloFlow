@@ -73,10 +73,27 @@ const MEMORY_AID_VISUAL_REVIEW_STATUSES = Object.freeze({
   approved: { label: "Teacher approved", tone: "emerald" },
   "needs-revision": { label: "Teacher requested revision", tone: "amber" }
 });
+const MEMORY_AID_VISUAL_SOURCES = Object.freeze({
+  "ai-generated": { label: "AI-generated visual" },
+  "ai-refined": { label: "AI-refined visual" },
+  uploaded: { label: "Uploaded visual" },
+  legacy: { label: "Imported or earlier visual" }
+});
+const MEMORY_AID_PRACTICE_CONFIDENCE = Object.freeze({
+  "not-sure": { label: "Not sure yet" },
+  somewhat: { label: "Somewhat confident" },
+  confident: { label: "Confident" }
+});
+const MEMORY_AID_PRACTICE_CHECKS = Object.freeze({
+  unrated: { label: "Not checked yet" },
+  recalled: { label: "I recalled this" },
+  practice: { label: "Needs more practice" }
+});
 const _maString = (value, max = 4e3) => String(value == null ? "" : value).slice(0, max);
 const _maList = (value, max = 12, itemMax = 800) => (Array.isArray(value) ? value : []).slice(0, max).map((item) => _maString(item, itemMax).trim()).filter(Boolean);
 const _maId = (prefix, index) => prefix + "-" + Date.now().toString(36) + "-" + String(index || 0) + "-" + Math.random().toString(36).slice(2, 6);
 const _maModeForIndex = (index) => ["generated", "scaffolded", "student-authored"][Math.max(0, index) % 3];
+const _MA_MAX_PRACTICE_ATTEMPTS = 6;
 const _MA_MAX_IMAGE_CHARS = 6 * 1024 * 1024;
 const _MA_IMAGE_DATA_RE = /^data:image\/(png|jpe?g|gif|webp);base64,([\s\S]+)$/i;
 function normalizeMemoryAidImage(value) {
@@ -98,6 +115,11 @@ function memoryAidImageMime(value) {
   const normalized = normalizeMemoryAidImage(value);
   const match = normalized.match(/^data:(image\/(?:png|jpeg|gif|webp));base64,/i);
   return match ? match[1].toLowerCase() : "";
+}
+function normalizeMemoryAidVisualSource(value, hasImage) {
+  if (!hasImage) return "";
+  const source = _maString(value, 40).trim();
+  return Object.prototype.hasOwnProperty.call(MEMORY_AID_VISUAL_SOURCES, source) ? source : "legacy";
 }
 function _maPromptData(value, max = 1600) {
   return _maString(value, max).replace(/[\u0000-\u001f\u007f]/g, " ").replace(new RegExp(String.fromCharCode(96) + "{3,}", "g"), "'''").replace(/(?:BEGIN|END)\s+UNTRUSTED\s+SOURCE\s+MATERIAL/gi, "[source boundary]").replace(/\s+/g, " ").trim();
@@ -155,7 +177,8 @@ function buildMemoryAidVisualCheckPrompt(card) {
     "Written memory cue: " + (_maPromptData(cue, 1400) || "(No written cue yet.)"),
     "Teacher mapping: " + (_maPromptData(normalized.mapping, 1200) || "(No mapping supplied.)"),
     "END UNTRUSTED SOURCE MATERIAL",
-    'Return ONLY JSON with: alignment (supports, mixed, or unclear), strength (one visible feature that may help retrieval), concern (one possible mismatch, ambiguity, or "None identified"), suggestedChange (one concise visual revision, or "No change suggested").',
+    'Return ONLY JSON with: alignment (supports, mixed, or unclear), strength (one visible feature that may help retrieval), concern (one possible mismatch, ambiguity, or "None identified"), suggestedChange (one concise visual revision, or "No change suggested"), suggestedAlt (one concise image description of visible people, objects, actions, colors, and spatial relationships).',
+    'For suggestedAlt, describe only what is visibly present. Do not state lesson meaning, inferred intent, identity, emotion, disability, culture, or other attributes that are not visually certain. Do not begin with "image of" or "picture of". Keep it under 250 characters.',
     "This is advisory AI feedback. Never claim the image is teacher-approved."
   ].join("\n");
 }
@@ -166,6 +189,7 @@ function normalizeMemoryAidVisualCheck(value) {
     strength: _maString(value.strength, 1e3),
     concern: _maString(value.concern, 1e3),
     suggestedChange: _maString(value.suggestedChange, 1e3),
+    suggestedAlt: _maString(value.suggestedAlt, 800),
     createdAt: _maString(value.createdAt, 60)
   };
 }
@@ -184,6 +208,7 @@ function parseMemoryAidVisualCheck(value) {
       strength: text || "The visual includes a concrete cue to review.",
       concern: "A structured fact-alignment result was not available.",
       suggestedChange: "Compare every visible element with the teacher-checked facts before relying on the cue.",
+      suggestedAlt: "",
       createdAt: ""
     };
   }
@@ -204,6 +229,20 @@ function buildMemoryAidVisualAlt(card) {
   );
   const target = _maPromptData(normalized.target, 300) || "this memory target";
   return _maString("Visual memory cue for " + target + (cue ? ": " + cue : "."), 800).trim();
+}
+function _maVisualAltIsSpecific(value) {
+  const description = _maString(value, 800).trim();
+  return !!description && !/^visual memory cue for\s/i.test(description);
+}
+function memoryAidVisualAltReady(card) {
+  const normalized = normalizeMemoryAidCard(card, 0, { authorshipMode: "student-authored" });
+  if (!normalized.visualImage) {
+    return { ok: false, reason: "Add a visual before reviewing its image description." };
+  }
+  if (!_maVisualAltIsSpecific(normalized.visualAlt)) {
+    return { ok: false, reason: "Add a specific description of visible details before teacher approval." };
+  }
+  return { ok: true, reason: "Specific image description added. Review it against the visual before approval." };
 }
 function memoryAidAudioFilename(card) {
   const raw = card && typeof card === "object" ? card : {};
@@ -240,6 +279,133 @@ function normalizeMemoryAidTypes(value) {
   const normalized = source.map((item) => _maString(item, 60)).filter((item) => valid.has(item));
   return Array.from(new Set(normalized));
 }
+function _maStableHash(value) {
+  const text = _maString(value, 24e3);
+  let hash = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+function memoryAidPracticeCue(card) {
+  const raw = card && typeof card === "object" ? card : {};
+  return _maString(
+    raw.studentDraft || raw.aiExample || raw.example || raw.scaffoldStarter,
+    6e3
+  ).trim();
+}
+function memoryAidPracticeBasis(card) {
+  const raw = card && typeof card === "object" ? card : {};
+  const facts = _maList(raw.essentialFacts || raw.facts, 10, 600);
+  const rawImage = typeof (raw.visualImage || raw.imageUrl) === "string" ? (raw.visualImage || raw.imageUrl).trim() : "";
+  const image = rawImage.length <= _MA_MAX_IMAGE_CHARS && /^data:image\/(?:png|jpeg|gif|webp);base64,/i.test(rawImage) ? rawImage : "";
+  const imageFingerprint = image ? [String(image.length), image.slice(0, 96), image.slice(-96)].join(":") : "";
+  return _maStableHash([
+    _maString(raw.target || raw.concept, 1e3).trim(),
+    facts.join("\n"),
+    memoryAidPracticeCue(raw),
+    _maString(raw.visualAlt, 800).trim(),
+    imageFingerprint
+  ].join("\n---\n"));
+}
+function normalizeMemoryAidPracticeAttempt(value, card, index) {
+  const raw = value && typeof value === "object" ? value : null;
+  if (!raw) return null;
+  const response = _maString(raw.response || raw.recall, 6e3).trim();
+  if (!response) return null;
+  const currentFacts = _maList(card && (card.essentialFacts || card.facts), 10, 600);
+  const savedFacts = _maList(raw.facts, 10, 600);
+  const facts = savedFacts.length ? savedFacts : currentFacts;
+  const rawChecks = Array.isArray(raw.factChecks) ? raw.factChecks : [];
+  const factChecks = facts.map((_, factIndex) => {
+    const check = rawChecks[factIndex];
+    if (check === true) return "recalled";
+    if (check === false) return "practice";
+    return Object.prototype.hasOwnProperty.call(MEMORY_AID_PRACTICE_CHECKS, check) ? check : "unrated";
+  });
+  const confidence = Object.prototype.hasOwnProperty.call(MEMORY_AID_PRACTICE_CONFIDENCE, raw.confidence) ? raw.confidence : "not-sure";
+  const createdAt = _maString(raw.createdAt, 60);
+  const basisKey = _maString(raw.basisKey, 80);
+  const stableId = "memory-practice-" + _maStableHash([
+    response,
+    createdAt,
+    String(index || 0)
+  ].join("|"));
+  return {
+    id: _maString(raw.id, 120) || stableId,
+    response,
+    confidence,
+    facts,
+    factChecks,
+    basisKey,
+    createdAt
+  };
+}
+function normalizeMemoryAidPracticeAttempts(value, card) {
+  const source = Array.isArray(value) ? value.slice(-_MA_MAX_PRACTICE_ATTEMPTS) : [];
+  return source.map((attempt, index) => normalizeMemoryAidPracticeAttempt(attempt, card, index)).filter(Boolean);
+}
+function memoryAidPracticeReady(card) {
+  const raw = card && typeof card === "object" ? card : {};
+  const facts = _maList(raw.essentialFacts || raw.facts, 10, 600);
+  if (!facts.length) {
+    return { ok: false, reason: "A teacher-checked fact is needed before recall practice." };
+  }
+  const cue = memoryAidPracticeCue(raw);
+  const image = normalizeMemoryAidImage(raw.visualImage || raw.imageUrl);
+  if (!cue && !image) {
+    return { ok: false, reason: "Create a written or visual memory cue before recall practice." };
+  }
+  if (!cue && image && !_maVisualAltIsSpecific(raw.visualAlt)) {
+    return { ok: false, reason: "Add a specific image description before using a visual-only cue for accessible recall practice." };
+  }
+  return { ok: true, reason: "Ready to practice with the teacher-checked facts hidden." };
+}
+function createMemoryAidPracticeAttempt(card, session) {
+  const rawSession = session && typeof session === "object" ? session : {};
+  const response = _maString(rawSession.response, 6e3).trim();
+  if (!memoryAidPracticeReady(card).ok || !response) return null;
+  const facts = _maList(card && (card.essentialFacts || card.facts), 10, 600);
+  return normalizeMemoryAidPracticeAttempt({
+    id: _maId("memory-practice", 0),
+    response,
+    confidence: rawSession.confidence,
+    facts,
+    factChecks: facts.map(() => "unrated"),
+    basisKey: memoryAidPracticeBasis(card),
+    createdAt: (/* @__PURE__ */ new Date()).toISOString()
+  }, card, 0);
+}
+function memoryAidPracticeSummary(attempt, card) {
+  const normalized = normalizeMemoryAidPracticeAttempt(attempt, card, 0);
+  if (!normalized) {
+    return { recalled: 0, needsPractice: 0, unrated: 0, total: 0, complete: false, current: false };
+  }
+  const recalled = normalized.factChecks.filter((check) => check === "recalled").length;
+  const needsPractice = normalized.factChecks.filter((check) => check === "practice").length;
+  const unrated = normalized.factChecks.filter((check) => check === "unrated").length;
+  return {
+    recalled,
+    needsPractice,
+    unrated,
+    total: normalized.factChecks.length,
+    complete: normalized.factChecks.length > 0 && unrated === 0,
+    current: !!normalized.basisKey && normalized.basisKey === memoryAidPracticeBasis(card)
+  };
+}
+function buildMemoryAidPracticeCueText(card) {
+  const raw = card && typeof card === "object" ? card : {};
+  const target = _maString(raw.target || raw.concept, 1e3).trim() || "this memory target";
+  const cue = memoryAidPracticeCue(raw);
+  const image = normalizeMemoryAidImage(raw.visualImage || raw.imageUrl);
+  const visualAlt = image ? _maString(raw.visualAlt, 800).trim() : "";
+  return [
+    "Memory target. " + target + ".",
+    cue ? "Memory cue. " + cue : "",
+    visualAlt ? "Visual cue description. " + visualAlt : ""
+  ].filter(Boolean).join("\n\n");
+}
 function normalizeMemoryAidCard(card, index, defaults) {
   const raw = card && typeof card === "object" ? card : {};
   const defaultMode = defaults && defaults.authorshipMode === "progressive" ? _maModeForIndex(index) : _maString(defaults && defaults.authorshipMode, 40);
@@ -257,6 +423,20 @@ function normalizeMemoryAidCard(card, index, defaults) {
     createdAt: _maString(raw.feedback.createdAt, 60)
   } : null;
   const visualImage = normalizeMemoryAidImage(raw.visualImage || raw.imageUrl);
+  const visualAlt = _maString(raw.visualAlt, 800);
+  let visualReview = normalizeMemoryAidVisualReview(raw.visualReview);
+  if (visualReview.status === "approved" && (!visualImage || !_maVisualAltIsSpecific(visualAlt))) {
+    visualReview = Object.assign({}, visualReview, { status: "unreviewed", reviewedAt: "" });
+  }
+  const practiceContext = {
+    target: _maString(raw.target || raw.concept, 1e3),
+    essentialFacts,
+    studentDraft: _maString(raw.studentDraft, 6e3),
+    aiExample: _maString(raw.aiExample || raw.example, 4e3),
+    scaffoldStarter: _maString(raw.scaffoldStarter, 2e3),
+    visualImage,
+    visualAlt
+  };
   return {
     id: _maString(raw.id, 120) || _maId("memory-card", index),
     target: _maString(raw.target || raw.concept, 1e3),
@@ -279,11 +459,13 @@ function normalizeMemoryAidCard(card, index, defaults) {
     studentReasoning: _maString(raw.studentReasoning, 6e3),
     coachHint: _maString(raw.coachHint, 1200),
     visualImage,
+    visualSource: normalizeMemoryAidVisualSource(raw.visualSource, !!visualImage),
     visualPrompt: _maString(raw.visualPrompt, 1200),
-    visualAlt: _maString(raw.visualAlt, 800),
+    visualAlt,
     visualCheck: visualImage ? normalizeMemoryAidVisualCheck(raw.visualCheck) : null,
-    visualReview: normalizeMemoryAidVisualReview(raw.visualReview),
-    feedback
+    visualReview,
+    feedback,
+    practiceAttempts: normalizeMemoryAidPracticeAttempts(raw.practiceAttempts || raw.retrievalAttempts, practiceContext)
   };
 }
 function normalizeMemoryAidData(value) {
@@ -323,7 +505,7 @@ const MEMORY_AID_FEEDBACK_INPUTS = Object.freeze([
   "studentDraft",
   "studentReasoning"
 ]);
-const MEMORY_AID_VISUAL_GROUNDING_INPUTS = Object.freeze([
+const MEMORY_AID_VISUAL_CHECK_INPUTS = Object.freeze([
   "target",
   "essentialFacts",
   "type",
@@ -334,6 +516,7 @@ const MEMORY_AID_VISUAL_GROUNDING_INPUTS = Object.freeze([
   "mapping",
   "visualImage"
 ]);
+const MEMORY_AID_VISUAL_REVIEW_INPUTS = Object.freeze(MEMORY_AID_VISUAL_CHECK_INPUTS.concat(["visualAlt"]));
 function applyMemoryAidCardPatch(card, patch) {
   const current = card && typeof card === "object" ? card : {};
   const resolvedPatch = typeof patch === "function" ? patch(current) : patch;
@@ -344,21 +527,21 @@ function applyMemoryAidCardPatch(card, patch) {
   if (!suppliesFeedback && changesFeedbackInput) next.feedback = null;
   const suppliesVisualCheck = Object.prototype.hasOwnProperty.call(safePatch, "visualCheck");
   const suppliesVisualReview = Object.prototype.hasOwnProperty.call(safePatch, "visualReview");
-  const changesVisualGrounding = MEMORY_AID_VISUAL_GROUNDING_INPUTS.some((key) => {
+  const changesVisualInput = (keys) => keys.some((key) => {
     if (!Object.prototype.hasOwnProperty.call(safePatch, key)) return false;
     if (key === "visualImage") {
       return normalizeMemoryAidImage(current.visualImage) !== normalizeMemoryAidImage(safePatch.visualImage);
     }
     return true;
   });
-  if (changesVisualGrounding) {
-    if (!suppliesVisualCheck) next.visualCheck = null;
-    if (!suppliesVisualReview) {
-      next.visualReview = Object.assign(normalizeMemoryAidVisualReview(current.visualReview), {
-        status: "unreviewed",
-        reviewedAt: ""
-      });
-    }
+  const changesVisualCheckInput = changesVisualInput(MEMORY_AID_VISUAL_CHECK_INPUTS);
+  const changesVisualReviewInput = changesVisualInput(MEMORY_AID_VISUAL_REVIEW_INPUTS);
+  if (changesVisualCheckInput && !suppliesVisualCheck) next.visualCheck = null;
+  if (changesVisualReviewInput && !suppliesVisualReview) {
+    next.visualReview = Object.assign(normalizeMemoryAidVisualReview(current.visualReview), {
+      status: "unreviewed",
+      reviewedAt: ""
+    });
   }
   return next;
 }
@@ -449,6 +632,45 @@ function MemoryAidPanel(props) {
     return /* @__PURE__ */ React.createElement("button", { key: id, type: "button", "aria-pressed": active, onClick: () => toggleType(id), className: "min-h-11 rounded-xl border px-2 py-2 text-left text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 " + (active ? "border-teal-600 bg-teal-100 text-teal-950" : "border-slate-300 bg-white text-slate-700 hover:border-teal-400") }, meta.shortLabel);
   }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "mb-1 block text-xs font-black uppercase tracking-wide text-slate-700" }, "Authorship pathway"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Memory aid authorship pathway", value: memoryAidAuthorshipMode || "progressive", onChange: (event) => setMemoryAidAuthorshipMode(event.target.value), className: "min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, /* @__PURE__ */ React.createElement("option", { value: "progressive" }, "See one \u2192 Build one \u2192 Create one"), Object.entries(MEMORY_AID_MODES).map(([id, meta]) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, meta.label)))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "mb-1 block text-xs font-black uppercase tracking-wide text-slate-700" }, "Student reasoning"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Student reasoning level", value: memoryAidReflectionLevel || "quick", onChange: (event) => updateReflectionLevel(event.target.value), className: "min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, Object.entries(MEMORY_AID_REFLECTION_LEVELS).map(([id, meta]) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, meta.label))), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-slate-600" }, "The mnemonic-to-fact connection is always visible. This controls whether students add their own explanation.")), (memoryAidReflectionLevel || "quick") !== "none" && /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: memoryAidReasoningRequired === true, onChange: (event) => setMemoryAidReasoningRequired(event.target.checked), className: "h-4 w-4 accent-teal-700" }), "Require reasoning before AI feedback"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "mb-1 block text-xs font-black uppercase tracking-wide text-slate-700" }, "Number of memory targets"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Number of memory targets", value: Number(memoryAidCount) || 3, onChange: (event) => setMemoryAidCount(Number(event.target.value)), className: "min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, /* @__PURE__ */ React.createElement("option", { value: 3 }, "3 \u2014 Compact"), /* @__PURE__ */ React.createElement("option", { value: 4 }, "4 \u2014 Standard"), /* @__PURE__ */ React.createElement("option", { value: 5 }, "5 \u2014 Extended"))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "mb-1 block text-xs font-black uppercase tracking-wide text-slate-700" }, "Teacher instructions ", /* @__PURE__ */ React.createElement("span", { className: "font-medium normal-case text-slate-500" }, "(optional)")), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Custom instructions for memory aids", value: memoryAidCustomInstructions || "", onChange: (event) => setMemoryAidCustomInstructions(event.target.value), maxLength: 2e3, rows: 3, placeholder: "Prioritize vocabulary, avoid rhymes, connect to a class example...", className: "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": "Generate memory aid resource", onClick: () => handleGenerate("memory-aid"), disabled: !hasSourceOrAnalysis || isProcessing, "aria-busy": isProcessing, className: "group m-3 mt-0 flex min-h-12 w-[calc(100%_-_1.5rem)] items-center justify-between rounded-xl border border-teal-300 bg-white px-4 py-3 font-black text-teal-900 shadow-sm hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, /* @__PURE__ */ React.createElement("span", null, isProcessing ? "Building memory aids\u2026" : "Build Memory Aid Studio"), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2192")));
 }
+function MemoryAidPracticePanel(props) {
+  const {
+    card,
+    session,
+    isProcessing,
+    canSpeak,
+    onStart,
+    onChange,
+    onReveal,
+    onFactCheck,
+    onRepeat,
+    onClose,
+    onSpeak
+  } = props;
+  const stage = session && ["recall", "review"].includes(session.stage) ? session.stage : "idle";
+  const readiness = memoryAidPracticeReady(card);
+  const cue = memoryAidPracticeCue(card);
+  const attempts = Array.isArray(card.practiceAttempts) ? card.practiceAttempts : [];
+  const practiceHelpId = "memory-practice-help-" + card.id;
+  if (stage === "recall") {
+    const response = _maString(session.response, 6e3);
+    const confidence = Object.prototype.hasOwnProperty.call(MEMORY_AID_PRACTICE_CONFIDENCE, session.confidence) ? session.confidence : "somewhat";
+    return /* @__PURE__ */ React.createElement("section", { className: "memory-aid-practice-panel rounded-2xl border-2 border-cyan-300 bg-cyan-50 p-4", "aria-labelledby": "memory-practice-title-" + card.id }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-black uppercase tracking-widest text-cyan-800" }, "Recall practice"), /* @__PURE__ */ React.createElement("h3", { id: "memory-practice-title-" + card.id, className: "mt-1 text-lg font-black text-cyan-950" }, "Use the cue before seeing the facts")), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white px-3 py-1 text-xs font-black text-cyan-900" }, "Facts hidden")), /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm leading-relaxed text-slate-700" }, "The teacher-checked facts, mapping, feedback, and creation supports stay hidden until you record what you remember."), /* @__PURE__ */ React.createElement("div", { className: "mt-4 rounded-2xl border border-cyan-200 bg-white p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black uppercase tracking-wide text-cyan-900" }, "Your memory cue"), cue && /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-base font-bold leading-relaxed text-slate-900" }, cue), card.visualImage && /* @__PURE__ */ React.createElement("img", { src: card.visualImage, alt: card.visualAlt || buildMemoryAidVisualAlt(card), className: "mt-3 max-h-72 w-auto max-w-full rounded-xl border border-cyan-100 object-contain" }), canSpeak && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onSpeak, disabled: isProcessing, className: "mt-3 min-h-11 rounded-xl border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-black text-sky-900 hover:bg-sky-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" }, "Listen to practice cue")), /* @__PURE__ */ React.createElement("label", { className: "mt-4 block text-sm font-black text-slate-900" }, "What does the cue help you remember?", /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Recall response for " + card.target, value: response, onChange: (event) => onChange({ response: event.target.value }), maxLength: 6e3, rows: 5, placeholder: "Write everything you can retrieve before revealing the facts\u2026", className: "mt-2 w-full rounded-xl border border-cyan-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600" })), /* @__PURE__ */ React.createElement("label", { className: "mt-3 block text-sm font-black text-slate-900" }, "How confident do you feel before checking?", /* @__PURE__ */ React.createElement("select", { "aria-label": "Recall confidence for " + card.target, value: confidence, onChange: (event) => onChange({ confidence: event.target.value }), className: "mt-2 min-h-11 w-full rounded-xl border border-cyan-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600" }, Object.entries(MEMORY_AID_PRACTICE_CONFIDENCE).map(([id, meta]) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, meta.label)))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onReveal, disabled: !response.trim(), "aria-describedby": practiceHelpId, className: "min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2" }, "Reveal teacher-checked facts"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500" }, "Exit practice")), /* @__PURE__ */ React.createElement("p", { id: practiceHelpId, className: "mt-2 text-xs leading-relaxed text-slate-600" }, response.trim() ? "Your response is ready. Reveal the facts and check it yourself." : "Write a recall response before revealing the facts."));
+  }
+  if (stage === "review" && session.attempt) {
+    const attempt = session.attempt;
+    const summary = memoryAidPracticeSummary(attempt, card);
+    const confidenceMeta = MEMORY_AID_PRACTICE_CONFIDENCE[attempt.confidence] || MEMORY_AID_PRACTICE_CONFIDENCE["not-sure"];
+    return /* @__PURE__ */ React.createElement("section", { className: "memory-aid-practice-panel rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4", "aria-labelledby": "memory-practice-title-" + card.id }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-black uppercase tracking-widest text-emerald-800" }, "Recall review"), /* @__PURE__ */ React.createElement("h3", { id: "memory-practice-title-" + card.id, className: "mt-1 text-lg font-black text-emerald-950" }, "Compare your recall with the accurate facts"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-emerald-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black uppercase tracking-wide text-emerald-900" }, "What you recalled"), /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800" }, attempt.response), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs font-bold text-slate-600" }, "Confidence before checking: ", confidenceMeta.label)), /* @__PURE__ */ React.createElement("fieldset", { className: "mt-4" }, /* @__PURE__ */ React.createElement("legend", { className: "text-sm font-black text-slate-900" }, "Check each teacher-checked fact"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, "This is your self-check, not an AI score. Mark whether your response included the meaning of each fact."), /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-3" }, attempt.facts.map((fact, factIndex) => {
+      const check = attempt.factChecks[factIndex] || "unrated";
+      return /* @__PURE__ */ React.createElement("li", { key: factIndex, className: "rounded-xl border border-emerald-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold leading-relaxed text-slate-900" }, /* @__PURE__ */ React.createElement("span", { className: "mr-1 text-emerald-800" }, factIndex + 1, "."), " ", fact), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": check === "recalled", onClick: () => onFactCheck(factIndex, "recalled"), className: "min-h-10 rounded-xl border px-3 py-2 text-xs font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 " + (check === "recalled" ? "border-emerald-700 bg-emerald-100 text-emerald-950" : "border-slate-300 bg-white text-slate-700 hover:bg-emerald-50") }, "I recalled this"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": check === "practice", onClick: () => onFactCheck(factIndex, "practice"), className: "min-h-10 rounded-xl border px-3 py-2 text-xs font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 " + (check === "practice" ? "border-amber-700 bg-amber-100 text-amber-950" : "border-slate-300 bg-white text-slate-700 hover:bg-amber-50") }, "Needs more practice")));
+    }))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-4 rounded-xl border border-emerald-200 bg-white p-3 text-sm font-bold text-slate-800" }, summary.complete ? "Self-check complete: " + summary.recalled + " of " + summary.total + " facts recalled; " + summary.needsPractice + " marked for more practice." : "Check each fact to complete this attempt. " + summary.unrated + " remaining."), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onRepeat, className: "min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2" }, "Practice again"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500" }, summary.needsPractice ? "Return to revise the aid" : "Return to card")));
+  }
+  return /* @__PURE__ */ React.createElement("section", { className: "memory-aid-no-print rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4", "aria-labelledby": "memory-practice-title-" + card.id }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h3", { id: "memory-practice-title-" + card.id, className: "text-sm font-black text-cyan-950" }, "Try it from memory"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, "Use only the cue, record what you retrieve, then reveal and self-check the teacher-checked facts. AI does not grade this practice.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onStart, disabled: !readiness.ok || isProcessing, "aria-describedby": practiceHelpId, className: "min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2" }, "Start recall practice")), /* @__PURE__ */ React.createElement("p", { id: practiceHelpId, role: "status", className: "mt-2 text-xs font-bold leading-relaxed text-slate-600" }, readiness.reason), attempts.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-3 rounded-xl border border-cyan-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-black text-cyan-950" }, "Saved practice attempts (", attempts.length, ")"), /* @__PURE__ */ React.createElement("ol", { className: "mt-3 space-y-3" }, attempts.slice().reverse().map((attempt, attemptIndex) => {
+    const summary = memoryAidPracticeSummary(attempt, card);
+    const confidenceMeta = MEMORY_AID_PRACTICE_CONFIDENCE[attempt.confidence] || MEMORY_AID_PRACTICE_CONFIDENCE["not-sure"];
+    return /* @__PURE__ */ React.createElement("li", { key: attempt.id, className: "rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "font-black text-slate-900" }, "Attempt ", attempts.length - attemptIndex), /* @__PURE__ */ React.createElement("span", { className: "rounded-full px-2 py-1 font-bold " + (summary.current ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-950") }, summary.current ? "Current cue version" : "Earlier cue version")), /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, /* @__PURE__ */ React.createElement("strong", null, "Self-check:"), " ", summary.recalled, "/", summary.total, " recalled \xB7 ", summary.needsPractice, " need practice \xB7 ", summary.unrated, " unchecked"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "Confidence:"), " ", confidenceMeta.label), /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Recall response:"), " ", attempt.response));
+  }))));
+}
 function MemoryAidView(props) {
   const {
     generatedContent,
@@ -468,6 +690,8 @@ function MemoryAidView(props) {
   } = props;
   const [isEditing, setIsEditing] = React.useState(false);
   const [busyByCard, setBusyByCard] = React.useState({});
+  const [imageEditor, setImageEditor] = React.useState(null);
+  const [practiceByCard, setPracticeByCard] = React.useState({});
   const resourceActive = !!(generatedContent && generatedContent.type === "memory-aid");
   const data = normalizeMemoryAidData(resourceActive ? generatedContent.data : {});
   const cards = data.cards;
@@ -479,6 +703,9 @@ function MemoryAidView(props) {
   const callGeminiVision = typeof callGeminiVisionProp === "function" ? callGeminiVisionProp : typeof window !== "undefined" && typeof window.callGeminiVision === "function" ? window.callGeminiVision : null;
   const handleSpeak = typeof handleSpeakProp === "function" ? handleSpeakProp : null;
   const handleDownloadAudio = typeof handleDownloadAudioProp === "function" ? handleDownloadAudioProp : null;
+  const imageAssetTools = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.ImageAssetTools : null;
+  const ImageAssetPickerComponent = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.ImageAssetPicker : null;
+  const ImageAssetEditorComponent = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.ImageAssetEditor : null;
   const commitField = React.useCallback((key, value) => {
     if (!resourceActive || typeof handleNoteUpdate !== "function") return;
     handleNoteUpdate(key, value);
@@ -489,6 +716,105 @@ function MemoryAidView(props) {
       return normalized.id === cardId ? applyMemoryAidCardPatch(normalized, patch) : normalized;
     }));
   }, [cards, commitField, data.authorshipMode]);
+  const updatePracticeSession = (cardId, patch) => {
+    setPracticeByCard((previous) => {
+      const current = previous[cardId] && typeof previous[cardId] === "object" ? previous[cardId] : {};
+      const resolved = typeof patch === "function" ? patch(current) : patch;
+      return Object.assign({}, previous, {
+        [cardId]: Object.assign({}, current, resolved && typeof resolved === "object" ? resolved : {})
+      });
+    });
+  };
+  const persistPracticeAttempt = (card, attempt) => {
+    if (!attempt) return;
+    updateCard(card.id, (current) => {
+      const attempts = normalizeMemoryAidPracticeAttempts(current.practiceAttempts, current);
+      const existingIndex = attempts.findIndex((item) => item.id === attempt.id);
+      const next = existingIndex >= 0 ? attempts.map((item, index) => index === existingIndex ? attempt : item) : attempts.concat(attempt);
+      return { practiceAttempts: next.slice(-_MA_MAX_PRACTICE_ATTEMPTS) };
+    });
+  };
+  const startPractice = (card) => {
+    const readiness = memoryAidPracticeReady(card);
+    if (!readiness.ok) {
+      addToast(readiness.reason, "info");
+      return;
+    }
+    try {
+      if (typeof handleSpeak === "function") {
+        Promise.resolve(handleSpeak("", "memory-practice-stop-" + card.id, 0, true)).catch(function() {
+        });
+      }
+      if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+    } catch (_) {
+    }
+    setIsEditing(false);
+    setImageEditor(null);
+    setPracticeByCard({
+      [card.id]: {
+        stage: "recall",
+        response: "",
+        confidence: "somewhat",
+        attempt: null
+      }
+    });
+  };
+  const revealPracticeFacts = (card) => {
+    const session = practiceByCard[card.id];
+    const attempt = createMemoryAidPracticeAttempt(card, session);
+    if (!attempt) {
+      addToast("Write what you remember before revealing the facts.", "info");
+      return;
+    }
+    persistPracticeAttempt(card, attempt);
+    updatePracticeSession(card.id, { stage: "review", attempt });
+    addToast("Facts revealed. Check each one against your own response.", "success");
+  };
+  const checkPracticeFact = (card, factIndex, value) => {
+    if (!["recalled", "practice"].includes(value)) return;
+    const session = practiceByCard[card.id];
+    const currentAttempt = session && session.attempt;
+    if (!currentAttempt || factIndex < 0 || factIndex >= currentAttempt.facts.length) return;
+    const factChecks = currentAttempt.factChecks.slice();
+    factChecks[factIndex] = value;
+    const attempt = normalizeMemoryAidPracticeAttempt(
+      Object.assign({}, currentAttempt, { factChecks }),
+      card,
+      0
+    );
+    if (!attempt) return;
+    persistPracticeAttempt(card, attempt);
+    updatePracticeSession(card.id, { attempt });
+  };
+  const repeatPractice = (card) => {
+    const previous = practiceByCard[card.id];
+    updatePracticeSession(card.id, {
+      stage: "recall",
+      response: "",
+      confidence: previous && previous.attempt ? previous.attempt.confidence : "somewhat",
+      attempt: null
+    });
+  };
+  const closePractice = (cardId) => {
+    setPracticeByCard((previous) => {
+      const next = Object.assign({}, previous);
+      delete next[cardId];
+      return next;
+    });
+  };
+  const speakPracticeCue = async (card) => {
+    if (typeof handleSpeak !== "function") return;
+    try {
+      await Promise.resolve(handleSpeak(
+        buildMemoryAidPracticeCueText(card),
+        "memory-practice-" + card.id,
+        0,
+        true
+      ));
+    } catch (_) {
+      addToast("The practice cue could not be read aloud. Try again.", "error");
+    }
+  };
   const setBusy = (cardId, task) => setBusyByCard((previous) => Object.assign({}, previous, { [cardId]: task || "" }));
   const requestHint = async (card) => {
     if (typeof callGemini !== "function") {
@@ -555,6 +881,7 @@ function MemoryAidView(props) {
       if (!visualImage) throw new Error("Unsupported image result");
       updateCard(card.id, (current) => ({
         visualImage,
+        visualSource: "ai-generated",
         visualAlt: _maString(current.visualAlt, 800).trim() || buildMemoryAidVisualAlt(current)
       }));
       addToast("Visual cue added. Review its image description when you are ready.", "success");
@@ -589,7 +916,7 @@ function MemoryAidView(props) {
       );
       const visualImage = normalizeMemoryAidImage(result);
       if (!visualImage) throw new Error("Unsupported image result");
-      updateCard(card.id, { visualImage });
+      updateCard(card.id, { visualImage, visualSource: "ai-refined" });
       addToast("Visual cue refined. Check that it still supports the accurate facts.", "success");
     } catch (_) {
       addToast("The visual cue could not be refined. The previous image is still saved.", "error");
@@ -613,17 +940,76 @@ function MemoryAidView(props) {
       const raw = await callGeminiVision(buildMemoryAidVisualCheckPrompt(card), rawBase64, mimeType);
       const visualCheck = Object.assign(parseMemoryAidVisualCheck(raw), { createdAt: (/* @__PURE__ */ new Date()).toISOString() });
       updateCard(card.id, { visualCheck });
-      addToast("Advisory visual feedback added. Teacher review remains separate.", "success");
+      addToast(visualCheck.suggestedAlt ? "Visual feedback and an optional image-description draft were added. Teacher review remains separate." : "Advisory visual feedback added. Teacher review remains separate.", "success");
     } catch (_) {
       addToast("The visual cue could not be checked. The image is still saved.", "error");
     } finally {
       setBusy(card.id, "");
     }
   };
+  const openUploadedVisual = (card, result) => {
+    const sourceDataUrl = result && result.dataUrl;
+    if (!sourceDataUrl) {
+      addToast("That image could not be opened. Try a PNG, JPEG, or WebP file.", "error");
+      return;
+    }
+    setImageEditor({
+      cardId: card.id,
+      sourceDataUrl,
+      sourceName: _maString(result.name, 500) || "Uploaded image",
+      sourceKind: "uploaded"
+    });
+  };
+  const openCurrentVisual = (card) => {
+    const sourceDataUrl = imageAssetTools && typeof imageAssetTools.normalizeRasterDataUrl === "function" ? imageAssetTools.normalizeRasterDataUrl(card.visualImage) : "";
+    if (!sourceDataUrl) {
+      addToast("This visual format cannot be cropped here. Upload a PNG, JPEG, or WebP image instead.", "info");
+      return;
+    }
+    setImageEditor({
+      cardId: card.id,
+      sourceDataUrl,
+      sourceName: "Current visual cue",
+      sourceKind: "existing"
+    });
+  };
+  const applyEditedVisual = (card, result) => {
+    const visualImage = normalizeMemoryAidImage(result && result.dataUrl);
+    if (!visualImage) {
+      addToast("The edited image could not be saved safely.", "error");
+      return;
+    }
+    const editor = imageEditor && imageEditor.cardId === card.id ? imageEditor : null;
+    const visualSource = editor && editor.sourceKind === "uploaded" ? "uploaded" : normalizeMemoryAidVisualSource(card.visualSource, true);
+    updateCard(card.id, (current) => ({
+      visualImage,
+      visualSource,
+      visualAlt: _maString(current.visualAlt, 800).trim() || buildMemoryAidVisualAlt(current)
+    }));
+    setImageEditor(null);
+    addToast(editor && editor.sourceKind === "uploaded" ? "Uploaded visual added. Review its image description when you are ready." : "Visual repositioned. Recheck it against the accurate facts.", "success");
+  };
+  const removeVisual = (card) => {
+    if (imageEditor && imageEditor.cardId === card.id) setImageEditor(null);
+    updateCard(card.id, { visualImage: "", visualSource: "" });
+  };
+  const useSuggestedVisualAlt = (card) => {
+    const suggestedAlt = _maString(card && card.visualCheck && card.visualCheck.suggestedAlt, 800).trim();
+    if (!suggestedAlt) return;
+    updateCard(card.id, { visualAlt: suggestedAlt });
+    addToast("Description draft applied. Review and edit it against the visible image before approval.", "success");
+  };
   const updateVisualReview = (card, patch) => {
+    const requested = patch && typeof patch === "object" ? patch : {};
+    if (requested.status === "approved") {
+      const readiness = memoryAidVisualAltReady(card);
+      if (!readiness.ok) {
+        addToast(readiness.reason, "info");
+        return;
+      }
+    }
     updateCard(card.id, (current) => {
       const previous = normalizeMemoryAidVisualReview(current.visualReview);
-      const requested = patch && typeof patch === "object" ? patch : {};
       const next = Object.assign({}, previous, requested);
       if (Object.prototype.hasOwnProperty.call(requested, "status")) {
         next.reviewedAt = requested.status === "unreviewed" ? "" : (/* @__PURE__ */ new Date()).toISOString();
@@ -687,22 +1073,66 @@ function MemoryAidView(props) {
     commitField("cards", cards.filter((card) => card.id !== cardId));
   };
   if (!resourceActive) return /* @__PURE__ */ React.createElement("div", { role: "status", className: "p-6 text-sm text-slate-600" }, "Preparing Memory Aid Studio\u2026");
-  return /* @__PURE__ */ React.createElement("main", { className: "mx-auto w-full max-w-5xl p-4 sm:p-6", "aria-labelledby": "memory-aid-title" }, /* @__PURE__ */ React.createElement("style", null, "@media print { .memory-aid-no-print { display:none !important; } .memory-aid-card { break-inside:avoid; box-shadow:none !important; } }"), /* @__PURE__ */ React.createElement("header", { className: "mb-5 rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-white to-cyan-50 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1 text-xs font-black uppercase tracking-[0.18em] text-teal-800" }, "Memory Aid Studio"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("input", { id: "memory-aid-title", "aria-label": "Memory aid resource title", value: data.title, onChange: (event) => commitField("title", event.target.value), className: "w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-2xl font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("h1", { id: "memory-aid-title", className: "text-2xl font-black text-slate-900" }, data.title), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Memory aid student instructions", value: data.instructions, onChange: (event) => commitField("instructions", event.target.value), rows: 2, className: "mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 max-w-3xl text-sm leading-relaxed text-slate-700" }, data.instructions)), /* @__PURE__ */ React.createElement("div", { className: "memory-aid-no-print flex flex-wrap gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": isEditing, onClick: () => setIsEditing((value) => !value), className: "min-h-11 rounded-xl border border-teal-700 bg-white px-3 py-2 text-sm font-black text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, isEditing ? "Done editing" : "Edit resource"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => window.print(), className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, "Print"))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap gap-2 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-teal-100 px-3 py-1 text-teal-900" }, data.selectionMode === "auto-mix" ? "Auto Mix" : "Teacher-selected mix"), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-indigo-100 px-3 py-1 text-indigo-900" }, data.authorshipMode === "progressive" ? "See \u2192 Build \u2192 Create" : (MEMORY_AID_MODES[data.authorshipMode] || {}).label), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-amber-100 px-3 py-1 text-amber-950" }, MEMORY_AID_REFLECTION_LEVELS[data.reflectionLevel].label, data.reasoningRequired ? " \xB7 required for feedback" : ""))), /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, cards.map((card, index) => {
+  return /* @__PURE__ */ React.createElement("main", { className: "mx-auto w-full max-w-5xl p-4 sm:p-6", "aria-labelledby": "memory-aid-title" }, /* @__PURE__ */ React.createElement("style", null, "@media print { .memory-aid-no-print, .memory-aid-practice-panel { display:none !important; } .memory-aid-practice-content[hidden] { display:block !important; } .memory-aid-card { break-inside:avoid; box-shadow:none !important; } }"), /* @__PURE__ */ React.createElement("header", { className: "mb-5 rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-white to-cyan-50 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "mb-1 text-xs font-black uppercase tracking-[0.18em] text-teal-800" }, "Memory Aid Studio"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("input", { id: "memory-aid-title", "aria-label": "Memory aid resource title", value: data.title, onChange: (event) => commitField("title", event.target.value), className: "w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-2xl font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("h1", { id: "memory-aid-title", className: "text-2xl font-black text-slate-900" }, data.title), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Memory aid student instructions", value: data.instructions, onChange: (event) => commitField("instructions", event.target.value), rows: 2, className: "mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 max-w-3xl text-sm leading-relaxed text-slate-700" }, data.instructions)), /* @__PURE__ */ React.createElement("div", { className: "memory-aid-no-print flex flex-wrap gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": isEditing, onClick: () => setIsEditing((value) => !value), className: "min-h-11 rounded-xl border border-teal-700 bg-white px-3 py-2 text-sm font-black text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, isEditing ? "Done editing" : "Edit resource"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => window.print(), className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, "Print"))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap gap-2 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-teal-100 px-3 py-1 text-teal-900" }, data.selectionMode === "auto-mix" ? "Auto Mix" : "Teacher-selected mix"), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-indigo-100 px-3 py-1 text-indigo-900" }, data.authorshipMode === "progressive" ? "See \u2192 Build \u2192 Create" : (MEMORY_AID_MODES[data.authorshipMode] || {}).label), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-amber-100 px-3 py-1 text-amber-950" }, MEMORY_AID_REFLECTION_LEVELS[data.reflectionLevel].label, data.reasoningRequired ? " \xB7 required for feedback" : ""))), /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, cards.map((card, index) => {
     const typeMeta = MEMORY_AID_TYPES[card.type] || MEMORY_AID_TYPES["keyword-association"];
     const modeMeta = MEMORY_AID_MODES[card.mode] || MEMORY_AID_MODES["student-authored"];
     const busy = busyByCard[card.id];
+    const practiceSession = practiceByCard[card.id] || null;
+    const practiceActive = !!(practiceSession && ["recall", "review"].includes(practiceSession.stage));
     const draftLabel = card.mode === "generated" ? "Make your own or remix the example" : card.mode === "scaffolded" ? "Finish and personalize the scaffold" : "Create your memory aid";
     const feedbackReady = memoryAidFeedbackReady(card, data.reasoningRequired);
     const feedbackHelpId = "memory-feedback-help-" + card.id;
     const aiFeedbackAvailable = typeof callGemini === "function";
     const visualBusy = busy === "visual" || busy === "visual-edit" || busy === "visual-check";
     const visualReviewMeta = MEMORY_AID_VISUAL_REVIEW_STATUSES[card.visualReview.status] || MEMORY_AID_VISUAL_REVIEW_STATUSES.unreviewed;
+    const visualSourceMeta = MEMORY_AID_VISUAL_SOURCES[card.visualSource] || MEMORY_AID_VISUAL_SOURCES.legacy;
+    const editingVisual = imageEditor && imageEditor.cardId === card.id ? imageEditor : null;
+    const visualAltReadiness = memoryAidVisualAltReady(card);
+    const visualAltHelpId = "memory-visual-alt-help-" + card.id;
+    const visualEditable = !!(card.visualImage && imageAssetTools && typeof imageAssetTools.normalizeRasterDataUrl === "function" && imageAssetTools.normalizeRasterDataUrl(card.visualImage));
     const visualReviewClass = card.visualReview.status === "approved" ? "border-emerald-300 bg-emerald-50 text-emerald-900" : card.visualReview.status === "needs-revision" ? "border-amber-300 bg-amber-50 text-amber-950" : "border-slate-300 bg-slate-50 text-slate-700";
     const audioContentId = "dl-memory-aid-" + card.id;
     const audioDownloading = downloadingContentId === audioContentId;
     const anotherAudioDownloadActive = !!downloadingContentId && !audioDownloading;
     const feedbackGuidance = !aiFeedbackAvailable ? "AI feedback is unavailable right now. Your work is still saved." : !feedbackReady.ok ? feedbackReady.reason : data.reasoningRequired ? "Ready for feedback. Your memory aid and explanation will be checked against the teacher-checked facts." : card.studentReasoning.trim() ? "Ready for feedback. Your optional explanation will be included." : "Ready for feedback. An explanation is optional, and you can add one if it helps show your connection.";
-    return /* @__PURE__ */ React.createElement("article", { key: card.id, className: "memory-aid-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm", "aria-labelledby": "memory-card-title-" + card.id }, /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-200 bg-slate-50 p-4 sm:p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-black uppercase tracking-widest text-slate-500" }, "Memory target ", index + 1), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("input", { id: "memory-card-title-" + card.id, "aria-label": "Memory target " + (index + 1), value: card.target, onChange: (event) => updateCard(card.id, { target: event.target.value }), className: "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("h2", { id: "memory-card-title-" + card.id, className: "mt-1 text-lg font-black text-slate-900" }, card.target || "Memory target")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-teal-100 px-3 py-1 text-teal-900" }, typeMeta.shortLabel), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-indigo-100 px-3 py-1 text-indigo-900" }, modeMeta.compactLabel), handleSpeak && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => speakCard(card), disabled: isProcessing, "aria-label": "Listen to memory aid for " + (card.target || "this target"), className: "memory-aid-no-print min-h-10 rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-900 hover:bg-sky-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" }, "Listen to this card"), handleDownloadAudio && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadCardAudio(card), disabled: isProcessing || anotherAudioDownloadActive, "aria-busy": audioDownloading, "aria-label": (audioDownloading ? "Stop audio download for " : "Download audio for ") + (card.target || "this memory aid"), className: "memory-aid-no-print min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-900 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, audioDownloading ? "Stop audio download" : "Download card audio"))), isTeacherMode && isEditing && /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-3 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-black text-slate-700" }, "Aid type", /* @__PURE__ */ React.createElement("select", { value: card.type, onChange: (event) => updateCard(card.id, { type: event.target.value, feedback: null }), className: "mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, Object.entries(MEMORY_AID_TYPES).map(([id, meta]) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, meta.label)))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-black text-slate-700" }, "Authorship mode", /* @__PURE__ */ React.createElement("select", { value: card.mode, onChange: (event) => updateCard(card.id, { mode: event.target.value, feedback: null }), className: "mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, Object.entries(MEMORY_AID_MODES).map(([id, meta]) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, meta.label)))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-4 p-4 sm:p-5" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-amber-200 bg-amber-50/70 p-4", "aria-label": "Teacher-checked facts" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-amber-950" }, "What must stay accurate"), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[11px] font-bold text-amber-900" }, card.factLocked ? "Teacher-checked facts" : "Teacher editing facts")), isTeacherMode && isEditing && !card.factLocked ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Required facts for " + card.target, value: card.essentialFacts.join("\n"), onChange: (event) => updateCard(card.id, { essentialFacts: event.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean), feedback: null }), rows: Math.max(3, card.essentialFacts.length), className: "mt-2 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" }) : /* @__PURE__ */ React.createElement("ul", { className: "mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800" }, card.essentialFacts.map((fact, factIndex) => /* @__PURE__ */ React.createElement("li", { key: factIndex }, fact))), isTeacherMode && isEditing && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateCard(card.id, { factLocked: !card.factLocked }), className: "memory-aid-no-print mt-3 min-h-10 rounded-xl border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" }, card.factLocked ? "Unlock facts to edit" : "Lock facts")), card.mode === "generated" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-teal-200 bg-teal-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-teal-950" }, "AI example"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "AI example for " + card.target, value: card.aiExample, onChange: (event) => updateCard(card.id, { aiExample: event.target.value }), rows: 3, className: "mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-base font-bold leading-relaxed text-slate-900" }, card.aiExample)), card.mode === "scaffolded" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-indigo-950" }, "Build it with support"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Scaffold starter for " + card.target, value: card.scaffoldStarter, onChange: (event) => updateCard(card.id, { scaffoldStarter: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-sm font-bold text-slate-900" }, card.scaffoldStarter), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Scaffold steps for " + card.target, value: card.scaffoldSteps.join("\n"), onChange: (event) => updateCard(card.id, { scaffoldSteps: event.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean) }), rows: Math.max(3, card.scaffoldSteps.length), placeholder: "One scaffold step per line", className: "mt-3 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }) : /* @__PURE__ */ React.createElement("ol", { className: "mt-3 list-decimal space-y-1 pl-5 text-sm text-slate-800" }, card.scaffoldSteps.map((step, stepIndex) => /* @__PURE__ */ React.createElement("li", { key: stepIndex }, step)))), card.mode === "student-authored" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-violet-200 bg-violet-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-violet-950" }, "Coach questions"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Coach prompts for " + card.target, value: card.coachPrompts.join("\n"), onChange: (event) => updateCard(card.id, { coachPrompts: event.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean) }), rows: Math.max(3, card.coachPrompts.length), placeholder: "One coaching question per line", className: "mt-2 w-full rounded-xl border border-violet-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" }) : /* @__PURE__ */ React.createElement("ul", { className: "mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800" }, card.coachPrompts.map((prompt, promptIndex) => /* @__PURE__ */ React.createElement("li", { key: promptIndex }, prompt))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestHint(card), disabled: !!busy || isProcessing || typeof callGemini !== "function", className: "memory-aid-no-print mt-3 min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-sm font-black text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" }, busy === "hint" ? "Thinking of a hint\u2026" : "Ask for one hint"), card.coachHint && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-3 rounded-xl border border-violet-200 bg-white p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("strong", null, "Coach hint:"), " ", card.coachHint)), /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-slate-200 bg-white p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-slate-900" }, "How the cue connects"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Mnemonic-to-fact mapping for " + card.target, value: card.mapping, onChange: (event) => updateCard(card.id, { mapping: event.target.value }), rows: 3, className: "mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700" }, card.mapping)), /* @__PURE__ */ React.createElement("section", { className: (card.visualImage ? "" : "memory-aid-no-print ") + "rounded-2xl border border-fuchsia-200 bg-fuchsia-50/50 p-4", "aria-labelledby": "memory-visual-title-" + card.id, "aria-busy": visualBusy }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "memory-visual-title-" + card.id, className: "text-sm font-black text-fuchsia-950" }, "Visual cue ", /* @__PURE__ */ React.createElement("span", { className: "font-medium text-fuchsia-800" }, "(optional)")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, "A visual can support retrieval, but the teacher-checked facts and your explanation remain the source of meaning.")), card.visualImage && /* @__PURE__ */ React.createElement("figure", { className: "mt-3 overflow-hidden rounded-2xl border border-fuchsia-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("img", { src: card.visualImage, alt: card.visualAlt || buildMemoryAidVisualAlt(card), loading: "lazy", className: "mx-auto max-h-[26rem] w-auto max-w-full rounded-xl object-contain" })), card.visualImage && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border px-3 py-2 text-xs " + visualReviewClass }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, visualReviewMeta.label), card.visualReview.note && /* @__PURE__ */ React.createElement("p", { className: "mt-1 whitespace-pre-wrap leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, card.visualReview.status === "unreviewed" ? "Teacher note retained for revision:" : "Teacher note:"), " ", card.visualReview.note)), card.visualImage && card.visualCheck && /* @__PURE__ */ React.createElement("section", { role: "status", "aria-live": "polite", className: "mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-cyan-950" }, "AI visual check ", /* @__PURE__ */ React.createElement("span", { className: "font-medium" }, "(advisory)")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-cyan-900" }, "This feedback does not replace teacher approval."), /* @__PURE__ */ React.createElement("dl", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Alignment"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.alignment === "supports" ? "Supports the intended cue" : card.visualCheck.alignment === "mixed" ? "Mixed or partial support" : "Unclear from the image")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Visible strength"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.strength)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Possible concern"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.concern)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Suggested change"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.suggestedChange)))), /* @__PURE__ */ React.createElement("div", { className: "memory-aid-no-print mt-3 space-y-3" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Visual direction", /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Visual direction for " + card.target, value: card.visualPrompt, onChange: (event) => updateCard(card.id, { visualPrompt: event.target.value }), maxLength: 1200, rows: 2, placeholder: "Example: Show a statue beside water taking the shape of a clear container.", className: "mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" })), card.visualImage && /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Image description", /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Image description for " + card.target, value: card.visualAlt || buildMemoryAidVisualAlt(card), onChange: (event) => updateCard(card.id, { visualAlt: event.target.value }), maxLength: 800, rows: 2, className: "mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block font-medium leading-relaxed text-slate-600" }, "Describe the meaningful visual details for learners who may not see the image.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestVisual(card), disabled: !!busy || isProcessing || !callImagen, "aria-busy": busy === "visual", className: "min-h-11 rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white hover:bg-fuchsia-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2" }, busy === "visual" ? "Creating visual cue\u2026" : card.visualImage ? "Regenerate visual cue" : "Generate visual cue"), card.visualImage && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => refineVisual(card), disabled: !!busy || isProcessing || !callGeminiImageEdit || !card.visualPrompt.trim(), "aria-busy": busy === "visual-edit", className: "min-h-11 rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-sm font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }, busy === "visual-edit" ? "Refining visual cue\u2026" : "Refine with direction"), card.visualImage && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestVisualCheck(card), disabled: !!busy || isProcessing || !callGeminiVision, "aria-busy": busy === "visual-check", className: "min-h-11 rounded-xl border border-cyan-400 bg-white px-3 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600" }, busy === "visual-check" ? "Checking visual cue\u2026" : card.visualCheck ? "Recheck visual against facts" : "Check visual against facts"), card.visualImage && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateCard(card.id, { visualImage: "" }), disabled: !!busy || isProcessing, className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500" }, "Remove visual")), !callImagen && !card.visualImage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs leading-relaxed text-slate-600" }, "Visual generation is unavailable with the current AI setup. The text-based memory aid remains fully usable."), card.visualImage && !callGeminiImageEdit && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs leading-relaxed text-slate-600" }, "Image refinement is unavailable, but you can keep, remove, or regenerate this visual."), card.visualImage && !callGeminiVision && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs leading-relaxed text-slate-600" }, "AI visual checking is unavailable. A teacher can still review the cue directly."), isTeacherMode && card.visualImage && /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-xl border border-slate-300 bg-white p-3" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-xs font-black text-slate-800" }, "Teacher visual review"), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700" }, "Review note ", /* @__PURE__ */ React.createElement("span", { className: "font-medium" }, "(optional)"), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Teacher visual review note for " + card.target, value: card.visualReview.note, onChange: (event) => updateVisualReview(card, { note: event.target.value }), maxLength: 1e3, rows: 2, placeholder: "Name what works or what should change.", className: "mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" })), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": card.visualReview.status === "approved", onClick: () => updateVisualReview(card, { status: "approved" }), className: "min-h-11 rounded-xl border border-emerald-400 bg-emerald-50 px-3 py-2 text-sm font-black text-emerald-900 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600" }, "Approve visual"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": card.visualReview.status === "needs-revision", onClick: () => updateVisualReview(card, { status: "needs-revision" }), className: "min-h-11 rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" }, "Request visual revision"), card.visualReview.status !== "unreviewed" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateVisualReview(card, { status: "unreviewed" }), className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500" }, "Clear review status"))))), /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border-2 border-teal-200 bg-white p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-teal-950" }, draftLabel), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Student creation prompt for " + card.target, value: card.studentPrompt, onChange: (event) => updateCard(card.id, { studentPrompt: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, card.studentPrompt), /* @__PURE__ */ React.createElement("textarea", { "aria-label": draftLabel + " for " + card.target, value: card.studentDraft, onChange: (event) => updateCard(card.id, { studentDraft: event.target.value, feedback: null }), rows: 4, placeholder: "Write, remix, or build your memory aid here\u2026", className: "mt-3 w-full rounded-xl border border-teal-300 bg-teal-50/30 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" })), data.reflectionLevel !== "none" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-sky-200 bg-sky-50/60 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-sky-950" }, data.reflectionLevel === "full" ? "Explain and revise" : "Quick connection"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-sky-800" }, data.reasoningRequired ? "Required before feedback" : "Optional")), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Reasoning prompt for " + card.target, value: card.reasoningPrompt, onChange: (event) => updateCard(card.id, { reasoningPrompt: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, card.reasoningPrompt), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Reasoning for " + card.target, value: card.studentReasoning, onChange: (event) => updateCard(card.id, { studentReasoning: event.target.value, feedback: null }), rows: data.reflectionLevel === "full" ? 4 : 2, placeholder: data.reflectionLevel === "full" ? "Explain how each important part leads back to the accurate facts\u2026" : "This helps me remember because\u2026", className: "mt-3 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" })), /* @__PURE__ */ React.createElement("div", { className: "memory-aid-no-print flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestFeedback(card), disabled: !!busy || isProcessing || !aiFeedbackAvailable, "aria-busy": busy === "feedback", "aria-describedby": feedbackHelpId, className: "min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2" }, busy === "feedback" ? "Reviewing your thinking\u2026" : "Get strengths-first AI feedback"), isTeacherMode && isEditing && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCard(card.id), className: "min-h-11 rounded-xl border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600" }, "Remove target")), /* @__PURE__ */ React.createElement("p", { id: feedbackHelpId, role: "status", "aria-live": "polite", className: "memory-aid-no-print -mt-2 text-xs leading-relaxed text-slate-600" }, feedbackGuidance), card.feedback && /* @__PURE__ */ React.createElement("section", { "aria-label": "AI feedback", role: "status", "aria-live": "polite", className: "rounded-2xl border border-emerald-200 bg-emerald-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-emerald-950" }, "Feedback for your next revision"), /* @__PURE__ */ React.createElement("dl", { className: "mt-3 space-y-3 text-sm" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "A strength"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.strength)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "Accuracy check"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.accuracyCheck)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "One next step"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.nextStep)), card.feedback.question && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "Think about"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.question))))));
+    return /* @__PURE__ */ React.createElement("article", { key: card.id, className: "memory-aid-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm", "aria-labelledby": "memory-card-title-" + card.id }, /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-200 bg-slate-50 p-4 sm:p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-black uppercase tracking-widest text-slate-500" }, "Memory target ", index + 1), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("input", { id: "memory-card-title-" + card.id, "aria-label": "Memory target " + (index + 1), value: card.target, onChange: (event) => updateCard(card.id, { target: event.target.value }), className: "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("h2", { id: "memory-card-title-" + card.id, className: "mt-1 text-lg font-black text-slate-900" }, card.target || "Memory target")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-teal-100 px-3 py-1 text-teal-900" }, typeMeta.shortLabel), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-indigo-100 px-3 py-1 text-indigo-900" }, modeMeta.compactLabel), !practiceActive && handleSpeak && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => speakCard(card), disabled: isProcessing, "aria-label": "Listen to memory aid for " + (card.target || "this target"), className: "memory-aid-no-print min-h-10 rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-900 hover:bg-sky-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" }, "Listen to this card"), !practiceActive && handleDownloadAudio && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadCardAudio(card), disabled: isProcessing || anotherAudioDownloadActive, "aria-busy": audioDownloading, "aria-label": (audioDownloading ? "Stop audio download for " : "Download audio for ") + (card.target || "this memory aid"), className: "memory-aid-no-print min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-900 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, audioDownloading ? "Stop audio download" : "Download card audio"))), isTeacherMode && isEditing && /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-3 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-black text-slate-700" }, "Aid type", /* @__PURE__ */ React.createElement("select", { value: card.type, onChange: (event) => updateCard(card.id, { type: event.target.value, feedback: null }), className: "mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, Object.entries(MEMORY_AID_TYPES).map(([id, meta]) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, meta.label)))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-black text-slate-700" }, "Authorship mode", /* @__PURE__ */ React.createElement("select", { value: card.mode, onChange: (event) => updateCard(card.id, { mode: event.target.value, feedback: null }), className: "mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, Object.entries(MEMORY_AID_MODES).map(([id, meta]) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, meta.label)))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-4 p-4 sm:p-5" }, /* @__PURE__ */ React.createElement(
+      MemoryAidPracticePanel,
+      {
+        card,
+        session: practiceSession,
+        isProcessing,
+        canSpeak: typeof handleSpeak === "function",
+        onStart: () => startPractice(card),
+        onChange: (patch) => updatePracticeSession(card.id, patch),
+        onReveal: () => revealPracticeFacts(card),
+        onFactCheck: (factIndex, value) => checkPracticeFact(card, factIndex, value),
+        onRepeat: () => repeatPractice(card),
+        onClose: () => closePractice(card.id),
+        onSpeak: () => speakPracticeCue(card)
+      }
+    ), /* @__PURE__ */ React.createElement("div", { hidden: practiceActive, className: "memory-aid-practice-content space-y-4" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-amber-200 bg-amber-50/70 p-4", "aria-label": "Teacher-checked facts" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-amber-950" }, "What must stay accurate"), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[11px] font-bold text-amber-900" }, card.factLocked ? "Teacher-checked facts" : "Teacher editing facts")), isTeacherMode && isEditing && !card.factLocked ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Required facts for " + card.target, value: card.essentialFacts.join("\n"), onChange: (event) => updateCard(card.id, { essentialFacts: event.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean), feedback: null }), rows: Math.max(3, card.essentialFacts.length), className: "mt-2 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" }) : /* @__PURE__ */ React.createElement("ul", { className: "mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800" }, card.essentialFacts.map((fact, factIndex) => /* @__PURE__ */ React.createElement("li", { key: factIndex }, fact))), isTeacherMode && isEditing && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateCard(card.id, { factLocked: !card.factLocked }), className: "memory-aid-no-print mt-3 min-h-10 rounded-xl border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" }, card.factLocked ? "Unlock facts to edit" : "Lock facts")), card.mode === "generated" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-teal-200 bg-teal-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-teal-950" }, "AI example"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "AI example for " + card.target, value: card.aiExample, onChange: (event) => updateCard(card.id, { aiExample: event.target.value }), rows: 3, className: "mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-base font-bold leading-relaxed text-slate-900" }, card.aiExample)), card.mode === "scaffolded" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-indigo-950" }, "Build it with support"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Scaffold starter for " + card.target, value: card.scaffoldStarter, onChange: (event) => updateCard(card.id, { scaffoldStarter: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-sm font-bold text-slate-900" }, card.scaffoldStarter), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Scaffold steps for " + card.target, value: card.scaffoldSteps.join("\n"), onChange: (event) => updateCard(card.id, { scaffoldSteps: event.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean) }), rows: Math.max(3, card.scaffoldSteps.length), placeholder: "One scaffold step per line", className: "mt-3 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }) : /* @__PURE__ */ React.createElement("ol", { className: "mt-3 list-decimal space-y-1 pl-5 text-sm text-slate-800" }, card.scaffoldSteps.map((step, stepIndex) => /* @__PURE__ */ React.createElement("li", { key: stepIndex }, step)))), card.mode === "student-authored" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-violet-200 bg-violet-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-violet-950" }, "Coach questions"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Coach prompts for " + card.target, value: card.coachPrompts.join("\n"), onChange: (event) => updateCard(card.id, { coachPrompts: event.target.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean) }), rows: Math.max(3, card.coachPrompts.length), placeholder: "One coaching question per line", className: "mt-2 w-full rounded-xl border border-violet-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" }) : /* @__PURE__ */ React.createElement("ul", { className: "mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800" }, card.coachPrompts.map((prompt, promptIndex) => /* @__PURE__ */ React.createElement("li", { key: promptIndex }, prompt))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestHint(card), disabled: !!busy || isProcessing || typeof callGemini !== "function", className: "memory-aid-no-print mt-3 min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-sm font-black text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" }, busy === "hint" ? "Thinking of a hint\u2026" : "Ask for one hint"), card.coachHint && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-3 rounded-xl border border-violet-200 bg-white p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("strong", null, "Coach hint:"), " ", card.coachHint)), /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-slate-200 bg-white p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-slate-900" }, "How the cue connects"), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Mnemonic-to-fact mapping for " + card.target, value: card.mapping, onChange: (event) => updateCard(card.id, { mapping: event.target.value }), rows: 3, className: "mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700" }, card.mapping)), /* @__PURE__ */ React.createElement("section", { className: (card.visualImage ? "" : "memory-aid-no-print ") + "rounded-2xl border border-fuchsia-200 bg-fuchsia-50/50 p-4", "aria-labelledby": "memory-visual-title-" + card.id, "aria-busy": visualBusy }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "memory-visual-title-" + card.id, className: "text-sm font-black text-fuchsia-950" }, "Visual cue ", /* @__PURE__ */ React.createElement("span", { className: "font-medium text-fuchsia-800" }, "(optional)")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, "A visual can support retrieval, but the teacher-checked facts and your explanation remain the source of meaning.")), card.visualImage && /* @__PURE__ */ React.createElement("figure", { className: "mt-3 overflow-hidden rounded-2xl border border-fuchsia-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("img", { src: card.visualImage, alt: card.visualAlt || buildMemoryAidVisualAlt(card), loading: "lazy", className: "mx-auto max-h-[26rem] w-auto max-w-full rounded-xl object-contain" }), /* @__PURE__ */ React.createElement("figcaption", { className: "mt-2 text-center text-[11px] font-bold text-slate-600" }, "Source: ", visualSourceMeta.label)), card.visualImage && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border px-3 py-2 text-xs " + visualReviewClass }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, visualReviewMeta.label), card.visualReview.note && /* @__PURE__ */ React.createElement("p", { className: "mt-1 whitespace-pre-wrap leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, card.visualReview.status === "unreviewed" ? "Teacher note retained for revision:" : "Teacher note:"), " ", card.visualReview.note)), card.visualImage && card.visualCheck && /* @__PURE__ */ React.createElement("section", { "aria-live": "polite", className: "mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-cyan-950" }, "AI visual check ", /* @__PURE__ */ React.createElement("span", { className: "font-medium" }, "(advisory)")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-cyan-900" }, "This feedback does not replace teacher approval."), /* @__PURE__ */ React.createElement("dl", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Alignment"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.alignment === "supports" ? "Supports the intended cue" : card.visualCheck.alignment === "mixed" ? "Mixed or partial support" : "Unclear from the image")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Visible strength"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.strength)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Possible concern"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.concern)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black" }, "Suggested change"), /* @__PURE__ */ React.createElement("dd", null, card.visualCheck.suggestedChange))), card.visualCheck.suggestedAlt && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl border border-cyan-300 bg-white p-3" }, /* @__PURE__ */ React.createElement("p", { className: "font-black text-cyan-950" }, "Suggested image description"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed text-slate-800" }, card.visualCheck.suggestedAlt), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "AI draft: compare it with the visible image, then edit any uncertain or unnecessary detail."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => useSuggestedVisualAlt(card), className: "mt-2 min-h-11 rounded-xl border border-cyan-400 bg-cyan-50 px-3 py-2 text-sm font-black text-cyan-950 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600" }, "Use this description"))), /* @__PURE__ */ React.createElement("div", { className: "memory-aid-no-print mt-3 space-y-3" }, ImageAssetPickerComponent ? /* @__PURE__ */ React.createElement(
+      ImageAssetPickerComponent,
+      {
+        id: "memory-visual-upload-" + card.id,
+        label: card.visualImage ? "Replace with an image from this device" : "Upload an image from this device",
+        disabled: !!busy || isProcessing,
+        readFile: imageAssetTools && imageAssetTools.readImageAssetFile,
+        maxFileBytes: imageAssetTools && imageAssetTools.IMAGE_ASSET_MAX_FILE_BYTES,
+        onLoaded: (result) => openUploadedVisual(card, result)
+      }
+    ) : /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs leading-relaxed text-slate-600" }, "Device image upload is unavailable right now. AI-generated and text-only memory aids remain available."), editingVisual && ImageAssetEditorComponent && /* @__PURE__ */ React.createElement(
+      ImageAssetEditorComponent,
+      {
+        sourceDataUrl: editingVisual.sourceDataUrl,
+        sourceName: editingVisual.sourceName,
+        previewAlt: "Preview of visual cue for " + (card.target || "this memory target"),
+        renderImageAsset: imageAssetTools && imageAssetTools.renderImageAsset,
+        maxDimension: 1280,
+        maxOutputChars: imageAssetTools && imageAssetTools.IMAGE_ASSET_MAX_OUTPUT_CHARS,
+        onApply: (result) => applyEditedVisual(card, result),
+        onCancel: () => setImageEditor(null)
+      }
+    ), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Visual direction", /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Visual direction for " + card.target, value: card.visualPrompt, onChange: (event) => updateCard(card.id, { visualPrompt: event.target.value }), maxLength: 1200, rows: 2, placeholder: "Example: Show a statue beside water taking the shape of a clear container.", className: "mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" })), card.visualImage && /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-black text-slate-700" }, "Image description", /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Image description for " + card.target, "aria-describedby": visualAltHelpId, value: card.visualAlt || buildMemoryAidVisualAlt(card), onChange: (event) => updateCard(card.id, { visualAlt: event.target.value }), maxLength: 800, rows: 2, className: "mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }), /* @__PURE__ */ React.createElement("span", { id: visualAltHelpId, className: "mt-1 block font-bold leading-relaxed " + (visualAltReadiness.ok ? "text-emerald-700" : "text-amber-800") }, visualAltReadiness.reason)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestVisual(card), disabled: !!busy || isProcessing || !callImagen, "aria-busy": busy === "visual", className: "min-h-11 rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white hover:bg-fuchsia-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2" }, busy === "visual" ? "Creating visual cue\u2026" : card.visualImage ? "Regenerate visual cue" : "Generate visual cue"), card.visualImage && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => refineVisual(card), disabled: !!busy || isProcessing || !callGeminiImageEdit || !card.visualPrompt.trim(), "aria-busy": busy === "visual-edit", className: "min-h-11 rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-sm font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }, busy === "visual-edit" ? "Refining visual cue\u2026" : "Refine with direction"), visualEditable && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openCurrentVisual(card), disabled: !!busy || isProcessing, "aria-expanded": !!editingVisual, className: "min-h-11 rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-sm font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" }, "Crop or reposition"), card.visualImage && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestVisualCheck(card), disabled: !!busy || isProcessing || !callGeminiVision, "aria-busy": busy === "visual-check", className: "min-h-11 rounded-xl border border-cyan-400 bg-white px-3 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600" }, busy === "visual-check" ? "Checking visual cue\u2026" : card.visualCheck ? "Recheck facts + description" : "Check facts + draft description"), card.visualImage && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeVisual(card), disabled: !!busy || isProcessing, className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500" }, "Remove visual")), !callImagen && !card.visualImage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs leading-relaxed text-slate-600" }, "AI visual generation is unavailable with the current setup. You can upload an image or keep the memory aid text-only."), card.visualImage && !callGeminiImageEdit && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs leading-relaxed text-slate-600" }, "AI image refinement is unavailable, but you can crop, replace, keep, or remove this visual."), card.visualImage && !callGeminiVision && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs leading-relaxed text-slate-600" }, "AI visual checking and description drafting are unavailable. A learner or teacher can still write the description and review the cue directly."), isTeacherMode && card.visualImage && /* @__PURE__ */ React.createElement("fieldset", { className: "rounded-xl border border-slate-300 bg-white p-3" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-xs font-black text-slate-800" }, "Teacher visual review"), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700" }, "Review note ", /* @__PURE__ */ React.createElement("span", { className: "font-medium" }, "(optional)"), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Teacher visual review note for " + card.target, value: card.visualReview.note, onChange: (event) => updateVisualReview(card, { note: event.target.value }), maxLength: 1e3, rows: 2, placeholder: "Name what works or what should change.", className: "mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" })), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": card.visualReview.status === "approved", "aria-describedby": visualAltHelpId, onClick: () => updateVisualReview(card, { status: "approved" }), disabled: !visualAltReadiness.ok, className: "min-h-11 rounded-xl border border-emerald-400 bg-emerald-50 px-3 py-2 text-sm font-black text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600" }, "Approve visual"), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": card.visualReview.status === "needs-revision", onClick: () => updateVisualReview(card, { status: "needs-revision" }), className: "min-h-11 rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" }, "Request visual revision"), card.visualReview.status !== "unreviewed" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => updateVisualReview(card, { status: "unreviewed" }), className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500" }, "Clear review status"))))), /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border-2 border-teal-200 bg-white p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-teal-950" }, draftLabel), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Student creation prompt for " + card.target, value: card.studentPrompt, onChange: (event) => updateCard(card.id, { studentPrompt: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-600" }, card.studentPrompt), /* @__PURE__ */ React.createElement("textarea", { "aria-label": draftLabel + " for " + card.target, value: card.studentDraft, onChange: (event) => updateCard(card.id, { studentDraft: event.target.value, feedback: null }), rows: 4, placeholder: "Write, remix, or build your memory aid here\u2026", className: "mt-3 w-full rounded-xl border border-teal-300 bg-teal-50/30 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" })), data.reflectionLevel !== "none" && /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-sky-200 bg-sky-50/60 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-sky-950" }, data.reflectionLevel === "full" ? "Explain and revise" : "Quick connection"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-sky-800" }, data.reasoningRequired ? "Required before feedback" : "Optional")), isTeacherMode && isEditing ? /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Reasoning prompt for " + card.target, value: card.reasoningPrompt, onChange: (event) => updateCard(card.id, { reasoningPrompt: event.target.value }), rows: 2, className: "mt-2 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" }) : /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-700" }, card.reasoningPrompt), /* @__PURE__ */ React.createElement("textarea", { "aria-label": "Reasoning for " + card.target, value: card.studentReasoning, onChange: (event) => updateCard(card.id, { studentReasoning: event.target.value, feedback: null }), rows: data.reflectionLevel === "full" ? 4 : 2, placeholder: data.reflectionLevel === "full" ? "Explain how each important part leads back to the accurate facts\u2026" : "This helps me remember because\u2026", className: "mt-3 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" })), /* @__PURE__ */ React.createElement("div", { className: "memory-aid-no-print flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => requestFeedback(card), disabled: !!busy || isProcessing || !aiFeedbackAvailable, "aria-busy": busy === "feedback", "aria-describedby": feedbackHelpId, className: "min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2" }, busy === "feedback" ? "Reviewing your thinking\u2026" : "Get strengths-first AI feedback"), isTeacherMode && isEditing && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCard(card.id), className: "min-h-11 rounded-xl border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600" }, "Remove target")), /* @__PURE__ */ React.createElement("p", { id: feedbackHelpId, role: "status", "aria-live": "polite", className: "memory-aid-no-print -mt-2 text-xs leading-relaxed text-slate-600" }, feedbackGuidance), card.feedback && /* @__PURE__ */ React.createElement("section", { "aria-label": "AI feedback", role: "status", "aria-live": "polite", className: "rounded-2xl border border-emerald-200 bg-emerald-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-black text-emerald-950" }, "Feedback for your next revision"), /* @__PURE__ */ React.createElement("dl", { className: "mt-3 space-y-3 text-sm" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "A strength"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.strength)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "Accuracy check"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.accuracyCheck)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "One next step"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.nextStep)), card.feedback.question && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-black text-emerald-900" }, "Think about"), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 text-slate-800" }, card.feedback.question)))))));
   })), cards.length === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", className: "rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600" }, "No memory targets yet."), isTeacherMode && isEditing && cards.length < 8 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCard, className: "memory-aid-no-print mt-5 min-h-12 w-full rounded-2xl border-2 border-dashed border-teal-400 bg-teal-50 px-4 py-3 text-sm font-black text-teal-900 hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" }, "Add a memory target"));
 }
 window.AlloModules = window.AlloModules || {};
@@ -713,11 +1143,15 @@ window.AlloModules.MemoryAid = {
   MEMORY_AID_MODES: MEMORY_AID_MODES,
   MEMORY_AID_REFLECTION_LEVELS: MEMORY_AID_REFLECTION_LEVELS,
   MEMORY_AID_VISUAL_REVIEW_STATUSES: MEMORY_AID_VISUAL_REVIEW_STATUSES,
+  MEMORY_AID_VISUAL_SOURCES: MEMORY_AID_VISUAL_SOURCES,
+  MEMORY_AID_PRACTICE_CONFIDENCE: MEMORY_AID_PRACTICE_CONFIDENCE,
+  MEMORY_AID_PRACTICE_CHECKS: MEMORY_AID_PRACTICE_CHECKS,
   _testing: {
     normalizeMemoryAidTypes: normalizeMemoryAidTypes,
     normalizeMemoryAidCard: normalizeMemoryAidCard,
     normalizeMemoryAidData: normalizeMemoryAidData,
     normalizeMemoryAidImage: normalizeMemoryAidImage,
+    normalizeMemoryAidVisualSource: normalizeMemoryAidVisualSource,
     memoryAidImageBase64: memoryAidImageBase64,
     memoryAidImageMime: memoryAidImageMime,
     buildMemoryAidVisualPrompt: buildMemoryAidVisualPrompt,
@@ -727,9 +1161,18 @@ window.AlloModules.MemoryAid = {
     parseMemoryAidVisualCheck: parseMemoryAidVisualCheck,
     normalizeMemoryAidVisualReview: normalizeMemoryAidVisualReview,
     buildMemoryAidVisualAlt: buildMemoryAidVisualAlt,
+    memoryAidVisualAltReady: memoryAidVisualAltReady,
     buildMemoryAidReadAloudText: buildMemoryAidReadAloudText,
     memoryAidAudioFilename: memoryAidAudioFilename,
     memoryAidFeedbackReady: memoryAidFeedbackReady,
+    memoryAidPracticeCue: memoryAidPracticeCue,
+    memoryAidPracticeBasis: memoryAidPracticeBasis,
+    normalizeMemoryAidPracticeAttempt: normalizeMemoryAidPracticeAttempt,
+    normalizeMemoryAidPracticeAttempts: normalizeMemoryAidPracticeAttempts,
+    memoryAidPracticeReady: memoryAidPracticeReady,
+    createMemoryAidPracticeAttempt: createMemoryAidPracticeAttempt,
+    memoryAidPracticeSummary: memoryAidPracticeSummary,
+    buildMemoryAidPracticeCueText: buildMemoryAidPracticeCueText,
     applyMemoryAidCardPatch: applyMemoryAidCardPatch,
     buildMemoryAidFeedbackPrompt: buildMemoryAidFeedbackPrompt,
     parseMemoryAidFeedback: parseMemoryAidFeedback,

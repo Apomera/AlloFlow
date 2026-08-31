@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T14:24:24.398Z",
+  "generatedAt": "2026-08-29T14:23:53.475Z",
   "source": {
     "stemToolFileCount": 147,
     "registeredToolCount": 149,
@@ -13,9 +13,9 @@
     "monitoredErrorCount": 0,
     "monitoredWarningCount": 1,
     "monitoredNoticeCount": 0,
-    "syncDriftCount": 7,
-    "sourcePublicDriftCount": 6,
-    "monitoredSyncDriftCount": 1
+    "syncDriftCount": 11,
+    "sourcePublicDriftCount": 0,
+    "monitoredSyncDriftCount": 2
   },
   "loadErrors": [],
   "markerResults": [
@@ -457,14 +457,14 @@
       "marker": "data-molecule-command",
       "label": "Molecule Lab command deck",
       "ok": true,
-      "htmlBytes": 36056,
+      "htmlBytes": 36083,
       "issues": [],
       "metrics": {
         "buttons": 104,
         "fields": 1,
         "canvases": 0,
         "headings": 4,
-        "htmlBytes": 36056
+        "htmlBytes": 36083
       }
     },
     {
@@ -505,14 +505,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 29369,
+      "htmlBytes": 29338,
       "issues": [],
       "metrics": {
         "buttons": 50,
         "fields": 1,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 29369
+        "htmlBytes": 29338
       }
     },
     {
@@ -601,14 +601,14 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 145310,
+      "htmlBytes": 142857,
       "issues": [],
       "metrics": {
         "buttons": 127,
         "fields": 1,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 145310
+        "htmlBytes": 142857
       }
     },
     {
@@ -633,14 +633,14 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 18436,
+      "htmlBytes": 18437,
       "issues": [],
       "metrics": {
         "buttons": 31,
         "fields": 5,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 18436
+        "htmlBytes": 18437
       }
     },
     {
@@ -665,14 +665,14 @@
       "marker": "data-astronomy-command",
       "label": "Astronomy observation command",
       "ok": true,
-      "htmlBytes": 14986,
+      "htmlBytes": 14989,
       "issues": [],
       "metrics": {
         "buttons": 18,
         "fields": 1,
         "canvases": 0,
         "headings": 2,
-        "htmlBytes": 14986
+        "htmlBytes": 14989
       }
     },
     {
@@ -777,14 +777,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 56315,
+      "htmlBytes": 56373,
       "issues": [],
       "metrics": {
         "buttons": 57,
         "fields": 8,
         "canvases": 1,
         "headings": 7,
-        "htmlBytes": 56315
+        "htmlBytes": 56373
       }
     },
     {
@@ -809,14 +809,14 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 9813,
+      "htmlBytes": 13949,
       "issues": [],
       "metrics": {
         "buttons": 7,
-        "fields": 20,
+        "fields": 21,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 9813
+        "htmlBytes": 13949
       }
     },
     {
@@ -1232,7 +1232,7 @@
   "sync": {
     "drift": [
       {
-        "file": "stem_tool_archstudio.js",
+        "file": "stem_tool_allobotsage.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1240,13 +1240,13 @@
           "build": true
         },
         "hashes": {
-          "source": "30BF5DF19EA7",
-          "public": "C18FC0CD2112",
-          "build": "C18FC0CD2112"
+          "source": "E4D479651E37",
+          "public": "E4D479651E37",
+          "build": "BF3D0C5E5742"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       },
       {
         "file": "stem_tool_artstudio.js",
@@ -1257,13 +1257,30 @@
           "build": true
         },
         "hashes": {
-          "source": "83F3A497CD9C",
-          "public": "7DC02663FA94",
-          "build": "7DC02663FA94"
+          "source": "B55447FEA8F2",
+          "public": "B55447FEA8F2",
+          "build": "0A2C98461328"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_autorepair.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "15A2C5B741BB",
+          "public": "15A2C5B741BB",
+          "build": "177C5C5651F5"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
       },
       {
         "file": "stem_tool_dissection.js",
@@ -1274,9 +1291,77 @@
           "build": true
         },
         "hashes": {
-          "source": "587F7186BFA8",
-          "public": "587F7186BFA8",
-          "build": "EF4588009EAD"
+          "source": "5C3E4AFDBA74",
+          "public": "5C3E4AFDBA74",
+          "build": "6B35B37504ED"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_geometryworld.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "BAE9DD303E78",
+          "public": "BAE9DD303E78",
+          "build": "8CE372630750"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_geometryworld_builder.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "9661DEBC0DBC",
+          "public": "9661DEBC0DBC",
+          "build": "DCC01C16ECAA"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_magnetism.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "167488A7A2D6",
+          "public": "167488A7A2D6",
+          "build": "821D650D7C7F"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_molecule.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "A7944BB6904B",
+          "public": "A7944BB6904B",
+          "build": "AD6BE5C91DB1"
         },
         "sourcePublicMatch": true,
         "sourceBuildMatch": false,
@@ -1291,13 +1376,13 @@
           "build": true
         },
         "hashes": {
-          "source": "34227263D7DC",
-          "public": "1CF57990A4B4",
-          "build": "1CF57990A4B4"
+          "source": "480A5BB2B457",
+          "public": "480A5BB2B457",
+          "build": "CA91206EED1F"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       },
       {
         "file": "stem_tool_printlab.js",
@@ -1308,16 +1393,16 @@
           "build": true
         },
         "hashes": {
-          "source": "B65B91D9740B",
-          "public": "EA6ED6DCFBCB",
-          "build": "EA6ED6DCFBCB"
+          "source": "16106717AAFB",
+          "public": "16106717AAFB",
+          "build": "07561C637034"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       },
       {
-        "file": "stem_tool_spaceexplorer.js",
+        "file": "stem_tool_wheelandfire.js",
         "monitored": false,
         "exists": {
           "source": true,
@@ -1325,138 +1410,35 @@
           "build": true
         },
         "hashes": {
-          "source": "015AF6D8F323",
-          "public": "63B1BE59ECAD",
-          "build": "63B1BE59ECAD"
+          "source": "C9F6CDDA8794",
+          "public": "C9F6CDDA8794",
+          "build": "28E5056CB4A7"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_treelab.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "4265247EDA5F",
-          "public": "538596D2939A",
-          "build": "538596D2939A"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ],
-    "sourcePublicDrift": [
-      {
-        "file": "stem_tool_archstudio.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "30BF5DF19EA7",
-          "public": "C18FC0CD2112",
-          "build": "C18FC0CD2112"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_artstudio.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "83F3A497CD9C",
-          "public": "7DC02663FA94",
-          "build": "7DC02663FA94"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_optics.js",
-        "monitored": true,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "34227263D7DC",
-          "public": "1CF57990A4B4",
-          "build": "1CF57990A4B4"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_printlab.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "B65B91D9740B",
-          "public": "EA6ED6DCFBCB",
-          "build": "EA6ED6DCFBCB"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_spaceexplorer.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "015AF6D8F323",
-          "public": "63B1BE59ECAD",
-          "build": "63B1BE59ECAD"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      },
-      {
-        "file": "stem_tool_treelab.js",
-        "monitored": false,
-        "exists": {
-          "source": true,
-          "public": true,
-          "build": true
-        },
-        "hashes": {
-          "source": "4265247EDA5F",
-          "public": "538596D2939A",
-          "build": "538596D2939A"
-        },
-        "sourcePublicMatch": false,
-        "sourceBuildMatch": false,
-        "status": "source-public-drift"
-      }
-    ],
+    "sourcePublicDrift": [],
     "monitoredDrift": [
       {
+        "file": "stem_tool_molecule.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "A7944BB6904B",
+          "public": "A7944BB6904B",
+          "build": "AD6BE5C91DB1"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
         "file": "stem_tool_optics.js",
         "monitored": true,
         "exists": {
@@ -1465,13 +1447,13 @@
           "build": true
         },
         "hashes": {
-          "source": "34227263D7DC",
-          "public": "1CF57990A4B4",
-          "build": "1CF57990A4B4"
+          "source": "480A5BB2B457",
+          "public": "480A5BB2B457",
+          "build": "CA91206EED1F"
         },
-        "sourcePublicMatch": false,
+        "sourcePublicMatch": true,
         "sourceBuildMatch": false,
-        "status": "source-public-drift"
+        "status": "build-drift"
       }
     ]
   },

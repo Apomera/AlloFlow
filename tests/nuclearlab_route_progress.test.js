@@ -13,14 +13,6 @@ let latestToolData;
 let originalGetContext;
 let originalScrollIntoView;
 
-const COMPLETE_EVIDENCE = [
-  'reactor-bomb',
-  'inverse-square',
-  'low-dose-zero',
-  'neutron-layers',
-  'short-count',
-];
-
 beforeAll(() => {
   act = React.act;
   global.IS_REACT_ACT_ENVIRONMENT = true;
@@ -76,6 +68,36 @@ function buttonNamed(text) {
 }
 
 describe('question-route progress semantics', () => {
+  it('places visible route context before every routed topic without changing the all-topics view', () => {
+    host.innerHTML = renderTool('nuclearLab', {
+      _nuclearLab: { nkPath: 'safety', nkOpen: false },
+    });
+
+    const expected = ['shielding', 'protect', 'shelter', 'evidence'];
+    const sections = [...host.querySelectorAll('[data-nk-sec]')];
+    expect(sections.map((section) => section.getAttribute('data-nk-sec'))).toEqual(expected);
+    expect(host.querySelectorAll('[data-nk-route-step]')).toHaveLength(expected.length);
+
+    sections.forEach((section, index) => {
+      const id = expected[index];
+      const kicker = section.querySelector('[data-nk-route-step=' + id + ']');
+      const topicHeading = section.querySelector('h4');
+      expect(kicker.id).toBe('nk-route-step-' + id);
+      expect(kicker.textContent).toContain('Route step ' + (index + 1) + ' of 4');
+      expect(kicker.textContent).toContain('How would I protect myself?');
+      expect(section.getAttribute('aria-describedby')).toBe(kicker.id);
+      expect(section.classList.contains('nk-route-section')).toBe(true);
+      expect(kicker.compareDocumentPosition(topicHeading) & Node.DOCUMENT_POSITION_FOLLOWING)
+        .toBeTruthy();
+      expect(section.style.borderLeftWidth).toBe('4px');
+      expect(topicHeading.style.fontSize).toBe('0.875rem');
+    });
+
+    host.innerHTML = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false } });
+    expect(host.querySelectorAll('[data-nk-route-step]')).toHaveLength(0);
+    expect(host.querySelector('[data-nk-sec]').hasAttribute('aria-describedby')).toBe(false);
+  });
+
   it('shows sanitized progress, a next step, and truthful completion guidance', () => {
     host.innerHTML = renderTool('nuclearLab', {
       _nuclearLab: {
@@ -120,7 +142,7 @@ describe('question-route progress semantics', () => {
         nkOpen: false,
         nkRouteSeen: { know: ['detect', 'dating', 'chain', 'evidence'] },
         pathsCompleted: ['know'],
-        evidenceMastered: COMPLETE_EVIDENCE,
+        evidenceMastered: ['short-count'],
       },
     });
 
@@ -157,7 +179,7 @@ describe('question-route progress interaction', () => {
 
   it('records navigation, resumes at the next unopened step, and restores focus there', () => {
     const announceToSR = vi.fn();
-    mount({ nkOpen: true, evidenceMastered: COMPLETE_EVIDENCE }, { announceToSR });
+    mount({ nkOpen: true, evidenceMastered: ['short-count'] }, { announceToSR });
 
     act(() => buttonAriaStarts('Follow the route: How do we know all this?').click());
     expect(latestToolData._nuclearLab.nkRouteSeen.know).toEqual(['detect']);
@@ -199,16 +221,33 @@ describe('question-route progress interaction', () => {
       evidenceIndex: 4,
       evidenceChoices: { 'short-count': 'uncertain' },
       evidenceChecked: { 'short-count': false },
-      evidenceMastered: COMPLETE_EVIDENCE.slice(0, 4),
+      evidenceMastered: [],
     }, { announceToSR });
 
     act(() => buttonNamed('Check the evidence').click());
 
-    expect(latestToolData._nuclearLab.evidenceMastered).toEqual(COMPLETE_EVIDENCE);
+    expect(latestToolData._nuclearLab.evidenceMastered).toEqual(['short-count']);
     expect(latestToolData._nuclearLab.pathsCompleted).toEqual(['know']);
     expect(host.querySelector('#nksec-evidence').textContent).toContain('✓ Route complete');
+    expect(cfg.questHooks.find((item) => item.id === 'nk_evidence')
+      .check(latestToolData._nuclearLab)).toBe(false);
     expect(announceToSR.mock.calls.at(-1)[0]).toContain(
       'Route complete: How do we know all this?',
     );
+  });
+
+  it('reviews supporting evidence without ejecting the learner from the route', () => {
+    mount({
+      nkPath: 'know',
+      evidenceIndex: 4,
+      evidenceChoices: { 'short-count': 'uncertain' },
+      evidenceChecked: { 'short-count': true },
+      evidenceMastered: ['short-count'],
+    });
+
+    act(() => buttonNamed('Review the supporting topic').click());
+
+    expect(latestToolData._nuclearLab.nkPath).toBe('know');
+    expect(document.activeElement.id).toBe('nksec-detect');
   });
 });

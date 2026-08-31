@@ -146,6 +146,34 @@ describe('dispatcher — structured-activity normalizers', () => {
       expect(JSON.parse(JSON.stringify(obj))).toEqual(obj);
     }
   });
+
+  it('tracks stable derivative records across generation and editing', () => {
+    const content = dispatcher.attachActivityDerivativeMetadata([
+      { kind: 'jigsaw', title: 'Rock cycle', worksheet: '## Exit ticket' }
+    ], 'pack-1');
+    expect(content[0].derivatives).toMatchObject({
+      guide: { status: 'not-created', version: 0, format: 'markdown' },
+      worksheet: { status: 'ready', version: 1, format: 'markdown' },
+      rubric: { status: 'not-created', version: 0, format: 'json' },
+      cover: { status: 'not-created', version: 0, format: 'image' }
+    });
+    expect(content[0].derivatives.worksheet.artifactId).toBe('pack-1-activity-0-worksheet');
+    expect(content[0].derivatives.worksheet.contentHash).toMatch(/^[a-z0-9]+$/);
+    const edited = dispatcher.stampActivityDerivative(
+      { ...content[0], worksheet: '## Revised exit ticket' },
+      'pack-1',
+      0,
+      'worksheet',
+      { status: 'edited', bumpVersion: true, pageDesignerDocumentId: 'studio-1' }
+    );
+    expect(edited.derivatives.worksheet).toMatchObject({
+      status: 'edited',
+      version: 2,
+      pageDesignerDocumentId: 'studio-1'
+    });
+    expect(edited.derivatives.worksheet.contentHash).toMatch(/^[a-z0-9]+$/);
+    expect(edited.derivatives.worksheet.contentHash).not.toBe(content[0].derivatives.worksheet.contentHash);
+  });
 });
 
 // ── Dispatcher branch wiring ───────────────────────────────────────────────
@@ -162,6 +190,37 @@ describe.each([
 
   it('keeps the simulation path as a separate gemini-bridge branch (no data migration)', () => {
     expect(src).toMatch(/type === 'gemini-bridge'/);
+  });
+});
+
+describe.each([
+  'AlloFlowANTI.txt',
+  path.join('desktop', 'web-app', 'src', 'AlloFlowANTI.txt'),
+  path.join('desktop', 'web-app', 'src', 'App.jsx'),
+])('%s — linked worksheet revision contract', (relPath) => {
+  const src = read(relPath);
+
+  it('uses content fingerprints for conflict checks and returns the next revision', () => {
+    expect(src).toMatch(/worksheetMeta\.contentHash/);
+    expect(src).toMatch(/expectedRevision/);
+    expect(src).toMatch(/String\(payload\.sourceRevision\) !== String\(expectedRevision\)/);
+    expect(src).toMatch(/return \{ ok: true, sourceRevision: String\(nextRevision\)/);
+  });
+});
+
+describe.each([
+  'generate_dispatcher_source.jsx',
+  'generate_dispatcher_module.js',
+  path.join('desktop', 'web-app', 'public', 'generate_dispatcher_module.js'),
+])('%s — structured activity recovery', (relPath) => {
+  const src = read(relPath);
+
+  it('bounds malformed Discussion/Jigsaw repair and preserves fatal errors', () => {
+    expect(src).toMatch(/generateStructuredActivityWithRecovery/);
+    expect(src).toMatch(/attempt <= 2/);
+    expect(src).toMatch(/401\|403\|quota\|safety/);
+    expect(src).toMatch(/error && \(error\.status \|\| error\.statusCode \|\| error\.httpStatus\)/);
+    expect(src).toMatch(/RECOVERY:/);
   });
 });
 

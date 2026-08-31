@@ -75,3 +75,17 @@ describe('header aria/title keys are registered, not just called', () => {
     expect(typeof ui.header?.ai_diagnostics_canvas).toBe('string');
   });
 });
+
+describe('dashboard navigation names the role-specific destination', () => {
+  it('keeps teacher and family labels while naming learner progress accurately', () => {
+    expect(source).toContain("const dashboardNavLabel = isParentMode");
+    expect(source).toContain("t('parent_mode.dashboard_title')");
+    expect(source).toContain(": isTeacherMode");
+    expect(source).toContain("t('dashboard.title')");
+    expect(source).toContain("t('common.progress') || 'My Learning Progress'");
+  });
+
+  it('ships the localized learner label in the built module', () => {
+    expect(module_).toContain('t("common.progress") || "My Learning Progress"');
+  });
+});

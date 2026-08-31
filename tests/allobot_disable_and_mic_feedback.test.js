@@ -22,10 +22,11 @@ describe('A3 — hiding AlloBot must not silence the rest of the app', () => {
     // cancelAlloBotBrowserSpeech, which returns early unless the bot owns the
     // current utterance.
     const guard = botSource.slice(
-      botSource.indexOf('const cancelAlloBotBrowserSpeech = () =>'),
+      botSource.indexOf('let _alloBotBrowserSpeechOwner = null;'),
       botSource.indexOf('const AlloBot = React.memo'),
     );
-    expect(guard).toContain('if (!_alloBotOwnsBrowserSpeech) return false;');
+    expect(guard).toContain('let _alloBotBrowserSpeechOwner = null;');
+    expect(guard).toContain('if (!owner || _alloBotBrowserSpeechOwner !== owner) return false;');
     expect(guard).toContain('window.speechSynthesis.cancel()');
 
     const callSites = botSource
@@ -35,21 +36,65 @@ describe('A3 — hiding AlloBot must not silence the rest of the app', () => {
     expect(callSites.length, callSites.join(' || ')).toBe(1);
   });
 
-  it('claims ownership only while its own browser utterance is in flight', () => {
-    expect(botSource).toContain('alloBotClaimBrowserSpeech();\n                      window.speechSynthesis.speak(utter);');
-    expect(botSource).toContain('utter.onend = () => { alloBotReleaseBrowserSpeech(); resetState(); };');
+  it('claims exact ownership at queue time and refuses to join a busy browser engine', () => {
+    expect(botSource).toContain('const alloBotCanQueueBrowserSpeech = () => {');
+    expect(botSource).toContain('!_alloBotBrowserSpeechOwner && !synth.speaking && !synth.pending');
+    expect(botSource).toContain('const browserOwner = { generation: myGenId, utterance: utter, started: false, cancelRequested: false, afterRelease: null };');
+    expect(botSource).toContain('if (!alloBotCanQueueBrowserSpeech()) {');
+    expect(botSource).toContain('if (_alloBotBrowserSpeechOwner === owner) _alloBotBrowserSpeechOwner = null;');
+    expect(botSource).toContain('utter.onend = () => { releaseBrowserOwner(); resetState(); };');
     expect(botSource).toContain('utter.onerror = () => {');
-    expect(botSource).toContain('alloBotReleaseBrowserSpeech();\n                      reportPlaybackFailure');
+    expect(botSource).toContain('releaseBrowserOwner();');
+    const fallback = botSource.slice(
+      botSource.indexOf('const playBrowserFallback'),
+      botSource.indexOf('debugLog("AlloBot Speak Debug'),
+    );
+    const refClaim = fallback.indexOf('browserSpeechOwnerRef.current = browserOwner;');
+    const globalClaim = fallback.indexOf('alloBotClaimBrowserSpeech(browserOwner);');
+    const queue = fallback.indexOf('window.speechSynthesis.speak(utter);');
+    expect(refClaim).toBeGreaterThan(-1);
+    expect(globalClaim).toBeGreaterThan(refClaim);
+    expect(queue).toBeGreaterThan(globalClaim);
+  });
+
+  it('does not globally clear unrelated speech queued behind its active utterance', () => {
+    const guard = botSource.slice(
+      botSource.indexOf('const cancelAlloBotBrowserSpeech = (owner) =>'),
+      botSource.indexOf('const alloBotTipText'),
+    );
+    expect(guard).toContain('if (synth.pending) {');
+    expect(guard).toContain('owner.cancelRequested = true;');
+    expect(guard).toContain('owner.utterance.volume = 0;');
+    expect(guard.indexOf('if (synth.pending) {')).toBeLessThan(guard.indexOf('window.speechSynthesis.cancel()'));
   });
 
   it('routes every silence path through the scoped helper', () => {
-    for (const marker of [
-      'if (speechTimeoutRef.current) { clearTimeout(speechTimeoutRef.current); speechTimeoutRef.current = null; }\n      cancelAlloBotBrowserSpeech();', // silenceSpeech
-      'if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);\n      cancelAlloBotBrowserSpeech();\n      if (wasPlaying && onSpeechEnd) onSpeechEnd();', // unmount cleanup
-      'cancelAlloBotBrowserSpeech();\n          setIsTalking(false);',                                                                               // mute toggle
-    ]) {
-      expect(botSource).toContain(marker);
+    const mute = botSource.slice(botSource.indexOf('soundEnabledRef.current = soundEnabled;'), botSource.indexOf('// Hiding the bot unmounts'));
+    const unmount = botSource.slice(botSource.indexOf('// Hiding the bot unmounts'), botSource.indexOf('const latestPositionRef'));
+    const silence = botSource.slice(botSource.indexOf('const silenceSpeech = useCallback('), botSource.indexOf('const fallAsleep = useCallback('));
+    for (const block of [mute, unmount, silence]) {
+      expect(block).toContain('speechGenerationRef.current += 1;');
+      expect(block).toContain('speechRequestAbortRef.current?.abort()');
+      expect(block).toContain('cancelOwnedBrowserSpeech(true);');
     }
+  });
+
+  it('force-detaches terminal owners without draining unrelated queued speech', () => {
+    const detach = botSource.slice(
+      botSource.indexOf('const alloBotDetachBrowserSpeechOwner ='),
+      botSource.indexOf('const alloBotTipText'),
+    );
+    expect(detach).toContain('owner.utterance.onstart = null;');
+    expect(detach).toContain('owner.utterance.onend = null;');
+    expect(detach).toContain('owner.utterance.onerror = null;');
+    expect(detach).toContain('alloBotReleaseBrowserSpeech(owner);');
+
+    const localCancel = botSource.slice(
+      botSource.indexOf('const cancelOwnedBrowserSpeech = useCallback('),
+      botSource.indexOf('useEffect(() => () => {', botSource.indexOf('const cancelOwnedBrowserSpeech = useCallback(')),
+    );
+    expect(localCancel).toContain('else if (releaseToken && owner) {');
+    expect(localCancel).toContain('alloBotDetachBrowserSpeechOwner(owner);');
   });
 
   it('keeps both disable controls on one piece of state so they cannot diverge', () => {
@@ -154,7 +199,7 @@ describe('A4 — the microphone shows that it is hearing you', () => {
 describe('A5 — recording state is labelled, announced, and not colour-only', () => {
   it('marks the mic control as a real toggle with a state-specific name', () => {
     const mic = botSource.slice(botSource.indexOf('data-help-key="bot_mic_btn"'), botSource.indexOf('{isSleeping && ('));
-    expect(mic).toContain("aria-pressed={isListening ? 'true' : 'false'}");
+    expect(mic).toContain('aria-pressed={!!isListening}');
     expect(mic).toContain("aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}");
     // Non-colour cues: the icon swaps Mic/MicOff and a focus-independent ring
     // marks the live state for anyone who cannot separate red from white.

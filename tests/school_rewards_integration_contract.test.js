@@ -7,6 +7,19 @@ const ROOT = path.resolve(process.cwd());
 const read = relative => fs.readFileSync(path.join(ROOT, relative), 'utf8');
 
 describe('School Rewards integration contract', () => {
+  it('ships every HTML file referenced by the Apps Script service', () => {
+    const servicePath = path.join(ROOT, 'apps_script/school_rewards/Code.gs');
+    const source = fs.readFileSync(servicePath, 'utf8');
+    const references = [...source.matchAll(/HtmlService\.(?:createTemplateFromFile|createHtmlOutputFromFile)\(\s*['"]([^'"]+)['"]\s*\)/g)]
+      .map(match => match[1]);
+
+    expect(references).toEqual(expect.arrayContaining(['Index', 'Portal']));
+    expect(references.length).toBeGreaterThan(0);
+    references.forEach(reference => {
+      expect(fs.existsSync(path.join(path.dirname(servicePath), `${reference}.html`)), `Missing Apps Script HTML file: ${reference}.html`).toBe(true);
+    });
+  });
+
   it('has a parseable Apps Script service and domain-only least-privilege deployment', () => {
     expect(() => new vm.Script(read('apps_script/school_rewards/Code.gs'))).not.toThrow();
     const portalScript = read('apps_script/school_rewards/Portal.html').match(/<script>([\s\S]*)<\/script>/)[1];
@@ -24,7 +37,8 @@ describe('School Rewards integration contract', () => {
     expect(source).toContain('LockService.getScriptLock()');
     expect(source).toContain("kind: 'SPEND'");
     expect(source).toContain("kind: 'REVERSAL'");
-    expect(source).toContain("idemResult_(key, 'checkout')");
+    expect(source).toContain("printIdemOperation_('checkout'");
+    expect(source).toContain('idemResult_(key, operation)');
     expect(source).not.toMatch(/havenRewards|AlloHaven/i);
   });
 
@@ -43,7 +57,8 @@ describe('School Rewards integration contract', () => {
     const readme = read('apps_script/school_rewards/README.md');
     expect(readme).toMatch(/use the system without opening the portal/i);
     expect(readme).toMatch(/opaque student UUID/i);
-    expect(source).toContain("subject: (config.schoolName || 'School') + ' rewards balance:");
+    expect(source).toContain("subject: (config.schoolName || 'School') + ' rewards update'");
+    expect(source).not.toMatch(/subject:[^\n]+balance/);
     expect(source).not.toMatch(/statementHtml_\([\s\S]{0,500}reason/);
   });
 
@@ -55,8 +70,29 @@ describe('School Rewards integration contract', () => {
     expect(source).toContain("actor.role === 'student'");
     expect(source).toContain("entry.kind === 'EARN' || entry.kind === 'REVERSAL'");
     expect(source).toContain("sendOrderReceipt_");
+    expect(source).toContain('function resendSchoolRewardsOrderReceipt');
+    expect(source).toContain('function resolveSchoolRewardsReceiptDelivery');
+    expect(source).toContain('function receiptDto_');
+    expect(source).toContain("status = 'PENDING'");
+    expect(source).toContain("srError_('receipt_uncertain'");
     expect(portal).toContain('HOWLs & custom categories');
     expect(portal).toContain('Store purchases never lower these levels');
+    expect(portal).toContain("rpc('resendSchoolRewardsOrderReceipt'");
+    expect(portal).toContain("rpc('resolveSchoolRewardsReceiptDelivery'");
+    expect(portal).toContain('data-receipt-kind');
+    expect(portal).toContain('data-resolve-receipt');
+  });
+
+  it('provides keyboard tabs, contextual cart controls, and an on-screen receipt surface', () => {
+    const portal = read('apps_script/school_rewards/Portal.html');
+    expect(portal).toContain('role="tablist"');
+    expect(portal).toContain('role="tab"');
+    expect(portal).toContain('role="tabpanel"');
+    expect(portal).toContain("event.key==='ArrowRight'");
+    expect(portal).toContain('<caption class="sr-only">');
+    expect(portal).toContain('scope="col"');
+    expect(portal).toContain('id="checkout-receipt"');
+    expect(portal).toContain('aria-label="Add \'+esc(item.name)+\' to cart"');
   });
 
   it('ships the schema-v4 private asset and immutable revision boundary', () => {

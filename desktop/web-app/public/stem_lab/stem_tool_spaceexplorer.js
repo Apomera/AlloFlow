@@ -79,6 +79,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       '.se-shell [style*="background"]>.text-slate-400{color:#334155!important}',
       '.se-shell .se-locked-badge{opacity:.65!important;filter:grayscale(1)}',
       '.se-shell .se-sr-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
+      '@keyframes se-motion-trace-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}',
+      '.se-shell .se-motion-trace{stroke-dasharray:1;stroke-dashoffset:1;animation:se-motion-trace-draw .65s cubic-bezier(.2,.8,.2,1) forwards;vector-effect:non-scaling-stroke}',
+      '@media (prefers-reduced-motion:reduce){.se-shell .se-motion-trace{animation:none;stroke-dashoffset:0}}',
       '@media (max-width:520px){.se-shell .se-destination-grid,.se-shell .se-two-column-grid{grid-template-columns:minmax(0,1fr)!important}.se-shell .se-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.se-shell .se-toolbar{align-items:stretch;flex-direction:column}.se-shell .se-toolbar>*{width:100%}.se-shell .se-debrief-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}}',
       '@media (prefers-contrast:more){.se-shell [class*="border-"]{border-color:#94a3b8!important}.se-shell [class*="bg-white/5"]{background-color:#1e293b!important}.se-shell button:disabled{opacity:1!important}.se-shell .se-locked-badge{opacity:1!important}}',
       '@media (forced-colors:active){.se-shell button,.se-shell summary,.se-shell textarea,.se-shell input,.se-shell a[data-se-action]{border:1px solid ButtonText}.se-shell .se-choice-card{forced-color-adjust:auto}}'
@@ -370,22 +373,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     {
       id: 'flightdeck', name: 'Flight deck', short: 'Flight', icon: '\uD83E\uDDED',
       activity: 'Confirm the attitude reference and secure the command tablet.',
-      challenge: 'Floating controls can drift into the crew path during a maneuver.'
+      challenge: 'Floating controls can drift into the crew path during a maneuver.',
+      activityOptions: [
+        { id: 'secured', label: 'Foot restraint + tablet tether', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'The foot restraint gives your body a reaction point while the tether keeps the tablet within reach.' },
+        { id: 'quick', label: 'One handrail + tablet tether', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'In the stable cabin, the handrail provides enough leverage for this light task.', recoveryFeedback: 'During the maneuver, one handrail does not fully control your body as the tablet changes direction. Re-brace at two points before retrying.' }
+      ]
     },
     {
       id: 'lab', name: 'Science lab', short: 'Lab', icon: '\uD83E\uDDEA',
       activity: 'Tether the specimen bag before opening the experiment rack.',
-      challenge: 'A loose sample keeps moving until a hand, rail, or wall stops it.'
+      challenge: 'A loose sample keeps moving until a hand, rail, or wall stops it.',
+      activityOptions: [
+        { id: 'secured', label: 'Body restraint + specimen tether', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'Your body restraint supplies a reaction point while the specimen tether prevents a loose sample.' },
+        { id: 'quick', label: 'One handrail + specimen tether', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'With the cabin stable, one firm handrail contact controls the small rack-opening force.', recoveryFeedback: 'During the maneuver, the rack force pulls your one-point brace off line and the specimen starts to drift. Re-brace at two points before retrying.' }
+      ]
     },
     {
       id: 'medbay', name: 'Medical bay', short: 'Med', icon: '\uD83E\uDE7A',
       activity: 'Stow the medical kit and brace the patient restraint.',
-      challenge: 'Crew and equipment both need restraint during treatment.'
+      challenge: 'Crew and equipment both need restraint during treatment.',
+      activityOptions: [
+        { id: 'secured', label: 'Caregiver restraint + patient restraint', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'Restraining both caregiver and patient creates a stable treatment frame while the kit stays tethered.' },
+        { id: 'quick', label: 'Handrail + patient restraint', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'In the stable cabin, a handrail keeps the caregiver aligned with the restrained patient.', recoveryFeedback: 'During the maneuver, the caregiver pivots around the single handhold and loses alignment with the patient. Add a body restraint before retrying.' }
+      ]
     },
     {
       id: 'engineering', name: 'Engineering', short: 'Engineering', icon: '\u2699\uFE0F',
       activity: 'Inspect the oxygen scrubber and lock the tool pouch.',
-      challenge: 'Turning a tool can rotate an unbraced astronaut in the opposite direction.'
+      challenge: 'Turning a tool can rotate an unbraced astronaut in the opposite direction.',
+      activityOptions: [
+        { id: 'secured', label: 'Foot restraint + tool tether', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'The foot restraint resists the tool torque while the tether keeps every tool attached.' },
+        { id: 'quick', label: 'One handrail + tool tether', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'In the stable cabin, a handrail supplies enough counter-torque for the inspection.', recoveryFeedback: 'During the maneuver, tool torque rotates you around the single handhold. Add a second restraint point before retrying.' }
+      ]
     }
   ];
 
@@ -394,18 +413,163 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       id: 'stable', label: 'Stable cabin', short: 'Stable', icon: '\u2693',
       description: 'No planned attitude change. Short gentle translations remain predictable.',
       speedFactor: 1,
-      gentleSpanLimit: 2
+      gentleSpanLimit: 2,
+      activityControlRequired: 1
     },
     {
       id: 'maneuver', label: 'Station maneuver', short: 'Maneuver', icon: '\uD83D\uDEF0\uFE0F',
       description: 'The station is changing attitude. Apparent drift changes while the crew member is in transit.',
       speedFactor: 1.15,
-      gentleSpanLimit: 1
+      gentleSpanLimit: 1,
+      activityControlRequired: 2
     }
   ];
 
+  var INTERIOR_ROUTE_POINTS = {
+    flightdeck: { x: 105, y: 211 },
+    lab: { x: 253, y: 160 },
+    medbay: { x: 386, y: 120 },
+    engineering: { x: 535, y: 81 }
+  };
+
   function getInteriorCondition(conditionId) {
     return INTERIOR_CONDITIONS.find(function(condition) { return condition.id === conditionId; }) || INTERIOR_CONDITIONS[0];
+  }
+
+  function createInteriorOrientation() {
+    return {
+      position: 'flightdeck', target: 'lab', routeMode: 'direct', condition: 'stable', tasks: {},
+      controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0,
+      activityAttempts: {}, activityRecoveryCount: 0, activityResults: {},
+      lastResult: null, lastActivityResult: null, feedback: '', readinessComplete: false
+    };
+  }
+
+  function normalizeInteriorCounter(value) {
+    var number = Number(value);
+    return isFinite(number) && number > 0 ? Math.floor(number) : 0;
+  }
+
+  function countInteriorCompletedActivities(tasks) {
+    var completedTasks = tasks || {};
+    return INTERIOR_ZONES.filter(function(zone) { return completedTasks[zone.id] === true; }).length;
+  }
+
+  function isInteriorReadinessComplete(orientation) {
+    var current = orientation || {};
+    return countInteriorCompletedActivities(current.tasks) >= 2 && normalizeInteriorCounter(current.controlledMoves) >= 2;
+  }
+
+  function evaluateInteriorActivity(zoneId, optionId, conditionId) {
+    var zone = INTERIOR_ZONES.find(function(item) { return item.id === zoneId; });
+    var condition = getInteriorCondition(conditionId);
+    if (!zone) {
+      return { valid: false, controlled: false, status: 'Choose a compartment', feedback: 'Move to a known compartment before choosing a work setup.' };
+    }
+    var option = (zone.activityOptions || []).find(function(item) { return item.id === optionId; });
+    if (!option) {
+      return { valid: false, controlled: false, zone: zone, condition: condition, status: 'Choose a work setup', feedback: 'Select one of the available restraint setups before beginning the activity.' };
+    }
+    var controlled = option.controlLevel >= condition.activityControlRequired;
+    return {
+      valid: true,
+      controlled: controlled,
+      zone: zone,
+      option: option,
+      condition: condition,
+      status: controlled ? 'Procedure secured' : 'Work recovery needed',
+      feedback: controlled ? option.feedback : (option.recoveryFeedback || 'This setup does not provide enough control. Add another restraint point before retrying.')
+    };
+  }
+
+  function applyInteriorActivityDecision(orientation, optionId) {
+    var current = orientation || createInteriorOrientation();
+    var zoneId = current.position || 'flightdeck';
+    var result = evaluateInteriorActivity(zoneId, optionId, current.condition || 'stable');
+    if (!result.valid) return { state: current, result: result };
+    if ((current.tasks || {})[zoneId]) {
+      return {
+        state: current,
+        result: { valid: false, controlled: true, zone: result.zone, option: result.option, condition: result.condition, status: 'Activity already complete', feedback: 'This compartment activity is already secured.' }
+      };
+    }
+
+    var nextTasks = Object.assign({}, current.tasks || {});
+    if (result.controlled) nextTasks[zoneId] = true;
+    var nextAttempts = Object.assign({}, current.activityAttempts || {});
+    nextAttempts[zoneId] = normalizeInteriorCounter(nextAttempts[zoneId]) + 1;
+    var nextBase = Object.assign({}, current, {
+      tasks: nextTasks,
+      activityAttempts: nextAttempts,
+      activityRecoveryCount: normalizeInteriorCounter(current.activityRecoveryCount) + (result.controlled ? 0 : 1)
+    });
+    nextBase.readinessComplete = isInteriorReadinessComplete(nextBase);
+
+    var completed = countInteriorCompletedActivities(nextTasks);
+    var guidance = result.controlled
+      ? (nextBase.readinessComplete
+        ? 'Activity logged. Cabin orientation complete.'
+        : completed >= 2
+          ? 'Activity logged. Practice one more controlled translation to finish orientation.'
+          : 'Activity logged. Work in one more compartment to continue orientation.')
+      : 'The activity remains incomplete. Choose the maneuver-ready setup and retry.';
+    var message = result.feedback + ' ' + guidance;
+    var activityRecord = {
+      zoneId: zoneId,
+      zoneName: result.zone.name,
+      optionId: result.option.id,
+      optionLabel: result.option.label,
+      conditionId: result.condition.id,
+      conditionLabel: result.condition.label,
+      controlled: result.controlled,
+      status: result.status,
+      feedback: message
+    };
+    var nextActivityResults = Object.assign({}, current.activityResults || {});
+    if (result.controlled) nextActivityResults[zoneId] = activityRecord;
+    var nextState = Object.assign({}, nextBase, { activityResults: nextActivityResults, lastActivityResult: activityRecord, feedback: message });
+    return { state: nextState, result: Object.assign({}, result, activityRecord) };
+  }
+
+  function buildInteriorMotionTrace(fromId, toId, controlled, conditionId) {
+    var start = INTERIOR_ROUTE_POINTS[fromId];
+    var destination = INTERIOR_ROUTE_POINTS[toId];
+    if (!start || !destination || fromId === toId) return null;
+    var condition = getInteriorCondition(conditionId);
+    var dx = destination.x - start.x;
+    var dy = destination.y - start.y;
+    var length = Math.sqrt(dx * dx + dy * dy) || 1;
+    var unitX = dx / length;
+    var unitY = dy / length;
+    var overshootPixels = controlled ? 0 : Math.min(48, 24 + length * 0.08);
+    var unclampedEndX = destination.x + unitX * overshootPixels;
+    var unclampedEndY = destination.y + unitY * overshootPixels;
+    var end = {
+      x: Math.max(20, Math.min(620, unclampedEndX)),
+      y: Math.max(46, Math.min(244, unclampedEndY))
+    };
+    var normalX = -unitY;
+    var normalY = unitX;
+    var curveOffset = condition.id === 'maneuver' ? 18 : (controlled ? 0 : 8);
+    var direction = dx >= 0 ? -1 : 1;
+    var control = {
+      x: (start.x + end.x) / 2 + normalX * curveOffset * direction,
+      y: (start.y + end.y) / 2 + normalY * curveOffset * direction
+    };
+    function rounded(value) { return Math.round(value * 10) / 10; }
+    return {
+      fromId: fromId,
+      toId: toId,
+      controlled: !!controlled,
+      condition: condition,
+      start: { x: rounded(start.x), y: rounded(start.y) },
+      destination: { x: rounded(destination.x), y: rounded(destination.y) },
+      end: { x: rounded(end.x), y: rounded(end.y) },
+      control: { x: rounded(control.x), y: rounded(control.y) },
+      overshootPixels: rounded(overshootPixels),
+      path: 'M ' + rounded(start.x) + ' ' + rounded(start.y) + ' Q ' + rounded(control.x) + ' ' + rounded(control.y) + ' ' + rounded(end.x) + ' ' + rounded(end.y),
+      label: controlled ? 'Controlled stop at ' + toId : 'Inertia overshoot beyond ' + toId
+    };
   }
 
   function evaluateInteriorTranslation(fromId, toId, strategy, conditionId) {
@@ -457,12 +621,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     };
   }
 
+  function buildInteriorRoutePlan(fromId, finalTargetId, routeMode, strategy, conditionId) {
+    var fromIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === fromId; });
+    var targetIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === finalTargetId; });
+    var validStrategies = ['rail', 'gentle', 'hard'];
+    if (fromIndex < 0 || targetIndex < 0 || fromIndex === targetIndex || validStrategies.indexOf(strategy) < 0) {
+      return {
+        valid: false,
+        mode: routeMode === 'staged' ? 'staged' : 'direct',
+        finalTarget: targetIndex >= 0 ? INTERIOR_ZONES[targetIndex] : null,
+        waypointIds: [], waypoints: [], legs: [], nextTargetId: null,
+        totalDistance: 0, controlled: false, remainingStops: 0
+      };
+    }
+
+    var mode = routeMode === 'staged' ? 'staged' : 'direct';
+    var direction = targetIndex > fromIndex ? 1 : -1;
+    var waypointIndexes = [];
+    if (mode === 'staged') {
+      var condition = getInteriorCondition(conditionId);
+      var safeSpan = strategy === 'gentle' ? Math.max(1, condition.gentleSpanLimit) : 1;
+      var cursor = fromIndex;
+      while (cursor !== targetIndex) {
+        var remaining = Math.abs(targetIndex - cursor);
+        cursor += direction * Math.min(safeSpan, remaining);
+        waypointIndexes.push(cursor);
+      }
+    } else {
+      waypointIndexes.push(targetIndex);
+    }
+
+    var legs = [];
+    var legStartId = fromId;
+    waypointIndexes.forEach(function(index) {
+      var waypointId = INTERIOR_ZONES[index].id;
+      legs.push(evaluateInteriorTranslation(legStartId, waypointId, strategy, conditionId));
+      legStartId = waypointId;
+    });
+    var waypointIds = waypointIndexes.map(function(index) { return INTERIOR_ZONES[index].id; });
+    return {
+      valid: legs.length > 0 && legs.every(function(leg) { return leg.valid; }),
+      mode: mode,
+      finalTarget: INTERIOR_ZONES[targetIndex],
+      waypointIds: waypointIds,
+      waypoints: waypointIndexes.map(function(index) { return INTERIOR_ZONES[index]; }),
+      legs: legs,
+      nextTargetId: waypointIds[0] || null,
+      totalDistance: legs.reduce(function(total, leg) { return total + (leg.distance || 0); }, 0),
+      controlled: legs.length > 0 && legs.every(function(leg) { return leg.controlled; }),
+      remainingStops: Math.max(0, waypointIds.length - 1)
+    };
+  }
+
   function applyInteriorReadinessBonus(resources, orientation, alreadyApplied) {
     var next = Object.assign({}, resources || {});
     var state = orientation || {};
     var tasks = state.tasks || {};
-    var completedTasks = Object.keys(tasks).filter(function(key) { return !!tasks[key]; }).length;
-    var eligible = !alreadyApplied && !!state.readinessComplete && completedTasks >= 2 && (state.controlledMoves || 0) >= 2;
+    var completedTasks = countInteriorCompletedActivities(tasks);
+    var eligible = !alreadyApplied && isInteriorReadinessComplete(state);
     if (!eligible) {
       return { resources: next, applied: false, moraleBonus: 0, completedTasks: completedTasks };
     }
@@ -1230,7 +1446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var viewportWidth = ctx.viewportWidth || (typeof window !== 'undefined' ? window.innerWidth : 1024);
       var isCompactViewport = viewportWidth < 640;
       var confirmAbort = !!d.confirmAbort;
-      var interiorOrientation = d.interiorOrientation || { position: 'flightdeck', target: 'lab', condition: 'stable', tasks: {}, controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0, lastResult: null, feedback: '', readinessComplete: false };
+      var interiorOrientation = d.interiorOrientation || createInteriorOrientation();
 
       var MISSION_STEPS = [
         { id: 'destination', label: t('stem.spaceexplorer.step_destination', 'Destination') },
@@ -1323,25 +1539,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var tasks = interiorOrientation.tasks || {};
         var positionZone = INTERIOR_ZONES.find(function(zone) { return zone.id === positionId; }) || INTERIOR_ZONES[0];
         var targetZone = INTERIOR_ZONES.find(function(zone) { return zone.id === targetId; }) || INTERIOR_ZONES[1];
-        var completedActivities = Object.keys(tasks).filter(function(key) { return !!tasks[key]; }).length;
-        var controlledMoves = interiorOrientation.controlledMoves || 0;
-        var maneuverControlledMoves = interiorOrientation.maneuverControlledMoves || 0;
-        var readinessComplete = !!interiorOrientation.readinessComplete;
+        var completedActivities = countInteriorCompletedActivities(tasks);
+        var controlledMoves = normalizeInteriorCounter(interiorOrientation.controlledMoves);
+        var maneuverControlledMoves = normalizeInteriorCounter(interiorOrientation.maneuverControlledMoves);
+        var readinessComplete = isInteriorReadinessComplete(interiorOrientation);
         var lastResult = interiorOrientation.lastResult || null;
+        var lastActivityResult = interiorOrientation.lastActivityResult || null;
+        var activityAttempts = interiorOrientation.activityAttempts || {};
+        var activityResults = interiorOrientation.activityResults || {};
+        var completedActivityResult = activityResults[positionId] || null;
+        var currentActivityAttempts = normalizeInteriorCounter(activityAttempts[positionId]);
+        var activityRecoveryCount = normalizeInteriorCounter(interiorOrientation.activityRecoveryCount);
         var conditionId = interiorOrientation.condition || 'stable';
         var condition = getInteriorCondition(conditionId);
+        var routeMode = interiorOrientation.routeMode === 'staged' ? 'staged' : 'direct';
+        var directGentlePrediction = evaluateInteriorTranslation(positionId, targetId, 'gentle', conditionId);
+        var stagedRoutePlan = buildInteriorRoutePlan(positionId, targetId, 'staged', 'gentle', conditionId);
+        var recommendedBrakeZone = stagedRoutePlan.valid ? INTERIOR_ZONES.find(function(zone) { return zone.id === stagedRoutePlan.nextTargetId; }) : null;
+        var recommendedRouteLabel = stagedRoutePlan.valid ? [positionZone].concat(stagedRoutePlan.waypoints).map(function(zone) { return zone.short; }).join(' \u2192 ') : '';
+        var stagedRouteRecommended = routeMode === 'direct' && directGentlePrediction.valid && !directGentlePrediction.controlled && stagedRoutePlan.valid && stagedRoutePlan.controlled && stagedRoutePlan.waypointIds.length > 1;
+        var activeRoutePlan = buildInteriorRoutePlan(positionId, targetId, routeMode, 'gentle', conditionId);
+        var movementTargetId = routeMode === 'staged' && activeRoutePlan.valid ? activeRoutePlan.nextTargetId : targetId;
+        var movementTargetZone = INTERIOR_ZONES.find(function(zone) { return zone.id === movementTargetId; }) || targetZone;
+        var nextBrakeZone = routeMode === 'staged' && activeRoutePlan.valid ? movementTargetZone : null;
+        var activeRoutePointIds = routeMode === 'staged' && activeRoutePlan.valid ? [positionZone.id].concat(activeRoutePlan.waypointIds) : [];
+        var activeRoutePoints = activeRoutePointIds.map(function(id) { return INTERIOR_ROUTE_POINTS[id]; }).filter(Boolean);
+        var stagedRoutePointString = activeRoutePoints.map(function(point) { return point.x + ',' + point.y; }).join(' ');
+        var stagedRouteLabel = routeMode === 'staged' && activeRoutePlan.valid ? [positionZone].concat(activeRoutePlan.waypoints).map(function(zone) { return zone.short; }).join(' \u2192 ') : '';
         var movementMethods = [
-          { id: 'rail', label: 'Handrail travel', hint: 'Slowest ? continuous contact', cls: 'border-green-500 bg-green-950/60' },
+          { id: 'rail', label: 'Handrail travel', hint: 'Slowest \u2022 continuous contact', cls: 'border-green-500 bg-green-950/60' },
           { id: 'gentle', label: 'Gentle push + brake', hint: 'Coast, then counter-push', cls: 'border-cyan-500 bg-cyan-950/60' },
-          { id: 'hard', label: 'Hard push', hint: 'Fast ? recovery likely', cls: 'border-amber-500 bg-amber-950/50' }
+          { id: 'hard', label: 'Hard push', hint: 'Fast \u2022 recovery likely', cls: 'border-amber-500 bg-amber-950/50' }
         ];
         var routePredictions = {};
-        movementMethods.forEach(function(method) { routePredictions[method.id] = evaluateInteriorTranslation(positionId, targetId, method.id, conditionId); });
+        movementMethods.forEach(function(method) { routePredictions[method.id] = evaluateInteriorTranslation(positionId, movementTargetId, method.id, conditionId); });
+        var activityPredictions = {};
+        (positionZone.activityOptions || []).forEach(function(option) { activityPredictions[option.id] = evaluateInteriorActivity(positionId, option.id, conditionId); });
+        var visibleActivityResult = lastActivityResult && lastActivityResult.zoneId === positionId && lastActivityResult.conditionId === condition.id ? lastActivityResult : null;
+        var motionTrace = !visibleActivityResult && lastResult && lastResult.fromId && lastResult.toId ? buildInteriorMotionTrace(lastResult.fromId, lastResult.toId, lastResult.controlled, lastResult.conditionId) : null;
+        var feedbackResult = visibleActivityResult
+          ? (visibleActivityResult.controlled ? 'work-secured' : 'work-recovery')
+          : lastResult ? (lastResult.controlled ? 'controlled' : 'recovery') : 'ready';
+        var feedbackIsRecovery = visibleActivityResult ? !visibleActivityResult.controlled : !!(lastResult && !lastResult.controlled);
+        var feedbackIsSecured = !!(visibleActivityResult && visibleActivityResult.controlled);
         var zoneLayout = {
           flightdeck: { x: 28, y: 180, w: 154, h: 62 },
           lab: { x: 190, y: 132, w: 126, h: 56 },
           medbay: { x: 328, y: 94, w: 116, h: 52 },
           engineering: { x: 456, y: 56, w: 158, h: 50 }
+        };
+        var positionLayout = zoneLayout[positionId] || zoneLayout.flightdeck;
+        var positionRoutePoint = INTERIOR_ROUTE_POINTS[positionZone.id];
+        var targetRoutePoint = INTERIOR_ROUTE_POINTS[targetZone.id];
+        var activityRoutePoint = positionRoutePoint;
+        var activityMarkerPoint = {
+          x: Math.min(610, positionLayout.x + positionLayout.w - 8),
+          y: Math.max(48, positionLayout.y - 14)
         };
 
         function setInteriorOrientation(patch) {
@@ -1349,36 +1602,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         }
 
         function chooseInteriorTarget(id) {
-          setInteriorOrientation({ target: id, feedback: id === positionId ? 'You are already in this compartment. Choose another destination or complete its activity.' : '' });
-          var zone = INTERIOR_ZONES.find(function(item) { return item.id === id; });
-          if (zone) announceToSR(zone.name + ' selected as the interior destination.');
+          setInteriorOrientation({ target: id, routeMode: 'direct', feedback: id === positionId ? 'You are already in this compartment. Choose another destination or complete its activity.' : '' });
         }
 
         function chooseInteriorCondition(id) {
           var nextCondition = getInteriorCondition(id);
-          setInteriorOrientation({ condition: nextCondition.id, feedback: nextCondition.description, lastResult: null });
-          announceToSR(nextCondition.label + ' selected. ' + nextCondition.description);
+          setInteriorOrientation({ condition: nextCondition.id, feedback: nextCondition.description, lastResult: null, lastActivityResult: null });
+        }
+
+        function focusInteriorRouteCard(id) {
+          if (typeof window === 'undefined' || typeof document === 'undefined') return;
+          window.setTimeout(function() {
+            var card = document.getElementById(id);
+            if (card && typeof card.focus === 'function') card.focus();
+          }, 0);
+        }
+
+        function activateStagedRoute() {
+          if (!stagedRoutePlan.valid || !stagedRoutePlan.nextTargetId) return;
+          var firstBrake = INTERIOR_ZONES.find(function(zone) { return zone.id === stagedRoutePlan.nextTargetId; });
+          setInteriorOrientation({
+            routeMode: 'staged',
+            feedback: 'Guided braking route active. Move one controlled leg at a time toward ' + targetZone.name + '. First braking point: ' + (firstBrake ? firstBrake.name : targetZone.name) + '.',
+            lastResult: null,
+            lastActivityResult: null
+          });
+          focusInteriorRouteCard('se-staged-route-status');
+        }
+
+        function useDirectRoute() {
+          setInteriorOrientation({
+            routeMode: 'direct',
+            feedback: 'Direct route restored. Compare the predicted control margin before moving.',
+            lastResult: null,
+            lastActivityResult: null
+          });
+          focusInteriorRouteCard('se-interior-route-preview');
         }
 
         function tryInteriorTranslation(strategy) {
-          var result = evaluateInteriorTranslation(positionId, targetId, strategy, conditionId);
+          var result = evaluateInteriorTranslation(positionId, movementTargetId, strategy, conditionId);
           if (!result.valid) {
-            setInteriorOrientation({ feedback: result.feedback, lastResult: null });
-            announceToSR(result.feedback);
+            setInteriorOrientation({ feedback: result.feedback, lastResult: null, lastActivityResult: null });
             return;
           }
           var nextControlled = controlledMoves + (result.controlled ? 1 : 0);
           var nextManeuverControlled = maneuverControlledMoves + (result.controlled && result.condition.id === 'maneuver' ? 1 : 0);
-          var nextRecoveries = (interiorOrientation.recoveryCount || 0) + (result.controlled ? 0 : 1);
-          var nextReady = completedActivities >= 2 && nextControlled >= 2;
+          var nextRecoveries = normalizeInteriorCounter(interiorOrientation.recoveryCount) + (result.controlled ? 0 : 1);
+          var nextReady = isInteriorReadinessComplete({ tasks: tasks, controlledMoves: nextControlled });
+          var translationFeedback = result.feedback;
+          if (routeMode === 'staged') {
+            if (result.to.id === targetId) {
+              translationFeedback += ' Final destination reached: ' + targetZone.name + '.';
+            } else {
+              var continuingRoute = buildInteriorRoutePlan(result.to.id, targetId, 'staged', 'gentle', conditionId);
+              var continuingZone = INTERIOR_ZONES.find(function(zone) { return zone.id === continuingRoute.nextTargetId; });
+              translationFeedback += result.controlled ? ' Braking point secured.' : ' Recover at this braking point before continuing.';
+              if (continuingZone) translationFeedback += ' Next braking point: ' + continuingZone.name + '. Final goal: ' + targetZone.name + '.';
+            }
+          }
           setInteriorOrientation({
             position: result.to.id,
-            attempts: (interiorOrientation.attempts || 0) + 1,
+            routeMode: result.to.id === targetId ? 'direct' : routeMode,
+            attempts: normalizeInteriorCounter(interiorOrientation.attempts) + 1,
             controlledMoves: nextControlled,
             maneuverControlledMoves: nextManeuverControlled,
             recoveryCount: nextRecoveries,
             readinessComplete: nextReady,
             lastResult: {
+              fromId: result.from.id,
+              fromName: result.from.name,
+              toId: result.to.id,
+              toName: result.to.name,
               method: result.method,
               conditionId: result.condition.id,
               conditionLabel: result.condition.label,
@@ -1388,28 +1683,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               stoppingDistance: result.stoppingDistance,
               status: result.status
             },
-            feedback: result.feedback
+            lastActivityResult: null,
+            feedback: translationFeedback
           });
-          announceToSR(result.status + '. Arrived at ' + result.to.name + '. ' + result.feedback);
         }
 
-        function completeInteriorActivity() {
-          if (positionId !== targetId || tasks[positionId]) return;
-          var nextTasks = Object.assign({}, tasks);
-          nextTasks[positionId] = true;
-          var nextCount = Object.keys(nextTasks).filter(function(key) { return !!nextTasks[key]; }).length;
-          var nextReady = nextCount >= 2 && controlledMoves >= 2;
-          var message = positionZone.activity + ' Activity logged.';
-          if (nextReady) message += ' Cabin orientation complete.';
-          else if (nextCount >= 2) message += ' Practice one more controlled translation to finish orientation.';
-          else message += ' Select another compartment for the second activity.';
-          setInteriorOrientation({ tasks: nextTasks, readinessComplete: nextReady, feedback: message });
-          announceToSR(message);
+        function tryInteriorActivity(optionId) {
+          var decision = applyInteriorActivityDecision(interiorOrientation, optionId);
+          if (!decision.result.valid) {
+            announceToSR(decision.result.feedback);
+            return;
+          }
+          upd('interiorOrientation', decision.state);
+          if (decision.result.controlled && typeof window !== 'undefined' && typeof document !== 'undefined') {
+            window.setTimeout(function() {
+              var feedback = document.getElementById('se-interior-feedback');
+              if (feedback && typeof feedback.focus === 'function') feedback.focus();
+            }, 0);
+          }
         }
 
         function resetInteriorOrientation() {
-          upd('interiorOrientation', { position: 'flightdeck', target: 'lab', condition: 'stable', tasks: {}, controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0, lastResult: null, feedback: '', readinessComplete: false });
-          announceToSR('Interior orientation reset. You are back on the flight deck.');
+          upd('interiorOrientation', createInteriorOrientation());
         }
 
         return h('section', {
@@ -1419,19 +1714,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         },
           h('div', { className: 'se-toolbar mb-3 flex items-start justify-between gap-3' },
             h('div', null,
-              h('div', { className: 'text-xs font-bold uppercase tracking-wide text-cyan-200' }, 'Optional practice ? launch remains available'),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wide text-cyan-200' }, 'Optional practice \u2022 launch remains available'),
               h('h2', { id: 'se-interior-title', className: 'mt-1 text-base font-black text-white' }, 'Float through the mission cabin'),
-              h('p', { id: 'se-interior-help', className: 'mt-1 text-xs leading-relaxed text-slate-200' }, 'Choose a compartment, test a movement method, then complete its activity. In microgravity, weightlessness removes foot friction ? not mass or inertia.')
+              h('p', { id: 'se-interior-help', className: 'mt-1 text-xs leading-relaxed text-slate-200' }, 'Choose a compartment, compare movement methods, then select a restraint setup for its activity. In microgravity, weightlessness removes foot friction \u2014 not mass or inertia.')
             ),
             h('div', {
               'data-spaceexplorer-interior-progress': 'true',
-              className: 'min-w-[132px] rounded-lg bg-slate-800 p-2 text-right',
-              role: 'status',
-              'aria-live': 'polite'
+              className: 'min-w-[132px] rounded-lg border border-slate-600 bg-slate-800 p-2 text-right'
             },
               h('div', { className: 'text-xs font-bold ' + (readinessComplete ? 'text-green-200' : 'text-cyan-100') }, readinessComplete ? 'Cabin ready' : completedActivities + ' of 2 activities'),
               h('div', { className: 'mt-1 text-[11px] text-slate-200' }, controlledMoves + ' controlled move' + (controlledMoves === 1 ? '' : 's')),
-              maneuverControlledMoves > 0 && h('div', { 'data-spaceexplorer-maneuver-safe': String(maneuverControlledMoves), className: 'mt-1 text-[11px] font-bold text-orange-200' }, maneuverControlledMoves + ' maneuver-safe')
+              maneuverControlledMoves > 0 && h('div', { 'data-spaceexplorer-maneuver-safe': String(maneuverControlledMoves), className: 'mt-1 text-[11px] font-bold text-orange-200' }, maneuverControlledMoves + ' maneuver-safe'),
+              activityRecoveryCount > 0 && h('div', { 'data-spaceexplorer-work-corrections': String(activityRecoveryCount), className: 'mt-1 text-[11px] font-bold text-amber-200' }, activityRecoveryCount + ' work correction' + (activityRecoveryCount === 1 ? '' : 's'))
             )
           ),
           h('div', { className: 'se-two-column-grid grid grid-cols-2 items-start gap-3' },
@@ -1444,7 +1738,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 'data-spaceexplorer-interior-visual': 'perspective'
               },
                 h('title', { id: 'se-interior-visual-title' }, 'Perspective view of the mission cabin'),
-                h('desc', { id: 'se-interior-visual-desc' }, 'A connected interior route from the flight deck through the science lab and medical bay to engineering. Current compartment: ' + positionZone.name + '. Selected destination: ' + targetZone.name + '. Cabin condition: ' + condition.label + '. ' + condition.description),
+                h('desc', { id: 'se-interior-visual-desc' }, 'A connected interior route from the flight deck through the science lab and medical bay to engineering. Current compartment: ' + positionZone.name + '. Final destination: ' + targetZone.name + '. Cabin condition: ' + condition.label + '. ' + condition.description + (routeMode === 'staged' && activeRoutePlan.valid ? ' Guided braking route: ' + stagedRouteLabel + '. Next braking point: ' + nextBrakeZone.name + '.' : ' Direct route selected.') + (visibleActivityResult ? ' Latest work procedure in ' + visibleActivityResult.zoneName + ': ' + visibleActivityResult.status.toLowerCase() + ' using ' + visibleActivityResult.optionLabel + '.' : motionTrace ? ' Last movement: ' + (lastResult.fromName || lastResult.fromId) + ' to ' + (lastResult.toName || lastResult.toId) + ', ' + (motionTrace.controlled ? 'controlled stop.' : 'inertia overshoot followed by recovery.') : '')),
                 h('defs', null,
                   h('linearGradient', { id: 'se-cabin-wall', x1: '0', y1: '0', x2: '0', y2: '1' },
                     h('stop', { offset: '0%', stopColor: '#172554' }),
@@ -1453,43 +1747,111 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   h('linearGradient', { id: 'se-cabin-floor', x1: '0', y1: '0', x2: '1', y2: '1' },
                     h('stop', { offset: '0%', stopColor: '#0f172a' }),
                     h('stop', { offset: '100%', stopColor: '#1e293b' })
+                  ),
+                  h('marker', { id: 'se-motion-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' },
+                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: motionTrace && !motionTrace.controlled ? '#fdba74' : '#86efac' })
+                  ),
+                  h('marker', { id: 'se-work-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' },
+                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#fdba74' })
                   )
                 ),
                 h('rect', { width: 640, height: 270, fill: '#020617' }),
                 h('polygon', { points: '0,0 640,0 548,270 92,270', fill: 'url(#se-cabin-wall)' }),
                 h('polygon', { points: '226,52 414,52 548,270 92,270', fill: 'url(#se-cabin-floor)', stroke: '#475569', strokeWidth: 2 }),
+                h('g', { opacity: 0.55, fill: 'none', stroke: '#475569', strokeWidth: 2, 'aria-hidden': 'true' },
+                  h('polyline', { points: '205,72 435,72 488,158 152,158 205,72' }),
+                  h('polyline', { points: '165,116 475,116 520,218 120,218 165,116' }),
+                  h('line', { x1: 226, y1: 52, x2: 92, y2: 270 }),
+                  h('line', { x1: 414, y1: 52, x2: 548, y2: 270 })
+                ),
+                h('polygon', { points: '0,78 164,112 120,218 0,250', fill: '#0c4a6e', opacity: 0.18, 'aria-hidden': 'true' }),
+                h('polygon', { points: '640,78 476,112 520,218 640,250', fill: '#312e81', opacity: 0.18, 'aria-hidden': 'true' }),
                 h('line', { x1: 110, y1: 250, x2: 278, y2: 56, stroke: '#67e8f9', strokeWidth: 5 }),
                 h('line', { x1: 530, y1: 250, x2: 362, y2: 56, stroke: '#67e8f9', strokeWidth: 5 }),
                 h('line', { x1: 110, y1: 250, x2: 278, y2: 56, stroke: '#ecfeff', strokeWidth: 1 }),
                 h('line', { x1: 530, y1: 250, x2: 362, y2: 56, stroke: '#ecfeff', strokeWidth: 1 }),
-                h('polyline', { points: '105,211 253,160 386,120 535,81', fill: 'none', stroke: condition.id === 'maneuver' ? '#fb923c' : '#fde047', strokeWidth: 4, strokeDasharray: condition.id === 'maneuver' ? '5 5' : '9 8' }),
+                h('polyline', { 'data-spaceexplorer-cabin-route': 'true', points: '105,211 253,160 386,120 535,81', fill: 'none', stroke: '#64748b', strokeWidth: 3, strokeDasharray: '7 7', 'aria-hidden': 'true' }),
+                directGentlePrediction.valid && h('line', {
+                  'data-spaceexplorer-direct-route': routeMode,
+                  x1: positionRoutePoint.x, y1: positionRoutePoint.y,
+                  x2: targetRoutePoint.x, y2: targetRoutePoint.y,
+                  stroke: '#fb923c', strokeWidth: 4, strokeDasharray: '10 7', strokeLinecap: 'round',
+                  opacity: routeMode === 'staged' ? 0.38 : 0.9, 'aria-hidden': 'true'
+                }),
+                routeMode === 'staged' && activeRoutePlan.valid && h('g', {
+                  'data-spaceexplorer-staged-route-visual': 'true',
+                  'aria-hidden': 'true'
+                },
+                  h('polyline', { points: stagedRoutePointString, fill: 'none', stroke: '#0891b2', strokeWidth: 12, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.28 }),
+                  h('polyline', { points: stagedRoutePointString, fill: 'none', stroke: '#a5f3fc', strokeWidth: 5, strokeDasharray: '9 6', strokeLinecap: 'round', strokeLinejoin: 'round' })
+                ),
+                motionTrace && h('g', { 'data-spaceexplorer-interior-trace': motionTrace.controlled ? 'controlled' : 'overshoot', 'data-trace-condition': motionTrace.condition.id, 'aria-hidden': 'true' },
+                  h('path', { d: motionTrace.path, fill: 'none', stroke: motionTrace.controlled ? '#22c55e' : '#f97316', strokeWidth: 12, strokeLinecap: 'round', opacity: 0.22 }),
+                  h('path', { d: motionTrace.path, pathLength: 1, className: 'se-motion-trace', fill: 'none', stroke: motionTrace.controlled ? '#bbf7d0' : '#fed7aa', strokeWidth: 5, strokeLinecap: 'round', markerEnd: 'url(#se-motion-arrow)' })
+                ),
                 INTERIOR_ZONES.map(function(zone) {
                   var box = zoneLayout[zone.id];
-                  var current = zone.id === positionId;
-                  var target = zone.id === targetId;
+                  var current = zone.id === positionZone.id;
+                  var target = zone.id === targetZone.id;
+                  var nextBrake = routeMode === 'staged' && nextBrakeZone && zone.id === nextBrakeZone.id;
                   var complete = !!tasks[zone.id];
-                  var fill = current ? '#166534' : target ? '#6d28d9' : complete ? '#0f766e' : '#1e293b';
-                  var stroke = current ? '#86efac' : target ? '#c4b5fd' : complete ? '#5eead4' : '#94a3b8';
-                  var stateLabel = current ? 'YOU ARE HERE' : target ? 'TARGET' : complete ? 'TASK DONE' : 'COMPARTMENT';
-                  return h('g', { key: zone.id },
-                    h('rect', { x: box.x, y: box.y, width: box.w, height: box.h, rx: 7, fill: fill, stroke: stroke, strokeWidth: 3 }),
-                    h('text', { x: box.x + box.w / 2, y: box.y + 26, textAnchor: 'middle', fill: '#f8fafc', fontSize: 22, fontWeight: 700 }, zone.short),
-                    h('text', { x: box.x + box.w / 2, y: box.y + box.h - 10, textAnchor: 'middle', fill: '#f8fafc', fontSize: 18, fontWeight: 700 }, stateLabel)
+                  var zoneState = current ? 'current' : target ? 'final' : nextBrake ? 'next-brake' : complete ? 'complete' : 'available';
+                  var fill = current ? '#166534' : nextBrake && !target ? '#155e75' : target ? '#6d28d9' : complete ? '#0f766e' : '#1e293b';
+                  var stroke = current ? '#86efac' : nextBrake && !target ? '#a5f3fc' : target ? '#ddd6fe' : complete ? '#5eead4' : '#94a3b8';
+                  var visualLabel = zone.id === 'engineering' ? 'Eng' : zone.short;
+                  return h('g', { key: zone.id, 'data-spaceexplorer-zone-state': zoneState },
+                    h('rect', { x: box.x, y: box.y, width: box.w, height: box.h, rx: 7, fill: fill, stroke: stroke, strokeWidth: current || target || nextBrake ? 4 : 3 }),
+                    h('text', { 'data-spaceexplorer-svg-label': 'zone', 'data-spaceexplorer-svg-zone-label': zone.id, x: box.x + box.w / 2, y: box.y + box.h / 2 + 9, textAnchor: 'middle', fill: '#f8fafc', fontSize: 32, fontWeight: 700 }, visualLabel),
+                    current && h('path', { d: 'M ' + (box.x + 14) + ' ' + (box.y + box.h - 9) + ' H ' + (box.x + box.w - 14), stroke: '#dcfce7', strokeWidth: 5, strokeLinecap: 'round' }),
+                    target && !current && h('path', { d: 'M ' + (box.x + box.w - 16) + ' ' + (box.y + 7) + ' l 8 8 l -8 8 l -8 -8 z', fill: '#f5f3ff' }),
+                    nextBrake && !current && h('circle', { 'data-spaceexplorer-next-brake-point': zone.id, cx: box.x + box.w - 15, cy: box.y + 15, r: 12, fill: 'none', stroke: '#ecfeff', strokeWidth: 4 }),
+                    complete && !current && !target && !nextBrake && h('path', { d: 'M ' + (box.x + box.w - 24) + ' ' + (box.y + 16) + ' l 5 5 l 10 -12', fill: 'none', stroke: '#ccfbf1', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' })
                   );
                 }),
-                h('text', { x: 20, y: 28, fill: '#cffafe', fontSize: 20, fontWeight: 700 }, 'MISSION CABIN ? HANDRAILS + HATCH ROUTE'),
-                h('text', { x: 620, y: 28, textAnchor: 'end', fill: condition.id === 'maneuver' ? '#fed7aa' : '#bbf7d0', fontSize: 18, fontWeight: 700 }, condition.id === 'maneuver' ? 'ATTITUDE MANEUVER ACTIVE' : 'STABLE FLIGHT'),
-                h('text', { x: 320, y: 262, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 18 }, (condition.id === 'maneuver' ? 'Orange dashed path = changing reference' : 'Yellow path = planned translation') + ' ? cyan rails = braking points')
+                motionTrace && !motionTrace.controlled && h('g', { 'data-spaceexplorer-interior-overshoot-marker': 'true', 'aria-hidden': 'true' },
+                  h('circle', { cx: motionTrace.end.x, cy: motionTrace.end.y, r: 11, fill: '#431407', stroke: '#fdba74', strokeWidth: 3 }),
+                  h('line', { x1: motionTrace.end.x - 5, y1: motionTrace.end.y - 5, x2: motionTrace.end.x + 5, y2: motionTrace.end.y + 5, stroke: '#ffedd5', strokeWidth: 3 }),
+                  h('line', { x1: motionTrace.end.x + 5, y1: motionTrace.end.y - 5, x2: motionTrace.end.x - 5, y2: motionTrace.end.y + 5, stroke: '#ffedd5', strokeWidth: 3 })
+                ),
+                visibleActivityResult && h('g', {
+                  'data-spaceexplorer-work-marker': visibleActivityResult.controlled ? 'secured' : 'recovery',
+                  'aria-hidden': 'true'
+                },
+                  h('path', {
+                    d: 'M ' + activityRoutePoint.x + ' ' + activityRoutePoint.y + ' Q ' + ((activityRoutePoint.x + activityMarkerPoint.x) / 2) + ' ' + (Math.min(activityRoutePoint.y, activityMarkerPoint.y) - 18) + ' ' + activityMarkerPoint.x + ' ' + activityMarkerPoint.y,
+                    pathLength: 1,
+                    className: 'se-motion-trace',
+                    fill: 'none',
+                    stroke: visibleActivityResult.controlled ? '#67e8f9' : '#fdba74',
+                    strokeWidth: 4,
+                    strokeDasharray: visibleActivityResult.controlled ? '4 3' : '8 6',
+                    markerEnd: visibleActivityResult.controlled ? undefined : 'url(#se-work-arrow)'
+                  }),
+                  h('circle', { cx: activityRoutePoint.x, cy: activityRoutePoint.y, r: 5, fill: '#0f172a', stroke: visibleActivityResult.controlled ? '#a5f3fc' : '#fed7aa', strokeWidth: 3 }),
+                  h('circle', { cx: activityMarkerPoint.x, cy: activityMarkerPoint.y, r: 13, fill: visibleActivityResult.controlled ? '#14532d' : '#431407', stroke: visibleActivityResult.controlled ? '#86efac' : '#fdba74', strokeWidth: 3 }),
+                  visibleActivityResult.controlled
+                    ? h('path', { d: 'M ' + (activityMarkerPoint.x - 6) + ' ' + activityMarkerPoint.y + ' l 4 5 l 9 -11', fill: 'none', stroke: '#dcfce7', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                    : h('g', null,
+                        h('line', { x1: activityMarkerPoint.x - 5, y1: activityMarkerPoint.y - 5, x2: activityMarkerPoint.x + 5, y2: activityMarkerPoint.y + 5, stroke: '#ffedd5', strokeWidth: 3 }),
+                        h('line', { x1: activityMarkerPoint.x + 5, y1: activityMarkerPoint.y - 5, x2: activityMarkerPoint.x - 5, y2: activityMarkerPoint.y + 5, stroke: '#ffedd5', strokeWidth: 3 })
+                      )
+                ),
+                h('text', { 'data-spaceexplorer-svg-label': 'title', x: 20, y: 38, fill: '#cffafe', fontSize: 32, fontWeight: 700 }, 'CABIN ROUTE'),
+                h('rect', { x: 438, y: 3, width: 184, height: 46, rx: 7, fill: condition.id === 'maneuver' ? '#7c2d12' : '#14532d', stroke: condition.id === 'maneuver' ? '#fdba74' : '#86efac', strokeWidth: 3, 'aria-hidden': 'true' }),
+                h('text', { 'data-spaceexplorer-svg-label': 'condition', x: 530, y: 38, textAnchor: 'middle', fill: condition.id === 'maneuver' ? '#ffedd5' : '#dcfce7', fontSize: 32, fontWeight: 700 }, condition.id === 'maneuver' ? 'MANEUVER' : 'STABLE')
               ),
               h('div', { className: 'grid grid-cols-2 gap-2 border-t border-slate-600 p-2 text-[11px]' },
-                h('div', null, h('span', { className: 'text-slate-300' }, 'Current: '), h('strong', { 'data-spaceexplorer-interior-position': positionId, className: 'text-green-200' }, positionZone.name)),
-                h('div', { className: 'text-right' }, h('span', { className: 'text-slate-300' }, 'Target: '), h('strong', { className: 'text-purple-200' }, targetZone.name)),
-                h('div', { className: 'col-span-2 border-t border-slate-700 pt-1' }, h('span', { className: 'text-slate-300' }, 'Condition: '), h('strong', { 'data-spaceexplorer-interior-condition-status': condition.id, className: condition.id === 'maneuver' ? 'text-orange-200' : 'text-green-200' }, condition.icon + ' ' + condition.label))
+                h('div', null, h('span', { className: 'text-slate-300' }, 'Current: '), h('strong', { 'data-spaceexplorer-interior-position': positionZone.id, className: 'text-green-200' }, positionZone.name)),
+                h('div', { className: 'text-right' }, h('span', { className: 'text-slate-300' }, 'Final goal: '), h('strong', { 'data-spaceexplorer-final-target': targetZone.id, className: 'text-purple-200' }, targetZone.name)),
+                routeMode === 'staged' && activeRoutePlan.valid && h('div', { 'data-spaceexplorer-active-next-brake': nextBrakeZone.id, className: 'col-span-2 border-t border-slate-700 pt-1' }, h('span', { className: 'text-slate-300' }, 'Next braking point: '), h('strong', { className: 'text-cyan-100' }, nextBrakeZone.name)),
+                h('div', { className: 'col-span-2 border-t border-slate-700 pt-1' }, h('span', { className: 'text-slate-300' }, 'Condition: '), h('strong', { 'data-spaceexplorer-interior-condition-status': condition.id, className: condition.id === 'maneuver' ? 'text-orange-200' : 'text-green-200' }, condition.icon + ' ' + condition.label)),
+                h('div', { 'data-spaceexplorer-route-legend': routeMode, className: 'col-span-2 border-t border-slate-700 pt-1 text-slate-200' }, routeMode === 'staged' && activeRoutePlan.valid ? 'Cyan segmented route = guided braking \u2022 bright ring = next braking point' : 'Amber dashed line = direct translation \u2022 cyan rails = handholds'),
+                motionTrace && h('div', { 'data-spaceexplorer-interior-trace-summary': motionTrace.controlled ? 'controlled' : 'overshoot', className: 'col-span-2 border-t border-slate-700 pt-1 font-bold ' + (motionTrace.controlled ? 'text-green-200' : 'text-orange-200') }, 'Last trace: ' + (lastResult.fromName || lastResult.fromId) + ' \u2192 ' + (lastResult.toName || lastResult.toId) + ' \u2022 ' + (motionTrace.controlled ? 'controlled stop' : 'overshoot and recovery'))
               )
             ),
             h('div', { className: 'space-y-3' },
               h('div', null,
-                h('h3', { className: 'text-xs font-black text-white' }, '1. Choose a compartment'),
+                h('h3', { className: 'text-xs font-black text-white' }, '1. Choose a final compartment'),
                 h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Interior destination' },
                   INTERIOR_ZONES.map(function(zone) {
                     var selected = zone.id === targetId;
@@ -1529,11 +1891,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('div', null,
                 h('h3', { className: 'text-xs font-black text-white' }, '3. Choose how to move'),
                 h('div', {
+                  id: 'se-interior-route-preview',
+                  tabIndex: -1,
                   'data-spaceexplorer-interior-route-preview': condition.id,
                   className: 'mt-2 rounded-lg border border-slate-600 bg-slate-900 p-2 text-[11px] text-slate-100'
                 }, positionId === targetId
                   ? 'Choose a different compartment to preview the route.'
-                  : positionZone.short + ' ? ' + targetZone.short + ' ? ' + routePredictions.rail.distance.toFixed(1) + ' m ? ' + condition.label),
+                  : positionZone.short + ' \u2192 ' + movementTargetZone.short + ' \u2022 ' + routePredictions.rail.distance.toFixed(1) + ' m \u2022 ' + condition.label + (routeMode === 'staged' ? ' \u2022 staged leg toward ' + targetZone.short : '')),
+                stagedRouteRecommended && h('div', {
+                  id: 'se-staged-route-recommendation',
+                  tabIndex: -1,
+                  'data-spaceexplorer-staged-route': 'recommendation',
+                  className: 'mt-2 rounded-lg border border-cyan-400 bg-cyan-950/70 p-2.5 text-slate-100'
+                },
+                  h('strong', { className: 'block text-xs text-cyan-100' }, 'Safer staged route'),
+                  h('p', { 'data-spaceexplorer-staged-route-summary': 'recommendation', className: 'mt-1 text-[11px] font-bold text-white' }, recommendedRouteLabel),
+                  h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, 'A long gentle push is hard to stop here. Use an intermediate handhold as a braking point while keeping ' + targetZone.name + ' as the final goal.'),
+                  h('button', {
+                    type: 'button',
+                    'data-spaceexplorer-next-brake': recommendedBrakeZone.id,
+                    onClick: activateStagedRoute,
+                    className: 'mt-2 min-h-[44px] w-full rounded-lg border border-cyan-200 bg-cyan-800 px-3 py-2 text-left text-xs font-black text-white hover:bg-cyan-700'
+                  }, 'Use ' + recommendedBrakeZone.name + ' as the next braking point')
+                ),
+                routeMode === 'staged' && activeRoutePlan.valid && h('div', {
+                  id: 'se-staged-route-status',
+                  tabIndex: -1,
+                  'data-spaceexplorer-staged-route': 'active',
+                  className: 'mt-2 rounded-lg border border-cyan-300 bg-cyan-950/70 p-2.5 text-slate-100'
+                },
+                  h('strong', { className: 'block text-xs text-cyan-100' }, '\u2713 Guided braking route active'),
+                  h('p', { 'data-spaceexplorer-staged-route-summary': 'active', className: 'mt-1 text-[11px] font-bold text-white' }, stagedRouteLabel),
+                  h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, 'Next braking point: ' + nextBrakeZone.name + ' \u2022 final goal: ' + targetZone.name),
+                  h('button', {
+                    type: 'button',
+                    'data-spaceexplorer-use-direct-route': 'true',
+                    onClick: useDirectRoute,
+                    className: 'mt-2 min-h-[44px] w-full rounded-lg border border-slate-400 bg-slate-800 px-3 py-2 text-left text-xs font-bold text-white hover:bg-slate-700'
+                  }, 'Use direct route instead')
+                ),
                 h('div', { className: 'mt-2 space-y-2', role: 'group', 'aria-label': 'Microgravity movement method' },
                   movementMethods.map(function(method) {
                     var prediction = routePredictions[method.id];
@@ -1551,37 +1947,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                         'data-spaceexplorer-interior-prediction': method.id,
                         'data-predicted-control': prediction.valid ? (prediction.controlled ? 'controlled' : 'recovery') : 'unavailable',
                         className: 'mt-1 block text-[11px] font-bold ' + (prediction.valid && prediction.controlled ? 'text-green-200' : 'text-amber-200')
-                      }, prediction.valid ? (prediction.controlled ? 'Controlled arrival predicted' : 'Recovery likely') + ' ? ' + prediction.speed.toFixed(2) + ' m/s' : 'Choose another compartment')
+                      }, prediction.valid ? (prediction.controlled ? 'Controlled arrival predicted' : 'Recovery likely') + ' \u2022 ' + prediction.speed.toFixed(2) + ' m/s' : 'Choose another compartment')
                     );
                   })
                 )
               ),
               h('div', { className: 'rounded-lg border border-slate-600 bg-slate-900 p-2.5' },
-                h('h3', { className: 'text-xs font-black text-white' }, '4. Work in the compartment'),
-                h('p', { className: 'mt-1 text-xs text-slate-200' }, positionZone.challenge),
-                h('button', {
-                  type: 'button',
-                  disabled: positionId !== targetId || !!tasks[positionId],
-                  'data-spaceexplorer-interior-activity': positionId,
-                  onClick: completeInteriorActivity,
-                  className: 'mt-2 w-full rounded-lg border border-cyan-300 bg-cyan-800 px-3 py-2 text-xs font-bold text-white hover:bg-cyan-700'
-                }, tasks[positionId] ? 'Activity complete' : positionId !== targetId ? 'Move to ' + targetZone.name + ' first' : 'Complete activity in ' + positionZone.name)
+                h('h3', { className: 'text-xs font-black text-white' }, '4. Choose a work setup'),
+                h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-100' },
+                  h('strong', { className: 'text-cyan-100' }, 'Task: '), positionZone.activity
+                ),
+                h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-300' },
+                  h('strong', { className: 'text-amber-200' }, 'Challenge: '), positionZone.challenge
+                ),
+                h('div', {
+                  'data-spaceexplorer-work-condition': condition.id,
+                  className: 'mt-2 flex flex-wrap items-center justify-between gap-1 rounded-md border border-slate-600 bg-slate-950/70 px-2 py-1.5 text-[11px]'
+                },
+                  h('span', { className: 'font-bold text-white' }, condition.icon + ' ' + condition.label),
+                  h('span', { className: 'text-slate-200' }, 'Needs ' + condition.activityControlRequired + ' control point' + (condition.activityControlRequired === 1 ? '' : 's'))
+                ),
+                tasks[positionId]
+                  ? h('div', {
+                      'data-spaceexplorer-interior-activity-complete': positionId,
+                      className: 'mt-2 rounded-lg border border-green-500 bg-green-950/60 p-2.5'
+                    },
+                      h('strong', { className: 'block text-xs text-green-100' }, '\u2713 Activity secured'),
+                      h('span', { className: 'mt-1 block text-[11px] text-slate-200' }, completedActivityResult ? completedActivityResult.optionLabel + ' \u2022 ' + completedActivityResult.conditionLabel : 'The procedure is complete in ' + positionZone.name + '.')
+                    )
+                  : h('div', {
+                      className: 'mt-2 space-y-2',
+                      role: 'group',
+                      'aria-label': 'Work setup for ' + positionZone.name
+                    },
+                      (positionZone.activityOptions || []).map(function(option) {
+                        var prediction = activityPredictions[option.id];
+                        return h('button', {
+                          key: option.id,
+                          type: 'button',
+                          'data-spaceexplorer-work-choice': option.id,
+                          'data-spaceexplorer-interior-work-choice': option.id,
+                          'data-work-control-level': String(option.controlLevel),
+                          'data-predicted-control': prediction && prediction.controlled ? 'controlled' : 'recovery',
+                          onClick: function() { tryInteriorActivity(option.id); },
+                          className: 'w-full rounded-lg border p-2.5 text-left text-white ' + (prediction && prediction.controlled ? 'border-green-500 bg-green-950/60 hover:bg-green-900/70' : 'border-amber-500 bg-amber-950/50 hover:bg-amber-900/70')
+                        },
+                          h('span', { className: 'flex flex-wrap items-start justify-between gap-1' },
+                            h('span', { className: 'text-xs font-black' }, option.label),
+                            h('span', { className: 'rounded-full border px-2 py-0.5 text-[10px] font-bold ' + (prediction && prediction.controlled ? 'border-green-400 text-green-100' : 'border-amber-400 text-amber-100') }, prediction && prediction.controlled ? '\u2713 Controlled' : '\u26A0 Recovery risk')
+                          ),
+                          h('span', { className: 'mt-1 block text-[11px] text-slate-200' }, option.hint),
+                          h('span', { className: 'mt-1 block text-[11px] font-bold ' + (prediction && prediction.controlled ? 'text-green-200' : 'text-amber-200') }, prediction && prediction.controlled ? 'Controlled setup predicted for ' + condition.short.toLowerCase() + ' conditions' : 'Recovery likely during this maneuver')
+                        );
+                      })
+                    ),
+                currentActivityAttempts > 0 && h('p', {
+                  'data-spaceexplorer-work-attempts': String(currentActivityAttempts),
+                  className: 'mt-2 text-[11px] text-slate-300'
+                }, currentActivityAttempts + ' work attempt' + (currentActivityAttempts === 1 ? '' : 's') + ' in this compartment')
               )
             )
           ),
           h('div', {
             id: 'se-interior-feedback',
-            'data-spaceexplorer-interior-result': lastResult ? (lastResult.controlled ? 'controlled' : 'recovery') : 'ready',
-            className: 'mt-3 rounded-lg border p-2.5 ' + (readinessComplete ? 'border-green-500 bg-green-950/60' : lastResult && !lastResult.controlled ? 'border-amber-500 bg-amber-950/50' : 'border-slate-600 bg-slate-900'),
-            role: 'status',
-            'aria-live': 'polite'
+            tabIndex: -1,
+            'data-spaceexplorer-interior-result': feedbackResult,
+            'data-spaceexplorer-work-result': visibleActivityResult ? (visibleActivityResult.controlled ? 'secured' : 'recovery') : undefined,
+            className: 'mt-3 rounded-lg border p-2.5 ' + (readinessComplete ? 'border-green-500 bg-green-950/60' : feedbackIsRecovery ? 'border-amber-500 bg-amber-950/50' : feedbackIsSecured ? 'border-emerald-500 bg-emerald-950/50' : 'border-slate-600 bg-slate-900')
           },
-            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-              h('strong', { className: 'text-xs ' + (readinessComplete ? 'text-green-200' : 'text-white') }, readinessComplete ? 'Cabin ready ? orientation complete' : lastResult ? lastResult.status : 'Ready for interior practice'),
-              h('button', { type: 'button', onClick: resetInteriorOrientation, className: 'rounded-md border border-slate-500 bg-slate-800 px-2 py-1 text-[11px] font-bold text-white' }, 'Reset practice')
+            h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('strong', { className: 'text-xs ' + (readinessComplete || feedbackIsSecured ? 'text-green-200' : feedbackIsRecovery ? 'text-amber-100' : 'text-white') }, readinessComplete ? 'Cabin ready \u2022 orientation complete' : visibleActivityResult ? visibleActivityResult.status : lastResult ? lastResult.status : 'Ready for interior practice'),
+              h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-200' }, interiorOrientation.feedback || 'Start on the flight deck. Compare movement control, then choose a restraint setup for the current task.'),
+              visibleActivityResult
+                ? h('p', { className: 'mt-1 text-[11px] font-mono text-cyan-100' }, visibleActivityResult.conditionLabel + ' \u2022 ' + visibleActivityResult.optionLabel + ' \u2022 ' + (visibleActivityResult.controlled ? 'controlled work' : 'recovery and retry'))
+                : lastResult && h('p', { className: 'mt-1 text-[11px] font-mono text-cyan-100' }, (lastResult.conditionLabel || 'Stable cabin') + ' \u2022 ' + lastResult.method + ' \u2022 ' + lastResult.speed.toFixed(2) + ' m/s \u2022 ' + lastResult.distance.toFixed(1) + ' m route \u2022 about ' + lastResult.stoppingDistance.toFixed(2) + ' m to stop')
             ),
-            h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-200' }, interiorOrientation.feedback || 'Start on the flight deck. Pick a different compartment, then compare how movement choices affect control.'),
-            lastResult && h('p', { className: 'mt-1 text-[11px] font-mono text-cyan-100' }, (lastResult.conditionLabel || 'Stable cabin') + ' ? ' + lastResult.method + ' ? ' + lastResult.speed.toFixed(2) + ' m/s ? ' + lastResult.distance.toFixed(1) + ' m route ? about ' + lastResult.stoppingDistance.toFixed(2) + ' m to stop')
+            h('div', { className: 'mt-2 flex justify-end border-t border-slate-700 pt-2' },
+              h('button', { type: 'button', onClick: resetInteriorOrientation, className: 'rounded-md border border-slate-500 bg-slate-800 px-2 py-1 text-[11px] font-bold text-white hover:bg-slate-700' }, 'Reset practice')
+            )
           )
         );
       }
@@ -1631,7 +2074,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           consultUsed: false,
           revealedHiddenOption: false,
           specimenLog: [],
-          interiorOrientation: { position: 'flightdeck', target: 'lab', condition: 'stable', tasks: {}, controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0, lastResult: null, feedback: '', readinessComplete: false },
+          interiorOrientation: createInteriorOrientation(),
           interiorReadinessApplied: false, interiorReadinessBonus: 0,
           objectiveReport: null,
           objectiveBonusScience: 0
@@ -2383,6 +2826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var allocPool = getPipPool(unlockedTech);
         var allocSum = powerAllocation.life + powerAllocation.science + powerAllocation.shields + powerAllocation.comms;
         var allocRemaining = allocPool - allocSum;
+        var preflightInteriorReady = isInteriorReadinessComplete(interiorOrientation);
         var bumpAlloc = function(key, delta) {
           var next = Object.assign({}, powerAllocation);
           var cur = next[key] || 0;
@@ -2423,8 +2867,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               className: 'rounded-lg border border-cyan-400 bg-cyan-950 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-900'
             }, '\u2190 Back to briefing'),
             h('div', { className: 'text-right', role: 'status' },
-              h('div', { className: 'text-xs font-bold ' + (interiorOrientation.readinessComplete ? 'text-green-200' : 'text-slate-100') }, interiorOrientation.readinessComplete ? 'Cabin orientation complete' : 'Cabin orientation optional'),
-              h('div', { className: 'text-[11px] text-slate-300' }, interiorOrientation.readinessComplete ? 'First launch: up to +3 morale for rehearsed crew coordination' + ((interiorOrientation.maneuverControlledMoves || 0) > 0 ? '. Maneuver route practiced.' : '') : 'Return to the briefing any time before launch')
+              h('div', { className: 'text-xs font-bold ' + (preflightInteriorReady ? 'text-green-200' : 'text-slate-100') }, preflightInteriorReady ? 'Cabin orientation complete' : 'Cabin orientation optional'),
+              h('div', { className: 'text-[11px] text-slate-300' }, preflightInteriorReady ? 'First launch: up to +3 morale for rehearsed crew coordination' + ((interiorOrientation.maneuverControlledMoves || 0) > 0 ? '. Maneuver route practiced.' : '') : 'Return to the briefing any time before launch')
             )
           ),
           renderMissionExit(),
@@ -3116,8 +3560,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var success = d.missionResult === 'success';
         var optCount = decisionLog.filter(function(x) { return x.quality === 'optimal'; }).length;
         var pct = decisionLog.length > 0 ? Math.round(optCount / decisionLog.length * 100) : 0;
-        var interiorCompletedActivities = Object.keys(interiorOrientation.tasks || {}).filter(function(key) { return !!interiorOrientation.tasks[key]; }).length;
-        var interiorReady = !!interiorOrientation.readinessComplete;
+        var interiorCompletedActivities = countInteriorCompletedActivities(interiorOrientation.tasks);
+        var interiorWorkAttempts = Object.keys(interiorOrientation.activityAttempts || {}).reduce(function(total, key) { return total + normalizeInteriorCounter(interiorOrientation.activityAttempts[key]); }, 0);
+        var interiorReady = isInteriorReadinessComplete(interiorOrientation);
+        var interiorProcedureSummary = INTERIOR_ZONES.filter(function(zone) { return (interiorOrientation.tasks || {})[zone.id] === true; }).map(function(zone) { var result = (interiorOrientation.activityResults || {})[zone.id]; return zone.short + ': ' + (result ? result.optionLabel : 'secured procedure'); });
         return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'debrief', 'aria-label': 'Mission debrief for ' + destination.name },
           renderMissionProgress('debrief'),
           h('nav', { className: 'se-debrief-nav grid grid-cols-4 gap-2', 'aria-label': t('stem.spaceexplorer.debrief_sections', 'Debrief sections') },
@@ -3148,19 +3594,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('span', { className: 'text-xs font-bold ' + (interiorReady ? 'text-green-200' : 'text-slate-200') }, interiorReady ? 'Completed before launch' : 'Optional practice not completed')
             ),
             h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-200' }, interiorReady ? 'The crew rehearsed controlled movement and real cabin tasks before committing mission resources.' : 'The mission remained playable without practice. Rehearsing first can make the first crew transition more coordinated.'),
-            h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'list', 'aria-label': 'Cabin practice results' },
+            h('div', { className: 'mt-2 grid grid-cols-2 gap-2 md:grid-cols-3', role: 'list', 'aria-label': 'Cabin practice results' },
               [
-                ['Activities', interiorCompletedActivities + ' completed'],
-                ['Controlled moves', String(interiorOrientation.controlledMoves || 0)],
-                ['Recoveries', String(interiorOrientation.recoveryCount || 0)],
-                ['Maneuver-safe', String(interiorOrientation.maneuverControlledMoves || 0)]
+                ['Activities', interiorCompletedActivities + ' completed', 'activities'],
+                ['Work attempts', String(interiorWorkAttempts), 'work-attempts'],
+                ['Work corrections', String(normalizeInteriorCounter(interiorOrientation.activityRecoveryCount)), 'work-corrections'],
+                ['Controlled moves', String(normalizeInteriorCounter(interiorOrientation.controlledMoves)), 'controlled-moves'],
+                ['Navigation recoveries', String(normalizeInteriorCounter(interiorOrientation.recoveryCount)), 'navigation-recoveries'],
+                ['Maneuver-safe', String(normalizeInteriorCounter(interiorOrientation.maneuverControlledMoves)), 'maneuver-safe']
               ].map(function(metric) {
-                return h('div', { key: metric[0], role: 'listitem', className: 'rounded-lg border border-slate-600 bg-slate-900/70 p-2 text-center' },
+                return h('div', {
+                  key: metric[0],
+                  role: 'listitem',
+                  'data-spaceexplorer-review-metric': metric[2],
+                  className: 'rounded-lg border border-slate-600 bg-slate-900/70 p-2 text-center'
+                },
                   h('div', { className: 'text-[11px] text-slate-300' }, metric[0]),
                   h('strong', { className: 'mt-1 block text-xs text-white' }, metric[1])
                 );
               })
             ),
+            interiorProcedureSummary.length > 0 && h('p', {
+              'data-spaceexplorer-procedure-summary': 'true',
+              className: 'mt-2 rounded-lg border border-slate-600 bg-slate-900/70 p-2 text-[11px] leading-relaxed text-slate-200'
+            }, h('strong', { className: 'text-cyan-100' }, 'Secured setups: '), interiorProcedureSummary.join(' \u2022 ')),
             h('p', { className: 'mt-2 text-xs font-bold ' + (d.interiorReadinessApplied ? 'text-green-200' : 'text-slate-300') }, d.interiorReadinessApplied ? 'First-launch effect: +' + (d.interiorReadinessBonus || 0) + ' morale applied before routine drain.' : 'No cabin-readiness resource effect was applied.')
           ),
           missionDossier && h('div', { 'data-spaceexplorer-dossier-review': 'true', className: 'bg-indigo-500/5 rounded-xl p-3 border border-indigo-500/20' },

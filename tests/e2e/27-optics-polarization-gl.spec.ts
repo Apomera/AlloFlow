@@ -473,13 +473,75 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     await page.setViewportSize({ width: 320, height: 760 });
     await mountUi(page, {
       mode: 'interference', intShowWavefield3D: true, intWavefieldProbe: 0.4,
+      intLambda: 600, intSlitSep: 0.1, intSlitWidth: 50, intScreenL: 1,
+      intScreenProbeMm: 3,
     });
 
     const probe = page.getByRole('slider', { name: 'interference wavefield depth probe' });
+    const scene = page.locator('[data-op-wavefield-3d="interference"]');
+    const readout = page.locator('[data-op-wavefield-probe-readout="interference"]');
+    const probeMeasurement = scene.locator('[data-op-wavefield-probe-measurement="interference"]');
+    const screenMeasurement = scene.locator('[data-op-wavefield-detector="interference"]');
+    const measurementTrail = scene.locator('[data-op-wavefield-measurement-trail="interference"]');
     await expect(probe).toHaveValue('0.4');
+    await expect(probe).toHaveAttribute('aria-valuetext', /^0\.40 meters from the aperture, 40 percent/);
+    await expect(readout).toHaveAttribute('aria-live', 'polite');
+    await expect(readout).toHaveAttribute('data-op-probe-distance-m', '0.400');
+    await expect(readout).toContainText('0.40 m · 40%');
+    await expect(readout).toContainText('I / I₀');
+    await expect(scene).toHaveAttribute('viewBox', '0 0 250 220');
+    await expect(scene).toHaveAttribute('data-op-wavefield-direct', 'ridge-selection');
     await expect(page.locator('[data-op-wavefield-probe="true"]')).toHaveCount(1);
+    await expect(scene.locator('[data-op-wavefield-slice-hit]')).toHaveCount(10);
+    await expect(scene.locator('[data-op-wavefield-slice-hit="0.4"]')).toHaveAttribute('data-op-wavefield-slice-selected', 'true');
+    await expect(scene.locator('[data-op-wavefield-slice-fill="probe"]')).toHaveCount(1);
+    await expect(scene.locator('[data-op-wavefield-slice-fill="screen"]')).toHaveCount(1);
+    await expect(page.locator('[data-op-wavefield-key="interference"]')).toContainText('Probe sample');
+    await expect(page.locator('[data-op-wavefield-key="interference"]')).toContainText('Height = I / I₀');
+    await expect(probeMeasurement).toHaveAttribute('data-op-probe-mm', '3.000');
+    await expect(probeMeasurement).toHaveAttribute('data-op-probe-visible', 'true');
+    await expect(measurementTrail).toHaveAttribute('data-op-trail-sample-count', '10');
+    await expect(measurementTrail).toHaveAttribute('data-op-trail-lateral-mm', '3.000');
+    await expect(measurementTrail).toHaveAttribute('data-op-trail-selected-depth', '0.4');
+    await expect(measurementTrail.locator('[data-op-wavefield-trail-point]')).toHaveCount(10);
+    await expect(measurementTrail.locator('[data-op-wavefield-trail-point="0.4"]')).toHaveAttribute('data-op-trail-selected', 'true');
     await expect(page.getByText('probe 40%', { exact: true })).toBeVisible();
     await expect(page.locator('[data-op-intensity-profile="interference"]')).toBeVisible();
+    const clippedLabels = await scene.evaluate((svg) => {
+      const frame = svg.getBoundingClientRect();
+      return Array.from(svg.querySelectorAll('text')).filter((label) => {
+        const box = label.getBoundingClientRect();
+        return box.left < frame.left - 1 || box.right > frame.right + 1
+          || box.top < frame.top - 1 || box.bottom > frame.bottom + 1;
+      }).map((label) => label.textContent);
+    });
+    expect(clippedLabels).toEqual([]);
+
+    const probeAt40 = Number(await probeMeasurement.getAttribute('data-op-probe-intensity'));
+    const screenAt100 = Number(await screenMeasurement.getAttribute('data-op-detector-intensity'));
+    expect(probeAt40).toBeGreaterThan(0.05);
+    expect(screenAt100).toBeLessThan(0.001);
+    expect(Number(await measurementTrail.locator('[data-op-wavefield-trail-point="0.4"]').getAttribute('data-op-trail-intensity'))).toBeCloseTo(probeAt40, 4);
+    expect(Number(await measurementTrail.locator('[data-op-wavefield-trail-point="1.0"]').getAttribute('data-op-trail-intensity'))).toBeCloseTo(screenAt100, 4);
+    await scene.locator('[data-op-wavefield-slice-hit="0.6"]').dispatchEvent('pointerdown', {
+      pointerType: 'mouse', pointerId: 1, isPrimary: true, button: 0, buttons: 1,
+    });
+    await page.waitForFunction(() => (window as any).__bucket().intWavefieldProbe === 0.6);
+    await expect(probe).toHaveValue('0.6');
+    await expect(scene.locator('[data-op-wavefield-slice-hit="0.6"]')).toHaveAttribute('data-op-wavefield-slice-selected', 'true');
+    await expect(measurementTrail).toHaveAttribute('data-op-trail-selected-depth', '0.6');
+    await expect(measurementTrail.locator('[data-op-wavefield-trail-point="0.6"]')).toHaveAttribute('data-op-trail-selected', 'true');
+    expect(Number(await probeMeasurement.getAttribute('data-op-probe-intensity'))).toBeGreaterThan(probeAt40);
+
+    await probe.fill('1');
+    await expect(readout).toHaveAttribute('data-op-probe-distance-m', '1.000');
+    await expect(readout).toContainText('1.00 m · 100%');
+    await expect(scene.locator('[data-op-wavefield-probe-at-screen="true"]')).toHaveCount(1);
+    await expect(probeMeasurement).toHaveAttribute('data-op-probe-visible', 'false');
+    await expect(probeMeasurement).toHaveAttribute('data-op-probe-at-screen', 'true');
+    await expect(measurementTrail).toHaveAttribute('data-op-trail-selected-depth', '1.0');
+    await expect(measurementTrail.locator('[data-op-wavefield-trail-point="1.0"]')).toHaveAttribute('data-op-trail-selected', 'true');
+    expect(Number(await probeMeasurement.getAttribute('data-op-probe-intensity'))).toBeCloseTo(screenAt100, 4);
     const size = await page.evaluate(() => ({
       body: document.documentElement.scrollWidth,
       viewport: document.documentElement.clientWidth,

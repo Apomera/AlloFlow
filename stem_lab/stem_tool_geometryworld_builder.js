@@ -9,6 +9,11 @@
 
   var ENGINE_KEY = '__geoWorldEngine';
   var MAX_BLOCKS = 1500;
+  var MAX_EDITABLE_WORLD_BYTES = 512 * 1024;
+  var MAX_EDITABLE_BLOCKS = 875;
+  var EDITABLE_WORLD_SCHEMA = 'alloflow-geometry-world/2';
+  var EDITABLE_XZ_LIMIT = 64;
+  var EDITABLE_Y_MAX = 128;
   var FREE_BUILD_LESSON = {
     title: 'Free Build Sandbox',
     description: 'A calm, open block-building world for designing, measuring, revising, and preparing a selected creation for Print Lab.',
@@ -73,6 +78,67 @@
       shape: validBlockShape(block.shape),
       rotation: normalizedRotation(block.rotation)
     };
+  }
+
+  function editableWorldByteLength(text) {
+    text = String(text == null ? '' : text);
+    try { return new TextEncoder().encode(text).byteLength; }
+    catch (_) { try { return unescape(encodeURIComponent(text)).length; } catch (__) { return text.length * 2; } }
+  }
+  function editableTitle(value) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 80) || 'Geometry World editable build';
+  }
+  function normalizeEditableWorld(candidate) {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || candidate.schema !== EDITABLE_WORLD_SCHEMA) return { ok: false, error: 'Choose an AlloFlow Geometry World editable file (schema alloflow-geometry-world/2).' };
+    if (!Array.isArray(candidate.blocks) || !candidate.blocks.length) return { ok: false, error: 'The editable world does not contain any student blocks.' };
+    if (candidate.blocks.length > MAX_EDITABLE_BLOCKS) return { ok: false, error: 'This editable world has more than ' + MAX_EDITABLE_BLOCKS + ' student blocks, the safe sandbox capacity.' };
+    var blocks = [], seen = {};
+    for (var i = 0; i < candidate.blocks.length; i++) {
+      var raw = candidate.blocks[i];
+      var knownType = raw && BLOCK_TYPES.some(function (item) { return item.id === raw.type && item.id !== 'grass'; });
+      var knownShape = raw && BLOCK_SHAPES.some(function (item) { return item.id === raw.shape; });
+      var integerPosition = raw && [raw.x, raw.y, raw.z].every(function (value) { return typeof value === 'number' && isFinite(value) && Math.round(value) === value; });
+      var validRotation = raw && typeof raw.rotation === 'number' && isFinite(raw.rotation) && Math.round(raw.rotation) === raw.rotation && raw.rotation >= 0 && raw.rotation <= 3;
+      if (!knownType || !knownShape || !integerPosition || !validRotation || Math.abs(raw.x) > EDITABLE_XZ_LIMIT || Math.abs(raw.z) > EDITABLE_XZ_LIMIT || raw.y < 1 || raw.y > EDITABLE_Y_MAX) {
+        return { ok: false, error: 'Block ' + (i + 1) + ' is outside the editable sandbox schema or allowed coordinate range.' };
+      }
+      var clean = sanitizeSourceBlock(raw, false), key = keyFor(clean);
+      if (seen[key]) return { ok: false, error: 'The editable world contains two blocks at ' + key + '.' };
+      seen[key] = true; blocks.push(clean);
+    }
+    blocks.sort(compareBlocks);
+    var min = { x: Infinity, y: Infinity, z: Infinity }, max = { x: -Infinity, y: -Infinity, z: -Infinity };
+    blocks.forEach(function (block) {
+      min.x = Math.min(min.x, block.x); min.y = Math.min(min.y, block.y); min.z = Math.min(min.z, block.z);
+      max.x = Math.max(max.x, block.x); max.y = Math.max(max.y, block.y); max.z = Math.max(max.z, block.z);
+    });
+    return {
+      ok: true,
+      value: { schema: EDITABLE_WORLD_SCHEMA, title: editableTitle(candidate.title), coordinateSystem: 'x-right,y-up,z-depth', blocks: blocks },
+      summary: { blockCount: blocks.length, bounds: { width: max.x - min.x + 1, depth: max.z - min.z + 1, height: max.y - min.y + 1 }, min: min, max: max }
+    };
+  }
+  function parseEditableWorldText(text, declaredBytes) {
+    text = String(text == null ? '' : text);
+    var byteLength = Math.max(0, Math.round(Number(declaredBytes) || editableWorldByteLength(text)));
+    if (byteLength > MAX_EDITABLE_WORLD_BYTES || text.length > MAX_EDITABLE_WORLD_BYTES) return { ok: false, error: 'Editable Geometry World files are limited to 512 KiB.' };
+    var parsed;
+    try { parsed = JSON.parse(text); }
+    catch (_) { return { ok: false, error: 'The selected file is not valid JSON.' }; }
+    var normalized = normalizeEditableWorld(parsed);
+    if (normalized.ok) normalized.byteLength = byteLength;
+    return normalized;
+  }
+  function readEditableWorldFile(file) {
+    if (!file) return Promise.reject(new Error('Choose an editable Geometry World JSON file.'));
+    if (Number(file.size) > MAX_EDITABLE_WORLD_BYTES) return Promise.reject(new Error('Editable Geometry World files are limited to 512 KiB.'));
+    if (typeof file.text === 'function') return file.text();
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(String(reader.result || '')); };
+      reader.onerror = function () { reject(new Error('The editable world file could not be read.')); };
+      reader.readAsText(file);
+    });
   }
   function compareBlocks(a, b) {
     return a.y - b.y || a.x - b.x || a.z - b.z || a.shape.localeCompare(b.shape) || a.type.localeCompare(b.type) || a.rotation - b.rotation;
@@ -273,24 +339,25 @@
     var blocks = [];
     Object.keys((engine && engine.blocks) || {}).forEach(function (key) {
       var mesh = engine.blocks[key], position = gridPosition(mesh);
-      if (!position || !mesh.userData) return;
+      if (!position || !mesh.userData || !isStudentBlock(mesh.userData)) return;
       var clean = sanitizeSourceBlock({
         x: position.x, y: position.y, z: position.z,
         type: mesh.userData.blockType || 'stone',
         shape: mesh.userData.shape || 'cube',
         rotation: mesh.userData.rotation || 0
-      }, true);
+      }, false);
       if (clean) blocks.push(clean);
     });
     blocks.sort(compareBlocks);
-    return { schema: 'alloflow-geometry-world/2', title: 'Geometry World editable build', blocks: blocks };
+    return { schema: EDITABLE_WORLD_SCHEMA, title: 'Geometry World editable build', coordinateSystem: 'x-right,y-up,z-depth', blocks: blocks };
   }
   function saveEditableWorld(ctx) {
     var engine = window[ENGINE_KEY];
     if (!engine) { announce(ctx, 'Open the 3D world before saving.', 'info'); return; }
-    var world = editableWorld(engine);
-    downloadBlob(new Blob([JSON.stringify(world, null, 2)], { type: 'application/json' }), safeFilePart((engine._currentLesson && engine._currentLesson.title) || 'geometry-world') + '-editable.json');
-    announce(ctx, 'Saved an editable Geometry World file with shapes and rotations.', 'success');
+    var checked = normalizeEditableWorld(editableWorld(engine));
+    if (!checked.ok) { announce(ctx, checked.error, 'error'); return; }
+    downloadBlob(new Blob([JSON.stringify(checked.value, null, 2)], { type: 'application/json' }), safeFilePart((engine._currentLesson && engine._currentLesson.title) || 'geometry-world') + '-editable.json');
+    announce(ctx, 'Saved ' + checked.summary.blockCount + ' editable student block' + (checked.summary.blockCount === 1 ? '' : 's') + ' with shapes and rotations.', 'success');
   }
   function startSandboxMode(ctx) {
     var engine = window[ENGINE_KEY];
@@ -307,6 +374,25 @@
     announce(ctx, 'Free Build Sandbox opened. Aim at the ground and place blocks to begin.', 'success');
     focusWorldSurface(50);
     return true;
+  }
+  function restoreEditableWorld(engine, candidate) {
+    if (!engine || typeof engine.loadLesson !== 'function' || typeof engine.placeBlock !== 'function') return { ok: false, error: 'The Geometry World engine is not ready.' };
+    var checked = normalizeEditableWorld(candidate);
+    if (!checked.ok) return checked;
+    engine.loadLesson(FREE_BUILD_LESSON);
+    var available = Math.max(0, MAX_BLOCKS - Object.keys(engine.blocks || {}).length);
+    if (checked.value.blocks.length > available) return { ok: false, error: 'The sandbox does not have enough safe block capacity for this file.' };
+    var placedCount = 0;
+    checked.value.blocks.forEach(function (block) {
+      var key = keyFor(block);
+      engine.placeBlock(block.x, block.y, block.z, block.type, block.shape, block.rotation);
+      if (engine.blocks[key] && isStudentBlock(engine.blocks[key].userData)) placedCount += 1;
+    });
+    if (placedCount !== checked.value.blocks.length) return { ok: false, error: 'Geometry World could not restore every validated block.' };
+    engine.blocksPlaced = placedCount;
+    engine._undoStack = [];
+    engine._redoStack = [];
+    return { ok: true, value: checked.value, summary: checked.summary, placedCount: placedCount };
   }
   function aimedStudentMeasurement(ctx, updateDisplay) {
     var engine = window[ENGINE_KEY];
@@ -413,10 +499,16 @@
   window.StemLab = window.StemLab || {};
   window.StemLab.geometryWorldBuilderPure = {
     MAX_BLOCKS: MAX_BLOCKS,
+    MAX_EDITABLE_WORLD_BYTES: MAX_EDITABLE_WORLD_BYTES,
+    MAX_EDITABLE_BLOCKS: MAX_EDITABLE_BLOCKS,
+    EDITABLE_WORLD_SCHEMA: EDITABLE_WORLD_SCHEMA,
     FREE_BUILD_LESSON: FREE_BUILD_LESSON,
     measurementLayerFor: measurementLayerFor,
     buildGeometryWorldStl: buildGeometryWorldStl,
     editableWorld: editableWorld,
+    normalizeEditableWorld: normalizeEditableWorld,
+    parseEditableWorldText: parseEditableWorldText,
+    restoreEditableWorld: restoreEditableWorld,
     defaultPrintEnvelope: defaultPrintEnvelope,
     sanitizeSourceBlock: sanitizeSourceBlock,
     restorePendingEditableBuild: restorePendingEditableBuild
@@ -433,6 +525,7 @@
       '.gwe-builder-dock[data-collapsed="true"]{width:auto}.gwe-builder-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;border-bottom:1px solid rgba(103,232,249,.18)}.gwe-builder-title{display:flex;min-width:0;align-items:center;gap:9px}.gwe-builder-icon{display:grid;width:34px;height:34px;flex:0 0 auto;place-items:center;border:1px solid rgba(103,232,249,.45);border-radius:11px;background:rgba(14,116,144,.34);font-size:18px}.gwe-builder-eyebrow{color:#67e8f9;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.gwe-builder-name{margin-top:1px;color:#fff;font-size:13px;font-weight:900}.gwe-collapse{display:grid;min-width:38px;min-height:38px;place-items:center;border:1px solid rgba(148,163,184,.35);border-radius:10px;background:rgba(15,23,42,.64);color:#e2e8f0;font-size:15px;cursor:pointer}',
       '.gwe-builder-body{display:flex;flex-direction:column;gap:11px;padding:12px 13px 13px}.gwe-builder-intro{margin:0;color:#cbd5e1;font-size:10px;line-height:1.5}.gwe-selection{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gwe-selection-card{min-width:0;padding:8px 9px;border:1px solid rgba(148,163,184,.2);border-radius:11px;background:rgba(15,23,42,.54)}.gwe-selection-label{display:block;color:#94a3b8;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.gwe-selection-value{display:block;margin-top:3px;overflow:hidden;color:#f8fafc;font-size:10px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}',
       '.gwe-measure-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.gwe-metric{padding:7px 5px;border:1px solid rgba(103,232,249,.18);border-radius:10px;background:rgba(8,47,73,.35);text-align:center}.gwe-metric strong{display:block;color:#fff;font-size:12px}.gwe-metric span{color:#a5f3fc;font-size:8px;font-weight:800;text-transform:uppercase}.gwe-builder-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gwe-builder-actions button{min-height:44px;padding:8px 9px;border:1px solid rgba(148,163,184,.34);border-radius:11px;background:rgba(15,23,42,.72);color:#f8fafc;font-size:10px;font-weight:900;cursor:pointer}.gwe-builder-actions .gwe-primary{grid-column:1/-1;border-color:#67e8f9;background:linear-gradient(135deg,#0891b2,#4f46e5);font-size:11px}.gwe-builder-actions button:hover{filter:brightness(1.12)}.gwe-builder-note{margin:0;padding-top:8px;border-top:1px solid rgba(148,163,184,.15);color:#bae6fd;font-size:9px;line-height:1.45}',
+      '.gwe-recovery{padding:10px;border:1px solid rgba(103,232,249,.36);border-radius:12px;background:rgba(8,47,73,.34)}.gwe-recovery[data-state="error"]{border-color:rgba(251,113,133,.55);background:rgba(76,5,25,.34)}.gwe-recovery strong{display:block;color:#fff;font-size:11px}.gwe-recovery p{margin:4px 0 0;color:#cffafe;font-size:9px;line-height:1.5}.gwe-recovery[data-state="error"] p{color:#ffe4e6}.gwe-recovery-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.gwe-recovery-actions button{min-height:40px;padding:7px;border:1px solid rgba(148,163,184,.42);border-radius:10px;background:rgba(15,23,42,.82);color:#fff;font-size:9px;font-weight:900;cursor:pointer}.gwe-recovery-actions .gwe-replace{border-color:#fbbf24;background:#92400e}',
       '.gwe-print-ready{padding:9px 10px;border:1px solid rgba(52,211,153,.38);border-radius:11px;background:rgba(6,78,59,.3)}.gwe-print-ready[data-fit="false"]{border-color:rgba(251,191,36,.48);background:rgba(120,53,15,.28)}.gwe-print-ready-label{display:block;color:#6ee7b7;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.gwe-print-ready[data-fit="false"] .gwe-print-ready-label{color:#fde68a}.gwe-print-ready strong{display:block;margin-top:3px;color:#fff;font-size:13px}.gwe-print-ready p{margin:4px 0 0;color:#d1fae5;font-size:9px;line-height:1.45}.gwe-print-ready[data-fit="false"] p{color:#fef3c7}',
       '.gwe-backdrop{position:absolute;inset:0;z-index:210;display:flex;box-sizing:border-box;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,23,.78);backdrop-filter:blur(10px)}.gwe-launcher{box-sizing:border-box;width:min(760px,100%);max-height:calc(100% - 8px);overflow:auto;border:1px solid rgba(103,232,249,.52);border-radius:24px;background:radial-gradient(circle at 15% 0,rgba(8,145,178,.25),transparent 38%),linear-gradient(150deg,#0f172a,#1e1b4b);box-shadow:0 30px 100px rgba(2,6,23,.82);color:#f8fafc}.gwe-launcher-hero{padding:24px 24px 17px;border-bottom:1px solid rgba(148,163,184,.17)}.gwe-launcher-kicker{margin:0;color:#67e8f9;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.gwe-launcher h2{margin:6px 0 0;color:#fff;font-size:25px;line-height:1.12}.gwe-launcher-subtitle{max-width:620px;margin:9px 0 0;color:#cbd5e1;font-size:12px;line-height:1.55}.gwe-feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 24px}.gwe-feature{padding:14px;border:1px solid rgba(148,163,184,.2);border-radius:15px;background:rgba(15,23,42,.58)}.gwe-feature-icon{font-size:22px}.gwe-feature strong{display:block;margin-top:7px;color:#fff;font-size:12px}.gwe-feature p{margin:5px 0 0;color:#cbd5e1;font-size:10px;line-height:1.45}.gwe-reset-note{margin:0 24px;padding:11px 12px;border:1px solid rgba(251,191,36,.36);border-radius:12px;background:rgba(120,53,15,.22);color:#fde68a;font-size:10px;line-height:1.5}.gwe-launcher-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding:16px 24px 22px}.gwe-launcher-actions button{min-height:44px;padding:9px 14px;border:1px solid rgba(148,163,184,.4);border-radius:12px;background:#1e293b;color:#f8fafc;font-size:11px;font-weight:900;cursor:pointer}.gwe-launcher-actions .gwe-open{border-color:#67e8f9;background:linear-gradient(135deg,#0891b2,#4f46e5)}',
       '#geoworld-fs-workspace[data-geometry-mode="sandbox"] .gw-toolbar{border-bottom-color:rgba(103,232,249,.34)!important;box-shadow:0 10px 38px rgba(8,145,178,.12)}#geoworld-fs-workspace[data-geometry-mode="sandbox"] .gw-brand-mark{border-color:rgba(103,232,249,.55);background:linear-gradient(135deg,rgba(8,145,178,.48),rgba(79,70,229,.34))}',
@@ -470,6 +563,13 @@
       var hasPendingReturn = !!window.__alloGeometryWorldPendingBuild;
       var base = originalRender(ctx);
       var launcherFocusRef = React.useRef('');
+      var editableInputRef = React.useRef(null);
+      var editableReadTokenRef = React.useRef(0);
+      var _editablePreview = React.useState(null), editablePreview = _editablePreview[0], setEditablePreview = _editablePreview[1];
+      var _editableError = React.useState(''), editableError = _editableError[0], setEditableError = _editableError[1];
+      var _editableBusy = React.useState(false), editableBusy = _editableBusy[0], setEditableBusy = _editableBusy[1];
+
+      React.useEffect(function () { return function () { editableReadTokenRef.current += 1; }; }, []);
 
       React.useEffect(function () {
         if (!isSandbox && !hasPendingReturn) return undefined;
@@ -518,6 +618,40 @@
         patchGeometryState(ctx, { activeLesson: 'volumeExplorer', worldActive: false, showLessonIntro: true, sandboxDockCollapsed: false, measureResult: null, measureHistory: [], hudPanel: '' });
         announce(ctx, 'Guided lesson picker ready. Choose a lesson and start when you are ready.', 'info');
       }
+      function chooseEditableWorld(event) {
+        var file = event.target.files && event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+        var token = editableReadTokenRef.current + 1;
+        editableReadTokenRef.current = token;
+        setEditableBusy(true); setEditablePreview(null); setEditableError('');
+        readEditableWorldFile(file).then(function (text) {
+          if (editableReadTokenRef.current !== token) return;
+          var checked = parseEditableWorldText(text, file.size);
+          if (!checked.ok) throw new Error(checked.error);
+          setEditablePreview(checked); setEditableError('');
+          announce(ctx, 'Editable world checked locally. Review the preview before replacing the current sandbox.', 'info');
+        }).catch(function (error) {
+          if (editableReadTokenRef.current !== token) return;
+          var message = error && error.message ? error.message : 'The editable world file could not be checked.';
+          setEditablePreview(null); setEditableError(message); announce(ctx, message, 'error');
+        }).then(function () { if (editableReadTokenRef.current === token) setEditableBusy(false); });
+      }
+      function cancelEditablePreview() {
+        editableReadTokenRef.current += 1;
+        setEditableBusy(false); setEditablePreview(null); setEditableError('');
+      }
+      function confirmEditableRestore() {
+        if (!editablePreview || !editablePreview.value) return;
+        var liveEngine = window[ENGINE_KEY];
+        var result = restoreEditableWorld(liveEngine, editablePreview.value);
+        if (!result.ok) { setEditableError(result.error); announce(ctx, result.error, 'error'); return; }
+        patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [], blocksPlaced: result.placedCount });
+        if (liveEngine.logEvent) liveEngine.logEvent('editable_world_open', { blocks: result.placedCount, schema: EDITABLE_WORLD_SCHEMA });
+        cancelEditablePreview();
+        announce(ctx, 'Opened ' + result.value.title + ' with ' + result.placedCount + ' student block' + (result.placedCount === 1 ? '' : 's') + '. The previous sandbox was replaced only after confirmation.', 'success');
+        focusWorldSurface(50);
+      }
 
       var additions = [];
       if (!isSandbox && !launcherOpen) additions.push(h('button', {
@@ -557,9 +691,21 @@
           h('div', { className: 'gwe-builder-actions' },
             h('button', { type: 'button', onClick: function () { measureSelectedBuild(ctx); } }, '\uD83D\uDCCF Measure aimed build'),
             h('button', { type: 'button', onClick: function () { saveEditableWorld(ctx); } }, '\uD83D\uDCBE Save editable world'),
+            h('button', { type: 'button', disabled: editableBusy, onClick: function () { if (editableInputRef.current) editableInputRef.current.click(); } }, editableBusy ? 'Checking file...' : '\uD83D\uDCC2 Open editable world'),
+            h('input', { ref: editableInputRef, type: 'file', accept: '.json,application/json', onChange: chooseEditableWorld, style: { display: 'none' }, tabIndex: -1, 'aria-hidden': 'true' }),
             h('button', { type: 'button', className: 'gwe-primary', onClick: function () { openSelectedBuildInPrintLab(ctx); } }, '\uD83D\uDDA8\uFE0F Send selected build to Print Lab'),
             h('button', { type: 'button', onClick: returnToLessons }, '\uD83D\uDCD8 Choose guided lesson'),
             h('button', { type: 'button', onClick: openLauncher, 'aria-haspopup': 'dialog', 'aria-controls': 'gwe-sandbox-launcher', 'data-gwe-focus-return': 'sandbox-dock' }, '\u2728 Start a fresh sandbox')
+          ),
+          editableError && h('div', { className: 'gwe-recovery', 'data-state': 'error', role: 'alert' }, h('strong', null, 'File not opened'), h('p', null, editableError)),
+          editablePreview && h('section', { className: 'gwe-recovery', 'data-state': 'preview', 'aria-labelledby': 'gwe-recovery-title' },
+            h('strong', { id: 'gwe-recovery-title' }, 'Ready to open: ' + editablePreview.value.title),
+            h('p', null, editablePreview.summary.blockCount + ' student block' + (editablePreview.summary.blockCount === 1 ? '' : 's') + ' - bounds ' + editablePreview.summary.bounds.width + ' x ' + editablePreview.summary.bounds.depth + ' x ' + editablePreview.summary.bounds.height + '. Current world is unchanged.'),
+            h('p', null, 'Replacing starts from the blank sandbox floor and treats the loaded blocks as a new baseline. This cannot be undone inside Geometry World.'),
+            h('div', { className: 'gwe-recovery-actions' },
+              h('button', { type: 'button', onClick: cancelEditablePreview }, 'Cancel'),
+              h('button', { type: 'button', className: 'gwe-replace', onClick: confirmEditableRestore }, 'Replace current sandbox')
+            )
           ),
           h('p', { className: 'gwe-builder-note' }, 'Print Lab starts at 5 mm per block. Geometry World materials describe appearance only; choose the real filament separately after reviewing its science and tradeoffs.')
         )

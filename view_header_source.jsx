@@ -394,10 +394,22 @@ function HeaderBar(props) {
   const _textSettingsRef = React.useRef(null);
   const _voiceSettingsRef = React.useRef(null);
   const _joinPopoverRef = React.useRef(null);
+  const _joinTriggerRef = React.useRef(null);
+  const _joinOpenAfterExpandRef = React.useRef(false);
   _headerUseFocusTrap(_setupMenuRef, showSetupPathMenu, () => setShowSetupPathMenu(false));
   _headerUseFocusTrap(_textSettingsRef, showTextSettings, handleSetShowTextSettingsToFalse);
   _headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings, handleSetShowVoiceSettingsToFalse);
   _headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen, handleSetIsJoinPopoverOpenToFalse);
+  React.useEffect(() => {
+    if (!_joinOpenAfterExpandRef.current || headerCollapsed) return;
+    _joinOpenAfterExpandRef.current = false;
+    try {
+      if (_joinTriggerRef.current && typeof _joinTriggerRef.current.focus === 'function') {
+        _joinTriggerRef.current.focus();
+      }
+    } catch (_) {}
+    if (!isJoinPopoverOpen) handleToggleIsJoinPopoverOpen();
+  }, [headerCollapsed, isJoinPopoverOpen, handleToggleIsJoinPopoverOpen]);
   const returnToStartFromHeader = () => {
     setShowSetupPathMenu(false);
     if (typeof onReturnToStart === 'function') onReturnToStart();
@@ -494,6 +506,35 @@ function HeaderBar(props) {
   const readThisPageTitle = t('read_this_page.title') || 'Read This Page';
   const readThisPagePanelLabel = t('read_this_page.panel_aria') || (readThisPageTitle + ' panel');
   const closeLabel = t('common.close') || 'Close';
+  // Read This Page still renders in the legacy host, after this modular
+  // header. Its fixed 360px width clipped the narration control at 320px, and
+  // its z-[45] stacking context left pointer controls underneath this z-50
+  // header. Bridge those two host-owned presentation details while the panel
+  // is open; the stable Read All id avoids matching unrelated complementary
+  // landmarks or depending on a localized accessible name.
+  React.useEffect(() => {
+    if (!showReadThisPage || typeof document === 'undefined') return undefined;
+    const readAllButton = document.getElementById('rtp-read-all-btn');
+    const panel = readAllButton && readAllButton.closest('[role="complementary"]');
+    if (!panel) return undefined;
+    const previousMaxWidth = panel.style.maxWidth;
+    const previousZIndex = panel.style.zIndex;
+    const mutedElements = Array.from(panel.querySelectorAll('.text-slate-600'));
+    const previousMutedColors = mutedElements.map(element => element.style.color);
+    panel.style.maxWidth = 'calc(100vw - 2rem)';
+    panel.style.zIndex = '70';
+    mutedElements.forEach(element => {
+      element.style.color = theme === 'contrast' ? '#fbbf24' : '#cbd5e1';
+    });
+    return () => {
+      if (!panel.isConnected) return;
+      panel.style.maxWidth = previousMaxWidth;
+      panel.style.zIndex = previousZIndex;
+      mutedElements.forEach((element, index) => {
+        element.style.color = previousMutedColors[index];
+      });
+    };
+  }, [showReadThisPage, theme]);
   const notebookLabel = t('cmd.open_notebook') || 'Open my notebook';
   const personalAIConnectLabel = t('header.personal_ai_connect') || 'Connect personal AI';
   const personalAIConnectedLabel = t('header.personal_ai_connected') || 'Personal AI connected';
@@ -552,7 +593,9 @@ function HeaderBar(props) {
   // change — W3's call, left alone).
   const dashboardNavLabel = isParentMode
     ? (t('parent_mode.dashboard_title') || t('dashboard.title_parent') || 'Family Dashboard')
-    : (t('dashboard.title') || 'Dashboard');
+    : isTeacherMode
+      ? (t('dashboard.title') || 'Dashboard')
+      : (t('common.progress') || 'My Learning Progress');
   const parentProgressLabel = isParentMode
     ? (t('parent_mode.progress_label') || t('common.assessment_center') || 'Child Progress')
     : (t('common.assessment_center') || 'Assessment Center');
@@ -574,10 +617,12 @@ function HeaderBar(props) {
         : (compactViewFallback || (t('common.ready') || 'Ready'));
   const openJoinFromCompactHeader = () => {
     // The named, focus-trapped Join dialog lives in the full command surface.
-    // Expand first so the trigger never opens an unmounted dialog.
+    // Mark the handoff before expanding. The post-commit effect above focuses
+    // the connected expanded trigger, then opens on the following render so
+    // the shared trap captures a valid element for dismissal restoration.
+    _joinOpenAfterExpandRef.current = true;
     setHeaderCollapsed(false);
     try { localStorage.setItem('allo_header_collapsed', 'false'); } catch (_) {}
-    if (!isJoinPopoverOpen) handleToggleIsJoinPopoverOpen();
   };
 
   return (
@@ -588,10 +633,17 @@ function HeaderBar(props) {
           .allo-premium-header button { min-height: 44px; }
           .allo-premium-header button:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
           .allo-premium-appbar { min-height: 68px; }
+          .allo-premium-appbar-brand { display: flex; flex: 1 1 auto; align-items: center; gap: .75rem; min-width: 0; }
+          .allo-premium-context-block { min-width: 0; max-width: 21rem; flex: 1 1 auto; }
+          .allo-premium-context-line, .allo-premium-pii-text { overflow-wrap: anywhere; }
           .allo-premium-compact-nav { scrollbar-width: none; }
           .allo-premium-compact-nav::-webkit-scrollbar { display: none; }
           .allo-header-settings-dialog { max-height: calc(100dvh - 8rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
           @media (max-width: 639px) {
+            .allo-premium-appbar { flex-wrap: wrap; align-content: center; column-gap: .5rem; row-gap: .375rem; padding-block: .25rem; }
+            .allo-premium-appbar-brand { display: contents; }
+            .allo-premium-brand-name { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+            .allo-premium-context-block { order: 99; flex: 0 0 100%; width: 100%; max-width: none; }
             .allo-header-settings-dialog { top: 5rem !important; right: .75rem !important; left: .75rem !important; width: auto !important; max-height: calc(100dvh - 6rem); padding: 1rem !important; }
             .allo-reading-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
             .allo-reading-theme-grid .allo-reading-theme-swatch > span:last-child { overflow: visible !important; text-overflow: clip !important; white-space: normal !important; }
@@ -600,12 +652,12 @@ function HeaderBar(props) {
         `}</style>
         <div className="w-full max-w-[1600px] mx-auto relative">
           <div className={headerCollapsed ? 'allo-premium-appbar flex items-center gap-2 sm:gap-3 min-w-0' : 'flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4'}>
-            <div className={headerCollapsed ? 'flex flex-1 items-center gap-2 sm:gap-3 min-w-0' : ''}>
-              <h1 className={`${headerCollapsed ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'} font-black tracking-tight flex items-center gap-3 ${theme === 'contrast' ? 'text-yellow-400' : 'text-white drop-shadow-sm'}`}>
+            <div className={headerCollapsed ? 'allo-premium-appbar-brand' : ''}>
+              <h1 className={`${headerCollapsed ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'} font-black tracking-tight flex min-w-0 shrink-0 items-center gap-3 ${theme === 'contrast' ? 'text-yellow-400' : 'text-white drop-shadow-sm'}`}>
                 <span className={`inline-flex items-center justify-center ${theme === 'contrast' ? '' : `${headerCollapsed ? 'p-1 rounded-xl' : 'p-1.5 rounded-2xl'} bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-200/30`}`} aria-hidden="true">
                   <Layers className={headerCollapsed ? 'w-7 h-7' : 'w-9 h-9'} aria-hidden="true" />
                 </span>
-                {theme === 'contrast' ? t('header.app_name') : <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent">{t('header.app_name')}</span>}
+                <span className={`allo-premium-brand-name ${theme === 'contrast' ? '' : 'bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent'}`}>{t('header.app_name')}</span>
                 {!headerCollapsed && <div className={`hidden 2xl:flex items-center gap-1 ml-4 p-1 rounded-full border backdrop-blur-md shadow-sm select-none pointer-events-none ${theme === 'contrast' ? 'border-yellow-400 bg-black' : 'bg-white/10 border-white/20'}`}>
                     <div className={`px-3 py-1 rounded-full flex items-center gap-1.5 ${theme === 'contrast' ? 'text-yellow-400' : 'text-green-200'}`}>
                         <CheckCircle2 size={12} className="fill-current opacity-50" aria-hidden="true" />
@@ -629,13 +681,13 @@ function HeaderBar(props) {
                 </p>
               )}
               {headerCollapsed ? (
-                <div className="min-w-0 max-w-[18rem] flex flex-col justify-center leading-tight">
-                  <span className={`truncate text-[11px] font-black uppercase tracking-[.14em] ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
+                <div className="allo-premium-context-block flex flex-col justify-center leading-tight">
+                  <span className={`allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] ${theme === 'contrast' ? 'text-yellow-400' : 'text-indigo-100'}`}>
                     {compactRoleLabel} <span aria-hidden="true">/</span> {compactContextLabel}
                   </span>
-                  <span className={`mt-1 flex min-w-0 items-center gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
-                    <AlertCircle size={11} className="shrink-0" aria-hidden="true" />
-                    <span className="truncate">{piiWarningText}</span>
+                  <span className={`mt-1 flex min-w-0 items-start gap-1 text-[11px] font-medium ${theme === 'contrast' ? 'text-red-400' : 'text-orange-100'}`} title={piiWarningText}>
+                    <AlertCircle size={11} className="mt-px shrink-0" aria-hidden="true" />
+                    <span className="allo-premium-pii-text">{piiWarningText}</span>
                   </span>
                 </div>
               ) : <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -752,6 +804,7 @@ function HeaderBar(props) {
                 )}
                 {!isTeacherMode && !activeSessionCode && (
                   <button type="button"
+                    ref={_joinTriggerRef}
                     onClick={openJoinFromCompactHeader}
                     className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors"
                     data-help-key="header_session_join"
@@ -866,8 +919,8 @@ function HeaderBar(props) {
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.font_family')}</label>
-                                                <select aria-label={t('common.selection')}
+                                                <label htmlFor="header-text-font-family" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.font_family')}</label>
+                                                <select id="header-text-font-family"
                                                     value={selectedFont}
                                                     onChange={(e) => setSelectedFont(e.target.value)}
                                                     data-help-key="header_settings_text_font"
@@ -893,7 +946,7 @@ function HeaderBar(props) {
                                                     </div>
                                                     <div className="text-left">
                                                         <span className="block text-xs font-bold">{t('settings.text.bionic')}</span>
-                                                        <span className="block text-[11px] opacity-70">{t('settings.text.bionic_sub')}</span>
+                                                        <span className="block text-[11px]">{t('settings.text.bionic_sub')}</span>
                                                     </div>
                                                 </div>
                                                 <div className={`w-10 h-5 rounded-full relative transition-colors ${focusMode ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
@@ -902,12 +955,12 @@ function HeaderBar(props) {
                                             </button>
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.size')}</label>
+                                                    <label htmlFor="header-text-font-size" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.size')}</label>
                                                     <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{baseFontSize}px</span>
                                                 </div>
                                             <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
                                                     <button type="button" aria-label={t('common.minimize')} onClick={() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); setSliderFontSize(Math.max(12, baseFontSize - 1)); }} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16}/></button>
-                                                    <input aria-label={t('common.adjust_slider_font_size')}
+                                                    <input id="header-text-font-size"
                                                         type="range" min="12" max="24" step="1"
                                                         value={sliderFontSize}
                                                         onChange={(e) => setSliderFontSize(parseInt(e.target.value))}
@@ -920,10 +973,10 @@ function HeaderBar(props) {
                                             </div>
                                             <div className={`border-t ${_skin.divider} pt-3 mt-3`}>
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.line_height')}</label>
+                                                    <label htmlFor="header-text-line-height" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.line_height')}</label>
                                                     <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{lineHeight}</span>
                                                 </div>
-                                                <input aria-label={t('common.adjust_line_height')}
+                                                <input id="header-text-line-height"
                                                     type="range" min="1.0" max="2.5" step="0.1"
                                                     value={lineHeight}
                                                     onChange={(e) => setLineHeight(parseFloat(e.target.value))}
@@ -933,10 +986,10 @@ function HeaderBar(props) {
                                             </div>
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.spacing')}</label>
+                                                    <label htmlFor="header-text-letter-spacing" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.spacing')}</label>
                                                     <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{letterSpacing}em</span>
                                                 </div>
-                                                <input aria-label={t('common.adjust_letter_spacing')}
+                                                <input id="header-text-letter-spacing"
                                                     type="range" min="0" max="0.2" step="0.01"
                                                     value={letterSpacing}
                                                     onChange={(e) => setLetterSpacing(parseFloat(e.target.value))}
@@ -1069,8 +1122,8 @@ function HeaderBar(props) {
                                                 )}
                                             </div>
                                             <div>
-                                                <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.spoken_output_voice') || 'Spoken-output voice'}</label>
-                                                <select aria-label={t('common.selection')}
+                                                <label htmlFor="header-spoken-output-voice" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.spoken_output_voice') || 'Spoken-output voice'}</label>
+                                                <select id="header-spoken-output-voice"
                                                     value={selectedVoice}
                                                     onChange={(e) => {
                                                       const voice = e.target.value;
@@ -1197,8 +1250,8 @@ function HeaderBar(props) {
                                                 )}
                                                 <div className="flex gap-2 mt-3">
                                                     <div className="flex-1">
-                                                        <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_speed') || 'Speed'}: {voiceSpeed}x</label>
-                                                        <input aria-label={t('common.range_slider')}
+                                                        <label htmlFor="header-voice-speed" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_speed') || 'Speed'}: {voiceSpeed}x</label>
+                                                        <input id="header-voice-speed"
                                                             type="range"
                                                             min="0.5"
                                                             max="2"
@@ -1210,8 +1263,8 @@ function HeaderBar(props) {
                                                         />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_volume') || 'Volume'}: {Math.round(voiceVolume * 100)}%</label>
-                                                        <input aria-label={t('common.range_slider')}
+                                                        <label htmlFor="header-voice-volume" className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_volume') || 'Volume'}: {Math.round(voiceVolume * 100)}%</label>
+                                                        <input id="header-voice-volume"
                                                             type="range"
                                                             min="0"
                                                             max="1"
@@ -1755,6 +1808,7 @@ function HeaderBar(props) {
                                     ) : (
                                         <>
                                             <button type="button"
+                                                ref={_joinTriggerRef}
                                                 onClick={handleToggleIsJoinPopoverOpen}
                                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30"
                                                 data-help-key="header_session_join"
@@ -1772,8 +1826,9 @@ function HeaderBar(props) {
                                                             <button type="button" onClick={handleSetIsJoinPopoverOpenToFalse} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={t('common.close') || 'Close join session'}>&times;</button>
                                                         </div>
                                                         <div>
-                                                            <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
-                                                            <input aria-label={t('common.session_default_placeholder')}
+                                                            <label htmlFor="header-join-host-id" className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.host_id_optional')}</label>
+                                                            <input
+                                                                id="header-join-host-id"
                                                                 type="text"
                                                                 value={joinAppIdInput}
                                                                 onChange={(e) => setJoinAppIdInput(e.target.value)}
@@ -1782,10 +1837,11 @@ function HeaderBar(props) {
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.code')}</label>
+                                                            <label htmlFor="header-join-code" className="block text-[11px] font-bold text-slate-600 mb-1 uppercase">{t('session.code')}</label>
                                                             <div className="flex gap-1">
-                                                                <input aria-label={t('common.enter_join_code_input')}
-                                                                    autoFocus
+                                                                <input
+                                                                    id="header-join-code"
+                                                                    data-autofocus
                                                                     type="text"
                                                                     value={joinCodeInput}
                                                                     onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}

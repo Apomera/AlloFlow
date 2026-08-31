@@ -22,7 +22,9 @@ function extractScope(startMarker, endMarker, returns) {
 const engine = extractScope('var BADGES = [', 'function buildMissionDossier', [
   'BADGES', 'DESTINATIONS', 'TECH_TREE', 'CREW_POOL', 'selectCrew', 'RESOURCES',
   'DESTINATION_DRAINS', 'MISSION_MODIFIERS', 'getInitialResources',
-  'getPipPool', 'normalizeAllocation', 'applyTurnDrain', 'INTERIOR_ZONES', 'INTERIOR_CONDITIONS', 'getInteriorCondition', 'evaluateInteriorTranslation', 'applyInteriorReadinessBonus'
+  'getPipPool', 'normalizeAllocation', 'applyTurnDrain', 'INTERIOR_ZONES', 'INTERIOR_CONDITIONS', 'INTERIOR_ROUTE_POINTS', 'getInteriorCondition',
+  'createInteriorOrientation', 'normalizeInteriorCounter', 'countInteriorCompletedActivities', 'isInteriorReadinessComplete', 'evaluateInteriorActivity', 'applyInteriorActivityDecision',
+  'buildInteriorMotionTrace', 'evaluateInteriorTranslation', 'buildInteriorRoutePlan', 'applyInteriorReadinessBonus'
 ]);
 
 const byId = {};
@@ -212,6 +214,150 @@ describe('microgravity interior orientation', () => {
     expect(fallback.id).toBe('stable');
   });
 
+  it('plans direct and staged maneuver routes without hiding unsafe momentum', () => {
+    const direct = engine.buildInteriorRoutePlan('flightdeck', 'engineering', 'direct', 'gentle', 'maneuver');
+    expect(direct).toMatchObject({
+      valid: true,
+      mode: 'direct',
+      waypointIds: ['engineering'],
+      nextTargetId: 'engineering',
+      controlled: false,
+      remainingStops: 0
+    });
+    expect(direct.legs).toHaveLength(1);
+    expect(direct.legs[0]).toMatchObject({ span: 3, controlled: false });
+    expect(direct.totalDistance).toBeCloseTo(9.6);
+
+    const staged = engine.buildInteriorRoutePlan('flightdeck', 'engineering', 'staged', 'gentle', 'maneuver');
+    expect(staged).toMatchObject({
+      valid: true,
+      mode: 'staged',
+      waypointIds: ['lab', 'medbay', 'engineering'],
+      nextTargetId: 'lab',
+      controlled: true,
+      remainingStops: 2
+    });
+    expect(staged.legs.map((leg) => leg.span)).toEqual([1, 1, 1]);
+    expect(staged.legs.every((leg) => leg.controlled)).toBe(true);
+    expect(staged.totalDistance).toBeCloseTo(direct.totalDistance);
+  });
+
+  it('uses the fewest safe gentle legs in stable flight and preserves reverse order', () => {
+    const stable = engine.buildInteriorRoutePlan('flightdeck', 'engineering', 'staged', 'gentle', 'stable');
+    expect(stable).toMatchObject({
+      valid: true,
+      waypointIds: ['medbay', 'engineering'],
+      nextTargetId: 'medbay',
+      controlled: true,
+      remainingStops: 1
+    });
+    expect(stable.legs.map((leg) => leg.span)).toEqual([2, 1]);
+
+    const reverse = engine.buildInteriorRoutePlan('engineering', 'flightdeck', 'staged', 'gentle', 'maneuver');
+    expect(reverse.waypointIds).toEqual(['medbay', 'lab', 'flightdeck']);
+    expect(reverse.nextTargetId).toBe('medbay');
+    expect(reverse.legs.map((leg) => [leg.from.id, leg.to.id])).toEqual([
+      ['engineering', 'medbay'],
+      ['medbay', 'lab'],
+      ['lab', 'flightdeck']
+    ]);
+    expect(reverse.controlled).toBe(true);
+  });
+
+  it('rejects invalid routes and matches manually evaluated staged legs', () => {
+    const same = engine.buildInteriorRoutePlan('lab', 'lab', 'staged', 'gentle', 'stable');
+    expect(same).toMatchObject({ valid: false, waypointIds: [], legs: [], nextTargetId: null, controlled: false });
+
+    const unknownStart = engine.buildInteriorRoutePlan('airlock', 'lab', 'direct', 'rail', 'stable');
+    expect(unknownStart).toMatchObject({ valid: false, finalTarget: expect.objectContaining({ id: 'lab' }), legs: [] });
+    const unknownTarget = engine.buildInteriorRoutePlan('lab', 'airlock', 'direct', 'rail', 'stable');
+    expect(unknownTarget).toMatchObject({ valid: false, finalTarget: null, legs: [] });
+    const invalidStrategy = engine.buildInteriorRoutePlan('flightdeck', 'engineering', 'staged', 'drift', 'maneuver');
+    expect(invalidStrategy).toMatchObject({ valid: false, waypointIds: [], legs: [], nextTargetId: null });
+
+    const plan = engine.buildInteriorRoutePlan('flightdeck', 'engineering', 'staged', 'gentle', 'maneuver');
+    const manualIds = ['flightdeck', ...plan.waypointIds];
+    const manualLegs = plan.waypointIds.map((waypointId, index) =>
+      engine.evaluateInteriorTranslation(manualIds[index], waypointId, 'gentle', 'maneuver')
+    );
+    expect(plan.legs.map((leg) => leg.controlled)).toEqual(manualLegs.map((leg) => leg.controlled));
+    expect(plan.controlled).toBe(manualLegs.every((leg) => leg.controlled));
+    expect(plan.totalDistance).toBeCloseTo(manualLegs.reduce((total, leg) => total + leg.distance, 0));
+  });
+
+    const stableStop = engine.buildInteriorMotionTrace('flightdeck', 'medbay', true, 'stable');
+    expect(stableStop.controlled).toBe(true);
+    expect(stableStop.overshootPixels).toBe(0);
+    expect(stableStop.end).toEqual(stableStop.destination);
+    expect(stableStop.path).toContain('Q');
+
+    const maneuverStop = engine.buildInteriorMotionTrace('flightdeck', 'medbay', true, 'maneuver');
+    expect(maneuverStop.path).not.toBe(stableStop.path);
+    expect(maneuverStop.condition.id).toBe('maneuver');
+
+    const overshoot = engine.buildInteriorMotionTrace('flightdeck', 'medbay', false, 'maneuver');
+  it('builds bounded movement traces for controlled stops and inertia overshoots', () => {
+    expect(overshoot.controlled).toBe(false);
+    expect(overshoot.overshootPixels).toBeGreaterThan(0);
+    expect(overshoot.end.x).toBeGreaterThan(overshoot.destination.x);
+    expect(overshoot.end.x).toBeLessThanOrEqual(620);
+    expect(overshoot.end.y).toBeGreaterThanOrEqual(46);
+
+    const reverse = engine.buildInteriorMotionTrace('engineering', 'lab', false, 'stable');
+    expect(reverse.end.x).toBeLessThan(reverse.destination.x);
+    expect(engine.buildInteriorMotionTrace('lab', 'lab', true, 'stable')).toBeNull();
+    expect(engine.buildInteriorMotionTrace('unknown', 'lab', true, 'stable')).toBeNull();
+  });
+
+  it('keeps maneuver work incomplete until a secured retry', () => {
+    const initial = {
+      ...engine.createInteriorOrientation(),
+      position: 'lab', target: 'lab', condition: 'maneuver',
+      tasks: { medbay: true }, controlledMoves: 2
+    };
+
+    const stableQuick = engine.evaluateInteriorActivity('lab', 'quick', 'stable');
+    const maneuverQuick = engine.evaluateInteriorActivity('lab', 'quick', 'maneuver');
+    const maneuverSecured = engine.evaluateInteriorActivity('lab', 'secured', 'maneuver');
+    expect(stableQuick).toMatchObject({ valid: true, controlled: true, status: 'Procedure secured' });
+    expect(maneuverQuick).toMatchObject({ valid: true, controlled: false, status: 'Work recovery needed' });
+    expect(maneuverQuick.feedback).toContain('Re-brace at two points');
+    expect(maneuverSecured).toMatchObject({ valid: true, controlled: true, status: 'Procedure secured' });
+
+    const failed = engine.applyInteriorActivityDecision(initial, 'quick');
+    expect(failed.result).toMatchObject({ valid: true, controlled: false, zoneId: 'lab', optionId: 'quick' });
+    expect(failed.state.tasks).toEqual({ medbay: true });
+    expect(failed.state.activityAttempts).toEqual({ lab: 1 });
+    expect(failed.state.activityRecoveryCount).toBe(1);
+    expect(failed.state.lastActivityResult).toMatchObject({ zoneId: 'lab', conditionId: 'maneuver', controlled: false });
+    expect(failed.state.readinessComplete).toBe(false);
+    expect(engine.isInteriorReadinessComplete(failed.state)).toBe(false);
+    expect(engine.applyInteriorReadinessBonus({ morale: 70 }, failed.state, false).applied).toBe(false);
+    expect(failed.state.activityResults).toEqual({});
+
+    const retried = engine.applyInteriorActivityDecision(failed.state, 'secured');
+    expect(retried.result).toMatchObject({ valid: true, controlled: true, zoneId: 'lab', optionId: 'secured' });
+    expect(retried.state.tasks).toEqual({ medbay: true, lab: true });
+    expect(retried.state.activityAttempts).toEqual({ lab: 2 });
+    expect(retried.state.activityRecoveryCount).toBe(1);
+    expect(retried.state.lastActivityResult).toMatchObject({ zoneId: 'lab', conditionId: 'maneuver', controlled: true });
+    expect(retried.state.readinessComplete).toBe(true);
+    expect(engine.applyInteriorReadinessBonus({ morale: 70 }, retried.state, false)).toMatchObject({ applied: true, moraleBonus: 3 });
+
+    const repeated = engine.applyInteriorActivityDecision(retried.state, 'secured');
+    expect(repeated.result).toMatchObject({ valid: false, status: 'Activity already complete' });
+    expect(retried.state.activityResults.lab).toMatchObject({ zoneId: 'lab', optionId: 'secured', conditionId: 'maneuver', controlled: true });
+    expect(repeated.state).toBe(retried.state);
+    expect(repeated.state.activityAttempts).toEqual({ lab: 2 });
+    expect(repeated.state.activityRecoveryCount).toBe(1);
+    expect(initial.tasks).toEqual({ medbay: true });
+    expect(initial.activityAttempts).toEqual({});
+
+    const invalid = engine.applyInteriorActivityDecision(initial, 'unknown-setup');
+    expect(invalid.result).toMatchObject({ valid: false, controlled: false });
+    expect(invalid.state).toBe(initial);
+  });
+
   it('applies the cabin readiness morale effect once and respects the resource cap', () => {
     const ready = {
       readinessComplete: true,
@@ -221,6 +367,7 @@ describe('microgravity interior orientation', () => {
     const first = engine.applyInteriorReadinessBonus({ morale: 70, o2: 80 }, ready, false);
     expect(first.applied).toBe(true);
     expect(first.moraleBonus).toBe(3);
+
     expect(first.resources.morale).toBe(73);
     expect(first.resources.o2).toBe(80);
 
@@ -238,6 +385,30 @@ describe('microgravity interior orientation', () => {
     expect(incomplete.resources.morale).toBe(70);
   });
 });
+
+  it('normalizes legacy counters and derives readiness only from real completed zones', () => {
+    expect(engine.normalizeInteriorCounter('2.9')).toBe(2);
+    expect(engine.normalizeInteriorCounter('not-a-number')).toBe(0);
+    expect(engine.normalizeInteriorCounter(-4)).toBe(0);
+    expect(engine.normalizeInteriorCounter(Infinity)).toBe(0);
+    expect(engine.countInteriorCompletedActivities({ lab: true, medbay: 'true', bogus: true })).toBe(1);
+
+    const stale = {
+      readinessComplete: true,
+      controlledMoves: '2',
+      tasks: { lab: true, bogus: true }
+    };
+    expect(engine.isInteriorReadinessComplete(stale)).toBe(false);
+    expect(engine.applyInteriorReadinessBonus({ morale: 70 }, stale, false).applied).toBe(false);
+
+    const legacy = {
+      readinessComplete: false,
+      controlledMoves: '2',
+      tasks: { lab: true, medbay: true }
+    };
+    expect(engine.isInteriorReadinessComplete(legacy)).toBe(true);
+    expect(engine.applyInteriorReadinessBonus({ morale: 70 }, legacy, false)).toMatchObject({ applied: true, moraleBonus: 3, completedTasks: 2 });
+  });
 describe('render and deployment', () => {
   it('renders the mission select shell', () => {
     const html = renderTool('spaceExplorer', { spaceExplorer: {} });
@@ -262,6 +433,9 @@ describe('render and deployment', () => {
     expect(src).toContain('outline:3px solid var(--se-focus)');
     expect(src).toContain('@media (prefers-contrast:more)');
     expect(src).toContain('@media (forced-colors:active)');
+    expect(src).toContain('@keyframes se-motion-trace-draw');
+    expect(src).toContain('.se-shell .se-motion-trace');
+    expect(src).toContain('@media (prefers-reduced-motion:reduce){.se-shell .se-motion-trace');
     expect(src).toContain('.se-resource-grid{grid-template-columns:repeat(2');
     expect(src).toContain('[class~="text-xs"]{font-size:.8125rem');
     expect(src).toContain("statusLevel === 'Critical'");
@@ -358,12 +532,38 @@ describe('render and deployment', () => {
     });
     expect(maneuver).toContain('data-spaceexplorer-interior-condition-status="maneuver"');
     expect(maneuver).toContain('data-spaceexplorer-interior-route-preview="maneuver"');
-    expect(maneuver).toContain('ATTITUDE MANEUVER ACTIVE');
+    expect(maneuver).toContain('MANEUVER');
     expect(maneuver).toContain('data-spaceexplorer-interior-prediction="rail"');
     expect(maneuver).toContain('data-predicted-control="controlled"');
     expect(maneuver).toContain('data-spaceexplorer-interior-prediction="gentle"');
     expect(maneuver).toContain('data-predicted-control="recovery"');
     expect(maneuver).toContain('Recovery likely');
+
+    const overshootTrace = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: {
+          position: 'medbay', target: 'medbay', condition: 'maneuver',
+          tasks: {}, controlledMoves: 0, maneuverControlledMoves: 0,
+          recoveryCount: 1, attempts: 1,
+          lastResult: {
+            fromId: 'flightdeck', fromName: 'Flight deck',
+            toId: 'medbay', toName: 'Medical bay',
+            method: 'Gentle push + brake', conditionId: 'maneuver', conditionLabel: 'Station maneuver',
+            controlled: false, speed: 0.24, distance: 6.4,
+            stoppingDistance: 0.24, status: 'Recovery needed'
+          },
+          feedback: 'Recovery needed.', readinessComplete: false
+        }
+      }
+    });
+    expect(overshootTrace).toContain('data-spaceexplorer-interior-trace="overshoot"');
+    expect(overshootTrace).toContain('data-spaceexplorer-interior-overshoot-marker="true"');
+    expect(overshootTrace).toContain('data-spaceexplorer-interior-trace-summary="overshoot"');
+    expect(overshootTrace).toContain('se-motion-trace');
+    expect(overshootTrace).toContain('overshoot and recovery');
+    expect(overshootTrace).toContain('inertia overshoot followed by recovery.');
+
     const ready = renderTool('spaceExplorer', {
       spaceExplorer: {
         ...base,
@@ -381,8 +581,91 @@ describe('render and deployment', () => {
       }
     });
     expect(ready).toContain('Cabin ready');
-    expect(ready).toContain('Cabin ready ? orientation complete');
+    expect(ready).toContain('Cabin ready \u2022 orientation complete');
     expect(ready).toContain('data-spaceexplorer-interior-position="medbay"');
+  });
+
+  it('renders a recoverable maneuver work error and its secured retry', () => {
+    const base = {
+      missionPhase: 'briefing',
+      destination: 'mars',
+      resources: { o2: 85, power: 80, hull: 100, morale: 75, fuel: 90, science: 0 },
+      crew: []
+    };
+    const initial = {
+      ...engine.createInteriorOrientation(),
+      position: 'lab', target: 'lab', condition: 'maneuver',
+      tasks: { medbay: true }, controlledMoves: 2, maneuverControlledMoves: 1
+    };
+    const failed = engine.applyInteriorActivityDecision(initial, 'quick').state;
+    const failedHtml = renderTool('spaceExplorer', {
+      spaceExplorer: { ...base, interiorOrientation: failed }
+    });
+
+    expect(failedHtml).toContain('data-spaceexplorer-work-choice="quick"');
+    expect(failedHtml).toContain('data-spaceexplorer-work-choice="secured"');
+    expect(failedHtml).toContain('data-spaceexplorer-work-result="recovery"');
+    expect(failedHtml).toContain('data-spaceexplorer-work-corrections="1"');
+    expect(failedHtml).toContain('data-spaceexplorer-work-attempts="1"');
+    expect(failedHtml).toContain('Work recovery needed');
+    expect(failedHtml).toContain('data-spaceexplorer-work-marker="recovery"');
+    expect(failedHtml).toContain('activity remains incomplete');
+    expect(failedHtml).not.toContain('data-spaceexplorer-interior-activity-complete="lab"');
+
+    const retried = engine.applyInteriorActivityDecision(failed, 'secured').state;
+    const securedHtml = renderTool('spaceExplorer', {
+      spaceExplorer: { ...base, interiorOrientation: retried }
+    });
+    expect(securedHtml).toContain('data-spaceexplorer-work-result="secured"');
+    expect(securedHtml).toContain('data-spaceexplorer-work-corrections="1"');
+    expect(securedHtml).toContain('data-spaceexplorer-interior-activity-complete="lab"');
+    expect(securedHtml).toContain('Cabin ready');
+    expect(securedHtml).toContain('data-spaceexplorer-work-marker="secured"');
+    expect(securedHtml).not.toContain('data-spaceexplorer-work-choice=');
+
+    expect(securedHtml).toContain('Body restraint + specimen tether');
+    expect(securedHtml).toContain('Station maneuver');
+    const debriefHtml = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        missionPhase: 'debrief',
+        missionResult: 'success',
+        interiorOrientation: retried,
+        interiorReadinessApplied: true,
+        interiorReadinessBonus: 3
+      }
+    });
+    expect(debriefHtml).toContain('data-spaceexplorer-review-metric="work-attempts"');
+    expect(debriefHtml).toContain('data-spaceexplorer-review-metric="work-corrections"');
+    expect(debriefHtml).toContain('Work attempts');
+    expect(debriefHtml).toContain('Work corrections');
+    expect(debriefHtml).toContain('data-spaceexplorer-procedure-summary="true"');
+    expect(debriefHtml).toContain('Lab: Body restraint + specimen tether');
+  });
+
+  it('derives preflight readiness instead of trusting stale persisted flags', () => {
+    const base = {
+      missionPhase: 'allocate', destination: 'mars',
+      resources: { o2: 85, power: 80, hull: 100, morale: 75, fuel: 90, science: 0 },
+      crew: []
+    };
+    const stale = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: { readinessComplete: true, controlledMoves: '2', tasks: { lab: true, bogus: true } }
+      }
+    });
+    expect(stale).toContain('Cabin orientation optional');
+    expect(stale).not.toContain('First launch: up to +3 morale');
+
+    const legacy = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: { readinessComplete: false, controlledMoves: '2', tasks: { lab: true, medbay: true } }
+      }
+    });
+    expect(legacy).toContain('Cabin orientation complete');
+    expect(legacy).toContain('First launch: up to +3 morale');
   });
 
   it('surfaces cabin readiness in preflight, the active HUD, and debrief', () => {

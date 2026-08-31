@@ -73,6 +73,7 @@ const SURFACES = [
   ['detector — background only, negative net', { cdSrc: 'none', cdTime: 30, cdRuns: [{ g: 10, b: 14, t: 30, d: 10, s: 'none' }] }],
   ['accident open', { incPick: 'chernobyl', incidentsRead: ['chernobyl'] }],
   ['reactor design open', { reactorPick: 'smr', reactorsSeen: ['smr'] }],
+  ['station blackout start', { rxScenario: 'blackout' }],
   ['waste card open', { wastePick: 4, wasteSeen: ['How much there is'] }],
   ['topic index filtered', { nkQuery: 'radon', nkGroup: 'radiation' }],
   // jsdom reports a 1024 px viewport, so the index defaults to OPEN in every
@@ -98,7 +99,7 @@ const SURFACES = [
     evidenceIndex: 4,
     evidenceChoices: { 'short-count': 'uncertain' },
     evidenceChecked: { 'short-count': true },
-    evidenceMastered: ['reactor-bomb', 'inverse-square', 'low-dose-zero', 'neutron-layers', 'short-count'],
+    evidenceMastered: ['short-count'],
     nkReflections: {
       know: {
         confidence: 'growing',
@@ -272,7 +273,7 @@ describe('nuclearLab — checks axe cannot make for us', () => {
     }
   }, 150000);
 
-  it('exposes reactor telemetry as semantic text linked from the canvas', () => {
+  it('exposes reactor telemetry and objective progress as semantic text linked from the canvas', () => {
     host.innerHTML = renderTool('nuclearLab', {});
     const readings = host.querySelector('#rx-live-readings');
     expect(readings, 'semantic reactor readings are missing').toBeTruthy();
@@ -286,7 +287,23 @@ describe('nuclearLab — checks axe cannot make for us', () => {
     }
     const canvas = host.querySelector('canvas[aria-label^="Reactor control panel"]');
     expect(canvas, 'reactor canvas is missing').toBeTruthy();
-    expect(canvas.getAttribute('aria-describedby')).toBe('rx-live-readings');
+    expect(canvas.getAttribute('aria-describedby').split(/\s+/))
+      .toEqual(expect.arrayContaining(['rx-live-readings', 'rx-objective-progress']));
+
+    const objective = host.querySelector('#rx-objective-progress');
+    expect(objective, 'reactor objective progress is missing').toBeTruthy();
+    expect(objective.getAttribute('role')).toBe('group');
+    expect(objective.getAttribute('aria-labelledby')).toBe('rx-objective-heading');
+    expect((objective.querySelector('#rx-objective-step').textContent || '').trim()).not.toBe('');
+    expect((objective.querySelector('#rx-objective-detail').textContent || '').trim()).not.toBe('');
+    expect(objective.querySelector('[aria-live]'), 'continuous objective timer is a live region').toBeNull();
+    const meter = objective.querySelector('progress');
+    expect(meter, 'native objective progress is missing').toBeTruthy();
+    expect(meter.getAttribute('aria-labelledby')).toBe('rx-objective-step');
+    expect(meter.getAttribute('aria-describedby')).toBe('rx-objective-detail');
+    expect(Number(meter.getAttribute('max'))).toBeGreaterThan(0);
+    expect(Number(meter.getAttribute('value'))).toBeGreaterThanOrEqual(0);
+    expect((meter.getAttribute('aria-valuetext') || '').trim()).not.toBe('');
   });
 
   it('renders reactor details as a disclosure with content outside the button', () => {

@@ -258,11 +258,13 @@ test('keeps mobile stage guidance readable instead of squeezing it into a corner
       orr_tab: 0,
       orr_sel: 'earth',
       orr_paused: true,
+      orr_scale_mode: 'relative',
     },
   }, undefined, { expectCanvas: false });
 
   await page.locator('#wrap').evaluate((wrap) => { (wrap as HTMLElement).style.width = '320px'; });
   await expect(page.locator('#orrery-model-scale-note')).toContainText('not one literal scale');
+  await expect(page.locator('#orrery-model-scale-note')).toContainText('compressed and clamped for visibility');
   await expect(page.locator('canvas[role="application"]')).toHaveAttribute('aria-describedby', 'orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip orrery-stage-readout');
   await expect(page.locator('#orrery-hover-summary')).toHaveAttribute('role', 'status');
   await expect(page.locator('#orrery-stage-key')).toContainText('Velocity vector');

@@ -33,7 +33,7 @@ describe('Adventure scene, artwork, and playback accessibility', () => {
     expect(source).toContain('src={adventureState.sceneImage || adventureState.sceneImagePreview}\n                                        className={`absolute');
     expect(source.match(/alt=""/g)?.length).toBeGreaterThanOrEqual(4);
     expect(source.match(/role="status" aria-live="polite" aria-atomic="true" className="absolute inset-0/g)).toHaveLength(2);
-    expect(source).toContain('animate-ken-burns motion-reduce:animate-none motion-reduce:transition-none');
+    expect(source).toContain('adventure-ken-burns motion-reduce:animate-none motion-reduce:transition-none');
     expect(source).toContain('aria-hidden="true" className="absolute inset-0 bg-gradient-to-t');
   });
 

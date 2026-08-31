@@ -421,6 +421,9 @@ if (!window._galaxyHasLoadedOnce) {
           var REAL_SKY_NOTE_MAX_LENGTH = 600;
           var REAL_SKY_OBSERVATION_LIMIT = 8;
           var REAL_SKY_VIEW_URL_MAX_LENGTH = 4096;
+          var REAL_SKY_CONTROL_MIN_FOV = 1 / 36000;
+          var REAL_SKY_CONTROL_MAX_FOV = 180;
+          var REAL_SKY_VIEW_MAX_FOV = 360;
           var realSkyEvidenceNote = typeof d.realSkyEvidenceNote === 'string' ? d.realSkyEvidenceNote.slice(0, REAL_SKY_NOTE_MAX_LENGTH) : '';
 
           // Bound restored notebook content at the same limit as newly composed and
@@ -1020,7 +1023,7 @@ if (!window._galaxyHasLoadedOnce) {
               };
               if (hasControlCharacter(targetValue) || hasControlCharacter(fovValue) || hasControlCharacter(surveyValue)) return null;
               if (surveyValue !== entrySurvey.id) return null;
-              var decimalPattern = '[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)';
+              var decimalPattern = '[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?';
               var coordinateMatch = targetValue.match(new RegExp('^(' + decimalPattern + ') +(' + decimalPattern + ')$'));
               if (!coordinateMatch || !(new RegExp('^' + decimalPattern + '$')).test(fovValue)) return null;
               var ra = Number(coordinateMatch[1]);
@@ -1033,15 +1036,50 @@ if (!window._galaxyHasLoadedOnce) {
               return null;
             }
           };
+          var normalizeRealSkyViewport = function (ra, dec, fov) {
+            if (typeof ra !== 'number' || typeof dec !== 'number' || typeof fov !== 'number') return null;
+            if (!isFinite(ra) || !isFinite(dec) || !isFinite(fov)) return null;
+            if (ra < 0 || ra >= 360 || dec < -90 || dec > 90 || fov <= 0 || fov > 360) return null;
+            return { ra: ra, dec: dec, fov: fov };
+          };
+          var formatRealSkyViewportFov = function (value) {
+            if (value < 0.0001) return value.toExponential(2).replace('e+', 'e');
+            return value.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+          };
+          var formatRealSkyViewportReadout = function (viewport) {
+            if (!viewport) return '';
+            var roundedRa = Math.round(viewport.ra * 10000) / 10000;
+            if (roundedRa >= 360) roundedRa = 0;
+            var roundedDec = Math.round(viewport.dec * 10000) / 10000;
+            if (Math.abs(roundedDec) < 0.00005) roundedDec = 0;
+            return 'RA ' + roundedRa.toFixed(4) + '\u00B0 \u00B7 Dec ' + roundedDec.toFixed(4) + '\u00B0 \u00B7 FoV ' + formatRealSkyViewportFov(viewport.fov) + '\u00B0';
+          };
+          var buildRealSkyViewportAladinUrl = function (viewport, survey) {
+            var normalizedViewport = viewport && normalizeRealSkyViewport(viewport.ra, viewport.dec, viewport.fov);
+            if (!normalizedViewport || !survey || !survey.id) return '';
+            return 'https://aladin.cds.unistra.fr/AladinLite/?target='
+              + encodeURIComponent(String(normalizedViewport.ra) + ' ' + String(normalizedViewport.dec))
+              + '&fov=' + encodeURIComponent(normalizedViewport.fov)
+              + '&survey=' + encodeURIComponent(survey.id);
+          };
+
           var applyRealSkyAladinCoordinates = function (aladin, ra, dec, fov) {
-            if (!aladin || typeof aladin.gotoRaDec !== 'function') return false;
+            if (!aladin || typeof aladin.gotoRaDec !== 'function') {
+              if (aladin) aladin._galaxyCoordinateNavigationReady = false;
+              return false;
+            }
             var setFov = typeof aladin.setFov === 'function' ? aladin.setFov : (typeof aladin.setFoV === 'function' ? aladin.setFoV : null);
-            if (!setFov) return false;
+            if (!setFov) {
+              aladin._galaxyCoordinateNavigationReady = false;
+              return false;
+            }
             try {
               setFov.call(aladin, fov);
               aladin.gotoRaDec(ra, dec);
+              aladin._galaxyCoordinateNavigationReady = true;
               return true;
             } catch (viewApplyError) {
+              aladin._galaxyCoordinateNavigationReady = false;
               return false;
             }
           };
@@ -1718,6 +1756,14 @@ if (!window._galaxyHasLoadedOnce) {
           // Cross-target exact restores are transient, last-intent-wins work. The
           // observation remains byte-for-byte unchanged in persisted tool data.
           var realSkyPendingViewRef = React.useRef(null);
+          // Live viewport telemetry is transient UI state. Keeping it in refs avoids
+          // persisting or rerendering the full tool during Aladin pan/zoom events.
+          var realSkyViewportRef = React.useRef(null);
+          var realSkyViewportReadoutRef = React.useRef(null);
+          var realSkyExternalLinkRef = React.useRef(null);
+          var realSkyCapabilityRevisionState = React.useState(0);
+          var realSkyCapabilityRevision = realSkyCapabilityRevisionState[0];
+          var setRealSkyCapabilityRevision = realSkyCapabilityRevisionState[1];
           var blackHoleRefCb = React.useCallback(function(canvas) {
             if (!canvas) { if (blackHoleCanvasActive.current && blackHoleCanvasActive.current._blackHoleCleanup) blackHoleCanvasActive.current._blackHoleCleanup(); blackHoleCanvasActive.current = null; return; }
             if (canvas._blackHoleInit) return;
@@ -6729,40 +6775,57 @@ if (!window._galaxyHasLoadedOnce) {
           };
           var reloadRealSkyAtlas = function () {
             if (realSkyReloadPending) return false;
-            patchGalaxy({ realSkyStatus: 'idle', realSkyMessage: '', realSkyRetry: realSkyRetry + 1 });
+            var nextRetry = realSkyRetry + 1;
+            var pendingView = realSkyPendingViewRef.current;
+            var activeSignature = activeRealSkyTarget.key + '|' + activeRealSkySurvey.id + '|' + activeRealSkyCatalog.id;
+            if (pendingView && pendingView.signature === activeSignature) {
+              realSkyPendingViewRef.current = Object.assign({}, pendingView, { retry: nextRetry });
+            }
+            patchGalaxy({ realSkyStatus: 'idle', realSkyMessage: '', realSkyRetry: nextRetry });
             return true;
           };
 
           var startRealSkyRecipe = function (recipe) {
             if (!recipe) return;
-            patchGalaxy({
+            var recipeChangesAtlas = recipe.targetKey !== activeRealSkyTarget.key || recipe.fromSurveyId !== activeRealSkySurvey.id;
+            realSkyPendingViewRef.current = null;
+            var recipePatch = {
               realSkyRecipe: recipe.id,
               realSkyTarget: recipe.targetKey,
               realSkyTargetQuery: '',
               realSkySurvey: recipe.fromSurveyId,
               previousRealSkySurvey: '',
-              realSkySurveyHistory: [recipe.fromSurveyId],
-              realSkyStatus: 'idle',
-              realSkyMessage: ''
-            });
+              realSkySurveyHistory: [recipe.fromSurveyId]
+            };
+            if (recipeChangesAtlas) {
+              recipePatch.realSkyStatus = 'idle';
+              recipePatch.realSkyMessage = '';
+            }
+            patchGalaxy(recipePatch);
           };
 
           var advanceRealSkyRecipe = function (recipe) {
             if (!recipe) return;
-            patchGalaxy({
+            var recipeChangesAtlas = recipe.targetKey !== activeRealSkyTarget.key || recipe.toSurveyId !== activeRealSkySurvey.id;
+            realSkyPendingViewRef.current = null;
+            var recipePatch = {
               realSkyRecipe: recipe.id,
               realSkyTarget: recipe.targetKey,
               realSkyTargetQuery: '',
               previousRealSkySurvey: recipe.fromSurveyId,
               realSkySurvey: recipe.toSurveyId,
-              realSkySurveyHistory: [recipe.fromSurveyId, recipe.toSurveyId],
-              realSkyStatus: 'idle',
-              realSkyMessage: ''
-            });
+              realSkySurveyHistory: [recipe.fromSurveyId, recipe.toSurveyId]
+            };
+            if (recipeChangesAtlas) {
+              recipePatch.realSkyStatus = 'idle';
+              recipePatch.realSkyMessage = '';
+            }
+            patchGalaxy(recipePatch);
           };
 
           var selectRealSkySurvey = function (survey) {
             if (!survey || survey.id === activeRealSkySurvey.id) return;
+            realSkyPendingViewRef.current = null;
             var nextHistory = realSkySurveyHistory.indexOf(survey.id) === -1 ? realSkySurveyHistory.concat([survey.id]) : realSkySurveyHistory;
             var nextPatch = {
               previousRealSkySurvey: activeRealSkySurvey.id,
@@ -6774,7 +6837,6 @@ if (!window._galaxyHasLoadedOnce) {
             if (activeRealSkyRecipe && survey.id !== activeRealSkyRecipe.fromSurveyId && survey.id !== activeRealSkyRecipe.toSurveyId) nextPatch.realSkyRecipe = '';
             patchGalaxy(nextPatch);
           };
-
           var toggleRealSkySurveyComparison = function () {
             if (!previousRealSkySurvey) return false;
             selectRealSkySurvey(previousRealSkySurvey);
@@ -6989,7 +7051,10 @@ if (!window._galaxyHasLoadedOnce) {
             // A successful list mutation commits the previous one-step removal.
             setRealSkyRemovedObservation(null);
             if (!alreadySavedView && typeof awardStemXP === 'function') awardStemXP('galaxy_real_sky_evidence', 1, 'Recorded real-sky evidence');
-            if (typeof addToast === 'function') addToast(__alloT('stem.galaxy.real_sky_observation_saved', 'Observation saved to the evidence notebook.'), 'success');
+            var savedMessage = __alloT('stem.galaxy.real_sky_observation_saved', 'Observation saved to the evidence notebook.');
+            if (typeof addToast === 'function') addToast(savedMessage, 'success');
+            if (typeof announceToSR === 'function') announceToSR(savedMessage);
+            focusRealSkyObservationRow(nextEntry.id);
             return true;
           };
 
@@ -7046,9 +7111,20 @@ if (!window._galaxyHasLoadedOnce) {
             var canReuseCurrentAtlas = !!(exactView && !atlasBaseChanged && currentElement && currentElement.isConnected && currentAladin && currentElement._galaxyAladinSignature === atlasSignature);
             var restoreSucceeded = true;
             if (canReuseCurrentAtlas) {
-              realSkyPendingViewRef.current = null;
               patchGalaxy(openPatch);
-              restoreSucceeded = finishRealSkyObservationRestore(applyRealSkyObservationRestore(currentAladin, exactView, entryTarget), entryTarget, openedMessage);
+              var currentRestoreOutcome = applyRealSkyObservationRestore(currentAladin, exactView, entryTarget);
+              if (currentRestoreOutcome !== 'failed') {
+                realSkyPendingViewRef.current = null;
+                refreshRealSkyViewportTelemetry(currentElement, currentRestoreOutcome === 'exact' ? exactView : entryTarget, currentRestoreOutcome === 'exact' ? 'saved' : 'preset');
+              } else if (exactView) {
+                realSkyPendingViewRef.current = { signature: atlasSignature, retry: realSkyRetry, view: exactView, target: entryTarget, openedMessage: openedMessage };
+                // A failed in-place restore can still emit delayed position or zoom
+                // events. Retire that binding so the pending exact recovery link wins.
+                disposeRealSkyViewportTelemetry(currentElement);
+              } else {
+                realSkyPendingViewRef.current = null;
+              }
+              restoreSucceeded = finishRealSkyObservationRestore(currentRestoreOutcome, entryTarget, openedMessage);
             } else {
               if (exactView) {
                 var nextRestoreRetry = realSkyRetry + 1;
@@ -7087,7 +7163,11 @@ if (!window._galaxyHasLoadedOnce) {
               var entryComparisonSurvey = resolveRealSkyObservationComparisonSurvey(entry, entrySurvey);
               var entryViewUrl = resolveRealSkyObservationViewUrl(entry, entryTarget, entrySurvey);
               var entryTargetLabel = entryTarget ? entryTarget.short + ' ' + entryTarget.name : String(entry.targetKey || '—');
-              var coordinates = entryTarget ? 'RA ' + entryTarget.ra.toFixed(4) + '° · Dec ' + entryTarget.dec.toFixed(4) + '° · FoV ' + entryTarget.fov + '°' : '—';
+              // A trusted numeric share URL is the evidence record for an exact
+              // panned/zoomed field. Legacy or unsafe rows retain the target preset.
+              var entryExactView = parseRealSkyObservationExactView(entry, entrySurvey);
+              var coordinateViewport = entryExactView || entryTarget;
+              var coordinates = coordinateViewport ? formatRealSkyViewportReadout(coordinateViewport) : '—';
               lines.push(String(index + 1) + '. ' + entryTargetLabel);
               if (entryComparisonSurvey) {
                 lines.push(__alloT('stem.galaxy.real_sky_observation_comparison', 'Wavelength comparison: {previous} \u2192 {current}')
@@ -7157,13 +7237,25 @@ if (!window._galaxyHasLoadedOnce) {
           var resolveRealSkyLiveShareUrl = function () {
             var el = realSkyElementRef.current;
             var expectedSignature = activeRealSkyTarget.key + '|' + activeRealSkySurvey.id + '|' + activeRealSkyCatalog.id;
+            var expectedViewportKey = expectedSignature + '|' + realSkyRetry;
             var aladin = el && el._galaxyAladin;
-            if (!el || !el.isConnected || !aladin || el._galaxyAladinSignature !== expectedSignature || typeof aladin.getShareURL !== 'function') return '';
-            try {
-              return normalizeRealSkyAladinUrl(aladin.getShareURL());
-            } catch (shareUrlError) {
-              return '';
+            if (!el || !el.isConnected || !aladin || el._galaxyAladinSignature !== expectedSignature) return '';
+            // Pinned Aladin 3.8.1 can serialize a native share target as
+            // sexagesimal text. Prefer its numeric public getters so saved evidence,
+            // exact restore, and reports all use the same strict decimal contract.
+            var getterViewport = readRealSkyAladinViewport(aladin);
+            var getterViewportUrl = buildRealSkyViewportAladinUrl(getterViewport, activeRealSkySurvey);
+            if (getterViewportUrl) return getterViewportUrl;
+            if (typeof aladin.getShareURL === 'function') {
+              try {
+                var nativeShareUrl = normalizeRealSkyAladinUrl(aladin.getShareURL());
+                var nativeExactView = nativeShareUrl ? parseRealSkyObservationExactView({ viewUrl: nativeShareUrl }, activeRealSkySurvey) : null;
+                if (nativeExactView) return nativeExactView.url;
+              } catch (shareUrlError) {}
             }
+            var cachedViewport = realSkyViewportRef.current;
+            var cachedViewportIsExact = !!(cachedViewport && cachedViewport.key === expectedViewportKey && (cachedViewport.source === 'live' || cachedViewport.source === 'saved'));
+            return buildRealSkyViewportAladinUrl(cachedViewportIsExact ? cachedViewport : null, activeRealSkySurvey);
           };
 
           var resolveRealSkyShareUrl = function () {
@@ -7253,11 +7345,236 @@ if (!window._galaxyHasLoadedOnce) {
             }
           };
 
+          var readRealSkyAladinViewport = function (aladin) {
+            if (!aladin || typeof aladin.getRaDec !== 'function') return null;
+            var getFov = typeof aladin.getFov === 'function' ? aladin.getFov : (typeof aladin.getFoV === 'function' ? aladin.getFoV : null);
+            if (!getFov) return null;
+            try {
+              var position = aladin.getRaDec();
+              var field = getFov.call(aladin);
+              var horizontalFov = field && typeof field !== 'number' && typeof field.length === 'number' ? field[0] : field;
+              if (!position || typeof position.length !== 'number' || position.length < 2) return null;
+              return normalizeRealSkyViewport(position[0], position[1], horizontalFov);
+            } catch (viewportReadError) {
+              return null;
+            }
+          };
+
+          var commitRealSkyViewport = function (el, binding, viewport, source) {
+            if (!el || !binding || el._galaxyAladinViewportTelemetry !== binding || !binding.isCurrent()) return false;
+            var normalizedViewport = viewport && normalizeRealSkyViewport(viewport.ra, viewport.dec, viewport.fov);
+            if (!normalizedViewport) return false;
+            var nextViewport = {
+              key: binding.viewportKey,
+              signature: binding.signature,
+              source: source === 'saved' ? 'saved' : (source === 'live' ? 'live' : 'preset'),
+              ra: normalizedViewport.ra,
+              dec: normalizedViewport.dec,
+              fov: normalizedViewport.fov
+            };
+            realSkyViewportRef.current = nextViewport;
+            var readout = realSkyViewportReadoutRef.current;
+            if (readout && readout.isConnected && readout.getAttribute('data-galaxy-real-sky-viewport-key') === binding.viewportKey) {
+              var nextText = formatRealSkyViewportReadout(nextViewport);
+              if (readout.textContent !== nextText) readout.textContent = nextText;
+              readout.setAttribute('data-galaxy-real-sky-viewport-source', nextViewport.source);
+              readout.setAttribute('data-galaxy-real-sky-ra', String(nextViewport.ra));
+              readout.setAttribute('data-galaxy-real-sky-dec', String(nextViewport.dec));
+              readout.setAttribute('data-galaxy-real-sky-fov', String(nextViewport.fov));
+            }
+            var externalLink = realSkyExternalLinkRef.current;
+            var externalUrl = buildRealSkyViewportAladinUrl(nextViewport, activeRealSkySurvey);
+            if (externalLink && externalLink.isConnected && externalUrl) {
+              externalLink.setAttribute('href', externalUrl);
+              externalLink.setAttribute('data-galaxy-real-sky-viewport-key', binding.viewportKey);
+              externalLink.setAttribute('data-galaxy-real-sky-viewport-source', nextViewport.source);
+            }
+            return true;
+          };
+          var disposeRealSkyViewportTelemetry = function (el) {
+            var binding = el && el._galaxyAladinViewportTelemetry;
+            if (!binding) return;
+            el._galaxyAladinViewportTelemetry = null;
+            if (binding.initialTimer) {
+              clearTimeout(binding.initialTimer);
+              binding.initialTimer = null;
+            }
+            // Aladin 3.8.1 has no public off(); newer builds do. The connected-node,
+            // instance, and signature guards remain the primary stale-callback fence.
+            if (binding.instance && typeof binding.instance.off === 'function') {
+              binding.events.forEach(function (eventName) {
+                try { binding.instance.off(eventName); } catch (offError) {}
+              });
+            }
+          };
+
+          var refreshRealSkyViewportTelemetry = function (el, preferredViewport, source) {
+            var binding = el && el._galaxyAladinViewportTelemetry;
+            if (!binding || !binding.refresh) return false;
+            return binding.refresh(preferredViewport, source);
+          };
+
+          var controlRealSkyViewport = function (action) {
+            var el = realSkyElementRef.current;
+            var signature = activeRealSkyTarget.key + '|' + activeRealSkySurvey.id + '|' + activeRealSkyCatalog.id;
+            var viewportKey = signature + '|' + realSkyRetry;
+            var aladin = el && el._galaxyAladin;
+            if (realSkyStatus !== 'ready' || !el || !el.isConnected || !aladin || el._galaxyAladinSignature !== signature || aladin._galaxyCoordinateNavigationReady !== true) return false;
+            var disableCoordinateControls = function () {
+              aladin._galaxyCoordinateNavigationReady = false;
+              setRealSkyCapabilityRevision(function (revision) { return revision + 1; });
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.galaxy.real_sky_status_init_error', 'Real-sky atlas could not initialize on this device.'));
+              return false;
+            };
+            var cachedViewport = realSkyViewportRef.current;
+            var basis = readRealSkyAladinViewport(aladin)
+              || (cachedViewport && cachedViewport.key === viewportKey ? cachedViewport : null)
+              || normalizeRealSkyViewport(activeRealSkyTarget.ra, activeRealSkyTarget.dec, activeRealSkyTarget.fov);
+            if (!basis) return false;
+            var nextViewport = null;
+            try {
+              if (action === 'pan-left' || action === 'pan-right' || action === 'pan-up' || action === 'pan-down') {
+                if (typeof aladin.gotoRaDec !== 'function') return disableCoordinateControls();
+                if (typeof aladin.getSize === 'function' && typeof aladin.pix2world === 'function') {
+                  try {
+                    var size = aladin.getSize();
+                    var width = size && Number(size[0]);
+                    var height = size && Number(size[1]);
+                    if (isFinite(width) && width > 0 && isFinite(height) && height > 0) {
+                      var x = width / 2;
+                      var y = height / 2;
+                      if (action === 'pan-left') x -= width * 0.25;
+                      else if (action === 'pan-right') x += width * 0.25;
+                      else if (action === 'pan-up') y -= height * 0.25;
+                      else y += height * 0.25;
+                      var worldPosition = aladin.pix2world(x, y);
+                      if (worldPosition && typeof worldPosition.length === 'number' && worldPosition.length >= 2) {
+                        nextViewport = normalizeRealSkyViewport(Number(worldPosition[0]), Number(worldPosition[1]), basis.fov);
+                      }
+                    }
+                  } catch (pixelNavigationError) {}
+                }
+                if (!nextViewport) {
+                  var angularStep = Math.max(basis.fov * 0.25, REAL_SKY_CONTROL_MIN_FOV);
+                  var cosineDeclination = Math.abs(Math.cos(basis.dec * Math.PI / 180));
+                  var rightAscensionStep = Math.min(90, angularStep / Math.max(0.15, cosineDeclination));
+                  var nextRa = basis.ra;
+                  var nextDec = basis.dec;
+                  if (action === 'pan-left') nextRa += rightAscensionStep;
+                  else if (action === 'pan-right') nextRa -= rightAscensionStep;
+                  else if (action === 'pan-up') nextDec = Math.min(90, basis.dec + angularStep);
+                  else nextDec = Math.max(-90, basis.dec - angularStep);
+                  nextRa = ((nextRa % 360) + 360) % 360;
+                  nextViewport = normalizeRealSkyViewport(nextRa, nextDec, basis.fov);
+                }
+                if (!nextViewport || (nextViewport.ra === basis.ra && nextViewport.dec === basis.dec)) return false;
+                aladin.gotoRaDec(nextViewport.ra, nextViewport.dec);
+              } else if (action === 'zoom-in' || action === 'zoom-out') {
+                var setFov = typeof aladin.setFov === 'function' ? aladin.setFov : (typeof aladin.setFoV === 'function' ? aladin.setFoV : null);
+                if (!setFov) return disableCoordinateControls();
+                var zoomFactor = action === 'zoom-in' ? (2 / 3) : 1.5;
+                var zoomFloor = basis.fov < REAL_SKY_CONTROL_MIN_FOV ? 0 : REAL_SKY_CONTROL_MIN_FOV;
+                var zoomCeiling = basis.fov > REAL_SKY_CONTROL_MAX_FOV ? REAL_SKY_VIEW_MAX_FOV : REAL_SKY_CONTROL_MAX_FOV;
+                var nextFov = action === 'zoom-in'
+                  ? Math.max(zoomFloor, basis.fov * zoomFactor)
+                  : Math.min(zoomCeiling, basis.fov * zoomFactor);
+                nextViewport = normalizeRealSkyViewport(basis.ra, basis.dec, nextFov);
+                if (!nextViewport || nextViewport.fov === basis.fov) return false;
+                setFov.call(aladin, nextViewport.fov);
+              } else if (action === 'reset') {
+                nextViewport = normalizeRealSkyViewport(activeRealSkyTarget.ra, activeRealSkyTarget.dec, activeRealSkyTarget.fov);
+                if (!nextViewport || !applyRealSkyAladinCoordinates(aladin, nextViewport.ra, nextViewport.dec, nextViewport.fov)) return disableCoordinateControls();
+              } else {
+                return false;
+              }
+            } catch (viewportControlError) {
+              return disableCoordinateControls();
+            }
+            refreshRealSkyViewportTelemetry(el, nextViewport, action === 'reset' ? 'preset' : 'live');
+            if (typeof announceToSR === 'function') {
+              announceToSR(__alloT('stem.galaxy.real_sky_coordinates_label', 'Sky coordinates') + ': ' + formatRealSkyViewportReadout(nextViewport));
+            }
+            return true;
+          };
+          var bindRealSkyViewportTelemetry = function (el, aladin, signature, viewportKey, initialViewport, initialSource) {
+            var existingBinding = el && el._galaxyAladinViewportTelemetry;
+            if (existingBinding && existingBinding.instance === aladin && existingBinding.viewportKey === viewportKey) {
+              existingBinding.refresh(initialViewport, initialSource);
+              return existingBinding;
+            }
+            if (existingBinding) disposeRealSkyViewportTelemetry(el);
+            var fallbackViewport = normalizeRealSkyViewport(activeRealSkyTarget.ra, activeRealSkyTarget.dec, activeRealSkyTarget.fov);
+            var binding = {
+              instance: aladin,
+              signature: signature,
+              viewportKey: viewportKey,
+              fallback: fallbackViewport,
+              events: [],
+              initialTimer: null,
+              refresh: null,
+              isCurrent: null
+            };
+            binding.isCurrent = function () {
+              return !!(el && el.isConnected && realSkyElementRef.current === el && el._galaxyAladin === aladin && el._galaxyAladinSignature === signature && el._galaxyAladinViewportTelemetry === binding);
+            };
+            var currentBasis = function () {
+              var apiViewport = readRealSkyAladinViewport(aladin);
+              if (apiViewport) return apiViewport;
+              var cachedViewport = realSkyViewportRef.current;
+              if (cachedViewport && cachedViewport.key === viewportKey) return cachedViewport;
+              return binding.fallback;
+            };
+            binding.refresh = function (preferred, preferredSource) {
+              if (!binding.isCurrent()) return false;
+              var normalizedPreferred = preferred && normalizeRealSkyViewport(preferred.ra, preferred.dec, preferred.fov);
+              if (normalizedPreferred) return commitRealSkyViewport(el, binding, normalizedPreferred, preferredSource || 'saved');
+              var apiViewport = readRealSkyAladinViewport(aladin);
+              return commitRealSkyViewport(el, binding, apiViewport || binding.fallback, apiViewport ? 'live' : 'preset');
+            };
+            binding.positionChanged = function (position) {
+              if (!binding.isCurrent() || !position) return;
+              var basis = currentBasis();
+              if (!basis) return;
+              var nextViewport = normalizeRealSkyViewport(position.ra, position.dec, basis.fov);
+              if (nextViewport) commitRealSkyViewport(el, binding, nextViewport, 'live');
+            };
+            binding.zoomChanged = function (horizontalFov) {
+              if (!binding.isCurrent() || typeof horizontalFov !== 'number') return;
+              var basis = currentBasis();
+              if (!basis) return;
+              var nextViewport = normalizeRealSkyViewport(basis.ra, basis.dec, horizontalFov);
+              if (nextViewport) commitRealSkyViewport(el, binding, nextViewport, 'live');
+            };
+            el._galaxyAladinViewportTelemetry = binding;
+            if (aladin && typeof aladin.on === 'function') {
+              try {
+                aladin.on('positionChanged', binding.positionChanged);
+                binding.events.push('positionChanged');
+              } catch (positionListenerError) {}
+              try {
+                aladin.on('zoomChanged', binding.zoomChanged);
+                binding.events.push('zoomChanged');
+              } catch (zoomListenerError) {}
+            }
+            binding.refresh(initialViewport, initialSource);
+            binding.initialTimer = setTimeout(function () {
+              binding.initialTimer = null;
+              binding.refresh(initialViewport, initialSource);
+            }, 0);
+            return binding;
+          };
+
           var syncRealSkyAladin = function (el) {
             var aladin = el && el._galaxyAladin;
-            if (!el || !el.isConnected || !aladin) return;
+            if (!el || !el.isConnected || !aladin) return false;
             var signature = activeRealSkyTarget.key + '|' + activeRealSkySurvey.id + '|' + activeRealSkyCatalog.id;
-            if (el._galaxyAladinSignature === signature) return;
+            var viewportKey = signature + '|' + realSkyRetry;
+            if (el._galaxyAladinSignature === signature) {
+              if (!el._galaxyAladinViewportTelemetry || el._galaxyAladinViewportTelemetry.viewportKey !== viewportKey) {
+                bindRealSkyViewportTelemetry(el, aladin, signature, viewportKey, null, 'preset');
+              }
+              return true;
+            }
             el._galaxyAladinSignature = signature;
             var realSkyAladinIsCurrent = function () {
               return !!(el.isConnected && el._galaxyAladin === aladin && el._galaxyAladinSignature === signature);
@@ -7266,31 +7583,21 @@ if (!window._galaxyHasLoadedOnce) {
             var pendingViewMatches = !!(pendingView && pendingView.retry === realSkyRetry && pendingView.signature === signature && realSkyAladinIsCurrent());
             if (pendingView && pendingView.retry === realSkyRetry && pendingView.signature !== signature && realSkyAladinIsCurrent()) realSkyPendingViewRef.current = null;
             var restoreOutcome = '';
+            var defaultNavigationReady = true;
             if (pendingViewMatches) {
-              realSkyPendingViewRef.current = null;
               restoreOutcome = applyRealSkyObservationRestore(aladin, pendingView.view, pendingView.target);
+              if (restoreOutcome !== 'failed') realSkyPendingViewRef.current = null;
             } else {
-              try {
-                var defaultSetFov = typeof aladin.setFov === 'function' ? aladin.setFov : (typeof aladin.setFoV === 'function' ? aladin.setFoV : null);
-                if (defaultSetFov) defaultSetFov.call(aladin, activeRealSkyTarget.fov);
-                if (aladin.gotoObject) {
-                  aladin.gotoObject(activeRealSkyTarget.target, {
-                    success: function () {
-                      if (!realSkyAladinIsCurrent()) return;
-                      setRealSkyStatus('ready', __alloT('stem.galaxy.real_sky_status_loaded', '{target} loaded from real sky survey data.').replace('{target}', activeRealSkyTarget.name));
-                    },
-                    error: function () {
-                      if (!realSkyAladinIsCurrent()) return;
-                      if (aladin.gotoRaDec) aladin.gotoRaDec(activeRealSkyTarget.ra, activeRealSkyTarget.dec);
-                      setRealSkyStatus('ready', __alloT('stem.galaxy.real_sky_status_coordinates', '{target} loaded by coordinates.').replace('{target}', activeRealSkyTarget.name));
-                    }
-                  });
-                } else if (aladin.gotoRaDec) {
-                  aladin.gotoRaDec(activeRealSkyTarget.ra, activeRealSkyTarget.dec);
-                }
-              } catch (e) {}
-            }
-            try { if (aladin.removeLayers) aladin.removeLayers(); } catch (e2) {}
+              defaultNavigationReady = applyRealSkyAladinCoordinates(aladin, activeRealSkyTarget.ra, activeRealSkyTarget.dec, activeRealSkyTarget.fov);
+              if (!defaultNavigationReady && typeof aladin.gotoObject === 'function') {
+                try {
+                  var defaultSetFov = typeof aladin.setFov === 'function' ? aladin.setFov : (typeof aladin.setFoV === 'function' ? aladin.setFoV : null);
+                  if (defaultSetFov) defaultSetFov.call(aladin, activeRealSkyTarget.fov);
+                  aladin.gotoObject(activeRealSkyTarget.target);
+                  defaultNavigationReady = true;
+                } catch (symbolicNavigationError) {}
+              }
+            }            try { if (aladin.removeLayers) aladin.removeLayers(); } catch (e2) {}
             try {
               if (aladin.setImageSurvey) {
                 var surveySet = false;
@@ -7313,12 +7620,24 @@ if (!window._galaxyHasLoadedOnce) {
                 if (cat) aladin.addCatalog(cat);
               }
             } catch (e5) {}
-            if (pendingViewMatches) {
-              if (realSkyAladinIsCurrent()) finishRealSkyObservationRestore(restoreOutcome, pendingView.target, pendingView.openedMessage);
-            } else if (realSkyAladinIsCurrent()) {
-              setRealSkyStatus('ready', __alloT('stem.galaxy.real_sky_status_loaded', '{target} loaded from real sky survey data.').replace('{target}', activeRealSkyTarget.name));
+            var restoredViewport = pendingViewMatches && restoreOutcome === 'exact' ? pendingView.view : null;
+            if (pendingViewMatches && restoreOutcome === 'failed') {
+              // Keep the pending exact destination authoritative while recovery is
+              // visible; fallback telemetry would otherwise overwrite its header link.
+              disposeRealSkyViewportTelemetry(el);
+            } else {
+              bindRealSkyViewportTelemetry(el, aladin, signature, viewportKey, restoredViewport, restoredViewport ? 'saved' : 'preset');
             }
-          };
+            var synchronizationReady = true;
+            if (pendingViewMatches) {
+              if (realSkyAladinIsCurrent()) synchronizationReady = finishRealSkyObservationRestore(restoreOutcome, pendingView.target, pendingView.openedMessage);
+            } else if (realSkyAladinIsCurrent()) {
+              synchronizationReady = defaultNavigationReady;
+              setRealSkyStatus(defaultNavigationReady ? 'ready' : 'error', defaultNavigationReady
+                ? __alloT('stem.galaxy.real_sky_status_loaded', '{target} loaded from real sky survey data.').replace('{target}', activeRealSkyTarget.name)
+                : __alloT('stem.galaxy.real_sky_status_init_error', 'Real-sky atlas could not initialize on this device.'));
+            }
+            return synchronizationReady;          };
 
           // The Real Sky container is keyed on target+survey+catalog, so every target
           // click REMOUNTS it and builds a fresh Aladin Lite instance. Nothing ever
@@ -7328,7 +7647,9 @@ if (!window._galaxyHasLoadedOnce) {
           // callback is a new identity each time), so disposal is deferred by a tick
           // and cancelled if the same element comes straight back.
           var disposeRealSkyAladin = function (el) {
-            if (!el || !el._galaxyAladin) return;
+            if (!el) return;
+            disposeRealSkyViewportTelemetry(el);
+            if (!el._galaxyAladin) return;
             var instance = el._galaxyAladin;
             el._galaxyAladin = null;
             el._galaxyAladinSignature = '';
@@ -7367,12 +7688,18 @@ if (!window._galaxyHasLoadedOnce) {
                 setRealSkyStatus('error', __alloT('stem.galaxy.real_sky_status_load_error', 'Real-sky atlas could not load. The external Aladin Lite service may be blocked or offline.'));
                 return;
               }
+              var nextAladin = null;
               try {
                 el.innerHTML = '';
-                el._galaxyAladin = window.A.aladin('#' + el.id, {
-                  target: activeRealSkyTarget.target,
+                var initialSignature = activeRealSkyTarget.key + '|' + activeRealSkySurvey.id + '|' + activeRealSkyCatalog.id;
+                var initialPendingView = realSkyPendingViewRef.current;
+                var initialViewport = initialPendingView && initialPendingView.retry === realSkyRetry && initialPendingView.signature === initialSignature
+                  ? initialPendingView.view
+                  : activeRealSkyTarget;
+                nextAladin = window.A.aladin('#' + el.id, {
+                  target: String(initialViewport.ra) + ' ' + String(initialViewport.dec),
                   survey: activeRealSkySurvey.id,
-                  fov: activeRealSkyTarget.fov,
+                  fov: initialViewport.fov,
                   showReticle: true,
                   showCooGrid: true,
                   showCooGridControl: true,
@@ -7384,10 +7711,20 @@ if (!window._galaxyHasLoadedOnce) {
                   showLayersControl: true,
                   showGotoControl: true
                 });
+                var nextSetFov = nextAladin && (typeof nextAladin.setFov === 'function' ? nextAladin.setFov : (typeof nextAladin.setFoV === 'function' ? nextAladin.setFoV : null));
+                var nextHasNavigation = !!(nextAladin && typeof nextAladin.gotoRaDec === 'function');
+                if (!nextAladin || !nextSetFov || !nextHasNavigation) throw new Error('Aladin returned an incomplete instance');
+                el._galaxyAladin = nextAladin;
                 el._galaxyAladinSignature = '';
-                syncRealSkyAladin(el);
-                if (typeof awardStemXP === 'function') awardStemXP('galaxy_real_sky', 2, 'Opened real sky survey');
-              } catch (e) {
+                var synchronized = syncRealSkyAladin(el);
+                setRealSkyCapabilityRevision(function (revision) { return revision + 1; });
+                if (synchronized && typeof awardStemXP === 'function') awardStemXP('galaxy_real_sky', 2, 'Opened real sky survey');              } catch (e) {
+                disposeRealSkyViewportTelemetry(el);
+                var failedAladin = el._galaxyAladin || nextAladin;
+                el._galaxyAladin = null;
+                el._galaxyAladinSignature = '';
+                try { if (failedAladin && typeof failedAladin.destroy === 'function') failedAladin.destroy(); } catch (destroyInitError) {}
+                try { el.innerHTML = ''; } catch (clearInitError) {}
                 setRealSkyStatus('error', __alloT('stem.galaxy.real_sky_status_init_error', 'Real-sky atlas could not initialize on this device.'));
               }
             });
@@ -7458,6 +7795,33 @@ if (!window._galaxyHasLoadedOnce) {
           var enabledLayerLabels = LAYER_TOGGLES.filter(function (layer) { return !morphologyVisual.hiddenLayers[layer.key] && layers[layer.key] !== false; }).map(function (layer) { return layer.label; });
           var galaxySelectionSummary = selStar ? selStar.label + ' star' : selNeb ? selNeb.name : __alloT('stem.galaxy.summary_no_selection', 'No object selected');
           var galaxyMotionSummary = galaxyReducedMotion ? __alloT('stem.galaxy.summary_motion_reduced', 'Reduced motion; automatic movement disabled') : galaxyAutoRotate ? __alloT('stem.galaxy.summary_motion_rotating', 'Gentle automatic rotation active') : __alloT('stem.galaxy.summary_motion_paused', 'Automatic rotation paused');
+          var activeRealSkyViewportSignature = activeRealSkyTarget.key + '|' + activeRealSkySurvey.id + '|' + activeRealSkyCatalog.id;
+          var activeRealSkyViewportKey = activeRealSkyViewportSignature + '|' + realSkyRetry;
+          var cachedRealSkyViewport = realSkyViewportRef.current;
+          var presetRealSkyViewport = normalizeRealSkyViewport(activeRealSkyTarget.ra, activeRealSkyTarget.dec, activeRealSkyTarget.fov);
+          var displayedRealSkyViewport = cachedRealSkyViewport && cachedRealSkyViewport.key === activeRealSkyViewportKey
+            ? cachedRealSkyViewport
+            : Object.assign({ key: activeRealSkyViewportKey, signature: activeRealSkyViewportSignature, source: 'preset' }, presetRealSkyViewport);
+          var matchingPendingRealSkyView = realSkyPendingViewRef.current;
+          var pendingRealSkyViewport = matchingPendingRealSkyView && matchingPendingRealSkyView.retry === realSkyRetry && matchingPendingRealSkyView.signature === activeRealSkyViewportSignature
+            ? matchingPendingRealSkyView.view
+            : null;
+          var activeRealSkyExternalUrl = buildRealSkyViewportAladinUrl(pendingRealSkyViewport || displayedRealSkyViewport, activeRealSkySurvey) || activeAladinUrl;
+          var currentRealSkyControlElement = realSkyElementRef.current;
+          var currentRealSkyControlInstance = currentRealSkyControlElement && currentRealSkyControlElement._galaxyAladin;
+          var realSkyViewportControlsReady = realSkyCapabilityRevision >= 0 && realSkyStatus === 'ready' && !!currentRealSkyControlElement && currentRealSkyControlElement.isConnected
+            && currentRealSkyControlElement._galaxyAladinSignature === activeRealSkyViewportSignature
+            && !!currentRealSkyControlInstance && currentRealSkyControlInstance._galaxyCoordinateNavigationReady === true;
+          var activeRealSkyViewportText = formatRealSkyViewportReadout(displayedRealSkyViewport);
+          var realSkyViewportControls = [
+            { action: 'pan-left', icon: '←', label: __alloT('stem.galaxy.real_sky_pan_left', 'Pan atlas left') },
+            { action: 'pan-up', icon: '↑', label: __alloT('stem.galaxy.real_sky_pan_up', 'Pan atlas up') },
+            { action: 'pan-down', icon: '↓', label: __alloT('stem.galaxy.real_sky_pan_down', 'Pan atlas down') },
+            { action: 'pan-right', icon: '→', label: __alloT('stem.galaxy.real_sky_pan_right', 'Pan atlas right') },
+            { action: 'zoom-out', icon: '−', label: __alloT('stem.galaxy.real_sky_zoom_out', 'Zoom atlas out') },
+            { action: 'zoom-in', icon: '+', label: __alloT('stem.galaxy.real_sky_zoom_in', 'Zoom atlas in') },
+            { action: 'reset', icon: '⌖', label: __alloT('stem.galaxy.real_sky_reset_view', 'Reset to selected target') }
+          ];
 
 
 
@@ -7924,13 +8288,13 @@ if (!window._galaxyHasLoadedOnce) {
                     )
                   ),
                   React.createElement("div", { className: "mb-3 grid grid-cols-4 gap-1 rounded-xl bg-slate-200/70 p-1", role: "tablist", "aria-orientation": "horizontal", "aria-label": __alloT('stem.galaxy.aria_control_groups', 'Galaxy control groups') },
-                    [{ key: 'view', icon: '◉', label: 'View' }, { key: 'motion', icon: '↻', label: 'Motion' }, { key: 'time', icon: '◷', label: 'Time' }, { key: 'discover', icon: '⌖', label: 'Discover' }].map(function (panel) {
+                    [{ key: 'view', icon: '◉', label: __alloT('stem.galaxy.control_group_view', 'View') }, { key: 'motion', icon: '↻', label: __alloT('stem.galaxy.control_group_motion', 'Motion') }, { key: 'time', icon: '◷', label: __alloT('stem.galaxy.control_group_time', 'Time') }, { key: 'discover', icon: '⌖', label: __alloT('stem.galaxy.control_group_discover', 'Discover') }].map(function (panel) {
                       var active = galaxyControlPanel === panel.key;
                       // A tab without id/aria-controls leaves screen readers unable to
                       // connect the tab to the panel it reveals; roving tabindex keeps
                       // the group a single stop in the tab order.
                       return React.createElement("button", { type: "button", key: panel.key, role: "tab", "data-galaxy-control-tab": panel.key, id: "galaxy-tab-" + panel.key, "aria-controls": "galaxy-panel-" + panel.key, "aria-selected": active, tabIndex: active ? 0 : -1, onKeyDown: function (event) { moveGalaxyControlTab(event, panel.key); }, onClick: function () { upd('galaxyControlPanel', panel.key); }, className: "min-h-[44px] rounded-lg px-1.5 py-2 text-xs font-black transition-colors " + (active ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:bg-white/70 hover:text-slate-900") },
-                        React.createElement("span", { className: "block text-sm", "aria-hidden": true }, panel.icon), __alloT('stem.galaxy.control_group_' + panel.key, panel.label));
+                        React.createElement("span", { className: "block text-sm", "aria-hidden": true }, panel.icon), panel.label);
                     })
                   ),
                   galaxyControlPanel === 'view' && React.createElement("div", { className: "space-y-3", role: "tabpanel", id: "galaxy-panel-view", "aria-labelledby": "galaxy-tab-view" },              // ── Observatory Filters ──
@@ -8938,7 +9302,7 @@ if (!window._galaxyHasLoadedOnce) {
                       onClick: reloadRealSkyAtlas,
                       className: "inline-flex min-h-[44px] items-center rounded-lg border border-cyan-200/40 bg-cyan-400/10 px-3 py-2 text-xs font-bold text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 " + (realSkyReloadPending ? "cursor-wait opacity-60" : "hover:bg-cyan-400/20")
                     }, __alloT('stem.galaxy.retry_atlas', 'Retry atlas')),
-                    React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", "data-galaxy-real-sky-external-link": "header", className: "inline-flex min-h-[44px] items-center rounded-lg border px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-400/10", style: { borderColor: 'rgba(103,232,249,0.35)' } }, __alloT('stem.galaxy.open_in_aladin', 'Open in Aladin')),
+                    React.createElement("a", { ref: realSkyExternalLinkRef, href: activeRealSkyExternalUrl, target: "_blank", rel: "noreferrer", "data-galaxy-real-sky-external-link": "header", className: "inline-flex min-h-[44px] items-center rounded-lg border px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-400/10", style: { borderColor: 'rgba(103,232,249,0.35)' } }, __alloT('stem.galaxy.open_in_aladin', 'Open in Aladin')),
                     React.createElement("button", {
                       type: "button",
                       "data-galaxy-real-sky-copy-view-link": "true",
@@ -9009,7 +9373,7 @@ if (!window._galaxyHasLoadedOnce) {
                           key: target.key,
                           "data-galaxy-real-sky-target": target.key,
                           "aria-pressed": on ? "true" : "false",
-                          onClick: function () { patchGalaxy({ realSkyTarget: target.key, realSkyRecipe: '', previousRealSkySurvey: '', realSkySurveyHistory: [activeRealSkySurvey.id], realSkyStatus: 'idle', realSkyMessage: '' }); },
+                          onClick: function () { if (on) return; realSkyPendingViewRef.current = null; patchGalaxy({ realSkyTarget: target.key, realSkyRecipe: '', previousRealSkySurvey: '', realSkySurveyHistory: [activeRealSkySurvey.id], realSkyStatus: 'idle', realSkyMessage: '' }); },
                           className: "min-h-[44px] text-left rounded-lg border px-2.5 py-2 transition-all " + (on ? "bg-slate-900 text-white border-slate-900 shadow-sm" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-white")
                         },
                           React.createElement("span", { className: "block text-xs font-black leading-tight" }, target.short + " " + target.name),
@@ -9043,8 +9407,9 @@ if (!window._galaxyHasLoadedOnce) {
                         return React.createElement("button", {
                           type: "button",
                           key: catalog.id,
+                          "data-galaxy-real-sky-catalog-id": catalog.id,
                           "aria-pressed": on ? "true" : "false",
-                          onClick: function () { patchGalaxy({ realSkyCatalog: catalog.id, realSkyStatus: 'idle', realSkyMessage: '' }); },
+                          onClick: function () { if (on) return; realSkyPendingViewRef.current = null; patchGalaxy({ realSkyCatalog: catalog.id, realSkyStatus: 'idle', realSkyMessage: '' }); },
                           className: "min-h-[44px] w-full text-left rounded-lg border px-2.5 py-2 text-xs font-bold transition-all " + (on ? "bg-amber-50 text-amber-800 border-amber-300" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-white")
                         }, catalog.label, React.createElement("span", { className: "block text-[11px] font-semibold opacity-70" }, catalog.desc));
                       })
@@ -9088,7 +9453,7 @@ if (!window._galaxyHasLoadedOnce) {
                         realSkyStatus === 'error' && React.createElement("p", { id: "galaxy-real-sky-recovery-hint", className: "mt-2 text-[11px] leading-relaxed text-cyan-100" }, __alloT('stem.galaxy.real_sky_recovery_hint', 'Your selected target and saved notes are safe. Retry here or open the same coordinates in the external atlas.')),
                         realSkyStatus === 'error' && React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-2" },
                           React.createElement("button", { type: "button", "data-galaxy-real-sky-retry": "true", "aria-controls": "galaxy-real-sky-aladin", "aria-describedby": "galaxy-real-sky-recovery-hint", onClick: reloadRealSkyAtlas, className: "inline-flex min-h-[44px] items-center rounded-lg border border-cyan-200/50 bg-cyan-400/15 px-3 py-2 text-xs font-bold text-cyan-50 hover:bg-cyan-400/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950" }, __alloT('stem.galaxy.retry_atlas', 'Retry atlas')),
-                          React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", "data-galaxy-real-sky-external-link": "recovery", "aria-controls": "galaxy-real-sky-aladin", "aria-describedby": "galaxy-real-sky-recovery-hint", className: "inline-flex min-h-[44px] items-center rounded-lg bg-cyan-700 px-3 py-2 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950" }, __alloT('stem.galaxy.open_external_atlas', 'Open external atlas'))
+                          React.createElement("a", { href: activeRealSkyExternalUrl, target: "_blank", rel: "noreferrer", "data-galaxy-real-sky-external-link": "recovery", "aria-controls": "galaxy-real-sky-aladin", "aria-describedby": "galaxy-real-sky-recovery-hint", className: "inline-flex min-h-[44px] items-center rounded-lg bg-cyan-700 px-3 py-2 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950" }, __alloT('stem.galaxy.open_external_atlas', 'Open external atlas'))
                         )
                       )
                     )
@@ -9096,9 +9461,91 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("div", { id: "galaxy-real-sky-caption", "data-galaxy-real-sky-caption": "true", className: "mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-600 shadow-sm" },
                     React.createElement("span", { className: "font-black text-slate-800" }, __alloT('stem.galaxy.real_sky_coordinates_label', 'Sky coordinates')),
-                    React.createElement("span", { className: "font-mono" }, "RA " + activeRealSkyTarget.ra.toFixed(4) + "\u00B0 \u00B7 Dec " + activeRealSkyTarget.dec.toFixed(4) + "\u00B0 \u00B7 FoV " + activeRealSkyTarget.fov + "\u00B0"),
+                    React.createElement("span", {
+                      key: activeRealSkyViewportKey,
+                      ref: realSkyViewportReadoutRef,
+                      "data-galaxy-real-sky-viewport-readout": "true",
+                      "data-galaxy-real-sky-viewport-key": activeRealSkyViewportKey,
+                      "data-galaxy-real-sky-viewport-source": displayedRealSkyViewport.source || "preset",
+                      "data-galaxy-real-sky-ra": String(displayedRealSkyViewport.ra),
+                      "data-galaxy-real-sky-dec": String(displayedRealSkyViewport.dec),
+                      "data-galaxy-real-sky-fov": String(displayedRealSkyViewport.fov),
+                      "aria-live": "off",
+                      className: "font-mono"
+                    }, activeRealSkyViewportText),
                     React.createElement("span", { className: "ml-auto" }, __alloT('stem.galaxy.real_sky_controls_hint', 'Drag to pan \u00B7 scroll or pinch to zoom \u00B7 right-click to identify')),
                     React.createElement("span", { className: "w-full text-slate-500" }, __alloT('stem.galaxy.real_sky_credit', 'Real survey imagery and object data via CDS Aladin Lite and SIMBAD.'))
+                  ),
+
+                  React.createElement("div", { "data-galaxy-real-sky-viewport-controls": "true", className: "mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50/60 p-2.5" },
+                    React.createElement("p", { id: "galaxy-real-sky-viewport-controls-label", className: "mr-auto text-xs font-black text-cyan-950" }, __alloT('stem.galaxy.real_sky_keyboard_controls', 'Keyboard atlas controls')),
+                    React.createElement("div", { role: "group", "aria-labelledby": "galaxy-real-sky-viewport-controls-label", "aria-disabled": realSkyViewportControlsReady ? "false" : "true", className: "grid grid-cols-4 gap-1.5 sm:grid-cols-7" },
+                      realSkyViewportControls.map(function (control) {
+                        return React.createElement("button", {
+                          type: "button",
+                          key: control.action,
+                          "data-galaxy-real-sky-viewport-action": control.action,
+                          disabled: !realSkyViewportControlsReady,
+                          "aria-controls": "galaxy-real-sky-aladin",
+                          "aria-label": control.label,
+                          title: control.label,
+                          onClick: function () { controlRealSkyViewport(control.action); },
+                          className: "flex h-11 min-w-[44px] items-center justify-center rounded-lg border border-cyan-300 bg-white px-3 text-base font-black text-cyan-900 shadow-sm hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                        },
+                          React.createElement("span", { "aria-hidden": "true" }, control.icon),
+                          React.createElement("span", { className: "sr-only" }, control.label)
+                        );
+                      })
+                    )
+                  ),
+                  realSkyStatus === 'ready' && activeRealSkyStaticImageUrl && React.createElement("details", {
+                    key: activeRealSkyTarget.key + "-" + activeRealSkySurvey.id,
+                    "data-galaxy-real-sky-static-disclosure": "true",
+                    className: "mt-2 overflow-hidden rounded-xl border border-cyan-200 bg-cyan-50/50 shadow-sm",
+                    onToggle: function (event) {
+                      var disclosure = event.currentTarget;
+                      if (!disclosure || !disclosure.open) return;
+                      var image = disclosure.querySelector('[data-galaxy-real-sky-static-disclosure-image="true"]');
+                      var source = image && image.getAttribute('data-src');
+                      if (image && source && !image.getAttribute('src')) image.setAttribute('src', source);
+                    }
+                  },
+                    React.createElement("summary", {
+                      className: "flex min-h-[44px] cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs font-black text-cyan-900 marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-600"
+                    },
+                      React.createElement("span", { "aria-hidden": "true" }, "📷"),
+                      React.createElement("span", null, __alloT('stem.galaxy.snapshot', 'Snapshot') + " · " + activeRealSkyTarget.short + " · " + activeRealSkySurvey.label)
+                    ),
+                    React.createElement("div", { className: "border-t border-cyan-100 bg-white p-3" },
+                      React.createElement("figure", { "data-galaxy-real-sky-static-disclosure-figure": "true", className: "overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-inner" },
+                        React.createElement("img", {
+                          "data-galaxy-real-sky-static-disclosure-image": "true",
+                          "data-src": activeRealSkyStaticImageUrl,
+                          alt: activeRealSkyTarget.name + " · " + activeRealSkySurvey.label + " · " + __alloT('stem.galaxy.snapshot', 'Snapshot'),
+                          referrerPolicy: "no-referrer",
+                          crossOrigin: "anonymous",
+                          decoding: "async",
+                          loading: "eager",
+                          className: "aspect-[3/2] w-full bg-slate-950 object-cover",
+                          onError: function (event) {
+                            var fallbackFigure = event.currentTarget && event.currentTarget.parentElement;
+                            var disclosureBody = fallbackFigure && fallbackFigure.parentElement;
+                            var fallbackDisclosure = disclosureBody && disclosureBody.parentElement;
+                            var fallbackStatus = fallbackDisclosure && fallbackDisclosure.querySelector('[data-galaxy-real-sky-static-disclosure-status="true"]');
+                            if (fallbackFigure) fallbackFigure.hidden = true;
+                            if (fallbackStatus) fallbackStatus.hidden = false;
+                          }
+                        }),
+                        React.createElement("figcaption", { className: "bg-slate-950 px-3 py-2 text-[11px] font-bold text-cyan-100" }, activeRealSkyTarget.name + " · " + activeRealSkySurvey.label)
+                      ),
+                      React.createElement("p", {
+                        hidden: true,
+                        role: "status",
+                        "aria-live": "polite",
+                        "data-galaxy-real-sky-static-disclosure-status": "true",
+                        className: "rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900"
+                      }, __alloT('stem.galaxy.real_sky_recovery_hint', 'Your selected target and saved notes are safe. Retry here or open the same coordinates in the external atlas.'))
+                    )
                   ),
 
                   React.createElement("section", { "data-galaxy-real-sky-workbench": "true", className: "mt-3 rounded-2xl border border-violet-200 bg-white p-3 shadow-sm", "aria-labelledby": "galaxy-real-sky-workbench-title" },

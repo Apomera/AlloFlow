@@ -242,6 +242,171 @@ describe('no quest is granted for free', () => {
   });
 });
 
+describe('the xenon scenario requires a continuous low-power hold', () => {
+  function makeXenonStep() {
+    const openMark = '} else if (scen.id === \'xenon\') {';
+    const closeMark = '} else if (scen.id === \'blackout\')';
+    const open = SRC.indexOf(openMark);
+    const close = SRC.indexOf(closeMark, open);
+    expect(open, 'xenon scoring branch not found').toBeGreaterThan(-1);
+    expect(close, 'end of xenon scoring branch not found').toBeGreaterThan(open);
+    // Execute the production scoring branch itself, not a copy of its rules.
+    return new Function('s', 'dt', SRC.slice(open + openMark.length, close));
+  }
+
+  it('restarts the timer if power rises above 20 percent', () => {
+    const step = makeXenonStep();
+    const s = { phase: 0, power: 20, holdOk: 0, verdict: null };
+
+    step(s, 0);
+    expect(s.phase).toBe(1);
+    step(s, 45);
+    expect(s.holdOk).toBe(45);
+
+    s.power = 21;
+    step(s, 1);
+    expect(s.phase).toBe(1);
+    expect(s.holdOk).toBe(0);
+    expect(s.verdict).toBeNull();
+
+    // Ninety low-power seconds in total are not enough when interrupted.
+    s.power = 20;
+    step(s, 45);
+    expect(s.phase).toBe(1);
+    expect(s.holdOk).toBe(45);
+  });
+
+  it('advances only after 90 continuous low-power seconds, then requires recovery', () => {
+    const step = makeXenonStep();
+    const s = { phase: 0, power: 20, holdOk: 0, verdict: null };
+
+    step(s, 0);
+    step(s, 89);
+    expect(s.phase).toBe(1);
+    expect(s.verdict).toBeNull();
+
+    step(s, 1);
+    expect(s.phase).toBe(2);
+    expect(s.verdict).toBeNull();
+
+    s.power = 81;
+    step(s, 0.1);
+    expect(s.verdict && s.verdict.ok).toBe(true);
+  });
+});
+
+describe('reactor objectives expose the scoring state learners are trying to control', () => {
+  function progressFor(state, scenario) {
+    const open = SRC.indexOf('  function rxScenarioProgress(');
+    const close = SRC.indexOf('\n  function rxDecayHeat', open);
+    expect(open, 'rxScenarioProgress helper not found').toBeGreaterThan(-1);
+    expect(close, 'end of rxScenarioProgress helper not found').toBeGreaterThan(open);
+    const read = new Function(
+      SRC.slice(open, close) + '\nreturn rxScenarioProgress;',
+    )();
+    return read(state, { id: scenario });
+  }
+
+  it('shows a continuous steady-power hold and an explicit reset state', () => {
+    const holding = progressFor({ power: 100, holdOk: 23 }, 'steady');
+    expect(holding).toMatchObject({
+      stage: 'steady-hold', value: 23, max: 60,
+    });
+    expect(holding.detail).toContain('23 of 60 continuous seconds');
+
+    const reset = progressFor({ power: 106, holdOk: 0 }, 'steady');
+    expect(reset).toMatchObject({
+      stage: 'steady-reset', value: 0, max: 60,
+    });
+    expect(reset.detail).toContain('timer is at 0');
+  });
+
+  it('names all three xenon phases, including an interrupted hold', () => {
+    expect(progressFor({ phase: 0, power: 55, holdOk: 0 }, 'xenon'))
+      .toMatchObject({ stage: 'xenon-lower', value: 0, max: 3 });
+    expect(progressFor({ phase: 1, power: 20, holdOk: 45 }, 'xenon'))
+      .toMatchObject({ stage: 'xenon-hold', value: 1.5, max: 3 });
+    expect(progressFor({ phase: 1, power: 21, holdOk: 0 }, 'xenon'))
+      .toMatchObject({ stage: 'xenon-reset', value: 1, max: 3 });
+    expect(progressFor({ phase: 2, power: 70, holdOk: 90 }, 'xenon'))
+      .toMatchObject({ stage: 'xenon-recover', value: 2, max: 3 });
+  });
+
+  it('turns blackout SCRAM and cooling into two inspectable steps', () => {
+    const beforeScram = progressFor({ scrammed: false, holdOk: 0 }, 'blackout');
+    expect(beforeScram).toMatchObject({
+      stage: 'blackout-scram', value: 0, max: 2,
+    });
+    expect(beforeScram.detail).toContain('Cooling is offline');
+
+    const cooling = progressFor({ scrammed: true, holdOk: 60 }, 'blackout');
+    expect(cooling).toMatchObject({
+      stage: 'blackout-cool', value: 1.5, max: 2,
+    });
+    expect(cooling.detail).toContain('60 of 120 seconds');
+
+    const complete = progressFor({
+      scrammed: true, holdOk: 120, verdict: { ok: true },
+    }, 'blackout');
+    expect(complete).toMatchObject({ stage: 'complete', value: 2, max: 2 });
+  });
+});
+
+describe('station blackout actually removes cooling', () => {
+  function productionReactor() {
+    const constantsOpen = SRC.indexOf('  var RX_BETA =');
+    const constantsClose = SRC.indexOf('\n  var RX_SCENARIOS =', constantsOpen);
+    const decayOpen = SRC.indexOf('  function rxDecayHeat(');
+    const decayClose = SRC.indexOf('\n\n  // ── 3D core', decayOpen);
+    const reactivityOpen = SRC.indexOf('      function rxReactivity(');
+    const reactivityClose = SRC.indexOf('\n\n      function rxWriteTelemetry', reactivityOpen);
+    const stepOpen = SRC.indexOf('      function rxStep(');
+    const stepClose = SRC.indexOf('\n\n      React.useEffect(function () {', stepOpen);
+    for (const [label, value] of Object.entries({
+      constantsOpen, constantsClose, decayOpen, decayClose,
+      reactivityOpen, reactivityClose, stepOpen, stepClose,
+    })) expect(value, label + ' not found').toBeGreaterThan(-1);
+    return new Function(
+      SRC.slice(constantsOpen, constantsClose)
+        + SRC.slice(decayOpen, decayClose)
+        + SRC.slice(reactivityOpen, reactivityClose)
+        + SRC.slice(stepOpen, stepClose)
+        + '\nreturn { step: rxStep, mode: RX_MODES[0], clad: RX_T_CLAD };',
+    )();
+  }
+
+  function scrammedState(pumps) {
+    return {
+      rods: 100, pumps, scrammed: true, power: 100, t: 320,
+      xe: 1, iod: 1, elapsed: 0, sinceScram: 0, holdOk: 0,
+      phase: 0, peakT: 320, verdict: null,
+    };
+  }
+
+  it('fails before 120 seconds if the learner never restores cooling', () => {
+    const { step, mode, clad } = productionReactor();
+    const state = scrammedState(false);
+    while (!state.verdict && state.elapsed < 121) {
+      step(state, 0.016, mode, { id: 'blackout' });
+    }
+    expect(state.verdict && state.verdict.ok).toBe(false);
+    expect(state.elapsed).toBeLessThan(120);
+    expect(state.t).toBeGreaterThanOrEqual(clad);
+  });
+
+  it('survives the full hold if cooling is restored halfway through', () => {
+    const { step, mode, clad } = productionReactor();
+    const state = scrammedState(false);
+    while (!state.verdict && state.elapsed < 121) {
+      if (state.elapsed >= 60) state.pumps = true;
+      step(state, 0.016, mode, { id: 'blackout' });
+    }
+    expect(state.verdict && state.verdict.ok).toBe(true);
+    expect(state.elapsed).toBeGreaterThanOrEqual(120);
+    expect(state.peakT).toBeLessThan(clad);
+  });
+});
+
 describe('the tool does not contradict itself in the headline', () => {
   // Both of these are the same failure: someone fixed the careful case and
   // left the summary sentence stating the thing they had just disproved.

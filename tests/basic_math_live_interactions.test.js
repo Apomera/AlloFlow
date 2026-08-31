@@ -125,6 +125,31 @@ describe('draft-safe basic-math numeric inputs', () => {
     expect(runtime.getState()._numberline.range).toEqual({ min: 30, max: 40 });
     expect(runtime.container.textContent).not.toContain('Minimum value must be less than maximum value');
   });
+
+  it('preserves Ratio Lab drafts until a valid bounded value can be committed', async () => {
+    const runtime = await mountTool('stem_lab/stem_tool_ratios.js', 'ratioLab', {
+      _ratioLab: { mode: 'numberLine', lineTopUnit: 2, lineBottomUnit: 5, lineSteps: 5 },
+    });
+    const input = runtime.container.querySelector('[aria-label="Top-line value per interval"]');
+
+    await enterText(input, '');
+    expect(input.value).toBe('');
+    expect(runtime.getState()._ratioLab.lineTopUnit).toBe(2);
+    expect(runtime.getState()._ratioLab.lineTopUnitDraft).toBe('');
+
+    await enterText(input, '0');
+    expect(input.value).toBe('0');
+    expect(runtime.getState()._ratioLab.lineTopUnit).toBe(2);
+
+    await enterText(input, '0.5');
+    expect(runtime.getState()._ratioLab.lineTopUnit).toBe(0.5);
+    await React.act(async () => {
+      input.focus();
+      input.blur();
+    });
+    expect(runtime.getState()._ratioLab.lineTopUnit).toBe(0.5);
+    expect(runtime.getState()._ratioLab.lineTopUnitDraft).toBeNull();
+  });
 });
 
 describe('normalized fraction answers', () => {
@@ -162,5 +187,42 @@ describe('normalized fraction answers', () => {
 
     expect(runtime.getState()._fractions.storyFeedback.correct).toBe(true);
     expect(runtime.container.textContent).toContain('Equivalent value; it simplifies to 3 3/8.');
+  });
+});
+
+describe('Money Math classroom exchange model', () => {
+  it('states that rates are fixed and explains the conversion and rounding model', async () => {
+    const runtime = await mountTool('stem_lab/stem_tool_money.js', 'moneyMath', {
+      _moneyMath: { tab: 'exchange', exchFrom: 'USD', exchTo: 'JPY', exchAmount: 100, exchCorrect: 14950, exchAnswer: null, exchFeedback: null },
+    });
+
+    expect(runtime.container.textContent).toContain('fixed classroom rate model');
+    expect(runtime.container.textContent).toContain('not live market quotes');
+    expect(runtime.container.textContent).toContain('1 USD = 149.5 JPY');
+    expect(runtime.container.textContent).toContain('amount ÷ the from-currency rate × the to-currency rate');
+    expect(runtime.container.textContent).toContain('nearest whole yen');
+
+    const input = runtime.container.querySelector('[aria-label="Currency exchange answer"]');
+    expect(input.getAttribute('step')).toBe('1');
+    expect(input.getAttribute('aria-describedby')).toBe('money-exchange-model-note money-exchange-rounding-note');
+  });
+
+  it('rejects a loose percentage approximation and accepts the currency-rounded answer', async () => {
+    const runtime = await mountTool('stem_lab/stem_tool_money.js', 'moneyMath', {
+      _moneyMath: { tab: 'exchange', exchFrom: 'USD', exchTo: 'JPY', exchAmount: 100, exchCorrect: 14950, exchAnswer: null, exchFeedback: null },
+    });
+    const input = runtime.container.querySelector('[aria-label="Currency exchange answer"]');
+    const check = runtime.container.querySelector('button[aria-label="Check"]');
+
+    await enterText(input, '14500');
+    await React.act(async () => check.click());
+    expect(runtime.getState()._moneyMath.exchFeedback.ok).toBe(false);
+    expect(runtime.container.textContent).toContain('correctly rounded answer is ¥14,950 JPY');
+
+    await enterText(input, '14950');
+    expect(runtime.getState()._moneyMath.exchFeedback).toBeNull();
+    await React.act(async () => check.click());
+    expect(runtime.getState()._moneyMath.exchFeedback.ok).toBe(true);
+    expect(runtime.container.textContent).toContain('Correct!');
   });
 });

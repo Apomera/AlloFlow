@@ -1598,6 +1598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         var usageCount = opts.usageCount || 0;
         var tier = masteryTier(usageCount);
         return h('button', {
+          type: 'button',
           key: s.id,
           onClick: onClick,
           disabled: !unlocked && !opts.alwaysClickable,
@@ -1624,7 +1625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               : ('Locked \u2014 ' + s.unlockHint)
           ),
           unlocked && usageCount > 0 && h('div', { className: 'mt-1 text-[10px] text-slate-500 font-mono' }, '\uD83D\uDD2E ' + usageCount + ' cast' + (usageCount > 1 ? 's' : '')),
-          unlocked && h('div', { className: 'mt-1 text-[10px] italic text-slate-400 leading-snug' }, s.flavor)
+          unlocked && h('div', { className: 'mt-1 text-[10px] italic text-slate-600 leading-snug' }, s.flavor)
         );
       }
 
@@ -1836,8 +1837,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Solves a real UX gap: previously the only way to see a spell's
           // questions was to cast it in combat (high-stakes), so students
           // couldn't make informed choices about which spell to practice.
-          d.previewingSpellId && (function() {
+          d.previewingSpellId && h(stableType('SpellPreviewDialog', function SpellPreviewDialog() {
+            var dialogRef = React.useRef(null);
+            var closeButtonRef = React.useRef(null);
+            var openerRef = React.useRef(null);
             var ps = findSpell(d.previewingSpellId);
+            function closePreview() {
+              sfxClick();
+              updKey('previewingSpellId', null);
+            }
+            React.useEffect(function() {
+              var opener = document.activeElement;
+              openerRef.current = opener && typeof opener.focus === 'function' ? opener : null;
+              var initialFocus = closeButtonRef.current || dialogRef.current;
+              if (initialFocus && typeof initialFocus.focus === 'function') initialFocus.focus();
+              return function() {
+                var previousFocus = openerRef.current;
+                if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+                  previousFocus.focus();
+                }
+              };
+            }, []);
+            function handlePreviewKeyDown(e) {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                closePreview();
+                return;
+              }
+              if (e.key !== 'Tab' || !dialogRef.current) return;
+              var focusable = Array.prototype.slice.call(dialogRef.current.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+              )).filter(function(node) { return node.getAttribute('aria-hidden') !== 'true'; });
+              if (focusable.length === 0) {
+                e.preventDefault();
+                dialogRef.current.focus();
+                return;
+              }
+              var first = focusable[0];
+              var last = focusable[focusable.length - 1];
+              var active = document.activeElement;
+              if (!dialogRef.current.contains(active)) {
+                e.preventDefault();
+                (e.shiftKey ? last : first).focus();
+              } else if (e.shiftKey && active === first) {
+                e.preventDefault();
+                last.focus();
+              } else if (!e.shiftKey && active === last) {
+                e.preventDefault();
+                first.focus();
+              }
+            }
             if (!ps) return null;
             var bank = getMergedBank(ps, aiChallengeCache);
             var stats = d.questionStats || {};
@@ -1869,11 +1919,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             // Cast count from castCounts
             var castN = (d.castCounts || {})[ps.id] || 0;
             return h('div', {
+              ref: dialogRef,
               role: 'dialog',
               'aria-modal': 'true',
               'aria-labelledby': 'abs-preview-title',
+              tabIndex: -1,
               style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflow: 'auto' },
-              onClick: function(e) { if (e.target === e.currentTarget) { sfxClick(); updKey('previewingSpellId', null); } }
+              onKeyDown: handlePreviewKeyDown,
+              onClick: function(e) { if (e.target === e.currentTarget) closePreview(); }
             },
               h('div', {
                 style: { maxWidth: '560px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: '#fff', border: '2px solid ' + ps.color, borderRadius: '14px', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }
@@ -1886,8 +1939,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, ps.sourceLabel + ' · ' + ps.element + ' · ' + ps.baseDamage + ' base dmg · crit ×' + ps.critMultiplier.toFixed(1))
                   ),
                   h('button', {
-                    onClick: function() { sfxClick(); updKey('previewingSpellId', null); },
-                    className: 'transition-colors text-2xl text-slate-400 hover:text-slate-700 font-bold leading-none focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2',
+                    ref: closeButtonRef,
+                    type: 'button',
+                    onClick: closePreview,
+                    className: 'transition-colors text-2xl text-slate-600 hover:text-slate-800 font-bold leading-none focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2',
                     'aria-label': t('stem.allobotsage.close_preview', 'Close preview')
                   }, '×')
                 ),
@@ -1895,16 +1950,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('div', { className: 'px-4 py-2 text-[12px] italic text-slate-600 border-b border-slate-200' }, '"' + ps.flavor + '"'),
                 h('div', { className: 'px-4 py-2 grid grid-cols-3 gap-2 text-center border-b border-slate-200' },
                   h('div', null,
-                    h('div', { className: 'text-[9px] font-bold text-slate-400 uppercase tracking-wider' }, t('stem.allobotsage.casts', 'Casts')),
+                    h('div', { className: 'text-[9px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.casts', 'Casts')),
                     h('div', { className: 'text-base font-bold text-violet-700' }, castN)
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[9px] font-bold text-slate-400 uppercase tracking-wider' }, t('stem.allobotsage.questions', 'Questions')),
-                    h('div', { className: 'text-base font-bold text-slate-700' }, bank.length, h('span', { className: 'text-[10px] text-slate-400 font-normal' }, ' (' + pSeen + ' seen)'))
+                    h('div', { className: 'text-[9px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.questions', 'Questions')),
+                    h('div', { className: 'text-base font-bold text-slate-700' }, bank.length, h('span', { className: 'text-[10px] text-slate-600 font-normal' }, ' (' + pSeen + ' seen)'))
                   ),
                   h('div', null,
-                    h('div', { className: 'text-[9px] font-bold text-slate-400 uppercase tracking-wider' }, t('stem.allobotsage.accuracy', 'Accuracy')),
-                    h('div', { className: 'text-base font-bold ' + (pAccPct === null ? 'text-slate-400' : pAccPct >= 75 ? 'text-emerald-600' : pAccPct >= 50 ? 'text-amber-600' : 'text-red-600') }, pAccPct === null ? '—' : pAccPct + '%')
+                    h('div', { className: 'text-[9px] font-bold text-slate-600 uppercase tracking-wider' }, t('stem.allobotsage.accuracy', 'Accuracy')),
+                    h('div', { className: 'text-base font-bold ' + (pAccPct === null ? 'text-slate-600' : pAccPct >= 75 ? 'text-emerald-600' : pAccPct >= 50 ? 'text-amber-600' : 'text-red-600') }, pAccPct === null ? '—' : pAccPct + '%')
                   )
                 ),
                 // Sample questions
@@ -1940,6 +1995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 // CTA: drill in Study Hall
                 h('div', { className: 'px-4 pb-4 flex gap-2' },
                   h('button', {
+                    type: 'button',
                     onClick: function() {
                       sfxClick();
                       updSage({ phase: 'practice', practiceSpellId: ps.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, previewingSpellId: null });
@@ -1948,13 +2004,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     'aria-label': 'Drill ' + ps.name + ' in Study Hall'
                   }, t('stem.allobotsage.drill_in_study_hall', '📚 Drill in Study Hall')),
                   h('button', {
-                    onClick: function() { sfxClick(); updKey('previewingSpellId', null); },
+                    type: 'button',
+                    onClick: closePreview,
                     className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-500 focus:outline-none'
                   }, t('stem.allobotsage.close', 'Close'))
                 )
               )
             );
-          })(),
+          }), null),
 
           // Header
           h('div', { className: 'flex items-center gap-3 mb-4' },

@@ -22,7 +22,7 @@ function expeditionSeed(extra = {}) {
     analyzerMysteryWins: {}, earthSeen: false,
     earthShieldResultSeen: false, earthShieldRuns: 0,
     missionId: 'power_path', missionStarted: false, missionPanelOpen: false,
-    notebookOpen: false, labFocus: false,
+    notebookOpen: false, labFocus: false, labShellPanel: 'journey',
   }, extra);
 }
 

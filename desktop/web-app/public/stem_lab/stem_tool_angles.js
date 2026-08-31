@@ -464,8 +464,11 @@ window.StemLab = window.StemLab || {
       // Tolerance shrinks with streak (progressive difficulty)
       var tolerance = Math.max(1, 5 - Math.floor(streak / 3));
 
+      var angleSubmissionPending = false;
       var checkAngle = function() {
-        if (!angleChallenge) return;
+        if (!angleChallenge || angleSubmissionPending ||
+            (angleFeedback && (angleFeedback.correct || angleChallenge.type === 'classify'))) return;
+        angleSubmissionPending = true;
         if (angleChallenge.type === 'create') {
           var diff = Math.abs(angleValue - angleChallenge.target);
           var ok = diff <= tolerance;
@@ -499,8 +502,10 @@ window.StemLab = window.StemLab || {
       };
 
       var checkEstimate = function() {
-        var guess = parseInt(estimateGuess);
-        if (isNaN(guess)) return;
+        if (angleSubmissionPending || estimateResult) return;
+        var guess = Number(String(estimateGuess == null ? '' : estimateGuess).trim());
+        if (!Number.isSafeInteger(guess)) return;
+        angleSubmissionPending = true;
         var diff = Math.abs(guess - estimateTarget);
         // Progressive difficulty: tolerance tightens as the streak grows (6° down to 2°).
         var estTolerance = Math.max(2, 6 - Math.floor((streak || 0) / 2));
@@ -1080,13 +1085,13 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, t('stem.angles.estimate_the_angle', '\uD83D\uDC41\uFE0F Estimate the Angle!')),
             h('div', { className: 'text-xs text-amber-600 mb-3' }, t('stem.angles.look_at_the_angle_on_the_protractor_nu', 'Look at the angle on the protractor (number hidden). How many degrees is it?')),
             h('div', { className: 'flex gap-2 items-center' },
-              h('input', { type: 'number', min: 0, max: 360, value: estimateGuess, placeholder: t('stem.angles.your_guess', 'Your guess...'),
+              h('input', { type: 'number', min: 0, max: 360, value: estimateGuess, disabled: !!estimateResult, placeholder: t('stem.angles.your_guess', 'Your guess...'),
                 onChange: function(e) { upd('estimateGuess', e.target.value); },
                 'aria-label': t('stem.angles.angle_estimate_guess_in_degrees', 'Angle estimate guess in degrees'),
                 className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-sm font-bold text-amber-800 focus:border-amber-500'
               }),
               h('span', { className: 'text-sm text-amber-600' }, '\u00B0'),
-              h('button', { 'aria-label': t('stem.angles.check', 'Check'), onClick: checkEstimate, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 transition-all' }, t('stem.angles.check_2', '\u2714 Check'))
+              h('button', { 'aria-label': t('stem.angles.check', 'Check'), onClick: checkEstimate, disabled: !!estimateResult, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 transition-all disabled:opacity-50' }, t('stem.angles.check_2', '\u2714 Check'))
             ),
             estimateResult && h('div', { className: 'mt-2 p-2 rounded-lg text-sm font-bold ' + (estimateResult.ok ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-red-100 text-red-700 border border-red-300') },
               estimateResult.ok
@@ -1106,12 +1111,14 @@ window.StemLab = window.StemLab || {
             ),
             angleChallenge.type === 'create' && h('div', { className: 'flex gap-2 items-center' },
               h('span', { className: 'text-xs text-purple-600' }, t('stem.angles.your_angle', 'Your angle: '), h('span', { className: 'font-bold text-purple-900' }, angleFeedback ? (angleValue + '\u00B0') : '\u2753')),
-              h('button', { 'aria-label': t('stem.angles.check_3', 'Check'), onClick: checkAngle, className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all' }, t('stem.angles.check_4', '\u2714 Check'))
+              h('button', { 'aria-label': t('stem.angles.check_3', 'Check'), onClick: checkAngle, disabled: !!(angleFeedback && angleFeedback.correct), className: 'ml-auto px-4 py-1.5 bg-purple-700 text-white font-bold rounded-lg text-sm hover:bg-purple-600 transition-all disabled:opacity-50' }, t('stem.angles.check_4', '\u2714 Check'))
             ),
             angleChallenge.type === 'classify' && h('div', { className: 'flex gap-2 flex-wrap' },
               ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
                 return h('button', { key: cls,
                   onClick: function() {
+                    if (angleSubmissionPending || angleFeedback) return;
+                    angleSubmissionPending = true;
                     var correctClass = classifyAngle(angleChallenge.target);
                     var ok = cls === correctClass;
                     announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
@@ -1123,7 +1130,8 @@ window.StemLab = window.StemLab || {
                     if (ok) { awardXP('protractor', 5, 'classify angle'); recordCorrect(correctClass); }
                     else recordWrong();
                   },
-                  className: 'px-3 py-2 rounded-lg text-sm font-bold transition-all border ' +
+                  disabled: !!angleFeedback,
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold transition-all border disabled:cursor-default ' +
                     (angleFeedback ? (cls === classifyAngle(angleChallenge.target) ? 'bg-green-100 border-green-400 text-green-700' : 'bg-slate-50 border-slate-200 text-slate-600') : 'bg-white border-purple-600 text-purple-700 hover:bg-purple-100 hover:border-purple-400 cursor-pointer')
                 }, cls);
               })

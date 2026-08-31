@@ -191,12 +191,17 @@ describe('rock cycle colour contrast', () => {
   });
 
   it('lets the mode tabs wrap instead of overflowing a phone', () => {
-    // Six mode tabs on one non-wrapping row measured 441px, so a 390px phone
+    // Seven mode tabs cannot fit on one row, so a 390px phone
     // scrolled the whole tool sideways and the last tabs sat off-screen.
     // Measured in a real browser; pinned here so it cannot regress silently.
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      expect(src).toContain('flex flex-wrap gap-1 sm:ml-auto');
+      expect(src).toContain('"data-rocks-header": "responsive"');
+      expect(src).toContain('"data-rocks-mode-nav": "responsive"');
+      expect(src).toContain('order-3 flex w-full flex-wrap gap-1 sm:order-none sm:w-auto sm:ml-auto');
+      expect(src).toContain('"data-rocks-header-action": "back"');
+      expect(src).toContain('grid h-11 w-11 shrink-0');
+      expect(src).toContain('className: "min-h-[44px] px-3 py-2 rounded-lg');
       expect(src).not.toContain('className: "flex gap-1 ml-auto"');
     });
   });

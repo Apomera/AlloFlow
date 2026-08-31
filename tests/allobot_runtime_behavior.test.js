@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-const COARSE_POINTER_QUERY = '(hover: none), (pointer: coarse)';
+const COARSE_POINTER_QUERY = '(hover: none), (pointer: coarse), (any-pointer: coarse)';
 
 let React;
 let createRoot;
@@ -100,8 +100,8 @@ function loadAlloBotFromSource() {
     var safeSetItem = function(key, value) { try { localStorage.setItem(key, value); } catch (_) {} };
     var warnLog = function() {};
     var debugLog = function() {};
-    var getGlobalAudioContext = function() { return null; };
-    var isGlobalMuted = function() { return false; };
+    var getGlobalAudioContext = function() { return window.__allobotRuntimeAudioContext || null; };
+    var isGlobalMuted = function() { return !!window.__allobotRuntimeGlobalMuted; };
     var STYLE_ANIMATION_DELAY_HALF = { animationDelay: '0.5s' };
     var STYLE_POINTER_EVENTS_NONE = { pointerEvents: 'none' };
     var _icons = window.AlloIcons || {};
@@ -118,20 +118,26 @@ function loadAlloBotFromSource() {
   return window.__allobotRuntimeSource.AlloBot;
 }
 
-async function mountBot(props = {}) {
+async function mountBot(props = {}, { ref = null, languageValue = null } = {}) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   mountedRoots.add(root);
+  const renderTree = (nextProps) => {
+    const bot = React.createElement(AlloBot, { ...defaultProps, ...nextProps, ref });
+    return languageValue
+      ? React.createElement(window.AlloLanguageContext.Provider, { value: languageValue }, bot)
+      : bot;
+  };
   await React.act(async () => {
-    root.render(React.createElement(AlloBot, { ...defaultProps, ...props }));
+    root.render(renderTree(props));
   });
   return {
     container,
     root,
     async rerender(nextProps = {}) {
       await React.act(async () => {
-        root.render(React.createElement(AlloBot, { ...defaultProps, ...nextProps }));
+        root.render(renderTree(nextProps));
       });
     },
     async unmount() {
@@ -247,7 +253,9 @@ describe('AlloBot runtime motion behavior', () => {
     await advance(10000);
     expect(surface().getAttribute('data-allobot-body-state')).toBe('sleeping');
 
-    await dispatch(surface(), new MouseEvent('mousedown', { bubbles: true, clientX: 50, clientY: 50 }));
+    const wakeButton = bot.container.querySelector('[data-allobot-avatar-action="wake"]');
+    expect(wakeButton).toBeTruthy();
+    await dispatch(wakeButton, new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
     expect(surface().getAttribute('data-allobot-body-state')).not.toBe('sleeping');
     expect(bot.container.querySelector('[data-allobot-eye-details]')?.getAttribute('data-allobot-eye-details')).toBe('visible');
 
@@ -265,8 +273,9 @@ describe('AlloBot runtime motion behavior', () => {
 
     await dispatch(sleepButton, new MouseEvent('click', { bubbles: true, cancelable: true }));
     await advance(400);
-    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
-    await dispatch(surface, new MouseEvent('mousedown', { bubbles: true, clientX: 50, clientY: 50 }));
+    const wakeButton = bot.container.querySelector('[data-allobot-avatar-action="wake"]');
+    expect(wakeButton).toBeTruthy();
+    await dispatch(wakeButton, new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
 
     const wakeTimerIndex = setTimeoutSpy.mock.calls.findLastIndex(([, delay]) => delay === 1500);
     expect(wakeTimerIndex).toBeGreaterThanOrEqual(0);
@@ -461,5 +470,745 @@ describe('AlloBot runtime motion behavior', () => {
 
     await bot.unmount();
     expect(motionQuery.removeEventListener).toHaveBeenCalledWith('change', registration[1]);
+  });
+});
+
+describe('AlloBot position and drag hardening', () => {
+  it.each([
+    ['JSON null', 'null'],
+    ['array', '[]'],
+    ['missing coordinates', '{}'],
+    ['non-numeric coordinates', '{"x":"far","y":null}'],
+    ['invalid JSON', '{not-json'],
+  ])('falls back safely for a persisted %s position', async (_label, saved) => {
+    localStorage.setItem('allo_bot_pos_v2', saved);
+    const bot = await mountBot();
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+
+    expect(surface.style.right).toBe('24px');
+    expect(surface.style.top).toBe('20px');
+  });
+
+  it('clamps a persisted off-screen position into the reachable viewport', async () => {
+    localStorage.setItem('allo_bot_pos_v2', JSON.stringify({ x: 99999, y: -500 }));
+    const bot = await mountBot();
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+
+    expect(surface.style.right).toBe(`${Math.max(10, window.innerWidth - 74)}px`);
+    expect(surface.style.top).toBe('10px');
+  });
+
+  it('clamps drag movement on every edge and clears drag state on blur and touch cancellation', async () => {
+    const bot = await mountBot();
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+    const beginDrag = () => dispatch(surface, new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+      clientX: 100,
+      clientY: 100,
+    }));
+
+    await beginDrag();
+    expect(surface.className).toContain('cursor-grabbing');
+    await dispatch(window, new MouseEvent('mousemove', { clientX: -10000, clientY: -10000 }));
+    expect(surface.style.right).toBe(`${Math.max(10, window.innerWidth - 74)}px`);
+    expect(surface.style.top).toBe('10px');
+
+    await dispatch(window, new Event('blur'));
+    expect(surface.className).toContain('cursor-grab');
+    expect(surface.className).not.toContain('cursor-grabbing');
+    expect(surface.style.transform).not.toContain('1.1, 0.9');
+
+    await beginDrag();
+    await dispatch(window, new MouseEvent('mousemove', { clientX: 10000, clientY: 10000 }));
+    expect(surface.style.right).toBe('10px');
+    expect(surface.style.top).toBe(`${Math.max(10, window.innerHeight - 74)}px`);
+
+    await dispatch(window, new Event('touchcancel'));
+    expect(surface.className).not.toContain('cursor-grabbing');
+    expect(surface.style.transform).not.toContain('1.1, 0.9');
+  });
+
+  it('ignores a malformed touch start without entering drag mode', async () => {
+    const bot = await mountBot();
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+
+    await dispatch(surface, new Event('touchstart', { bubbles: true, cancelable: true }));
+
+    expect(surface.className).not.toContain('cursor-grabbing');
+  });
+});
+
+describe('AlloBot keyboard and announcement behavior', () => {
+  it('uses a dynamic instruction relationship and exposes an awake native action button', async () => {
+    const onClick = vi.fn();
+    const onVoiceSettingsClick = vi.fn();
+    const bot = await mountBot({ onClick, onVoiceSettingsClick });
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+    const instructionsId = surface.getAttribute('aria-describedby');
+
+    expect(surface.getAttribute('role')).toBe('group');
+    expect(instructionsId).toBeTruthy();
+    expect(document.getElementById(instructionsId)?.textContent).toMatch(/bot\.move_instructions|Use the arrow keys to move AlloBot/);
+    expect(surface.getAttribute('aria-keyshortcuts')).toBe('ArrowLeft ArrowRight ArrowUp ArrowDown');
+
+    const openButton = surface.querySelector('[data-allobot-avatar-action="open"]');
+    expect(openButton?.tagName).toBe('BUTTON');
+    expect(openButton?.getAttribute('type')).toBe('button');
+    expect(openButton?.classList.contains('allobot-avatar-action')).toBe(true);
+    const actionStyle = getComputedStyle(openButton);
+    expect(actionStyle.position).toBe('absolute');
+    expect(actionStyle.width).toBe('100%');
+    expect(actionStyle.height).toBe('100%');
+    expect(actionStyle.paddingTop).toBe('0px');
+    expect(actionStyle.borderTopWidth).toBe('0px');
+    expect(actionStyle.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    await dispatch(openButton, new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+    await dispatch(openButton, new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+    expect(onClick).toHaveBeenCalledTimes(2);
+
+    const settings = bot.container.querySelector('[data-help-key="bot_settings_btn"]');
+    await dispatch(settings, new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    expect(onClick).toHaveBeenCalledTimes(2);
+  });
+
+  it('presents one native sleeping button target and wakes through its activation click', async () => {
+    const onClick = vi.fn();
+    const bot = await mountBot({ onClick });
+    const sleepButton = bot.container.querySelector('[data-help-key="bot_sleep_btn"]');
+    await dispatch(sleepButton, new MouseEvent('click', { bubbles: true, cancelable: true }));
+    await advance(400);
+
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+    expect(surface.getAttribute('role')).toBe('group');
+    expect(surface.hasAttribute('aria-keyshortcuts')).toBe(false);
+    expect(surface.hasAttribute('aria-describedby')).toBe(false);
+    const wakeButton = surface.querySelector('[data-allobot-avatar-action="wake"]');
+    expect(wakeButton?.tagName).toBe('BUTTON');
+    expect(wakeButton?.getAttribute('type')).toBe('button');
+    expect(wakeButton?.classList.contains('allobot-avatar-action')).toBe(true);
+    expect(surface.querySelectorAll('[data-allobot-avatar-action]')).toHaveLength(1);
+
+    await dispatch(wakeButton, new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+    expect(surface.getAttribute('role')).toBe('group');
+    expect(surface.querySelector('[data-allobot-avatar-action="open"]')).toBeTruthy();
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('keeps passive hover copy out of the live region and announces explicit speech', async () => {
+    const ref = React.createRef();
+    const bot = await mountBot({ disableAnimations: true }, { ref });
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+    const live = () => bot.container.querySelector('.allobot-bubble-live');
+
+    await dispatch(surface, pointerEvent('pointerover'));
+    expect(live().textContent).toBe('');
+
+    await React.act(async () => {
+      await ref.current.speak('A deliberate AlloBot announcement.');
+    });
+    expect(live().textContent).toBe('A deliberate AlloBot announcement.');
+  });
+
+  it('finishes a hidden-tab bubble silently and does not restart it on visibility return', async () => {
+    const previousVisibility = Object.getOwnPropertyDescriptor(document, 'visibilityState');
+    let visibilityState = 'hidden';
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => visibilityState });
+    const beepOscillator = {
+      connect: vi.fn(), start: vi.fn(), stop: vi.fn(), frequency: { value: 0 },
+    };
+    const beepGain = {
+      connect: vi.fn(),
+      gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
+    };
+    const audioContext = {
+      state: 'running', currentTime: 1, destination: {},
+      createOscillator: vi.fn(() => beepOscillator),
+      createGain: vi.fn(() => beepGain),
+      resume: vi.fn(),
+    };
+    window.__allobotRuntimeAudioContext = audioContext;
+    try {
+      const bot = await mountBot({ soundEnabled: true });
+      const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+      await dispatch(surface, pointerEvent('pointerover'));
+      const bubbleText = bot.container.querySelector('.allobot-bubble-text');
+      const completedText = bubbleText.textContent;
+      expect(completedText.length).toBeGreaterThan(0);
+      expect(audioContext.createOscillator).not.toHaveBeenCalled();
+      expect(bot.container.querySelector('[data-allobot-voice-cue]')).toBeNull();
+      await advance(1000);
+      expect(bubbleText.textContent).toBe(completedText);
+      expect(audioContext.createOscillator).not.toHaveBeenCalled();
+
+      visibilityState = 'visible';
+      await dispatch(document, new Event('visibilitychange'));
+      await advance(1000);
+      expect(bubbleText.textContent).toBe(completedText);
+      expect(audioContext.createOscillator).not.toHaveBeenCalled();
+      await bot.unmount();
+    } finally {
+      delete window.__allobotRuntimeAudioContext;
+      if (previousVisibility) Object.defineProperty(document, 'visibilityState', previousVisibility);
+      else delete document.visibilityState;
+    }
+  });
+});
+
+describe('AlloBot flight Web Audio ownership', () => {
+  it('does not start an externally requested flight graph in an already-hidden tab', async () => {
+    const previousVisibility = Object.getOwnPropertyDescriptor(document, 'visibilityState');
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    const audioContext = {
+      createBufferSource: vi.fn(),
+      createOscillator: vi.fn(),
+    };
+    window.__allobotRuntimeAudioContext = audioContext;
+    try {
+      const bot = await mountBot({ isFlying: true, soundEnabled: true });
+      expect(audioContext.createBufferSource).not.toHaveBeenCalled();
+      expect(audioContext.createOscillator).not.toHaveBeenCalled();
+      await bot.unmount();
+    } finally {
+      delete window.__allobotRuntimeAudioContext;
+      if (previousVisibility) Object.defineProperty(document, 'visibilityState', previousVisibility);
+      else delete document.visibilityState;
+    }
+  });
+
+  it.each(['flight ends', 'bot sleeps', 'document hides', 'sound disables', 'global mute', 'unmount'])(
+    'stops and disconnects every owned flight node when %s',
+    async (terminalPath) => {
+      const previousVisibility = Object.getOwnPropertyDescriptor(document, 'visibilityState');
+      let visibilityState = 'visible';
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => visibilityState });
+      const makeNode = (extra = {}) => ({ connect: vi.fn(), disconnect: vi.fn(), ...extra });
+      const audioParam = () => ({
+        setValueAtTime: vi.fn(),
+        linearRampToValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      });
+      const noise = makeNode({ start: vi.fn(), stop: vi.fn() });
+      const noiseFilter = makeNode({ frequency: audioParam() });
+      const noiseGain = makeNode({ gain: audioParam() });
+      const osc = makeNode({ start: vi.fn(), stop: vi.fn(), frequency: audioParam() });
+      const oscGain = makeNode({ gain: audioParam() });
+      const audioContext = {
+        state: 'running', currentTime: 2, sampleRate: 4, destination: {},
+        createBuffer: vi.fn((_channels, length) => ({ getChannelData: () => new Float32Array(length) })),
+        createBufferSource: vi.fn(() => noise),
+        createBiquadFilter: vi.fn(() => noiseFilter),
+        createGain: vi.fn().mockReturnValueOnce(noiseGain).mockReturnValueOnce(oscGain),
+        createOscillator: vi.fn(() => osc),
+        resume: vi.fn(),
+      };
+      window.__allobotRuntimeAudioContext = audioContext;
+      try {
+        const bot = await mountBot({
+          isFlying: true,
+          soundEnabled: true,
+          idleSleepMs: terminalPath === 'bot sleeps' ? 1 : defaultProps.idleSleepMs,
+        });
+        expect(audioContext.createBufferSource).toHaveBeenCalledTimes(1);
+        expect(audioContext.createOscillator).toHaveBeenCalledTimes(1);
+        if (terminalPath === 'flight ends') {
+          await bot.rerender({ isFlying: false, soundEnabled: true });
+        } else if (terminalPath === 'bot sleeps') {
+          await advance(15000);
+        } else if (terminalPath === 'document hides') {
+          visibilityState = 'hidden';
+          await dispatch(document, new Event('visibilitychange'));
+        } else if (terminalPath === 'sound disables') {
+          await bot.rerender({ isFlying: true, soundEnabled: false });
+        } else if (terminalPath === 'global mute') {
+          await dispatch(window, new CustomEvent('alloflow-mute-changed', { detail: { muted: true } }));
+        } else {
+          await bot.unmount();
+        }
+        expect(noise.stop).toHaveBeenCalledWith(0);
+        expect(osc.stop).toHaveBeenCalledWith(0);
+        for (const node of [noise, noiseFilter, noiseGain, osc, oscGain]) {
+          expect(node.disconnect).toHaveBeenCalledTimes(1);
+        }
+        if (terminalPath !== 'unmount') await bot.unmount();
+      } finally {
+        delete window.__allobotRuntimeAudioContext;
+        if (previousVisibility) Object.defineProperty(document, 'visibilityState', previousVisibility);
+        else delete document.visibilityState;
+      }
+    },
+  );
+});
+
+describe('AlloBot imperative animation contract', () => {
+  it('plays every supported animation and rejects unknown class input', async () => {
+    const ref = React.createRef();
+    const bot = await mountBot({}, { ref });
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+    const animationLayer = surface.firstElementChild;
+    for (const name of ['wave-hello', 'sympathetic-tilt', 'wave', 'backflip', 'shrug', 'look-around']) {
+      let accepted;
+      await React.act(async () => { accepted = ref.current.playAnimation(name, 500); });
+      expect(accepted, `${name} should be accepted`).toBe(true);
+      expect(animationLayer.classList.contains(`animate-allo-${name}`), `${name} should reach its authored class`).toBe(true);
+    }
+
+    let rejected;
+    await React.act(async () => { rejected = ref.current.playAnimation('wave bg-red-500', 500); });
+    expect(rejected).toBe(false);
+    expect(animationLayer.className).not.toContain('bg-red-500');
+    expect(animationLayer.className).not.toContain('wave bg-red-500');
+    await bot.unmount();
+  });
+});
+
+describe('AlloBot delayed-data and intro lifecycle', () => {
+  it.each([null, {}, 'not-history'])('mounts safely with malformed history %j', async (history) => {
+    const bot = await mountBot({ history });
+    expect(bot.container.querySelector('[data-allobot-control-surface="true"]')).toBeTruthy();
+  });
+
+  it('handles malformed quiz questions when the delayed event tip runs', async () => {
+    const history = [{
+      id: 'runtime-malformed-quiz-regression',
+      type: 'quiz',
+      data: { questions: [null, 'not-a-question', {}, { question: 'Why does this work?' }] },
+    }];
+    const bot = await mountBot({ history, disableAnimations: true });
+
+    await advance(5000);
+
+    expect(bot.container.querySelector('.allobot-bubble-live')?.textContent).toContain("I've generated 2 questions");
+  });
+
+  it('contains malformed quiz question-text types when the delayed event tip runs', async () => {
+    const history = [{
+      id: 'runtime-malformed-quiz-text-types',
+      type: 'quiz',
+      data: {
+        questions: [
+          { question: { nested: 'prompt' } },
+          { text: 42 },
+          { question: ['array prompt'] },
+          { question: null, text: false },
+        ],
+      },
+    }];
+    const bot = await mountBot({ history, disableAnimations: true });
+
+    await advance(5000);
+
+    expect(bot.container.querySelector('.allobot-bubble-live')?.textContent).toContain("I've generated 4 questions");
+  });
+
+  it('does not schedule the welcome when the intro was already seen', async () => {
+    const onBotIntroSeen = vi.fn();
+    const languageValue = {
+      t: (key) => ({
+        'bot_events.intro_greeting': 'Hello!',
+        'sidebar.ai_guide_welcome': 'Welcome to AlloFlow!',
+      })[key] || key,
+    };
+    await mountBot(
+      { canPlayIntro: true, hasSeenBotIntro: true, onBotIntroSeen },
+      { languageValue },
+    );
+
+    await advance(3000);
+    expect(onBotIntroSeen).not.toHaveBeenCalled();
+  });
+
+  it('releases an unmounted pending intro so a later instance can welcome once', async () => {
+    const languageValue = {
+      t: (key) => ({
+        'bot_events.intro_greeting': 'Hello!',
+        'sidebar.ai_guide_welcome': 'Welcome to AlloFlow!',
+      })[key] || key,
+    };
+    const abandonedIntro = vi.fn();
+    const first = await mountBot(
+      { canPlayIntro: true, hasSeenBotIntro: false, onBotIntroSeen: abandonedIntro, disableAnimations: true },
+      { languageValue },
+    );
+    await advance(1000);
+    await first.unmount();
+    await advance(2000);
+    expect(abandonedIntro).not.toHaveBeenCalled();
+
+    const completedIntro = vi.fn();
+    const second = await mountBot(
+      { canPlayIntro: true, hasSeenBotIntro: false, onBotIntroSeen: completedIntro, disableAnimations: true },
+      { languageValue },
+    );
+    await advance(2499);
+    expect(completedIntro).not.toHaveBeenCalled();
+    await advance(1);
+    expect(completedIntro).toHaveBeenCalledTimes(1);
+    expect(second.container.querySelector('.allobot-bubble-live')?.textContent).toBe('Welcome to AlloFlow!');
+  });
+});
+
+describe('AlloBot speech ownership and cancellation', () => {
+  it('keeps the latest browser fallback queued when the superseded utterance starts late', async () => {
+    const previousSpeech = Object.getOwnPropertyDescriptor(globalThis, 'speechSynthesis');
+    const previousUtterance = Object.getOwnPropertyDescriptor(globalThis, 'SpeechSynthesisUtterance');
+    const queue = [];
+    const onSpeechStart = vi.fn();
+    const speechSynthesis = {
+      speak: vi.fn((utterance) => queue.push({ utterance, cancelled: false, started: false })),
+      cancel: vi.fn(() => {
+        queue.filter((entry) => !entry.started).forEach((entry) => { entry.cancelled = true; });
+      }),
+      getVoices: vi.fn(() => []),
+    };
+    function FakeUtterance(text) { this.text = text; }
+    Object.defineProperty(globalThis, 'speechSynthesis', { configurable: true, value: speechSynthesis });
+    Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', { configurable: true, value: FakeUtterance });
+    try {
+      const ref = React.createRef();
+      const bot = await mountBot({ soundEnabled: true, onSpeechStart }, { ref });
+
+      await React.act(async () => { await ref.current.speak('Rapid browser response one.'); });
+      await React.act(async () => { await ref.current.speak('Rapid browser response two.'); });
+      expect(queue).toHaveLength(2);
+      expect.soft(queue[0].cancelled, 'the superseded queued response is cancelled before its replacement is queued').toBe(true);
+
+      const cancellationsAfterSupersede = speechSynthesis.cancel.mock.calls.length;
+      queue[0].started = true;
+      await React.act(async () => queue[0].utterance.onstart());
+      expect.soft(
+        speechSynthesis.cancel.mock.calls.length,
+        'a stale onstart cannot globally cancel the newer browser response',
+      ).toBe(cancellationsAfterSupersede);
+      expect.soft(queue[1].cancelled, 'the latest browser response remains eligible to start').toBe(false);
+
+      const latest = queue.find((entry) => !entry.started && !entry.cancelled);
+      if (latest) {
+        latest.started = true;
+        await React.act(async () => latest.utterance.onstart());
+      }
+      expect.soft(onSpeechStart, 'the latest response reaches audible playback').toHaveBeenCalledTimes(1);
+
+      await bot.unmount();
+    } finally {
+      if (previousSpeech) Object.defineProperty(globalThis, 'speechSynthesis', previousSpeech);
+      else delete globalThis.speechSynthesis;
+      if (previousUtterance) Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', previousUtterance);
+      else delete globalThis.SpeechSynthesisUtterance;
+    }
+  });
+
+  it('refuses a second AlloBot browser fallback while another instance owns the engine', async () => {
+    const previousSpeech = Object.getOwnPropertyDescriptor(globalThis, 'speechSynthesis');
+    const previousUtterance = Object.getOwnPropertyDescriptor(globalThis, 'SpeechSynthesisUtterance');
+    const utterances = [];
+    const speechSynthesis = {
+      speaking: false,
+      pending: false,
+      speak: vi.fn(),
+      cancel: vi.fn(),
+      getVoices: vi.fn(() => []),
+    };
+    function FakeUtterance(text) { this.text = text; utterances.push(this); }
+    Object.defineProperty(globalThis, 'speechSynthesis', { configurable: true, value: speechSynthesis });
+    Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', { configurable: true, value: FakeUtterance });
+    try {
+      const firstRef = React.createRef();
+      const secondRef = React.createRef();
+      const first = await mountBot({ soundEnabled: true }, { ref: firstRef });
+      const second = await mountBot({ soundEnabled: true }, { ref: secondRef });
+
+      await React.act(async () => { await firstRef.current.speak('Exact owner alpha.'); });
+      expect(utterances).toHaveLength(1);
+      speechSynthesis.speaking = true;
+      await React.act(async () => utterances[0].onstart());
+
+      await React.act(async () => { await secondRef.current.speak('Exact owner beta.'); });
+      expect(utterances).toHaveLength(1);
+      expect(speechSynthesis.cancel).not.toHaveBeenCalled();
+      expect(second.container.querySelector('.allobot-bubble-live')?.textContent).toBe('Exact owner beta.');
+
+      speechSynthesis.speaking = false;
+      await React.act(async () => utterances[0].onend());
+      await React.act(async () => { await secondRef.current.speak('Exact owner gamma.'); });
+      expect(utterances).toHaveLength(2);
+      await React.act(async () => utterances[1].onstart());
+      await React.act(async () => utterances[1].onend());
+
+      await second.unmount();
+      await first.unmount();
+      expect(speechSynthesis.cancel).not.toHaveBeenCalled();
+    } finally {
+      if (previousSpeech) Object.defineProperty(globalThis, 'speechSynthesis', previousSpeech);
+      else delete globalThis.speechSynthesis;
+      if (previousUtterance) Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', previousUtterance);
+      else delete globalThis.SpeechSynthesisUtterance;
+    }
+  });
+
+  it.each([
+    ['no unrelated speech queued', false, 1],
+    ['unrelated speech pending behind it', true, 0],
+  ])('clears global-mute speech UI with %s', async (_label, hasPendingSpeech, expectedGlobalCancels) => {
+    const previousSpeech = Object.getOwnPropertyDescriptor(globalThis, 'speechSynthesis');
+    const previousUtterance = Object.getOwnPropertyDescriptor(globalThis, 'SpeechSynthesisUtterance');
+    const utterances = [];
+    const onSpeechEnd = vi.fn();
+    const speechSynthesis = {
+      speaking: false,
+      pending: false,
+      speak: vi.fn(),
+      cancel: vi.fn(() => { speechSynthesis.speaking = false; }),
+      getVoices: vi.fn(() => []),
+    };
+    function FakeUtterance(text) { this.text = text; utterances.push(this); }
+    Object.defineProperty(globalThis, 'speechSynthesis', { configurable: true, value: speechSynthesis });
+    Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', { configurable: true, value: FakeUtterance });
+    try {
+      const ref = React.createRef();
+      const bot = await mountBot({ soundEnabled: true, disableAnimations: true, onSpeechEnd }, { ref });
+      await React.act(async () => { await ref.current.speak(`Mute coordinator ${hasPendingSpeech}.`); });
+      speechSynthesis.speaking = true;
+      await React.act(async () => utterances[0].onstart());
+      expect(bot.container.querySelector('.allobot-bubble-live')?.textContent).toContain('Mute coordinator');
+      expect(bot.container.querySelector('[data-allobot-voice-cue="talking"]')).toBeTruthy();
+
+      speechSynthesis.pending = hasPendingSpeech;
+      await dispatch(window, new CustomEvent('alloflow-mute-changed', { detail: { muted: true } }));
+
+      expect(speechSynthesis.cancel).toHaveBeenCalledTimes(expectedGlobalCancels);
+      if (hasPendingSpeech) expect(utterances[0].volume).toBe(0);
+      expect(bot.container.querySelector('.allobot-bubble-live')?.textContent).toBe('');
+      expect(bot.container.querySelector('[data-allobot-voice-cue]')).toBeNull();
+      expect(onSpeechEnd).toHaveBeenCalledTimes(1);
+
+      speechSynthesis.pending = false;
+      speechSynthesis.speaking = false;
+      if (hasPendingSpeech) {
+        expect(utterances[0].onstart).toBeNull();
+        expect(utterances[0].onend).toBeNull();
+        expect(utterances[0].onerror).toBeNull();
+      } else {
+        await React.act(async () => utterances[0].onend());
+      }
+      await bot.unmount();
+    } finally {
+      if (previousSpeech) Object.defineProperty(globalThis, 'speechSynthesis', previousSpeech);
+      else delete globalThis.speechSynthesis;
+      if (previousUtterance) Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', previousUtterance);
+      else delete globalThis.SpeechSynthesisUtterance;
+    }
+  });
+
+  it.each(['global mute', 'hide/unmount'])(
+    'releases a pre-start owner stuck pending after %s and allows the next idle fallback',
+    async (terminalAction) => {
+      const previousSpeech = Object.getOwnPropertyDescriptor(globalThis, 'speechSynthesis');
+      const previousUtterance = Object.getOwnPropertyDescriptor(globalThis, 'SpeechSynthesisUtterance');
+      const utterances = [];
+      const speechSynthesis = {
+        speaking: false,
+        pending: false,
+        speak: vi.fn(),
+        cancel: vi.fn(),
+        getVoices: vi.fn(() => []),
+      };
+      function FakeUtterance(text) { this.text = text; utterances.push(this); }
+      Object.defineProperty(globalThis, 'speechSynthesis', { configurable: true, value: speechSynthesis });
+      Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', { configurable: true, value: FakeUtterance });
+      try {
+        const firstRef = React.createRef();
+        const first = await mountBot({ soundEnabled: true }, { ref: firstRef });
+        await React.act(async () => { await firstRef.current.speak(`Pending forever before ${terminalAction}.`); });
+        expect(utterances).toHaveLength(1);
+        expect(utterances[0].onstart).toEqual(expect.any(Function));
+
+        // The browser reports a pending queue but never invokes any lifecycle
+        // callback for this utterance. A terminal AlloBot path must release its
+        // token without globally discarding the unrelated queued narration.
+        speechSynthesis.pending = true;
+        if (terminalAction === 'global mute') {
+          await dispatch(window, new CustomEvent('alloflow-mute-changed', { detail: { muted: true } }));
+        } else {
+          await first.unmount();
+        }
+
+        expect(speechSynthesis.cancel).not.toHaveBeenCalled();
+        expect(utterances[0].volume).toBe(0);
+        expect(utterances[0].onstart).toBeNull();
+        expect(utterances[0].onend).toBeNull();
+        expect(utterances[0].onerror).toBeNull();
+
+        speechSynthesis.pending = false;
+        speechSynthesis.speaking = false;
+        const nextRef = React.createRef();
+        const next = await mountBot({ soundEnabled: true }, { ref: nextRef });
+        await React.act(async () => { await nextRef.current.speak(`Fallback after ${terminalAction}.`); });
+        expect(utterances).toHaveLength(2);
+        expect(speechSynthesis.speak).toHaveBeenCalledTimes(2);
+        await React.act(async () => utterances[1].onstart());
+        await React.act(async () => utterances[1].onend());
+        await next.unmount();
+        if (terminalAction === 'global mute') await first.unmount();
+        expect(speechSynthesis.cancel).not.toHaveBeenCalled();
+      } finally {
+        if (previousSpeech) Object.defineProperty(globalThis, 'speechSynthesis', previousSpeech);
+        else delete globalThis.speechSynthesis;
+        if (previousUtterance) Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', previousUtterance);
+        else delete globalThis.SpeechSynthesisUtterance;
+      }
+    },
+  );
+
+  it.each(['global mute', 'TTS off'])(
+    'does not generate audio or consume duplicate suppression while %s',
+    async (blockedBy) => {
+      const storageKey = 'alloflow_ai_config';
+      const previousConfig = localStorage.getItem(storageKey);
+      const onGenerateAudio = vi.fn(() => Promise.resolve(null));
+      const ref = React.createRef();
+      let bot;
+      try {
+        if (blockedBy === 'global mute') {
+          window.__allobotRuntimeGlobalMuted = true;
+        } else {
+          localStorage.setItem(storageKey, JSON.stringify({ ttsProvider: 'off' }));
+        }
+
+        bot = await mountBot({ soundEnabled: true, onGenerateAudio }, { ref });
+        const repeatedText = `Blocked duplicate guard: ${blockedBy}.`;
+        await React.act(async () => { await ref.current.speak(repeatedText); });
+        expect(onGenerateAudio).not.toHaveBeenCalled();
+
+        if (blockedBy === 'global mute') {
+          window.__allobotRuntimeGlobalMuted = false;
+        } else {
+          localStorage.removeItem(storageKey);
+        }
+        await React.act(async () => { await ref.current.speak(repeatedText); });
+        expect(onGenerateAudio).toHaveBeenCalledTimes(1);
+        expect(onGenerateAudio.mock.calls[0][0]).toBe(repeatedText);
+        expect(onGenerateAudio.mock.calls[0][3]).toEqual(expect.objectContaining({
+          reason: 'allobot-speech',
+          signal: expect.any(AbortSignal),
+        }));
+      } finally {
+        if (bot) await bot.unmount();
+        delete window.__allobotRuntimeGlobalMuted;
+        if (previousConfig === null) localStorage.removeItem(storageKey);
+        else localStorage.setItem(storageKey, previousConfig);
+      }
+    },
+  );
+
+  it('queues at most one browser fallback when generated audio reports duplicate errors', async () => {
+    const previousSpeech = Object.getOwnPropertyDescriptor(globalThis, 'speechSynthesis');
+    const previousUtterance = Object.getOwnPropertyDescriptor(globalThis, 'SpeechSynthesisUtterance');
+    const previousAudio = Object.getOwnPropertyDescriptor(globalThis, 'Audio');
+    const previousInvalidate = Object.getOwnPropertyDescriptor(window, '__alloInvalidateTtsUrl');
+    const utterances = [];
+    const audioInstances = [];
+    const speechSynthesis = {
+      speaking: false,
+      pending: false,
+      speak: vi.fn(),
+      cancel: vi.fn(),
+      getVoices: vi.fn(() => []),
+    };
+    function FakeUtterance(text) { this.text = text; utterances.push(this); }
+    const AudioMock = vi.fn(function FakeGeneratedAudio(src) {
+      this.src = src;
+      this.play = vi.fn(() => Promise.resolve());
+      this.pause = vi.fn();
+      audioInstances.push(this);
+    });
+    const invalidate = vi.fn();
+    Object.defineProperty(globalThis, 'speechSynthesis', { configurable: true, value: speechSynthesis });
+    Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', { configurable: true, value: FakeUtterance });
+    Object.defineProperty(globalThis, 'Audio', { configurable: true, value: AudioMock });
+    Object.defineProperty(window, '__alloInvalidateTtsUrl', { configurable: true, value: invalidate });
+    try {
+      const ref = React.createRef();
+      const onGenerateAudio = vi.fn(() => Promise.resolve('blob:duplicate-generated-error'));
+      const bot = await mountBot({ soundEnabled: true, onGenerateAudio }, { ref });
+      await React.act(async () => { await ref.current.speak('Generated audio duplicate error guard.'); });
+      expect(audioInstances).toHaveLength(1);
+
+      const error = new Error('the same media failure surfaced twice');
+      await React.act(async () => {
+        audioInstances[0].onerror(error);
+        audioInstances[0].onerror(error);
+      });
+
+      expect(invalidate).toHaveBeenCalledTimes(1);
+      expect(speechSynthesis.speak).toHaveBeenCalledTimes(1);
+      expect(utterances).toHaveLength(1);
+      await bot.unmount();
+    } finally {
+      if (previousSpeech) Object.defineProperty(globalThis, 'speechSynthesis', previousSpeech);
+      else delete globalThis.speechSynthesis;
+      if (previousUtterance) Object.defineProperty(globalThis, 'SpeechSynthesisUtterance', previousUtterance);
+      else delete globalThis.SpeechSynthesisUtterance;
+      if (previousAudio) Object.defineProperty(globalThis, 'Audio', previousAudio);
+      else delete globalThis.Audio;
+      if (previousInvalidate) Object.defineProperty(window, '__alloInvalidateTtsUrl', previousInvalidate);
+      else delete window.__alloInvalidateTtsUrl;
+    }
+  });
+
+  it.each(['mute', 'unmount', 'hidden-tab'])('never plays generated audio that resolves after %s cancellation', async (cancelKind) => {
+    const previousAudio = Object.getOwnPropertyDescriptor(globalThis, 'Audio');
+    const previousVisibility = Object.getOwnPropertyDescriptor(document, 'visibilityState');
+    const previousRevoke = URL.revokeObjectURL;
+    const AudioMock = vi.fn(function FakeAudio() {
+      this.play = vi.fn(() => Promise.resolve());
+      this.pause = vi.fn();
+    });
+    URL.revokeObjectURL = vi.fn();
+    Object.defineProperty(globalThis, 'Audio', { configurable: true, value: AudioMock });
+    let resolveAudio;
+    let visibilityState = 'visible';
+    if (cancelKind === 'hidden-tab') {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => visibilityState,
+      });
+    }
+    const onGenerateAudio = vi.fn(() => new Promise((resolvePromise) => { resolveAudio = resolvePromise; }));
+    const ref = React.createRef();
+    try {
+      const bot = await mountBot({ soundEnabled: true, onGenerateAudio }, { ref });
+      let speechPromise;
+      await React.act(async () => {
+        speechPromise = ref.current.speak(`Late generated audio after ${cancelKind}.`);
+        await Promise.resolve();
+      });
+      expect(onGenerateAudio).toHaveBeenCalledTimes(1);
+
+      if (cancelKind === 'mute') {
+        await bot.rerender({ soundEnabled: false, onGenerateAudio });
+      } else if (cancelKind === 'unmount') {
+        await bot.unmount();
+      } else {
+        visibilityState = 'hidden';
+        await dispatch(document, new Event('visibilitychange'));
+      }
+      await React.act(async () => { await speechPromise; });
+      await React.act(async () => {
+        resolveAudio(`blob:late-${cancelKind}`);
+        await Promise.resolve();
+      });
+
+      expect(AudioMock).not.toHaveBeenCalled();
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith(`blob:late-${cancelKind}`);
+    } finally {
+      if (previousAudio) Object.defineProperty(globalThis, 'Audio', previousAudio);
+      else delete globalThis.Audio;
+      if (cancelKind === 'hidden-tab') {
+        if (previousVisibility) Object.defineProperty(document, 'visibilityState', previousVisibility);
+        else delete document.visibilityState;
+      }
+      URL.revokeObjectURL = previousRevoke;
+    }
   });
 });

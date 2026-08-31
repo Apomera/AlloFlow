@@ -6542,7 +6542,7 @@ const AlloCommandPalette = ({ ctx }) => {
         "aria-controls": "allo-palette-list",
         "aria-describedby": "allo-palette-status",
         "aria-activedescendant": selectedCommandId ? "allo-cmd-" + selectedCommandId : void 0,
-        className: "flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500"
+        className: "min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500"
       }
     ), /* @__PURE__ */ React.createElement(
       "button",

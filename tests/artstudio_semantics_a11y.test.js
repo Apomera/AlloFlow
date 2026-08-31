@@ -101,6 +101,44 @@ describe('Art Studio graphic and form semantics', () => {
     expect(animatedHtml).toContain('id="artstudio-stereo-animation-ai-prompt"');
   });
 
+  it('keeps every collapsed disclosure target mounted, hidden, and labelled', () => {
+    loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
+    for (const tab of ['spinArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram']) {
+      const host = document.createElement('div');
+      host.innerHTML = renderTool('artStudio', { artStudio: { tab, studioHome: false } });
+      const controls = [...host.querySelectorAll('button[aria-expanded][aria-controls]')];
+      expect(controls.length, tab + ' must expose disclosure controls').toBeGreaterThan(0);
+      for (const control of controls) {
+        const target = host.querySelector('#' + control.getAttribute('aria-controls'));
+        expect(target, control.getAttribute('aria-controls') + ' must resolve').not.toBeNull();
+        if (control.getAttribute('aria-expanded') === 'false') expect(target.hidden).toBe(true);
+        if (target.getAttribute('role') === 'region') {
+          const labelId = target.getAttribute('aria-labelledby');
+          expect(labelId).toBeTruthy();
+          expect(host.querySelector('#' + labelId)).not.toBeNull();
+        }
+      }
+    }
+  });
+
+  it('uses explicit stereogram announcements without duplicate playback live regions', () => {
+    loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
+    const host = document.createElement('div');
+    host.innerHTML = renderTool('artStudio', {
+      artStudio: {
+        tab: 'stereogram',
+        studioHome: false,
+        stereoAnimMode: 'animate',
+        stereoAnimSource: 'draw',
+        stereoAnimHasFrames: true,
+        stereoAnimPlaying: false,
+      },
+    });
+    const panel = host.querySelector('#artstudio-panel-stereogram');
+    expect(panel.querySelectorAll('[aria-live]')).toHaveLength(0);
+    expect(panel.textContent).toContain('Paused');
+  });
+
   it('exposes the watercolor canvas, controls, and keyboard instructions', () => {
     loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
     const html = renderTool('artStudio', {
@@ -112,10 +150,11 @@ describe('Art Studio graphic and form semantics', () => {
     expect(html).toContain('id="watercolorCanvas"');
     expect(html).toContain('aria-label="Watercolor painting canvas. Focus and use Arrow keys');
     expect(html).toContain('id="artstudio-watercolor-keyboard-help"');
-    expect(html).toContain('aria-describedby="artstudio-watercolor-keyboard-help artstudio-watercolor-status"');
+    expect(html).toContain('aria-describedby="artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status"');
     expect(html).toContain('Control+Z Control+Y Meta+Z Meta+Y');
     expect(html).toContain('Enter Space P Control+Z');
-    expect(html).toContain('id="artstudio-watercolor-status" role="status" aria-live="polite" aria-atomic="true"');
+    expect(html).toContain('id="artstudio-watercolor-status"');
+    expect(html).not.toContain('id="artstudio-watercolor-status" role="status"');
     expect(html).toContain('id="artstudio-watercolor-undo"');
     expect(html).toContain('id="artstudio-watercolor-redo"');
     expect(html).toContain('id="artstudio-watercolor-pause"');
@@ -226,6 +265,6 @@ describe('Art Studio graphic and form semantics', () => {
     expect(source).toContain('role: "img", "aria-label": "Uploaded depth map preview"');
     expect(source).toContain('role: "img", "aria-label": "AI-generated depth map preview"');
     expect(source).toContain('"aria-label": \'3D sculpture preview. \' + sculptSummary');
-    expect(source).toContain('"aria-describedby": "artstudio-sculpt-keyboard-help"');
+    expect(source).toContain('"aria-describedby": "artstudio-sculpt-touch-help artstudio-sculpt-keyboard-help"');
   });
 });

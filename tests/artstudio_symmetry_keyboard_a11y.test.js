@@ -22,6 +22,7 @@ function makeCanvasContext() {
     fill: vi.fn(),
     fillRect: vi.fn(),
     globalAlpha: 1,
+    globalCompositeOperation: 'source-over',
     getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
     lineTo: vi.fn(),
     moveTo: vi.fn(),
@@ -80,7 +81,7 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     });
 
     expect(html).toContain('hold Shift with an Arrow key to draw a line');
-    expect(html).toContain('aria-describedby="artstudio-symmetry-keyboard-help"');
+    expect(html).toContain('aria-describedby="artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help"');
     expect(html).toContain('Shift+ArrowUp');
     expect(html).toContain('focus-visible:ring-4');
     expect(html).toContain('Dot stamp stroke mode');
@@ -92,6 +93,14 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     expect(html).toContain('Bilateral mirror symmetry pattern');
     expect(html).toContain('Custom symmetry fold count');
     expect(html).toContain('Symmetry brush opacity');
+    expect(html).toContain('Symmetry stroke stabilization');
+    expect(html).toContain('Use pen pressure for symmetry brush size');
+    expect(html).toContain('Stabilization softens hand jitter');
+    expect(html).toContain('Symmetry origin horizontal position');
+    expect(html).toContain('Symmetry origin vertical position');
+    expect(html).toContain('Normal symmetry brush blending');
+    expect(html).toContain('Glow symmetry brush blending');
+    expect(html).toContain('Changing the origin starts a fresh canvas');
     expect(html).toContain('Undo symmetry change');
     expect(html).toContain('Control+Z');
     expect(html).toMatch(/aria-label="8 symmetry folds" aria-pressed="true"/);
@@ -248,6 +257,84 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
 
     canvas._symClearAction();
     expect(context.globalAlpha).toBe(1);
+  });
+
+  it('draws around an off-center origin and supports additive Glow blending', async () => {
+    await mount({
+      symmetryFolds: 4,
+      symCenterX: 0.25,
+      symCenterY: 0.75,
+      symBlendMode: 'glow',
+      symStrokeMode: 'dots',
+      symPatternMode: 'rotate',
+    });
+    const canvas = host.querySelector('#symmetryCanvas');
+    const originX = host.querySelector('input[aria-label="Symmetry origin horizontal position"]');
+    const originY = host.querySelector('input[aria-label="Symmetry origin vertical position"]');
+
+    expect(originX.value).toBe('25');
+    expect(originY.value).toBe('75');
+    expect(canvas.getAttribute('aria-label')).toContain('Origin at 25 percent x, 75 percent y');
+    context.arc.mockClear();
+    canvas.onpointerdown({ button: 0, clientX: 200, clientY: 200, pointerId: 30, preventDefault: vi.fn() });
+    canvas.onpointerup({ clientX: 200, clientY: 200, pointerId: 30 });
+
+    expect(context.arc).toHaveBeenCalledTimes(4);
+    expect(context.arc.mock.calls[1][0]).toBeCloseTo(312, 5);
+    expect(context.arc.mock.calls[1][1]).toBeCloseTo(456, 5);
+    expect(context.globalCompositeOperation).toBe('lighter');
+
+    canvas._symClearAction();
+    expect(context.globalCompositeOperation).toBe('source-over');
+  });
+
+  it('stabilizes freehand movement and consumes coalesced pointer samples', async () => {
+    await mount({ symStrokeMode: 'freehand', symSmoothing: 0.5, symmetryFolds: 6 });
+    const canvas = host.querySelector('#symmetryCanvas');
+    const smoothing = host.querySelector('input[aria-label="Symmetry stroke stabilization"]');
+    expect(smoothing.value).toBe('50');
+
+    context.lineTo.mockClear();
+    canvas.onpointerdown({ button: 0, clientX: 100, clientY: 100, pointerId: 40, preventDefault: vi.fn() });
+    canvas.onpointermove({
+      clientX: 140,
+      clientY: 140,
+      pointerId: 40,
+      preventDefault: vi.fn(),
+      getCoalescedEvents: () => [
+        { clientX: 120, clientY: 120 },
+        { clientX: 140, clientY: 140 },
+      ],
+    });
+    canvas.onpointerup({ clientX: 140, clientY: 140, pointerId: 40 });
+
+    expect(context.lineTo).toHaveBeenCalledTimes(12);
+    expect(context.lineTo.mock.calls[0][0]).toBeCloseTo(110, 5);
+    expect(context.lineTo.mock.calls[0][1]).toBeCloseTo(110, 5);
+    expect(context.lineTo.mock.calls[6][0]).toBeCloseTo(125, 5);
+    expect(context.lineTo.mock.calls[6][1]).toBeCloseTo(125, 5);
+  });
+
+  it('uses stylus pressure for brush width without changing mouse behavior', async () => {
+    await mount({ symStrokeMode: 'dots', symPressureEnabled: true, brushSize: 4, symmetryFolds: 6 });
+    const canvas = host.querySelector('#symmetryCanvas');
+    const pressureToggle = host.querySelector('button[aria-label="Use pen pressure for symmetry brush size"]');
+    expect(pressureToggle.getAttribute('aria-pressed')).toBe('true');
+
+    context.arc.mockClear();
+    canvas.onpointerdown({ button: 0, pointerType: 'pen', pressure: 0.2, clientX: 100, clientY: 100, pointerId: 41, preventDefault: vi.fn() });
+    canvas.onpointerup({ clientX: 100, clientY: 100, pointerId: 41 });
+    expect(context.arc.mock.calls[0][2]).toBeCloseTo(2.32, 5);
+
+    context.arc.mockClear();
+    canvas.onpointerdown({ button: 0, pointerType: 'pen', pressure: 1, clientX: 100, clientY: 100, pointerId: 42, preventDefault: vi.fn() });
+    canvas.onpointerup({ clientX: 100, clientY: 100, pointerId: 42 });
+    expect(context.arc.mock.calls[0][2]).toBeCloseTo(6, 5);
+
+    context.arc.mockClear();
+    canvas.onpointerdown({ button: 0, pointerType: 'mouse', pressure: 0.5, clientX: 100, clientY: 100, pointerId: 43, preventDefault: vi.fn() });
+    canvas.onpointerup({ clientX: 100, clientY: 100, pointerId: 43 });
+    expect(context.arc.mock.calls[0][2]).toBeCloseTo(4, 5);
   });
 
   it('keeps source and active public mirrors identical', () => {

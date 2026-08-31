@@ -169,6 +169,88 @@ test.describe('Space Explorer usability and contrast', () => {
     await page.screenshot({ path: 'test-results/space-explorer-usability-phone.png', fullPage: true });
   });
 
+  test('guides a staged maneuver route with readable cabin labels on narrow screens', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount(page);
+
+    await page.getByRole('button', { name: /^Mars\./ }).click();
+    const interior = page.locator('[data-spaceexplorer-interior]');
+    await expect(interior).toBeVisible();
+
+    const maneuver = interior.locator('[data-spaceexplorer-interior-condition="maneuver"]');
+    const engineering = interior.locator('[data-spaceexplorer-interior-target="engineering"]');
+    await maneuver.click();
+    await engineering.click();
+
+    const recommendation = interior.locator('[data-spaceexplorer-staged-route="recommendation"]');
+    const activateStagedRoute = recommendation.locator('[data-spaceexplorer-next-brake="lab"]');
+    await expect(recommendation).toBeVisible();
+    await expect(recommendation.locator('[data-spaceexplorer-staged-route-summary="recommendation"]')).toContainText('Flight → Lab → Med → Engineering');
+    await expect(activateStagedRoute).toContainText('Use Science lab as the next braking point');
+
+    for (const control of [maneuver, engineering, activateStagedRoute]) {
+      const box = await control.boundingBox();
+      expect(box?.height || 0).toBeGreaterThanOrEqual(44);
+    }
+
+    await activateStagedRoute.click();
+    await expect(interior.locator('#se-staged-route-status')).toBeFocused();
+    await expect(interior.locator('[data-spaceexplorer-staged-route="active"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-staged-route-visual="true"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-final-target="engineering"]')).toHaveText('Engineering');
+    await expect(interior.locator('[data-spaceexplorer-active-next-brake="lab"]')).toContainText('Science lab');
+    await expect(interior.locator('[data-spaceexplorer-next-brake-point="lab"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-zone-state="next-brake"]')).toContainText('Lab');
+
+    const gentleMove = interior.locator('[data-spaceexplorer-interior-strategy="gentle"]');
+    const directRoute = interior.locator('[data-spaceexplorer-use-direct-route="true"]');
+    for (const control of [gentleMove, directRoute]) {
+      const box = await control.boundingBox();
+      expect(box?.height || 0).toBeGreaterThanOrEqual(44);
+    }
+
+    await gentleMove.click();
+    await expect(interior.locator('[data-spaceexplorer-interior-position="lab"]')).toHaveText('Science lab');
+    await expect(interior.locator('[data-spaceexplorer-final-target="engineering"]')).toHaveText('Engineering');
+    await expect(interior.locator('[data-spaceexplorer-active-next-brake="medbay"]')).toContainText('Medical bay');
+    await expect(interior.locator('[data-spaceexplorer-next-brake-point="medbay"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-staged-route-summary="active"]')).toContainText('Lab → Med → Engineering');
+    await expect(interior.locator('[data-spaceexplorer-route-legend="staged"]')).toContainText('bright ring = next braking point');
+    await expect.poll(async () => page.evaluate(() => {
+      const orientation = (window as any).__state.interiorOrientation;
+      return { position: orientation.position, target: orientation.target, routeMode: orientation.routeMode };
+    })).toEqual({ position: 'lab', target: 'engineering', routeMode: 'staged' });
+
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    expect(await axeViolations(page)).toEqual([]);
+    await page.screenshot({ path: 'test-results/space-explorer-staged-route-phone.png', fullPage: true });
+
+    await page.setViewportSize({ width: 320, height: 800 });
+    const cabinVisual = interior.locator('[data-spaceexplorer-interior-visual="perspective"]');
+    const labelMetrics = await cabinVisual.locator('[data-spaceexplorer-svg-label]').evaluateAll((labels) => labels.map((label) => {
+      const node = label as SVGTextElement;
+      const matrix = node.getScreenCTM();
+      const bounds = node.getBBox();
+      const viewBox = node.ownerSVGElement!.viewBox.baseVal;
+      return {
+        text: node.textContent || '',
+        screenFontPx: parseFloat(getComputedStyle(node).fontSize) * (matrix ? Math.hypot(matrix.a, matrix.b) : 0),
+        insideSvg: bounds.x >= viewBox.x && bounds.y >= viewBox.y && bounds.x + bounds.width <= viewBox.x + viewBox.width && bounds.y + bounds.height <= viewBox.y + viewBox.height,
+        bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
+        viewBox: { x: viewBox.x, y: viewBox.y, width: viewBox.width, height: viewBox.height },
+      };
+    }));
+    expect(labelMetrics.length).toBeGreaterThanOrEqual(6);
+    for (const metric of labelMetrics) {
+      expect(metric.screenFontPx, `${metric.text} should remain at least 11 screen pixels`).toBeGreaterThanOrEqual(11);
+      expect(metric.insideSvg, `${metric.text} should remain inside the cabin SVG: ${JSON.stringify({ bounds: metric.bounds, viewBox: metric.viewBox })}`).toBe(true);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await directRoute.click();
+    await expect(interior.locator('#se-interior-route-preview')).toBeFocused();
+    await expect(interior.locator('[data-spaceexplorer-staged-route="active"]')).toHaveCount(0);
+  });
+
   test('guides a mission without stealing focus or number keys from typing', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await mount(page);
@@ -203,21 +285,92 @@ test.describe('Space Explorer usability and contrast', () => {
     await interior.locator('[data-spaceexplorer-interior-target="medbay"]').click();
     await expect(interior.locator('[data-spaceexplorer-interior-prediction="gentle"]')).toHaveAttribute('data-predicted-control', 'recovery');
     await expect(interior.locator('[data-spaceexplorer-interior-prediction="gentle"]')).toContainText('Recovery likely');
+    await interior.locator('[data-spaceexplorer-interior-strategy="gentle"]').click();
+    await expect(interior.locator('[data-spaceexplorer-interior-position]')).toHaveText('Medical bay');
+    await expect(interior.locator('[data-spaceexplorer-interior-result="recovery"]')).toContainText('Recovery needed');
+    await expect(interior.locator('[data-spaceexplorer-interior-trace="overshoot"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-interior-overshoot-marker="true"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-interior-trace-summary="overshoot"]')).toContainText('overshoot and recovery');
+    await expect(interior.locator('.se-motion-trace')).toHaveCSS('animation-name', 'se-motion-trace-draw');
+    expect(await interior.locator('.se-motion-trace').evaluate((path) => (path as SVGPathElement).getTotalLength())).toBeGreaterThan(0);
     expect(await axeViolations(page)).toEqual([]);
+    await page.screenshot({ path: 'test-results/space-explorer-interior-overshoot.png', fullPage: true });
+
     await interior.locator('[data-spaceexplorer-interior-target="lab"]').click();
     await expect(interior.locator('[data-spaceexplorer-interior-prediction="gentle"]')).toHaveAttribute('data-predicted-control', 'controlled');
 
     await interior.locator('[data-spaceexplorer-interior-strategy="rail"]').click();
     await expect(interior.locator('[data-spaceexplorer-interior-position]')).toHaveText('Science lab');
     await expect(interior.locator('[data-spaceexplorer-interior-result="controlled"]')).toContainText('Controlled arrival');
-    await interior.locator('[data-spaceexplorer-interior-activity="lab"]').click();
+    await expect(interior.locator('[data-spaceexplorer-interior-trace="controlled"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-interior-trace-summary="controlled"]')).toContainText('controlled stop');
+    await expect(interior.locator('[data-spaceexplorer-interior-overshoot-marker]')).toHaveCount(0);
+
+    const quickWork = interior.locator('[data-spaceexplorer-work-choice="quick"]');
+    const securedWork = interior.locator('[data-spaceexplorer-work-choice="secured"]');
+    await expect(quickWork).toHaveAttribute('data-predicted-control', 'recovery');
+    await expect(securedWork).toHaveAttribute('data-predicted-control', 'controlled');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(quickWork).toBeVisible();
+    await expect(securedWork).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    expect(await axeViolations(page)).toEqual([]);
+
+    await quickWork.click();
+    await expect(interior.locator('[data-spaceexplorer-work-result="recovery"]')).toContainText('Work recovery needed');
+    await expect(interior.locator('[data-spaceexplorer-work-marker="recovery"]')).toHaveCount(1);
+    await expect(interior.locator('[data-spaceexplorer-work-result="recovery"]')).toContainText('activity remains incomplete');
+    await expect(interior.locator('[data-spaceexplorer-work-corrections="1"]')).toContainText('1 work correction');
+    await expect(interior.locator('[data-spaceexplorer-work-attempts="1"]')).toContainText('1 work attempt');
+    await expect(interior.locator('[data-spaceexplorer-interior-progress]')).toContainText('0 of 2 activities');
+    const failedWork = await page.evaluate(() => {
+      const orientation = (window as any).__state.interiorOrientation;
+      return {
+        labComplete: !!orientation.tasks.lab,
+        attempts: orientation.activityAttempts.lab,
+        corrections: orientation.activityRecoveryCount,
+        controlled: orientation.lastActivityResult.controlled,
+      };
+    });
+    expect(failedWork).toEqual({ labComplete: false, attempts: 1, corrections: 1, controlled: false });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    expect(await axeViolations(page)).toEqual([]);
+    await page.screenshot({ path: 'test-results/space-explorer-work-recovery-phone.png', fullPage: true });
+
+
+    await interior.locator('[data-spaceexplorer-interior-target="medbay"]').click();
+    await expect(interior.locator('[data-spaceexplorer-work-result="recovery"]')).toContainText('Work recovery needed');
+    await expect(interior.locator('[data-spaceexplorer-work-marker="recovery"]')).toHaveCount(1);
+    await securedWork.click();
+    await expect(interior.locator('[data-spaceexplorer-work-result="secured"]')).toContainText('Procedure secured');
+    await expect(interior.locator('[data-spaceexplorer-interior-activity-complete="lab"]')).toBeVisible();
+    await expect(interior.locator('[data-spaceexplorer-work-marker="secured"]')).toHaveCount(1);
+    await expect(interior.locator('#se-interior-feedback')).toBeFocused();
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('se-interior-feedback');
+    await page.screenshot({ path: 'test-results/space-explorer-work-secured-phone.png', fullPage: true });
     await expect(interior.locator('[data-spaceexplorer-interior-progress]')).toContainText('1 of 2 activities');
+    const securedRetry = await page.evaluate(() => {
+      const orientation = (window as any).__state.interiorOrientation;
+      return {
+        labComplete: !!orientation.tasks.lab,
+        attempts: orientation.activityAttempts.lab,
+        corrections: orientation.activityRecoveryCount,
+        controlled: orientation.lastActivityResult.controlled,
+      };
+    });
+    expect(securedRetry).toEqual({ labComplete: true, attempts: 2, corrections: 1, controlled: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    expect(await axeViolations(page)).toEqual([]);
+    await page.setViewportSize({ width: 900, height: 900 });
 
     await interior.locator('[data-spaceexplorer-interior-target="medbay"]').click();
     await interior.locator('[data-spaceexplorer-interior-strategy="gentle"]').click();
     await expect(interior.locator('[data-spaceexplorer-interior-position]')).toHaveText('Medical bay');
-    await interior.locator('[data-spaceexplorer-interior-activity="medbay"]').click();
+    await interior.locator('[data-spaceexplorer-work-choice="secured"]').click();
+    await expect(interior.locator('[data-spaceexplorer-interior-activity-complete="medbay"]')).toBeVisible();
     await expect(interior.locator('[data-spaceexplorer-maneuver-safe="2"]')).toContainText('2 maneuver-safe');
+    await expect(interior.locator('[data-spaceexplorer-work-corrections="1"]')).toContainText('1 work correction');
     await expect(interior.locator('[data-spaceexplorer-interior-progress]')).toContainText('Cabin ready');
     await expect(interior.locator('[data-spaceexplorer-interior-result]')).toContainText('orientation complete');
     await page.getByRole('button', { name: /Continue to power setup/ }).click();

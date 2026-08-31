@@ -241,10 +241,51 @@ describe('Optics Lab refinements', () => {
     expect(interference).toContain('data-op-wavefield-probe="true"');
     expect(interference).toContain('Depth probe');
     expect(interference).toContain('probe 40%');
+    expect(interference).toContain('data-op-wavefield-probe-readout="interference"');
+    expect(interference).toContain('data-op-probe-distance-m="0.400"');
+    expect(interference).toContain('0.40 m · 40%');
+    expect(interference).toContain('data-op-wavefield-slice-fill="probe"');
+    expect(interference).toContain('data-op-wavefield-slice-fill="screen"');
+    expect(interference).toContain('data-op-wavefield-direct="ridge-selection"');
+    expect((interference.match(/data-op-wavefield-slice-hit=/g) || [])).toHaveLength(10);
+    expect(interference).toMatch(/data-op-wavefield-slice-hit="0\.4"[^>]*data-op-wavefield-slice-selected="true"/);
+    expect(interference).toContain('data-op-wavefield-probe-measurement="interference"');
+    expect(interference).toContain('data-op-probe-intensity="1.0000"');
+    expect(interference).toContain('data-op-wavefield-measurement-trail="interference"');
+    expect(interference).toContain('data-op-trail-sample-count="10"');
+    expect((interference.match(/data-op-wavefield-trail-point=/g) || [])).toHaveLength(10);
+    expect(interference).toMatch(/data-op-wavefield-trail-point="0\.4"[^>]*data-op-trail-selected="true"/);
+    expect(interference).toContain('data-op-wavefield-key="interference"');
+    expect(interference).toContain('Far-field model · select any ridge');
+    expect(interference).toContain('Probe sample 0.40 m · 100.0%');
+    expect(interference).toContain('Screen 1.00 m');
+    expect(interference).toContain('aria-keyshortcuts="ArrowLeft ArrowRight Home End"');
     expect(diffraction).toContain('data-op-wavefield-3d="diffraction"');
     expect(diffraction).toContain('data-op-wavefield-depth="diffraction"');
+    expect(diffraction).toContain('data-op-probe-distance-m="1.050"');
+    expect(diffraction).toContain('1.05 m · 70%');
     expect(diffraction).toContain('3D wavefield surface');
     expect(lenses).not.toContain('3D wavefield surface');
+  });
+
+  it('samples the linked detector position on an intermediate wavefield slice', () => {
+    const interference = renderTool('opticsLab', state({
+      mode: 'interference', intShowWavefield3D: true, intWavefieldProbe: 0.4,
+      intLambda: 600, intSlitSep: 0.1, intSlitWidth: 50, intScreenL: 1,
+      intScreenProbeMm: 3,
+    }));
+    const probe = interference.match(/data-op-wavefield-probe-measurement="interference"[^>]*data-op-probe-intensity="([^"]+)"/);
+    const screen = interference.match(/data-op-wavefield-detector="interference"[^>]*data-op-detector-intensity="([^"]+)"/);
+
+    expect(probe).not.toBeNull();
+    expect(screen).not.toBeNull();
+    expect(Number(probe[1])).toBeGreaterThan(0.05);
+    expect(Number(screen[1])).toBeLessThan(0.001);
+    expect(interference).toContain('data-op-probe-mm="3.000"');
+    expect(interference).toContain('data-op-trail-lateral-mm="3.000"');
+    expect(interference).toContain('data-op-trail-selected-depth="0.4"');
+    expect(interference).toContain('The amber probe marker samples that same lateral position');
+    expect(interference).toContain('A dashed measurement trail connects that fixed lateral position');
   });
 
   it('keeps wave apparatus geometry on a fixed physical scale with direct handles', () => {

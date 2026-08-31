@@ -3657,19 +3657,19 @@ const d = labToolData.rocks || {};
 
             // Header
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-2 sm:gap-3 mb-3", "data-rocks-header": "responsive" },
 
-              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "transition-colors grid h-11 w-11 shrink-0 place-items-center hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': __alloT('stem.rocks.back_to_tools', 'Back to tools'), "data-rocks-header-action": "back" }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rocks_minerals_explorer', "Rocks & Minerals Explorer")),
+              React.createElement("h3", { className: "min-w-0 flex-1 text-lg font-bold text-slate-800 tracking-tight leading-tight" }, "\uD83E\uDEA8 " + __alloT('stem.rocks.rocks_minerals_explorer', "Rocks & Minerals Explorer")),
 
-              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('geologyExplorer'); }, title: __alloT('stem.rocks.open_3d_voxel_cross_section', 'Open the 3D voxel cross-section of the crust'), 'aria-label': __alloT('stem.rocks.open_geology_explorer_3d', 'Open Geology Explorer \u2014 3D voxel cross-section'), className: "transition-colors active:scale-[0.97] min-h-[44px] text-[11px] font-bold px-2.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100", "data-rocks-header-action": "geology-3d" }, "\u26F0\uFE0F " + __alloT('stem.rocks.explore_in_3d', "Explore in 3D") + " \u2192"),
 
               // flex-wrap: six mode tabs on one non-wrapping row measured 441px,
               // so on a 390px phone the whole tool scrolled sideways and the last
               // tabs sat off-screen. The header is the one row a student cannot
               // work around, so it wraps rather than overflowing.
-              React.createElement("div", { className: "flex flex-wrap gap-1 sm:ml-auto" },
+              React.createElement("div", { className: "order-3 flex w-full flex-wrap gap-1 sm:order-none sm:w-auto sm:ml-auto", "data-rocks-mode-nav": "responsive" },
 
                 ['landscape', 'rocks', 'minerals', 'mystery', 'workbench', 'quiz', 'weathHunt'].map(function (m) {
 
@@ -3687,7 +3687,7 @@ const d = labToolData.rocks || {};
 
                       if (typeof canvasNarrate === 'function') { canvasNarrate('rocks', 'mode_switch', { first: 'Switched to ' + modeLabel + ' mode.', repeat: modeLabel + ' mode.', terse: m + '.' }, { debounce: 500 }); }
 
-                    }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
+                    }, className: "min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold capitalize " + (mode === m ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
 
                   },
 
@@ -6104,6 +6104,9 @@ const d = labToolData.rocks || {};
 
               // Evidence, derived once for the notebook and the candidate filter.
               var wbEvidence = [];
+              // Match the coverage rail's property order. This is an
+              // explanatory grouping, not a claim that tests ran in sequence.
+              if (wb.lens && sp) wbEvidence.push({ k: 'lens', text: __alloT('stem.rocks.wb_ev_lens', 'Lens: luster ') + sp.luster, test: function (m) { return m.luster === sp.luster; } });
               if (wb.streakDone && sp) {
                 var wbObservedStreak = wbStreakOutcomeFor(sp);
                 wbEvidence.push({
@@ -6132,7 +6135,6 @@ const d = labToolData.rocks || {};
               })();
               if (wb.fizz && sp) wbEvidence.push({ k: 'fizz', text: wb.fizz === 'fizz' ? __alloT('stem.rocks.wb_ev_fizz', 'Acid: fizzes (carbonate)') : __alloT('stem.rocks.wb_ev_nofizz', 'Acid: no reaction'), test: function (m) { return (WB_CARBONATES.indexOf(m.id) !== -1) === (wb.fizz === 'fizz'); } });
               if (wb.magnet && sp) wbEvidence.push({ k: 'magnet', text: wb.magnet === 'pull' ? __alloT('stem.rocks.wb_ev_pull', 'Magnet: strong pull') : __alloT('stem.rocks.wb_ev_nopull', 'Magnet: no attraction'), test: function (m) { return (WB_MAGNETIC.indexOf(m.id) !== -1) === (wb.magnet === 'pull'); } });
-              if (wb.lens && sp) wbEvidence.push({ k: 'lens', text: __alloT('stem.rocks.wb_ev_lens', 'Lens: luster ') + sp.luster, test: function (m) { return m.luster === sp.luster; } });
               if (wb.density && sp && sp.density) {
                 var wbObservedDensity = wbDensityOutcomeFor(sp);
                 wbEvidence.push({ k: 'density', text: __alloT('stem.rocks.wb_ev_density', 'Density: about ') + sp.density.toFixed(2) + ' g/cm³ — ' + wbObservedDensity.label, test: function (m) { return wbDensityOutcomeFor(m).id === wbObservedDensity.id; } });
@@ -6156,8 +6158,40 @@ const d = labToolData.rocks || {};
               var wbScratchCount = Object.keys(wb.scratch || {}).length;
               var wbStrictScratchCount = Object.keys(wb.scratch || {}).filter(function (id) { return (wb.scratch || {})[id] !== 'borderline'; }).length;
               var wbHasProvisionalScratch = Object.keys(wb.scratch || {}).some(function (id) { return (wb.scratch || {})[id] === 'borderline'; });
-              var wbHardnessConfirmed = wbPlateScratched || wbStrictScratchCount > 0;
-              var wbHardnessProvisional = !wbHardnessConfirmed && wbHasProvisionalScratch;
+              // Convert scratch observations into explicit inequalities once,
+              // before deciding whether hardness is usable in a claim.
+              var wbLo = wbPlateScratched ? RK_STREAK_PLATE_HARDNESS : 0, wbHi = 10.5, wbEq = null, wbHardnessConflict = false;
+              (function () {
+                var sc = wb.scratch || {};
+                for (var i = 0; i < WB_REFS.length; i++) {
+                  var r = WB_REFS[i];
+                  if (sc[r.id] === 'scratched' && r.h < wbHi) wbHi = r.h;
+                  if (sc[r.id] === 'no' && r.h > wbLo) wbLo = r.h;
+                  if (sc[r.id] === 'borderline') {
+                    if (wbEq !== null && wbEq !== r.h) wbHardnessConflict = true;
+                    wbEq = r.h;
+                  }
+                }
+                if (wbLo >= wbHi || (wbEq !== null && (wbEq <= wbLo || wbEq >= wbHi))) wbHardnessConflict = true;
+              })();
+              // A distant reference adds a broad bound; it does not confirm an
+              // approximate equality. Require the next softer/harder recorded
+              // reference, or an independent plate-groove hardness result.
+              var wbHasAdjacentScratchConfirmation = false;
+              (function () {
+                var sc = wb.scratch || {};
+                for (var i = 0; i < WB_REFS.length; i++) {
+                  if (sc[WB_REFS[i].id] !== 'borderline') continue;
+                  var softer = i > 0 ? sc[WB_REFS[i - 1].id] : null;
+                  var harder = i < WB_REFS.length - 1 ? sc[WB_REFS[i + 1].id] : null;
+                  // The softer reference should leave no mark; the harder one
+                  // should scratch. An opposite result is a conflict, not
+                  // corroboration.
+                  if (softer === 'no' || harder === 'scratched') wbHasAdjacentScratchConfirmation = true;
+                }
+              })();
+              var wbHardnessConfirmed = !wbHardnessConflict && (wbPlateScratched || (!wbHasProvisionalScratch && wbStrictScratchCount > 0) || wbHasAdjacentScratchConfirmation);
+              var wbHardnessProvisional = !wbHardnessConflict && !wbHardnessConfirmed && wbHasProvisionalScratch;
               var wbHasHardnessEvidence = wbHardnessConfirmed || wbHardnessProvisional;
               // Scratch references create several notebook observations, but
               // they measure one scientific property. Keep a separate coverage
@@ -6238,7 +6272,8 @@ const d = labToolData.rocks || {};
               };
               var wbBuildForecast = function (tool, candidates) {
                 var groups = [], byId = {};
-                (candidates || []).forEach(function (m) {
+                var candidatePool = (candidates || []).filter(Boolean);
+                candidatePool.forEach(function (m) {
                   var outcome = wbForecastOutcomeFor(tool, m);
                   if (!outcome) return;
                   if (!byId[outcome.id]) {
@@ -6247,6 +6282,19 @@ const d = labToolData.rocks || {};
                   }
                   byId[outcome.id].count++;
                   byId[outcome.id].candidates.push({ id: m.id, label: m.label || m.id });
+                });
+                // Outcome bars use exact trigger groups. A provisional scratch
+                // branch deliberately retains a wider ±0.5 Mohs shortlist, so
+                // projected remaining counts must be calculated separately.
+                var forecastScratchRef = wbScratchRefFor(tool);
+                groups.forEach(function (group) {
+                  var retained = group.candidates.slice();
+                  if (forecastScratchRef) {
+                    var observed = group.id === 'scratches' ? 'scratched' : group.id === 'borderline' ? 'borderline' : 'no';
+                    retained = candidatePool.filter(function (m) { return wbScratchObservationMatches(forecastScratchRef, observed, m); }).map(function (m) { return { id: m.id, label: m.label || m.id }; });
+                  }
+                  group.remainingCount = retained.length;
+                  group.remainingCandidates = retained;
                 });
                 groups.sort(function (a, b) { return b.count - a.count || a.label.localeCompare(b.label); });
                 return groups;
@@ -6282,8 +6330,8 @@ const d = labToolData.rocks || {};
                 var profile = wbTestProfileFor(tool);
                 var groups = wbBuildForecast(tool, wbViableCandidates);
                 if (!profile || groups.length < 2 || wbViableCandidates.length < 2) return null;
-                var expectedRemaining = groups.reduce(function (sum, group) { return sum + group.count * group.count; }, 0) / wbViableCandidates.length;
-                var largestGroup = groups.reduce(function (largest, group) { return Math.max(largest, group.count); }, 0);
+                var expectedRemaining = groups.reduce(function (sum, group) { return sum + group.count * group.remainingCount; }, 0) / wbViableCandidates.length;
+                var largestGroup = groups.reduce(function (largest, group) { return Math.max(largest, group.remainingCount); }, 0);
                 return Object.assign({}, profile, {
                   outcomeCount: groups.length,
                   expectedRemaining: expectedRemaining,
@@ -6325,6 +6373,10 @@ const d = labToolData.rocks || {};
                       : key === 'magnet' ? __alloT('stem.rocks.wb_kind_magnet', 'magnetism')
                         : __alloT('stem.rocks.wb_kind_streak', 'streak');
               };
+              var wbEvidenceIcon = function (key) {
+                if (key.indexOf('scratch_') === 0) return '⛏️';
+                return key === 'lens' ? '🔍' : key === 'density' ? '⚖️' : key === 'fizz' ? '🧪' : key === 'magnet' ? '🧲' : '➖';
+              };
               var wbMismatchKind = function (m) {
                 for (var i = 0; i < wbEvidence.length; i++) {
                   if (!wbEvidence[i].test(m)) return wbEvidenceKind(wbEvidence[i].k);
@@ -6332,24 +6384,8 @@ const d = labToolData.rocks || {};
                 return null;
               };
 
-              // Convert scratch observations into explicit inequalities. With
-              // the tri-state model, a clean scratch means H < reference, no
-              // mark means H > reference, and equal modeled values are an
-              // approximate equality that should be retested in a real lab.
-              var wbLo = wbPlateScratched ? RK_STREAK_PLATE_HARDNESS : 0, wbHi = 10.5, wbEq = null, wbHardnessConflict = false;
-              (function () {
-                var sc = wb.scratch || {};
-                for (var i = 0; i < WB_REFS.length; i++) {
-                  var r = WB_REFS[i];
-                  if (sc[r.id] === 'scratched' && r.h < wbHi) wbHi = r.h;
-                  if (sc[r.id] === 'no' && r.h > wbLo) wbLo = r.h;
-                  if (sc[r.id] === 'borderline') {
-                    if (wbEq !== null && wbEq !== r.h) wbHardnessConflict = true;
-                    wbEq = r.h;
-                  }
-                }
-                if (wbLo >= wbHi || (wbEq !== null && (wbEq <= wbLo || wbEq >= wbHi))) wbHardnessConflict = true;
-              })();
+              // A clean scratch means H < reference, no mark means H >
+              // reference, and equal modeled values are approximate.
               var wbHardnessLabel = wbHardnessConflict
                 ? __alloT('stem.rocks.wb_mohs_conflict', 'Conflicting scratch results — retest')
                 : wbEq !== null ? 'H ≈ ' + wbEq
@@ -6709,16 +6745,18 @@ const d = labToolData.rocks || {};
                     return React.createElement("div", {
                       key: group.id, role: "listitem", className: "rounded-lg border border-slate-200 bg-white px-2.5 py-2 min-w-0",
                       "data-wb-forecast-branch": group.id, "data-wb-branch-count": group.count,
-                      "data-wb-forecast-candidates": group.candidates.map(function (candidate) { return candidate.id; }).join(',')
+                      "data-wb-branch-remaining": group.remainingCount,
+                      "data-wb-forecast-candidates": group.candidates.map(function (candidate) { return candidate.id; }).join(','),
+                      "data-wb-forecast-retained": group.remainingCandidates.map(function (candidate) { return candidate.id; }).join(',')
                     },
                       React.createElement("div", { className: "flex items-center gap-2 min-w-0" },
                         React.createElement("span", { className: "w-2.5 h-2.5 rounded-full shrink-0", style: { background: wbForecastPalette[i % wbForecastPalette.length] }, "aria-hidden": "true" }),
                         React.createElement("span", { className: "text-[10.5px] font-bold text-slate-800 min-w-0 flex-1", style: { overflowWrap: 'anywhere' } }, group.label),
-                        React.createElement("span", { className: "rounded-full bg-slate-100 px-2 py-0.5 text-[9.5px] font-black text-slate-700 shrink-0" }, group.count + (group.count === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')))
+                        React.createElement("span", { className: "rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-700 shrink-0" }, group.count + __alloT('stem.rocks.wb_forecast_can_produce', ' can produce this'))
                       ),
                       React.createElement("p", { className: "mt-1.5 pl-[18px] text-[9.5px] text-slate-600 leading-relaxed", style: { overflowWrap: 'anywhere' } },
                         React.createElement("span", { className: "font-black text-violet-800" }, __alloT('stem.rocks.wb_branch_keeps', 'Would keep: ')),
-                        group.candidates.map(function (candidate) { return candidate.label; }).join(', ')
+                        group.remainingCandidates.map(function (candidate) { return candidate.label; }).join(', ')
                       )
                     );
                   })),
@@ -6727,23 +6765,23 @@ const d = labToolData.rocks || {};
                     React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1" }, wbForecastGroups.map(function (group) {
                       var chosen = wbPredictionTool === wbNext.tool && wbPredictionValue === group.id;
                       return React.createElement("button", {
-                        key: group.id, type: "button", "aria-pressed": chosen, "data-wb-prediction-outcome": group.id, "data-wb-prediction-branch-size": group.count,
-                        "aria-label": __alloT('stem.rocks.wb_predict_aria_start', 'Predict ') + group.label + '. ' + __alloT('stem.rocks.wb_predict_aria_mid', 'This branch would leave ') + group.count + (group.count === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '.',
-                        onClick: function () { updWb({ predictionTool: wbNext.tool, predictionValue: group.id }); wbSay(__alloT('stem.rocks.wb_prediction_saved_sr', 'Prediction saved: ') + group.label + '. ' + __alloT('stem.rocks.wb_predict_aria_mid', 'This branch would leave ') + group.count + (group.count === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '. ' + __alloT('stem.rocks.wb_prediction_saved_sr2', 'Run the recommended test and compare the observation.')); },
+                        key: group.id, type: "button", "aria-pressed": chosen, "data-wb-prediction-outcome": group.id, "data-wb-prediction-branch-size": group.remainingCount,
+                        "aria-label": __alloT('stem.rocks.wb_predict_aria_start', 'Predict ') + group.label + '. ' + __alloT('stem.rocks.wb_predict_aria_mid', 'This branch would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '.',
+                        onClick: function () { updWb({ predictionTool: wbNext.tool, predictionValue: group.id }); wbSay(__alloT('stem.rocks.wb_prediction_saved_sr', 'Prediction saved: ') + group.label + '. ' + __alloT('stem.rocks.wb_predict_aria_mid', 'This branch would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')) + '. ' + __alloT('stem.rocks.wb_prediction_saved_sr2', 'Run the recommended test and compare the observation.')); },
                         className: "rounded-xl border px-3 py-2.5 min-h-[48px] text-left text-[10.5px] font-black transition-all " + (chosen ? "bg-violet-100 border-violet-500 text-violet-900 ring-2 ring-violet-200" : "bg-white border-slate-300 text-slate-800 hover:border-violet-400 hover:bg-violet-50")
                       },
                         React.createElement("span", { className: "block" }, (chosen ? '✓ ' : '') + group.label),
-                        React.createElement("span", { className: "block mt-1 text-[9.5px] font-semibold text-slate-600" }, __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.count + (group.count === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')))
+                        React.createElement("span", { className: "block mt-1 text-[10px] font-semibold text-slate-600" }, __alloT('stem.rocks.wb_branch_would_leave', 'Would leave ') + group.remainingCount + (group.remainingCount === 1 ? __alloT('stem.rocks.wb_forecast_candidate_one', ' candidate') : __alloT('stem.rocks.wb_forecast_candidate_many', ' candidates')))
                       );
                     })),
                     activePredictionBranch ? React.createElement("aside", {
                       className: "mt-2 rounded-xl border border-violet-300 bg-violet-50 p-2.5",
-                      role: "status", "aria-live": "polite", "data-wb-prediction-branch": activePredictionBranch.id,
-                      "data-wb-prediction-remaining": activePredictionBranch.count
+                      "data-wb-prediction-branch": activePredictionBranch.id,
+                      "data-wb-prediction-remaining": activePredictionBranch.remainingCount
                     },
                       React.createElement("p", { className: "text-[9.5px] font-black uppercase tracking-[0.12em] text-violet-800" }, __alloT('stem.rocks.wb_working_hypothesis', 'Working hypothesis')),
                       React.createElement("p", { className: "text-[10.5px] text-slate-800 mt-0.5 leading-relaxed" },
-                        __alloT('stem.rocks.wb_branch_if', 'If ') + activePredictionBranch.label + __alloT('stem.rocks.wb_branch_then', ' occurs, ') + activePredictionBranch.count + (activePredictionBranch.count === 1 ? __alloT('stem.rocks.wb_branch_one_remains', ' candidate would remain: ') : __alloT('stem.rocks.wb_branch_many_remain', ' candidates would remain: ')) + activePredictionBranch.candidates.map(function (candidate) { return candidate.label; }).join(', ') + '.'
+                        __alloT('stem.rocks.wb_branch_if', 'If ') + activePredictionBranch.label + __alloT('stem.rocks.wb_branch_then', ' occurs, ') + activePredictionBranch.remainingCount + (activePredictionBranch.remainingCount === 1 ? __alloT('stem.rocks.wb_branch_one_remains', ' candidate would remain: ') : __alloT('stem.rocks.wb_branch_many_remain', ' candidates would remain: ')) + activePredictionBranch.remainingCandidates.map(function (candidate) { return candidate.label; }).join(', ') + '.'
                       )
                     ) : null
                   ),
@@ -6757,7 +6795,7 @@ const d = labToolData.rocks || {};
                   className: "rounded-2xl border-2 p-3 sm:p-4 " + (wbBusy ? "border-sky-300 bg-sky-50" : "border-amber-300 bg-amber-50"),
                   "aria-labelledby": "wb-action-hub-title", "data-wb-action-hub": "unified", "data-wb-action-tool": wbNext.tool
                 },
-                  React.createElement("div", { className: "flex gap-3 items-start min-w-0", role: "status", "aria-live": "polite" },
+                  React.createElement("div", { className: "flex gap-3 items-start min-w-0" },
                     React.createElement("span", { className: "w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm shrink-0", "aria-hidden": "true" }, wbBusy ? '⏳' : wbNext.icon),
                     React.createElement("div", { className: "min-w-0" },
                       React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.14em] " + (wbBusy ? "text-sky-800" : "text-amber-800") }, wbBusy ? __alloT('stem.rocks.wb_observing_now', 'Observation in progress') : __alloT('stem.rocks.wb_current_focus', 'Next scientific move') + ' · ' + focusStep.title),
@@ -6780,7 +6818,7 @@ const d = labToolData.rocks || {};
                 if (!wbPredictionActual || !wbPredictionExpected) return null;
                 return React.createElement("aside", {
                   className: "mt-3 rounded-xl border p-3 " + (wbPredictionMatched ? "border-emerald-300 bg-emerald-50" : "border-sky-300 bg-sky-50"),
-                  role: "status", "aria-live": "polite", "data-wb-prediction-reflection": wbPredictionMatched ? 'matched' : 'updated'
+                  "data-wb-prediction-reflection": wbPredictionMatched ? 'matched' : 'updated'
                 },
                   React.createElement("div", { className: "flex items-start gap-2.5" },
                     React.createElement("span", { className: "w-9 h-9 rounded-xl bg-white border flex items-center justify-center text-lg shrink-0 " + (wbPredictionMatched ? "border-emerald-200" : "border-sky-200"), "aria-hidden": "true" }, wbPredictionMatched ? '✓' : '↻'),
@@ -6819,7 +6857,7 @@ const d = labToolData.rocks || {};
                         React.createElement("span", { className: "min-w-0" },
                           React.createElement("span", { className: "block text-[11px] font-black " + (item.caution || item.provisional ? "text-amber-900" : item.done ? "text-emerald-900" : "text-slate-700") }, (item.provisional ? '≈ ' : item.caution ? '↗ ' : item.done ? '✓ ' : '') + item.label),
                           React.createElement("span", { className: "block text-[10.5px] font-semibold mt-0.5 " + (item.done || item.provisional ? "text-slate-800" : "text-slate-600"), style: { overflowWrap: 'anywhere' } }, item.value),
-                          item.provisional ? React.createElement("span", { className: "block text-[9px] font-black text-amber-800 mt-0.5" }, __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm')) : null
+                          item.provisional ? React.createElement("span", { className: "block text-[10px] font-black text-amber-800 mt-0.5" }, __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm')) : null
                         )
                       )
                     );
@@ -6908,13 +6946,13 @@ const d = labToolData.rocks || {};
                           React.createElement("div", { className: "min-w-0 flex-1" },
                             React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
                               React.createElement("h5", { className: "text-[12px] font-black text-slate-900" }, item.label),
-                              React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[8.5px] font-black " + (item.provisional ? "bg-amber-100 text-amber-900" : item.done ? "bg-emerald-100 text-emerald-900" : "bg-white text-slate-700 border border-slate-200") }, item.provisional ? __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : item.done ? __alloT('stem.rocks.wb_guide_measured', 'Measured') : __alloT('stem.rocks.wb_guide_available', 'Available'))
+                              React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[10px] font-black " + (item.provisional ? "bg-amber-100 text-amber-900" : item.done ? "bg-emerald-100 text-emerald-900" : "bg-white text-slate-700 border border-slate-200") }, item.provisional ? __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : item.done ? __alloT('stem.rocks.wb_guide_measured', 'Measured') : __alloT('stem.rocks.wb_guide_available', 'Available'))
                             ),
                             React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-1 leading-relaxed" }, item.meaning)
                           )
                         ),
                         React.createElement("p", { className: "text-[10px] font-semibold text-violet-900 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_guide_use_prefix', 'Diagnostic use: ') + item.use),
-                        React.createElement("p", { className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[9.5px] text-amber-900 leading-relaxed" }, '⚠ ' + __alloT('stem.rocks.wb_guide_guard_prefix', 'Do not mix it up: ') + item.guard)
+                        React.createElement("p", { className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10.5px] text-amber-900 leading-relaxed" }, '⚠ ' + __alloT('stem.rocks.wb_guide_guard_prefix', 'Do not mix it up: ') + item.guard)
                       );
                     }))
                   )
@@ -6967,14 +7005,16 @@ const d = labToolData.rocks || {};
               var wbConfidenceLabel = wbClaimConfidence ? (wbConfidenceOptions.filter(function (item) { return item.id === wbClaimConfidence; })[0] || {}).label : __alloT('stem.rocks.wb_conf_not_recorded', 'Confidence not recorded');
               var wbClaimReasoningLabel = wbClaimReasoning ? (wbReasoningOptions.filter(function (item) { return item.id === wbClaimReasoning; })[0] || {}).label : __alloT('stem.rocks.wb_reason_not_recorded', 'Reasoning not recorded');
               var wbCerReady = wbClaimReady && wbClaimEvidence.length >= 2 && !!wbClaimReasoning && !!wbClaimConfidence;
-              var wbToggleClaimEvidence = function (id) {
+              var wbToggleClaimEvidence = function (id, label) {
                 var next = wbClaimEvidence.slice();
                 var at = next.indexOf(id);
                 if (at === -1) next.push(id); else next.splice(at, 1);
                 updWb({ claimEvidence: next });
-                wbSay((at === -1 ? __alloT('stem.rocks.wb_ev_selected_sr', 'Evidence selected: ') : __alloT('stem.rocks.wb_ev_removed_sr', 'Evidence removed: ')) + id + '.');
+                wbSay((at === -1 ? __alloT('stem.rocks.wb_ev_selected_sr', 'Evidence selected: ') : __alloT('stem.rocks.wb_ev_removed_sr', 'Evidence removed: ')) + (label || id) + '.');
               };
-              var wbCerRows = wbSelected ? wbMatchRowsFor(wbSelected) : [];
+              // Provisional properties remain visible in comparisons, but do
+              // not appear as selectable evidence until they are confirmed.
+              var wbCerRows = wbSelected ? wbMatchRowsFor(wbSelected).filter(function (row) { return wbMeasuredIds.indexOf(row.id) !== -1; }) : [];
               var wbChosenRows = wbCerRows.filter(function (row) { return wbClaimEvidence.indexOf(row.id) !== -1; });
               var wbChosenLabels = wbChosenRows.map(function (row) { return row.label.toLowerCase(); });
               var wbChosenText = wbChosenLabels.length > 1 ? wbChosenLabels.slice(0, -1).join(', ') + __alloT('stem.rocks.wb_reason_and', ' and ') + wbChosenLabels[wbChosenLabels.length - 1] : (wbChosenLabels[0] || '');
@@ -7053,7 +7093,7 @@ const d = labToolData.rocks || {};
                       var impact = wbPropertyImpact(row.id);
                       return React.createElement("button", {
                         key: row.id, type: "button", "aria-pressed": chosen, "data-wb-cer-evidence": row.id, "data-wb-cer-evidence-state": chosen ? 'chosen' : 'available',
-                        onClick: function () { wbToggleClaimEvidence(row.id); },
+                        onClick: function () { wbToggleClaimEvidence(row.id, row.label); },
                         className: "rounded-xl border p-2.5 min-h-[66px] text-left transition-all " + (chosen ? "bg-violet-100 border-violet-500 ring-2 ring-violet-200 text-violet-900" : "bg-slate-50 border-slate-300 text-slate-800 hover:border-violet-400")
                       },
                         React.createElement("span", { className: "flex items-center justify-between gap-2" },
@@ -7092,7 +7132,7 @@ const d = labToolData.rocks || {};
                         }, option.label);
                       }))
                     ),
-                    React.createElement("div", { className: "rounded-xl border border-emerald-300 bg-emerald-50 p-3", role: "status", "aria-live": "polite", "data-wb-reasoning-frame": wbCerReady ? 'complete' : 'building' },
+                    React.createElement("div", { className: "rounded-xl border border-emerald-300 bg-emerald-50 p-3", "data-wb-reasoning-frame": wbCerReady ? 'complete' : 'building' },
                       React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_reasoning_preview', 'Your reasoning preview')),
                       React.createElement("p", { className: "text-[11px] font-semibold text-emerald-900 mt-1 leading-relaxed" }, wbReasoningSentence)
                     )
@@ -7127,7 +7167,7 @@ const d = labToolData.rocks || {};
                   setTimeout(function () { try { checkRocksChallenges({ ...d, wb: { ...wb, solvedId: claimId, solved: (wb.solved || 0) + 1 } }); } catch (e) {} }, 60);
                   wbSay(__alloT('stem.rocks.wb_sr_solved', 'Correct. The specimen is ') + wbSelected.label + '.');
                 } else {
-                  updWb({ guessedWrong: (wb.guessedWrong || []).concat([claimId]), selectedId: null, lastRejectedId: claimId, reviewId: claimId, candidateView: 'setaside', attempts: (wb.attempts || 0) + 1, anim: 'wrong' });
+                  updWb({ guessedWrong: (wb.guessedWrong || []).concat([claimId]), selectedId: null, lastRejectedId: claimId, reviewId: claimId, candidateView: 'setaside', claimEvidence: [], claimReasoning: null, claimConfidence: null, attempts: (wb.attempts || 0) + 1, anim: 'wrong' });
                   setTimeout(function () { try { wbSay(__alloT('stem.rocks.wb_sr_wrong', 'Not ') + wbSelected.label + '. ' + __alloT('stem.rocks.wb_sr_wrong2', 'Your evidence still fits it, so run a test that would tell them apart.')); } finally { updWb({ anim: null }); } }, 700);
                 }
               };
@@ -7247,8 +7287,10 @@ const d = labToolData.rocks || {};
                   byHardness[key].names.push(m.label);
                 });
                 var candidateGroups = Object.keys(byHardness).map(function (key) { return byHardness[key]; }).sort(function (a, b) { return a.hardness - b.hardness; });
-                var candidateSummary = candidateGroups.map(function (group) { return group.count + ' at Mohs ' + group.hardness; }).join(', ');
-                var intervalAria = 'Mohs ordinal hardness ranking from 1 to 10. Modeled constraint: ' + wbHardnessLabel + '. ' + __alloT('stem.rocks.wb_mohs_rank_note', 'Mohs is an ordinal ranking; equal spacing does not mean equal increases in hardness.') + ' ' + __alloT('stem.rocks.wb_mohs_aria_candidates', 'Remaining candidate positions: ') + candidateSummary + '.' + (recommendedRef ? ' ' + __alloT('stem.rocks.wb_mohs_aria_next', 'Recommended next reference: ') + recommendedRef.label + ', Mohs ' + recommendedRef.h + '.' : '');
+                var candidateSummary = candidateGroups.length ? candidateGroups.map(function (group) {
+                  return group.count + (group.count === 1 ? __alloT('stem.rocks.wb_mohs_aria_candidate_one', ' candidate at Mohs ') : __alloT('stem.rocks.wb_mohs_aria_candidate_many', ' candidates at Mohs ')) + group.hardness;
+                }).join(', ') : __alloT('stem.rocks.wb_mohs_aria_none', 'No candidates match the current scratch results');
+                var intervalAria = __alloT('stem.rocks.wb_mohs_aria_intro', 'Mohs ordinal hardness ranking from 1 to 10. Modeled constraint: ') + wbHardnessLabel + '. ' + __alloT('stem.rocks.wb_mohs_rank_note', 'Mohs is an ordinal ranking; equal spacing does not mean equal increases in hardness.') + ' ' + __alloT('stem.rocks.wb_mohs_aria_candidates', 'Remaining candidate positions: ') + candidateSummary + '.' + (recommendedRef ? ' ' + __alloT('stem.rocks.wb_mohs_aria_next', 'Recommended next reference: ') + recommendedRef.label.replace(/^\S+\s/, '') + ', Mohs ' + recommendedRef.h + '.' : '');
                 return React.createElement("figure", {
                   className: "mt-3", "data-wb-mohs-interval": quality,
                   "data-wb-mohs-low": low, "data-wb-mohs-high": high,
@@ -7346,9 +7388,12 @@ const d = labToolData.rocks || {};
                   React.createElement("p", { className: "sm:hidden rounded-lg bg-slate-800 px-3 py-2 text-[11px] font-semibold text-white leading-relaxed", "data-wb-mobile-bench-caption": "readable" },
                     __alloT('stem.rocks.wb_unknown_mobile', 'Unknown specimen') + ' · ' + sp.crystal + ' · ' + sp.luster + (wbPlateScratched ? ' · ' + __alloT('stem.rocks.wb_plate_mobile', 'No powder streak; plate groove gives H > 6.5') : '')
                   ),
+                  // Guided learners see the next scientific move immediately
+                  // after the specimen; the full bench keeps evidence first.
+                  wbGuided ? wbRenderActionHub() : null,
                   wbRenderEvidenceRail(),
                   wbRenderPropertyGuide(),
-                  wbRenderActionHub(),
+                  !wbGuided ? wbRenderActionHub() : null,
                   React.createElement("div", { className: "grid lg:grid-cols-5 gap-3" },
                     // Instrument tray: purpose text and Mohs values make each
                     // control a scientific choice rather than an icon puzzle.
@@ -7399,13 +7444,15 @@ const d = labToolData.rocks || {};
                       ),
                       React.createElement("div", { className: "mt-3", role: "group", "aria-label": __alloT('stem.rocks.wb_coverage_aria', 'Evidence coverage by property type') },
                         React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1.5" },
-                          React.createElement("p", { className: "text-[9.5px] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_coverage_title', 'Evidence coverage')),
-                          React.createElement("p", { className: "text-[9.5px] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_six_types', ' of 6 confirmed property types'))
+                          React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_coverage_title', 'Evidence coverage')),
+                          React.createElement("p", { className: "text-[10px] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_six_types', ' of 6 confirmed property types'))
                         ),
-                        React.createElement("div", { className: "grid grid-cols-2 gap-1.5" }, wbCoverage.map(function (item) {
+                        React.createElement("div", { className: "grid grid-cols-2 gap-1.5", role: "list" }, wbCoverage.map(function (item) {
                           return React.createElement("div", {
                             key: item.id, "data-wb-evidence-type": item.id, "data-wb-evidence-state": item.provisional ? 'provisional' : item.done ? 'measured' : 'not-measured',
-                            className: "rounded-lg border px-2 py-1.5 flex items-center gap-1.5 text-[9.5px] font-black " + (item.provisional ? "bg-amber-100 border-amber-400 text-amber-900" : item.done ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-white/70 border-amber-200 text-amber-800")
+                            role: "listitem",
+                            "aria-label": item.label + '. ' + (item.provisional ? __alloT('stem.rocks.wb_provisional_short', 'provisional') : item.done ? __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') : __alloT('stem.rocks.wb_rail_pending', 'Not measured')) + '.',
+                            className: "rounded-lg border px-2 py-1.5 flex items-center gap-1.5 text-[10px] font-black " + (item.provisional ? "bg-amber-100 border-amber-400 text-amber-900" : item.done ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-white/70 border-amber-200 text-amber-800")
                           },
                             React.createElement("span", { "aria-hidden": "true" }, item.provisional ? '≈' : item.done ? '✓' : item.icon),
                             React.createElement("span", null, item.label + (item.provisional ? ' · ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
@@ -7415,20 +7462,20 @@ const d = labToolData.rocks || {};
                       wbEvidence.length === 0 ? React.createElement("div", { className: "rounded-xl border border-dashed border-amber-400 bg-white/70 p-4 mt-3 text-center" },
                         React.createElement("p", { className: "text-[12px] font-black text-amber-900" }, __alloT('stem.rocks.wb_notebook_empty_title', 'Your first observation goes here.')),
                         React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, __alloT('stem.rocks.wb_notebook_empty', 'No observations yet. Every test you run is recorded here as evidence.'))
-                      ) : React.createElement("ul", { className: "space-y-2 mt-3" }, wbEvidence.map(function (ev, i) {
+                      ) : React.createElement("ul", { className: "space-y-2 mt-3", "aria-label": __alloT('stem.rocks.wb_notebook_list_aria', 'Recorded evidence grouped by property') }, wbEvidence.map(function (ev) {
                         var impact = wbEvidenceImpact(ev);
                         return React.createElement("li", { key: ev.k, "data-wb-evidence-impact": impact, "data-wb-evidence-certainty": ev.provisional ? 'provisional' : 'confirmed', className: "rounded-lg border p-2.5 rk-wb-pop flex gap-2 " + (ev.provisional ? "border-amber-400 bg-amber-50" : "border-amber-200 bg-white/85") },
-                          React.createElement("span", { className: "w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center shrink-0 " + (ev.provisional ? "bg-amber-700" : "bg-emerald-600"), "aria-hidden": "true" }, ev.provisional ? '≈' : i + 1),
+                          React.createElement("span", { className: "w-7 h-7 rounded-lg text-[14px] flex items-center justify-center shrink-0 " + (ev.provisional ? "bg-amber-100 border border-amber-400" : "bg-emerald-50 border border-emerald-300"), "aria-hidden": "true" }, ev.provisional ? '≈' : wbEvidenceIcon(ev.k)),
                           React.createElement("span", { className: "min-w-0 flex-1" },
-                            React.createElement("span", { className: "block text-[9px] font-black uppercase tracking-wide text-amber-800" }, wbEvidenceKind(ev.k)),
+                            React.createElement("span", { className: "block text-[10px] font-black uppercase tracking-wide text-amber-800" }, wbEvidenceKind(ev.k)),
                             React.createElement("span", { className: "block text-[11.5px] text-amber-900 font-semibold leading-snug" }, ev.text),
-                            React.createElement("span", { className: "inline-block mt-1 rounded-full border px-2 py-0.5 text-[9px] font-black " + (ev.provisional ? "bg-amber-100 border-amber-300 text-amber-900" : impact > 0 ? "bg-violet-50 border-violet-200 text-violet-900" : "bg-slate-50 border-slate-200 text-slate-600") }, ev.provisional ? __alloT('stem.rocks.wb_provisional_not_claim', 'Provisional model clue—confirm before using hardness in a claim') : impact > 0 ? __alloT('stem.rocks.wb_rules_out', 'Rules out ') + impact + __alloT('stem.rocks.wb_on_own', ' on its own') : __alloT('stem.rocks.wb_confirms_only', 'Confirms, but does not narrow alone'))
+                            React.createElement("span", { className: "inline-block mt-1 rounded-full border px-2 py-0.5 text-[10px] font-black " + (ev.provisional ? "bg-amber-100 border-amber-300 text-amber-900" : impact > 0 ? "bg-violet-50 border-violet-200 text-violet-900" : "bg-slate-50 border-slate-200 text-slate-600") }, ev.provisional ? __alloT('stem.rocks.wb_provisional_not_claim', 'Provisional model clue—confirm before using hardness in a claim') : impact > 0 ? __alloT('stem.rocks.wb_rules_out', 'Rules out ') + impact + __alloT('stem.rocks.wb_on_own', ' on its own') : __alloT('stem.rocks.wb_confirms_only', 'Confirms, but does not narrow alone'))
                           )
                         );
                       })),
                       wbHasHardnessEvidence ? React.createElement("p", { className: "text-[11.5px] font-black mt-3 rounded-lg border p-2.5 " + (wbHardnessProvisional ? "text-amber-900 border-amber-300 bg-amber-50" : "text-violet-900 border-violet-200 bg-violet-50"), "data-wb-hardness-certainty": wbHardnessProvisional ? 'provisional' : 'confirmed' }, '⛏️ ' + __alloT('stem.rocks.wb_bracket', 'Hardness constraint: ') + wbHardnessLabel + (wbHardnessProvisional ? ' · ' + __alloT('stem.rocks.wb_provisional_confirm', 'Provisional—confirm') : '')) : null,
                       wbTopEvidence && wbTopEvidence.impact > 0 ? React.createElement("div", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50 p-2.5", "data-wb-diagnostic-leader": wbEvidenceKind(wbTopEvidence.ev.k) },
-                        React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wide text-violet-800" }, __alloT('stem.rocks.wb_diagnostic_title', 'Most diagnostic so far')),
+                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, __alloT('stem.rocks.wb_diagnostic_title', 'Most diagnostic so far')),
                         React.createElement("p", { className: "text-[10.5px] font-semibold text-violet-900 mt-0.5" }, wbEvidenceKind(wbTopEvidence.ev.k) + __alloT('stem.rocks.wb_diagnostic_mid', ' rules out ') + wbTopEvidence.impact + __alloT('stem.rocks.wb_diagnostic_end', ' candidates by itself. A useful test creates a strong split among possibilities.'))
                       ) : null,
                       React.createElement("div", { className: "mt-4 pt-3 border-t border-amber-300" },
@@ -7436,7 +7483,7 @@ const d = labToolData.rocks || {};
                           React.createElement("span", { className: "font-black text-amber-900" }, wbRemaining + ' ' + __alloT('stem.rocks.wb_still_fit', 'still fit')),
                           React.createElement("span", { className: "font-semibold text-amber-800" }, ((wb.order || []).length - wbRemaining) + ' ' + __alloT('stem.rocks.wb_eliminated', 'eliminated'))
                         ),
-                        React.createElement("div", { className: "h-2 rounded-full bg-amber-200 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": __alloT('stem.rocks.wb_elimination_progress', 'Candidate elimination progress'), "aria-valuemin": 0, "aria-valuemax": (wb.order || []).length, "aria-valuenow": (wb.order || []).length - wbRemaining },
+                        React.createElement("div", { className: "h-2 rounded-full bg-amber-200 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": __alloT('stem.rocks.wb_elimination_progress', 'Candidate elimination progress'), "aria-valuemin": 0, "aria-valuemax": (wb.order || []).length, "aria-valuenow": (wb.order || []).length - wbRemaining, "aria-valuetext": ((wb.order || []).length - wbRemaining) + ' ' + __alloT('stem.rocks.wb_eliminated', 'eliminated') + '; ' + wbRemaining + ' ' + __alloT('stem.rocks.wb_still_fit', 'still fit') + '.' },
                           React.createElement("div", { className: "h-full rounded-full bg-emerald-600 transition-all", style: { width: (((wb.order || []).length ? (((wb.order || []).length - wbRemaining) / wb.order.length) : 0) * 100) + '%' } })
                         ),
                         React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-3 italic" }, __alloT('stem.rocks.wb_reasoning_prompt', 'Reasoning check: why did the most diagnostic observation separate more candidates than surface color would?')),
@@ -7450,7 +7497,7 @@ const d = labToolData.rocks || {};
                   // Candidate cards get the full width. The swatch exposes habit
                   // and luster; property chips appear only after that property
                   // has been measured, so the reference table grows with inquiry.
-                  wbCandidatesOpen ? React.createElement("section", { className: "rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4", "aria-labelledby": "wb-candidates-title", "data-wb-candidate-view": wbCandidateView, "data-wb-candidates-state": "open" },
+                  wbCandidatesOpen ? React.createElement("section", { id: "wb-candidates-panel", className: "rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:p-4", "aria-labelledby": "wb-candidates-title", "data-wb-candidate-view": wbCandidateView, "data-wb-candidates-state": "open" },
                     React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-3" },
                       React.createElement("div", null,
                         React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.14em] text-violet-700" }, __alloT('stem.rocks.wb_compare_board', 'Evidence comparison board')),
@@ -7475,7 +7522,7 @@ const d = labToolData.rocks || {};
                           }, view.label + ' · ' + view.count);
                         })
                       ),
-                      React.createElement("p", { className: "text-[9.5px] text-slate-600 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_filter_help', 'Active shortlist cards match the current observations and have not been submitted already. Set aside preserves measurement conflicts and rejected claims for review; rejection feedback is not a physical property.')),
+                      React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-2 leading-relaxed" }, __alloT('stem.rocks.wb_filter_help', 'Active shortlist cards match the current observations and have not been submitted already. Set aside preserves measurement conflicts and rejected claims for review; rejection feedback is not a physical property.')),
                       wbCompatibleRejectedCount ? React.createElement("p", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[10px] font-bold text-amber-900 leading-relaxed", role: "status", "data-wb-compatible-rejected": wbCompatibleRejectedCount }, wbCompatibleRejectedCount + ' ' + (wbCompatibleRejectedCount === 1 ? __alloT('stem.rocks.wb_compatible_rejected_one', 'rejected claim still matches the measurements.') : __alloT('stem.rocks.wb_compatible_rejected_many', 'rejected claims still match the measurements.')) + ' ' + __alloT('stem.rocks.wb_rejection_not_evidence', 'Rejection feedback is not physical evidence—run another diagnostic test.')) : null
                     ) : null,
                     !wb.solvedId ? wbRenderComparisonDock() : null,
@@ -7517,7 +7564,7 @@ const d = labToolData.rocks || {};
                           React.createElement("p", { className: "text-[11.5px] font-black text-amber-900" }, __alloT('stem.rocks.wb_conflict_revision_title', 'New evidence changed your working claim.')),
                           React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-0.5 leading-relaxed" }, wbInvalidatedSelected.label + __alloT('stem.rocks.wb_conflict_revision_mid', ' no longer fits the ') + (wbInvalidatedKind || __alloT('stem.rocks.wb_new_evidence', 'new evidence')) + __alloT('stem.rocks.wb_conflict_revision_end', ' observation. Your notebook is preserved—review what changed, then choose a supported candidate.'))
                         ),
-                        React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-lg border border-amber-500 bg-white px-3 py-2 text-[10.5px] font-black text-amber-900 hover:bg-amber-100 shrink-0", "data-wb-review-conflict": wbInvalidatedSelected.id, onClick: function () { var invalidatedId = wbInvalidatedSelected.id; updWb({ selectedId: null, reviewId: invalidatedId, candidateView: 'setaside' }); wbSay(__alloT('stem.rocks.wb_conflict_reviewing_sr', 'Reviewing the new evidence conflict for ') + wbInvalidatedSelected.label + '.'); } }, __alloT('stem.rocks.wb_review_conflict_action', 'Review conflict'))
+                        React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-lg border border-amber-500 bg-white px-3 py-2 text-[10.5px] font-black text-amber-900 hover:bg-amber-100 shrink-0", "data-wb-review-conflict": wbInvalidatedSelected.id, onClick: function () { var invalidatedId = wbInvalidatedSelected.id; updWb({ selectedId: null, reviewId: invalidatedId, candidateView: 'setaside', claimEvidence: [], claimReasoning: null, claimConfidence: null }); wbSay(__alloT('stem.rocks.wb_conflict_reviewing_sr', 'Reviewing the new evidence conflict for ') + wbInvalidatedSelected.label + '. ' + __alloT('stem.rocks.wb_claim_changed_sr', 'Recheck the evidence, reasoning, and confidence before making a revised claim.')); } }, __alloT('stem.rocks.wb_review_conflict_action', 'Review conflict'))
                       ) : wbLastRejected ? React.createElement("aside", { className: "rounded-xl border border-rose-300 bg-rose-50 p-3 mb-3 flex gap-3 items-start", role: "status", "aria-live": "polite", "data-wb-revision": "needed" },
                         React.createElement("span", { className: "w-9 h-9 rounded-xl bg-white border border-rose-200 flex items-center justify-center shrink-0", "aria-hidden": "true" }, '↺'),
                         React.createElement("div", { className: "min-w-0" },
@@ -7551,8 +7598,11 @@ const d = labToolData.rocks || {};
                               wbSay(__alloT('stem.rocks.wb_reviewing_sr', 'Reviewing the measured evidence for ') + m.label + '.');
                               return;
                             }
-                            updWb({ selectedId: id, lastRejectedId: null, reviewId: null, toolsExpanded: false });
-                            wbSay(__alloT('stem.rocks.wb_selected_sr', 'Selected ') + m.label + __alloT('stem.rocks.wb_selected_sr2', ' as a possible claim. Review the claim builder before submitting.'));
+                            var changedClaim = wb.selectedId !== id && (!!wb.selectedId || !!wb.claimReasoning || !!wb.claimConfidence || (wb.claimEvidence || []).length > 0);
+                            var selectionPatch = { selectedId: id, lastRejectedId: null, reviewId: null, toolsExpanded: false };
+                            if (wb.selectedId !== id) Object.assign(selectionPatch, { claimEvidence: [], claimReasoning: null, claimConfidence: null });
+                            updWb(selectionPatch);
+                            wbSay(__alloT('stem.rocks.wb_selected_sr', 'Selected ') + m.label + __alloT('stem.rocks.wb_selected_sr2', ' as a possible claim. Review the claim builder before submitting.') + (changedClaim ? ' ' + __alloT('stem.rocks.wb_claim_changed_sr', 'Recheck the evidence, reasoning, and confidence before making a revised claim.') : ''));
                           }
                         },
                           React.createElement("span", { className: "shrink-0 relative" },
@@ -7593,7 +7643,7 @@ const d = labToolData.rocks || {};
                       React.createElement("h4", { id: "wb-candidates-preview-title", className: "text-[12px] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting', 'Candidate references are waiting for your first observation.')),
                       React.createElement("p", { className: "text-[10.5px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_candidates_waiting_help', 'Collect one property first, or preview the full reference set whenever you need it.'))
                     ),
-                    React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-violet-400 hover:bg-violet-50", onClick: function () { updWb({ candidatesExpanded: true }); }, "aria-expanded": false }, __alloT('stem.rocks.wb_preview_candidates', 'Preview candidates'))
+                    React.createElement("button", { type: "button", className: "w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-[10.5px] font-black text-slate-800 hover:border-violet-400 hover:bg-violet-50", onClick: function () { updWb({ candidatesExpanded: true }); }, "aria-expanded": false, "aria-controls": "wb-candidates-panel" }, __alloT('stem.rocks.wb_preview_candidates', 'Preview candidates'))
                   )
                 )
               );

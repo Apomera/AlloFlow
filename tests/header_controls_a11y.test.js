@@ -62,10 +62,40 @@ describe('header control accessibility', () => {
     expect(source).not.toContain("aria-label={th.label + ' theme'}");
   });
 
+  it('keeps the legacy Read This Page panel above the header and within a narrow viewport', () => {
+    expect(source).toContain("document.getElementById('rtp-read-all-btn')");
+    expect(source).toContain("readAllButton.closest('[role=\"complementary\"]')");
+    expect(source).toContain("panel.style.maxWidth = 'calc(100vw - 2rem)'");
+    expect(source).toContain("panel.style.zIndex = '70'");
+    expect(source).toContain("panel.querySelectorAll('.text-slate-600')");
+    expect(source).toContain("theme === 'contrast' ? '#fbbf24' : '#cbd5e1'");
+    expect(source).toContain('previousMaxWidth');
+    expect(source).toContain('previousZIndex');
+    expect(source).toContain('previousMutedColors');
+  });
+
   it('keeps localized visible text aligned with the personal-AI accessible names', () => {
     expect(source).toContain("personalAIReadyLabel = t('header.personal_ai_ready')");
     expect(source).toContain('{window.__alloStudentAiConfigured ? personalAIReadyLabel : personalAIConnectLabel}');
     expect(source).toContain("<span className='hidden xl:inline'>{personalAIDisconnectLabel}</span>");
+  });
+
+  it('uses the visible Text and Voice settings labels as control names', () => {
+    [
+      ['header-text-font-family', 'header-text-font-family'],
+      ['header-text-font-size', 'header-text-font-size'],
+      ['header-text-line-height', 'header-text-line-height'],
+      ['header-text-letter-spacing', 'header-text-letter-spacing'],
+      ['header-spoken-output-voice', 'header-spoken-output-voice'],
+      ['header-voice-speed', 'header-voice-speed'],
+      ['header-voice-volume', 'header-voice-volume'],
+    ].forEach(([labelFor, controlId]) => {
+      expect(source).toContain(`htmlFor="${labelFor}"`);
+      expect(source).toContain(`id="${controlId}"`);
+    });
+    expect(source).not.toContain("aria-label={t('common.selection')}");
+    expect(source).not.toContain("aria-label={t('common.range_slider')}");
+    expect(source).not.toContain('text-[11px] opacity-70');
   });
 
   it('provides a touch-friendly Student Actions launcher backed by the shared palette', () => {

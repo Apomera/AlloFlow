@@ -1452,11 +1452,14 @@ describe('Tree Life Lab — season control and post-mortem', () => {
     expect(seasonButton[0]).toMatch(/Autumn/);
   });
 
-  it('never implies the season changed a number the model did not recompute', () => {
+  it('labels seasonal numbers as a modelled trace that rolls up to the yearly step', () => {
     const html = render({ treeLab: { view: 'grow', tree: grown(40), season: 'winter' } });
-    // simulateYear has no seasonal term. The panel has to say so, or a leafless tree
-    // sitting above a positive carbon budget reads as a modelling claim.
+    expect(html).toContain('data-tree-season-ledger="modelled-seasonal-trace"');
+    expect(html).toMatch(/modelled seasonal trace/i);
     expect(html).toMatch(/whole YEAR/);
+    expect(html).toMatch(/add exactly to the yearly carbon budget/i);
+    expect(html).toMatch(/year boundary/i);
+    expect(html).not.toContain('not a figure the model has recalculated');
   });
 
   it('a season note is keyed on leaf habit, because that IS the lesson', () => {
@@ -2946,6 +2949,13 @@ describe('Tree Life Lab - seasonal observatory and species lens', () => {
     expect(broad).toContain('Anthocyanins');
     expect(broad).toContain('Red and purple pigments can be produced');
     expect(broad).toContain('leaf color alone cannot reconstruct one exact');
+    expect(broad).toContain('data-autumn-detective="pigments"');
+    expect(broad).toContain('data-autumn-claim-result="waiting"');
+    expect(broad).toContain('data-autumn-specimen="pigments"');
+    expect(broad.match(/data-autumn-claim="(different-processes|all-hidden|exact-weather)"/g)).toHaveLength(3);
+    expect(broad).toContain('Observe');
+    expect(broad).toContain('Match evidence');
+    expect(broad).toContain('Make a careful claim');
 
     expect(conifer).toContain('data-tree-phenology="evergreen"');
     expect(conifer).toMatch(/data-phenology-stage="autumn"[^>]*data-leaf-action="gradual-shed"[^>]*aria-current="step"/);
@@ -2957,6 +2967,88 @@ describe('Tree Life Lab - seasonal observatory and species lens', () => {
     expect(conifer).toContain('Evergreen needle-age map');
     expect(conifer).toContain('Several needle cohorts share the canopy');
     expect(conifer).toContain('Older needles still fall');
+    expect(conifer).toContain('data-autumn-detective="needle-cohorts"');
+    expect(conifer).toContain('data-autumn-claim-result="waiting"');
+    expect(conifer).toContain('data-autumn-specimen="needles"');
+    expect(conifer.match(/data-autumn-claim="(age-cohorts|not-evergreen|all-at-once)"/g)).toHaveLength(3);
+    expect(conifer).toContain('small inner cohort turns yellow and falls');
+  });
+
+  it('shows leaf release as a prepared seal and evergreen shedding as cohort renewal', () => {
+    const broad = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: matureTree('oak'), season: 'autumn' },
+    });
+    const conifer = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'pine', tree: matureTree('pine'), season: 'autumn' },
+    });
+    const young = render({
+      treeLab: { view: 'grow', bandOverride: 'k2', speciesId: 'oak', tree: matureTree('oak'), season: 'autumn' },
+    });
+
+    expect(broad).toContain('data-autumn-release-sequence="leaf-release"');
+    expect(broad.match(/data-autumn-release-stage="(signal|resorption|seal|detach)"/g)).toHaveLength(4);
+    expect(broad).toContain('From canopy to forest floor');
+    expect(broad).toContain('Nitrogen and phosphorus move from the leaf into the twig');
+    expect(broad).toContain('Protective seal');
+    expect(broad).toContain('abscission layer forms at the leaf base');
+    expect(broad).toContain('does not tear away from an open wound');
+    expect(broad).toContain('decomposers later return some fallen-leaf nutrients to the soil');
+
+    expect(conifer).toContain('data-autumn-release-sequence="needle-renewal"');
+    expect(conifer.match(/data-autumn-release-stage="(new-cohort|overlap|separation|duff)"/g)).toHaveLength(4);
+    expect(conifer).toContain('Evergreen needle renewal');
+    expect(conifer).toContain('Canopy ages overlap');
+    expect(conifer).toContain('forms a separation layer');
+    expect(conifer).toContain('not permanent individual needles');
+
+    expect(young).toContain('How a leaf lets go');
+    expect(young).toContain('Leaf fall is a prepared handoff, not a random tear');
+  });
+
+  it('turns autumn observations into careful claims with explanatory feedback', () => {
+    const broadCorrect = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: matureTree('oak'),
+        season: 'autumn', autumnPigmentClaim: 'different-processes',
+      },
+    });
+    const broadRetry = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: matureTree('oak'),
+        season: 'autumn', autumnPigmentClaim: 'exact-weather',
+      },
+    });
+    const coniferCorrect = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'pine', tree: matureTree('pine'),
+        season: 'autumn', autumnNeedleClaim: 'age-cohorts',
+      },
+    });
+    const coniferRetry = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'pine', tree: matureTree('pine'),
+        season: 'autumn', autumnNeedleClaim: 'not-evergreen',
+      },
+    });
+    const young = render({
+      treeLab: { view: 'grow', bandOverride: 'k2', speciesId: 'oak', tree: matureTree('oak'), season: 'autumn' },
+    });
+
+    expect(broadCorrect).toContain('data-autumn-claim-result="correct"');
+    expect(broadCorrect).toContain('data-autumn-claim="different-processes" aria-pressed="true"');
+    expect(broadCorrect).toContain('red-purple anthocyanins can be produced');
+    expect(broadRetry).toContain('data-autumn-claim-result="retry"');
+    expect(broadRetry).toContain('data-autumn-claim="exact-weather" aria-pressed="true"');
+    expect(broadRetry).toContain('not a thermometer or rain gauge');
+
+    expect(coniferCorrect).toContain('data-autumn-claim-result="correct"');
+    expect(coniferCorrect).toContain('data-autumn-claim="age-cohorts" aria-pressed="true"');
+    expect(coniferCorrect).toContain('younger cohorts keep the canopy green');
+    expect(coniferRetry).toContain('data-autumn-claim-result="retry"');
+    expect(coniferRetry).toContain('does not mean that no needle ever falls');
+
+    expect(young).toContain('Be a leaf detective');
+    expect(young).toContain('Yellow may show through; red may be made.');
   });
 
   it('shows that species traits are model inputs and tradeoffs, not scores', () => {
@@ -3082,5 +3174,473 @@ describe('Tree Life Lab - truthful edge states and primary-reader clarity', () =
     expect(grow).toMatch(/<h3[^>]*>[^<]+<\/h3>/);
     expect(grow).toContain('role="group"');
     expect(grow).toContain('aria-label="Step 1:');
+  });
+});
+describe('Tree Life Lab - canopy plumbing and year-outcome evidence', () => {
+  function advance(E, start, years, env = GOOD_ENV, alloc = ALLOC) {
+    const sp = E.speciesById(start.speciesId || 'oak');
+    let tree = start;
+    for (let i = 0; i < years && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, sp, env, alloc);
+    }
+    return tree;
+  }
+
+  it('uses the same pure canopy projection in the preview and annual engine', () => {
+    const E = engine();
+    const tree = E.newTree('oak');
+    const sp = E.speciesById('oak');
+    const aperture = E.stomatalAperture(GOOD_ENV.soilWater, sp.droughtTol, false);
+    const live = E.grossPhotosynthesis(sp, GOOD_ENV, tree.leafArea, aperture);
+    const surplus = Math.max(0, live.gross - E.maintenanceRespiration(sp, tree));
+    const alloc = E.normaliseAlloc(ALLOC);
+    const projection = E.projectCanopySupport(
+      tree, surplus * alloc.leaf, surplus * alloc.wood);
+    const next = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+
+    expect(next.sapwoodMass).toBeCloseTo(projection.sapwoodMass, 10);
+    expect(next.leafMass).toBeCloseTo(projection.supportedLeafMass, 10);
+    expect(next.leafArea).toBeCloseTo(projection.leafArea, 10);
+  });
+
+  it('distinguishes available, nearly-full, and pipe-limited canopy plans', () => {
+    const E = engine();
+    const tree = { ...E.newTree('oak'), sapwoodMass: 1, leafMass: 0.1 };
+    const base = E.projectCanopySupport(tree, 0, 0);
+    const nearlyLeaf = Math.max(0, (base.leafCapacity * 0.9 - tree.leafMass * 0.62) / 3.4);
+    const available = E.projectCanopySupport(tree, 0, 3);
+    const nearly = E.projectCanopySupport(tree, nearlyLeaf, 0);
+    const blocked = E.projectCanopySupport(tree, nearlyLeaf + 1, 0);
+    const woodBacked = E.projectCanopySupport(tree, nearlyLeaf + 1, 3);
+
+    expect(available.state).toBe('capacity-available');
+    expect(nearly.state).toBe('nearly-full');
+    expect(nearly.blockedLeafMass).toBeCloseTo(0, 8);
+    expect(blocked.state).toBe('pipe-limited');
+    expect(blocked.blockedLeafMass).toBeGreaterThan(0);
+    expect(woodBacked.leafCapacity).toBeGreaterThan(blocked.leafCapacity);
+  });
+
+  it('renders a numeric, non-color-only pipe-limit preview and a headroom state', () => {
+    const E = engine();
+    const pipeTree = {
+      ...E.newTree('oak'), age: 12, heightM: 4, dbhCm: 8,
+      leafArea: 60, leafMass: 4, sapwoodMass: 0.05, rootMass: 0.5,
+    };
+    const pipeHtml = render({ treeLab: {
+      view: 'grow', bandOverride: 'g68', tree: pipeTree,
+      alloc: { leaf: 0.9, root: 0.025, wood: 0.025, repro: 0.025, store: 0.025 },
+    } });
+    expect(pipeHtml).toContain('data-canopy-support="pipe-limited"');
+    expect(pipeHtml).toContain('Canopy plumbing: preview the hidden limit');
+    expect(pipeHtml).toContain('Projected leaf demand');
+    expect(pipeHtml).toContain('Sapwood capacity');
+    expect(pipeHtml).toContain('Blocked plan');
+    expect(pipeHtml).toContain('not rerouted automatically');
+    expect(pipeHtml).toContain('square metres blocked by the pipe limit');
+    expect(pipeHtml).toContain('repeating-linear-gradient');
+
+    const roomyTree = {
+      ...E.newTree('oak'), age: 12, heightM: 4, dbhCm: 8,
+      leafArea: 12, leafMass: 0.01, sapwoodMass: 20, rootMass: 0.2,
+    };
+    const roomyHtml = render({ treeLab: {
+      view: 'grow', bandOverride: 'g68', tree: roomyTree,
+      alloc: { leaf: 0.05, root: 0.05, wood: 0.8, repro: 0.05, store: 0.05 },
+    } });
+    expect(roomyHtml).toContain('data-canopy-support="capacity-available"');
+    expect(roomyHtml).toContain('headroom');
+  });
+
+  it('keeps the K-2 canopy explanation concrete and jargon-free', () => {
+    const E = engine();
+    const tree = {
+      ...E.newTree('oak'), age: 8, heightM: 3, dbhCm: 5,
+      leafArea: 40, leafMass: 3, sapwoodMass: 0.05, rootMass: 0.4,
+    };
+    const html = render({ treeLab: {
+      view: 'grow', bandOverride: 'k2', tree,
+      alloc: { leaf: 0.9, root: 0.025, wood: 0.025, repro: 0.025, store: 0.025 },
+    } });
+    const panel = html.match(/<section[^>]*data-canopy-support="[^"]+"[\s\S]*?<\/section>/)?.[0] || '';
+
+    expect(panel).toContain('Can the trunk feed the leaf roof?');
+    expect(panel).toContain('Trunk water pipes');
+    expect(panel).toContain('Move some food from Leaves to Wood');
+    expect(panel).not.toContain('sapwood');
+    expect(panel).not.toContain('hydraulic');
+  });
+
+  it('summarises each time jump from the exact records it added', () => {
+    const E = engine();
+    const before = advance(E, E.newTree('oak'), 8);
+    const after = advance(E, before, 10);
+    const summary = E.summariseYearAdvance(before, after, 10);
+    const added = after.history.filter((r) => r.year >= before.age && r.year < after.age);
+    const total = added.reduce((sum, r) => sum + r.net, 0);
+
+    expect(summary.version).toBe(1);
+    expect(summary.requestedYears).toBe(10);
+    expect(summary.completedYears).toBe(10);
+    expect(summary.ringsAdded).toBe(10);
+    expect(summary.ageBefore).toBe(before.age);
+    expect(summary.ageAfter).toBe(after.age);
+    expect(summary.carbonTotal).toBeCloseTo(total, 2);
+    expect(summary.dominantLimiter).toMatch(/^(light|water|temperature|co2)$/);
+  });
+
+  it('renders a persistent outcome receipt and a separate polite announcement', () => {
+    const E = engine();
+    const before = advance(E, E.newTree('oak'), 8);
+    const after = advance(E, before, 10);
+    const summary = E.summariseYearAdvance(before, after, 10);
+    const html = render({ treeLab: {
+      view: 'grow', bandOverride: 'g68', tree: after, lastYearOutcome: summary,
+    } });
+
+    expect(html).toContain('data-year-outcome="10"');
+    expect(html).toContain('Year outcome: your decision became evidence');
+    expect(html).toContain('Carbon result');
+    expect(html).toContain('Visible growth evidence');
+    expect(html).toContain('Consequence');
+    expect(html).toContain('Look for');
+    expect(html).toContain('data-year-outcome-live="true"');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('Time result. Advanced 10 years.');
+  });
+
+  it('uses explicit deficit language and simpler K-2 outcome copy', () => {
+    const E = engine();
+    const before = advance(E, E.newTree('oak'), 5);
+    const dark = { ...GOOD_ENV, light: 0.001, soilWater: 0.08 };
+    const after = advance(E, before, 1, dark);
+    const summary = E.summariseYearAdvance(before, after, 1);
+    const older = render({ treeLab: {
+      view: 'grow', bandOverride: 'g68', tree: after, lastYearOutcome: summary,
+    } });
+    expect(summary.carbonTotal).toBeLessThan(0);
+    expect(older).toContain('data-year-carbon-state="deficit"');
+    expect(older).toContain('deficit years');
+    expect(older).toContain('stress-marked ring');
+
+    const young = render({ treeLab: {
+      view: 'grow', bandOverride: 'k2', tree: after, lastYearOutcome: summary,
+    } });
+    const panel = young.match(/<section[^>]*data-year-outcome="1"[\s\S]*?<\/section>/)?.[0] || '';
+    expect(panel).toContain('What happened when time moved?');
+    expect(panel).toContain('Not enough food overall');
+    expect(panel).toContain('Biggest need:');
+    expect(panel).not.toContain('kg C');
+  });
+});
+
+describe('Tree Life Lab - causal four-season carbon trace', () => {
+  it('orders the four phases and conserves the annual carbon budget', () => {
+    const E = engine();
+    const tree = E.newTree('oak');
+    const sp = E.speciesById('oak');
+    const trace = E.seasonalCarbonTrace(tree, sp, GOOD_ENV);
+    const aperture = E.stomatalAperture(GOOD_ENV.soilWater, sp.droughtTol, false);
+    const annualPhoto = E.grossPhotosynthesis(sp, GOOD_ENV, tree.leafArea, aperture);
+    const annualResp = E.maintenanceRespiration(sp, tree);
+
+    expect(trace.phases.map((phase) => phase.id)).toEqual([
+      'spring', 'summer', 'autumn', 'winter',
+    ]);
+    expect(trace.phases.map((phase) => phase.order)).toEqual([0, 1, 2, 3]);
+    expect(trace.phases.reduce((sum, phase) => sum + phase.gross, 0))
+      .toBeCloseTo(annualPhoto.gross, 12);
+    expect(trace.phases.reduce((sum, phase) => sum + phase.resp, 0))
+      .toBeCloseTo(annualResp, 12);
+    expect(trace.phases.reduce((sum, phase) => sum + phase.net, 0))
+      .toBeCloseTo(annualPhoto.gross - annualResp, 12);
+    expect(trace.annual.gross).toBeCloseTo(annualPhoto.gross, 12);
+    expect(trace.annual.resp).toBeCloseTo(annualResp, 12);
+    expect(trace.annual.net).toBeCloseTo(trace.annual.gross - trace.annual.resp, 12);
+    expect(trace.phases.reduce((sum, phase) => sum + phase.photosynthesisShare, 0))
+      .toBeCloseTo(1, 12);
+    expect(trace.phases.reduce((sum, phase) => sum + phase.respirationShare, 0))
+      .toBeCloseTo(1, 12);
+    expect(trace.phases.reduce((sum, phase) => sum + phase.reserveChange, 0))
+      .toBeCloseTo(0, 12);
+    expect(trace.annual.reserveBalance).toBe(0);
+    const committed = E.simulateYear(tree, sp, GOOD_ENV, ALLOC).history.at(-1);
+    expect(Number(trace.annual.gross.toFixed(3))).toBe(committed.gross);
+    expect(Number(trace.annual.resp.toFixed(3))).toBe(committed.resp);
+    expect(Number(trace.annual.net.toFixed(3))).toBe(committed.net);
+  });
+
+  it('shows deciduous spring debt, summer peak production, and evergreen winter opportunity', () => {
+    const E = engine();
+    const oak = E.seasonalCarbonTrace(
+      E.newTree('oak'), E.speciesById('oak'), GOOD_ENV);
+    const pine = E.seasonalCarbonTrace(
+      E.newTree('pine'), E.speciesById('pine'), GOOD_ENV);
+    const oakSpring = oak.phases[0];
+    const oakSummer = oak.phases[1];
+    const oakAutumn = oak.phases[2];
+    const oakWinter = oak.phases[3];
+    const pineWinter = pine.phases[3];
+
+    expect(oakSpring.reserveChange).toBeLessThan(0);
+    expect(oakSpring.reserveDebtAfter).toBeGreaterThan(0);
+    expect(oakAutumn.reserveChange).toBeGreaterThan(0);
+    expect(oakAutumn.reserveDebtAfter).toBeCloseTo(0, 12);
+    expect(oakSummer.gross).toBe(Math.max(...oak.phases.map((phase) => phase.gross)));
+    expect(oakWinter.photosynthesisShare).toBeLessThanOrEqual(0.001);
+    expect(pineWinter.photosynthesisShare).toBeGreaterThan(0.04);
+    expect(pineWinter.gross).toBeGreaterThan(oakWinter.gross);
+    expect(pineWinter.phenology).toBe('retained-needles');
+  });
+
+  it('responds deterministically to drought and temperature while preserving needle cold-season activity', () => {
+    const E = engine();
+    const oak = E.speciesById('oak');
+    const pine = E.speciesById('pine');
+    const tree = E.newTree('oak');
+    const good = E.seasonalCarbonTrace(tree, oak, GOOD_ENV);
+    const drought = E.seasonalCarbonTrace(tree, oak, {
+      ...GOOD_ENV, soilWater: 0.04, drought: true,
+    });
+    const frozenOak = E.seasonalCarbonTrace(tree, oak, { ...GOOD_ENV, tempC: -3 });
+    const coldPine = E.seasonalCarbonTrace(
+      E.newTree('pine'), pine, { ...GOOD_ENV, tempC: -3 });
+
+    expect(drought.annual.gross).toBeLessThan(good.annual.gross);
+    expect(drought.phases[1].photosynthesisShare)
+      .toBeLessThan(good.phases[1].photosynthesisShare);
+    expect(frozenOak.annual.gross).toBe(0);
+    expect(coldPine.annual.gross).toBeGreaterThan(0);
+    expect(coldPine.phases[3].gross).toBeGreaterThan(0);
+    expect(E.seasonalCarbonTrace(tree, oak, GOOD_ENV)).toEqual(good);
+  });
+
+  it('contains no NaN or Infinity even when restored inputs are malformed', () => {
+    const E = engine();
+    const trace = E.seasonalCarbonTrace(
+      {
+        speciesId: 'oak', leafArea: NaN, leafMass: Infinity,
+        rootMass: -Infinity, sapwoodMass: undefined, reserves: NaN,
+      },
+      { id: 'oak', amax: NaN, respRate: Infinity, droughtTol: NaN },
+      { tempC: NaN, light: Infinity, co2ppm: NaN, soilWater: -Infinity },
+    );
+    const numbers = [];
+    (function visit(value) {
+      if (typeof value === 'number') numbers.push(value);
+      else if (Array.isArray(value)) value.forEach(visit);
+      else if (value && typeof value === 'object') Object.values(value).forEach(visit);
+    }(trace));
+
+    expect(numbers.length).toBeGreaterThan(20);
+    expect(numbers.every(Number.isFinite)).toBe(true);
+  });
+});
+
+describe('Tree Life Lab - card-scale phenology and weather', () => {
+  it('maps every paused season to a valid representative point in the year', () => {
+    const E = engine();
+    const seasons = ['spring', 'summer', 'autumn', 'winter'];
+    const phases = seasons.map((season) => E.canonicalPhaseForSeason(season));
+    phases.forEach((phase, index) => {
+      expect(Number.isFinite(phase)).toBe(true);
+      expect(E.seasonForPhase(phase)).toBe(seasons[index]);
+    });
+    expect(phases).toEqual([...phases].sort((a, b) => a - b));
+  });
+
+  it('gives each card a stable, ordered biological biography', () => {
+    const E = engine();
+    const first = E.leafCardTraits('oak:42', 7, 0.82, 0.64);
+    const repeat = E.leafCardTraits('oak:42', 7, 0.82, 0.64);
+    const neighbour = E.leafCardTraits('oak:42', 8, 0.82, 0.64);
+
+    expect(repeat).toEqual(first);
+    expect(neighbour).not.toEqual(first);
+    expect(first.budAt).toBeLessThan(first.colorAt);
+    expect(first.colorAt).toBeLessThan(first.releaseAt);
+    expect(first.fallDuration).toBeGreaterThan(0);
+    for (const key of [
+      'cohort', 'exposure', 'hydraulic', 'budAt', 'colorAt',
+      'releaseAt', 'fallDuration', 'fallSample',
+    ]) {
+      expect(Number.isFinite(first[key]), key).toBe(true);
+      expect(first[key], key).toBeGreaterThanOrEqual(0);
+      expect(first[key], key).toBeLessThanOrEqual(1);
+    }
+    expect(first.drift).toBeGreaterThanOrEqual(-1);
+    expect(first.drift).toBeLessThanOrEqual(1);
+  });
+
+  it('moves a broadleaf through bud, canopy, colour, flight, and litter exactly once', () => {
+    const E = engine();
+    const trait = {
+      cohort: 0.45, exposure: 0.7, hydraulic: 0.8,
+      budAt: 0.1, colorAt: 0.6, releaseAt: 0.7,
+      fallDuration: 0.1, fallSample: 0.2, drift: 0.4,
+    };
+    const beforeBud = E.leafCardState(trait, 0.05, 'broadleaf', 0, 0);
+    const green = E.leafCardState(trait, 0.3, 'broadleaf', 0, 0);
+    const coloured = E.leafCardState(trait, 0.65, 'broadleaf', 0, 0);
+    const airborne = E.leafCardState(trait, 0.75, 'broadleaf', 0, 0);
+    const litter = E.leafCardState(trait, 0.9, 'broadleaf', 0, 0);
+
+    expect(beforeBud.canopyScale).toBe(0);
+    expect(green.retained).toBe(true);
+    expect(coloured.retained).toBe(true);
+    expect(coloured.pigment).toBeGreaterThan(0);
+    expect(airborne.flight).toBeGreaterThan(0);
+    expect(airborne.canopyScale).toBe(0);
+    expect(litter.landed).toBe(true);
+    for (const state of [beforeBud, green, coloured, airborne, litter]) {
+      const occupancy = Number(state.retained) + Number(state.flight > 0) + Number(state.landed);
+      expect(occupancy).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('sheds only the oldest needle cohort and keeps stress bounded', () => {
+    const E = engine();
+    const base = {
+      exposure: 0.7, hydraulic: 0.8, budAt: 0.1, colorAt: 0.6,
+      releaseAt: 0.7, fallDuration: 0.1, fallSample: 0.2, drift: 0.4,
+    };
+    const young = E.leafCardState({ ...base, cohort: 0.2 }, 0.75, 'needle', 0.9, 0.9);
+    const oldest = E.leafCardState({ ...base, cohort: 0.95 }, 0.75, 'needle', 0.9, 0.9);
+
+    expect(young.retained).toBe(true);
+    expect(young.flight).toBe(0);
+    expect(oldest.retained).toBe(false);
+    expect(oldest.flight).toBeGreaterThan(0);
+    expect(Number.isFinite(young.stress)).toBe(true);
+    expect(young.stress).toBeGreaterThanOrEqual(0);
+    expect(young.stress).toBeLessThanOrEqual(1);
+  });
+
+  it('keeps static wetness, frost, and snow under reduced motion but stops particles', () => {
+    const E = engine();
+    const rain = { kind: 'rain', startedAt: 1000, durationMs: 6500 };
+    const active = E.deriveWeatherVisualState(
+      'summer', { tempC: 22, soilWater: 0.7 }, rain, false, 2000);
+    const expired = E.deriveWeatherVisualState(
+      'summer', { tempC: 22, soilWater: 0.7 }, rain, false, 8000);
+    const winter = E.deriveWeatherVisualState(
+      'winter', { tempC: -5, soilWater: 0.9 }, null, false, 2000);
+    const winterStill = E.deriveWeatherVisualState(
+      'winter', { tempC: -5, soilWater: 0.9 }, null, true, 2000);
+
+    expect(active.kind).toBe('rain');
+    expect(active.precipitating).toBe(true);
+    expect(active.animate).toBe(true);
+    expect(active.eventEndsAt).toBe(7500);
+    expect(expired.precipitating).toBe(false);
+    expect(expired.animate).toBe(false);
+    expect(winter.frost).toBeGreaterThan(0);
+    expect(winter.snow).toBeGreaterThan(0);
+    expect(winterStill.wetness).toBe(winter.wetness);
+    expect(winterStill.frost).toBe(winter.frost);
+    expect(winterStill.snow).toBe(winter.snow);
+    expect(winterStill.animate).toBe(false);
+    for (const state of [active, expired, winter, winterStill]) {
+      for (const key of ['wetness', 'frost', 'snow']) {
+        expect(Number.isFinite(state[key]), key).toBe(true);
+        expect(state[key], key).toBeGreaterThanOrEqual(0);
+        expect(state[key], key).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('starts honest rain on drought recovery and clears stale events elsewhere', () => {
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    const recovery = src.match(/function endDrought\(\)[\s\S]*?function resetTree/)?.[0] || '';
+    const drought = src.match(/function sendDrought\(years\)[\s\S]*?function endDrought/)?.[0] || '';
+    const reset = src.match(/function resetTree\([\s\S]*?\/\/ ── 3D panel/)?.[0] || '';
+    expect(recovery).toMatch(/weatherEvent:\s*\{\s*kind:\s*'rain'/);
+    expect(recovery).toMatch(/durationMs:\s*6500/);
+    expect(drought).toMatch(/weatherEvent:\s*null/);
+    expect(reset).toMatch(/weatherEvent:\s*null/);
+  });
+});
+
+describe('Tree Life Lab - causal seasonal carbon ledger', () => {
+  function ledgerOf(html) {
+    return html.match(
+      /<section[^>]*data-tree-season-ledger="modelled-seasonal-trace"[\s\S]*?<\/section>/,
+    )?.[0] || '';
+  }
+
+  it('renders one static chronological ledger whose values roll up to the annual equation', () => {
+    const E = engine();
+    const tree = E.newTree('oak');
+    const html = render({ treeLab: {
+      view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+      season: 'autumn', tempC: GOOD_ENV.tempC, light: GOOD_ENV.light,
+      co2ppm: GOOD_ENV.co2ppm, soilWater: GOOD_ENV.soilWater,
+    } });
+    const ledger = ledgerOf(html);
+
+    expect(ledger).not.toBe('');
+    expect(ledger).toContain('data-ledger-active-season="autumn"');
+    expect(ledger).toContain('data-ledger-leaf-habit="deciduous"');
+    expect(ledger).toContain('data-ledger-state="surplus"');
+    expect(ledger.match(/data-ledger-stage="(spring|summer|autumn|winter)"/g)).toHaveLength(4);
+    const order = ['spring', 'summer', 'autumn', 'winter']
+      .map((stage) => ledger.indexOf('data-ledger-stage="' + stage + '"'));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(ledger).toMatch(/data-ledger-stage="autumn"[^>]*aria-current="step"/);
+    expect(ledger).toContain('<ol');
+    expect(ledger).not.toContain('<button');
+    expect(ledger).not.toContain('tabindex');
+    expect(ledger).not.toContain('aria-live');
+    expect(ledger).toMatch(/aria-label="Modelled whole-year carbon equation:[^"]*gross[^"]*respiration[^"]*net/i);
+    expect(ledger).toContain('Reserve draw');
+    expect(ledger).toContain('Returned to reserves');
+  });
+
+  it('distinguishes evergreen winter opportunity from a stopped dead tree', () => {
+    const E = engine();
+    const pine = render({ treeLab: {
+      view: 'grow', bandOverride: 'g68', speciesId: 'pine',
+      tree: E.newTree('pine'), season: 'winter',
+    } });
+    const pineLedger = ledgerOf(pine);
+    expect(pineLedger).toContain('data-ledger-leaf-habit="evergreen"');
+    expect(pineLedger).toMatch(/data-ledger-stage="winter"[^>]*aria-current="step"/);
+    expect(pineLedger).toMatch(/Retained needles allow limited activity/i);
+
+    const deadTree = { ...E.newTree('oak'), alive: false, causeOfDeath: 'carbon_starvation' };
+    const dead = ledgerOf(render({ treeLab: {
+      view: 'grow', bandOverride: 'g68', speciesId: 'oak',
+      tree: deadTree, season: 'summer',
+    } }));
+    expect(dead).toContain('data-ledger-state="stopped"');
+    expect(dead).toMatch(/carbon income and seasonal exchange have stopped/i);
+    expect(dead).not.toContain('data-ledger-state="surplus"');
+    expect(dead).not.toContain('kg C');
+  });
+
+  it('adapts the same causal structure to all four reading bands', () => {
+    const E = engine();
+    const tree = E.newTree('oak');
+    const cases = [
+      ['k2', 'A year of making and using food'],
+      ['g35', 'The tree&#x27;s food year'],
+      ['g68', 'Four seasons, one carbon budget'],
+      ['g912', 'Seasonal carbon sources and sinks'],
+    ];
+    for (const [bandOverride, title] of cases) {
+      const ledger = ledgerOf(render({ treeLab: {
+        view: 'grow', bandOverride, speciesId: 'oak', tree, season: 'summer',
+      } }));
+      expect(ledger, bandOverride).toContain(title);
+      expect(ledger.match(/data-ledger-stage=/g), bandOverride).toHaveLength(4);
+      if (bandOverride === 'k2') {
+        expect(ledger).not.toContain('kg C');
+        expect(ledger.toLowerCase()).not.toContain('respiration');
+        expect(ledger.toLowerCase()).not.toContain('source');
+        expect(ledger.toLowerCase()).not.toContain('sink');
+      } else if (bandOverride === 'g912') {
+        expect(ledger).toContain('kg C');
+      }
+    }
   });
 });

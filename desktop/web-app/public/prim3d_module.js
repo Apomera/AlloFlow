@@ -25,6 +25,7 @@
 
   var VERSION = 'p3d/1';
   var SHAPES = { box: 1, sphere: 1, cylinder: 1, cone: 1, torus: 1 };
+  var FINISHES = { standard: 1, matte: 1, gloss: 1, metal: 1, wire: 1 };
   var MAX_PARTS = 24;
   var FALLBACK_COLOR = '#818cf8';
 
@@ -32,6 +33,15 @@
   function clamp(v, lo, hi, d) { return isNum(v) ? Math.max(lo, Math.min(hi, v)) : d; }
   function color(v) { return (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim())) ? v.trim().toLowerCase() : FALLBACK_COLOR; }
   function color2(v) { return (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v.trim())) ? v.trim().toLowerCase() : null; }   // null when absent/invalid
+  function partLabel(v) { return typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 40) : ''; }
+  function normalizeDeform(value) {
+    var input = value && typeof value === 'object' ? value : {};
+    return {
+      taper: clamp(input.taper, -0.85, 0.85, 0),
+      twist: clamp(input.twist, -180, 180, 0),
+      bulge: clamp(input.bulge, -0.75, 1.5, 0)
+    };
+  }
 
   // ── normalizeRecipe — PURE: untrusted JSON → safe, renderable recipe ──
   // Unknown shapes are dropped; sizes/positions clamped to a sane sculpting
@@ -48,14 +58,25 @@
       var size = Array.isArray(p.size) ? p.size : [];
       var pos = Array.isArray(p.position) ? p.position : [];
       var rot = Array.isArray(p.rotation) ? p.rotation : [];
+      var stretch = Array.isArray(p.stretch) ? p.stretch : [];
+      var requestedFinish = typeof p.finish === 'string' ? p.finish.toLowerCase().trim() : '';
       parts.push({
         shape: shape,
+        label: partLabel(p.label),
         // size semantics per shape (documented in the prompt):
         //   box: [w, h, d] · sphere: [radius] · cylinder/cone: [radius, height] · torus: [radius, tube]
         size: [clamp(size[0], 0.02, 4, 0.4), clamp(size[1], 0.02, 4, 0.4), clamp(size[2], 0.02, 4, 0.4)],
+        // Per-axis silhouette morphing, independent from each shape's size semantics.
+        stretch: [clamp(stretch[0], 0.1, 4, 1), clamp(stretch[1], 0.1, 4, 1), clamp(stretch[2], 0.1, 4, 1)],
+        // Parametric vertex deformation. Neutral values preserve legacy geometry.
+        deform: normalizeDeform(p.deform),
         position: [clamp(pos[0], -4, 4, 0), clamp(pos[1], -4, 8, 0.5), clamp(pos[2], -4, 4, 0)],
         rotation: [clamp(rot[0], -360, 360, 0), clamp(rot[1], -360, 360, 0), clamp(rot[2], -360, 360, 0)],
-        color: color(p.color)
+        color: color(p.color),
+        finish: FINISHES[requestedFinish] ? requestedFinish : 'standard',
+        opacity: clamp(p.opacity, 0.15, 1, 1),
+        hidden: p.hidden === true,
+        locked: p.locked === true
       });
     }
     if (!parts.length) return null;
@@ -78,11 +99,14 @@
       'Subject: "' + String(subject || 'a friendly mascot') + '"',
       (opts.style ? 'Style: ' + opts.style : 'Style: cheerful low-poly toy, bold colors'),
       'Return ONLY JSON of this exact shape:',
-      '{ "name": "...", "parts": [ { "shape": "box", "size": [w, h, d], "position": [x, y, z], "rotation": [rx, ry, rz], "color": "#rrggbb" } ] }',
+      '{ "name": "...", "parts": [ { "shape": "box", "label": "body", "size": [w, h, d], "stretch": [sx, sy, sz], "deform": { "taper": 0, "twist": 0, "bulge": 0 }, "position": [x, y, z], "rotation": [rx, ry, rz], "color": "#rrggbb", "finish": "standard", "opacity": 1 } ] }',
       'Rules:',
       '- 4 to ' + MAX_PARTS + ' parts. y is UP. The object STANDS ON the ground plane y=0 (no part below y=0).',
       '- Overall height about 1.0 unit; position is each part\'s CENTER; rotation in degrees.',
       '- size semantics: box=[width,height,depth]; sphere=[radius]; cylinder=[radius,height]; cone=[radius,height]; torus=[ring radius,tube radius].',
+      '- stretch is optional per-axis silhouette morphing [x,y,z], normally [1,1,1], each value 0.1 to 4.',
+      '- deform is optional: taper -0.85 to 0.85, twist -180 to 180 degrees, bulge -0.75 to 1.5; normally all 0.',
+      '- label is an optional short part name; finish is standard, matte, gloss, metal, or wire; opacity is 0.15 to 1.',
       '- Distinct hex colors per logical body part; school-appropriate, friendly; no text, no letters.'
     ].join('\n');
   }
@@ -100,7 +124,7 @@
       'The student wants this change: "' + String(instruction || '') + '"',
       'Modify the JSON to make that change while keeping it a recognizable, charming low-poly object.',
       'Use ONLY box, sphere, cylinder, cone, torus. Keep the SAME JSON shape:',
-      '{ "name": "...", "parts": [ { "shape": "box", "size": [w,h,d], "position": [x,y,z], "rotation": [rx,ry,rz], "color": "#rrggbb" } ] }',
+      '{ "name": "...", "parts": [ { "shape": "box", "label": "body", "size": [w,h,d], "stretch": [sx,sy,sz], "deform": { "taper": 0, "twist": 0, "bulge": 0 }, "position": [x,y,z], "rotation": [rx,ry,rz], "color": "#rrggbb", "finish": "standard", "opacity": 1 } ] }',
       'Rules: 4-' + MAX_PARTS + ' parts; y is UP; the object STANDS ON y=0; sizes/positions in the same small range as the input; school-appropriate; no text.',
       'Return ONLY the updated JSON.'
     ].join('\n');
@@ -316,6 +340,45 @@
     return null;
   }
 
+  // Reusable silhouette recipes. A morph profile deliberately changes only
+  // stretch + deformation, so material, placement, rotation, and primitive
+  // identity stay under the student's control.
+  var MORPH_PROFILES = [
+    { id: 'original', label: 'Original', stretch: [1, 1, 1], deform: { taper: 0, twist: 0, bulge: 0 } },
+    { id: 'tall', label: 'Tall', stretch: [0.82, 1.7, 0.82], deform: { taper: 0, twist: 0, bulge: 0 } },
+    { id: 'tapered', label: 'Tapered', stretch: [1, 1, 1], deform: { taper: -0.55, twist: 0, bulge: 0 } },
+    { id: 'flared', label: 'Flared', stretch: [1, 1, 1], deform: { taper: 0.55, twist: 0, bulge: 0 } },
+    { id: 'bulged', label: 'Bulged', stretch: [1, 1, 1], deform: { taper: 0, twist: 0, bulge: 0.7 } },
+    { id: 'pinched', label: 'Pinched', stretch: [1, 1, 1], deform: { taper: 0, twist: 0, bulge: -0.55 } },
+    { id: 'twisted', label: 'Twisted', stretch: [1, 1, 1], deform: { taper: 0, twist: 110, bulge: 0.12 } }
+  ];
+  function profileText(value, max) {
+    return typeof value === 'string' ? value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) : '';
+  }
+  function normalizeMorphProfile(value) {
+    if (!value || typeof value !== 'object') return null;
+    var stretch = Array.isArray(value.stretch) ? value.stretch : [];
+    return {
+      id: profileText(value.id, 64),
+      label: profileText(value.label != null ? value.label : value.name, 40) || 'Custom form',
+      stretch: [clamp(stretch[0], 0.1, 4, 1), clamp(stretch[1], 0.1, 4, 1), clamp(stretch[2], 0.1, 4, 1)],
+      deform: normalizeDeform(value.deform)
+    };
+  }
+  function getMorphProfile(id) {
+    for (var i = 0; i < MORPH_PROFILES.length; i++) {
+      if (MORPH_PROFILES[i].id === id) return normalizeMorphProfile(MORPH_PROFILES[i]);
+    }
+    return null;
+  }
+  function applyMorphProfile(recipe, index, profile) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index] || r.parts[index].locked) return r;
+    var clean = typeof profile === 'string' ? getMorphProfile(profile) : normalizeMorphProfile(profile);
+    if (!clean) return r;
+    return updatePart(r, index, { stretch: clean.stretch.slice(), deform: normalizeDeform(clean.deform) });
+  }
+
   // ── Recipe editing ops — PURE seams for HAND-BUILT sculpting ──
   // Students author their own shapes part-by-part (no AI needed): every op
   // takes a recipe (or null), returns a fresh NORMALIZED recipe — clamping,
@@ -331,7 +394,7 @@
   };
   function _copyParts(r) {
     return r.parts.map(function (p) {
-      return { shape: p.shape, size: p.size.slice(), position: p.position.slice(), rotation: p.rotation.slice(), color: p.color };
+      return { shape: p.shape, label: p.label, size: p.size.slice(), stretch: p.stretch.slice(), deform: normalizeDeform(p.deform), position: p.position.slice(), rotation: p.rotation.slice(), color: p.color, finish: p.finish, opacity: p.opacity, hidden: p.hidden, locked: p.locked };
     });
   }
   function _rebuild(r, parts) {
@@ -342,10 +405,17 @@
     var sh = SHAPES[shape] ? shape : 'box';
     return {
       shape: sh,
+      label: '',
       size: (PART_DEFAULT_SIZE[sh] || PART_DEFAULT_SIZE.box).slice(),
+      stretch: [1, 1, 1],
+      deform: { taper: 0, twist: 0, bulge: 0 },
       position: [0, 0.5, 0],
       rotation: [0, 0, 0],
-      color: PART_PALETTE[(isNum(index) ? index : 0) % PART_PALETTE.length]
+      color: PART_PALETTE[(isNum(index) ? index : 0) % PART_PALETTE.length],
+      finish: 'standard',
+      opacity: 1,
+      hidden: false,
+      locked: false
     };
   }
   // addPart — append a starter part (no-op at the MAX_PARTS cap).
@@ -356,13 +426,18 @@
     parts.push(newPart(shape, parts.length));
     return _rebuild(r, parts);
   }
-  // updatePart — shallow-patch one part ({shape|size|position|rotation|color}).
+  // updatePart — shallow-patch one part; _rebuild revalidates geometry and metadata.
   function updatePart(recipe, index, patch) {
     var r = normalizeRecipe(recipe);
     if (!r || !r.parts[index]) return r;
     var parts = _copyParts(r);
     parts[index] = Object.assign(parts[index], patch || {});
     return _rebuild(r, parts);
+  }
+  function updatePartDeform(recipe, index, patch) {
+    var r = normalizeRecipe(recipe);
+    if (!r || !r.parts[index] || r.parts[index].locked) return r;
+    return updatePart(r, index, { deform: Object.assign({}, r.parts[index].deform, patch || {}) });
   }
   // removePart — returns NULL when the last part goes (callers treat as "cleared").
   function removePart(recipe, index) {
@@ -377,7 +452,10 @@
     var r = normalizeRecipe(recipe);
     if (!r || !r.parts[index] || r.parts.length >= MAX_PARTS) return r;
     var parts = _copyParts(r);
-    var copy = { shape: parts[index].shape, size: parts[index].size.slice(), position: parts[index].position.slice(), rotation: parts[index].rotation.slice(), color: parts[index].color };
+    var copy = { shape: parts[index].shape, label: parts[index].label, size: parts[index].size.slice(), stretch: parts[index].stretch.slice(), deform: normalizeDeform(parts[index].deform), position: parts[index].position.slice(), rotation: parts[index].rotation.slice(), color: parts[index].color, finish: parts[index].finish, opacity: parts[index].opacity, hidden: parts[index].hidden, locked: parts[index].locked };
+    if (copy.label) copy.label = (copy.label + ' copy').slice(0, 40);
+    copy.hidden = false;
+    copy.locked = false;
     copy.position[0] += 0.2;
     parts.splice(index + 1, 0, copy);
     return _rebuild(r, parts);
@@ -408,6 +486,54 @@
     return updatePart(r, index, { color: PART_PALETTE[(cur + 1) % PART_PALETTE.length] });
   }
 
+  // Apply taper, twist, and bulge directly to local geometry vertices. The
+  // deformation is deterministic and renderer-independent; neutral modifiers
+  // leave the original primitive untouched.
+  function deformGeometry(geometry, value) {
+    var deform = normalizeDeform(value);
+    if (!geometry || (!deform.taper && !deform.twist && !deform.bulge)) return geometry;
+    var attr = geometry.attributes && geometry.attributes.position;
+    if (!attr || !attr.count) return geometry;
+    var read = function(index, axis) {
+      var getter = axis === 0 ? attr.getX : axis === 1 ? attr.getY : attr.getZ;
+      if (typeof getter === 'function') return getter.call(attr, index);
+      var itemSize = attr.itemSize || 3;
+      return attr.array ? Number(attr.array[index * itemSize + axis]) : 0;
+    };
+    var write = function(index, x, y, z) {
+      if (typeof attr.setXYZ === 'function') attr.setXYZ(index, x, y, z);
+      else if (attr.array) {
+        var itemSize = attr.itemSize || 3;
+        attr.array[index * itemSize] = x;
+        attr.array[index * itemSize + 1] = y;
+        attr.array[index * itemSize + 2] = z;
+      }
+    };
+    var minY = Infinity, maxY = -Infinity;
+    for (var yIndex = 0; yIndex < attr.count; yIndex++) {
+      var yValue = read(yIndex, 1);
+      minY = Math.min(minY, yValue);
+      maxY = Math.max(maxY, yValue);
+    }
+    var height = maxY - minY;
+    if (!isFinite(height) || height <= 0) return geometry;
+    var twistRadians = deform.twist * Math.PI / 180;
+    for (var vertexIndex = 0; vertexIndex < attr.count; vertexIndex++) {
+      var x = read(vertexIndex, 0), y = read(vertexIndex, 1), z = read(vertexIndex, 2);
+      var u = ((y - minY) / height) * 2 - 1;
+      var radial = Math.max(0.1, (1 + deform.taper * u) * (1 + deform.bulge * (1 - u * u)));
+      var angle = twistRadians * u / 2;
+      var scaledX = x * radial, scaledZ = z * radial;
+      var cos = Math.cos(angle), sin = Math.sin(angle);
+      write(vertexIndex, scaledX * cos - scaledZ * sin, y, scaledX * sin + scaledZ * cos);
+    }
+    attr.needsUpdate = true;
+    if (typeof geometry.computeVertexNormals === 'function') geometry.computeVertexNormals();
+    if (typeof geometry.computeBoundingBox === 'function') geometry.computeBoundingBox();
+    if (typeof geometry.computeBoundingSphere === 'function') geometry.computeBoundingSphere();
+    return geometry;
+  }
+
   // ── buildObject — recipe → THREE.Group (no GL context required) ──
   // opts.scale multiplies the whole assembly (1 recipe unit ≈ opts.unit world
   // units, default 1) — the same recipe is a trinket at 70 and a landmark at 900.
@@ -421,20 +547,27 @@
     var unit = isNum(opts.unit) ? opts.unit : 1;
     var group = new THREE.Group();
     r.parts.forEach(function (p, partIndex) {
+      if (p.hidden) return;
       var geo = null;
+      var shaped = !!(p.deform.taper || p.deform.twist || p.deform.bulge);
       try {
-        if (p.shape === 'box') geo = new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]);
+        if (p.shape === 'box') geo = new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2], shaped ? 5 : 1, shaped ? 8 : 1, shaped ? 5 : 1);
         else if (p.shape === 'sphere') geo = new THREE.SphereGeometry(p.size[0], 18, 18);
-        else if (p.shape === 'cylinder') geo = new THREE.CylinderGeometry(p.size[0], p.size[0], p.size[1], 20);
-        else if (p.shape === 'cone') geo = new THREE.ConeGeometry(p.size[0], p.size[1], 20);
+        else if (p.shape === 'cylinder') geo = new THREE.CylinderGeometry(p.size[0], p.size[0], p.size[1], 20, shaped ? 12 : 1);
+        else if (p.shape === 'cone') geo = new THREE.ConeGeometry(p.size[0], p.size[1], 20, shaped ? 12 : 1);
         else if (p.shape === 'torus') geo = new THREE.TorusGeometry(p.size[0], p.size[1], 12, 28);
       } catch (e) { geo = null; }
       if (!geo) return;
-      var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(p.color), roughness: 0.55, metalness: 0.08 }));
+      deformGeometry(geo, p.deform);
+      var finishStyle = p.finish === 'matte' ? { roughness: 0.88, metalness: 0.02 } : p.finish === 'gloss' ? { roughness: 0.16, metalness: 0.05 } : p.finish === 'metal' ? { roughness: 0.28, metalness: 0.82 } : { roughness: 0.55, metalness: 0.08 };
+      var materialOptions = { color: new THREE.Color(p.color), roughness: finishStyle.roughness, metalness: finishStyle.metalness, opacity: p.opacity, transparent: p.opacity < 1, depthWrite: p.opacity >= 0.98, wireframe: p.finish === 'wire' };
+      var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial(materialOptions));
       mesh.userData = mesh.userData || {};
       mesh.userData.prim3dPartIndex = partIndex;
+      mesh.userData.prim3dPartLabel = p.label || '';
       mesh.position.set(p.position[0], p.position[1], p.position[2]);
       mesh.rotation.set(p.rotation[0] * Math.PI / 180, p.rotation[1] * Math.PI / 180, p.rotation[2] * Math.PI / 180);
+      if (mesh.scale && mesh.scale.set) mesh.scale.set(p.stretch[0], p.stretch[1], p.stretch[2]);
       group.add(mesh);
     });
     if (!group.children.length) return null;
@@ -469,15 +602,22 @@
     parseStretchCommand: parseStretchCommand,
     PRESETS: PRESETS,
     getPreset: getPreset,
+    MORPH_PROFILES: MORPH_PROFILES,
+    normalizeDeform: normalizeDeform,
+    normalizeMorphProfile: normalizeMorphProfile,
+    getMorphProfile: getMorphProfile,
+    applyMorphProfile: applyMorphProfile,
     PART_PALETTE: PART_PALETTE,
     newPart: newPart,
     addPart: addPart,
     updatePart: updatePart,
+    updatePartDeform: updatePartDeform,
     removePart: removePart,
     duplicatePart: duplicatePart,
     nudgePart: nudgePart,
     scalePart: scalePart,
     recolorPart: recolorPart,
+    deformGeometry: deformGeometry,
     buildObject: buildObject
   };
   console.log('[Prim3D] Registered (p3d/1 — Gemini primitive-assembly sculptures)');

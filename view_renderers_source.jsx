@@ -15,6 +15,9 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
     if (typeof text !== 'string') {
         return <div className="text-red-500 text-xs">{_t('renderers.error_invalid_text_format') || 'Error: Invalid text format'}</div>;
     }
+    text = text
+        .replace(/&lt;br\s*\/?&gt;/gi, '\n')
+        .replace(/<br\s*\/?>/gi, '\n');
     text = sanitizeTruncatedCitations(text);
     const processedText = normalizeResourceLinks(text);
     const isSingleParagraph = !processedText.includes('\n\n') && processedText.length < 500 && !processedText.includes('|');
@@ -24,6 +27,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
     normalizedText = normalizedText.replace(/([^\n])\s+(#\s+[A-Z])/g, '$1\n\n$2');
     normalizedText = normalizedText.replace(/^(#{1,6}\s[^\n]+)\n(?!\n|#{1,6}\s|$)/gm, '$1\n\n');
     normalizedText = normalizedText.replace(/\n{3,}/g, '\n\n');
+    normalizedText = normalizedText.replace(/(^|\n)\s*#\s*(?=\n|$)/g, '$1');
     normalizedText = normalizedText.replace(/^Title:\s*(.+)/m, '# $1');
     const lines = normalizedText.split('\n');
     const elements = [];

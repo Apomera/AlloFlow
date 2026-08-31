@@ -74,7 +74,7 @@ describe('Solar System canvas alternatives', () => {
   });
 
   it('exposes keyboard shortcuts on the interactive Orrery canvas', () => {
-    const markup = renderTool('solarSystem', { solarSystem: { tutorialDismissed: true, orreryMode: true, orr_sel: 'earth', orr_paused: true } });
+    const markup = renderTool('solarSystem', { solarSystem: { tutorialDismissed: true, orreryMode: true, orr_sel: 'earth', orr_paused: true, orr_scale_mode: 'relative' } });
     document.body.innerHTML = markup;
     const canvas = document.querySelector('canvas[role="application"]');
     expect(canvas).not.toBeNull();
@@ -83,6 +83,7 @@ describe('Solar System canvas alternatives', () => {
     expect(canvas.getAttribute('aria-describedby')).toBe('orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip orrery-stage-readout');
     expect(document.getElementById('orrery-canvas-help')?.textContent).toContain('Keyboard: arrows pan');
     expect(document.getElementById('orrery-model-scale-note')?.textContent).toContain('not one literal scale');
+    expect(document.getElementById('orrery-model-scale-note')?.textContent).toContain('compressed and clamped for visibility');
     expect(document.getElementById('orrery-stage-key')?.getAttribute('aria-label')).toBe('Orrery visual key');
     expect(document.getElementById('orrery-stage-key')?.textContent).toContain('Velocity vector');
     expect(document.getElementById('orrery-stage-tip')?.textContent).toContain('Arrow = direction/relative speed');

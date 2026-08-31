@@ -1,55 +1,55 @@
 {
   "schemaVersion": 1,
-  "qaVersion": "ap-calculus-ab-foundation-qa-v1",
+  "qaVersion": "ap-calculus-ab-foundation-qa-v2",
   "reportId": "ap-calculus-ab-foundation-qa",
-  "generatedAt": "2026-08-25T00:00:00.000Z",
+  "generatedAt": "2026-08-30T00:00:00.000Z",
   "packId": "ap-calculus-ab-foundation-pilot",
-  "version": "0.1.0-internal-preview",
+  "version": "0.2.0-internal-preview",
   "status": "pass",
   "automatedAssessment": "pass",
   "structuralFindings": [],
   "advisories": [
     "Automated QA does not establish AP Calculus AB content validity, fairness, accessibility conformance, rights clearance, production readiness, score meaning, or psychometric quality.",
     "Independent AP Calculus AB subject-expert, rights, accessibility, field-testing, and psychometric review remain release-blocking.",
-    "The 80-item initial seed is not a complete AP exam form or full topic-depth bank."
+    "The 160-item expanded foundation, its unscored diagnostic routes, and its remediation playbooks are not a complete AP exam form, official score, readiness measure, or psychometrically calibrated bank."
   ],
   "metrics": {
-    "itemCount": 80,
+    "itemCount": 160,
     "unitCount": 8,
     "unitCounts": {
-      "limits-and-continuity": 10,
-      "differentiation-definition-and-fundamental-properties": 10,
-      "differentiation-composite-implicit-inverse-functions": 10,
-      "contextual-applications-of-differentiation": 10,
-      "analytical-applications-of-differentiation": 10,
-      "integration-and-accumulation-of-change": 10,
-      "differential-equations": 10,
-      "applications-of-integration": 10
+      "limits-and-continuity": 20,
+      "differentiation-definition-and-fundamental-properties": 20,
+      "differentiation-composite-implicit-inverse-functions": 20,
+      "contextual-applications-of-differentiation": 20,
+      "analytical-applications-of-differentiation": 20,
+      "integration-and-accumulation-of-change": 20,
+      "differential-equations": 20,
+      "applications-of-integration": 20
     },
     "selectedFrameworkTopicCount": 66,
     "foundationTopicRouteCount": 40,
-    "minimumItemsPerSelectedTopic": 2,
+    "minimumItemsPerSelectedTopic": 4,
     "practiceCounts": {
-      "MP2": 20,
-      "MP3": 19,
-      "MP1": 36,
-      "MP4": 5
+      "MP2": 43,
+      "MP3": 43,
+      "MP1": 62,
+      "MP4": 12
     },
     "representationCounts": {
-      "tabular": 3,
-      "verbal": 15,
-      "analytical": 57,
-      "graphical-text": 5
+      "tabular": 10,
+      "verbal": 34,
+      "analytical": 105,
+      "graphical-text": 11
     },
     "calculatorCounts": {
-      "calculator-not-required": 56,
-      "calculator-permitted-practice": 24
+      "calculator-not-required": 112,
+      "calculator-permitted-practice": 48
     },
     "answerPositionCounts": [
-      20,
-      20,
-      20,
-      20
+      40,
+      40,
+      40,
+      40
     ],
     "chapterCount": 8,
     "sectionCount": 24,
@@ -57,6 +57,9 @@
     "flashcardCount": 40,
     "memoryAidCount": 16,
     "practiceRouteCount": 24,
+    "diagnosticRouteCount": 40,
+    "diagnosticSetCount": 120,
+    "remediationPlaybookCount": 40,
     "studyRouteCount": 4,
     "quickReferenceCount": 8,
     "diagramCount": 8,
@@ -66,11 +69,12 @@
   "coverage": {
     "allSelectedTopicsRepresented": true,
     "allUnitsRepresented": true,
-    "everyItemSectionRouted": true
+    "everyItemSectionRouted": true,
+    "everyTopicHasDiagnosticAndRemediation": true
   },
   "inputs": {
-    "packSha256": "eac15110c2ed779295861dd4acb8d5c3097837c0f8425e98b7afe3e51df71486",
-    "learningLibrarySha256": "5be98f69215ca9602ff083751d8b9037e3d72d8cca1335521a9077322f312d83",
+    "packSha256": "145f96d861aa8d4030147e7ffaa36a76f149954c4572c6f12dd5660cb5266316",
+    "learningLibrarySha256": "74140810a6b836d2c67fb938971a2ca7ed895bba44ce884684e5f4c515957522",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
     "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-calculus-ab/exam",
     "reviewedAt": "2026-08-25"

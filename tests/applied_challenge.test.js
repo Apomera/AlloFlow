@@ -52,10 +52,52 @@ describe('Applied Challenge Studio schema', () => {
     expect(data.supports.frameStarter).toContain('two materials');
     expect(data.workspace.response).toContain('layered insulation');
     expect(data.feedback.strength).toBe('Clear application');
-    expect(data.schemaVersion).toBe(2);
+    expect(data.schemaVersion).toBe(4);
     expect(data.brief.factVerified).toBe(false);
+    expect(data.evidenceLedger).toEqual([]);
+    expect(data.stressTest).toBeNull();
     expect(data.workspace).not.toHaveProperty('feedback');
     expect(data.brief).not.toHaveProperty('response');
+  });
+
+  it('normalizes and bounds the evidence ledger without merging it into student prose', () => {
+    const data = H.normalizeAppliedChallengeData({
+      evidenceLedger: Array.from({ length: 13 }, (_, index) => ({
+        id: index < 2 ? 'shared id' : 'row-' + index,
+        option: index === 0 ? 'Choose the shaded route' : 'Claim ' + index,
+        support: 'Lesson connection ' + index,
+        status: index === 0 ? 'verified' : index === 1 ? 'assumption' : 'unsupported-status',
+        constraint: 'Tradeoff ' + index,
+      })),
+    });
+    expect(data.evidenceLedger).toHaveLength(12);
+    expect(data.evidenceLedger[0]).toMatchObject({
+      id: 'shared-id',
+      claim: 'Choose the shaded route',
+      evidence: 'Lesson connection 0',
+      status: 'verified',
+      tradeoff: 'Tradeoff 0',
+    });
+    expect(data.evidenceLedger[1].id).not.toBe(data.evidenceLedger[0].id);
+    expect(data.evidenceLedger[1].status).toBe('assumption');
+    expect(data.evidenceLedger[2].status).toBe('needs-check');
+    expect(data.workspace).not.toHaveProperty('evidenceLedger');
+  });
+
+  it('normalizes bounded stress tests as separate AI support', () => {
+    const stressTest = H.normalizeAppliedChallengeStressTest({
+      pressureTest: 'BEGIN-' + 'x'.repeat(2200) + '-END',
+      rationale: 'This reveals a binding constraint.',
+      revisionQuestion: 'What evidence could change the plan?',
+      draftFingerprint: 'draft-123',
+      createdAt: '2026-08-29T12:00:00.000Z',
+    });
+    expect(stressTest.challenge).toContain('BEGIN-');
+    expect(stressTest.challenge).not.toContain('-END');
+    expect(stressTest.whyItMatters).toContain('binding constraint');
+    expect(stressTest.question).toContain('change the plan');
+    expect(stressTest.draftFingerprint).toBe('draft-123');
+    expect(H.normalizeAppliedChallengeStressTest({})).toBeNull();
   });
 
   it('does not let student-framed mode inherit an AI-written question', () => {
@@ -102,6 +144,21 @@ describe('Applied Challenge Studio schema', () => {
     expect(standard).toEqual({ started: 3, total: 10, percentage: 30 });
   });
 
+  it('reports useful ledger progress without making the optional organizer a workflow gate', () => {
+    expect(H.appliedChallengeEvidenceLedgerProgress([
+      { claim: 'Option A', evidence: 'Lesson fact 1', status: 'verified', tradeoff: 'Costs time' },
+      { claim: 'Option B', evidence: '', status: 'assumption' },
+      { claim: '', evidence: '', status: 'needs-check', tradeoff: '' },
+    ])).toEqual({
+      started: 2,
+      complete: 1,
+      total: 3,
+      verified: 1,
+      needsCheck: 0,
+      assumptions: 1,
+    });
+  });
+
   it('fingerprints reasoning inputs but ignores saved coaching output', () => {
     const base = {
       family: 'decide',
@@ -112,12 +169,26 @@ describe('Applied Challenge Studio schema', () => {
     expect(H.appliedChallengeCoachingFingerprint({
       ...base,
       coachHint: 'A saved hint',
+      stressTest: { challenge: 'A saved pressure test' },
       feedback: { strength: 'A saved strength' },
     })).toBe(fingerprint);
     expect(H.appliedChallengeCoachingFingerprint({
       ...base,
       workspace: { response: 'A changed draft' },
     })).not.toBe(fingerprint);
+    expect(H.appliedChallengeCoachingFingerprint({
+      ...base,
+      evidenceLedger: [{ claim: 'A new claim', evidence: 'A lesson connection', status: 'needs-check' }],
+    })).not.toBe(fingerprint);
+    expect(H.appliedChallengeDraftFingerprint(base)).toMatch(/^[0-9a-f]{8}$/);
+    expect(H.appliedChallengeDraftFingerprint({
+      ...base,
+      stressTest: { challenge: 'Saved AI support', draftFingerprint: 'old' },
+    })).toBe(H.appliedChallengeDraftFingerprint(base));
+    expect(H.appliedChallengeDraftFingerprint({
+      ...base,
+      workspace: { response: 'A changed draft' },
+    })).not.toBe(H.appliedChallengeDraftFingerprint(base));
   });
 
   it('bounds long workspace fields before adding them to AI prompts', () => {
@@ -129,6 +200,23 @@ describe('Applied Challenge Studio schema', () => {
     expect(snapshot).not.toContain('-END');
     expect(snapshot).toContain('A concise revision');
     expect(snapshot.length).toBeLessThan(5000);
+  });
+
+  it('bounds ledger context and preserves evidence status for coaching', () => {
+    const snapshot = H.appliedChallengeEvidenceLedgerPromptSnapshot([
+      {
+        claim: 'BEGIN-' + 'c'.repeat(1400) + '-END',
+        evidence: 'Lesson fact connection',
+        status: 'assumption',
+        tradeoff: 'May exclude another stakeholder',
+      },
+      { claim: '', evidence: '', status: 'needs-check', tradeoff: '' },
+    ]);
+    expect(snapshot).toContain('BEGIN-');
+    expect(snapshot).not.toContain('-END');
+    expect(snapshot).toContain('\"status\": \"assumption\"');
+    expect(snapshot).not.toContain('needs-check');
+    expect(snapshot.length).toBeLessThan(2600);
   });
 });
 
@@ -151,6 +239,13 @@ describe('Applied Challenge Studio coaching guardrails', () => {
       tradeoffs: 'Option A improves access but needs staffing.',
       response: 'Recommend a small pilot and collect evidence before expansion.',
     },
+    evidenceLedger: [{
+      id: 'ledger-a',
+      claim: 'A small pilot is feasible.',
+      evidence: 'Local staffing capacity has not been confirmed.',
+      status: 'needs-check',
+      tradeoff: 'A pilot reaches fewer people at first.',
+    }],
   };
 
   it('requires a framed question and student draft before feedback', () => {
@@ -164,6 +259,17 @@ describe('Applied Challenge Studio coaching guardrails', () => {
     }).ok).toBe(false);
   });
 
+  it('requires a framed question and draft before creating a pressure test', () => {
+    expect(H.appliedChallengeStressTestReady(base)).toEqual({ ok: true, reason: '' });
+    expect(H.appliedChallengeStressTestReady({ ...base, workspace: { response: '' } }).reason).toContain('draft response');
+    expect(H.appliedChallengeStressTestReady({
+      ...base,
+      agencyMode: 'student-framed',
+      brief: { ...base.brief, drivingQuestion: '' },
+      workspace: { response: 'A response without a student question.' },
+    }).reason).toContain('working question');
+  });
+
   it('asks for one hint without writing or completing student work', () => {
     const prompt = H.buildAppliedChallengeHintPrompt(base, 'tradeoffs');
     expect(prompt).toContain('exactly one');
@@ -172,6 +278,27 @@ describe('Applied Challenge Studio coaching guardrails', () => {
     expect(prompt).toContain('Option A improves access');
     expect(prompt).toContain('Do not invent sources');
     expect(prompt).toContain('Teacher review pending');
+    expect(prompt).toContain('Evidence and decision ledger');
+    expect(prompt).toContain('Local staffing capacity has not been confirmed');
+  });
+
+  it('creates one family-specific pressure test without proposing the answer', () => {
+    const prompt = H.buildAppliedChallengeStressTestPrompt(base);
+    expect(prompt).toContain('exactly one high-value pressure test');
+    expect(prompt).toContain('feasibility risk, adoption barrier, resource assumption, or unintended effect');
+    expect(prompt).toContain('Do not rewrite, complete, improve, or supply an alternative answer');
+    expect(prompt).toContain('Local staffing capacity has not been confirmed');
+    expect(prompt).toContain('Return ONLY JSON with challenge, whyItMatters, and question');
+    const explorationPrompt = H.buildAppliedChallengeStressTestPrompt({ ...base, family: 'explore' });
+    expect(explorationPrompt).toContain('counterexample, internal tension, implication, or strongest alternative view');
+    expect(explorationPrompt).toContain('never challenge the student\'s identity');
+    const boundedPrompt = H.buildAppliedChallengeStressTestPrompt({
+      ...base,
+      workspace: { ...base.workspace, response: 'BEGIN-' + 'x'.repeat(7000) + '-END' },
+    });
+    expect(boundedPrompt).toContain('BEGIN-');
+    expect(boundedPrompt).not.toContain('-END');
+    expect(boundedPrompt.length).toBeLessThan(15000);
   });
 
   it('normalizes plain, object, and fenced JSON hint responses', () => {
@@ -179,6 +306,27 @@ describe('Applied Challenge Studio coaching guardrails', () => {
     expect(H.parseAppliedChallengeHint('Ask what evidence could change your choice.')).toContain('what evidence');
     expect(H.parseAppliedChallengeHint({ question: 'Which constraint matters first?' })).toBe('Which constraint matters first?');
     expect(H.parseAppliedChallengeHint(fence + 'json\n' + JSON.stringify({ hint: 'Compare both alternatives.' }) + '\n' + fence)).toBe('Compare both alternatives.');
+  });
+
+  it('parses object, fenced JSON, and plain-text stress tests safely', () => {
+    const fence = String.fromCharCode(96).repeat(3);
+    expect(H.parseAppliedChallengeStressTest({
+      pressureTest: 'What if staffing is unavailable?',
+      rationale: 'The proposal depends on staffing.',
+      revisionQuestion: 'What fallback could you test?',
+    })).toMatchObject({
+      challenge: 'What if staffing is unavailable?',
+      whyItMatters: 'The proposal depends on staffing.',
+      question: 'What fallback could you test?',
+    });
+    expect(H.parseAppliedChallengeStressTest(fence + 'json\n' + JSON.stringify({
+      challenge: 'Test the strongest alternative.',
+      whyItMatters: 'It may better satisfy the criterion.',
+      question: 'What evidence distinguishes the options?',
+    }) + '\n' + fence).challenge).toBe('Test the strongest alternative.');
+    expect(H.parseAppliedChallengeStressTest('Consider whether the constraint excludes the preferred option.').question).toContain('revise or verify');
+    expect(H.parseAppliedChallengeStressTest('')).toBeNull();
+    expect(H.parseAppliedChallengeStressTest('{not valid json')).toBeNull();
   });
 
   it('reviews proposals without fabricating financial evidence or replacing the response', () => {
@@ -193,6 +341,7 @@ describe('Applied Challenge Studio coaching guardrails', () => {
     expect(prompt).toContain('return status needs-check');
     expect(prompt).toContain('The budget is unknown');
     expect(prompt).toContain('Access is a core design consideration');
+    expect(prompt).toContain('At least one populated ledger row still needs checking');
   });
 
   it('evaluates philosophical reasoning without grading a worldview', () => {
@@ -225,7 +374,14 @@ describe('Applied Challenge Studio coaching guardrails', () => {
     expect(H.finalizeAppliedChallengeFeedback({
       strength: 'Strong reasoning',
       status: 'grounded',
-    }, { brief: { factVerified: true } }).status).toBe('grounded');
+    }, { brief: { factVerified: true }, evidenceLedger: [] }).status).toBe('grounded');
+    expect(H.finalizeAppliedChallengeFeedback({
+      strength: 'Strong reasoning',
+      status: 'grounded',
+    }, {
+      brief: { factVerified: true },
+      evidenceLedger: [{ claim: 'Projected demand', evidence: 'No survey yet', status: 'needs-check' }],
+    }).status).toBe('needs-check');
   });
 });
 

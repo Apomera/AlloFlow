@@ -19,7 +19,7 @@ function electroSeed(extra = {}) {
     turns: 100, current: 2, core: false, currentDir: 1, windingDir: 1,
     electroBaseline: null, notebookOpen: false, notebookPrediction: '',
     notebookClaim: '', notebookTrials: [], missionId: 'power_path',
-    missionStarted: false, missionPanelOpen: false, labFocus: false,
+    missionStarted: false, missionPanelOpen: false, labFocus: false, labShellPanel: 'evidence',
   }, extra);
 }
 

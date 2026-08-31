@@ -341,6 +341,7 @@ function makeAppsScriptHarness() {
           }
           return lockAvailable;
         },
+        hasLock: () => acquired,
         releaseLock() {
           if (!acquired) return;
           acquired = false;

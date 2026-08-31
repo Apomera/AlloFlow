@@ -76,6 +76,9 @@ describe('student-facing accessibility contracts', () => {
     expect(src).toContain('await Promise.resolve(onSubmit(fullName, stats))');
     expect(src).toContain("submissionContext === 'standard-live'");
     expect(src).toContain('If delivery fails, a backup file downloads instead.');
+    expect(src).toContain('max-h-[calc(100vh-2rem)] overflow-y-auto');
+    expect(src).toContain('grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3');
+    expect(src).not.toContain('grid grid-cols-2 gap-3 mb-3');
   });
 
   it('the inline student live-session lobby has dark and high-contrast branches', () => {

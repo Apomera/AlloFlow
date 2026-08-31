@@ -860,7 +860,7 @@ describe('Fisher Lab renderer resource teardown', () => {
     const resizeStart = source.indexOf('    function onResize()');
     const apiStart = source.indexOf('    return {', resizeStart);
     const boatStateStart = source.indexOf('      getBoatState:', apiStart);
-    const listenerStubs = 'var onWebGLContextLost = function() {}; var onWebGLContextRestored = function() {}; var onKeyDown = function() {}; var onKeyUp = function() {}; var onWindowBlur = function() {}; var onResize = function() {}; var onVisibilityChange = function() {}; var onPageHide = function() {}; ';
+    const listenerStubs = 'var onWebGLContextLost = function() {}; var onWebGLContextRestored = function() {}; var onKeyDown = function() {}; var onKeyUp = function() {}; var onWindowBlur = function() {}; var onActivityReturn = function() {}; var onResize = function() {}; var onVisibilityChange = function() {}; var onPageHide = function() {}; ';
     const apiSource = listenerStubs + source.slice(apiStart, boatStateStart) + '    };';
     const calls = {
       release: 0,
@@ -965,7 +965,7 @@ describe('Fisher Lab renderer resource teardown', () => {
       release: 1,
       cancelled: 1,
       canvasListeners: 2,
-      windowListeners: 5,
+      windowListeners: 7,
       documentListeners: 1,
       ambient: 1,
       composer: 1,
@@ -1016,6 +1016,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(keyboardEnd).toBeGreaterThan(keyboardStart);
 
     const listeners = {};
+    const inactivityReasons = [];
     const canvas = {};
     const harness = new Function(
       'window',
@@ -1023,19 +1024,22 @@ describe('Fisher Lab simulator safeguards', () => {
       'canvas',
       'boatState',
       'shouldIgnoreCoreRepeatedKey',
+      'pauseForInactivity',
       source.slice(keyboardStart, keyboardEnd) + '\nreturn { getKeys: function() { return keys; } };'
     )(
       { addEventListener(type, listener) { listeners[type] = listener; } },
       { activeElement: canvas },
       canvas,
       { paused: false },
-      () => false
+      () => false,
+      (reason) => inactivityReasons.push(reason)
     );
 
     listeners.keydown({ key: 'w', repeat: false, preventDefault() {} });
     expect(harness.getKeys().w).toBe(true);
 
     listeners.blur();
+    expect(inactivityReasons).toEqual(['window-blur']);
     expect(Object.keys(harness.getKeys())).toEqual([]);
     expect(Object.getPrototypeOf(harness.getKeys())).toBeNull();
   });
@@ -1193,14 +1197,316 @@ describe('Fisher Lab simulator safeguards', () => {
 
     expect(source).toContain("canvas.removeEventListener('webglcontextlost', onWebGLContextLost, false)");
     expect(source).toContain("canvas.removeEventListener('webglcontextrestored', onWebGLContextRestored, false)");
-    expect(source).toContain('if (alive && !contextLost && raf === null) raf = requestAnimationFrame(tick);');
+    expect(source).toContain('if (alive && !contextLost && raf === null && (force || !boatState.paused)) raf = requestAnimationFrame(tick);');
     expect(source.match(/if \(!renderFrame\(\)\) return;/g)).toHaveLength(2);
+  });
+
+  it('idles paused rendering and wakes only for resume or a forced paint', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const pauseStart = source.indexOf('    function setPaused(paused, announce)');
+    const pauseEnd = source.indexOf('    var pausedForInactivity', pauseStart);
+    const schedulerStart = source.indexOf('    function scheduleNextFrame(force)');
+    const schedulerEnd = source.indexOf("    canvas.addEventListener('webglcontextlost'", schedulerStart);
+    const tickStart = source.indexOf('    function tick()');
+    const activeTickStart = source.indexOf('      elapsed += dt;', tickStart);
+    const boatState = { paused: false, throttle: 0.7 };
+    const calls = { cancelled: [], scheduled: [], releases: 0, hud: 0 };
+    let now = 1000;
+
+    expect(pauseStart).toBeGreaterThan(-1);
+    expect(pauseEnd).toBeGreaterThan(pauseStart);
+    expect(schedulerStart).toBeGreaterThan(pauseEnd);
+    expect(schedulerEnd).toBeGreaterThan(schedulerStart);
+    expect(activeTickStart).toBeGreaterThan(tickStart);
+
+    const pauseHarness = new Function(
+      'boatState',
+      'releaseHeldControls',
+      'statusCb',
+      'flAnnounce',
+      'publishHudPatch',
+      'emitVoyageCheckpoint',
+      'cancelAnimationFrame',
+      'performance',
+      'scheduleNextFrame',
+      'var contextLost = false; var raf = 41; var lastT = 100;\n' +
+        source.slice(pauseStart, pauseEnd) +
+        '\nreturn { setPaused, getRaf: function() { return raf; }, getLastT: function() { return lastT; } };'
+    )(
+      boatState,
+      () => { calls.releases += 1; },
+      () => {},
+      () => {},
+      () => { calls.hud += 1; },
+      () => {},
+      (id) => calls.cancelled.push(id),
+      { now: () => now },
+      (force) => calls.scheduled.push(force)
+    );
+
+    expect(pauseHarness.setPaused(true, false)).toBe(true);
+    expect(boatState).toEqual({ paused: true, throttle: 0 });
+    expect(calls.cancelled).toEqual([41]);
+    expect(calls.scheduled).toEqual([]);
+    expect(pauseHarness.getRaf()).toBeNull();
+    expect(pauseHarness.getLastT()).toBe(100);
+
+    now = 7250;
+    expect(pauseHarness.setPaused(false, false)).toBe(true);
+    expect(boatState.paused).toBe(false);
+    expect(pauseHarness.getLastT()).toBe(7250);
+    expect(calls.scheduled).toEqual([false]);
+    expect(calls.releases).toBe(2);
+    expect(calls.hud).toBe(2);
+
+    const requests = [];
+    const schedulerBoatState = { paused: true };
+    const schedulerHarness = new Function(
+      'boatState',
+      'requestAnimationFrame',
+      'tick',
+      'var alive = true; var contextLost = false; var raf = null;\n' +
+        source.slice(schedulerStart, schedulerEnd) +
+        '\nreturn {' +
+        ' schedule: scheduleNextFrame,' +
+        ' getRaf: function() { return raf; },' +
+        ' clear: function() { raf = null; },' +
+        ' setAlive: function(value) { alive = value; },' +
+        ' setContextLost: function(value) { contextLost = value; }' +
+        '};'
+    )(
+      schedulerBoatState,
+      (callback) => {
+        requests.push(callback);
+        return 80 + requests.length;
+      },
+      function heldTick() {}
+    );
+
+    schedulerHarness.schedule(false);
+    expect(requests).toHaveLength(0);
+    schedulerHarness.schedule(true);
+    expect(requests).toHaveLength(1);
+    expect(schedulerHarness.getRaf()).toBe(81);
+    schedulerHarness.schedule(true);
+    expect(requests).toHaveLength(1);
+
+    schedulerHarness.clear();
+    schedulerBoatState.paused = false;
+    schedulerHarness.schedule(false);
+    expect(requests).toHaveLength(2);
+    schedulerHarness.clear();
+    schedulerHarness.setContextLost(true);
+    schedulerHarness.schedule(true);
+    expect(requests).toHaveLength(2);
+    schedulerHarness.setContextLost(false);
+    schedulerHarness.setAlive(false);
+    schedulerHarness.schedule(true);
+    expect(requests).toHaveLength(2);
+
+    let heldRenders = 0;
+    let heldSchedules = 0;
+    const heldTickHarness = new Function(
+      'performance',
+      'boatState',
+      'renderFrame',
+      'scheduleNextFrame',
+      'var raf = 73; var alive = true; var contextLost = false; var lastT = 1000;\n' +
+        source.slice(tickStart, activeTickStart) +
+        '    }\nreturn { tick, getRaf: function() { return raf; } };'
+    )(
+      { now: () => 1050 },
+      { paused: true },
+      () => { heldRenders += 1; return true; },
+      () => { heldSchedules += 1; }
+    );
+
+    heldTickHarness.tick();
+    expect(heldTickHarness.getRaf()).toBeNull();
+    expect(heldRenders).toBe(1);
+    expect(heldSchedules).toBe(0);
+    expect(source).toContain('scheduleNextFrame(true);');
+  });
+
+  it('repaints paused scene controls once while preserving active camera easing', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const controlsStart = source.indexOf('    function repaintHeldScene(patch, refreshCamera)');
+    const controlsEnd = source.indexOf('    function createCurrentVoyageCheckpoint()', controlsStart);
+    const boatState = { paused: true, timeOfDay: 'day', weather: 'clear', cameraView: 'chase' };
+    const calls = { hud: [], cameras: [], frames: [], environments: [] };
+
+    expect(controlsStart).toBeGreaterThan(-1);
+    expect(controlsEnd).toBeGreaterThan(controlsStart);
+
+    const controls = new Function(
+      'boatState',
+      'publishHudPatch',
+      'applyCameraRig',
+      'scheduleNextFrame',
+      'updateEnvironment',
+      'CAMERA_VIEW_IDS',
+      source.slice(controlsStart, controlsEnd) +
+        '\nreturn { setCoreTimeOfDay, setCoreCameraView, setCoreWeather, repaintHeldScene };'
+    )(
+      boatState,
+      (patch) => calls.hud.push(patch),
+      (immediate) => calls.cameras.push(immediate),
+      (force) => calls.frames.push(force),
+      (timeOfDay, weather) => calls.environments.push([timeOfDay, weather]),
+      ['chase', 'helm', 'overhead', 'map']
+    );
+
+    expect(controls.setCoreTimeOfDay('night')).toBe('night');
+    expect(boatState.timeOfDay).toBe('night');
+    expect(calls.environments.at(-1)).toEqual(['night', 'clear']);
+    expect(calls.hud.at(-1)).toEqual({ timeOfDay: 'night' });
+    expect(calls.frames.at(-1)).toBe(true);
+
+    expect(controls.setCoreWeather('rainy')).toBe('rainy');
+    expect(boatState.weather).toBe('rainy');
+    expect(calls.environments.at(-1)).toEqual(['night', 'rainy']);
+    expect(calls.hud.at(-1)).toEqual({ weather: 'rainy' });
+
+    expect(controls.setCoreCameraView('helm')).toBe('helm');
+    expect(boatState.cameraView).toBe('helm');
+    expect(calls.cameras).toEqual([true]);
+    expect(calls.hud.at(-1)).toEqual({ cameraView: 'helm' });
+
+    expect(controls.setCoreCameraView('unknown-view')).toBe('chase');
+    expect(boatState.cameraView).toBe('chase');
+    expect(calls.cameras).toEqual([true, true]);
+    expect(calls.frames).toEqual([true, true, true, true]);
+
+    boatState.paused = false;
+    const heldCounts = {
+      hud: calls.hud.length,
+      cameras: calls.cameras.length,
+      frames: calls.frames.length
+    };
+    expect(controls.setCoreCameraView('overhead')).toBe('overhead');
+    expect(boatState.cameraView).toBe('overhead');
+    expect(calls.hud).toHaveLength(heldCounts.hud);
+    expect(calls.cameras).toHaveLength(heldCounts.cameras);
+    expect(calls.frames).toHaveLength(heldCounts.frames);
+    expect(controls.repaintHeldScene({ weather: 'foggy' }, false)).toBe(false);
+
+    expect(source).toContain('var cameraView = applyCameraRig(false);');
+    expect(source).toContain('if (refreshCamera) applyCameraRig(true);');
+    expect(source).toContain('return setCoreTimeOfDay(tod);');
+    expect(source).toContain('return setCoreCameraView(view);');
+    expect(source).toContain('return setCoreWeather(w);');
+  });
+
+  it('pauses, checkpoints, and requires explicit resume across every inactivity boundary', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const lifecycleStart = source.indexOf('    var pausedForInactivity = false;');
+    const lifecycleEnd = source.indexOf('    function soundFogSignal()', lifecycleStart);
+    const boatState = { paused: false, throttle: 0.9 };
+    const calls = { releases: 0, pauses: [], checkpoints: [], statuses: [], announcements: [] };
+    const listeners = { document: {}, window: {} };
+    let hidden = false;
+    let focused = true;
+    let checkpointValue = { schemaVersion: 1 };
+
+    expect(lifecycleStart).toBeGreaterThan(-1);
+    expect(lifecycleEnd).toBeGreaterThan(lifecycleStart);
+
+    const documentStub = {
+      get hidden() { return hidden; },
+      hasFocus() { return focused; },
+      addEventListener(name, handler) { listeners.document[name] = handler; }
+    };
+    const windowStub = {
+      addEventListener(name, handler) { listeners.window[name] = handler; }
+    };
+    const lifecycle = new Function(
+      'boatState',
+      'releaseHeldControls',
+      'setPaused',
+      'emitVoyageCheckpoint',
+      'statusCb',
+      'flAnnounce',
+      'document',
+      'window',
+      source.slice(lifecycleStart, lifecycleEnd) +
+        '\nreturn { pauseForInactivity, onActivityReturn, onVisibilityChange, onPageHide };'
+    )(
+      boatState,
+      () => { calls.releases += 1; },
+      (paused, announce) => {
+        calls.pauses.push({ paused, announce });
+        boatState.paused = !!paused;
+        boatState.throttle = 0;
+        return true;
+      },
+      (reason, force) => {
+        calls.checkpoints.push({ reason, force });
+        return checkpointValue;
+      },
+      (payload) => calls.statuses.push(payload.text),
+      (message) => calls.announcements.push(message),
+      documentStub,
+      windowStub
+    );
+
+    expect(listeners.document.visibilitychange).toBe(lifecycle.onVisibilityChange);
+    expect(listeners.window.focus).toBe(lifecycle.onActivityReturn);
+    expect(listeners.window.pageshow).toBe(lifecycle.onActivityReturn);
+    expect(listeners.window.pagehide).toBe(lifecycle.onPageHide);
+
+    expect(lifecycle.pauseForInactivity('window-blur')).toBe(true);
+    expect(boatState).toEqual({ paused: true, throttle: 0 });
+    expect(calls.checkpoints.at(-1)).toEqual({ reason: 'window-blur', force: true });
+    expect(calls.statuses.at(-1)).toContain('Safe progress was saved');
+    expect(lifecycle.pauseForInactivity('window-blur')).toBe(false);
+    expect(calls.checkpoints).toHaveLength(1);
+
+    expect(lifecycle.onActivityReturn()).toBe(true);
+    expect(boatState.paused).toBe(true);
+    expect(calls.statuses.at(-1)).toContain('remains paused until you resume');
+    expect(calls.announcements.at(-1)).toContain('Press P or use Resume');
+
+    boatState.paused = true;
+    const manualStatusCount = calls.statuses.length;
+    expect(lifecycle.pauseForInactivity('window-blur')).toBe(false);
+    expect(lifecycle.onActivityReturn()).toBe(false);
+    expect(calls.statuses).toHaveLength(manualStatusCount);
+
+    boatState.paused = false;
+    boatState.throttle = 0.6;
+    hidden = true;
+    listeners.document.visibilitychange();
+    expect(boatState.paused).toBe(true);
+    expect(calls.checkpoints.at(-1)).toEqual({ reason: 'visibility', force: true });
+
+    hidden = false;
+    focused = false;
+    listeners.document.visibilitychange();
+    expect(calls.announcements).toHaveLength(1);
+    focused = true;
+    expect(listeners.window.focus()).toBe(true);
+    expect(calls.statuses.at(-1)).toContain('Tab active');
+
+    boatState.paused = false;
+    boatState.throttle = 0.4;
+    checkpointValue = null;
+    listeners.window.pagehide();
+    expect(calls.checkpoints.at(-1)).toEqual({ reason: 'pagehide', force: true });
+    expect(calls.statuses.at(-1)).toContain('most recent stable checkpoint is unchanged');
+    expect(listeners.window.pageshow()).toBe(true);
+    expect(boatState.paused).toBe(true);
+    expect(calls.pauses).toEqual([
+      { paused: true, announce: false },
+      { paused: true, announce: false },
+      { paused: true, announce: false }
+    ]);
+    expect(source).toContain("pauseForInactivity('window-blur');");
   });
 
   it('locks resume and exposes persistent recovery guidance while graphics are unavailable', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
     const pauseStart = source.indexOf('    function setPaused(paused, announce)');
-    const pauseEnd = source.indexOf('    var pausedForVisibility', pauseStart);
+    const pauseEnd = source.indexOf('    var pausedForInactivity', pauseStart);
     const boatState = { paused: true, throttle: 0.8 };
     const statuses = [];
     const announcements = [];
@@ -1216,8 +1522,7 @@ describe('Fisher Lab simulator safeguards', () => {
       'releaseHeldControls',
       'statusCb',
       'flAnnounce',
-      'hudCb',
-      'lastHud',
+      'publishHudPatch',
       'emitVoyageCheckpoint',
       'var contextLost = true;\n' + source.slice(pauseStart, pauseEnd) + '\nreturn setPaused;'
     )(
@@ -1226,7 +1531,6 @@ describe('Fisher Lab simulator safeguards', () => {
       (payload) => statuses.push(payload.text),
       (message) => announcements.push(message),
       () => { hudUpdates += 1; },
-      { paused: true },
       () => { checkpoints += 1; }
     );
 
@@ -1332,6 +1636,10 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('if (document.activeElement !== canvas) return;');
     expect(source).toContain("window.addEventListener('blur', onWindowBlur)");
     expect(source).toContain("window.removeEventListener('blur', onWindowBlur)");
+    expect(source).toContain("window.addEventListener('focus', onActivityReturn)");
+    expect(source).toContain("window.removeEventListener('focus', onActivityReturn)");
+    expect(source).toContain("window.addEventListener('pageshow', onActivityReturn)");
+    expect(source).toContain("window.removeEventListener('pageshow', onActivityReturn)");
     expect(source).toContain('function cancelHeldControlPulse(key)');
     expect(source).toContain("document.addEventListener('visibilitychange', onVisibilityChange)");
     expect(source).toContain("document.removeEventListener('visibilitychange', onVisibilityChange)");

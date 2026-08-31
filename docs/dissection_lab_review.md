@@ -1,10 +1,18 @@
 # Virtual Dissection Lab improvement review
 
-Updated: 2026-08-28
+Updated: 2026-08-31
 
 ## Implemented
 
 - Progress now loads and saves per specimen, including revealed layers, explored structures, assessment totals, active layer, annotations, investigation time, evidence notes, confidence ratings, and objectives.
+- Debounced progress writes are keyed per specimen. A specimen switch flushes the departing record before loading the next one, reset cancels pending pre-reset writes so deleted progress cannot be recreated, and pending writes flush when the page is hidden or closed.
+- A visible, polite save-health indicator reports saved, storage-limited, failed, and recovered states. If image-heavy evidence exceeds browser storage, the lab retries with the newest frame and then with text-only evidence so notes, procedure state, inquiry work, and assessment progress are retained whenever possible.
+- Evidence capture no longer silently evicts the oldest frame when the six-frame notebook is full. Learners are directed to download or remove a frame first, and duplicate millisecond capture IDs are avoided.
+- The evidence notebook now supports confirmed per-frame removal and confirmed clear-all cleanup. Reference selection is repaired after deletion, notes and non-image progress are preserved, focus returns to the notebook, and incomplete legacy frame metadata receives readable fallback labels.
+- Delayed layer-reveal work is now owned and cancelable. Switching specimens, confirming reset, or unmounting the canvas clears pending reveal and transition timers so progress, XP, and visual state cannot leak into another specimen or reappear after reset.
+- Technique comparison replay honors both the in-tool and operating-system reduced-motion preferences by showing a static full-path frame, and replay progress no longer produces dozens of live-region announcements.
+- Timed-practical answers keep explanations hidden for both correct and incorrect responses, removing a correctness side channel and accurately describing when feedback is withheld.
+- Lab report, structure information, and completion-summary copy actions now report success only after the Clipboard API resolves; unavailable or rejected access produces visible, announced failure feedback.
 - Specimen switching clears transient state before restoring that specimen's saved progress. Reset affects only the current specimen.
 - Quiz order and distractors are deterministic within a session instead of changing during render. Questions alternate between function and diagram-location evidence.
 - Learners can answer by accessible multiple choice or by selecting a structure on the canvas. Timed practical mode uses the live score and cleans up its timer.
@@ -26,7 +34,7 @@ Focused Vitest coverage lives in:
 - `tests/dissection_lab_improvements.test.js`
 - `tests/stem_widgets_smoke.test.js`
 
-The source and deployment mirror are expected to remain byte-identical:
+The source and deployment mirror are enforced as byte-identical by the focused regression suite:
 
 - `stem_lab/stem_tool_dissection.js`
 - `desktop/web-app/public/stem_lab/stem_tool_dissection.js`

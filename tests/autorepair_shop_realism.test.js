@@ -49,6 +49,7 @@ describe.each([CANONICAL, MIRROR])('Auto Repair realism source: %s', (path) => {
     expect(source).toContain("'hood-weather-seal-' + sealIndex");
     expect(source).toContain("hoodLatch.name = 'hood-latch-striker'");
     expect(source).toContain("hoodWorkLight.name = 'hood-mounted-task-light'");
+    expect(source).toContain("hoodServiceDecal.name = 'hood-service-information-decal'");
   });
 
   it('makes the engine state visually meaningful without bypassing reduced motion', () => {
@@ -58,8 +59,39 @@ describe.each([CANONICAL, MIRROR])('Auto Repair realism source: %s', (path) => {
     expect(source).toContain("beltMarker.name = 'belt-witness-mark'");
     expect(source).toContain('frame: engineRunning && !api.reduced ? function (now)');
     expect(source).toContain('var idle = Math.sin(now * 0.034) * 0.0035');
-    expect(source).toContain("sceneKey: 'repair-bay-' + engine");
-    expect(source).toContain("sceneProps: { engineRunning: engine === 'running' }");
+    expect(source).toContain("sceneKey: 'repair-bay-' + kase.id + '-' + engine");
+    expect(source).toContain("sceneProps: { engineRunning: engine === 'running', caseId: kase.id, openPart: openPart }");
+  });
+
+  it('turns authored repair-case evidence into faithful scene behavior', () => {
+    expect(source).toContain("var repairCaseId = api.sceneProps && typeof api.sceneProps.caseId === 'string'");
+    expect(source).toContain("coolingFan.userData.faultState = repairCaseId === 'overheat'");
+    expect(source).toContain("if (coolingFan && repairCaseId !== 'overheat')");
+    expect(source).toContain("glazedBeltSurface.name = 'glazed-belt-surface'");
+    expect(source).toContain("'worn-belt-crack-' + beltCrackIndex");
+    expect(source).toContain("'positive-terminal-corrosion-' + corrosionIndex");
+    expect(source).toContain("fluid.name = lowCoolantEvidence ? 'coolant-below-min-level'");
+    expect(source).toContain("capSludge.name = 'oil-cap-milky-sludge'");
+  });
+
+  it('builds a supported, serviceable cooling pack instead of floating parts', () => {
+    expect(source).toContain("fanShroud.name = 'radiator-fan-shroud'");
+    expect(source).toContain("fanMotor.name = 'radiator-fan-motor'");
+    expect(source).toContain("fanConnector.name = 'radiator-fan-electrical-connector'");
+    expect(source).toContain("'radiator-fan-shroud-mount-' + shroudMountIndex");
+    expect(source).toContain("'radiator-side-tank-' +");
+    expect(source).toContain("fillerNeck.name = 'radiator-filler-neck'");
+    expect(source).toContain("drainCock.name = 'radiator-drain-cock'");
+    expect(source).toContain("'radiator-mount-fastener-' + radiatorSupportIndex");
+  });
+
+  it('adds geometric service markings that remain visible without textures', () => {
+    expect(source).toContain("oilCanMark.name = 'oil-cap-oil-can-symbol'");
+    expect(source).toContain("positivePolarity.name = 'battery-positive-polarity-mark'");
+    expect(source).toContain("negativePolarity.name = 'battery-negative-polarity-mark'");
+    expect(source).toContain("coolantWarningCollar.name = 'coolant-cold-warning-collar'");
+    expect(source).toContain("washerCapMark.name = 'washer-cap-spray-symbol'");
+    expect(source).toContain("band.name = p.id + '-level-band-'");
   });
 
   it('adds component-level material and identification cues', () => {
@@ -79,6 +111,30 @@ describe.each([CANONICAL, MIRROR])('Auto Repair realism source: %s', (path) => {
     expect(source).toContain("'valve-cover-fastener-' + engineBoltIndex");
     expect(source).toContain("'intake-manifold-runner-' + runnerIndex");
     expect(source).toContain("'heat-shield-fastener-' + shieldDimpleIndex");
+  });
+
+  it('models service inspections with semantic geometry and fault metadata', () => {
+    expect(source).toContain("var openPart = api.sceneProps && typeof api.sceneProps.openPart === 'string'");
+    expect(source).toContain("stickAssembly.name = 'dipstick-pull-assembly'");
+    expect(source).toContain("stickAssembly.userData.inspectionState = dipstickPulled ? 'pulled' : 'seated'");
+    expect(source).toContain("minMark.name = 'dipstick-min-mark'");
+    expect(source).toContain("maxMark.name = 'dipstick-max-mark'");
+    expect(source).toContain("oilFilm.name = 'dipstick-oil-film'");
+    expect(source).toContain("oilFilm.userData.faultState = milkyOil ? 'milky'");
+    expect(source).toContain("fuseLid.name = 'fusebox-lid-pivot'");
+    expect(source).toContain("fuseMap.name = 'fusebox-lid-map'");
+    expect(source).toContain("fuseTray.name = 'fusebox-fuse-tray'");
+    expect(source).toContain("? 'fusebox-cooling-fan-fuse'");
+    expect(source).toContain("fuseAssembly.userData.faultState = blownFuse ? 'blown' : 'intact'");
+  });
+
+  it('rebuilds inspection content from explicit under-hood and case state', () => {
+    expect(source).toContain("sceneKey: 'underhood-inspection-' + (openPart || 'closed')");
+    expect(source).toContain('sceneProps: { openPart: openPart }');
+    expect(source).toContain("sceneKey: 'repair-bay-' + kase.id + '-' + engine + '-' + (openPart || 'closed')");
+    expect(source).toContain("sceneProps: { engineRunning: engine === 'running', caseId: kase.id, openPart: openPart }");
+    expect(source).toContain("var openPart = (d.uhOpenPart === 'fusebox' || d.uhOpenPart === 'dipstick')");
+    expect(source).toContain("var openPart = (d.rbOpenPart === 'fusebox' || d.rbOpenPart === 'dipstick')");
   });
 
   it('replaces the blocky roadside car and wheels with layered assemblies', () => {

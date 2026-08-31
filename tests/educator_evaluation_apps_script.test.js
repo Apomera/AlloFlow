@@ -186,6 +186,19 @@ describe('Educator Evaluation Apps Script concurrency and append-only records', 
 
     workspaceFile.setContent = originalSetContent;
     harness.setActiveEmail(EVALUATOR);
+    const stillCanonical = harness.invoke('bootstrap');
+    expect(stillCanonical.revision).toBe(before.revision);
+    expect(stillCanonical.workspace.walkthroughs.find(item => item.id === 'walk-t1-private').evidence).toBe('Private evaluator draft.');
+    expect(harness.properties.get('EE_COMMIT_RECOVERY_REQUIRED')).toBe('1');
+
+    harness.setActiveEmail(ADMIN);
+    const review = harness.invoke('reviewPortalWorkspaceIntegrity').review;
+    expect(harness.invoke('reconcilePortalWorkspaceIntegrity', {
+      reviewToken: review.token,
+      acknowledgeRepair: true,
+    })).toMatchObject({ ok: true, status: 'completed', recoveryPending: false });
+
+    harness.setActiveEmail(EVALUATOR);
     const recovered = harness.invoke('bootstrap');
     expect(recovered.revision).toBe(before.revision + 1);
     expect(recovered.workspace.walkthroughs.find(item => item.id === 'walk-t1-private').evidence).toBe('Journaled evidence awaiting primary commit recovery.');

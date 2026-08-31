@@ -28,26 +28,26 @@ exports[`science-sim + studio render goldens > renders + pins a digest for anato
 
 exports[`science-sim + studio render goldens > renders + pins a digest for archStudio [ssr] 1`] = `
 {
-  "buttons": 93,
+  "buttons": 94,
   "canvases": 1,
   "inputs": 2,
-  "lengthBucket": 153,
+  "lengthBucket": 173,
   "paths": 0,
   "selects": 0,
-  "sha": "8d647fe4a2dd2c2a",
+  "sha": "64abca02b9c10a9a",
   "svgs": 0,
 }
 `;
 
 exports[`science-sim + studio render goldens > renders + pins a digest for artStudio [ssr] 1`] = `
 {
-  "buttons": 9,
+  "buttons": 12,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 38,
+  "lengthBucket": 59,
   "paths": 0,
   "selects": 0,
-  "sha": "46bdae1c6dffb55c",
+  "sha": "f59f4929543b07d1",
   "svgs": 0,
 }
 `;
@@ -255,7 +255,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for molec
   "lengthBucket": 180,
   "paths": 0,
   "selects": 0,
-  "sha": "8067115a5dc97db4",
+  "sha": "5d2494d7665a816a",
   "svgs": 1,
 }
 `;
@@ -317,10 +317,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rocks
   "buttons": 10,
   "canvases": 1,
   "inputs": 0,
-  "lengthBucket": 33,
+  "lengthBucket": 35,
   "paths": 0,
   "selects": 0,
-  "sha": "6fdc7c0e1d1ab040",
+  "sha": "2a4f428beda17d38",
   "svgs": 0,
 }
 `;

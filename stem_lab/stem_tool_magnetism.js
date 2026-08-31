@@ -3005,6 +3005,53 @@
     return metrics;
   }
 
+  // Normalize the visual state of every shared range control without changing
+  // the saved experiment value. This keeps decimal steps crisp, makes negative
+  // ranges fill correctly, and gives restored/partial projects a safe display.
+  function rangePresentationState(valueInput, minInput, maxInput, stepInput) {
+    var min = Number(minInput), max = Number(maxInput), value = Number(valueInput), step = Number(stepInput);
+    if (!Number.isFinite(min)) min = 0;
+    if (!Number.isFinite(max)) max = min + 1;
+    if (max < min) { var swap = min; min = max; max = swap; }
+    if (max === min) max = min + 1;
+    if (!Number.isFinite(value)) value = min;
+    value = Math.max(min, Math.min(max, value));
+    if (!Number.isFinite(step) || step <= 0) step = 1;
+
+    var stepText = String(step).toLowerCase();
+    var precision = 0;
+    if (stepText.indexOf('e-') !== -1) precision = Math.min(6, Number(stepText.split('e-')[1]) || 0);
+    else if (stepText.indexOf('.') !== -1) precision = Math.min(6, stepText.split('.')[1].length);
+    function displayNumber(number) {
+      var factor = Math.pow(10, precision);
+      var rounded = Math.round((number + Number.EPSILON) * factor) / factor;
+      if (Object.is(rounded, -0)) rounded = 0;
+      return String(rounded);
+    }
+    var percent = Math.max(0, Math.min(100, (value - min) / (max - min) * 100));
+    var percentText = percent.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '%';
+    return {
+      value: value, min: min, max: max, step: step,
+      valueDisplay: displayNumber(value), minDisplay: displayNumber(min), maxDisplay: displayNumber(max),
+      percent: percent, percentCss: percentText,
+      edge: percent <= 1 ? 'start' : percent >= 99 ? 'end' : 'middle'
+    };
+  }
+
+  // Give every experiment region a deterministic heading relationship. The
+  // short hash prevents similar titles from colliding while keeping the DOM id
+  // readable for diagnostics and stable across rerenders or restored projects.
+  function fieldCardTitleId(titleInput) {
+    var text = String(titleInput || 'Magnetism investigation').trim();
+    var slug = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 44) || 'investigation';
+    var hash = 2166136261;
+    for (var index = 0; index < text.length; index++) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return 'mag-card-title-' + slug + '-' + (hash >>> 0).toString(36);
+  }
+
   // Compare the current station readouts with the newest saved value for the
   // same measurement. This is display-only derived state: older projects with
   // text-only notebook trials simply begin with a fresh baseline, while newer
@@ -3349,7 +3396,8 @@
         ind3dCoilRadius: 1.25, ind3dCoilYaw: 0, ind3dCoilPitch: 0, ind3dTurns: 80,
         ind3dStepTime: 0.5, ind3dFlux: 0, ind3dEMF: 0, ind3dTrace: [], ind3dTrialMsg: '',
         // Learning mode + investigation notebook
-        learningMode: 'guided', missionId: 'power_path', missionStarted: false, missionSeen: false, missionPanelOpen: false, labFocus: false, magLastChange: null, magChangeSeq: 0, notebookOpen: false, notebookPrediction: '', notebookClaim: '', replaySelectedIndex: null,
+        learningMode: 'guided', missionId: 'power_path', missionStarted: false, missionSeen: false, missionPanelOpen: false, labFocus: false,
+        labShellPanel: '', labShellMenuOpen: false, magLastChange: null, magChangeSeq: 0, notebookOpen: false, notebookPrediction: '', notebookClaim: '', replaySelectedIndex: null,
         notebookTrials: [], notebookUsed: false, forceBenchUsed: false, lorentzUsed: false,
         // Earth
         earthSeen: false, declination: 12, earthSolarWind: 5, earthShieldBaseline: null, earthShieldPrediction: null, earthShieldResultSeen: false, earthShieldRuns: 0, earthView: '2d', earth3dStatus: 'loading', earth3dAttempt: 0, earth3dUsed: false, earth3dFieldLines: true, earth3dBoundary: true, earth3dBelts: true, earth3dWind: true, earth3dReference: true, earth3dMotion: false,
@@ -3434,8 +3482,14 @@
       }
 
       function card(title, children, accent) {
-        return h('div', { className: 'mag-card', role: 'region', 'aria-label': typeof title === 'string' ? title : undefined, style: { '--mag-accent': accent || '#f43f5e', padding: 14, borderRadius: 12, background: PANEL, border: '1px solid ' + BORDER, borderLeft: '3px solid ' + (accent || '#f43f5e'), marginBottom: 12 } },
-          title ? h('h3', { className: 'mag-card-title', style: { fontSize: 14, fontWeight: 800, color: TEXT, margin: '0 0 8px' } }, title) : null,
+        var titleId = title ? fieldCardTitleId(title) : null;
+        return h('div', { className: 'mag-card', role: title ? 'region' : undefined,
+            'aria-label': typeof title === 'string' ? title : undefined,
+            'aria-labelledby': titleId || undefined, 'data-magnetism-field-card': 'true',
+            style: { '--mag-accent': accent || '#f43f5e' } },
+          title ? h('div', { className: 'mag-card-head' },
+            h('span', { className: 'mag-card-signal', 'aria-hidden': 'true' }, h('i'), h('i')),
+            h('h3', { id: titleId, className: 'mag-card-title' }, title)) : null,
           children);
       }
 
@@ -3447,6 +3501,39 @@
           '.mag-root button{min-height:36px}' +
           '.mag-root button:disabled{cursor:not-allowed!important;opacity:.55}' +
           '.mag-root button:disabled:hover{transform:none!important}' +
+          '.mag-root .mag-card{--mag-accent:#f43f5e;position:relative;isolation:isolate;padding:14px;border:1px solid ' + BORDER + ';border-left:3px solid var(--mag-accent);border-radius:14px;background-color:' + PANEL + ';background-image:radial-gradient(circle at 100% 0,color-mix(in srgb,var(--mag-accent) 11%,transparent),transparent 36%),linear-gradient(145deg,color-mix(in srgb,var(--mag-accent) 4%,' + PANEL + '),' + PANEL + ' 62%);box-shadow:0 9px 24px rgba(2,6,23,.13),inset 0 1px 0 rgba(255,255,255,.025);margin-bottom:12px;animation:mag-card-enter .28s ease-out both;transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease}' +
+          '.mag-root .mag-card:before{content:"";position:absolute;z-index:0;inset:0 0 auto;height:2px;border-radius:14px 14px 0 0;background:linear-gradient(90deg,var(--mag-accent),color-mix(in srgb,var(--mag-accent) 46%,#38bdf8),transparent 82%);pointer-events:none}.mag-root .mag-card>*{position:relative;z-index:1}' +
+          '.mag-root .mag-card-head{display:flex;align-items:center;gap:8px;min-width:0;margin:0 0 10px}.mag-root .mag-card-head:after{content:"";flex:1 1 28px;min-width:18px;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--mag-accent) 58%,' + BORDER + '),transparent)}' +
+          '.mag-root .mag-card-title{flex:0 1 auto;min-width:0;margin:0;color:' + TEXT + ';font-size:14px;font-weight:850;line-height:1.25;letter-spacing:.005em}' +
+          '.mag-root .mag-card-signal{position:relative;display:grid;place-items:center;flex:0 0 auto;width:29px;height:29px;border:1px solid color-mix(in srgb,var(--mag-accent) 42%,' + BORDER + ');border-radius:9px;background:color-mix(in srgb,var(--mag-accent) 9%,' + INSTRUMENT + ');box-shadow:inset 0 0 12px color-mix(in srgb,var(--mag-accent) 8%,transparent)}' +
+          '.mag-root .mag-card-signal:before{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--mag-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-accent) 12%,transparent),0 0 8px color-mix(in srgb,var(--mag-accent) 52%,transparent)}' +
+          '.mag-root .mag-card-signal i{position:absolute;width:21px;height:10px;border:1px solid var(--mag-accent);border-left-color:transparent;border-right-color:transparent;border-radius:50%;opacity:.55;animation:mag-card-field-pulse 2.8s ease-in-out infinite}.mag-root .mag-card-signal i:last-child{width:10px;height:21px;animation-delay:.42s;opacity:.35}' +
+          '@keyframes mag-card-enter{0%{opacity:.62;transform:translateY(3px)}100%{opacity:1;transform:translateY(0)}}@keyframes mag-card-field-pulse{0%,100%{opacity:.28}50%{opacity:.82}}' +
+          '@media(hover:hover){.mag-root .mag-card:hover{box-shadow:0 13px 30px rgba(2,6,23,.18),0 0 0 1px color-mix(in srgb,var(--mag-accent) 8%,transparent),inset 0 1px 0 rgba(255,255,255,.035)}.mag-root .mag-card:hover .mag-card-signal:before{box-shadow:0 0 0 4px color-mix(in srgb,var(--mag-accent) 15%,transparent),0 0 11px color-mix(in srgb,var(--mag-accent) 62%,transparent)}}' +
+          '@media(max-width:420px){.mag-root .mag-card{padding:11px;border-radius:12px}.mag-root .mag-card-head{gap:7px;margin-bottom:8px}.mag-root .mag-card-signal{width:27px;height:27px;border-radius:8px}.mag-root .mag-card-title{font-size:13px}.mag-root .mag-card-head:after{min-width:10px}}' +
+          '@media(forced-colors:active){.mag-root .mag-card:before{background:CanvasText}.mag-root .mag-card-signal{border-color:CanvasText}.mag-root .mag-card-signal:before{background:Highlight}.mag-root .mag-card-signal i{border-color:CanvasText transparent}}' +
+          '.mag-root .mag-range{--mag-range-tone:var(--mag-accent,var(--mag-active));--mag-range-fill:0%;position:relative;margin:0 0 10px;padding:9px 10px 7px;border:1px solid color-mix(in srgb,var(--mag-range-tone) 18%,' + BORDER + ');border-radius:11px;background:linear-gradient(145deg,color-mix(in srgb,var(--mag-range-tone) 5%,' + INSTRUMENT + '),' + INSTRUMENT + ' 64%);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:border-color .16s ease,box-shadow .16s ease,background .16s ease}' +
+          '.mag-root .mag-range:not([data-disabled=true]):hover{border-color:color-mix(in srgb,var(--mag-range-tone) 42%,' + BORDER + ');box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 5px 16px rgba(2,6,23,.1)}' +
+          '.mag-root .mag-range:focus-within{border-color:var(--mag-range-tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-range-tone) 12%,transparent)}' +
+          '.mag-root .mag-range-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}' +
+          '.mag-root .mag-range-label{min-width:0;color:' + TEXT + ';font-size:12px;font-weight:780;line-height:1.25}' +
+          '.mag-root .mag-range-value{display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;min-width:48px;min-height:25px;padding:3px 7px;border:1px solid color-mix(in srgb,var(--mag-range-tone) 32%,' + BORDER + ');border-radius:8px;background:color-mix(in srgb,var(--mag-range-tone) 8%,' + PANEL + ');color:' + TEXT + ';font-size:11.5px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}' +
+          '.mag-root .mag-range-value:before{content:"";width:6px;height:6px;flex:0 0 auto;border-radius:50%;background:var(--mag-range-tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-range-tone) 13%,transparent)}' +
+          '.mag-root .mag-range-input{display:block;width:100%;height:30px;margin:2px 0 0;padding:0;-webkit-appearance:none;appearance:none;border:0;background:transparent;box-sizing:border-box;cursor:pointer;touch-action:pan-y}' +
+          '.mag-root .mag-range-input::-webkit-slider-runnable-track{height:7px;border:1px solid color-mix(in srgb,var(--mag-range-tone) 22%,' + BORDER + ');border-radius:999px;background:linear-gradient(90deg,var(--mag-range-tone) 0,var(--mag-range-tone) var(--mag-range-fill),rgba(148,163,184,.18) var(--mag-range-fill),rgba(148,163,184,.18) 100%);box-shadow:inset 0 1px 2px rgba(2,6,23,.3)}' +
+          '.mag-root .mag-range-input::-webkit-slider-thumb{width:21px;height:21px;margin-top:-7px;-webkit-appearance:none;appearance:none;border:2px solid ' + PANEL + ';border-radius:50%;background:var(--mag-range-tone);box-shadow:0 0 0 1px color-mix(in srgb,var(--mag-range-tone) 72%,' + BORDER + '),0 4px 10px rgba(2,6,23,.3);transition:transform .14s ease,box-shadow .14s ease}' +
+          '.mag-root .mag-range:not([data-disabled=true]) .mag-range-input:hover::-webkit-slider-thumb{transform:scale(1.1);box-shadow:0 0 0 4px color-mix(in srgb,var(--mag-range-tone) 13%,transparent),0 4px 11px rgba(2,6,23,.35)}' +
+          '.mag-root .mag-range-input::-moz-range-track{height:7px;border:1px solid ' + BORDER + ';border-radius:999px;background:rgba(148,163,184,.18);box-shadow:inset 0 1px 2px rgba(2,6,23,.3)}' +
+          '.mag-root .mag-range-input::-moz-range-progress{height:7px;border-radius:999px;background:var(--mag-range-tone)}' +
+          '.mag-root .mag-range-input::-moz-range-thumb{width:18px;height:18px;border:2px solid ' + PANEL + ';border-radius:50%;background:var(--mag-range-tone);box-shadow:0 0 0 1px color-mix(in srgb,var(--mag-range-tone) 72%,' + BORDER + '),0 4px 10px rgba(2,6,23,.3);transition:transform .14s ease,box-shadow .14s ease}' +
+          '.mag-root .mag-range:not([data-disabled=true]) .mag-range-input:hover::-moz-range-thumb{transform:scale(1.1);box-shadow:0 0 0 4px color-mix(in srgb,var(--mag-range-tone) 13%,transparent),0 4px 11px rgba(2,6,23,.35)}' +
+          '.mag-root .mag-range-input:focus-visible{outline:3px solid #fbbf24;outline-offset:1px;border-radius:999px}' +
+          '.mag-root .mag-range-scale{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:-2px;color:' + SOFT + ';font-size:8.5px;font-weight:750;font-variant-numeric:tabular-nums;line-height:1.1}' +
+          '.mag-root .mag-range-scale>span:last-child{text-align:right}.mag-root .mag-range-hint{color:color-mix(in srgb,var(--mag-range-tone) 68%,' + SOFT + ');font-size:7.5px;font-weight:900;letter-spacing:.075em;text-transform:uppercase}' +
+          '.mag-root .mag-range[data-disabled=true]{--mag-range-tone:#94a3b8;border-style:dashed;background:rgba(148,163,184,.035)}.mag-root .mag-range[data-disabled=true] .mag-range-input{cursor:not-allowed;opacity:.55}.mag-root .mag-range[data-disabled=true] .mag-range-value{opacity:.72}' +
+          '@media(pointer:coarse){.mag-root .mag-range-input{height:38px}.mag-root .mag-range-input::-webkit-slider-runnable-track{height:9px}.mag-root .mag-range-input::-webkit-slider-thumb{width:25px;height:25px;margin-top:-8px}.mag-root .mag-range-input::-moz-range-track,.mag-root .mag-range-input::-moz-range-progress{height:9px}.mag-root .mag-range-input::-moz-range-thumb{width:22px;height:22px}}' +
+          '@media(max-width:420px){.mag-root .mag-range{padding:8px 9px 6px}.mag-root .mag-range-head{gap:7px}.mag-root .mag-range-label{font-size:11px}.mag-root .mag-range-value{min-width:43px;padding:3px 6px;font-size:10.5px}.mag-root .mag-range-hint{font-size:7px}}' +
+          '@media(forced-colors:active){.mag-root .mag-range{box-shadow:none}.mag-root .mag-range-input::-webkit-slider-runnable-track{background:Canvas;border-color:CanvasText}.mag-root .mag-range-input::-webkit-slider-thumb{background:Highlight;border-color:Canvas}.mag-root .mag-range-input::-moz-range-track{background:Canvas;border-color:CanvasText}.mag-root .mag-range-input::-moz-range-progress,.mag-root .mag-range-input::-moz-range-thumb{background:Highlight}.mag-root .mag-range-value:before{background:Highlight}}' +
           '.mag-root .mag-pole-key{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 9px;color:' + SOFT + ';font-size:11.5px}' +
           '.mag-root .mag-pole-key span{display:inline-flex;align-items:center;gap:5px}' +
           '.mag-root .mag-pole-chip{display:inline-grid;place-items:center;width:22px;height:22px;border:2px solid currentColor;border-radius:5px;color:' + TEXT + ';font-style:normal;font-size:11px;font-weight:800}' +
@@ -3847,6 +3934,17 @@
           '@media(max-width:640px){.mag-root .mag-station{grid-template-columns:1fr 1fr}.mag-root .mag-station-main{grid-column:1/-1}.mag-root .mag-cycle{border-left:0;border-top:2px solid ' + BORDER + '}.mag-root .mag-cycle:last-child{grid-column:1/-1}.mag-root .mag-passport{margin-left:-4px;margin-right:-4px}.mag-root .mag-tabs button{flex:0 0 auto}.mag-root .mag-lab-context{flex-basis:100%}}' +
           '@media(max-width:480px){.mag-root .mag-guide>summary{grid-template-columns:auto minmax(0,1fr) auto}.mag-root .mag-guide-route{display:none}.mag-root .mag-hunt-step{padding:0 2px}.mag-root .mag-hunt-step small{display:none}.mag-root .mag-hunt-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}.mag-root .mag-hunt-next{align-items:start}.mag-root .mag-fair-flow{grid-template-columns:1fr}.mag-root .mag-fair-change{grid-template-columns:auto minmax(0,1fr);place-content:initial;justify-items:start;align-items:center;text-align:left}.mag-root .mag-fair-change i{transform:rotate(90deg)}.mag-root .mag-speed-actions button{flex:1 1 120px}.mag-root .mag-maze-metrics{grid-template-columns:1fr 1fr}.mag-root .mag-maze-metric:last-child{grid-column:1/-1}.mag-root .mag-crane-ledger{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-crane-metrics{grid-template-columns:1fr 1fr}.mag-root .mag-crane-metric:last-child{grid-column:1/-1}.mag-root .mag-crane-predict button{flex:1 1 130px}.mag-root .mag-xfmr-goals{grid-template-columns:1fr}.mag-root .mag-xfmr-missions button{flex:1 1 135px}}' +
           '@media(max-width:390px){.mag-root .mag-station{grid-template-columns:1fr}.mag-root .mag-cycle:last-child{grid-column:auto}.mag-root .mag-speed-grid{grid-template-columns:1fr 1fr}.mag-root .mag-speed-run:last-child{grid-column:1/-1}}' +
+          '.mag-root .mag-adaptive-shell{--mag-shell-tone:#38bdf8;position:relative;overflow:hidden;margin:0 0 8px;border:1px solid ' + BORDER + ';border-radius:16px;background:radial-gradient(circle at 5% 0,rgba(56,189,248,.13),transparent 36%),' + PANEL + ';box-shadow:0 12px 28px rgba(2,6,23,.18)}.mag-root .mag-adaptive-shell:after{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--mag-shell-tone),#fbbf24,#f43f5e,transparent 88%)}.mag-root .mag-shell-main{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(200px,280px);gap:12px;align-items:center;padding:14px 15px 10px}.mag-root .mag-shell-emblem{display:grid;place-items:center;width:56px;height:56px;border:1px solid ' + BORDER + ';border-radius:16px;background:' + INSTRUMENT + '}.mag-root .mag-shell-emblem svg{width:50px;height:50px}.mag-root .mag-shell-orbit{fill:none;stroke:var(--mag-shell-tone);opacity:.6;transform-origin:32px 32px;animation:mag-shell-orbit 9s linear infinite}.mag-root .orbit-b{stroke:#fbbf24;animation-direction:reverse}.mag-root .mag-shell-pole.n{fill:#f43f5e}.mag-root .mag-shell-pole.s{fill:#3b82f6}.mag-root .mag-shell-spark{fill:#fbbf24}' +
+          '.mag-root .mag-shell-copy{min-width:0}.mag-root .mag-shell-copy>small{color:var(--mag-shell-tone);font-size:10.5px;font-weight:900;text-transform:uppercase}.mag-root .mag-shell-copy h2{overflow:hidden;margin:2px 0;color:' + TEXT + ';font-size:19px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}.mag-root .mag-shell-copy p{margin:4px 0 0;color:' + SOFT + ';font-size:12.5px;line-height:1.4}.mag-root .mag-shell-copy p b{color:' + TEXT + '}.mag-root .mag-shell-status{padding:9px;border:1px solid ' + BORDER + ';border-radius:11px;background:' + INSTRUMENT + ';color:' + SOFT + ';font-size:10px}.mag-root .mag-shell-status-head{display:flex;justify-content:space-between;gap:8px;font-size:10.5px}.mag-root .mag-shell-status-head b{color:' + TEXT + ';font-size:12px}.mag-root .mag-shell-status progress{display:block;width:100%;height:7px;margin:6px 0;accent-color:var(--mag-shell-tone)}.mag-root .mag-shell-status>small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+          '.mag-root .mag-shell-actions{display:grid;grid-template-columns:1.3fr .75fr .75fr;gap:7px;padding:0 15px 12px}.mag-root .mag-shell-actions>button{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center;min-width:0;min-height:48px;padding:7px 10px!important;text-align:left}.mag-root .mag-shell-actions>button>span:first-child{font-size:17px}.mag-root .mag-shell-actions small,.mag-root .mag-shell-actions b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mag-root .mag-shell-actions small{color:' + SOFT + ';font-size:10px}.mag-root .mag-shell-actions b{font-size:12.5px}.mag-root .mag-shell-next{background:' + ACTIVE + '!important;box-shadow:0 7px 16px rgba(2,6,23,.16)!important}.mag-root .mag-shell-next small{color:rgba(255,255,255,.78)}' +
+          '.mag-root .mag-shell-journey{height:4px;background:rgba(148,163,184,.12)}.mag-root .mag-shell-journey span{display:block;height:100%;background:linear-gradient(90deg,var(--mag-shell-tone),#fbbf24,#34d399)}.mag-root .mag-shell-menu{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:0 15px 12px;animation:mag-shell-menu-in .2s ease-out}.mag-root .mag-shell-menu-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;align-items:center;min-width:0;padding:7px 8px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + ';color:' + TEXT + ';text-align:left}.mag-root .mag-shell-menu-item[aria-pressed="true"]{border-color:var(--mag-menu-tone)}.mag-root .mag-shell-menu-item b,.mag-root .mag-shell-menu-item small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mag-root .mag-shell-menu-item b{font-size:12px}.mag-root .mag-shell-menu-item small{color:' + SOFT + ';font-size:10px}.mag-root .mag-shell-menu-item i{color:var(--mag-menu-tone);font-style:normal}' +
+          '.mag-root .mag-shell-panel-frame[hidden]{display:none!important}.mag-root .mag-shell-panel-frame{margin:0 0 10px;padding:10px;border:1px solid ' + BORDER + ';border-radius:14px;background:' + PANEL + ';box-shadow:0 8px 20px rgba(2,6,23,.14);scroll-margin-top:72px}.mag-root .mag-shell-panel-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid ' + BORDER + '}.mag-root .mag-shell-panel-icon{font-size:17px}.mag-root .mag-shell-panel-head small,.mag-root .mag-shell-panel-head b{display:block}.mag-root .mag-shell-panel-head small{color:var(--mag-shell-panel-tone);font-size:9.5px;font-weight:900;text-transform:uppercase}.mag-root .mag-shell-panel-head b{color:' + TEXT + ';font-size:14px}.mag-root .mag-shell-panel-frame>:last-child{margin-bottom:0}.mag-root .mag-passport.is-shell-passport{margin-bottom:9px;box-shadow:0 6px 16px rgba(2,6,23,.15)}.mag-root .mag-passport.is-shell-passport .mag-passport-head{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.mag-root .mag-passport.is-shell-passport .mag-tabs{padding:6px}.mag-root .mag-passport.is-shell-passport .mag-station-tab{min-width:112px;min-height:45px;padding:5px 7px 8px}.mag-root .mag-passport.is-shell-passport .mag-station-tab-copy b{font-size:12px}.mag-root .mag-passport.is-shell-passport .mag-station-tab-copy small{display:none}.mag-root .mag-passport.is-shell-passport .mag-station-tab-count{font-size:10px}' +
+          '.mag-root .mag-lab-toolbar.is-signal-only{display:block;padding:0;margin:0 0 8px;border:0;background:transparent}.mag-root .mag-lab-toolbar.is-signal-only .mag-causal-strip{padding:8px}.mag-root .mag-lab-toolbar.is-signal-only .mag-causal-head{margin-bottom:5px}.mag-root .mag-lab-toolbar.is-signal-only .mag-causal-node b{font-size:11px}.mag-root .mag-lab-toolbar.is-signal-only .mag-causal-node span{font-size:9.5px}.mag-root .mag-active-panel{scroll-margin-top:72px}.mag-root .mag-card-title{font-size:15px}.mag-root .mag-range-label{font-size:13px}.mag-root .mag-range-value{font-size:12px}.mag-root .mag-range-scale{font-size:10px}.mag-root .mag-range-hint{font-size:9px}.mag-root .mag-scene-text{font-size:12.5px}.mag-root .mag-model-badge{font-size:11px}.mag-root .mag-kicker{font-size:10.5px}' +
+          '@keyframes mag-shell-orbit{to{transform:rotate(360deg)}}@keyframes mag-shell-menu-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}' +
+          '@media(max-width:820px){.mag-root .mag-shell-main{grid-template-columns:auto minmax(0,1fr)}.mag-root .mag-shell-status{grid-column:1/-1}.mag-root .mag-shell-menu{grid-template-columns:repeat(2,minmax(0,1fr))}}' +
+          '@media(max-width:560px){.mag-root .mag-shell-main{padding:12px 11px 9px}.mag-root .mag-shell-emblem{width:48px;height:48px}.mag-root .mag-shell-emblem svg{width:43px;height:43px}.mag-root .mag-shell-copy h2{font-size:16px}.mag-root .mag-shell-copy p{font-size:11.5px}.mag-root .mag-shell-actions{grid-template-columns:1fr 1fr;padding:0 11px 10px}.mag-root .mag-shell-next{grid-column:1/-1}.mag-root .mag-shell-menu{grid-template-columns:1fr;padding:0 11px 10px}.mag-root .mag-passport.is-shell-passport{margin-left:0;margin-right:0}.mag-root .mag-passport.is-shell-passport .mag-station-tab{min-width:101px}.mag-root .mag-range-label{font-size:12.5px}.mag-root .mag-range-hint{font-size:8.5px}}' +
+          '@media(max-width:350px){.mag-root .mag-shell-actions{grid-template-columns:1fr}.mag-root .mag-shell-next{grid-column:auto}.mag-root .mag-shell-copy p{display:none}}' +
+          '@media(forced-colors:active){.mag-root .mag-adaptive-shell,.mag-root .mag-shell-panel-frame{box-shadow:none}.mag-root .mag-adaptive-shell:after,.mag-root .mag-shell-journey span{background:CanvasText}}' +
           '@media(pointer:coarse){.mag-root button{min-height:44px}.mag-root summary{min-height:44px}}' +
           '@media(prefers-reduced-motion:reduce){.mag-root *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
           '@media(forced-colors:active){.mag-root .mag-card,.mag-root .mag-hero{box-shadow:none}.mag-root .mag-swatch,.mag-root .mag-pole-chip{border:1px solid CanvasText}.mag-root button[aria-pressed="true"],.mag-root button[aria-selected="true"]{outline:2px solid SelectedItem;outline-offset:1px}}'
@@ -3869,13 +3967,13 @@
         earth: { phase: 'Planet-scale field', icon: '🌍', goal: 'Connect local navigation to a planet-scale magnetic shield.', predict: 'What will stronger solar wind compress or stretch?', test: 'Compare 2D and 3D views while changing pressure.', explain: 'Separate declination, dipole structure, and space weather.' },
         quiz: { phase: 'Retrieve & reflect', icon: '🧠', goal: 'Use evidence from the lab, not memorized slogans.', predict: 'Commit to one answer.', test: 'Read the feedback after each choice.', explain: 'Revisit only the concepts you missed.' }
       };
-      function tabBar() {
+      function tabBar(compact) {
         var passport = stationPassportState(d, d.tab);
         var stationById = {};
         passport.stations.forEach(function (station) { stationById[station.id] = station; });
         var activeStation = passport.activeStation;
         function activateTab(tab, moveFocus) {
-          upd(Object.assign({ tab: tab.id }, tab.id === 'earth' ? { earthSeen: true } : {}));
+          upd(Object.assign({ tab: tab.id, labShellPanel: '', labShellMenuOpen: false }, tab.id === 'earth' ? { earthSeen: true } : {}));
           announceToSR(tab.label + ' section');
           if (typeof document !== 'undefined') {
             window.setTimeout(function () {
@@ -3896,7 +3994,7 @@
           event.preventDefault();
           activateTab(TABS[nextIndex], true);
         }
-        return h('nav', { className: 'mag-passport', 'data-magnetism-station-passport': 'true', 'data-complete': passport.complete ? 'true' : 'false',
+        return h('nav', { className: 'mag-passport' + (compact ? ' is-shell-passport' : ''), 'data-magnetism-station-passport': 'true', 'data-complete': passport.complete ? 'true' : 'false',
             'aria-labelledby': 'mag-passport-title', style: { '--mag-passport-tone': activeStation.chapter.accent } },
           h('div', { className: 'mag-passport-head' },
             h('div', { className: 'mag-passport-title' },
@@ -3924,7 +4022,7 @@
             })));
       }
 
-      function stationGuide() {
+      function stationGuide(expanded) {
         var g = STATION_GUIDES[d.tab] || STATION_GUIDES.field;
         if (d.tab === 'field' && d.fieldView === 'hunt') {
           g = { phase: 'Infer a hidden source', icon: '\uD83E\uDDED', goal: 'Use well-spread vector readings to infer an unseen dipole.', predict: 'Will one nearby reading locate the source?', test: 'Sample multiple sides, then fit and check.', explain: 'Connect field direction, magnitude, and survey geometry.' };
@@ -3957,7 +4055,7 @@
             h('div', { className: 'mag-cycle' }, h('b', null, '3 · Explain'), h('span', null, g.explain))
           );
         }
-        return h('details', { className: 'mag-guide' }, summary, body);
+        return h('details', { className: 'mag-guide', open: expanded ? true : undefined }, summary, body);
       }
 
       // ── Field Explorer ────────────────────────────────────────────────
@@ -9890,14 +9988,23 @@
       }
       function slider(label, val, min, max, step, onChange, disabled) {
         var sliderId = 'mag-slider-' + (++_sliderUid);
-        return h('div', { style: { marginBottom: 10 } },
-          h('label', { htmlFor: sliderId, style: { display: 'flex', justifyContent: 'space-between', color: TEXT, fontSize: 13, fontWeight: 600, marginBottom: 4 } },
-            h('span', null, label), h('span', { style: { color: TEXT, fontVariantNumeric: 'tabular-nums' } }, String(val))),
-          h('input', { id: sliderId, type: 'range', min: min, max: max, step: step, value: val,
-            'aria-valuetext': label + ': ' + String(val),
+        var scaleId = sliderId + '-scale';
+        var range = rangePresentationState(val, min, max, step);
+        return h('div', { className: 'mag-range', 'data-disabled': disabled ? 'true' : 'false', 'data-edge': range.edge,
+            'data-range-percent': String(range.percent), style: { '--mag-range-fill': range.percentCss } },
+          h('div', { className: 'mag-range-head' },
+            h('label', { htmlFor: sliderId, className: 'mag-range-label' }, label),
+            h('output', { htmlFor: sliderId, className: 'mag-range-value', 'aria-label': label + ' current value' }, range.valueDisplay)),
+          h('span', { id: scaleId, className: 'mag-sronly' }, 'Minimum ' + range.minDisplay + ', maximum ' + range.maxDisplay + '.'),
+          h('input', { id: sliderId, className: 'mag-range-input', type: 'range', min: range.min, max: range.max, step: range.step, value: range.value,
+            'aria-describedby': scaleId,
+            'aria-valuetext': label + ': ' + range.valueDisplay,
             disabled: !!disabled,
-            onChange: function (e) { onChange(parseFloat(e.target.value)); },
-            style: { width: '100%', accentColor: ACTIVE, opacity: disabled ? 0.55 : 1, cursor: disabled ? 'not-allowed' : 'pointer' } }));
+            onChange: function (e) { onChange(parseFloat(e.target.value)); } }),
+          h('div', { className: 'mag-range-scale', 'aria-hidden': 'true' },
+            h('span', null, range.minDisplay),
+            h('span', { className: 'mag-range-hint' }, disabled ? 'Locked' : 'Drag to test'),
+            h('span', null, range.maxDisplay)));
       }
       function disclosure(text, accent) {
         return h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.08)', border: '1px dashed ' + BORDER, marginBottom: 12 } },
@@ -9928,6 +10035,151 @@
           transformer: 'ideal transformer + load model', earth: 'schematic planetary model',
           quiz: 'evidence retrieval'
         })[d.tab] || 'interactive teaching model';
+      }
+
+      function shellPanelFrame(panel, label, icon, children, accent) {
+        var active = d.labShellPanel === panel;
+        var content = active ? (typeof children === 'function' ? children() : children) : null;
+        function closePanel() {
+          upd({ labShellPanel: '', labShellMenuOpen: false });
+          announceToSR(label + ' panel closed. The active experiment is ready.');
+          if (typeof document !== 'undefined') window.setTimeout(function () {
+            var trigger = document.getElementById('mag-shell-menu-button');
+            if (trigger && typeof trigger.scrollIntoView === 'function') trigger.scrollIntoView({ block: 'nearest' });
+            if (trigger && typeof trigger.focus === 'function') trigger.focus();
+          }, 0);
+        }
+        return h('section', {
+          id: 'mag-shell-panel-' + panel,
+          className: 'mag-shell-panel-frame',
+          hidden: !active,
+          'data-magnetism-shell-panel': panel,
+          'aria-label': label,
+          style: { '--mag-shell-panel-tone': accent || '#38bdf8' }
+        },
+          h('div', { className: 'mag-shell-panel-head' },
+            h('span', { className: 'mag-shell-panel-icon', 'aria-hidden': 'true' }, icon),
+            h('span', null, h('small', null, 'Lab workspace'), h('b', null, label)),
+            h('button', { type: 'button', onClick: closePanel, style: btn(), 'aria-label': 'Close ' + label + ' panel' }, 'Close ×')),
+          content);
+      }
+
+      function adaptiveLabShell() {
+        var passport = stationPassportState(d, d.tab);
+        var story = magneticStoryState(d, d.tab);
+        var expedition = journeyExpeditionState(d);
+        var studio = evidenceStudioState(d, d.tab);
+        var station = passport.activeStation;
+        var guide = STATION_GUIDES[d.tab] || STATION_GUIDES.field;
+        if (d.tab === 'field' && d.fieldView === 'hunt') {
+          guide = { phase: 'Infer a hidden source', icon: '🧭', goal: 'Use well-spread vector readings to infer an unseen dipole.' };
+        }
+        var nextQuest = station.nextQuest || expedition.nextQuest;
+        var menuOpen = !!d.labShellMenuOpen;
+        var evidenceAvailable = d.tab !== 'quiz';
+        var menuItems = [
+          { id: 'overview', icon: '✦', label: 'Story', detail: 'Learning arc', hidden: !!d.labFocus },
+          { id: 'mission', icon: '🎯', label: 'Mission', detail: 'Design target', hidden: !!d.labFocus },
+          { id: 'guide', icon: '🧭', label: 'Guide', detail: 'Predict, test, explain', hidden: !!d.labFocus },
+          { id: 'evidence', icon: '📓', label: 'Evidence', detail: studio.statusLabel, hidden: !evidenceAvailable },
+          { id: 'journey', icon: '🗺️', label: 'Journey', detail: expedition.doneCount + '/' + expedition.total + ' complete', hidden: !!d.labFocus },
+          { id: 'notes', icon: '💡', label: 'Field notes', detail: 'Connect the idea' },
+          { id: 'coach', icon: '💬', label: 'Question lab', detail: 'Ask and investigate', hidden: !evidenceAvailable },
+          { id: 'settings', icon: '⚙️', label: 'Lab settings', detail: d.learningMode === 'challenge' ? 'Challenge mode' : 'Guided mode' }
+        ].filter(function (item) { return !item.hidden; });
+
+        function focusPanel(panel) {
+          if (typeof document === 'undefined') return;
+          window.setTimeout(function () {
+            var target = document.getElementById('mag-shell-panel-' + panel);
+            if (target && typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'start', behavior: _prefersReducedMotion ? 'auto' : 'smooth' });
+            var close = target && target.querySelector('button');
+            if (close && typeof close.focus === 'function') close.focus();
+          }, 0);
+        }
+
+        function selectPanel(panel, label) {
+          var closing = d.labShellPanel === panel;
+          var patch = { labShellPanel: closing ? '' : panel, labShellMenuOpen: false };
+          if (!closing && panel === 'evidence') patch.notebookOpen = true;
+          upd(patch);
+          announceToSR(closing ? label + ' panel closed.' : label + ' panel opened.');
+          if (!closing) focusPanel(panel);
+        }
+
+        function openQuest(quest) {
+          if (!quest) {
+            selectPanel(evidenceAvailable ? 'evidence' : 'notes', evidenceAvailable ? 'Evidence Studio' : 'Field notes');
+            return;
+          }
+          var patch = { tab: quest.tab, labShellPanel: '', labShellMenuOpen: false };
+          if (quest.id === 'mag_lorentz') patch.motorMode = 'particle';
+          if (quest.id === 'mag_analyzer') patch.motorMode = 'analyzer';
+          if (quest.id === 'mag_motor' || quest.id === 'mag_motor_direction') patch.motorMode = 'forces';
+          if (quest.id === 'mag_induce') patch.induceMode = 'hand';
+          if (quest.id === 'mag_generator_phase') patch.induceMode = 'coil';
+          if (quest.tab === 'earth') patch.earthSeen = true;
+          upd(patch);
+          announceToSR('Next evidence opened: ' + quest.label + '.');
+          if (typeof document !== 'undefined') window.setTimeout(function () {
+            var panel = document.getElementById('mag-panel-' + quest.tab);
+            if (panel && typeof panel.scrollIntoView === 'function') panel.scrollIntoView({ block: 'start', behavior: _prefersReducedMotion ? 'auto' : 'smooth' });
+          }, 0);
+        }
+
+        function toggleMenu() {
+          upd({ labShellMenuOpen: !menuOpen });
+          announceToSR(!menuOpen ? 'Lab menu opened.' : 'Lab menu closed.');
+        }
+
+        return h('header', {
+          className: 'mag-adaptive-shell',
+          'data-magnetism-adaptive-shell': 'true',
+          'data-panel': d.labShellPanel || 'experiment',
+          'data-menu-open': menuOpen ? 'true' : 'false',
+          style: { '--mag-shell-tone': station.chapter.accent }
+        },
+          h('div', { className: 'mag-shell-main' },
+            h('span', { className: 'mag-shell-emblem', 'aria-hidden': 'true' },
+              h('svg', { viewBox: '0 0 64 64', focusable: 'false' },
+                h('path', { className: 'mag-shell-orbit orbit-a', d: 'M13 32c7-20 31-20 38 0-7 20-31 20-38 0Z' }),
+                h('path', { className: 'mag-shell-orbit orbit-b', d: 'M32 13c20 7 20 31 0 38-20-7-20-31 0-38Z' }),
+                h('rect', { className: 'mag-shell-pole n', x: 21, y: 24, width: 12, height: 16, rx: 3 }),
+                h('rect', { className: 'mag-shell-pole s', x: 32, y: 24, width: 12, height: 16, rx: 3 }),
+                h('circle', { className: 'mag-shell-spark', cx: 51, cy: 32, r: 2.2 }))),
+            h('div', { className: 'mag-shell-copy' },
+              h('small', null, 'Magnetism & Electromagnetism Lab · Chapter ' + story.chapterNumber + '/' + story.chapterCount),
+              h('h2', { id: 'mag-shell-title' }, station.icon + ' ' + station.label),
+              h('p', null, h('b', null, guide.phase + '. '), guide.goal)),
+            h('div', { className: 'mag-shell-status', role: 'group', 'aria-label': station.label + ' progress: ' + station.doneCount + ' of ' + station.total + ' station milestones; ' + expedition.doneCount + ' of ' + expedition.total + ' journey milestones complete.' },
+              h('div', { className: 'mag-shell-status-head' },
+                h('span', null, station.complete ? 'Station evidence complete' : station.doneCount ? 'Evidence in progress' : 'Ready to investigate'),
+                h('b', null, station.doneCount + '/' + station.total)),
+              h('progress', { value: station.doneCount, max: station.total || 1, 'aria-label': station.label + ' evidence progress' }),
+              h('small', null, 'Expedition ' + expedition.doneCount + '/' + expedition.total + ' · ' + activeModelLabel()))),
+          h('div', { className: 'mag-shell-actions', role: 'group', 'aria-label': 'Primary lab actions' },
+            h('button', { type: 'button', className: 'mag-shell-next', onClick: function () { openQuest(nextQuest); }, style: btn(true) },
+              h('span', { 'aria-hidden': 'true' }, nextQuest ? nextQuest.icon : '✓'),
+              h('span', null, h('small', null, nextQuest ? 'Next evidence' : 'Journey complete'), h('b', null, nextQuest ? nextQuest.label : (evidenceAvailable ? 'Review your evidence' : 'Review field notes')))),
+            h('button', { type: 'button', className: 'mag-shell-evidence', 'aria-pressed': d.labShellPanel === (evidenceAvailable ? 'evidence' : 'notes') ? 'true' : 'false',
+                onClick: function () { selectPanel(evidenceAvailable ? 'evidence' : 'notes', evidenceAvailable ? 'Evidence Studio' : 'Field notes'); }, style: btn(d.labShellPanel === 'evidence') },
+              h('span', { 'aria-hidden': 'true' }, evidenceAvailable ? '📓' : '💡'),
+              h('span', null, h('small', null, evidenceAvailable ? studio.statusLabel : 'Concept connections'), h('b', null, evidenceAvailable ? studio.trialCount + ' saved trial' + (studio.trialCount === 1 ? '' : 's') : 'Open field notes'))),
+            h('button', { id: 'mag-shell-menu-button', type: 'button', className: 'mag-shell-menu-button',
+                'aria-expanded': menuOpen ? 'true' : 'false', 'aria-controls': 'mag-shell-menu', onClick: toggleMenu, style: btn(menuOpen) },
+              h('span', { 'aria-hidden': 'true' }, '☰'),
+              h('span', null, h('small', null, d.labShellPanel ? 'Open panel · ' + d.labShellPanel : 'Story, guide, settings'), h('b', null, menuOpen ? 'Close lab menu' : 'Lab menu')))),
+          h('div', { className: 'mag-shell-journey', 'aria-hidden': 'true' },
+            h('span', { style: { width: expedition.percent + '%' } })),
+          menuOpen ? h('div', { id: 'mag-shell-menu', className: 'mag-shell-menu', role: 'group', 'aria-label': 'Choose a lab support panel' },
+            menuItems.map(function (item) {
+              var active = d.labShellPanel === item.id;
+              return h('button', { key: item.id, type: 'button', className: 'mag-shell-menu-item', 'aria-pressed': active ? 'true' : 'false',
+                  onClick: function () { selectPanel(item.id, item.label); }, style: { '--mag-menu-tone': station.chapter.accent } },
+                h('span', { 'aria-hidden': 'true' }, item.icon),
+                h('span', null, h('b', null, item.label), h('small', null, item.detail)),
+                h('i', { 'aria-hidden': 'true' }, active ? '✓' : '→'));
+            })) : null);
       }
 
       function magneticStoryHero() {
@@ -9975,25 +10227,29 @@
             })));
       }
 
-      function labToolbar() {
+      function labToolbar(mode) {
+        var signalOnly = mode === 'signal';
+        var settingsOnly = mode === 'settings';
         var g = STATION_GUIDES[d.tab] || STATION_GUIDES.field;
         if (d.tab === 'field' && d.fieldView === 'hunt') g = { icon: '\uD83E\uDDED', phase: 'Infer a hidden source' };
         var progress = missionProgressState(d.missionId, d);
         var feedback = CAUSAL_FEEDBACK[d.magLastChange];
         var signal = causalSignalState(d, d.tab);
         var signalIcon = ({ up: '\u2197', down: '\u2198', same: '\u2014', baseline: '\u25cf' })[signal.trend] || '\u25cf';
-        return h('section', { className: 'mag-lab-toolbar', 'aria-label': 'Lab command bar' },
-          h('div', { className: 'mag-lab-context' },
+        if (signalOnly && !(feedback && signal.active)) return null;
+        return h('section', { className: 'mag-lab-toolbar' + (signalOnly ? ' is-signal-only' : '') + (settingsOnly ? ' is-settings-only' : ''),
+            'aria-label': signalOnly ? 'Cause and effect feedback' : 'Lab command bar' },
+          signalOnly ? null : h('div', { className: 'mag-lab-context' },
             h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, g.icon),
             h('span', null, g.phase),
             h('span', { className: 'mag-model-badge' }, activeModelLabel())),
-          h('span', { className: 'mag-model-badge', 'aria-label': progress.mission.label + ' mission progress: ' + progress.doneCount + ' of ' + progress.total }, progress.mission.icon + ' ' + progress.doneCount + '/' + progress.total),
-          learningModeSwitch(),
-          h('button', { type: 'button', 'aria-pressed': d.labFocus ? 'true' : 'false', onClick: function () {
-            upd({ labFocus: !d.labFocus, missionPanelOpen: false });
+          signalOnly ? null : h('span', { className: 'mag-model-badge', 'aria-label': progress.mission.label + ' mission progress: ' + progress.doneCount + ' of ' + progress.total }, progress.mission.icon + ' ' + progress.doneCount + '/' + progress.total),
+          signalOnly ? null : learningModeSwitch(),
+          signalOnly ? null : h('button', { type: 'button', 'aria-pressed': d.labFocus ? 'true' : 'false', onClick: function () {
+            upd({ labFocus: !d.labFocus, missionPanelOpen: false, labShellPanel: '' });
             announceToSR(!d.labFocus ? 'Focus Lab on. The active experiment is wider and supporting panels are hidden.' : 'Focus Lab off. Mission and guidance panels are visible.');
           }, style: btn(!!d.labFocus) }, d.labFocus ? 'Exit Focus Lab' : 'Focus Lab'),
-          feedback && signal.active ? h('div', {
+          settingsOnly ? null : (feedback && signal.active ? h('div', {
               key: 'mag-change-' + signal.changeSeq,
               className: 'mag-causal-strip',
               'data-magnetism-signal-story': 'true',
@@ -10027,7 +10283,7 @@
                 h('i', null, signalIcon),
                 h('small', null, 'Live evidence'),
                 h('b', null, signal.evidenceLabel + ': ' + signal.evidenceValue),
-                h('span', null, signal.evidenceDetail)))) : null
+                h('span', null, signal.evidenceDetail)))) : null)
         );
       }
 
@@ -10751,7 +11007,8 @@
         : d.tab === 'earth' ? earthTab()
         : quizTab();
 
-      return h('div', { className: 'mag-root' + (d.labFocus ? ' is-focus' : ''), 'data-learning-mode': d.learningMode, style: { maxWidth: d.labFocus ? 1040 : 780, margin: '0 auto', color: TEXT,
+      return h('div', { className: 'mag-root' + (d.labFocus ? ' is-focus' : ''), 'data-learning-mode': d.learningMode,
+          'data-shell-panel': d.labShellPanel || 'experiment', style: { maxWidth: d.labFocus ? 1180 : 1080, margin: '0 auto', color: TEXT,
         // Own the ground (2026-08-23): every ink here is themed through the
         // --allo-stem tokens, but the root painted nothing, so dark-resolved
         // inks floated on the host's white content card. The same token that
@@ -10759,17 +11016,19 @@
         background: 'var(--allo-stem-deeper, var(--allo-stem-panel, transparent))', borderRadius: 12, padding: 12 } },
         wcagStyles(),
         h('div', { className: 'mag-sronly', role: 'status', 'aria-live': 'polite' }, ''),
-        d.labFocus ? h('h2', { className: 'mag-sronly' }, 'Magnetism & Electromagnetism · Focus Lab') : h('div', { className: 'mag-hero' },
-          magneticStoryHero()),
-        d.labFocus ? null : missionControl(),
-        labToolbar(),
-        tabBar(),
-        d.labFocus ? null : stationGuide(),
-        d.tab !== 'quiz' ? investigationNotebook() : null,
-        h('div', { id: 'mag-panel-' + d.tab, role: 'tabpanel', 'aria-labelledby': 'mag-tab-' + d.tab }, body),
-        d.tab !== 'quiz' ? askBox() : null,
-        d.labFocus ? null : journeyStrip(),
-        factStrip()
+        d.labFocus ? h('h2', { className: 'mag-sronly' }, 'Magnetism & Electromagnetism · Focus Lab')
+          : shellPanelFrame('overview', 'Magnetism story', '✦', function () { return h('div', { className: 'mag-hero' }, magneticStoryHero()); }, '#38bdf8'),
+        d.labFocus ? null : shellPanelFrame('mission', 'Design mission', '🎯', function () { return missionControl(); }, '#fbbf24'),
+        adaptiveLabShell(),
+        tabBar(true),
+        d.labFocus ? null : shellPanelFrame('guide', 'Investigation guide', '🧭', function () { return stationGuide(); }, '#38bdf8'),
+        d.tab !== 'quiz' ? shellPanelFrame('evidence', 'Evidence Studio', '📓', function () { return investigationNotebook(); }, '#34d399') : null,
+        labToolbar('signal'),
+        shellPanelFrame('settings', 'Lab settings', '⚙️', function () { return labToolbar('settings'); }, '#a78bfa'),
+        h('div', { id: 'mag-panel-' + d.tab, className: 'mag-active-panel', role: 'tabpanel', 'aria-labelledby': 'mag-tab-' + d.tab }, body),
+        d.tab !== 'quiz' ? shellPanelFrame('coach', 'Question Lab', '💬', function () { return askBox(); }, '#a78bfa') : null,
+        d.labFocus ? null : shellPanelFrame('journey', 'Magnetism Expedition', '🗺️', function () { return journeyStrip(); }, '#34d399'),
+        shellPanelFrame('notes', 'Field notes', '💡', function () { return factStrip(); }, '#fbbf24')
       );
     }
   });
@@ -10795,6 +11054,8 @@
     module.exports.magneticStoryState = magneticStoryState;
     module.exports.SOCRATIC_COACH_DEFS = SOCRATIC_COACH_DEFS;
     module.exports.socraticCoachState = socraticCoachState;
+    module.exports.rangePresentationState = rangePresentationState;
+    module.exports.fieldCardTitleId = fieldCardTitleId;
     module.exports.liveEvidencePulseState = liveEvidencePulseState;
     module.exports.causalSignalState = causalSignalState;
     module.exports.evidenceStudioState = evidenceStudioState;

@@ -6,7 +6,6 @@ const path = require('path');
 const { createHash } = require('crypto');
 const {
   buildMailboxScriptSourceModule,
-  buildMailboxScriptInlineFallback,
 } = require('../_build_mailbox_script_source_module.js');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -22,7 +21,6 @@ if (!versionMatch) throw new Error('Code.gs is missing var VERSION');
 const version = Number(versionMatch[1]);
 const bytes = Buffer.byteLength(source, 'utf8');
 const sha256 = createHash('sha256').update(source, 'utf8').digest('hex');
-const fallback = buildMailboxScriptInlineFallback(source);
 const moduleSource = buildMailboxScriptSourceModule(source);
 
 function writeIfChanged(file, content) {
@@ -56,7 +54,7 @@ const replacements = [
   [/const ALLO_MB_SCRIPT_VERSION = \d+;/, `const ALLO_MB_SCRIPT_VERSION = ${version};`],
   [/const ALLO_MB_SCRIPT_SHA256 = '[a-f0-9]{64}';/, `const ALLO_MB_SCRIPT_SHA256 = '${sha256}';`],
   [/const ALLO_MB_SCRIPT_BYTES = \d+;/, `const ALLO_MB_SCRIPT_BYTES = ${bytes};`],
-  [/const ALLO_MB_SCRIPT_FALLBACK_GZIP = '[A-Za-z0-9+/=]+';/, `const ALLO_MB_SCRIPT_FALLBACK_GZIP = '${fallback}';`],
+  [/const ALLO_MB_SCRIPT_FALLBACK_GZIP = '[A-Za-z0-9+/=]*';/, "const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';"],
 ];
 for (const [pattern, replacement] of replacements) {
   if (!pattern.test(anti)) throw new Error(`AlloFlowANTI.txt is missing ${pattern}`);
@@ -64,7 +62,7 @@ for (const [pattern, replacement] of replacements) {
 }
 
 const changed = [];
-if (writeIfChanged(ANTI, anti)) changed.push('AlloFlowANTI.txt metadata/fallback');
+if (writeIfChanged(ANTI, anti)) changed.push('AlloFlowANTI.txt metadata');
 if (writeIfChanged(MODULE, moduleSource)) changed.push('mailbox_script_source_module.js');
 if (writeIfChanged(MODULE_PUB, moduleSource)) changed.push('desktop public module mirror');
 if (writeIfChanged(GS_PUB, source)) changed.push('desktop public Code.gs mirror');

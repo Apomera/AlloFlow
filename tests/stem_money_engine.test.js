@@ -1,6 +1,6 @@
 import fs from 'node:fs';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 // Machine verification for the Money Math lab. Every financial figure
 // asserted below is recomputed independently in this file from the
@@ -222,6 +222,159 @@ describe('rendered calculators', () => {
     const html = renderTool('moneyMath', { _moneyMath: { tab: 'finance', finSub: 'loans' } });
     expect(html).toContain('Loan &amp; Debt Calculator');
     expect(html).toContain('$' + Math.round(payment).toLocaleString());
+  });
+});
+
+describe('Money Math regression refinements', () => {
+  it('rounds receipt lines, tax, and the displayed equation at currency boundaries', () => {
+    const html = renderTool('moneyMath', {
+      _moneyMath: {
+        tab: 'store', grade: 'high', currency: 'USD',
+        cart: [{ name: 'Apples', price: 1.49, weight: 2.5, qty: 1, pricePer: 'lb' }],
+      },
+    });
+    expect(html).toContain('$3.73 + $0.30 = $4.03');
+    expect(html).not.toContain('$3.73 + $0.30 = $4.02');
+  });
+
+  it('renders a zero-principal loan without NaN or Infinity', () => {
+    const html = renderTool('moneyMath', {
+      _moneyMath: { tab: 'finance', finSub: 'loans', loanAmt: 0, loanRate: 5, loanTerm: 60 },
+    });
+    expect(html).toContain('Enter a loan amount greater than zero');
+    expect(html).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('lets existing savings compound before solving for the monthly contribution', () => {
+    const rate = 0.12 / 12;
+    const months = 12;
+    const futureExisting = 5000 * Math.pow(1 + rate, months);
+    const expected = (10000 - futureExisting) / ((Math.pow(1 + rate, months) - 1) / rate);
+    expect(Math.round(expected)).toBe(344);
+    const html = renderTool('moneyMath', {
+      _moneyMath: { tab: 'finance', finSub: 'goals', sgTarget: 10000, sgHave: 5000, sgMonths: months, sgRate: 12 },
+    });
+    expect(html).toContain('$344');
+    expect(html).not.toContain('$394');
+  });
+
+  it('uses selected-currency denominations in Coin Drop', () => {
+    const html = renderTool('moneyMath', {
+      _moneyMath: { tab: 'cents', currency: 'JPY', grade: 'elementary', cdTarget: 500, cdDropped: [] },
+    });
+    expect(html).toContain('aria-label="Add \u00A51 denomination"');
+    expect(html).toContain('aria-label="Add \u00A5500 denomination"');
+    expect(html).not.toContain('aria-label="Drop $1 coin"');
+  });
+
+  it('rejects fractional-yen tips but awards one host XP event for the rounded answer', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    const awardXP = vi.fn();
+    let latest;
+
+    function App({ answer }) {
+      const [state, setState] = React.useState({
+        _moneyMath: { tab: 'tips', currency: 'JPY', tipMode: 'tip', tipBill: 1000, tipPct: 15, tipDiners: 3, tipAnswer: answer },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    }
+
+    document.body.innerHTML = '<div id="money-root"></div>';
+    let root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App, { answer: 383.33 })); });
+    let check = document.querySelector('button[aria-label="Check"]');
+    await React.act(async () => { check.click(); });
+    expect(latest._moneyMath.tipFeedback.ok).toBe(false);
+    expect(awardXP).not.toHaveBeenCalled();
+    await React.act(async () => { root.unmount(); });
+
+    document.body.innerHTML = '<div id="money-root"></div>';
+    root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App, { answer: 383 })); });
+    check = document.querySelector('button[aria-label="Check"]');
+    await React.act(async () => { check.click(); check.click(); });
+    expect(latest._moneyMath.tipFeedback.ok).toBe(true);
+    expect(document.body.textContent).toContain('= \u00A5383/person');
+    expect(awardXP).toHaveBeenCalledWith('moneyMath', 15, 'tip calculation');
+    expect(awardXP).toHaveBeenCalledTimes(1);
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('clears currency-dependent problem state when the currency changes', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({
+        _moneyMath: { tab: 'tips', currency: 'JPY', tipMode: 'tip', tipBill: 1000, tipAnswer: 383, tipFeedback: { ok: true }, changePrice: 750, changeFeedback: { ok: true } },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    document.body.innerHTML = '<div id="money-root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const currency = document.querySelector('select[aria-label="Currency"]');
+    currency.value = 'USD';
+    await React.act(async () => { currency.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(latest._moneyMath.currency).toBe('USD');
+    expect(latest._moneyMath.tipBill).toBeNull();
+    expect(latest._moneyMath.tipAnswer).toBeNull();
+    expect(latest._moneyMath.tipFeedback).toBeNull();
+    expect(latest._moneyMath.changePrice).toBeNull();
+    expect(latest._moneyMath.changeFeedback).toBeNull();
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('generates non-negative change even when a college price exceeds the largest bill', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({ _moneyMath: { tab: 'change', currency: 'USD', grade: 'college' } });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.999);
+    document.body.innerHTML = '<div id="money-root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const generate = document.querySelector('button[aria-label="Generate Problem"]');
+    await React.act(async () => { generate.click(); });
+    expect(latest._moneyMath.changePrice).toBeGreaterThan(100);
+    expect(latest._moneyMath.changePaid).toBeGreaterThanOrEqual(latest._moneyMath.changePrice);
+    expect(latest._moneyMath.changePaid - latest._moneyMath.changePrice).toBeGreaterThanOrEqual(0);
+    random.mockRestore();
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('keeps Check the Change non-negative above the largest single bill', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({
+        _moneyMath: { tab: 'cents', currency: 'USD', grade: 'college', storeItems: [] },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.999);
+    document.body.innerHTML = '<div id="money-root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const start = document.querySelector('button[aria-label="Item costs:"]');
+    await React.act(async () => { start.click(); });
+    expect(latest._moneyMath.ccPrice).toBeGreaterThan(100);
+    expect(latest._moneyMath.ccPaid).toBeGreaterThanOrEqual(latest._moneyMath.ccPrice);
+    expect(latest._moneyMath.ccCorrectAmt).toBeGreaterThanOrEqual(0);
+    random.mockRestore();
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('routes all rewards through the scoped host helper and recognizes object feedback in the quest hook', () => {
+    expect(src).not.toMatch(/\b(?:addXP|awardStemXP)\s*\(/);
+    const hook = window.StemLab._registry.moneyMath.questHooks.find((item) => item.id === 'make_change');
+    expect(hook.check({ changeFeedback: { ok: true } })).toBe(true);
+    expect(hook.progress({ changeFeedback: { ok: true } })).toBe('Done!');
   });
 });
 

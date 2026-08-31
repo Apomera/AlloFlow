@@ -32,6 +32,27 @@ describe('Header popover semantics and dismissal', () => {
     expect(source).not.toContain('<div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === \'Escape\') e.currentTarget.click(); }} className="fixed inset-0');
   });
 
+  it('hands compact Join focus to the connected expanded trigger for restoration', () => {
+    expect(source).toContain('const _joinTriggerRef = React.useRef(null)');
+    expect(source).toContain('const _joinOpenAfterExpandRef = React.useRef(false)');
+    expect(source.match(/ref=\{_joinTriggerRef\}/g)?.length).toBe(2);
+    expect(source).toContain('_joinOpenAfterExpandRef.current = true');
+    expect(source).toContain('if (!_joinOpenAfterExpandRef.current || headerCollapsed) return');
+    expect(source).toContain('_joinTriggerRef.current.focus()');
+    expect(source).not.toContain('window.requestAnimationFrame(openExpandedJoin)');
+    expect(source).toContain('id="header-join-code"\n                                                                    data-autofocus');
+    expect(source).not.toContain('id="header-join-code"\n                                                                    autoFocus');
+  });
+
+  it('uses the visible Join labels as the input accessible names', () => {
+    expect(source).toContain('htmlFor="header-join-host-id"');
+    expect(source).toContain('id="header-join-host-id"');
+    expect(source).toContain('htmlFor="header-join-code"');
+    expect(source).toContain('id="header-join-code"');
+    expect(source).not.toContain("input aria-label={t('common.session_default_placeholder')}");
+    expect(source).not.toContain("input aria-label={t('common.enter_join_code_input')}");
+  });
+
   it('escapes the header stacking context so the settings panels stay on top', () => {
     // Both panels are position:fixed at z-[10001], but they live inside
     // #tour-header-settings (relative z-[60]) inside <header> (relative z-50).

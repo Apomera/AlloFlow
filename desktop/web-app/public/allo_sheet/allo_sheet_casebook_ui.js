@@ -23,6 +23,7 @@
       var recognition = null;
       var voiceStatus = { state: 'idle', engine: '', engineLabel: '', privacy: '', message: '', reason: '' };
       var boundTables = null;
+      var contextDirty = false;
 
       function byId(id) { return document.getElementById(id); }
       function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
@@ -269,11 +270,110 @@
         activeCaseId = select.value;
       }
 
+      function updateCaseContextActions(book) {
+        var caseItem = selectedCase(book);
+        var locked = Boolean(draft);
+        var input = byId('casebookCaseContext');
+        if (input) input.disabled = locked || !caseItem;
+        byId('saveCasebookCaseContextButton').disabled = locked || !caseItem || !contextDirty;
+        byId('resetCasebookCaseContextButton').disabled = locked || !caseItem || !contextDirty;
+      }
+
+      function renderCaseContext(book, force) {
+        var input = byId('casebookCaseContext');
+        var caseItem = selectedCase(book);
+        if (!caseItem) {
+          input.value = '';
+          input.dataset.caseId = '';
+          contextDirty = false;
+          text(byId('casebookCaseContextStatus'), '');
+          updateCaseContextActions(book);
+          return;
+        }
+        text(
+          byId('casebookCaseContextLabel'),
+          book.definition.caseLabel + ' description / stable context (optional)'
+        );
+        text(
+          byId('casebookCaseContextHint'),
+          book.definition.privacyMode === 'learner-support'
+            ? 'Keep this minimal and approved, prefer coded identifiers, and use it only for stable access or learning context. It is not included in agent reflection unless you explicitly select the Cases table.'
+            : 'Use this for stable setup or background. Changing it does not rewrite earlier observations, and it is not included in agent reflection unless you explicitly select the Cases table.'
+        );
+        if (force || input.dataset.caseId !== caseItem.id || !contextDirty) {
+          input.value = caseItem.context || '';
+          input.dataset.caseId = caseItem.id;
+          contextDirty = false;
+          clearError('casebookCaseContextError', ['casebookCaseContext']);
+          text(byId('casebookCaseContextStatus'), '');
+        }
+        updateCaseContextActions(book);
+      }
+
+      function blockUnsavedCaseContext(message) {
+        if (!contextDirty) return false;
+        setError(
+          'casebookCaseContextError',
+          message || 'Save or undo the current case-context edits before switching cases or creating an observation.',
+          byId('casebookCaseContext')
+        );
+        return true;
+      }
+
+      function hasPendingEdits() {
+        return contextDirty;
+      }
+
+      function focusPendingEdits(message) {
+        if (!contextDirty) return false;
+        if (typeof host.setView === 'function') host.setView('casebook');
+        blockUnsavedCaseContext(message);
+        return true;
+      }
+
+      function saveCaseContext(event) {
+        if (event) event.preventDefault();
+        var book = currentBook();
+        var caseItem = selectedCase(book);
+        clearError('casebookCaseContextError', ['casebookCaseContext']);
+        try {
+          if (!caseItem) throw new Error('Choose a valid case first.');
+          if (draft) throw new Error('Finish or discard the review draft before changing case context.');
+          var record = Model.createCaseContextUpdate(book, caseItem.id, byId('casebookCaseContext').value);
+          host.replaceRecord(Model.tableIds.cases, record, 'case-context');
+          contextDirty = false;
+          text(
+            byId('casebookCaseContextStatus'),
+            'Case context saved locally. Earlier observation rows were not changed.'
+          );
+          updateCaseContextActions(currentBook());
+          announce('Case context saved locally. Earlier observations were not changed.');
+        } catch (error) {
+          setError(
+            'casebookCaseContextError',
+            String(error && error.message || error),
+            byId('casebookCaseContext')
+          );
+        }
+      }
+
+      function resetCaseContext() {
+        var book = currentBook();
+        var caseItem = selectedCase(book);
+        if (!caseItem || draft) return;
+        contextDirty = false;
+        renderCaseContext(book, true);
+        text(byId('casebookCaseContextStatus'), 'Unsaved context edits were undone.');
+        byId('casebookCaseContext').focus();
+        announce('Unsaved case-context edits were undone.');
+      }
+
       function addCase() {
         var input = byId('casebookNewCaseName');
         clearError('casebookCaseError', ['casebookNewCaseName']);
         var book = currentBook();
         try {
+          if (blockUnsavedCaseContext()) return;
           var record = Model.createCase(book, input.value);
           activeCaseId = record.id;
           host.appendRecord(Model.tableIds.cases, record, 'case');
@@ -292,12 +392,52 @@
 
       function updateDraftLock() {
         var locked = Boolean(draft);
-        ['casebookCaseSelect', 'casebookNewCaseName', 'casebookAddCaseButton', 'casebookObservedAt', 'casebookNarrative']
+        ['casebookCaseSelect', 'casebookNewCaseName', 'casebookAddCaseButton', 'casebookObservedAt', 'casebookNarrative', 'casebookCaseContext']
           .forEach(function (id) {
             var control = byId(id);
             if (control) control.disabled = locked;
           });
+        updateCaseContextActions(currentBook());
         updateVoiceButton();
+        updateRepeatButton(currentBook());
+      }
+
+      function draftReviewWarnings(book) {
+        var warnings = draft && Array.isArray(draft.warnings) ? draft.warnings.slice() : [];
+        if (!draft || !book) return warnings;
+        var targetCase = book.cases.find(function (item) { return item.id === draft.caseId; });
+        var initialCase = book.cases.find(function (item) { return item.id === draft.initialCaseId; });
+        var mentionedCases = (draft.mentionedCaseIds || []).map(function (caseId) {
+          return book.cases.find(function (item) { return item.id === caseId; });
+        }).filter(Boolean);
+        if (mentionedCases.length === 1 && targetCase) {
+          var mentionedCase = mentionedCases[0];
+          if (targetCase.id === mentionedCase.id && initialCase && initialCase.id !== targetCase.id) {
+            warnings.unshift(
+              'The narrative names ' + targetCase.name + ', while ' + initialCase.name
+                + ' was selected. The draft target was changed to ' + targetCase.name + '; confirm it before recording.'
+            );
+          } else if (targetCase.id !== mentionedCase.id) {
+            warnings.unshift(
+              'The narrative names ' + mentionedCase.name + ', while ' + targetCase.name
+                + ' is now the draft target. Confirm the target before recording.'
+            );
+          }
+        } else if (mentionedCases.length > 1) {
+          warnings.unshift(
+            'The narrative names multiple cases (' + mentionedCases.map(function (item) { return item.name; }).join(', ')
+              + '). One entry records one case; choose the correct target before recording.'
+          );
+        }
+        return warnings;
+      }
+
+      function renderDraftWarnings(book) {
+        var warnings = byId('casebookDraftWarnings');
+        clear(warnings);
+        draftReviewWarnings(book).forEach(function (warning) {
+          warnings.appendChild(make('li', warning, ''));
+        });
       }
 
       function renderDraft(book) {
@@ -309,10 +449,22 @@
           updateDraftLock();
           return;
         }
-        var draftCase = book.cases.find(function (item) { return item.id === draft.caseId; });
+        text(byId('casebookDraftCaseLabel'), book.definition.caseLabel + ' target');
+        var targetSelect = byId('casebookDraftCaseSelect');
+        clear(targetSelect);
+        book.cases.forEach(function (caseItem) {
+          var option = document.createElement('option');
+          option.value = caseItem.id;
+          option.textContent = caseItem.name + ' (' + caseItem.id + ')';
+          targetSelect.appendChild(option);
+        });
+        targetSelect.value = draft.caseId;
+        var draftCase = book.cases.find(function (item) { return item.id === targetSelect.value; });
         text(
-          byId('casebookDraftCaseLabel'),
-          book.definition.caseLabel + ': ' + (draftCase ? draftCase.name : 'Unavailable target')
+          byId('casebookDraftCaseContext'),
+          draftCase && draftCase.context
+            ? 'Current stable context: ' + draftCase.context
+            : 'No stable context is saved for this case.'
         );
         var draftTime = byId('casebookDraftObservedAt');
         draftTime.dateTime = draft.observedAt;
@@ -362,9 +514,7 @@
         });
         byId('casebookDraftNote').value = draft.note || '';
         byId('casebookDraftInterpretation').value = draft.interpretation || '';
-        var warnings = byId('casebookDraftWarnings');
-        clear(warnings);
-        (draft.warnings || []).forEach(function (warning) { warnings.appendChild(make('li', warning, '')); });
+        renderDraftWarnings(book);
         clearError('casebookDraftError');
         panel.hidden = false;
         updateDraftLock();
@@ -378,6 +528,7 @@
         var caseItem = selectedCase(book);
         var dateControl = byId('casebookObservedAt');
         var narrativeControl = byId('casebookNarrative');
+        if (blockUnsavedCaseContext()) return;
         try {
           if (voiceBusy()) throw new Error('Finish dictation before creating a review draft.');
           if (!caseItem) throw new Error('Choose a valid case first.');
@@ -385,14 +536,21 @@
             throw new Error('Choose a valid observation date and time.');
           }
           var parsed = Model.parseNarrative(narrativeControl.value, book.parameters, { source: captureSource });
+          var mentionedCases = Model.findCaseMentions(narrativeControl.value, book.cases);
+          var targetCase = caseItem;
+          if (mentionedCases.length === 1 && mentionedCases[0].id !== caseItem.id) {
+            targetCase = mentionedCases[0];
+          }
           draft = {
-            caseId: caseItem.id,
+            caseId: targetCase.id,
+            initialCaseId: caseItem.id,
+            mentionedCaseIds: mentionedCases.map(function (item) { return item.id; }),
             observedAt: new Date(dateControl.value).toISOString(),
             values: parsed.values,
             note: parsed.note,
             interpretation: parsed.interpretation,
             source: parsed.source,
-            warnings: parsed.warnings
+            warnings: (parsed.warnings || []).slice()
           };
           renderDraft(book);
           text(
@@ -420,11 +578,13 @@
         if (!book || !draft) return;
         clearError('casebookDraftError');
         try {
-          var currentCase = selectedCase(book);
+          var reviewedCaseId = String(byId('casebookDraftCaseSelect').value || '');
+          var reviewedCase = book.cases.find(function (item) { return item.id === reviewedCaseId; });
           var currentObservedAt = new Date(byId('casebookObservedAt').value).toISOString();
-          if (!currentCase || currentCase.id !== draft.caseId || currentObservedAt !== draft.observedAt) {
-            throw new Error('This draft no longer matches its reviewed case or observation time. Discard it and create a new review draft.');
+          if (!reviewedCase || currentObservedAt !== draft.observedAt) {
+            throw new Error('This draft no longer matches its reviewed target or observation time. Discard it and create a new review draft.');
           }
+          draft.caseId = reviewedCase.id;
           var values = Object.create(null);
           document.querySelectorAll('[data-casebook-parameter-key]').forEach(function (control) {
             var value = control.value;
@@ -449,7 +609,11 @@
           byId('casebookDraftReview').hidden = true;
           byId('casebookObservedAt').value = localDateTimeValue(new Date());
           updateDraftLock();
-          text(byId('casebookCaptureStatus'), 'Reviewed entry recorded locally. Download the workspace when you are ready to keep it.');
+          text(
+            byId('casebookCaptureStatus'),
+            'Reviewed entry recorded locally for ' + reviewedCase.name
+              + '. The same case remains selected and is ready for another observation; no prior values were copied.'
+          );
           refresh();
           host.setView('casebook');
           byId('casebookNarrative').focus();
@@ -459,13 +623,104 @@
         }
       }
 
+      function updateRepeatButton(book) {
+        var button = byId('casebookStartAnotherButton');
+        if (!button) return;
+        var caseItem = selectedCase(book);
+        var hasPrevious = Boolean(caseItem && Model.caseTimeline(book, caseItem.id).length);
+        var hasUnreviewedText = Boolean(byId('casebookNarrative') && byId('casebookNarrative').value.trim());
+        button.disabled = !hasPrevious || Boolean(draft) || voiceBusy() || hasUnreviewedText || contextDirty;
+        button.title = hasUnreviewedText
+          ? 'Review or clear the current observation text first.'
+          : contextDirty
+            ? 'Save or undo the case-context edits first.'
+            : '';
+      }
+
+      function renderLatestObservation(book) {
+        var caseItem = selectedCase(book);
+        if (!caseItem) {
+          text(byId('casebookLatestObservationSummary'), 'Choose a case before logging an observation.');
+          updateRepeatButton(book);
+          return;
+        }
+        var latest = Model.caseTimeline(book, caseItem.id)[0] || null;
+        text(
+          byId('casebookLatestObservationSummary'),
+          latest
+            ? 'Latest recorded entry for ' + caseItem.name + ': ' + safeDateLabel(latest.observedAt)
+              + '. Prior values and notes are never copied into a new entry.'
+            : 'No prior observation is recorded for ' + caseItem.name + '.'
+        );
+        updateRepeatButton(book);
+      }
+
+      function startAnotherObservation() {
+        var book = currentBook();
+        var caseItem = selectedCase(book);
+        if (!caseItem || draft || voiceBusy() || blockUnsavedCaseContext()) return;
+        if (!Model.caseTimeline(book, caseItem.id).length) return;
+        var narrative = byId('casebookNarrative');
+        if (narrative.value.trim()) {
+          setError(
+            'casebookCaptureError',
+            'Review or clear the current observation text before starting another entry.',
+            narrative
+          );
+          return;
+        }
+        byId('casebookObservedAt').value = localDateTimeValue(new Date());
+        captureSource = 'typed';
+        clearError('casebookCaptureError', ['casebookObservedAt', 'casebookNarrative']);
+        text(
+          byId('casebookCaptureStatus'),
+          'Ready for another observation for ' + caseItem.name + '. No prior values, notes, or interpretation were copied.'
+        );
+        updateRepeatButton(book);
+        narrative.focus();
+        announce('Ready for another observation. No prior values or notes were copied.');
+      }
+
+      function renderAgentGoalHint(book) {
+        var goalControl = byId('casebookAgentGoal');
+        var button = byId('prepareCasebookAgentButton');
+        var hint = byId('casebookAgentGoalHint');
+        var caseItem = selectedCase(book);
+        var timeline = caseItem ? Model.caseTimeline(book, caseItem.id) : [];
+        var available = Boolean(caseItem && timeline.length);
+        var goal = goalControl && goalControl.value === 'feedback' ? 'feedback' : 'brainstorm';
+        var learnerGuardrail = book && book.definition.privacyMode === 'learner-support'
+          ? ' The request also prohibits diagnosis, ranking, grading, placement, disability, or hidden-trait inferences.'
+          : '';
+
+        if (goalControl) goalControl.disabled = !available;
+        if (button) button.disabled = !available;
+        if (!caseItem) {
+          text(hint, 'Choose a case with a recorded observation before preparing agent help. You will always review the selected rows, give consent, and approve the request before anything is sent.');
+          return;
+        }
+        if (!timeline.length) {
+          text(hint, 'Record and review an observation for ' + caseItem.name + ' before preparing agent help. You will always review the selected rows, give consent, and approve the request before anything is sent.' + learnerGuardrail);
+          return;
+        }
+        text(
+          hint,
+          (goal === 'feedback'
+            ? 'Feedback prepares only the latest recorded row for ' + caseItem.name + '.'
+            : 'Brainstorming prepares ' + Math.min(3, timeline.length) + ' recent recorded row'
+              + (Math.min(3, timeline.length) === 1 ? '' : 's') + ' for ' + caseItem.name + '.')
+            + ' You will always review the selected rows, give consent, and approve the request before anything is sent.'
+            + learnerGuardrail
+        );
+      }
+
       function renderTimeline(book) {
         var caseItem = selectedCase(book);
         var list = byId('casebookTimelineList');
         clear(list);
         if (!caseItem) {
           text(byId('casebookTimelineSummary'), 'Choose a case to review its observations.');
-          byId('prepareCasebookAgentButton').disabled = true;
+          renderAgentGoalHint(book);
           return;
         }
         var timeline = Model.caseTimeline(book, caseItem.id);
@@ -473,7 +728,7 @@
           byId('casebookTimelineSummary'),
           timeline.length + ' recorded entr' + (timeline.length === 1 ? 'y' : 'ies') + ' for ' + caseItem.name + '.'
         );
-        byId('prepareCasebookAgentButton').disabled = !timeline.length;
+        renderAgentGoalHint(book);
         if (!timeline.length) {
           list.appendChild(make('li', 'No observations yet. The first reviewed entry will appear here.', 'casebook-timeline-item'));
         }
@@ -505,6 +760,190 @@
           }
           list.appendChild(item);
         });
+      }
+
+      function fillHistoryPicker(book) {
+        var select = byId('casebookHistoryParameter');
+        var previous = select.value;
+        clear(select);
+        book.parameters.forEach(function (parameter) {
+          var option = document.createElement('option');
+          option.value = parameter.key;
+          option.textContent = parameter.label + (parameter.unit ? ' (' + parameter.unit + ')' : '');
+          select.appendChild(option);
+        });
+        if (book.parameters.some(function (parameter) { return parameter.key === previous; })) {
+          select.value = previous;
+        }
+      }
+
+      function historyOmissionText(history) {
+        var missing = Number(history.missingValueCount) || 0;
+        var undated = Number(history.undatedValueCount) || 0;
+        return 'Blank or missing values omitted: ' + missing + '. Undated values omitted: ' + undated + '.';
+      }
+
+      function historySummary(history) {
+        var label = history.parameter.label;
+        var caseName = history.case.name;
+        var first = history.firstPoint;
+        var latest = history.latestPoint;
+        var kind = history.firstToLatest.kind;
+        var summary = '';
+        if (kind === 'none') {
+          summary = 'No dated ' + label + ' values are recorded for ' + caseName + '.';
+        } else if (kind === 'single') {
+          summary = 'One dated ' + label + ' value is recorded for ' + caseName + ': ' + first.displayValue + '.';
+        } else if (kind === 'same') {
+          summary = 'For ' + caseName + ', the first and latest recorded ' + label + ' values are the same: ' + latest.displayValue + '.';
+        } else if (kind === 'higher') {
+          summary = 'For ' + caseName + ', the latest recorded ' + label + ' value is higher than the first: ' + latest.displayValue + ' compared with ' + first.displayValue + '.';
+        } else if (kind === 'lower') {
+          summary = 'For ' + caseName + ', the latest recorded ' + label + ' value is lower than the first: ' + latest.displayValue + ' compared with ' + first.displayValue + '.';
+        } else {
+          summary = 'For ' + caseName + ', the first and latest recorded ' + label + ' values changed: ' + first.displayValue + ' and ' + latest.displayValue + '.';
+        }
+        return summary + ' ' + historyOmissionText(history);
+      }
+
+      function appendSvgElement(svg, tag, attributes, value) {
+        var node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        Object.keys(attributes || {}).forEach(function (name) {
+          node.setAttribute(name, String(attributes[name]));
+        });
+        if (value !== undefined && value !== null) node.textContent = String(value);
+        svg.appendChild(node);
+        return node;
+      }
+
+      function renderNumericHistoryVisual(history) {
+        var visual = byId('casebookHistoryVisual');
+        var svg = byId('casebookHistorySvg');
+        clear(svg);
+        visual.hidden = true;
+        if (history.parameter.type !== 'number' || history.points.length < 2 || history.points.length > 50 || !history.numericRange) return;
+
+        var values = history.points.map(function (point) { return Number(point.value); });
+        var times = history.points.map(function (point) { return new Date(point.observedAt).getTime(); });
+        if (values.some(function (value) { return !Number.isFinite(value); }) || times.some(function (value) { return !Number.isFinite(value); })) return;
+
+        var width = 800;
+        var height = 180;
+        var left = 50;
+        var right = 18;
+        var top = 18;
+        var bottom = 22;
+        var plotWidth = width - left - right;
+        var plotHeight = height - top - bottom;
+        var firstTime = Math.min.apply(null, times);
+        var latestTime = Math.max.apply(null, times);
+        var sameTime = firstTime === latestTime;
+        var minimum = Number(history.numericRange.min);
+        var maximum = Number(history.numericRange.max);
+        var sameValue = minimum === maximum;
+        var coordinates = history.points.map(function (point, index) {
+          var xRatio = sameTime ? index / (history.points.length - 1) : (times[index] - firstTime) / (latestTime - firstTime);
+          var yRatio = sameValue ? 0.5 : (maximum - values[index]) / (maximum - minimum);
+          return {
+            x: left + xRatio * plotWidth,
+            y: top + yRatio * plotHeight
+          };
+        });
+
+        [top, top + plotHeight, sameValue ? top + plotHeight / 2 : null].forEach(function (y) {
+          if (y === null) return;
+          appendSvgElement(svg, 'line', {
+            x1: left,
+            y1: y,
+            x2: width - right,
+            y2: y,
+            'class': 'casebook-history-grid-line'
+          });
+        });
+        appendSvgElement(svg, 'text', {
+          x: 4,
+          y: top + 5,
+          'class': 'casebook-history-axis-label'
+        }, Model.valueText(history.parameter, maximum));
+        appendSvgElement(svg, 'text', {
+          x: 4,
+          y: top + plotHeight,
+          'class': 'casebook-history-axis-label'
+        }, Model.valueText(history.parameter, minimum));
+        appendSvgElement(svg, 'polyline', {
+          points: coordinates.map(function (point) { return point.x.toFixed(2) + ',' + point.y.toFixed(2); }).join(' '),
+          'class': 'casebook-history-line'
+        });
+        coordinates.forEach(function (point) {
+          appendSvgElement(svg, 'circle', {
+            cx: point.x.toFixed(2),
+            cy: point.y.toFixed(2),
+            r: 4,
+            'class': 'casebook-history-point'
+          });
+        });
+        text(byId('casebookHistoryScaleFirst'), 'First · ' + safeDateLabel(history.firstPoint.observedAt));
+        text(byId('casebookHistoryScaleLatest'), 'Latest · ' + safeDateLabel(history.latestPoint.observedAt));
+        visual.hidden = false;
+      }
+
+      function renderParameterHistory(book) {
+        var body = byId('casebookHistoryBody');
+        var visual = byId('casebookHistoryVisual');
+        var svg = byId('casebookHistorySvg');
+        clear(body);
+        clear(svg);
+        visual.hidden = true;
+        var caseItem = selectedCase(book);
+        var parameterKey = byId('casebookHistoryParameter').value;
+        var parameter = book.parameters.find(function (item) { return item.key === parameterKey; });
+        text(
+          byId('casebookHistoryBoundary'),
+          book.definition.privacyMode === 'learner-support'
+            ? 'Lines connect recorded numeric points only; gaps are not estimated. Values do not diagnose, rank, or establish progress.'
+            : 'Lines connect recorded numeric points only; gaps are not estimated. This view does not establish a cause or explain a change.'
+        );
+        if (!caseItem || !parameter) {
+          text(byId('casebookHistorySummary'), 'Choose a case and parameter to review recorded history.');
+          text(byId('casebookHistoryCaption'), 'Choose a case and parameter to review recorded history.');
+          return;
+        }
+        try {
+          var history = Model.buildParameterHistory(book, caseItem.id, parameter.key);
+          var summary = historySummary(history);
+          if (history.parameter.type === 'number' && history.points.length > 50) {
+            summary += ' The exact table shows every dated value; the visual is limited to 50 points.';
+          }
+          text(byId('casebookHistorySummary'), summary);
+          text(
+            byId('casebookHistoryCaption'),
+            parameter.label + ' for ' + caseItem.name + ', oldest recorded value first. '
+              + history.points.length + ' dated value' + (history.points.length === 1 ? '' : 's') + ' shown.'
+          );
+          history.points.forEach(function (point) {
+            var row = document.createElement('tr');
+            var observed = document.createElement('th');
+            var time = document.createElement('time');
+            observed.scope = 'row';
+            time.dateTime = point.observedAt;
+            time.textContent = safeDateLabel(point.observedAt);
+            observed.appendChild(time);
+            row.appendChild(observed);
+            row.appendChild(make('td', point.displayValue, ''));
+            body.appendChild(row);
+          });
+          if (!history.points.length) {
+            var emptyRow = document.createElement('tr');
+            var emptyCell = make('td', 'No dated recorded values are available for this parameter.', '');
+            emptyCell.colSpan = 2;
+            emptyRow.appendChild(emptyCell);
+            body.appendChild(emptyRow);
+          }
+          renderNumericHistoryVisual(history);
+        } catch (error) {
+          text(byId('casebookHistorySummary'), String(error && error.message || error));
+          text(byId('casebookHistoryCaption'), 'Parameter history is unavailable.');
+        }
       }
 
       function renderReflections(book) {
@@ -560,16 +999,11 @@
         var book = currentBook();
         var caseItem = selectedCase(book);
         if (!caseItem) return;
-        var ids = Model.caseTimeline(book, caseItem.id).slice(0, 3).map(function (observation) { return observation.id; });
-        if (!ids.length) return;
+        var goal = byId('casebookAgentGoal').value;
+        var request = Model.buildAgentReflectionRequest(book, caseItem.id, goal);
+        if (!request.recordIds.length) return;
         abortVoice('view-hidden');
-        host.prepareAgentRows(ids, [
-          'Review only the selected observation rows.',
-          'Separate recorded evidence from human interpretation.',
-          'Describe possible patterns, important limitations, questions to investigate, and useful next observations.',
-          'Do not infer a cause, diagnosis, disability, placement, grade, or hidden student trait.',
-          'Do not propose cell changes.'
-        ].join(' '));
+        host.prepareAgentRows(request.recordIds, request.instruction);
       }
 
       function appendTranscript(finalText, interimText) {
@@ -679,6 +1113,7 @@
           reason: next.reason || ''
         };
         updateVoiceButton();
+        updateRepeatButton(currentBook());
         if (voiceStatus.message) text(byId('casebookCaptureStatus'), voiceStatus.message);
         if (voiceStatus.privacy) {
           text(byId('casebookVoiceDisclosure'), voiceStatus.privacy + ' Dictation never saves automatically; no raw audio is stored by AlloSheet.');
@@ -770,14 +1205,21 @@
         draft = null;
         activeCaseId = '';
         captureSource = 'typed';
+        contextDirty = false;
         if (byId('casebookNarrative')) byId('casebookNarrative').value = '';
         if (byId('casebookNewCaseName')) byId('casebookNewCaseName').value = '';
+        if (byId('casebookCaseContext')) {
+          byId('casebookCaseContext').value = '';
+          byId('casebookCaseContext').dataset.caseId = '';
+        }
         if (byId('casebookDraftReview')) byId('casebookDraftReview').hidden = true;
         if (byId('casebookObservedAt')) byId('casebookObservedAt').value = localDateTimeValue(new Date());
         clearError('casebookCaptureError', ['casebookNarrative', 'casebookObservedAt']);
         clearError('casebookDraftError');
         clearError('casebookCaseError', ['casebookNewCaseName']);
+        clearError('casebookCaseContextError', ['casebookCaseContext']);
         text(byId('casebookCaptureStatus'), '');
+        text(byId('casebookCaseContextStatus'), '');
         updateDraftLock();
       }
 
@@ -821,9 +1263,13 @@
             : 'Observation boundary: expected ranges are author-provided context. Local prompts and comparisons never establish cause.'
         );
         fillCaseSelect(book);
+        renderCaseContext(book, false);
         if (!byId('casebookObservedAt').value) byId('casebookObservedAt').value = localDateTimeValue(new Date());
+        renderLatestObservation(book);
+        fillHistoryPicker(book);
         fillComparisonPicker(book);
         renderTimeline(book);
+        renderParameterHistory(book);
         renderReflections(book);
         renderComparison(book);
         if (draft) renderDraft(book);
@@ -864,9 +1310,28 @@
           );
         });
         byId('casebookCaseSelect').addEventListener('change', function () {
+          if (contextDirty) {
+            this.value = activeCaseId;
+            blockUnsavedCaseContext();
+            return;
+          }
           activeCaseId = this.value;
           refresh();
           announce('Case changed. Timeline, reflections, and comparison updated.');
+        });
+        byId('casebookCaseContextForm').addEventListener('submit', saveCaseContext);
+        byId('resetCasebookCaseContextButton').addEventListener('click', resetCaseContext);
+        byId('casebookCaseContext').addEventListener('input', function () {
+          var book = currentBook();
+          var caseItem = selectedCase(book);
+          contextDirty = Boolean(caseItem) && this.value !== String(caseItem.context || '');
+          clearError('casebookCaseContextError', ['casebookCaseContext']);
+          text(
+            byId('casebookCaseContextStatus'),
+            contextDirty ? 'Context edits are not saved yet.' : ''
+          );
+          updateCaseContextActions(book);
+          updateRepeatButton(book);
         });
         byId('casebookAddCaseButton').addEventListener('click', addCase);
         byId('casebookNewCaseName').addEventListener('keydown', function (event) {
@@ -880,11 +1345,41 @@
           if (event.isTrusted && !this.value.trim()) captureSource = 'typed';
           else if (event.isTrusted && captureSource === 'voice') captureSource = 'mixed';
           clearError('casebookCaptureError', ['casebookNarrative']);
+          updateRepeatButton(currentBook());
         });
         byId('casebookVoiceButton').addEventListener('click', toggleVoice);
+        byId('casebookStartAnotherButton').addEventListener('click', startAnotherObservation);
         byId('saveCasebookObservationButton').addEventListener('click', saveObservation);
         byId('discardCasebookDraftButton').addEventListener('click', discardDraft);
+        byId('casebookDraftCaseSelect').addEventListener('change', function () {
+          if (!draft) return;
+          var book = currentBook();
+          var selectedCaseId = this.value;
+          var caseItem = book && book.cases.find(function (item) { return item.id === selectedCaseId; });
+          if (!caseItem) return;
+          draft.caseId = caseItem.id;
+          text(
+            byId('casebookDraftCaseContext'),
+            caseItem.context
+              ? 'Current stable context: ' + caseItem.context
+              : 'No stable context is saved for this case.'
+          );
+          renderDraftWarnings(book);
+          clearError('casebookDraftError');
+          announce(
+            'Draft target changed to ' + caseItem.name + '. '
+              + (caseItem.context ? 'Current stable context is available for review.' : 'No stable context is saved.')
+          );
+        });
         byId('prepareCasebookAgentButton').addEventListener('click', prepareAgentReflection);
+        byId('casebookAgentGoal').addEventListener('change', function () {
+          var book = currentBook();
+          if (book) renderAgentGoalHint(book);
+        });
+        byId('casebookHistoryParameter').addEventListener('change', function () {
+          var book = currentBook();
+          if (book) renderParameterHistory(book);
+        });
         byId('casebookCompareParameter').addEventListener('change', function () {
           var book = currentBook();
           if (book) renderComparison(book);
@@ -917,7 +1412,9 @@
         openBuilder: openBuilder,
         stopVoice: stopVoice,
         abortVoice: abortVoice,
-        resetForWorkspace: resetForWorkspace
+        resetForWorkspace: resetForWorkspace,
+        hasPendingEdits: hasPendingEdits,
+        focusPendingEdits: focusPendingEdits
       });
     }
 

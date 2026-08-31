@@ -1370,10 +1370,10 @@
 
         audio.onended = playNext;
         return {
-            stop: () => _cancelStream(
+            stop: (notifyDone = true) => _cancelStream(
                 stream,
                 _abortError('Kokoro stream playback stopped'),
-                true
+                !!notifyDone
             )
         };
     }

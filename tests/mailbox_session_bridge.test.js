@@ -15,6 +15,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const publicMailboxSource = fs.readFileSync(path.join(ROOT, 'desktop/web-app', 'public', 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const shareSessionSource = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
 
 function sliceBetween(source, startMarker, endMarker) {
     const start = source.indexOf(startMarker);
@@ -770,8 +771,8 @@ describe('three-copy sync pins (Phase C sections)', () => {
     it('ships the canonical mailbox server script through the extracted module path', () => {
         expect(publicMailboxSource).toBe(gsSource);
         expect(anti).not.toContain('const ALLO_MB_SCRIPT_SOURCE = `');
-        expect(anti).toMatch(/loadModule\('MailboxScriptSource', 'https:\/\/alloflow-cdn\.pages\.dev\/mailbox_script_source_module\.js(?:\?v=[a-z0-9]+)?'\)/);
-        expect(anti).toContain('const ALLO_MB_SCRIPT_FALLBACK_GZIP = ');
+        expect(anti).toMatch(/window\.__alloLazyMailboxScriptSource = .*loadModule\('MailboxScriptSource', 'https:\/\/alloflow-cdn\.pages\.dev\/mailbox_script_source_module\.js(?:\?v=[a-z0-9]+)?'\)/);
+        expect(anti).toContain("const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';");
         expect(anti).toContain('const _alloValidateMailboxScriptSource = async (candidate) => {');
         expect(anti).toContain('const _alloDecodeMailboxScriptFallback = async () => {');
     });
@@ -786,10 +787,10 @@ describe('three-copy sync pins (Phase C sections)', () => {
             // The old CDN fetch was CORS-fragile in Canvas and dead offline.
             expect(source).not.toContain("const res = await fetch('https://alloflow-cdn.pages.dev/apps_script");
             expect(source).toContain('v: Number(mbHello && mbHello.v) || 0');
-            // Banner threshold must track the shipped server VERSION so a
-            // future bump cannot silently stop nudging teachers to update.
-            expect(source).toContain(`Number(mbConfig.v) < ${serverVersion}`);
         });
+        // The setup banner now lives in the extracted share-session view. Its
+        // threshold must still track the shipped server VERSION.
+        expect(shareSessionSource).toContain(`Number(mbConfig.v) < ${serverVersion}`);
     });
 });
 

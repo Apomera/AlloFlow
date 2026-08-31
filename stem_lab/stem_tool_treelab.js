@@ -307,6 +307,152 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     return sp.respRate * living;
   }
 
+  // Resolve the annual carbon budget into a causal four-season story without
+  // changing its arithmetic. This is a disaggregation of the same gross and
+  // maintenance totals used by simulateYear, not four additional simulation
+  // steps: summing every phase therefore recovers the annual gross, respiration
+  // and net exactly (apart from normal floating-point precision).
+  //
+  // reserveChange is an INTERNAL transfer and is deliberately kept separate from
+  // net. A negative value means stored carbon is being drawn down; a positive value
+  // means that debt is being repaid. Treating a reserve draw as photosynthesis would
+  // create carbon from nowhere, which is precisely the misconception this trace is
+  // meant to prevent.
+  function seasonalCarbonTrace(st, sp, env) {
+    var rawTree = st && typeof st === 'object' ? st : {};
+    var rawSpecies = sp && typeof sp === 'object' ? sp : {};
+    var fallbackSpecies = speciesById(rawSpecies.id || rawTree.speciesId);
+    var safeSpecies = Object.assign({}, fallbackSpecies, rawSpecies);
+    safeSpecies.id = typeof safeSpecies.id === 'string' ? safeSpecies.id : fallbackSpecies.id;
+    safeSpecies.leafType = safeSpecies.leafType === 'needle' ? 'needle' : 'broadleaf';
+    safeSpecies.amax = Math.max(0, finiteOr(safeSpecies.amax, fallbackSpecies.amax));
+    safeSpecies.respRate = Math.max(0, finiteOr(safeSpecies.respRate, fallbackSpecies.respRate));
+    safeSpecies.droughtTol = clamp(finiteOr(safeSpecies.droughtTol, fallbackSpecies.droughtTol), 0, 1);
+
+    var baseTree = newTree(fallbackSpecies.id);
+    var safeTree = Object.assign({}, baseTree, rawTree);
+    ['leafArea', 'leafMass', 'rootMass', 'sapwoodMass'].forEach(function (key) {
+      safeTree[key] = Math.max(0, finiteOr(safeTree[key], baseTree[key]));
+    });
+    safeTree.reserves = finiteOr(safeTree.reserves, baseTree.reserves);
+
+    var rawEnv = env && typeof env === 'object' ? env : {};
+    var safeEnv = {
+      tempC: finiteOr(rawEnv.tempC, 22),
+      light: finiteOr(rawEnv.light, 0.8),
+      co2ppm: finiteOr(rawEnv.co2ppm, 420),
+      soilWater: finiteOr(rawEnv.soilWater, 0.7),
+      forcedClose: rawEnv.forcedClose === true,
+      drought: rawEnv.drought === true
+    };
+
+    var aperture = stomatalAperture(
+      safeEnv.soilWater, safeSpecies.droughtTol, safeEnv.forcedClose);
+    var annualPhoto = grossPhotosynthesis(
+      safeSpecies, safeEnv, safeTree.leafArea, aperture);
+    var annualGross = Math.max(0, finiteOr(annualPhoto.gross, 0));
+    var annualResp = Math.max(0, finiteOr(
+      maintenanceRespiration(safeSpecies, safeTree), 0));
+
+    // Whole-year drought or severe heat shifts some production out of the summer
+    // peak. The peak remains the largest season because env is an annual scenario,
+    // not a month-by-month weather record; the annual engine already applies the
+    // full water and temperature penalty to the total amount fixed.
+    var waterStress = clamp((0.55 - clamp(safeEnv.soilWater, 0, 1)) / 0.55, 0, 1);
+    var heatStress = clamp((safeEnv.tempC - 28) / 17, 0, 1);
+    var stressShift = clamp(waterStress * 0.08 + heatStress * 0.04, 0, 0.12);
+    var isNeedle = safeSpecies.leafType === 'needle';
+    var photoWeights = isNeedle
+      ? [0.22 + stressShift * 0.45, 0.48 - stressShift * 0.75,
+        0.23 + stressShift * 0.30, 0.07]
+      : [0.24 + stressShift * 0.55, 0.59 - stressShift,
+        0.169 + stressShift * 0.45, 0.001];
+    var respWeights = isNeedle
+      ? [0.24, 0.32, 0.25, 0.19]
+      : [0.22, 0.34, 0.25, 0.19];
+
+    function splitTotal(total, weights) {
+      var weightTotal = weights.reduce(function (sum, value) {
+        return sum + Math.max(0, finiteOr(value, 0));
+      }, 0);
+      if (weightTotal <= 0) return [0, 0, 0, total];
+      var parts = [], used = 0;
+      for (var i = 0; i < weights.length - 1; i++) {
+        var part = total * Math.max(0, finiteOr(weights[i], 0)) / weightTotal;
+        parts.push(part);
+        used += part;
+      }
+      parts.push(total - used);
+      return parts;
+    }
+
+    var grossBySeason = splitTotal(annualGross, photoWeights);
+    var respBySeason = splitTotal(annualResp, respWeights);
+
+    // Deciduous trees pay a conspicuous stored-carbon bill before the new canopy
+    // can support itself. Evergreens also invest in new needles and shoots, but the
+    // retained canopy makes that spring debt much smaller. Summer begins repayment;
+    // autumn resorption and storage clear the remainder before winter.
+    var turnoverScale = Math.max(annualGross, annualResp, 0.001);
+    var reserveInvestment = turnoverScale * (isNeedle ? 0.025 : 0.09);
+    var summerRecovery = reserveInvestment * (isNeedle ? 0.55 : 0.35);
+    var reserveChanges = [
+      -reserveInvestment,
+      summerRecovery,
+      reserveInvestment - summerRecovery,
+      0
+    ];
+    var phaseDefs = isNeedle ? [
+      { id: 'spring', label: 'Spring', phenology: 'budbreak-and-needle-renewal', reserveRole: 'draw-for-new-growth' },
+      { id: 'summer', label: 'Summer', phenology: 'full-canopy', reserveRole: 'repay-spring-debt' },
+      { id: 'autumn', label: 'Autumn', phenology: 'older-needle-turnover', reserveRole: 'resorption-and-storage' },
+      { id: 'winter', label: 'Winter', phenology: 'retained-needles', reserveRole: 'maintenance' }
+    ] : [
+      { id: 'spring', label: 'Spring', phenology: 'budburst-and-leaf-expansion', reserveRole: 'draw-for-budburst' },
+      { id: 'summer', label: 'Summer', phenology: 'full-canopy', reserveRole: 'repay-spring-debt' },
+      { id: 'autumn', label: 'Autumn', phenology: 'resorption-and-leaf-fall', reserveRole: 'resorption-and-storage' },
+      { id: 'winter', label: 'Winter', phenology: 'leafless-dormancy', reserveRole: 'maintenance' }
+    ];
+
+    var debt = 0;
+    var phases = phaseDefs.map(function (definition, index) {
+      debt = Math.max(0, debt - reserveChanges[index]);
+      var gross = grossBySeason[index];
+      var resp = respBySeason[index];
+      return {
+        id: definition.id,
+        label: definition.label,
+        order: index,
+        phenology: definition.phenology,
+        reserveRole: definition.reserveRole,
+        photosynthesisShare: photoWeights[index],
+        respirationShare: respWeights[index],
+        gross: gross,
+        resp: resp,
+        net: gross - resp,
+        reserveChange: reserveChanges[index],
+        reserveDebtAfter: debt
+      };
+    });
+    var reserveBalance = reserveChanges.reduce(function (sum, value) { return sum + value; }, 0);
+
+    return {
+      version: 1,
+      leafType: safeSpecies.leafType,
+      phases: phases,
+      annual: {
+        gross: annualGross,
+        resp: annualResp,
+        net: annualGross - annualResp,
+        aperture: aperture,
+        limiting: annualPhoto.limiting.id,
+        reserveInvestment: reserveInvestment,
+        reserveRecovered: reserveInvestment,
+        reserveBalance: Math.abs(reserveBalance) < 1e-12 ? 0 : reserveBalance
+      }
+    };
+  }
+
   // Convert a year's wood carbon into a ring width. Ring width falls as the tree
   // widens even when the tree is gaining MORE wood each year, because the same volume
   // is spread around a longer circumference. Students read narrow outer rings as
@@ -362,6 +508,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       alive: true,
       causeOfDeath: null,
       history: []
+    };
+  }
+
+  // Project the pipe-model constraint before mutating the tree. Keeping this in one
+  // pure helper makes the learner-facing preview and the annual engine tell exactly
+  // the same story: wood builds living sapwood first, then that plumbing limits the
+  // leaf tissue the tree can support.
+  function projectCanopySupport(st, toLeaf, toWood) {
+    var leafInvestment = Math.max(0, finiteOr(toLeaf, 0));
+    var woodInvestment = Math.max(0, finiteOr(toWood, 0));
+    var converted = st.sapwoodMass * 0.022;
+    var sapwoodMass = clamp(st.sapwoodMass + woodInvestment * 0.74 - converted, 0.05, 90000);
+    var leafCapacity = 0.52 * Math.pow(Math.max(0.02, sapwoodMass), 0.8);
+    var leafDemand = st.leafMass * 0.62 + leafInvestment * 3.4;
+    var supportedLeafMass = clamp(Math.min(leafDemand, leafCapacity), 0.01, 600);
+    var blockedLeafMass = Math.max(0, leafDemand - leafCapacity);
+    var utilisation = leafCapacity > 0 ? leafDemand / leafCapacity : 1;
+    return {
+      converted: converted,
+      sapwoodMass: sapwoodMass,
+      leafDemand: leafDemand,
+      leafCapacity: leafCapacity,
+      supportedLeafMass: supportedLeafMass,
+      blockedLeafMass: blockedLeafMass,
+      leafArea: clamp(supportedLeafMass * 14, 0.05, 900),
+      state: blockedLeafMass > Math.max(0.001, leafCapacity * 0.02)
+        ? 'pipe-limited' : (utilisation >= 0.82 ? 'nearly-full' : 'capacity-available')
     };
   }
 
@@ -422,9 +595,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
     // Sapwood converts to heartwood as the tree ages. That is why an old tree's
     // respiration bill does not rise forever: the dead core is free to carry.
-    var converted = st.sapwoodMass * 0.022;
-    next.sapwoodMass = clamp(st.sapwoodMass + toWood * 0.74 - converted, 0.05, 90000);
-    next.heartwoodMass = st.heartwoodMass + converted;
+    var canopySupport = projectCanopySupport(st, toLeaf, toWood);
+    next.sapwoodMass = canopySupport.sapwoodMass;
+    next.heartwoodMass = st.heartwoodMass + canopySupport.converted;
 
     next.rootMass = clamp(st.rootMass + toRoot * 0.7 - st.rootMass * 0.06, 0.05, 4000);
 
@@ -433,10 +606,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // rather than the size of one year's leaf investment. Without this the canopy
     // equilibrates at a few times the annual flux and the tree can never accumulate:
     // a 60-year oak came out barely two metres tall.
-    var leafCap = 0.52 * Math.pow(Math.max(0.02, next.sapwoodMass), 0.8);
-    var leafGrown = st.leafMass * 0.62 + toLeaf * 3.4;
-    next.leafMass = clamp(Math.min(leafGrown, leafCap), 0.01, 600);
-    next.leafArea = clamp(next.leafMass * 14, 0.05, 900);
+    next.leafMass = canopySupport.supportedLeafMass;
+    next.leafArea = canopySupport.leafArea;
 
     next.reserves = reserves;
     next.seedsBanked = st.seedsBanked + toRepro;
@@ -473,6 +644,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     }]);
     if (next.history.length > 400) next.history = next.history.slice(-400);
     return next;
+  }
+
+  // Summarise a discrete time jump once, at the moment it happens. The receipt UI
+  // reads this immutable evidence instead of comparing against whatever inputs the
+  // learner may move next.
+  function summariseYearAdvance(before, after, requestedYears) {
+    if (!before || !after) return null;
+    var startAge = Math.max(0, Math.round(finiteOr(before.age, 0)));
+    var endAge = Math.max(startAge, Math.round(finiteOr(after.age, startAge)));
+    var completed = Math.max(0, endAge - startAge);
+    var records = Array.isArray(after.history) ? after.history.filter(function (rec) {
+      return rec && typeof rec.year === 'number' && rec.year >= startAge && rec.year < endAge;
+    }) : [];
+    var rings = Array.isArray(after.rings) ? after.rings.filter(function (ring) {
+      return ring && typeof ring.year === 'number' && ring.year >= startAge && ring.year < endAge;
+    }) : [];
+    var limiterCounts = {};
+    var carbonTotal = 0;
+    var deficitYears = 0;
+    records.forEach(function (rec) {
+      carbonTotal += finiteOr(rec.net, 0);
+      if (finiteOr(rec.net, 0) < 0) deficitYears += 1;
+      var id = rec.limiting === 'co2' && finiteOr(rec.aperture, 1) < 0.6
+        ? 'water' : rec.limiting;
+      if (['light', 'water', 'temperature', 'co2'].indexOf(id) >= 0) {
+        limiterCounts[id] = (limiterCounts[id] || 0) + 1;
+      }
+    });
+    var dominantLimiter = null;
+    Object.keys(limiterCounts).forEach(function (id) {
+      if (!dominantLimiter || limiterCounts[id] > limiterCounts[dominantLimiter]) {
+        dominantLimiter = id;
+      }
+    });
+    var newestRing = rings.length ? rings[rings.length - 1] : null;
+    return {
+      version: 1,
+      requestedYears: clamp(Math.round(finiteOr(requestedYears, completed)), 0, 100),
+      completedYears: completed,
+      capturedYears: records.length,
+      ageBefore: startAge,
+      ageAfter: endAge,
+      carbonTotal: round(carbonTotal, 3),
+      carbonMean: round(records.length ? carbonTotal / records.length : 0, 3),
+      surplusYears: Math.max(0, records.length - deficitYears),
+      deficitYears: deficitYears,
+      dominantLimiter: dominantLimiter,
+      heightDelta: round(finiteOr(after.heightM, 0) - finiteOr(before.heightM, 0), 3),
+      dbhDelta: round(finiteOr(after.dbhCm, 0) - finiteOr(before.dbhCm, 0), 3),
+      leafAreaDelta: round(finiteOr(after.leafArea, 0) - finiteOr(before.leafArea, 0), 3),
+      rootMassDelta: round(finiteOr(after.rootMass, 0) - finiteOr(before.rootMass, 0), 3),
+      reservesDelta: round(finiteOr(after.reserves, 0) - finiteOr(before.reserves, 0), 3),
+      reproductionDelta: round(finiteOr(after.seedsBanked, 0) - finiteOr(before.seedsBanked, 0), 3),
+      ringsAdded: rings.length,
+      newestRingMm: round(newestRing ? finiteOr(newestRing.widthMm, 0) : 0, 3),
+      deficitStreakAfter: Math.max(0, Math.round(finiteOr(after.deficitYears, 0))),
+      aliveAfter: after.alive !== false,
+      causeOfDeath: typeof after.causeOfDeath === 'string' ? after.causeOfDeath : null
+    };
   }
 
   function normaliseAlloc(a) {
@@ -1077,6 +1307,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     pine:    { branchSpread: 0.68, branchLift: 0.54, asymmetry: 0.03, wind: 0.62 },
     redwood: { branchSpread: 0.54, branchLift: 0.64, asymmetry: 0.02, wind: 0.48 }
   };
+
+  // Representative points for a paused season. Playback supplies the continuously
+  // changing yearPhase instead; these values make a season chosen by hand show the
+  // middle of its biological story rather than the exact instant at its boundary.
+  function canonicalPhaseForSeason(season) {
+    return {
+      spring: 0.17,
+      summer: 0.40,
+      autumn: 0.68,
+      winter: 0.90
+    }[season] || 0.40;
+  }
+
+  function smoothUnit(value) {
+    var x = clamp(finiteOr(value, 0), 0, 1);
+    return x * x * (3 - 2 * x);
+  }
+
+  // Every foliage card gets a stable biography. Exposure makes sunny outer leaves
+  // wake, colour and release a little earlier; hydraulic position makes the canopy
+  // respond in patches under stress. A separate seed prevents this biology from
+  // perturbing the procedural geometry that students may already recognise.
+  function leafCardTraits(seed, index, up, radial) {
+    var rnd = seeded(hashStr(String(seed) + '|' + String(index) + '|phenology'));
+    var sky = clamp((finiteOr(up, 0) + 1) / 2, 0, 1);
+    var edge = clamp(finiteOr(radial, 0.5), 0, 1);
+    var exposure = clamp(sky * 0.68 + edge * 0.32, 0, 1);
+    var budAt = clamp(0.045 + (1 - exposure) * 0.105 + rnd() * 0.030, 0.035, 0.19);
+    var colorAt = clamp(0.565 + (1 - exposure) * 0.070 + rnd() * 0.026, 0.55, 0.68);
+    var releaseAt = clamp(Math.max(colorAt + 0.05,
+      0.635 + (1 - exposure) * 0.070 + rnd() * 0.030), colorAt + 0.04, 0.77);
+    return {
+      cohort: rnd(),
+      exposure: exposure,
+      hydraulic: clamp(0.18 + rnd() * 0.62 + (1 - edge) * 0.20, 0, 1),
+      budAt: budAt,
+      colorAt: colorAt,
+      releaseAt: releaseAt,
+      fallDuration: 0.05 + rnd() * 0.03,
+      fallSample: rnd(),
+      drift: rnd() * 2 - 1
+    };
+  }
+
+  // Resolve one card into mutually exclusive canopy / flight / forest-floor states.
+  // This is pure on purpose: the renderer, reduced-motion still frame and tests all
+  // ask the same function what that leaf is doing.
+  function leafCardState(traitsRaw, annualPhase, leafType, carbonStress, waterStress) {
+    var tr = traitsRaw && typeof traitsRaw === 'object' ? traitsRaw : {};
+    var p = finiteOr(annualPhase, 0);
+    p = p - Math.floor(p);
+    var budAt = clamp(finiteOr(tr.budAt, 0.10), 0, 0.30);
+    var colorAt = clamp(finiteOr(tr.colorAt, 0.60), budAt + 0.03, 0.82);
+    var releaseAt = clamp(finiteOr(tr.releaseAt, 0.70), colorAt + 0.03, 0.90);
+    var fallDuration = clamp(finiteOr(tr.fallDuration, 0.07), 0.025, 0.16);
+    var cohort = clamp(finiteOr(tr.cohort, 0.5), 0, 1);
+    var hydraulic = clamp(finiteOr(tr.hydraulic, 0.5), 0, 1);
+    var cStress = clamp(finiteOr(carbonStress, 0), 0, 1);
+    var wStress = clamp(finiteOr(waterStress, 0), 0, 1);
+    var localStress = clamp(cStress * 0.72 + wStress * (0.42 + (1 - hydraulic) * 0.58), 0, 1);
+    var stressScale = clamp(1 - localStress * 0.23, 0.72, 1);
+    var retained = false, flight = 0, landed = false, pigment = 0, canopyScale = 0;
+    var isNeedle = leafType === 'needle';
+    var newest = isNeedle && cohort < 0.28;
+    var oldest = isNeedle && cohort > 0.82;
+
+    if (isNeedle && !oldest) {
+      retained = true;
+      canopyScale = newest
+        ? (0.30 + smoothUnit((p - budAt) / 0.10) * 0.70) * stressScale
+        : stressScale;
+      return {
+        canopyScale: canopyScale,
+        pigment: 0,
+        retained: true,
+        flight: 0,
+        landed: false,
+        young: newest && p >= budAt && p < 0.34,
+        stress: localStress,
+        cohort: cohort
+      };
+    }
+
+    if (p < budAt && !isNeedle) {
+      canopyScale = 0;
+    } else if (p < colorAt) {
+      retained = true;
+      canopyScale = (isNeedle ? 1 : smoothUnit((p - budAt) / 0.10)) * stressScale;
+    } else if (p < releaseAt) {
+      retained = true;
+      canopyScale = stressScale;
+      pigment = smoothUnit((p - colorAt) / Math.max(0.001, releaseAt - colorAt));
+    } else if (p < releaseAt + fallDuration) {
+      flight = smoothUnit((p - releaseAt) / fallDuration);
+      pigment = 1;
+    } else {
+      landed = true;
+      pigment = 1;
+    }
+
+    return {
+      canopyScale: retained ? canopyScale : 0,
+      pigment: pigment,
+      retained: retained,
+      flight: flight,
+      landed: landed,
+      young: !isNeedle && retained && p < budAt + 0.10,
+      stress: localStress,
+      cohort: cohort
+    };
+  }
+
+  // Weather is a visual material response, not a hidden growth input. Soil moisture
+  // supplies persistent wetness, winter cold supplies frost/snow potential, and only
+  // an explicit short event (currently the end of a drought) starts precipitation.
+  function deriveWeatherVisualState(season, envRaw, eventRaw, reduced, nowMs) {
+    var env = envRaw && typeof envRaw === 'object' ? envRaw : {};
+    var event = eventRaw && typeof eventRaw === 'object' ? eventRaw : {};
+    var water = clamp(finiteOr(env.soilWater, 0.7), 0, 1);
+    var temp = finiteOr(env.tempC, 22);
+    var now = finiteOr(nowMs, 0);
+    var startedAt = finiteOr(event.startedAt, -1);
+    var duration = clamp(finiteOr(event.durationMs, 0), 0, 60000);
+    var validKind = event.kind === 'rain' || event.kind === 'snow';
+    var active = validKind && startedAt >= 0 && duration > 0 &&
+      now >= startedAt && now < startedAt + duration;
+    var winterCold = season === 'winter' ? clamp((4 - temp) / 9, 0, 1) : 0;
+    var frost = clamp(winterCold * (0.38 + water * 0.62), 0, 1);
+    var snow = clamp(winterCold * clamp((water - 0.32) / 0.50, 0, 1), 0, 1);
+    var rainPulse = active && event.kind === 'rain' ? 1 : 0;
+    var wetness = clamp(Math.max(clamp((water - 0.42) / 0.52, 0, 1), rainPulse * 0.96), 0, 1);
+    var kind = active ? event.kind : (snow > 0.16 ? 'snow' : 'clear');
+    return {
+      kind: kind,
+      wetness: wetness,
+      frost: frost,
+      snow: snow,
+      precipitating: active,
+      animate: active && !reduced,
+      eventEndsAt: active ? startedAt + duration : 0
+    };
+  }
   var BARK_CANVAS_CACHE = {};
 
   // One source of truth for visual state. Water stress changes turgor and soil;
@@ -1745,6 +2117,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var needle = sp.leafType === 'needle';
     var alive = st.alive !== false;
     var visual = props.visual || deriveTreeVisualState(st, sp, { soilWater: props.soilWater }, season);
+    var visualPhase = typeof props.visualPhase === 'number' && isFinite(props.visualPhase)
+      ? props.visualPhase : canonicalPhaseForSeason(season);
+    var weather = deriveWeatherVisualState(season, {
+      soilWater: props.soilWater,
+      tempC: props.tempC
+    }, props.weatherEvent, reduced, Date.now());
     var stressed = visual.chronicDeficit;
     var form = TREE_FORM[sp.id] || TREE_FORM.oak;
     // High contrast exists to make every edge legible. Weather, haze and mood light
@@ -1822,6 +2200,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // first limb. Starting the crown at 0.46H buried it, and the tree read as a shrub.
     var crownBaseY = H * (needle ? 0.16 : (0.20 + 0.36 * maturity));
     var barkHex = BARK[sp.id] || '#6b4f2a';
+    if (!flat) {
+      // Water deepens bark colour and tightens its highlights; frost catches the
+      // exposed ridges with a cool veil. Neither changes the simulated physiology.
+      barkHex = mixHex(barkHex, '#241b15', weather.wetness * 0.24);
+      barkHex = mixHex(barkHex, '#dbeafe', weather.frost * 0.10);
+    }
     var bare = (season === 'winter' && !needle);
     var weeping = sp.id === 'willow';
     // Only loss of water pressure changes leaf angle. Carbon shortage instead thins
@@ -1928,6 +2312,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         groundFar = mixHex(groundFar, '#d99a55', lowSun * 0.10);
       }
     }
+    if (!flat && weather.wetness > 0) {
+      groundNear = mixHex(groundNear, '#253126', weather.wetness * 0.22);
+      groundFar = mixHex(groundFar, '#263027', weather.wetness * 0.16);
+    }
+    if (!flat && weather.frost > 0) {
+      groundNear = mixHex(groundNear, '#cbd9df', weather.frost * 0.18);
+      groundFar = mixHex(groundFar, '#b9c9d2', weather.frost * 0.14);
+    }
 
     // ── Sky dome, sun, fog ────────────────────────────────────────────────
     var sky = null;
@@ -2006,7 +2398,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (o.isAmbientLight) o.intensity = 0.13;
         else if (o.isDirectionalLight) {
           if (o.castShadow && !keyLight) keyLight = o;
-          else o.intensity *= 0.34;
+          else {
+            // Shell lights survive content rebuilds. Multiplication compounded on
+            // every season change until the fill was effectively black.
+            if (o.userData._treeBaseIntensity == null) {
+              o.userData._treeBaseIntensity = o.intensity;
+            }
+            o.intensity = o.userData._treeBaseIntensity * 0.34;
+          }
         }
       });
       if (keyLight) {
@@ -2039,7 +2438,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
     // ── Trunk: curved, tapered, fluted, with a root flare. ──
     var barkTex = flat ? null : barkTexture(THREE, sp.id, barkHex);
-    var barkMat = mat(barkHex, { shininess: 2, specular: 0x1a120a, map: barkTex });
+    var barkMat = mat(barkHex, {
+      shininess: 2 + weather.wetness * 12,
+      specular: weather.wetness > 0.18 ? 0x322b25 : 0x1a120a,
+      map: barkTex
+    });
     var trunkGroup = new THREE.Group();
     var trunkTopR = trunkR * (needle ? 0.13 : 0.42);
     var trunkH = needle ? H * 0.86 : Math.min(H, crownBaseY + crownR * 0.85);
@@ -2181,14 +2584,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // camera off crownR alone still cropped both sides of the canopy.
     // Seeded, never reset: the branch builder above has already contributed to this.
     if (crownMaxR < crownR * 0.6) crownMaxR = crownR * 0.6;
-    var foliage = [];          // inner masses, for per-mass wind
-    var cardSpec = [];         // {p, sc, q, phase, hue}
+    var foliage = [];          // inner masses, for per-mass wind + regional phenology
+    var cardSpec = [];         // {p, sc, q, phase, hue, traits}
 
     function addMass(p, r, i) {
-      // Spring unfolding and carbon limitation open real gaps in the crown. The dark
-      // inner mass shrinks with the leaf layer instead of remaining a solid green ball.
-      var massR = r * (0.52 + visual.leafDensity * 0.48);
-      var leafHex = visualLeafHex(season, sp.leafType, visual, i);
+      // Geometry stays stable inside a season; regional scale below now opens and
+      // closes these masses with their neighbouring cards.
+      var structuralDensity = 1 - visual.carbonStress * 0.28;
+      var massR = r * (0.52 + structuralDensity * 0.48);
+      var leafHex = visualLeafHex('summer', sp.leafType, visual, i);
       var m = new THREE.Mesh(blobGeom(THREE, massR, i * 31 + 7),
         mat(mixHex(leafHex, '#0b2412', 0.56),
           { shininess: 3, specular: 0x0a1f10, flat: true, glow: 0.025 }));
@@ -2196,7 +2600,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       if (api.wantShadow) m.castShadow = true;
       crownGroup.add(m);
       registerPick(m, 'crown');
-      foliage.push({ m: m, base: p.clone(), phase: (i % 9) * 0.71, h: clamp(p.y / Math.max(0.001, H), 0, 1) });
+      foliage.push({
+        m: m,
+        base: p.clone(),
+        phase: (i % 9) * 0.71,
+        h: clamp(p.y / Math.max(0.001, H), 0, 1),
+        hue: i,
+        traits: leafCardTraits('mass-' + sp.id, i,
+          clamp(p.y / Math.max(0.001, H), -1, 1),
+          clamp(Math.sqrt(p.x * p.x + p.z * p.z) / Math.max(0.001, crownR * 1.5), 0, 1))
+      });
       if (p.y + massR > crownTopY) crownTopY = p.y + massR;
       var massRad = Math.sqrt(p.x * p.x + p.z * p.z) + massR;
       if (massRad > crownMaxR) crownMaxR = massRad;
@@ -2206,7 +2619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // centre with a random twist, so they catch the sun as a surface does rather than
     // as a cloud of randomly angled flakes.
     function scatterCards(centre, r, n, seed, hueBase) {
-      n = Math.max(6, Math.round(n * visual.leafDensity));
+      n = Math.max(6, Math.round(n));
       var rnd = seeded(seed);
       for (var i = 0; i < n; i++) {
         // Golden-angle spiral on the sphere: an even shell, where uniform random
@@ -2225,13 +2638,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // A turgid leaf is held out to the light; a wilted one folds down. This is the
         // only instant, honest sign of water stress the tree itself can show.
         dummy.rotateX((rnd() - 0.5) * 1.1 + wilt * (0.55 + rnd() * 0.35));
+        var up = clamp(dir.y * 0.85 + 0.15, -1, 1);
+        var radial = clamp(Math.sqrt(p.x * p.x + p.z * p.z) /
+          Math.max(0.001, crownR * 1.5), 0, 1);
         cardSpec.push({
-          p: p, sc: r * (0.66 + rnd() * 0.40) * visual.leafScale, q: dummy.quaternion.clone(),
+          p: p, sc: r * (0.66 + rnd() * 0.40), q: dummy.quaternion.clone(),
           phase: rnd() * 6.2832, hue: hueBase + i,
           // How much sky this card faces. Foliage is not one green: the top of a crown
           // is bleached by full sun and the underside sits in its own shade, and
           // carrying that gradient is most of what separates a canopy from a hedge.
-          up: clamp(dir.y * 0.85 + 0.15, -1, 1)
+          up: up,
+          traits: leafCardTraits(seed, i, up, radial)
         });
         if (p.y + r * 0.5 > crownTopY) crownTopY = p.y + r * 0.5;
         var cardRad = Math.sqrt(p.x * p.x + p.z * p.z) + r * 0.5;
@@ -2250,7 +2667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var wa = (k * 2.1) + w * 2.39996;
         var out = new THREE.Vector3(Math.cos(wa), 0, Math.sin(wa)).multiplyScalar(r * (0.3 + rnd() * 0.5));
         var len = reach * (0.55 + rnd() * 0.45);
-        var n = Math.max(3, Math.round(7 * visual.leafDensity));
+        var n = 7;
         for (var q = 0; q < n; q++) {
           var f = (q + 0.6) / n;
           var p = new THREE.Vector3(
@@ -2262,9 +2679,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           dd.lookAt(p.clone().add(new THREE.Vector3(Math.cos(wa), 0.15, Math.sin(wa))));
           dd.rotateZ((rnd() - 0.5) * 0.5);
           cardSpec.push({
-            p: p, sc: r * (0.30 + rnd() * 0.16) * visual.leafScale, q: dd.quaternion.clone(),
+            p: p, sc: r * (0.30 + rnd() * 0.16), q: dd.quaternion.clone(),
             phase: rnd() * 6.2832, hue: hueBase + q + w,
             up: -0.25,
+            traits: leafCardTraits('willow-' + k + '-' + w, q, -0.25,
+              clamp(Math.sqrt(p.x * p.x + p.z * p.z) /
+                Math.max(0.001, crownR * 1.5), 0, 1)),
             // Whole strands swing, and they swing far more than a rigid twig does.
             swing: 1 + f * 2.2
           });
@@ -2290,7 +2710,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (api.wantShadow) cone.castShadow = true;
         crownGroup.add(cone);
         registerPick(cone, 'crown');
-        foliage.push({ m: cone, base: cone.position.clone(), phase: t2 * 0.8, h: clamp(cone.position.y / Math.max(0.001, H), 0, 1) });
+        foliage.push({
+          m: cone,
+          base: cone.position.clone(),
+          phase: t2 * 0.8,
+          h: clamp(cone.position.y / Math.max(0.001, H), 0, 1),
+          hue: t2,
+          traits: leafCardTraits('needle-mass-' + sp.id, t2,
+            clamp(cone.position.y / Math.max(0.001, H), -1, 1), 0.65)
+        });
         // Needle sprays around the skirt of each tier, where a conifer's foliage
         // actually is. Scattering them through the cone body would hide them inside it.
         var rimN = Math.max(26, Math.round(96 * (cr / Math.max(0.001, crownR))));
@@ -2308,11 +2736,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // Sprays hang OUT and DOWN off the branch they sit on.
           dd.lookAt(pp.clone().add(new THREE.Vector3(Math.cos(ra2), -0.55, Math.sin(ra2))));
           dd.rotateZ((rrnd() - 0.5) * 1.0);
+          var needleUp = clamp(vv * 1.3 - 0.35, -1, 1);
           cardSpec.push({
             p: pp, sc: cr * (0.46 + rrnd() * 0.30), q: dd.quaternion.clone(),
             phase: rrnd() * 6.2832, hue: t2 * 3 + rc,
             // Sun-bleached on top, deep in shade beneath, same as a broadleaf.
-            up: clamp(vv * 1.3 - 0.35, -1, 1)
+            up: needleUp,
+            traits: leafCardTraits('needle-' + sp.id + '-' + t2, rc, needleUp,
+              clamp(pr / Math.max(0.001, crownR), 0, 1))
           });
         }
       }
@@ -2341,6 +2772,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       crownTopY = Math.max(H, bareTopY);
     }
 
+    function cardHexForState(spec, state, visualNow, weatherNow) {
+      var vNow = visualNow || visual;
+      var wNow = weatherNow || weather;
+      var baseSeason = state.young ? 'spring' : 'summer';
+      var chex = visualLeafHex(baseSeason, sp.leafType, vNow, spec.hue);
+      var autumnHex = needle
+        ? ['#b7791f', '#8f5a22', '#7b4b22'][Math.abs(spec.hue) % 3]
+        : AUTUMN[Math.abs(spec.hue) % AUTUMN.length];
+      chex = mixHex(chex, autumnHex, state.pigment);
+      chex = mixHex(chex, needle ? '#6f6428' : '#8a6232', state.stress * 0.34);
+      if (!flat) {
+        var u2 = spec.up == null ? 0 : spec.up;
+        chex = u2 >= 0
+          ? mixHex(chex, state.pigment > 0.15 ? '#ffd25e' : '#cdec8e', u2 * 0.34)
+          : mixHex(chex, '#0a2413', -u2 * 0.24);
+        chex = mixHex(chex, '#e6f2ff',
+          wNow.frost * Math.max(0, u2) * 0.42);
+      }
+      return flat ? '#ffffff' : chex;
+    }
+
     // ── The leaf layer itself. Alpha-TESTED, never blended: blended foliage needs a
     //    back-to-front sort that no instanced mesh can give you, and the usual symptom
     //    is leaves winking in and out as the camera turns. ──
@@ -2363,18 +2815,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var ccol = new THREE.Color();
       for (var cs = 0; cs < cardSpec.length; cs++) {
         var spec = cardSpec[cs];
+        var initialLeafState = leafCardState(spec.traits, visualPhase,
+          sp.leafType, visual.carbonStress, visual.waterStress);
         cdummy.position.copy(spec.p);
         cdummy.quaternion.copy(spec.q);
-        cdummy.scale.setScalar(spec.sc);
+        cdummy.scale.setScalar(spec.sc * initialLeafState.canopyScale);
         cdummy.updateMatrix();
         cards.setMatrixAt(cs, cdummy.matrix);
-        var chex = visualLeafHex(season, sp.leafType, visual, spec.hue);
-        if (!flat) {
-          var u2 = spec.up == null ? 0 : spec.up;
-          chex = u2 >= 0 ? mixHex(chex, season === 'autumn' ? '#ffd25e' : '#cdec8e', u2 * 0.48)
-                         : mixHex(chex, '#0a2413', -u2 * 0.26);
-        }
-        ccol.set(flat ? '#ffffff' : chex);
+        ccol.set(cardHexForState(spec, initialLeafState));
         cards.setColorAt(cs, ccol);
       }
       cards.instanceMatrix.needsUpdate = true;
@@ -2482,6 +2930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     //    because it IS the lesson. ──
     var cloneGroup = new THREE.Group();
     var cloneCards = [];
+    var cloneLeafMesh = null;
     var nClones = clamp(clones, 0, 6);
     // Clone only when used; unreferenced Three materials are invisible to scene
     // traversal and would otherwise survive every no-clone scene rebuild.
@@ -2528,10 +2977,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (api.wantShadow) ctop.castShadow = true;
         cloneGroup.add(ctop);
         registerPick(ctop, 'clones');
-        foliage.push({ m: ctop, base: ctop.position.clone(), phase: c2 * 1.3 + 0.4, h: 0.5 });
+        foliage.push({
+          m: ctop,
+          base: ctop.position.clone(),
+          phase: c2 * 1.3 + 0.4,
+          h: 0.5,
+          hue: c2 + 3,
+          baseScale: ctop.scale.clone(),
+          traits: leafCardTraits('clone-mass-' + sp.id, c2, 0.55, 0.72)
+        });
         var crnd = seeded(c2 * 331 + 19);
         var ctopR = chh * 0.52;
-        var cloneLeafCount = Math.max(8, Math.round(20 * visual.leafDensity));
+        var cloneLeafCount = 20;
         for (var cc = 0; cc < cloneLeafCount; cc++) {
           var cu = (cc + 0.5) / cloneLeafCount;
           var cphi = Math.acos(1 - 2 * cu);
@@ -2546,9 +3003,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           cdd.position.copy(cp);
           cdd.lookAt(cp.clone().addScaledVector(cdir, 1));
           cdd.rotateZ(crnd() * 6.2832);
+          var cloneUp = clamp(cdir.y * 0.85 + 0.15, -1, 1);
           cloneCards.push({
-            p: cp, sc: ctopR * (0.55 + crnd() * 0.35) * visual.leafScale, q: cdd.quaternion.clone(),
-            hue: c2 * 3 + cc, up: clamp(cdir.y * 0.85 + 0.15, -1, 1)
+            p: cp, sc: ctopR * (0.55 + crnd() * 0.35), q: cdd.quaternion.clone(),
+            hue: c2 * 3 + cc, up: cloneUp,
+            traits: leafCardTraits('clone-' + sp.id + '-' + c2, cc, cloneUp, 0.74)
           });
         }
       }
@@ -2571,27 +3030,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         cloneMat.emissive = new THREE.Color(0x0b1f10);
         cloneMat.userData._preserveBaseEmissive = true;
         cloneMat.userData._keepOpaqueOnRecede = true;
-        var cMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cloneMat, cloneCards.length);
-        if (api.wantShadow) cMesh.castShadow = true;
+        cloneLeafMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), cloneMat, cloneCards.length);
+        if (api.wantShadow) cloneLeafMesh.castShadow = true;
         var cdum = new THREE.Object3D();
         var ccol2 = new THREE.Color();
         for (var ck = 0; ck < cloneCards.length; ck++) {
           var csp = cloneCards[ck];
+          var cloneState = leafCardState(csp.traits, visualPhase,
+            sp.leafType, visual.carbonStress, visual.waterStress);
           cdum.position.copy(csp.p);
           cdum.quaternion.copy(csp.q);
-          cdum.scale.setScalar(csp.sc);
+          cdum.scale.setScalar(csp.sc * cloneState.canopyScale);
           cdum.updateMatrix();
-          cMesh.setMatrixAt(ck, cdum.matrix);
-          var chx = visualLeafHex(season, sp.leafType, visual, csp.hue);
-          chx = csp.up >= 0 ? mixHex(chx, season === 'autumn' ? '#ffd25e' : '#cdec8e', csp.up * 0.48)
-                            : mixHex(chx, '#0a2413', -csp.up * 0.26);
-          ccol2.set(chx);
-          cMesh.setColorAt(ck, ccol2);
+          cloneLeafMesh.setMatrixAt(ck, cdum.matrix);
+          ccol2.set(cardHexForState(csp, cloneState));
+          cloneLeafMesh.setColorAt(ck, ccol2);
         }
-        cMesh.instanceMatrix.needsUpdate = true;
-        if (cMesh.instanceColor) cMesh.instanceColor.needsUpdate = true;
-        cloneGroup.add(cMesh);
-        registerPick(cMesh, 'clones');
+        cloneLeafMesh.instanceMatrix.needsUpdate = true;
+        if (cloneLeafMesh.instanceColor) cloneLeafMesh.instanceColor.needsUpdate = true;
+        cloneGroup.add(cloneLeafMesh);
+        registerPick(cloneLeafMesh, 'clones');
       }
     }
     cloneGroup.userData.noSelectionScale = true;
@@ -2606,7 +3064,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var groundMat = new THREE.MeshPhongMaterial({
       color: flat ? 0x333333 : 0xffffff,
       map: flat ? null : groundTexture(THREE, groundNear, groundFar, lawnR * 0.85 / GROUND_R),
-      side: THREE.DoubleSide, shininess: 0
+      side: THREE.DoubleSide,
+      shininess: flat ? 0 : weather.wetness * 11,
+      specular: flat ? 0x000000 : 0x26312f
     });
     if (!groundMat.map && !flat) groundMat.color = new THREE.Color(groundNear);
     var ground = new THREE.Mesh(new THREE.CircleGeometry(flat ? lawnR : GROUND_R, 56), groundMat);
@@ -2614,9 +3074,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     if (api.wantShadow) ground.receiveShadow = true;
     group.add(ground);
 
+    // Snow is accumulated material, so it remains as a still cue under reduced
+    // motion. Patchy cards avoid the false claim of a uniform measured snow depth.
+    if (!flat && weather.snow > 0.12) {
+      var snowCount = Math.round(16 + weather.snow * 30);
+      var snowMat = new THREE.MeshPhongMaterial({
+        color: new THREE.Color(api.dark ? '#c9d7e2' : '#f3f8fb').getHex(),
+        side: THREE.DoubleSide, shininess: 15, specular: 0xb9d6e7
+      });
+      var snowPatches = new THREE.InstancedMesh(
+        new THREE.CircleGeometry(1, 12), snowMat, snowCount);
+      var snowDummy = new THREE.Object3D();
+      var snowRnd = seeded(9017);
+      for (var sn = 0; sn < snowCount; sn++) {
+        var sna = snowRnd() * 6.2832;
+        var snd = lawnR * Math.sqrt(snowRnd()) * 1.05;
+        var sns = lawnR * (0.035 + snowRnd() * 0.085) * weather.snow;
+        snowDummy.position.set(Math.cos(sna) * snd, 0.018 + sn * 0.000002,
+          Math.sin(sna) * snd);
+        snowDummy.rotation.set(-Math.PI / 2, 0, snowRnd() * 6.2832);
+        snowDummy.scale.set(sns * (0.8 + snowRnd() * 0.7), sns, sns);
+        snowDummy.updateMatrix();
+        snowPatches.setMatrixAt(sn, snowDummy.matrix);
+      }
+      snowPatches.instanceMatrix.needsUpdate = true;
+      snowPatches.renderOrder = 2;
+      group.add(snowPatches);
+    }
+
     // A dark soil window explains why the roots remain visible. It is deliberately
     // compact and slightly above the lawn to avoid a false full-depth excavation.
     var soilHex = dry ? '#6f5131' : '#59412c';
+    if (!flat) soilHex = mixHex(soilHex, '#241b16', weather.wetness * 0.28);
     var soilTex = flat ? null : soilTexture(THREE, soilHex, damp);
     var soilWindow = new THREE.Mesh(
       // A few more segments now the rim is meant to be invisible: at 40 the alpha
@@ -2629,7 +3118,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // The disc sits 3mm above the lawn and is drawn after it. Writing depth from a
         // transparent edge would punch a hole in the ground for anything behind it.
         depthWrite: !soilTex,
-        side: THREE.DoubleSide, shininess: 0
+        side: THREE.DoubleSide,
+        shininess: flat ? 0 : weather.wetness * 13,
+        specular: flat ? 0x000000 : 0x2f2925
       })
     );
     soilWindow.rotation.x = -Math.PI / 2;
@@ -2637,13 +3128,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     soilWindow.renderOrder = 1;
     group.add(soilWindow);
 
-    // One seasonal ground-detail draw call: drought cracks OR fallen autumn leaves.
+    // One seasonal ground-detail draw call: drought cracks, evergreen duff, or the
+    // settled winter leaf layer. Autumn's visible litter is now made from the exact
+    // same card instances that leave the canopy below.
     // Shape carries the cue, so it remains useful without depending on colour alone.
     // Needle duff is the evergreen counterpart to autumn leaf fall, and the reason a
     // conifer's floor looks the way it does all year: needles shed continuously and rot
     // slowly, so the litter is always there rather than arriving in one season.
     var needleDuff = needle && alive && !cracked;
-    if (!flat && (cracked || needleDuff || (season === 'autumn' && !needle && alive))) {
+    if (!flat && (cracked || needleDuff || (season === 'winter' && !needle && alive))) {
       if (cracked) {
         var crackSegments = 32;
         var crackPos = new Float32Array(crackSegments * 6);
@@ -2919,35 +3412,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     //    has asked for reduced motion — the system is not BUILT in that case rather
     //    than being built and paused, because a shower frozen in mid-air is worse than
     //    no shower at all. ──
-    var leafFall = null, leafSeeds = null, leafDummy = null, leafTop = 1;
-    var falling = season === 'autumn' && !needle && alive;
-    if (!flat && !reduced && falling) {
-      var NL = 44;
-      var lgeo = new THREE.PlaneGeometry(1, 1);
-      var lmat = new THREE.MeshPhongMaterial({
-        color: 0xffffff, side: THREE.DoubleSide, shininess: 8, flatShading: true
-      });
-      leafFall = new THREE.InstancedMesh(lgeo, lmat, NL);
-      leafDummy = new THREE.Object3D();
-      leafSeeds = [];
-      var spread = crownR * 1.3;
-      leafTop = crownTopY;
-      var lrnd = seeded(6151);
-      var col = new THREE.Color();
-      for (var li = 0; li < NL; li++) {
-        var lang = lrnd() * 6.2832;
-        var lrad = spread * Math.sqrt(lrnd());
-        leafSeeds.push({
-          x: Math.cos(lang) * lrad, z: Math.sin(lang) * lrad,
-          t0: lrnd(), sp: 0.05 + lrnd() * 0.10,
-          sc: crownR * (0.055 + lrnd() * 0.05),
-          spin: 0.6 + lrnd() * 1.6, sway: 0.30
-        });
-        col.set(clusterHex('autumn', 'broad', stressed, li));
-        leafFall.setColorAt(li, col);
+    var leafFall = null, leafSeeds = [], leafDummy = null;
+    var falling = season === 'autumn' && alive && cardSpec.length;
+    if (!flat && falling) {
+      var maxFalling = needle ? 18 : 44;
+      for (var fallIndex = 0; fallIndex < cardSpec.length &&
+          leafSeeds.length < maxFalling; fallIndex++) {
+        var fallSpec = cardSpec[fallIndex];
+        var oldestNeedle = needle && fallSpec.traits && fallSpec.traits.cohort > 0.82;
+        var sampled = fallSpec.traits && fallSpec.traits.fallSample <
+          (needle ? 0.54 : 0.19);
+        if ((!needle || oldestNeedle) && sampled) {
+          var driftAngle = fallSpec.phase + fallSpec.traits.drift * 1.4;
+          var driftReach = crownR * (0.38 + Math.abs(fallSpec.traits.drift) * 0.85);
+          leafSeeds.push({
+            spec: fallSpec,
+            x: fallSpec.p.x + Math.cos(driftAngle) * driftReach,
+            z: fallSpec.p.z + Math.sin(driftAngle) * driftReach,
+            rot: driftAngle,
+            spin: 1.1 + fallSpec.traits.fallSample * 2.2
+          });
+        }
       }
-      if (leafFall.instanceColor) leafFall.instanceColor.needsUpdate = true;
-      group.add(leafFall);
+      if (leafSeeds.length) {
+        var lgeo = new THREE.PlaneGeometry(1, 1);
+        var lmat = new THREE.MeshPhongMaterial({
+          color: 0xffffff, side: THREE.DoubleSide, shininess: 7,
+          specular: weather.wetness > 0.2 ? 0x4a4035 : 0x1d1711,
+          flatShading: true
+        });
+        leafFall = new THREE.InstancedMesh(lgeo, lmat, leafSeeds.length);
+        leafDummy = new THREE.Object3D();
+        var col = new THREE.Color();
+        for (var li = 0; li < leafSeeds.length; li++) {
+          leafDummy.scale.setScalar(0);
+          leafDummy.updateMatrix();
+          leafFall.setMatrixAt(li, leafDummy.matrix);
+          col.set(needle
+            ? ['#b7791f', '#8f5a22', '#6f461f'][li % 3]
+            : AUTUMN[li % AUTUMN.length]);
+          leafFall.setColorAt(li, col);
+        }
+        leafFall.instanceMatrix.needsUpdate = true;
+        if (leafFall.instanceColor) leafFall.instanceColor.needsUpdate = true;
+        group.add(leafFall);
+      }
+    }
+
+    // Explicit short precipitation events are batched into one draw call. Snow cover
+    // and wet materials remain visible when motion is reduced; only particles vanish.
+    var rainMesh = null, rainPositions = null, rainSeeds = [];
+    var snowMesh = null, snowPositions = null, snowSeeds = [];
+    var precipTop = Math.max(crownTopY + crownR * 0.8, H + 0.8);
+    if (!flat && !reduced && weather.precipitating && weather.kind === 'rain') {
+      var rainCount = 84;
+      rainPositions = new Float32Array(rainCount * 6);
+      var rainRnd = seeded(8461);
+      for (var ri = 0; ri < rainCount; ri++) {
+        rainSeeds.push({
+          x: (rainRnd() * 2 - 1) * lawnR * 0.82,
+          z: (rainRnd() * 2 - 1) * lawnR * 0.82,
+          offset: rainRnd(),
+          slant: 0.035 + rainRnd() * 0.055
+        });
+      }
+      var rainGeo = new THREE.BufferGeometry();
+      rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPositions, 3));
+      rainMesh = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({
+        color: new THREE.Color(api.dark ? '#8cc8ea' : '#5ba7d0').getHex(),
+        transparent: true, opacity: 0.58
+      }));
+      rainMesh.frustumCulled = false;
+      group.add(rainMesh);
+    } else if (!flat && !reduced && weather.precipitating && weather.kind === 'snow') {
+      var snowAirCount = 68;
+      snowPositions = new Float32Array(snowAirCount * 3);
+      var snowAirRnd = seeded(8467);
+      for (var si = 0; si < snowAirCount; si++) {
+        snowSeeds.push({
+          x: (snowAirRnd() * 2 - 1) * lawnR * 0.78,
+          z: (snowAirRnd() * 2 - 1) * lawnR * 0.78,
+          offset: snowAirRnd(),
+          sway: snowAirRnd() * 6.2832
+        });
+      }
+      var snowAirGeo = new THREE.BufferGeometry();
+      snowAirGeo.setAttribute('position', new THREE.BufferAttribute(snowPositions, 3));
+      snowMesh = new THREE.Points(snowAirGeo, new THREE.PointsMaterial({
+        color: new THREE.Color('#f4f8fb').getHex(),
+        size: Math.max(0.018, crownR * 0.045),
+        transparent: true, opacity: 0.90, sizeAttenuation: true
+      }));
+      snowMesh.frustumCulled = false;
+      group.add(snowMesh);
     }
 
     // Dead trees keep their frame but lose their colour, so "it died" is visible in
@@ -3008,72 +3565,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // fraction would leave only microsecond resolution for the modulo.
     var t0 = 0;
     var cardDummy = new THREE.Object3D();
+    var dynamicColor = new THREE.Color();
+    var lastCanopySignature = '';
     function frame(now, sceneProps, reducedNow) {
-      if (reducedNow || (sceneProps && sceneProps.reduced)) return;
-      var wind = sceneProps && typeof sceneProps.wind === 'number' ? sceneProps.wind : 0.35;
-      if (wind <= 0) return;
-      wind *= form.wind;
+      var liveProps = sceneProps || props;
+      var reducedFrame = !!reducedNow || !!liveProps.reduced;
+      var phaseNow = typeof liveProps.visualPhase === 'number' && isFinite(liveProps.visualPhase)
+        ? liveProps.visualPhase : visualPhase;
+      var visualNow = liveProps.visual || visual;
+      var weatherNow = deriveWeatherVisualState(season, {
+        soilWater: liveProps.soilWater,
+        tempC: liveProps.tempC
+      }, liveProps.weatherEvent, reducedFrame, now);
       if (!t0) t0 = now;
       var t = (now - t0) / 1000;
+      var wind = typeof liveProps.wind === 'number' ? liveProps.wind : 0.35;
+      if (reducedFrame) wind = 0;
+      wind = Math.max(0, wind) * form.wind;
+      var gust = wind > 0
+        ? wind * (0.5 + 0.5 * Math.abs(Math.sin(t * 0.21) * Math.sin(t * 0.37 + 1.1)))
+        : 0;
+      var canopySignature = [
+        Math.round((phaseNow - Math.floor(phaseNow)) * 500),
+        Math.round(visualNow.waterStress * 50),
+        Math.round(visualNow.carbonStress * 50),
+        Math.round(weatherNow.frost * 20)
+      ].join('|');
+      var recolorCanopy = canopySignature !== lastCanopySignature;
+      lastCanopySignature = canopySignature;
 
-      // Clouds drift. One rotation write on the sky dome per frame: the slowest motion
-      // in the scene, and the one that makes a still frame feel like a paused video
-      // rather than a poster. Under reduced motion this function has already returned.
-      if (sky) sky.rotation.y = t * 0.0035;
-
-      // The flock. A slow shared circuit with per-bird radius, height and phase, plus
-      // a wing-flap squash. Distance does the rest: at nine units out a chevron card
-      // and a real silhouette are the same thing.
-      if (birdMesh && birdSeeds) {
-        for (var bi2 = 0; bi2 < birdSeeds.length; bi2++) {
-          var B = birdSeeds[bi2];
-          var ba = t * 0.10 + B.ph;
-          cardDummy.position.set(
-            Math.cos(ba) * B.r,
-            B.h + Math.sin(t * 0.5 + B.ph * 2) * 0.25,
-            Math.sin(ba) * B.r
-          );
-          // Face along the flight path, laid nearly flat so the chevron reads from
-          // the low camera angle.
-          cardDummy.rotation.set(-1.25, -ba, 0);
-          var flap = 1 + Math.sin(t * B.flap * 2.4 + B.ph) * 0.35;
-          cardDummy.scale.set(B.sc, B.sc * flap, B.sc);
-          cardDummy.updateMatrix();
-          birdMesh.setMatrixAt(bi2, cardDummy.matrix);
-        }
-        birdMesh.instanceMatrix.needsUpdate = true;
-      }
-      // Gusts. Constant-amplitude sway is exactly what gives a sine wave away as a
-      // sine wave; real wind arrives in pulses, so the amplitude is itself modulated
-      // by two slow beats that never quite line up.
-      var gust = wind * (0.5 + 0.5 * Math.abs(Math.sin(t * 0.21) * Math.sin(t * 0.37 + 1.1)));
-
-      // The whole tree bends from the base. Both groups share that origin, so they
-      // have to rotate together or the canopy shears off the trunk.
+      // The whole tree bends from the base. Calm wind and reduced motion restore the
+      // exact resting pose rather than leaving the last animated angle behind.
       var bendZ = Math.sin(t * 0.52) * gust * 0.024;
       var bendX = Math.cos(t * 0.41) * gust * 0.016;
       trunkGroup.rotation.z = bendZ; trunkGroup.rotation.x = bendX;
       crownGroup.rotation.z = bendZ; crownGroup.rotation.x = bendX;
       cloneGroup.rotation.z = Math.sin(t * 0.9 + 1.2) * gust * 0.030;
 
-      // Then each mass moves on its own, more the higher it sits. A canopy that sways
-      // as one rigid lump is the second giveaway after constant amplitude.
+      // Inner masses follow the median timing of their local foliage region. This is
+      // what prevents a dark green blob remaining after the silhouette cards detach.
       for (var i = 0; i < foliage.length; i++) {
         var f = foliage[i];
+        var massState = leafCardState(f.traits, phaseNow,
+          sp.leafType, visualNow.carbonStress, visualNow.waterStress);
+        if (needle) {
+          massState = Object.assign({}, massState, {
+            retained: true,
+            canopyScale: 0.84 + massState.canopyScale * 0.16,
+            pigment: massState.pigment * 0.28
+          });
+        }
+        var massScale = massState.retained
+          ? Math.max(0.02, Math.pow(massState.canopyScale, 0.72)) : 0.001;
+        var baseScale = f.baseScale || { x: 1, y: 1, z: 1 };
+        f.m.scale.set(baseScale.x * massScale, baseScale.y * massScale,
+          baseScale.z * massScale);
         var amp = gust * 0.05 * (0.35 + f.h);
         f.m.position.x = f.base.x + Math.sin(t * 1.15 + f.phase) * amp;
         f.m.position.z = f.base.z + Math.cos(t * 0.93 + f.phase * 1.4) * amp * 0.7;
         f.m.position.y = f.base.y + Math.sin(t * 1.6 + f.phase) * amp * 0.30;
         f.m.rotation.z = Math.sin(t * 0.9 + f.phase) * gust * 0.10;
+        if (recolorCanopy && f.m.material && f.m.material.color) {
+          var massHex = cardHexForState({
+            hue: f.hue || i, up: clamp(f.h, -1, 1)
+          }, massState, visualNow, weatherNow);
+          f.m.material.color.set(mixHex(massHex, '#0b2412', 0.56));
+        }
       }
 
-      // Leaf cards flutter individually. This is the detail that sells wind: the
-      // masses behind them move as lumps, and only the leaf layer shimmers.
+      // Each card keeps its stable place, but its own timing controls scale, colour
+      // and release. Wind is an optional layer on top of that biological state.
       if (cards) {
         for (var ci2 = 0; ci2 < cardSpec.length; ci2++) {
           var sc2 = cardSpec[ci2];
-          // A hanging shoot is not a twig: it swings, and it swings further the
-          // further down the strand the leaf sits.
+          var leafState = leafCardState(sc2.traits, phaseNow,
+            sp.leafType, visualNow.carbonStress, visualNow.waterStress);
           var sw2 = sc2.swing == null ? 1 : sc2.swing;
           var a2 = Math.sin(t * 2.1 + sc2.phase) * gust * 0.30 * sw2;
           cardDummy.position.set(
@@ -3084,35 +3650,131 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           cardDummy.quaternion.copy(sc2.q);
           cardDummy.rotateY(a2);
           cardDummy.rotateX(a2 * 0.6);
-          cardDummy.scale.setScalar(sc2.sc);
+          cardDummy.scale.setScalar(sc2.sc * leafState.canopyScale);
           cardDummy.updateMatrix();
           cards.setMatrixAt(ci2, cardDummy.matrix);
+          if (recolorCanopy) {
+            dynamicColor.set(cardHexForState(sc2, leafState, visualNow, weatherNow));
+            cards.setColorAt(ci2, dynamicColor);
+          }
         }
         cards.instanceMatrix.needsUpdate = true;
+        if (recolorCanopy && cards.instanceColor) cards.instanceColor.needsUpdate = true;
       }
 
-      if (sky) sky.rotation.y = t * 0.004;    // cloud drift, slow enough to be felt
+      if (cloneLeafMesh) {
+        for (var ck2 = 0; ck2 < cloneCards.length; ck2++) {
+          var cloneSpec = cloneCards[ck2];
+          var cloneState = leafCardState(cloneSpec.traits, phaseNow,
+            sp.leafType, visualNow.carbonStress, visualNow.waterStress);
+          cardDummy.position.copy(cloneSpec.p);
+          cardDummy.quaternion.copy(cloneSpec.q);
+          cardDummy.scale.setScalar(cloneSpec.sc * cloneState.canopyScale);
+          cardDummy.updateMatrix();
+          cloneLeafMesh.setMatrixAt(ck2, cardDummy.matrix);
+          if (recolorCanopy) {
+            dynamicColor.set(cardHexForState(cloneSpec, cloneState, visualNow, weatherNow));
+            cloneLeafMesh.setColorAt(ck2, dynamicColor);
+          }
+        }
+        cloneLeafMesh.instanceMatrix.needsUpdate = true;
+        if (recolorCanopy && cloneLeafMesh.instanceColor) {
+          cloneLeafMesh.instanceColor.needsUpdate = true;
+        }
+      }
 
       if (leafFall) {
         for (var li = 0; li < leafSeeds.length; li++) {
           var s = leafSeeds[li];
-          var fall = (t * s.sp + s.t0) % 1;
-          var drift = fall * 6.2832;
-          var sw = crownR * (s.sway == null ? 0.30 : s.sway);
-          leafDummy.position.set(
-            s.x + Math.sin(drift + s.t0 * 6.28) * sw,
-            leafTop - fall * (leafTop + rootDepth * 0.2),
-            s.z + Math.cos(drift * 0.8 + s.t0 * 6.28) * sw * 0.87
-          );
-          leafDummy.rotation.set(t * s.spin, t * s.spin * 1.3 + s.t0 * 6.28, fall * 6.0);
-          leafDummy.scale.setScalar(s.sc);
+          var fallState = leafCardState(s.spec.traits, phaseNow,
+            sp.leafType, visualNow.carbonStress, visualNow.waterStress);
+          if (fallState.flight > 0 && !reducedFrame) {
+            var fall = fallState.flight;
+            var flutter = Math.sin(fall * Math.PI * 3 + s.rot) * crownR * 0.12;
+            leafDummy.position.set(
+              s.spec.p.x + (s.x - s.spec.p.x) * fall + flutter,
+              s.spec.p.y * (1 - fall) + 0.018 * fall +
+                Math.sin(fall * Math.PI) * crownR * 0.16,
+              s.spec.p.z + (s.z - s.spec.p.z) * fall +
+                Math.cos(fall * Math.PI * 2 + s.rot) * crownR * 0.08
+            );
+            leafDummy.rotation.set(t * s.spin, t * s.spin * 1.3 + s.rot, fall * 5.5);
+            leafDummy.scale.setScalar(s.spec.sc);
+          } else if (fallState.landed) {
+            leafDummy.position.set(s.x, 0.018 + li * 0.000003, s.z);
+            leafDummy.rotation.set(-Math.PI / 2, 0, s.rot);
+            leafDummy.scale.set(s.spec.sc * 1.35, s.spec.sc, s.spec.sc);
+          } else {
+            leafDummy.position.set(0, -rootDepth, 0);
+            leafDummy.rotation.set(0, 0, 0);
+            leafDummy.scale.setScalar(0);
+          }
           leafDummy.updateMatrix();
           leafFall.setMatrixAt(li, leafDummy.matrix);
         }
         leafFall.instanceMatrix.needsUpdate = true;
       }
+
+      // Precipitation expires from wall-clock time even when React does not render
+      // again. The wet bark and accumulated snow remain as material evidence.
+      if (rainMesh) {
+        rainMesh.visible = weatherNow.kind === 'rain' && weatherNow.animate;
+        if (rainMesh.visible) {
+          for (var ri2 = 0; ri2 < rainSeeds.length; ri2++) {
+            var R = rainSeeds[ri2];
+            var rainF = (t * 1.75 + R.offset) % 1;
+            var rainY = precipTop - rainF * (precipTop + rootDepth * 0.35);
+            var ro = ri2 * 6;
+            rainPositions[ro] = R.x;
+            rainPositions[ro + 1] = rainY;
+            rainPositions[ro + 2] = R.z;
+            rainPositions[ro + 3] = R.x + R.slant;
+            rainPositions[ro + 4] = rainY - crownR * 0.22;
+            rainPositions[ro + 5] = R.z + R.slant * 0.35;
+          }
+          rainMesh.geometry.attributes.position.needsUpdate = true;
+        }
+      }
+      if (snowMesh) {
+        snowMesh.visible = weatherNow.kind === 'snow' && weatherNow.animate;
+        if (snowMesh.visible) {
+          for (var si2 = 0; si2 < snowSeeds.length; si2++) {
+            var S = snowSeeds[si2];
+            var snowF = (t * 0.16 + S.offset) % 1;
+            var so = si2 * 3;
+            snowPositions[so] = S.x + Math.sin(t * 0.55 + S.sway) * crownR * 0.14;
+            snowPositions[so + 1] = precipTop - snowF * (precipTop + rootDepth * 0.30);
+            snowPositions[so + 2] = S.z + Math.cos(t * 0.47 + S.sway) * crownR * 0.11;
+          }
+          snowMesh.geometry.attributes.position.needsUpdate = true;
+        }
+      }
+
+      if (reducedFrame) return;
+      if (sky) sky.rotation.y = t * 0.004;
+
+      // A slow shared circuit with per-bird radius, height and phase.
+      if (birdMesh && birdSeeds) {
+        for (var bi2 = 0; bi2 < birdSeeds.length; bi2++) {
+          var B = birdSeeds[bi2];
+          var ba = t * 0.10 + B.ph;
+          cardDummy.position.set(
+            Math.cos(ba) * B.r,
+            B.h + Math.sin(t * 0.5 + B.ph * 2) * 0.25,
+            Math.sin(ba) * B.r
+          );
+          cardDummy.rotation.set(-1.25, -ba, 0);
+          var flap = 1 + Math.sin(t * B.flap * 2.4 + B.ph) * 0.35;
+          cardDummy.scale.set(B.sc, B.sc * flap, B.sc);
+          cardDummy.updateMatrix();
+          birdMesh.setMatrixAt(bi2, cardDummy.matrix);
+        }
+        birdMesh.instanceMatrix.needsUpdate = true;
+      }
     }
 
+    // Establish the correct paused/reduced-motion phenotype before the first RAF.
+    frame(Date.now(), props, reduced);
     return { meshes: meshes, picks: picks, anchor: trunk, frame: frame };
   }
 
@@ -3497,7 +4159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-habitat-fill{display:block;height:100%;border-radius:99px;}',
         '.allo-tree-season-observatory{position:relative;overflow:hidden;margin-top:11px;padding:12px;border:1px solid var(--chapter-border);border-radius:17px;background:var(--mission-bg);box-shadow:0 12px 26px var(--tree-shadow);}',
         '.allo-tree-season-observatory:after{content:"";position:absolute;width:150px;height:150px;right:-88px;top:-98px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 23px var(--hero-ring-soft);pointer-events:none;}',
-        '.allo-tree-season-head,.allo-tree-season-choices,.allo-tree-season-portrait,.allo-tree-season-note,.allo-tree-season-boundary{position:relative;z-index:1;}',
+        '.allo-tree-season-head,.allo-tree-season-choices,.allo-tree-season-portrait,.allo-tree-season-ledger,.allo-tree-season-note,.allo-tree-season-boundary{position:relative;z-index:1;}',
         '.allo-tree-season-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}',
         '.allo-tree-season-kicker{display:flex;align-items:center;gap:6px;font-size:9.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--season-hue);}',
         '.allo-tree-season-status{padding:3px 7px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--hero-chip);font-size:9px;font-weight:850;color:var(--tree-muted);}',
@@ -3509,7 +4171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-season-choice.is-current{border-color:var(--season-hue);box-shadow:inset 0 -3px 0 var(--season-hue),0 8px 18px var(--tree-shadow);}',
         '.allo-tree-season-choice-icon{grid-row:1/3;font-size:20px;line-height:1;}',
         '.allo-tree-season-choice strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;}',
-        '.allo-tree-season-choice span:last-child{font-size:8.5px;font-weight:850;color:var(--tree-muted);}',
+        '.allo-tree-season-choice span:last-child{font-size:10.5px;font-weight:850;color:var(--tree-muted);}',
         '.allo-tree-season-portrait{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;margin-top:9px;padding:11px;border:1px solid var(--chapter-border);border-radius:14px;background:var(--chapter-bg);}',
         '.allo-tree-season-orb{display:grid;place-items:center;width:64px;height:64px;border:1px solid var(--chapter-border);border-radius:50%;background:radial-gradient(circle at 34% 28%,var(--hero-chip),var(--flow-badge));font-size:30px;box-shadow:inset 0 -4px 0 var(--season-hue),0 10px 22px var(--tree-shadow);animation:tree-season-breathe 3.2s ease-in-out infinite;}',
         '.allo-tree-season-title{display:block;font-size:14px;line-height:1.2;color:var(--tree-ink);}',
@@ -3517,18 +4179,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-season-signals{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0;}',
         '.allo-tree-season-signal{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 7px;align-items:center;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--mission-step);}',
         '.allo-tree-season-signal-icon{grid-row:1/3;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--flow-badge);font-size:15px;}',
-        '.allo-tree-season-signal dt{font-size:8.5px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-season-signal dt{font-size:10px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;color:var(--tree-muted);}',
         '.allo-tree-season-signal dd{margin:0;font-size:10.5px;font-weight:900;line-height:1.3;color:var(--tree-ink);}',
         '.allo-tree-phenology{position:relative;z-index:1;margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-radius:14px;background:var(--chapter-bg);}',
-        '.allo-tree-phenology-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px;margin-bottom:8px}.allo-tree-phenology-head strong{font-size:10.5px;color:var(--tree-ink)}.allo-tree-phenology-head span{font-size:8.5px;font-weight:850;color:var(--tree-muted)}',
+        '.allo-tree-phenology-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px;margin-bottom:8px}.allo-tree-phenology-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-phenology-head span{font-size:10px;font-weight:850;color:var(--tree-muted)}',
         '.allo-tree-phenology-trail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}.allo-tree-phenology-stage{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-top:3px solid var(--phenology-tone);border-radius:11px;background:var(--mission-step)}.allo-tree-phenology-stage:not(:last-child):after{content:"\\2192";position:absolute;right:-13px;top:50%;z-index:2;display:grid;place-items:center;width:18px;height:18px;margin-top:-9px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--tree-muted);font-size:10px;font-weight:950}',
-        '.allo-tree-phenology-stage[aria-current="step"]{border-color:var(--season-hue);box-shadow:inset 0 -3px 0 var(--season-hue),0 7px 16px var(--tree-shadow)}.allo-tree-phenology-icon{grid-row:1/3;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:var(--flow-badge);font-size:15px}.allo-tree-phenology-stage strong{font-size:9.5px;color:var(--tree-ink)}.allo-tree-phenology-stage span:last-child{font-size:8px;line-height:1.3;color:var(--tree-muted)}',
-        '.allo-tree-phenology-stage.is-leaf-fall[aria-current="step"] .allo-tree-phenology-icon{animation:tree-leaf-drift 2.4s ease-in-out infinite}.allo-tree-phenology-process{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:9px;line-height:1.48;color:var(--tree-muted)}.allo-tree-phenology-process b{color:var(--season-hue)}',
+        '.allo-tree-phenology-stage[aria-current="step"]{border-color:var(--season-hue);box-shadow:inset 0 -3px 0 var(--season-hue),0 7px 16px var(--tree-shadow)}.allo-tree-phenology-icon{grid-row:1/3;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:var(--flow-badge);font-size:15px}.allo-tree-phenology-stage strong{font-size:10.5px;color:var(--tree-ink)}.allo-tree-phenology-stage span:last-child{font-size:10.5px;line-height:1.35;color:var(--tree-muted)}',
+        '.allo-tree-phenology-stage.is-leaf-fall[aria-current="step"] .allo-tree-phenology-icon{animation:tree-leaf-drift 2.4s ease-in-out infinite}.allo-tree-phenology-process{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-phenology-process b{color:var(--season-hue)}',
+        '.allo-tree-season-ledger{overflow:hidden;margin-top:10px;padding:11px;border:1px solid var(--chapter-border);border-radius:15px;background:linear-gradient(145deg,var(--chapter-bg),var(--mission-bg));box-shadow:0 10px 23px var(--tree-shadow)}',
+        '.allo-tree-season-ledger:after{content:"";position:absolute;right:-62px;bottom:-72px;width:126px;height:126px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 20px var(--hero-ring-soft);pointer-events:none}',
+        '.allo-tree-season-ledger-head,.allo-tree-season-ledger-grid,.allo-tree-season-ledger-annual,.allo-tree-season-ledger-evidence{position:relative;z-index:1}',
+        '.allo-tree-season-ledger-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 9px;align-items:center;margin-bottom:9px}.allo-tree-season-ledger-head>.allo-tree-season-ledger-icon{display:grid;place-items:center;width:37px;height:37px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--flow-badge);color:var(--season-hue);font-size:19px;font-weight:950}.allo-tree-season-ledger-head>strong{font-size:12px;line-height:1.25;color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-scope{padding:4px 8px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--hero-chip);font-size:10px;font-weight:900;color:var(--tree-muted)}',
+        '.allo-tree-season-ledger-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}',
+        '.allo-tree-season-ledger-stage{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-content:start;min-width:0;padding:9px;border:1px solid var(--chapter-border);border-top:4px solid var(--ledger-tone);border-radius:12px;background:var(--mission-step);box-shadow:0 7px 16px var(--tree-shadow)}',
+        '.allo-tree-season-ledger-stage:not(:last-child):after{content:"\\2192";position:absolute;z-index:3;right:-13px;top:22px;display:grid;place-items:center;width:19px;height:19px;border:1px solid var(--chapter-border);border-radius:50%;background:var(--chapter-bg);color:var(--ledger-tone);font-size:10px;font-weight:950}',
+        '.allo-tree-season-ledger-stage[aria-current="step"]{border-color:var(--season-hue);box-shadow:inset 0 -3px 0 var(--season-hue),0 10px 22px var(--tree-shadow)}',
+        '.allo-tree-season-ledger-stage>.allo-tree-season-ledger-icon{grid-row:1/3;display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:var(--flow-badge);font-size:16px}.allo-tree-season-ledger-action{min-width:0}.allo-tree-season-ledger-action span{display:block;font-size:9.5px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;color:var(--ledger-tone)}.allo-tree-season-ledger-action strong{display:block;margin-top:1px;font-size:11px;line-height:1.3;color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-copy{grid-column:1/-1;margin:2px 0 0;font-size:10.5px;line-height:1.48;color:var(--tree-muted)}',
+        '.allo-tree-season-ledger-metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:2px 0 0}.allo-tree-season-ledger-metrics>div{min-width:0;padding:5px 6px;border:1px solid var(--chapter-border);border-radius:8px;background:var(--hero-chip)}.allo-tree-season-ledger-metrics dt{font-size:9.5px;font-weight:900;color:var(--tree-muted)}.allo-tree-season-ledger-metrics dd{overflow:hidden;text-overflow:ellipsis;margin:2px 0 0;font-size:10.5px;font-weight:950;color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-balance{grid-column:1/-1;padding:6px 7px;border-radius:8px;background:var(--flow-badge);font-size:10.5px;color:var(--tree-ink)}.allo-tree-season-ledger-reserve{grid-column:1/-1;padding-top:6px;border-top:1px dashed var(--chapter-border);font-size:10px;line-height:1.4;color:var(--tree-muted)}',
+        '.allo-tree-season-ledger-annual{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(180px,.65fr);gap:8px;align-items:stretch;margin-top:9px;padding-top:9px;border-top:1px dashed var(--chapter-border)}',
+        '.allo-tree-season-ledger-equation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:5px;align-items:stretch;padding:8px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--hero-chip)}.allo-tree-season-ledger-equation>span,.allo-tree-season-ledger-equation>strong{display:grid;place-content:center;min-width:0;padding:5px;border-radius:8px;background:var(--flow-badge);text-align:center}.allo-tree-season-ledger-equation b{display:block;font-size:9.5px;color:var(--tree-muted)}.allo-tree-season-ledger-equation strong{display:block;margin-top:2px;font-size:11px;color:var(--tree-ink)}.allo-tree-season-ledger-equation>i{align-self:center;font-size:15px;font-style:normal;font-weight:950;color:var(--season-hue)}',
+        '.allo-tree-season-ledger-fact{margin:0;padding:9px;border-left:4px solid var(--season-hue);border-radius:10px;background:var(--flow-badge);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-season-ledger-fact strong{color:var(--tree-ink)}',
+        '.allo-tree-season-ledger-evidence{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin:8px 0 0;font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-season-ledger-evidence b{color:var(--season-hue)}.allo-tree-season-ledger.is-stopped{border-style:dashed}.allo-tree-season-ledger.is-stopped .allo-tree-season-ledger-evidence{padding:9px;border-radius:10px;background:var(--flow-badge);color:var(--tree-ink)}',
         '.allo-tree-autumn-lab{position:relative;z-index:1;overflow:hidden;margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-left:4px solid var(--season-hue);border-radius:14px;background:linear-gradient(135deg,var(--chapter-bg),var(--mission-bg));}',
-        '.allo-tree-autumn-lab-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center;margin-bottom:8px}.allo-tree-autumn-lab-mark{grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--flow-badge);font-size:17px}.allo-tree-autumn-lab-head strong{font-size:10.5px;color:var(--tree-ink)}.allo-tree-autumn-lab-head span:last-child{font-size:8.5px;line-height:1.4;color:var(--tree-muted)}',
+        '.allo-tree-autumn-lab-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center;margin-bottom:8px}.allo-tree-autumn-lab-mark{grid-row:1/3;display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:var(--flow-badge);font-size:17px}.allo-tree-autumn-lab-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-autumn-lab-head span:last-child{font-size:10.5px;line-height:1.45;color:var(--tree-muted)}',
         '.allo-tree-autumn-evidence-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.allo-tree-autumn-lab[data-tree-autumn-lab="needle-cohorts"] .allo-tree-autumn-evidence-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.allo-tree-autumn-evidence{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;padding:7px 8px;border:1px solid var(--chapter-border);border-top:3px solid var(--autumn-tone);border-radius:10px;background:var(--mission-step)}',
-        '.allo-tree-autumn-swatch{grid-row:1/3;display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:var(--autumn-tone);border:1px solid var(--chapter-border);color:#fff;font-size:7px;font-weight:950;text-shadow:0 1px 2px #000}.allo-tree-autumn-evidence strong{font-size:9px;color:var(--tree-ink)}.allo-tree-autumn-evidence span:last-child{font-size:7.8px;line-height:1.32;color:var(--tree-muted)}',
-        '.allo-tree-autumn-boundary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:8.5px;line-height:1.45;color:var(--tree-muted)}.allo-tree-autumn-boundary b{color:var(--season-hue)}',
+        '.allo-tree-autumn-swatch{grid-row:1/3;display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:var(--autumn-tone);border:1px solid var(--chapter-border);color:#fff;font-size:9.5px;font-weight:950;text-shadow:0 1px 2px #000}.allo-tree-autumn-evidence strong{font-size:10.5px;color:var(--tree-ink)}.allo-tree-autumn-evidence span:last-child{font-size:10.5px;line-height:1.42;color:var(--tree-muted)}',
+        '.allo-tree-autumn-boundary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-autumn-boundary b{color:var(--season-hue)}',
+        '.allo-tree-autumn-detective{margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--hero-chip);box-shadow:inset 0 3px 0 var(--detective-tone)}.allo-tree-autumn-detective-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center}.allo-tree-autumn-detective-icon{grid-row:1/3;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--flow-badge);font-size:16px}.allo-tree-autumn-detective-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-autumn-detective-head span:last-child{font-size:10.5px;line-height:1.45;color:var(--tree-muted)}',
+        '.allo-tree-autumn-reasoning-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:8px 0;padding:0;list-style:none}.allo-tree-autumn-reasoning-step{position:relative;display:flex;align-items:center;justify-content:center;gap:5px;min-height:31px;padding:6px 8px;border:1px solid var(--chapter-border);border-radius:99px;background:var(--mission-step);font-size:10px;font-weight:900;color:var(--tree-muted);text-align:center}.allo-tree-autumn-reasoning-step:not(:last-child):after{content:"\\2192";position:absolute;right:-13px;color:var(--detective-tone);font-size:11px;font-weight:950}',
+        '.allo-tree-autumn-observation{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:center;padding:8px;border:1px dashed var(--chapter-border);border-radius:11px;background:var(--mission-step)}.allo-tree-autumn-observation-copy{display:grid;gap:2px}.allo-tree-autumn-observation-copy b{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--detective-tone)}.allo-tree-autumn-observation-copy span{font-size:10.5px;line-height:1.48;color:var(--tree-ink)}',
+        '.allo-tree-autumn-specimen{position:relative;display:flex;align-items:center;justify-content:center;width:82px;height:52px;border:1px solid var(--chapter-border);border-radius:12px;background:radial-gradient(circle,var(--flow-badge),transparent 70%);overflow:hidden}.allo-tree-autumn-sample-piece{position:relative;display:block;background:var(--sample-tone);box-shadow:0 3px 8px var(--tree-shadow)}.allo-tree-autumn-specimen[data-autumn-specimen="pigments"] .allo-tree-autumn-sample-piece{width:22px;height:31px;margin:-2px;border-radius:85% 15% 80% 20%;transform:rotate(-34deg)}.allo-tree-autumn-specimen[data-autumn-specimen="pigments"] .allo-tree-autumn-sample-piece:nth-child(2){transform:translateY(-4px) rotate(-45deg)}.allo-tree-autumn-specimen[data-autumn-specimen="pigments"] .allo-tree-autumn-sample-piece:nth-child(3){transform:rotate(-56deg)}.allo-tree-autumn-specimen[data-autumn-specimen="pigments"] .allo-tree-autumn-sample-piece:after{content:"";position:absolute;left:48%;top:18%;width:1px;height:70%;background:rgba(255,255,255,.72);transform:rotate(-34deg)}.allo-tree-autumn-specimen[data-autumn-specimen="needles"]{align-items:flex-end;padding-bottom:8px}.allo-tree-autumn-specimen[data-autumn-specimen="needles"] .allo-tree-autumn-sample-piece{width:4px;height:35px;margin:0 3px;border-radius:99px 99px 3px 3px;transform-origin:bottom center;transform:rotate(-24deg)}.allo-tree-autumn-specimen[data-autumn-specimen="needles"] .allo-tree-autumn-sample-piece:nth-child(2){height:40px;transform:rotate(0)}.allo-tree-autumn-specimen[data-autumn-specimen="needles"] .allo-tree-autumn-sample-piece:nth-child(3){height:32px;transform:rotate(25deg)}',
+        '.allo-tree-autumn-claim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.allo-tree-autumn-claim{min-height:56px;padding:8px 9px;border:1px solid var(--chapter-border);border-radius:10px;background:var(--mission-step);color:var(--tree-ink);font-size:10.5px;font-weight:850;line-height:1.42;text-align:left;cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}.allo-tree-autumn-claim:hover{transform:translateY(-1px);border-color:var(--detective-tone)}.allo-tree-autumn-claim:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px}.allo-tree-autumn-claim[aria-pressed="true"]{border-color:var(--detective-tone);box-shadow:inset 0 0 0 2px var(--detective-tone),0 5px 12px var(--tree-shadow)}',
+        '.allo-tree-autumn-feedback{min-height:34px;margin:8px 0 0;padding:8px 10px;border-left:4px solid var(--detective-tone);border-radius:8px;background:var(--flow-badge);font-size:10.5px;line-height:1.48;color:var(--tree-muted)}.allo-tree-autumn-detective[data-autumn-claim-result="correct"] .allo-tree-autumn-feedback{color:var(--tree-ink);font-weight:800}',
+        '.allo-tree-autumn-release{margin-top:9px;padding:10px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--chapter-bg)}.allo-tree-autumn-release-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;align-items:center;margin-bottom:8px}.allo-tree-autumn-release-mark{grid-row:1/3;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--flow-badge);font-size:16px}.allo-tree-autumn-release-head strong{font-size:11px;color:var(--tree-ink)}.allo-tree-autumn-release-head span:last-child{font-size:10.5px;line-height:1.45;color:var(--tree-muted)}',
+        '.allo-tree-autumn-release-body{display:grid;grid-template-columns:138px minmax(0,1fr);gap:8px;align-items:stretch}.allo-tree-autumn-release-visual{display:grid;place-items:center;min-height:92px;padding:6px;border:1px solid var(--chapter-border);border-radius:11px;background:radial-gradient(circle at 50% 45%,var(--flow-badge),transparent 68%);overflow:hidden}.allo-tree-autumn-release-visual svg{display:block;width:100%;height:auto;max-height:94px}.allo-tree-autumn-release-fall{transform-box:fill-box;transform-origin:center;animation:tree-release-float 3s ease-in-out infinite}',
+        '.allo-tree-autumn-release-trail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.allo-tree-autumn-release-stage{position:relative;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-top:3px solid var(--release-tone);border-radius:10px;background:var(--mission-step)}.allo-tree-autumn-release-stage:not(:last-child):after{content:"\\2192";position:absolute;right:-10px;top:50%;z-index:2;color:var(--release-tone);font-size:11px;font-weight:950}.allo-tree-autumn-release-stage-head{display:flex;align-items:center;gap:5px}.allo-tree-autumn-release-number{display:grid;place-items:center;flex:0 0 auto;width:22px;height:22px;border-radius:7px;background:var(--flow-badge);font-size:9.5px;font-weight:950;color:var(--release-tone)}.allo-tree-autumn-release-stage strong{font-size:10px;line-height:1.3;color:var(--tree-ink)}.allo-tree-autumn-release-stage p{margin:5px 0 0;font-size:10px;line-height:1.45;color:var(--tree-muted)}',
+        '.allo-tree-autumn-release-note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:start;margin:8px 0 0;padding:8px 9px;border-left:4px solid var(--season-hue);border-radius:8px;background:var(--flow-badge);font-size:10.5px;line-height:1.5;color:var(--tree-muted)}.allo-tree-autumn-release-note b{color:var(--season-hue)}',
         '.allo-tree-season-note{margin-top:8px;padding:9px 10px;border-left:4px solid var(--season-hue);border-radius:10px;background:var(--hero-chip);font-size:11px;line-height:1.55;color:var(--tree-ink);}',
         '.allo-tree-season-note strong{color:var(--season-hue);}',
         '.allo-tree-season-boundary{display:flex;gap:7px;align-items:flex-start;margin-top:7px;font-size:9.5px;line-height:1.45;color:var(--tree-muted);}',
@@ -3549,10 +4238,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-species-tradeoff{grid-column:1/-1;margin:0;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:9.5px;line-height:1.45;color:var(--tree-muted);}',
         '@keyframes tree-season-breathe{50%{transform:translateY(-2px) scale(1.025)}}',
         '@keyframes tree-leaf-drift{0%,100%{transform:translate(0,-1px) rotate(-7deg)}50%{transform:translate(3px,3px) rotate(9deg)}}',
-        '@media (max-width:700px){.allo-tree-season-choices,.allo-tree-phenology-trail,.allo-tree-autumn-evidence-grid,.allo-tree-autumn-lab[data-tree-autumn-lab="needle-cohorts"] .allo-tree-autumn-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-phenology-stage:after{display:none}.allo-tree-species-lens{grid-template-columns:repeat(2,minmax(0,1fr))}}',
-        '@media (max-width:460px){.allo-tree-season-portrait{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.allo-tree-season-signals,.allo-tree-phenology-trail,.allo-tree-autumn-evidence-grid,.allo-tree-autumn-lab[data-tree-autumn-lab="needle-cohorts"] .allo-tree-autumn-evidence-grid{grid-template-columns:minmax(0,1fr);width:100%;text-align:left}.allo-tree-species-lens{grid-template-columns:minmax(0,1fr)}}',
-        '@media (prefers-reduced-motion:reduce){.allo-tree-season-orb,.allo-tree-phenology-stage.is-leaf-fall .allo-tree-phenology-icon{animation:none}.allo-tree-season-choice{transition:none}.allo-tree-season-choice:hover{transform:none}}',
-        '@media (forced-colors:active){.allo-tree-season-observatory,.allo-tree-season-choice,.allo-tree-season-portrait,.allo-tree-season-signal,.allo-tree-phenology,.allo-tree-phenology-stage,.allo-tree-autumn-lab,.allo-tree-autumn-evidence,.allo-tree-species-context,.allo-tree-species-portrait,.allo-tree-species-trait{border-color:ButtonText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.allo-tree-season-choice.is-current,.allo-tree-phenology-stage[aria-current="step"]{outline:3px solid Highlight;outline-offset:1px}.allo-tree-season-orb{border:2px solid ButtonText;background:Canvas;box-shadow:none}.allo-tree-autumn-swatch{forced-color-adjust:auto;border:2px solid ButtonText;background:Canvas;color:CanvasText;text-shadow:none}}',
+        '@keyframes tree-release-float{0%,100%{transform:translateY(-1px) rotate(-2deg)}50%{transform:translate(3px,4px) rotate(5deg)}}',
+        '@media (max-width:700px){.allo-tree-season-choices,.allo-tree-phenology-trail,.allo-tree-season-ledger-grid,.allo-tree-autumn-evidence-grid,.allo-tree-autumn-lab[data-tree-autumn-lab="needle-cohorts"] .allo-tree-autumn-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-season-ledger-annual,.allo-tree-autumn-claim-grid,.allo-tree-autumn-release-body{grid-template-columns:minmax(0,1fr)}.allo-tree-autumn-release-trail{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-phenology-stage:after,.allo-tree-season-ledger-stage:after,.allo-tree-autumn-release-stage:after{display:none}.allo-tree-species-lens{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+        '@media (max-width:460px){.allo-tree-season-portrait{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.allo-tree-season-ledger-head{grid-template-columns:auto minmax(0,1fr)}.allo-tree-season-ledger-scope{grid-column:1/-1;justify-self:start}.allo-tree-season-signals,.allo-tree-phenology-trail,.allo-tree-season-ledger-grid,.allo-tree-autumn-evidence-grid,.allo-tree-autumn-lab[data-tree-autumn-lab="needle-cohorts"] .allo-tree-autumn-evidence-grid,.allo-tree-autumn-reasoning-path,.allo-tree-autumn-release-trail{grid-template-columns:minmax(0,1fr);width:100%;text-align:left}.allo-tree-autumn-reasoning-step:not(:last-child):after{display:none}.allo-tree-autumn-observation{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.allo-tree-species-lens{grid-template-columns:minmax(0,1fr)}}',
+        '@media (prefers-reduced-motion:reduce){.allo-tree-season-orb,.allo-tree-phenology-stage.is-leaf-fall .allo-tree-phenology-icon,.allo-tree-autumn-release-fall{animation:none}.allo-tree-season-choice,.allo-tree-autumn-claim{transition:none}.allo-tree-season-choice:hover,.allo-tree-autumn-claim:hover{transform:none}}',
+        '@media (forced-colors:active){.allo-tree-season-observatory,.allo-tree-season-choice,.allo-tree-season-portrait,.allo-tree-season-signal,.allo-tree-phenology,.allo-tree-phenology-stage,.allo-tree-season-ledger,.allo-tree-season-ledger-stage,.allo-tree-season-ledger-metrics>div,.allo-tree-season-ledger-equation,.allo-tree-season-ledger-equation>span,.allo-tree-season-ledger-equation>strong,.allo-tree-season-ledger-fact,.allo-tree-autumn-lab,.allo-tree-autumn-evidence,.allo-tree-autumn-detective,.allo-tree-autumn-reasoning-step,.allo-tree-autumn-observation,.allo-tree-autumn-claim,.allo-tree-autumn-feedback,.allo-tree-autumn-release,.allo-tree-autumn-release-visual,.allo-tree-autumn-release-stage,.allo-tree-autumn-release-note,.allo-tree-species-context,.allo-tree-species-portrait,.allo-tree-species-trait{border-color:ButtonText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.allo-tree-season-choice.is-current,.allo-tree-phenology-stage[aria-current="step"],.allo-tree-season-ledger-stage[aria-current="step"],.allo-tree-autumn-claim[aria-pressed="true"]{outline:3px solid Highlight;outline-offset:1px}.allo-tree-season-orb{border:2px solid ButtonText;background:Canvas;box-shadow:none}.allo-tree-autumn-swatch,.allo-tree-autumn-sample-piece,.allo-tree-autumn-release-visual svg{forced-color-adjust:auto;border:2px solid ButtonText;background:Canvas;color:CanvasText;text-shadow:none}}',
         '.allo-tree-timescales{position:relative;overflow:hidden;margin:0 0 14px;padding:14px;border:1px solid var(--scene-edge);border-radius:18px;background:linear-gradient(135deg,var(--chapter-bg),var(--mission-bg));box-shadow:0 16px 36px var(--scene-shadow);}',
         '.allo-tree-timescales:after{content:"";position:absolute;width:185px;height:185px;right:-112px;top:-125px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 28px var(--hero-ring-soft);pointer-events:none;}',
         '.allo-tree-timescales-head,.allo-tree-clock-grid,.allo-tree-timescales-story{position:relative;z-index:1;}',
@@ -3984,6 +4674,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-effect-value{margin-top:2px;font-size:12px;font-weight:900;line-height:1.25;color:var(--tree-ink);}',
         '.allo-tree-effect-detail{margin-top:2px;font-size:10px;line-height:1.35;color:var(--tree-muted);}',
         '.allo-tree-effect-response{position:relative;z-index:1;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:11px;line-height:1.5;color:var(--tree-ink);}',
+        '.allo-tree-canopy-support{position:relative;overflow:hidden;margin:12px 0 2px;padding:12px;border:1px solid var(--chapter-border);border-left:4px solid var(--support-tone);border-radius:15px;background:linear-gradient(145deg,var(--chapter-bg),var(--mission-bg));box-shadow:0 12px 26px var(--tree-shadow);}',
+        '.allo-tree-canopy-support:after{content:"";position:absolute;width:118px;height:118px;right:-67px;top:-74px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 18px var(--hero-ring-soft);pointer-events:none;}',
+        '.allo-tree-canopy-head,.allo-tree-canopy-flow,.allo-tree-canopy-meter,.allo-tree-canopy-foot{position:relative;z-index:1;}',
+        '.allo-tree-canopy-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 9px;align-items:center;margin-bottom:9px}.allo-tree-canopy-mark{grid-row:1/3;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--flow-badge);font-size:19px}.allo-tree-canopy-head strong{font-size:12px;color:var(--tree-ink)}.allo-tree-canopy-head>span:nth-child(3){font-size:9.5px;line-height:1.4;color:var(--tree-muted)}.allo-tree-canopy-state{grid-row:1/3;grid-column:3;padding:4px 8px;border:1px solid var(--support-tone);border-radius:999px;background:var(--hero-chip);font-size:8.5px;font-weight:950;color:var(--support-tone);white-space:nowrap}',
+        '.allo-tree-canopy-flow{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);gap:4px;align-items:stretch}.allo-tree-canopy-node{min-width:0;padding:8px;border:1px solid var(--chapter-border);border-top:3px solid var(--node-tone);border-radius:11px;background:var(--mission-step)}.allo-tree-canopy-node-label{display:block;font-size:8px;font-weight:950;letter-spacing:.055em;text-transform:uppercase;color:var(--tree-muted)}.allo-tree-canopy-node-value{display:block;margin-top:3px;font-size:12px;color:var(--tree-ink)}.allo-tree-canopy-node-copy{display:block;margin-top:2px;font-size:8.5px;line-height:1.35;color:var(--tree-muted)}.allo-tree-canopy-arrow{display:grid;place-items:center;color:var(--support-tone);font-size:14px;font-weight:950}',
+        '.allo-tree-canopy-meter{margin-top:9px}.allo-tree-canopy-meter-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px;font-size:8.5px;font-weight:850;color:var(--tree-muted)}.allo-tree-canopy-track{position:relative;display:flex;height:13px;border:1px solid var(--chapter-border);border-radius:99px;background:var(--hero-chip);overflow:hidden}.allo-tree-canopy-supported{height:100%;background:linear-gradient(90deg,var(--tree-accent),var(--tree-focus))}.allo-tree-canopy-blocked{height:100%;background:repeating-linear-gradient(135deg,var(--support-tone) 0 4px,var(--chapter-bg) 4px 8px);border-left:2px solid var(--support-tone)}.allo-tree-canopy-cap{position:absolute;top:-2px;bottom:-2px;width:3px;margin-left:-1px;background:var(--tree-ink);box-shadow:0 0 0 1px var(--chapter-bg)}',
+        '.allo-tree-canopy-legend{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:5px;font-size:8.5px;color:var(--tree-muted)}.allo-tree-canopy-legend span{display:inline-flex;align-items:center;gap:4px}.allo-tree-canopy-key{width:12px;height:7px;border:1px solid var(--chapter-border);border-radius:2px;background:var(--tree-accent)}.allo-tree-canopy-key.is-blocked{background:repeating-linear-gradient(135deg,var(--support-tone) 0 3px,var(--chapter-bg) 3px 6px)}.allo-tree-canopy-key.is-cap{width:3px;background:var(--tree-ink)}',
+        '.allo-tree-canopy-foot{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 8px;align-items:start;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:9px;line-height:1.45;color:var(--tree-muted)}.allo-tree-canopy-foot b{color:var(--support-tone)}.allo-tree-canopy-foot-note{grid-column:2;font-size:8.5px}',
+        '.allo-tree-year-outcome{position:relative;overflow:hidden;margin-top:11px;padding:12px;border:1px solid var(--chapter-border);border-top:4px solid var(--outcome-tone);border-radius:15px;background:linear-gradient(145deg,var(--mission-bg),var(--chapter-bg));box-shadow:0 13px 28px var(--tree-shadow);animation:tree-effect-in .28s ease-out}.allo-tree-year-outcome:after{content:"";position:absolute;width:112px;height:112px;right:-66px;bottom:-76px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 18px var(--hero-ring-soft);pointer-events:none}',
+        '.allo-tree-outcome-head,.allo-tree-outcome-grid,.allo-tree-outcome-cue{position:relative;z-index:1}.allo-tree-outcome-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 9px;align-items:center;margin-bottom:9px}.allo-tree-outcome-mark{grid-row:1/3;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--flow-badge);font-size:19px}.allo-tree-outcome-head strong{font-size:12px;color:var(--tree-ink)}.allo-tree-outcome-head span:nth-child(3){font-size:9.5px;color:var(--tree-muted)}.allo-tree-outcome-age{grid-row:1/3;grid-column:3;padding:4px 8px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--hero-chip);font-size:8.5px;font-weight:950;color:var(--tree-ink);white-space:nowrap}',
+        '.allo-tree-outcome-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.allo-tree-outcome-fact{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-content:start;min-width:0;padding:8px;border:1px solid var(--chapter-border);border-top:3px solid var(--fact-tone);border-radius:11px;background:var(--mission-step)}.allo-tree-outcome-icon{grid-row:1/4;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--flow-badge);font-size:15px}.allo-tree-outcome-label{font-size:8px;font-weight:950;letter-spacing:.055em;text-transform:uppercase;color:var(--tree-muted)}.allo-tree-outcome-value{font-size:11px;line-height:1.25;color:var(--tree-ink)}.allo-tree-outcome-detail{font-size:8.5px;line-height:1.35;color:var(--tree-muted)}',
+        '.allo-tree-outcome-cue{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;margin-top:8px;padding:8px 9px;border-left:4px solid var(--outcome-tone);border-radius:9px;background:var(--hero-chip);font-size:9.5px;line-height:1.45;color:var(--tree-ink)}.allo-tree-outcome-cue strong{color:var(--outcome-tone)}',
+        '@media (max-width:720px){.allo-tree-canopy-flow{grid-template-columns:minmax(0,1fr)}.allo-tree-canopy-arrow{min-height:12px;transform:rotate(90deg)}.allo-tree-outcome-grid{grid-template-columns:minmax(0,1fr)}}',
+        '@media (max-width:460px){.allo-tree-canopy-head,.allo-tree-outcome-head{grid-template-columns:auto minmax(0,1fr)}.allo-tree-canopy-state,.allo-tree-outcome-age{grid-row:auto;grid-column:1/-1;justify-self:start;margin-top:4px}.allo-tree-canopy-foot{grid-template-columns:minmax(0,1fr)}.allo-tree-canopy-foot-note{grid-column:1}}',
+        '@media (prefers-reduced-motion:reduce){.allo-tree-canopy-support,.allo-tree-year-outcome{animation:none!important;transition:none!important}}',
+        '@media (forced-colors:active){.allo-tree-canopy-support,.allo-tree-canopy-node,.allo-tree-canopy-state,.allo-tree-canopy-track,.allo-tree-year-outcome,.allo-tree-outcome-fact,.allo-tree-outcome-age,.allo-tree-outcome-cue{border-color:ButtonText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.allo-tree-canopy-blocked{background:Canvas!important;border-left:4px dashed ButtonText}.allo-tree-canopy-supported,.allo-tree-canopy-cap,.allo-tree-canopy-key{background:ButtonText!important}.allo-tree-canopy-support[data-canopy-support="pipe-limited"],.allo-tree-year-outcome[data-year-carbon-state="deficit"]{outline:3px solid Highlight;outline-offset:1px}}',
         '.allo-tree-scene-effect{animation:tree-effect-chip .32s ease-out;box-shadow:0 10px 24px var(--scene-shadow);}',
         '.allo-tree-advanced-gateway>.allo-tree-card{border-style:dashed!important;background:var(--chapter-bg)!important;}',
         '.allo-tree-advanced-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;}',
@@ -4036,6 +4742,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var advancedOpen = advancedPinned || d.growAdvancedOpen === true ||
         (advancedHasEvidence && d.growAdvancedOpen !== false);
       playing = playing && !experimentActive;
+      var visualPhase = (playing && speed.seasonal)
+        ? yearPhase : canonicalPhaseForSeason(season);
 
       // Live readout for the CURRENT settings, independent of the yearly step.
       // Same environment the next simulated year will see, so a drought is visible in
@@ -4061,6 +4769,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         typeof effectRaw.netBefore === 'number' && isFinite(effectRaw.netBefore) &&
         typeof effectRaw.netAfter === 'number' && isFinite(effectRaw.netAfter)
         ? effectRaw : null;
+      var outcomeRaw = d.lastYearOutcome;
+      var yearOutcome = outcomeRaw && typeof outcomeRaw === 'object' && outcomeRaw.version === 1 &&
+        typeof outcomeRaw.completedYears === 'number' && isFinite(outcomeRaw.completedYears) && outcomeRaw.completedYears > 0 &&
+        typeof outcomeRaw.ageBefore === 'number' && isFinite(outcomeRaw.ageBefore) &&
+        typeof outcomeRaw.ageAfter === 'number' && isFinite(outcomeRaw.ageAfter) &&
+        typeof outcomeRaw.carbonTotal === 'number' && isFinite(outcomeRaw.carbonTotal) &&
+        typeof outcomeRaw.heightDelta === 'number' && isFinite(outcomeRaw.heightDelta) &&
+        typeof outcomeRaw.leafAreaDelta === 'number' && isFinite(outcomeRaw.leafAreaDelta) &&
+        typeof outcomeRaw.reservesDelta === 'number' && isFinite(outcomeRaw.reservesDelta)
+        ? outcomeRaw : null;
+
 
       function buildConditionEffect(factor, before, after, nextCfg, mode) {
         var nextEnv = envForYear(nextCfg, tree.age);
@@ -4084,7 +4803,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (!tree.alive || experimentLocked) return;
         var nextCfg = Object.assign({}, envCfg);
         nextCfg[field] = value;
-        var patch = { lastEffect: buildConditionEffect(factor, envCfg[field], value, nextCfg, 'slider') };
+        var patch = {
+          lastEffect: buildConditionEffect(factor, envCfg[field], value, nextCfg, 'slider'),
+          lastYearOutcome: null,
+          weatherEvent: null
+        };
         patch[field] = value;
         updMulti(patch);
       }
@@ -4230,7 +4953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       function beginExperiment() {
         CLOCK.stop();
         updMulti({
-          playing: false,
+          playing: false, lastYearOutcome: null,
           experiment: freshExperiment(tree, sp.id, envCfg, alloc, experiment.duration)
         });
         sfxTick();
@@ -4285,7 +5008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           speciesId: sid,
           limitsSeen: seen,
           playing: false,
-          yearPhase: 0,
+          yearPhase: 0, lastYearOutcome: null,
           experiment: Object.assign({}, experiment, { phase: 'explain', result: outcome })
         });
         outcome.tree.alive ? sfxGrow() : sfxBad();
@@ -4327,7 +5050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           droughtYears: a.treatment.env.droughtYears.slice(),
           alloc: Object.assign({}, a.treatment.alloc),
           playing: false,
-          yearPhase: 0,
+          yearPhase: 0, lastYearOutcome: null,
           experiment: freshExperiment(base.tree, a.speciesId, base.env, base.alloc, a.duration)
         });
         srSay(__alloT('stem.treelab.trial_b_ready', 'Trial B starts from the same tree as Trial A. Change one condition and make a new prediction.'));
@@ -4364,7 +5087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           seen[probe.limiting.id] = true;
           st = simulateYear(st, sp, env, alloc);
         }
-        var stepPatch = { tree: st, limitsSeen: seen };
+        var stepPatch = { tree: st, limitsSeen: seen, lastYearOutcome: summariseYearAdvance(tree, st, n) };
         var reachedGoal = !d.goalReached && treeGoalReached(st);
         if (reachedGoal) {
           stepPatch.goalReached = st.age;
@@ -4406,7 +5129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           seen[probe.limiting.id] = true;
           st = simulateYear(st, sp, env, alloc);
         }
-        var patch = { tree: st, limitsSeen: seen, yearPhase: phase - whole };
+        var patch = { tree: st, limitsSeen: seen, yearPhase: phase - whole, lastYearOutcome: null };
         // Goal completion is detected HERE rather than in the render body, so the
         // award fires once, on the year it is actually earned. Same two model-owned
         // targets the card draws: the renderer's own maturity height, and the
@@ -4449,7 +5172,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
         var next = !d.playing;
         if (next && !tree.alive) { sfxBad(); srSay(__alloT('stem.treelab.say_dead_first', 'This tree has died. Start a new seedling first.')); return; }
-        upd('playing', next);
+        next ? updMulti({ playing: true, lastYearOutcome: null }) : upd('playing', false);
         sfxTick();
         srSay(next
           ? __alloT('stem.treelab.say_playing', 'Playing at ') + speedLabel(speed) + '.'
@@ -4463,7 +5186,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var nextWater = envForYear(nextCfg, tree.age).soilWater;
         updMulti({
           droughtYears: list,
-          lastEffect: buildConditionEffect('water', liveEnv.soilWater, nextWater, nextCfg, 'drought-start')
+          lastEffect: buildConditionEffect('water', liveEnv.soilWater, nextWater, nextCfg, 'drought-start'),
+          lastYearOutcome: null,
+          weatherEvent: null
         });
         sfxBad();
         srSay(__alloT('stem.treelab.drought_started', 'A drought begins. It will last ') + years +
@@ -4475,7 +5200,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var nextWater = envForYear(nextCfg, tree.age).soilWater;
         updMulti({
           droughtYears: [],
-          lastEffect: buildConditionEffect('water', liveEnv.soilWater, nextWater, nextCfg, 'drought-end')
+          lastEffect: buildConditionEffect('water', liveEnv.soilWater, nextWater, nextCfg, 'drought-end'),
+          lastYearOutcome: null,
+          weatherEvent: {
+            kind: 'rain',
+            startedAt: Date.now(),
+            durationMs: 6500
+          }
         });
         srSay(__alloT('stem.treelab.drought_over', 'The rains return.'));
       }
@@ -4493,7 +5224,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           historyFocusYear: null,
           historyReplay: null,
           historyClaimYear: null, historyClaim: null,
-          yearPhase: 0, droughtYears: [], lastEffect: null, growAdvancedOpen: false, goalReached: null,
+          yearPhase: 0, droughtYears: [], lastEffect: null, lastYearOutcome: null,
+          weatherEvent: null, growAdvancedOpen: false, goalReached: null,
           // The record belongs to the tree that earned it, and the 3D scene reads its
           // clone count from spreadTotals — a fresh seedling was inheriting the
           // previous tree's whole stand of clones.
@@ -4514,6 +5246,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       //    the canvas once instead of tearing it down every render. ──
       var cloneCount = (d.spreadTotals && d.spreadTotals.clonal) || 0;
       var treeVisual = deriveTreeVisualState(tree, sp, liveEnv, season);
+      var weatherEvent = d.weatherEvent && typeof d.weatherEvent === 'object'
+        ? d.weatherEvent : null;
+      var sceneWeather = deriveWeatherVisualState(
+        season, liveEnv, weatherEvent, reduceMotion, Date.now());
       var isSceneDry = inDrought || liveEnv.soilWater < 0.35;
       var isSceneCracked = liveEnv.soilWater < 0.12;
       var crownSelectable = tree.alive && !(season === 'winter' && sp.leafType !== 'needle');
@@ -4552,6 +5288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         selected: sceneSelection,
         dark: isDark,
         contrast: isContrast,
+        reduced: reduceMotion,
         onPick: function (id) { upd('selectedPart', id); },
         onStatus: function (next) { upd('viewerStatus', next); },
         sceneKey: [
@@ -4567,17 +5304,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // four quantised states avoid rebuilding for every slider pixel.
           Math.round(treeVisual.waterStress * 3),
           Math.round(treeVisual.carbonStress * 3),
+          sceneWeather.kind,
+          Math.round(sceneWeather.wetness * 3),
+          Math.round(sceneWeather.frost * 3),
+          Math.round(sceneWeather.snow * 3),
           reduceMotion ? 'still' : 'anim'
         ].join('|'),
         sceneProps: {
           species: sp, tree: tree, season: season, clones: cloneCount,
+          visualPhase: visualPhase,
           visual: treeVisual, wind: reduceMotion ? 0 : 0.4,
-          light: liveEnv.light, soilWater: liveEnv.soilWater,
+          light: liveEnv.light, soilWater: liveEnv.soilWater, tempC: liveEnv.tempC,
+          weatherEvent: weatherEvent,
           // Drought reads as a dusty amber sky and dry ground, so the picture and the
           // limiting-factor card tell one story rather than two.
           dry: isSceneDry, cracked: isSceneCracked,
-          // The falling-leaf system is NOT BUILT under reduced motion. A shower of
-          // leaves frozen in mid-air is worse than no leaves at all.
+          // Reduced motion keeps static phenology, wetness, frost, snow and litter,
+          // while omitting only flight, precipitation and ambient movement.
           reduced: reduceMotion
         }
       });
@@ -4908,6 +5651,316 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           h('div', { key: 'response', className: 'allo-tree-effect-response' }, [
             h('strong', { key: 'label' }, __alloT('stem.treelab.effect_tree_response', 'Tree response: ')),
             h('span', { key: 'copy' }, conditionResponse(lastEffect, delta).replace(/^Visible response:\s*/, ''))
+          ])
+        ]);
+      }
+      function canopySupportPanel() {
+        if (!tree.alive) return null;
+        var surplus = Math.max(0, liveNet);
+        var projection = projectCanopySupport(
+          tree, surplus * alloc.leaf, surplus * alloc.wood);
+        var demandArea = Math.max(0, projection.leafDemand * 14);
+        var capacityArea = Math.max(0, projection.leafCapacity * 14);
+        var supportedArea = Math.max(0, Math.min(demandArea, capacityArea));
+        var blockedArea = Math.max(0, demandArea - capacityArea);
+        var scaleArea = Math.max(0.1, demandArea, capacityArea);
+        var supportedPct = clamp((supportedArea / scaleArea) * 100, 0, 100);
+        var blockedPct = clamp((blockedArea / scaleArea) * 100, 0, 100);
+        var capacityPct = clamp((capacityArea / scaleArea) * 100, 0, 100);
+        var supportState = surplus <= 0.0001 ? 'no-surplus' : projection.state;
+        var supportTone = supportState === 'pipe-limited' ? T.warn
+          : (supportState === 'no-surplus' ? T.bad
+            : (supportState === 'nearly-full' ? T.warn : T.good));
+        var stateLabel = {
+          'capacity-available': band === 'k2'
+            ? __alloT('stem.treelab.canopy_state_room_k2', 'Room for more leaves')
+            : __alloT('stem.treelab.canopy_state_room', 'Capacity available'),
+          'nearly-full': band === 'k2'
+            ? __alloT('stem.treelab.canopy_state_near_k2', 'Pipes nearly full')
+            : __alloT('stem.treelab.canopy_state_near', 'Nearly at capacity'),
+          'pipe-limited': band === 'k2'
+            ? __alloT('stem.treelab.canopy_state_limited_k2', 'Needs more trunk pipes')
+            : __alloT('stem.treelab.canopy_state_limited', 'Pipe-limited'),
+          'no-surplus': band === 'k2'
+            ? __alloT('stem.treelab.canopy_state_paused_k2', 'No food left to grow')
+            : __alloT('stem.treelab.canopy_state_paused', 'Growth paused')
+        }[supportState];
+        var statusCopy = supportState === 'pipe-limited'
+          ? (band === 'k2'
+            ? __alloT('stem.treelab.canopy_limited_copy_k2',
+              'The plan asks for more leaves than the trunk water pipes can feed. Move some food from Leaves to Wood.')
+            : __alloT('stem.treelab.canopy_limited_copy',
+              'The plan asks for more leaf area than the projected sapwood can support. Shift some allocation from leaves to wood or storage before running the year.'))
+          : (supportState === 'nearly-full'
+            ? (band === 'k2'
+              ? __alloT('stem.treelab.canopy_near_copy_k2',
+                'The water pipes can just feed this leaf plan. A little more leaf growth will need more wood.')
+              : __alloT('stem.treelab.canopy_near_copy',
+                'Projected canopy demand is close to the sapwood ceiling. The next increase in leaf allocation may become pipe-limited.'))
+            : (supportState === 'no-surplus'
+              ? (band === 'k2'
+                ? __alloT('stem.treelab.canopy_paused_copy_k2',
+                  'The tree is using all its food to stay alive, so it cannot build new leaves or trunk pipes this year.')
+                : __alloT('stem.treelab.canopy_paused_copy',
+                  'There is no positive carbon surplus to build leaves or sapwood. Existing leaf turnover continues, but the growth plan is paused.'))
+              : (band === 'k2'
+                ? __alloT('stem.treelab.canopy_room_copy_k2',
+                  'The trunk water pipes can feed every leaf in this plan, with room left.')
+                : __alloT('stem.treelab.canopy_room_copy',
+                  'Projected living sapwood can support the whole leaf plan with hydraulic headroom remaining.'))));
+        function supportNode(key, label, value, copy, color) {
+          return h('div', {
+            key: key, className: 'allo-tree-canopy-node',
+            style: { '--node-tone': tone(color) }
+          }, [
+            h('span', { key: 'l', className: 'allo-tree-canopy-node-label' }, label),
+            h('strong', { key: 'v', className: 'allo-tree-canopy-node-value' }, value),
+            h('span', { key: 'c', className: 'allo-tree-canopy-node-copy' }, copy)
+          ]);
+        }
+        var demandLabel = band === 'k2'
+          ? __alloT('stem.treelab.canopy_demand_k2', 'Leaves in your plan')
+          : __alloT('stem.treelab.canopy_demand', 'Projected leaf demand');
+        var pipeLabel = band === 'k2'
+          ? __alloT('stem.treelab.canopy_pipes_k2', 'Trunk water pipes')
+          : __alloT('stem.treelab.canopy_pipes', 'Sapwood capacity');
+        var resultLabel = band === 'k2'
+          ? __alloT('stem.treelab.canopy_result_k2', 'Leaves it can feed')
+          : __alloT('stem.treelab.canopy_result', 'Supported canopy');
+        var meterAlt = demandLabel + ': ' + round(demandArea, 1)
+          + __alloT('stem.treelab.canopy_meter_demand_alt', ' square metres requested. ')
+          + pipeLabel + ': ' + round(capacityArea, 1)
+          + __alloT('stem.treelab.canopy_meter_capacity_alt', ' square metres supported. ')
+          + (blockedArea > 0.01
+            ? round(blockedArea, 1) + __alloT('stem.treelab.canopy_meter_blocked_alt', ' square metres blocked by the pipe limit.')
+            : __alloT('stem.treelab.canopy_meter_all_supported', 'All planned leaf area is supported.'));
+        return h('section', {
+          key: 'canopy-support',
+          className: 'allo-tree-canopy-support',
+          'data-canopy-support': supportState,
+          'data-canopy-demand': round(demandArea, 2),
+          'data-canopy-capacity': round(capacityArea, 2),
+          role: 'group',
+          'aria-labelledby': 'treelab-canopy-support-title',
+          style: { '--support-tone': tone(supportTone) }
+        }, [
+          h('div', { key: 'head', className: 'allo-tree-canopy-head' }, [
+            h('span', { key: 'mark', className: 'allo-tree-canopy-mark', 'aria-hidden': 'true' }, '\uD83E\uDEB5'),
+            h('strong', { key: 'title', id: 'treelab-canopy-support-title' },
+              band === 'k2'
+                ? __alloT('stem.treelab.canopy_title_k2', 'Can the trunk feed the leaf roof?')
+                : __alloT('stem.treelab.canopy_title', 'Canopy plumbing: preview the hidden limit')),
+            h('span', { key: 'copy' },
+              band === 'k2'
+                ? __alloT('stem.treelab.canopy_intro_k2', 'Wood makes water pipes. Those pipes must reach every leaf.')
+                : __alloT('stem.treelab.canopy_intro', 'Wood builds living sapwood first; that water-carrying plumbing sets the canopy ceiling.')),
+            h('span', { key: 'state', className: 'allo-tree-canopy-state' }, stateLabel)
+          ]),
+          h('div', { key: 'flow', className: 'allo-tree-canopy-flow' }, [
+            supportNode('demand', demandLabel, round(demandArea, 1) + ' m\u00B2',
+              band === 'k2'
+                ? __alloT('stem.treelab.canopy_demand_copy_k2', 'Leaf food plus the leaves that remain.')
+                : __alloT('stem.treelab.canopy_demand_copy', 'Post-turnover leaf tissue plus this year\u2019s leaf investment.'),
+              '#22c55e'),
+            h('span', { key: 'a1', className: 'allo-tree-canopy-arrow', 'aria-hidden': 'true' }, '\u2192'),
+            supportNode('pipes', pipeLabel, round(capacityArea, 1) + ' m\u00B2',
+              band === 'k2'
+                ? __alloT('stem.treelab.canopy_pipes_copy_k2', 'More Wood makes room for more leaves.')
+                : __alloT('stem.treelab.canopy_pipes_copy', 'Projected living sapwood after this year\u2019s wood investment.'),
+              '#a16207'),
+            h('span', { key: 'a2', className: 'allo-tree-canopy-arrow', 'aria-hidden': 'true' }, '\u2192'),
+            supportNode('result', resultLabel, round(supportedArea, 1) + ' m\u00B2',
+              blockedArea > 0.01
+                ? (band === 'k2'
+                  ? __alloT('stem.treelab.canopy_result_blocked_k2', 'Some planned leaves cannot be fed.')
+                  : __alloT('stem.treelab.canopy_result_blocked', 'Demand above the hydraulic ceiling is blocked.'))
+                : __alloT('stem.treelab.canopy_result_supported', 'The whole planned canopy is supportable.'),
+              supportTone)
+          ]),
+          h('div', { key: 'meter', className: 'allo-tree-canopy-meter' }, [
+            h('div', { key: 'head', className: 'allo-tree-canopy-meter-head' }, [
+              h('span', { key: 'l' }, __alloT('stem.treelab.canopy_meter_plan', 'Plan compared with pipe capacity')),
+              h('strong', { key: 'v', style: { color: tone(supportTone) } },
+                blockedArea > 0.01
+                  ? round(blockedArea, 1) + ' m\u00B2 ' + __alloT('stem.treelab.canopy_blocked', 'blocked')
+                  : round(Math.max(0, capacityArea - demandArea), 1) + ' m\u00B2 ' + __alloT('stem.treelab.canopy_headroom', 'headroom'))
+            ]),
+            h('div', {
+              key: 'track', className: 'allo-tree-canopy-track', role: 'img',
+              'aria-label': meterAlt
+            }, [
+              h('span', { key: 'supported', className: 'allo-tree-canopy-supported', style: { width: supportedPct + '%' } }),
+              blockedPct > 0 ? h('span', {
+                key: 'blocked', className: 'allo-tree-canopy-blocked',
+                style: { width: blockedPct + '%' }
+              }) : null,
+              h('span', {
+                key: 'cap', className: 'allo-tree-canopy-cap', 'aria-hidden': 'true',
+                style: { left: capacityPct + '%' }
+              })
+            ]),
+            h('div', { key: 'legend', className: 'allo-tree-canopy-legend', 'aria-hidden': 'true' }, [
+              h('span', { key: 's' }, [
+                h('i', { key: 'k', className: 'allo-tree-canopy-key' }),
+                __alloT('stem.treelab.canopy_supported', 'Supported leaves')
+              ]),
+              blockedArea > 0.01 ? h('span', { key: 'b' }, [
+                h('i', { key: 'k', className: 'allo-tree-canopy-key is-blocked' }),
+                __alloT('stem.treelab.canopy_blocked_plan', 'Blocked plan')
+              ]) : null,
+              h('span', { key: 'c' }, [
+                h('i', { key: 'k', className: 'allo-tree-canopy-key is-cap' }),
+                __alloT('stem.treelab.canopy_capacity_marker', 'Pipe limit')
+              ])
+            ])
+          ]),
+          h('div', { key: 'foot', className: 'allo-tree-canopy-foot' }, [
+            h('span', { key: 'i', 'aria-hidden': 'true' }, supportState === 'pipe-limited' ? '\u26A0' : '\u21B3'),
+            h('span', { key: 'copy' }, [
+              h('b', { key: 'label' }, stateLabel + ': '),
+              h('span', { key: 'value' }, statusCopy)
+            ]),
+            h('span', { key: 'note', className: 'allo-tree-canopy-foot-note' },
+              band === 'k2'
+                ? __alloT('stem.treelab.canopy_boundary_k2', 'Model rule: unused leaf food is not moved for you. Change the sliders before you grow.')
+                : __alloT('stem.treelab.canopy_boundary', 'Model boundary: leaf investment above the support limit is not rerouted automatically. Rebalance the plan before advancing time.'))
+          ])
+        ]);
+      }
+
+      function outcomeLimiterLabel(id) {
+        return {
+          light: __alloT('stem.treelab.light', 'Light'),
+          water: __alloT('stem.treelab.water', 'Water'),
+          temperature: __alloT('stem.treelab.temperature', 'Temperature'),
+          co2: band === 'k2' ? __alloT('stem.treelab.air_k2', 'Air') : CO2
+        }[id] || __alloT('stem.treelab.outcome_no_limiter', 'No limiter recorded');
+      }
+
+      function signedOutcome(value, digits, unit) {
+        var n = round(finiteOr(value, 0), digits);
+        return (n > 0 ? '+' : '') + n + (unit || '');
+      }
+
+      function yearOutcomeAnnouncement() {
+        if (!yearOutcome) return '';
+        var years = Math.max(1, Math.round(yearOutcome.completedYears));
+        var carbonState = yearOutcome.carbonTotal < 0
+          ? __alloT('stem.treelab.outcome_deficit_word', 'carbon deficit')
+          : __alloT('stem.treelab.outcome_surplus_word', 'carbon surplus');
+        return __alloT('stem.treelab.outcome_live_prefix', 'Time result. Advanced ') + years + ' '
+          + (years === 1 ? __alloT('stem.treelab.year_one', 'year') : __alloT('stem.treelab.year_many', 'years'))
+          + '. ' + carbonState + '. '
+          + __alloT('stem.treelab.outcome_live_age', 'Tree age ') + yearOutcome.ageAfter + '. '
+          + __alloT('stem.treelab.outcome_live_limit', 'Most frequent limiting factor: ')
+          + outcomeLimiterLabel(yearOutcome.dominantLimiter) + '.';
+      }
+
+      function yearOutcomePanel() {
+        if (!yearOutcome) return null;
+        var o = yearOutcome;
+        var years = Math.max(1, Math.round(o.completedYears));
+        var carbonDeficit = o.carbonTotal < 0;
+        var outcomeTone = carbonDeficit ? T.bad : T.good;
+        var limiterName = outcomeLimiterLabel(o.dominantLimiter);
+        var surplusYears = Math.max(0, Math.round(finiteOr(o.surplusYears, 0)));
+        var deficitYears = Math.max(0, Math.round(finiteOr(o.deficitYears, 0)));
+        var ringsAdded = Math.max(0, Math.round(finiteOr(o.ringsAdded, years)));
+        var newestRing = Math.max(0, finiteOr(o.newestRingMm, 0));
+        var aliveAfter = o.aliveAfter !== false;
+        var reserveDirection = o.reservesDelta > 0.005
+          ? __alloT('stem.treelab.outcome_reserves_up', 'reserves rose')
+          : (o.reservesDelta < -0.005
+            ? __alloT('stem.treelab.outcome_reserves_down', 'reserves fell')
+            : __alloT('stem.treelab.outcome_reserves_flat', 'reserves held steady'));
+        var carbonValue = band === 'k2'
+          ? (carbonDeficit
+            ? __alloT('stem.treelab.outcome_food_short_k2', 'Not enough food overall')
+            : __alloT('stem.treelab.outcome_food_ahead_k2', 'Food left after living'))
+          : signedOutcome(o.carbonTotal, 2, ' kg C');
+        var carbonDetail = band === 'k2'
+          ? surplusYears + ' ' + __alloT('stem.treelab.outcome_good_years_k2', 'good-food years')
+            + ' \u00B7 ' + deficitYears + ' ' + __alloT('stem.treelab.outcome_hard_years_k2', 'hard years')
+          : surplusYears + ' ' + __alloT('stem.treelab.outcome_surplus_years', 'surplus')
+            + ' \u00B7 ' + deficitYears + ' ' + __alloT('stem.treelab.outcome_deficit_years', 'deficit years')
+            + ' \u00B7 ' + signedOutcome(o.carbonMean, 2, ' kg C/yr');
+        var growthValue = years + ' '
+          + (years === 1 ? __alloT('stem.treelab.year_one', 'year') : __alloT('stem.treelab.year_many', 'years'))
+          + ' \u00B7 ' + ringsAdded + ' '
+          + (ringsAdded === 1 ? __alloT('stem.treelab.outcome_ring_one', 'ring') : __alloT('stem.treelab.outcome_ring_many', 'rings'));
+        var growthDetail = (band === 'k2'
+          ? __alloT('stem.treelab.outcome_taller_k2', 'Height changed ') + signedOutcome(o.heightDelta, 2, ' m')
+            + '; ' + __alloT('stem.treelab.outcome_leaf_roof_k2', 'leaf roof changed ') + signedOutcome(o.leafAreaDelta, 1, ' m\u00B2')
+          : __alloT('stem.treelab.outcome_height_delta', 'Height ') + signedOutcome(o.heightDelta, 2, ' m')
+            + ' \u00B7 ' + __alloT('stem.treelab.outcome_canopy_delta', 'canopy ') + signedOutcome(o.leafAreaDelta, 1, ' m\u00B2'))
+          + ' \u00B7 ' + __alloT('stem.treelab.outcome_newest_ring', 'newest ring ') + round(newestRing, 2) + ' mm';
+        var consequenceValue = !aliveAfter
+          ? (o.causeOfDeath === 'senescence'
+            ? __alloT('stem.treelab.outcome_lifespan_end', 'Lifespan completed')
+            : __alloT('stem.treelab.outcome_tree_died', 'The tree starved'))
+          : (band === 'k2'
+            ? __alloT('stem.treelab.outcome_biggest_need_k2', 'Biggest need: ') + limiterName
+            : limiterName + ' ' + __alloT('stem.treelab.outcome_limited_most', 'limited most often'));
+        var consequenceDetail = band === 'k2'
+          ? reserveDirection + ' \u00B7 ' + __alloT('stem.treelab.outcome_saved_food_change_k2', 'saved food changed ') + signedOutcome(o.reservesDelta, 2, '')
+          : reserveDirection + ' ' + signedOutcome(o.reservesDelta, 2, ' kg C')
+            + ' \u00B7 ' + __alloT('stem.treelab.outcome_deficit_streak', 'ending deficit streak ') + Math.max(0, Math.round(finiteOr(o.deficitStreakAfter, 0)));
+        var cue = !aliveAfter
+          ? __alloT('stem.treelab.outcome_cue_dead', 'Look for a still, bare crown and a stopped clock: the lifetime record is complete.')
+          : (carbonDeficit || deficitYears > surplusYears
+            ? __alloT('stem.treelab.outcome_cue_stress', 'Look for the newest stress-marked ring and a canopy that gained little\u2014or shrank.')
+            : (o.leafAreaDelta > 0.5
+              ? __alloT('stem.treelab.outcome_cue_canopy', 'Look for a fuller canopy, the newest outer ring, and the taller silhouette your allocation built.')
+              : (o.heightDelta > 0.05
+                ? __alloT('stem.treelab.outcome_cue_height', 'Look for a taller trunk and the newest outer ring; canopy growth stayed modest.')
+                : __alloT('stem.treelab.outcome_cue_ring', 'Look closely at the newest ring: the tree aged even when its silhouette changed only a little.'))));
+        function outcomeFact(key, icon, label, value, detail, color) {
+          return h('div', {
+            key: key, className: 'allo-tree-outcome-fact',
+            style: { '--fact-tone': tone(color) }
+          }, [
+            h('span', { key: 'i', className: 'allo-tree-outcome-icon', 'aria-hidden': 'true' }, icon),
+            h('span', { key: 'l', className: 'allo-tree-outcome-label' }, label),
+            h('strong', { key: 'v', className: 'allo-tree-outcome-value' }, value),
+            h('span', { key: 'd', className: 'allo-tree-outcome-detail' }, detail)
+          ]);
+        }
+        return h('section', {
+          key: 'year-outcome',
+          className: 'allo-tree-year-outcome',
+          'data-year-outcome': years,
+          'data-year-carbon-state': carbonDeficit ? 'deficit' : 'surplus',
+          role: 'region',
+          'aria-labelledby': 'treelab-year-outcome-title',
+          style: { '--outcome-tone': tone(outcomeTone) }
+        }, [
+          h('div', { key: 'head', className: 'allo-tree-outcome-head' }, [
+            h('span', { key: 'mark', className: 'allo-tree-outcome-mark', 'aria-hidden': 'true' }, '\uD83E\uDDFE'),
+            h('strong', { key: 'title', id: 'treelab-year-outcome-title' },
+              band === 'k2'
+                ? __alloT('stem.treelab.outcome_title_k2', 'What happened when time moved?')
+                : __alloT('stem.treelab.outcome_title', 'Year outcome: your decision became evidence')),
+            h('span', { key: 'copy' },
+              band === 'k2'
+                ? __alloT('stem.treelab.outcome_intro_k2', 'Read what changed, then find the clues on the tree.')
+                : __alloT('stem.treelab.outcome_intro', 'A persistent receipt connecting the time jump to carbon, growth, and survival.')),
+            h('span', { key: 'age', className: 'allo-tree-outcome-age' },
+              __alloT('stem.treelab.age', 'Age') + ' ' + o.ageBefore + ' \u2192 ' + o.ageAfter)
+          ]),
+          h('div', { key: 'grid', className: 'allo-tree-outcome-grid' }, [
+            outcomeFact('carbon', carbonDeficit ? '\u25BC' : '\u25B2',
+              band === 'k2' ? __alloT('stem.treelab.outcome_carbon_k2', 'Food result') : __alloT('stem.treelab.outcome_carbon', 'Carbon result'),
+              carbonValue, carbonDetail, outcomeTone),
+            outcomeFact('growth', '\uD83E\uDEB5',
+              band === 'k2' ? __alloT('stem.treelab.outcome_growth_k2', 'Tree clues') : __alloT('stem.treelab.outcome_growth', 'Visible growth evidence'),
+              growthValue, growthDetail, T.accent),
+            outcomeFact('consequence', aliveAfter ? '\uD83D\uDEE1' : '\u25C6',
+              band === 'k2' ? __alloT('stem.treelab.outcome_consequence_k2', 'What it means') : __alloT('stem.treelab.outcome_consequence', 'Consequence'),
+              consequenceValue, consequenceDetail, aliveAfter ? T.warn : T.bad)
+          ]),
+          h('div', { key: 'cue', className: 'allo-tree-outcome-cue' }, [
+            h('strong', { key: 'l' }, __alloT('stem.treelab.outcome_look', 'Look for \u2192')),
+            h('span', { key: 'v' }, cue)
           ])
         ]);
       }
@@ -5428,6 +6481,233 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      function seasonalCarbonLedger() {
+        var needle = sp.leafType === 'needle';
+        var titles = {
+          k2: __alloT('stem.treelab.ledger_title_k2', 'A year of making and using food'),
+          g35: __alloT('stem.treelab.ledger_title_g35', 'The tree\'s food year'),
+          g68: __alloT('stem.treelab.ledger_title_g68', 'Four seasons, one carbon budget'),
+          g912: __alloT('stem.treelab.ledger_title_g912', 'Seasonal carbon sources and sinks')
+        };
+        var title = titles[band] || titles.g68;
+        var habit = needle ? 'evergreen' : 'deciduous';
+        if (!tree.alive) {
+          return h('section', {
+            key: 'season-ledger',
+            className: 'allo-tree-season-ledger is-stopped',
+            'data-tree-season-ledger': 'modelled-seasonal-trace',
+            'data-ledger-active-season': season,
+            'data-ledger-leaf-habit': habit,
+            'data-ledger-state': 'stopped',
+            'aria-label': title
+          }, [
+            h('div', { key: 'head', className: 'allo-tree-season-ledger-head' }, [
+              h('span', { key: 'mark', className: 'allo-tree-season-ledger-icon', 'aria-hidden': 'true' }, '\uD83C\uDF32'),
+              h('strong', { key: 'title' }, title),
+              h('span', { key: 'scope', className: 'allo-tree-season-ledger-scope' },
+                __alloT('stem.treelab.ledger_stopped_badge', 'Exchange stopped'))
+            ]),
+            h('p', { key: 'copy', className: 'allo-tree-season-ledger-evidence' },
+              __alloT('stem.treelab.ledger_stopped_copy',
+                'This tree is no longer alive, so carbon income and seasonal exchange have stopped. Its earlier rings remain as the lifetime record.'))
+          ]);
+        }
+
+        var trace = seasonalCarbonTrace(tree, sp, liveEnv);
+        var ledgerState = trace.annual.net > 0.005
+          ? 'surplus' : (trace.annual.net < -0.005 ? 'deficit' : 'balanced');
+        var phaseTone = {
+          spring: '#22c55e', summer: '#eab308', autumn: '#ea580c', winter: '#38bdf8'
+        };
+        var phaseIcon = {
+          spring: '\uD83C\uDF31', summer: '\u2600\uFE0F',
+          autumn: '\uD83C\uDF42', winter: '\u2744\uFE0F'
+        };
+        var broadActions = {
+          spring: [
+            __alloT('stem.treelab.ledger_broad_spring_action', 'Build the canopy'),
+            __alloT('stem.treelab.ledger_broad_spring_copy', 'Stored carbon opens buds and expands new leaves before they can repay the cost.')
+          ],
+          summer: [
+            __alloT('stem.treelab.ledger_broad_summer_action', 'Earn and grow'),
+            __alloT('stem.treelab.ledger_broad_summer_copy', 'A full canopy captures the longest days, repays spring debt, and supplies wood and roots.')
+          ],
+          autumn: [
+            __alloT('stem.treelab.ledger_broad_autumn_action', 'Recover and store'),
+            __alloT('stem.treelab.ledger_broad_autumn_copy', 'Photosynthesis slows while useful materials return from leaves and reserves refill.')
+          ],
+          winter: [
+            __alloT('stem.treelab.ledger_broad_winter_action', 'Maintain from reserves'),
+            __alloT('stem.treelab.ledger_broad_winter_copy', 'A bare crown fixes almost no carbon, but living wood and roots still need maintenance.')
+          ]
+        };
+        var needleActions = {
+          spring: [
+            __alloT('stem.treelab.ledger_needle_spring_action', 'Restart with leaves ready'),
+            __alloT('stem.treelab.ledger_needle_spring_copy', 'Retained needles resume work while stored carbon helps build new shoots and needles.')
+          ],
+          summer: [
+            __alloT('stem.treelab.ledger_needle_summer_action', 'Earn and grow'),
+            __alloT('stem.treelab.ledger_needle_summer_copy', 'Long days drive the largest income while tighter stomatal control guards water.')
+          ],
+          autumn: [
+            __alloT('stem.treelab.ledger_needle_autumn_action', 'Store and renew'),
+            __alloT('stem.treelab.ledger_needle_autumn_copy', 'Growth slows, reserves refill, and a small oldest needle cohort is replaced.')
+          ],
+          winter: [
+            __alloT('stem.treelab.ledger_needle_winter_action', 'Keep a limited watch'),
+            __alloT('stem.treelab.ledger_needle_winter_copy', 'Retained needles allow limited activity on mild days, while maintenance continues.')
+          ]
+        };
+        var actionTable = needle ? needleActions : broadActions;
+        function carbonText(value, signed) {
+          var clean = Math.abs(value) < 0.0005 ? 0 : value;
+          return (signed && clean > 0 ? '+' : '') + round(clean, 2) + ' kg C';
+        }
+        function balanceWords(value) {
+          if (value > 0.005) return band === 'k2'
+            ? __alloT('stem.treelab.ledger_food_extra_k2', 'Makes more than it uses')
+            : __alloT('stem.treelab.ledger_surplus', 'Carbon surplus');
+          if (value < -0.005) return band === 'k2'
+            ? __alloT('stem.treelab.ledger_food_short_k2', 'Uses more than it makes')
+            : __alloT('stem.treelab.ledger_deficit', 'Carbon deficit');
+          return band === 'k2'
+            ? __alloT('stem.treelab.ledger_food_even_k2', 'Makes about what it uses')
+            : __alloT('stem.treelab.ledger_balanced', 'Near balance');
+        }
+        function reserveText(phase) {
+          if (band === 'k2') {
+            if (phase.reserveChange < -0.0005) {
+              return __alloT('stem.treelab.ledger_reserve_draw_k2', 'Uses some saved food');
+            }
+            if (phase.reserveChange > 0.0005) {
+              return __alloT('stem.treelab.ledger_reserve_store_k2', 'Puts food back into storage');
+            }
+            return __alloT('stem.treelab.ledger_reserve_hold_k2', 'Keeps stored food ready');
+          }
+          if (phase.reserveChange < -0.0005) {
+            return __alloT('stem.treelab.ledger_reserve_draw', 'Reserve draw: ') +
+              carbonText(Math.abs(phase.reserveChange), false);
+          }
+          if (phase.reserveChange > 0.0005) {
+            return __alloT('stem.treelab.ledger_reserve_store', 'Returned to reserves: ') +
+              carbonText(phase.reserveChange, false);
+          }
+          return __alloT('stem.treelab.ledger_reserve_hold', 'No modelled reserve transfer');
+        }
+
+        var annualAria = band === 'k2'
+          ? __alloT('stem.treelab.ledger_equation_aria_k2',
+            'Whole year food equation: food made minus food used equals food left for growth and storage.')
+          : __alloT('stem.treelab.ledger_equation_aria',
+            'Modelled whole-year carbon equation: gross carbon fixed ' +
+            carbonText(trace.annual.gross, false) + ' minus respiration ' +
+            carbonText(trace.annual.resp, false) + ' equals net carbon ' +
+            carbonText(trace.annual.net, true) + '.');
+        return h('section', {
+          key: 'season-ledger',
+          className: 'allo-tree-season-ledger',
+          'data-tree-season-ledger': 'modelled-seasonal-trace',
+          'data-ledger-active-season': season,
+          'data-ledger-leaf-habit': habit,
+          'data-ledger-state': ledgerState,
+          'aria-label': title
+        }, [
+          h('div', { key: 'head', className: 'allo-tree-season-ledger-head' }, [
+            h('span', { key: 'mark', className: 'allo-tree-season-ledger-icon', 'aria-hidden': 'true' }, '\u21BB'),
+            h('strong', { key: 'title' }, title),
+            h('span', { key: 'scope', className: 'allo-tree-season-ledger-scope' },
+              band === 'k2'
+                ? __alloT('stem.treelab.ledger_scope_k2', 'One whole year')
+                : __alloT('stem.treelab.ledger_scope', 'Modelled seasonal trace'))
+          ]),
+          h('ol', { key: 'grid', className: 'allo-tree-season-ledger-grid' },
+            trace.phases.map(function (phase) {
+              var current = phase.id === season;
+              var action = actionTable[phase.id];
+              return h('li', {
+                key: phase.id,
+                className: 'allo-tree-season-ledger-stage',
+                'data-ledger-stage': phase.id,
+                'data-ledger-balance': phase.net > 0.005
+                  ? 'surplus' : (phase.net < -0.005 ? 'deficit' : 'balanced'),
+                'aria-current': current ? 'step' : undefined,
+                style: { '--ledger-tone': tone(phaseTone[phase.id]) }
+              }, [
+                h('span', { key: 'icon', className: 'allo-tree-season-ledger-icon', 'aria-hidden': 'true' },
+                  phaseIcon[phase.id]),
+                h('div', { key: 'action', className: 'allo-tree-season-ledger-action' }, [
+                  h('span', { key: 'season' }, __alloT('stem.treelab.season_' + phase.id, phase.label)),
+                  h('strong', { key: 'title' }, action[0])
+                ]),
+                h('p', { key: 'copy', className: 'allo-tree-season-ledger-copy' }, action[1]),
+                band === 'k2'
+                  ? h('strong', { key: 'balance', className: 'allo-tree-season-ledger-balance' },
+                    balanceWords(phase.net))
+                  : h('dl', { key: 'metrics', className: 'allo-tree-season-ledger-metrics' }, [
+                    h('div', { key: 'gross' }, [
+                      h('dt', null, __alloT('stem.treelab.ledger_gross_short', 'Fixed')),
+                      h('dd', null, carbonText(phase.gross, false))
+                    ]),
+                    h('div', { key: 'resp' }, [
+                      h('dt', null, __alloT('stem.treelab.ledger_resp_short', 'Used')),
+                      h('dd', null, carbonText(phase.resp, false))
+                    ]),
+                    h('div', { key: 'net' }, [
+                      h('dt', null, __alloT('stem.treelab.ledger_net_short', 'Net')),
+                      h('dd', null, carbonText(phase.net, true))
+                    ])
+                  ]),
+                h('span', { key: 'reserve', className: 'allo-tree-season-ledger-reserve' },
+                  reserveText(phase))
+              ]);
+            })),
+          h('div', { key: 'annual', className: 'allo-tree-season-ledger-annual' }, [
+            h('div', {
+              key: 'equation', className: 'allo-tree-season-ledger-equation',
+              role: 'img', 'aria-label': annualAria
+            }, band === 'k2' ? [
+              h('strong', { key: 'gross' }, __alloT('stem.treelab.ledger_made_k2', 'Food made')),
+              h('span', { key: 'minus', 'aria-hidden': 'true' }, '\u2212'),
+              h('strong', { key: 'resp' }, __alloT('stem.treelab.ledger_used_k2', 'Food used')),
+              h('span', { key: 'equals', 'aria-hidden': 'true' }, '='),
+              h('strong', { key: 'net' }, __alloT('stem.treelab.ledger_left_k2', 'Food left'))
+            ] : [
+              h('span', { key: 'gross' }, [
+                h('b', { key: 'label' }, __alloT('stem.treelab.ledger_annual_gross', 'Gross')),
+                h('strong', { key: 'value' }, carbonText(trace.annual.gross, false))
+              ]),
+              h('i', { key: 'minus', 'aria-hidden': 'true' }, '\u2212'),
+              h('span', { key: 'resp' }, [
+                h('b', { key: 'label' }, __alloT('stem.treelab.ledger_annual_resp', 'Respiration')),
+                h('strong', { key: 'value' }, carbonText(trace.annual.resp, false))
+              ]),
+              h('i', { key: 'equals', 'aria-hidden': 'true' }, '='),
+              h('span', { key: 'net' }, [
+                h('b', { key: 'label' }, __alloT('stem.treelab.ledger_annual_net', 'Net')),
+                h('strong', { key: 'value' }, carbonText(trace.annual.net, true))
+              ])
+            ]),
+            h('p', { key: 'fact', className: 'allo-tree-season-ledger-fact' }, [
+              h('strong', { key: 'label' }, balanceWords(trace.annual.net) + '. '),
+              h('span', { key: 'copy' }, band === 'k2'
+                ? __alloT('stem.treelab.ledger_fact_k2',
+                  'The four seasons join into one full-year result.')
+                : __alloT('stem.treelab.ledger_fact',
+                  'Reserve draws and repayments are internal transfers, so they are shown separately and never counted as new carbon.'))
+            ])
+          ]),
+          h('p', { key: 'evidence', className: 'allo-tree-season-ledger-evidence' }, [
+            h('b', { key: 'icon', 'aria-hidden': 'true' }, '\u24D8'),
+            h('span', { key: 'copy' }, band === 'k2'
+              ? __alloT('stem.treelab.ledger_evidence_k2',
+                'This is a model story of the year. The four season pieces add back to the same full-year result.')
+              : __alloT('stem.treelab.ledger_evidence',
+                'Model boundary: these are causal phases of the same annual scenario, not four monthly measurements. Their gross, respiration, and net values add exactly to the whole-year budget.'))
+          ])
+        ]);
+      }
+
       function autumnLeafLab() {
         if (season !== 'autumn') return null;
         var needle = sp.leafType === 'needle';
@@ -5482,6 +6762,214 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var boundary = needle
           ? __alloT('stem.treelab.autumn_needle_boundary', 'Evergreen describes overlapping foliage cohorts, not immortal needles. Older needles still fall, and their slow-decaying litter builds duff.')
           : __alloT('stem.treelab.autumn_pigment_boundary', 'Evidence boundary: leaf color alone cannot reconstruct one exact temperature, rainfall amount, or weather event. Species, leaf chemistry, light, sugar, and weather interact.');
+        var claimKey = needle ? 'autumnNeedleClaim' : 'autumnPigmentClaim';
+        var correctClaim = needle ? 'age-cohorts' : 'different-processes';
+        var currentClaim = typeof d[claimKey] === 'string' ? d[claimKey] : null;
+        var claimCorrect = currentClaim ? currentClaim === correctClaim : false;
+        var claimTone = !currentClaim ? (isContrast ? T.accent : '#ea580c') : (claimCorrect ? T.good : T.warn);
+        var scenario = needle
+          ? (band === 'k2'
+            ? __alloT('stem.treelab.autumn_needle_scenario_k2', 'Most pine needles stay green while a small inner group turns yellow and falls.')
+            : __alloT('stem.treelab.autumn_needle_scenario', 'Most of a pine canopy stays green while a small inner cohort turns yellow and falls.'))
+          : (band === 'k2'
+            ? __alloT('stem.treelab.autumn_pigment_scenario_k2', 'One leaf is yellow-orange while another leaf on the same tree is red-purple.')
+            : __alloT('stem.treelab.autumn_pigment_scenario', 'On one broadleaf tree, some leaves are yellow-orange while others are red-purple.'));
+        var detectiveTitle = needle
+          ? (band === 'k2'
+            ? __alloT('stem.treelab.autumn_needle_detective_title_k2', 'Be a needle detective')
+            : __alloT('stem.treelab.autumn_needle_detective_title', 'Evergreen evidence challenge'))
+          : (band === 'k2'
+            ? __alloT('stem.treelab.autumn_pigment_detective_title_k2', 'Be a leaf detective')
+            : __alloT('stem.treelab.autumn_pigment_detective_title', 'Autumn evidence challenge'));
+        var detectivePrompt = needle
+          ? __alloT('stem.treelab.autumn_needle_detective_prompt', 'Which claim best explains the pattern?')
+          : __alloT('stem.treelab.autumn_pigment_detective_prompt', 'Which claim is supported by the pigment evidence?');
+        var claimOptions = needle ? [
+          {
+            id: 'age-cohorts',
+            label: band === 'k2'
+              ? __alloT('stem.treelab.autumn_claim_needle_cohorts_k2', 'Old needles fall while younger needles stay.')
+              : __alloT('stem.treelab.autumn_claim_needle_cohorts', 'Older cohorts shed while younger needles stay.')
+          },
+          {
+            id: 'not-evergreen',
+            label: band === 'k2'
+              ? __alloT('stem.treelab.autumn_claim_needle_not_evergreen_k2', 'A falling needle means the pine is not evergreen.')
+              : __alloT('stem.treelab.autumn_claim_needle_not_evergreen', 'Any falling needle means the pine is no longer evergreen.')
+          },
+          {
+            id: 'all-at-once',
+            label: band === 'k2'
+              ? __alloT('stem.treelab.autumn_claim_needle_all_k2', 'All pine needles fall together every autumn.')
+              : __alloT('stem.treelab.autumn_claim_needle_all', 'Every needle is replaced together each autumn.')
+          }
+        ] : [
+          {
+            id: 'different-processes',
+            label: band === 'k2'
+              ? __alloT('stem.treelab.autumn_claim_pigment_process_k2', 'Yellow may show through; red may be made.')
+              : __alloT('stem.treelab.autumn_claim_pigment_process', 'Yellow-orange can be revealed; red-purple can be produced.')
+          },
+          {
+            id: 'all-hidden',
+            label: band === 'k2'
+              ? __alloT('stem.treelab.autumn_claim_pigment_hidden_k2', 'Every autumn color was hiding all year.')
+              : __alloT('stem.treelab.autumn_claim_pigment_hidden', 'Every autumn color was hidden under chlorophyll all summer.')
+          },
+          {
+            id: 'exact-weather',
+            label: band === 'k2'
+              ? __alloT('stem.treelab.autumn_claim_pigment_weather_k2', 'The color tells the exact weather.')
+              : __alloT('stem.treelab.autumn_claim_pigment_weather', 'The colors reveal one exact temperature or weather event.')
+          }
+        ];
+        var correctSay = needle
+          ? __alloT('stem.treelab.autumn_needle_claim_correct_say', 'That claim matches the needle-age evidence.')
+          : __alloT('stem.treelab.autumn_pigment_claim_correct_say', 'That claim matches the pigment evidence.');
+        var retrySay = needle
+          ? __alloT('stem.treelab.autumn_needle_claim_retry_say', 'Look again at which needle age group is falling.')
+          : __alloT('stem.treelab.autumn_pigment_claim_retry_say', 'Compare how yellow-orange and red-purple pigments appear.');
+        var claimFeedback;
+        if (!currentClaim) {
+          claimFeedback = band === 'k2'
+            ? __alloT('stem.treelab.autumn_claim_wait_k2', 'Choose the idea that best matches what you observed.')
+            : __alloT('stem.treelab.autumn_claim_wait', 'Choose the most careful claim supported by the evidence above.');
+        } else if (claimCorrect && needle) {
+          claimFeedback = __alloT('stem.treelab.autumn_needle_claim_correct', 'Yes. The oldest cohort can shed while younger cohorts keep the canopy green. Evergreen foliage overlaps across years.');
+        } else if (claimCorrect) {
+          claimFeedback = __alloT('stem.treelab.autumn_pigment_claim_correct', 'Yes. Yellow-orange pigments can be uncovered as chlorophyll fades, while red-purple anthocyanins can be produced in some leaves.');
+        } else if (needle && currentClaim === 'not-evergreen') {
+          claimFeedback = __alloT('stem.treelab.autumn_needle_claim_retry_evergreen', 'Not quite. Evergreen means the canopy keeps overlapping needle cohorts; it does not mean that no needle ever falls.');
+        } else if (needle) {
+          claimFeedback = __alloT('stem.treelab.autumn_needle_claim_retry_all', 'Look again. The age cohorts overlap, so a pine sheds some older needles instead of replacing the whole canopy at once.');
+        } else if (currentClaim === 'all-hidden') {
+          claimFeedback = __alloT('stem.treelab.autumn_pigment_claim_retry_hidden', 'Not quite. Yellow-orange pigments may be revealed, but red-purple anthocyanins can be produced during autumn.');
+        } else {
+          claimFeedback = __alloT('stem.treelab.autumn_pigment_claim_retry_weather', 'Color is a clue shaped by species, chemistry, light, sugar, and weather; it is not a thermometer or rain gauge.');
+        }
+        function autumnClaimOption(option) {
+          return h('button', {
+            key: option.id,
+            type: 'button',
+            className: 'allo-tree-autumn-claim',
+            'data-autumn-claim': option.id,
+            'aria-pressed': currentClaim === option.id,
+            'aria-describedby': 'treelab-autumn-detective-feedback',
+            onClick: function () {
+              var correct = option.id === correctClaim;
+              upd(claimKey, option.id);
+              srSay(correct ? correctSay : retrySay);
+            }
+          }, option.label);
+        }
+        var specimenTones = needle
+          ? ['#22c55e', '#15803d', '#a16207']
+          : ['#eab308', '#ea580c', '#be123c'];
+        var releaseStages = needle ? [
+          {
+            id: 'new-cohort', icon: '\uD83C\uDF31', tone: '#22c55e',
+            title: __alloT('stem.treelab.autumn_release_needle_new_title', 'New cohort matures'),
+            copy: __alloT('stem.treelab.autumn_release_needle_new_copy', 'Current-year needles finish expanding and hardening.')
+          },
+          {
+            id: 'overlap', icon: '\uD83C\uDF32', tone: '#15803d',
+            title: __alloT('stem.treelab.autumn_release_needle_overlap_title', 'Canopy ages overlap'),
+            copy: __alloT('stem.treelab.autumn_release_needle_overlap_copy', 'Several needle cohorts keep working together.')
+          },
+          {
+            id: 'separation', icon: '\u21A9\uFE0F', tone: '#ca8a04',
+            title: __alloT('stem.treelab.autumn_release_needle_seal_title', 'Oldest cohort closes'),
+            copy: __alloT('stem.treelab.autumn_release_needle_seal_copy', 'The tree reclaims some nutrients and forms a separation layer.')
+          },
+          {
+            id: 'duff', icon: '\uD83C\uDF42', tone: '#a16207',
+            title: __alloT('stem.treelab.autumn_release_needle_duff_title', 'Needles join the duff'),
+            copy: __alloT('stem.treelab.autumn_release_needle_duff_copy', 'Older needles detach gradually and decay slowly below.')
+          }
+        ] : [
+          {
+            id: 'signal', icon: '\uD83C\uDF24\uFE0F', tone: '#ca8a04',
+            title: __alloT('stem.treelab.autumn_release_leaf_signal_title', 'Seasonal signal'),
+            copy: __alloT('stem.treelab.autumn_release_leaf_signal_copy', 'Shorter days and cooling weather shift leaf chemistry.')
+          },
+          {
+            id: 'resorption', icon: '\u21A9\uFE0F', tone: '#059669',
+            title: __alloT('stem.treelab.autumn_release_leaf_return_title', 'Nutrients return'),
+            copy: __alloT('stem.treelab.autumn_release_leaf_return_copy', 'Nitrogen and phosphorus move from the leaf into the twig.')
+          },
+          {
+            id: 'seal', icon: '\uD83D\uDEE1\uFE0F', tone: '#ea580c',
+            title: __alloT('stem.treelab.autumn_release_leaf_seal_title', 'Protective seal'),
+            copy: __alloT('stem.treelab.autumn_release_leaf_seal_copy', 'An abscission layer forms at the leaf base and seals the twig side.')
+          },
+          {
+            id: 'detach', icon: '\uD83C\uDF42', tone: '#a16207',
+            title: __alloT('stem.treelab.autumn_release_leaf_detach_title', 'Leaf detaches'),
+            copy: __alloT('stem.treelab.autumn_release_leaf_detach_copy', 'The weakened connection releases in wind or under the leaf\'s weight.')
+          }
+        ];
+        var releaseTitle = needle
+          ? (band === 'k2'
+            ? __alloT('stem.treelab.autumn_release_needle_title_k2', 'How a pine replaces old needles')
+            : __alloT('stem.treelab.autumn_release_needle_title', 'Evergreen needle renewal'))
+          : (band === 'k2'
+            ? __alloT('stem.treelab.autumn_release_leaf_title_k2', 'How a leaf lets go')
+            : __alloT('stem.treelab.autumn_release_leaf_title', 'From canopy to forest floor'));
+        var releaseIntro = needle
+          ? __alloT('stem.treelab.autumn_release_needle_intro', 'Pines renew the canopy a little at a time instead of dropping it all at once.')
+          : __alloT('stem.treelab.autumn_release_leaf_intro', 'Leaf fall is a prepared handoff, not a random tear.');
+        var releaseNote = needle
+          ? __alloT('stem.treelab.autumn_release_needle_note', 'Needles also build a separation layer before detaching. Evergreen describes a continuously foliated canopy, not permanent individual needles.')
+          : __alloT('stem.treelab.autumn_release_leaf_note', 'The leaf does not tear away from an open wound. The tree prepares and seals the twig boundary first; decomposers later return some fallen-leaf nutrients to the soil.');
+        var releaseVisualLabel = needle
+          ? __alloT('stem.treelab.autumn_release_needle_visual_label', 'Diagram of younger green needle cohorts retained while an older brown needle detaches')
+          : __alloT('stem.treelab.autumn_release_leaf_visual_label', 'Diagram of nutrients returning through a leaf stalk, a sealed separation layer, and a leaf detaching');
+        function autumnReleaseVisual() {
+          var branch = h('rect', {
+            key: 'branch', x: 9, y: 45, width: needle ? 158 : 122, height: 16, rx: 8,
+            fill: tone('#92400e')
+          });
+          if (needle) {
+            var needleLines = [
+              [45, 48, 31, 16, '#22c55e'],
+              [66, 49, 61, 10, '#22c55e'],
+              [88, 49, 94, 12, '#15803d'],
+              [111, 49, 125, 17, '#15803d'],
+              [139, 50, 153, 26, '#a16207']
+            ];
+            return h('span', { key: 'visual', className: 'allo-tree-autumn-release-visual' },
+              h('svg', { viewBox: '0 0 240 88', role: 'img', 'aria-label': releaseVisualLabel, focusable: 'false' }, [
+                branch,
+                needleLines.map(function (line, index) {
+                  return h('line', {
+                    key: 'needle-' + index,
+                    x1: line[0], y1: line[1], x2: line[2], y2: line[3],
+                    stroke: tone(line[4]), strokeWidth: 5, strokeLinecap: 'round'
+                  });
+                }),
+                h('circle', { key: 'seal', cx: 143, cy: 51, r: 5, fill: tone('#ea580c') }),
+                h('g', { key: 'fall', className: 'allo-tree-autumn-release-fall' }, [
+                  h('line', { key: 'old', x1: 188, y1: 28, x2: 197, y2: 66, stroke: tone('#a16207'), strokeWidth: 5, strokeLinecap: 'round' }),
+                  h('circle', { key: 'tip', cx: 197, cy: 67, r: 3, fill: tone('#92400e') })
+                ])
+              ]));
+          }
+          return h('span', { key: 'visual', className: 'allo-tree-autumn-release-visual' },
+            h('svg', { viewBox: '0 0 240 88', role: 'img', 'aria-label': releaseVisualLabel, focusable: 'false' }, [
+              branch,
+              h('path', { key: 'petiole', d: 'M124 53 C143 47 151 31 162 22', fill: 'none', stroke: tone('#a16207'), strokeWidth: 5, strokeLinecap: 'round' }),
+              h('line', { key: 'seal', x1: 129, y1: 42, x2: 129, y2: 63, stroke: tone('#ea580c'), strokeWidth: 5, strokeLinecap: 'round' }),
+              h('path', { key: 'leaf', d: 'M159 22 C174 4 207 8 219 24 C204 42 178 44 159 22Z', fill: tone('#eab308'), stroke: tone('#92400e'), strokeWidth: 2 }),
+              h('path', { key: 'vein', d: 'M163 23 L207 23', fill: 'none', stroke: tone('#fff7ed'), strokeWidth: 2, opacity: 0.85 }),
+              [149, 141, 135].map(function (cx, index) {
+                return h('circle', { key: 'nutrient-' + index, cx: cx, cy: 40 + (index * 4), r: 3, fill: tone('#059669') });
+              }),
+              h('g', { key: 'fall', className: 'allo-tree-autumn-release-fall' }, [
+                h('path', { key: 'fall-leaf', d: 'M178 58 C189 45 211 49 217 61 C206 73 188 73 178 58Z', fill: tone('#be123c'), stroke: tone('#92400e'), strokeWidth: 2 }),
+                h('path', { key: 'fall-vein', d: 'M182 59 L207 59', fill: 'none', stroke: tone('#fff7ed'), strokeWidth: 1.5, opacity: 0.82 })
+              ])
+            ]));
+        }
         return h('section', {
           key: 'autumn-lab',
           className: 'allo-tree-autumn-lab',
@@ -5508,6 +6996,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 h('span', { key: 'copy' }, item.copy)
               ]);
             })),
+          h('section', {
+            key: 'release',
+            className: 'allo-tree-autumn-release',
+            'data-autumn-release-sequence': needle ? 'needle-renewal' : 'leaf-release',
+            'aria-labelledby': 'treelab-autumn-release-title'
+          }, [
+            h('div', { key: 'head', className: 'allo-tree-autumn-release-head' }, [
+              h('span', { key: 'mark', className: 'allo-tree-autumn-release-mark', 'aria-hidden': 'true' },
+                needle ? '\uD83C\uDF32' : '\uD83C\uDF42'),
+              h('strong', { key: 'title', id: 'treelab-autumn-release-title' }, releaseTitle),
+              h('span', { key: 'intro' }, releaseIntro)
+            ]),
+            h('div', { key: 'body', className: 'allo-tree-autumn-release-body' }, [
+              autumnReleaseVisual(),
+              h('ol', { key: 'trail', className: 'allo-tree-autumn-release-trail' },
+                releaseStages.map(function (stage, index) {
+                  return h('li', {
+                    key: stage.id,
+                    className: 'allo-tree-autumn-release-stage',
+                    'data-autumn-release-stage': stage.id,
+                    style: { '--release-tone': tone(stage.tone) }
+                  }, [
+                    h('div', { key: 'head', className: 'allo-tree-autumn-release-stage-head' }, [
+                      h('span', { key: 'number', className: 'allo-tree-autumn-release-number', 'aria-hidden': 'true' }, String(index + 1)),
+                      h('span', { key: 'icon', 'aria-hidden': 'true' }, stage.icon),
+                      h('strong', { key: 'title' }, stage.title)
+                    ]),
+                    h('p', { key: 'copy' }, stage.copy)
+                  ]);
+                }))
+            ]),
+            h('p', { key: 'note', className: 'allo-tree-autumn-release-note' }, [
+              h('b', { key: 'icon', 'aria-hidden': 'true' }, '\u24D8'),
+              h('span', { key: 'copy' }, releaseNote)
+            ])
+          ]),
+          h('section', {
+            key: 'detective',
+            className: 'allo-tree-autumn-detective',
+            'data-autumn-detective': needle ? 'needle-cohorts' : 'pigments',
+            'data-autumn-claim-result': !currentClaim ? 'waiting' : (claimCorrect ? 'correct' : 'retry'),
+            'aria-labelledby': 'treelab-autumn-detective-title',
+            style: { '--detective-tone': tone(claimTone) }
+          }, [
+            h('div', { key: 'head', className: 'allo-tree-autumn-detective-head' }, [
+              h('span', { key: 'icon', className: 'allo-tree-autumn-detective-icon', 'aria-hidden': 'true' }, '\uD83D\uDD0E'),
+              h('strong', { key: 'title', id: 'treelab-autumn-detective-title' }, detectiveTitle),
+              h('span', { key: 'prompt' }, detectivePrompt)
+            ]),
+            h('ol', {
+              key: 'path',
+              className: 'allo-tree-autumn-reasoning-path',
+              'aria-label': __alloT('stem.treelab.autumn_reasoning_path_label', 'Scientific reasoning steps')
+            }, [
+              h('li', { key: 'observe', className: 'allo-tree-autumn-reasoning-step' }, [
+                h('span', { key: 'icon', 'aria-hidden': 'true' }, '\uD83D\uDC41\uFE0F'),
+                h('span', { key: 'copy' }, __alloT('stem.treelab.autumn_reasoning_observe', 'Observe'))
+              ]),
+              h('li', { key: 'match', className: 'allo-tree-autumn-reasoning-step' }, [
+                h('span', { key: 'icon', 'aria-hidden': 'true' }, '\uD83E\uDDE9'),
+                h('span', { key: 'copy' }, __alloT('stem.treelab.autumn_reasoning_match', 'Match evidence'))
+              ]),
+              h('li', { key: 'claim', className: 'allo-tree-autumn-reasoning-step' }, [
+                h('span', { key: 'icon', 'aria-hidden': 'true' }, '\uD83D\uDCAC'),
+                h('span', { key: 'copy' }, __alloT('stem.treelab.autumn_reasoning_claim', 'Make a careful claim'))
+              ])
+            ]),
+            h('div', { key: 'observation', className: 'allo-tree-autumn-observation' }, [
+              h('span', {
+                key: 'specimen',
+                className: 'allo-tree-autumn-specimen',
+                'data-autumn-specimen': needle ? 'needles' : 'pigments',
+                'aria-hidden': 'true'
+              }, specimenTones.map(function (sampleTone, index) {
+                return h('i', {
+                  key: index,
+                  className: 'allo-tree-autumn-sample-piece',
+                  style: { '--sample-tone': tone(sampleTone) }
+                });
+              })),
+              h('span', { key: 'copy', className: 'allo-tree-autumn-observation-copy' }, [
+                h('b', { key: 'label' }, __alloT('stem.treelab.autumn_observation_label', 'Observation')),
+                h('span', { key: 'scenario' }, scenario)
+              ])
+            ]),
+            h('div', {
+              key: 'claims',
+              className: 'allo-tree-autumn-claim-grid',
+              role: 'group',
+              'aria-label': __alloT('stem.treelab.autumn_claim_options_label', 'Choose the claim best supported by the autumn evidence')
+            }, claimOptions.map(autumnClaimOption)),
+            h('p', {
+              key: 'feedback',
+              id: 'treelab-autumn-detective-feedback',
+              className: 'allo-tree-autumn-feedback',
+              role: 'status',
+              'aria-live': 'polite'
+            }, claimFeedback)
+          ]),
           h('div', { key: 'boundary', className: 'allo-tree-autumn-boundary' }, [
             h('b', { key: 'icon', 'aria-hidden': 'true' }, '\u24D8'),
             h('span', { key: 'copy' }, boundary)
@@ -5515,8 +7102,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
-      // A qualitative observatory: it makes phenology comparable without pretending
-      // that the annual engine has suddenly acquired monthly carbon accounting.
+      // A causal observatory: phenology and a disaggregated seasonal trace explain
+      // how the same annual carbon arithmetic unfolds without pretending these are
+      // four independent monthly simulations.
       function seasonRow() {
         var driven = playing && speed.seasonal;
         var note = seasonNote(season);
@@ -5582,6 +7170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               }))
           ]),
           phenologyTrail(),
+          seasonalCarbonLedger(),
           autumnLeafLab(),
           h('div', { key: 'note', className: 'allo-tree-season-note' }, [
             h('strong', { key: 'l' }, __alloT('stem.treelab.season_field_note', 'Field note: ')),
@@ -5590,7 +7179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           h('div', { key: 'boundary', className: 'allo-tree-season-boundary' }, [
             h('span', { key: 'i', 'aria-hidden': 'true' }, '\u24D8'),
             h('span', { key: 't' }, __alloT('stem.treelab.season_honest',
-              'The carbon budget on this page is a whole YEAR. Changing the season changes what you are looking at and what is described here, not a figure the model has recalculated.'))
+              'The modelled seasonal trace divides the same whole YEAR into causal phases. Its four gross, respiration, and net values add exactly to the yearly carbon budget; the simulator commits growth when the whole-year step crosses the year boundary.'))
           ])
         ]);
       }
@@ -7269,12 +8858,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           allocSlider('wood', __alloT('stem.treelab.wood', 'Wood (height and rings)'), '#f59e0b'),
           allocSlider('repro', __alloT('stem.treelab.reproduction', 'Reproduction'), '#ec4899'),
           allocSlider('store', __alloT('stem.treelab.reserves', 'Stored reserves'), '#38bdf8'),
+          canopySupportPanel(),
           h('div', { key: 'run', style: { marginTop: 10, display: 'flex', flexWrap: 'wrap' } }, [
             btn('y1', __alloT('stem.treelab.plus_1', '+1 year'), function () { stepYears(1); }, { disabled: !tree.alive || experimentActive }),
             btn('y10', __alloT('stem.treelab.plus_10', '+10 years'), function () { stepYears(10); }, { disabled: !tree.alive || experimentActive }),
             btn('y50', __alloT('stem.treelab.plus_50', '+50 years'), function () { stepYears(50); }, { disabled: !tree.alive || experimentActive }),
             btn('rst', __alloT('stem.treelab.new_seedling', 'New seedling'), function () { resetTree(); }, { tone: 'ghost' })
           ]),
+          yearOutcomePanel(),
+          h('div', {
+            key: 'year-outcome-live', className: 'allo-tree-sr-only',
+            'data-year-outcome-live': 'true',
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'
+          }, yearOutcomeAnnouncement()),
           !tree.alive ? postMortem() : null
         ]), 'grow-spend');
 
@@ -7905,7 +9501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             onChange: function (e) {
               var next = Object.assign({}, alloc);
               next[k] = parseFloat(e.target.value) / 100;
-              upd('alloc', next);
+              updMulti({ alloc: next, lastYearOutcome: null });
             },
             style: { width: '100%', accentColor: tone(hex), opacity: experimentLocked ? 0.55 : 1 }
           })
@@ -10724,7 +12320,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     lightFactor: lightFactor, co2Factor: co2Factor, tempFactor: tempFactor,
     stomatalAperture: stomatalAperture, limitingFactor: limitingFactor,
     grossPhotosynthesis: grossPhotosynthesis, maintenanceRespiration: maintenanceRespiration,
-    ringWidthMm: ringWidthMm, newTree: newTree, simulateYear: simulateYear,
+    seasonalCarbonTrace: seasonalCarbonTrace,
+    ringWidthMm: ringWidthMm, newTree: newTree, projectCanopySupport: projectCanopySupport,
+    simulateYear: simulateYear, summariseYearAdvance: summariseYearAdvance,
     normaliseAlloc: normaliseAlloc, normaliseTree: normaliseTree, envForYear: envForYear,
     configForHistorySnapshot: configForHistorySnapshot,
     cloneTreeSnapshot: cloneTreeSnapshot, normaliseExperimentEnv: normaliseExperimentEnv,
@@ -10733,7 +12331,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     normaliseTrialRecord: normaliseTrialRecord, normaliseExperimentTrials: normaliseExperimentTrials,
     seasonForPhase: seasonForPhase, speedById: speedById, SPEEDS: SPEEDS, CLOCK: CLOCK,
     resolveSpread: resolveSpread, lcg: lcg, speciesById: speciesById,
-    deriveTreeVisualState: deriveTreeVisualState, buildTreeScene: buildTreeScene, TREE_FORM: TREE_FORM,
+    deriveTreeVisualState: deriveTreeVisualState,
+    canonicalPhaseForSeason: canonicalPhaseForSeason,
+    leafCardTraits: leafCardTraits, leafCardState: leafCardState,
+    deriveWeatherVisualState: deriveWeatherVisualState,
+    buildTreeScene: buildTreeScene, TREE_FORM: TREE_FORM,
     // Camera framing is pure arithmetic, so it can be tested without a GPU. BASE_DIST
     // goes with it because the property that matters is relative to it: the camera may
     // only ever move OUT from the baseline, which is what keeps a seedling small.

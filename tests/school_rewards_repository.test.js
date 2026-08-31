@@ -14,6 +14,8 @@ const STUDENT = `avery@${DOMAIN}`;
 
 function harness() {
   let activeEmail = ADMIN;
+  let mailFailure = '';
+  let receiptUpdateFailure = '';
   let nextId = 1;
   const properties = new Map();
   const books = new Map();
@@ -24,7 +26,7 @@ function harness() {
   class Range {
     constructor(sheet, row, col, rowCount = 1, colCount = 1) { Object.assign(this, { sheet, row, col, rowCount, colCount }); }
     getValues() { return Array.from({ length: this.rowCount }, (_, r) => Array.from({ length: this.colCount }, (_, c) => (this.sheet.data[this.row - 1 + r] || [])[this.col - 1 + c] ?? '')); }
-    setValues(values) { values.forEach((valuesRow, r) => { const index = this.row - 1 + r; this.sheet.data[index] ||= []; valuesRow.forEach((value, c) => { this.sheet.data[index][this.col - 1 + c] = value; }); }); return this; }
+    setValues(values) { if (receiptUpdateFailure && this.sheet.name === 'Receipts' && this.row > 1) throw new Error(receiptUpdateFailure); values.forEach((valuesRow, r) => { const index = this.row - 1 + r; this.sheet.data[index] ||= []; valuesRow.forEach((value, c) => { this.sheet.data[index][this.col - 1 + c] = value; }); }); return this; }
   }
   class Sheet {
     constructor(name) { this.name = name; this.data = []; this.maxColumns = 26; }
@@ -93,7 +95,13 @@ function harness() {
       base64DecodeWebSafe: value => [...Buffer.from(String(value), 'base64url')],
       newBlob: (bytes, mimeType, name) => new Blob(bytes, mimeType, name),
     },
-    MailApp: { getRemainingDailyQuota: () => 100, sendEmail: value => mail.push(structuredClone(value)) },
+    MailApp: {
+      getRemainingDailyQuota: () => 100,
+      sendEmail: value => {
+        if (mailFailure) throw new Error(mailFailure);
+        mail.push(structuredClone(value));
+      },
+    },
     ScriptApp: {
       WeekDay: { MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5 },
       getProjectTriggers: () => [], deleteTrigger() {},
@@ -113,7 +121,12 @@ function harness() {
   function rows(name) { const book = books.get(properties.get('SR_SPREADSHEET_ID')); return book.getSheetByName(name).data.map(row => [...row]); }
   function maxColumns(name) { const book = books.get(properties.get('SR_SPREADSHEET_ID')); return book.getSheetByName(name).getMaxColumns(); }
   function simulateV3PrintRequests() { const book = books.get(properties.get('SR_SPREADSHEET_ID')); const sheet = book.getSheetByName('PrintRequests'); sheet.data[0] = sheet.data[0].slice(0, 31); sheet.maxColumns = 31; }
-  return { call, rows, maxColumns, simulateV3PrintRequests, mail, setActive: email => { activeEmail = email; } };
+  return {
+    call, rows, maxColumns, simulateV3PrintRequests, mail,
+    setActive: email => { activeEmail = email; },
+    setMailFailure: message => { mailFailure = String(message || ''); },
+    setReceiptUpdateFailure: message => { receiptUpdateFailure = String(message || ''); },
+  };
 }
 
 function setup(h) {
@@ -129,6 +142,10 @@ function setup(h) {
   return h.call('getSchoolRewardsBootstrap').students[0];
 }
 
+function seededCategory(h) {
+  return h.call('getSchoolRewardsBootstrap').categories[0];
+}
+
 describe('School Rewards Apps Script repository', () => {
   it('uses managed identity and role checks instead of client-supplied actors', () => {
     const h = harness(); setup(h);
@@ -141,13 +158,35 @@ describe('School Rewards Apps Script repository', () => {
     expect(cashierView.recentLedger).toEqual([]);
   });
 
+  it('lets admins revoke access and manage inactive roster records without losing history', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 10, categoryId: category.id, reason: 'Recognition before roster change', idempotencyKey: 'award_before_deactivate1' });
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsStudent', { id: student.id, firstName: student.firstName, lastInitial: student.lastInitial, grade: student.grade, homeroom: student.homeroom, email: STUDENT, active: false });
+    expect(h.call('getSchoolRewardsBootstrap').students.find(item => item.id === student.id)).toMatchObject({ active: false, balance: 10 });
+
+    h.setActive(STAFF);
+    expect(h.call('getSchoolRewardsBootstrap').students).toEqual([]);
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsMember', { email: STAFF, displayName: 'Teacher', role: 'staff', active: false });
+    expect(h.call('getSchoolRewardsBootstrap').members.find(member => member.email === STAFF)).toMatchObject({ role: 'staff', active: false });
+    h.setActive(STAFF);
+    expect(() => h.call('getSchoolRewardsBootstrap')).toThrow(/not an active School Rewards member/i);
+
+    h.setActive(ADMIN);
+    expect(() => h.call('adminUpsertRewardsMember', { email: ADMIN, displayName: 'Administrator', role: 'admin', active: false })).toThrow(/active administrator is required/i);
+    expect(h.call('getSchoolRewardsBootstrap').members.find(member => member.email === ADMIN)).toMatchObject({ role: 'admin', active: true });
+  });
+
   it('records an award once when the same request is retried', () => {
-    const h = harness(); const student = setup(h); h.setActive(STAFF);
-    const request = { studentId: student.id, amount: 25, reason: 'Helped a classmate', idempotencyKey: 'award_retry_01' };
+    const h = harness(); const student = setup(h); const category = seededCategory(h); h.setActive(STAFF);
+    const request = { studentId: student.id, amount: 25, categoryId: category.id, reason: 'Helped a classmate', idempotencyKey: 'award_retry_01' };
     const first = h.call('awardSchoolRewardsPoints', request);
     const second = h.call('awardSchoolRewardsPoints', request);
     expect(first.entry.id).toBe(second.entry.id);
     expect(second.balance).toBe(25);
+    expect(() => h.call('awardSchoolRewardsPoints', { ...request, amount: 24 })).toThrow(/request key was already used/i);
     expect(h.rows('Ledger')).toHaveLength(2);
     h.setActive(ADMIN);
     const corrected = h.call('reverseSchoolRewardsEntry', { entryId: first.entry.id, reason: 'Duplicate staff entry', idempotencyKey: 'reverse_award_01' });
@@ -155,9 +194,37 @@ describe('School Rewards Apps Script repository', () => {
     expect(h.rows('Balances')[1].slice(1, 4)).toEqual([0, 0, 0]);
   });
 
+  it('requires both a recognition category and a student-facing reason for awards', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h); h.setActive(STAFF);
+    expect(() => h.call('awardSchoolRewardsPoints', {
+      studentId: student.id, amount: 5, categoryId: category.id, reason: '   ', idempotencyKey: 'award_blank_reason1',
+    })).toThrow(/describe|reason|required|explain/i);
+    expect(() => h.call('awardSchoolRewardsPoints', {
+      studentId: student.id, amount: 5, reason: 'Helped prepare the shared materials', idempotencyKey: 'award_no_category1',
+    })).toThrow(/category|required/i);
+    const awarded = h.call('awardSchoolRewardsPoints', {
+      studentId: student.id, amount: 5, categoryId: category.id, reason: 'Helped prepare the shared materials', idempotencyKey: 'award_valid_fields1',
+    });
+    expect(awarded).toMatchObject({ ok: true, balance: 5, entry: { categoryId: category.id, reason: 'Helped prepare the shared materials' } });
+  });
+
+  it('preserves inactive category names and earned growth while blocking new awards', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 15, categoryId: category.id, reason: 'Followed through on a difficult task', idempotencyKey: 'award_category_history1' });
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsCategory', { id: category.id, name: category.name, description: category.description, framework: category.framework, color: category.color, sortOrder: category.sortOrder, active: false });
+    expect(h.call('getSchoolRewardsBootstrap').categories.find(item => item.id === category.id)).toMatchObject({ name: category.name, active: false });
+    h.setActive(STAFF);
+    expect(() => h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 5, categoryId: category.id, reason: 'New attempt', idempotencyKey: 'award_inactive_category1' })).toThrow(/active recognition category/i);
+    expect(h.call('getSchoolRewardsBootstrap').categories.find(item => item.id === category.id)).toMatchObject({ name: category.name, active: false });
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').progress.find(item => item.categoryId === category.id)).toMatchObject({ name: category.name, active: false, points: 15 });
+  });
+
   it('checks live balance and inventory atomically at cashier checkout', () => {
-    const h = harness(); const student = setup(h);
-    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 25, reason: 'Recognition', idempotencyKey: 'award_checkout_01' });
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 25, categoryId: category.id, reason: 'Recognition', idempotencyKey: 'award_checkout_01' });
     h.setActive(ADMIN);
     const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Notebook', cost: 10, inventoryLimit: 5, description: 'School notebook' }).item;
     const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester 1', status: 'OPEN' }).window;
@@ -169,12 +236,13 @@ describe('School Rewards Apps Script repository', () => {
     expect(retry.order.id).toBe(first.order.id);
     expect(h.rows('Orders')).toHaveLength(2);
     expect(h.rows('Catalog')[1][5]).toBe(3);
+    expect(() => h.call('checkoutSchoolRewardsOrder', { ...request, lines: [{ catalogId: prize.id, quantity: 1 }] })).toThrow(/request key was already used/i);
     expect(() => h.call('checkoutSchoolRewardsOrder', { ...request, idempotencyKey: 'checkout_no_funds_02' })).toThrow(/enough points/i);
   });
 
   it('emails only the student total and current prize preview', () => {
-    const h = harness(); const student = setup(h);
-    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 12, reason: 'Private staff reason', idempotencyKey: 'award_email_01' });
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 12, categoryId: category.id, reason: 'Private staff reason', idempotencyKey: 'award_email_01' });
     h.setActive(ADMIN);
     h.call('adminUpsertRewardsCatalogItem', { name: 'Art Kit', cost: 10, inventoryLimit: -1, description: 'Markers and paper' });
     h.call('adminUpsertRewardsWindow', { name: 'Trimester 1', status: 'PREVIEW' });
@@ -185,6 +253,14 @@ describe('School Rewards Apps Script repository', () => {
     expect(h.mail[0].htmlBody).toContain('Art Kit');
     expect(h.mail[0].htmlBody).not.toContain('Private staff reason');
     expect(h.call('verifySchoolRewardsAuditChain')).toMatchObject({ ok: true });
+  });
+
+  it('uses the verified effective admin for a non-interactive scheduled statement trigger', () => {
+    const h = harness(); setup(h);
+    h.setActive('');
+    const result = h.call('runScheduledSchoolRewardsStatements');
+    expect(result).toMatchObject({ sent: 1, failed: 0 });
+    expect(h.mail[0]).toMatchObject({ to: STUDENT, subject: 'Pilot School rewards update' });
   });
 
   it('lets a rostered student see only their own categorized growth and reasons', () => {
@@ -207,10 +283,29 @@ describe('School Rewards Apps Script repository', () => {
     expect(view.catalog[0].name).toBe('Model print');
   });
 
-  it('keeps a purchase and full refund reconciled and records both receipts', () => {
-    const h = harness(); const student = setup(h);
+  it('reports the current growth threshold and points remaining at each category level', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.call('adminSetRewardsLevelThresholds', [0, 25, 75]);
     h.setActive(STAFF);
-    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 30, reason: 'Recognition', idempotencyKey: 'award_refund_01' });
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 50, categoryId: category.id, reason: 'Sustained collaboration across the project', idempotencyKey: 'award_threshold_progress1' });
+    h.setActive(STUDENT);
+    const progress = h.call('getSchoolRewardsBootstrap').progress.find(item => item.categoryId === category.id);
+    expect(progress).toMatchObject({ points: 50, level: 1, currentThreshold: 25, nextThreshold: 75, pointsToNext: 25 });
+  });
+
+  it('names configured growth levels beyond the five default labels accurately', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.call('adminSetRewardsLevelThresholds', [0, 10, 20, 30, 40, 50, 60]);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 55, categoryId: category.id, reason: 'Sustained leadership and reflection', idempotencyKey: 'award_extended_level1' });
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').progress.find(item => item.categoryId === category.id)).toMatchObject({ points: 55, level: 5, levelName: 'Level 6', currentThreshold: 50, nextThreshold: 60, pointsToNext: 5 });
+  });
+
+  it('keeps a purchase and full refund reconciled and records both receipts', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 30, categoryId: category.id, reason: 'Recognition', idempotencyKey: 'award_refund_01' });
     h.setActive(ADMIN);
     const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Notebook', cost: 10, inventoryLimit: 5, description: 'School notebook' }).item;
     const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester 1', status: 'OPEN' }).window;
@@ -224,9 +319,230 @@ describe('School Rewards Apps Script repository', () => {
     expect(h.rows('Catalog')[1][5]).toBe(5);
     expect(h.rows('Orders')[1][4]).toBe('REFUNDED');
     expect(h.rows('Receipts')).toHaveLength(3);
+    expect(() => h.call('resendSchoolRewardsOrderReceipt', { orderId: checkout.order.id, kind: 'PURCHASE', idempotencyKey: 'receipt_purchase_after_refund1' })).toThrow(/purchase receipt.*completed/i);
     const report = h.call('getSchoolRewardsReconciliation', { windowId: windowItem.id });
     expect(report).toMatchObject({ orders: 1, completedOrders: 0, refundedOrders: 1, netPointsSpent: 0, refundedPoints: 20, pointsOutstanding: 30 });
     expect(report.audit.ok).toBe(true);
+  });
+
+  it('keeps checkout complete when email fails and lets a cashier recover the receipt once', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 30, categoryId: category.id, reason: 'Store recognition', idempotencyKey: 'award_receipt_retry1' });
+    h.setActive(ADMIN);
+    const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Sketchbook', cost: 10, inventoryLimit: 5, description: 'Blank pages for new ideas' }).item;
+    const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester store', status: 'OPEN' }).window;
+
+    h.setActive(CASHIER);
+    h.setMailFailure('Temporary mail outage');
+    const checkout = h.call('checkoutSchoolRewardsOrder', {
+      studentId: student.id, windowId: windowItem.id,
+      lines: [{ catalogId: prize.id, quantity: 2 }], idempotencyKey: 'checkout_receipt_retry1',
+    });
+    expect(checkout).toMatchObject({ balance: 10, receipt: { status: 'FAILED', kind: 'PURCHASE' } });
+    expect(h.rows('Orders')[1][4]).toBe('COMPLETED');
+    expect(h.rows('Catalog')[1][5]).toBe(3);
+    expect(h.rows('Ledger')).toHaveLength(3);
+    expect(h.mail).toHaveLength(0);
+
+    const failedView = h.call('getSchoolRewardsBootstrap');
+    expect(failedView.recentReceipts[0]).toMatchObject({ orderId: checkout.order.id, kind: 'PURCHASE', status: 'FAILED' });
+    expect(failedView.recentOrders[0].lines[0]).toMatchObject({ itemName: 'Sketchbook', quantity: 2, lineTotal: 20 });
+    expect(failedView.recentOrders[0]).not.toHaveProperty('actorEmail');
+    expect(failedView.recentOrders[0]).not.toHaveProperty('idempotencyKey');
+    expect(failedView.recentReceipts[0]).not.toHaveProperty('recipientEmail');
+    expect(failedView.recentReceipts[0]).not.toHaveProperty('error');
+
+    h.setActive(STAFF);
+    const staffView = h.call('getSchoolRewardsBootstrap');
+    expect(staffView.recentLedger[0]).not.toHaveProperty('actorEmail');
+    expect(staffView.recentLedger[0]).not.toHaveProperty('idempotencyKey');
+
+    h.setActive(CASHIER);
+    h.setMailFailure('');
+    const resent = h.call('resendSchoolRewardsOrderReceipt', {
+      orderId: checkout.order.id, kind: 'PURCHASE', idempotencyKey: 'receipt_resend_recovery1',
+    });
+    expect(resent).toMatchObject({ ok: true, alreadySent: false, receipt: { status: 'SENT', kind: 'PURCHASE' } });
+    expect(h.mail).toHaveLength(1);
+    expect(h.mail[0].body).toContain('2 x Sketchbook');
+    expect(h.mail[0].body).toContain('Current available balance when this copy was sent: 10 points');
+
+    const duplicate = h.call('resendSchoolRewardsOrderReceipt', {
+      orderId: checkout.order.id, kind: 'PURCHASE', idempotencyKey: 'receipt_resend_after_sent1',
+    });
+    expect(duplicate).toMatchObject({ ok: true, alreadySent: true, receipt: { status: 'SENT' } });
+    expect(h.mail).toHaveLength(1);
+
+    h.setActive(STUDENT);
+    const studentView = h.call('getSchoolRewardsBootstrap');
+    expect(studentView.recentOrders[0].lines[0]).toMatchObject({ itemName: 'Sketchbook', quantity: 2, lineTotal: 20 });
+    expect(studentView.recentOrders[0]).not.toHaveProperty('actorEmail');
+    expect(studentView.recentOrders[0]).not.toHaveProperty('idempotencyKey');
+    expect(studentView.recentReceipts[0]).toMatchObject({ orderId: checkout.order.id, status: 'SENT' });
+    expect(studentView.recentReceipts[0]).not.toHaveProperty('recipientEmail');
+    expect(studentView.recentReceipts[0]).not.toHaveProperty('error');
+  });
+
+  it('does not duplicate mail when receipt delivery becomes uncertain after sending', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 20, categoryId: category.id, reason: 'Store recognition', idempotencyKey: 'award_uncertain_receipt1' });
+    h.setActive(ADMIN);
+    const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Bookmark', cost: 10, inventoryLimit: 3 }).item;
+    const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester store', status: 'OPEN' }).window;
+    h.setActive(CASHIER);
+    h.setReceiptUpdateFailure('Receipt status write unavailable');
+    const request = { studentId: student.id, windowId: windowItem.id, lines: [{ catalogId: prize.id, quantity: 1 }], idempotencyKey: 'checkout_uncertain_receipt1' };
+    const checkout = h.call('checkoutSchoolRewardsOrder', request);
+    expect(checkout).toMatchObject({ balance: 10, receipt: { status: 'UNKNOWN' } });
+    expect(h.mail).toHaveLength(1);
+    expect(h.rows('Receipts')[1][5]).toBe('PENDING');
+
+    const retry = h.call('checkoutSchoolRewardsOrder', request);
+    expect(retry.order.id).toBe(checkout.order.id);
+    expect(retry.receipt.status).toBe('UNKNOWN');
+    expect(h.mail).toHaveLength(1);
+    expect(h.rows('Orders')).toHaveLength(2);
+    expect(() => h.call('resendSchoolRewardsOrderReceipt', { orderId: checkout.order.id, kind: 'PURCHASE', idempotencyKey: 'resend_uncertain_block1' })).toThrow(/delivery is uncertain|verify.*mailbox/i);
+    expect(() => h.call('resolveSchoolRewardsReceiptDelivery', { receiptId: checkout.receipt.id, status: 'SENT', note: 'Verified in managed mailbox', idempotencyKey: 'resolve_wrong_role1' })).toThrow(/role cannot perform/i);
+
+    h.setReceiptUpdateFailure('');
+    h.setActive(ADMIN);
+    const resolved = h.call('resolveSchoolRewardsReceiptDelivery', { receiptId: checkout.receipt.id, status: 'SENT', note: 'Verified in managed mailbox', idempotencyKey: 'resolve_uncertain_sent1' });
+    expect(resolved).toMatchObject({ ok: true, receipt: { id: checkout.receipt.id, status: 'SENT' } });
+    h.setActive(CASHIER);
+    const duplicate = h.call('resendSchoolRewardsOrderReceipt', { orderId: checkout.order.id, kind: 'PURCHASE', idempotencyKey: 'resend_after_resolve1' });
+    expect(duplicate).toMatchObject({ ok: true, alreadySent: true, receipt: { status: 'SENT' } });
+    expect(h.mail).toHaveLength(1);
+  });
+
+  it('transitions one trimester window through preview, open, and closed without duplicating it', () => {
+    const h = harness(); setup(h);
+    const preview = h.call('adminUpsertRewardsWindow', { name: 'Trimester 1 store', status: 'PREVIEW' }).window;
+    expect(h.rows('StoreWindows')).toHaveLength(2);
+
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').windows).toEqual([expect.objectContaining({ id: preview.id, status: 'PREVIEW' })]);
+
+    h.setActive(ADMIN);
+    const opened = h.call('adminUpsertRewardsWindow', { id: preview.id, name: preview.name, status: 'OPEN' }).window;
+    expect(opened.id).toBe(preview.id);
+    expect(h.rows('StoreWindows')).toHaveLength(2);
+
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').windows).toEqual([expect.objectContaining({ id: preview.id, status: 'OPEN' })]);
+
+    h.setActive(ADMIN);
+    const closed = h.call('adminUpsertRewardsWindow', { id: preview.id, name: preview.name, status: 'CLOSED' }).window;
+    expect(closed.id).toBe(preview.id);
+    expect(h.rows('StoreWindows')).toHaveLength(2);
+
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').windows).toEqual([]);
+  });
+
+  it('rejects cashier checkout outside an open window\'s configured dates', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 100, categoryId: category.id, reason: 'Trimester recognition', idempotencyKey: 'award_window_dates1' });
+    h.setActive(ADMIN);
+    const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Art set', cost: 10, inventoryLimit: 5 }).item;
+    const now = Date.now();
+    const future = h.call('adminUpsertRewardsWindow', {
+      name: 'Future store', status: 'OPEN',
+      startsAt: new Date(now + 60 * 60 * 1000).toISOString(),
+      endsAt: new Date(now + 2 * 60 * 60 * 1000).toISOString(),
+    }).window;
+
+    h.setActive(CASHIER);
+    expect(() => h.call('checkoutSchoolRewardsOrder', {
+      studentId: student.id, windowId: future.id, lines: [{ catalogId: prize.id, quantity: 1 }], idempotencyKey: 'checkout_future_window1',
+    })).toThrow(/not started|has not started|opens at|before.*window starts/i);
+
+    h.setActive(ADMIN);
+    const ended = h.call('adminUpsertRewardsWindow', {
+      name: 'Ended store', status: 'OPEN',
+      startsAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+      endsAt: new Date(now - 60 * 60 * 1000).toISOString(),
+    }).window;
+
+    h.setActive(CASHIER);
+    expect(() => h.call('checkoutSchoolRewardsOrder', {
+      studentId: student.id, windowId: ended.id, lines: [{ catalogId: prize.id, quantity: 1 }], idempotencyKey: 'checkout_ended_window1',
+    })).toThrow(/ended|has ended|expired|after.*window ends/i);
+    expect(h.rows('Orders')).toHaveLength(1);
+    expect(h.rows('Catalog')[1][5]).toBe(5);
+  });
+
+  it('preserves sold inventory on metadata edits and applies an explicit stock change', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 30, categoryId: category.id, reason: 'Store recognition', idempotencyKey: 'award_catalog_edit1' });
+    h.setActive(ADMIN);
+    const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Notebook', cost: 10, inventoryLimit: 5, description: 'Original description' }).item;
+    const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester store', status: 'OPEN' }).window;
+    h.setActive(CASHIER);
+    h.call('checkoutSchoolRewardsOrder', { studentId: student.id, windowId: windowItem.id, lines: [{ catalogId: prize.id, quantity: 2 }], idempotencyKey: 'checkout_catalog_edit1' });
+
+    h.setActive(ADMIN);
+    const metadataEdit = h.call('adminUpsertRewardsCatalogItem', {
+      id: prize.id, name: 'College-ruled notebook', cost: 12, inventoryLimit: 5, description: 'Updated description', active: true,
+    }).item;
+    expect(metadataEdit).toMatchObject({ id: prize.id, cost: 12, inventoryLimit: 5, remaining: 3 });
+
+    const stockEdit = h.call('adminUpsertRewardsCatalogItem', {
+      id: prize.id, name: metadataEdit.name, cost: metadataEdit.cost, inventoryLimit: 5, remaining: 4, description: metadataEdit.description, active: true,
+    }).item;
+    expect(stockEdit).toMatchObject({ id: prize.id, remaining: 4 });
+    expect(h.rows('Catalog')).toHaveLength(2);
+  });
+
+  it('rejects an inventory-conflicting refund before changing points, stock, or order state', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 30, categoryId: category.id, reason: 'Store recognition', idempotencyKey: 'award_refund_preflight1' });
+    h.setActive(ADMIN);
+    const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Notebook', cost: 10, inventoryLimit: 5, description: 'School notebook' }).item;
+    const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester store', status: 'OPEN' }).window;
+    h.setActive(CASHIER);
+    const checkout = h.call('checkoutSchoolRewardsOrder', { studentId: student.id, windowId: windowItem.id, lines: [{ catalogId: prize.id, quantity: 2 }], idempotencyKey: 'checkout_refund_preflight1' });
+
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsCatalogItem', { id: prize.id, name: prize.name, cost: prize.cost, inventoryLimit: 5, remaining: 4, description: prize.description, active: true });
+    const before = Object.fromEntries(['Ledger', 'Balances', 'Catalog', 'Orders', 'Receipts', 'Idempotency', 'Audit'].map(name => [name, h.rows(name)]));
+    const mailCount = h.mail.length;
+    const refundRequest = { orderId: checkout.order.id, reason: 'Item unavailable', idempotencyKey: 'refund_inventory_preflight1' };
+    expect(() => h.call('refundSchoolRewardsOrder', refundRequest)).toThrow(/inventory exceed|exceed.*limit/i);
+    Object.entries(before).forEach(([name, rows]) => expect(h.rows(name)).toEqual(rows));
+    expect(h.mail).toHaveLength(mailCount);
+    expect(h.rows('Orders')[1][4]).toBe('COMPLETED');
+    expect(h.rows('Balances')[1].slice(1, 4)).toEqual([30, 20, 10]);
+
+    h.call('adminUpsertRewardsCatalogItem', { id: prize.id, name: prize.name, cost: prize.cost, inventoryLimit: 5, remaining: 3, description: prize.description, active: true });
+    const recovered = h.call('refundSchoolRewardsOrder', refundRequest);
+    expect(recovered).toMatchObject({ balance: 30, restoredPoints: 20, receipt: { status: 'SENT', kind: 'REFUND' } });
+    expect(h.rows('Catalog')[1][5]).toBe(5);
+    expect(h.rows('Orders')[1][4]).toBe('REFUNDED');
+  });
+
+  it('refunds a historical order safely after the student is deactivated', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 20, categoryId: category.id, reason: 'Store recognition', idempotencyKey: 'award_inactive_refund1' });
+    h.setActive(ADMIN);
+    const prize = h.call('adminUpsertRewardsCatalogItem', { name: 'Pencil set', cost: 10, inventoryLimit: 2 }).item;
+    const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester store', status: 'OPEN' }).window;
+    h.setActive(CASHIER);
+    const checkout = h.call('checkoutSchoolRewardsOrder', { studentId: student.id, windowId: windowItem.id, lines: [{ catalogId: prize.id, quantity: 1 }], idempotencyKey: 'checkout_inactive_refund1' });
+
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsStudent', { id: student.id, firstName: student.firstName, lastInitial: student.lastInitial, grade: student.grade, homeroom: student.homeroom, email: STUDENT, active: false });
+    const refund = h.call('refundSchoolRewardsOrder', { orderId: checkout.order.id, reason: 'Returned after roster change', idempotencyKey: 'refund_inactive_student1' });
+    expect(refund).toMatchObject({ balance: 20, restoredPoints: 10, receipt: { kind: 'REFUND', status: 'SENT' } });
+    expect(h.rows('Orders')[1][4]).toBe('REFUNDED');
+    expect(h.rows('Catalog')[1][5]).toBe(2);
+    expect(h.rows('Balances')[1].slice(1, 4)).toEqual([20, 0, 20]);
   });
 
   it('validates a bulk roster before committing the batch', () => {
@@ -242,6 +558,27 @@ describe('School Rewards Apps Script repository', () => {
       { firstName: 'Duplicate Again', email: `same@${DOMAIN}` },
     ])).toThrow(/duplicate student email/i);
     expect(h.rows('Students')).toHaveLength(4);
+  });
+
+  it('updates CSV roster rows by managed email and rejects identity conflicts before writes', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 25, categoryId: category.id, reason: 'Persistent roster reference', idempotencyKey: 'award_roster_update1' });
+    h.setActive(ADMIN);
+    const updated = h.call('adminBulkUpsertRewardsStudents', [{ firstName: 'Avery Updated', lastInitial: 'R', grade: '6', homeroom: '6B', email: STUDENT.toUpperCase() }]);
+    expect(updated.students[0]).toMatchObject({ id: student.id, firstName: 'Avery Updated', grade: '6', homeroom: '6B', email: STUDENT });
+    expect(h.rows('Students')).toHaveLength(2);
+    expect(h.rows('Balances')).toHaveLength(2);
+    expect(h.rows('Balances')[1].slice(0, 4)).toEqual([student.id, 25, 0, 25]);
+
+    const before = Object.fromEntries(['Students', 'Balances', 'Audit'].map(name => [name, h.rows(name)]));
+    expect(() => h.call('adminBulkUpsertRewardsStudents', [
+      { firstName: 'Jordan', lastInitial: 'K', grade: '6', homeroom: '6B', email: `jordan@${DOMAIN}` },
+      { id: 'different-student-id', firstName: 'Incorrect claim', email: STUDENT },
+    ])).toThrow(/already assigned|different roster|duplicate student/i);
+    Object.entries(before).forEach(([name, rows]) => expect(h.rows(name)).toEqual(rows));
+    expect(() => h.call('adminBulkUpsertRewardsStudents', [{ firstName: '   ', email: `blankname@${DOMAIN}` }])).toThrow(/first name is required/i);
+    Object.entries(before).forEach(([name, rows]) => expect(h.rows(name)).toEqual(rows));
   });
 
   it('registers private recipe models while keeping GLB/STL as metadata-only handoffs', () => {
@@ -279,9 +616,9 @@ describe('School Rewards Apps Script repository', () => {
   });
 
   it('reserves available points, fulfills one print spend, and refunds it once', () => {
-    const h = harness(); const student = setup(h);
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
     h.setActive(STAFF);
-    const award = h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 40, reason: 'Design iteration', idempotencyKey: 'award_print_flow_01' });
+    const award = h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 40, categoryId: category.id, reason: 'Design iteration', idempotencyKey: 'award_print_flow_01' });
     h.setActive(ADMIN);
     const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Trimester Print Store', status: 'OPEN' }).window;
     const expensive = h.call('adminUpsertRewardsCatalogItem', { name: 'Large prize', cost: 30, inventoryLimit: -1 }).item;
@@ -308,6 +645,17 @@ describe('School Rewards Apps Script repository', () => {
     expect(h.rows('PointHolds')).toHaveLength(2);
     const studentView = h.call('getSchoolRewardsBootstrap');
     expect(studentView.students[0]).toMatchObject({ balance: 40, reservedPoints: 15, availableBalance: 25 });
+
+    h.setActive(ADMIN);
+    const statementRun = h.call('sendSchoolRewardsBalanceStatements', { periodKey: '2026-t1-active-hold', limit: 100 });
+    expect(statementRun).toMatchObject({ sent: 1, failed: 0 });
+    const statement = h.mail.at(-1);
+    expect(statement.subject).toMatch(/rewards.*update/i);
+    expect(statement.subject).not.toMatch(/\d+\s*points?/i);
+    expect(statement.body).toMatch(/ledger balance:\s*40 points/i);
+    expect(statement.body).toMatch(/reserved(?: for active requests)?:\s*15 points/i);
+    expect(statement.body).toMatch(/available(?: to spend)?:\s*25 points/i);
+    expect(statement.body).not.toContain('Design iteration');
 
     h.setActive(CASHIER);
     expect(() => h.call('checkoutSchoolRewardsOrder', { studentId: student.id, windowId: windowItem.id, lines: [{ catalogId: expensive.id, quantity: 1 }], idempotencyKey: 'checkout_held_points1' })).toThrow(/enough points/i);
@@ -342,8 +690,8 @@ describe('School Rewards Apps Script repository', () => {
   });
 
   it('releases a confirmed print reservation on student cancellation without spending', () => {
-    const h = harness(); const student = setup(h);
-    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 20, reason: 'Recognition', idempotencyKey: 'award_cancel_print1' });
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 20, categoryId: category.id, reason: 'Recognition', idempotencyKey: 'award_cancel_print1' });
     h.setActive(ADMIN); const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Print window', status: 'OPEN' }).window;
     h.setActive(STUDENT);
     const model = h.call('createSchoolRewardsPrintModel', { title: 'Name tag', sourceFormat: 'RECIPE', recipe: { parts: [{ shape: 'box', size: [1, 0.2, 0.4], position: [0, 0, 0], rotation: [0, 0, 0], color: '#7c3aed' }] }, widthMm: 45, depthMm: 18, heightMm: 4, triangleCount: 12, idempotencyKey: 'print_model_cancel01' }).model;
@@ -405,7 +753,7 @@ describe('School Rewards Apps Script repository', () => {
     const h = harness(); setup(h);
     h.setActive(ADMIN); const windowItem = h.call('adminUpsertRewardsWindow', { name: 'Revision window', status: 'PREVIEW' }).window;
     h.setActive(STUDENT);
-    const base = { sourceFormat: 'RECIPE', recipe: { parts: [{ shape: 'box', size: [1, 0.2, 0.4], position: [0, 0, 0], rotation: [0, 0, 0], color: '#2563eb' }] }, widthMm: 50, depthMm: 20, heightMm: 10, triangleCount: 12 };
+    const base = { sourceFormat: 'RECIPE', recipe: { parts: [{ shape: 'box', size: [1, 0.2, 0.4], position: [0, 0, 0], rotation: [0, 0, 0], color: '#2563eb' }] }, widthMm: 50, depthMm: 20, heightMm: 10, triangleCount: 12, aiUse: 'ASSISTED', aiDisclosure: 'Private drafting note: student-marker@example.test' };
     const v1 = h.call('createSchoolRewardsPrintModel', { ...base, title: 'Bridge v1', idempotencyKey: 'v4_revision_model1' }).model;
     const first = h.call('submitSchoolRewardsPrintRequest', { modelId: v1.id, windowId: windowItem.id, idempotencyKey: 'v4_revision_submit1' }).request;
     h.setActive(STAFF); h.call('reviewSchoolRewardsPrintRequest', { requestId: first.id, action: 'REQUEST_REVISION', reason: 'Make the base wider.', idempotencyKey: 'v4_revision_review1' });
@@ -417,6 +765,10 @@ describe('School Rewards Apps Script repository', () => {
     h.setActive(STAFF);
     expect(h.call('reviewSchoolRewardsPrintPublication', { publicationId: publication.id, action: 'APPROVE', idempotencyKey: 'v4_publish_approve1' }).publication.status).toBe('PUBLISHED');
     h.setActive(STUDENT);
+    const community = h.call('getSchoolRewardsPrintBootstrap').communityModels[0];
+    expect(community).not.toHaveProperty('aiDisclosure');
+    expect(community).not.toHaveProperty('contentHash');
+    expect(JSON.stringify(community)).not.toContain('student-marker@example.test');
     const remix = h.call('remixSchoolRewardsPrintModel', { modelId: v2.id, title: 'My bridge remix', idempotencyKey: 'v4_remix_model001' }).model;
     expect(remix).toMatchObject({ version: 1, remixOfModelId: v2.id, publicationStatus: 'PRIVATE' });
     const reported = h.call('reviewSchoolRewardsPrintPublication', { publicationId: publication.id, action: 'REPORT', reason: 'Needs another safety review.', idempotencyKey: 'v4_publish_report1' });
@@ -425,10 +777,10 @@ describe('School Rewards Apps Script repository', () => {
   });
 
   it('protects guardian digest privacy, audits deactivation, and exports only district aggregates', () => {
-    const h = harness(); const student = setup(h);
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
     const guardianInput = { studentId: student.id, guardianEmail: 'guardian@family.example', guardianName: 'Family Member', relationship: 'Guardian', active: true, consentConfirmed: true, idempotencyKey: 'v4_guardian_map01' };
     const guardian = h.call('adminUpsertSchoolRewardsGuardian', guardianInput).guardian;
-    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 14, reason: 'Private classroom observation', idempotencyKey: 'v4_guardian_award1' });
+    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 14, categoryId: category.id, reason: 'Private classroom observation', idempotencyKey: 'v4_guardian_award1' });
     h.setActive(ADMIN);
     const digest = h.call('sendSchoolRewardsGuardianDigests', { periodKey: '2026-t1-positive', limit: 20, idempotencyKey: 'v4_guardian_send01' });
     expect(digest).toMatchObject({ sent: 1, failed: 0 });

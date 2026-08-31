@@ -68,6 +68,7 @@
   var MAX_PERCENT = 1000;
   var MAX_PERCENT_QUANTITY = 1000000;
   var MAX_UNIT_RATE_VALUE = 1000000;
+  var MAX_NUMBER_LINE_UNIT = 1000;
 
   var CHALLENGES = {
     ratioTable: [
@@ -119,6 +120,7 @@
   }
 
   function finiteNumber(value, fallback) {
+    if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) return fallback;
     var number = Number(value);
     return isFinite(number) ? number : fallback;
   }
@@ -141,6 +143,23 @@
     if (!isFinite(value)) return '\u2014';
     var rounded = roundTo(value, places == null ? 3 : places);
     return String(Object.is(rounded, -0) ? 0 : rounded);
+  }
+
+  function formatSignificantNumber(value, significantDigits) {
+    var number = finiteNumber(value, null);
+    if (number === null) return '\u2014';
+    if (number === 0) return '0';
+    var digits = clamp(Math.floor(finiteNumber(significantDigits, 3)), 1, 17);
+    var rounded = Number(number.toPrecision(digits));
+    return isFinite(rounded) ? String(Object.is(rounded, -0) ? 0 : rounded) : '\u2014';
+  }
+
+  function formatUnitRate(value, significantDigits) {
+    return formatSignificantNumber(value, significantDigits == null ? 3 : significantDigits);
+  }
+
+  function unitRateIsRepresentable(pair, rate) {
+    return !!pair && isFinite(rate) && !(rate === 0 && pair.y !== 0);
   }
 
   function percentSegmentFills(tapePercent) {
@@ -224,6 +243,43 @@
     return Math.abs(left - right) <= 64 * Number.EPSILON * magnitude;
   }
 
+  function formatUnitRateEvidence(pairs) {
+    var usablePairs = (pairs || []).filter(function(pair) {
+      return pair && pair.x !== 0 && [pair.x, pair.y].every(isFinite);
+    });
+    var rates = usablePairs.map(function(pair) { return pair.y / pair.x; });
+    var representable = rates.map(function(rate, index) { return unitRateIsRepresentable(usablePairs[index], rate); });
+    var digits = 3;
+    var displays = rates.map(function(rate, index) { return representable[index] ? formatUnitRate(rate, digits) : '\u2014'; });
+    var hasCollision = false;
+
+    function findCollision() {
+      for (var i = 0; i < usablePairs.length; i++) {
+        for (var j = i + 1; j < usablePairs.length; j++) {
+          if (representable[i] && representable[j] && !pairsShareUnitRate(usablePairs[i], usablePairs[j]) && displays[i] === displays[j]) return true;
+        }
+      }
+      return false;
+    }
+
+    while (digits < 17 && findCollision()) {
+      digits += 1;
+      displays = rates.map(function(rate, index) { return representable[index] ? formatUnitRate(rate, digits) : '\u2014'; });
+    }
+    hasCollision = findCollision();
+    if (hasCollision) {
+      displays = displays.map(function(display, index) {
+        var collides = usablePairs.some(function(otherPair, otherIndex) {
+          return representable[index] && representable[otherIndex] && otherIndex !== index && !pairsShareUnitRate(usablePairs[index], otherPair) && displays[otherIndex] === display;
+        });
+        return collides
+          ? display + ' (' + formatSignificantNumber(usablePairs[index].y, 17) + ' \u00F7 ' + formatSignificantNumber(usablePairs[index].x, 17) + ')'
+          : display;
+      });
+    }
+    return { digits: digits, displays: displays, rates: rates, representable: representable, collisionFallback: hasCollision };
+  }
+
   function positiveAxisMaximum(values) {
     var maximum = 0;
     (values || []).forEach(function(value) {
@@ -239,7 +295,20 @@
   }
 
   function normalizeAnswer(value) {
-    return String(value == null ? '' : value).trim().toLowerCase().replace(/,/g, '').replace(/\s+/g, ' ');
+    return String(value == null ? '' : value).trim().toLowerCase().replace(/\s+/g, ' ').replace(/\s*([:/])\s*/g, '$1');
+  }
+
+  function parseNumericChallengeAnswer(value, options) {
+    options = options || {};
+    var normalized = normalizeAnswer(value);
+    if (!normalized) return null;
+    var match = normalized.match(/^(\$)?([+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+))(%?)$/);
+    if (!match) return null;
+    if (match[1] && match[3]) return null;
+    if (match[1] && options.allowCurrency === false) return null;
+    if (match[3] && options.allowPercent === false) return null;
+    var numeric = Number(match[2].replace(/,/g, ''));
+    return isFinite(numeric) ? numeric : null;
   }
 
   function challengeIsCorrect(challenge, rawAnswer) {
@@ -248,8 +317,8 @@
     if (challenge.answers) {
       return challenge.answers.some(function(answer) { return normalized === normalizeAnswer(answer); });
     }
-    var numeric = Number(normalized.replace(/[$%]/g, ''));
-    return isFinite(numeric) && nearlyEqual(numeric, challenge.answer);
+    var numeric = parseNumericChallengeAnswer(normalized);
+    return numeric !== null && nearlyEqual(numeric, challenge.answer);
   }
 
   function parsePairInput(xText, yText) {
@@ -293,7 +362,12 @@
     var nonzeroPairs = pairs.filter(function(pair) { return pair.x !== 0; });
     var hasInvalidOrigin = pairs.some(function(pair) { return pair.x === 0 && pair.y !== 0; });
     var rates = nonzeroPairs.map(function(pair) { return pair.y / pair.x; });
-    var complete = diagnostic.complete !== false && errors.length === 0;
+    var hasUnrepresentableRate = nonzeroPairs.some(function(pair, index) {
+      return !isFinite(rates[index]) || (rates[index] === 0 && pair.y !== 0);
+    });
+    var analysisErrors = errors.slice();
+    if (hasUnrepresentableRate) analysisErrors.push('Coordinate magnitudes are too far apart to calculate a reliable unit rate. Use less extreme values.');
+    var complete = diagnostic.complete !== false && analysisErrors.length === 0;
     var valid = complete && pairs.length >= 2 && nonzeroPairs.length > 0;
     var constantRate = valid && nonzeroPairs.every(function(pair) { return pairsShareUnitRate(nonzeroPairs[0], pair); });
     return {
@@ -302,7 +376,8 @@
       rates: rates,
       constant: constantRate && !hasInvalidOrigin && isFinite(rates[0]) ? rates[0] : null,
       hasInvalidOrigin: hasInvalidOrigin,
-      errors: errors.slice(),
+      hasUnrepresentableRate: hasUnrepresentableRate,
+      errors: analysisErrors,
       complete: complete
     };
   }
@@ -313,11 +388,16 @@
     parsePairInput: parsePairInput,
     analyzeProportionalPairs: analyzeProportionalPairs,
     pairsShareUnitRate: pairsShareUnitRate,
+    unitRateIsRepresentable: unitRateIsRepresentable,
+    formatSignificantNumber: formatSignificantNumber,
+    formatUnitRate: formatUnitRate,
+    formatUnitRateEvidence: formatUnitRateEvidence,
     positiveAxisMaximum: positiveAxisMaximum,
     roundTo: roundTo,
     percentSegmentFills: percentSegmentFills,
     percentTapeModel: percentTapeModel,
     percentTapeSummary: percentTapeSummary,
+    parseNumericChallengeAnswer: parseNumericChallengeAnswer,
     challengeIsCorrect: challengeIsCorrect,
     canonicalChallengeAnswer: canonicalChallengeAnswer,
     challenges: CHALLENGES
@@ -446,30 +526,89 @@
         }
       }
 
+      function validateNumericDraft(raw, options) {
+        options = options || {};
+        var normalized = String(raw == null ? '' : raw).trim();
+        if (!normalized) return { valid: false, code: 'required', value: null };
+        var parsed = Number(normalized);
+        if (!isFinite(parsed)) return { valid: false, code: 'number', value: null };
+        if (options.integer && !Number.isInteger(parsed)) return { valid: false, code: 'integer', value: parsed };
+        if (options.min != null && parsed < options.min) return { valid: false, code: 'min', value: parsed };
+        if (options.max != null && parsed > options.max) return { valid: false, code: 'max', value: parsed };
+        return { valid: true, code: null, value: parsed };
+      }
+
+      function numericDraftState(key, options) {
+        var draftKey = key + 'Draft';
+        var hasDraft = d[draftKey] !== null && d[draftKey] !== undefined;
+        if (!hasDraft) return { hasDraft: false, valid: true, code: null, value: null };
+        return Object.assign({ hasDraft: true }, validateNumericDraft(d[draftKey], options));
+      }
+
+      function numericFieldsReady(fields) {
+        return fields.every(function(field) { return numericDraftState(field.key, field.options).valid; });
+      }
+
+      function numericDraftMessage(label, state, options) {
+        if (state.code === 'integer') return t('stem.ratios.enter_a_whole_number_for', "Enter a whole number for ") + label + '.';
+        if (state.code === 'min') return label + t('stem.ratios.must_be_at_least', " must be at least ") + formatNumber(options.min) + '.';
+        if (state.code === 'max') return label + t('stem.ratios.must_be_no_more_than', " must be no more than ") + formatNumber(options.max) + '.';
+        if (state.code === 'number') return t('stem.ratios.enter_a_valid_number_for', "Enter a valid number for ") + label + '.';
+        return t('stem.ratios.enter_a_value_for', "Enter a value for ") + label + '.';
+      }
+
       function numericField(label, value, key, options) {
         options = options || {};
+        var draftKey = key + 'Draft';
+        var state = numericDraftState(key, options);
+        var hasDraft = state.hasDraft;
+        var errorId = 'ratio-field-error-' + key;
         return h('label', { className: 'block text-xs font-semibold', key: key },
           h('span', { className: 'block mb-1', style: { color: muted } }, label),
           h('input', {
             type: 'number',
-            value: value,
+            value: hasDraft ? d[draftKey] : value,
             min: options.min,
             max: options.max,
-            step: options.step || 1,
+            step: options.step == null ? 1 : options.step,
             onChange: function(event) {
-              var nextValue = finiteNumber(event.target.value, 0);
+              var raw = event.target.value;
+              var patch = {}; patch[draftKey] = raw;
+              var nextState = validateNumericDraft(raw, options);
+              if (nextState.valid) patch[key] = nextState.value;
+              update(patch);
+            },
+            onBlur: function(event) {
+              var nextValue = finiteNumber(event.target.value, value);
+              if (options.integer) nextValue = Math.round(nextValue);
               if (options.min != null) nextValue = Math.max(options.min, nextValue);
               if (options.max != null) nextValue = Math.min(options.max, nextValue);
-              var patch = {}; patch[key] = nextValue; update(patch);
+              var patch = {}; patch[key] = nextValue; patch[draftKey] = null; update(patch);
             },
             className: 'w-full rounded-lg px-3 py-2 text-sm',
             style: inputStyle,
-            'aria-label': label
-          })
+            'aria-label': label,
+            'aria-invalid': hasDraft && !state.valid ? 'true' : undefined,
+            'aria-describedby': hasDraft && !state.valid ? errorId : undefined,
+            'data-draft-valid': hasDraft ? String(state.valid) : undefined
+          }),
+          hasDraft && !state.valid && h('span', {
+            id: errorId,
+            role: 'status',
+            'aria-live': 'polite',
+            className: 'block mt-1 text-xs font-semibold',
+            style: { color: warning }
+          }, numericDraftMessage(label, state, options))
         );
       }
 
       function renderRatioTable() {
+        var ratioFields = [
+          { key: 'ratioA', options: { min: 1, max: 100, integer: true } },
+          { key: 'ratioB', options: { min: 1, max: 100, integer: true } },
+          { key: 'ratioFactor', options: { min: 1, max: 12, integer: true } }
+        ];
+        var ratioReady = numericFieldsReady(ratioFields);
         var first = clamp(Math.round(finiteNumber(d.ratioA, 3)), 1, 100);
         var second = clamp(Math.round(finiteNumber(d.ratioB, 5)), 1, 100);
         var selectedFactor = clamp(Math.round(finiteNumber(d.ratioFactor, 4)), 1, 12);
@@ -481,21 +620,22 @@
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('h3', { className: 'font-bold' }, t('stem.ratios.build_an_equivalent_ratio_family', "Build an equivalent-ratio family")),
             h('div', { className: 'grid grid-cols-2 gap-3' },
-              numericField(t('stem.ratios.first_quantity', "First quantity"), first, 'ratioA', { min: 1, max: 100 }),
-              numericField(t('stem.ratios.second_quantity', "Second quantity"), second, 'ratioB', { min: 1, max: 100 })
+              numericField(t('stem.ratios.first_quantity', "First quantity"), first, 'ratioA', { min: 1, max: 100, integer: true }),
+              numericField(t('stem.ratios.second_quantity', "Second quantity"), second, 'ratioB', { min: 1, max: 100, integer: true })
             ),
-            numericField(t('stem.ratios.scale_factor', "Scale factor"), selectedFactor, 'ratioFactor', { min: 1, max: 12 }),
-            h('div', { className: 'rounded-lg p-3 text-center', style: { background: soft, border: '1px solid ' + border } },
+            numericField(t('stem.ratios.scale_factor', "Scale factor"), selectedFactor, 'ratioFactor', { min: 1, max: 12, integer: true }),
+            ratioReady ? h('div', { className: 'rounded-lg p-3 text-center', style: { background: soft, border: '1px solid ' + border } },
               h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.scaled_ratio', "Scaled ratio")),
               h('div', { className: 'text-2xl font-black', style: { color: accent } }, (first * selectedFactor) + ':' + (second * selectedFactor)),
               h('div', { className: 'text-xs mt-1', style: { color: muted } }, first + ' \u00D7 ' + selectedFactor + t('stem.ratios.and', " and ") + second + ' \u00D7 ' + selectedFactor)
-            ),
-            h('p', { className: 'text-sm' },
+            ) : h('div', { role: 'status', className: 'rounded-lg p-3 text-sm font-semibold', style: { background: soft, color: warning, border: '1px solid ' + warning } }, t('stem.ratios.finish_valid_inputs', "Finish the highlighted inputs to update the ratio model.")),
+            ratioReady && h('p', { className: 'text-sm' },
               h('strong', null, t('stem.ratios.simplest_form', "Simplest form: ")), (first / divisor) + ':' + (second / divisor), t('stem.ratios.divide_both_quantities_by', ". Divide both quantities by "), divisor, '.'
             )
           ),
           h('div', { className: 'rounded-xl p-4 overflow-x-auto', style: cardStyle },
-            h('table', { className: 'w-full text-sm border-collapse' },
+            ratioReady ? h(React.Fragment, null,
+              h('table', { className: 'w-full text-sm border-collapse' },
               h('caption', { className: 'text-left font-bold mb-3' }, t('stem.ratios.equivalent_ratio_table_for', "Equivalent ratio table for ") + first + ':' + second),
               h('thead', null, h('tr', null,
                 h('th', { scope: 'col', className: 'p-2 text-left', style: { borderBottom: '2px solid ' + border } }, t('stem.ratios.scale_factor', "Scale factor")),
@@ -510,30 +650,38 @@
                   h('td', { className: 'p-2 text-right font-mono' }, second * factor)
                 );
               }))
-            ),
-            h('p', { className: 'text-xs mt-3', style: { color: muted } }, 'Equivalent ratios preserve the multiplicative relationship: both columns must use the same scale factor.')
+              ),
+              h('p', { className: 'text-xs mt-3', style: { color: muted } }, 'Equivalent ratios preserve the multiplicative relationship: both columns must use the same scale factor.')
+            ) : h('p', { role: 'status', className: 'p-4 text-center text-sm font-semibold', style: { color: warning } }, t('stem.ratios.ratio_table_waiting_for_valid_inputs', "The equivalent-ratio table is waiting for valid whole-number inputs."))
           )
         );
       }
 
       function renderNumberLine() {
-        var topUnit = clamp(finiteNumber(d.lineTopUnit, 2), 0.1, 1000);
-        var bottomUnit = clamp(finiteNumber(d.lineBottomUnit, 5), 0.1, 1000);
+        var lineFields = [
+          { key: 'lineTopUnit', options: { min: 0.1, max: MAX_NUMBER_LINE_UNIT } },
+          { key: 'lineBottomUnit', options: { min: 0.1, max: MAX_NUMBER_LINE_UNIT } },
+          { key: 'lineSteps', options: { min: 2, max: 8, integer: true } }
+        ];
+        var lineReady = numericFieldsReady(lineFields);
+        var topUnit = clamp(finiteNumber(d.lineTopUnit, 2), 0.1, MAX_NUMBER_LINE_UNIT);
+        var bottomUnit = clamp(finiteNumber(d.lineBottomUnit, 5), 0.1, MAX_NUMBER_LINE_UNIT);
         var steps = clamp(Math.round(finiteNumber(d.lineSteps, 5)), 2, 8);
         var ticks = [];
         for (var i = 0; i <= steps; i++) ticks.push(i);
         return h('div', { className: "grid lg:grid-cols-[250px_1fr] gap-4" },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('h3', { className: 'font-bold' }, t('stem.ratios.set_one_aligned_interval', "Set one aligned interval")),
-            numericField(t('stem.ratios.top_line_value_per_interval', "Top-line value per interval"), topUnit, 'lineTopUnit', { min: 0.1, step: 0.1 }),
-            numericField(t('stem.ratios.bottom_line_value_per_interval', "Bottom-line value per interval"), bottomUnit, 'lineBottomUnit', { min: 0.1, step: 0.1 }),
-            numericField(t('stem.ratios.number_of_intervals', "Number of intervals"), steps, 'lineSteps', { min: 2, max: 8 }),
+            numericField(t('stem.ratios.top_line_value_per_interval', "Top-line value per interval"), topUnit, 'lineTopUnit', { min: 0.1, max: MAX_NUMBER_LINE_UNIT, step: 0.1 }),
+            numericField(t('stem.ratios.bottom_line_value_per_interval', "Bottom-line value per interval"), bottomUnit, 'lineBottomUnit', { min: 0.1, max: MAX_NUMBER_LINE_UNIT, step: 0.1 }),
+            numericField(t('stem.ratios.number_of_intervals', "Number of intervals"), steps, 'lineSteps', { min: 2, max: 8, integer: true }),
             h('div', { className: 'rounded-lg p-3 text-sm', style: { background: soft, border: '1px solid ' + border } },
-              h('strong', null, t('stem.ratios.unit_relationship', "Unit relationship: ")), t('stem.ratios.n_1_top_unit_corresponds_to', "1 top unit corresponds to "), formatNumber(bottomUnit / topUnit), t('stem.ratios.bottom_units', " bottom units.")
-            )
+              lineReady ? h(React.Fragment, null, h('strong', null, t('stem.ratios.unit_relationship', "Unit relationship: ")), t('stem.ratios.n_1_top_unit_corresponds_to', "1 top unit corresponds to "), formatNumber(bottomUnit / topUnit), t('stem.ratios.bottom_units', " bottom units.")) : h('span', { role: 'status', style: { color: warning } }, t('stem.ratios.finish_valid_inputs', "Finish the highlighted inputs to update the ratio model."))
+            ),
+            h('p', { className: 'text-xs', role: 'note', style: { color: muted } }, t('stem.ratios.number_line_learning_range', "Interval values range from 0.1 to 1,000; use 2 to 8 whole-number intervals."))
           ),
           h('div', { className: 'rounded-xl p-3 sm:p-4', style: cardStyle },
-            h('svg', {
+            lineReady ? h(React.Fragment, null, h('svg', {
               viewBox: '0 0 500 190',
               className: 'w-full min-h-[190px]',
               role: 'img',
@@ -556,37 +704,53 @@
                 );
               })
             ),
-            h('p', { className: 'text-xs text-center', style: { color: muted } }, 'Each vertical guide connects values produced by the same scale factor.')
+            h('p', { className: 'text-xs text-center', style: { color: muted } }, 'Each vertical guide connects values produced by the same scale factor.')) : h('div', { role: 'status', className: 'min-h-[190px] flex items-center justify-center p-4 text-center text-sm font-semibold', style: { color: warning } }, t('stem.ratios.double_number_line_waiting', "The double number line is waiting for valid interval values."))
           )
         );
       }
 
       function renderUnitRates() {
+        var amountOptions = { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.1 };
+        var costOptions = { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.01 };
+        var optionAReady = numericFieldsReady([
+          { key: 'amountA', options: amountOptions },
+          { key: 'costA', options: costOptions }
+        ]);
+        var optionBReady = numericFieldsReady([
+          { key: 'amountB', options: amountOptions },
+          { key: 'costB', options: costOptions }
+        ]);
+        var comparisonReady = optionAReady && optionBReady;
         var amountA = clamp(finiteNumber(d.amountA, 12), 0, MAX_UNIT_RATE_VALUE);
         var costA = clamp(finiteNumber(d.costA, 3.6), 0, MAX_UNIT_RATE_VALUE);
         var amountB = clamp(finiteNumber(d.amountB, 20), 0, MAX_UNIT_RATE_VALUE);
         var costB = clamp(finiteNumber(d.costB, 5.4), 0, MAX_UNIT_RATE_VALUE);
-        var computedRateA = amountA > 0 ? costA / amountA : null;
-        var computedRateB = amountB > 0 ? costB / amountB : null;
-        var rateA = computedRateA !== null && isFinite(computedRateA) ? computedRateA : null;
-        var rateB = computedRateB !== null && isFinite(computedRateB) ? computedRateB : null;
+        var computedRateA = optionAReady && amountA > 0 ? costA / amountA : null;
+        var computedRateB = optionBReady && amountB > 0 ? costB / amountB : null;
+        var rateA = computedRateA !== null && unitRateIsRepresentable({ x: amountA, y: costA }, computedRateA) ? computedRateA : null;
+        var rateB = computedRateB !== null && unitRateIsRepresentable({ x: amountB, y: costB }, computedRateB) ? computedRateB : null;
+        var rateEvidence = rateA !== null && rateB !== null
+          ? formatUnitRateEvidence([{ x: amountA, y: costA }, { x: amountB, y: costB }])
+          : { displays: [formatUnitRate(rateA), formatUnitRate(rateB)] };
         var comparison = t('stem.ratios.enter_an_amount_greater_than_zero_for_', "Enter an amount greater than zero for both options.");
-        if (rateA !== null && rateB !== null) {
-          comparison = nearlyEqual(rateA, rateB) ? t('stem.ratios.both_options_have_the_same_cost_per_un', "Both options have the same cost per unit.") : (rateA < rateB ? t('stem.ratios.option_a_has_the_lower_cost_per_unit', "Option A has the lower cost per unit.") : t('stem.ratios.option_b_has_the_lower_cost_per_unit', "Option B has the lower cost per unit."));
+        if (!comparisonReady) {
+          comparison = t('stem.ratios.finish_valid_inputs_before_comparing', "Finish the highlighted inputs before comparing the options.");
+        } else if (rateA !== null && rateB !== null) {
+          comparison = pairsShareUnitRate({ x: amountA, y: costA }, { x: amountB, y: costB }) ? t('stem.ratios.both_options_have_the_same_cost_per_un', "Both options have the same cost per unit.") : (rateA < rateB ? t('stem.ratios.option_a_has_the_lower_cost_per_unit', "Option A has the lower cost per unit.") : t('stem.ratios.option_b_has_the_lower_cost_per_unit', "Option B has the lower cost per unit."));
         } else if (amountA > 0 && amountB > 0) {
           comparison = t('stem.ratios.adjust_the_values_so_both_unit_rates_s', "Adjust the values so both unit rates stay within the learning-model range.");
         }
 
-        function optionCard(name, amount, cost, amountKey, costKey, rate) {
+        function optionCard(name, amount, cost, amountKey, costKey, ready, rate, rateDisplay) {
           return h('fieldset', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
             h('legend', { className: 'px-2 font-bold' }, name),
             h('div', { className: 'grid grid-cols-2 gap-3' },
-              numericField(name + t('stem.ratios.quantity', " quantity"), amount, amountKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.1 }),
-              numericField(name + t('stem.ratios.cost_in_dollars', " cost in dollars"), cost, costKey, { min: 0, max: MAX_UNIT_RATE_VALUE, step: 0.01 })
+              numericField(name + t('stem.ratios.quantity', " quantity"), amount, amountKey, amountOptions),
+              numericField(name + t('stem.ratios.cost_in_dollars', " cost in dollars"), cost, costKey, costOptions)
             ),
             h('div', { className: 'rounded-lg p-3 text-center', style: { background: soft, border: '1px solid ' + border } },
               h('div', { className: 'text-xs', style: { color: muted } }, t('stem.ratios.cost_for_1_unit', "Cost for 1 unit")),
-              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, rate === null ? (amount > 0 ? t('stem.ratios.rate_outside_model_range', "Rate outside model range") : t('stem.ratios.needs_a_quantity', "Needs a quantity")) : '$' + formatNumber(rate)),
+              h('div', { className: 'text-2xl font-black', style: { color: rate === null ? warning : accent } }, !ready ? t('stem.ratios.finish_the_inputs', "Finish the inputs") : (rate === null ? (amount > 0 ? t('stem.ratios.rate_outside_model_range', "Rate outside model range") : t('stem.ratios.needs_a_quantity', "Needs a quantity")) : '$' + rateDisplay)),
               rate !== null && h('div', { className: 'text-xs', style: { color: muted } }, '$' + formatNumber(cost) + ' \u00F7 ' + formatNumber(amount))
             )
           );
@@ -594,8 +758,8 @@
 
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'grid md:grid-cols-2 gap-4' },
-            optionCard(t('stem.ratios.option_a', "Option A"), amountA, costA, 'amountA', 'costA', rateA),
-            optionCard(t('stem.ratios.option_b', "Option B"), amountB, costB, 'amountB', 'costB', rateB)
+            optionCard(t('stem.ratios.option_a', "Option A"), amountA, costA, 'amountA', 'costA', optionAReady, rateA, rateEvidence.displays[0]),
+            optionCard(t('stem.ratios.option_b', "Option B"), amountB, costB, 'amountB', 'costB', optionBReady, rateB, rateEvidence.displays[1])
           ),
           h('div', { className: 'rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-2', role: 'status', 'aria-live': 'polite', style: { background: soft, border: '1px solid ' + border } },
             h('span', { className: 'text-xl', 'aria-hidden': 'true' }, '\u2696\uFE0F'),
@@ -609,6 +773,14 @@
 
       function renderPercent() {
         var kind = ['findPart', 'findPercent', 'findWhole'].indexOf(d.percentKind) >= 0 ? d.percentKind : 'findPart';
+        var wholeOptions = { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 };
+        var percentOptions = { min: 0, max: MAX_PERCENT, step: 0.1 };
+        var partOptions = { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 };
+        var percentFields = [];
+        if (kind !== 'findWhole') percentFields.push({ key: 'percentWhole', options: wholeOptions });
+        if (kind !== 'findPercent') percentFields.push({ key: 'percentValue', options: percentOptions });
+        if (kind !== 'findPart') percentFields.push({ key: 'percentPart', options: partOptions });
+        var percentReady = numericFieldsReady(percentFields);
         var percent = clamp(finiteNumber(d.percentValue, 25), 0, MAX_PERCENT);
         var whole = clamp(finiteNumber(d.percentWhole, 80), 0, MAX_PERCENT_QUANTITY);
         var part = clamp(finiteNumber(d.percentPart, 20), 0, MAX_PERCENT_QUANTITY);
@@ -617,30 +789,32 @@
         var resultLabel;
         var resultIssue = '';
         if (kind === 'findPercent') {
-          result = whole > 0 ? part / whole * 100 : null;
+          result = percentReady && whole > 0 ? part / whole * 100 : null;
           formula = t('stem.ratios.part_whole_100', "part ÷ whole × 100");
           resultLabel = t('stem.ratios.percent', "Percent");
         } else if (kind === 'findWhole') {
-          result = percent > 0 ? part / (percent / 100) : null;
+          result = percentReady && percent > 0 ? part / (percent / 100) : null;
           formula = t('stem.ratios.part_percent_100', "part ÷ (percent ÷ 100)");
           resultLabel = t('stem.ratios.whole', "Whole");
         } else {
-          result = whole * (percent / 100);
+          result = percentReady ? whole * (percent / 100) : null;
           formula = t('stem.ratios.whole_percent_100', "whole × (percent ÷ 100)");
           resultLabel = t('stem.ratios.part', "Part");
         }
         var resultLimit = kind === 'findPercent' ? MAX_PERCENT : MAX_PERCENT_QUANTITY;
-        if (result != null && (!isFinite(result) || result > resultLimit)) {
+        if (!percentReady) {
+          resultIssue = t('stem.ratios.finish_valid_inputs', "Finish the highlighted inputs to update the ratio model.");
+        } else if (result != null && (!isFinite(result) || result > resultLimit)) {
           result = null;
           resultIssue = kind === 'findPercent'
             ? t('stem.ratios.this_example_is_above_the_1000_learnin', "This example is above the 1000% learning-model limit. Adjust the part or whole.")
             : t('stem.ratios.this_result_is_above_the_1_000_000_qua', "This result is above the 1,000,000 quantity limit. Adjust the example values.");
         }
         var tapePercent = kind === 'findPercent' ? (result == null ? 0 : result) : percent;
-        var tapeModel = percentTapeModel(tapePercent, 6);
-        var tapeSummary = resultIssue || (result == null
+        var tapeModel = percentReady ? percentTapeModel(tapePercent, 6) : null;
+        var tapeSummary = !percentReady ? resultIssue : (resultIssue || (result == null
           ? (kind === 'findPercent' ? t('stem.ratios.the_percent_is_not_defined_when_the_wh', "The percent is not defined when the whole is zero. Enter a positive whole to build the tape.") : t('stem.ratios.the_whole_is_not_defined_when_the_perc', "The whole is not defined when the percent is zero. Enter a positive percent to build the tape."))
-          : percentTapeSummary(tapeModel));
+          : percentTapeSummary(tapeModel)));
 
         function renderPercentTape(tape, tapeIndex) {
           var wholeNumber = tape.complete ? tapeIndex + 1 : tapeModel.wholeCount + 1;
@@ -707,25 +881,25 @@
                 h('option', { value: 'findWhole' }, t('stem.ratios.find_the_whole', "Find the whole"))
               )
             ),
-            kind !== 'findWhole' && numericField(t('stem.ratios.whole', "Whole"), whole, 'percentWhole', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
-            kind !== 'findPercent' && numericField(t('stem.ratios.percent', "Percent"), percent, 'percentValue', { min: 0, max: MAX_PERCENT, step: 0.1 }),
-            kind !== 'findPart' && numericField(t('stem.ratios.part', "Part"), part, 'percentPart', { min: 0, max: MAX_PERCENT_QUANTITY, step: 0.1 }),
+            kind !== 'findWhole' && numericField(t('stem.ratios.whole', "Whole"), whole, 'percentWhole', wholeOptions),
+            kind !== 'findPercent' && numericField(t('stem.ratios.percent', "Percent"), percent, 'percentValue', percentOptions),
+            kind !== 'findPart' && numericField(t('stem.ratios.part', "Part"), part, 'percentPart', partOptions),
             h('p', { className: 'text-xs', style: { color: muted }, role: 'note' }, t('stem.ratios.learning_model_range_0_to_1000_quantit', "Learning-model range: 0% to 1000%; quantities up to 1,000,000."))
           ),
           h('div', { className: 'rounded-xl p-4 space-y-4', style: cardStyle },
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3' },
               h('div', null,
                 h('div', { className: 'text-xs', style: { color: muted } }, resultLabel),
-                h('div', { className: 'text-3xl font-black', style: { color: result == null ? warning : accent } }, result == null ? t('stem.ratios.not_defined', "Not defined") : formatNumber(result) + (kind === 'findPercent' ? '%' : ''))
+                h('div', { className: 'text-3xl font-black', style: { color: result == null ? warning : accent } }, !percentReady ? t('stem.ratios.finish_the_inputs', "Finish the inputs") : (result == null ? t('stem.ratios.not_defined', "Not defined") : formatNumber(result) + (kind === 'findPercent' ? '%' : '')))
               ),
               h('code', { className: 'rounded-lg px-3 py-2 text-xs', style: { background: soft, border: '1px solid ' + border } }, formula)
             ),
-            h('div', { className: 'space-y-3', 'data-percent-tape-total': formatNumber(tapeModel.percent), 'data-percent-tape-count': tapeModel.totalTapeCount },
+            percentReady ? h('div', { className: 'space-y-3', 'data-percent-tape-total': formatNumber(tapeModel.percent), 'data-percent-tape-count': tapeModel.totalTapeCount },
               h('p', { id: 'ratio-percent-tape-summary', className: 'text-sm font-semibold', style: { color: text } }, tapeSummary),
               h('p', { id: 'ratio-percent-tape-key', className: 'text-xs', style: { color: muted } }, t('stem.ratios.each_outlined_section_is_exactly_10_of', "Each outlined section is exactly 10% of one whole. A partially filled section shows the exact fraction of that 10% section.")),
               h('div', { className: 'space-y-3', 'aria-describedby': 'ratio-percent-tape-summary ratio-percent-tape-key' }, tapeModel.tapes.map(renderPercentTape)),
               tapeModel.hiddenWholeCount > 0 && h('p', { className: 'text-xs font-semibold', style: { color: muted }, role: 'note' }, t('stem.ratios.showing', "Showing ") + (tapeModel.tapes.length - (tapeModel.remainderPercent > 0 ? 1 : 0)) + t('stem.ratios.complete_whole_tapes', " complete whole tapes; ") + tapeModel.hiddenWholeCount + t('stem.ratios.additional_complete', " additional complete ") + (tapeModel.hiddenWholeCount === 1 ? t('stem.ratios.whole_is', "whole is") : t('stem.ratios.wholes_are', "wholes are")) + t('stem.ratios.summarized_above', " summarized above."))
-            )
+            ) : h('div', { role: 'status', className: 'rounded-lg p-4 text-center text-sm font-semibold', style: { background: soft, color: warning, border: '1px solid ' + warning } }, tapeSummary)
           )
         );
       }
@@ -737,9 +911,19 @@
         var pairs = pairInput.pairs;
         var analysis = analyzeProportionalPairs(pairInput);
         var rates = analysis.rates;
+        var analysisErrors = analysis.errors;
+        var nonzeroPairs = pairs.filter(function(pair) { return pair.x !== 0; });
+        var rateEvidence = formatUnitRateEvidence(nonzeroPairs);
+        var rateDisplayIndex = 0;
+        var pairRateDisplays = pairs.map(function(pair) {
+          if (pair.x === 0) return pair.y === 0 ? 'origin' : 'undefined';
+          var display = rateEvidence.displays[rateDisplayIndex];
+          rateDisplayIndex += 1;
+          return display;
+        });
         var proportional = analysis.proportional;
         var validForDecision = analysis.valid;
-        var graphPairs = pairInput.complete ? pairs.slice().sort(function(a, b) { return a.x - b.x; }) : [];
+        var graphPairs = analysis.complete ? pairs.slice().sort(function(a, b) { return a.x - b.x; }) : [];
         var maxX = positiveAxisMaximum(graphPairs.map(function(pair) { return pair.x; }));
         var maxY = positiveAxisMaximum(graphPairs.map(function(pair) { return pair.y; }));
         function scaleX(value) { return 42 + (value / maxX) * 290; }
@@ -747,7 +931,7 @@
         var xTicks = [0, maxX / 2, maxX];
         var yTicks = [0, maxY / 2, maxY];
         var includesOrigin = graphPairs.some(function(pair) { return pair.x === 0 && pair.y === 0; });
-        var verdict = pairInput.errors.length ? pairInput.errors[0] : !validForDecision ? t('stem.ratios.enter_at_least_two_valid_coordinate_pa', "Enter at least two valid coordinate pairs, including one with a nonzero x-value.") : (proportional ? t('stem.ratios.proportional_the_unit_rate_is_constant', "Proportional: the unit rate is constant.") : t('stem.ratios.not_proportional_the_evidence_does_not', "Not proportional: the evidence does not show one constant unit rate through the origin."));
+        var verdict = analysisErrors.length ? analysisErrors[0] : !validForDecision ? t('stem.ratios.enter_at_least_two_valid_coordinate_pa', "Enter at least two valid coordinate pairs, including one with a nonzero x-value.") : (proportional ? t('stem.ratios.proportional_the_unit_rate_is_constant', "Proportional: the unit rate is constant.") : t('stem.ratios.not_proportional_the_evidence_does_not', "Not proportional: the evidence does not show one constant unit rate through the origin."));
 
         function setExample(isProportional) {
           update(isProportional ? { propX: '0, 1, 2, 4', propY: '0, 3, 6, 12' } : { propX: '0, 1, 2, 4', propY: '0, 3, 7, 12' });
@@ -774,9 +958,9 @@
               )
             ),
             h('p', { className: 'text-xs mt-2', style: { color: muted } }, t('stem.ratios.use_the_same_number_of_x_and_y_values_', "Use the same number of x- and y-values. This first-quadrant graph requires a nonnegative number in every row.")),
-            pairInput.errors.length > 0 && h('div', { role: 'alert', className: 'mt-3 rounded-lg p-3 text-xs font-semibold', style: { background: soft, color: warning, border: '1px solid ' + warning } },
+            analysisErrors.length > 0 && h('div', { role: 'alert', className: 'mt-3 rounded-lg p-3 text-xs font-semibold', style: { background: soft, color: warning, border: '1px solid ' + warning } },
               h('p', { className: 'font-bold' }, t('stem.ratios.fix_the_coordinate_list_before_making_', "Fix the coordinate list before making a proportionality decision:")),
-              h('ul', { className: 'mt-1 list-disc pl-5 space-y-1' }, pairInput.errors.map(function(error, index) { return h('li', { key: index }, error); }))
+              h('ul', { className: 'mt-1 list-disc pl-5 space-y-1' }, analysisErrors.map(function(error, index) { return h('li', { key: index }, error); }))
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -790,9 +974,9 @@
                 )),
                 h('tbody', null, pairs.length ? pairs.map(function(pair, index) {
                   return h('tr', { key: index },
-                    h('td', { className: 'p-2 font-mono' }, formatNumber(pair.x)),
-                    h('td', { className: 'p-2 font-mono' }, formatNumber(pair.y)),
-                    h('td', { className: 'p-2 font-mono' }, pair.x === 0 ? (pair.y === 0 ? 'origin' : 'undefined') : formatNumber(pair.y / pair.x))
+                    h('td', { className: 'p-2 font-mono' }, formatSignificantNumber(pair.x, 6)),
+                    h('td', { className: 'p-2 font-mono' }, formatSignificantNumber(pair.y, 6)),
+                    h('td', { className: 'p-2 font-mono' }, pairRateDisplays[index])
                   );
                 }) : h('tr', null, h('td', { colSpan: 3, className: 'p-4 text-center', style: { color: muted } }, t('stem.ratios.no_valid_paired_rows_yet', "No valid paired rows yet."))))
               )
@@ -804,13 +988,13 @@
                 xTicks.map(function(value, index) {
                   return h('g', { key: 'x-tick-' + index },
                     h('line', { x1: scaleX(value), y1: 40, x2: scaleX(value), y2: 185, stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
-                    h('text', { x: scaleX(value), y: 201, textAnchor: 'middle', style: { fill: muted, fontSize: '9px' } }, formatNumber(value))
+                    h('text', { x: scaleX(value), y: 201, textAnchor: 'middle', style: { fill: muted, fontSize: '9px' } }, formatSignificantNumber(value, 6))
                   );
                 }),
                 yTicks.map(function(value, index) {
                   return h('g', { key: 'y-tick-' + index },
                     h('line', { x1: 42, y1: scaleY(value), x2: 332, y2: scaleY(value), stroke: border, strokeWidth: 1, strokeDasharray: '3 4' }),
-                    h('text', { x: 36, y: scaleY(value) + 3, textAnchor: 'end', style: { fill: muted, fontSize: '9px' } }, formatNumber(value))
+                    h('text', { x: 36, y: scaleY(value) + 3, textAnchor: 'end', style: { fill: muted, fontSize: '9px' } }, formatSignificantNumber(value, 6))
                   );
                 }),
                 h('line', { x1: 42, y1: 185, x2: 340, y2: 185, stroke: text, strokeWidth: 2 }),
@@ -821,7 +1005,7 @@
                 graphPairs.map(function(pair, index) {
                   return h('g', { key: index },
                     h('circle', { cx: scaleX(pair.x), cy: scaleY(pair.y), r: 5, fill: accentStrong, stroke: panel, strokeWidth: 2 }, h('title', null, '(' + pair.x + ', ' + pair.y + ')')),
-                    h('text', { x: scaleX(pair.x) + 6, y: scaleY(pair.y) - 7, style: { fill: text, fontSize: '9px' } }, '(' + formatNumber(pair.x) + ',' + formatNumber(pair.y) + ')')
+                    h('text', { x: scaleX(pair.x) + 6, y: scaleY(pair.y) - 7, style: { fill: text, fontSize: '9px' } }, '(' + formatSignificantNumber(pair.x, 6) + ',' + formatSignificantNumber(pair.y, 6) + ')')
                   );
                 })
               )
@@ -829,7 +1013,7 @@
           ),
           h('div', { className: 'rounded-xl p-4', role: 'status', 'aria-live': 'polite', style: { background: soft, border: '1px solid ' + border } },
             h('div', { className: 'font-bold', style: { color: validForDecision ? (proportional ? success : warning) : muted } }, verdict),
-            validForDecision && h('p', { className: 'text-xs mt-1', style: { color: muted } }, proportional ? t('stem.ratios.table_evidence_all_defined_y_x_values_', "Table evidence: all defined y ÷ x values equal ") + formatNumber(rates[0]) + t('stem.ratios.graph_evidence', ". Graph evidence: ") + (includesOrigin ? t('stem.ratios.the_entered_points_include_0_0_and_fol', "the entered points include (0,0) and follow the model ray.") : t('stem.ratios.the_model_ray_extends_the_constant_rel', "the model ray extends the constant relationship through (0,0), even though the origin was not entered.")) : t('stem.ratios.check_for_changing_y_x_values_a_nonzer', "Check for changing y ÷ x values, a nonzero y-value when x = 0, or points that do not lie on one straight line through the origin."))
+            validForDecision && h('p', { className: 'text-xs mt-1', style: { color: muted } }, proportional ? t('stem.ratios.table_evidence_all_defined_y_x_values_', "Table evidence: all defined y ÷ x values equal ") + rateEvidence.displays[0] + t('stem.ratios.graph_evidence', ". Graph evidence: ") + (includesOrigin ? t('stem.ratios.the_entered_points_include_0_0_and_fol', "the entered points include (0,0) and follow the model ray.") : t('stem.ratios.the_model_ray_extends_the_constant_rel', "the model ray extends the constant relationship through (0,0), even though the origin was not entered.")) : t('stem.ratios.check_for_changing_y_x_values_a_nonzer', "Check for changing y ÷ x values, a nonzero y-value when x = 0, or points that do not lie on one straight line through the origin."))
           )
         );
       }

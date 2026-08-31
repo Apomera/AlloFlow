@@ -2407,6 +2407,9 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
           warnLog("formatInlineText received non-string:", text);
           return String(text);
       }
+      text = text
+          .replace(/&lt;br\s*\/?&gt;/gi, '\n')
+          .replace(/<br\s*\/?>/gi, '\n');
       const parts = text.split(/(\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)|\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\[.*?\]\(resource:.*?\)|\[.*?\]\(.*?\)|https?:\/\/[^\s"']+(?<![.,;)])|`[^`]*`|\*\*.*?\*\*|\*.*?\*|==.*?==)/g);
       return parts.map((part, pIdx) => {
           if ((part.startsWith('$') && part.endsWith('$')) || (part.startsWith('\\(') && part.endsWith('\\)')) || (part.startsWith('\\[') && part.endsWith('\\]'))) {
@@ -2552,7 +2555,7 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
           if (isCode) {
               return <code key={pIdx} className="bg-slate-100 text-pink-600 px-1 rounded font-mono text-xs border border-slate-400">{renderedSubParts}</code>;
           }
-          return <span key={pIdx}>{renderedSubParts}</span>;
+          return <span key={pIdx} className="whitespace-pre-line">{renderedSubParts}</span>;
       });
 };
 

@@ -1,6 +1,6 @@
 # STEM Visual QA Audit
 
-Generated: 2026-08-28T14:24:24.398Z
+Generated: 2026-08-29T14:23:53.475Z
 
 ## Scope
 
@@ -17,9 +17,9 @@ Generated: 2026-08-28T14:24:24.398Z
 | Marker failures | 0 |
 | Monitored first-screen findings | 1 |
 | High-confidence monitored errors | 0 |
-| Source/public drift | 6 |
-| Any source/public/build drift | 7 |
-| Monitored file drift | 1 |
+| Source/public drift | 0 |
+| Any source/public/build drift | 11 |
+| Monitored file drift | 2 |
 
 ## Visual Marker Coverage
 
@@ -111,13 +111,17 @@ Generated: 2026-08-28T14:24:24.398Z
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| source-public-drift | `stem_tool_archstudio.js` | no | source `30BF5DF19EA7`, public `C18FC0CD2112`, build `C18FC0CD2112` |
-| source-public-drift | `stem_tool_artstudio.js` | no | source `83F3A497CD9C`, public `7DC02663FA94`, build `7DC02663FA94` |
-| build-drift | `stem_tool_dissection.js` | no | source `587F7186BFA8`, public `587F7186BFA8`, build `EF4588009EAD` |
-| source-public-drift | `stem_tool_optics.js` | yes | source `34227263D7DC`, public `1CF57990A4B4`, build `1CF57990A4B4` |
-| source-public-drift | `stem_tool_printlab.js` | no | source `B65B91D9740B`, public `EA6ED6DCFBCB`, build `EA6ED6DCFBCB` |
-| source-public-drift | `stem_tool_spaceexplorer.js` | no | source `015AF6D8F323`, public `63B1BE59ECAD`, build `63B1BE59ECAD` |
-| source-public-drift | `stem_tool_treelab.js` | no | source `4265247EDA5F`, public `538596D2939A`, build `538596D2939A` |
+| build-drift | `stem_tool_allobotsage.js` | no | source `E4D479651E37`, public `E4D479651E37`, build `BF3D0C5E5742` |
+| build-drift | `stem_tool_artstudio.js` | no | source `B55447FEA8F2`, public `B55447FEA8F2`, build `0A2C98461328` |
+| build-drift | `stem_tool_autorepair.js` | no | source `15A2C5B741BB`, public `15A2C5B741BB`, build `177C5C5651F5` |
+| build-drift | `stem_tool_dissection.js` | no | source `5C3E4AFDBA74`, public `5C3E4AFDBA74`, build `6B35B37504ED` |
+| build-drift | `stem_tool_geometryworld.js` | no | source `BAE9DD303E78`, public `BAE9DD303E78`, build `8CE372630750` |
+| build-drift | `stem_tool_geometryworld_builder.js` | no | source `9661DEBC0DBC`, public `9661DEBC0DBC`, build `DCC01C16ECAA` |
+| build-drift | `stem_tool_magnetism.js` | no | source `167488A7A2D6`, public `167488A7A2D6`, build `821D650D7C7F` |
+| build-drift | `stem_tool_molecule.js` | yes | source `A7944BB6904B`, public `A7944BB6904B`, build `AD6BE5C91DB1` |
+| build-drift | `stem_tool_optics.js` | yes | source `480A5BB2B457`, public `480A5BB2B457`, build `CA91206EED1F` |
+| build-drift | `stem_tool_printlab.js` | no | source `16106717AAFB`, public `16106717AAFB`, build `07561C637034` |
+| build-drift | `stem_tool_wheelandfire.js` | no | source `C9F6CDDA8794`, public `C9F6CDDA8794`, build `28E5056CB4A7` |
 
 ## Gate Policy
 

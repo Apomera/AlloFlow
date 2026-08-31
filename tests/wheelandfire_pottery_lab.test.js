@@ -417,6 +417,103 @@ describe('Wheel & Fire pottery lab', () => {
     expect(supportedAtAnotherRing.heightCm).toBe(supported.heightCm);
   });
 
+  it('tracks, remaps, previews, and dries individual coil joints locally', () => {
+    const pure = window.__alloPotteryPure;
+    const vessel = pure.makeVessel('stoneware', 'cylinder');
+    const placement = { pressure: 80, rpm: 0, method: 'coil', handSupport: 0, lubrication: 30, contactSpan: 3 };
+    const added = pure.applyTool(vessel, 'add-coil', 4, placement);
+    const joints = pure.summarizeCoilJoints(added);
+    const near = pure.applyTool(added, 'paddle', 31, { pressure: 70, rpm: 0, method: 'coil', handSupport: 70, lubrication: 30, contactSpan: 3 });
+    const far = pure.applyTool(added, 'paddle', 10, { pressure: 70, rpm: 0, method: 'coil', handSupport: 70, lubrication: 30, contactSpan: 3 });
+    const stacked = pure.applyTool(added, 'add-coil', 2, placement);
+    const stackedJoints = pure.summarizeCoilJoints(stacked);
+    const risks = pure.analyzeRingRisks(added, placement);
+    const stats = pure.analyzeVessel(added, placement);
+    const dried = pure.dryVessel(added, { humidity: 10, dryingRate: 100, method: 'coil' });
+    const html = renderTool('wheelAndFire', { wheelAndFire: { view: 'shape', vessel: added, method: 'coil', activeTool: 'paddle', workRing: 31, pressure: 70, handSupport: 70, contactSpan: 3, showCrossSection: true } });
+    const driedHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'shape', vessel: dried, method: 'coil', activeTool: 'paddle', workRing: 31 } });
+    const scienceHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'science', vessel: added, method: 'coil' } });
+
+    expect(vessel.coilJoints).toHaveLength(pure.RING_COUNT);
+    expect(vessel.coilJoints.every((joint) => joint === null)).toBe(true);
+    expect(joints.jointCount).toBe(1);
+    expect(joints.weakestRing).toBe(31);
+    expect(joints.overallStatus).toBe('weak');
+    expect(added.coilJoints[31]).toBeCloseTo(joints.weakestStrength, 8);
+    expect(near.coilJoints[31]).toBeGreaterThan(added.coilJoints[31]);
+    expect(far.coilJoints[31]).toBe(added.coilJoints[31]);
+    expect(near.coilBond).toBeGreaterThan(far.coilBond);
+    expect(stackedJoints.jointCount).toBe(2);
+    expect(stackedJoints.joints.map((joint) => joint.ring)).toEqual([27, 31]);
+    expect(risks[31].coilJointStrength).toBeCloseTo(added.coilJoints[31], 8);
+    expect(risks[30].coilJointStrength).toBeNull();
+    expect(risks[31].risk).toBeGreaterThan(risks[30].risk);
+    expect(stats.trackedCoilJointCount).toBe(1);
+    expect(stats.weakestCoilJointRing).toBe(31);
+    expect(stats.weakestCoilJoint).toBeCloseTo(added.coilJoints[31] * 100, 8);
+    expect(dried.defects).toContain('coil separation');
+    expect(dried.coilSeparationRing).toBe(31);
+    expect(dried.lastOutcome).toContain('ring 32');
+
+    expect(html).toContain('data-wheel-fire-coil-joint-map-visible="true"');
+    expect(html).toContain('data-wheel-fire-coil-joint-map="true"');
+    expect(html).toContain('data-wheel-fire-coil-joint="32"');
+    expect(html).toContain('data-wheel-fire-coil-joint-state="weak"');
+    expect(html).toContain('data-wheel-fire-coil-joint-preview="32"');
+    expect(html).toContain('data-wheel-fire-coil-joint-controls="true"');
+    expect(html).toContain('data-wheel-fire-coil-joint-forecast="true"');
+    expect(html).toContain('data-wheel-fire-coil-joint-legend="true"');
+    expect(html).toContain('data-wheel-fire-coil-joint-focus="true"');
+    expect(html).toContain('data-wheel-fire-coil-joint-help="true"');
+    expect(html).toContain('Set Paddle at weakest joint · ring 32');
+    expect(driedHtml).toContain('data-wheel-fire-coil-separation-ring="32"');
+    expect(driedHtml).toContain('data-wheel-fire-coil-separation="32"');
+    expect(driedHtml).toContain('coil separation · ring 32');
+    expect(driedHtml).not.toContain('data-wheel-fire-coil-joint-focus="true"');
+    expect(scienceHtml).toContain('Coil continuity');
+    expect(scienceHtml).toContain('Weakest ring 32');
+    expect(html).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('loads only contacted coil seams during reshaping and previews the load direction', () => {
+    const pure = window.__alloPotteryPure;
+    const vessel = pure.makeVessel('stoneware', 'cylinder');
+    const joined = pure.applyTool(vessel, 'add-coil', 31, { pressure: 55, rpm: 0, method: 'coil', handSupport: 100, lubrication: 30, contactSpan: 3 });
+    const loadSettings = { pressure: 85, rpm: 0, method: 'coil', handSupport: 0, lubrication: 30, contactSpan: 3 };
+    const loaded = pure.applyTool(joined, 'belly', 31, loadSettings);
+    const supported = pure.applyTool(joined, 'belly', 31, { ...loadSettings, handSupport: 100 });
+    const elsewhere = pure.applyTool(joined, 'belly', 10, loadSettings);
+    const collared = pure.applyTool(joined, 'collar', 31, loadSettings);
+    const tensionResponse = pure.estimateCoilJointResponse(0.8, 'belly', { force: 0.8, handSupport: 0, moisture: 0.78, plasticity: 0.75 });
+    const supportedResponse = pure.estimateCoilJointResponse(0.8, 'belly', { force: 0.8, handSupport: 100, moisture: 0.78, plasticity: 0.75 });
+    const paddleResponse = pure.estimateCoilJointResponse(0.8, 'paddle', { force: 0.8, handSupport: 70, moisture: 0.78, plasticity: 0.75 });
+    const html = renderTool('wheelAndFire', { wheelAndFire: { view: 'shape', vessel: joined, method: 'coil', activeTool: 'belly', workRing: 31, ...loadSettings } });
+
+    expect(tensionResponse.loadId).toBe('outward-tension');
+    expect(tensionResponse.state).toBe('loaded');
+    expect(tensionResponse.delta).toBeLessThan(0);
+    expect(supportedResponse.nextStrength).toBeGreaterThan(tensionResponse.nextStrength);
+    expect(paddleResponse.state).toBe('strengthened');
+    expect(paddleResponse.delta).toBeGreaterThan(0);
+    expect(loaded.coilJoints[31]).toBeLessThan(joined.coilJoints[31]);
+    expect(supported.coilJoints[31]).toBeGreaterThan(loaded.coilJoints[31]);
+    expect(elsewhere.coilJoints[31]).toBe(joined.coilJoints[31]);
+    expect(collared.coilJoints[31]).toBeGreaterThan(loaded.coilJoints[31]);
+    expect(loaded.coilBond).toBeLessThan(joined.coilBond);
+    expect(loaded.lastOutcome).toContain('Outward tension loaded the tracked joint at ring 32');
+    expect(loaded.lastOutcome).toContain('More inside support or a gentler pass');
+
+    expect(html).toContain('data-wheel-fire-coil-joint-load-state="loaded"');
+    expect(html).toContain('data-wheel-fire-coil-joint-load-ring="32"');
+    expect(html).toContain('data-wheel-fire-coil-joint-preview-state="loaded"');
+    expect(html).toContain('data-wheel-fire-coil-joint-preview-load="outward-tension"');
+    expect(html).toContain('data-wheel-fire-coil-joint-load-cue="loaded"');
+    expect(html).toContain('data-wheel-fire-coil-joint-load-kind="outward-tension"');
+    expect(html).toContain('data-wheel-fire-coil-joint-response="loaded"');
+    expect(html).toContain('under outward tension');
+    expect(html).not.toMatch(/NaN|Infinity/);
+  });
+
   it('constrains Trim and Scrape to a visible lower-exterior target zone', () => {
     const pure = window.__alloPotteryPure;
     const vessel = pure.makeVessel('stoneware', 'cylinder');

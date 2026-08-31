@@ -199,10 +199,18 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.day).toBe(0);
     expect(latest.beehive.experimentRunSerial).toBe(2);
     expect(latest.beehive.experimentBaseline).toMatchObject({ capturedDay: 8, runSerial: 1 });
+    expect(latest.beehive.notebook.experiment).toMatchObject({
+      schemaVersion: 4,
+      registeredPlan: { schemaVersion: 1, runSerial: 2, baselineRunSerial: 1, complete: false },
+    });
     workspace = host.querySelector('[data-beehive-experiment-compare="true"]');
     expect(workspace.getAttribute('data-experiment-compare-state')).toBe('checkpoint');
     expect(workspace.querySelector('[data-experiment-protocol-step="repeat"]').getAttribute('data-protocol-step-state')).toBe('complete');
+    expect(workspace.querySelector('[data-experiment-protocol-step="registration"]').getAttribute('data-protocol-step-state')).toBe('upcoming');
     expect(workspace.querySelector('[data-experiment-protocol-step="checkpoint"]').getAttribute('data-protocol-step-state')).toBe('upcoming');
+    expect(workspace.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('incomplete');
+    expect(workspace.querySelector('[data-experiment-plan-registration="true"]').textContent).toContain('Incomplete when Run B began');
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('The plan was incomplete when Run B began');
     expect(workspace.querySelector('[data-experiment-management-audit="true"]').getAttribute('data-management-audit-final')).toBe('false');
     expect(workspace.querySelector('[data-experiment-management-audit="true"]').textContent).toContain('Provisional through Day 0');
 
@@ -299,7 +307,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     notebook = host.querySelector('[data-beehive-experiment-notebook="true"]');
     expect(latest.beehive.notebook.experiment.plannedActionId).toBe('plant_wildflowers');
     expect(host.querySelector('[data-experiment-plan-alignment="matched"]')).toBeTruthy();
-    expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Planned comparison ready');
+    expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Plan timing not recorded');
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('unregistered');
     expect(host.querySelector('[data-experiment-protocol-step="choice"]').getAttribute('data-protocol-step-state')).toBe('complete');
 
     expect(host.querySelector('[data-experiment-prediction-audit="true"]').getAttribute('data-prediction-audit-status')).toBe('unplanned');
@@ -341,7 +350,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
       await act(async () => { setter.call(area, value); area.dispatchEvent(new Event('input', { bubbles: true })); await Promise.resolve(); });
     }
     expect(latest.beehive.notebook.experiment).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       plannedActionId: 'plant_wildflowers',
       predictedMetricId: 'honey',
       predictedDirection: 'higher',
@@ -349,6 +358,58 @@ describe('Beehive WCAG 2.2 accessibility', () => {
       changedVariable: values.changedVariable,
       conclusion: values.conclusion,
     });
+
+    const observationGuidance = host.querySelector('[data-experiment-notebook-field="observations"]').closest('label').textContent;
+    expect(observationGuidance).toContain('The recorded action matches the current plan');
+    expect(observationGuidance).toContain('its timing is not protected');
+    expect(observationGuidance).not.toContain('does not match the planned choice');
+    expect(host.querySelector('[data-experiment-evidence-prompt="true"]').textContent).toContain('Restart Run B with the complete current plan');
+
+    const recovery = host.querySelector('[data-experiment-restart-run-b-plan="true"]');
+    expect(recovery).toBeTruthy();
+    expect(recovery.className).toContain('min-h-[44px]');
+    expect(recovery.textContent).toContain('Restart Run B with current plan');
+    expect(recovery.getAttribute('aria-label')).toContain('record the complete current plan before the new run begins');
+    await act(async () => { recovery.click(); await Promise.resolve(); });
+    expect(latest.beehive.day).toBe(0);
+    expect(latest.beehive.experimentRunSerial).toBe(3);
+    expect(latest.beehive.experimentBaseline).toEqual(guidedRunA);
+    expect(latest.beehive.notebook.experiment.registeredPlan).toMatchObject({
+      schemaVersion: 1,
+      runSerial: 3,
+      baselineRunSerial: 1,
+      complete: true,
+      plannedActionId: 'plant_wildflowers',
+      predictedMetricId: 'honey',
+      predictedDirection: 'higher',
+      question: values.question,
+      changedVariable: values.changedVariable,
+      prediction: values.prediction,
+    });
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('matched');
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('The complete plan was recorded before Run B');
+
+    const protectedNotebook = JSON.parse(JSON.stringify(latest.beehive.notebook));
+    await mount({
+      viewMode: 'beekeeper',
+      day: 8,
+      simulationSeed: 2468,
+      randomState: 9753,
+      experimentRunSerial: 3,
+      seededFromDay: 0,
+      honey: 34,
+      experimentBaseline: guidedRunA,
+      managementTrail: [{ day: 3, label: 'Plant wildflowers', cost: '1 AP' }],
+      notebook: protectedNotebook,
+      experimentNotebookOpen: true,
+      motionPaused: true,
+    });
+    notebook = host.querySelector('[data-beehive-experiment-notebook="true"]');
+    expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Protected comparison ready');
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('matched');
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').textContent).toContain('Recorded before Run B');
+    expect(host.querySelector('[data-experiment-protocol-step="registration"]').getAttribute('data-protocol-step-state')).toBe('complete');
+    expect(host.querySelector('[data-experiment-restart-run-b-plan="true"]')).toBeNull();
 
     let reviewChecks = Array.from(host.querySelectorAll('[data-experiment-notebook-review-check]'));
     expect(reviewChecks).toHaveLength(3);
@@ -369,10 +430,16 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.notebook.experiment.review.numericEvidence).toBe(false);
     expect(host.querySelector('[data-experiment-prediction-audit="true"]').getAttribute('data-prediction-audit-status')).toBe('not-aligned');
     expect(host.querySelector('[data-experiment-prediction-audit="true"]').textContent).toContain('This is still useful evidence');
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('changed');
+    expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Plan changed after Run B started');
+    expect(host.querySelector('[data-experiment-evidence-prompt="true"]').textContent).toContain('Restart Run B with the complete current plan');
+    expect(host.querySelector('[data-experiment-restart-run-b-plan="true"]')).toBeTruthy();
     predictionDirectionControl = host.querySelector('[data-experiment-prediction-direction="true"]');
     await act(async () => { selectSetter.call(predictionDirectionControl, 'higher'); predictionDirectionControl.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
     expect(latest.beehive.notebook.experiment.review.numericEvidence).toBe(false);
     expect(host.querySelector('[data-experiment-prediction-audit="true"]').getAttribute('data-prediction-audit-status')).toBe('aligned');
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('matched');
+    expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Protected comparison ready');
     await act(async () => { host.querySelector('[data-experiment-notebook-review-check="numericEvidence"]').click(); await Promise.resolve(); });
     expect(latest.beehive.notebook.experiment.review.numericEvidence).toBe(true);
 
@@ -380,9 +447,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await act(async () => { selectSetter.call(plannedActionControl, 'feed_bees'); plannedActionControl.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
     expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(false);
     expect(host.querySelector('[data-experiment-plan-alignment="mismatched"]')).toBeTruthy();
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('changed');
     plannedActionControl = host.querySelector('[data-experiment-planned-action="true"]');
     await act(async () => { selectSetter.call(plannedActionControl, 'plant_wildflowers'); plannedActionControl.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
     expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(false);
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('matched');
     await act(async () => { host.querySelector('[data-experiment-notebook-review-check="singleVariable"]').click(); await Promise.resolve(); });
     expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(true);
 
@@ -390,8 +459,10 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await act(async () => { setter.call(changedVariable, ''); changedVariable.dispatchEvent(new Event('input', { bubbles: true })); await Promise.resolve(); });
     expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(false);
     expect(host.querySelector('[data-experiment-notebook-review-check="singleVariable"]').disabled).toBe(true);
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('changed');
     const restoredVariable = host.querySelector('[data-experiment-notebook-field="changedVariable"]');
     await act(async () => { setter.call(restoredVariable, values.changedVariable); restoredVariable.dispatchEvent(new Event('input', { bubbles: true })); await Promise.resolve(); });
+    expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('matched');
 
     const capture = host.querySelector('[data-experiment-notebook-capture="true"]');
     expect(capture.className).toContain('min-h-[44px]');
@@ -399,6 +470,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.notebook.experiment.observations).toContain('Run A Day 8 vs Run B Day 8');
     expect(latest.beehive.notebook.experiment.observations).toContain('Management-choice audit: one recorded difference');
     expect(latest.beehive.notebook.experiment.observations).toContain('Planned-choice audit: recorded change matches Plant wildflowers');
+    expect(latest.beehive.notebook.experiment.observations).toContain('Plan-timing audit: complete plan recorded before Run B');
     expect(latest.beehive.notebook.experiment.observations).toContain('Prediction audit: Honey: Run B was higher; displayed direction aligned with the prediction');
     expect(latest.beehive.notebook.experiment.observations).toContain('Honey:');
     expect(document.getElementById('allo-live-beehive').textContent).toContain('metrics inserted into experiment observations');
@@ -410,7 +482,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.exportedReportTitle).toBe('Experiment Evidence Record');
     expect(latest.beehive.exportedReport).toContain('## Guided Experiment Notebook');
     expect(latest.beehive.exportedReport).toContain(values.question);
-    expect(latest.beehive.exportedReport).toContain('**Comparison status:** Planned comparison ready');
+    expect(latest.beehive.exportedReport).toContain('**Comparison status:** Protected comparison ready');
+    expect(latest.beehive.exportedReport).toContain('**Plan registration:** Recorded before Colony Run 3 against Run A Colony Run 1 (complete)');
+    expect(latest.beehive.exportedReport).toContain('### Plan-timing audit');
+    expect(latest.beehive.exportedReport).toContain('**Result:** Complete plan matches the copy recorded before Run B');
+    expect(latest.beehive.exportedReport).toContain('**Recovery:** No timing repair needed.');
     expect(latest.beehive.exportedReport).toContain('### Management-choice audit');
     expect(latest.beehive.exportedReport).toContain('**Recorded-choice result:** One difference');
     expect(latest.beehive.exportedReport).toContain('**Plan alignment:** Recorded change matches the plan');

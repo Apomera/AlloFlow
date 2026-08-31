@@ -502,6 +502,149 @@ describe('galaxy canvas lifecycle', () => {
     expect(freshAladin).toHaveBeenCalledTimes(1);
     expect(latestToolData.galaxy.realSkyStatus).toBe('ready');
   });
+  it('tracks the live Aladin center and field without rerendering or persisting pan and zoom telemetry', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const handlers = Object.create(null);
+    let center = [189.9976, -11.6231];
+    let field = [0.9, 0.6];
+    const getShareURL = vi.fn(() => 'https://aladin.cds.unistra.fr/AladinLite/?target=12%3A40%3A29.63%20-11%3A39%3A15.6&fov=0.42&survey=P%2F2MASS%2Fcolor');
+    const saved = {
+      id: 'obs-live-telemetry',
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'Live telemetry must not mutate this evidence.',
+    };
+    const instance = trackedAladinInstance({
+      getRaDec: vi.fn(() => center.slice()),
+      getFov: vi.fn(() => field.slice()),
+      getShareURL,
+      on: vi.fn((eventName, handler) => { handlers[eventName] = handler; }),
+      off: vi.fn((eventName) => { delete handlers[eventName]; }),
+    });
+    const aladin = vi.fn(() => instance);
+    window.A = { init: Promise.resolve(), aladin };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+      realSkyEvidenceNote: 'My transient draft remains untouched.',
+      realSkyObservations: [saved],
+    });
+    await React.act(async () => {
+      await window.A.init;
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    const atlas = host.querySelector('#galaxy-real-sky-aladin');
+    const readout = host.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
+    const galaxyStateBeforeEvents = latestToolData.galaxy;
+    expect(readout.textContent).toBe('RA 189.9976° · Dec -11.6231° · FoV 0.9°');
+    expect(readout.getAttribute('aria-live')).toBe('off');
+    expect(readout.getAttribute('data-galaxy-real-sky-viewport-source')).toBe('live');
+    expect(instance.on).toHaveBeenCalledTimes(2);
+    expect(instance.on.mock.calls.map((call) => call[0])).toEqual(['positionChanged', 'zoomChanged']);
+
+    center = [190.123456, -11.654321];
+    await React.act(async () => {
+      handlers.positionChanged({ ra: center[0], dec: center[1], dragging: false, frame: 'ICRS' });
+      await Promise.resolve();
+    });
+    expect(readout.textContent).toBe('RA 190.1235° · Dec -11.6543° · FoV 0.9°');
+
+    field = [0.42, 0.28];
+    await React.act(async () => {
+      handlers.zoomChanged(0.42);
+      await Promise.resolve();
+    });
+    expect(readout.textContent).toBe('RA 190.1235° · Dec -11.6543° · FoV 0.42°');
+    expect(readout.getAttribute('data-galaxy-real-sky-ra')).toBe('190.123456');
+    expect(readout.getAttribute('data-galaxy-real-sky-dec')).toBe('-11.654321');
+    expect(readout.getAttribute('data-galaxy-real-sky-fov')).toBe('0.42');
+
+    const textBeforeMalformedEvents = readout.textContent;
+    handlers.positionChanged({ ra: Infinity, dec: 0, dragging: false });
+    handlers.positionChanged({ ra: null, dec: 0, dragging: false });
+    handlers.zoomChanged(0);
+    handlers.zoomChanged(NaN);
+    expect(readout.textContent).toBe(textBeforeMalformedEvents);
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(host.querySelector('#galaxy-real-sky-aladin')).toBe(atlas);
+    expect(atlas._galaxyAladin).toBe(instance);
+    expect(latestToolData.galaxy).toBe(galaxyStateBeforeEvents);
+    expect(latestToolData.galaxy.realSkyEvidenceNote).toBe('My transient draft remains untouched.');
+    expect(latestToolData.galaxy.realSkyObservations).toEqual([saved]);
+
+    await click(saveObservationButton());
+    expect(latestToolData.galaxy.realSkyEvidenceNote).toBe('');
+    expect(latestToolData.galaxy.realSkyObservations[0]).toEqual(expect.objectContaining({
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'My transient draft remains untouched.',
+      viewUrl: 'https://aladin.cds.unistra.fr/AladinLite/?target=190.123456%20-11.654321&fov=0.42&survey=P%2F2MASS%2Fcolor',
+    }));
+    expect(latestToolData.galaxy.realSkyObservations[1]).toEqual(saved);
+    expect(getShareURL).not.toHaveBeenCalled();
+
+    center = [359.99999, -0.00001];
+    field = [0.00001, 0.000006];
+    handlers.positionChanged({ ra: center[0], dec: center[1], dragging: false, frame: 'ICRS' });
+    handlers.zoomChanged(field[0]);
+    expect(readout.textContent).toBe('RA 0.0000° · Dec 0.0000° · FoV 1.00e-5°');
+  });
+
+  it('retires live viewport callbacks before destroy and fences stale events from a replacement atlas', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const staleHandlers = Object.create(null);
+    const lifecycle = [];
+    const firstInstance = trackedAladinInstance({
+      getRaDec: vi.fn(() => [189.9976, -11.6231]),
+      getFov: vi.fn(() => [0.9, 0.6]),
+      on: vi.fn((eventName, handler) => { staleHandlers[eventName] = handler; }),
+      off: vi.fn((eventName) => { lifecycle.push('off:' + eventName); }),
+      destroy: vi.fn(() => { lifecycle.push('destroy'); }),
+    });
+    const secondInstance = trackedAladinInstance();
+    const aladin = vi.fn()
+      .mockReturnValueOnce(firstInstance)
+      .mockReturnValueOnce(secondInstance);
+    window.A = { init: Promise.resolve(), aladin };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+    });
+    await React.act(async () => {
+      await window.A.init;
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    const stalePositionChanged = staleHandlers.positionChanged;
+    expect(typeof stalePositionChanged).toBe('function');
+
+    await click(host.querySelector('[data-galaxy-real-sky-target="m42"]'));
+
+    const replacementAtlas = host.querySelector('#galaxy-real-sky-aladin');
+    const replacementReadout = host.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
+    expect(aladin).toHaveBeenCalledTimes(2);
+    expect(replacementAtlas._galaxyAladin).toBe(secondInstance);
+    expect(replacementReadout.textContent).toBe('RA 83.8221° · Dec -5.3911° · FoV 1.25°');
+    expect(firstInstance.off.mock.calls.map((call) => call[0])).toEqual(['positionChanged', 'zoomChanged']);
+    expect(firstInstance.destroy).toHaveBeenCalledTimes(1);
+    expect(lifecycle).toEqual(['off:positionChanged', 'off:zoomChanged', 'destroy']);
+
+    const replacementText = replacementReadout.textContent;
+    stalePositionChanged({ ra: 12.3456, dec: 45.6789, dragging: false, frame: 'ICRS' });
+    expect(replacementReadout.textContent).toBe(replacementText);
+    expect(replacementReadout.getAttribute('data-galaxy-real-sky-viewport-source')).toBe('preset');
+  });
+
   it('rebuilds a ready but visually blank atlas in place without losing learner work or focus', async () => {
     const ensureThree = vi.fn(() => new Promise(() => {}));
     const saved = {
@@ -559,6 +702,75 @@ describe('galaxy canvas lifecycle', () => {
     expect(latestToolData.galaxy.realSkyObservations).toEqual([saved]);
     expect(retainedReload.getAttribute('aria-disabled')).toBe('false');
     expect(document.activeElement).toBe(retainedReload);
+  });
+
+  it('lazy-loads the ready-state survey snapshot without rebuilding Aladin or mutating learner data', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const instance = trackedAladinInstance();
+    const aladin = vi.fn(() => instance);
+    const saved = {
+      id: 'obs-static-disclosure',
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'The static disclosure must not change this saved observation.',
+    };
+    window.A = { init: Promise.resolve(), aladin };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+      realSkyEvidenceNote: 'The current evidence draft also remains untouched.',
+      realSkyObservations: [saved],
+    });
+    await React.act(async () => {
+      await window.A.init;
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    const atlas = host.querySelector('#galaxy-real-sky-aladin');
+    const disclosure = host.querySelector('[data-galaxy-real-sky-static-disclosure="true"]');
+    const summary = disclosure.querySelector('summary');
+    const image = disclosure.querySelector('[data-galaxy-real-sky-static-disclosure-image="true"]');
+    const figure = disclosure.querySelector('[data-galaxy-real-sky-static-disclosure-figure="true"]');
+    const fallbackStatus = disclosure.querySelector('[data-galaxy-real-sky-static-disclosure-status="true"]');
+    const galaxyStateBeforeOpen = latestToolData.galaxy;
+    const expectedSource = 'https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2F2MASS%2Fcolor&width=960&height=640&projection=TAN&fov=0.9&ra=189.9976&dec=-11.6231&coordsys=icrs&format=jpg';
+
+    expect(disclosure.open).toBe(false);
+    expect(image.hasAttribute('src')).toBe(false);
+    expect(image.getAttribute('data-src')).toBe(expectedSource);
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(atlas._galaxyAladin).toBe(instance);
+
+    summary.focus();
+    await React.act(async () => {
+      disclosure.open = true;
+      disclosure.dispatchEvent(new Event('toggle'));
+      await Promise.resolve();
+    });
+
+    expect(disclosure.open).toBe(true);
+    expect(image.getAttribute('src')).toBe(expectedSource);
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(host.querySelector('#galaxy-real-sky-aladin')).toBe(atlas);
+    expect(instance.destroy).not.toHaveBeenCalled();
+    expect(latestToolData.galaxy).toBe(galaxyStateBeforeOpen);
+    expect(latestToolData.galaxy.realSkyEvidenceNote).toBe('The current evidence draft also remains untouched.');
+    expect(latestToolData.galaxy.realSkyObservations).toEqual([saved]);
+    expect(document.activeElement).toBe(summary);
+
+    await React.act(async () => {
+      image.dispatchEvent(new Event('error', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(figure.hidden).toBe(true);
+    expect(fallbackStatus.hidden).toBe(false);
+    expect(fallbackStatus.textContent).toContain('Your selected target and saved notes are safe.');
+    expect(document.activeElement).toBe(summary);
   });
 
   it('reopens a saved observation in its exact target, survey, and catalog view', async () => {
@@ -877,6 +1089,9 @@ describe('galaxy canvas lifecycle', () => {
     expect(restoredInstance.gotoRaDec).toHaveBeenCalledTimes(1);
     expect(restoredInstance.gotoRaDec).toHaveBeenCalledWith(189.998, -11.623);
     expect(restoredInstance.gotoObject).not.toHaveBeenCalled();
+    const restoredReadout = host.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
+    expect(restoredReadout.textContent).toBe('RA 189.9980° · Dec -11.6230° · FoV 0.42°');
+    expect(restoredReadout.getAttribute('data-galaxy-real-sky-viewport-source')).toBe('saved');
     expect(latestToolData.galaxy.realSkyTarget).toBe('m104');
     expect(latestToolData.galaxy.realSkySurvey).toBe('P/2MASS/color');
     expect(latestToolData.galaxy.previousRealSkySurvey).toBe('P/DSS2/color');
@@ -935,6 +1150,7 @@ describe('galaxy canvas lifecycle', () => {
     const gotoObjectCallsBefore = instance.gotoObject.mock.calls.length;
     const surveyCallsBefore = instance.setImageSurvey.mock.calls.length;
     const fovCallsBefore = instance.setFov.mock.calls.length;
+    const coordinateCallsBefore = instance.gotoRaDec.mock.calls.length;
 
     await click(exactButton);
 
@@ -944,8 +1160,11 @@ describe('galaxy canvas lifecycle', () => {
     expect(instance.setImageSurvey).toHaveBeenCalledTimes(surveyCallsBefore);
     expect(instance.setFov).toHaveBeenCalledTimes(fovCallsBefore + 1);
     expect(instance.setFov).toHaveBeenLastCalledWith(0.42);
-    expect(instance.gotoRaDec).toHaveBeenCalledTimes(1);
+    expect(instance.gotoRaDec).toHaveBeenCalledTimes(coordinateCallsBefore + 1);
     expect(instance.gotoRaDec).toHaveBeenCalledWith(189.998, -11.623);
+    const sameBaseReadout = host.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
+    expect(sameBaseReadout.textContent).toBe('RA 189.9980° · Dec -11.6230° · FoV 0.42°');
+    expect(sameBaseReadout.getAttribute('data-galaxy-real-sky-viewport-source')).toBe('saved');
     expect(latestToolData.galaxy.realSkyStatus).toBe(statusBefore);
     expect(latestToolData.galaxy.realSkyMessage).toBe(addToast.mock.calls[0][0]);
     expect(latestToolData.galaxy.realSkyObservations).toEqual(observations);
@@ -1010,9 +1229,9 @@ describe('galaxy canvas lifecycle', () => {
 
     expect(instances).toHaveLength(2);
     const restoredInstance = instances[1];
-    expect(restoredInstance.gotoRaDec).not.toHaveBeenCalled();
-    expect(restoredInstance.gotoObject).toHaveBeenCalledTimes(1);
-    expect(restoredInstance.gotoObject.mock.calls[0][0]).toBe('M 104');
+    expect(restoredInstance.gotoRaDec).toHaveBeenCalledTimes(1);
+    expect(restoredInstance.gotoRaDec).toHaveBeenCalledWith(189.9976, -11.6231);
+    expect(restoredInstance.gotoObject).not.toHaveBeenCalled();
     expect(restoredInstance.setFov).toHaveBeenLastCalledWith(0.9);
     expect(restoredInstance.setImageSurvey).toHaveBeenCalledWith('P/2MASS/color');
     expect(latestToolData.galaxy.realSkyObservations).toEqual([observation]);
@@ -1124,7 +1343,6 @@ describe('galaxy canvas lifecycle', () => {
   });
 
   it.each([
-    ['missing gotoRaDec', 'missing'],
     ['throwing gotoRaDec', 'throwing'],
   ])('falls back once to the deterministic preset when exact restoration has a %s API', async (_case, failureMode) => {
     const ensureThree = vi.fn(() => new Promise(() => {}));
@@ -1169,6 +1387,443 @@ describe('galaxy canvas lifecycle', () => {
     expect(addToast.mock.calls[0][1]).toBe('success');
     expect(announceToSR).toHaveBeenCalledTimes(1);
     expect(announceToSR.mock.calls[0][0]).toBe(addToast.mock.calls[0][0]);
+    const disabledControls = Array.from(host.querySelectorAll('[data-galaxy-real-sky-viewport-action]'));
+    expect(disabledControls).toHaveLength(7);
+    disabledControls.forEach((control) => expect(control.disabled).toBe(true));
+    expect(host.querySelector('[data-galaxy-real-sky-viewport-controls] [role="group"]').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('provides seven keyboard atlas controls that pan, zoom, reset, announce, and keep the external link exact', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const announceToSR = vi.fn();
+    const viewport = { ra: 189.9976, dec: -11.6231, fov: 0.9 };
+    const gotoRaDec = vi.fn((ra, dec) => { viewport.ra = ra; viewport.dec = dec; });
+    const setFov = vi.fn((fov) => { viewport.fov = fov; });
+    const pix2world = vi.fn(() => [190.5, -11.7]);
+    const instance = trackedAladinInstance({
+      gotoRaDec,
+      setFov,
+      getRaDec: vi.fn(() => [viewport.ra, viewport.dec]),
+      getFov: vi.fn(() => [viewport.fov, viewport.fov * 0.75]),
+      getSize: vi.fn(() => [1000, 600]),
+      pix2world,
+    });
+    const aladin = vi.fn(() => instance);
+    window.A = { init: Promise.resolve(), aladin };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+    }, { announceToSR });
+    await React.act(async () => {
+      await window.A.init;
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    const controls = Array.from(host.querySelectorAll('[data-galaxy-real-sky-viewport-action]'));
+    expect(controls).toHaveLength(7);
+    expect(controls.map((control) => control.getAttribute('aria-label'))).toEqual([
+      'Pan atlas left', 'Pan atlas up', 'Pan atlas down', 'Pan atlas right',
+      'Zoom atlas out', 'Zoom atlas in', 'Reset to selected target',
+    ]);
+    controls.forEach((control) => {
+      expect(control.tagName).toBe('BUTTON');
+      expect(control.disabled).toBe(false);
+      expect(control.className).toContain('h-11');
+      expect(control.className).toContain('min-w-[44px]');
+    });
+    expect(host.querySelector('[data-galaxy-real-sky-viewport-controls] [role="group"]').getAttribute('aria-disabled')).toBe('false');
+    expect(aladin.mock.calls[0][1]).toMatchObject({ target: '189.9976 -11.6231', fov: 0.9 });
+
+    const headerLink = () => host.querySelector('[data-galaxy-real-sky-external-link="header"]');
+    const readout = () => host.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
+    const left = host.querySelector('[data-galaxy-real-sky-viewport-action="pan-left"]');
+    await click(left);
+
+    expect(pix2world).toHaveBeenCalledWith(250, 300);
+    expect(gotoRaDec).toHaveBeenLastCalledWith(190.5, -11.7);
+    expect(readout().textContent).toBe('RA 190.5000° · Dec -11.7000° · FoV 0.9°');
+    expect(readout().getAttribute('data-galaxy-real-sky-viewport-source')).toBe('live');
+    let external = new URL(headerLink().href);
+    expect(external.searchParams.get('target')).toBe('190.5 -11.7');
+    expect(external.searchParams.get('fov')).toBe('0.9');
+
+    await click(host.querySelector('[data-galaxy-real-sky-viewport-action="zoom-in"]'));
+    expect(setFov).toHaveBeenLastCalledWith(0.6);
+    expect(readout().textContent).toBe('RA 190.5000° · Dec -11.7000° · FoV 0.6°');
+    external = new URL(headerLink().href);
+    expect(external.searchParams.get('target')).toBe('190.5 -11.7');
+    expect(external.searchParams.get('fov')).toBe('0.6');
+
+    await click(host.querySelector('[data-galaxy-real-sky-viewport-action="reset"]'));
+    expect(setFov).toHaveBeenLastCalledWith(0.9);
+    expect(gotoRaDec).toHaveBeenLastCalledWith(189.9976, -11.6231);
+    expect(readout().getAttribute('data-galaxy-real-sky-viewport-source')).toBe('preset');
+    external = new URL(headerLink().href);
+    expect(external.searchParams.get('target')).toBe('189.9976 -11.6231');
+    expect(external.searchParams.get('fov')).toBe('0.9');
+    expect(announceToSR).toHaveBeenCalledTimes(3);
+    expect(announceToSR.mock.calls[0][0]).toContain('Sky coordinates: RA 190.5000°');
+    expect(announceToSR.mock.calls[1][0]).toContain('FoV 0.6°');
+    expect(announceToSR.mock.calls[2][0]).toContain('RA 189.9976°');
+  });
+
+  it('keeps selected target, catalog, and same-base recipe actions ready without recreating Aladin', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const instance = trackedAladinInstance();
+    const aladin = vi.fn(() => instance);
+    window.A = { init: Promise.resolve(), aladin };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/DSS2/color',
+      realSkyCatalog: 'simbad',
+    });
+    await React.act(async () => {
+      await window.A.init;
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    const atlas = host.querySelector('#galaxy-real-sky-aladin');
+    const originalState = latestToolData.galaxy;
+    const originalMessage = latestToolData.galaxy.realSkyMessage;
+    await click(host.querySelector('[data-galaxy-real-sky-target="m104"]'));
+    await click(host.querySelector('[data-galaxy-real-sky-catalog-id="simbad"]'));
+
+    expect(latestToolData.galaxy).toBe(originalState);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('ready');
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(host.querySelector('#galaxy-real-sky-aladin')).toBe(atlas);
+
+    await click(host.querySelector('[data-galaxy-real-sky-recipe="dust-lane"]'));
+
+    expect(latestToolData.galaxy.realSkyRecipe).toBe('dust-lane');
+    expect(latestToolData.galaxy.realSkyTarget).toBe('m104');
+    expect(latestToolData.galaxy.realSkySurvey).toBe('P/DSS2/color');
+    expect(latestToolData.galaxy.realSkyStatus).toBe('ready');
+    expect(latestToolData.galaxy.realSkyMessage).toBe(originalMessage);
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(host.querySelector('#galaxy-real-sky-aladin')).toBe(atlas);
+    expect(atlas._galaxyAladin).toBe(instance);
+    expect(instance.destroy).not.toHaveBeenCalled();
+    expect(host.querySelector('[data-galaxy-real-sky-retry="true"]')).toBeNull();
+  });
+
+  it('turns a null Aladin constructor result into recoverable error state and awards XP only after Retry succeeds', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const awardXP = vi.fn();
+    const recovered = trackedAladinInstance();
+    const aladin = vi.fn().mockReturnValueOnce(null).mockReturnValueOnce(recovered);
+    window.A = { init: Promise.resolve(), aladin };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+    }, { awardXP });
+    await React.act(async () => {
+      await window.A.init;
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(latestToolData.galaxy.realSkyStatus).toBe('error');
+    expect(awardXP).not.toHaveBeenCalled();
+    const retry = host.querySelector('[data-galaxy-real-sky-retry="true"]');
+    expect(retry).not.toBeNull();
+    Array.from(host.querySelectorAll('[data-galaxy-real-sky-viewport-action]'))
+      .forEach((control) => expect(control.disabled).toBe(true));
+
+    await click(retry);
+
+    expect(aladin).toHaveBeenCalledTimes(2);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('ready');
+    expect(recovered.gotoRaDec).toHaveBeenCalledWith(189.9976, -11.6231);
+    expect(awardXP).toHaveBeenCalledTimes(1);
+    expect(awardXP).toHaveBeenCalledWith('galaxy_real_sky', 2, 'Opened real sky survey');
+    Array.from(host.querySelectorAll('[data-galaxy-real-sky-viewport-action]'))
+      .forEach((control) => expect(control.disabled).toBe(false));
+  });
+
+  it('preserves an exact saved viewport and external recovery links through an incomplete constructor and Retry', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const addToast = vi.fn();
+    const announceToSR = vi.fn();
+    const initial = trackedAladinInstance();
+    const incomplete = { destroy: vi.fn(), setFov: vi.fn(), gotoObject: vi.fn() };
+    const recovered = trackedAladinInstance();
+    const aladin = vi.fn()
+      .mockReturnValueOnce(initial)
+      .mockReturnValueOnce(incomplete)
+      .mockReturnValueOnce(recovered);
+    window.A = { init: Promise.resolve(), aladin };
+    const exactUrl = 'https://aladin.cds.unistra.fr/AladinLite/?target=189.998%20-11.623&fov=0.42&survey=P%2F2MASS%2Fcolor';
+    const observation = {
+      id: 'obs-exact-retry-retained',
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'This exact viewport must survive a failed replacement constructor.',
+      viewUrl: exactUrl,
+    };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm31',
+      realSkySurvey: 'P/DSS2/color',
+      realSkyCatalog: 'simbad',
+      realSkyObservations: [observation],
+    }, { addToast, announceToSR });
+    await click(openObservationButton(observation.id));
+
+    expect(aladin).toHaveBeenCalledTimes(2);
+    expect(aladin.mock.calls[1][1]).toMatchObject({ target: '189.998 -11.623', fov: 0.42 });
+    expect(incomplete.destroy).toHaveBeenCalledTimes(1);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('error');
+    expect(latestToolData.galaxy.realSkyObservations).toEqual([observation]);
+    expect(addToast).not.toHaveBeenCalled();
+    expect(announceToSR).not.toHaveBeenCalled();
+    ['header', 'recovery'].forEach((location) => {
+      const destination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="' + location + '"]').href);
+      expect(destination.searchParams.get('target')).toBe('189.998 -11.623');
+      expect(destination.searchParams.get('fov')).toBe('0.42');
+      expect(destination.searchParams.get('survey')).toBe('P/2MASS/color');
+    });
+
+    await click(host.querySelector('[data-galaxy-real-sky-retry="true"]'));
+
+    expect(aladin).toHaveBeenCalledTimes(3);
+    expect(aladin.mock.calls[2][1]).toMatchObject({ target: '189.998 -11.623', fov: 0.42 });
+    expect(recovered.setFov).toHaveBeenCalledWith(0.42);
+    expect(recovered.gotoRaDec).toHaveBeenCalledWith(189.998, -11.623);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('ready');
+    expect(latestToolData.galaxy.realSkyObservations).toEqual([observation]);
+    const readout = host.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
+    expect(readout.getAttribute('data-galaxy-real-sky-viewport-source')).toBe('saved');
+    expect(readout.textContent).toBe('RA 189.9980° · Dec -11.6230° · FoV 0.42°');
+    const headerDestination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="header"]').href);
+    expect(headerDestination.searchParams.get('target')).toBe('189.998 -11.623');
+    expect(headerDestination.searchParams.get('fov')).toBe('0.42');
+    expect(addToast).toHaveBeenCalledTimes(1);
+    expect(announceToSR).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(observationRow(observation.id));
+  });
+
+  it('restores finite exponent-form exact coordinates without downgrading to a preset', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const instance = trackedAladinInstance();
+    const aladin = vi.fn(() => instance);
+    window.A = { init: Promise.resolve(), aladin };
+    const observation = {
+      id: 'obs-exponent-exact',
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'Exponent-form finite coordinates remain valid exact evidence.',
+      viewUrl: 'https://aladin.cds.unistra.fr/AladinLite/?target=1e-7%20-1e-7&fov=1e-7&survey=P%2F2MASS%2Fcolor',
+    };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+      realSkyObservations: [observation],
+    });
+    const coordinateCallsBefore = instance.gotoRaDec.mock.calls.length;
+    await click(openObservationButton(observation.id));
+
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(instance.gotoRaDec).toHaveBeenCalledTimes(coordinateCallsBefore + 1);
+    expect(instance.gotoRaDec).toHaveBeenLastCalledWith(1e-7, -1e-7);
+    expect(instance.setFov).toHaveBeenLastCalledWith(1e-7);
+    const readout = host.querySelector('[data-galaxy-real-sky-viewport-readout="true"]');
+    expect(readout.getAttribute('data-galaxy-real-sky-viewport-source')).toBe('saved');
+    const destination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="header"]').href);
+    expect(destination.searchParams.get('target')).toBe('1e-7 -1e-7');
+    expect(destination.searchParams.get('fov')).toBe('1e-7');
+
+    await click(host.querySelector('[data-galaxy-real-sky-viewport-action="zoom-in"]'));
+
+    const zoomedFov = instance.setFov.mock.calls[instance.setFov.mock.calls.length - 1][0];
+    expect(zoomedFov).toBeCloseTo(1e-7 * (2 / 3), 14);
+    expect(zoomedFov).toBeLessThan(1e-7);
+    const zoomedDestination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="header"]').href);
+    expect(Number(zoomedDestination.searchParams.get('fov'))).toBeCloseTo(1e-7 * (2 / 3), 14);
+  });
+
+  it('keeps zoom-out moving outward from an exact field wider than the standard control range', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const instance = trackedAladinInstance();
+    const aladin = vi.fn(() => instance);
+    window.A = { init: Promise.resolve(), aladin };
+    const observation = {
+      id: 'obs-wide-exact',
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'A very wide exact field must continue zooming outward.',
+      viewUrl: 'https://aladin.cds.unistra.fr/AladinLite/?target=189.998%20-11.623&fov=270&survey=P%2F2MASS%2Fcolor',
+    };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+      realSkyObservations: [observation],
+    });
+    await click(openObservationButton(observation.id));
+    await click(host.querySelector('[data-galaxy-real-sky-viewport-action="zoom-out"]'));
+
+    const zoomedFov = instance.setFov.mock.calls[instance.setFov.mock.calls.length - 1][0];
+    expect(zoomedFov).toBe(360);
+    expect(zoomedFov).toBeGreaterThan(270);
+    const destination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="header"]').href);
+    expect(destination.searchParams.get('target')).toBe('189.998 -11.623');
+    expect(destination.searchParams.get('fov')).toBe('360');
+  });
+
+  it('keeps exact recovery links authoritative when every restore navigation path fails, then retries exactly', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const initial = trackedAladinInstance();
+    const navigationFailure = new Error('navigation unavailable');
+    const failing = trackedAladinInstance({
+      setFov: vi.fn(() => { throw navigationFailure; }),
+      gotoRaDec: vi.fn(() => { throw navigationFailure; }),
+      gotoObject: vi.fn(() => { throw navigationFailure; }),
+      getRaDec: vi.fn(() => [10, 20]),
+      getFov: vi.fn(() => [4, 3]),
+      on: vi.fn(),
+      off: vi.fn(),
+    });
+    const recovered = trackedAladinInstance();
+    const aladin = vi.fn()
+      .mockReturnValueOnce(initial)
+      .mockReturnValueOnce(failing)
+      .mockReturnValueOnce(recovered);
+    window.A = { init: Promise.resolve(), aladin };
+    const observation = {
+      id: 'obs-total-navigation-retry',
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'The exact evidence link must remain authoritative through navigation failure.',
+      viewUrl: 'https://aladin.cds.unistra.fr/AladinLite/?target=189.998%20-11.623&fov=0.42&survey=P%2F2MASS%2Fcolor',
+    };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm31',
+      realSkySurvey: 'P/DSS2/color',
+      realSkyCatalog: 'simbad',
+      realSkyObservations: [observation],
+    });
+    await click(openObservationButton(observation.id));
+
+    expect(aladin).toHaveBeenCalledTimes(2);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('error');
+    const failedAtlas = host.querySelector('#galaxy-real-sky-aladin');
+    expect(failedAtlas._galaxyAladin).toBe(failing);
+    expect(failedAtlas._galaxyAladinViewportTelemetry).toBeFalsy();
+    expect(failing.on).not.toHaveBeenCalled();
+    ['header', 'recovery'].forEach((location) => {
+      const destination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="' + location + '"]').href);
+      expect(destination.searchParams.get('target')).toBe('189.998 -11.623');
+      expect(destination.searchParams.get('fov')).toBe('0.42');
+      expect(destination.searchParams.get('survey')).toBe('P/2MASS/color');
+    });
+
+    await click(host.querySelector('[data-galaxy-real-sky-retry="true"]'));
+
+    expect(aladin).toHaveBeenCalledTimes(3);
+    expect(failing.destroy).toHaveBeenCalledTimes(1);
+    expect(recovered.setFov).toHaveBeenCalledWith(0.42);
+    expect(recovered.gotoRaDec).toHaveBeenCalledWith(189.998, -11.623);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('ready');
+    const recoveredDestination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="header"]').href);
+    expect(recoveredDestination.searchParams.get('target')).toBe('189.998 -11.623');
+    expect(recoveredDestination.searchParams.get('fov')).toBe('0.42');
+  });
+
+  it('retires stale current-atlas telemetry when an in-place exact restore fails', async () => {
+    const ensureThree = vi.fn(() => new Promise(() => {}));
+    const handlers = Object.create(null);
+    const current = trackedAladinInstance({
+      getRaDec: vi.fn(() => [10, 20]),
+      getFov: vi.fn(() => [4, 3]),
+      on: vi.fn((eventName, handler) => { handlers[eventName] = handler; }),
+      off: vi.fn(),
+    });
+    const recovered = trackedAladinInstance();
+    const aladin = vi.fn()
+      .mockReturnValueOnce(current)
+      .mockReturnValueOnce(recovered);
+    window.A = { init: Promise.resolve(), aladin };
+    const observation = {
+      id: 'obs-in-place-navigation-retry',
+      targetKey: 'm104',
+      surveyId: 'P/2MASS/color',
+      catalogId: 'none',
+      note: 'Stale live telemetry must not replace the exact recovery evidence.',
+      viewUrl: 'https://aladin.cds.unistra.fr/AladinLite/?target=189.998%20-11.623&fov=0.42&survey=P%2F2MASS%2Fcolor',
+    };
+
+    await mountGalaxy(ensureThree, {
+      simMode: 'realSky',
+      realSkyTarget: 'm104',
+      realSkySurvey: 'P/2MASS/color',
+      realSkyCatalog: 'none',
+      realSkyObservations: [observation],
+    });
+    const stalePositionChanged = handlers.positionChanged;
+    const staleZoomChanged = handlers.zoomChanged;
+    expect(typeof stalePositionChanged).toBe('function');
+    expect(typeof staleZoomChanged).toBe('function');
+    const navigationFailure = new Error('current atlas navigation unavailable');
+    current.setFov.mockImplementation(() => { throw navigationFailure; });
+    current.gotoRaDec.mockImplementation(() => { throw navigationFailure; });
+    current.gotoObject.mockImplementation(() => { throw navigationFailure; });
+
+    await click(openObservationButton(observation.id));
+
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('error');
+    const failedAtlas = host.querySelector('#galaxy-real-sky-aladin');
+    expect(failedAtlas._galaxyAladin).toBe(current);
+    expect(failedAtlas._galaxyAladinViewportTelemetry).toBeFalsy();
+    expect(current.off).toHaveBeenCalledWith('positionChanged');
+    expect(current.off).toHaveBeenCalledWith('zoomChanged');
+    ['header', 'recovery'].forEach((location) => {
+      const destination = new URL(host.querySelector('[data-galaxy-real-sky-external-link="' + location + '"]').href);
+      expect(destination.searchParams.get('target')).toBe('189.998 -11.623');
+      expect(destination.searchParams.get('fov')).toBe('0.42');
+    });
+    const authoritativeHref = host.querySelector('[data-galaxy-real-sky-external-link="header"]').href;
+
+    await React.act(async () => {
+      stalePositionChanged({ ra: 10, dec: 20, dragging: false, frame: 'ICRS' });
+      staleZoomChanged(4);
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(host.querySelector('[data-galaxy-real-sky-external-link="header"]').href).toBe(authoritativeHref);
+    expect(new URL(authoritativeHref).searchParams.get('target')).toBe('189.998 -11.623');
+
+    await click(host.querySelector('[data-galaxy-real-sky-retry="true"]'));
+
+    expect(aladin).toHaveBeenCalledTimes(2);
+    expect(current.destroy).toHaveBeenCalledTimes(1);
+    expect(recovered.setFov).toHaveBeenCalledWith(0.42);
+    expect(recovered.gotoRaDec).toHaveBeenCalledWith(189.998, -11.623);
+    expect(latestToolData.galaxy.realSkyStatus).toBe('ready');
   });
 
   it('preserves an in-progress note edit while restoring another exact saved viewport', async () => {
@@ -1455,6 +2110,9 @@ describe('galaxy canvas lifecycle', () => {
     expect(row.querySelector('[data-galaxy-real-sky-observation-comparison="true"]').textContent)
       .toBe('Wavelength comparison: Optical \u2192 Near infrared \u00B7 Clean survey');
     expect(row.getAttribute('data-galaxy-real-sky-active-observation')).toBe('false');
+    expect(document.activeElement).toBe(row);
+    expect(addToast).toHaveBeenCalledWith('Observation saved to the evidence notebook.', 'success');
+    expect(announceToSR).toHaveBeenCalledWith('Observation saved to the evidence notebook.');
 
     const copyButton = copyObservationViewButton(saved.id);
     expect(copyButton).not.toBeNull();
@@ -2352,7 +3010,7 @@ describe('galaxy canvas lifecycle', () => {
       '1. M104 Sombrero Galaxy',
       'Wavelength comparison: Optical \u2192 Near infrared',
       'Catalog Overlay: Clean survey',
-      'Sky coordinates: RA 189.9976° · Dec -11.6231° · FoV 0.9°',
+      'Sky coordinates: RA 189.9980° · Dec -11.6230° · FoV 0.42°',
       'Atlas view link: ' + firstViewUrl,
       'Evidence: ' + firstNote,
       '',
@@ -2422,7 +3080,7 @@ describe('galaxy canvas lifecycle', () => {
     expect(writeText.mock.calls[0][0]).toContain('Atlas view link: ' + secondFallbackUrl);
     expect(writeText.mock.calls[0][0]).not.toContain(unsafeSecondViewUrl);
     expect(writeText.mock.calls[0][0]).toContain('Atlas view link: \u2014');
-    expect(writeText.mock.calls[0][0].indexOf('Sky coordinates: RA 189.9976'))
+    expect(writeText.mock.calls[0][0].indexOf('Sky coordinates: RA 189.9980'))
       .toBeLessThan(writeText.mock.calls[0][0].indexOf('Atlas view link: ' + firstViewUrl));
     expect(writeText.mock.calls[0][0].indexOf('Atlas view link: ' + firstViewUrl))
       .toBeLessThan(writeText.mock.calls[0][0].indexOf('Evidence: ' + firstNote));

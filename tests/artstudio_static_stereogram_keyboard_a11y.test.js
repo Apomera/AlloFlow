@@ -119,7 +119,7 @@ describe('Art Studio static stereogram accessibility', () => {
     });
 
     expect(html).toContain('hold Shift with an Arrow key to draw');
-    expect(html).toContain('aria-describedby="artstudio-depth-map-legend artstudio-depth-map-keyboard-help"');
+    expect(html).toContain('aria-describedby="artstudio-depth-map-legend artstudio-depth-map-touch-help artstudio-depth-map-keyboard-help"');
     expect(html).toContain('Shift+ArrowUp');
     expect(html).toContain('focus-visible:ring-4');
     expect(html).toContain('aria-describedby="artstudio-stereogram-output-help"');

@@ -73,4 +73,24 @@ test('keeps visual comparison and shared-scale bars inside 340px', async ({ page
   await expect(scale).toBeVisible();
   expect(await scale.getByRole('img').count()).toBe(9);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+
+  const controlLayout = await page.locator('[data-solarsystem-canvas-controls]').evaluate((controls) => {
+    const strip = controls.getBoundingClientRect();
+    const play = controls.querySelector('[data-solarsystem-playback-toggle]') as HTMLElement;
+    const speed = controls.querySelector('[data-solarsystem-speed-control]') as HTMLElement;
+    const slider = controls.querySelector('[data-solarsystem-speed-slider]') as HTMLElement;
+    const reset = [...controls.querySelectorAll('button')].find((button) => button !== play) as HTMLElement;
+    const items = [play, speed, reset];
+    const rects = items.map((item) => item.getBoundingClientRect());
+    return {
+      noInternalOverflow: controls.scrollWidth <= controls.clientWidth + 1,
+      allInside: rects.every((rect) => rect.left >= strip.left - 1 && rect.right <= strip.right + 1),
+      noOverlap: rects.every((rect, index) => index === 0 || rect.left >= rects[index - 1].right - 1),
+      targetHeights: [play.getBoundingClientRect().height, slider.getBoundingClientRect().height, reset.getBoundingClientRect().height],
+    };
+  });
+  expect(controlLayout.noInternalOverflow).toBe(true);
+  expect(controlLayout.allInside).toBe(true);
+  expect(controlLayout.noOverlap).toBe(true);
+  expect(controlLayout.targetHeights.every((height) => height >= 44)).toBe(true);
 });

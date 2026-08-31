@@ -1,14 +1,632 @@
 {
-  "formatVersion": 1,
-  "scenarioCount": 26,
+  "formatVersion": 2,
+  "scenarioCount": 30,
+  "stylesheets": {
+    "93015cd19342786dcaba31e6d70aaf76a7e7b3f4a6b234e19b69e32aa67ff0bc": {
+      "scenarioIds": [
+        "contrast-live-chrome-bottom-left--200pct",
+        "contrast-live-chrome-bottom-left--64px",
+        "light-listening--200pct",
+        "light-listening--64px"
+      ],
+      "authoredKeyframes": [
+        "allo-backflip",
+        "allo-float",
+        "allo-look-around",
+        "allo-puff",
+        "allo-shrug",
+        "allo-wave",
+        "allobot-effect-confetti",
+        "allobot-effect-confetti-ring",
+        "allobot-effect-dust-left",
+        "allobot-effect-dust-puff",
+        "allobot-effect-dust-right",
+        "allobot-effect-float-reaction",
+        "allobot-effect-jetpack-smoke",
+        "allobot-mic-listening-pulse",
+        "allobotAccessoryArriveLeft",
+        "allobotAccessoryArriveRight",
+        "allobotExit",
+        "allobotFloat",
+        "allobotFolderPage",
+        "allobotGenerationCard",
+        "allobotGenerationCheck",
+        "allobotGenerationClock",
+        "allobotGenerationComplete",
+        "allobotGenerationCompletionCheck",
+        "allobotGenerationDot",
+        "allobotGenerationEnter",
+        "allobotGenerationLine",
+        "allobotGenerationPackNode",
+        "allobotGenerationProgress",
+        "allobotGenerationQuestion",
+        "allobotGenerationResolve",
+        "allobotGenerationScan",
+        "allobotGenerationSpark",
+        "allobotGenerationStageNode",
+        "allobotInboxDrop",
+        "allobotMazeFlag",
+        "allobotPerk",
+        "allobotPop",
+        "allobotProgressPulse",
+        "allobotStopwatchHand",
+        "allobotSway",
+        "allobotTick",
+        "allobotTwinkle",
+        "allobotWorking",
+        "antenna-spring",
+        "antenna-sway",
+        "antenna-tri-bounce",
+        "bot-breathe",
+        "bot-confetti",
+        "bot-fly-tilt",
+        "bot-land",
+        "dust-left",
+        "dust-puff",
+        "dust-right",
+        "float-hands",
+        "float-reaction",
+        "gesture-left",
+        "gesture-right",
+        "happy-nod",
+        "hologram-spin",
+        "jetpack-flame",
+        "jetpack-smoke",
+        "shadow-pulse",
+        "signal-wave",
+        "sympathetic-tilt",
+        "tap-pointer",
+        "voice-wave",
+        "wave-hello",
+        "wind-streak",
+        "zzz-float"
+      ],
+      "parsedKeyframes": [
+        "allo-backflip",
+        "allo-float",
+        "allo-look-around",
+        "allo-puff",
+        "allo-shrug",
+        "allo-wave",
+        "allobot-effect-confetti",
+        "allobot-effect-confetti-ring",
+        "allobot-effect-dust-left",
+        "allobot-effect-dust-puff",
+        "allobot-effect-dust-right",
+        "allobot-effect-float-reaction",
+        "allobot-effect-jetpack-smoke",
+        "allobot-mic-listening-pulse",
+        "allobotAccessoryArriveLeft",
+        "allobotAccessoryArriveRight",
+        "allobotExit",
+        "allobotFloat",
+        "allobotFolderPage",
+        "allobotGenerationCard",
+        "allobotGenerationCheck",
+        "allobotGenerationClock",
+        "allobotGenerationComplete",
+        "allobotGenerationCompletionCheck",
+        "allobotGenerationDot",
+        "allobotGenerationEnter",
+        "allobotGenerationLine",
+        "allobotGenerationPackNode",
+        "allobotGenerationProgress",
+        "allobotGenerationQuestion",
+        "allobotGenerationResolve",
+        "allobotGenerationScan",
+        "allobotGenerationSpark",
+        "allobotGenerationStageNode",
+        "allobotInboxDrop",
+        "allobotMazeFlag",
+        "allobotPerk",
+        "allobotPop",
+        "allobotProgressPulse",
+        "allobotStopwatchHand",
+        "allobotSway",
+        "allobotTick",
+        "allobotTwinkle",
+        "allobotWorking",
+        "antenna-spring",
+        "antenna-sway",
+        "antenna-tri-bounce",
+        "bot-breathe",
+        "bot-confetti",
+        "bot-fly-tilt",
+        "bot-land",
+        "dust-left",
+        "dust-puff",
+        "dust-right",
+        "float-hands",
+        "float-reaction",
+        "gesture-left",
+        "gesture-right",
+        "happy-nod",
+        "hologram-spin",
+        "jetpack-flame",
+        "jetpack-smoke",
+        "shadow-pulse",
+        "signal-wave",
+        "sympathetic-tilt",
+        "tap-pointer",
+        "voice-wave",
+        "wave-hello",
+        "wind-streak",
+        "zzz-float"
+      ],
+      "keyframeRuleCount": 70,
+      "animationBindingCount": 69,
+      "animationReferences": [
+        "allo-backflip",
+        "allo-float",
+        "allo-look-around",
+        "allo-puff",
+        "allo-shrug",
+        "allo-wave",
+        "allobot-effect-confetti",
+        "allobot-effect-confetti-ring",
+        "allobot-effect-dust-left",
+        "allobot-effect-dust-puff",
+        "allobot-effect-dust-right",
+        "allobot-effect-float-reaction",
+        "allobot-effect-jetpack-smoke",
+        "allobot-mic-listening-pulse",
+        "allobotAccessoryArriveLeft",
+        "allobotAccessoryArriveRight",
+        "allobotExit",
+        "allobotFloat",
+        "allobotFolderPage",
+        "allobotGenerationCard",
+        "allobotGenerationCheck",
+        "allobotGenerationClock",
+        "allobotGenerationComplete",
+        "allobotGenerationCompletionCheck",
+        "allobotGenerationDot",
+        "allobotGenerationEnter",
+        "allobotGenerationLine",
+        "allobotGenerationPackNode",
+        "allobotGenerationProgress",
+        "allobotGenerationQuestion",
+        "allobotGenerationResolve",
+        "allobotGenerationScan",
+        "allobotGenerationSpark",
+        "allobotGenerationStageNode",
+        "allobotInboxDrop",
+        "allobotMazeFlag",
+        "allobotPerk",
+        "allobotPop",
+        "allobotProgressPulse",
+        "allobotStopwatchHand",
+        "allobotSway",
+        "allobotTick",
+        "allobotTwinkle",
+        "allobotWorking",
+        "antenna-spring",
+        "antenna-sway",
+        "antenna-tri-bounce",
+        "bot-breathe",
+        "bot-confetti",
+        "bot-fly-tilt",
+        "bot-land",
+        "dust-left",
+        "dust-puff",
+        "dust-right",
+        "float-hands",
+        "float-reaction",
+        "gesture-left",
+        "gesture-right",
+        "happy-nod",
+        "hologram-spin",
+        "jetpack-flame",
+        "jetpack-smoke",
+        "shadow-pulse",
+        "signal-wave",
+        "sympathetic-tilt",
+        "tap-pointer",
+        "wave-hello",
+        "wind-streak",
+        "zzz-float"
+      ],
+      "runtimeAnimations": [
+        {
+          "name": "wave",
+          "className": "animate-allo-wave",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-wave"
+          ]
+        },
+        {
+          "name": "backflip",
+          "className": "animate-allo-backflip",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-backflip"
+          ]
+        },
+        {
+          "name": "shrug",
+          "className": "animate-allo-shrug",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-shrug"
+          ]
+        },
+        {
+          "name": "look-around",
+          "className": "animate-allo-look-around",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-look-around"
+          ]
+        },
+        {
+          "name": "wave-hello",
+          "className": "animate-allo-wave-hello",
+          "sources": [
+            "summon",
+            "intro"
+          ],
+          "animationNames": [
+            "wave-hello"
+          ]
+        },
+        {
+          "name": "sympathetic-tilt",
+          "className": "animate-allo-sympathetic-tilt",
+          "sources": [
+            "imperative"
+          ],
+          "animationNames": [
+            "sympathetic-tilt"
+          ]
+        }
+      ],
+      "keyframesSha256": "32ffb44f569509364e0344b64db375bebe82b92e702446172f35eb4ee9480030",
+      "animationBindingsSha256": "e621d1652058e235685823a11a20831a69a2a616d633fb1e9336414c63c7f4bb"
+    },
+    "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d": {
+      "scenarioIds": [
+        "contrast-idle--200pct",
+        "contrast-idle--64px",
+        "dark-idle--200pct",
+        "dark-idle--64px",
+        "light-chrome-top-right--200pct",
+        "light-chrome-top-right--64px",
+        "light-happy--200pct",
+        "light-happy--64px",
+        "light-idle--200pct",
+        "light-idle--64px",
+        "light-librarian-kit--200pct",
+        "light-librarian-kit--64px",
+        "light-prop-gaze-left--200pct",
+        "light-prop-gaze-left--64px",
+        "light-prop-gaze-right--200pct",
+        "light-prop-gaze-right--64px",
+        "light-sad--200pct",
+        "light-sad--64px",
+        "light-scholar-specs--200pct",
+        "light-scholar-specs--64px",
+        "light-sleeping--200pct",
+        "light-sleeping--64px",
+        "light-talking--200pct",
+        "light-talking--64px",
+        "light-thinking--200pct",
+        "light-thinking--64px"
+      ],
+      "authoredKeyframes": [
+        "allo-backflip",
+        "allo-float",
+        "allo-look-around",
+        "allo-puff",
+        "allo-shrug",
+        "allo-wave",
+        "allobot-effect-confetti",
+        "allobot-effect-confetti-ring",
+        "allobot-effect-dust-left",
+        "allobot-effect-dust-puff",
+        "allobot-effect-dust-right",
+        "allobot-effect-float-reaction",
+        "allobot-effect-jetpack-smoke",
+        "allobotAccessoryArriveLeft",
+        "allobotAccessoryArriveRight",
+        "allobotExit",
+        "allobotFloat",
+        "allobotFolderPage",
+        "allobotGenerationCard",
+        "allobotGenerationCheck",
+        "allobotGenerationClock",
+        "allobotGenerationComplete",
+        "allobotGenerationCompletionCheck",
+        "allobotGenerationDot",
+        "allobotGenerationEnter",
+        "allobotGenerationLine",
+        "allobotGenerationPackNode",
+        "allobotGenerationProgress",
+        "allobotGenerationQuestion",
+        "allobotGenerationResolve",
+        "allobotGenerationScan",
+        "allobotGenerationSpark",
+        "allobotGenerationStageNode",
+        "allobotInboxDrop",
+        "allobotMazeFlag",
+        "allobotPerk",
+        "allobotPop",
+        "allobotProgressPulse",
+        "allobotStopwatchHand",
+        "allobotSway",
+        "allobotTick",
+        "allobotTwinkle",
+        "allobotWorking",
+        "antenna-spring",
+        "antenna-sway",
+        "antenna-tri-bounce",
+        "bot-breathe",
+        "bot-confetti",
+        "bot-fly-tilt",
+        "bot-land",
+        "dust-left",
+        "dust-puff",
+        "dust-right",
+        "float-hands",
+        "float-reaction",
+        "gesture-left",
+        "gesture-right",
+        "happy-nod",
+        "hologram-spin",
+        "jetpack-flame",
+        "jetpack-smoke",
+        "shadow-pulse",
+        "signal-wave",
+        "sympathetic-tilt",
+        "tap-pointer",
+        "voice-wave",
+        "wave-hello",
+        "wind-streak",
+        "zzz-float"
+      ],
+      "parsedKeyframes": [
+        "allo-backflip",
+        "allo-float",
+        "allo-look-around",
+        "allo-puff",
+        "allo-shrug",
+        "allo-wave",
+        "allobot-effect-confetti",
+        "allobot-effect-confetti-ring",
+        "allobot-effect-dust-left",
+        "allobot-effect-dust-puff",
+        "allobot-effect-dust-right",
+        "allobot-effect-float-reaction",
+        "allobot-effect-jetpack-smoke",
+        "allobotAccessoryArriveLeft",
+        "allobotAccessoryArriveRight",
+        "allobotExit",
+        "allobotFloat",
+        "allobotFolderPage",
+        "allobotGenerationCard",
+        "allobotGenerationCheck",
+        "allobotGenerationClock",
+        "allobotGenerationComplete",
+        "allobotGenerationCompletionCheck",
+        "allobotGenerationDot",
+        "allobotGenerationEnter",
+        "allobotGenerationLine",
+        "allobotGenerationPackNode",
+        "allobotGenerationProgress",
+        "allobotGenerationQuestion",
+        "allobotGenerationResolve",
+        "allobotGenerationScan",
+        "allobotGenerationSpark",
+        "allobotGenerationStageNode",
+        "allobotInboxDrop",
+        "allobotMazeFlag",
+        "allobotPerk",
+        "allobotPop",
+        "allobotProgressPulse",
+        "allobotStopwatchHand",
+        "allobotSway",
+        "allobotTick",
+        "allobotTwinkle",
+        "allobotWorking",
+        "antenna-spring",
+        "antenna-sway",
+        "antenna-tri-bounce",
+        "bot-breathe",
+        "bot-confetti",
+        "bot-fly-tilt",
+        "bot-land",
+        "dust-left",
+        "dust-puff",
+        "dust-right",
+        "float-hands",
+        "float-reaction",
+        "gesture-left",
+        "gesture-right",
+        "happy-nod",
+        "hologram-spin",
+        "jetpack-flame",
+        "jetpack-smoke",
+        "shadow-pulse",
+        "signal-wave",
+        "sympathetic-tilt",
+        "tap-pointer",
+        "voice-wave",
+        "wave-hello",
+        "wind-streak",
+        "zzz-float"
+      ],
+      "keyframeRuleCount": 69,
+      "animationBindingCount": 68,
+      "animationReferences": [
+        "allo-backflip",
+        "allo-float",
+        "allo-look-around",
+        "allo-puff",
+        "allo-shrug",
+        "allo-wave",
+        "allobot-effect-confetti",
+        "allobot-effect-confetti-ring",
+        "allobot-effect-dust-left",
+        "allobot-effect-dust-puff",
+        "allobot-effect-dust-right",
+        "allobot-effect-float-reaction",
+        "allobot-effect-jetpack-smoke",
+        "allobotAccessoryArriveLeft",
+        "allobotAccessoryArriveRight",
+        "allobotExit",
+        "allobotFloat",
+        "allobotFolderPage",
+        "allobotGenerationCard",
+        "allobotGenerationCheck",
+        "allobotGenerationClock",
+        "allobotGenerationComplete",
+        "allobotGenerationCompletionCheck",
+        "allobotGenerationDot",
+        "allobotGenerationEnter",
+        "allobotGenerationLine",
+        "allobotGenerationPackNode",
+        "allobotGenerationProgress",
+        "allobotGenerationQuestion",
+        "allobotGenerationResolve",
+        "allobotGenerationScan",
+        "allobotGenerationSpark",
+        "allobotGenerationStageNode",
+        "allobotInboxDrop",
+        "allobotMazeFlag",
+        "allobotPerk",
+        "allobotPop",
+        "allobotProgressPulse",
+        "allobotStopwatchHand",
+        "allobotSway",
+        "allobotTick",
+        "allobotTwinkle",
+        "allobotWorking",
+        "antenna-spring",
+        "antenna-sway",
+        "antenna-tri-bounce",
+        "bot-breathe",
+        "bot-confetti",
+        "bot-fly-tilt",
+        "bot-land",
+        "dust-left",
+        "dust-puff",
+        "dust-right",
+        "float-hands",
+        "float-reaction",
+        "gesture-left",
+        "gesture-right",
+        "happy-nod",
+        "hologram-spin",
+        "jetpack-flame",
+        "jetpack-smoke",
+        "shadow-pulse",
+        "signal-wave",
+        "sympathetic-tilt",
+        "tap-pointer",
+        "wave-hello",
+        "wind-streak",
+        "zzz-float"
+      ],
+      "runtimeAnimations": [
+        {
+          "name": "wave",
+          "className": "animate-allo-wave",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-wave"
+          ]
+        },
+        {
+          "name": "backflip",
+          "className": "animate-allo-backflip",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-backflip"
+          ]
+        },
+        {
+          "name": "shrug",
+          "className": "animate-allo-shrug",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-shrug"
+          ]
+        },
+        {
+          "name": "look-around",
+          "className": "animate-allo-look-around",
+          "sources": [
+            "ambient"
+          ],
+          "animationNames": [
+            "allo-look-around"
+          ]
+        },
+        {
+          "name": "wave-hello",
+          "className": "animate-allo-wave-hello",
+          "sources": [
+            "summon",
+            "intro"
+          ],
+          "animationNames": [
+            "wave-hello"
+          ]
+        },
+        {
+          "name": "sympathetic-tilt",
+          "className": "animate-allo-sympathetic-tilt",
+          "sources": [
+            "imperative"
+          ],
+          "animationNames": [
+            "sympathetic-tilt"
+          ]
+        }
+      ],
+      "keyframesSha256": "588c69d5edb1f9f51e8118bcf6618c17628571ff348a1f2e80db50f687db91d6",
+      "animationBindingsSha256": "32011b701f4524823d4c265c9bbc9d0d51879e469bedf144378ec03cf5920d9f"
+    }
+  },
   "scenarios": {
     "light-idle--64px": {
-      "domSha256": "d1cfaeeeb221642580be63b1bf6f47f18977152bc110ce63c05ff012722e02d5",
+      "domSha256": "5b7d284310653f6490196e0df6be4e69c9046bea0829ba42732835a1433ccdb2",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "8537608db2d8b654aa2f573af55c2472435e31668b68c9fa6777421abf72eb3a",
+      "paintNodeCount": 116,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -20,16 +638,84 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-idle--200pct": {
-      "domSha256": "d1cfaeeeb221642580be63b1bf6f47f18977152bc110ce63c05ff012722e02d5",
+      "domSha256": "5b7d284310653f6490196e0df6be4e69c9046bea0829ba42732835a1433ccdb2",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "a300ee53b11a635262d8c7da8a4accddd6d620265e2ba7a057eccca73b76c917",
+      "paintNodeCount": 116,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -41,16 +727,84 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-happy--64px": {
-      "domSha256": "9db2ee744c0dc2c45aac00a4504ead83f576a5324441307830ad1131fa626ff2",
+      "domSha256": "47281cbf8d674ffc0b56acf219ac9d455d4267d8ed066f7fc2535f242130b6c1",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "dd7c435b75501708e3f3c923fbefd3a3678e899a10386e99c39728bd6f644a84",
+      "paintNodeCount": 120,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "happy",
@@ -62,16 +816,84 @@
         "avatarFilter": "",
         "mouth": "happy",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.92",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(167, 243, 208)",
+          "stroke": "rgb(110, 231, 183)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(255, 255, 255)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-happy--200pct": {
-      "domSha256": "9db2ee744c0dc2c45aac00a4504ead83f576a5324441307830ad1131fa626ff2",
+      "domSha256": "47281cbf8d674ffc0b56acf219ac9d455d4267d8ed066f7fc2535f242130b6c1",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "1f9c75636be1e52300f412840232f946085c4cbb193b4f143814449f7a85b0ad",
+      "paintNodeCount": 120,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "happy",
@@ -83,16 +905,84 @@
         "avatarFilter": "",
         "mouth": "happy",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.92",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(167, 243, 208)",
+          "stroke": "rgb(110, 231, 183)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(255, 255, 255)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-thinking--64px": {
-      "domSha256": "1f38f766086807b99abbda4e22634cc5f6ffcf78c25b1031b098fb4d4bb03606",
+      "domSha256": "b6c2f56175c8bbc9374ab3086fb4c4f76bbe0d53be977eb5a8268327d3e0e345",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "75ddac0725ee287787fc90fa64b3e295f071c00ec6f5fc4b92429c503e58ed42",
+      "paintNodeCount": 161,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "thinking",
@@ -104,16 +994,84 @@
         "avatarFilter": "",
         "mouth": "thinking",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.92",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(253, 230, 138)",
+          "stroke": "rgb(252, 211, 77)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(254, 243, 199)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-thinking--200pct": {
-      "domSha256": "1f38f766086807b99abbda4e22634cc5f6ffcf78c25b1031b098fb4d4bb03606",
+      "domSha256": "b6c2f56175c8bbc9374ab3086fb4c4f76bbe0d53be977eb5a8268327d3e0e345",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "8c07c5f188b4de55816f5a8c7ac5ff07e9811973c7b662cf670fb226e7af9ac7",
+      "paintNodeCount": 161,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "thinking",
@@ -125,16 +1083,84 @@
         "avatarFilter": "",
         "mouth": "thinking",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.92",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(253, 230, 138)",
+          "stroke": "rgb(252, 211, 77)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(254, 243, 199)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-sad--64px": {
-      "domSha256": "1fd05a3cad28497d91171c8b08de7f8c7694fc473d53620e793ef3b9f3c460ad",
+      "domSha256": "bca6a4fa12652a8155d63dc60a005b478c344d651dccf064313bd125194114d1",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "94f3cdb56a184a25b80948775702305d19c0c7485208474c7360b80dd4cd6755",
+      "paintNodeCount": 120,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "sad",
@@ -146,16 +1172,84 @@
         "avatarFilter": "",
         "mouth": "sad",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.9",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(186, 230, 253)",
+          "stroke": "rgb(147, 197, 253)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(226, 232, 240)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-sad--200pct": {
-      "domSha256": "1fd05a3cad28497d91171c8b08de7f8c7694fc473d53620e793ef3b9f3c460ad",
+      "domSha256": "bca6a4fa12652a8155d63dc60a005b478c344d651dccf064313bd125194114d1",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "c58a3ce8c9b0b8f22004a9a17ce12e00c40ed7f5e96b6c7eb5a30bd6d695e3b6",
+      "paintNodeCount": 120,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "sad",
@@ -167,16 +1261,84 @@
         "avatarFilter": "",
         "mouth": "sad",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.9",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(186, 230, 253)",
+          "stroke": "rgb(147, 197, 253)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(226, 232, 240)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "dark-idle--64px": {
-      "domSha256": "3a2da750edf3dac67e5dcb6d7b97f059fdaa1bab11900abd6394b2a7ab704135",
+      "domSha256": "d1fa83564c5f8933940163bbcbb22ceeb994dfe8c39933d51c8e363c416d7943",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "1f544fe54b792b7c045265ae33a0667304756002f0f168004c2108891c05d457",
+      "paintNodeCount": 116,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "dark",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -188,16 +1350,84 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(0, 0, 0, 0.7) 0px 2px 3px) drop-shadow(rgba(255, 255, 255, 0.16) 0px 0px 1px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(103, 232, 249)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "dark-idle--200pct": {
-      "domSha256": "3a2da750edf3dac67e5dcb6d7b97f059fdaa1bab11900abd6394b2a7ab704135",
+      "domSha256": "d1fa83564c5f8933940163bbcbb22ceeb994dfe8c39933d51c8e363c416d7943",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "592e0a03f98ea4bcd0670e3a151b74f622a402ed3e6629257449efc44aada37e",
+      "paintNodeCount": 116,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "dark",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -209,16 +1439,84 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(0, 0, 0, 0.7) 0px 2px 3px) drop-shadow(rgba(255, 255, 255, 0.16) 0px 0px 1px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(103, 232, 249)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "contrast-idle--64px": {
-      "domSha256": "42a584cdb7f31c4e5bf53374040c3fd9ce8626e22428293e6a15a541110a488d",
+      "domSha256": "b3ba7dd8351fd1d1d737873c7aabc29b0c72d4ccca555ad9ca9669c954f4699b",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "30090302aeb81aa240484b6235bb442e99da24f5cd16d3ea6d2031e71c445f79",
+      "paintNodeCount": 117,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "contrast",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -230,16 +1528,84 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgb(0, 0, 0) 0px 2px 0px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(250, 204, 21)",
+          "stroke": "rgb(255, 255, 255)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(250, 204, 21)",
+          "stroke-width": "2.5px"
+        },
+        "accessory": null
       }
     },
     "contrast-idle--200pct": {
-      "domSha256": "42a584cdb7f31c4e5bf53374040c3fd9ce8626e22428293e6a15a541110a488d",
+      "domSha256": "b3ba7dd8351fd1d1d737873c7aabc29b0c72d4ccca555ad9ca9669c954f4699b",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "4588b1048fb04d36b89900c5980d99541ebc670b4e8d525dafaa28c8c190be06",
+      "paintNodeCount": 117,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "contrast",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -251,16 +1617,1044 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgb(0, 0, 0) 0px 2px 0px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(250, 204, 21)",
+          "stroke": "rgb(255, 255, 255)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(250, 204, 21)",
+          "stroke-width": "2.5px"
+        },
+        "accessory": null
+      }
+    },
+    "light-chrome-top-right--64px": {
+      "domSha256": "75794134ce421b0d6c8c66bbfca24f151de2fa6951d182d199e3714f85e4e453",
+      "chromeDomSha256": "db0a99d413f2180f7a357aee4623f2142022c6bc6e14a0b7c3c3d927ebb28cbe",
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "d15505e650a476a9605f0989c8214530123d840f6868f399ed68b80550e14d5b",
+      "paintNodeCount": 168,
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "bounds": {
+          "left": 106,
+          "top": 22,
+          "rightGap": 22,
+          "bottomGap": 106
+        },
+        "rootBounds": {
+          "left": 106,
+          "top": 22,
+          "rightGap": 22,
+          "bottomGap": 102
+        },
+        "theme": "light",
+        "motionDisabled": true,
+        "chromeControls": 4,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(-0.85px, 0.2px)",
+        "accessorySilhouette": "side-left",
+        "accessoryBounds": {
+          "left": -14.976,
+          "top": 31.328,
+          "rightGap": 55.04,
+          "bottomGap": 3.808,
+          "width": 23.936,
+          "height": 28.864
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "22px",
+          "right": "22px",
+          "bottom": "102px",
+          "left": "106px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "transform-origin": "64px 0px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        },
+        "orbit": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "0.68",
+          "position": "absolute",
+          "top": "-3px",
+          "right": "-3px",
+          "bottom": "-3px",
+          "left": "-3px",
+          "width": "68px",
+          "height": "72px",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgba(79, 70, 229, 0.56)",
+          "border-top-style": "dashed",
+          "border-top-width": "1px",
+          "border-radius": "9999px",
+          "box-shadow": "none",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "transform-origin": "35px 37px"
+        },
+        "orbitMarker": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "-2px",
+          "right": "32px",
+          "bottom": "70px",
+          "left": "32px",
+          "width": "4px",
+          "height": "4px",
+          "background-color": "rgba(79, 70, 229, 0.56)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgb(0, 0, 0)",
+          "border-top-style": "none",
+          "border-top-width": "0px",
+          "border-radius": "9999px",
+          "box-shadow": "rgba(79, 70, 229, 0.56) 0px 70px 0px 0px, rgba(79, 70, 229, 0.56) -35px 35px 0px 0px, rgba(79, 70, 229, 0.56) 35px 35px 0px 0px",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "2px 2px"
+        },
+        "controls": {
+          "hide": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "-8px",
+            "bottom": "44px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(226, 232, 240)",
+            "color": "rgb(71, 85, 105)",
+            "border-top-color": "rgb(255, 255, 255)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(15, 23, 42, 0.18) 0px 4px 10px 0px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "mic": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "40px",
+            "bottom": "-4px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(79, 70, 229)",
+            "border-top-color": "rgb(199, 210, 254)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(15, 23, 42, 0.18) 0px 4px 10px 0px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "settings": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "40px",
+            "bottom": "44px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(79, 70, 229)",
+            "border-top-color": "rgb(199, 210, 254)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(15, 23, 42, 0.18) 0px 4px 10px 0px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "sound": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "-8px",
+            "bottom": "-4px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(241, 245, 249)",
+            "color": "rgb(71, 85, 105)",
+            "border-top-color": "rgb(203, 213, 225)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(15, 23, 42, 0.18) 0px 4px 10px 0px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          }
+        }
+      }
+    },
+    "light-chrome-top-right--200pct": {
+      "domSha256": "75794134ce421b0d6c8c66bbfca24f151de2fa6951d182d199e3714f85e4e453",
+      "chromeDomSha256": "db0a99d413f2180f7a357aee4623f2142022c6bc6e14a0b7c3c3d927ebb28cbe",
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "388ece1dea89bbf900d24eb3829b77ac785539c53ca99920063d0bf3365c3a06",
+      "paintNodeCount": 168,
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "bounds": {
+          "left": 162,
+          "top": 30,
+          "rightGap": 30,
+          "bottomGap": 162
+        },
+        "rootBounds": {
+          "left": 162,
+          "top": 30,
+          "rightGap": 30,
+          "bottomGap": 154
+        },
+        "theme": "light",
+        "motionDisabled": true,
+        "chromeControls": 4,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(-0.85px, 0.2px)",
+        "accessorySilhouette": "side-left",
+        "accessoryBounds": {
+          "left": -29.952,
+          "top": 62.656,
+          "rightGap": 110.08,
+          "bottomGap": 7.616,
+          "width": 47.872,
+          "height": 57.728
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "30px",
+          "right": "30px",
+          "bottom": "222px",
+          "left": "226px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, 0, 0)",
+          "transform-origin": "64px 0px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        },
+        "orbit": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "0.68",
+          "position": "absolute",
+          "top": "-3px",
+          "right": "-3px",
+          "bottom": "-3px",
+          "left": "-3px",
+          "width": "68px",
+          "height": "72px",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgba(79, 70, 229, 0.56)",
+          "border-top-style": "dashed",
+          "border-top-width": "1px",
+          "border-radius": "9999px",
+          "box-shadow": "none",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "transform-origin": "35px 37px"
+        },
+        "orbitMarker": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "-2px",
+          "right": "32px",
+          "bottom": "70px",
+          "left": "32px",
+          "width": "4px",
+          "height": "4px",
+          "background-color": "rgba(79, 70, 229, 0.56)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgb(0, 0, 0)",
+          "border-top-style": "none",
+          "border-top-width": "0px",
+          "border-radius": "9999px",
+          "box-shadow": "rgba(79, 70, 229, 0.56) 0px 70px 0px 0px, rgba(79, 70, 229, 0.56) -35px 35px 0px 0px, rgba(79, 70, 229, 0.56) 35px 35px 0px 0px",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "2px 2px"
+        },
+        "controls": {
+          "hide": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "-8px",
+            "bottom": "44px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(226, 232, 240)",
+            "color": "rgb(71, 85, 105)",
+            "border-top-color": "rgb(255, 255, 255)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(15, 23, 42, 0.18) 0px 4px 10px 0px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "mic": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "40px",
+            "bottom": "-4px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(255, 255, 255)",
+            "color": "rgb(79, 70, 229)",
+            "border-top-color": "rgb(199, 210, 254)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(15, 23, 42, 0.18) 0px 4px 10px 0px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "settings": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "40px",
+            "bottom": "44px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(238, 242, 255)",
+            "color": "rgb(55, 48, 163)",
+            "border-top-color": "rgb(199, 210, 254)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(49, 46, 129, 0.24) 0px 7px 15px 0px",
+            "filter": "none",
+            "transform": "matrix(1, 0, 0, 1, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "sound": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "-8px",
+            "bottom": "-4px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(241, 245, 249)",
+            "color": "rgb(71, 85, 105)",
+            "border-top-color": "rgb(203, 213, 225)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgba(15, 23, 42, 0.18) 0px 4px 10px 0px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          }
+        }
+      }
+    },
+    "contrast-live-chrome-bottom-left--64px": {
+      "domSha256": "1874ee8d0437c553014dfe9a53a8fdceffb2f61862f613533fd9af774e273eb0",
+      "chromeDomSha256": "43a907923792bb5ea7eefb7bcfa17bdc6321d46cec3afcfa8598516357b11cd2",
+      "stylesheetSha256": "93015cd19342786dcaba31e6d70aaf76a7e7b3f4a6b234e19b69e32aa67ff0bc",
+      "paintTreeSha256": "e9d138a271cd69906b59546d67b6442b3960f50d02861cb6c23bc6481022c478",
+      "paintNodeCount": 152,
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "bounds": {
+          "left": 22,
+          "top": 102,
+          "rightGap": 106,
+          "bottomGap": 26
+        },
+        "rootBounds": {
+          "left": 22,
+          "top": 102,
+          "rightGap": 106,
+          "bottomGap": 22
+        },
+        "theme": "contrast",
+        "motionDisabled": true,
+        "chromeControls": 4,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "listening",
+        "body": "listening",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": "listening",
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": "head",
+        "accessoryBounds": {
+          "left": 8.796,
+          "top": -2.944,
+          "rightGap": 6.188,
+          "bottomGap": 42.472,
+          "width": 49.017,
+          "height": 24.472
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "102px",
+          "right": "106px",
+          "bottom": "22px",
+          "left": "22px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "transform-origin": "0px 68px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgb(0, 0, 0) 0px 2px 0px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(250, 204, 21)",
+          "stroke": "rgb(255, 255, 255)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(250, 204, 21)",
+          "stroke-width": "2.5px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        },
+        "orbit": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "0.68",
+          "position": "absolute",
+          "top": "-3px",
+          "right": "-3px",
+          "bottom": "-3px",
+          "left": "-3px",
+          "width": "68px",
+          "height": "72px",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgb(250, 204, 21)",
+          "border-top-style": "solid",
+          "border-top-width": "1px",
+          "border-radius": "9999px",
+          "box-shadow": "rgba(255, 255, 255, 0.32) 0px 0px 0px 3px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "transform-origin": "35px 37px"
+        },
+        "orbitMarker": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "-2px",
+          "right": "32px",
+          "bottom": "70px",
+          "left": "32px",
+          "width": "4px",
+          "height": "4px",
+          "background-color": "rgb(250, 204, 21)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgb(0, 0, 0)",
+          "border-top-style": "none",
+          "border-top-width": "0px",
+          "border-radius": "9999px",
+          "box-shadow": "rgb(250, 204, 21) 0px 70px 0px 0px, rgb(250, 204, 21) -35px 35px 0px 0px, rgb(250, 204, 21) 35px 35px 0px 0px",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "2px 2px"
+        },
+        "controls": {
+          "hide": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "-8px",
+            "bottom": "44px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "border-top-color": "rgb(255, 255, 255)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(0, 0, 0) 3px 3px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 1px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "mic": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "40px",
+            "bottom": "-4px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(0, 0, 0)",
+            "color": "rgb(250, 204, 21)",
+            "border-top-color": "rgb(250, 204, 21)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(255, 255, 255) 0px 0px 0px 3px, rgb(0, 0, 0) 0px 0px 0px 5px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "settings": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "40px",
+            "bottom": "44px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "border-top-color": "rgb(250, 204, 21)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(0, 0, 0) 3px 3px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 1px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "sound": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "-8px",
+            "bottom": "-4px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(0, 0, 0)",
+            "color": "rgb(250, 204, 21)",
+            "border-top-color": "rgb(255, 255, 255)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(0, 0, 0) 3px 3px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 1px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          }
+        }
+      }
+    },
+    "contrast-live-chrome-bottom-left--200pct": {
+      "domSha256": "1874ee8d0437c553014dfe9a53a8fdceffb2f61862f613533fd9af774e273eb0",
+      "chromeDomSha256": "43a907923792bb5ea7eefb7bcfa17bdc6321d46cec3afcfa8598516357b11cd2",
+      "stylesheetSha256": "93015cd19342786dcaba31e6d70aaf76a7e7b3f4a6b234e19b69e32aa67ff0bc",
+      "paintTreeSha256": "35e661e3fb5bd0eb5d92903c5fe0e439195c987d0b8690ef7ec0d9731be54985",
+      "paintNodeCount": 152,
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "bounds": {
+          "left": 30,
+          "top": 154,
+          "rightGap": 162,
+          "bottomGap": 38
+        },
+        "rootBounds": {
+          "left": 30,
+          "top": 154,
+          "rightGap": 162,
+          "bottomGap": 30
+        },
+        "theme": "contrast",
+        "motionDisabled": true,
+        "chromeControls": 4,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "listening",
+        "body": "listening",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": "listening",
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": "head",
+        "accessoryBounds": {
+          "left": 17.591,
+          "top": -5.887,
+          "rightGap": 12.375,
+          "bottomGap": 84.943,
+          "width": 98.034,
+          "height": 48.944
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "222px",
+          "right": "226px",
+          "bottom": "30px",
+          "left": "30px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, 0, 0)",
+          "transform-origin": "0px 68px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgb(0, 0, 0) 0px 2px 0px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(250, 204, 21)",
+          "stroke": "rgb(255, 255, 255)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(250, 204, 21)",
+          "stroke-width": "2.5px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        },
+        "orbit": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "0.68",
+          "position": "absolute",
+          "top": "-3px",
+          "right": "-3px",
+          "bottom": "-3px",
+          "left": "-3px",
+          "width": "68px",
+          "height": "72px",
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgb(250, 204, 21)",
+          "border-top-style": "solid",
+          "border-top-width": "1px",
+          "border-radius": "9999px",
+          "box-shadow": "rgba(255, 255, 255, 0.32) 0px 0px 0px 3px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "transform-origin": "35px 37px"
+        },
+        "orbitMarker": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "-2px",
+          "right": "32px",
+          "bottom": "70px",
+          "left": "32px",
+          "width": "4px",
+          "height": "4px",
+          "background-color": "rgb(250, 204, 21)",
+          "color": "rgb(0, 0, 0)",
+          "border-top-color": "rgb(0, 0, 0)",
+          "border-top-style": "none",
+          "border-top-width": "0px",
+          "border-radius": "9999px",
+          "box-shadow": "rgb(250, 204, 21) 0px 70px 0px 0px, rgb(250, 204, 21) -35px 35px 0px 0px, rgb(250, 204, 21) 35px 35px 0px 0px",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "2px 2px"
+        },
+        "controls": {
+          "hide": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "-8px",
+            "bottom": "44px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "border-top-color": "rgb(255, 255, 255)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(0, 0, 0) 3px 3px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 1px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "mic": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "40px",
+            "bottom": "-4px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(0, 0, 0)",
+            "color": "rgb(250, 204, 21)",
+            "border-top-color": "rgb(250, 204, 21)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(255, 255, 255) 0px 0px 0px 3px, rgb(0, 0, 0) 0px 0px 0px 5px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "settings": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "-8px",
+            "right": "40px",
+            "bottom": "44px",
+            "left": "-8px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(250, 204, 21)",
+            "color": "rgb(0, 0, 0)",
+            "border-top-color": "rgb(250, 204, 21)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(0, 0, 0) 4px 4px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px",
+            "filter": "none",
+            "transform": "matrix(1, 0, 0, 1, 0, 0)",
+            "transform-origin": "16px 16px"
+          },
+          "sound": {
+            "display": "flex",
+            "visibility": "visible",
+            "opacity": "1",
+            "position": "absolute",
+            "top": "40px",
+            "right": "-8px",
+            "bottom": "-4px",
+            "left": "40px",
+            "width": "32px",
+            "height": "32px",
+            "background-color": "rgb(0, 0, 0)",
+            "color": "rgb(250, 204, 21)",
+            "border-top-color": "rgb(255, 255, 255)",
+            "border-top-style": "solid",
+            "border-top-width": "2px",
+            "border-radius": "9999px",
+            "box-shadow": "rgb(0, 0, 0) 3px 3px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 1px",
+            "filter": "none",
+            "transform": "matrix(0.75, 0, 0, 0.75, 0, 0)",
+            "transform-origin": "16px 16px"
+          }
+        }
       }
     },
     "light-listening--64px": {
-      "domSha256": "29818cde203742e6f6ef6fa330a1bb64f27998a41f4efd02345f66149bb226c3",
+      "domSha256": "661b13bfe790df00be6bd1dfa8ab946599ba521830f519e92a60230485975ada",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "93015cd19342786dcaba31e6d70aaf76a7e7b3f4a6b234e19b69e32aa67ff0bc",
+      "paintTreeSha256": "88e7d28a27317577afe7ad021e569beafd6a7335bea52c64318d6e9b55214065",
+      "paintNodeCount": 125,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "listening",
@@ -272,16 +2666,84 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": "listening",
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-listening--200pct": {
-      "domSha256": "29818cde203742e6f6ef6fa330a1bb64f27998a41f4efd02345f66149bb226c3",
+      "domSha256": "661b13bfe790df00be6bd1dfa8ab946599ba521830f519e92a60230485975ada",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "93015cd19342786dcaba31e6d70aaf76a7e7b3f4a6b234e19b69e32aa67ff0bc",
+      "paintTreeSha256": "9070ff9bc752562de08e56eb3220beab58b12aaf1925817857bbe146b93e04b4",
+      "paintNodeCount": 125,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "listening",
@@ -293,16 +2755,84 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": "listening",
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-talking--64px": {
-      "domSha256": "f567d22e8a2d422960c28aa5bbb6f5475be85723dc97f2327459ede80d469f8c",
+      "domSha256": "895e168f330375eb5e5980dcc8e111261e00ae6395f14816de5ef85083c34b33",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "32354b197fd6c84c286b9c7e32cacc13191d8a21b729509ea6e1429514ee147f",
+      "paintNodeCount": 123,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "talking",
@@ -314,16 +2844,84 @@
         "avatarFilter": "",
         "mouth": "talking",
         "voiceCue": "talking",
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-talking--200pct": {
-      "domSha256": "f567d22e8a2d422960c28aa5bbb6f5475be85723dc97f2327459ede80d469f8c",
+      "domSha256": "895e168f330375eb5e5980dcc8e111261e00ae6395f14816de5ef85083c34b33",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "7858c052a3397a9d00d57ebbdd3278f5191f787c714219828518f4bcd05496b3",
+      "paintNodeCount": 123,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "talking",
@@ -335,16 +2933,84 @@
         "avatarFilter": "",
         "mouth": "talking",
         "voiceCue": "talking",
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": null,
+        "accessoryBounds": null,
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": null
       }
     },
     "light-sleeping--64px": {
-      "domSha256": "98f37d9ff2de53217be87f61f43402b17b8b39f26ef8d13e55707d643d090e12",
+      "domSha256": "82372657e93c4be9d4dbf186bf0bffc43d10723d63bf85eb8f7c58837d5deb9e",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "8476b16ce38938eef06700aa351ce3d8cef8a336d6023707acb5770ce1c36f5c",
+      "paintNodeCount": 124,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 72,
+          "rightGap": 64,
+          "bottomGap": 56
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 0,
         "cores": 0,
         "sparkles": 0,
         "face": "sleeping",
@@ -356,16 +3022,113 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": ""
+        "eyeTransform": "",
+        "accessorySilhouette": "head",
+        "accessoryBounds": {
+          "left": 18.202,
+          "top": 2.672,
+          "rightGap": 12.4,
+          "bottomGap": 27.302,
+          "width": 33.398,
+          "height": 34.026
+        },
+        "avatarAction": {
+          "kind": "wake",
+          "bounds": {
+            "left": 0,
+            "top": 10,
+            "width": 64,
+            "height": 68
+          },
+          "appearance": "none",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderWidths": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ]
+        }
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": null,
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-sleeping--200pct": {
-      "domSha256": "98f37d9ff2de53217be87f61f43402b17b8b39f26ef8d13e55707d643d090e12",
+      "domSha256": "82372657e93c4be9d4dbf186bf0bffc43d10723d63bf85eb8f7c58837d5deb9e",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "6d2c1329070573fb8f0e952fe2acf8e175bff3ef587000e8e3263da0a47afed8",
+      "paintNodeCount": 124,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 112,
+          "rightGap": 96,
+          "bottomGap": 80
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 0,
         "cores": 0,
         "sparkles": 0,
         "face": "sleeping",
@@ -377,16 +3140,113 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": ""
+        "eyeTransform": "",
+        "accessorySilhouette": "head",
+        "accessoryBounds": {
+          "left": 36.403,
+          "top": 5.344,
+          "rightGap": 24.8,
+          "bottomGap": 54.605,
+          "width": 66.797,
+          "height": 68.051
+        },
+        "avatarAction": {
+          "kind": "wake",
+          "bounds": {
+            "left": 0,
+            "top": 20,
+            "width": 128,
+            "height": 136
+          },
+          "appearance": "none",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderWidths": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ],
+          "padding": [
+            "0px",
+            "0px",
+            "0px",
+            "0px"
+          ]
+        }
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": null,
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-prop-gaze-left--64px": {
-      "domSha256": "eb327adfa7c803791575b0d9b02029348139d8465cfdab9c9a8dd5b0aee3f3c7",
+      "domSha256": "d5aa034badc341f52d771dd4294361737d3b61ff9b5076a0d95e2988c782d3f9",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "97d6b941a94d79b5324f806d0be1ce208ac867c7f2e4f73505e28166ebfb1f3b",
+      "paintNodeCount": 148,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -398,16 +3258,101 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(-0.85px, 0.2px)"
+        "eyeTransform": "translate(-0.85px, 0.2px)",
+        "accessorySilhouette": "side-left",
+        "accessoryBounds": {
+          "left": 1.28,
+          "top": 15.36,
+          "rightGap": 42.24,
+          "bottomGap": 3.84,
+          "width": 20.48,
+          "height": 44.8
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-prop-gaze-left--200pct": {
-      "domSha256": "eb327adfa7c803791575b0d9b02029348139d8465cfdab9c9a8dd5b0aee3f3c7",
+      "domSha256": "d5aa034badc341f52d771dd4294361737d3b61ff9b5076a0d95e2988c782d3f9",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "e564bca4b5ce900bd2e6bc176a3941dab01e51ab1a852c71bf2b701be1fb628a",
+      "paintNodeCount": 148,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
@@ -419,58 +3364,313 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(-0.85px, 0.2px)"
+        "eyeTransform": "translate(-0.85px, 0.2px)",
+        "accessorySilhouette": "side-left",
+        "accessoryBounds": {
+          "left": 2.56,
+          "top": 30.72,
+          "rightGap": 84.48,
+          "bottomGap": 7.68,
+          "width": 40.96,
+          "height": 89.6
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-prop-gaze-right--64px": {
-      "domSha256": "c6142e6ea271c80306f525f70df7b2da2b8d922f980aa33d4209ab1f6e5d5890",
+      "domSha256": "b75f5f8031d81e7da44d7a49b99c2c2a10b546b2fea6e589034fac4bd9b00b5b",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "4e0d2f3813d86cad1068c4a989901afe55a9555664f3e71c375eeeffc21a1ea3",
+      "paintNodeCount": 148,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
         "body": "ready",
         "avatarTop": "80px",
-        "avatarRight": "410px",
+        "avatarRight": "406px",
         "avatarTransform": "translateY(0px) scale(1)",
         "avatarOpacity": "",
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0.85px, 0.2px)"
+        "eyeTransform": "translate(0.85px, 0.2px)",
+        "accessorySilhouette": "side-right",
+        "accessoryBounds": {
+          "left": 42.24,
+          "top": 15.36,
+          "rightGap": 1.28,
+          "bottomGap": 3.84,
+          "width": 20.48,
+          "height": 44.8
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-prop-gaze-right--200pct": {
-      "domSha256": "c6142e6ea271c80306f525f70df7b2da2b8d922f980aa33d4209ab1f6e5d5890",
+      "domSha256": "b75f5f8031d81e7da44d7a49b99c2c2a10b546b2fea6e589034fac4bd9b00b5b",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "c9eb43182c2266716d826fe54975573cfb0e47cef2e9ec2107f361fc86e94123",
+      "paintNodeCount": 148,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 4,
         "face": "idle",
         "body": "ready",
         "avatarTop": "80px",
-        "avatarRight": "410px",
+        "avatarRight": "406px",
         "avatarTransform": "translateY(0px) scale(1)",
         "avatarOpacity": "",
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0.85px, 0.2px)"
+        "eyeTransform": "translate(0.85px, 0.2px)",
+        "accessorySilhouette": "side-right",
+        "accessoryBounds": {
+          "left": 84.48,
+          "top": 30.72,
+          "rightGap": 2.56,
+          "bottomGap": 7.68,
+          "width": 40.96,
+          "height": 89.6
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-scholar-specs--64px": {
-      "domSha256": "e307ec82cbdbb6cd0053591399d5127a9d45f28aedfa5ea127ffe82b7a5c8059",
+      "domSha256": "0d5da702d4a060d83d66a577633f69d68b938b9ef550f6ff9fc0639a0b9038a9",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "55b5ac5a0579bae45b38ee4eda621fdad2a085a2111ce6045260fb87f8247e70",
+      "paintNodeCount": 137,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 0,
         "face": "idle",
@@ -482,16 +3682,101 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": "face-and-side",
+        "accessoryBounds": {
+          "left": -16.422,
+          "top": 25.21,
+          "rightGap": 14.618,
+          "bottomGap": 17.062,
+          "width": 65.805,
+          "height": 21.728
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-scholar-specs--200pct": {
-      "domSha256": "e307ec82cbdbb6cd0053591399d5127a9d45f28aedfa5ea127ffe82b7a5c8059",
+      "domSha256": "0d5da702d4a060d83d66a577633f69d68b938b9ef550f6ff9fc0639a0b9038a9",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "caec471158e1f26a44f47f3ab188837520618e4122a248972bda0007e9e25034",
+      "paintNodeCount": 137,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 0,
         "face": "idle",
@@ -503,16 +3788,101 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": "face-and-side",
+        "accessoryBounds": {
+          "left": -32.845,
+          "top": 50.419,
+          "rightGap": 29.235,
+          "bottomGap": 34.125,
+          "width": 131.61,
+          "height": 43.456
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-librarian-kit--64px": {
-      "domSha256": "f9125986ba67e450266b61efa0832128cdbbec49ff6bad454c9bedc91c2ab5b0",
+      "domSha256": "28f914061b04ea6dfc311e7c94ab79c363dca190c969b2d195bb154b2d6a73ac",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "ee545d43c47976e774de1d2e32e73bb9db5a98c8f203ea83b23f8d47dd04a71b",
+      "paintNodeCount": 142,
       "measurements": {
         "width": 64,
         "height": 64,
+        "bounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 66
+        },
+        "rootBounds": {
+          "left": 64,
+          "top": 62,
+          "rightGap": 64,
+          "bottomGap": 62
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 0,
         "face": "idle",
@@ -524,16 +3894,101 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": "face-and-side",
+        "accessoryBounds": {
+          "left": -15.982,
+          "top": 25.744,
+          "rightGap": 2.668,
+          "bottomGap": 12.112,
+          "width": 77.314,
+          "height": 26.144
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "96px",
+          "right": "32px",
+          "bottom": "28px",
+          "left": "96px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(1, 0, 0, 1, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     },
     "light-librarian-kit--200pct": {
-      "domSha256": "f9125986ba67e450266b61efa0832128cdbbec49ff6bad454c9bedc91c2ab5b0",
+      "domSha256": "28f914061b04ea6dfc311e7c94ab79c363dca190c969b2d195bb154b2d6a73ac",
+      "chromeDomSha256": null,
+      "stylesheetSha256": "d93e898637b5aa787b4da4c44f2c7c561b177e055affb5925abd75b5def5091d",
+      "paintTreeSha256": "8be75252d1a329afe49f3523d4ec3abf24ea270f2f5314b0d543941c49a282c4",
+      "paintNodeCount": 142,
       "measurements": {
         "width": 128,
         "height": 128,
+        "bounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 100
+        },
+        "rootBounds": {
+          "left": 96,
+          "top": 92,
+          "rightGap": 96,
+          "bottomGap": 92
+        },
         "theme": "light",
         "motionDisabled": true,
+        "chromeControls": 1,
         "cores": 2,
         "sparkles": 0,
         "face": "idle",
@@ -545,7 +4000,75 @@
         "avatarFilter": "",
         "mouth": "idle",
         "voiceCue": null,
-        "eyeTransform": "translate(0px, 0px)"
+        "eyeTransform": "translate(0px, 0px)",
+        "accessorySilhouette": "face-and-side",
+        "accessoryBounds": {
+          "left": -31.964,
+          "top": 51.488,
+          "rightGap": 5.336,
+          "bottomGap": 24.224,
+          "width": 154.628,
+          "height": 52.288
+        },
+        "avatarAction": null
+      },
+      "computedPaint": {
+        "avatar": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "position": "absolute",
+          "top": "160px",
+          "right": "96px",
+          "bottom": "92px",
+          "left": "160px",
+          "width": "64px",
+          "height": "68px",
+          "filter": "none",
+          "transform": "matrix(2, 0, 0, 2, -32, -34)",
+          "transform-origin": "32px 34px"
+        },
+        "body": {
+          "display": "block",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "drop-shadow(rgba(15, 23, 42, 0.28) 0px 2px 3px)",
+          "transform": "none",
+          "transform-origin": "32px 34px"
+        },
+        "eyeCore": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "0.94",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "rgb(224, 242, 254)",
+          "stroke": "rgb(165, 180, 252)",
+          "stroke-width": "0.55px"
+        },
+        "mouth": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "rgb(34, 211, 238)",
+          "stroke-width": "2px"
+        },
+        "accessory": {
+          "display": "inline",
+          "visibility": "visible",
+          "opacity": "1",
+          "filter": "none",
+          "transform": "none",
+          "transform-origin": "0px 0px",
+          "fill": "none",
+          "stroke": "none",
+          "stroke-width": "1px"
+        }
       }
     }
   }

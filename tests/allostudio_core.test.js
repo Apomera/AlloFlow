@@ -657,6 +657,69 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(data.instructions).toMatch(/Instructions/i);
     expect(data.questions.map(q => q.prompt)).toEqual(['Question 1', 'Question 2', 'Question 3']);
   });
+  it('exports all text runs during worksheet round-trip', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Runs', T0);
+    ST.stAppend(d, { type: 'object.add', object: {
+      type: 'text', role: 'heading1', frame: { x: 20, y: 20, w: 420, h: 52 }, z: 1,
+      runs: [{ text: 'Worksheet ' }, { text: 'title' }]
+    } }, 'user', T0);
+    ST.stAppend(d, { type: 'object.add', object: {
+      type: 'text', role: 'body', frame: { x: 20, y: 90, w: 420, h: 52 }, z: 1,
+      runs: [{ text: 'Read ' }, { text: 'carefully.' }]
+    } }, 'user', T0 + 1);
+    expect(ST.stExportWorksheetMarkdown(d)).toContain('# Worksheet title');
+    expect(ST.stExportWorksheetMarkdown(d)).toContain('Read carefully.');
+  });
+  it('preserves Activity worksheet lineage on the imported Studio document', () => {
+    const doc = ST.stActivityWorksheetDocFromResource({
+      title: 'Jigsaw worksheet',
+      worksheet: '# Jigsaw worksheet\n1. Explain your chunk.',
+      artifactId: 'pack-1-activity-2-worksheet',
+      parentResourceId: 'pack-1',
+      activityIndex: 2,
+      activityKind: 'jigsaw',
+      sourceTitle: 'Rock cycle activities',
+      sourceRevision: 'hash-7'
+    }, { now: T0 });
+    expect(doc.provenance).toMatchObject({
+      origin: 'activity-worksheet',
+      artifactType: 'worksheet',
+      artifactId: 'pack-1-activity-2-worksheet',
+      parentResourceId: 'pack-1',
+      activityIndex: 2,
+      activityKind: 'jigsaw',
+      sourceTitle: 'Rock cycle activities',
+      sourceType: 'activity-worksheet',
+      sourceRevision: 'hash-7'
+    });
+  });
+  it('preserves Activity lineage when resource cues become deck pages', () => {
+    const built = ST.stDeckFromResourceCues([{
+      id: 'pack-1-activity-2-worksheet',
+      kind: 'activity-worksheet',
+      label: 'Jigsaw worksheet',
+      text: 'Explain your chunk.',
+      sourceTitle: 'Rock cycle activities',
+      sourceType: 'activity-worksheet',
+      parentResourceId: 'pack-1',
+      activityIndex: 2,
+      activityKind: 'jigsaw',
+      artifactType: 'worksheet',
+      artifactId: 'pack-1-activity-2-worksheet',
+      sourceRevision: 'hash-7'
+    }], { now: T0, title: 'Rock cycle deck' });
+    const sourcedObjects = built.doc.objects.filter(object => object && object.provenance);
+    expect(sourcedObjects.length).toBeGreaterThan(0);
+    expect(sourcedObjects.every(object => object.provenance)).toBe(true);
+    expect(sourcedObjects[0].provenance).toMatchObject({
+      parentResourceId: 'pack-1',
+      activityIndex: 2,
+      activityKind: 'jigsaw',
+      artifactType: 'worksheet',
+      artifactId: 'pack-1-activity-2-worksheet',
+      sourceRevision: 'hash-7'
+    });
+  });
   it('worksheet bridge emits a linear, semantic worksheet document (ol/li + answer regions)', () => {
     const ws = ST.stTemplates().find(t => t.key === 'worksheet').make(T0);
     const html = ST.stExportWorksheetHtml(ws, { lang: 'en' });
@@ -720,6 +783,28 @@ describe('resource shelf + portfolio continuity helpers', () => {
     expect(cues.find(c => c.label === 'Cloud diagram').imageSrc).toMatch(/^data:image/);
     expect(cues.find(c => c.label === 'Remote image').imageSrc).toBe('');
   });
+  it('fans out generated artifacts from other lesson resource types', () => {
+    const cues = ST.stBuildResourceCues([{
+      id: 'lesson-1',
+      type: 'lesson-plan',
+      title: 'Cell lesson',
+      data: {
+        guide: 'Teacher steps',
+        worksheet: '## Exit ticket\n1. Name one cell part.',
+        rubric: { criteria: [{ criterion: 'Accuracy', levels: { '4': 'Explains clearly.' } }] },
+        coverImage: 'data:image/png;base64,abc'
+      },
+      derivatives: { worksheet: { version: 3, contentHash: 'hash-7' } }
+    }], { limit: 20 });
+    expect(cues.map(c => c.kind)).toEqual(expect.arrayContaining([
+      'lesson-guide', 'lesson-worksheet', 'lesson-rubric', 'lesson-cover'
+    ]));
+    expect(cues.find(c => c.kind === 'lesson-worksheet')).toMatchObject({
+      parentResourceId: 'lesson-1',
+      artifactType: 'worksheet',
+      sourceRevision: 'hash-7'
+    });
+  });
   it('filters source cues by kind and search text for a calmer shelf', () => {
     const cues = [
       { id: 'img', kind: 'image', label: 'Cloud diagram', text: 'Water cycle visual', sourceTitle: 'Science pack' },
@@ -739,10 +824,20 @@ describe('resource shelf + portfolio continuity helpers', () => {
       label: 'Habitat',
       text: 'The place where a living thing gets what it needs.',
       imageSrc: 'data:image/png;base64,abc',
-      sourceTitle: 'Science pack'
+      sourceTitle: 'Science pack',
+      parentResourceId: 'lesson-1',
+      activityIndex: 2,
+      activityKind: 'jigsaw',
+      artifactType: 'worksheet',
+      artifactId: 'lesson-1-activity-2-worksheet',
+      sourceRevision: 'hash-7'
     }, { canvas: ST.ST_CANVAS_PRESETS['letter-portrait'], x: 40, y: 50, w: 500 });
     expect(objects.map(o => o.type)).toEqual(expect.arrayContaining(['shape', 'text', 'image']));
     expect(objects.every(o => o.provenance && o.provenance.origin === 'resource-history')).toBe(true);
+    expect(objects.every(o => o.provenance && o.provenance.parentResourceId === 'lesson-1')).toBe(true);
+    expect(objects.every(o => o.provenance && o.provenance.activityIndex === 2)).toBe(true);
+    expect(objects.every(o => o.provenance && o.provenance.artifactType === 'worksheet')).toBe(true);
+    expect(objects.every(o => o.provenance && o.provenance.sourceRevision === 'hash-7')).toBe(true);
     expect(objects.find(o => o.type === 'image').alt).toBe('Habitat');
     expect(objects.some(o => o.type === 'text' && /Definition/.test(o.runs[0].text))).toBe(true);
   });

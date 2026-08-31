@@ -36,7 +36,7 @@ function mainBootstrap(role = 'student') {
     students: role === 'student' ? [{ id: 'student-1', firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', balance: 120, reservedPoints: 20, availableBalance: 100 }] : [],
     categories: [], progress: [], catalog: [],
     windows: [{ id: 'window-1', name: 'Trimester 1', status: 'OPEN' }],
-    recentLedger: [], recentOrders: [], emailSchedule: {}, mailQuota: 100,
+    recentLedger: [], recentOrders: [], recentReceipts: [], emailSchedule: {}, mailQuota: 100,
   };
 }
 
@@ -136,6 +136,204 @@ function printHandoff(sourceFormat = 'RECIPE', overrides = {}) {
 }
 
 describe('School Rewards Print Lab portal', () => {
+  it('shows the truly available student balance instead of reserved points as spendable', async () => {
+    const app = await runPortal();
+    expect(app.nodes['metric-students-label'].textContent).toBe('My available-to-spend balance');
+    expect(app.nodes['metric-students'].textContent).toBe('100 pts');
+    expect(app.nodes['metric-students-detail'].textContent).toBe('120 ledger total • 20 reserved');
+  });
+
+  it('shows student prize affordability and protects external catalog image requests', async () => {
+    const main = mainBootstrap('student');
+    main.catalog = [
+      { id: 'prize-1', name: 'Sketch & Make Kit', description: 'Creative supplies', cost: 100, inventoryLimit: -1, remaining: -1, imageUrl: 'https://images.example/sketch-kit.jpg', active: true },
+      { id: 'prize-2', name: 'Maker Lab Pass', description: 'A special lab session', cost: 135, inventoryLimit: 8, remaining: 3, imageUrl: '', active: true },
+    ];
+    const app = await runPortal({ mainBootstrapData: main });
+    const preview = app.nodes['preview-catalog'].innerHTML;
+    const store = app.nodes['store-catalog'].innerHTML;
+    expect(preview).toContain('Within your balance');
+    expect(preview).toContain('35 more points needed');
+    expect(store).toContain('Within your balance');
+    expect(store).toContain('35 more points needed');
+    expect(preview).toContain('alt="Sketch &amp; Make Kit prize"');
+    expect(preview).toContain('loading="lazy"');
+    expect(preview).toContain('decoding="async"');
+    expect(preview).toContain('referrerpolicy="no-referrer"');
+  });
+
+  it('preserves cashier add-to-cart controls without student affordability cues', async () => {
+    const main = mainBootstrap('cashier');
+    main.catalog = [{ id: 'prize-1', name: 'Sketchbook', description: 'Blank pages', cost: 20, inventoryLimit: 10, remaining: 5, imageUrl: '', active: true }];
+    const app = await runPortal({ role: 'cashier', mainBootstrapData: main });
+    const store = app.nodes['store-catalog'].innerHTML;
+    expect(store).toContain('data-add="prize-1"');
+    expect(store).toContain('aria-label="Add Sketchbook to cart"');
+    expect(store).toContain('Add to cart');
+    expect(store).not.toContain('Within your balance');
+    expect(store).not.toContain('more points needed');
+  });
+
+  it('measures category progress within the current level interval', async () => {
+    const main = mainBootstrap('student');
+    main.progress = [{ categoryId: 'category-1', name: 'Perseverance', framework: 'HOWL', description: 'Keeps working through challenge.', color: '#b45309', points: 50, levelName: 'Growing', currentThreshold: 25, nextThreshold: 75, pointsToNext: 25 }];
+    const app = await runPortal({ mainBootstrapData: main });
+    expect(app.nodes['category-progress'].innerHTML).toContain('width:50%');
+    expect(app.nodes['category-progress'].innerHTML).toContain('aria-valuenow="50"');
+    expect(app.nodes['category-progress'].innerHTML).toContain('HOWL • Keeps working through challenge.');
+  });
+
+  it('submits a categorized award only once while the first request is pending', async () => {
+    const main = mainBootstrap('student');
+    main.actor = { role: 'staff', email: 'teacher@school.example' };
+    main.categories = [{ id: 'category-1', name: 'Perseverance', framework: 'HOWL', description: 'Keeps working.', color: '#b45309' }];
+    let releaseAward;
+    const awardResponse = new Promise(resolve => { releaseAward = resolve; });
+    const app = await runPortal({ role: 'staff', mainBootstrapData: main, rpcResponses: { awardSchoolRewardsPoints: () => awardResponse } });
+    app.nodes['award-student'].value = 'student-1';
+    app.nodes['award-amount'].value = '5';
+    app.nodes['award-category'].value = 'category-1';
+    app.nodes['award-reason'].value = 'Revised the design after testing.';
+    const first = app.nodes['award-form'].onsubmit({ preventDefault() {}, target: app.nodes['award-form'] });
+    const second = app.nodes['award-form'].onsubmit({ preventDefault() {}, target: app.nodes['award-form'] });
+    expect(app.calls.filter(call => call.name === 'awardSchoolRewardsPoints')).toHaveLength(1);
+    expect(app.nodes['award-submit'].disabled).toBe(true);
+    releaseAward({ ok: true, balance: 125 });
+    await Promise.all([first, second]);
+    await flush();
+    expect(app.nodes['award-submit'].disabled).toBe(false);
+  });
+
+  it('edits and deactivates categories without offering inactive ones for new awards', async () => {
+    const main = mainBootstrap('admin');
+    main.students = [{ id: 'student-1', firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', balance: 100, reservedPoints: 0, availableBalance: 100 }];
+    main.categories = [
+      { id: 'category-active', name: 'Collaboration', framework: 'HOWL', description: 'Helps the group learn.', color: '#0f766e', sortOrder: 10, active: true },
+      { id: 'category-history', name: 'Legacy Habit', framework: 'CUSTOM', description: 'Preserved for historical growth.', color: '#6046b6', sortOrder: 20, active: false },
+    ];
+    const app = await runPortal({ role: 'admin', mainBootstrapData: main, rpcResponses: { adminUpsertRewardsCategory: { ok: true, category: main.categories[1] } } });
+    expect(app.nodes['award-category'].innerHTML).toContain('Collaboration');
+    expect(app.nodes['award-category'].innerHTML).not.toContain('Legacy Habit');
+    expect(app.nodes['category-id'].innerHTML).toContain('Legacy Habit — INACTIVE');
+
+    app.nodes['category-id'].value = 'category-history';
+    app.nodes['category-id'].onchange();
+    expect(app.nodes['category-name'].value).toBe('Legacy Habit');
+    expect(app.nodes['category-active'].checked).toBe(false);
+    expect(app.nodes['category-submit'].textContent).toBe('Save category changes');
+    app.nodes['category-name'].value = 'Legacy Habit Updated';
+    await app.nodes['category-form'].onsubmit({ preventDefault() {}, target: app.nodes['category-form'] });
+    const save = app.calls.find(call => call.name === 'adminUpsertRewardsCategory');
+    expect(save.argument).toMatchObject({ id: 'category-history', name: 'Legacy Habit Updated', active: false });
+  });
+
+  it('edits student roster status while keeping inactive students out of award, checkout, guardian, and active metrics', async () => {
+    const main = mainBootstrap('admin');
+    main.students = [
+      { id: 'student-active', firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', email: 'avery@school.example', balance: 100, reservedPoints: 5, availableBalance: 95, active: true },
+      { id: 'student-inactive', firstName: 'Jordan', lastInitial: 'K', grade: '6', homeroom: '6B', email: 'jordan@school.example', balance: 40, reservedPoints: 0, availableBalance: 40, active: false },
+    ];
+    main.members = [];
+    const app = await runPortal({ role: 'admin', mainBootstrapData: main, rpcResponses: { adminUpsertRewardsStudent: argument => ({ ok: true, student: { ...main.students.find(student => student.id === argument.id), ...argument } }) } });
+
+    expect(app.nodes['metric-students'].textContent).toBe(1);
+    ['award-student', 'checkout-student', 'guardian-student'].forEach(id => {
+      expect(app.nodes[id].innerHTML).toContain('Avery R.');
+      expect(app.nodes[id].innerHTML).not.toContain('Jordan K.');
+    });
+    expect(app.nodes['student-balances'].innerHTML).not.toContain('Jordan K.');
+    expect(app.nodes['student-id'].innerHTML).toContain('Jordan K. — INACTIVE');
+    expect(app.nodes['student-list'].innerHTML).toContain('INACTIVE');
+
+    app.nodes['student-id'].value = 'student-inactive';
+    app.nodes['student-id'].onchange();
+    expect(app.nodes['student-first'].value).toBe('Jordan');
+    expect(app.nodes['student-active'].checked).toBe(false);
+    expect(app.nodes['student-submit'].textContent).toBe('Save student changes');
+    app.nodes['student-active'].checked = true;
+    await app.nodes['student-form'].onsubmit({ preventDefault() {}, target: app.nodes['student-form'] });
+    expect(app.calls.filter(call => call.name === 'adminUpsertRewardsStudent').at(-1).argument).toMatchObject({ id: 'student-inactive', email: 'jordan@school.example', active: true });
+
+    app.nodes['student-id'].value = 'student-active';
+    app.nodes['student-id'].onchange();
+    app.nodes['student-active'].checked = false;
+    await app.nodes['student-form'].onsubmit({ preventDefault() {}, target: app.nodes['student-form'] });
+    expect(app.calls.filter(call => call.name === 'adminUpsertRewardsStudent').at(-1).argument).toMatchObject({ id: 'student-active', active: false });
+  });
+
+  it('edits staff access without changing its managed identity and surfaces the last-admin rejection', async () => {
+    const main = mainBootstrap('admin');
+    main.students = [{ id: 'student-1', firstName: 'Avery', lastInitial: 'R', email: 'avery@school.example', balance: 0, active: true }];
+    main.members = [
+      { email: 'admin@school.example', displayName: 'Administrator', role: 'admin', active: true },
+      { email: 'cashier@school.example', displayName: 'Store Cashier', role: 'cashier', active: false },
+    ];
+    const app = await runPortal({
+      role: 'admin',
+      mainBootstrapData: main,
+      rpcResponses: {
+        adminUpsertRewardsMember: argument => {
+          if (argument.email === 'admin@school.example' && argument.active === false) throw new Error('At least one active administrator is required.');
+          return { ok: true };
+        },
+      },
+    });
+
+    expect(app.nodes['member-id'].innerHTML).toContain('Store Cashier — INACTIVE');
+    app.nodes['member-id'].value = 'cashier@school.example';
+    app.nodes['member-id'].onchange();
+    expect(app.nodes['member-email'].value).toBe('cashier@school.example');
+    expect(app.nodes['member-email'].readOnly).toBe(true);
+    expect(app.nodes['member-active'].checked).toBe(false);
+    app.nodes['member-role'].value = 'staff';
+    app.nodes['member-active'].checked = true;
+    await app.nodes['member-form'].onsubmit({ preventDefault() {}, target: app.nodes['member-form'] });
+    expect(app.calls.filter(call => call.name === 'adminUpsertRewardsMember').at(-1).argument).toEqual({ email: 'cashier@school.example', displayName: 'Store Cashier', role: 'staff', active: true });
+
+    app.nodes['member-id'].value = '';
+    app.nodes['member-id'].onchange();
+    expect(app.nodes['member-email'].value).toBe('');
+    expect(app.nodes['member-email'].readOnly).toBe(false);
+    expect(app.nodes['member-active'].checked).toBe(true);
+
+    app.nodes['member-id'].value = 'admin@school.example';
+    app.nodes['member-id'].onchange();
+    app.nodes['member-active'].checked = false;
+    await app.nodes['member-form'].onsubmit({ preventDefault() {}, target: app.nodes['member-form'] });
+    expect(app.nodes.notice.textContent).toContain('At least one active administrator is required.');
+    expect(app.nodes.notice.attributes.role).toBe('alert');
+    expect(app.nodes['member-email'].value).toBe('admin@school.example');
+    expect(app.nodes['member-email'].readOnly).toBe(true);
+  });
+
+  it('shows failed receipt delivery and a cashier recovery action in order history', async () => {
+    const main = mainBootstrap('cashier');
+    main.students = [{ id: 'student-1', firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', balance: 100, reservedPoints: 0, availableBalance: 100 }];
+    main.recentOrders = [{ id: 'order-1', studentId: 'student-1', total: 20, status: 'COMPLETED', at: '2026-08-25T12:00:00.000Z', lines: [{ quantity: 2, itemName: 'Sketchbook', lineTotal: 20 }] }];
+    main.recentReceipts = [{ id: 'receipt-1', orderId: 'order-1', studentId: 'student-1', kind: 'PURCHASE', status: 'FAILED', sentAt: '2026-08-25T12:00:01.000Z' }];
+    const app = await runPortal({ role: 'cashier', mainBootstrapData: main });
+    const history = app.nodes['orders-body'].innerHTML;
+    expect(history).toContain('FAILED');
+    expect(history).toContain('data-resend="order-1"');
+    expect(history).toContain('data-receipt-kind="PURCHASE"');
+    expect(history).toContain('Send receipt');
+  });
+
+  it('requires an administrator to resolve uncertain receipt delivery before resend or refund', async () => {
+    const main = mainBootstrap('admin');
+    main.students = [{ id: 'student-1', firstName: 'Avery', lastInitial: 'R', grade: '5', homeroom: '5A', balance: 100, reservedPoints: 0, availableBalance: 100, active: true }];
+    main.recentOrders = [{ id: 'order-uncertain', studentId: 'student-1', total: 20, status: 'COMPLETED', at: '2026-08-25T12:00:00.000Z', lines: [{ quantity: 2, itemName: 'Sketchbook', lineTotal: 20 }] }];
+    main.recentReceipts = [{ id: 'receipt-uncertain', orderId: 'order-uncertain', studentId: 'student-1', kind: 'PURCHASE', status: 'PENDING', sentAt: '2026-08-25T12:00:01.000Z' }];
+    const app = await runPortal({ role: 'admin', mainBootstrapData: main });
+    const history = app.nodes['orders-body'].innerHTML;
+    expect(history).toContain('PENDING');
+    expect(history).toContain('data-resolve-receipt="SENT"');
+    expect(history).toContain('data-resolve-receipt="FAILED"');
+    expect(history).toContain('data-receipt-id="receipt-uncertain"');
+    expect(history).not.toContain('data-resend="order-uncertain"');
+    expect(history).not.toContain('data-refund="order-uncertain"');
+  });
+
   it('executes student bootstrap and submits only sanitized handoff metadata', async () => {
     const app = await runPortal();
     expect(app.calls.slice(0, 2).map(call => call.name)).toEqual(['getSchoolRewardsBootstrap', 'getSchoolRewardsPrintBootstrap']);

@@ -18,7 +18,7 @@ function studioSeed(extra = {}) {
     tab: 'field', fieldView: '2d', learningMode: 'guided',
     notebookOpen: true, notebookPrediction: '', notebookClaim: '', notebookTrials: [],
     missionId: 'power_path', missionStarted: false, missionPanelOpen: false,
-    labFocus: false, analyzerMysteryWins: {}, xfmrMissionWins: {},
+    labFocus: false, labShellPanel: 'evidence', analyzerMysteryWins: {}, xfmrMissionWins: {},
   }, extra);
 }
 

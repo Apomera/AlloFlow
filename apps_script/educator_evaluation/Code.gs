@@ -195,9 +195,10 @@ function setupEvaluationRepository(config) {
     upsertMemberRow_(spreadsheet, { email: bootstrapAdmin, displayName: safeString_(config.adminDisplayName, 160, 'Repository Administrator'), role: 'admin', teacherId: '', active: true });
     seedMembersAndAssignments_(spreadsheet, setupMembers, setupAssignments, domain);
 
+    if (existing) assertNoPendingWorkspaceCommit_();
     var state = readWorkspaceState_();
     validateRepositoryReferences_(state.workspace);
-    if (!state.metadataExists) writeWorkspaceState_(state.workspace, 0, email);
+    if (!state.metadataExists) writeWorkspaceState_(state.workspace, 0, email, lock);
     syncSnapshots_(state.workspace);
     appendOperationAuditBestEffort_({ teacherId: '', event: existing ? 'REPOSITORY_RECONFIGURED' : 'REPOSITORY_CREATED', summary: existing ? 'Repository configuration reviewed' : 'District repository created', entityType: 'repository', entityId: 'repository', version: state.revision }, { email: email, role: 'admin' });
     props.setProperty('EE_SETUP_STATE', 'ready');
@@ -408,9 +409,9 @@ function recordDirectoryDocumentRecovery_(payload) {
   recordReleaseRecovery_({ at: payload.at, teacherId: payload.teacherId, stage: 'directory_acl_failures', actorEmail: payload.actorEmail });
 }
 
-function reconcileDirectoryReleasedAccess_(state, teacherIds, actor, reason, reviewedDocumentIds) {
+function reconcileDirectoryReleasedAccess_(state, teacherIds, actor, reason, reviewedDocumentIds, lock) {
   var access;
-  try { access = reconcileReleasedDocsForTeachers_(state, teacherIds, actor, reason, { reviewedDocumentIds: reviewedDocumentIds }); }
+  try { access = reconcileReleasedDocsForTeachers_(state, teacherIds, actor, reason, { reviewedDocumentIds: reviewedDocumentIds, lock: lock }); }
   catch (accessErr) {
     if (!accessErr || accessErr.code !== 'release_recovery_required') {
       recordReleaseRecovery_({ at: nowIso_(), stage: 'directory_acl_dispatch', actorEmail: actor.email });
@@ -453,6 +454,7 @@ function saveWorkspace(request) {
     var lockedTeacherId = safeId_(request.mutation && request.mutation.teacherId || '', false);
     if (lockedTeacherId) requireTeacherAccess_(actor, lockedTeacherId);
     assertNoAnnualRolloverRecovery_();
+    assertNoPendingWorkspaceCommit_();
     var state = readWorkspaceState_();
     if (state.revision !== expected) return { ok: false, code: 'conflict', error: 'This evaluation changed in another session. Reload before saving.', revision: state.revision, version: state.revision };
     var merged = mergeWorkspaceForActor_(state.workspace, incoming, actor, request.mutation);
@@ -464,7 +466,7 @@ function saveWorkspace(request) {
     if (mutation) appendWorkspaceAudit_(merged, mutation, actor);
     var nextRevision = state.revision + 1;
     var visible = filterWorkspaceForActor_(merged, actor);
-    var commit = writeWorkspaceState_(merged, nextRevision, actor.email);
+    var commit = writeWorkspaceState_(merged, nextRevision, actor.email, lock);
     if (commit.pending) throw eeError_('commit_recovery_required', 'The workspace journal was written, but the primary evaluation record was not confirmed. Do not retry this change; reload the district record or ask an administrator to check Setup health.');
     var reconciliationPending = false;
     try { syncSecondaryIndexes_(merged); clearWorkspaceIndexRecovery_(); }
@@ -1815,7 +1817,7 @@ function sharePortalReleasedEvaluation(request) {
       upsertReleaseRegistry_(workspace, teacher, teacher.releasedDoc, acl, 'active');
       var auditEntry = appendWorkspaceAudit_(workspace, mutation, actor);
       commitStarted = true;
-      var commit = writeWorkspaceState_(workspace, state.revision + 1, actor.email);
+      var commit = writeWorkspaceState_(workspace, state.revision + 1, actor.email, lock);
       var recoveryPending = !!commit.pending;
       if (recoveryPending) {
         try {
@@ -2035,6 +2037,7 @@ function recordReleasedSummaryOpened(request) {
     if (actor.role !== 'teacher' || actor.teacherId !== teacherId) throw eeError_('denied', 'Educator record is outside this account.');
     requireTeacherAccess_(actor, teacherId);
     assertNoAnnualRolloverRecovery_();
+    assertNoPendingWorkspaceCommit_();
     var state = readWorkspaceState_();
     var teacher = findById_(state.workspace.teachers || [], teacherId);
     if (!teacher || !teacher.releasedDoc) return { ok: true, skipped: true };
@@ -2042,7 +2045,7 @@ function recordReleasedSummaryOpened(request) {
     teacher.releasedDoc.openedAt = nowIso_();
     var mutation = { teacherId: teacherId, event: 'RECEIPT_OPENED', summary: 'Educator opened the released summary link', entityType: 'released_summary', entityId: teacherId, version: 1 };
     var auditEntry = appendWorkspaceAudit_(state.workspace, mutation, actor);
-    var commit = writeWorkspaceState_(state.workspace, state.revision + 1, actor.email);
+    var commit = writeWorkspaceState_(state.workspace, state.revision + 1, actor.email, lock);
     if (commit.pending) return { ok: true, status: 'recovery_pending', recoveryPending: true, auditPending: true, openedAt: teacher.releasedDoc.openedAt };
     var auditPending = false;
     try { appendCanonicalAuditRow_(auditEntry); }
@@ -2150,7 +2153,7 @@ function reconcilePortalWorkspaceIntegrity(request) {
     var props = PropertiesService.getScriptProperties();
     var commitWasPending = inspection.pendingCommit.pending;
     if (commitWasPending) {
-      try { reconcilePendingCommit_(); }
+      try { reconcilePendingCommit_(lock); }
       catch (commitErr) { throw eeError_('manual_recovery_required', 'The pending workspace journal could not be completed safely. District IT must inspect the canonical file, metadata row, and journal.'); }
     }
     var state = readWorkspaceState_({ skipPendingRecovery: true });
@@ -2291,7 +2294,7 @@ function getPortalSetupHealth() {
     if (!releaseRecoveryRequired && !rolloverRecoveryRequired && !workspaceCommitRecoveryRequired && !artifactRecoveryRequired && !notificationRecoveryRequired && !props.getProperty('EE_SECONDARY_RECONCILE_REQUIRED')) throw workspaceErr;
     state = { workspace: { teachers: [] }, revision: -1, metadataExists: false };
   }
-  var secondaryIndexes = { missingMessages:0,missingAuditRows:0,missingSnapshots:0,mismatchedMessages:0,mismatchedAuditRows:0,mismatchedSnapshots:0,duplicateMessageIds:0,duplicateAuditIds:0,duplicateSnapshotIds:0,ledgerOnlyMessages:0,ledgerOnlyAuditRows:0,ledgerOnlySnapshots:0,totalMissing:0,totalMismatched:0,totalDuplicateIds:0,totalLedgerOnly:0,ambiguous:false,issueSamples:[],fingerprint:'' };
+  var secondaryIndexes = { messages:{blankIdRows:0},audit:{blankIdRows:0},snapshots:{blankIdRows:0},missingMessages:0,missingAuditRows:0,missingSnapshots:0,mismatchedMessages:0,mismatchedAuditRows:0,mismatchedSnapshots:0,duplicateMessageIds:0,duplicateAuditIds:0,duplicateSnapshotIds:0,ledgerOnlyMessages:0,ledgerOnlyAuditRows:0,ledgerOnlySnapshots:0,totalMissing:0,totalMismatched:0,totalDuplicateIds:0,totalLedgerOnly:0,ambiguous:false,issueSamples:[],fingerprint:'' };
   var secondaryInspectionUnavailable = false;
   var configurationStatus={keyCount:0,missing:false,mismatched:false,duplicate:false,ambiguous:false,ok:true,fingerprint:''};
   var outboxStatus={queued:secondaryJournal.auditEntries.length,missing:secondaryJournal.auditEntries.length,exactPresent:0,mismatched:0,duplicateIds:0,ambiguous:false,issueSamples:[]};
@@ -2613,7 +2616,7 @@ function reconcileReleasedDocsForTeachers_(state, teacherIds, actor, reason, opt
     }, actor));
   }
   var commit;
-  try { commit = writeWorkspaceState_(workspace, state.revision + 1, actor.email); }
+  try { commit = writeWorkspaceState_(workspace, state.revision + 1, actor.email, options.lock); }
   catch (commitErr) {
     recordReleaseRecovery_({ at: nowIso_(), teacherId: allowGlobalRecovery ? '' : scopeTeacherId, stage: 'acl_workspace_commit', actorEmail: actor.email });
     throw eeError_('release_recovery_required', 'Drive access changed, but the released-summary registry commit was not confirmed. Run released-summary access recovery before continuing.');
@@ -2993,7 +2996,7 @@ function reconcilePortalReleasedEvaluationAccess(request) {
     }
     var state = inspection.state;
     clearCommittedReleaseRecovery_(state, teacherId);
-    var result = reconcileReleasedDocsForTeachers_(state, inspection.targetTeacherIds, actor, 'administrator recovery', { allowGlobalRecovery: !teacherId, teacherId: teacherId });
+    var result = reconcileReleasedDocsForTeachers_(state, inspection.targetTeacherIds, actor, 'administrator recovery', { allowGlobalRecovery: !teacherId, teacherId: teacherId, lock: lock });
     if (pendingCommitInspection_().pending) {
       result.status = 'recovery_pending';
       result.recoveryPending = true;
@@ -3161,7 +3164,7 @@ function performPortalDirectoryChange(request) {
       directoryMutation = { teacherId: assignment.teacherId, event: 'ASSIGNMENT_UPDATED', summary: assignment.active ? 'Evaluator assignment created or activated' : 'Evaluator assignment deactivated', entityType: 'assignment', entityId: assignment.teacherId, version: 1 };
     }
     var auditPending = appendDirectoryAuditBestEffort_(directoryMutation, actor);
-    var access = reconcileDirectoryReleasedAccess_(workspaceState, affectedTeacherIds, actor, kind === 'member' ? 'a membership change' : 'an evaluator assignment change', affectedDocumentIds);
+    var access = reconcileDirectoryReleasedAccess_(workspaceState, affectedTeacherIds, actor, kind === 'member' ? 'a membership change' : 'an evaluator assignment change', affectedDocumentIds, lock);
     auditPending = auditPending || !!access.auditPending;
     return { ok: true, status: (access.recoveryPending || auditPending) ? 'recovery_pending' : access.status, recoveryPending: access.recoveryPending || auditPending, auditPending: auditPending, releasedSummaryAccess: access, directory: portalAdminDirectory_() };
   } finally { lock.releaseLock(); }
@@ -3212,7 +3215,7 @@ function performPortalCycleSchedule(request) {
     cache.remove(key);
     for (var i = 0; i < plan.targets.length; i++) plan.targets[i].dueDate = plan.dueDate;
     var auditEntry = appendWorkspaceAudit_(state.workspace, { event: 'CYCLE_SCHEDULE_UPDATED', summary: 'Administrator applied a reviewed cycle due-date schedule to ' + ids.length + ' educator records', entityType: 'cycle_schedule', entityId: 'schedule-' + plan.dueDate, version: 1 }, actor);
-    var commit = writeWorkspaceState_(state.workspace, state.revision + 1, actor.email), pending = !!commit.pending;
+    var commit = writeWorkspaceState_(state.workspace, state.revision + 1, actor.email, lock), pending = !!commit.pending;
     var auditPending = false;
     if (!pending) { try { appendCanonicalAuditRow_(auditEntry); } catch (auditErr) { try { markWorkspaceIndexRecovery_(); } catch (markerErr) {} auditPending = true; } }
     return { ok: true, status: (pending || auditPending) ? 'recovery_pending' : 'completed', recoveryPending: pending || auditPending, auditPending: auditPending, dueDate: plan.dueDate, affectedEducators: ids.length, revision: state.revision + 1 };
@@ -3323,7 +3326,7 @@ function performPortalWorkspaceConfiguration(request) {
     state.workspace.config = candidate;
     var auditEntry = appendWorkspaceAudit_(state.workspace, { event: 'CONFIGURATION_UPDATED', summary: 'Administrator applied ' + changes.length + ' reviewed district configuration change' + (changes.length === 1 ? '' : 's'), entityType: 'workspace_configuration', entityId: 'configuration', version: 1 }, actor);
     var nextRevision = state.revision + 1;
-    var commit = writeWorkspaceState_(state.workspace, nextRevision, actor.email), pending = !!commit.pending;
+    var commit = writeWorkspaceState_(state.workspace, nextRevision, actor.email, lock), pending = !!commit.pending;
     var auditPending = false, configurationPending = false;
     if (!pending) {
       try { appendCanonicalAuditRow_(auditEntry); }
@@ -3556,7 +3559,7 @@ function authorizedExportsFolder_() {
   return folder;
 }
 
-function csvCell_(value) { var text = String(value == null ? '' : value); return '"' + text.replace(/"/g, '""') + '"'; }
+function csvCell_(value) { var text = String(sheetSafeCell_(String(value == null ? '' : value))); return '"' + text.replace(/"/g, '""') + '"'; }
 function statusExportCsv_(workspace) {
   var rows = [['Staff code','Educator','Building','Assignment','Active','Cycle status','Due date','Finalized at']];
   (workspace.teachers || []).forEach(function (teacher) { rows.push([teacher.code,teacher.name,teacher.building,teacher.assignment,teacher.active !== false ? 'yes' : 'no',teacher.cycleStatus,teacher.dueDate || '',teacher.finalizedAt || '']); });
@@ -4787,7 +4790,7 @@ function performPortalAnnualRollover(request) {
     recovery.auditEntryId = auditEntry.id;
     recovery.stage = 'workspace_commit';
     recordAnnualRolloverRecovery_(recovery);
-    var commit = writeWorkspaceState_(nextWorkspace, state.revision + 1, actor.email);
+    var commit = writeWorkspaceState_(nextWorkspace, state.revision + 1, actor.email, lock);
     var recoveryPending = !!commit.pending;
     if (recoveryPending) {
       try { recoveryPending = !annualRolloverCommitted_(readWorkspaceState_(), recovery); }
@@ -5004,6 +5007,9 @@ function filterWorkspaceForActor_(workspace, actor) {
   }
   if (actor.role === 'teacher') {
     copy.walkthroughs = copy.walkthroughs.filter(function(item) { return !!item.publishedAt; });
+    var visibleWalkthroughIds = {};
+    for (var visibleWalkthroughIndex = 0; visibleWalkthroughIndex < copy.walkthroughs.length; visibleWalkthroughIndex++) visibleWalkthroughIds[copy.walkthroughs[visibleWalkthroughIndex].id] = true;
+    copy.comments = copy.comments.filter(function(item) { return item.recordType !== 'walkthrough' || !!visibleWalkthroughIds[item.recordId]; });
     for (var teacherIndex = 0; teacherIndex < copy.teachers.length; teacherIndex++) {
       var teacherProfile = copy.teachers[teacherIndex];
       if (!teacherProfile.finalizedAt) {
@@ -5032,7 +5038,7 @@ function filterWorkspaceForActor_(workspace, actor) {
       copy.spms[j].pendingReturnReason = '';
       if (copy.spms[j].status !== 'locked') { copy.spms[j].rating = null; copy.spms[j].ratingRationale = ''; }
     }
-    copy.audit = copy.audit.filter(function(item) { return item.teacherId === actor.teacherId; });
+    copy.audit = copy.audit.filter(function(item) { return item.teacherId === actor.teacherId && (item.entityType !== 'walkthrough' || !!visibleWalkthroughIds[item.entityId]); });
   } else {
     // Teacher drafts remain private until their explicit submission milestone.
     // The merge layer preserves canonical teacher fields when these redacted
@@ -5788,16 +5794,78 @@ function sanitizeSnapshot_(v) { v=requireObject_(v,'snapshot'); return { id:safe
 
 function repositoryConfigured_() { var p=PropertiesService.getScriptProperties(); return p.getProperty('EE_SETUP_STATE')==='ready'&&!!(p.getProperty('EE_ALLOWED_DOMAIN')&&p.getProperty('EE_SPREADSHEET_ID')&&p.getProperty('EE_WORKSPACE_FILE_ID')&&p.getProperty('EE_PENDING_COMMIT_FILE_ID')); }
 function repositorySpreadsheet_() { var id=PropertiesService.getScriptProperties().getProperty('EE_SPREADSHEET_ID'); if(!id)throw eeError_('not_configured','Repository spreadsheet is not configured.'); return SpreadsheetApp.openById(id); }
-function readWorkspaceState_(options) { if(!(options&&options.skipPendingRecovery))reconcilePendingCommit_(); var p=PropertiesService.getScriptProperties(); var id=p.getProperty('EE_WORKSPACE_FILE_ID'); if(!id)throw eeError_('not_configured','Workspace file is not configured.'); var raw=DriveApp.getFileById(id).getBlob().getDataAsString('UTF-8'); if(raw.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Stored workspace exceeds its limit.'); var workspace; try{workspace=sanitizeStoredWorkspace_(JSON.parse(raw));}catch(err){throw eeError_('corrupt','Stored workspace failed validation.');} var sheet=repositorySpreadsheet_().getSheetByName('Workspace'); var revision=0,exists=false; if(sheet&&sheet.getLastRow()>=2){var row=sheet.getRange(2,1,1,6).getValues()[0],parsedRevision=Number(row[1]);if(String(row[0])!=='workspace'||String(row[2])!==id||Math.floor(parsedRevision)!==parsedRevision||parsedRevision<0||sheetLogicalCell_(row[3])!==hashText_(raw))throw eeError_('corrupt','Workspace metadata integrity check failed; an administrator must restore a matching reviewed backup.');revision=parsedRevision;exists=true;} return {workspace:workspace,revision:revision,metadataExists:exists}; }
+function readWorkspaceState_(options) { var p=PropertiesService.getScriptProperties(); var id=p.getProperty('EE_WORKSPACE_FILE_ID'); if(!id)throw eeError_('not_configured','Workspace file is not configured.'); var raw=DriveApp.getFileById(id).getBlob().getDataAsString('UTF-8'); if(raw.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Stored workspace exceeds its limit.'); var workspace; try{workspace=sanitizeStoredWorkspace_(JSON.parse(raw));}catch(err){throw eeError_('corrupt','Stored workspace failed validation.');} var sheet=repositorySpreadsheet_().getSheetByName('Workspace'); var revision=0,exists=false; if(sheet&&sheet.getLastRow()>=2){var row=sheet.getRange(2,1,1,6).getValues()[0],parsedRevision=Number(row[1]);if(String(row[0])!=='workspace'||String(row[2])!==id||Math.floor(parsedRevision)!==parsedRevision||parsedRevision<0||sheetLogicalCell_(row[3])!==hashText_(raw))throw eeError_('corrupt','Workspace metadata integrity check failed; an administrator must restore a matching reviewed backup.');revision=parsedRevision;exists=true;} return {workspace:workspace,revision:revision,metadataExists:exists}; }
 function sanitizeStoredWorkspace_(raw) { var copy=clone_(raw); var audit=Array.isArray(copy.audit)?copy.audit.slice(-EE_MAX_AUDIT):[]; copy.audit=[]; var clean=sanitizeWorkspace_(copy); clean.audit=audit.map(sanitizeAuditObject_); return clean; }
-function sheetSafeCell_(value){if(typeof value!=='string')return value;return /^(?:[\t\r]|[ \t\r\n]*[=+\-@])/.test(value)?"'"+value:value;}
+function sheetSafeCell_(value){if(typeof value!=='string')return value;return /^(?:[\t\r]|[\u0000-\u0020]*[=+\-@])/.test(value)?"'"+value:value;}
 function sheetSafeRow_(row){if(!Array.isArray(row))throw eeError_('bad_request','Spreadsheet row must be an array.');return row.map(sheetSafeCell_);}
 function sheetSafeValues_(values){if(!Array.isArray(values))throw eeError_('bad_request','Spreadsheet values must be an array.');return values.map(sheetSafeRow_);}
 function safeSheetAppendRow_(sheet,row){sheet.appendRow(sheetSafeRow_(row));}
 function safeSheetSetValues_(range,values){range.setValues(sheetSafeValues_(values));}
-function writeWorkspaceState_(workspace,revision,actorEmail){var json=JSON.stringify(workspace);if(json.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('too_large','Workspace exceeds the server size limit.');var props=PropertiesService.getScriptProperties(),pending=DriveApp.getFileById(props.getProperty('EE_PENDING_COMMIT_FILE_ID'));var envelope=JSON.stringify({revision:revision,actorEmail:actorEmail,at:nowIso_(),workspace:workspace});pending.setContent(envelope);try{completePendingCommit_();return{pending:false};}catch(commitErr){props.setProperty('EE_COMMIT_RECOVERY_REQUIRED','1');try{markWorkspaceIndexRecovery_();}catch(markerErr){props.setProperty('EE_SECONDARY_RECONCILE_REQUIRED','1');props.setProperty('EE_SECONDARY_RECOVERY_MANUAL_REQUIRED','1');}return{pending:true};}}
-function reconcilePendingCommit_(){var props=PropertiesService.getScriptProperties(),pendingId=props.getProperty('EE_PENDING_COMMIT_FILE_ID');if(!pendingId)return;var pending=DriveApp.getFileById(pendingId),raw=pending.getBlob().getDataAsString('UTF-8');if(!raw)return;completePendingCommit_();}
-function completePendingCommit_(){var props=PropertiesService.getScriptProperties(),pending=DriveApp.getFileById(props.getProperty('EE_PENDING_COMMIT_FILE_ID')),raw=pending.getBlob().getDataAsString('UTF-8');if(!raw)return;var envelope;try{envelope=JSON.parse(raw);}catch(err){throw eeError_('corrupt','Pending workspace journal is invalid.');}var revision=Number(envelope.revision);if(Math.floor(revision)!==revision||revision<0)throw eeError_('corrupt','Pending workspace revision is invalid.');var workspace=sanitizeStoredWorkspace_(envelope.workspace),json=JSON.stringify(workspace);if(json.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Pending workspace exceeds its limit.');var file=DriveApp.getFileById(props.getProperty('EE_WORKSPACE_FILE_ID'));file.setContent(json);writeWorkspaceMetadata_(file.getId(),json,revision,normalizeEmail_(envelope.actorEmail));pending.setContent('');props.deleteProperty('EE_COMMIT_RECOVERY_REQUIRED');}
+function assertScriptLockHeld_(lock){if(!lock||typeof lock.hasLock!=='function'||!lock.hasLock())throw eeError_('server_error','Canonical workspace writes require the held repository lock.');}
+function writeWorkspaceState_(workspace,revision,actorEmail,lock){
+  assertScriptLockHeld_(lock);
+  var json=JSON.stringify(workspace);
+  if(json.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('too_large','Workspace exceeds the server size limit.');
+  var props=PropertiesService.getScriptProperties(),pending=DriveApp.getFileById(props.getProperty('EE_PENDING_COMMIT_FILE_ID'));
+  var envelope=JSON.stringify({revision:revision,actorEmail:actorEmail,at:nowIso_(),workspace:workspace});
+  pending.setContent(envelope);
+  try{completePendingCommit_(lock);return{pending:false};}
+  catch(commitErr){
+    props.setProperty('EE_COMMIT_RECOVERY_REQUIRED','1');
+    try{markWorkspaceIndexRecovery_();}catch(markerErr){props.setProperty('EE_SECONDARY_RECONCILE_REQUIRED','1');props.setProperty('EE_SECONDARY_RECOVERY_MANUAL_REQUIRED','1');}
+    return{pending:true};
+  }
+}
+function reconcilePendingCommit_(lock){
+  assertScriptLockHeld_(lock);
+  var props=PropertiesService.getScriptProperties(),pendingId=props.getProperty('EE_PENDING_COMMIT_FILE_ID');
+  if(!pendingId)return;
+  var pending=DriveApp.getFileById(pendingId),raw=pending.getBlob().getDataAsString('UTF-8');
+  if(!raw)return;
+  return completePendingCommit_(lock);
+}
+function completePendingCommit_(lock){
+  assertScriptLockHeld_(lock);
+  var props=PropertiesService.getScriptProperties(),pendingId=props.getProperty('EE_PENDING_COMMIT_FILE_ID'),fileId=props.getProperty('EE_WORKSPACE_FILE_ID');
+  if(!pendingId||!fileId)throw eeError_('not_configured','Workspace commit files are not configured.');
+  var pending=DriveApp.getFileById(pendingId),raw=pending.getBlob().getDataAsString('UTF-8');
+  if(!raw)return{completed:false,idempotent:false};
+  var envelope;
+  try{envelope=JSON.parse(raw);}catch(err){throw eeError_('corrupt','Pending workspace journal is invalid.');}
+  var revision=Number(envelope.revision);
+  if(Math.floor(revision)!==revision||revision<0)throw eeError_('corrupt','Pending workspace revision is invalid.');
+  var workspace=sanitizeStoredWorkspace_(envelope.workspace),json=JSON.stringify(workspace);
+  if(json.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Pending workspace exceeds its limit.');
+  var file=DriveApp.getFileById(fileId),canonicalRaw=file.getBlob().getDataAsString('UTF-8');
+  if(canonicalRaw.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Stored workspace exceeds its limit.');
+  try{sanitizeStoredWorkspace_(JSON.parse(canonicalRaw));}catch(canonicalErr){throw eeError_('manual_recovery_required','The canonical workspace cannot be validated against the pending journal. District IT must inspect both files.');}
+  var sheet=repositorySpreadsheet_().getSheetByName('Workspace'),metadataExists=false,metadataRevision=-1,metadataHash='';
+  if(sheet&&sheet.getLastRow()>=2){
+    var row=sheet.getRange(2,1,1,6).getValues()[0],parsedRevision=Number(row[1]);
+    metadataHash=sheetLogicalCell_(row[3]);
+    if(String(row[0])!=='workspace'||String(row[2])!==fileId||Math.floor(parsedRevision)!==parsedRevision||parsedRevision<0||!/^[A-Za-z0-9_-]{40,64}$/.test(metadataHash))throw eeError_('corrupt','Workspace metadata is invalid; the pending journal was not applied.');
+    metadataExists=true;metadataRevision=parsedRevision;
+  }
+  var canonicalHash=hashText_(canonicalRaw),pendingHash=hashText_(json),canonicalMatchesMetadata=metadataExists&&canonicalHash===metadataHash,canonicalMatchesPending=canonicalHash===pendingHash;
+  if(!metadataExists){
+    if(revision!==0||!canonicalMatchesPending)throw eeError_('manual_recovery_required','Missing workspace metadata can be initialized only by an exact revision-0 journal for the current canonical file.');
+    writeWorkspaceMetadata_(fileId,json,revision,normalizeEmail_(envelope.actorEmail));
+  }else if(canonicalMatchesMetadata){
+    if(revision===metadataRevision&&canonicalMatchesPending){
+      pending.setContent('');props.deleteProperty('EE_COMMIT_RECOVERY_REQUIRED');
+      return{completed:true,idempotent:true,revision:revision};
+    }
+    if(revision!==metadataRevision+1)throw eeError_('manual_recovery_required','The pending workspace revision is stale or skips the canonical revision. The journal was retained for District IT review.');
+    file.setContent(json);
+    writeWorkspaceMetadata_(fileId,json,revision,normalizeEmail_(envelope.actorEmail));
+  }else if(canonicalMatchesPending&&revision===metadataRevision+1){
+    writeWorkspaceMetadata_(fileId,json,revision,normalizeEmail_(envelope.actorEmail));
+  }else{
+    throw eeError_('manual_recovery_required','The canonical workspace, metadata, and pending journal do not form one monotonic commit. The journal was retained for District IT review.');
+  }
+  pending.setContent('');props.deleteProperty('EE_COMMIT_RECOVERY_REQUIRED');
+  return{completed:true,idempotent:false,revision:revision};
+}
 function writeWorkspaceMetadata_(fileId,json,revision,actorEmail){var sheet=repositorySpreadsheet_().getSheetByName('Workspace');var row=['workspace',revision,fileId,hashText_(json),nowIso_(),actorEmail];if(sheet.getLastRow()<2)safeSheetAppendRow_(sheet,row);else safeSheetSetValues_(sheet.getRange(2,1,1,row.length),[row]);}
 function initializeSheets_(ss){var names=Object.keys(EE_SHEETS);var first=ss.getSheets()[0];for(var i=0;i<names.length;i++){var name=names[i];var sheet=ss.getSheetByName(name);if(!sheet){if(i===0&&first&&first.getLastRow()===0){sheet=first;sheet.setName(name);}else sheet=ss.insertSheet(name);}var headers=EE_SHEETS[name];safeSheetSetValues_(sheet.getRange(1,1,1,headers.length),[headers]);sheet.setFrozenRows(1);protectSheet_(sheet);try{sheet.hideSheet();}catch(err){}}}
 function protectSheet_(sheet){var ps=sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET);for(var i=0;i<ps.length;i++)ps[i].remove();var p=sheet.protect().setDescription('AlloFlow evaluation repository - service access only');p.setWarningOnly(false);var owner=Session.getEffectiveUser(),ownerEmail=normalizeEmail_(owner.getEmail());p.addEditor(owner);var editors=p.getEditors();if(editors&&editors.length)p.removeEditors(editors);if(p.canDomainEdit())p.setDomainEdit(false);var remaining=p.getEditors()||[];for(var j=0;j<remaining.length;j++){var email=normalizeEmail_(remaining[j].getEmail());if(!email||email!==ownerEmail)throw eeError_('protection_failed','Repository sheet has an unintended editor.');}if(p.canDomainEdit()||(typeof p.isWarningOnly==='function'&&p.isWarningOnly()))throw eeError_('protection_failed','Repository sheet protection could not be verified.');}
@@ -6018,7 +6086,7 @@ function sameExcept_(a,b,allowed){var x=clone_(a),y=clone_(b);for(var i=0;i<allo
 function sameProposal_(a,b){var fields=['context','baseline','goal','measures','actionPlan','results','reflection','revisions'];for(var i=0;i<fields.length;i++)if(!same_(a[fields[i]],b[fields[i]]))return false;return true;}
 function observationTimestampFields_(){return['preworkSubmittedAt','preConferenceAt','observedAt','evidencePublishedAt','reflectionSubmittedAt','postConferenceAt','evaluatorSignedAt','teacherAcknowledgedAt','finalizedAt'];}
 function recordType_(v){return oneOf_(v,['walkthrough','formal_observation','spm'],'recordType');}
-function requireRecord_(workspace,teacherId,type,id,actor){var collection=type==='walkthrough'?workspace.walkthroughs:(type==='formal_observation'?workspace.observations:workspace.spms);var found=findById_(collection||[],id);if(!found||found.teacherId!==teacherId)throw eeError_('not_found','Evaluation record not found.');if(actor.role==='teacher'&&type==='walkthrough'&&!found.publishedAt)throw eeError_('denied','Private evaluator draft is unavailable.');return found;}
+function requireRecord_(workspace,teacherId,type,id,actor){var collection=type==='walkthrough'?workspace.walkthroughs:(type==='formal_observation'?workspace.observations:workspace.spms);var found=findById_(collection||[],id);if(!found||found.teacherId!==teacherId)throw eeError_('not_found','Evaluation record not found.');if(type==='walkthrough'&&!found.publishedAt)throw eeError_('invalid_transition','Comments are available only after the walkthrough is published.');return found;}
 function requireReceiptState_(record,type,receiptType,actor){if(receiptType==='opened'){if(actor.role==='teacher'||type!=='spm'||record.status!=='submitted'||!record.submittedAt)throw eeError_('invalid_transition','Open receipts require an evaluator opening a submitted SPM.');return;}if(actor.role!=='teacher')throw eeError_('denied','Teacher acknowledgment receipts require the teacher.');if(type==='walkthrough'&&record.publishedAt&&record.teacherAcknowledgedAt)return;if(type==='formal_observation'&&record.evaluatorSignedAt&&record.teacherAcknowledgedAt)return;throw eeError_('invalid_transition','Acknowledgment receipt requires the completed record milestone.');}
 function notificationRecipient_(teacherId,target,actor){var members=memberObjects_();if(target==='teacher'){for(var i=0;i<members.length;i++)if(members[i].active&&members[i].role==='teacher'&&members[i].teacherId===teacherId)return members[i].email;}else{var assignments=assignmentObjects_();for(var j=0;j<assignments.length;j++){var assignment=assignments[j];if(!assignment.active||assignment.teacherId!==teacherId||(actor.role!=='teacher'&&assignment.evaluatorEmail!==actor.email))continue;for(var k=0;k<members.length;k++){var member=members[k];if(member.active&&member.email===assignment.evaluatorEmail&&(member.role==='evaluator'||member.role==='admin'))return member.email;}}}return'';}
 function parseBool_(v){return v===true||String(v).toLowerCase()==='true'||String(v)==='1';}

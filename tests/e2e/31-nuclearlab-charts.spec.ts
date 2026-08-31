@@ -243,6 +243,12 @@ test.describe('Nuclear Lab — charts in a real browser', () => {
     writeFileSync(join(SHOTS, 'page-dark.png'), await page.screenshot({ fullPage: true, timeout: 90000 }));
     await setTheme(page, 'light');
     writeFileSync(join(SHOTS, 'page-light.png'), await page.screenshot({ fullPage: true, timeout: 90000 }));
+
+    await harness.destroy(page);
+    await mount2d(page, { _nuclearLab: { nkPath: 'safety', nkOpen: false } });
+    writeFileSync(join(SHOTS, 'route-safety-dark.png'), await page.screenshot({ fullPage: true, timeout: 90000 }));
+    await setTheme(page, 'light');
+    writeFileSync(join(SHOTS, 'route-safety-light.png'), await page.screenshot({ fullPage: true, timeout: 90000 }));
   });
 
   // ── The reactor panel ────────────────────────────────────────────────────
@@ -301,13 +307,7 @@ test.describe('Nuclear Lab — charts in a real browser', () => {
             me: ['weighting', 'biohalf', 'mydose', 'doseladder', 'lowdose', 'evidence'],
           },
           pathsCompleted: ['me'],
-          evidenceMastered: [
-            'reactor-bomb',
-            'inverse-square',
-            'low-dose-zero',
-            'neutron-layers',
-            'short-count',
-          ],
+          evidenceMastered: ['low-dose-zero'],
           nkReflections: {
             me: {
               confidence: 'growing',

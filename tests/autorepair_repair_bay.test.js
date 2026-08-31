@@ -40,6 +40,12 @@ function bay(extra) {
   return renderTool(ID, { autoRepair: Object.assign({ view: 'repairbay' }, extra || {}) });
 }
 
+function hostFor(html) {
+  const host = document.createElement('div');
+  host.innerHTML = html;
+  return host;
+}
+
 beforeEach(() => {
   resetStemLab();
   loadTool(FILE, ID);
@@ -175,6 +181,34 @@ describe('repair bay — safety is enforced, not decorative', () => {
   it('does not warn when the engine is off', () => {
     const html = bay({ rbCase: 'squeal', rbEngine: 'off' });
     expect(html).not.toContain('unsafe with the engine running');
+  });
+
+  it('blocks physical fuse-box inspection while the engine is running', () => {
+    const host = hostFor(bay({
+      rbCase: 'overheat', rbEngine: 'running', rbSel: 'fusebox', rbOpenPart: null
+    }));
+    const action = host.querySelector('[data-ar-inspection-action="fusebox"]');
+
+    expect(action).toBeTruthy();
+    expect(action.disabled).toBe(true);
+    expect(action.getAttribute('aria-label')).toBe('Shut the engine off before using this inspection');
+    expect(action.getAttribute('aria-pressed')).toBe('false');
+    expect(SRC).toContain("updMulti({ rbSel: pid, rbOpenPart: null })");
+    expect(SRC).toContain("arAnnounce('Inspection blocked. Shut the engine off before '");
+  });
+
+  it('renders case inspection state and controls when the engine is safely off', () => {
+    const open = hostFor(bay({
+      rbCase: 'overheat', rbEngine: 'off', rbSel: 'fusebox', rbOpenPart: 'fusebox'
+    }));
+    const panel = open.querySelector('[data-ar-service-inspection="fusebox"]');
+    const action = open.querySelector('[data-ar-inspection-action="fusebox"]');
+
+    expect(panel.dataset.arInspectionState).toBe('open');
+    expect(action.disabled).toBe(false);
+    expect(action.getAttribute('aria-pressed')).toBe('true');
+    expect(action.getAttribute('aria-label')).toBe('Close the under-hood fuse box');
+    expect(open.textContent).toContain('fan-circuit fuse');
   });
 
   it('surfaces recorded violations in an alert region', () => {

@@ -188,6 +188,34 @@ test.describe('Nuclear Lab — render cost', () => {
     expect(running[key!], 'the simulation is not animating').toBeGreaterThan(50);
   });
 
+  test('reactor objective progress advances and blackout resets with cooling offline', async ({ page }) => {
+    await page.goto(harness.url + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
+    await page.evaluate(() => (window as any).__mount({}));
+    await layout(page);
+
+    const meter = page.locator('#rx-objective-meter');
+    await expect(meter).toHaveAttribute('max', '60');
+    await expect(meter).toHaveAttribute('aria-valuetext', /0 of 60 continuous seconds/);
+    await page.getByLabel('Start the simulation').click();
+    await expect.poll(async () => meter.evaluate((node: HTMLProgressElement) => node.value), {
+      message: 'the semantic objective timer never advanced with the running simulation',
+      timeout: 3000,
+    }).toBeGreaterThan(0);
+    await page.getByLabel('Pause the simulation').click();
+
+    await page.getByRole('button', { name: /Run the scenario: Station blackout/ }).click();
+    await expect(page.getByLabel('Restore the coolant pumps')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('#rx-objective-progress')).toHaveAttribute('data-stage', 'blackout-scram');
+    await expect(page.locator('#rx-objective-detail')).toContainText('Cooling is offline');
+
+    await page.getByLabel('Reset the reactor to its starting condition').click();
+    await expect(page.getByLabel('Restore the coolant pumps')).toHaveAttribute('aria-pressed', 'false');
+
+    await page.getByRole('button', { name: /Run the scenario: Hold at full power/ }).click();
+    await expect(page.getByLabel('Stop the coolant pumps')).toHaveAttribute('aria-pressed', 'true');
+  });
+
   test('moving one slider does not repaint unrelated charts', async ({ page }) => {
     // Six chart canvases, each with its own effect and dep list. The shielding
     // slider feeds none of them.
@@ -217,8 +245,8 @@ test.describe('Nuclear Lab — the sticky index must not eat the screen', () => 
   // permanently, for navigation. It now defaults closed on a narrow viewport and
   // folds itself after a jump. This is the budget that keeps it that way.
   for (const [name, state, maxPct] of [
-    ['default', {}, 20],
-    ['on a route', { nkPath: 'safe' }, 20],
+    ['default', {}, 12],
+    ['on a route', { nkPath: 'safe' }, 12],
     ['forced open', { nkOpen: true }, 55],
   ] as const) {
     test(`phone, ${name}`, async ({ page }) => {
@@ -231,11 +259,31 @@ test.describe('Nuclear Lab — the sticky index must not eat the screen', () => 
       await page.waitForSelector('#wrap canvas', { timeout: 30000 });
       const m = await page.evaluate(() => {
         const nav = document.querySelector('#wrap nav[aria-label="Nuclear lab topics"]') as HTMLElement;
-        return { nav: Math.round(nav.getBoundingClientRect().height), vh: window.innerHeight };
+        const secondary = nav.querySelector('.nk-index-secondary') as HTMLElement;
+        const search = nav.querySelector('#nk-topic-search') as HTMLElement;
+        const rect = nav.getBoundingClientRect();
+        return {
+          nav: Math.round(rect.height),
+          navRight: Math.round(rect.right),
+          vh: window.innerHeight,
+          vw: window.innerWidth,
+          pageOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+          secondaryDisplay: getComputedStyle(secondary).display,
+          searchHeight: Math.round(search.getBoundingClientRect().height),
+        };
       });
       const pct = Math.round((100 * m.nav) / m.vh);
       console.log(`phone ${name}: sticky index ${m.nav}px of ${m.vh}px = ${pct}%`);
       expect(pct, `sticky index takes ${pct}% of a phone screen`).toBeLessThanOrEqual(maxPct);
+      expect(m.navRight, 'sticky index extends past the phone viewport').toBeLessThanOrEqual(m.vw);
+      expect(m.pageOverflow, 'the compact masthead widened the phone page').toBeLessThanOrEqual(1);
+      if (name === 'forced open') {
+        expect(m.secondaryDisplay, 'expanded display controls stayed hidden').not.toBe('none');
+        expect(m.searchHeight, 'expanded topic search is not a 44px touch target').toBeGreaterThanOrEqual(44);
+      } else {
+        expect(m.secondaryDisplay, 'collapsed phone masthead kept its secondary rows').toBe('none');
+        expect(m.searchHeight).toBe(0);
+      }
     });
   }
 });
@@ -264,6 +312,54 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     console.log('after scrolling to waste: ' + JSON.stringify(second));
     expect(second.length).toBe(1);
     expect(second[0], 'the highlight did not follow the scroll').not.toBe(first[0]);
+  });
+
+  test('gives every route topic a visible step banner and stronger section hierarchy', async ({ page }) => {
+    await mount2d(page, { _nuclearLab: { nkPath: 'safety', nkOpen: false } });
+    const route = await page.evaluate(() => [...document.querySelectorAll('[data-nk-route-step]')]
+      .map((kicker) => {
+        const section = kicker.closest('[data-nk-sec]') as HTMLElement;
+        const heading = section.querySelector('h4') as HTMLElement;
+        return {
+          id: kicker.getAttribute('data-nk-route-step'),
+          text: kicker.textContent || '',
+          describedBy: section.getAttribute('aria-describedby'),
+          kickerId: kicker.id,
+          precedesHeading: !!(kicker.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING),
+          borderLeft: parseFloat(getComputedStyle(section).borderLeftWidth),
+          headingSize: parseFloat(getComputedStyle(heading).fontSize),
+        };
+      }));
+
+    expect(route.map((step) => step.id)).toEqual(['shielding', 'protect', 'shelter', 'evidence']);
+    route.forEach((step, index) => {
+      expect(step.text).toContain(`Route step ${index + 1} of 4`);
+      expect(step.text).toContain('How would I protect myself?');
+      expect(step.describedBy).toBe(step.kickerId);
+      expect(step.precedesHeading).toBe(true);
+      expect(step.borderLeft).toBeGreaterThanOrEqual(4);
+      expect(step.headingSize).toBeGreaterThanOrEqual(14);
+    });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.width = '390px';
+      wrap.style.maxWidth = '100%';
+    });
+    const phone = await page.locator('[data-nk-route-step]').first().evaluate((kicker) => {
+      const badge = kicker.querySelector('.nk-route-kicker-badge')!.getBoundingClientRect();
+      const question = kicker.querySelector('.nk-route-kicker-question')!.getBoundingClientRect();
+      const section = kicker.closest('[data-nk-sec]')!.getBoundingClientRect();
+      return {
+        badgeBottom: badge.bottom,
+        questionTop: question.top,
+        sectionRight: section.right,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(phone.questionTop, 'route question did not wrap below the step badge').toBeGreaterThanOrEqual(phone.badgeBottom - 1);
+    expect(phone.sectionRight, 'route section extends past the phone viewport').toBeLessThanOrEqual(phone.viewportWidth);
   });
 
   test('costs no re-render — the spy must not go through React', async ({ page }) => {
@@ -312,19 +408,32 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     expect(totalClears, 'saving route progress repainted an unchanged chart').toBeLessThanOrEqual(1);
   });
 
+  test('evidence keyboard flow keeps focus through feedback and the next route claim', async ({ page }) => {
+    await mount2d(page, { _nuclearLab: { nkPath: 'safety', nkOpen: false } });
+    const evidence = page.locator('#nksec-evidence');
+    await evidence.getByRole('radio', { name: 'Supported by this evidence' }).check();
+
+    const check = evidence.getByRole('button', { name: 'Check the evidence' });
+    await check.focus();
+    await page.keyboard.press('Enter');
+    await expect(evidence.getByRole('button', { name: 'Check again' })).toBeFocused();
+
+    const next = evidence.getByRole('button', { name: 'Next claim →' });
+    await next.focus();
+    await page.keyboard.press('Enter');
+    const claim = evidence.locator('#nk-evidence-claim');
+    await expect(claim).toBeFocused();
+    await expect(claim).toHaveAccessibleName('Claim 2 of 2');
+    expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe('BODY');
+  });
+
   test('a route can be walked from the sections themselves', async ({ page }) => {
     await mount2d(page, {
       _nuclearLab: {
         nkPath: 'know',
         nkOpen: false,
         nkRouteSeen: { know: ['detect'] },
-        evidenceMastered: [
-          'reactor-bomb',
-          'inverse-square',
-          'low-dose-zero',
-          'neutron-layers',
-          'short-count',
-        ],
+        evidenceMastered: ['short-count'],
       },
     });
     const sectionOrder = await page.locator('#wrap [data-nk-sec]').evaluateAll((nodes) =>
@@ -393,13 +502,7 @@ test.describe('Nuclear Lab - route reflection on a phone', () => {
     await mount2d(page, {
       _nuclearLab: {
         nkPath: 'know',
-        evidenceMastered: [
-          'reactor-bomb',
-          'inverse-square',
-          'low-dose-zero',
-          'neutron-layers',
-          'short-count',
-        ],
+        evidenceMastered: ['short-count'],
       },
     });
     await page.evaluate(() => {
