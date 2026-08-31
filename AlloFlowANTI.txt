@@ -56508,6 +56508,37 @@ ${_alloActivityContext(activity)}
           // as an EDITABLE deck (build-direct, no .pptx round trip).
           openInAlloStudio: () => { setShowExportPreviewWrapped(false); setAlloStudioInitialFile(null); setAlloStudioInitialAction('deck-from-resources'); setIsAlloStudioOpen(true); }
         })}
+        {/* Recoverable open state (lazy-load gate): the user's intent to open stays
+            honored while view_export_preview_module.js loads, and a failed CDN load
+            explains itself with a targeted Retry instead of rendering nothing.
+            Re-renders arrive from the alloflow:module-registry-changed listener. */}
+        {showExportPreview && !(window.AlloModules && window.AlloModules.ExportPreviewView) && (() => {
+          const _exportPreviewEntry = (window.__alloModuleRegistry && (window.__alloModuleRegistry.ExportPreviewView || window.__alloModuleRegistry.DocPipelineModule)) || null;
+          const _exportPreviewFailed = !!(_exportPreviewEntry && _exportPreviewEntry.status === 'failed');
+          return (
+            <div role="alertdialog" aria-modal="true" aria-label={t('export.preview_loading') || 'Preparing the export preview\u2026'} className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-900/50 p-4">
+              <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-center shadow-2xl">
+                {_exportPreviewFailed ? (
+                  <>
+                    <p className="text-sm font-bold text-slate-800">{t('export.preview_load_failed') || 'The export preview module could not load.'}</p>
+                    <p className="mt-1 text-xs text-slate-600">{t('export.preview_load_failed_hint') || 'Check the connection, then retry \u2014 your document stays open.'}</p>
+                    <div className="mt-4 flex justify-center gap-2">
+                      <button type="button" onClick={retryExportPreviewView} className="min-h-11 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">{t('common.retry') || 'Retry'}</button>
+                      <button type="button" onClick={() => setShowExportPreviewWrapped(false)} className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">{t('common.close') || 'Close'}</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-bold text-slate-800">{t('export.preview_loading') || 'Preparing the export preview\u2026'}</p>
+                    <div className="mt-4 flex justify-center">
+                      <button type="button" onClick={() => setShowExportPreviewWrapped(false)} className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">{t('common.close') || 'Close'}</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })()}
         <CDNModuleGate moduleKey="StemLab" isOpen={showStemLab} onClose={() => setShowStemLab(false)} icon="🔬" displayName="STEAM Lab" t={t}>
             {(StemLab) => React.createElement(StemLab, {
                 ArrowLeft, Calculator, GripVertical, Sparkles, X, addToast,

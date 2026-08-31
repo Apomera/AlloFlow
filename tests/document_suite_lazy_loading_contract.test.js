@@ -6,9 +6,12 @@ const ROOT = process.cwd();
 const read = file => readFileSync(resolve(ROOT, file), 'utf8');
 
 const SHELLS = [
+  // Since the mirror unification, all three shells are byte-identical copies of
+  // the root ANTI and load pinned CDN assets (build-desktop-web rewrites for
+  // the desktop bundle at build time).
   { file: 'AlloFlowANTI.txt', assetPrefix: 'https://alloflow-cdn.pages.dev/' },
-  { file: 'desktop/web-app/src/AlloFlowANTI.txt', assetPrefix: './' },
-  { file: 'desktop/web-app/src/App.jsx', assetPrefix: './' },
+  { file: 'desktop/web-app/src/AlloFlowANTI.txt', assetPrefix: 'https://alloflow-cdn.pages.dev/' },
+  { file: 'desktop/web-app/src/App.jsx', assetPrefix: 'https://alloflow-cdn.pages.dev/' },
 ];
 
 const TARGETS = [
@@ -21,6 +24,9 @@ const TARGETS = [
     moduleKey: 'PdfAuditView',
     fileName: 'view_pdf_audit_module.js',
     globalHint: 'PdfAudit',
+    // The on-demand consumer moved into the (itself lazily-loaded) Export
+    // Preview module in the 2026-08 modularization.
+    consumerFiles: ['view_export_preview_source.jsx'],
   },
   {
     moduleKey: 'ExportPreviewView',
@@ -170,9 +176,14 @@ function findTargetContract(source, shell, target) {
   expect(expandedEnsure, `${shell.file}: ${ensure.name} must recognize already-loaded modules`).toMatch(/\bAlloModules\b/);
 
   const withoutEnsureDefinition = source.slice(0, ensure.start) + source.slice(ensure.end);
-  expect(withoutEnsureDefinition, `${shell.file}: ${ensure.name} must be wired to an on-demand consumer`).toMatch(
-    new RegExp(`\\b${escapeRegExp(ensure.name)}\\b`),
+  const consumerPool = withoutEnsureDefinition + (target.consumerFiles || [])
+    .map(file => readFileSync(resolve(process.cwd(), file), 'utf8')).join('\n');
+  // Since the 2026-08 refactor a consumer may also route through the generic
+  // __alloEnsureLazyModule('<ModuleKey>', ...) ensure instead of the named one.
+  const consumerPattern = new RegExp(
+    `\\b${escapeRegExp(ensure.name)}\\b|__alloEnsureLazyModule\\(\\s*(['"])${escapeRegExp(target.moduleKey)}\\1|\\b${escapeRegExp(lazy.name)}\\s*\\(`,
   );
+  expect(consumerPool, `${shell.file}: ${ensure.name} must be wired to an on-demand consumer`).toMatch(consumerPattern);
 
   return { lazy, ensure };
 }
@@ -239,10 +250,12 @@ describe('document-suite heavy modules are safely demand-loaded', () => {
     const pdfContract = findTargetContract(root, SHELLS[0], TARGETS[1]);
     const ensureName = pdfContract.ensure.name;
     const ensureIndex = callback.indexOf(ensureName);
-    const apiIndex = callback.indexOf('AccessibleOfficeExport');
+    // The callback may fast-path an already-registered API before the ensure;
+    // the invariant is that after awaiting readiness it RE-resolves the API.
+    const apiAfterEnsure = callback.indexOf('AccessibleOfficeExport', ensureIndex);
 
     expect(ensureIndex, 'Office export must invoke the PDF-audit ensure global').toBeGreaterThan(0);
-    expect(apiIndex, 'Office export must resolve AccessibleOfficeExport after readiness').toBeGreaterThan(ensureIndex);
+    expect(apiAfterEnsure, 'Office export must re-resolve AccessibleOfficeExport after readiness').toBeGreaterThan(ensureIndex);
     expect(callback.slice(Math.max(0, ensureIndex - 300), ensureIndex + ensureName.length + 300), 'Office export must await readiness').toMatch(/\bawait\b/);
   });
 });

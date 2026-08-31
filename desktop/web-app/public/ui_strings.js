@@ -8807,6 +8807,9 @@
     "shared_links": "Polls, sign-ups & shared links"
   },
   "export": {
+    "preview_loading": "Preparing the export preview\u2026",
+    "preview_load_failed": "The export preview module could not load.",
+    "preview_load_failed_hint": "Check the connection, then retry \u2014 your document stays open.",
     "district_resource": "AlloFlow District Resource",
     "topic": "Topic",
     "date_label": "Date",

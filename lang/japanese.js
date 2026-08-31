@@ -7309,7 +7309,10 @@
     "cloze_word_bank": "Word Bank",
     "no_categories": "No categories were provided.",
     "no_content": "No glossary entries.",
-    "uncategorized": "Uncategorized"
+    "uncategorized": "Uncategorized",
+    "preview_load_failed": "The export preview module could not load.",
+    "preview_load_failed_hint": "Check the connection, then retry — your document stays open.",
+    "preview_loading": "Preparing the export preview…"
   },
   "immersive": {
     "title": "イマーシブオプション",
