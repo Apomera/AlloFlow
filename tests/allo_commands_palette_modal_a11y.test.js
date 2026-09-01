@@ -70,6 +70,14 @@ describe('AlloCommandPalette modal accessibility', () => {
     }
   });
 
+  it('does not expose an empty listbox when search has no matching commands', () => {
+    expect(source).toContain('aria-expanded={commandRowCount > 0}');
+    expect(source).toContain("aria-controls={commandRowCount > 0 ? 'allo-palette-list' : undefined}");
+    expect(source).toContain('aria-activedescendant={commandRowCount > 0 && selectedCommandId');
+    expect(source).toMatch(/\{commandRowCount === 0 \? \(\s*<div id="allo-palette-empty"/);
+    expect(source).toMatch(/\) : \(\s*<ul id="allo-palette-list" role="listbox"/);
+  });
+
   it('provides an explicit non-submit close button with a 44px target', () => {
     const buttons = elements.filter((node) => elementName(node.openingElement) === 'button');
     expect(buttons.length).toBeGreaterThan(0);

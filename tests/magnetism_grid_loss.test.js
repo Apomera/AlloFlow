@@ -3,10 +3,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -138,7 +137,7 @@ describe('magnetism transformer grid-loss lens', () => {
   });
 
   it('records grid evidence in notebook metrics and restored-session text', () => {
-    const active = transformerSeed({ notebookOpen: true });
+    const active = transformerSeed({ notebookOpen: true, labShellPanel: 'evidence' });
     const metrics = physics.notebookMetricSnapshot({ magnetism: active });
     expect(metrics.find((metric) => metric.key === 'grid_line_voltage')).toMatchObject({ value: 240, display: '240 V' });
     expect(metrics.find((metric) => metric.key === 'grid_line_current')).toMatchObject({ display: '4.17 A' });
@@ -168,10 +167,7 @@ describe('magnetism transformer grid-loss lens', () => {
     try {
       expect(host.querySelector('.mag-grid-feedback[role="status"][aria-live="polite"]')).toBeTruthy();
       expect(host.querySelector('.mag-grid-presets[role="group"]')).toBeTruthy();
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await runIsolatedAxe(host.querySelector('.mag-grid-lens').outerHTML);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       host.remove();

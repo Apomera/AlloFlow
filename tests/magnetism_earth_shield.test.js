@@ -101,7 +101,7 @@ describe('magnetism Earth Shield Watch investigation', () => {
     const state = earthSeed({
       earthSolarWind: 10, earthShieldBaseline: { pressure: 2 },
       earthShieldPrediction: 'compress_stretch_equatorward', earthShieldResultSeen: true,
-      notebookOpen: true,
+      notebookOpen: true, labShellPanel: 'evidence',
     });
     const metrics = physics.notebookMetricSnapshot({ magnetism: state });
     expect(metrics.map((metric) => metric.key)).toEqual([

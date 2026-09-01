@@ -37,7 +37,19 @@ function EndSessionPreview({
     } catch (_) { return String(fallback || ''); }
   };
   React.useEffect(() => {
-    try { if (dialogRef && dialogRef.current) dialogRef.current.focus(); } catch (_) {}
+    let focusTimer = null;
+    try {
+      focusTimer = window.setTimeout(() => {
+        try {
+          if (!dialogRef || !dialogRef.current) return;
+          dialogRef.current.scrollTop = 0;
+          dialogRef.current.focus({ preventScroll: true });
+        } catch (_) {}
+      }, 0);
+    } catch (_) {}
+    return () => {
+      try { if (focusTimer !== null) window.clearTimeout(focusTimer); } catch (_) {}
+    };
   }, [dialogRef]);
 
   // Keep the extracted markup readable while exposing only the minimum host
@@ -65,10 +77,10 @@ function EndSessionPreview({
 
   return (
     <div className="fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation">
-      <div ref={endSessionPreviewRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="end-session-summary-title" className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100">
+      <div ref={endSessionPreviewRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="end-session-summary-title" aria-describedby="end-session-summary-description" className="allo-docsuite bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100">
         <h2 id="end-session-summary-title" className="text-xl font-black text-slate-800">{tx('end_session.title', 'End session')}</h2>
-        <p className="text-sm text-slate-600 mt-1">{tx('end_session.review_summary', 'Review the privacy-limited roster summary before temporary live-session data is deleted.')}</p>
-        <div className="grid grid-cols-3 gap-2 my-4">
+        <p id="end-session-summary-description" className="text-sm text-slate-600 mt-1">{tx('end_session.review_summary', 'Review the privacy-limited roster summary before temporary live-session data is deleted.')}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 my-4">
           <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-2xl font-black text-emerald-700">{Object.keys(endSessionPreview.summary.participants || {}).length}</div><div className="text-[11px] font-bold text-emerald-800">{tx('end_session.roster_matched', 'Roster matched')}</div></div>
           <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-2xl font-black text-amber-700">{(endSessionPreview.summary.absentCodenames || []).length}</div><div className="text-[11px] font-bold text-amber-800">{tx('end_session.not_present', 'Not present')}</div></div>
           <div className="rounded-xl bg-rose-50 p-3 text-center"><div className="text-2xl font-black text-rose-700">{(endSessionPreview.summary.unmatchedCodenames || []).length}</div><div className="text-[11px] font-bold text-rose-800">{tx('end_session.unmatched', 'Unmatched')}</div></div>
@@ -132,7 +144,6 @@ function EndSessionPreview({
                       value={endSessionPreview.followUpResourceId || ''}
                       disabled={!!endSessionPreview.followUpBusy}
                       onChange={event => setEndSessionPreview(prev => prev ? { ...prev, followUpResourceId: event.target.value, followUpStatus: '' } : prev)}
-                      aria-label={tx('end_session.choose_follow_up_resource', 'Choose the student-safe resource to send to an evidence cohort')}
                       className="mt-1 min-h-11 w-full rounded-lg border border-violet-300 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
                     >
                       {(endSessionPreview.followUpResources || []).map(resource => <option key={resource.id} value={resource.id}>{resource.title}</option>)}
@@ -144,6 +155,10 @@ function EndSessionPreview({
                     const connectedCount = resolveEndSessionCohortUids(cohort.codenames).length;
                     const supportCohort = cohort.intent === 'support';
                     const sending = endSessionPreview.followUpBusy === cohort.code;
+                    const sendActionLabel = sending
+                      ? tx('end_session.sending', 'Sending...')
+                      : tx('end_session.send_to_count', 'Send to {count}', { count: connectedCount });
+                    const sendActionDescription = tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}', { count: connectedCount, cohort: cohort.label });
                     return (
                       <div key={cohort.code} className={'rounded-lg border p-2 ' + (supportCohort ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50')}>
                         <div className="flex items-start gap-2">
@@ -156,15 +171,15 @@ function EndSessionPreview({
                               type="button"
                               disabled={!!endSessionPreview.followUpBusy || endSessionPreview.busy}
                               onClick={() => sendEndSessionEvidenceCohort(cohort)}
-                              aria-label={tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}', { count: connectedCount, cohort: cohort.label })}
+                              aria-label={sendActionLabel + '. ' + sendActionDescription}
                               className="min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white hover:bg-violet-800 disabled:opacity-50"
                             >
-                              {sending ? tx('end_session.sending', 'Sending...') : tx('end_session.send_to_count', 'Send to {count}', { count: connectedCount })}
+                              {sendActionLabel}
                             </button>
                           )}
                         </div>
                         <details className="mt-1">
-                          <summary className="cursor-pointer text-[10px] font-bold text-slate-600">{tx('end_session.review_codenames', 'Review codenames')}</summary>
+                          <summary tabIndex={0} className="cursor-pointer rounded text-[10px] font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.review_codenames', 'Review codenames')}</summary>
                           <div className="mt-1 text-[10px] text-slate-600">{(cohort.codenames || []).join(', ')}</div>
                         </details>
                       </div>
@@ -201,7 +216,7 @@ function EndSessionPreview({
             <p className="mt-1 text-[11px] text-amber-800">{tx('end_session.delivery_keep_open', 'The session can stay open while learners receive the resource. Ending removes temporary connections.')}</p>
           </div>
         )}
-        <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary className="cursor-pointer text-sm font-bold text-slate-700">{tx('end_session.what_will_be_saved', 'What will be saved?')}</summary><p className="text-xs text-slate-600 mt-2">{tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.')}</p></details>
+        <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary tabIndex={0} className="cursor-pointer rounded text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.what_will_be_saved', 'What will be saved?')}</summary><p className="text-xs text-slate-600 mt-2">{tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.')}</p></details>
         <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="end-session-note">{tx('end_session.optional_codename_note', 'Optional codename-only teacher note')}</label>
         <textarea id="end-session-note" aria-describedby="end-session-note-privacy" value={endSessionNote} maxLength={500} onChange={event => setEndSessionNote(event.target.value.slice(0, 500))} rows={3} placeholder={tx('end_session.teacher_note_placeholder', 'Example: Azure Fox may benefit from a fractions review')} className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
         <div className="flex items-start justify-between gap-3 text-[11px] text-slate-500"><span id="end-session-note-privacy">{tx('end_session.note_privacy_guidance', 'Use codenames only. This note is stored with the roster summary and included in roster backups.')}</span><span className="shrink-0">{endSessionNote.length}/500</span></div>
@@ -211,7 +226,7 @@ function EndSessionPreview({
           {endSessionPreview.deliveryGuard ? (
             <>
               <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(false, true)} className="px-4 py-2.5 rounded-xl border border-rose-300 bg-rose-100 text-rose-800 font-bold disabled:opacity-50">{tx('end_session.end_without_saving_anyway', 'End without saving anyway')}</button>
-              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(true, true)} className="px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold shadow-lg disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway')}</button>}
+              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(true, true)} className="px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold shadow-lg hover:bg-amber-800 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway')}</button>}
             </>
           ) : (
             <>

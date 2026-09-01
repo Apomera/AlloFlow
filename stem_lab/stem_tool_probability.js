@@ -278,6 +278,17 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  var PROBABILITY_TRIAL_MILESTONES = [10, 50, 100, 500, 1000];
+
+  function probabilityNewTrialMilestones(totalTrials, awardedMilestones) {
+    var total = Math.floor(Number(totalTrials));
+    if (!Number.isFinite(total) || total < 0) return [];
+    var awarded = Array.isArray(awardedMilestones) ? awardedMilestones : [];
+    return PROBABILITY_TRIAL_MILESTONES.filter(function(milestone) {
+      return total >= milestone && awarded.indexOf(milestone) === -1;
+    });
+  }
+
   var PROBABILITY_AUTO_TRIAL_LIMIT = 10000;
 
   window.__ProbabilityCore = Object.assign({}, window.__ProbabilityCore || {}, {
@@ -290,6 +301,8 @@ window.StemLab = window.StemLab || {
     wilsonInterval: probabilityWilsonInterval,
     rollDicePair: probabilityRollDicePair,
     resetPatch: probabilityResetPatch,
+    newTrialMilestones: probabilityNewTrialMilestones,
+    trialMilestones: PROBABILITY_TRIAL_MILESTONES.slice(),
     autoTrialLimit: PROBABILITY_AUTO_TRIAL_LIMIT
   });
 
@@ -690,6 +703,48 @@ window.StemLab = window.StemLab || {
         };
       }, []);
 
+      // Trial milestones are lifetime progress, not current-run progress. This
+      // effect makes manual batches, Auto-Run, and the specialty simulations
+      // share one award path while the persisted list prevents reset farming.
+      var probabilityRewardGuard = React.useRef({ milestones: {}, challenges: {} });
+      var probabilityProgress = (labToolData && labToolData.probability) || {};
+      var probabilityProgressTotal = probabilityProgress.totalTrials || 0;
+      var probabilityMilestoneSignature = Array.isArray(probabilityProgress._awardedTrialMilestones)
+        ? probabilityProgress._awardedTrialMilestones.join(',')
+        : '';
+      React.useEffect(function() {
+        var pending = probabilityNewTrialMilestones(
+          probabilityProgressTotal,
+          probabilityProgress._awardedTrialMilestones
+        );
+        if (!pending.length) return;
+
+        setLabToolData(function(prev) {
+          var current = prev.probability || {};
+          var awarded = Array.isArray(current._awardedTrialMilestones)
+            ? current._awardedTrialMilestones.slice()
+            : [];
+          pending.forEach(function(milestone) {
+            if (awarded.indexOf(milestone) === -1) awarded.push(milestone);
+          });
+          awarded.sort(function(a, b) { return a - b; });
+          return Object.assign({}, prev, {
+            probability: Object.assign({}, current, { _awardedTrialMilestones: awarded })
+          });
+        });
+
+        var claimable = pending.filter(function(milestone) {
+          if (probabilityRewardGuard.current.milestones[milestone]) return false;
+          probabilityRewardGuard.current.milestones[milestone] = true;
+          return true;
+        });
+        if (!claimable.length) return;
+        var earnedXP = claimable.length * 5;
+        if (awardStemXP) awardStemXP('probability', earnedXP);
+        if (stemCelebrate) stemCelebrate();
+        if (addToast) addToast('\uD83C\uDF89 Trial milestone' + (claimable.length > 1 ? 's ' : ' ') + claimable.join(', ') + '! +' + earnedXP + ' XP', 'success');
+      }, [probabilityProgressTotal, probabilityMilestoneSignature]);
+
       // ── Theme detection (fixes pre-existing undefined isDark/isContrast bug) ──
       var isDark = false, isContrast = false;
       try {
@@ -988,19 +1043,6 @@ var d = (labToolData.probability) || {};
                 stemBeep(_noteMap[_lastR] || 440, 0.08);
 
               }
-
-            }
-
-            // ── Milestone XP ──
-            var _mTotal = results.length;
-
-            if ([10, 50, 100, 500, 1000].indexOf(_mTotal) >= 0) {
-
-              if (stemCelebrate) stemCelebrate();
-
-              if (awardStemXP) awardStemXP('probability', 5);
-
-              if (addToast) addToast('🎉 ' + _mTotal + ' trials! +5 XP', 'success');
 
             }
 
@@ -4279,11 +4321,18 @@ var d = (labToolData.probability) || {};
 
                         : _ok ? React.createElement("button", { "aria-label": t('stem.probability.claim', "Claim"), onClick:function() {
 
-                            if(_cc.indexOf(ch.id)>=0) return;
+                            if(_cc.indexOf(ch.id)>=0 || probabilityRewardGuard.current.challenges[ch.id]) return;
+                            probabilityRewardGuard.current.challenges[ch.id] = true;
+
+                            setLabToolData(function(prev) {
+                              var current = prev.probability || {};
+                              var completed = Array.isArray(current._completedChallenges) ? current._completedChallenges.slice() : [];
+                              if (completed.indexOf(ch.id) >= 0) return prev;
+                              completed.push(ch.id);
+                              return Object.assign({}, prev, { probability: Object.assign({}, current, { _completedChallenges: completed }) });
+                            });
 
                             if(awardStemXP) awardStemXP('probability', ch.xp);
-
-                            upd('_completedChallenges', _cc.concat([ch.id]));
 
                             if(stemCelebrate) stemCelebrate();
 

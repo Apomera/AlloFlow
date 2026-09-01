@@ -26,6 +26,7 @@ function ActivityArtifactSummary(props) {
   ];
   var statusText = { 'not-created': 'not created', generating: 'creating', ready: 'ready', edited: 'edited', failed: 'needs retry' };
   var readyCount = 0;
+  var generationMeta = item.generationMeta && typeof item.generationMeta === 'object' ? item.generationMeta : null;
   var pills = definitions.map(function (entry) {
     var kind = entry[0];
     var value = kind === 'cover' ? item.coverImage : item[kind];
@@ -41,6 +42,11 @@ function ActivityArtifactSummary(props) {
     <div className="flex flex-wrap items-center gap-1.5 mb-3" aria-label={(t('brainstorm.resource_status') || 'Activity resources') + ': ' + readyCount + '/' + definitions.length}>
       <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1">{t('brainstorm.resource_status') || 'Resources'}</span>
       {pills}
+      {generationMeta && generationMeta.attempts > 1 ? (
+        <span className="text-[10px] font-bold rounded-full border px-2 py-0.5 border-amber-200 bg-amber-50 text-amber-800" title="The activity response was repaired automatically after an incomplete first response.">
+          Recovered after {generationMeta.attempts} attempts
+        </span>
+      ) : null}
     </div>
   );
 }

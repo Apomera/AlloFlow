@@ -125,7 +125,7 @@ describe('magnetism Signal Story', () => {
 
   it('renders a clear three-node visual story while preserving the legacy feedback wording', () => {
     withStaticHost(electroSeed({
-      magLastChange: 'turns', magChangeSeq: 2,
+      magLastChange: 'turns', magChangeSeq: 2, labShellPanel: 'overview',
     }), (host, html) => {
       const story = host.querySelector('[data-magnetism-signal-story="true"]');
       expect(story).toBeTruthy();

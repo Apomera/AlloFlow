@@ -396,6 +396,95 @@ describe('Optics Lab refinements', () => {
     expect(interference).toContain('data-op-wavefield-aperture="double"');
   });
 
+  it('adds a measurement studio with explicit model validity and comparable wave profiles', () => {
+    const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
+    const interference = renderTool('opticsLab', state({ mode: 'interference' }));
+    const diffraction = renderTool('opticsLab', state({ mode: 'diffraction', diffMode: 'single' }));
+
+    [interference, diffraction].forEach((html) => {
+      expect(html).toContain('Measurement studio');
+      expect(html).toContain('data-op-optical-path=');
+      expect((html.match(/data-op-signal-stage=/g) || [])).toHaveLength(4);
+      expect(html).toContain('data-op-model-validity=');
+      expect(html).toContain('data-op-fresnel-number=');
+      expect(html).toContain('data-op-regime-meter=');
+      expect(html).toContain('data-op-source-spectrum=');
+      expect((html.match(/data-op-spectrum-tick=/g) || [])).toHaveLength(6);
+      expect(html).toContain('data-op-model-profile-line="fraunhofer"');
+      expect(html).toContain('data-op-model-profile-line="fresnel"');
+      expect(html).toContain('data-op-model-profile-gap-area=');
+      expect((html.match(/data-op-model-profile-x-tick=/g) || [])).toHaveLength(3);
+      expect(html).toContain('Export screen + depth data');
+      expect(html).toContain('D is the illuminated aperture span');
+    });
+    expect(interference).toContain('data-op-measurement-studio="interference"');
+    expect(interference).toMatch(/data-op-propagation-model="fraunhofer"[^>]*aria-pressed="true"/);
+    expect(interference).toContain('Far-field conditions are strong');
+    expect(interference).toContain('data-op-spectrum-mode="monochromatic"');
+    expect(interference).toContain('data-op-spectrum-band="interference"');
+    expect(interference).toContain('Visible spectrum scale from 380 to 750 nanometers');
+    expect(diffraction).toContain('data-op-measurement-studio="diffraction"');
+    expect(diffraction).toContain('aria-label="diffraction source spectral bandwidth"');
+    expect(source).toContain("rows.push([section, modelInfo.model");
+    expect(source).toContain("addRow('screen_profile'");
+    expect(source).toContain("addRow('detector_depth_trail'");
+    expect(source).toContain('if (opticsWavefieldSampleCache.order.length > 8)');
+    expect(source).toContain('if (group.count > 8000)');
+  });
+
+  it('renders near-field, broadband, detector-averaged, uncertainty, and phase states coherently', () => {
+    const advanced = renderTool('opticsLab', state({
+      mode: 'interference', intLambda: 600, intSlitSep: .5, intSlitWidth: 200,
+      intScreenL: .2, intScreenProbeMm: 3, intPropagationModel: 'fresnel',
+      intBandwidthNm: 40, intDetectorWidthMm: 2, intNoisePct: 1.5,
+      intShowWavefield3D: true, intWavefieldProbe: .5, opWavefieldDisplay: 'phase',
+    }));
+
+    expect(advanced).toMatch(/data-op-propagation-model="fresnel"[^>]*aria-pressed="true"/);
+    expect(advanced).toMatch(/data-op-model-validity="interference"[^>]*data-status="near"/);
+    expect(advanced).toContain('Near-field conditions: the Fresnel model resolves the evolving aperture image');
+    expect(advanced).toContain('data-op-optical-path="interference"');
+    expect(advanced).toContain('data-op-signal-stage="source"');
+    expect(advanced).toContain('data-op-signal-stage="aperture"');
+    expect(advanced).toContain('data-op-signal-stage="propagation"');
+    expect(advanced).toContain('data-op-signal-stage="detector"');
+    expect(advanced).toMatch(/data-op-regime-meter="interference"[^>]*data-op-regime-status="near"/);
+    const regime = advanced.match(/data-op-regime-position="([^"]+)"/);
+    expect(regime).not.toBeNull();
+    expect(Number(regime[1])).toBeGreaterThan(60);
+    expect(advanced).toContain('data-op-spectrum-start-nm="580.0"');
+    expect(advanced).toContain('data-op-spectrum-end-nm="620.0"');
+    expect(advanced).toContain('data-op-spectrum-mode="band"');
+    expect(advanced).toContain('data-op-spectrum-center-percent="59.459"');
+    expect(advanced).toContain('data-op-spectrum-width-percent="10.811"');
+    expect(advanced).toContain('aria-label="interference source spectral bandwidth"');
+    expect(advanced).toContain('aria-label="interference detector aperture width"');
+    expect(advanced).toContain('aria-label="interference detector uncertainty"');
+    expect(advanced).toContain('2.0 mm aperture average');
+    expect(advanced).toContain('±1.5% uncertainty');
+    expect(advanced).toContain('data-op-wavefield-model="fresnel"');
+    expect(advanced).toContain('data-op-wavefield-height="normalized-field-phase"');
+    expect(advanced).toContain('data-op-model-max-delta=');
+    expect(advanced).toContain('data-op-model-profile-max-gap="interference"');
+    expect(advanced).toContain('data-op-model-profile-detector-point="fraunhofer"');
+    expect(advanced).toContain('data-op-model-profile-detector-point="fresnel"');
+    expect(advanced).toContain('data-op-model-profile-gap-area="interference"');
+    expect(advanced).toContain('Max profile Δ');
+    expect(advanced).toMatch(/data-op-wavefield-display="phase"[^>]*aria-pressed="true"/);
+    expect(advanced).toMatch(/data-op-wavefield-probe-readout="interference"[^>]*data-op-probe-field="-?\d+\.\d{4}"/);
+    expect(advanced).toMatch(/data-op-wavefield-probe-readout="interference"[^>]*data-op-probe-phase-rad="-?\d+\.\d{4}"/);
+    expect(advanced).toContain('data-op-probe-display="phase"');
+    expect((advanced.match(/data-op-probe-metric=/g) || [])).toHaveLength(4);
+    expect(advanced).toContain('data-op-probe-metric="field"');
+    expect(advanced).toContain('data-op-probe-metric="phase"');
+    expect(advanced).toContain('data-op-wavefield-depth-scale="interference"');
+    expect(advanced).toContain('Re(E) / E₀');
+    expect(advanced).toContain('φc');
+    expect(advanced).toContain('positive field phase');
+    expect(advanced).toContain('opposite field phase');
+    expect(advanced).toContain('Height = Re(E) / E₀');
+  });
+
   it('turns setup changes into a cause, law, and measured-result chain', () => {
     const isolated = renderTool('opticsLab', state({
       mode: 'interference', intLambda: 700, intSlitSep: 0.1, intScreenL: 1, intSlitWidth: 50,

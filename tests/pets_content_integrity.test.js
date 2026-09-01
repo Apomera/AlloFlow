@@ -442,3 +442,67 @@ describe('Pets Lab - interaction safety treats cues as uncertainty, not predicti
     expect(groundTruth).toMatch(/familiar family pets/i);
   });
 });
+
+describe('Pets Lab - One Health practice traces exposure pathways instead of blaming species', () => {
+  const zoonoses = sourceBetween('var ZOONOSES = [', '// SECTION 4: GLOSSARY');
+  const cases = sourceBetween('function zoonosisPathwayCases()', 'function normalizeZoonosisPracticeState(');
+  const normalizer = sourceBetween('function normalizeZoonosisPracticeState(', 'function normalizePetsMiniGameState(');
+  const render = sourceBetween('function renderZoonoses()', '// SERVICE & SUPPORT ANIMALS');
+
+  it('replaces universal and automatic-clearance claims with current exposure guidance', () => {
+    expect((zoonoses.match(/\{ id:/g) || [])).toHaveLength(6);
+    expect((zoonoses.match(/sourceUrl:/g) || [])).toHaveLength(6);
+    expect(zoonoses).toMatch(/Public health evaluates whether testing and post-exposure prophylaxis are needed/i);
+    expect(zoonoses).toMatch(/oocysts generally take 1–5 days/i);
+    expect(zoonoses).toMatch(/higher-risk households to consider another pet/i);
+    expect(SRC).not.toMatch(/universal shedding|ALWAYS FATAL|ANY bat indoors|no reptiles in households|only a week or two after its own first infection|essentially never again|annual rabies vaccine is legally required/i);
+  });
+
+  it('defines four balanced pathway cases with an explicit exposure-route-person-break model', () => {
+    expect((cases.match(/\bid:\s*'/g) || [])).toHaveLength(4);
+    expect(cases).toMatch(/id: 'bat-bedroom'/);
+    expect(cases).toMatch(/id: 'litter-pregnancy'/);
+    expect(cases).toMatch(/id: 'turtle-kitchen'/);
+    expect(cases).toMatch(/id: 'bird-cage-dust'/);
+    expect((cases.match(/\bexposure:/g) || [])).toHaveLength(4);
+    expect((cases.match(/\broute:/g) || [])).toHaveLength(4);
+    expect((cases.match(/\bhigherRisk:/g) || [])).toHaveLength(4);
+    expect((cases.match(/\bbreakPoint:/g) || [])).toHaveLength(4);
+    expect(cases).toMatch(/correct: 1[\s\S]*correct: 2[\s\S]*correct: 0[\s\S]*correct: 3/);
+    expect(cases).toContain('https://www.cdc.gov/rabies/prevention/bats.html');
+    expect(cases).toContain('https://www.cdc.gov/toxoplasmosis/prevention/index.html');
+    expect(cases).toContain('https://www.cdc.gov/healthy-pets/about/reptiles-and-amphibians.html');
+    expect(cases).toContain('https://www.cdc.gov/psittacosis/prevention/index.html');
+  });
+
+  it('persists only bounded answers and renders an accessible evidence-recording practice', () => {
+    expect(normalizer).toMatch(/answer < 0 \|\| answer >= cases\[i\]\.choices\.length/);
+    expect(normalizer).not.toMatch(/scenario|question|feedback|why/);
+    expect(normalizer).toMatch(/raw\.mode === 'focused'/);
+    expect(normalizer).toMatch(/seenRetryCases/);
+    expect(render).toMatch(/data-pets-zoon-practice/);
+    expect(render).toMatch(/data-pets-zoon-retry/);
+    expect(render).toMatch(/data-pets-pathway-model': 'four-links'/);
+    expect(render).toMatch(/data-pets-pathway-part/);
+    expect(render).toMatch(/This is prevention practice, not medical diagnosis/i);
+    expect(render).toMatch(/role: 'group'/);
+    expect(render).toMatch(/role: 'progressbar'/);
+    expect(render).toMatch(/role: 'region'/);
+    expect(render).toMatch(/questionId \+ ' ' \+ questionTextId/);
+    expect(render).toMatch(/ref: _zoonFeedbackRef/);
+    expect(render).toMatch(/Focused practice does not replace the original four-case result/i);
+    expect(render).toMatch(/Finished all 4 Exposure Pathway decisions/);
+    expect(render).toMatch(/criterionMet: pct >= 75/);
+    expect(render).toContain('https://www.cdc.gov/onehealth/index.html');
+    expect(SRC).toMatch(/Zoonoses & One Health.+trace an exposure through its route.+3\/4 meets the activity target/is);
+  });
+
+  it('registers aggregate zoonoses evidence without storing authored scenario text', () => {
+    expect(SRC).toMatch(/zoonoses: \['score', 'total', 'scorePct', 'bestPct', 'needsPractice', 'criterionMet'\]/);
+    expect(SRC).toMatch(/zoonoses: 'Completed the Exposure Pathway Check'/);
+    expect(SRC).toMatch(/'quizState', 'zoonPractice', 'careSim'/);
+    expect(SRC).toMatch(/snapshot\.zoonPractice = normalizeZoonosisPracticeState/);
+    expect(SRC).toMatch(/zoonoses: true,[\s\S]*function requiresActivityCompletion/);
+    expect(SRC).toMatch(/Latest Exposure Pathway Check is below 3\/4/);
+  });
+});

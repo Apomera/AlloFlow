@@ -645,14 +645,14 @@ const d = labToolData.solarSystem || {};
               { alt: 50, name: __alloT('stem.solarsystem.methane_clouds', 'Methane Clouds'), desc: __alloT('stem.solarsystem.blue_green_ice_crystal_clouds', 'Blue-green ice crystal clouds'), temp: '-195\u00B0C', pressure: '1 atm', color: '#5aafa5' },
               { alt: -100, name: __alloT('stem.solarsystem.h_s_clouds', 'H\u2082S Clouds'), desc: __alloT('stem.solarsystem.hydrogen_sulfide_clouds_rotten_eggs', 'Hydrogen sulfide clouds (rotten eggs!)'), temp: '-100\u00B0C', pressure: '10 atm', color: '#3a8a7a' },
               { alt: -5000, name: __alloT('stem.solarsystem.superionic_ice', 'Superionic Ice'), desc: __alloT('stem.solarsystem.water_in_exotic_superionic_state', 'Water in exotic superionic state'), temp: '2,700\u00B0C', pressure: '200,000 atm', color: '#2a5a7a' },
-              { alt: -15000, name: __alloT('stem.solarsystem.diamond_rain', 'Diamond Rain'), desc: __alloT('stem.solarsystem.carbon_atoms_crushed_into_diamonds_fal', 'Lab experiments suggest carbon squeezed this hard forms diamonds that sink like rain'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#b8d8f8' }
+              { alt: -15000, name: __alloT('stem.solarsystem.diamond_formation_model', 'Diamond Formation Model'), desc: __alloT('stem.solarsystem.carbon_atoms_crushed_into_diamonds_fal', 'Lab experiments suggest carbon squeezed this hard forms diamonds that sink like rain'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#b8d8f8' }
             ],
             Neptune: [
               { alt: 300, name: __alloT('stem.solarsystem.upper_atmosphere_3', 'Upper Atmosphere'), desc: __alloT('stem.solarsystem.deep_blue_from_methane_absorption', 'Deep blue from methane absorption'), temp: '-220\u00B0C', pressure: '0.001 atm', color: '#4060c0' },
               { alt: 50, name: __alloT('stem.solarsystem.methane_clouds_2', 'Methane Clouds'), desc: __alloT('stem.solarsystem.supersonic_winds_2_100_km_h', 'Supersonic winds: 2,100 km/h'), temp: '-200\u00B0C', pressure: '1 atm', color: '#3050a0' },
               { alt: -100, name: __alloT('stem.solarsystem.deep_clouds', 'Deep Clouds'), desc: __alloT('stem.solarsystem.great_dark_spot_storms', 'Great Dark Spot storms'), temp: '-50\u00B0C', pressure: '50 atm', color: '#203080' },
               { alt: -5000, name: __alloT('stem.solarsystem.hot_ice_mantle', 'Hot Ice Mantle'), desc: __alloT('stem.solarsystem.superionic_water_at_extreme_pressure', 'Superionic water at extreme pressure'), temp: '2,700\u00B0C', pressure: '200,000 atm', color: '#1a2060' },
-              { alt: -15000, name: __alloT('stem.solarsystem.diamond_rain_2', 'Diamond Rain'), desc: __alloT('stem.solarsystem.literal_diamonds_raining_down_through_', 'Experiments suggest real diamonds rain down through these depths'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#a0c8e8' }
+              { alt: -15000, name: __alloT('stem.solarsystem.diamond_formation_model_2', 'Diamond Formation Model'), desc: __alloT('stem.solarsystem.literal_diamonds_raining_down_through_', 'Experiments suggest real diamonds rain down through these depths'), temp: '5,000\u00B0C', pressure: '1,000,000 atm', color: '#a0c8e8' }
             ]
           };
 
@@ -1206,6 +1206,7 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]):hover svg{transform:translateY(-1px);box-shadow:0 18px 42px rgba(2,6,23,.38),0 0 30px rgba(99,102,241,.14)}',
               '.solar-cosmos canvas[role="img"]{box-shadow:inset 0 0 42px rgba(2,6,23,.28)}',
               '.solar-cosmos button:focus-visible,.solar-cosmos summary:focus-visible{outline:3px solid #67e8f9!important;outline-offset:3px}',
+              '@media(max-width:640px){.solar-cosmos :is(.solar-seasons-stage,.solar-signal-stage,.solar-moon-stage){overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#67e8f9 rgba(15,23,42,.72)}.solar-cosmos :is(.solar-seasons-stage,.solar-signal-stage,.solar-moon-stage)>svg{width:720px;min-width:720px;max-width:none}.solar-cosmos :is(.solar-seasons-stage,.solar-signal-stage,.solar-moon-stage):focus-visible{outline:3px solid #67e8f9;outline-offset:3px}}',
               '@media(max-width:640px){.solar-cosmos .solar-tutorial-orbit{height:106px}.solar-cosmos .solar-tutorial-orbit-line--three{width:270px}.solar-cosmos .solar-tutorial-content{padding:16px}.solar-cosmos .solar-tutorial-title{font-size:19px}.solar-cosmos .solar-tutorial-steps{grid-template-columns:1fr;gap:7px;margin-top:13px}.solar-cosmos .solar-tutorial-step{min-height:54px}.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 112px)}}',
               '@media(prefers-reduced-motion:reduce){.solar-cosmos .solar-tutorial-sun,.solar-cosmos .solar-tutorial-planet,.solar-cosmos .solar-tutorial-craft{animation:none!important}.solar-cosmos .solar-tutorial-launch,.solar-cosmos .solar-tutorial-launch::before,.solar-cosmos .solar-tutorial-launch-arrow{transition:none!important}.solar-cosmos .solar-tutorial-launch:hover{transform:none}}',
               '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{top:auto;left:10px;right:10px;bottom:66px;max-width:none;padding:7px 9px}.solar-cosmos .solar-model-note span{font-size:10px;line-height:1.38}.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px}.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
@@ -1230,7 +1231,7 @@ const d = labToolData.solarSystem || {};
 
             { key: 'Saturn', name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, orbitE: 0.05386, orbitI: 2.486, orbitNode: 113.662, orbitPeri: 92.599, tilt: 0.467, moons: 293, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: __alloT('stem.solarsystem.its_rings_are_made_of_ice_and_rock_cou', 'Its rings are made of ice and rock. Could float in a giant bathtub!'), hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
 
-            { key: 'Uranus', name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, orbitE: 0.04726, orbitI: 0.773, orbitNode: 74.017, orbitPeri: 170.954, tilt: 1.706, moons: 29, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: __alloT('stem.solarsystem.rotates_on_its_side_an_ice_giant_with_', 'Rotates on its side! An ice giant with methane atmosphere.'), gravity: '0.89g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
+            { key: 'Uranus', name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, orbitE: 0.04726, orbitI: 0.773, orbitNode: 74.017, orbitPeri: 170.954, tilt: 1.706, moons: 29, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: __alloT('stem.solarsystem.rotates_on_its_side_an_ice_giant_with_', 'Rotates on its side! An ice giant with methane atmosphere.'), gravity: '0.89g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Lab-modeled diamond formation at depth'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, experiments suggest extreme pressure may form sinking diamonds.' },
 
             { key: 'Neptune', name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, orbitE: 0.00859, orbitI: 1.770, orbitNode: 131.784, orbitPeri: 44.965, tilt: 0.494, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: __alloT('stem.solarsystem.windiest_planet_winds_up_to_2_100_km_h', 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.'), gravity: '1.14g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
 
@@ -1537,7 +1538,7 @@ const d = labToolData.solarSystem || {};
                       );
                     })
                   ),
-                  React.createElement("div", { className: "solar-seasons-stage p-2 sm:p-3" },
+                  React.createElement("div", { className: "solar-seasons-stage p-2 sm:p-3", role: "region", tabIndex: 0, "aria-label": "Scrollable seasons geometry diagram. Swipe or use arrow keys to inspect the full scientific model." },
                     React.createElement("svg", { viewBox: "0 0 640 280", className: "relative z-[1] block h-auto w-full", role: "img", "aria-label": sunlightDescription },
                       React.createElement("defs", null,
                         React.createElement("radialGradient", { id: "solarSeasonSun", cx: "35%", cy: "30%" },
@@ -1723,7 +1724,7 @@ const d = labToolData.solarSystem || {};
                       );
                     })
                   ),
-                  React.createElement("div", { className: "solar-signal-stage p-2 sm:p-3" },
+                  React.createElement("div", { className: "solar-signal-stage p-2 sm:p-3", role: "region", tabIndex: 0, "aria-label": "Scrollable signal-delay geometry diagram. Swipe or use arrow keys to inspect the full scientific model." },
                     React.createElement("svg", { viewBox: "0 0 660 310", className: "relative z-[1] block h-auto w-full", role: "img", "aria-label": "Circular-orbit geometry model. Earth and " + targetPlanet.name + " are " + distanceAU.toFixed(3) + " AU apart; one-way light time " + formatSignalDuration(oneWaySeconds) + "." },
                       React.createElement("defs", null,
                         React.createElement("radialGradient", { id: "solarSignalSun", cx: "35%", cy: "30%" }, React.createElement("stop", { offset: "0%", stopColor: "#fff7c2" }), React.createElement("stop", { offset: "42%", stopColor: "#fbbf24" }), React.createElement("stop", { offset: "100%", stopColor: "#f97316" })),
@@ -1897,7 +1898,7 @@ const d = labToolData.solarSystem || {};
               ),
               React.createElement('div', { className: 'grid gap-4 p-4 md:p-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(310px,.75fr)]' },
                 React.createElement('div', { className: 'min-w-0 space-y-3' },
-                  React.createElement('div', { className: 'solar-moon-stage p-2 sm:p-3' },
+                  React.createElement('div', { className: 'solar-moon-stage p-2 sm:p-3', role: 'region', tabIndex: 0, 'aria-label': 'Scrollable Moon geometry diagram. Swipe or use arrow keys to inspect the full scientific model.' },
                     React.createElement('svg', { viewBox: '0 0 720 350', className: 'relative z-[1] block h-auto w-full', role: 'img', 'aria-label': phaseName + '. ' + alignmentLabel + '. ' + Math.round(illuminatedFraction * 100) + ' percent illuminated; model lunar latitude ' + modelLatitudeDeg.toFixed(2) + ' degrees.' },
                       React.createElement('title', { id: 'solar-moon-visual-title' }, phaseName + ' and ' + alignmentLabel),
                       React.createElement('desc', { id: 'solar-moon-visual-desc' }, 'Sun, Earth, and Moon geometry. The Moon is ' + Math.round(illuminatedFraction * 100) + ' percent illuminated as seen from Earth and has model ecliptic latitude ' + modelLatitudeDeg.toFixed(2) + ' degrees.'),
@@ -2055,7 +2056,15 @@ const d = labToolData.solarSystem || {};
           const simSpeed = d.simSpeed || 1;
 
           const paused = d.paused || false;
-          var selectedAccent = sel ? sel.color : '#6366f1';
+          function getSolarPlanetAccent(planet) {
+            if (planet && Array.isArray(planet.rgb) && planet.rgb.length >= 3) {
+              return '#' + planet.rgb.slice(0, 3).map(function(channel) {
+                return Math.round(Math.max(0, Math.min(1, channel)) * 255).toString(16).padStart(2, '0');
+              }).join('');
+            }
+            return planet && /^#[0-9a-f]{6}$/i.test(planet.color || '') ? planet.color : '#6366f1';
+          }
+          var selectedAccent = getSolarPlanetAccent(sel);
           var selectedName = sel ? sel.name : 'Free orbit';
           var nextWorld = PLANETS.find(function(p) { return planetsVisited.indexOf(p.name) === -1; }) || PLANETS[0];
           var visitProgress = Math.round((planetsVisited.length / Math.max(PLANETS.length, 1)) * 100);
@@ -4606,6 +4615,7 @@ const d = labToolData.solarSystem || {};
       "input[type=range].orr-slider::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 10px " + accent + "55}",
       "input[type=range].orr-slider::-moz-range-track{height:6px;border-radius:3px;background:" + (isDark ? "#334155" : "#cbd5e1") + "}",
       "input[type=range].orr-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:" + accent + ";cursor:pointer;border:2px solid #fff}",
+      "@media (any-pointer:coarse){.orr-btn{min-width:44px!important;min-height:44px!important}.orr-slider{min-height:44px}.orr-body-navigator select{min-height:44px}}",
       // Section header accent line
       ".orr-section-hdr{position:relative;display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:10px}",
       ".orr-section-hdr::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;border-radius:2px;background:linear-gradient(90deg," + accent + "," + accentLight + ")}",
@@ -4644,23 +4654,28 @@ const d = labToolData.solarSystem || {};
       // The orrery is the visual anchor: give it a quiet observatory frame while
       // keeping the actual canvas free to use the full width of the tool.
       ".orr-orbit-stage{position:relative;overflow:hidden;border-radius:18px;isolation:isolate;border:1px solid " + (isDark ? "rgba(129,140,248,0.35)" : "rgba(67,56,202,0.32)") + ";background:" + (isDark ? "linear-gradient(135deg,#050709,#0b1022 52%,#111827)" : "linear-gradient(135deg,#c8d3ee,#e5eafb 52%,#aab9dc)") + ";box-shadow:" + (isDark ? "0 18px 36px rgba(2,6,23,0.50),0 0 0 1px rgba(165,180,252,0.07),inset 0 1px 0 rgba(255,255,255,0.05)" : "0 18px 36px rgba(30,41,59,0.18),0 0 0 1px rgba(67,56,202,0.08),inset 0 1px 0 rgba(255,255,255,0.82)") + "}",
-      ".orr-orbit-stage canvas{position:relative;z-index:1;border:0!important;border-radius:0!important;box-shadow:none!important}",
-      ".orr-orbit-stage::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;background:radial-gradient(circle at 50% 44%,transparent 48%,rgba(2,6,23," + (isDark ? "0.10" : "0.02") + ") 100%)}",
+      ".orr-orbit-viewport{position:relative;overflow:hidden;isolation:isolate;background:" + (isDark ? "linear-gradient(135deg,#050709,#0b1022 52%,#111827)" : "linear-gradient(135deg,#c8d3ee,#e5eafb 52%,#aab9dc)") + "}",
+      ".orr-orbit-viewport canvas{position:relative;z-index:1;border:0!important;border-radius:0!important;box-shadow:none!important}",
+      ".orr-orbit-viewport::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;background:radial-gradient(circle at 50% 44%,transparent 48%,rgba(2,6,23," + (isDark ? "0.10" : "0.02") + ") 100%)}",
       ".orr-stage-hud{position:absolute;top:14px;left:16px;right:16px;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;pointer-events:none}",
-      ".orr-stage-eyebrow{display:block;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:" + (isDark ? "#a5b4fc" : "#4f46e5") + "}",
+      ".orr-stage-eyebrow{display:block;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:" + (isDark ? "#a5b4fc" : "#4f46e5") + "}",
       ".orr-stage-title{display:block;margin-top:3px;font-size:13px;font-weight:700;color:" + (isDark ? "#f8fafc" : "#1e293b") + "}",
-      ".orr-stage-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:" + (isDark ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.82)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.24)" : "rgba(99,102,241,0.16)") + ";font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:" + (isDark ? "#e2e8f0" : "#334155") + "}",
+      ".orr-stage-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:" + (isDark ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.82)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.24)" : "rgba(99,102,241,0.16)") + ";font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:" + (isDark ? "#e2e8f0" : "#334155") + "}",
       ".orr-stage-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:" + (isDark ? "#34d399" : "#16a34a") + ";box-shadow:0 0 10px " + (isDark ? "rgba(52,211,153,0.8)" : "rgba(22,163,74,0.45)") + "}",
-      ".orr-stage-readout{position:absolute;right:16px;top:58px;z-index:3;display:flex;flex-direction:column;gap:3px;max-width:250px;padding:8px 10px;border-radius:10px;background:" + (isDark ? "rgba(15,23,42,0.80)" : "rgba(255,255,255,0.86)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.22)" : "rgba(99,102,241,0.16)") + ";box-shadow:" + (isDark ? "0 6px 18px rgba(2,6,23,0.32)" : "0 5px 14px rgba(30,41,59,0.10)") + ";backdrop-filter:blur(8px);pointer-events:none}",
-      ".orr-stage-readout-label{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:" + (isDark ? "#a5b4fc" : "#4f46e5") + "}",
-      ".orr-stage-readout-body{font-size:12px;font-weight:800;color:" + (isDark ? "#f8fafc" : "#1e293b") + "}",
-      ".orr-stage-readout-values{font-size:10px;line-height:1.35;color:" + (isDark ? "#cbd5e1" : "#475569") + "}",
-      "@media (max-width:640px){.orr-stage-readout{left:10px;right:10px;top:126px;max-width:none;padding:6px 8px;gap:3px 7px}.orr-stage-readout-values{flex-basis:100%}}",
-      ".orr-stage-key{position:absolute;left:16px;top:58px;z-index:3;display:flex;flex-wrap:wrap;gap:8px;pointer-events:none}",
-      ".orr-stage-key-item{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:8px;background:" + (isDark ? "rgba(15,23,42,0.72)" : "rgba(255,255,255,0.82)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.20)" : "rgba(99,102,241,0.13)") + ";font-size:10px;color:" + (isDark ? "#cbd5e1" : "#475569") + "}",
-      ".orr-stage-key-dot{width:6px;height:6px;border-radius:50%;display:inline-block}",
-      ".orr-stage-tip{position:absolute;right:16px;bottom:14px;z-index:3;padding:5px 8px;border-radius:8px;background:" + (isDark ? "rgba(15,23,42,0.72)" : "rgba(255,255,255,0.82)") + ";font-size:10px;color:" + (isDark ? "#94a3b8" : "#64748b") + ";pointer-events:none}",
-      "@media (max-width:640px){.orr-stage-hud{top:10px;left:10px;right:10px;flex-direction:column;gap:6px}.orr-stage-hud>div:last-child{justify-content:flex-start!important}.orr-stage-key{left:10px;top:52px;right:10px}.orr-stage-tip{left:10px;right:10px;bottom:10px;max-width:none;text-align:left;line-height:1.35}}",
+      ".orr-stage-instrument-rail{position:relative;z-index:3;display:grid;grid-template-columns:minmax(210px,.8fr) minmax(0,1.7fr);gap:8px;padding:10px 12px;border-top:1px solid " + (isDark ? "rgba(129,140,248,0.24)" : "rgba(67,56,202,0.18)") + ";background:" + (isDark ? "linear-gradient(135deg,rgba(15,23,42,0.97),rgba(17,24,39,0.94))" : "linear-gradient(135deg,rgba(248,250,252,0.98),rgba(238,242,255,0.96))") + "}",
+      ".orr-stage-readout{position:static;z-index:3;display:grid;grid-template-columns:auto minmax(0,1fr);align-content:start;gap:3px 8px;min-width:0;max-width:none;padding:8px 10px;border-radius:10px;background:" + (isDark ? "rgba(30,41,59,0.88)" : "rgba(255,255,255,0.90)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.22)" : "rgba(99,102,241,0.16)") + ";box-shadow:" + (isDark ? "0 6px 18px rgba(2,6,23,0.22)" : "0 5px 14px rgba(30,41,59,0.08)") + ";pointer-events:none}",
+      ".orr-stage-readout-label{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:" + (isDark ? "#a5b4fc" : "#4f46e5") + "}",
+      ".orr-stage-readout-body{min-width:0;font-size:12px;font-weight:800;color:" + (isDark ? "#f8fafc" : "#1e293b") + "}",
+      ".orr-stage-readout-values{grid-column:1/-1;font-size:11px;line-height:1.4;color:" + (isDark ? "#cbd5e1" : "#475569") + "}",
+      ".orr-stage-key-shell{position:relative;min-width:0;align-self:stretch}",
+      ".orr-stage-key{position:static;z-index:3;display:flex;align-content:flex-start;align-items:flex-start;flex-wrap:wrap;gap:7px;min-width:0;pointer-events:none}",
+      "@media (min-width:900px) and (max-width:1199px){.orr-stage-instrument-rail[data-has-readout=true] .orr-stage-key[data-key-items=\'7\'],.orr-stage-instrument-rail[data-has-readout=true] .orr-stage-key[data-key-items=\'8\']{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}}",
+      ".orr-stage-instrument-rail:not([data-has-readout=true]) .orr-stage-key-shell{grid-column:1/-1}",
+      ".orr-stage-key-item{display:inline-flex;align-items:center;align-self:stretch;gap:5px;min-width:0;padding:6px 8px;border-radius:8px;background:" + (isDark ? "rgba(30,41,59,0.78)" : "rgba(255,255,255,0.84)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.20)" : "rgba(99,102,241,0.13)") + ";font-size:11px;line-height:1.25;overflow-wrap:anywhere;color:" + (isDark ? "#cbd5e1" : "#475569") + "}",
+      ".orr-stage-key-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:0 0 auto}",
+      ".orr-stage-key-scroll-cue{display:none}",
+      ".orr-stage-tip{position:static;z-index:3;grid-column:1/-1;padding:6px 8px;border-radius:8px;background:" + (isDark ? "rgba(30,41,59,0.68)" : "rgba(255,255,255,0.78)") + ";font-size:11px;line-height:1.4;text-align:left;color:" + (isDark ? "#a8b5c8" : "#526277") + ";pointer-events:none}",
+      "@media (max-width:640px){.orr-stage-hud{top:10px;left:10px;right:10px;flex-direction:column;gap:6px}.orr-stage-hud>div:last-child{justify-content:flex-start!important}.orr-stage-hud>div:last-child .orr-stage-chip:nth-child(2){display:none}.orr-stage-instrument-rail{grid-template-columns:minmax(0,1fr);padding:9px 10px}.orr-stage-readout,.orr-stage-key-shell,.orr-stage-tip{grid-column:1/-1}.orr-stage-readout{padding:7px 8px}.orr-stage-key-shell{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}.orr-stage-key{display:flex;width:100%;flex-wrap:nowrap;gap:6px;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:inline proximity;scrollbar-width:auto;scrollbar-color:" + (isDark ? "#6366f1 #1e293b" : "#4f46e5 #e2e8f0") + ";pointer-events:auto;padding:0 0 4px}.orr-stage-key::-webkit-scrollbar{height:6px}.orr-stage-key::-webkit-scrollbar-track{background:" + (isDark ? "#1e293b" : "#e2e8f0") + ";border-radius:999px}.orr-stage-key::-webkit-scrollbar-thumb{background:" + (isDark ? "#6366f1" : "#4f46e5") + ";border-radius:999px}.orr-stage-key-item{flex:0 0 auto;padding:6px 7px;scroll-snap-align:start}.orr-stage-key-scroll-cue{display:inline-flex;position:static;justify-self:end;align-items:center;margin-top:3px;padding:1px 2px;font-size:10px;font-weight:900;letter-spacing:.03em;color:" + (isDark ? "#a5b4fc" : "#4338ca") + ";pointer-events:none}}",
       ".orr-control-deck{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:14px;background:" + (isDark ? "linear-gradient(135deg,rgba(30,41,59,0.88),rgba(15,23,42,0.92))" : "linear-gradient(135deg,rgba(248,250,252,0.96),rgba(238,242,255,0.96))") + ";border:1px solid " + (isDark ? "rgba(99,102,241,0.22)" : "rgba(99,102,241,0.14)") + ";box-shadow:" + (isDark ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "inset 0 1px 0 rgba(255,255,255,0.82)") + "}",
       ".orr-filter-deck{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;border-radius:12px;background:" + (isDark ? "rgba(15,23,42,0.58)" : "rgba(241,245,249,0.80)") + ";border:1px solid " + (isDark ? "rgba(148,163,184,0.14)" : "rgba(148,163,184,0.20)") + "}"
     ].join("\n");
@@ -4947,48 +4962,133 @@ const d = labToolData.solarSystem || {};
     React.useEffect(function() {
       var cv = ref.current;
       if (!cv) return;
-      // High-DPI scaling for crisp rendering on Retina/HiDPI displays
-      var dpr = window.devicePixelRatio || 1;
-      var bufferChanged = cv._dpr !== dpr || cv._logicalWidth !== props.width || cv._logicalHeight !== props.height;
-      if (bufferChanged) {
-        cv.width = props.width * dpr;
-        cv.height = props.height * dpr;
-        // Keep a crisp logical drawing buffer while letting the canvas breathe with
-        // its parent.  The old fixed CSS width made the orrery feel cramped on
-        // smaller screens and also made pointer coordinates drift after scaling.
-        cv.style.width = "100%";
-        cv.style.height = "auto";
-        cv._dpr = dpr;
-        cv._logicalWidth = props.width;
-        cv._logicalHeight = props.height;
-        cv._dprScaled = true;
+      var ctx = cv.getContext("2d");
+      var responsiveCanvas = !!props.responsive;
+      var st = stateRef.current;
+      var logicalWidth = props.width;
+      var logicalHeight = props.height;
+      var canvasDpr = 1;
+      var resizePending = false;
+      var resizeObserver = null;
+      var intersectionObserver = null;
+      var fallbackResizeHandler = null;
+      var canvasInViewport = true;
+
+      function readCanvasDpr() {
+        var rawDpr = Number(window.devicePixelRatio) || 1;
+        return Math.min(2, Math.max(1, rawDpr));
+      }
+      function canvasScaleFit() {
+        return responsiveCanvas ? (cv._canvasFit || 1) : 1;
+      }
+      function canvasInitialScale() {
+        var base = Number(props.initScale) || 1;
+        return base * canvasScaleFit();
+      }
+      function canvasMinScale() {
+        return (Number(props.minScale) || 0.1) * canvasScaleFit();
+      }
+      function canvasMaxScale() {
+        return (Number(props.maxScale) || 200) * canvasScaleFit();
+      }
+      function resetCanvasCaches() {
         cv._nebulaCache = null;
         cv._stars = null;
         cv._shoot = null;
-        cv._solarWind = null;
-        cv._asteroids = null;
-        cv._kuiperBelt = null;
       }
-      var ctx = cv.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      function resizeCanvasBuffer(preserveCamera) {
+        var rect = cv.getBoundingClientRect();
+        var measuredWidth = cv.clientWidth || rect.width;
+        if (responsiveCanvas && !(measuredWidth > 0)) {
+          resizePending = true;
+          return false;
+        }
+        var cssWidth = responsiveCanvas ? Math.max(1, Math.round(measuredWidth)) : props.width;
+        var responsiveAspect = props.width > 0 ? props.height / props.width : 2 / 3;
+        var responsiveMinHeight = Number(props.responsiveMinHeight) || 340;
+        var responsiveMaxHeight = Number(props.responsiveMaxHeight) || 620;
+        var widthDrivenHeight = Math.min(responsiveMaxHeight, Math.max(responsiveMinHeight, cssWidth * responsiveAspect));
+        var cssHeight = responsiveCanvas ? Math.max(1, Math.round(widthDrivenHeight)) : props.height;
+        var nextDpr = readCanvasDpr();
+        var backingWidth = Math.max(1, Math.round(cssWidth * nextDpr));
+        var backingHeight = Math.max(1, Math.round(cssHeight * nextDpr));
+        var nextFit = responsiveCanvas ? Math.min(cssWidth / props.width, cssHeight / props.height) : 1;
+        var oldWidth = cv._logicalWidth || cssWidth;
+        var oldHeight = cv._logicalHeight || cssHeight;
+        var oldFit = cv._canvasFit || nextFit;
+        var bufferChanged = cv.width !== backingWidth || cv.height !== backingHeight || cv._dpr !== nextDpr || oldWidth !== cssWidth || oldHeight !== cssHeight;
+
+        if (preserveCamera && isFinite(st.cx) && isFinite(st.cy) && isFinite(st.scale) && (oldWidth !== cssWidth || oldHeight !== cssHeight)) {
+          var fitRatio = oldFit > 0 ? nextFit / oldFit : 1;
+          st.cx = cssWidth / 2 + (st.cx - oldWidth / 2) * fitRatio;
+          st.cy = cssHeight / 2 + (st.cy - oldHeight / 2) * fitRatio;
+          st.scale *= fitRatio;
+          if (isFinite(st.targetCx)) st.targetCx = cssWidth / 2 + (st.targetCx - oldWidth / 2) * fitRatio;
+          if (isFinite(st.targetCy)) st.targetCy = cssHeight / 2 + (st.targetCy - oldHeight / 2) * fitRatio;
+          if (isFinite(st.targetScale)) st.targetScale *= fitRatio;
+          st.hoverX = null;
+          st.hoverY = null;
+          var interruptedGesture = st.dragging || st.pinchActive || Object.keys(st.touchPoints || {}).length > 0;
+          st.dragging = false;
+          st.touchPoints = {};
+          st.pinchActive = false;
+          st.pinchGesture = false;
+          if (interruptedGesture) st.suppressClick = true;
+          cancelInertia();
+        }
+
+        if (bufferChanged) {
+          cv.width = backingWidth;
+          cv.height = backingHeight;
+          if (oldWidth !== cssWidth || oldHeight !== cssHeight) {
+            resetCanvasCaches();
+            cv._orreryLiveDomLast = null;
+          }
+        }
+        cv.style.width = "100%";
+        cv.style.height = responsiveCanvas ? cssHeight + "px" : "auto";
+        cv._dpr = nextDpr;
+        cv._logicalWidth = cssWidth;
+        cv._logicalHeight = cssHeight;
+        cv._cssWidth = cssWidth;
+        cv._cssHeight = cssHeight;
+        cv._designWidth = props.width;
+        cv._designHeight = props.height;
+        cv._canvasFit = nextFit;
+        cv._dprScaled = true;
+        cv.setAttribute("data-canvas-layout", cssWidth < 640 ? "compact" : "wide");
+        cv.setAttribute("data-canvas-dpr", String(nextDpr));
+        ctx.setTransform(backingWidth / cssWidth, 0, 0, backingHeight / cssHeight, 0, 0);
+        logicalWidth = cssWidth;
+        logicalHeight = cssHeight;
+        canvasDpr = nextDpr;
+        st.viewportWidth = cssWidth;
+        st.viewportHeight = cssHeight;
+        st.canvasFit = nextFit;
+        st.coarsePointer = !!((window.matchMedia && window.matchMedia('(any-pointer: coarse)').matches) || (window.navigator && window.navigator.maxTouchPoints > 0));
+        st.canvasHitRadius = st.coarsePointer ? 22 : 14;
+      }
+
+      resizeCanvasBuffer(isFinite(st.cx) && isFinite(st.cy) && isFinite(st.scale));
       var running = true;
 
       function pointFromEvent(ev) {
         var rect = cv.getBoundingClientRect();
-        var scaleX = rect.width ? props.width / rect.width : 1;
-        var scaleY = rect.height ? props.height / rect.height : 1;
+        var eventWidth = responsiveCanvas ? (cv.clientWidth || rect.width) : rect.width;
+        var eventHeight = responsiveCanvas ? (cv.clientHeight || rect.height) : rect.height;
+        var scaleX = eventWidth ? logicalWidth / eventWidth : 1;
+        var scaleY = eventHeight ? logicalHeight / eventHeight : 1;
         return {
-          x: (ev.clientX - rect.left) * scaleX,
-          y: (ev.clientY - rect.top) * scaleY
+          x: (ev.clientX - rect.left - (responsiveCanvas ? cv.clientLeft : 0)) * scaleX,
+          y: (ev.clientY - rect.top - (responsiveCanvas ? cv.clientTop : 0)) * scaleY
         };
       }
 
       // Pointer state for pan/zoom
-      var st = stateRef.current;
       if (!isFinite(st.cx) || !isFinite(st.cy) || !isFinite(st.scale)) {
-        st.cx = props.width / 2;
-        st.cy = props.height / 2;
-        st.scale = props.initScale || 1;
+        st.cx = logicalWidth / 2;
+        st.cy = logicalHeight / 2;
+        st.scale = canvasInitialScale();
         st.dragging = false;
         st.lastX = 0;
         st.lastY = 0;
@@ -5006,9 +5106,9 @@ const d = labToolData.solarSystem || {};
       // during ordinary re-renders, but make Inner / Full / Outer deterministic
       // when the learner explicitly changes the preset.
       if (props.viewPresetKey != null && st._viewPresetKey !== props.viewPresetKey) {
-        st.cx = props.width / 2;
-        st.cy = props.height / 2;
-        st.scale = props.initScale || 1;
+        st.cx = logicalWidth / 2;
+        st.cy = logicalHeight / 2;
+        st.scale = canvasInitialScale();
         st.targetCx = st.cx;
         st.targetCy = st.cy;
         st.targetScale = st.scale;
@@ -5016,9 +5116,9 @@ const d = labToolData.solarSystem || {};
         st._viewPresetKey = props.viewPresetKey;
       }
       if (props.resetKey != null && st._resetKey !== props.resetKey) {
-        st.cx = props.width / 2;
-        st.cy = props.height / 2;
-        st.scale = props.initScale || 1;
+        st.cx = logicalWidth / 2;
+        st.cy = logicalHeight / 2;
+        st.scale = canvasInitialScale();
         st.targetCx = st.cx;
         st.targetCy = st.cy;
         st.targetScale = st.scale;
@@ -5040,14 +5140,18 @@ const d = labToolData.solarSystem || {};
       }
 
       function scheduleFrame() {
-        if (!running || document.hidden || raf.current) return;
+        if (!running || document.hidden || !canvasInViewport || raf.current) return;
         raf.current = requestAnimationFrame(function(frameTime) {
           raf.current = null;
           draw(frameTime);
         });
       }
       function draw(t) {
-        if (!running || document.hidden) return;
+        if (!running || document.hidden || !canvasInViewport) return;
+        if (resizePending || readCanvasDpr() !== canvasDpr) {
+          resizePending = false;
+          resizeCanvasBuffer(true);
+        }
         if (drawRef.current) drawRef.current(ctx, cv, st, t);
         scheduleFrame();
       }
@@ -5061,6 +5165,33 @@ const d = labToolData.solarSystem || {};
         }
       }
       document.addEventListener("visibilitychange", onCanvasVisibilityChange);
+      if (responsiveCanvas && typeof window.ResizeObserver === "function") {
+        resizeObserver = new window.ResizeObserver(function() {
+          resizePending = true;
+          scheduleFrame();
+        });
+        resizeObserver.observe(cv);
+      } else if (responsiveCanvas) {
+        fallbackResizeHandler = function() {
+          resizePending = true;
+          scheduleFrame();
+        };
+        window.addEventListener("resize", fallbackResizeHandler);
+      }
+      if (responsiveCanvas && typeof window.IntersectionObserver === "function") {
+        intersectionObserver = new window.IntersectionObserver(function(entries) {
+          canvasInViewport = !entries.length || entries[0].isIntersecting;
+          if (!canvasInViewport) {
+            if (raf.current) cancelAnimationFrame(raf.current);
+            raf.current = null;
+            cancelInertia();
+          } else {
+            resizePending = true;
+            scheduleFrame();
+          }
+        }, { rootMargin: "120px" });
+        intersectionObserver.observe(cv);
+      }
       scheduleFrame();
 
       // Inertia state for smooth pan
@@ -5075,7 +5206,7 @@ const d = labToolData.solarSystem || {};
         cancelCameraGlide();
         interruptFollow();
         var f = ev.deltaY < 0 ? 1.1 : 0.9;
-        st.scale = clamp(st.scale * f, (props.minScale || 0.1), (props.maxScale || 200));
+        st.scale = clamp(st.scale * f, canvasMinScale(), canvasMaxScale());
       }
       function touchDistance(ids) {
         if (!ids || ids.length < 2) return 0;
@@ -5090,6 +5221,8 @@ const d = labToolData.solarSystem || {};
         cancelInertia();
         cancelCameraGlide();
         if (ev.pointerType === "touch") {
+          st.coarsePointer = true;
+          st.canvasHitRadius = 22;
           st.touchPoints[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
           var touchIds = Object.keys(st.touchPoints);
           if (touchIds.length >= 2) {
@@ -5119,7 +5252,7 @@ const d = labToolData.solarSystem || {};
             var nextPinchDistance = touchDistance(pinchIds);
             if (nextPinchDistance > 0 && st.pinchDistance > 0) {
               interruptFollow();
-              st.scale = clamp(st.pinchScale * nextPinchDistance / Math.max(1, st.pinchDistance), (props.minScale || 0.1), (props.maxScale || 200));
+              st.scale = clamp(st.pinchScale * nextPinchDistance / Math.max(1, st.pinchDistance), canvasMinScale(), canvasMaxScale());
               st.suppressClick = true;
             }
             return;
@@ -5235,10 +5368,10 @@ const d = labToolData.solarSystem || {};
           if (key === 'ArrowRight') { cancelCameraGlide(); interruptFollow(); st.cx -= step; ev.preventDefault(); return; }
           if (key === 'ArrowUp')    { cancelCameraGlide(); interruptFollow(); st.cy += step; ev.preventDefault(); return; }
           if (key === 'ArrowDown')  { cancelCameraGlide(); interruptFollow(); st.cy -= step; ev.preventDefault(); return; }
-          if (key === '+' || key === '=') { cancelCameraGlide(); interruptFollow(); st.scale = clamp(st.scale * 1.15, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
-          if (key === '-' || key === '_') { cancelCameraGlide(); interruptFollow(); st.scale = clamp(st.scale * 0.87, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
+          if (key === '+' || key === '=') { cancelCameraGlide(); interruptFollow(); st.scale = clamp(st.scale * 1.15, canvasMinScale(), canvasMaxScale()); ev.preventDefault(); return; }
+          if (key === '-' || key === '_') { cancelCameraGlide(); interruptFollow(); st.scale = clamp(st.scale * 0.87, canvasMinScale(), canvasMaxScale()); ev.preventDefault(); return; }
           if (key === 'Home' || key === '0') {
-            st.cx = props.width / 2; st.cy = props.height / 2; st.scale = (props.initScale || 1);
+            st.cx = logicalWidth / 2; st.cy = logicalHeight / 2; st.scale = canvasInitialScale();
             st.targetCx = st.cx; st.targetCy = st.cy; st.targetScale = st.scale;
             st._zoomAnim = false; st._followBody = null;
             if (homeRef.current) homeRef.current(st);
@@ -5248,8 +5381,8 @@ const d = labToolData.solarSystem || {};
         if ((key === 'Enter' || key === ' ') && (keyboardInteractRef.current || clickRef.current)) {
           if (keyboardInteractRef.current) keyboardInteractRef.current(st);
           else {
-            var cxLocal = props.width / 2;
-            var cyLocal = props.height / 2;
+            var cxLocal = logicalWidth / 2;
+            var cyLocal = logicalHeight / 2;
             clickRef.current(cxLocal, cyLocal, st);
           }
           ev.preventDefault();
@@ -5262,6 +5395,9 @@ const d = labToolData.solarSystem || {};
         if (raf.current) cancelAnimationFrame(raf.current);
         cancelInertia();
         document.removeEventListener("visibilitychange", onCanvasVisibilityChange);
+        if (resizeObserver) resizeObserver.disconnect();
+        if (intersectionObserver) intersectionObserver.disconnect();
+        if (fallbackResizeHandler) window.removeEventListener("resize", fallbackResizeHandler);
         if (props.panZoom) {
           cv.removeEventListener("wheel", onWheel);
           cv.removeEventListener("pointerdown", onDown);
@@ -5286,6 +5422,7 @@ const d = labToolData.solarSystem || {};
       'aria-keyshortcuts': keyboardInteractive ? (props.panZoom ? 'ArrowLeft ArrowRight ArrowUp ArrowDown + - Home 0 Enter Space Escape' : 'Enter Space Escape') : undefined,
       'aria-describedby': props.ariaDescribedBy || undefined,
       'data-view-preset': props.viewPresetKey || undefined,
+      'data-responsive-canvas': props.responsive ? 'true' : undefined,
       ref: ref,
       width: props.width,
       height: props.height,
@@ -5303,6 +5440,8 @@ const d = labToolData.solarSystem || {};
         boxSizing: "border-box",
         width: "100%",
         height: "auto",
+        minHeight: props.responsive ? (Number(props.responsiveMinHeight) || 340) + "px" : undefined,
+        maxHeight: props.responsive ? (Number(props.responsiveMaxHeight) || 620) + "px" : undefined,
         aspectRatio: props.width + " / " + props.height,
         touchAction: props.panZoom ? "none" : "auto",
         boxShadow: isDark
@@ -5737,9 +5876,9 @@ const d = labToolData.solarSystem || {};
       var insetGlow = ctx.createRadialGradient(plotX, plotY, 0, plotX, plotY, 120);
       insetGlow.addColorStop(0, "rgba(79,70,229,0.22)"); insetGlow.addColorStop(1, "rgba(15,23,42,0)");
       ctx.fillStyle = insetGlow; ctx.fillRect(insetX + 1, insetY + 1, insetW - 2, insetH - 2);
-      ctx.fillStyle = "#a5b4fc"; ctx.font = "800 9px sans-serif";
+      ctx.fillStyle = "#a5b4fc"; ctx.font = "800 11px sans-serif";
       ctx.fillText("MAGNIFIED INNER SYSTEM", insetX + 12, insetY + 18);
-      ctx.fillStyle = "#94a3b8"; ctx.font = "9px sans-serif";
+      ctx.fillStyle = "#94a3b8"; ctx.font = "11px sans-serif";
       ctx.fillText("One distance scale · markers enlarged", insetX + 12, insetY + 32);
 
       ctx.save(); ctx.beginPath(); ctx.rect(insetX + 7, insetY + 38, 158, insetH - 46); ctx.clip();
@@ -5774,8 +5913,8 @@ const d = labToolData.solarSystem || {};
       for (var insetLabelIndex = 0; insetLabelIndex < innerBodies.length; insetLabelIndex++) {
         var labelBody = innerBodies[insetLabelIndex]; var labelY = insetY + 58 + insetLabelIndex * 25;
         ctx.fillStyle = labelBody.color; ctx.beginPath(); ctx.arc(insetX + 185, labelY - 3, 3.2, 0, TAU); ctx.fill();
-        ctx.fillStyle = "#e2e8f0"; ctx.font = "700 10px sans-serif"; ctx.fillText(labelBody.name, insetX + 194, labelY);
-        ctx.fillStyle = "#94a3b8"; ctx.font = "8px sans-serif";
+        ctx.fillStyle = "#e2e8f0"; ctx.font = "700 11px sans-serif"; ctx.fillText(labelBody.name, insetX + 194, labelY);
+        ctx.fillStyle = "#94a3b8"; ctx.font = "11px sans-serif";
         ctx.fillText(labelBody.a.toFixed(labelBody.a < 1 ? 3 : 2) + " AU", insetX + 194, labelY + 10);
       }
       ctx.restore();
@@ -5785,6 +5924,9 @@ const d = labToolData.solarSystem || {};
       width: W,
       height: H,
       panZoom: true,
+      responsive: true,
+      responsiveMinHeight: 340,
+      responsiveMaxHeight: 620,
       reduceMotion: reduceMotion,
       initScale: baseScale,
       minScale: 0.5,
@@ -5813,7 +5955,8 @@ const d = labToolData.solarSystem || {};
           var sy = st.cy - pos.y * st.scale;
           var dx = mx - sx;
           var dy = my - sy;
-          if (dx * dx + dy * dy < 144) {
+          var bodyHitRadius = st.canvasHitRadius || 14;
+          if (dx * dx + dy * dy < bodyHitRadius * bodyHitRadius) {
             var alreadySelected = (selBody === b.id);
             if (d.orr_compare === b.id) upd("orr_compare", null);
             upd("orr_sel", b.id);
@@ -5827,9 +5970,11 @@ const d = labToolData.solarSystem || {};
               // Fresh selection → start zoom animation, clear any prior follow
               st._followBody = null;
               upd("orr_follow", null);
-              var targetScale = clamp((W * 0.40) / Math.max(b.a, 0.3), 8, 280);
-              st.targetCx = W / 2 - pos.x * targetScale;
-              st.targetCy = H / 2 + pos.y * targetScale;
+              var targetViewportW = st.viewportWidth || W;
+              var targetViewportH = st.viewportHeight || H;
+              var targetScale = clamp((W * 0.40) / Math.max(b.a, 0.3), 8, 280) * (st.canvasFit || 1);
+              st.targetCx = targetViewportW / 2 - pos.x * targetScale;
+              st.targetCy = targetViewportH / 2 + pos.y * targetScale;
               st.targetScale = targetScale;
               if (reduceMotion) { st.cx = st.targetCx; st.cy = st.targetCy; st.scale = st.targetScale; st._zoomAnim = false; }
               else st._zoomAnim = true;
@@ -5842,15 +5987,23 @@ const d = labToolData.solarSystem || {};
         st._followBody = null;
       },
       draw: function(ctx, cv, st, timestamp) {
+        var viewW = st.viewportWidth || W;
+        var viewH = st.viewportHeight || H;
+        var viewFit = st.canvasFit || 1;
+        var liveDomScaleKey = zoomMode + ":" + resetRequest;
+        if (st._liveDomScaleKey !== liveDomScaleKey) {
+          st._liveDomScaleKey = liveDomScaleKey;
+          cv._orreryLiveDomLast = null;
+        }
         if (focusRequest !== st._focusRequest) {
           st._focusRequest = focusRequest;
           var navTarget = focusBodyId ? OB.filter(function(body) { return body.id === focusBodyId; })[0] : null;
           if (navTarget) {
             var navM = (TAU * timeRef.current / navTarget.T) % TAU;
             var navPos = orbitalPos(navTarget.a, navTarget.e, navM);
-            var navScale = clamp((W * 0.40) / Math.max(navTarget.a, 0.3), 8, 280);
-            st.targetCx = W / 2 - navPos.x * navScale;
-            st.targetCy = H / 2 + navPos.y * navScale;
+            var navScale = clamp((W * 0.40) / Math.max(navTarget.a, 0.3), 8, 280) * viewFit;
+            st.targetCx = viewW / 2 - navPos.x * navScale;
+            st.targetCy = viewH / 2 + navPos.y * navScale;
             st.targetScale = navScale;
             if (reduceMotion) { st.cx = st.targetCx; st.cy = st.targetCy; st.scale = st.targetScale; st._zoomAnim = false; }
             else st._zoomAnim = true;
@@ -5858,7 +6011,7 @@ const d = labToolData.solarSystem || {};
         }
 
         if (!st.dragging && st._followBody !== followBodyId) st._followBody = followBodyId;
-        ctx.clearRect(0, 0, W, H);
+        ctx.clearRect(0, 0, viewW, viewH);
         var visualTime = reduceMotion ? 0 : (timestamp || 0);
 
         // ── Smooth camera interpolation toward target (zoom-to-planet) ──
@@ -5896,8 +6049,8 @@ const d = labToolData.solarSystem || {};
             if (fbb.id !== st._followBody) continue;
             var fbM = (TAU * timeRef.current / fbb.T) % TAU;
             var fbPos = orbitalPos(fbb.a, fbb.e, fbM);
-            var desiredCx = W / 2 - fbPos.x * st.scale;
-            var desiredCy = H / 2 + fbPos.y * st.scale;
+            var desiredCx = viewW / 2 - fbPos.x * st.scale;
+            var desiredCy = viewH / 2 + fbPos.y * st.scale;
             // Smoothly interpolate camera so it doesn't snap jarringly; reduced-motion
             // users get the same focus target without the glide.
             var followLerp = reduceMotion ? 1 : 0.15;
@@ -5909,19 +6062,19 @@ const d = labToolData.solarSystem || {};
 
         // ── Deep space background with subtle gradient ──
         if (isDark) {
-          var bgGrad = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, W * 0.7);
+          var bgGrad = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, viewW * 0.7);
           bgGrad.addColorStop(0, "#0d1117");
           bgGrad.addColorStop(0.5, "#090c14");
           bgGrad.addColorStop(1, "#050709");
           ctx.fillStyle = bgGrad;
         } else {
-          var bgGradL = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, W * 0.7);
+          var bgGradL = ctx.createRadialGradient(st.cx, st.cy, 0, st.cx, st.cy, viewW * 0.7);
           bgGradL.addColorStop(0, "#edf2ff");
           bgGradL.addColorStop(0.55, "#d5ddf4");
           bgGradL.addColorStop(1, "#aebdde");
           ctx.fillStyle = bgGradL;
         }
-        ctx.fillRect(0, 0, W, H);
+        ctx.fillRect(0, 0, viewW, viewH);
 
         // ── Nebula clouds + Milky Way band (dark mode only, cached to offscreen once) ──
         // Drawing big blurred blobs every frame would tank performance, so we bake them
@@ -5929,36 +6082,36 @@ const d = labToolData.solarSystem || {};
         // a flat gradient.
         if (isDark && !cv._nebulaCache) {
           var neb = document.createElement("canvas"); neb.setAttribute("aria-hidden", "true");
-          neb.width = W; neb.height = H;
+          neb.width = viewW; neb.height = viewH;
           var nctx = neb.getContext("2d");
           // Milky Way band — a diffuse diagonal stripe of warm, dusty glow that reads as
           // the galactic disk seen edge-on. Draw first so nebulas layer on top.
           nctx.save();
-          nctx.translate(W / 2, H / 2);
+          nctx.translate(viewW / 2, viewH / 2);
           nctx.rotate(-0.45); // diagonal tilt
-          var mwGrad = nctx.createLinearGradient(0, -H * 0.35, 0, H * 0.35);
+          var mwGrad = nctx.createLinearGradient(0, -viewH * 0.35, 0, viewH * 0.35);
           mwGrad.addColorStop(0, "rgba(180,140,120,0)");
           mwGrad.addColorStop(0.35, "rgba(210,175,145,0.08)");
           mwGrad.addColorStop(0.5, "rgba(235,200,170,0.14)");
           mwGrad.addColorStop(0.65, "rgba(210,175,145,0.08)");
           mwGrad.addColorStop(1, "rgba(180,140,120,0)");
           nctx.fillStyle = mwGrad;
-          nctx.fillRect(-W * 1.2, -H * 0.35, W * 2.4, H * 0.7);
+          nctx.fillRect(-viewW * 1.2, -viewH * 0.35, viewW * 2.4, viewH * 0.7);
           // Dark dust lanes — thin subtracting streaks across the band for texture
           nctx.globalCompositeOperation = "destination-out";
           nctx.fillStyle = "rgba(0,0,0,0.35)";
           for (var dl = 0; dl < 3; dl++) {
-            var lanePosY = (-H * 0.18) + dl * (H * 0.18);
-            nctx.fillRect(-W * 1.2, lanePosY, W * 2.4, 3 + dl);
+            var lanePosY = (-viewH * 0.18) + dl * (viewH * 0.18);
+            nctx.fillRect(-viewW * 1.2, lanePosY, viewW * 2.4, 3 + dl);
           }
           nctx.globalCompositeOperation = "source-over";
           nctx.restore();
           // Nebula clouds layered on top
           var nebulas = [
-            { x: W * 0.22, y: H * 0.28, r: W * 0.35, hue: "99,102,241", alpha: 0.055 },  // indigo cloud
-            { x: W * 0.78, y: H * 0.72, r: W * 0.28, hue: "168,85,247", alpha: 0.045 },  // violet cloud
-            { x: W * 0.85, y: H * 0.22, r: W * 0.22, hue: "236,72,153", alpha: 0.030 },  // pink wisp
-            { x: W * 0.15, y: H * 0.85, r: W * 0.30, hue: "34,211,238", alpha: 0.025 }   // cyan wisp
+            { x: viewW * 0.22, y: viewH * 0.28, r: viewW * 0.35, hue: "99,102,241", alpha: 0.055 },  // indigo cloud
+            { x: viewW * 0.78, y: viewH * 0.72, r: viewW * 0.28, hue: "168,85,247", alpha: 0.045 },  // violet cloud
+            { x: viewW * 0.85, y: viewH * 0.22, r: viewW * 0.22, hue: "236,72,153", alpha: 0.030 },  // pink wisp
+            { x: viewW * 0.15, y: viewH * 0.85, r: viewW * 0.30, hue: "34,211,238", alpha: 0.025 }   // cyan wisp
           ];
           for (var ni = 0; ni < nebulas.length; ni++) {
             var nb = nebulas[ni];
@@ -5967,7 +6120,7 @@ const d = labToolData.solarSystem || {};
             ng.addColorStop(0.5, "rgba(" + nb.hue + "," + (nb.alpha * 0.4) + ")");
             ng.addColorStop(1, "rgba(" + nb.hue + ",0)");
             nctx.fillStyle = ng;
-            nctx.fillRect(0, 0, W, H);
+            nctx.fillRect(0, 0, viewW, viewH);
           }
           cv._nebulaCache = neb;
         }
@@ -5981,8 +6134,8 @@ const d = labToolData.solarSystem || {};
           // Far layer (tiny, dim, numerous)
           for (var sfi = 0; sfi < 280; sfi++) {
             cv._stars.push({
-              x: Math.random() * W,
-              y: Math.random() * H,
+              x: Math.random() * viewW,
+              y: Math.random() * viewH,
               r: Math.random() * 0.7 + 0.15,
               b: Math.random() * 0.35 + 0.15,
               twinkleSpeed: Math.random() * 0.002 + 0.0005,
@@ -5994,8 +6147,8 @@ const d = labToolData.solarSystem || {};
             var tintedRoll = Math.random();
             var tint = tintedRoll < 0.12 ? "#bfdbfe" : tintedRoll < 0.20 ? "#fde68a" : tintedRoll < 0.26 ? "#fca5a5" : "#ffffff";
             cv._stars.push({
-              x: Math.random() * W,
-              y: Math.random() * H,
+              x: Math.random() * viewW,
+              y: Math.random() * viewH,
               r: Math.random() * 1.4 + 0.8,
               b: Math.random() * 0.4 + 0.5,
               twinkleSpeed: Math.random() * 0.004 + 0.002,
@@ -6055,17 +6208,17 @@ const d = labToolData.solarSystem || {};
             var edge = Math.floor(Math.random() * 4);
             var startX, startY, dirX, dirY;
             var angle = (Math.random() * 0.8 - 0.4); // ±0.4 rad slope
-            if (edge === 0) { startX = -30; startY = Math.random() * H * 0.6; dirX = 1; dirY = Math.tan(angle); }
-            else if (edge === 1) { startX = W + 30; startY = Math.random() * H * 0.6; dirX = -1; dirY = Math.tan(angle); }
-            else if (edge === 2) { startX = Math.random() * W; startY = -30; dirX = Math.tan(angle); dirY = 1; }
-            else { startX = Math.random() * W; startY = H + 30; dirX = Math.tan(angle); dirY = -1; }
+            if (edge === 0) { startX = -30; startY = Math.random() * viewH * 0.6; dirX = 1; dirY = Math.tan(angle); }
+            else if (edge === 1) { startX = viewW + 30; startY = Math.random() * viewH * 0.6; dirX = -1; dirY = Math.tan(angle); }
+            else if (edge === 2) { startX = Math.random() * viewW; startY = -30; dirX = Math.tan(angle); dirY = 1; }
+            else { startX = Math.random() * viewW; startY = viewH + 30; dirX = Math.tan(angle); dirY = -1; }
             var mag = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
             sh.active = true;
             sh.startTime = now;
             sh.duration = 900 + Math.random() * 700; // 0.9–1.6 sec streak
             sh.startX = startX; sh.startY = startY;
-            sh.vx = (dirX / mag) * (W * 0.8);
-            sh.vy = (dirY / mag) * (W * 0.8);
+            sh.vx = (dirX / mag) * (viewW * 0.8);
+            sh.vy = (dirY / mag) * (viewW * 0.8);
           }
           if (sh.active) {
             var progress = (now - sh.startTime) / sh.duration;
@@ -6198,6 +6351,7 @@ const d = labToolData.solarSystem || {};
         // Dynamic map readout: the controls stay lightweight while the canvas keeps
         // the clock and playback state truthful on every animation frame.
         (function() {
+          if (cv.getAttribute("data-canvas-layout") === "compact") return;
           var timeLabel = "Elapsed " + fmt(t, 2) + " Earth yr";
           var speedLabel = paused ? "Paused" : fmt(speed, 1) + " yr/s";
           var calendarLabel = orbitCalendarLabel(t);
@@ -6220,7 +6374,7 @@ const d = labToolData.solarSystem || {};
             orbitalSpeedLabel ? ctx.measureText(orbitalSpeedLabel).width : 0
           ) + 22;
           var readoutH = readoutBody ? (phaseLabel ? 100 : 84) : (phaseLabel ? 76 : 60);
-          var readoutX = W - readoutW - 16;
+          var readoutX = viewW - readoutW - 16;
           var readoutY = 56;
           var readoutR = 9;
           ctx.beginPath();
@@ -6238,10 +6392,10 @@ const d = labToolData.solarSystem || {};
           ctx.font = "bold 11px sans-serif";
           ctx.fillStyle = isDark ? "#f8fafc" : "#1e293b";
           ctx.fillText(timeLabel, readoutX + 11, readoutY + 16);
-          ctx.font = "10px sans-serif";
+          ctx.font = "11px sans-serif";
           ctx.fillStyle = paused ? (isDark ? "#fcd34d" : "#92400e") : (isDark ? "#86efac" : "#15803d");
           ctx.fillText(speedLabel, readoutX + 11, readoutY + 31);
-          ctx.font = "10px sans-serif";
+          ctx.font = "11px sans-serif";
           ctx.fillStyle = isDark ? "#cbd5e1" : "#475569";
           ctx.fillText(calendarLabel, readoutX + 11, readoutY + 46);
           if (phaseLabel) {
@@ -6252,7 +6406,7 @@ const d = labToolData.solarSystem || {};
             var gaugeY = phaseLabel ? readoutY + 82 : readoutY + 67;
             var gaugeX = readoutX + 11;
             var gaugeW = readoutW - 22;
-            ctx.font = "10px sans-serif";
+            ctx.font = "11px sans-serif";
             ctx.fillStyle = isDark ? "#cbd5e1" : "#475569";
             ctx.fillText(orbitalSpeedLabel, gaugeX, gaugeLabelY);
             ctx.fillStyle = isDark ? "rgba(71,85,105,0.75)" : "rgba(203,213,225,0.9)";
@@ -6453,7 +6607,7 @@ const d = labToolData.solarSystem || {};
             var kx = st.cx + Math.cos(kAng) * kb.a * st.scale;
             var ky = st.cy - Math.sin(kAng) * kb.a * st.scale;
             // Skip bodies that would render far outside the canvas — tiny perf win
-            if (kx < -20 || kx > W + 20 || ky < -20 || ky > H + 20) continue;
+            if (kx < -20 || kx > viewW + 20 || ky < -20 || ky > viewH + 20) continue;
             ctx.globalAlpha = kb.dim * kuiperAlpha;
             ctx.beginPath();
             ctx.arc(kx, ky, kb.size, 0, TAU);
@@ -6489,32 +6643,79 @@ const d = labToolData.solarSystem || {};
         // Keep visible nameplates from stacking on top of one another. Candidates
         // are clamped to the map and the least-overlapping position wins.
         var labelBoxes = [];
-        function placeOrbitLabel(sx, sy, dotR, pillW, pillH) {
+        var labelRequests = [];
+        var suppressedLabels = [];
+        var showInnerInset = zoomMode === "full" && viewW >= 540;
+        if (showInnerInset) labelBoxes.push({ x: 18, y: 112, w: 274, h: 178, kind: "inset", id: "inner-system-inset" });
+        function placeOrbitLabel(sx, sy, dotR, pillW, pillH, required) {
           var candidates = [
             { x: sx + dotR + 6, y: sy - pillH / 2 + 1 },
             { x: sx - pillW - dotR - 6, y: sy - pillH / 2 + 1 },
             { x: sx - pillW / 2, y: sy - dotR - pillH - 8 },
             { x: sx - pillW / 2, y: sy + dotR + 8 },
             { x: sx + dotR + 8, y: sy - dotR - pillH - 4 },
-            { x: sx - pillW - dotR - 8, y: sy + dotR + 4 }
+            { x: sx - pillW - dotR - 8, y: sy + dotR + 4 },
+            { x: sx + dotR + 16, y: sy - pillH - 14 },
+            { x: sx - pillW - dotR - 16, y: sy - pillH - 14 },
+            { x: sx + dotR + 16, y: sy + 12 },
+            { x: sx - pillW - dotR - 16, y: sy + 12 }
           ];
+          var labelGutter = viewW < 540 ? 5 : (viewW < 840 ? 3 : 1.5);
           var best = null;
           var bestScore = Infinity;
           for (var ci = 0; ci < candidates.length; ci++) {
             var candidate = candidates[ci];
-            var placed = { x: clamp(candidate.x, 4, W - pillW - 4), y: clamp(candidate.y, 4, H - pillH - 4), w: pillW, h: pillH };
+            var placed = { x: clamp(candidate.x, 4, viewW - pillW - 4), y: clamp(candidate.y, 4, viewH - pillH - 4), w: pillW, h: pillH };
             var score = 0;
             for (var bi = 0; bi < labelBoxes.length; bi++) {
               var prior = labelBoxes[bi];
-              var overlapW = Math.min(placed.x + placed.w, prior.x + prior.w) - Math.max(placed.x, prior.x);
-              var overlapH = Math.min(placed.y + placed.h, prior.y + prior.h) - Math.max(placed.y, prior.y);
+              var overlapW = Math.min(placed.x + placed.w + labelGutter, prior.x + prior.w + labelGutter) - Math.max(placed.x - labelGutter, prior.x - labelGutter);
+              var overlapH = Math.min(placed.y + placed.h + labelGutter, prior.y + prior.h + labelGutter) - Math.max(placed.y - labelGutter, prior.y - labelGutter);
               if (overlapW > 0 && overlapH > 0) score += overlapW * overlapH;
             }
-            if (score === 0) { best = placed; break; }
+            if (score === 0) { best = placed; bestScore = 0; break; }
             if (score < bestScore) { best = placed; bestScore = score; }
           }
+          if (!best || (bestScore > 0 && !required)) return null;
           labelBoxes.push(best);
           return best;
+        }
+        function drawOrbitLabel(request) {
+          var body = request.body;
+          var pillX = request.x, pillY = request.y, pillW = request.w, pillH = request.h;
+          var pillR = pillH / 2;
+          ctx.save();
+          ctx.font = request.font;
+          ctx.beginPath();
+          ctx.moveTo(pillX + pillR, pillY);
+          ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + pillH, pillR);
+          ctx.arcTo(pillX + pillW, pillY + pillH, pillX, pillY + pillH, pillR);
+          ctx.arcTo(pillX, pillY + pillH, pillX, pillY, pillR);
+          ctx.arcTo(pillX, pillY, pillX + pillW, pillY, pillR);
+          ctx.closePath();
+          ctx.fillStyle = isDark
+            ? (request.selected ? "rgba(30,41,59,0.92)" : (request.hovered ? "rgba(15,23,42,0.90)" : "rgba(15,23,42,0.78)"))
+            : (request.selected ? "rgba(255,255,255,0.98)" : (request.hovered ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.88)"));
+          ctx.fill();
+          if (request.emphasis) {
+            ctx.strokeStyle = body.color + (request.selected ? "cc" : "99");
+            ctx.lineWidth = request.selected ? 1.2 : 1;
+            ctx.stroke();
+          }
+          ctx.fillStyle = body.color;
+          ctx.beginPath();
+          ctx.moveTo(pillX + pillR, pillY);
+          ctx.lineTo(pillX + pillR + request.accentW, pillY);
+          ctx.lineTo(pillX + pillR + request.accentW, pillY + pillH);
+          ctx.lineTo(pillX + pillR, pillY + pillH);
+          ctx.arcTo(pillX, pillY + pillH, pillX, pillY, pillR);
+          ctx.arcTo(pillX, pillY, pillX + pillR + request.accentW, pillY, pillR);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = isDark ? "#e2e8f0" : "#1e293b";
+          ctx.textBaseline = "middle";
+          ctx.fillText(request.text, pillX + request.padX + request.accentW, pillY + pillH / 2 + 0.5);
+          ctx.restore();
         }
         // Draw orbits and bodies
         for (var i = 0; i < OB.length; i++) {
@@ -6587,7 +6788,8 @@ const d = labToolData.solarSystem || {};
 
           // Selected-orbit anchors make Kepler's second-law story visible: the
           // body is fastest at perihelion and slowest at aphelion.
-          if (isSelOrbit && st.scale > 2.5) {
+          var selectedOrbitScreenRadius = b.a * st.scale;
+          if (isSelOrbit && st.scale > 2.5 && selectedOrbitScreenRadius >= Math.min(90, viewW * 0.18)) {
             var periPos = orbitalPos(b.a, b.e, 0);
             var aphPos = orbitalPos(b.a, b.e, PI);
             var periX = st.cx + periPos.x * st.scale;
@@ -6611,13 +6813,14 @@ const d = labToolData.solarSystem || {};
             ctx.lineTo(aphX, aphY);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.font = "bold 10px sans-serif";
+            ctx.font = "bold 11px sans-serif";
             ctx.textBaseline = "alphabetic";
             for (var anchorIdx = 0; anchorIdx < orbitAnchors.length; anchorIdx++) {
               var anchor = orbitAnchors[anchorIdx];
               var anchorTextW = ctx.measureText(anchor.label).width;
-              var anchorLabelX = anchor.x >= st.cx ? anchor.x + 9 : anchor.x - 9 - anchorTextW;
-              var anchorLabelY = anchor.y - 9;
+              var rawAnchorLabelX = anchor.x >= st.cx ? anchor.x + 9 : anchor.x - 9 - anchorTextW;
+              var anchorLabelX = clamp(rawAnchorLabelX, 6, viewW - anchorTextW - 6);
+              var anchorLabelY = clamp(anchor.y - 9, 14, viewH - 6);
               ctx.shadowColor = isDark ? "#020617" : "#ffffff";
               ctx.shadowBlur = 4;
               ctx.beginPath();
@@ -6630,6 +6833,7 @@ const d = labToolData.solarSystem || {};
               ctx.shadowBlur = 0;
               ctx.fillStyle = anchorFg;
               ctx.fillText(anchor.label, anchorLabelX, anchorLabelY);
+              labelBoxes.push({ x: anchorLabelX - 3, y: anchorLabelY - 13, w: anchorTextW + 6, h: 17, kind: "anchor", id: anchor.label });
             }
             ctx.restore();
           }
@@ -6661,7 +6865,7 @@ const d = labToolData.solarSystem || {};
               ctx.strokeStyle = isDark ? "#0f172a" : "#ffffff";
               ctx.lineWidth = 1.5;
               ctx.stroke();
-              ctx.font = "bold 10px sans-serif";
+              ctx.font = "bold 11px sans-serif";
               ctx.fillStyle = snapshotEntry.color;
               ctx.fillText(snapshotEntry.key.toUpperCase(), snapshotX + 7, snapshotY - 7);
               ctx.restore();
@@ -7178,62 +7382,55 @@ const d = labToolData.solarSystem || {};
             (b.id === "mercury" || b.id === "venus" || b.id === "earth" || b.id === "mars") &&
             selBody !== b.id && !isHoveredBody;
           var hideCompressedSmallBodyLabel = zoomMode === "full" && st.scale <= 14 &&
-            (b.type === "comet" || (b.type !== "planet" && b.a < 15)) &&
-            selBody !== b.id && !isHoveredBody;
-          var labelVisible = !hideMainInnerLabel && !hideCompressedSmallBodyLabel &&
+            b.type !== "planet" && selBody !== b.id && !isHoveredBody;
+          var hideCompactPlanetLabel = zoomMode === "full" && viewW < 480 && b.type === "planet" &&
+            b.id !== "jupiter" && b.id !== "neptune" && selBody !== b.id && !isHoveredBody;
+          var labelVisible = !hideMainInnerLabel && !hideCompressedSmallBodyLabel && !hideCompactPlanetLabel &&
             (selBody === b.id || isHoveredBody || st.scale > 7 || (b.type === "planet" && st.scale > 2.5));
           if ((showLabels && labelVisible) || isHoveredBody) {
-            // Pill-style label: body-color accent bar on the left, rounded bg behind text.
-            // Readable over busy backgrounds without the "floating text" look of plain fillText.
             var isSel = selBody === b.id;
             var isEmphasis = isSel || isHoveredBody;
-            ctx.font = isEmphasis ? "bold 12px sans-serif" : "11px sans-serif";
+            var labelFont = isEmphasis ? "bold 12px sans-serif" : "11px sans-serif";
+            ctx.font = labelFont;
             var labelText = b.name;
             var textW = ctx.measureText(labelText).width;
-            var padX = 7, padY = 3, accentW = 3;
+            var padX = 7, accentW = 3;
             var pillH = isEmphasis ? 20 : 17;
             var pillW = textW + padX * 2 + accentW + 4;
-            var labelPlacement = placeOrbitLabel(sx, sy, dotR, pillW, pillH);
-            var pillX = labelPlacement.x;
-            var pillY = labelPlacement.y;
-            var pillR = pillH / 2;
-            // Pill background (rounded rect)
-            ctx.beginPath();
-            ctx.moveTo(pillX + pillR, pillY);
-            ctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + pillH, pillR);
-            ctx.arcTo(pillX + pillW, pillY + pillH, pillX, pillY + pillH, pillR);
-            ctx.arcTo(pillX, pillY + pillH, pillX, pillY, pillR);
-            ctx.arcTo(pillX, pillY, pillX + pillW, pillY, pillR);
-            ctx.closePath();
-            ctx.fillStyle = isDark
-              ? (isSel ? "rgba(30,41,59,0.92)" : (isHoveredBody ? "rgba(15,23,42,0.90)" : "rgba(15,23,42,0.78)"))
-              : (isSel ? "rgba(255,255,255,0.98)" : (isHoveredBody ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.88)"));
-            ctx.fill();
-            if (isEmphasis) {
-              ctx.strokeStyle = b.color + (isSel ? "cc" : "99"); ctx.lineWidth = isSel ? 1.2 : 1; ctx.stroke();
+            var labelPlacement = placeOrbitLabel(sx, sy, dotR, pillW, pillH, isEmphasis);
+            if (labelPlacement) {
+              labelPlacement.kind = "body";
+              labelPlacement.id = b.id;
+              labelRequests.push({
+                body: b, text: labelText, font: labelFont, padX: padX, accentW: accentW,
+                x: labelPlacement.x, y: labelPlacement.y, w: pillW, h: pillH,
+                selected: isSel, hovered: isHoveredBody, emphasis: isEmphasis,
+                priority: isSel ? 3 : (isHoveredBody ? 2 : (b.type === "planet" ? 1 : 0))
+              });
+            } else {
+              suppressedLabels.push(b.id);
             }
-            // Body-color accent bar on the left edge
-            ctx.fillStyle = b.color;
-            ctx.beginPath();
-            ctx.moveTo(pillX + pillR, pillY);
-            ctx.lineTo(pillX + pillR + accentW, pillY);
-            ctx.lineTo(pillX + pillR + accentW, pillY + pillH);
-            ctx.lineTo(pillX + pillR, pillY + pillH);
-            ctx.arcTo(pillX, pillY + pillH, pillX, pillY, pillR);
-            ctx.arcTo(pillX, pillY, pillX + pillR + accentW, pillY, pillR);
-            ctx.closePath();
-            ctx.fill();
-            // Label text
-            ctx.fillStyle = isDark ? "#e2e8f0" : "#1e293b";
-            ctx.textBaseline = "middle";
-            ctx.fillText(labelText, pillX + padX + accentW, pillY + pillH / 2 + 0.5);
-            ctx.textBaseline = "alphabetic";
           }
         }
 
+        // Paint nameplates after every orbit/body so later worlds cannot cover
+        // a selected or hovered label. Higher-priority evidence paints last.
+        labelRequests.sort(function(a, b) { return a.priority - b.priority; });
+        for (var labelRequestIndex = 0; labelRequestIndex < labelRequests.length; labelRequestIndex++) {
+          drawOrbitLabel(labelRequests[labelRequestIndex]);
+        }
+        cv._orreryLabelLayout = {
+          rendered: labelRequests.map(function(request) {
+            return { id: request.body.id, x: request.x, y: request.y, w: request.w, h: request.h, selected: request.selected, hovered: request.hovered };
+          }),
+          suppressed: suppressedLabels.slice(),
+          reserved: labelBoxes.filter(function(box) { return box.kind !== "body"; }).map(function(box) {
+            return { id: box.id, kind: box.kind, x: box.x, y: box.y, w: box.w, h: box.h };
+          })
+        };
         // Keep the true shared-distance story visible when the full-system scale
         // compresses Mercury through Mars into only a few pixels.
-        if (zoomMode === "full" && (!cv.clientWidth || cv.clientWidth >= 540)) {
+        if (showInnerInset) {
           drawOrreryInnerInset(ctx, t);
         }
 
@@ -7246,7 +7443,7 @@ const d = labToolData.solarSystem || {};
           var chosen = mapScaleValue(st.scale);
           var barPx = chosen * st.scale;
           if (barPx < 20 || barPx > 220) return; // out of useful range
-          var baseX = 14, baseY = H - 18;
+          var baseX = 14, baseY = viewH - 18;
           // Backdrop pill for legibility
           ctx.fillStyle = isDark ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.88)";
           ctx.strokeStyle = isDark ? "rgba(148,163,184,0.3)" : "rgba(100,116,139,0.3)";
@@ -7272,7 +7469,7 @@ const d = labToolData.solarSystem || {};
           ctx.moveTo(tickX + barPx, baseY - 3); ctx.lineTo(tickX + barPx, baseY + 3);
           ctx.stroke();
           // Label
-          ctx.font = "bold 10px sans-serif";
+          ctx.font = "bold 11px sans-serif";
           ctx.fillStyle = isDark ? "#e2e8f0" : "#1e293b";
           ctx.textBaseline = "middle";
           var scaleLabel = (chosen >= 1 ? chosen : chosen.toFixed(1)) + " AU";
@@ -7386,8 +7583,8 @@ const d = labToolData.solarSystem || {};
             // Position to avoid clipping the canvas edges
             var tipX = st.hoverX + 18;
             var tipY = st.hoverY + 14;
-            if (tipX + tipW > W - 4) tipX = st.hoverX - tipW - 18;
-            if (tipY + tipH > H - 4) tipY = st.hoverY - tipH - 14;
+            if (tipX + tipW > viewW - 4) tipX = st.hoverX - tipW - 18;
+            if (tipY + tipH > viewH - 4) tipY = st.hoverY - tipH - 14;
             if (tipX < 4) tipX = 4;
             if (tipY < 4) tipY = 4;
             // Card background
@@ -7710,8 +7907,15 @@ const d = labToolData.solarSystem || {};
       h("span", { id: "orrery-body-navigator-help", role: "status", "aria-live": "polite", "aria-atomic": "true", style: { flex: "1 1 180px", fontSize: "11px", color: mutedFg } }, stageBody ? "Focused: " + stageBody.name : "Choose a world to focus it on the map"),
       h("span", { id: "orrery-canvas-help", style: { flex: "1 1 220px", fontSize: "11px", color: mutedFg } }, "Keyboard: arrows pan; + and - zoom; Home reset; Enter/Space select next world; Escape clears selection")
     );
+    var stageMapScale = baseScale;
+    if (typeof document !== "undefined") {
+      var mountedOrreryCanvas = document.querySelector('canvas[data-responsive-canvas="true"]');
+      var mountedOrreryState = mountedOrreryCanvas && mountedOrreryCanvas.__canvasPanelState;
+      if (mountedOrreryState && isFinite(mountedOrreryState.canvasFit)) stageMapScale = baseScale * mountedOrreryState.canvasFit;
+    }
     var followStageTarget = followBodyId ? OB.filter(function(b) { return b.id === followBodyId; })[0] : null;
     var compareStageTarget = compareBodyId ? OB.filter(function(b) { return b.id === compareBodyId; })[0] : null;
+    var stageKeyItemCount = 4 + (zoomMode === "full" ? 1 : 0) + (stageBody ? 2 : 0) + (compareStageTarget ? 1 : 0);
     var stageTitle = stageBody ? stageBody.name + " in focus" : "Solar system in motion";
     var innerInsetScaleNote = zoomMode === "full"
       ? " The magnified inner-system inset uses one common orbital-distance scale for Mercury through Mars; its markers are enlarged for visibility."
@@ -7720,34 +7924,41 @@ const d = labToolData.solarSystem || {};
       ? "Model note: marker sizes are radius-informed but compressed and clamped for visibility; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance."
       : "Model note: markers are enlarged for visibility; distances use the zoom scale, so this is not one literal scale. The blue ruler shows the current map distance.") + innerInsetScaleNote;
     var orbitStage = h("div", { className: "orr-orbit-stage", "data-orrery-stage": true },
-      h("div", { className: "orr-stage-hud", "aria-live": "polite" },
-        h("div", null,
-          h("span", { className: "orr-stage-eyebrow" }, "Live orbit map"),
-          h("span", { className: "orr-stage-title" }, stageTitle)
+      h("div", { className: "orr-orbit-viewport", "data-orrery-viewport": true },
+        h("div", { className: "orr-stage-hud", "aria-live": "polite" },
+          h("div", null,
+            h("span", { className: "orr-stage-eyebrow" }, "Live orbit map"),
+            h("span", { className: "orr-stage-title" }, stageTitle)
+          ),
+          h("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "6px" } },
+            h("span", { className: "orr-stage-chip" }, paused ? "Paused" : "Auto-play"),
+            h("span", { className: "orr-stage-chip" }, scaleMode === "relative" ? "Comparative markers" : "Teaching markers"),
+            h("span", { className: "orr-stage-chip", style: followStageTarget ? { borderColor: followStageTarget.color + "aa" } : stageBody ? { borderColor: stageBody.color + "88" } : {} }, followStageTarget ? "Following: " + followStageTarget.name : stageBody ? "Focus: " + stageBody.name : "All worlds")
+          )
         ),
-        h("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "6px" } },
-          h("span", { className: "orr-stage-chip" }, paused ? "Paused" : "Auto-play"),
-          h("span", { className: "orr-stage-chip" }, scaleMode === "relative" ? "Comparative markers" : "Teaching markers"),
-          h("span", { className: "orr-stage-chip", style: followStageTarget ? { borderColor: followStageTarget.color + "aa" } : stageBody ? { borderColor: stageBody.color + "88" } : {} }, followStageTarget ? "Following: " + followStageTarget.name : stageBody ? "Focus: " + stageBody.name : "All worlds")
-        )
+        cvPanel
       ),
-      stageBody ? h("div", { id: "orrery-stage-readout", className: "orr-stage-readout", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" },
-        h("span", { className: "orr-stage-readout-label" }, "Live reading"),
-        h("strong", { id: "orrery-stage-readout-body", className: "orr-stage-readout-body" }, stageBody.name),
-        h("span", { id: "orrery-stage-readout-values", className: "orr-stage-readout-values" }, "Distance " + fmt(stageReadoutPos.r, 3) + " AU \u00b7 speed " + fmt(stageReadoutSpeed, 2) + " km/s \u00b7 " + stageReadoutPhase)
-      ) : null,
-      cvPanel,
-      h("div", { id: "orrery-stage-key", className: "orr-stage-key", "aria-label": "Orrery visual key" },
-        h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#86efac" : "#16a34a" } }), "Habitable zone"),
-        h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#cbd5e1" : "#64748b" } }), "Orbit paths"),
-        h("span", { id: "orrery-live-map-scale", className: "orr-stage-key-item", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" }, "Ruler: " + mapScaleLabel(baseScale)),
-        zoomMode === "full" ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "8px", borderRadius: "2px", background: "#1e2b4f", border: "1px solid #93c5fd" } }), "Magnified inner inset") : null,
-        h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: scaleMode === "relative" ? (isDark ? "#fbbf24" : "#b45309") : (isDark ? "#94a3b8" : "#64748b") } }), scaleMode === "relative" ? "Comparative marker sizes" : "Teaching marker sizes"),
-        stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { color: stageBody.color, fontSize: "14px", fontWeight: 800, lineHeight: "8px" } }, "\u2192"), "Velocity vector") : null,
-        stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { width: "12px", height: "8px", borderRadius: "2px", background: stageBody.color + "55", border: "1px solid " + stageBody.color + "aa" } }), "Equal-time sweep") : null,
-        compareStageTarget ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "0", borderTop: "2px dashed " + compareStageTarget.color } }), "Comparison orbit") : null
-      ),
-      h("div", { id: "orrery-stage-tip", className: "orr-stage-tip" }, followStageTarget ? "Following " + followStageTarget.name + " \u00b7 pan or zoom to release, or use Release camera follow" : compareStageTarget ? "Dashed path = comparison orbit \u00b7 hover for details" : stageBody ? "Arrow = direction/relative speed \u00b7 wedge = equal time \u00b7 use Follow camera to keep it centered, then pan or zoom to release \u00b7 hover for details" : "Hover for details \u00b7 drag to pan \u00b7 scroll to zoom \u00b7 select a world, then use Follow camera (or click twice to follow)")
+      h("div", { className: "orr-stage-instrument-rail", "data-orrery-instrument-rail": true, "data-has-readout": stageBody ? "true" : "false", "aria-label": "Live Orrery instruments" },
+        stageBody ? h("div", { id: "orrery-stage-readout", className: "orr-stage-readout", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" },
+          h("span", { className: "orr-stage-readout-label" }, "Live reading"),
+          h("strong", { id: "orrery-stage-readout-body", className: "orr-stage-readout-body" }, stageBody.name),
+          h("span", { id: "orrery-stage-readout-values", className: "orr-stage-readout-values" }, "Distance " + fmt(stageReadoutPos.r, 3) + " AU \u00b7 speed " + fmt(stageReadoutSpeed, 2) + " km/s \u00b7 " + stageReadoutPhase)
+        ) : null,
+        h("div", { className: "orr-stage-key-shell" },
+          h("div", { id: "orrery-stage-key", className: "orr-stage-key", "data-key-items": stageKeyItemCount, role: "region", tabIndex: 0, "aria-label": "Scrollable Orrery visual key", "aria-describedby": "orrery-stage-key-scroll-hint" },
+          h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#86efac" : "#16a34a" } }), "Habitable zone"),
+          h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: isDark ? "#cbd5e1" : "#64748b" } }), "Orbit paths"),
+          h("span", { id: "orrery-live-map-scale", className: "orr-stage-key-item", role: "status", "aria-live": paused ? "polite" : "off", "aria-atomic": "true" }, "Ruler: " + mapScaleLabel(stageMapScale)),
+          zoomMode === "full" ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "8px", borderRadius: "2px", background: "#1e2b4f", border: "1px solid #93c5fd" } }), "Magnified inner inset") : null,
+          h("span", { className: "orr-stage-key-item" }, h("span", { className: "orr-stage-key-dot", style: { background: scaleMode === "relative" ? (isDark ? "#fbbf24" : "#b45309") : (isDark ? "#94a3b8" : "#64748b") } }), scaleMode === "relative" ? "Comparative marker sizes" : "Teaching marker sizes"),
+          stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { color: stageBody.color, fontSize: "14px", fontWeight: 800, lineHeight: "8px" } }, "\u2192"), "Velocity vector") : null,
+          stageBody ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { width: "12px", height: "8px", borderRadius: "2px", background: stageBody.color + "55", border: "1px solid " + stageBody.color + "aa" } }), "Equal-time sweep") : null,
+          compareStageTarget ? h("span", { className: "orr-stage-key-item" }, h("span", { style: { display: "inline-block", width: "12px", height: "0", borderTop: "2px dashed " + compareStageTarget.color } }), "Comparison orbit") : null
+          ),
+          h("span", { id: "orrery-stage-key-scroll-hint", className: "orr-stage-key-scroll-cue" }, "More key items \u2192")
+        ),
+        h("div", { id: "orrery-stage-tip", className: "orr-stage-tip", role: "note" }, followStageTarget ? "Following " + followStageTarget.name + " \u00b7 pan or zoom to release, or use Release camera follow" : compareStageTarget ? "Dashed path = comparison orbit \u00b7 hover for details" : stageBody ? "Arrow = direction/relative speed \u00b7 wedge = equal time \u00b7 use Follow camera to keep it centered, then pan or zoom to release \u00b7 hover for details" : "Hover for details \u00b7 drag to pan \u00b7 scroll to zoom \u00b7 select a world, then use Follow camera (or click twice to follow)")
+      )
     );
     var guidedMission = GUIDED_MISSIONS[guidedMissionIdx];
     var guidedRecord = guidedMissionProgress[guidedMission.id] || {};
@@ -10152,11 +10363,11 @@ const d = labToolData.solarSystem || {};
                 position: "relative",
                 overflow: "hidden",
                 background: "linear-gradient(135deg,#ffffff 0%,#f6f9ff 65%,#eef2fb 100%)",
-                borderLeft: "4px solid " + sel.color,
-                borderTop: "1px solid " + sel.color + "33",
-                borderRight: "1px solid " + sel.color + "22",
-                borderBottom: "1px solid " + sel.color + "22",
-                boxShadow: "0 6px 22px rgba(15,23,42,0.10), 0 0 22px " + sel.color + "1a, inset 0 1px 0 rgba(255,255,255,0.7)"
+                borderLeft: "4px solid " + selectedAccent,
+                borderTop: "1px solid " + selectedAccent + "33",
+                borderRight: "1px solid " + selectedAccent + "22",
+                borderBottom: "1px solid " + selectedAccent + "22",
+                boxShadow: "0 6px 22px rgba(15,23,42,0.10), 0 0 22px " + selectedAccent + "1a, inset 0 1px 0 rgba(255,255,255,0.7)"
               }
             },
 
@@ -10168,7 +10379,7 @@ const d = labToolData.solarSystem || {};
                   top: "-60px", right: "-60px",
                   width: "220px", height: "220px",
                   borderRadius: "50%",
-                  background: "radial-gradient(circle," + sel.color + "33 0%," + sel.color + "11 55%,transparent 100%)",
+                  background: "radial-gradient(circle," + selectedAccent + "33 0%," + selectedAccent + "11 55%,transparent 100%)",
                   filter: "blur(8px)",
                   pointerEvents: "none"
                 }
@@ -10181,9 +10392,9 @@ const d = labToolData.solarSystem || {};
                 React.createElement("div", {
                   className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
                   style: {
-                    background: "radial-gradient(circle," + sel.color + "44 0%," + sel.color + "11 60%,transparent 100%)",
-                    border: "2px solid " + sel.color,
-                    boxShadow: "0 0 14px " + sel.color + "55, inset 0 0 12px " + sel.color + "33"
+                    background: "radial-gradient(circle," + selectedAccent + "44 0%," + selectedAccent + "11 60%,transparent 100%)",
+                    border: "2px solid " + selectedAccent,
+                    boxShadow: "0 0 14px " + selectedAccent + "55, inset 0 0 12px " + selectedAccent + "33"
                   }
                 }, sel.emoji),
 
@@ -10265,9 +10476,9 @@ const d = labToolData.solarSystem || {};
                         background: isDark
                           ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
                           : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
-                        borderColor: sel.color + "33",
+                        borderColor: selectedAccent + "33",
                         borderTopWidth: "2px",
-                        borderTopColor: sel.color + "88",
+                        borderTopColor: selectedAccent + "88",
                         boxShadow: isDark
                           ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
                           : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
@@ -10294,9 +10505,9 @@ const d = labToolData.solarSystem || {};
                       background: isDark
                         ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
                         : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
-                      borderColor: sel.color + "33",
+                      borderColor: selectedAccent + "33",
                       borderTopWidth: "2px",
-                      borderTopColor: sel.color + "88",
+                      borderTopColor: selectedAccent + "88",
                       boxShadow: isDark
                         ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
                         : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
@@ -10304,10 +10515,10 @@ const d = labToolData.solarSystem || {};
                   },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
                       React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.gravity_vs_earth', "\u2696\uFE0F Gravity vs Earth")),
-                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, (GRAVITY_MAP[sel.key] || 1).toFixed(2) + 'g')
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: selectedAccent } }, (GRAVITY_MAP[sel.key] || 1).toFixed(2) + 'g')
                     ),
                     React.createElement("div", { "data-solar-comparison-meter": "gravity", role: "meter", "aria-label": sel.name + " gravity relative to Earth on a zero to three g scale", "aria-valuemin": 0, "aria-valuemax": 3, "aria-valuenow": Number((GRAVITY_MAP[sel.key] || 1).toFixed(2)), "aria-valuetext": (GRAVITY_MAP[sel.key] || 1).toFixed(2) + " times standard Earth gravity", className: "solar-comparison-track w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((GRAVITY_MAP[sel.key] || 1) / 3) * 100) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } }),
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((GRAVITY_MAP[sel.key] || 1) / 3) * 100) + '%', background: 'linear-gradient(90deg,' + selectedAccent + 'cc,' + selectedAccent + ')', boxShadow: '0 0 10px ' + selectedAccent + '88' } }),
                       React.createElement("span", { className: "solar-earth-reference-marker", "aria-hidden": "true", style: { left: '33.333%' } })
                     ),
                     React.createElement("p", { className: "mt-1.5 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_gravity_marker', "Scale 0\u20133g \u00b7 marker = Earth (1g)"))
@@ -10319,9 +10530,9 @@ const d = labToolData.solarSystem || {};
                       background: isDark
                         ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
                         : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
-                      borderColor: sel.color + "33",
+                      borderColor: selectedAccent + "33",
                       borderTopWidth: "2px",
-                      borderTopColor: sel.color + "88",
+                      borderTopColor: selectedAccent + "88",
                       boxShadow: isDark
                         ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
                         : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
@@ -10329,10 +10540,10 @@ const d = labToolData.solarSystem || {};
                   },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
                       React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.radius_vs_earth', "\uD83D\uDCCF Radius vs Earth")),
-                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + '\u00d7')
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: selectedAccent } }, ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
                     React.createElement("div", { "data-solar-comparison-meter": "radius", role: "meter", "aria-label": sel.name + " radius relative to Earth on a zero to twelve Earth-radius scale", "aria-valuemin": 0, "aria-valuemax": 12, "aria-valuenow": Number(((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2)), "aria-valuetext": ((PLANET_RADII[sel.key] || 6371) / 6371).toFixed(2) + " Earth radii", className: "solar-comparison-track w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (((PLANET_RADII[sel.key] || 6371) / 6371) / 12) * 100) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } }),
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (((PLANET_RADII[sel.key] || 6371) / 6371) / 12) * 100) + '%', background: 'linear-gradient(90deg,' + selectedAccent + 'cc,' + selectedAccent + ')', boxShadow: '0 0 10px ' + selectedAccent + '88' } }),
                       React.createElement("span", { className: "solar-earth-reference-marker", "aria-hidden": "true", style: { left: '8.333%' } })
                     ),
                     React.createElement("p", { className: "mt-1.5 text-[11px] " + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_radius_marker', "Scale 0\u201312\u00d7 \u00b7 marker = Earth radius (1\u00d7)"))
@@ -10380,13 +10591,14 @@ const d = labToolData.solarSystem || {};
               (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
 
                 React.createElement("div", {
-                  className: "rounded-xl p-4 text-white",
+                  "data-solar-surface-summary": sel.key,
+                  className: "rounded-xl p-3 sm:p-4 text-white",
                   style: {
                     position: "relative",
                     overflow: "hidden",
-                    background: "linear-gradient(135deg," + sel.color + "44 0%,#0f172a 60%,#070b18 100%)",
-                    border: "1px solid " + sel.color + "55",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06),0 0 24px " + sel.color + "22,0 6px 18px rgba(7,11,24,0.55)"
+                    background: "linear-gradient(135deg," + selectedAccent + "44 0%,#0f172a 60%,#070b18 100%)",
+                    border: "1px solid " + selectedAccent + "55",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06),0 0 24px " + selectedAccent + "22,0 6px 18px rgba(7,11,24,0.55)"
                   }
                 },
 
@@ -10396,14 +10608,14 @@ const d = labToolData.solarSystem || {};
                     style: {
                       position: "absolute", top: "-50px", right: "-50px",
                       width: "180px", height: "180px", borderRadius: "50%",
-                      background: "radial-gradient(circle," + sel.color + "44 0%,transparent 70%)",
+                      background: "radial-gradient(circle," + selectedAccent + "44 0%,transparent 70%)",
                       filter: "blur(8px)", pointerEvents: "none"
                     }
                   }),
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
 
-                    React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + sel.color + "88" } }, "\uD83C\uDF0D"),
+                    React.createElement("span", { "aria-hidden": "true", className: "text-lg", style: { textShadow: "0 0 8px " + selectedAccent + "88" } }, "\uD83C\uDF0D"),
 
                     React.createElement("h5", { className: "font-bold text-sm", style: { color: 'var(--allo-stem-text, #ffffff)', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Surface Conditions")
 
@@ -10411,7 +10623,7 @@ const d = labToolData.solarSystem || {};
 
                   React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3", style: { position: "relative", zIndex: 1 } }, sel.surfaceDesc || 'Surface data unavailable.'),
 
-                  React.createElement("div", { "data-solarsystem-surface-conditions": sel.key, className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
+                  React.createElement("div", { "data-solarsystem-surface-conditions": sel.key, role: "list", className: "grid grid-cols-3 gap-1.5 sm:gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
 
                     [
 
@@ -10423,11 +10635,11 @@ const d = labToolData.solarSystem || {};
 
                     ].map(function (item) {
 
-                      return React.createElement("div", { key: item[0], className: "bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm" },
+                      return React.createElement("div", { key: item[0], role: "listitem", className: "min-w-0 bg-white/10 rounded-lg px-1.5 py-2 text-center backdrop-blur-sm" },
 
-                        React.createElement("p", { className: "text-[11px] text-slate-200" }, item[0]),
+                        React.createElement("p", { className: "text-[9px] sm:text-[11px] text-slate-200 leading-tight" }, item[0]),
 
-                        React.createElement("p", { className: "text-xs font-bold" }, item[1])
+                        React.createElement("p", { className: "mt-1 text-[10px] sm:text-xs font-bold leading-tight break-words" }, item[1])
 
                       );
 
@@ -10455,19 +10667,29 @@ const d = labToolData.solarSystem || {};
 
                 // â"€â"€ 2D Planet Surface Canvas â"€â"€
 
-                React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 shadow-xl", style: { height: '350px', borderColor: sel.color + '60' } },
+                React.createElement("div", { "data-solar-surface-stage": sel.key, "data-solar-surface-layout": "pending", className: "relative rounded-2xl overflow-hidden border-2 shadow-xl", style: { height: 'clamp(300px, 78vw, 350px)', borderColor: selectedAccent + '60' } },
 
                   React.createElement("canvas", {
 
                     "data-surface-canvas": "true",
+                    "data-solar-surface-canvas": sel.key,
+                    "data-solar-surface-layout": "pending",
+                    "data-solar-surface-dpr": "1",
                     role: "img",
-                    "aria-label": sel.name + " surface view. " + (sel.surfaceDesc || sel.fact) + " Diameter: " + sel.diameter + ". Gravity: " + (sel.gravity || "unknown") + ". " + sel.moons + " moon" + (sel.moons !== 1 ? "s" : "") + ". Click planet, atmosphere, or moons to explore. Drag to rotate.",
+                    "aria-label": sel.name + " animated surface model. " + (sel.surfaceDesc || sel.fact) + " Diameter: " + sel.diameter + ". Gravity: " + (sel.gravity || "unknown") + ". " + sel.moons + " moon" + (sel.moons !== 1 ? "s" : "") + ". Use the observation console and landmark notes below for keyboard-accessible evidence. Pointer drag rotates the model.",
 
-                    style: { width: '100%', height: '100%', display: 'block' },
+                    style: { width: '100%', height: '100%', display: 'block', touchAction: 'pan-y' },
 
                     ref: function (cvEl) {
 
-                      if (!cvEl || cvEl._surfInit === sel.name) return;
+                      if (!cvEl) return;
+                      var requestedSurfaceFeature = parseInt(d.surfaceFeature, 10);
+                      cvEl._surfaceSelectedFeature = Number.isFinite(requestedSurfaceFeature) ? requestedSurfaceFeature : -1;
+                      if (cvEl._surfInit === sel.name) {
+                        if (cvEl._requestSurfaceDraw) cvEl._requestSurfaceDraw();
+                        return;
+                      }
+                      if (cvEl._surfaceCleanup) cvEl._surfaceCleanup();
 
                       // Memory-leak fix: switching planets re-runs this init block on
                       // the same canvas element. Detach any leftover handlers from a
@@ -10478,6 +10700,12 @@ const d = labToolData.solarSystem || {};
                           cvEl.removeEventListener(ev, cvEl._surfHandlers[ev]);
                         });
                       }
+                      if (cvEl._surfVisibilityHandler && typeof document !== 'undefined') {
+                        document.removeEventListener('visibilitychange', cvEl._surfVisibilityHandler);
+                      }
+                      if (cvEl._surfMotionQuery && cvEl._surfMotionHandler && cvEl._surfMotionQuery.removeEventListener) {
+                        cvEl._surfMotionQuery.removeEventListener('change', cvEl._surfMotionHandler);
+                      }
                       var _surfH = cvEl._surfHandlers = {};
 
                       cvEl._surfInit = sel.name;
@@ -10485,8 +10713,23 @@ const d = labToolData.solarSystem || {};
                       var ctx = cvEl.getContext('2d');
 
                       var W = cvEl.offsetWidth || 600, H = cvEl.offsetHeight || 350;
+                      var surfacePixelRatio = 1;
+                      var surfaceLayout = 'wide';
 
-                      cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                      function resizeSurfaceCanvas() {
+                        W = Math.max(1, cvEl.offsetWidth || 600);
+                        H = Math.max(1, cvEl.offsetHeight || 350);
+                        surfacePixelRatio = Math.min(2, Math.max(1, (typeof window !== 'undefined' && window.devicePixelRatio) || 1));
+                        surfaceLayout = W < 520 ? 'compact' : 'wide';
+                        cvEl.width = Math.round(W * surfacePixelRatio);
+                        cvEl.height = Math.round(H * surfacePixelRatio);
+                        ctx.setTransform(surfacePixelRatio, 0, 0, surfacePixelRatio, 0, 0);
+                        cvEl.setAttribute('data-solar-surface-layout', surfaceLayout);
+                        cvEl.setAttribute('data-solar-surface-dpr', String(surfacePixelRatio));
+                        if (cvEl.parentElement) cvEl.parentElement.setAttribute('data-solar-surface-layout', surfaceLayout);
+                      }
+
+                      resizeSurfaceCanvas();
 
                       var isGas = sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant';
 
@@ -10503,87 +10746,161 @@ const d = labToolData.solarSystem || {};
                       var _featureLabels = []; // {x, y, r, name, desc} — clickable surface features
                       var _hoveredFeature = -1;
 
-                      // Click handler for canvas interactions
+                      // Pointer interaction shares one CSS-pixel coordinate system at every DPR.
+                      function surfacePoint(e) {
+                        var rect = cvEl.getBoundingClientRect();
+                        return {
+                          x: (e.clientX - rect.left) * (W / Math.max(1, rect.width)),
+                          y: (e.clientY - rect.top) * (H / Math.max(1, rect.height))
+                        };
+                      }
+
                       cvEl.style.cursor = 'default';
                       cvEl.addEventListener('click', _surfH.click = function(e) {
-                        var rect = cvEl.getBoundingClientRect();
-                        var mx = (e.clientX - rect.left) * (cvEl.width / 2 / rect.width);
-                        var my = (e.clientY - rect.top) * (cvEl.height / 2 / rect.height);
+                        if (_dragMoved) { _dragMoved = false; return; }
+                        var point = surfacePoint(e);
+                        var mx = point.x, my = point.y;
 
-                        // Check moon clicks
+                        for (var fi = 0; fi < _featureLabels.length; fi++) {
+                          var featureHit = _featureLabels[fi];
+                          var featureDistance = Math.hypot(mx - featureHit.x, my - featureHit.y);
+                          if (featureDistance < featureHit.r + 8) {
+                            cvEl._surfaceSelectedFeature = fi;
+                            upd('surfaceFeature', fi);
+                            return;
+                          }
+                        }
                         for (var mi = 0; mi < _moonHitAreas.length; mi++) {
                           var mh = _moonHitAreas[mi];
-                          var dist = Math.sqrt((mx - mh.x) * (mx - mh.x) + (my - mh.y) * (my - mh.y));
-                          if (dist < mh.r + 8) { // generous hit area
+                          var dist = Math.hypot(mx - mh.x, my - mh.y);
+                          if (dist < mh.r + 8) {
                             upd('surfaceExplore', 'moons');
                             return;
                           }
                         }
-                        // Check atmosphere ring click
-                        var adist = Math.sqrt((mx - _atmoHitArea.x) * (mx - _atmoHitArea.x) + (my - _atmoHitArea.y) * (my - _atmoHitArea.y));
+                        var adist = Math.hypot(mx - _atmoHitArea.x, my - _atmoHitArea.y);
                         if (adist > _planetHitArea.r && adist < _atmoHitArea.outerR) {
                           upd('surfaceExplore', d.surfaceExplore === 'atmosphere' ? null : 'atmosphere');
                           return;
                         }
-                        // Check planet body click
-                        var pdist = Math.sqrt((mx - _planetHitArea.x) * (mx - _planetHitArea.x) + (my - _planetHitArea.y) * (my - _planetHitArea.y));
+                        var pdist = Math.hypot(mx - _planetHitArea.x, my - _planetHitArea.y);
                         if (pdist < _planetHitArea.r) {
                           upd('surfaceExplore', d.surfaceExplore === 'composition' ? null : 'composition');
-                          return;
                         }
                       });
 
-                      // Mousemove for hover cursor + drag-to-rotate
-                      cvEl.addEventListener('mousedown', _surfH.mousedown = function(e) {
-                        var rect = cvEl.getBoundingClientRect();
-                        var mx = (e.clientX - rect.left) * (cvEl.width / 2 / rect.width);
-                        var my = (e.clientY - rect.top) * (cvEl.height / 2 / rect.height);
-                        var pdist = Math.sqrt((mx - _planetHitArea.x) * (mx - _planetHitArea.x) + (my - _planetHitArea.y) * (my - _planetHitArea.y));
+                      var _activePointerId = null;
+                      var _dragMoved = false;
+                      cvEl.addEventListener('pointerdown', _surfH.pointerdown = function(e) {
+                        var point = surfacePoint(e);
+                        var pdist = Math.hypot(point.x - _planetHitArea.x, point.y - _planetHitArea.y);
                         if (pdist < _planetHitArea.r * 1.1) {
                           _isDragging = true;
+                          _dragMoved = false;
+                          _activePointerId = e.pointerId;
                           _dragStartX = e.clientX;
+                          if (cvEl.setPointerCapture) cvEl.setPointerCapture(e.pointerId);
                           cvEl.style.cursor = 'grabbing';
                         }
                       });
-                      cvEl.addEventListener('mouseup', _surfH.mouseup = function() { _isDragging = false; });
-                      cvEl.addEventListener('mouseleave', _surfH.mouseleave = function() { _isDragging = false; });
-                      cvEl.addEventListener('mousemove', _surfH.mousemove = function(e) {
-                        if (_isDragging) {
-                          _dragRotation += (e.clientX - _dragStartX) * 0.008;
+
+                      function finishSurfacePointer(e) {
+                        if (_activePointerId !== null && e && e.pointerId !== undefined && e.pointerId !== _activePointerId) return;
+                        if (_activePointerId !== null && cvEl.hasPointerCapture && cvEl.hasPointerCapture(_activePointerId)) {
+                          cvEl.releasePointerCapture(_activePointerId);
+                        }
+                        _isDragging = false;
+                        _activePointerId = null;
+                        cvEl.style.cursor = 'default';
+                      }
+                      cvEl.addEventListener('pointerup', _surfH.pointerup = finishSurfacePointer);
+                      cvEl.addEventListener('pointercancel', _surfH.pointercancel = finishSurfacePointer);
+                      cvEl.addEventListener('lostpointercapture', _surfH.lostpointercapture = finishSurfacePointer);
+                      cvEl.addEventListener('pointerleave', _surfH.pointerleave = function(e) {
+                        if (!_isDragging) finishSurfacePointer(e);
+                      });
+                      cvEl.addEventListener('pointermove', _surfH.pointermove = function(e) {
+                        if (_isDragging && (_activePointerId === null || e.pointerId === _activePointerId)) {
+                          var dragDelta = e.clientX - _dragStartX;
+                          if (Math.abs(dragDelta) > 1) _dragMoved = true;
+                          _dragRotation += dragDelta * 0.008;
                           _dragStartX = e.clientX;
                           cvEl.style.cursor = 'grabbing';
+                          if (e.cancelable) e.preventDefault();
+                          if (cvEl._requestSurfaceDraw) cvEl._requestSurfaceDraw();
                           return;
                         }
-                        var rect = cvEl.getBoundingClientRect();
-                        var mx = (e.clientX - rect.left) * (cvEl.width / 2 / rect.width);
-                        var my = (e.clientY - rect.top) * (cvEl.height / 2 / rect.height);
+                        var point = surfacePoint(e);
+                        var mx = point.x, my = point.y;
                         var overMoon = false;
                         _hoveredMoon = -1;
                         for (var mi = 0; mi < _moonHitAreas.length; mi++) {
                           var mh = _moonHitAreas[mi];
-                          var dist = Math.sqrt((mx - mh.x) * (mx - mh.x) + (my - mh.y) * (my - mh.y));
+                          var dist = Math.hypot(mx - mh.x, my - mh.y);
                           if (dist < mh.r + 8) { overMoon = true; _hoveredMoon = mi; break; }
                         }
-                        var adist = Math.sqrt((mx - _atmoHitArea.x) * (mx - _atmoHitArea.x) + (my - _atmoHitArea.y) * (my - _atmoHitArea.y));
-                        var pdist = Math.sqrt((mx - _planetHitArea.x) * (mx - _planetHitArea.x) + (my - _planetHitArea.y) * (my - _planetHitArea.y));
+                        var adist = Math.hypot(mx - _atmoHitArea.x, my - _atmoHitArea.y);
+                        var pdist = Math.hypot(mx - _planetHitArea.x, my - _planetHitArea.y);
                         var overAtmo = adist > _planetHitArea.r && adist < _atmoHitArea.outerR;
                         var overPlanet = pdist < _planetHitArea.r;
-                        // Check feature labels hover
                         var overFeature = false;
                         _hoveredFeature = -1;
                         for (var fi2 = 0; fi2 < _featureLabels.length; fi2++) {
                           var fl = _featureLabels[fi2];
-                          var fdist = Math.sqrt((mx - fl.x) * (mx - fl.x) + (my - fl.y) * (my - fl.y));
+                          var fdist = Math.hypot(mx - fl.x, my - fl.y);
                           if (fdist < fl.r + 5) { overFeature = true; _hoveredFeature = fi2; break; }
                         }
                         cvEl.style.cursor = overFeature ? 'help' : overPlanet ? 'grab' : (overMoon || overAtmo) ? 'pointer' : 'default';
+                        if (cvEl._requestSurfaceDraw) cvEl._requestSurfaceDraw();
                       });
+
+                      var surfaceMotionQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+                      var surfaceReducedMotion = !!(surfaceMotionQuery && surfaceMotionQuery.matches);
+                      var surfacePageVisible = typeof document === 'undefined' || document.visibilityState !== 'hidden';
+                      var planetRaf = 0;
+                      function requestSurfaceDraw() {
+                        if (planetRaf || !cvEl.isConnected) return;
+                        planetRaf = requestAnimationFrame(function() {
+                          planetRaf = 0;
+                          drawPlanet();
+                        });
+                      }
+                      cvEl._requestSurfaceDraw = requestSurfaceDraw;
+                      var onSurfaceVisibilityChange = function() {
+                        surfacePageVisible = document.visibilityState !== 'hidden';
+                        if (!surfacePageVisible && planetRaf) {
+                          cancelAnimationFrame(planetRaf);
+                          planetRaf = 0;
+                        } else if (surfacePageVisible) {
+                          requestSurfaceDraw();
+                        }
+                      };
+                      cvEl._surfVisibilityHandler = onSurfaceVisibilityChange;
+                      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onSurfaceVisibilityChange);
+                      var onSurfaceMotionChange = function(event) {
+                        surfaceReducedMotion = !!event.matches;
+                        if (surfaceReducedMotion && planetRaf) {
+                          cancelAnimationFrame(planetRaf);
+                          planetRaf = 0;
+                        }
+                        requestSurfaceDraw();
+                      };
+                      cvEl._surfMotionQuery = surfaceMotionQuery;
+                      cvEl._surfMotionHandler = onSurfaceMotionChange;
+                      if (surfaceMotionQuery && surfaceMotionQuery.addEventListener) surfaceMotionQuery.addEventListener('change', onSurfaceMotionChange);
 
                       var planetRaf;
                       function drawPlanet() {
 
-                        if (!cvEl.isConnected) { cancelAnimationFrame(planetRaf); if (ro) ro.disconnect(); return; } // tear down loop + observer on remount/close
-                        tick++;
+                        if (!cvEl.isConnected) {
+                          if (planetRaf) cancelAnimationFrame(planetRaf);
+                          if (ro) ro.disconnect();
+                          if (cvEl._surfVisibilityHandler && typeof document !== 'undefined') document.removeEventListener('visibilitychange', cvEl._surfVisibilityHandler);
+                          if (cvEl._surfMotionQuery && cvEl._surfMotionHandler && cvEl._surfMotionQuery.removeEventListener) cvEl._surfMotionQuery.removeEventListener('change', cvEl._surfMotionHandler);
+                          cvEl._requestSurfaceDraw = null;
+                          return;
+                        }
+                        if (!surfaceReducedMotion) tick++;
 
                         ctx.clearRect(0, 0, W, H);
 
@@ -10637,9 +10954,13 @@ const d = labToolData.solarSystem || {};
 
                         // Planet
 
-                        var cx = W * 0.5, cy = H * 0.5;
+                        var compactSurface = surfaceLayout === 'compact';
+                        var surfaceCaptionY = H - 65;
+                        var surfaceVisualHeight = Math.max(140, surfaceCaptionY - 8);
+                        var cx = W * 0.5, cy = surfaceVisualHeight * 0.5;
 
-                        var planetR = Math.min(W, H) * 0.38;
+                        var planetR = Math.min(W * 0.32, surfaceVisualHeight * 0.44);
+                        if (compactSurface) planetR = Math.min(planetR, W * (sel.hasRings ? 0.25 : 0.27));
 
                         // Store hit areas for interactivity
                         _planetHitArea = { x: cx, y: cy, r: planetR };
@@ -10651,7 +10972,7 @@ const d = labToolData.solarSystem || {};
 
                         var glowGrad = ctx.createRadialGradient(cx, cy, planetR * 0.9, cx, cy, planetR * 1.4);
 
-                        glowGrad.addColorStop(0, sel.color + '40');
+                        glowGrad.addColorStop(0, selectedAccent + '40');
 
                         glowGrad.addColorStop(1, 'transparent');
 
@@ -10673,9 +10994,9 @@ const d = labToolData.solarSystem || {};
 
                         var bodyGrad = ctx.createLinearGradient(cx - planetR, cy - planetR, cx + planetR, cy + planetR);
 
-                        bodyGrad.addColorStop(0, sel.color);
+                        bodyGrad.addColorStop(0, selectedAccent);
 
-                        var darkerColor = sel.color.length >= 7 ? '#' + Math.max(0, parseInt(sel.color.slice(1, 3), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(sel.color.slice(3, 5), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(sel.color.slice(5, 7), 16) - 60).toString(16).padStart(2, '0') : sel.color;
+                        var darkerColor = selectedAccent.length >= 7 ? '#' + Math.max(0, parseInt(selectedAccent.slice(1, 3), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(selectedAccent.slice(3, 5), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(selectedAccent.slice(5, 7), 16) - 60).toString(16).padStart(2, '0') : selectedAccent;
 
                         bodyGrad.addColorStop(1, darkerColor);
 
@@ -11012,13 +11333,13 @@ const d = labToolData.solarSystem || {};
                         // the last few pixels of the canvas.
                         var captionW = Math.min(340, W - 24);
                         var captionX = cx - captionW / 2;
-                        var captionY = H - 65;
+                        var captionY = surfaceCaptionY;
                         ctx.save();
                         ctx.beginPath();
                         ctx.roundRect(captionX, captionY, captionW, 56, 12);
                         ctx.fillStyle = 'rgba(6,10,28,0.82)';
                         ctx.fill();
-                        ctx.strokeStyle = sel.color + '66';
+                        ctx.strokeStyle = selectedAccent + '66';
                         ctx.lineWidth = 1;
                         ctx.stroke();
 
@@ -11037,14 +11358,15 @@ const d = labToolData.solarSystem || {};
                         ctx.fillText(sel.diameter + ' \u2022 ' + (sel.gravity || '?'), cx, captionY + 32);
 
                         // Interactive hint
-                        ctx.font = 'bold 9px system-ui, sans-serif';
+                        ctx.font = 'bold 10px system-ui, sans-serif';
                         ctx.fillStyle = '#a5f3fc';
-                        ctx.fillText('Select a feature \u2022 drag to rotate', cx, captionY + 47);
+                        ctx.fillText('Drag to rotate \u2022 evidence controls below', cx, captionY + 47);
                         ctx.restore();
 
                         // === Feature hover labels ===
-                        if (_hoveredFeature >= 0 && _hoveredFeature < _featureLabels.length) {
-                          var hf = _featureLabels[_hoveredFeature];
+                        var describedFeature = _hoveredFeature >= 0 ? _hoveredFeature : cvEl._surfaceSelectedFeature;
+                        if (describedFeature >= 0 && describedFeature < _featureLabels.length) {
+                          var hf = _featureLabels[describedFeature];
                           // Highlight ring around feature
                           ctx.save();
                           ctx.strokeStyle = 'rgba(129,140,248,0.6)';
@@ -11069,22 +11391,23 @@ const d = labToolData.solarSystem || {};
                           ctx.stroke();
                           // Label background
                           ctx.fillStyle = 'rgba(15,23,42,0.85)';
+                          ctx.font = 'bold 11px system-ui, sans-serif';
                           var nameWidth = ctx.measureText(hf.name).width;
-                          var labelW = Math.max(nameWidth + 16, 80);
+                          var labelW = Math.min(160, Math.max(nameWidth + 16, 112));
                           ctx.beginPath();
-                          ctx.roundRect(labelX - labelW / 2, labelY - 18, labelW, 32, 6);
+                          ctx.roundRect(labelX - labelW / 2, labelY - 21, labelW, 40, 6);
                           ctx.fill();
                           ctx.strokeStyle = 'rgba(129,140,248,0.4)';
                           ctx.lineWidth = 0.5;
                           ctx.stroke();
                           // Label text
                           ctx.fillStyle = '#c7d2fe';
-                          ctx.font = 'bold 10px system-ui, sans-serif';
+                          ctx.font = 'bold 11px system-ui, sans-serif';
                           ctx.textAlign = 'center';
                           ctx.fillText(hf.name, labelX, labelY - 5);
-                          ctx.fillStyle = '#94a3b8';
-                          ctx.font = '7px system-ui, sans-serif';
-                          ctx.fillText(hf.desc, labelX, labelY + 7);
+                          ctx.fillStyle = '#cbd5e1';
+                          ctx.font = '10px system-ui, sans-serif';
+                          ctx.fillText('Landmark note below', labelX, labelY + 9, labelW - 12);
                           ctx.restore();
                         }
 
@@ -11093,7 +11416,11 @@ const d = labToolData.solarSystem || {};
                         var notableMoonNames = (NOTABLE_MOONS[sel.key] || []).map(function(m) { return m.name; });
                         if (moonCount > 0) {
                           for (var mi = 0; mi < moonCount; mi++) {
-                            var moonOrbitR = planetR * 1.3 + mi * 18;
+                            var rawMoonOrbitR = planetR * 1.3 + mi * 18;
+                            var moonOrbitLimit = Math.max(planetR * 1.12, Math.min(cx - 12, W - cx - 12));
+                            var compactOrbitStep = moonCount > 1 ? mi / (moonCount - 1) : 0.55;
+                            var compactMoonOrbitR = planetR * 1.12 + (moonOrbitLimit - planetR * 1.12) * compactOrbitStep;
+                            var moonOrbitR = compactSurface ? compactMoonOrbitR : Math.min(rawMoonOrbitR, moonOrbitLimit);
                             var moonAngle = tick * (0.008 + mi * 0.003) + mi * (Math.PI * 2 / moonCount);
                             var mx = cx + Math.cos(moonAngle) * moonOrbitR;
                             var my = cy + Math.sin(moonAngle) * moonOrbitR * 0.35; // elliptical
@@ -11128,7 +11455,7 @@ const d = labToolData.solarSystem || {};
                             // Moon name label on hover
                             if (isHovered && notableMoonNames[mi]) {
                               ctx.save();
-                              ctx.font = 'bold 9px system-ui, sans-serif';
+                              ctx.font = 'bold 10px system-ui, sans-serif';
                               ctx.fillStyle = '#c7d2fe';
                               ctx.textAlign = 'center';
                               ctx.fillText(notableMoonNames[mi], mx, my - moonR - 6);
@@ -11297,7 +11624,7 @@ const d = labToolData.solarSystem || {};
                             var atmoR = planetR * (1.05 + ai * 0.06);
                             var atmoGrad2 = ctx.createRadialGradient(cx, cy, atmoR * 0.95, cx, cy, atmoR);
                             atmoGrad2.addColorStop(0, 'transparent');
-                            atmoGrad2.addColorStop(0.5, sel.color + (ai === 0 ? '18' : '0a'));
+                            atmoGrad2.addColorStop(0.5, selectedAccent + (ai === 0 ? '18' : '0a'));
                             atmoGrad2.addColorStop(1, 'transparent');
                             ctx.fillStyle = atmoGrad2;
                             ctx.beginPath();
@@ -11320,8 +11647,8 @@ const d = labToolData.solarSystem || {};
                           ctx.stroke();
                           ctx.setLineDash([]);
                           // Axis label
-                          ctx.globalAlpha = 0.3;
-                          ctx.font = '7px system-ui';
+                          ctx.globalAlpha = 0.55;
+                          ctx.font = '10px system-ui';
                           ctx.fillStyle = '#67e8f9';
                           ctx.textAlign = 'left';
                           ctx.fillText('97.8\u00B0 tilt', cx + Math.cos(axisTilt) * planetR * 1.15 + 4, cy - Math.sin(axisTilt) * planetR * 1.15);
@@ -11354,8 +11681,8 @@ const d = labToolData.solarSystem || {};
                           ctx.arc(cx - planetR * 0.8, cy, planetR * 0.8, 0, Math.PI * 2);
                           ctx.fill();
                           // Temperature gradient indicator
-                          ctx.globalAlpha = 0.2;
-                          ctx.font = '7px system-ui';
+                          ctx.globalAlpha = 0.55;
+                          ctx.font = '10px system-ui';
                           ctx.fillStyle = '#fef3c7';
                           ctx.textAlign = 'center';
                           ctx.fillText('430\u00B0C', cx - planetR * 0.6, cy + planetR * 0.6);
@@ -11395,7 +11722,7 @@ const d = labToolData.solarSystem || {};
                             var ey = cy + ((ei * 43 + 7) % Math.floor(planetR * 1.4)) - planetR * 0.7;
                             var eAngle = tick * 0.003 + _dragRotation + ei * 0.5;
                             var eddySize = 6 + ei % 5 * 3;
-                            ctx.fillStyle = ei % 3 === 0 ? '#ffffff' : ei % 3 === 1 ? sel.color : '#000000';
+                            ctx.fillStyle = ei % 3 === 0 ? '#ffffff' : ei % 3 === 1 ? selectedAccent : '#000000';
                             ctx.beginPath();
                             ctx.ellipse(ex, ey, eddySize, eddySize * 0.55, eAngle, 0, Math.PI * 2);
                             ctx.fill();
@@ -11631,8 +11958,8 @@ const d = labToolData.solarSystem || {};
                             ctx.strokeStyle = 'rgba(59,130,246,0.6)';
                             ctx.lineWidth = 0.5;
                             ctx.stroke();
-                            ctx.globalAlpha = 0.6;
-                            ctx.font = '7px system-ui';
+                            ctx.globalAlpha = 0.7;
+                            ctx.font = '10px system-ui';
                             ctx.fillStyle = '#94a3b8';
                             ctx.textAlign = 'center';
                             ctx.fillText('\uD83C\uDF0D Earth', ecx, ecy + earthR + 8);
@@ -11640,8 +11967,8 @@ const d = labToolData.solarSystem || {};
                             ctx.globalAlpha = 1;
                           } else if (earthR >= planetR * 0.9) {
                             // Earth is similar size or bigger — show text only
-                            ctx.globalAlpha = 0.4;
-                            ctx.font = '7px system-ui';
+                            ctx.globalAlpha = 0.65;
+                            ctx.font = '10px system-ui';
                             ctx.fillStyle = '#94a3b8';
                             ctx.textAlign = 'right';
                             ctx.fillText('\uD83C\uDF0D ~' + (1 / earthScale).toFixed(1) + 'x Earth', W - 8, 14);
@@ -11650,7 +11977,7 @@ const d = labToolData.solarSystem || {};
                         }
 
                         // === Sun direction indicator (top-left) ===
-                        ctx.globalAlpha = 0.4;
+                        ctx.globalAlpha = 0.65;
                         ctx.fillStyle = '#fef3c7';
                         ctx.beginPath();
                         ctx.arc(16, 16, 5, 0, Math.PI * 2);
@@ -11665,13 +11992,18 @@ const d = labToolData.solarSystem || {};
                           ctx.lineTo(16 + Math.cos(ra) * 10, 16 + Math.sin(ra) * 10);
                           ctx.stroke();
                         }
-                        ctx.font = '6px system-ui';
+                        ctx.font = 'bold 10px system-ui';
                         ctx.fillStyle = '#fef3c7';
                         ctx.textAlign = 'left';
                         ctx.fillText(sel.dist ? sel.dist + ' AU' : '', 28, 18);
                         ctx.globalAlpha = 1;
 
-                        planetRaf = requestAnimationFrame(drawPlanet);
+                        if (!surfaceReducedMotion && surfacePageVisible) {
+                          planetRaf = requestAnimationFrame(function() {
+                            planetRaf = 0;
+                            drawPlanet();
+                          });
+                        }
 
                       }
 
@@ -11687,13 +12019,23 @@ const d = labToolData.solarSystem || {};
                         requestAnimationFrame(function () {
                           planetResizePending = false;
                           if (!cvEl.isConnected) return;
-                          W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 350;
-                          cvEl.width = W * 2; cvEl.height = H * 2; ctx.scale(2, 2);
+                          resizeSurfaceCanvas();
+                          requestSurfaceDraw();
                         });
 
                       });
 
                       ro.observe(cvEl);
+
+                      cvEl._surfaceCleanup = function() {
+                        if (planetRaf) { cancelAnimationFrame(planetRaf); planetRaf = 0; }
+                        if (ro) ro.disconnect();
+                        if (cvEl._surfVisibilityHandler && typeof document !== 'undefined') document.removeEventListener('visibilitychange', cvEl._surfVisibilityHandler);
+                        if (cvEl._surfMotionQuery && cvEl._surfMotionHandler && cvEl._surfMotionQuery.removeEventListener) cvEl._surfMotionQuery.removeEventListener('change', cvEl._surfMotionHandler);
+                        Object.keys(_surfH).forEach(function(eventName) { cvEl.removeEventListener(eventName, _surfH[eventName]); });
+                        cvEl._requestSurfaceDraw = null;
+                        cvEl._surfaceCleanup = null;
+                      };
 
                     }
 
@@ -11701,34 +12043,96 @@ const d = labToolData.solarSystem || {};
 
                 ),
 
-                // ── Interactive Depth Exploration Buttons ──
-                React.createElement("div", { "data-solarsystem-surface-evidence": true, role: "group", "aria-label": __alloT('stem.solarsystem.surface_evidence_categories', 'Surface evidence categories'), className: "flex flex-wrap gap-1.5 mt-2" },
-                  [
+                // ── Observation Console: keyboard-accessible evidence and landmark signals ──
+                (function() {
+                  var surfaceButtons = [
                     { key: 'moons', icon: '\uD83C\uDF19', label: 'Moons (' + sel.moons + ')', show: sel.moons > 0 },
                     { key: 'atmosphere', icon: '\uD83C\uDF2B\uFE0F', label: __alloT('stem.solarsystem.atmosphere', 'Atmosphere'), show: !!DESCENT_LAYERS[sel.key] },
                     { key: 'magnetic', icon: '\uD83E\uDDF2', label: __alloT('stem.solarsystem.magnetic_field', 'Magnetic Field'), show: !!MAGNETOSPHERE[sel.key] },
                     { key: 'nightsky', icon: '\uD83C\uDF0C', label: __alloT('stem.solarsystem.night_sky', 'Night Sky'), show: !!SKY_VIEWS[sel.key] },
                     { key: 'composition', icon: '\uD83E\uDDEA', label: __alloT('stem.solarsystem.composition', 'Composition'), show: true }
-                  ].filter(function(b) { return b.show; }).map(function(btn) {
-                    var isActive = d.surfaceExplore === btn.key;
-                    return React.createElement("button", {
-                      key: btn.key,
-                      type: "button",
-                      "aria-pressed": isActive,
-                      "aria-label": "Explore " + btn.label + " of " + sel.name,
-                      onClick: function() { upd('surfaceExplore', isActive ? null : btn.key); },
-                      className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border " +
-                        (isActive
-                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-600 text-white border-indigo-400/50 shadow-lg shadow-indigo-500/25 scale-[1.03] ring-1 ring-indigo-400/30'
-                          : (isDark
-                            ? 'transition-colors bg-slate-800 text-slate-300 border-slate-600 hover:border-indigo-500/50 hover:bg-slate-700 hover:text-indigo-300'
-                            : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
-                    }, btn.icon + ' ' + btn.label);
-                  })
-                ),
+                  ].filter(function(button) { return button.show; });
+                  var activeSurfaceButton = surfaceButtons.find(function(button) { return button.key === d.surfaceExplore; });
+                  var activeFeatureIndex = parseInt(d.surfaceFeature, 10);
+                  var hasActiveFeature = Number.isFinite(activeFeatureIndex) && sel.notableFeatures && activeFeatureIndex >= 0 && activeFeatureIndex < sel.notableFeatures.length;
+                  var landmarkReadoutId = 'solar-surface-landmark-readout-' + sel.key.toLowerCase();
+                  return React.createElement("section", {
+                    "data-solar-surface-console": sel.key,
+                    className: "mt-2 rounded-xl border border-slate-700 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/70 p-3 text-slate-100 shadow-lg"
+                  },
+                    React.createElement("div", { className: "flex items-start justify-between gap-3" },
+                      React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300" }, "Observation Console"),
+                        React.createElement("p", { className: "mt-0.5 text-[11px] leading-relaxed text-slate-300" }, "Open an evidence channel, then inspect a landmark signal.")
+                      ),
+                      React.createElement("span", { "aria-hidden": "true", className: "rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2 py-1 text-[9px] font-black text-cyan-200" }, "LIVE MODEL")
+                    ),
+                    React.createElement("div", {
+                      "data-solarsystem-surface-evidence": true,
+                      role: "group",
+                      "aria-label": __alloT('stem.solarsystem.surface_evidence_categories', 'Surface evidence categories'),
+                      className: "mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap"
+                    },
+                      surfaceButtons.map(function(btn) {
+                        var isActive = d.surfaceExplore === btn.key;
+                        var panelId = 'solar-surface-panel-' + btn.key + '-' + sel.key.toLowerCase();
+                        return React.createElement("button", {
+                          key: btn.key,
+                          type: "button",
+                          "data-solar-surface-evidence-button": btn.key,
+                          "aria-pressed": isActive,
+                          "aria-expanded": isActive,
+                          "aria-controls": panelId,
+                          "aria-label": "Explore " + btn.label + " of " + sel.name,
+                          onClick: function() { upd('surfaceExplore', isActive ? null : btn.key); },
+                          className: "min-h-[44px] min-w-0 rounded-lg border px-2 py-2 text-[10px] font-bold leading-tight transition-all sm:px-3 " +
+                            (isActive
+                              ? 'border-cyan-300/60 bg-gradient-to-r from-indigo-600 to-cyan-700 text-white shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-300/30'
+                              : 'border-slate-600 bg-slate-800 text-slate-200 hover:border-cyan-400/60 hover:bg-slate-700 hover:text-cyan-200')
+                        },
+                          React.createElement("span", { "aria-hidden": "true", className: "mr-1" }, btn.icon),
+                          React.createElement("span", null, btn.label)
+                        );
+                      })
+                    ),
+                    React.createElement("p", {
+                      "data-solar-surface-status": activeSurfaceButton ? activeSurfaceButton.key : "idle",
+                      role: "status",
+                      "aria-live": "polite",
+                      className: "mt-2 rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-[11px] leading-relaxed text-slate-300"
+                    }, activeSurfaceButton ? "Showing " + activeSurfaceButton.label + " evidence for " + sel.name + "." : "Choose an evidence channel to reveal the supporting readout."),
+                    sel.notableFeatures && sel.notableFeatures.length ? React.createElement("div", { className: "mt-3 border-t border-white/10 pt-3" },
+                      React.createElement("p", { className: "text-[9px] font-black uppercase tracking-[0.16em] text-indigo-300" }, "Landmark Signals"),
+                      React.createElement("div", { role: "group", "aria-label": sel.name + " landmark signals", className: "mt-2 grid grid-cols-3 gap-2" },
+                        sel.notableFeatures.slice(0, 3).map(function(feature, featureIndex) {
+                          var featureActive = hasActiveFeature && activeFeatureIndex === featureIndex;
+                          return React.createElement("button", {
+                            key: feature,
+                            type: "button",
+                            "data-solar-surface-feature-button": featureIndex,
+                            "aria-pressed": featureActive,
+                            "aria-controls": landmarkReadoutId,
+                            onClick: function() { upd('surfaceFeature', featureActive ? null : featureIndex); },
+                            className: "min-h-[44px] min-w-0 rounded-lg border px-2 py-2 text-[10px] font-bold leading-tight transition-colors " + (featureActive ? 'border-indigo-300 bg-indigo-500/25 text-white ring-1 ring-indigo-300/30' : 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-indigo-400/60 hover:text-indigo-200')
+                          }, "0" + (featureIndex + 1));
+                        })
+                      ),
+                      React.createElement("p", {
+                        id: landmarkReadoutId,
+                        "data-solar-surface-landmark-readout": hasActiveFeature ? activeFeatureIndex : "idle",
+                        role: "status",
+                        "aria-live": "polite",
+                        className: "mt-2 min-h-[44px] rounded-lg border border-indigo-400/20 bg-indigo-950/50 px-3 py-2 text-[11px] leading-relaxed text-indigo-100"
+                      }, hasActiveFeature ? React.createElement(React.Fragment, null,
+                        React.createElement("strong", { className: "text-cyan-200" }, "Landmark " + (activeFeatureIndex + 1) + ": "),
+                        sel.notableFeatures[activeFeatureIndex]
+                      ) : "Choose 01, 02, or 03 for a persistent landmark note. Canvas hover remains optional.")
+                    ) : null
+                  );
+                })(),
 
                 // ── MOONS DETAIL PANEL ──
-                d.surfaceExplore === 'moons' && React.createElement("div", { className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
+                d.surfaceExplore === 'moons' && React.createElement("div", { id: "solar-surface-panel-moons-" + sel.key.toLowerCase(), className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
                     React.createElement("h6", { className: "text-sm font-bold text-white" }, "\uD83C\uDF19 " + sel.name + "'s Moons"),
                     React.createElement("span", { className: "text-[11px] text-slate-200" }, sel.moons + " known moon" + (sel.moons !== 1 ? 's' : ''))
@@ -11760,7 +12164,7 @@ const d = labToolData.solarSystem || {};
                 ),
 
                 // ── ATMOSPHERE DEPTH PANEL ──
-                d.surfaceExplore === 'atmosphere' && React.createElement("div", { className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
+                d.surfaceExplore === 'atmosphere' && React.createElement("div", { id: "solar-surface-panel-atmosphere-" + sel.key.toLowerCase(), className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
                   React.createElement("h6", { className: "text-sm font-bold text-white mb-2" }, "\uD83C\uDF2B\uFE0F Atmospheric Descent: " + sel.name),
                   React.createElement("p", { className: "text-[11px] text-slate-200 mb-2" }, "What you\u2019d experience descending through " + sel.name + "'s atmosphere:"),
                   DESCENT_LAYERS[sel.key] ?
@@ -11777,7 +12181,7 @@ const d = labToolData.solarSystem || {};
                             React.createElement("div", { className: "bg-white/5 rounded-lg p-2 border border-white/10 hover:border-white/20 transition-all", style: { borderLeftColor: layer.color, borderLeftWidth: '3px' } },
                               React.createElement("div", { className: "flex items-center justify-between mb-1" },
                                 React.createElement("span", { className: "text-xs font-bold", style: { color: layer.color } }, layer.name),
-                                React.createElement("span", { className: "text-[11px] text-slate-600 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
+                                React.createElement("span", { className: "text-[11px] text-slate-300 font-mono" }, layer.alt >= 0 ? layer.alt + " km" : Math.abs(layer.alt).toLocaleString() + " km depth")
                               ),
                               React.createElement("p", { className: "text-[11px] text-slate-300 mb-1" }, layer.desc),
                               React.createElement("div", { className: "flex gap-3 text-[11px] text-slate-200" },
@@ -11791,12 +12195,12 @@ const d = labToolData.solarSystem || {};
                     ) :
                     React.createElement("div", { className: "text-center py-3" },
                       React.createElement("p", { className: "text-xs text-slate-300" }, sel.atmosphere || "No atmosphere data"),
-                      React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, "Detailed descent layers not available for " + sel.name)
+                      React.createElement("p", { className: "text-[11px] text-slate-300 mt-1" }, "Detailed descent layers not available for " + sel.name)
                     )
                 ),
 
                 // ── MAGNETIC FIELD PANEL ──
-                d.surfaceExplore === 'magnetic' && MAGNETOSPHERE[sel.key] && React.createElement("div", { className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
+                d.surfaceExplore === 'magnetic' && MAGNETOSPHERE[sel.key] && React.createElement("div", { id: "solar-surface-panel-magnetic-" + sel.key.toLowerCase(), className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
                   React.createElement("h6", { className: "text-sm font-bold text-white mb-2" }, "\uD83E\uDDF2 " + sel.name + "'s Magnetic Field"),
                   React.createElement("div", { className: "bg-white/5 rounded-lg p-3 border border-white/10" },
                     React.createElement("div", { className: "flex items-center gap-3 mb-2" },
@@ -11812,27 +12216,24 @@ const d = labToolData.solarSystem || {};
                       )
                     ),
                     React.createElement("p", { className: "text-[11px] text-sky-300 leading-relaxed" }, "\uD83D\uDCA1 " + MAGNETOSPHERE[sel.key].note),
-                    // Visual strength bar
-                    React.createElement("div", { className: "mt-2" },
-                      React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600 mb-0.5" },
-                        React.createElement("span", null, __alloT('stem.solarsystem.field_strength_vs_earth', "Field Strength vs Earth")),
-                        React.createElement("span", null, MAGNETOSPHERE[sel.key].strength)
+                    // Instrument cards avoid implying that mixed magnetic measures share a linear scale.
+                    React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
+                      React.createElement("div", { className: "rounded-lg border border-white/10 bg-black/20 p-2" },
+                        React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wide text-slate-300" }, "Field report"),
+                        React.createElement("p", { className: "mt-1 text-[11px] font-bold text-cyan-200" }, MAGNETOSPHERE[sel.key].strength)
                       ),
-                      React.createElement("div", { className: "h-2 bg-slate-700 rounded-full overflow-hidden" },
-                        React.createElement("div", { className: "h-full rounded-full transition-all",
-                          style: {
-                            width: Math.min(100, (sel.key === 'Jupiter' ? 100 : sel.key === 'Saturn' ? 60 : sel.key === 'Earth' ? 25 : sel.key === 'Uranus' ? 20 : sel.key === 'Neptune' ? 18 : 3)) + '%',
-                            background: MAGNETOSPHERE[sel.key].shield ? 'linear-gradient(90deg, #22c55e, #3b82f6)' : 'linear-gradient(90deg, #ef4444, #f97316)'
-                          }
-                        })
+                      React.createElement("div", { className: "rounded-lg border border-white/10 bg-black/20 p-2" },
+                        React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wide text-slate-300" }, "Surface shield"),
+                        React.createElement("p", { className: "mt-1 text-[11px] font-bold " + (MAGNETOSPHERE[sel.key].shield ? 'text-green-300' : 'text-amber-300') }, MAGNETOSPHERE[sel.key].shield ? "Protective global field" : "Limited or absent")
                       )
                     ),
-                    ESCAPE_VEL[sel.key] && React.createElement("p", { className: "text-[11px] text-slate-600 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.key] + " km/s" + (sel.key !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
+                    React.createElement("p", { role: "note", className: "mt-2 text-[10px] leading-relaxed text-slate-300" }, "Comparison descriptions may refer to different field measures; they are not plotted on one linear scale."),
+                    ESCAPE_VEL[sel.key] && React.createElement("p", { className: "text-[11px] text-slate-300 mt-2" }, "\uD83D\uDE80 Escape velocity: " + ESCAPE_VEL[sel.key] + " km/s" + (sel.key !== 'Earth' ? " (Earth: 11.2 km/s)" : ""))
                   )
                 ),
 
                 // ── NIGHT SKY PANEL ──
-                d.surfaceExplore === 'nightsky' && SKY_VIEWS[sel.key] && React.createElement("div", { className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
+                d.surfaceExplore === 'nightsky' && SKY_VIEWS[sel.key] && React.createElement("div", { id: "solar-surface-panel-nightsky-" + sel.key.toLowerCase(), className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
                   React.createElement("h6", { className: "text-sm font-bold text-white mb-2" }, "\uD83C\uDF0C Night Sky from " + sel.name),
                   React.createElement("div", { className: "bg-white/5 rounded-lg p-3 border border-white/10" },
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
@@ -11859,7 +12260,7 @@ const d = labToolData.solarSystem || {};
                 ),
 
                 // ── COMPOSITION PANEL ──
-                d.surfaceExplore === 'composition' && React.createElement("div", { className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
+                d.surfaceExplore === 'composition' && React.createElement("div", { id: "solar-surface-panel-composition-" + sel.key.toLowerCase(), className: "mt-2 bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-700 animate-fadeIn" },
                   React.createElement("h6", { className: "text-sm font-bold text-white mb-2" }, "\uD83E\uDDEA " + sel.name + " Composition"),
                   React.createElement("div", { className: "space-y-2" },
                     // Atmosphere composition
@@ -11881,7 +12282,7 @@ const d = labToolData.solarSystem || {};
                         return React.createElement("div", { className: "mt-2 space-y-1" },
                           gases.map(function(g) {
                             return React.createElement("div", { key: g[0], className: "flex items-center gap-2" },
-                              React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right font-mono" }, g[0]),
+                              React.createElement("span", { className: "text-[11px] text-slate-300 w-8 text-right font-mono" }, g[0]),
                               React.createElement("div", { className: "flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden" },
                                 React.createElement("div", { className: "h-full rounded-full", style: { width: Math.max(2, g[1]) + '%', backgroundColor: g[2] } })
                               ),
@@ -12005,7 +12406,7 @@ const d = labToolData.solarSystem || {};
                         }
 
                         // Right hemisphere is the observable exterior; left is the modeled cutaway.
-                        var exteriorBase = typeof sel.color === 'string' && sel.color.charAt(0) === '#' ? sel.color : layers[0].color;
+                        var exteriorBase = typeof selectedAccent === 'string' && selectedAccent.charAt(0) === '#' ? selectedAccent : layers[0].color;
                         ctx2.save();
                         ctx2.beginPath();
                         ctx2.arc(cx, cy, maxR, -Math.PI / 2, Math.PI / 2, false);
@@ -12367,10 +12768,10 @@ const d = labToolData.solarSystem || {};
                       "data-solar-descent-readout": controlLayer ? controlLayer.name : "",
                       role: "status",
                       "aria-live": "polite",
-                      className: "flex items-center justify-between gap-2"
+                      className: "flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2"
                     },
-                      React.createElement("span", { className: "min-w-0 truncate text-[10px] font-bold text-cyan-100" }, controlLayer ? "PROBE " + String.fromCharCode(0x00b7) + " " + controlLayer.name + " " + String.fromCharCode(0x00b7) + " " + controlAltitude : "Probe ready"),
-                      React.createElement("span", { className: "flex-shrink-0 text-[9px] font-mono text-slate-300" }, controlLayer ? controlLayer.temp + " " + String.fromCharCode(0x00b7) + " " + controlLayer.pressure : "")
+                      React.createElement("span", { className: "min-w-0 break-words text-[10px] font-bold leading-snug text-cyan-100" }, controlLayer ? "PROBE " + String.fromCharCode(0x00b7) + " " + controlLayer.name + " " + String.fromCharCode(0x00b7) + " " + controlAltitude : "Probe ready"),
+                      React.createElement("span", { className: "text-[10px] font-mono leading-snug text-slate-300 sm:flex-shrink-0" }, controlLayer ? controlLayer.temp + " " + String.fromCharCode(0x00b7) + " " + controlLayer.pressure : "")
                     );
                   })(),
                   React.createElement("div", { className: "mt-2 flex items-center gap-2" },
@@ -12388,7 +12789,7 @@ const d = labToolData.solarSystem || {};
                       })(),
                       onChange: function(e) { upd('_descentProbeY', clampSolarDescentProbeValue(parseInt(e.target.value, 10) / 100)); },
                       className: "flex-1 accent-indigo-400",
-                      style: { height: '6px' }
+                      style: { height: '44px' }
                     }),
                     React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, __alloT('stem.solarsystem.deep', "Deep"))
                   )
@@ -12404,11 +12805,12 @@ const d = labToolData.solarSystem || {};
                     var descentLayerCount = DESCENT_LAYERS[sel.key].length;
                     var activeDescentIndex = getSolarDescentLayerIndex(DESCENT_LAYERS[sel.key], d._descentProbeY != null ? d._descentProbeY : 0);
                     var isActive = activeDescentIndex === li;
-                    return React.createElement("div", {
+                    return React.createElement("button", {
                       key: li,
+                      type: "button",
                       "data-solar-descent-card": layer.name,
                       "data-solar-descent-active-layer": isActive ? "true" : "false",
-                      className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all cursor-pointer",
+                      className: "flex min-h-[44px] w-full items-stretch gap-0 overflow-hidden rounded-xl border text-left transition-all cursor-pointer",
                       style: {
                         background: isActive
                           ? "linear-gradient(135deg," + layer.color + "4d 0%," + layer.color + "22 56%,rgba(7,11,24,0.96) 100%),#0f172a"
@@ -12420,8 +12822,7 @@ const d = labToolData.solarSystem || {};
                         transform: isActive ? "translateY(-1px)" : "translateY(0)"
                       },
                       onClick: function() { upd('_descentProbeY', (li + 0.5) / descentLayerCount); tryAward('atmosphere_descent'); },
-                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('_descentProbeY', (li + 0.5) / descentLayerCount); tryAward('atmosphere_descent'); } },
-                      role: "button", tabIndex: 0, "aria-pressed": isActive ? "true" : "false",
+                      "aria-pressed": isActive ? "true" : "false",
                       "aria-label": layer.name + " at " + (layer.alt >= 0 ? '+' : '') + layer.alt + " km. " + layer.desc + " Temperature " + layer.temp + ". Pressure " + layer.pressure + "."
                     },
                       // Left accent strip — wider on active, glows on hover
@@ -14445,7 +14846,7 @@ const d = labToolData.solarSystem || {};
                             { name: __alloT('stem.solarsystem.water_vapor_sample', 'Water Vapor Sample'), icon: '\uD83C\uDF2B\uFE0F', gas: 'H\u2082O', depth: -3, color: 0x4488ff, xp: 10, fact: __alloT('stem.solarsystem.water_clouds_exist_deep_below_the_visi', 'Water clouds exist deep below the visible surface. Jupiter may have more water than Earth.') },
                             { name: __alloT('stem.solarsystem.methane_crystal', 'Methane Crystal'), icon: '\uD83D\uDC8E', gas: 'CH\u2084', depth: -1, color: 0x44ffaa, xp: 8, fact: __alloT('stem.solarsystem.methane_gives_uranus_and_neptune_their', 'Methane gives Uranus and Neptune their blue-green color. Under pressure, it breaks into carbon and hydrogen.') },
                             { name: __alloT('stem.solarsystem.ammonium_hydrosulfide', 'Ammonium Hydrosulfide'), icon: '\uD83E\uDDEA', gas: 'NH\u2084SH', depth: 1, color: 0xcc8844, xp: 10, fact: __alloT('stem.solarsystem.this_compound_creates_the_brown_orange', 'This compound creates the brown-orange bands visible on Jupiter and Saturn.') },
-                            { name: sel.terrainType === 'icegiant' ? 'Diamond Fragment' : 'Metallic Hydrogen', icon: sel.terrainType === 'icegiant' ? '\uD83D\uDC8E' : '\u26A1', gas: sel.terrainType === 'icegiant' ? 'C (diamond)' : 'Metallic H', depth: -12, color: sel.terrainType === 'icegiant' ? 0xffffff : 0xff8800, xp: 20, fact: sel.terrainType === 'icegiant' ? 'Carbon atoms crystallize into actual diamonds under extreme pressure!' : 'Hydrogen becomes a liquid metal that conducts electricity \u2014 creating the magnetic field.' },
+                            { name: sel.terrainType === 'icegiant' ? 'Diamond Fragment' : 'Metallic Hydrogen', icon: sel.terrainType === 'icegiant' ? '\uD83D\uDC8E' : '\u26A1', gas: sel.terrainType === 'icegiant' ? 'C (diamond)' : 'Metallic H', depth: -12, color: sel.terrainType === 'icegiant' ? 0xffffff : 0xff8800, xp: 20, fact: sel.terrainType === 'icegiant' ? 'Lab experiments suggest carbon may crystallize into diamonds under extreme pressure; this has not been observed directly inside an ice giant.' : 'Hydrogen becomes a liquid metal that conducts electricity \u2014 creating the magnetic field.' },
                             { name: __alloT('stem.solarsystem.phosphine_trace', 'Phosphine Trace'), icon: '\u2623\uFE0F', gas: 'PH\u2083', depth: -5, color: 0x88ff44, xp: 12, fact: __alloT('stem.solarsystem.phosphine_is_dredged_up_from_deep_atmo', 'Phosphine is dredged up from deep atmosphere by convection. It\u2019s a biosignature on rocky planets.') }
                           ];
 
@@ -15871,7 +16272,7 @@ const d = labToolData.solarSystem || {};
 
                           'Pluto': ['\u26A0 COMMS DELAY: 5h 28m one-way to Earth', '\u26A0 SURFACE TEMP: -230\u00B0C \u2014 nitrogen ice sublimating'],
 
-                          'Uranus': ['\u26A0 DIAMOND RAIN: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
+                          'Uranus': ['\u26A0 DIAMOND FORMATION MODEL: high-pressure carbon crystallization', '\u26A0 97.8\u00B0 AXIAL TILT: extreme seasonal variations'],
 
                           'Neptune': ['\u26A0 WIND SPEED: 2,100 km/h \u2014 fastest in solar system', '\u26A0 GREAT DARK SPOT: storm system ahead'],
 
@@ -15995,7 +16396,7 @@ const d = labToolData.solarSystem || {};
 
                           'Uranus': [
 
-                            { x: 15, z: -18, name: t('stem.planet_view.diamond_rain_zone'), desc: __alloT('stem.solarsystem.at_8_000_km_depth_extreme_pressure_cru', 'At 8,000 km depth, extreme pressure crushes carbon into diamonds.'), fact: __alloT('stem.solarsystem.these_diamonds_may_be_as_large_as_mill', 'These diamonds may be as large as millions of carats and rain down to form a diamond layer around the core.') },
+                            { x: 15, z: -18, name: t('stem.planet_view.diamond_rain_zone'), desc: __alloT('stem.solarsystem.ice_giant_diamond_zone_model', 'Models place high-pressure carbon crystallization thousands of kilometers below the clouds.'), fact: __alloT('stem.solarsystem.ice_giant_diamond_zone_uncertainty', 'Experiments suggest sinking diamond crystals could grow at depth; their size and fate inside Uranus remain uncertain.') },
 
                             { x: -20, z: 14, name: t('stem.planet_view.magnetic_pole_shift'), desc: __alloT('stem.solarsystem.uranus_s_magnetic_field_is_tilted_59_f', 'Uranus\u2019s magnetic field is tilted 59\u00B0 from its rotation axis.'), fact: __alloT('stem.solarsystem.combined_with_the_98_axial_tilt_uranus', 'Combined with the 98\u00B0 axial tilt, Uranus\u2019s magnetosphere tumbles chaotically through space.') },
 
@@ -17175,7 +17576,7 @@ const d = labToolData.solarSystem || {};
                           button.setAttribute('data-drone-command', action.key);
                           button.setAttribute('aria-keyshortcuts', action.key.toUpperCase());
                           button.setAttribute('aria-label', action.label + ', keyboard shortcut ' + action.key.toUpperCase());
-                          button.style.cssText = 'min-height:34px;padding:6px 8px;border:1px solid rgba(148,163,184,0.45);border-radius:8px;background:rgba(2,6,23,0.84);color:#e2e8f0;font:600 11px system-ui;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;backdrop-filter:blur(6px)';
+                          button.style.cssText = 'min-height:44px;padding:6px 8px;border:1px solid rgba(148,163,184,0.45);border-radius:8px;background:rgba(2,6,23,0.84);color:#e2e8f0;font:600 11px system-ui;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;backdrop-filter:blur(6px)';
 
                           var buttonLabel = document.createElement('span');
                           buttonLabel.textContent = action.label;
@@ -17330,7 +17731,7 @@ const d = labToolData.solarSystem || {};
                           roverTraverseButton.type = 'button';
                           roverTraverseButton.textContent = 'Start traverse';
                           roverTraverseButton.disabled = true;
-                          roverTraverseButton.style.cssText = 'margin-top:8px;min-height:34px;padding:6px 10px;border:1px solid rgba(94,234,212,.55);border-radius:7px;background:#12313a;color:#ccfbf1;font:700 11px system-ui;cursor:pointer';
+                          roverTraverseButton.style.cssText = 'margin-top:8px;min-height:44px;padding:6px 10px;border:1px solid rgba(94,234,212,.55);border-radius:7px;background:#12313a;color:#ccfbf1;font:700 11px system-ui;cursor:pointer';
                           roverTraverseDetails.appendChild(roverTraverseButton);
                           canvasEl.parentElement.appendChild(roverTraversePanel);
 
@@ -21707,7 +22108,7 @@ const d = labToolData.solarSystem || {};
                         // Target planet orbit
                         var pDist = DIST_AU[sel.key] || 1;
                         var targetR = Math.min(HH * 0.45, earthR * pDist / 1.0);
-                        hctx.strokeStyle = sel.color + '40';
+                        hctx.strokeStyle = selectedAccent + '40';
                         hctx.beginPath();
                         hctx.arc(cx3, cy3, targetR, 0, Math.PI * 2);
                         hctx.stroke();
@@ -21739,7 +22140,7 @@ const d = labToolData.solarSystem || {};
                         hctx.fill();
                         // Target planet dot
                         var tAngle = htick * 0.005;
-                        hctx.fillStyle = sel.color;
+                        hctx.fillStyle = selectedAccent;
                         hctx.beginPath();
                         hctx.arc(cx3 + Math.cos(tAngle) * targetR, cy3 + Math.sin(tAngle) * targetR, 3, 0, Math.PI * 2);
                         hctx.fill();
@@ -24342,8 +24743,8 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('defs', null,
                                               React.createElement('radialGradient', { id: 'mn', cx: '40%', cy: '40%' },
                                                 React.createElement('stop', { offset: '0%', stopColor: '#fff', stopOpacity: 0.8 }),
-                                                React.createElement('stop', { offset: '40%', stopColor: sel.color }),
-                                                React.createElement('stop', { offset: '100%', stopColor: sel.color, stopOpacity: 0.5 })
+                                                React.createElement('stop', { offset: '40%', stopColor: selectedAccent }),
+                                                React.createElement('stop', { offset: '100%', stopColor: selectedAccent, stopOpacity: 0.5 })
                                               )
                                             ),
                                             sel.icyShell && React.createElement('circle', { cx: 200, cy: 140, r: 110, fill: 'url(#mn)', opacity: 0.4 }),
@@ -26686,7 +27087,7 @@ const d = labToolData.solarSystem || {};
                                               return React.createElement('circle', { key: 'aast' + i, cx: (i * 41) % 400, cy: (i * 23) % 190, r: 0.5, fill: '#fff', opacity: 0.6 });
                                             }),
                                             [50, 110, 180, 240, 300, 350].map(function(x, i) {
-                                              return React.createElement('path', { key: 'auc' + i, d: 'M ' + x + ' 180 Q ' + (x + 10) + ' 120 ' + (x + 8) + ' 80 T ' + x + ' 30', fill: 'none', stroke: sel.color, strokeWidth: 4, opacity: 0.7, strokeLinecap: 'round' });
+                                              return React.createElement('path', { key: 'auc' + i, d: 'M ' + x + ' 180 Q ' + (x + 10) + ' 120 ' + (x + 8) + ' 80 T ' + x + ' 30', fill: 'none', stroke: selectedAccent, strokeWidth: 4, opacity: 0.7, strokeLinecap: 'round' });
                                             }),
                                             React.createElement('rect', { x: 0, y: 180, width: 400, height: 20, fill: '#0a0a0a' }),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, sel.name)

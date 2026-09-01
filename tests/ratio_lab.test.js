@@ -249,6 +249,101 @@ describe('Ratios, Rates & Proportions Lab', () => {
     expect(document.body.textContent).toContain('48:1200');
   });
 
+  it('preserves the percent relationship when the selected unknown changes', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+    const announceToSR = vi.fn();
+
+    function App() {
+      const [state, setState] = React.useState({
+        _ratioLab: {
+          mode: 'percent', percentKind: 'findPart',
+          percentWhole: 120, percentValue: 25, percentPart: 999,
+          percentWholeDraft: '120.0', percentValueDraft: '25.0', percentPartDraft: '999',
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, announceToSR }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    expect(document.getElementById('ratio-percent-result-value').textContent).toBe('30');
+    expect(document.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]')).toBeTruthy();
+
+    let selector = document.getElementById('ratio-percent-kind');
+    await React.act(async () => {
+      selector.value = 'findPercent';
+      selector.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(latest._ratioLab).toMatchObject({
+      percentKind: 'findPercent', percentWhole: 120, percentPart: 30,
+      percentWholeDraft: null, percentValueDraft: null, percentPartDraft: null,
+    });
+    expect(document.querySelector('[aria-label="Part"]').value).toBe('30');
+    expect(document.getElementById('ratio-percent-result-value').textContent).toBe('25%');
+
+    selector = document.getElementById('ratio-percent-kind');
+    await React.act(async () => {
+      selector.value = 'findWhole';
+      selector.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(latest._ratioLab).toMatchObject({ percentKind: 'findWhole', percentValue: 25, percentPart: 30 });
+    expect(document.getElementById('ratio-percent-result-value').textContent).toBe('120');
+    expect(announceToSR).toHaveBeenCalledWith('Now finding Percent.');
+    expect(announceToSR).toHaveBeenCalledWith('Now finding Whole.');
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('does not model an undefined percent as a zero-percent tape', () => {
+    loadTool(FILE, ID);
+    const html = renderTool(ID, {
+      _ratioLab: { mode: 'percent', percentKind: 'findPercent', percentWhole: 0, percentPart: 20 },
+    });
+    expect(html).toContain('The percent is not defined when the whole is zero');
+    expect(html).toContain('id="ratio-percent-result-value"');
+    expect(html).not.toContain('data-percent-tape-total');
+    expect(html).not.toContain('0% fills none of the whole');
+  });
+
+  it('clears wrong-answer feedback as soon as the challenge answer changes', async () => {
+    const tool = loadTool(FILE, ID);
+    let latest;
+
+    function App() {
+      const [state, setState] = React.useState({
+        _ratioLab: {
+          mode: 'ratioTable', challengeId: 'ratio-paint',
+          challengeCursorByMode: { ratioTable: 'ratio-paint' },
+          challengeAnswer: '10', challengeAnswerId: 'ratio-paint',
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+
+    const root = ReactDOMClient.createRoot(document.getElementById('root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    const check = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Check answer');
+    await React.act(async () => { check.click(); });
+    let input = document.getElementById('ratio-challenge-answer');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById('ratio-challenge-feedback')).toBeTruthy();
+
+    const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    await React.act(async () => {
+      valueSetter.call(input, '11');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    input = document.getElementById('ratio-challenge-answer');
+    expect(latest._ratioLab.challengeAnswer).toBe('11');
+    expect(latest._ratioLab.challengeFeedback).toBeNull();
+    expect(input.hasAttribute('aria-invalid')).toBe(false);
+    expect(input.hasAttribute('aria-describedby')).toBe(false);
+    expect(document.getElementById('ratio-challenge-feedback')).toBeNull();
+    await React.act(async () => { root.unmount(); });
+  });
+
   it('scopes challenge answers, feedback, and cursors to stable challenge IDs', () => {
     loadTool(FILE, ID);
     const html = renderTool(ID, {

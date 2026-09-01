@@ -14,6 +14,9 @@ describe('Info modal feature-guide navigation', () => {
   it('moves focus into feature details and restores the exact originating card', () => {
     expect(source).toContain('const featureBackRef = React.useRef(null)');
     expect(source).toContain('featureReturnFocusRef.current = trigger');
+    expect(source).toContain("const featureReturnFocusKeyRef = React.useRef('')");
+    expect(source).toContain("panelRef.current?.querySelectorAll('[data-feature-guide-key]')");
+    expect(source).toContain('data-feature-guide-key={feature.title}');
     expect(source).toContain('featureBackRef.current?.focus()');
     expect(source).toContain("if (trigger?.isConnected && typeof trigger.focus === 'function') trigger.focus()");
     expect(source).toContain('ref={featureBackRef}');
@@ -25,6 +28,12 @@ describe('Info modal feature-guide navigation', () => {
     expect(source).toContain('min-h-11 flex items-center gap-2');
     expect(source.match(/focus-visible:ring-indigo-600/g)?.length)
       .toBeGreaterThanOrEqual(2);
+  });
+
+  it('keeps small feature descriptions at full theme contrast', () => {
+    expect(source).toContain('<span className="block text-xs leading-snug">{feature.desc}</span>');
+    expect(source).not.toContain('text-xs opacity-90 leading-snug');
+    expect(source).not.toContain('uppercase tracking-wider opacity-75 block');
   });
 
   it('keeps root and deployed generated modules synchronized', () => {

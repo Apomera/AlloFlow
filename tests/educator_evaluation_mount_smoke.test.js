@@ -1227,6 +1227,48 @@ describe('EducatorEvaluationPanel', () => {
     expect(shareReleasedEvaluation).toHaveBeenCalledWith({ teacherId: sample.teachers[0].id, reviewToken: 'release-review-123' });
   });
 
+  it('keeps every close route blocked while a released-summary review is pending', async () => {
+    const sample = sampleWorkspaceFixture();
+    sample.teachers[0].finalizedAt = '2026-08-12T12:00:00.000Z';
+    sample.teachers[0].cycleStatus = 'finalized';
+    const onClose = vi.fn();
+    const reviewReleasedEvaluation = vi.fn(() => new Promise(() => {}));
+    const repository = {
+      bootstrap: vi.fn().mockResolvedValue({
+        ok: true,
+        workspace: sample,
+        revision: 22,
+        currentUser: { email: 'principal@district.example', role: 'evaluator' },
+        deployment: { kind: 'apps-script' },
+      }),
+      saveWorkspace: vi.fn(),
+      reviewReleasedEvaluation,
+      shareReleasedEvaluation: vi.fn(),
+    };
+    const container = mountPanel({ repository, onClose }, SourceEducatorEvaluationPanel);
+    await flushRemote();
+
+    clickButton(container, 'Review & share released summary');
+    await flushRemote();
+    expect(reviewReleasedEvaluation).toHaveBeenCalledTimes(1);
+
+    const unloadEvent = new window.Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(unloadEvent);
+    expect(unloadEvent.defaultPrevented).toBe(true);
+
+    click(container.querySelector('[aria-label="Close Educator Growth and Evaluation"]'));
+    click(container.querySelector('.ae-overlay'));
+    act(() => {
+      document.dispatchEvent(new window.KeyboardEvent('keydown', {
+        key: 'Escape', bubbles: true, cancelable: true,
+      }));
+    });
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Close blocked while released-summary access is being reviewed or changed.');
+    expect(container.textContent).toContain('exact disclosure outcome is confirmed');
+  });
+
   it('cancels a released-summary confirmation when the selected educator no longer matches its review', async () => {
     const sample = sampleWorkspaceFixture();
     const reviewedTeacher = sample.teachers[0];
@@ -1280,6 +1322,229 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).toContain('selected educator no longer matches this disclosure review');
     expect(container.textContent).toContain('nothing was shared');
   });
+  it('flushes cross-educator profile boundaries while coalescing same-scope keystrokes', async () => {
+    const sample = sampleWorkspaceFixture();
+    sample.config.sampleMode = false;
+    const firstTeacher = sample.teachers[2];
+    const secondTeacher = sample.teachers[3];
+    const firstOriginalName = firstTeacher.name;
+    const firstOriginalAssignment = firstTeacher.assignment;
+    const secondOriginalName = secondTeacher.name;
+    const payloads = [];
+    let activeRequests = 0;
+    let maxActiveRequests = 0;
+    let finishFirstSave;
+    const saveWorkspace = vi.fn((payload) => {
+      const savedPayload = JSON.parse(JSON.stringify(payload));
+      payloads.push(savedPayload);
+      activeRequests += 1;
+      maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+      if (payloads.length === 1) {
+        return new Promise((resolveSave) => {
+          finishFirstSave = () => {
+            activeRequests -= 1;
+            resolveSave({ ok: true, revision: 61, workspace: savedPayload.workspace });
+          };
+        });
+      }
+      activeRequests -= 1;
+      return Promise.resolve({ ok: true, revision: 62, workspace: savedPayload.workspace });
+    });
+    const repository = {
+      bootstrap: vi.fn().mockResolvedValue({
+        ok: true,
+        workspace: sample,
+        revision: 60,
+        currentUser: { email: 'principal@district.example', role: 'admin' },
+        deployment: { kind: 'apps-script' },
+      }),
+      saveWorkspace,
+    };
+    const container = mountPanel({ repository }, SourceEducatorEvaluationPanel);
+    await flushRemote();
+    click(container.querySelector('#ae-tab-staff'));
+    const selectedCard = () => Array.from(container.querySelectorAll('section'))
+      .find((section) => section.querySelector('h3')?.textContent === 'Selected educator');
+
+    clickButton(container, firstOriginalName);
+    enterInput(labeledInput(selectedCard(), 'Name'), 'Scoped First Name');
+    enterInput(labeledInput(selectedCard(), 'Assignment'), 'Scoped First Assignment');
+    await flushRemote();
+    expect(saveWorkspace).not.toHaveBeenCalled();
+
+    clickButton(container, secondOriginalName);
+    enterInput(labeledInput(selectedCard(), 'Name'), 'Scoped Second Name');
+    await flushRemote();
+
+    expect(saveWorkspace).toHaveBeenCalledTimes(1);
+    expect(payloads[0].mutation).toMatchObject({
+      teacherId: firstTeacher.id,
+      event: 'PROFILE_UPDATED',
+      entityType: 'educator_cycle',
+      entityId: firstTeacher.id,
+    });
+    expect(payloads[0].workspace.teachers.find((item) => item.id === firstTeacher.id)).toMatchObject({
+      name: 'Scoped First Name',
+      assignment: 'Scoped First Assignment',
+    });
+    expect(payloads[0].workspace.teachers.find((item) => item.id === secondTeacher.id).name).toBe(secondOriginalName);
+
+    await flushRemoteDebounce();
+    expect(saveWorkspace).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      finishFirstSave();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await flushRemote();
+
+    expect(saveWorkspace).toHaveBeenCalledTimes(2);
+    expect(maxActiveRequests).toBe(1);
+    expect(payloads.map((payload) => payload.expectedVersion)).toEqual([60, 61]);
+    expect(payloads.map((payload) => payload.mutation.teacherId)).toEqual([firstTeacher.id, secondTeacher.id]);
+    expect(payloads[1].mutation).toMatchObject({
+      event: 'PROFILE_UPDATED',
+      entityType: 'educator_cycle',
+      entityId: secondTeacher.id,
+    });
+    expect(payloads[1].workspace.teachers.find((item) => item.id === firstTeacher.id)).toMatchObject({
+      name: 'Scoped First Name',
+      assignment: 'Scoped First Assignment',
+    });
+    expect(payloads[1].workspace.teachers.find((item) => item.id === secondTeacher.id).name).toBe('Scoped Second Name');
+    expect(firstOriginalAssignment).not.toBe('Scoped First Assignment');
+  }, 20000);
+
+  it('serializes SPM and annual rating saves before the durable SPM finalization', async () => {
+    const sample = sampleWorkspaceFixture();
+    sample.config.sampleMode = false;
+    const teacher = sample.teachers[2];
+    const spm = sample.spms.find((item) => item.teacherId === teacher.id);
+    Object.assign(spm, {
+      status: 'results_submitted',
+      results: 'Documented year-end growth.',
+      reflection: 'The instructional adjustment improved the result.',
+      rating: 2,
+      ratingRationale: 'Evidence supports the selected rating.',
+      resultsSubmittedAt: '2026-08-20T12:00:00.000Z',
+      lockedAt: null,
+    });
+    teacher.finalizedAt = null;
+    teacher.cycleLockedAt = null;
+    teacher.ratings.lea = null;
+
+    const payloads = [];
+    const finishSaves = [];
+    let activeRequests = 0;
+    let maxActiveRequests = 0;
+    const saveWorkspace = vi.fn((payload) => {
+      const savedPayload = JSON.parse(JSON.stringify(payload));
+      const revision = 81 + payloads.length;
+      payloads.push(savedPayload);
+      activeRequests += 1;
+      maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+      return new Promise((resolveSave) => {
+        finishSaves.push(() => {
+          activeRequests -= 1;
+          resolveSave({ ok: true, revision, workspace: savedPayload.workspace });
+        });
+      });
+    });
+    const repository = {
+      bootstrap: vi.fn().mockResolvedValue({
+        ok: true,
+        workspace: sample,
+        revision: 80,
+        currentUser: { email: 'principal@district.example', role: 'admin' },
+        deployment: { kind: 'apps-script' },
+      }),
+      saveWorkspace,
+    };
+    const container = mountPanel({ repository }, SourceEducatorEvaluationPanel);
+    await flushRemote();
+    click(container.querySelector('#ae-tab-spm'));
+
+    const educatorField = Array.from(container.querySelectorAll('#ae-panel label'))
+      .find((label) => (label.querySelector('span')?.textContent || '').trim() === 'Educator');
+    act(() => {
+      Simulate.change(educatorField.querySelector('select'), { target: { value: teacher.id } });
+    });
+    const ratingField = Array.from(container.querySelectorAll('#ae-panel label'))
+      .find((label) => label.textContent.includes('Human-selected SPM rating'));
+    act(() => {
+      Simulate.change(ratingField.querySelector('select'), { target: { value: '3' } });
+    });
+    clickButton(container, 'Review rating & lock');
+
+    const dialog = container.querySelector('[aria-labelledby="ae-action-review-title"]');
+    expect(dialog).toBeTruthy();
+    act(() => {
+      Simulate.change(dialog.querySelector('input[type="checkbox"]'), { target: { checked: true } });
+    });
+    clickButton(dialog, 'Rate and lock record');
+    await flushRemote();
+
+    expect(saveWorkspace).toHaveBeenCalledTimes(1);
+    expect(payloads[0].mutation).toMatchObject({
+      teacherId: teacher.id,
+      event: 'RATING_UPDATED',
+      entityType: 'spm',
+      entityId: spm.id,
+    });
+    expect(payloads[0].workspace.spms.find((item) => item.id === spm.id)).toMatchObject({
+      status: 'results_submitted',
+      rating: 3,
+    });
+    expect(payloads[0].workspace.teachers.find((item) => item.id === teacher.id).ratings.lea).toBeNull();
+
+    await act(async () => {
+      finishSaves[0]();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await flushRemote();
+    expect(saveWorkspace).toHaveBeenCalledTimes(2);
+    expect(payloads[1].mutation).toMatchObject({
+      teacherId: teacher.id,
+      event: 'RATING_UPDATED',
+      entityType: 'educator_cycle',
+      entityId: teacher.id,
+    });
+    expect(payloads[1].workspace.spms.find((item) => item.id === spm.id).status).toBe('results_submitted');
+    expect(payloads[1].workspace.teachers.find((item) => item.id === teacher.id).ratings.lea).toBe(3);
+
+    await act(async () => {
+      finishSaves[1]();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await flushRemote();
+    expect(saveWorkspace).toHaveBeenCalledTimes(3);
+    expect(payloads[2].mutation).toMatchObject({
+      teacherId: teacher.id,
+      event: 'FINALIZED',
+      entityType: 'spm',
+      entityId: spm.id,
+    });
+    expect(payloads[2].workspace.spms.find((item) => item.id === spm.id)).toMatchObject({
+      status: 'locked',
+      rating: 3,
+    });
+    expect(payloads[2].workspace.teachers.find((item) => item.id === teacher.id).ratings.lea).toBe(3);
+    expect(payloads.map((payload) => payload.expectedVersion)).toEqual([80, 81, 82]);
+    expect(maxActiveRequests).toBe(1);
+
+    await act(async () => {
+      finishSaves[2]();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await flushRemote();
+  }, 20000);
+
   it('serializes a latest profile snapshot when another edit lands during an active remote save', async () => {
     const sample = sampleWorkspaceFixture();
     sample.config.sampleMode = false;

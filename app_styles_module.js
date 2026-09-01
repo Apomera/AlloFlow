@@ -951,6 +951,7 @@ const AppStyles = ({
         @media screen { .theme-contrast .bg-indigo-700, .theme-contrast .bg-indigo-900 { background-color: #000000 !important; border-bottom: 4px solid #ffff00 !important; } }
         @media screen { .theme-contrast button { background-color: #000000 !important; border: 2px solid #00ff00 !important; color: #00ff00 !important; font-weight: bold !important; } }
         @media screen { .theme-contrast button:hover { background-color: #00ff00 !important; color: #000000 !important; } }
+        @media screen { .theme-contrast button:hover * { color: #000000 !important; } }
         @media screen { .theme-contrast :focus-visible,
         .theme-contrast button:focus-visible,
         .theme-contrast a:focus-visible,

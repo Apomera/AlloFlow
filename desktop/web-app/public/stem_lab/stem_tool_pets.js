@@ -555,7 +555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     reptiles: {
       icon: '🦎', name: 'Reptiles & amphibians',
       principle: 'Ectothermic — body temperature follows environment',
-      oneLiner: 'Most pet-trade reptiles die young from incorrect husbandry, not disease. They need species-specific UVB lighting + heat gradients (basking spot + cool zone). Salmonella carriage is common and shedding can be intermittent — handwashing required. Amphibians have permeable skin; soap residue on hands kills them.',
+      oneLiner: 'Incorrect heat, humidity, lighting, diet, and habitat are common preventable welfare hazards. Reptiles and amphibians can carry Salmonella while appearing healthy, so habitat hygiene and handwashing matter. Amphibians have permeable skin that can be harmed by residues and rough handling.',
       lifespan: 'leopard gecko 15–20 yr · ball python 20–30 yr · tortoise 40–80+ yr',
       cite: 'ARAV + CDC One Health'
     }
@@ -657,29 +657,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   // ─────────────────────────────────────────────────────────
   var ZOONOSES = [
     { id: 'rabies', icon: '🦠', name: 'Rabies', from: 'mammals (esp bats, raccoons, skunks, foxes)',
-      severity: 'ALWAYS FATAL once symptoms appear',
-      protect: 'Vaccinate dogs + cats. Avoid wildlife. ANY bat indoors = call doctor + animal control. Wash any bite or scratch with soap and running water for a full 15 minutes first — that alone measurably lowers risk. Then start PEP (post-exposure prophylaxis) as soon as you can. Sooner is better, but there is NO cutoff after which it stops being worth doing: seek care even if days have already passed.',
-      cite: 'CDC + Maine CDC' },
+      severity: 'Clinical rabies has an extremely high fatality rate; exposure assessment and prevention happen before symptoms.',
+      protect: 'Keep dogs and cats current on vaccination and avoid wildlife contact. If bitten or scratched, wash promptly and thoroughly with soap and water. If bat contact happened or cannot be ruled out, do not touch or release the bat; keep people and pets away and promptly contact public health or animal control plus a medical professional. Public health evaluates whether testing and post-exposure prophylaxis are needed.',
+      cite: 'CDC Rabies + Maine CDC', sourceUrl: 'https://www.cdc.gov/rabies/prevention/bats.html' },
     { id: 'lyme', icon: '🕷️', name: 'Lyme disease + anaplasmosis', from: 'deer ticks (Ixodes scapularis)',
-      severity: 'Maine is consistently among the top few states for reported incidence, trading the lead year to year with Vermont and New Hampshire. Dogs + humans both vulnerable.',
-      protect: 'Year-round tick prevention for dogs (oral or topical). Daily tick checks. Lyme vaccine for high-exposure dogs. Don\'t stop checking in winter — adult ticks active any day above ~40°F.',
-      cite: 'Maine CDC + AVMA' },
+      severity: 'Maine deer ticks can transmit several infections to people and animals; not every tick is infected and risk changes with species, location, and attachment.',
+      protect: 'Use a veterinarian-recommended tick-prevention plan for pets, check people and animals after outdoor exposure, remove attached ticks promptly, and use Maine CDC guidance when identifying exposure and symptoms.',
+      cite: 'Maine CDC + veterinary guidance', sourceUrl: 'https://www.maine.gov/dhhs/mecdc/diseases-conditions/insect-borne-diseases/ticks' },
     { id: 'toxo', icon: '🤰', name: 'Toxoplasmosis', from: 'cats (oocysts in feces)',
-      severity: 'Concern for pregnancy + immunocompromise. Do NOT assume you are already immune: only about 1 in 10 people in the US carry antibodies, so most cat owners here are still susceptible. (Seroprevalence IS high in parts of Europe and South America, which is where the "everyone has had it already" claim comes from. It does not transfer to the US.) And most US infections trace to undercooked meat and unwashed produce, not to a cat.',
-      protect: 'Pregnant people: someone else cleans litter box, OR wear gloves + clean daily (oocysts take 24+ hr to become infective). Cook meat thoroughly. Wash veggies. Indoor cats fed only commercial food are very low risk — a cat sheds oocysts for only a week or two after its own first infection, which it gets by hunting or eating raw meat, and essentially never again after that.',
-      cite: 'CDC + ACOG' },
-    { id: 'salmonella', icon: '🐢', name: 'Salmonella', from: 'reptiles (universal shedding), raw food, baby chicks',
-      severity: 'GI illness; serious in young children, elderly, pregnant, immunocompromised',
-      protect: 'No reptiles for kids under 5 (CDC guidance). Wash hands after every handling. Don\'t kiss your turtle. Don\'t feed raw food to immunocompromised humans\' pets.',
-      cite: 'CDC' },
+      severity: 'New infection during pregnancy and infection in people with weakened immune systems can cause serious complications.',
+      protect: 'Exposure can come from undercooked meat, contaminated soil, water, or produce, and cat feces—not ordinary contact with a cat alone. If possible, have someone else change litter during pregnancy or immunocompromise; otherwise use disposable gloves and wash hands. Change litter daily because oocysts generally take 1–5 days to become infectious. Use food-safety and gardening precautions too.',
+      cite: 'CDC Toxoplasmosis', sourceUrl: 'https://www.cdc.gov/toxoplasmosis/prevention/index.html' },
+    { id: 'salmonella', icon: '🐢', name: 'Salmonella', from: 'reptiles, amphibians, their habitats or feeder animals, raw food, and backyard poultry',
+      severity: 'Gastrointestinal illness can be more serious in children under 5, adults 65+, and people with weakened immune systems.',
+      protect: 'Reptiles and amphibians can carry Salmonella while looking healthy. Wash hands after contact with the animal, food, waste, habitat, or tank water; keep them and their supplies out of food-preparation areas. CDC advises higher-risk households to consider another pet and says young children should avoid contact.',
+      cite: 'CDC Healthy Pets', sourceUrl: 'https://www.cdc.gov/healthy-pets/about/reptiles-and-amphibians.html' },
     { id: 'ringworm', icon: '⭕', name: 'Ringworm (NOT a worm — fungus)', from: 'cats (asymptomatic carriers), kittens, rabbits',
       severity: 'Skin infection, itchy, contagious to humans + other pets',
-      protect: 'Topical antifungal + environmental cleanup (spores survive months). Treat affected pets + screen housemates. Kittens from shelters often shed even when looking healthy.',
-      cite: 'CDC + AVMA' },
+      protect: 'Avoid contact with known infected skin or fur, wash hands, and ask a veterinarian about a pet with a rash or hair loss. A clinician or veterinarian should guide diagnosis and treatment; environmental cleaning may also be needed.',
+      cite: 'CDC Ringworm', sourceUrl: 'https://www.cdc.gov/ringworm/aboutemergingringworm/index.html' },
     { id: 'psittacosis', icon: '🦜', name: 'Psittacosis (parrot fever — Chlamydia psittaci)', from: 'birds, esp parrots + cockatiels',
-      severity: 'Pneumonia-like illness in humans; potentially severe',
-      protect: 'Quarantine + vet-test new birds. Don\'t share airspace with sick birds. Inhaled dust from droppings is the route — clean cages with damp cloth, not dry sweep.',
-      cite: 'CDC' }
+      severity: 'Usually a mild respiratory illness in people, but pneumonia and other serious complications can occur.',
+      protect: 'Wash hands after birds, droppings, or cage items. Wet cage surfaces before cleaning and avoid dry sweeping or vacuuming that can aerosolize dust. Seek avian veterinary care for a sick bird; if a person becomes ill after bird exposure, tell the healthcare provider about that exposure.',
+      cite: 'CDC Psittacosis', sourceUrl: 'https://www.cdc.gov/psittacosis/prevention/index.html' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -964,7 +964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     'Cats: obligate carnivores with species-specific dietary requirements including taurine, preformed vitamin A, arginine, and arachidonic acid. Adequacy depends on the finished diet and life stage, not a single ingredient identity. Indoor cats live 12–18 yr; cats with outdoor access die younger, though the widely-quoted "outdoor 2–5" figure is rough and leans on feral-colony data rather than owned cats.',
     'Rabbits: not eating plus hunched posture is an urgent emergency signal. Call a rabbit-experienced veterinarian now; do not force-feed or start home treatment unless a veterinarian has assessed blockage risk and specifically instructs it. An adult should be the primary caregiver; children need supervised, rabbit-respecting interaction.',
     'Birds: respiratory air-sac anatomy makes them sensitive to PTFE/Teflon, aerosols, scented candles, and smoke. Many parrots can require care for decades; lifespan varies by species, husbandry, and individual, so successor-care planning matters.',
-    'Reptiles: commonly carry and can shed Salmonella while appearing healthy; shedding may be intermittent, so a negative sample does not clear the animal. CDC: no reptiles in households with children under 5. Husbandry (UVB + heat gradient) is a major preventable cause of reptile illness and death.',
+    'Reptiles and amphibians can carry and shed Salmonella while appearing healthy; a negative sample does not clear future shedding. CDC advises households with children under 5, adults 65+, or people with weakened immune systems to consider another pet, and says young children should avoid contact. Species-specific heat, humidity, lighting, diet, and habitat are major preventable welfare needs.',
     'Service dog (ADA): individually task-trained for a disability; full public access; only 2 questions allowed (1) is it a service animal because of a disability (2) what task. ESA: comfort by presence; FHA only; no public access. Therapy: visit-based, no automatic access.',
     'Service-dog program eligibility, availability, wait times, and costs vary. Verify current details directly with an Assistance Dogs International accredited program; an alert dog complements rather than replaces medical monitoring.',
     'Cat house-soiling: sudden changes warrant veterinary evaluation. After medical causes are assessed, review box number, access, location, substrate, cleanliness, and stress; do not punish.',
@@ -2219,7 +2219,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // transient UI/bitmap state does not. v2 reads v1 as a migration fallback.
     var PETS_PERSIST_KEYS = [
       'badges', 'modulesVisited', 'modulesCompleted', 'evidenceRecords', 'decoderMastery',
-      'quizState', 'careSim', 'careTradeoff',
+      'quizState', 'zoonPractice', 'careSim', 'careTradeoff',
       'aiScenarioId', 'aiDrafts', 'aiCritiques', 'aiRevisionNotes', 'aiResponse',
       'pickHousing', 'pickKids', 'pickKidAge', 'pickAllergies', 'pickReadiness',
       'pickHoursHome', 'pickBudget', 'pickExperience',
@@ -2263,6 +2263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var PETS_EVIDENCE_ACTIVITY_FIELDS = {
       training: ['rounds', 'behaviorPct', 'trustPct', 'criterionMet'],
       nutrition: ['score', 'total', 'scorePct', 'needsPractice', 'criterionMet'],
+      zoonoses: ['score', 'total', 'scorePct', 'bestPct', 'needsPractice', 'criterionMet'],
       bodyLang: ['score', 'total', 'scorePct', 'practiceMode', 'decoderMastery', 'needsPractice', 'criterionMet'],
       decoderMastery: ['score', 'total', 'scorePct', 'coverageComplete'],
       lifespan: ['score', 'total', 'scorePct', 'needsPractice', 'criterionMet'],
@@ -2276,6 +2277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var PETS_EVIDENCE_ACTIVITY_SUMMARIES = {
       training: 'Completed the reinforcement trainer',
       nutrition: 'Completed the Household Hazard Sleuth',
+      zoonoses: 'Completed the Exposure Pathway Check',
       bodyLang: 'Completed body-language decoder practice',
       decoderMastery: 'Logged every body-language signal at least once',
       lifespan: 'Completed the lifespan match',
@@ -2287,6 +2289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var PETS_ACTIVITY_COMPLETION_REASONS = {
       training: ['Finished the 10-round reinforcement trainer'],
       nutrition: ['Finished all 10 Household Hazard Sleuth vignettes', 'Finished all 10 Toxic Foods Sleuth vignettes'],
+      zoonoses: ['Finished all 4 Exposure Pathway decisions'],
       decoderMastery: ['Logged all 27 body-language signals at least once'],
       lifespan: ['Finished all 10 lifespan matches'],
       quiz: ['Finished all quiz questions'],
@@ -2552,6 +2555,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           delete details.needsPractice;
           delete details.criterionMet;
         }
+      } else if (moduleId === 'zoonoses') {
+        var pathwayComplete = reconcileScore(4);
+        if (pathwayComplete) {
+          details.needsPractice = details.total - details.score;
+          if (hasNumber('bestPct')) {
+            // Historical best is represented by earlier evidence rows. Do not
+            // trust one restored row to claim an unverifiable higher result.
+            details.bestPct = details.scorePct;
+          }
+          details.criterionMet = details.scorePct >= 75;
+        } else {
+          delete details.bestPct;
+          delete details.needsPractice;
+          delete details.criterionMet;
+        }
       } else if (moduleId === 'bodyLang') {
         var bodyScoreValid = reconcileScore(null);
         if (details.practiceMode === 'random' && details.total === 10 && bodyScoreValid) {
@@ -2735,6 +2753,190 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         done: raw.done === true,
         log: log
       };
+    }
+    function zoonosisPathwayCases() {
+      return [
+        {
+          id: 'bat-bedroom',
+          icon: '🦇',
+          title: 'Bat in a bedroom',
+          scenario: 'An adult wakes and sees a bat flying in the bedroom. They do not remember touching it and cannot rule out unnoticed contact while asleep.',
+          question: 'Which response preserves the information needed for a safe rabies assessment?',
+          pathway: {
+            exposure: 'A bat shared a room with a sleeping person; contact cannot be ruled out.',
+            route: 'A bite or scratch, or saliva reaching eyes, mouth, or broken skin.',
+            higherRisk: 'Rabies prevention decisions must happen before symptoms and depend on a case-specific public-health assessment.',
+            breakPoint: 'Avoid direct contact or release; keep people and pets away and call public health or animal control plus a medical professional promptly.'
+          },
+          choices: [
+            'Open every window and release the bat immediately, then wait to see whether symptoms appear',
+            'Avoid touching or releasing it, keep people and pets away, and promptly contact public health or animal control plus a medical professional',
+            'Disinfect the bedroom; cleaning the room removes the need for an exposure assessment',
+            'Watch the household pets for a week and seek human care only if a pet becomes ill'
+          ],
+          correct: 1,
+          feedback: [
+            'Releasing the bat can remove the chance to test it, and waiting for symptoms is unsafe.',
+            'Yes. Public health can assess the contact and advise safe capture or testing and whether post-exposure care is needed.',
+            'Surface cleaning does not answer whether direct contact occurred or replace a rabies assessment.',
+            'Pet observation cannot determine a sleeping person\'s exposure. Human and animal-health professionals have different roles in the response.'
+          ],
+          why: 'Bat bites can be small and unnoticed. CDC advises avoiding contact, not releasing a bat found in a home before consulting public health, and getting medical help for possible contact.',
+          sourceLabel: 'CDC · Preventing Rabies from Bats',
+          sourceUrl: 'https://www.cdc.gov/rabies/prevention/bats.html'
+        },
+        {
+          id: 'litter-pregnancy',
+          icon: '🤰',
+          title: 'Pregnancy and litter care',
+          scenario: 'A pregnant person lives with an indoor cat. The litter box has not been cleaned for two days, and the household is planning dinner with garden vegetables.',
+          question: 'Which plan addresses the actual exposure routes without blaming ordinary contact with the cat?',
+          pathway: {
+            exposure: 'Cat feces, contaminated soil or produce, undercooked meat, or untreated water can contain Toxoplasma.',
+            route: 'The parasite is acquired by ingestion—not simply by petting a cat.',
+            higherRisk: 'A new infection during or just before pregnancy can affect the fetus.',
+            breakPoint: 'Have someone else change litter when possible; otherwise use disposable gloves, wash hands, and clean daily. Use food and soil precautions too.'
+          },
+          choices: [
+            'Rehome the cat because fur and normal petting are the primary routes',
+            'Leave the box for a week so fewer cleanings mean fewer exposures',
+            'Have someone else clean daily if possible; otherwise use gloves and handwashing, and also wash produce and cook meat safely',
+            'Test the cat every day and skip food-safety precautions if every test is negative'
+          ],
+          correct: 2,
+          feedback: [
+            'Ordinary petting is not the typical route, and CDC does not advise automatically giving up a cat.',
+            'Delay increases the chance that oocysts in feces have time to become infectious; daily cleaning is the safer pattern.',
+            'Yes. This plan breaks litter, food, and soil pathways instead of treating the cat as the only possible source.',
+            'A cat test is not a daily clearance tool and does not address food, soil, water, or produce exposures.'
+          ],
+          why: 'CDC says oocysts generally take 1–5 days after shedding to become infectious. Daily litter removal plus food, soil, and hand-hygiene precautions targets the routes that matter.',
+          sourceLabel: 'CDC · Preventing Toxoplasmosis',
+          sourceUrl: 'https://www.cdc.gov/toxoplasmosis/prevention/index.html'
+        },
+        {
+          id: 'turtle-kitchen',
+          icon: '🐢',
+          title: 'Turtle habitat and the kitchen',
+          scenario: 'A healthy-looking turtle\'s habitat is rinsed in the kitchen sink. A two-year-old plays nearby but never touches the turtle.',
+          question: 'What is the strongest exposure-reduction plan?',
+          pathway: {
+            exposure: 'The turtle, droppings, habitat surfaces, tank water, food, and cleaning supplies may carry Salmonella.',
+            route: 'Hands or contaminated surfaces can carry germs to the mouth or food; direct animal contact is not required.',
+            higherRisk: 'Children under 5 have greater risk of serious illness and may be exposed indirectly through caregivers or surfaces.',
+            breakPoint: 'Keep animals and habitat items out of food-preparation areas, use a dedicated cleaning setup, wash hands, and prevent young-child contact.'
+          },
+          choices: [
+            'Move habitat cleaning away from food-preparation areas, use dedicated supplies, wash hands, disinfect affected surfaces, and keep the child from contact',
+            'Keep using the kitchen sink because a healthy-looking turtle cannot spread Salmonella',
+            'Let the child touch only the dry shell; avoiding tank water removes all risk',
+            'Ask a veterinarian for a one-time Salmonella test and treat a negative result as permanent clearance'
+          ],
+          correct: 0,
+          feedback: [
+            'Yes. This plan addresses the animal, habitat, hands, surfaces, and the higher-risk child rather than relying on appearance.',
+            'Healthy-looking reptiles can carry Salmonella, and kitchen cleaning can contaminate food-preparation surfaces.',
+            'Germs can spread from the animal, habitat, supplies, tank water, caregivers, and surfaces—not only wet contact.',
+            'A negative sample cannot guarantee future non-shedding and does not replace routine exposure controls.'
+          ],
+          why: 'CDC advises keeping reptiles, amphibians, and their equipment out of kitchens and says children under 5 should avoid contact. Indirect household exposure can matter.',
+          sourceLabel: 'CDC · Reptiles and Amphibians',
+          sourceUrl: 'https://www.cdc.gov/healthy-pets/about/reptiles-and-amphibians.html'
+        },
+        {
+          id: 'bird-cage-dust',
+          icon: '🦜',
+          title: 'Bird-cage dust',
+          scenario: 'A caregiver dry-sweeps dusty droppings beneath a cockatiel cage. Days later, the caregiver develops fever and a dry cough while the bird seems quieter than usual.',
+          question: 'Which response addresses both the exposure route and both patients?',
+          pathway: {
+            exposure: 'Dried droppings or respiratory secretions from an infected bird can contaminate dust.',
+            route: 'Breathing airborne dust is the most common route for human psittacosis.',
+            higherRisk: 'Birds may shed bacteria with or without obvious signs; a sick person needs to mention bird exposure.',
+            breakPoint: 'Stop dry sweeping or vacuuming, wet surfaces before cleaning, and contact an avian veterinarian and healthcare provider.'
+          },
+          choices: [
+            'Use a stronger dry vacuum so the cage area becomes dust-free faster',
+            'Move the cage to a child\'s room because younger people cannot get psittacosis',
+            'Treat the bird with leftover antibiotics and wait to see whether the caregiver improves',
+            'Avoid aerosolizing dust, wet surfaces before cleaning, seek avian veterinary care, and tell the healthcare provider about bird exposure'
+          ],
+          correct: 3,
+          feedback: [
+            'Dry vacuuming can put contaminated dust into the air and increase inhalation exposure.',
+            'People of any age can get psittacosis; moving the cage spreads rather than controls the pathway.',
+            'Leftover medication is not a safe diagnosis or treatment plan for either patient.',
+            'Yes. This breaks the airborne route and connects the animal and human sides of the One Health response.'
+          ],
+          why: 'CDC recommends wetting bird-cage surfaces before cleaning and avoiding dry sweeping or vacuuming. Ill people should tell their healthcare provider about bird exposure.',
+          sourceLabel: 'CDC · Preventing Psittacosis',
+          sourceUrl: 'https://www.cdc.gov/psittacosis/prevention/index.html'
+        }
+      ];
+    }
+    function normalizeZoonosisPracticeState(raw) {
+      if (raw == null) return null;
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+      var cases = zoonosisPathwayCases();
+      var total = cases.length;
+      var bestPct = Number(raw.bestPct);
+      bestPct = isFinite(bestPct) ? Math.max(0, Math.min(100, Math.round(bestPct))) : 0;
+      if (raw.mode === 'focused') {
+        var seenRetryCases = {};
+        var retryQueue = (Array.isArray(raw.retryQueue) ? raw.retryQueue : []).filter(function(value) {
+          var caseIndex = Number(value);
+          if (!isFinite(caseIndex) || Math.floor(caseIndex) !== caseIndex ||
+              caseIndex < 0 || caseIndex >= total || seenRetryCases[caseIndex]) return false;
+          seenRetryCases[caseIndex] = true;
+          return true;
+        }).slice(0, total).map(Number);
+        var rawRetryTotal = Number(raw.retryTotal);
+        var retryTotal = isFinite(rawRetryTotal) && Math.floor(rawRetryTotal) === rawRetryTotal
+          ? Math.max(retryQueue.length, Math.min(total, rawRetryTotal))
+          : retryQueue.length;
+        var retryDone = raw.done === true && retryQueue.length === 0 && retryTotal > 0;
+        if (!retryQueue.length && !retryDone) return null;
+        var retryAnswers = [];
+        if (retryQueue.length && Array.isArray(raw.answers) && raw.answers.length) {
+          var retryAnswer = Number(raw.answers[0]);
+          var retryCase = cases[retryQueue[0]];
+          if (isFinite(retryAnswer) && Math.floor(retryAnswer) === retryAnswer &&
+              retryAnswer >= 0 && retryAnswer < retryCase.choices.length) {
+            retryAnswers.push(retryAnswer);
+          }
+        }
+        return {
+          mode: 'focused',
+          idx: 0,
+          answers: retryAnswers,
+          score: retryTotal - retryQueue.length,
+          done: retryDone,
+          bestPct: bestPct,
+          retryQueue: retryQueue,
+          retryTotal: retryTotal
+        };
+      }
+      var rawIdx = Number(raw.idx);
+      if (!isFinite(rawIdx) || Math.floor(rawIdx) !== rawIdx || rawIdx < 0 || rawIdx > total) return null;
+      var answers = [];
+      var incoming = Array.isArray(raw.answers) ? raw.answers.slice(0, total) : [];
+      for (var i = 0; i < incoming.length; i++) {
+        var answer = Number(incoming[i]);
+        if (!isFinite(answer) || Math.floor(answer) !== answer ||
+            answer < 0 || answer >= cases[i].choices.length) break;
+        answers.push(answer);
+      }
+      var done = raw.done === true && rawIdx === total && answers.length === total;
+      var idx = rawIdx;
+      if (!done && idx === total) idx = total - 1;
+      if (!done && answers.length < idx) idx = answers.length;
+      if (!done) answers = answers.slice(0, idx + 1);
+      var score = 0;
+      answers.forEach(function(answerIndex, caseIndex) {
+        if (cases[caseIndex] && answerIndex === cases[caseIndex].correct) score++;
+      });
+      if (done) bestPct = Math.max(bestPct, Math.round(score / total * 100));
+      return { idx: done ? total : idx, answers: answers, score: score, done: done, bestPct: bestPct };
     }
     function normalizePetsMiniGameState(src, prefix, total, validPicks) {
       src = src && typeof src === 'object' ? src : {};
@@ -3134,6 +3336,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       if (snapshot.blQuiz) snapshot.blQuiz = normalizeBodyLanguageQuiz(snapshot.blQuiz);
       if (snapshot.blTransfer) snapshot.blTransfer = normalizeBodyLanguageTransfer(snapshot.blTransfer);
       if (snapshot.quizState) snapshot.quizState = normalizeKnowledgeQuizState(snapshot.quizState);
+      if (Object.prototype.hasOwnProperty.call(snapshot, 'zoonPractice')) {
+        snapshot.zoonPractice = normalizeZoonosisPracticeState(snapshot.zoonPractice);
+      }
       var welfareKeys = ['spayNeuter', 'adoption', 'declawing', 'outdoorCats'];
       snapshot.welfareSec = welfareKeys.indexOf(snapshot.welfareSec) >= 0
         ? snapshot.welfareSec : 'spayNeuter';
@@ -3344,6 +3549,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _trainingFeedbackRef = React.useRef(null);
     var _toxinQuestionRef = React.useRef(null);
     var _toxinFeedbackRef = React.useRef(null);
+    var _zoonStepRef = React.useRef(null);
+    var _zoonFeedbackRef = React.useRef(null);
     var _lifespanQuestionRef = React.useRef(null);
     var _lifespanFeedbackRef = React.useRef(null);
     var _careQuestionRef = React.useRef(null);
@@ -3371,6 +3578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var badges = normalizePetsBadges(d.badges);
     var decoderMastery = normalizeDecoderMasteryState(d.decoderMastery);
     var quizState = normalizeKnowledgeQuizState(d.quizState);
+    var zoonPracticeState = normalizeZoonosisPracticeState(d.zoonPractice);
     var careSimState = normalizeCareSimState(d.careSim);
     var careTradeoffState = normalizeCareTradeoffState(d.careTradeoff);
     var aiScenarioId = normalizeAiScenarioId(d.aiScenarioId);
@@ -3412,6 +3620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }
       }
       addIfChanged('quizState', d.quizState, quizState);
+      addIfChanged('zoonPractice', d.zoonPractice, zoonPracticeState);
       addIfChanged('view', d.view, view);
       addIfChanged('badges', d.badges, badges);
       addIfChanged('modulesVisited', d.modulesVisited, modulesVisited);
@@ -3430,7 +3639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       addIfChanged('aiResponse', d.aiResponse, aiResponse);
       if (Object.keys(healPatch).length) updMulti(healPatch);
     }, [
-      d.quizState, d.view, d.badges, d.modulesVisited, d.modulesCompleted,
+      d.quizState, d.zoonPractice, d.view, d.badges, d.modulesVisited, d.modulesCompleted,
       d.evidenceRecords, d.decoderMastery, d.careSim, d.careTradeoff,
       d.lastView, d.welfareSec, d.welfareVisited, d.aiScenarioId, d.aiDrafts,
       d.aiCritiques, d.aiRevisionNotes, d.aiResponse
@@ -3725,7 +3934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var pickHousing = ['apartment', 'house', 'rural'].indexOf(d.pickHousing) >= 0 ? d.pickHousing : 'house';
     var pickKids = d.pickKids === true;
     // Youngest child's age BAND, not a yes/no. The picker's own scoring asks
-    // whether a child is under 5 (CDC: no reptiles) and under 8 (House Rabbit
+    // whether a child is under 5 (CDC: consider another pet; avoid contact) and under 8 (House Rabbit
     // Society), but the old boolean pinned every household with children to a
     // hardcoded age of 6 — so the under-5 reptile rule could never fire and a
     // family with a toddler was shown a gecko with no caution at all. A single
@@ -3836,6 +4045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var PETS_ACTIVITY_COMPLETION_MODULES = {
       training: true,
       nutrition: true,
+      zoonoses: true,
       bodyLang: true,
       decoderMastery: true,
       lifespan: true,
@@ -3883,7 +4093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         return normalizeEvidenceRecords(rows.concat([candidate]));
       });
     }
-    function completeModule(modId, reason, evidenceDetails) {
+    function completeModule(modId, reason, evidenceDetails, quiet) {
       if (!isTrackableModule(modId)) return;
       var currentCompletion = modulesCompleted[modId];
       var evidenceReason = reason || 'Reviewed by learner';
@@ -3903,7 +4113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           reason: evidenceReason
         };
         upd('modulesCompleted', upgraded);
-        petsAnnounce('Completion updated with activity evidence.');
+        if (!quiet) petsAnnounce('Completion updated with activity evidence.');
         return;
       }
       var nextCompleted = Object.assign({}, modulesCompleted);
@@ -3921,7 +4131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var count = completedModuleCount(nextCompleted);
       if (count >= 5) awardBadge('pets_explorer', 'Module Explorer (5 completed)');
       if (count >= 12) awardBadge('pets_pro', 'Lab Pathfinder (12 completed)');
-      petsAnnounce('Module marked complete. ' + count + ' completed.');
+      if (!quiet) petsAnnounce('Module marked complete. ' + count + ' completed.');
     }
     function goToView(nextView, label) {
       var leavingAiPractice = view === 'aiPractice' && nextView !== 'aiPractice';
@@ -4054,7 +4264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'cats',         icon: '🐈', label: 'Cats',                 desc: 'Obligate carnivore biology, sensory world, vocal evolution.' },
       { id: 'smallMammals', icon: '🐹', label: 'Small mammals',        desc: 'Hamster / guinea pig / rabbit / ferret. Lifespans + social needs.' },
       { id: 'birds',        icon: '🦜', label: 'Birds',                desc: 'Vocal learning, air-sac respiration, decade-spanning lifespans.' },
-      { id: 'reptiles',     icon: '🦎', label: 'Reptiles & amphibians', desc: 'Ectothermy, UVB, husbandry kills, Salmonella reality.' },
+      { id: 'reptiles',     icon: '🦎', label: 'Reptiles & amphibians', desc: 'Ectothermy, species-specific husbandry, and Salmonella exposure reduction.' },
       { id: 'training',     icon: '🎯', label: 'Pet Training (applied)', desc: 'Cross-species training; assumes BehaviorLab theory.' },
       { id: 'nutrition',    icon: '🥩', label: 'Nutrition Science',    desc: 'Species-specific needs + 8 toxic foods to know.' },
       { id: 'genetics',     icon: '🧬', label: 'Domestication & Breeding', desc: 'Artificial selection, breed traits, inbreeding consequences.' },
@@ -5043,28 +5253,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🌡️ Ectothermy: temperature is your job'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'Reptiles cannot generate body heat from metabolism — their entire physiology depends on environmental temperature. A reptile at the wrong temperature can\'t digest food, fight infection, or move. ',
-            h('strong', { style: { color: T.accentHi } }, 'Most pet reptile deaths are husbandry failures, not disease'),
-            '.'),
+            h('strong', { style: { color: T.accentHi } }, 'Husbandry is preventive care'),
+            ': incorrect heat, humidity, lighting, diet, and habitat are common avoidable causes of poor health.'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'Required setup: ',
             h('strong', { style: { color: T.text } }, 'thermal gradient'),
             ' (basking spot at species-specific high; cool zone at species-specific low). UVB lighting for diurnal species (bearded dragons, tortoises) — without UVB the animal can\'t synthesize vitamin D3 → metabolic bone disease (deformed legs, soft jaw, fatal). UVB bulbs LOSE output before they look dim — replace every 6–12 months even if visibly bright.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-          h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🦠 Salmonella: not optional'),
+          h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🦠 Salmonella: plan for exposure reduction'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'CDC: ',
             h('strong', { style: { color: T.accentHi } }, 'reptiles + amphibians commonly carry Salmonella and can shed it while looking healthy'),
-            '. Shedding is intermittent, so a lab test that comes back negative does NOT clear the animal — it only means Salmonella was not detected in that sample. Treat every reptile as potentially positive. Wash hands after every handling. CDC actively recommends ',
-            h('strong', { style: { color: T.warm } }, 'no reptiles in households with children under 5'),
-            ' or immunocompromised members. Don\'t let reptiles roam in food-prep areas. Don\'t kiss your turtle.')),
+            '. A negative sample does not clear future shedding. Wash hands after touching the animal, food, waste, habitat, or tank water; keep the animal and supplies out of food-preparation areas. CDC advises households with ',
+            h('strong', { style: { color: T.warm } }, 'children under 5, adults 65+, or people with weakened immune systems'),
+            ' to consider another pet, and says young children should avoid reptile and amphibian contact.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
-          h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, '🐸 Amphibians: bad pets for kids'),
+          h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } }, '🐸 Amphibians: observe with care'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            'Frog and salamander skin is permeable — they breathe + drink through it. Soap residue on a child\'s hands can poison the animal. Lotion, sunscreen, even tap water with chlorine. Look-don\'t-touch is the right framing.')),
+            'Frog and salamander skin is permeable and can be harmed by residues, oils, or rough handling. Minimize handling, follow species-specific water and habitat guidance, and frame observation—not touching—as the default.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine angle'),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            'Wild reptiles in Maine are protected — collecting native turtles or snakes for pets is illegal under Maine IFW rules. Released exotic reptiles (red-eared sliders most often) become invasive in southern Maine ponds. The pet-trade-released-into-the-wild pipeline is the #1 invasive-species vector globally (see also: Burmese pythons in Florida Everglades, lionfish in Caribbean).')),
+            'Check Maine IFW rules before any wildlife contact or collection. Never release a pet reptile or amphibian outdoors: released animals often die, and some can establish invasive populations or spread pathogens. Contact an appropriate rescue, veterinarian, retailer, zoo, or aquarium for rehoming help.')),
         footer());
     }
 
@@ -6826,31 +7036,367 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // ZOONOSES & ONE HEALTH
     // ─────────────────────────────────────────
     function renderZoonoses() {
+      var pathwayCases = zoonosisPathwayCases();
+      var practice = zoonPracticeState;
+      var focusedRetry = !!(practice && practice.mode === 'focused');
+      function startPathwayPractice() {
+        upd('zoonPractice', {
+          idx: 0,
+          answers: [],
+          score: 0,
+          done: false,
+          bestPct: practice ? practice.bestPct : 0
+        });
+        focusPetsTarget(_zoonStepRef);
+      }
+      function startFocusedPathwayRetry() {
+        if (!practice || !practice.done || focusedRetry) return;
+        var retryQueue = pathwayCases.map(function(_, index) { return index; }).filter(function(index) {
+          return practice.answers[index] !== pathwayCases[index].correct;
+        });
+        if (!retryQueue.length) return;
+        upd('zoonPractice', {
+          mode: 'focused',
+          idx: 0,
+          answers: [],
+          score: 0,
+          done: false,
+          bestPct: practice.bestPct,
+          retryQueue: retryQueue,
+          retryTotal: retryQueue.length
+        });
+        focusPetsTarget(_zoonStepRef);
+      }
+      function answerPathwayPractice(choiceIndex) {
+        if (!practice || practice.done) return;
+        var activeCaseIndex = focusedRetry ? practice.retryQueue[0] : practice.idx;
+        var answerSlot = focusedRetry ? 0 : practice.idx;
+        var current = pathwayCases[activeCaseIndex];
+        if (!current || practice.answers[answerSlot] != null ||
+            choiceIndex < 0 || choiceIndex >= current.choices.length) return;
+        var answers = practice.answers.slice();
+        answers[answerSlot] = choiceIndex;
+        if (focusedRetry) {
+          upd('zoonPractice', {
+            mode: 'focused',
+            idx: 0,
+            answers: answers.slice(0, 1),
+            score: practice.score,
+            done: false,
+            bestPct: practice.bestPct,
+            retryQueue: practice.retryQueue.slice(),
+            retryTotal: practice.retryTotal
+          });
+        } else {
+          var score = answers.reduce(function(total, answer, caseIndex) {
+            return total + (pathwayCases[caseIndex] && answer === pathwayCases[caseIndex].correct ? 1 : 0);
+          }, 0);
+          upd('zoonPractice', {
+            idx: practice.idx,
+            answers: answers,
+            score: score,
+            done: false,
+            bestPct: practice.bestPct
+          });
+        }
+        focusPetsTarget(_zoonFeedbackRef);
+      }
+      function nextPathwayCase() {
+        if (!practice || practice.done) return;
+        if (focusedRetry) {
+          var focusedCaseIndex = practice.retryQueue[0];
+          var focusedAnswer = practice.answers[0];
+          var focusedCase = pathwayCases[focusedCaseIndex];
+          if (!focusedCase || focusedAnswer == null) return;
+          var cleared = focusedAnswer === focusedCase.correct;
+          var nextQueue = practice.retryQueue.slice(1);
+          if (!cleared) nextQueue.push(focusedCaseIndex);
+          if (!nextQueue.length) {
+            upd('zoonPractice', {
+              mode: 'focused', idx: 0, answers: [], score: practice.retryTotal,
+              done: true, bestPct: practice.bestPct, retryQueue: [], retryTotal: practice.retryTotal
+            });
+          } else {
+            upd('zoonPractice', {
+              mode: 'focused', idx: 0, answers: [],
+              score: practice.retryTotal - nextQueue.length,
+              done: false, bestPct: practice.bestPct,
+              retryQueue: nextQueue, retryTotal: practice.retryTotal
+            });
+          }
+          focusPetsTarget(_zoonStepRef);
+          return;
+        }
+        if (practice.idx >= pathwayCases.length || practice.answers[practice.idx] == null) return;
+        if (practice.idx < pathwayCases.length - 1) {
+          upd('zoonPractice', {
+            idx: practice.idx + 1,
+            answers: practice.answers.slice(),
+            score: practice.score,
+            done: false,
+            bestPct: practice.bestPct
+          });
+          focusPetsTarget(_zoonStepRef);
+          return;
+        }
+        var pct = Math.round(practice.score / pathwayCases.length * 100);
+        var bestPct = Math.max(practice.bestPct || 0, pct);
+        upd('zoonPractice', {
+          idx: pathwayCases.length,
+          answers: practice.answers.slice(),
+          score: practice.score,
+          done: true,
+          bestPct: bestPct
+        });
+        completeModule('zoonoses', 'Finished all 4 Exposure Pathway decisions', {
+          score: practice.score,
+          total: pathwayCases.length,
+          scorePct: pct,
+          bestPct: bestPct,
+          needsPractice: pathwayCases.length - practice.score,
+          criterionMet: pct >= 75
+        }, true);
+        focusPetsTarget(_zoonStepRef);
+      }
+      function renderPathwayPractice() {
+        if (!practice) {
+          return h('section', {
+            'data-pets-zoon-practice': 'start',
+            'aria-labelledby': 'pets-zoon-practice-heading',
+            style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '2px solid ' + T.accent, marginBottom: 16 }
+          },
+            h('h2', { id: 'pets-zoon-practice-heading', style: { margin: '0 0 7px', color: T.accentHi, fontSize: 17 } },
+              '🔗 Exposure Pathway Check'),
+            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.6 } },
+              'Four cases ask you to trace risk before choosing an action. An animal species alone is not a diagnosis or a complete risk assessment.'),
+            h('ol', {
+              'data-pets-pathway-model': 'four-links',
+              style: { margin: '0 0 12px', paddingLeft: 22, color: T.muted, fontSize: 12, lineHeight: 1.65 }
+            },
+              h('li', null, h('strong', { style: { color: T.text } }, 'Exposure: '), 'What contact or contamination occurred?'),
+              h('li', null, h('strong', { style: { color: T.text } }, 'Route: '), 'How could a germ reach a person?'),
+              h('li', null, h('strong', { style: { color: T.text } }, 'Person: '), 'Who has greater risk of serious illness?'),
+              h('li', null, h('strong', { style: { color: T.text } }, 'Break point: '), 'Which action interrupts the pathway or gets the right expert involved?')
+            ),
+            h('p', { role: 'note', style: { margin: '0 0 12px', color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+              'This is prevention practice, not medical diagnosis. For a real exposure or illness, contact the appropriate healthcare, public-health, and veterinary professionals.'),
+            h('button', {
+              type: 'button',
+              'data-pets-focusable': true,
+              'data-pets-start-zoon-practice': true,
+              onClick: startPathwayPractice,
+              style: btnPrimary({ width: '100%', padding: '11px 16px', fontSize: 13 })
+            }, 'Start 4-case Exposure Pathway Check')
+          );
+        }
+        if (focusedRetry && practice.done) {
+          return h('section', {
+            'data-pets-zoon-practice': 'focused-complete',
+            'data-pets-zoon-retry': 'complete',
+            'aria-labelledby': 'pets-zoon-focused-complete-heading',
+            style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '2px solid ' + T.ok, marginBottom: 16 }
+          },
+            h('h2', {
+              id: 'pets-zoon-focused-complete-heading',
+              ref: _zoonStepRef,
+              tabIndex: -1,
+              style: { margin: '0 0 7px', color: T.ok, fontSize: 18 }
+            }, '✓ Focused pathway retry complete'),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.6 } },
+              'Every pathway missed in the last full check was answered correctly in focused practice.'),
+            h('p', { role: 'note', style: { margin: '0 0 12px', color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+              'Focused practice does not replace the original four-case result or create a new mastery record. Try a fresh full check when you are ready to update the activity target.'),
+            h('button', {
+              type: 'button',
+              'data-pets-focusable': true,
+              onClick: startPathwayPractice,
+              style: btnPrimary({ width: '100%', padding: '10px 16px', fontSize: 13 })
+            }, 'Try all 4 cases for a new target result')
+          );
+        }
+        if (practice.done) {
+          var resultPct = Math.round(practice.score / pathwayCases.length * 100);
+          var missedCases = pathwayCases.filter(function(_, index) {
+            return practice.answers[index] !== pathwayCases[index].correct;
+          });
+          return h('section', {
+            'data-pets-zoon-practice': 'results',
+            style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '2px solid ' + (resultPct >= 75 ? T.ok : T.warm), marginBottom: 16 }
+          },
+            h('h2', {
+              ref: _zoonStepRef,
+              tabIndex: -1,
+              className: 'petslab-zoon-result-heading',
+              style: { margin: '0 0 7px', color: resultPct >= 75 ? T.ok : T.warm, fontSize: 18 }
+            }, practice.score + ' / ' + pathwayCases.length + ' pathways interrupted'),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.6 } },
+              resultPct >= 75
+                ? 'Activity target met. You connected exposure, route, vulnerability, and action in at least three cases.'
+                : 'Keep practicing: start with the route of exposure, then choose the action that breaks that route or brings in the right expert.'),
+            h('p', { role: 'note', style: { margin: '0 0 10px', color: T.muted, fontSize: 11 } },
+              'Best result: ' + practice.bestPct + '% · ' + missedCases.length + ' case' + (missedCases.length === 1 ? '' : 's') + ' to review'),
+            missedCases.length > 0 && h('ul', { style: { margin: '0 0 12px', paddingLeft: 20, color: T.muted, fontSize: 12, lineHeight: 1.6 } },
+              missedCases.map(function(item) { return h('li', { key: item.id }, item.icon + ' ' + item.title); })),
+            h('div', { style: { display: 'grid', gap: 8 } },
+              missedCases.length > 0 && h('button', {
+                type: 'button',
+                'data-pets-focusable': true,
+                'data-pets-zoon-retry': 'start',
+                onClick: startFocusedPathwayRetry,
+                style: btnPrimary({ width: '100%', padding: '10px 16px', fontSize: 13 })
+              }, 'Retry ' + missedCases.length + ' missed pathway' + (missedCases.length === 1 ? '' : 's')),
+              h('button', {
+                type: 'button',
+                'data-pets-focusable': true,
+                onClick: startPathwayPractice,
+                style: btn({ width: '100%', padding: '10px 16px', fontSize: 13, textAlign: 'center' })
+              }, 'Try all 4 cases again')
+            )
+          );
+        }
+        var activeCaseIndex = focusedRetry ? practice.retryQueue[0] : practice.idx;
+        var answerSlot = focusedRetry ? 0 : practice.idx;
+        var item = pathwayCases[activeCaseIndex];
+        var picked = practice.answers[answerSlot];
+        var answered = picked != null;
+        var correct = answered && picked === item.correct;
+        var questionId = 'pets-zoon-question-' + item.id;
+        var questionTextId = questionId + '-prompt';
+        var pathwayParts = [
+          { id: 'exposure', label: '1 · Exposure', value: item.pathway.exposure },
+          { id: 'route', label: '2 · Route', value: item.pathway.route },
+          { id: 'person', label: '3 · Person', value: item.pathway.higherRisk },
+          { id: 'break', label: '4 · Break point', value: item.pathway.breakPoint }
+        ];
+        return h('section', {
+          'data-pets-zoon-practice': 'active',
+          'data-pets-zoon-case': item.id,
+          'data-pets-zoon-retry': focusedRetry ? 'active' : undefined,
+          style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '2px solid ' + T.accent, marginBottom: 16 }
+        },
+          h('div', {
+            role: 'progressbar',
+            'aria-label': focusedRetry ? 'Focused pathway retry progress' : 'Exposure Pathway Check progress',
+            'aria-valuemin': focusedRetry ? 0 : 1,
+            'aria-valuemax': focusedRetry ? practice.retryTotal : pathwayCases.length,
+            'aria-valuenow': focusedRetry ? practice.score : practice.idx + 1,
+            'aria-valuetext': focusedRetry
+              ? practice.score + ' of ' + practice.retryTotal + ' missed pathways cleared; ' + practice.retryQueue.length + ' still in rotation'
+              : 'Case ' + (practice.idx + 1) + ' of ' + pathwayCases.length + '; ' + practice.score + ' safest so far',
+            style: { marginBottom: 8, color: T.muted, fontSize: 11, fontWeight: 700 } },
+            focusedRetry
+              ? 'Focused retry · ' + practice.retryQueue.length + ' pathway' + (practice.retryQueue.length === 1 ? '' : 's') + ' still in rotation · ' + practice.score + ' cleared'
+              : 'Case ' + (practice.idx + 1) + ' of ' + pathwayCases.length + ' · ' + practice.score + ' safest so far'),
+          h('h2', {
+            id: questionId,
+            ref: _zoonStepRef,
+            tabIndex: -1,
+            className: 'petslab-zoon-question-heading',
+            style: { margin: '0 0 6px', color: T.accentHi, fontSize: 17 }
+          }, item.icon + ' ' + item.title),
+          h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.6 } }, item.scenario),
+          h('p', { id: questionTextId, style: { margin: '0 0 10px', color: T.text, fontSize: 13, fontWeight: 800, lineHeight: 1.5 } }, item.question),
+          h('div', { role: 'group', 'aria-labelledby': questionId + ' ' + questionTextId,
+            style: { display: 'grid', gap: 7, marginBottom: answered ? 10 : 0 } },
+            item.choices.map(function(choice, choiceIndex) {
+              var selected = picked === choiceIndex;
+              var choiceCorrect = choiceIndex === item.correct;
+              var borderColor = answered && choiceCorrect ? T.ok : answered && selected ? T.warm : T.border;
+              return h('button', {
+                key: choiceIndex,
+                type: 'button',
+                'data-pets-focusable': !answered,
+                'aria-disabled': answered ? 'true' : 'false',
+                tabIndex: answered ? -1 : 0,
+                onClick: function() { if (!answered) answerPathwayPractice(choiceIndex); },
+                style: btn({
+                  padding: '10px 12px',
+                  textAlign: 'left',
+                  fontSize: 12,
+                  lineHeight: 1.45,
+                  background: answered && choiceCorrect ? 'rgba(132,204,22,.12)' : answered && selected ? 'rgba(251,146,60,.12)' : T.card,
+                  border: '2px solid ' + borderColor
+                })
+              }, choice);
+            })
+          ),
+          answered && h('div', {
+            ref: _zoonFeedbackRef,
+            tabIndex: -1,
+            role: 'region',
+            'aria-label': 'Feedback for ' + item.title,
+            className: 'petslab-zoon-feedback',
+            style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + (correct ? T.ok : T.warm), marginBottom: 10 }
+          },
+            h('strong', { style: { display: 'block', color: correct ? T.ok : T.warm, marginBottom: 5 } },
+              correct ? '✓ Safest response' : '↻ This leaves part of the pathway open'),
+            h('p', { style: { margin: '0 0 7px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, item.feedback[picked]),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.text } }, 'Why: '), item.why)
+          ),
+          answered && h('div', {
+            'data-pets-pathway-chain': item.id,
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 7, marginBottom: 10 }
+          }, pathwayParts.map(function(part) {
+            return h('div', { key: part.id, 'data-pets-pathway-part': part.id,
+              style: { padding: 9, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
+              h('strong', { style: { display: 'block', color: T.accentHi, fontSize: 11, marginBottom: 3 } }, part.label),
+              h('span', { style: { color: T.muted, fontSize: 11, lineHeight: 1.45 } }, part.value));
+          })),
+          answered && h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' } },
+            h('a', {
+              href: item.sourceUrl,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              'aria-label': item.sourceLabel + ' (opens in a new tab)',
+              style: { color: T.accentHi, fontSize: 11, textDecoration: 'underline', textUnderlineOffset: 2, minHeight: 44, display: 'inline-flex', alignItems: 'center' }
+            }, item.sourceLabel),
+            h('button', {
+              type: 'button',
+              'data-pets-focusable': true,
+              onClick: nextPathwayCase,
+              style: btnPrimary({ padding: '9px 14px', fontSize: 12 })
+            }, focusedRetry
+              ? (correct
+                ? (practice.retryQueue.length === 1 ? 'Finish focused retry' : 'Next missed pathway →')
+                : 'Keep this pathway in rotation →')
+              : (practice.idx < pathwayCases.length - 1 ? 'Next pathway case →' : 'See pathway result'))
+          )
+        );
+      }
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🦠 Zoonoses & One Health'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Zoonoses are diseases that cross between humans and other animals. The CDC ',
-            h('strong', { style: { color: T.accentHi } }, 'One Health'),
-            ' framework recognizes that human, animal, and environmental health are inseparable. About 60% of known infectious diseases are zoonotic; ~75% of newly emerging infectious diseases originate in animals.')),
+            'Zoonoses are infections that can spread between people and other animals. ',
+            h('a', { href: 'https://www.cdc.gov/onehealth/index.html', target: '_blank', rel: 'noopener noreferrer',
+              style: { color: T.accentHi, fontWeight: 800 } }, 'CDC One Health'),
+            ' connects human, animal, plant, and environmental health—and asks which pathway allows exposure, not whether an entire species is “dirty.”')),
+        renderPathwayPractice(),
         ZOONOSES.map(function(z) {
-          return h('div', { key: z.id, style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+          return h('article', { key: z.id, style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, z.icon),
-              h('strong', { style: { color: T.accentHi, fontSize: 14 } }, z.name),
-              h('span', { style: { marginLeft: 'auto', fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'from ' + z.from)),
+              h('h2', { style: { margin: 0, color: T.accentHi, fontSize: 14 } }, z.name),
+              h('span', { style: { marginLeft: 'auto', fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Possible source: ' + z.from)),
             h('div', { style: { fontSize: 12, color: T.warm, lineHeight: 1.55, marginBottom: 4 } },
               h('strong', null, '⚠ Severity: '), z.severity),
             h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } },
               h('strong', { style: { color: T.text } }, '🛡 Protect: '), z.protect),
-            h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Cite: ' + z.cite));
+            h('a', { href: z.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+              style: { fontSize: 11, color: T.accentHi, fontStyle: 'italic' } }, 'Source: ' + z.cite));
         }),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
             'Maine has ',
             h('strong', { style: { color: T.accentHi } }, 'one of the highest US Lyme + anaplasmosis incidence rates'),
-            '. Year-round tick prevention is standard veterinary care. Maine CDC tracks tick-borne disease cases — see maine.gov/dhhs/mecdc. Rabies is endemic in Maine wildlife (raccoons, skunks, foxes, bats); annual rabies vaccine is legally required for dogs + cats.')),
+            '. Build a veterinarian-guided tick-prevention plan and keep checking people and pets after exposure. ',
+            h('a', { href: 'https://www.maine.gov/dhhs/mecdc/diseases-conditions/insect-borne-diseases/ticks',
+              target: '_blank', rel: 'noopener noreferrer',
+              style: { color: T.text, fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 2 } },
+              'Maine CDC tracks tickborne diseases'),
+            '. Rabies occurs in Maine wildlife; state law requires dogs and cats to remain current on rabies vaccination at the intervals that apply to the vaccine used.')),
         footer());
     }
 
@@ -7007,11 +7553,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             var s = 0;
             if (o.housing === 'apartment') s += 1; // small footprint
             if (o.allergies) s += 2; // no fur
-            if (o.kids && o.kidAge < 5) s -= 6; // CDC: not recommended in under-5 households
+            if (o.kids && o.kidAge < 5) s -= 6; // CDC: consider another pet; under-5s avoid contact
             if (o.experience === 'first') s -= 1; // husbandry steep learning curve
             return s;
           },
-          note: 'Can carry Salmonella while appearing healthy. Species-specific heat, lighting, habitat, hygiene, diet, lifespan, and exotic-vet access must be researched.' },
+          note: 'Can carry Salmonella while appearing healthy. CDC advises households with children under 5, adults 65+, or people with weakened immune systems to consider another pet; young children should avoid contact. Species-specific care and exotic-vet access must also be researched.' },
         { id: 'fish-tank', name: 'Freshwater aquarium', icon: '🐠',
           fit: function(o) {
             var s = 1;
@@ -9295,8 +9841,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         correct: 2, why: 'Theobromine + caffeine in chocolate are toxic across many mammals because they metabolize them slowly. Dogs are most affected; cats + ferrets vulnerable too. Dark chocolate is far worse than milk.' },
       { id: 'q9', icon: '🤰', module: 'zoonoses', strand: 'health',
         stem: 'A pregnant person has an indoor cat. What does the science say about toxoplasmosis risk?',
-        choices: ['Rehome the cat because ordinary contact with fur or saliva cannot be made safe during pregnancy', 'Indoor cats fed only commercial food are very low risk; pregnant person should avoid scooping (or wear gloves + scoop daily, since oocysts take 24+ hr to become infective)', 'Cat must be tested daily', 'No risk at all'],
-        correct: 1, why: 'Toxoplasmosis is a real concern, but the risk from an indoor commercial-food-fed cat is low. CDC + ACOG guidance: someone else handles the litter, OR daily cleaning with gloves. Higher risks: undercooked meat, unwashed produce.' },
+        choices: ['Rehome the cat because ordinary contact with fur or saliva cannot be made safe during pregnancy', 'Keep the cat; have someone else change litter if possible, or use gloves, wash hands, and clean daily—plus use food and soil precautions', 'Cat must be tested daily', 'No risk at all'],
+        correct: 1, why: 'Ordinary contact with a cat is not the typical route. CDC guidance emphasizes avoiding litter duty if possible; otherwise use disposable gloves, wash hands, and clean daily because oocysts generally take 1–5 days to become infectious. Undercooked meat, contaminated soil or water, and unwashed produce also matter.' },
       { id: 'q10', icon: '🧬', module: 'genetics', strand: 'biology',
         stem: 'A "purebred" dog from a 200-year-old closed studbook is more likely to have which of the following compared to mixed-breed dogs?',
         choices: ['Stronger immune function because the closed pedigree removes harmful variants over time', 'Concentrated genetic disorders (hip dysplasia, brachycephaly, etc.)', 'Longer lifespan automatically, because closed studbooks weed out weak lines over generations', 'Better behavior automatically'],
@@ -9314,9 +9860,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         choices: ['She is hungry and asking the other dog to move away from nearby food', 'She is sleepy and disengaging because the interaction interrupted a nap', 'A "calming signal" — trying to defuse the social tension', 'She\'s about to bite: lip-licking and yawning are the last warnings before a snap'],
         correct: 2, why: 'Lip licking, yawning, head turning, and ground sniffing in a tense moment are appeasement / calming signals. Dogs use them to defuse. Recognizing them helps owners intervene before stacked stress becomes a bite.' },
       { id: 'q14', icon: '🦠', module: 'zoonoses', strand: 'health',
-        stem: 'Why does the CDC recommend NO reptiles in households with children under 5?',
+        stem: 'Why does CDC advise higher-risk households to consider another pet and say children under 5 should avoid reptile contact?',
         choices: ['Reptiles bite easily', 'Healthy-looking reptiles commonly carry and can shed Salmonella', 'Reptiles need expensive vets', 'Children under 5 are allergic to reptile scales'],
-        correct: 1, why: 'Reptiles and amphibians commonly carry Salmonella even when healthy and clean-looking. Young children are less reliable hand-washers and have higher risk of severe infection. CDC guidance also calls for extra caution around immunocompromised and pregnant people.' },
+        correct: 1, why: 'Reptiles and amphibians can carry Salmonella even when healthy and clean-looking, and habitat water or supplies can spread it without direct animal contact. Children under 5, adults 65+, and people with weakened immune systems have greater risk of serious illness.' },
       { id: 'q15', icon: '🌲', module: 'zoonoses', strand: 'health',
         stem: 'Why do Maine vets push year-round tick prevention even in winter?',
         choices: ['Tradition', 'Adult deer ticks (Ixodes scapularis) are active any day above ~40°F — Maine has many such days even in January / February', 'Vets need year-round revenue', 'Lyme bacteria mutate in cold weather into a hardier winter strain that spreads faster, so prevention has to run through the coldest months'],
@@ -9804,6 +10350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var learningTargets = [
         { module: 'Pet Training', target: 'I can choose reinforcement timing that builds behavior without sacrificing trust.', success: 'Finish 10 rounds with behavior at 70%+ and trust at 80%+.' },
         { module: 'Household Hazard Sleuth', target: 'I can recognize common food, plant, and fume hazard patterns and use a call-first response protocol.', success: 'Finish all 10 vignettes; 8/10 meets the activity target. Classification never replaces case-specific veterinary or poison-control advice.' },
+        { module: 'Zoonoses & One Health', target: 'I can trace an exposure through its route, identify who may face greater risk, and choose a step that interrupts the pathway or brings in the right expert.', success: 'Finish all four Exposure Pathway cases; 3/4 meets the activity target. The result is prevention evidence—not a medical diagnosis or real-exposure clearance.' },
         { module: 'Body Language', target: 'I can recognize observable whole-body cues and use context to choose a cautious next step.', success: 'Score 8/10 on a random recognition set for the activity target. The four-case Context Challenge adds separate formative transfer evidence; neither result certifies real-animal handling.' },
         { module: 'Decoder Signal Log', target: 'I can broaden the range of body-language signals I have practiced.', success: 'A signal is logged after one correct identification. 27/27 is coverage—not durable mastery or a context assessment.' },
         { module: 'Lifespan Match', target: 'I can estimate the scale of a companion animal’s lifetime commitment.', success: 'Finish all 10 species; 8/10 meets the activity target. Missed species stay local for review and focused retry, while the full comparison remains available after the attempt.' },
@@ -9903,6 +10450,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ' Revisit the missed source modules, then try a fresh full quiz.';
         } else if (moduleId === 'bodyLang') {
           reason = 'Latest random signal set is below 8/10. Use focused signal practice, then check a fresh random set; context practice remains separate.';
+        } else if (moduleId === 'zoonoses') {
+          reason = 'Latest Exposure Pathway Check is below 3/4. Revisit each missed route and break point, use focused pathway practice, then try a fresh four-case check.';
         } else {
           reason = 'Latest activity result is below its stated target. Review the evidence card, reteach the weakest area, then retry.';
         }
@@ -9966,6 +10515,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         if ((record.moduleId === 'nutrition' || record.moduleId === 'lifespan') && x.score != null) {
           return x.score + ' / ' + x.total + ' (' + x.scorePct + '%)' +
             (x.needsPractice != null ? ' · ' + x.needsPractice + ' case' + (x.needsPractice === 1 ? '' : 's') + ' to revisit' : '');
+        }
+        if (record.moduleId === 'zoonoses' && x.score != null) {
+          return x.score + ' / ' + x.total + ' (' + x.scorePct + '%)' +
+            (x.needsPractice != null ? ' · ' + x.needsPractice + ' pathway' + (x.needsPractice === 1 ? '' : 's') + ' to revisit' : '');
         }
         if (record.moduleId === 'bodyLang' && x.score != null) {
           return (x.practiceMode === 'context' ? 'Context transfer ' : '') + x.score + ' / ' + x.total + ' (' + x.scorePct + '%)' +

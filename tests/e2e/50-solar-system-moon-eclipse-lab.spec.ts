@@ -92,6 +92,22 @@ test('keeps the featured Moon investigation clear and usable at 340px', async ({
   await expect(lab.getByLabel('Moon phase angle')).toBeVisible();
   await expect(lab.getByLabel('Node offset from new-Moon direction')).toBeVisible();
   await expect(lab.locator('svg[role="img"]')).toBeVisible();
+  const stage = lab.getByRole('region', { name: /Scrollable Moon geometry diagram/ });
+  await stage.focus();
+  await expect(stage).toBeFocused();
+  const diagram = await stage.evaluate((el) => {
+    const svg = el.querySelector('svg');
+    const label = [...el.querySelectorAll('text')].find((node) => node.textContent?.includes('TOP-DOWN GEOMETRY'));
+    if (!svg || !label) throw new Error('Moon geometry diagram did not render');
+    const svgRect = svg.getBoundingClientRect();
+    const labelRect = label.getBoundingClientRect();
+    el.scrollLeft = 120;
+    return { clientWidth: el.clientWidth, scrollWidth: el.scrollWidth, scrollLeft: el.scrollLeft, svgWidth: svgRect.width, labelHeight: labelRect.height };
+  });
+  expect(diagram.scrollWidth).toBeGreaterThan(diagram.clientWidth);
+  expect(diagram.svgWidth).toBeGreaterThanOrEqual(719);
+  expect(diagram.labelHeight).toBeGreaterThanOrEqual(9);
+  expect(diagram.scrollLeft).toBeGreaterThan(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 

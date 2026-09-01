@@ -210,6 +210,13 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(workspace.querySelector('[data-experiment-protocol-step="checkpoint"]').getAttribute('data-protocol-step-state')).toBe('upcoming');
     expect(workspace.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('incomplete');
     expect(workspace.querySelector('[data-experiment-plan-registration="true"]').textContent).toContain('Incomplete when Run B began');
+    const incompleteSequence = workspace.querySelector('[data-plan-registration-sequence="true"]');
+    expect(incompleteSequence.tagName).toBe('OL');
+    expect(incompleteSequence.getAttribute('aria-label')).toBe('Plan timing sequence');
+    expect(incompleteSequence.querySelectorAll('[data-plan-registration-node]')).toHaveLength(3);
+    expect(incompleteSequence.querySelector('[data-plan-registration-node="plan"]').getAttribute('data-sequence-state')).toBe('attention');
+    expect(incompleteSequence.querySelector('[data-plan-registration-node="copy"]').getAttribute('aria-label')).toContain('Incomplete copy saved');
+    expect(incompleteSequence.querySelector('[data-plan-registration-node="result"]').getAttribute('aria-label')).toContain('Run B began incomplete');
     expect(document.getElementById('allo-live-beehive').textContent).toContain('The plan was incomplete when Run B began');
     expect(workspace.querySelector('[data-experiment-management-audit="true"]').getAttribute('data-management-audit-final')).toBe('false');
     expect(workspace.querySelector('[data-experiment-management-audit="true"]').textContent).toContain('Provisional through Day 0');
@@ -291,6 +298,10 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(notebook.open).toBe(true);
     expect(notebook.querySelector('[data-experiment-notebook-summary="true"]').className).toContain('min-h-[58px]');
     expect(notebook.querySelectorAll('fieldset[data-experiment-notebook-phase]')).toHaveLength(2);
+    const auditDeck = host.querySelector('[data-experiment-audit-deck="true"]');
+    expect(auditDeck.tagName).toBe('SECTION');
+    expect(document.getElementById(auditDeck.getAttribute('aria-labelledby')).textContent).toBe('Evidence integrity');
+    expect(auditDeck.querySelectorAll('[data-experiment-audit-grid="true"] > section')).toHaveLength(3);
     const choiceAudit = host.querySelector('[data-experiment-management-audit="true"]');
     expect(choiceAudit.getAttribute('data-management-audit-status')).toBe('one-change');
     expect(choiceAudit.getAttribute('data-management-audit-final')).toBe('true');
@@ -364,6 +375,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(observationGuidance).toContain('its timing is not protected');
     expect(observationGuidance).not.toContain('does not match the planned choice');
     expect(host.querySelector('[data-experiment-evidence-prompt="true"]').textContent).toContain('Restart Run B with the complete current plan');
+    const readySequence = host.querySelector('[data-plan-registration-sequence="true"]');
+    expect(readySequence.querySelector('[data-plan-registration-node="plan"]').getAttribute('data-sequence-state')).toBe('complete');
+    expect(readySequence.querySelector('[data-plan-registration-node="copy"]').getAttribute('data-sequence-state')).toBe('attention');
+    expect(readySequence.querySelector('[data-plan-registration-node="result"]').getAttribute('data-sequence-state')).toBe('attention');
+    expect(readySequence.querySelector('[data-plan-registration-node="copy"]').getAttribute('aria-label')).toContain('No copy tied to these runs');
 
     const recovery = host.querySelector('[data-experiment-restart-run-b-plan="true"]');
     expect(recovery).toBeTruthy();
@@ -409,6 +425,9 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('matched');
     expect(host.querySelector('[data-experiment-plan-registration="true"]').textContent).toContain('Recorded before Run B');
     expect(host.querySelector('[data-experiment-protocol-step="registration"]').getAttribute('data-protocol-step-state')).toBe('complete');
+    const protectedSequence = host.querySelector('[data-plan-registration-sequence="true"]');
+    expect(Array.from(protectedSequence.querySelectorAll('[data-plan-registration-node]')).map((node) => node.getAttribute('data-sequence-state'))).toEqual(['complete', 'complete', 'complete']);
+    expect(protectedSequence.querySelector('[data-plan-registration-node="result"]').getAttribute('aria-label')).toContain('Plan and copy match');
     expect(host.querySelector('[data-experiment-restart-run-b-plan="true"]')).toBeNull();
 
     let reviewChecks = Array.from(host.querySelectorAll('[data-experiment-notebook-review-check]'));
@@ -432,6 +451,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(host.querySelector('[data-experiment-prediction-audit="true"]').textContent).toContain('This is still useful evidence');
     expect(host.querySelector('[data-experiment-plan-registration="true"]').getAttribute('data-plan-registration-status')).toBe('changed');
     expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Plan changed after Run B started');
+    const editedSequence = host.querySelector('[data-plan-registration-sequence="true"]');
+    expect(editedSequence.querySelector('[data-plan-registration-node="plan"]').getAttribute('data-sequence-state')).toBe('complete');
+    expect(editedSequence.querySelector('[data-plan-registration-node="copy"]').getAttribute('data-sequence-state')).toBe('complete');
+    expect(editedSequence.querySelector('[data-plan-registration-node="result"]').getAttribute('data-sequence-state')).toBe('attention');
+    expect(editedSequence.querySelector('[data-plan-registration-node="result"]').getAttribute('aria-label')).toContain('Current plan changed');
     expect(host.querySelector('[data-experiment-evidence-prompt="true"]').textContent).toContain('Restart Run B with the complete current plan');
     expect(host.querySelector('[data-experiment-restart-run-b-plan="true"]')).toBeTruthy();
     predictionDirectionControl = host.querySelector('[data-experiment-prediction-direction="true"]');
@@ -1220,6 +1244,11 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(reducedMotionCss).toContain('animation: none !important');
     expect(reducedMotionCss).toContain('transition: none !important');
     const beehiveCss = document.getElementById('allo-beehive-visual-css').textContent;
+    expect(beehiveCss).toContain('[data-experiment-audit-deck="true"]');
+    expect(beehiveCss).toContain('repeat(auto-fit,minmax(min(100%,16rem),1fr))');
+    expect(beehiveCss).toContain('[data-plan-registration-sequence="true"]');
+    expect(beehiveCss).toContain('[data-plan-registration-node][data-sequence-state="complete"]');
+    expect(beehiveCss).toContain('[data-plan-registration-node]:not(:last-child)::after');
     for (const selector of ['[data-beehive-build-zone]', '[data-beehive-focus-panel]', '[data-flight-control]', '[data-placement-zone]', '[data-beehive-start-strategy="true"]', '#beehive-next-day:hover', '[data-management-action]:hover']) {
       expect(beehiveCss).toContain(selector);
     }

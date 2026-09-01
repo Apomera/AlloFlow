@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 describe('Molecule Lab element catalog integrity', () => {
@@ -105,6 +106,46 @@ describe('Molecule Lab element catalog integrity', () => {
     expect(tools.getMetadata('Tc').isotopeStability).toBe('No stable isotopes');
   });
 
+  it('keeps all 118 element entries complete and free of unresolved localization keys', () => {
+    const html = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+        selectedElement: { name: 'stem.periodic.carbon', s: 'C', n: 6, cat: 'nonmetal', c: '#111827' },
+        elementDetailsOpen: true,
+        elementCompareOpen: true,
+        elementCompareA: 'Na',
+        elementCompareB: 'Cl',
+      },
+    });
+
+    const catalog = window.__alloMoleculeElementCatalog;
+    expect(catalog.count).toBe(118);
+    expect(catalog.entries).toHaveLength(118);
+    expect(new Set(catalog.entries.map((entry) => entry.atomicNumber)).size).toBe(118);
+    expect(new Set(catalog.entries.map((entry) => entry.symbol)).size).toBe(118);
+
+    catalog.entries.forEach((entry) => {
+      expect(entry.name.length).toBeGreaterThan(1);
+      expect(entry.description.length).toBeGreaterThan(20);
+      expect(entry.uses.length).toBeGreaterThan(0);
+      expect(entry.compounds.length).toBeGreaterThan(0);
+      expect(entry.name).not.toMatch(/^stem\./i);
+      expect(entry.description).not.toMatch(/stem\./i);
+      expect(entry.uses.join(' ')).not.toMatch(/stem\./i);
+      expect(entry.compounds.join(' ')).not.toMatch(/stem\./i);
+    });
+
+    const carbon = catalog.entries.find((entry) => entry.symbol === 'C');
+    expect(carbon.name).toBe('Carbon');
+    expect(carbon.description).toBe('Carbon forms the backbone of all known life and an enormous range of compounds.');
+    expect(html).toContain('Carbon forms the backbone of all known life');
+    expect(html).toContain('Carbon Dioxide (CO₂)');
+    expect(html).toContain('Lanthanide');
+    expect(html).toContain('Actinide');
+    expect(html).not.toMatch(/stem\.(?:periodic|chem_balance)\./i);
+  });
+
   it('renders an accessible side-by-side comparison for any two elements', () => {
     const html = renderTool('molecule', {
       molecule: {
@@ -163,6 +204,7 @@ describe('Molecule Lab element catalog integrity', () => {
       molecule: {
         moleculeMode: 'table',
         selectedElement: { name: 'Oganesson', s: 'Og', n: 118, cat: 'noble', c: '#c084fc' },
+        elementDetailsOpen: true,
       },
     });
 
@@ -173,6 +215,25 @@ describe('Molecule Lab element catalog integrity', () => {
     expect(html).toContain('p-block');
     expect(html).toContain('No stable isotopes');
     expect(html).toContain('Simplified Aufbau configuration');
+  });
+
+  it('keeps the map first and the selected-element inspector compact by default', () => {
+    const html = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'table',
+        elementCategory: 'nonmetal',
+        selectedElement: { name: 'Carbon', s: 'C', n: 6, cat: 'nonmetal', c: '#111827' },
+      },
+    });
+
+    expect(html).toContain('data-element-workspace="true"');
+    expect(html).toContain('data-matching-elements-tray="true"');
+    expect(html).toContain('data-matching-element="C"');
+    expect(html).toContain('aria-label="Remove filter: Nonmetals"');
+    expect(html).toContain('Explore complete facts');
+    expect(html).not.toContain('data-element-details-panel="true"');
+    expect(html).not.toContain('data-stable-bohr-panel="true"');
+    expect(html.indexOf('data-molecule-periodic-grid="true"')).toBeLessThan(html.indexOf('data-selected-element-card="true"'));
   });
 
   it('labels the quiz as complete-catalog practice and explains answered questions', () => {
@@ -236,10 +297,15 @@ describe('Molecule Lab element catalog integrity', () => {
         tutorialDismissed: true,
         elementCategory: 'nonmetal',
         selectedElement: { name: 'Carbon', s: 'C', n: 6, cat: 'nonmetal', c: '#111827' },
+        elementDetailsOpen: true,
       },
     });
 
-    expect(html).toContain('data-molecule-mode-grid="true"');
+    expect(html).toContain('data-molecule-command-state="compact"');
+    expect(html).toContain('data-molecule-command-summary="true"');
+    expect(html).toContain('Explore all modes');
+    expect(html).toContain('data-molecule-primary-tabs="true"');
+    expect(html).not.toContain('data-molecule-mode-grid="true"');
     expect(html).toContain('data-element-explorer-controls="true"');
     expect(html).toContain('Find an element without losing its place');
     expect(html).toContain('Layout preserved while filtering');
@@ -248,8 +314,107 @@ describe('Molecule Lab element catalog integrity', () => {
     expect(html).toContain('data-stable-bohr-panel="true"');
     expect(html).toContain('data-molecule-periodic-grid="true"');
     expect(html).toContain('aria-label="Scrollable periodic table map"');
+    expect(html).toContain('data-periodic-map-viewport-controls="true"');
+    expect(html).toContain('data-periodic-map-visible-groups="1-9"');
+    expect(html).toContain('data-periodic-map-move="earlier"');
+    expect(html).toContain('data-periodic-map-move="later"');
+    expect(html).toContain('data-periodic-map-track="true"');
+    expect(html).toContain('data-periodic-group="18"');
+    expect(html).toContain('data-periodic-map-overflow-cue="right"');
     expect(html).toContain('18 groups • 7 periods');
     expect(html).toContain('id="molecule-element-practice-title"');
     expect(html).toContain('Test the patterns you can see');
+  });
+
+  it('keeps the complete mode guide available without making it permanent', () => {
+    const expandedHtml = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+        modeDeckOpen: true,
+      },
+    });
+    const firstVisitHtml = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'viewer',
+        tutorialDismissed: false,
+      },
+    });
+
+    expect(expandedHtml).toContain('data-molecule-command-state="expanded"');
+    expect(expandedHtml).toContain('aria-expanded="true"');
+    expect(expandedHtml).toContain('data-molecule-mode-grid="true"');
+    expect((expandedHtml.match(/data-molecule-route=/g) || []).length).toBe(6);
+    expect(expandedHtml).toContain('data-molecule-route="realStructures"');
+    expect(expandedHtml).toContain('Hide mode guide');
+    expect(firstVisitHtml).toContain('data-molecule-command-state="expanded"');
+    expect(firstVisitHtml).toContain('data-molecule-mode-grid="true"');
+  });
+
+  it('keeps the 53-topic reference library compact until the learner opens it', () => {
+    const html = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+      },
+    });
+
+    expect(html).toContain('data-reference-library-launcher="true"');
+    expect(html).toContain('Browse 53 topics');
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).not.toContain('data-reference-library-browser="true"');
+    expect(html).not.toContain('data-reference-topic=');
+  });
+
+  it('exposes every reference topic while showing only one selected domain', () => {
+    const html = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+        referenceLibraryOpen: true,
+        referenceLibraryGroup: 'applications',
+      },
+    });
+
+    const catalog = window.__alloMoleculeReferenceCatalog;
+    expect(catalog.count).toBe(53);
+    expect(catalog.groups).toHaveLength(7);
+    expect(new Set(catalog.topicIds).size).toBe(53);
+    expect((html.match(/data-reference-group=/g) || []).length).toBe(7);
+    expect((html.match(/data-reference-topic=/g) || []).length).toBe(12);
+    expect(html).toContain('data-reference-topic="pharma"');
+    expect(html).not.toContain('data-reference-topic="vsepr"');
+
+    const source = readFileSync('stem_lab/stem_tool_molecule.js', 'utf8');
+    const routedTopicIds = Array.from(source.matchAll(/if \(expSection === '([^']+)'\)/g), (match) => match[1]);
+    expect(new Set(routedTopicIds)).toEqual(new Set(catalog.topicIds));
+  });
+
+  it('searches across all reference domains and provides a clear empty state', () => {
+    const resultHtml = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+        referenceLibraryOpen: true,
+        referenceLibraryQuery: 'solvent',
+      },
+    });
+
+    expect(resultHtml).toContain('1 search result');
+    expect(resultHtml).toContain('data-reference-topic="solventMystery"');
+    expect((resultHtml.match(/data-reference-topic=/g) || []).length).toBe(1);
+
+    const emptyHtml = renderTool('molecule', {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+        referenceLibraryOpen: true,
+        referenceLibraryQuery: 'not-a-chemistry-topic',
+      },
+    });
+
+    expect(emptyHtml).toContain('No matching topics');
+    expect(emptyHtml).toContain('0 search results');
+    expect(emptyHtml).not.toContain('data-reference-topic=');
   });
 });

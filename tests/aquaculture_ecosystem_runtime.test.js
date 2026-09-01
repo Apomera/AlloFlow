@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import axe from 'axe-core';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const { act } = React;
@@ -158,6 +159,36 @@ describe('Aquaculture Ecosystem Builder', () => {
     expect(host.querySelector('#aq-mussel-health-heading').textContent).toBe('Mussel health station');
     expect(host.querySelector('#aq-mussel-temperature-number').value).toBe('13.5');
     expect(JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1')).musselHealthWorkspace.evidenceSource).toBe('mission-crop');
+  });
+
+  it('renders scenario-specific current direction, effects, and operational clues accessibly', async () => {
+    await act(async () => { findButton(host, 'Boat mission').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    const briefing = host.querySelector('.aq-field-mission-briefing');
+    expect(briefing).toBeTruthy();
+
+    await act(async () => { findButton(briefing, 'After-rain freshet').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    let figure = briefing.querySelector('.aq-field-condition-figure');
+    let key = figure.querySelector('.aq-field-current-key');
+    expect(figure.querySelector('svg title').textContent).toBe('After-rain freshet sampling and current diagram');
+    expect(figure.querySelector('svg desc').textContent).toContain('Down-river and outward toward the landing');
+    expect(figure.querySelector('.aq-field-runoff-clue').textContent).toContain('RAIN RUNOFF SURFACE LAYER');
+    expect(key.textContent).toContain('Opposes inbound travel to the lease');
+    expect(key.textContent).toContain('Rain runoff can freshen the surface');
+
+    await act(async () => { findButton(briefing, 'Warm slack tide').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    figure = briefing.querySelector('.aq-field-condition-figure');
+    key = figure.querySelector('.aq-field-current-key');
+    expect(figure.querySelector('svg title').textContent).toBe('Warm slack tide sampling and current diagram');
+    expect(figure.querySelector('svg desc').textContent).toContain('Near-slack with a slight outward residual set');
+    expect(figure.querySelector('.aq-field-heat-clue').textContent).toContain('WARM HAZE');
+    expect(key.textContent).toContain('Offers little assistance in either direction');
+    expect(key.textContent).toContain('Warm haze and weak flushing');
+
+    const results = await axe.run(figure, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      rules: { 'color-contrast': { enabled: false }, region: { enabled: false }, 'scrollable-region-focusable': { enabled: false } },
+    });
+    expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact))).toEqual([]);
   });
 
   it('labels model scope and exposes official primary-source gateways', async () => {

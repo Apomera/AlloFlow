@@ -3,10 +3,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -92,7 +91,7 @@ describe('magnetism Force Bench distance detective', () => {
     const state = forceSeed({
       pairDistance: 120, pairStrength1: 1, pairStrength2: 1,
       forceBenchBaseline: { distance: 60, strength1: 1, strength2: 1 },
-      forceBenchPrediction: 16, forceBenchResultSeen: true, notebookOpen: true,
+      forceBenchPrediction: 16, forceBenchResultSeen: true, notebookOpen: true, labShellPanel: 'evidence',
     });
     const metrics = physics.notebookMetricSnapshot({ magnetism: state });
     expect(metrics.find((metric) => metric.key === 'force_rel')).toMatchObject({ value: 0.0625, unit: 'relative' });
@@ -232,10 +231,7 @@ describe('magnetism Force Bench distance detective', () => {
     host.innerHTML = html;
     document.body.appendChild(host);
     try {
-      const results = await axe.run(host, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await runIsolatedAxe(host.querySelector('.mag-force-challenge').outerHTML);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       host.remove();

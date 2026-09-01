@@ -1,31 +1,10 @@
 // Pets Lab — Zoonoses & One Health.
 //
-// This view tells a reader what to do about rabies exposure and about
-// toxoplasmosis in pregnancy. Wrong prose here does not produce a wrong answer
-// on a worksheet; it produces someone not seeking care. Four things pinned,
-// all added 2026-07-28:
-//
-//  1. TOXOPLASMOSIS IMMUNITY WAS BACKWARDS. The card said "most cat-owning
-//     humans have already been exposed and developed immunity." US
-//     seroprevalence is roughly 1 in 10 (NHANES), so most US cat owners are
-//     still SUSCEPTIBLE. The high-seroprevalence figure belongs to parts of
-//     Europe and South America. Offering false reassurance to the one group
-//     the card singles out — pregnant readers — is the worst direction for
-//     this particular error to point.
-//
-//  2. RABIES PEP HAD A FAKE DEADLINE. "PEP within hours of suspected
-//     exposure" implies a window that closes. There is no cutoff (CDC), and a
-//     reader who thinks they missed it may not seek care at all — again, the
-//     error pointed toward inaction.
-//
-//  3. THE TOOL CONTRADICTED ITSELF ON LYME, on one screen. The Lyme card said
-//     Maine "has the highest US incidence rate"; the Maine-reality box below
-//     it said "one of the highest". The stronger claim is the less defensible
-//     one — the top spot moves between Maine, Vermont and New Hampshire.
-//
-//  4. A NEGATIVE SALMONELLA TEST DOES NOT CLEAR A REPTILE. Shedding is
-//     intermittent. "All reptiles shed" is kept intact because a quiz item
-//     depends on it; the intermittency point is additive.
+// These checks deliberately pin actions, exposure routes, higher-risk groups,
+// and primary sources rather than volatile prevalence or state-ranking facts.
+// The tool teaches prevention and expert escalation; it must not imply that a
+// species alone diagnoses exposure or that an activity result clears a real
+// medical or veterinary concern.
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import fs from 'node:fs';
@@ -62,13 +41,14 @@ afterAll(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 beforeEach(() => { resetStemLab(); loadTool(FILE, ID); });
 
 describe('every disease card is complete', () => {
-  it('states source, severity, protection and a citation', () => {
+  it('states source, severity, protection and a linked citation', () => {
     expect(ZOONOSES.length).toBeGreaterThanOrEqual(6);
     for (const z of ZOONOSES) {
-      for (const f of ['id', 'name', 'from', 'severity', 'protect', 'cite']) {
+      for (const f of ['id', 'name', 'from', 'severity', 'protect', 'cite', 'sourceUrl']) {
         expect(typeof z[f], z.id + ' missing ' + f).toBe('string');
         expect(z[f].length, z.id + '.' + f + ' is too short to be real').toBeGreaterThan(2);
       }
+      expect(z.sourceUrl, z.id + ' needs an HTTPS source').toMatch(/^https:\/\//);
     }
   });
 
@@ -85,133 +65,148 @@ describe('toxoplasmosis does not offer false immunity', () => {
     expect(byId('toxo').severity).not.toMatch(/most cat-owning humans have already/i);
   });
 
-  it('says plainly that most US readers are still susceptible', () => {
+  it('identifies the groups for whom a new infection can be especially serious', () => {
     const s = byId('toxo').severity;
-    expect(s).toMatch(/do not assume|do NOT assume/i);
-    expect(s).toMatch(/1 in 10|11%|10%/);
-    expect(s).toMatch(/susceptible/i);
+    expect(s).toMatch(/new infection during pregnancy/i);
+    expect(s).toMatch(/weakened immune systems/i);
+    expect(s).toMatch(/serious complications/i);
   });
 
-  it('explains where the wrong belief comes from rather than only deleting it', () => {
-    // A reader who has heard "everyone has had it already" needs to know why
-    // it is wrong here, or they will keep believing the version they heard.
-    expect(byId('toxo').severity).toMatch(/Europe|South America/);
-  });
-
-  it('names the route that actually dominates in the US', () => {
-    expect(byId('toxo').severity).toMatch(/undercooked meat/i);
-    expect(byId('toxo').severity).toMatch(/produce/i);
-  });
-
-  it('keeps the practical litter-box guidance intact', () => {
+  it('covers litter, food, soil, water and produce routes without blaming ordinary contact', () => {
     const p = byId('toxo').protect;
-    expect(p).toMatch(/someone else cleans litter box/i);
-    expect(p).toMatch(/24\+ hr/);
+    expect(p).toMatch(/undercooked meat/i);
+    expect(p).toMatch(/soil, water, or produce/i);
+    expect(p).toMatch(/cat feces/i);
+    expect(p).toMatch(/not ordinary contact with a cat alone/i);
   });
 
-  it('gives the mechanism behind "indoor cats are low risk"', () => {
-    // The reassurance is real, but it is only trustworthy with the reason.
+  it('gives current litter-box timing, barrier and hand-hygiene guidance', () => {
     const p = byId('toxo').protect;
-    expect(p).toMatch(/week or two/i);
-    expect(p).toMatch(/first infection/i);
+    expect(p).toMatch(/someone else change litter/i);
+    expect(p).toMatch(/disposable gloves/i);
+    expect(p).toMatch(/wash hands/i);
+    expect(p).toMatch(/change litter daily/i);
+    expect(p).toMatch(/1–5 days/);
   });
 
-  it('agrees with the quiz item that covers the same ground', () => {
-    // Both surfaces must land on meat/produce as the higher risk, or a
-    // student gets one answer from the card and another from the quiz.
+  it('links CDC prevention guidance and agrees with the quiz', () => {
+    expect(byId('toxo').sourceUrl).toBe('https://www.cdc.gov/toxoplasmosis/prevention/index.html');
     const q = SRC.slice(SRC.indexOf('toxoplasmosis risk?'), SRC.indexOf('toxoplasmosis risk?') + 1400);
-    expect(q).toMatch(/undercooked meat/i);
-    expect(q).toMatch(/Indoor cats fed only commercial food are very low risk/i);
+    expect(q).toMatch(/Keep the cat/i);
+    expect(q).toMatch(/someone else change litter/i);
+    expect(q).toMatch(/food and soil precautions/i);
+    expect(q).toMatch(/ordinary contact with a cat is not the typical route/i);
   });
 });
 
-describe('rabies advice does not imply a closed window', () => {
-  it('drops the "within hours" deadline', () => {
+describe('rabies advice preserves a case-specific exposure assessment', () => {
+  it('avoids fake deadlines, blanket indoor-bat rules and symptom-stage absolutes', () => {
     expect(byId('rabies').protect).not.toMatch(/within hours/i);
-    expect(zooView()).not.toMatch(/PEP \(post-exposure prophylaxis\) within hours/i);
+    expect(byId('rabies').protect).not.toMatch(/ANY bat indoors/);
+    expect(byId('rabies').severity).not.toMatch(/always fatal|fatal once symptoms appear/i);
   });
 
-  it('says there is no cutoff and to seek care late', () => {
+  it('starts with current vaccination and prompt wound washing', () => {
     const p = byId('rabies').protect;
-    expect(p).toMatch(/no cutoff|NO cutoff/);
-    expect(p).toMatch(/even if days have already passed/i);
+    expect(p).toMatch(/current on vaccination/i);
+    expect(p).toMatch(/wash promptly and thoroughly with soap and water/i);
   });
 
-  it('still conveys that sooner is better', () => {
-    // Removing a false deadline must not read as "no rush".
-    expect(byId('rabies').protect).toMatch(/as soon as/i);
-    expect(byId('rabies').protect).toMatch(/Sooner is better/i);
-  });
-
-  it('gives the one action a bystander can take immediately', () => {
+  it('uses the conditional bat-contact rule and preserves the bat for advice or testing', () => {
     const p = byId('rabies').protect;
-    expect(p).toMatch(/soap and running water/i);
-    expect(p).toMatch(/15 minutes/i);
+    expect(p).toMatch(/bat contact happened or cannot be ruled out/i);
+    expect(p).toMatch(/do not touch or release the bat/i);
+    expect(p).toMatch(/keep people and pets away/i);
   });
 
-  it('keeps the bat rule and the vaccination rule', () => {
+  it('assigns testing and post-exposure decisions to the right experts', () => {
     const p = byId('rabies').protect;
-    expect(p).toMatch(/ANY bat indoors/);
-    expect(p).toMatch(/Vaccinate dogs \+ cats/i);
-    expect(byId('rabies').severity).toMatch(/FATAL once symptoms appear/i);
+    expect(p).toMatch(/public health or animal control/i);
+    expect(p).toMatch(/medical professional/i);
+    expect(p).toMatch(/Public health evaluates whether testing and post-exposure prophylaxis are needed/i);
+  });
+
+  it('conveys severity without turning the card into self-triage', () => {
+    expect(byId('rabies').severity).toMatch(/extremely high fatality rate/i);
+    expect(byId('rabies').severity).toMatch(/prevention happen before symptoms/i);
+    expect(byId('rabies').sourceUrl).toBe('https://www.cdc.gov/rabies/prevention/bats.html');
   });
 });
 
-describe('the Maine Lyme claim is consistent across the view', () => {
+describe('Maine tick guidance is specific without overstating rankings', () => {
   it('does not assert a bare national #1', () => {
     expect(byId('lyme').severity).not.toMatch(/has the highest US incidence/i);
     expect(zooView()).not.toMatch(/Maine has the highest US incidence/i);
   });
 
-  it('names the states it trades places with', () => {
+  it('explains that tick infection and exposure risk vary', () => {
     const s = byId('lyme').severity;
-    expect(s).toMatch(/Vermont/);
-    expect(s).toMatch(/New Hampshire/);
+    expect(s).toMatch(/several infections/i);
+    expect(s).toMatch(/not every tick is infected/i);
+    expect(s).toMatch(/species, location, and attachment/i);
   });
 
-  it('the card and the Maine-reality box make the same strength of claim', () => {
-    // Both render on one screen; a reader seeing "the highest" above "one of
-    // the highest" cannot tell which the tool means.
-    const html = zooView();
-    expect(html).toMatch(/one of the highest US Lyme/i);
-    const superlatives = (html.match(/the highest US/gi) || []).length;
-    const hedged = (html.match(/one of the highest US/gi) || []).length;
-    expect(superlatives, 'an unhedged "the highest US" is back').toBe(hedged);
+  it('makes prevention, checks and prompt removal the actionable content', () => {
+    const p = byId('lyme').protect;
+    expect(p).toMatch(/veterinarian-recommended tick-prevention plan/i);
+    expect(p).toMatch(/check people and animals/i);
+    expect(p).toMatch(/remove attached ticks promptly/i);
+    expect(p).toMatch(/Maine CDC guidance/i);
   });
 
-  it('keeps the actionable Maine content', () => {
+  it('renders a measured Maine summary and current vaccination rule', () => {
     const html = zooView();
-    expect(html).toMatch(/Year-round tick prevention/i);
-    expect(html).toMatch(/rabies vaccine is legally required/i);
-    expect(byId('lyme').protect).toMatch(/40.F|40°F/);
+    expect(html).toMatch(/one of the highest US Lyme \+ anaplasmosis incidence rates/i);
+    expect(html).toMatch(/veterinarian-guided tick-prevention plan/i);
+    expect(html).toMatch(/remain current on rabies vaccination at the intervals that apply to the vaccine used/i);
+    expect(byId('lyme').sourceUrl).toBe('https://www.maine.gov/dhhs/mecdc/diseases-conditions/insect-borne-diseases/ticks');
   });
 });
 
-describe('a negative Salmonella test does not clear a reptile', () => {
-  it('says intermittent shedding makes one test meaningless', () => {
+describe('Salmonella guidance reduces direct and indirect exposure', () => {
+  it('does not treat a negative sample as future clearance', () => {
     const html = text(renderTool(ID, { [ID]: { view: 'reptiles' } }));
-    expect(html).toMatch(/intermittent/i);
-    expect(html).toMatch(/does NOT clear the animal/i);
+    expect(html).toMatch(/negative sample does not clear future shedding/i);
   });
 
-  it('uses CDC-style carriage language without claiming constant universal shedding', () => {
+  it('uses CDC-style healthy-carrier language and covers habitat exposure', () => {
+    const card = byId('salmonella');
+    expect(card.protect).toMatch(/carry Salmonella while looking healthy/i);
+    expect(card.protect).toMatch(/animal, food, waste, habitat, or tank water/i);
+    expect(card.protect).toMatch(/out of food-preparation areas/i);
     const html = text(renderTool(ID, { [ID]: { view: 'reptiles' } }));
     expect(html).toMatch(/reptiles \+ amphibians commonly carry Salmonella and can shed it/i);
-    expect(html).toMatch(/Treat every reptile as potentially positive/i);
     expect(SRC).not.toMatch(/universally shed Salmonella|shedding is universal/i);
   });
 
-  it('keeps the under-5 household guidance', () => {
+  it('names higher-risk groups and preserves CDC choice-and-contact guidance', () => {
+    const card = byId('salmonella');
+    expect(card.severity).toMatch(/children under 5/i);
+    expect(card.severity).toMatch(/adults 65\+/i);
+    expect(card.severity).toMatch(/weakened immune systems/i);
+    expect(card.protect).toMatch(/higher-risk households to consider another pet/i);
+    expect(card.protect).toMatch(/young children should avoid contact/i);
     const html = text(renderTool(ID, { [ID]: { view: 'reptiles' } }));
-    expect(html).toMatch(/no reptiles in households with children under 5/i);
+    expect(html).toMatch(/to consider another pet/i);
+    expect(html).toMatch(/young children should avoid reptile and amphibian contact/i);
+    expect(html).not.toMatch(/no reptiles in households with children under 5/i);
+    expect(card.sourceUrl).toBe('https://www.cdc.gov/healthy-pets/about/reptiles-and-amphibians.html');
   });
 });
 
-describe('One Health framing survives', () => {
-  it('keeps the CDC proportions that motivate the section', () => {
+describe('One Health framing teaches an exposure pathway', () => {
+  it('links CDC and joins human, animal, plant and environmental health', () => {
     const html = zooView();
-    expect(html).toMatch(/60%/);
-    expect(html).toMatch(/75%/);
     expect(html).toMatch(/One Health/);
+    expect(html).toContain('https://www.cdc.gov/onehealth/index.html');
+    expect(html).toMatch(/human, animal, plant, and environmental health/i);
+    expect(html).not.toMatch(/60%|75%/);
+  });
+
+  it('renders the four-link model and rejects species-only diagnosis', () => {
+    const html = zooView();
+    expect(html).toContain('data-pets-pathway-model="four-links"');
+    expect(html).toMatch(/Exposure:.*Route:.*Person:.*Break point:/is);
+    expect(html).toMatch(/animal species alone is not a diagnosis or a complete risk assessment/i);
   });
 });

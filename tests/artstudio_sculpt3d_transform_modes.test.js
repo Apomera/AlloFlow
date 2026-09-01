@@ -225,4 +225,25 @@ describe('Art Studio Sculpture direct transform modes', () => {
     expect(latest.artStudio.sculptRecipe.parts[0].stretch.slice(1)).toEqual([1, 1]);
     expect(announce).toHaveBeenCalledWith('Scaled part 1 larger on the X axis.');
   });
+
+  it('ignores right-click transforms and finalizes a drag when pointer capture is lost', async () => {
+    await mount({ sculptInteractMode: 'move' });
+    const canvas = host.querySelector('canvas');
+    await act(async () => {
+      canvas.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true, button: 2, clientX: 100, clientY: 100 }));
+      await Promise.resolve();
+    });
+    expect(canvas._p3d.drag).toBeFalsy();
+
+    await act(async () => {
+      canvas.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientX: 100, clientY: 100 }));
+      await Promise.resolve();
+    });
+    expect(canvas._p3d.drag).toBeTruthy();
+    await act(async () => {
+      canvas.dispatchEvent(new Event('lostpointercapture'));
+      await Promise.resolve();
+    });
+    expect(canvas._p3d.drag).toBe(null);
+  });
 });

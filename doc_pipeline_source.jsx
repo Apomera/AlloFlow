@@ -40720,6 +40720,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           };
           const cardsHtml = cards.map((card, index) => {
               const c = card && typeof card === 'object' ? card : {};
+              const factsVerified = c.factVerified === true;
               const visualImage = safeDataImage(c.visualImage || c.imageUrl);
               const visualAlt = String(c.visualAlt || ('Visual memory cue for ' + (c.target || 'this memory target'))).trim().slice(0, 800);
               const visualSource = visualImage && Object.prototype.hasOwnProperty.call(visualSourceLabels, c.visualSource)
@@ -40772,6 +40773,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const titleId = idBase + '-title';
                   const cueId = idBase + '-cue';
                   const responseId = idBase + '-response';
+                  const authoringId = idBase + '-authoring';
                   const hasAccessibleVisual = !!visualImage && specificVisualAlt(c.visualAlt);
                   const recallVisualHtml = hasAccessibleVisual
                       ? '<figure style="margin:10px 0 0;padding:10px;border:1px solid #a5f3fc;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
@@ -40785,6 +40787,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       : hasAccessibleVisual
                         ? '<p style="margin:7px 0 0;color:#475569;">Use the visual cue and its description.</p>'
                         : '<p role="note" style="margin:7px 0 0;color:#78350f;font-weight:700;">No accessible recall cue is available yet. Ask your teacher to add one before practicing.</p>';
+                  if (!factsVerified) {
+                      return '<article class="memory-aid-authoring-sheet memory-aid-review-pending" style="margin:0 0 18px;padding:16px;border:1px solid #fbbf24;border-radius:10px;background:#fffbeb;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
+                          + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">Authoring only · facts awaiting teacher review</p>'
+                          + '<h3 id="' + titleId + '" style="margin:0;color:#78350f;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
+                          + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;"><strong>Recall practice is unavailable:</strong> These facts have not been marked teacher verified. You may create or revise the cue, but this sheet intentionally omits recall, confidence, and self-check fields until review is complete.</p>'
+                          + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #fcd34d;border-radius:8px;background:#fff;">'
+                          + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">Current cue draft</h4>' + cueBody + recallVisualHtml + '</section>'
+                          + '<section role="group" aria-labelledby="' + authoringId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
+                          + '<h4 id="' + authoringId + '" style="margin:0;color:#0f172a;">Create or revise your memory cue</h4>'
+                          + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">' + escapeHtml(c.studentPrompt || 'Create or personalize a cue. Your teacher will verify the facts before you use it for recall practice.') + '</p>'
+                          + ruledLines(6, 'Memory cue draft') + '</section></article>';
+                  }
                   return '<article class="memory-aid-recall-sheet" style="margin:0 0 18px;padding:16px;border:1px solid #67e8f9;border-radius:10px;background:#f0fdff;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
                       + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#0e7490;">Recall practice · facts hidden</p>'
                       + '<h3 id="' + titleId + '" style="margin:0;color:#164e63;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
@@ -40803,6 +40817,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       + '</fieldset></article>';
               }
               const facts = listHtml(c.essentialFacts || c.facts);
+              const factsHeading = factsVerified ? 'Teacher-verified facts' : 'Facts awaiting teacher review';
+              const factsReviewNote = factsVerified
+                  ? ''
+                  : '<p role="note" style="margin:8px 0 0;padding:8px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#78350f;font-weight:700;">Do not use this card for recall practice until a teacher verifies the facts.</p>';
               const scaffoldSteps = listHtml(c.scaffoldSteps);
               const coachPrompts = listHtml(c.coachPrompts);
               const modeBlock = c.mode === 'generated' && c.aiExample
@@ -40826,8 +40844,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'
                   + '<h3 style="margin:0;color:#0f172a;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
                   + '<div style="font-size:0.78em;color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || 'Memory aid') + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || 'Student-authored') + '</div></div>'
-                  + '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">What must stay accurate</h4>'
-                  + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>No checked facts were supplied.</div>') + '</section>'
+                  + '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">' + factsHeading + '</h4>'
+                  + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>No facts were supplied.</div>') + factsReviewNote + '</section>'
                   + modeBlock
                   + (c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">How the cue connects</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
                   + visualHtml

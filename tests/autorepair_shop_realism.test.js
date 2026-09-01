@@ -60,13 +60,36 @@ describe.each([CANONICAL, MIRROR])('Auto Repair realism source: %s', (path) => {
     expect(source).toContain('frame: engineRunning && !api.reduced ? function (now)');
     expect(source).toContain('var idle = Math.sin(now * 0.034) * 0.0035');
     expect(source).toContain("sceneKey: 'repair-bay-' + kase.id + '-' + engine");
-    expect(source).toContain("sceneProps: { engineRunning: engine === 'running', caseId: kase.id, openPart: openPart }");
+    expect(source).toContain("engineRunning: engine === 'running'");
+    expect(source).toContain('caseId: kase.id');
+    expect(source).toContain('openPart: openPart');
   });
 
   it('turns authored repair-case evidence into faithful scene behavior', () => {
     expect(source).toContain("var repairCaseId = api.sceneProps && typeof api.sceneProps.caseId === 'string'");
-    expect(source).toContain("coolingFan.userData.faultState = repairCaseId === 'overheat'");
-    expect(source).toContain("if (coolingFan && repairCaseId !== 'overheat')");
+    expect(source).toContain("var repairState = api.sceneProps && typeof api.sceneProps.repairState === 'string'");
+    expect(source).toContain("var repairVerified = repairState === 'verified';");
+    expect(source).toContain("var faultResolved = repairVerified && repairCaseId !== 'headgasket';");
+
+    // Unverified scenes retain the authored fault evidence. A verified normal
+    // repair resolves that evidence instead of leaving the bay visually stuck
+    // in its pre-repair condition.
+    expect(source).toContain("coolingFan.userData.faultState = repairCaseId === 'overheat' && !faultResolved ? 'failed-stopped' : 'operational';");
+    expect(source).toContain("var blownFuse = isFanFuse && repairCaseId === 'overheat' && !faultResolved;");
+    expect(source).toContain("var beltSurfaceMat = repairCaseId === 'squeal' && !faultResolved");
+    expect(source).toContain("if (repairCaseId === 'squeal' && !faultResolved)");
+    expect(source).toContain("positiveClamp.rotation.x = Math.PI / 2 + (repairCaseId === 'nocrank' && !faultResolved ? -0.14 : 0);");
+    expect(source).toContain("if (repairCaseId === 'nocrank' && !faultResolved)");
+    expect(source).toContain("var lowOil = repairCaseId === 'oilpressure' && !faultResolved;");
+
+    // A verified cooling-system repair may cycle the fan again. By contrast,
+    // safe head-gasket referral proves the professional boundary without
+    // pretending the internal engine fault was repaired in this bay.
+    expect(source).toContain("if (coolingFan && (repairCaseId !== 'overheat' || faultResolved))");
+    expect(source).toContain("var milkyOil = repairCaseId === 'headgasket';");
+    expect(source).toContain("? (repairCaseId === 'headgasket' ? 'tow-referral' : 'ready-for-release')");
+    expect(source).toContain("repairState: verifyPassed ? 'verified' : (rbPhase === 'verify' ? 'diagnosed' : '')");
+
     expect(source).toContain("glazedBeltSurface.name = 'glazed-belt-surface'");
     expect(source).toContain("'worn-belt-crack-' + beltCrackIndex");
     expect(source).toContain("'positive-terminal-corrosion-' + corrosionIndex");
@@ -128,11 +151,45 @@ describe.each([CANONICAL, MIRROR])('Auto Repair realism source: %s', (path) => {
     expect(source).toContain("fuseAssembly.userData.faultState = blownFuse ? 'blown' : 'intact'");
   });
 
+  it('models guided electrical diagnostics as semantic shop equipment', () => {
+    expect(source).toContain("meterGroup.name = 'diagnostic-digital-multimeter'");
+    expect(source).toContain('meterGroup.userData.testId = meterSetup.testId');
+    expect(source).toContain('meterGroup.userData.resultState = meterSetup.settled');
+    expect(source).toContain('meterGroup.userData.redContact = meterSetup.redContact');
+    expect(source).toContain('meterGroup.userData.blackContact = meterSetup.blackContact');
+    expect(source).toContain("var physicalLoad = meterSetup.appliedLoad || 'none'");
+    expect(source).toContain('meterGroup.userData.selectedLoad = meterSetup.selectedLoad');
+    expect(source).toContain("meterGroup.userData.loadState = physicalLoad !== 'none'");
+    expect(source).toContain('meterGroup.userData.settled = !!meterSetup.settled');
+    expect(source).toContain("meterScreen.name = 'diagnostic-multimeter-screen'");
+    expect(source).toContain("'diagnostic-red-test-lead'");
+    expect(source).toContain("'diagnostic-black-test-lead'");
+    expect(source).toContain("'meter-red-probe'");
+    expect(source).toContain("'meter-black-probe'");
+    expect(source).toContain('var selectedContacts = meterSetup.connectProbes');
+    expect(source).toContain("loadTester.name = 'diagnostic-battery-load-tester'");
+    expect(source).toContain("loadTester.userData.loadState = physicalLoad === 'carbon-pile'");
+    expect(source).toContain("if (physicalLoad === 'carbon-pile') {");
+    expect(source).toContain("starterLoadCue.name = 'diagnostic-starter-load-cue'");
+    expect(source).toContain("starterLoadCue.userData.loadState = 'cranking'");
+    expect(source).toContain("} else if (physicalLoad === 'starter') {");
+  });
+
+  it('keeps the diagnostic meter opt-in to an active Repair Bay measurement', () => {
+    expect(source).toContain('var meterSetup = api.sceneProps && api.sceneProps.meter');
+    expect(source).toContain('if (meterSetup) {');
+    expect(source).toContain('buildDiagnosticMeterScene(THREE, api, repairCaseId, meterSetup)');
+    expect(source).toContain('sceneProps: { openPart: openPart }');
+    expect(source).toContain('meter: meterScene');
+  });
+
   it('rebuilds inspection content from explicit under-hood and case state', () => {
     expect(source).toContain("sceneKey: 'underhood-inspection-' + (openPart || 'closed')");
     expect(source).toContain('sceneProps: { openPart: openPart }');
-    expect(source).toContain("sceneKey: 'repair-bay-' + kase.id + '-' + engine + '-' + (openPart || 'closed')");
-    expect(source).toContain("sceneProps: { engineRunning: engine === 'running', caseId: kase.id, openPart: openPart }");
+    expect(source).toContain("sceneKey: 'repair-bay-' + kase.id + '-' + engine + '-'");
+    expect(source).toContain("(openPart || 'closed') + '-' + meterSceneKey");
+    expect(source).toContain("engineRunning: engine === 'running'");
+    expect(source).toContain('meter: meterScene');
     expect(source).toContain("var openPart = (d.uhOpenPart === 'fusebox' || d.uhOpenPart === 'dipstick')");
     expect(source).toContain("var openPart = (d.rbOpenPart === 'fusebox' || d.rbOpenPart === 'dipstick')");
   });

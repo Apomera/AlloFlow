@@ -234,14 +234,25 @@ test.describe('Nuclear Lab — charts in a real browser', () => {
   test('full page, both themes, for the record', async ({ page }) => {
     const state = {
       _nuclearLab: {
+        nkOpen: true,
+        nkRouteSeen: {
+          safe: ['compare', 'accidents', 'lowdose', 'shelter', 'waste', 'reactors', 'evidence'],
+          know: ['detect', 'dating'],
+        },
+        pathsCompleted: ['safe'],
+        evidenceMastered: ['low-dose-harm'],
+        isoTried: ['c14', 'cs137', 'u238'],
+        radTried: ['alpha', 'beta'],
         halves: 2, isoId: 'c14', chainPick: 6, enrPick: 5, dosePick: 7,
         wrId: 'alpha', wtId: 'lung', absorbedMGy: 2, bioId: 'cs137',
         cdSrc: 'cs137', cdDist: 10, cdRuns: [{ g: 940, b: 255, t: 600, d: 10, s: 'cs137' }],
       },
     };
     await mount2d(page, state);
+    writeFileSync(join(SHOTS, 'route-cards-dark.png'), await page.locator('.nk-topic-nav').screenshot({ timeout: 60000 }));
     writeFileSync(join(SHOTS, 'page-dark.png'), await page.screenshot({ fullPage: true, timeout: 90000 }));
     await setTheme(page, 'light');
+    writeFileSync(join(SHOTS, 'route-cards-light.png'), await page.locator('.nk-topic-nav').screenshot({ timeout: 60000 }));
     writeFileSync(join(SHOTS, 'page-light.png'), await page.screenshot({ fullPage: true, timeout: 90000 }));
 
     await harness.destroy(page);
@@ -273,6 +284,8 @@ test.describe('Nuclear Lab — charts in a real browser', () => {
 
     const after = await panel.screenshot({ timeout: 60000 });
     writeFileSync(join(SHOTS, 'reactor-running.png'), after);
+    writeFileSync(join(SHOTS, 'reactor-dashboard-running.png'),
+      await page.locator('#nksec-operate').screenshot({ timeout: 60000 }));
     expect(Buffer.compare(before, after), 'the panel never changed — the loop is not running').not.toBe(0);
 
     const stats = (await canvasStats(page)).filter((x: any) => /Reactor control panel/i.test(x.label || ''));

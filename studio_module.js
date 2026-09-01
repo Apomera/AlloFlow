@@ -1071,7 +1071,7 @@
       var text = stCleanText(cue.text || cue.definition || cue.question || cue.prompt || label, 620);
       var imageSrc = stSafeDataImage(cue.imageSrc || cue.image || cue.imageUrl || cue.src || cue.dataUrl);
       if (!label && !text && !imageSrc) return;
-      out.push({
+      var normalizedCue = {
         id: stCleanText(cue.id || ('cue' + (out.length + 1)), 90),
         kind: stCleanText(cue.kind || 'resource', 40),
         label: label || 'Resource',
@@ -1087,7 +1087,16 @@
         artifactType: stCleanText(cue.artifactType || '', 40),
         artifactId: stCleanText(cue.artifactId || '', 140),
         sourceRevision: cue.sourceRevision == null ? null : String(cue.sourceRevision)
-      });
+      };
+      if (cue.generationMeta && typeof cue.generationMeta === 'object') {
+        normalizedCue.generationMeta = {
+          status: stCleanText(cue.generationMeta.status || '', 30),
+          attempts: Number.isFinite(Number(cue.generationMeta.attempts)) ? Math.max(0, Math.round(Number(cue.generationMeta.attempts))) : 0,
+          recovered: !!cue.generationMeta.recovered,
+          updatedAt: cue.generationMeta.updatedAt == null ? null : String(cue.generationMeta.updatedAt)
+        };
+      }
+      out.push(normalizedCue);
     };
     list.forEach(function (item, idx) {
       if (!item) return;
@@ -1201,7 +1210,8 @@
             sourceIndex: idx,
             parentResourceId: baseId,
             activityIndex: ai,
-            activityKind: activity.kind || 'idea'
+            activityKind: activity.kind || 'idea',
+            generationMeta: activity.generationMeta || null
           });
           var derivatives = activity.derivatives && typeof activity.derivatives === 'object' ? activity.derivatives : {};
           ['guide', 'worksheet', 'rubric', 'cover'].forEach(function (artifactType) {
@@ -4411,17 +4421,28 @@
     var TT = function (k, fb) { try { var s = t(k); return s || fb; } catch (_) { return fb; } };
     var addToast = props.addToast || function () {};
     var hasLinkedActivityWorksheet = !!(props.initialResource && typeof props.onSaveGeneratedArtifact === 'function');
+    var _linkedSave = React.useState(hasLinkedActivityWorksheet ? 'linked' : 'unlinked');
+    var linkedSaveState = _linkedSave[0], setLinkedSaveState = _linkedSave[1];
+    var linkedStatusLabel = linkedSaveState === 'saved'
+      ? '✓ Saved to Activity'
+      : (linkedSaveState === 'dirty'
+        ? '✎ Unsaved Activity changes'
+        : (linkedSaveState === 'saving'
+          ? '⟳ Saving to Activity'
+          : (linkedSaveState === 'conflict' ? '⚠ Activity changed — reopen' : '🔗 Activity worksheet')));
     var linkedRevisionRef = React.useRef(props.initialResource && props.initialResource.sourceRevision != null
       ? String(props.initialResource.sourceRevision)
       : null);
     React.useEffect(function () {
       if (!props.initialResource) {
         linkedRevisionRef.current = null;
+        setLinkedSaveState('unlinked');
         return;
       }
       linkedRevisionRef.current = props.initialResource.sourceRevision == null
         ? null
         : String(props.initialResource.sourceRevision);
+      setLinkedSaveState('linked');
     }, [
       props.initialResource && props.initialResource.parentResourceId,
       props.initialResource && props.initialResource.activityIndex,
@@ -4651,6 +4672,7 @@
     var dispatch = function (opBody, actor) {
       try {
         var op = stAppend(_docRef.current, opBody, actor || 'user', Date.now());
+        if (op && hasLinkedActivityWorksheet) setLinkedSaveState('dirty');
         bump();
         return op;
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'op failed'), 'error'); }
@@ -4659,6 +4681,7 @@
     var dispatchGesture = function (opBodies, actor, label, gestureId) {
       try {
         var applied = stAppendGesture(_docRef.current, opBodies, actor || 'user', Date.now(), { label: label || 'Grouped edit', id: gestureId });
+        if (applied.length && hasLinkedActivityWorksheet) setLinkedSaveState('dirty');
         if (applied.length) bump();
         return applied;
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'grouped edit failed'), 'error'); }
@@ -5811,22 +5834,32 @@
         return;
       }
       var resource = props.initialResource;
-      var result = props.onSaveGeneratedArtifact({
-        artifactType: 'worksheet',
-        artifactId: resource.artifactId || '',
-        parentResourceId: resource.parentResourceId || '',
-        activityIndex: resource.activityIndex,
-        sourceRevision: linkedRevisionRef.current != null ? linkedRevisionRef.current : resource.sourceRevision,
-        documentId: 'allostudio-' + String(doc && doc.createdAt || Date.now()),
-        content: stExportWorksheetMarkdown(doc)
-      });
+      setLinkedSaveState('saving');
+      var result;
+      try {
+        result = props.onSaveGeneratedArtifact({
+          artifactType: 'worksheet',
+          artifactId: resource.artifactId || '',
+          parentResourceId: resource.parentResourceId || '',
+          activityIndex: resource.activityIndex,
+          sourceRevision: linkedRevisionRef.current != null ? linkedRevisionRef.current : resource.sourceRevision,
+          documentId: 'allostudio-' + String(doc && doc.createdAt || Date.now()),
+          content: stExportWorksheetMarkdown(doc)
+        });
+      } catch (error) {
+        setLinkedSaveState('conflict');
+        addToast('The worksheet could not be saved back to Activities. Reopen it and try again.', 'error');
+        return;
+      }
       if (result === false || (result && result.ok === false)) {
+        setLinkedSaveState('conflict');
         addToast('The worksheet was not saved back to Activities. Reopen it if the source changed.', 'error');
         return;
       }
       if (result && typeof result === 'object' && result.sourceRevision != null) {
         linkedRevisionRef.current = String(result.sourceRevision);
       }
+      setLinkedSaveState('saved');
       addToast('Worksheet changes saved back to Activities.', 'success');
     };
     var saveToPortfolio = function () {
@@ -6882,8 +6915,8 @@
           h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'),
           h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'),
           h('span', { style: S.headerSpacer }),
-          hasLinkedActivityWorksheet ? h('span', { style: { fontSize: '10px', color: C.muted, whiteSpace: 'nowrap' }, title: 'This document is linked to an Activity worksheet.' }, '🔗 Activity worksheet') : null,
-          hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg }), onClick: saveLinkedArtifact, title: 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
+          hasLinkedActivityWorksheet ? h('span', { role: 'status', style: { fontSize: '10px', color: linkedSaveState === 'conflict' ? '#b91c1c' : C.muted, whiteSpace: 'nowrap' }, title: 'This document is linked to an Activity worksheet.' }, linkedStatusLabel) : null,
+          hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg, opacity: linkedSaveState === 'saving' || linkedSaveState === 'conflict' ? 0.55 : 1 }), disabled: linkedSaveState === 'saving' || linkedSaveState === 'conflict', onClick: saveLinkedArtifact, title: linkedSaveState === 'conflict' ? 'Reopen the worksheet to refresh its source revision' : 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
           h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
           h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', border: '1px solid #1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),

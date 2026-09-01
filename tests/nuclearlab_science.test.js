@@ -402,16 +402,16 @@ describe('Nuclear lab renders', () => {
   });
 
   it('gives every indexed topic a reachable anchor and a jump button', () => {
-    const html = renderTool('nuclearLab', {});
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: true } });
     const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
     registry.forEach((id) => expect(html, 'no anchor for ' + id).toContain('id="nksec-' + id + '"'));
-    expect((html.match(/aria-label="Jump to /g) || []).length).toBe(registry.length);
+    expect((html.match(/data-nk-jump="/g) || []).length).toBe(registry.length);
     expect(html).toContain('aria-label="Nuclear lab topics"');
   });
 
   it('filters the index by search text without hiding the sections themselves', () => {
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkQuery: 'radon' } });
-    const jumps = (html.match(/aria-label="Jump to /g) || []).length;
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkQuery: 'radon', nkOpen: true } });
+    const jumps = (html.match(/data-nk-jump="/g) || []).length;
     expect(jumps).toBeGreaterThan(0);
     expect(jumps).toBeLessThan(14);
     // Filtering is navigation only: the content stays on the page, so a reader
@@ -1289,21 +1289,21 @@ describe('Carbon dating scores the guess it was given', () => {
 });
 
 describe('Taking a route', () => {
-  it('offers every route on first load', () => {
-    const html = renderTool('nuclearLab', {});
+  it('offers every route when the compact index is opened', () => {
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: true } });
     expect(html).toContain('START WITH A QUESTION');
     for (const r of NK_PATHS) expect(html, r.q + ' missing').toContain(r.q);
   });
 
   it('narrows the index to that route, in its order', () => {
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know' } });
-    const steps = [...html.matchAll(/Step (\d+) — ([^<(]+)/g)].map((m) => m[2].trim());
-    expect(steps.length).toBe(4);
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know', nkOpen: true } });
+    const steps = [...html.matchAll(/data-nk-jump="([^"]+)"/g)].map((m) => m[1]);
+    expect(steps).toEqual(NK_PATHS.find((route) => route.id === 'know').steps);
     // 'know' is detect -> dating -> chain, which is NOT document order
     // (dating is section 2, detect is section 12). Order is the point.
-    expect(steps[0]).toMatch(/Measure it/);
-    expect(steps[1]).toMatch(/Carbon dating/);
-    expect(steps[3]).toMatch(/Evidence challenge/);
+    expect(html).toContain('Step 1 — Measure it');
+    expect(html).toContain('Step 2 — Carbon dating');
+    expect(html).toContain('Step 4 — Evidence challenge');
     expect(html).toContain('route: 0 of 4 opened');
   });
 
@@ -1330,7 +1330,7 @@ describe('Taking a route', () => {
   });
 
   it('still shows the section numbers, so a step is locatable in the document', () => {
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know' } });
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know', nkOpen: true } });
     expect(html).toMatch(/§13/);   // detect
     expect(html).toMatch(/§2/);    // dating
   });
@@ -1354,21 +1354,21 @@ describe('Taking a route', () => {
   });
 
   it('explains why the route is ordered the way it is', () => {
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'me' } });
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'me', nkOpen: true } });
     expect(html).toContain(NK_PATHS.find((r) => r.id === 'me').why);
   });
 
   it('does not strand the reader if a stale route id is persisted', () => {
     // Old saved state naming a route that no longer exists must fall back to
     // the full index rather than an empty one.
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'no-such-route' } });
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'no-such-route', nkOpen: true } });
     expect(html).toContain('showing all');
-    const jumps = (html.match(/aria-label="Jump to /g) || []).length;
+    const jumps = (html.match(/data-nk-jump="/g) || []).length;
     expect(jumps).toBe(SECTION_IDS.length);
   });
 
   it('labels the category pills as a way OFF a route while one is active', () => {
-    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'safe' } });
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'safe', nkOpen: true } });
     expect(html).toMatch(/Leave the route and show/);
   });
 });

@@ -74,6 +74,18 @@ describe('header control accessibility', () => {
     expect(source).toContain('previousMutedColors');
   });
 
+  it('repairs the legacy Translate dialog semantics and restores its trigger focus', () => {
+    expect(source).toContain('ref={_translateTriggerRef}');
+    expect(source).toContain('onClick={openTranslateDialogFromHeader}');
+    expect(source).toContain("backdrop.removeAttribute('role')");
+    expect(source).toContain("backdrop.removeAttribute('tabindex')");
+    expect(source).toContain("dialog.setAttribute('aria-labelledby', title.id)");
+    expect(source).toContain("label.htmlFor = 'header-translate-target-language'");
+    expect(source).toContain("input.removeAttribute('aria-label')");
+    expect(source).toContain('_translateObserverRef');
+    expect(source).toContain("typeof trigger.focus === 'function'");
+  });
+
   it('keeps localized visible text aligned with the personal-AI accessible names', () => {
     expect(source).toContain("personalAIReadyLabel = t('header.personal_ai_ready')");
     expect(source).toContain('{window.__alloStudentAiConfigured ? personalAIReadyLabel : personalAIConnectLabel}');

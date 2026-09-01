@@ -15,6 +15,7 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'memory_aid_source.jsx');
 const OUTPUT = path.join(ROOT, 'memory_aid_module.js');
 const PUBLIC = path.join(ROOT, 'desktop', 'web-app', 'public', 'memory_aid_module.js');
+const CHECK_ONLY = process.argv.includes('--check');
 
 if (!fs.existsSync(SOURCE)) {
   console.error('[MemoryAid] Source not found:', SOURCE);
@@ -55,9 +56,11 @@ const outputCode = [
   '  MEMORY_AID_VISUAL_SOURCES: MEMORY_AID_VISUAL_SOURCES,',
   '  MEMORY_AID_PRACTICE_CONFIDENCE: MEMORY_AID_PRACTICE_CONFIDENCE,',
   '  MEMORY_AID_PRACTICE_CHECKS: MEMORY_AID_PRACTICE_CHECKS,',
+  '  MEMORY_AID_PRACTICE_RESPONSE_MODES: MEMORY_AID_PRACTICE_RESPONSE_MODES,',
   '  _testing: {',
   '    normalizeMemoryAidTypes: normalizeMemoryAidTypes,',
   '    normalizeMemoryAidCard: normalizeMemoryAidCard,',
+  '    normalizeMemoryAidCards: normalizeMemoryAidCards,',
   '    normalizeMemoryAidData: normalizeMemoryAidData,',
   '    normalizeMemoryAidImage: normalizeMemoryAidImage,',
   '    normalizeMemoryAidVisualSource: normalizeMemoryAidVisualSource,',
@@ -75,12 +78,24 @@ const outputCode = [
   '    memoryAidAudioFilename: memoryAidAudioFilename,',
   '    memoryAidFeedbackReady: memoryAidFeedbackReady,',
   '    memoryAidPracticeCue: memoryAidPracticeCue,',
+  '    memoryAidPracticeCueKey: memoryAidPracticeCueKey,',
+  '    memoryAidPracticeFactKey: memoryAidPracticeFactKey,',
   '    memoryAidPracticeBasis: memoryAidPracticeBasis,',
   '    normalizeMemoryAidPracticeAttempt: normalizeMemoryAidPracticeAttempt,',
   '    normalizeMemoryAidPracticeAttempts: normalizeMemoryAidPracticeAttempts,',
   '    memoryAidPracticeReady: memoryAidPracticeReady,',
   '    createMemoryAidPracticeAttempt: createMemoryAidPracticeAttempt,',
   '    memoryAidPracticeSummary: memoryAidPracticeSummary,',
+  '    stripMemoryAidPracticeEvidence: stripMemoryAidPracticeEvidence,',
+  '    memoryAidPracticeResourceKey: memoryAidPracticeResourceKey,',
+  '    memoryAidPrivatePracticeKey: memoryAidPrivatePracticeKey,',
+  '    loadMemoryAidPrivatePractice: loadMemoryAidPrivatePractice,',
+  '    saveMemoryAidPrivatePractice: saveMemoryAidPrivatePractice,',
+  '    mutateMemoryAidPrivatePractice: mutateMemoryAidPrivatePractice,',
+  '    applyPrivatePracticeMutation: _maApplyPrivatePracticeMutation,',
+  '    normalizePrivatePracticePayload: _maNormalizePrivatePracticePayload,',
+  '    memoryAidLastPracticeSaveScope: memoryAidLastPracticeSaveScope,',
+  '    memoryAidPracticeRevisionState: memoryAidPracticeRevisionState,',
   '    buildMemoryAidPracticeCueText: buildMemoryAidPracticeCueText,',
   '    applyMemoryAidCardPatch: applyMemoryAidCardPatch,',
   '    buildMemoryAidFeedbackPrompt: buildMemoryAidFeedbackPrompt,',
@@ -93,6 +108,19 @@ const outputCode = [
   '})();',
   '',
 ].join('\n');
+
+if (CHECK_ONLY) {
+  const stale = [OUTPUT, PUBLIC].filter(file => {
+    try { return fs.readFileSync(file, 'utf8') !== outputCode; } catch (_) { return true; }
+  });
+  if (stale.length) {
+    console.error('[MemoryAid] Generated module is stale: ' + stale.map(file => path.relative(ROOT, file)).join(', '));
+    console.error('[MemoryAid] Run: node _build_memory_aid_module.js');
+    process.exit(1);
+  }
+  console.log('[MemoryAid] Source and generated modules are byte-for-byte fresh.');
+  process.exit(0);
+}
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf8');
 fs.mkdirSync(path.dirname(PUBLIC), { recursive: true });

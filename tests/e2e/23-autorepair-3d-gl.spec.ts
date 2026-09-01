@@ -84,6 +84,67 @@ const harness = new GlHarness({
         scale: { x: object.scale.x, y: object.scale.y, z: object.scale.z },
         faultState: object.userData && object.userData.faultState || null,
         inspectionState: object.userData && object.userData.inspectionState || null,
+        caseId: object.userData && object.userData.caseId || null,
+        repairState: object.userData && object.userData.repairState || null,
+        verified: object.userData && typeof object.userData.verified === 'boolean'
+          ? object.userData.verified
+          : null,
+        releaseState: object.userData && object.userData.releaseState || null,
+        stage: object.userData && object.userData.stage || null,
+        result: object.userData && object.userData.result || null,
+        state: object.userData && object.userData.state || null,
+        testId: object.userData && object.userData.testId || null,
+        mode: object.userData && object.userData.mode || null,
+        reading: object.userData && object.userData.reading != null
+          ? object.userData.reading
+          : null,
+        unit: object.userData && object.userData.unit || null,
+        resultState: object.userData && object.userData.resultState || null,
+        redContact: object.userData && object.userData.redContact || null,
+        blackContact: object.userData && object.userData.blackContact || null,
+        selectedLoad: object.userData && object.userData.selectedLoad || null,
+        loadState: object.userData && object.userData.loadState || null,
+        settled: object.userData && typeof object.userData.settled === 'boolean'
+          ? object.userData.settled
+          : null,
+        contact: object.userData && object.userData.contact || null,
+        visible: object.visible !== false
+      };
+    };
+    window.__latestSceneObjectState = function (name) {
+      var scene = window.__arLatestScene;
+      var object = scene && scene.getObjectByName && scene.getObjectByName(name);
+      if (!object) return null;
+      return {
+        name: object.name,
+        position: { x: object.position.x, y: object.position.y, z: object.position.z },
+        rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z },
+        faultState: object.userData && object.userData.faultState || null,
+        inspectionState: object.userData && object.userData.inspectionState || null,
+        caseId: object.userData && object.userData.caseId || null,
+        repairState: object.userData && object.userData.repairState || null,
+        verified: object.userData && typeof object.userData.verified === 'boolean'
+          ? object.userData.verified
+          : null,
+        releaseState: object.userData && object.userData.releaseState || null,
+        stage: object.userData && object.userData.stage || null,
+        result: object.userData && object.userData.result || null,
+        state: object.userData && object.userData.state || null,
+        testId: object.userData && object.userData.testId || null,
+        mode: object.userData && object.userData.mode || null,
+        reading: object.userData && object.userData.reading != null
+          ? object.userData.reading
+          : null,
+        unit: object.userData && object.userData.unit || null,
+        resultState: object.userData && object.userData.resultState || null,
+        redContact: object.userData && object.userData.redContact || null,
+        blackContact: object.userData && object.userData.blackContact || null,
+        selectedLoad: object.userData && object.userData.selectedLoad || null,
+        loadState: object.userData && object.userData.loadState || null,
+        settled: object.userData && typeof object.userData.settled === 'boolean'
+          ? object.userData.settled
+          : null,
+        contact: object.userData && object.userData.contact || null,
         visible: object.visible !== false
       };
     };
@@ -329,6 +390,176 @@ test.describe('Auto Repair Shop — 3D modules on real WebGL', () => {
     expect(errors, 'errors while rebuilding case evidence scenes').toEqual([]);
   });
 
+  test('Repair & Verify closes a repaired connection but preserves tow-only engine evidence', async ({ page }) => {
+    await harness.mount(page, {
+      autoRepair: {
+        view: 'repairbay', rbCase: 'nocrank', rbEngine: 'off', rbFound: {}
+      }
+    });
+
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart'))).toBeNull();
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('positive-terminal-corrosion-0')))
+      .not.toBeNull();
+
+    await page.getByRole('button', {
+      name: 'Clean the corrosion off and tighten the terminal, then re-test'
+    }).click();
+    await expect(page.locator('[data-ar-repair-verify="nocrank"]'))
+      .toHaveAttribute('data-ar-verify-state', 'ready');
+    await page.locator('#wrap canvas').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')
+        ?.releaseState === 'proof-test-required');
+
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')))
+      .toMatchObject({
+        caseId: 'nocrank',
+        repairState: 'diagnosed',
+        verified: false,
+        releaseState: 'proof-test-required'
+      });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-work-order')))
+      .toMatchObject({ caseId: 'nocrank', stage: 'awaiting-proof' });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-qa-unit')))
+      .toMatchObject({ caseId: 'nocrank', result: 'pending' });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('positive-terminal-corrosion-0')))
+      .not.toBeNull();
+
+    await page.locator('[data-ar-verify-plan="loaded-drop-restart"] input').check();
+    await page.locator('[data-ar-verify-action="run"]').click();
+    await expect(page.locator('[data-ar-repair-verify="nocrank"]'))
+      .toHaveAttribute('data-ar-verify-state', 'passed');
+    await expect(page.locator('[data-ar-release="release"]'))
+      .toContainText('READY FOR RELEASE');
+    // The viewer pauses while it is off screen. The proof controls sit below
+    // the bay, so bring the canvas back before waiting for its content swap.
+    await page.locator('#wrap canvas').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')
+        ?.releaseState === 'ready-for-release');
+
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')))
+      .toMatchObject({
+        caseId: 'nocrank',
+        repairState: 'verified',
+        verified: true,
+        releaseState: 'ready-for-release'
+      });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-work-order')))
+      .toMatchObject({ caseId: 'nocrank', stage: 'documented' });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-qa-unit')))
+      .toMatchObject({ caseId: 'nocrank', result: 'pass' });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('positive-terminal-corrosion-0'))).toBeNull();
+
+    const repairedPost = await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('battery-positive-post'));
+    const repairedClamp = await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('battery-positive-terminal-clamp'));
+    expect(repairedClamp).not.toBeNull();
+    expect(Math.abs((repairedClamp?.position.x ?? 99) - (repairedPost?.position.x ?? 0)))
+      .toBeLessThan(0.002);
+    expect(repairedClamp?.position.z).toBeCloseTo(0, 5);
+    expect(repairedClamp?.rotation.x).toBeCloseTo(Math.PI / 2, 5);
+    expect(await page.evaluate(() =>
+      (window as any).__toolData.autoRepair.rbDone?.nocrank))
+      .toMatchObject({
+        verdict: 'correct', verified: true,
+        verificationId: 'loaded-drop-restart', release: 'release'
+      });
+
+    // A professional boundary is also a verified outcome. Unlike a completed
+    // repair, the referral must keep the internal-failure evidence visible.
+    await page.evaluate(() => (window as any).__ctx.updateMulti('autoRepair', {
+      rbCase: 'headgasket',
+      rbEngine: 'off',
+      rbFound: {},
+      rbSel: null,
+      rbOpenPart: null,
+      rbVerdict: 'refer',
+      rbPhase: 'verify',
+      rbVerifyChoice: null,
+      rbVerifyResult: null,
+      rbPendingGrade: 'A',
+      rbMeterCase: null,
+      rbMeterTest: null,
+      rbMeterDraft: null,
+      rbMeterFeedback: null,
+      rbActiveTest: null
+    }));
+    await expect(page.locator('[data-ar-repair-verify="headgasket"]'))
+      .toHaveAttribute('data-ar-verify-state', 'ready');
+    await page.locator('#wrap canvas').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')?.caseId ===
+        'headgasket');
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')))
+      .toMatchObject({
+        caseId: 'headgasket',
+        repairState: 'diagnosed',
+        verified: false,
+        releaseState: 'proof-test-required'
+      });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-qa-unit')))
+      .toMatchObject({ caseId: 'headgasket', result: 'pending' });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('oil-cap-milky-sludge')))
+      .not.toBeNull();
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('coolant-below-min-level')))
+      .not.toBeNull();
+
+    await page.locator('[data-ar-verify-plan="document-tow"] input').check();
+    await page.locator('[data-ar-verify-action="run"]').click();
+    await expect(page.locator('[data-ar-repair-verify="headgasket"]'))
+      .toHaveAttribute('data-ar-verify-state', 'passed');
+    await expect(page.locator('[data-ar-release="refer"]'))
+      .toContainText('NO ROAD RELEASE');
+    await page.locator('#wrap canvas').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')
+        ?.releaseState === 'tow-referral');
+
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-cart')))
+      .toMatchObject({
+        caseId: 'headgasket',
+        repairState: 'verified',
+        verified: true,
+        releaseState: 'tow-referral'
+      });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-work-order')))
+      .toMatchObject({ caseId: 'headgasket', stage: 'documented' });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('repair-verification-qa-unit')))
+      .toMatchObject({ caseId: 'headgasket', result: 'safe-referral' });
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('oil-cap-milky-sludge')))
+      .not.toBeNull();
+    expect(await page.evaluate(() =>
+      (window as any).__latestSceneObjectState('coolant-below-min-level')))
+      .not.toBeNull();
+    expect(await page.evaluate(() =>
+      (window as any).__toolData.autoRepair.rbDone?.headgasket))
+      .toMatchObject({
+        verdict: 'correct', verified: true,
+        verificationId: 'document-tow', release: 'refer'
+      });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
   test('an open overheat fuse box exposes a blown fuse and supports camera focus and return', async ({ page }) => {
     await harness.mount(page, {
       autoRepair: {
@@ -401,6 +632,168 @@ test.describe('Auto Repair Shop — 3D modules on real WebGL', () => {
       (window as any).__sceneObjectState('dipstick-oil-film')?.faultState === 'below-low');
     expect(await page.evaluate(() =>
       (window as any).__sceneObjectState('dipstick-oil-film')?.faultState)).toBe('below-low');
+    expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('the guided multimeter gates evidence and settles a loaded post-to-clamp reading', async ({ page }) => {
+    await harness.mount(page, {
+      autoRepair: {
+        view: 'repairbay', rbCase: 'charging', rbEngine: 'off', rbFound: {}
+      }
+    });
+
+    const unavailable = page.locator('[data-ar-meter-test-trigger="v-run"]');
+    await expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    expect(await unavailable.evaluate((element) =>
+      !(element as HTMLButtonElement).disabled)).toBe(true);
+    await unavailable.focus();
+    await expect(unavailable).toBeFocused();
+    await unavailable.evaluate((element) => (element as HTMLButtonElement).click());
+    await expect(page.locator('[data-ar-meter-test]')).toHaveCount(0);
+    expect(await page.evaluate(() =>
+      !!(window as any).__toolData.autoRepair.rbFound?.['t:v-run'])).toBe(false);
+
+    await page.locator('[data-ar-meter-test-trigger="v-off"]').click();
+    await expect(page.locator('[data-ar-meter-test="v-off"]'))
+      .toHaveAttribute('data-ar-meter-state', 'setup');
+    expect(await page.evaluate(() =>
+      !!(window as any).__toolData.autoRepair.rbFound?.['t:v-off'])).toBe(false);
+    await expect(page.locator('[data-ar-meter-reading]')).toHaveCount(0);
+
+    await page.locator('[data-ar-meter-choice="mode:resistance"]').click();
+    await page.locator('[data-ar-meter-choice="connection:post-to-post"]').click();
+    await page.locator('[data-ar-meter-choice="load:none"]').click();
+    await page.locator('[data-ar-meter-action="take-reading"]').click();
+    await expect(page.locator('[data-ar-meter-feedback="error"]')).toContainText(
+      'Use DC volts for a 12-volt vehicle circuit'
+    );
+    expect(await page.evaluate(() =>
+      !!(window as any).__toolData.autoRepair.rbFound?.['t:v-off'])).toBe(false);
+    await expect(page.locator('[data-ar-meter-reading]')).toHaveCount(0);
+
+    await page.locator('[data-ar-meter-choice="mode:dcv"]').click();
+    await expect(page.locator('[data-ar-meter-feedback="error"]')).toHaveCount(0);
+    await page.locator('[data-ar-meter-action="take-reading"]').click();
+    await expect(page.locator('[data-ar-meter-reading="12.4"]'))
+      .toHaveAttribute('data-ar-meter-result', 'rest-charge-okay');
+    expect(await page.evaluate(() =>
+      !!(window as any).__toolData.autoRepair.rbFound?.['t:v-off'])).toBe(true);
+
+    await page.evaluate(() => (window as any).__ctx.updateMulti('autoRepair', {
+      rbCase: 'nocrank',
+      rbEngine: 'off',
+      rbFound: {},
+      rbSel: null,
+      rbOpenPart: null,
+      rbMeterCase: null,
+      rbMeterTest: null,
+      rbMeterDraft: null,
+      rbMeterFeedback: null,
+      rbActiveTest: null
+    }));
+    await page.locator('[data-ar-meter-test-trigger="v-clamp"]').click();
+    await page.locator('[data-ar-meter-choice="mode:dcv"]').click();
+    await page.locator('[data-ar-meter-choice="connection:positive-joint"]').click();
+    await page.locator('[data-ar-meter-choice="load:starter"]').click();
+    await page.locator('[data-ar-meter-action="take-reading"]').click();
+
+    const output = page.locator('[data-ar-meter-reading="1.6"]');
+    await expect(output).toHaveAttribute('data-ar-meter-unit', 'V drop');
+    await expect(output).toHaveAttribute('data-ar-meter-result', 'connection-drop-high');
+    await expect(output).toContainText('Below 0.2 V across one connection under load');
+    await expect(output).toContainText('Across + joint: post → clamp');
+    await expect(output).toContainText('Cranking / starter load');
+    expect(await page.evaluate(() =>
+      !!(window as any).__toolData.autoRepair.rbFound?.['t:v-clamp'])).toBe(true);
+
+    await page.waitForFunction(() =>
+      (window as any).__sceneObjectState('diagnostic-digital-multimeter')
+        ?.resultState === 'connection-drop-high');
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-digital-multimeter')))
+      .toMatchObject({
+        testId: 'v-clamp',
+        mode: 'dcv',
+        reading: '1.6',
+        unit: 'V drop',
+        resultState: 'connection-drop-high',
+        redContact: 'positive-post',
+        blackContact: 'positive-clamp',
+        selectedLoad: 'starter',
+        loadState: 'starter',
+        settled: true
+      });
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-red-test-lead')))
+      .toMatchObject({ testId: 'v-clamp', contact: 'positive-post' });
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-black-test-lead')))
+      .toMatchObject({ testId: 'v-clamp', contact: 'positive-clamp' });
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('meter-red-probe')))
+      .toMatchObject({ testId: 'v-clamp', contact: 'positive-post' });
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('meter-black-probe')))
+      .toMatchObject({ testId: 'v-clamp', contact: 'positive-clamp' });
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-starter-load-cue')))
+      .toMatchObject({ testId: 'v-clamp', loadState: 'cranking' });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('the load test uses separate shop equipment and the general tour stays meter-free', async ({ page }) => {
+    await harness.mount(page, {
+      autoRepair: {
+        view: 'repairbay', rbCase: 'badbattery', rbEngine: 'off', rbFound: {}
+      }
+    });
+
+    await page.locator('[data-ar-meter-test-trigger="load"]').click();
+    await page.locator('[data-ar-meter-choice="mode:dcv"]').click();
+    await page.locator('[data-ar-meter-choice="connection:post-to-post"]').click();
+    await page.locator('[data-ar-meter-choice="load:carbon-pile"]').click();
+    await page.locator('[data-ar-meter-action="take-reading"]').click();
+    await expect(page.locator('[data-ar-meter-reading="8.9"]'))
+      .toHaveAttribute('data-ar-meter-result', 'capacity-fail');
+
+    await page.waitForFunction(() =>
+      (window as any).__sceneObjectState('diagnostic-battery-load-tester')
+        ?.loadState === 'half-cca-15-seconds');
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-digital-multimeter')))
+      .toMatchObject({
+        testId: 'load',
+        reading: '8.9',
+        unit: 'V',
+        resultState: 'capacity-fail',
+        selectedLoad: 'carbon-pile',
+        loadState: 'carbon-pile',
+        settled: true
+      });
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-battery-load-tester')))
+      .toMatchObject({ testId: 'load', loadState: 'half-cca-15-seconds' });
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-load-tester-positive-cable')))
+      .not.toBeNull();
+    expect(await page.evaluate(() =>
+      (window as any).__sceneObjectState('diagnostic-load-tester-negative-cable')))
+      .not.toBeNull();
+
+    await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'view', 'underhood'));
+    await page.waitForFunction(() =>
+      !!(window as any).__latestSceneObjectState('raised-hood-underside'));
+    for (const name of [
+      'diagnostic-digital-multimeter',
+      'diagnostic-red-test-lead',
+      'diagnostic-black-test-lead',
+      'diagnostic-battery-load-tester',
+      'diagnostic-starter-load-cue'
+    ]) {
+      expect(await page.evaluate((objectName) =>
+        (window as any).__latestSceneObjectState(objectName), name), name).toBeNull();
+    }
     expect(await page.evaluate(() => (window as any).__canvasCount())).toBe(1);
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });

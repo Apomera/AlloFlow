@@ -13,7 +13,10 @@ describe('Info modal Atlas visualization', () => {
   });
 
   it('uses native buttons to open and focus their matching directory hubs', () => {
-    expect(source).toContain('aria-controls={atlasHubId(hub.hub)}');
+    // Overview cards switch views before the directory exists, so aria-controls
+    // would point at missing nodes until activation. The direct click/focus path
+    // communicates the relationship without an invalid ID reference.
+    expect(source).not.toContain('aria-controls={atlasHubId(hub.hub)}');
     expect(source).toContain('onClick={() => onChooseHub(hub.hub)}');
     expect(source).toContain("setAtlasView('directory')");
     expect(source).toContain("target.querySelector('summary')?.focus()");
@@ -22,7 +25,7 @@ describe('Info modal Atlas visualization', () => {
 
   it('keeps the visualization supplemental and exposes text equivalents', () => {
     expect(source).toContain('<p className="sr-only">{hub.hub} overview: {visual.route.join(\', \')}.</p>');
-    expect(source).toContain('aria-hidden="true" className="flex items-center gap-1.5"');
+    expect(source).toContain('aria-hidden="true" className="grid grid-cols-1 gap-1.5 sm:flex sm:items-center"');
     expect(source).toContain("aria-label={cat.name + ' catalog entries'}");
     expect(source).toContain('role="listitem"');
     expect(source).toContain('focus-visible:ring-indigo-600');
@@ -117,6 +120,24 @@ describe('Info modal Atlas visualization', () => {
     expect(source).toContain('>Catalog directory</h5>');
     expect(source).not.toContain('A map of everything inside AlloFlow');
     expect(source).not.toContain('Atlas is the complete live directory');
+  });
+
+  it('keeps expanded hubs readable and reflowable with text spacing at 320px', () => {
+    expect(source).toContain('grid grid-cols-[auto_minmax(0,1fr)_auto] items-start sm:flex sm:items-center');
+    expect(source).toContain('col-start-2 col-span-2 row-start-2 mt-2 justify-self-start max-w-full');
+    expect(source).toContain('whitespace-normal break-words sm:mt-0 sm:shrink-0 sm:whitespace-nowrap');
+    expect(source).toContain('hidden sm:block h-px min-w-2 flex-1 bg-slate-300');
+    expect(source).toContain('min-w-0 sm:flex-1 whitespace-normal break-words');
+    expect(source).toContain('id="atlas-directory-title" className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-600"');
+    expect(source).toContain('text-[9px] font-bold text-slate-600 leading-snug');
+    expect(source).toContain('text-[10px] text-slate-600 leading-relaxed pt-1 border-t');
+    expect(source).toContain('text-[9px] font-black uppercase tracking-wider text-slate-600 block mb-1');
+    expect(source).toContain('font-black uppercase tracking-wider text-slate-600">Examples:');
+    expect(source).toContain('text-[9px] font-black uppercase tracking-wider text-slate-600 mb-2');
+    expect(source).toContain("accent: 'bg-sky-700'");
+    expect(source).toContain("accent: 'bg-amber-700'");
+    expect(source).not.toContain("accent: 'bg-sky-600'");
+    expect(source).not.toContain("accent: 'bg-amber-600'");
   });
 
 });

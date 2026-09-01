@@ -109,14 +109,18 @@
   return /*#__PURE__*/React.createElement("div", {
     className: "mt-4 grid gap-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4 sm:grid-cols-[auto,1fr] sm:items-center"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3",
-    "aria-label": t('project_settings.portal_qr_aria') || "Educator Evaluation district portal QR code"
+    className: "flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3"
   }, state.status === 'ready' && state.svg ? /*#__PURE__*/React.createElement("div", {
+    role: "img",
+    "aria-label": t('project_settings.portal_qr_aria') || "Educator Evaluation district portal QR code",
     className: "h-40 w-40 [&_svg]:h-full [&_svg]:w-full",
     dangerouslySetInnerHTML: {
       __html: state.svg
     }
   }) : /*#__PURE__*/React.createElement("span", {
+    role: state.status === 'error' ? 'alert' : 'status',
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "px-3 text-center text-xs font-bold text-violet-800"
   }, state.status === 'error' ? 'QR unavailable' : 'Preparing QR code…')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-black uppercase tracking-wider text-violet-700"
@@ -131,6 +135,64 @@
     onClick: copyPortalLink,
     className: "mt-3 min-h-10 rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-800 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2"
   }, "Copy portal link")));
+}
+function ProjectSettingsDialogFocusManager(props) {
+  var React = window.React;
+  React.useEffect(function () {
+    var root = document.getElementById(props.dialogId);
+    if (!root) return undefined;
+    var previouslyFocused = document.activeElement;
+    var trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    var trap = {
+      root: root
+    };
+    trapStack.push(trap);
+    var isTopTrap = function () {
+      return trapStack[trapStack.length - 1] === trap;
+    };
+    var getFocusableElements = function () {
+      return Array.from(root.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])')).filter(function (element) {
+        if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        var style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+        return !style || style.display !== 'none' && style.visibility !== 'hidden';
+      });
+    };
+    var handleKeyDown = function (event) {
+      if (!isTopTrap() || event.key !== 'Tab') return;
+      var focusableElements = getFocusableElements();
+      if (!focusableElements.length) {
+        event.preventDefault();
+        root.focus();
+        return;
+      }
+      var first = focusableElements[0];
+      var last = focusableElements[focusableElements.length - 1];
+      var activeIndex = focusableElements.indexOf(document.activeElement);
+      if (event.shiftKey && (activeIndex <= 0 || !root.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (activeIndex === -1 || activeIndex === focusableElements.length - 1)) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    try {
+      root.focus();
+    } catch (_) {}
+    return function () {
+      document.removeEventListener('keydown', handleKeyDown);
+      var wasTopTrap = isTopTrap();
+      var trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
+        try {
+          previouslyFocused.focus();
+        } catch (_) {}
+      }
+    };
+  }, [props.dialogId]);
+  return null;
 }
 function ProjectSettingsView(props) {
   var t = props.t;
@@ -389,8 +451,12 @@ function ProjectSettingsView(props) {
         handleSetIsProjectSettingsOpenToFalse();
       }
     }
-  }, /*#__PURE__*/React.createElement("section", {
-    className: "flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-2xl",
+  }, /*#__PURE__*/React.createElement(ProjectSettingsDialogFocusManager, {
+    dialogId: "project-settings-dialog"
+  }), /*#__PURE__*/React.createElement("section", {
+    id: "project-settings-dialog",
+    tabIndex: -1,
+    className: "allo-docsuite flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-2xl",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "project-settings-title",
@@ -541,7 +607,9 @@ function ProjectSettingsView(props) {
     className: "mt-2 space-y-2 text-xs leading-relaxed text-slate-600"
   }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("strong", null, "This is not a self-serve setup."), " The portal is a Google Apps Script web app that a district-controlled Workspace account deploys and owns. It holds personnel records, so your district has to review and approve it first."), /*#__PURE__*/React.createElement("ol", {
     className: "ml-4 list-decimal space-y-1"
-  }, /*#__PURE__*/React.createElement("li", null, "Your district creates an Apps Script project from the AlloFlow Educator Evaluation package and reviews the source and its permissions."), /*#__PURE__*/React.createElement("li", null, "They deploy it as a Web app with ", /*#__PURE__*/React.createElement("strong", null, "Execute as: the district owner"), " and ", /*#__PURE__*/React.createElement("strong", null, "Who has access: users in your domain"), ". Never \"Anyone\"."), /*#__PURE__*/React.createElement("li", null, "They run the one-time setup with your school's staff list, evaluator assignments, and roles."), /*#__PURE__*/React.createElement("li", null, "They give you the deployment URL ending in ", /*#__PURE__*/React.createElement("code", null, "/exec"), ". Paste it above.")), /*#__PURE__*/React.createElement("p", null, "AlloFlow stores only that launcher address, on this device. It never holds the records. Access is decided by Google sign-in and the assignments your district configured, so sharing the link or the QR code does not give anyone access they do not already have."), /*#__PURE__*/React.createElement("p", null, "The full setup and compliance checklist ships with the package, at ", /*#__PURE__*/React.createElement("code", null, "apps_script/educator_evaluation/README.md"), "."))), /*#__PURE__*/React.createElement(EvaluationPortalQr, {
+  }, /*#__PURE__*/React.createElement("li", null, "Your district creates an Apps Script project from the AlloFlow Educator Evaluation package and reviews the source and its permissions."), /*#__PURE__*/React.createElement("li", null, "They deploy it as a Web app with ", /*#__PURE__*/React.createElement("strong", null, "Execute as: the district owner"), " and ", /*#__PURE__*/React.createElement("strong", null, "Who has access: users in your domain"), ". Never \"Anyone\"."), /*#__PURE__*/React.createElement("li", null, "They run the one-time setup with your school's staff list, evaluator assignments, and roles."), /*#__PURE__*/React.createElement("li", null, "They give you the deployment URL ending in ", /*#__PURE__*/React.createElement("code", null, "/exec"), ". Paste it above.")), /*#__PURE__*/React.createElement("p", null, "AlloFlow stores only that launcher address, on this device. It never holds the records. Access is decided by Google sign-in and the assignments your district configured, so sharing the link or the QR code does not give anyone access they do not already have."), /*#__PURE__*/React.createElement("p", null, "The full setup and compliance checklist ships with the package, at ", /*#__PURE__*/React.createElement("code", {
+    className: "break-all"
+  }, "apps_script/educator_evaluation/README.md"), "."))), /*#__PURE__*/React.createElement(EvaluationPortalQr, {
     t: t,
     url: isEvaluationPortalConnected ? evaluationPortalUrl : ''
   }))), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
@@ -718,8 +786,7 @@ function ProjectSettingsView(props) {
         console.warn('[Settings] Report-a-problem button failed:', error);
       }
     },
-    className: "flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-700",
-    "aria-label": t('a11y.report_problem')
+    className: "flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
   }, /*#__PURE__*/React.createElement(CircleHelp, {
     size: 14,
     "aria-hidden": "true"

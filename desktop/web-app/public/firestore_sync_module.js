@@ -59,12 +59,64 @@
     );
   }
 
+  // Memory Aid practice/retrieval attempts are private student learning
+  // evidence. Older resource versions embedded them in cards (and some
+  // imported payloads wrapped those cards more deeply), so boundary cleanup
+  // must be recursive rather than tied to one legacy schema shape.
+  const PRIVATE_MEMORY_AID_EVIDENCE_KEYS = new Set([
+    'practiceAttempts',
+    'retrievalAttempts',
+  ]);
+
+  function stripMemoryAidPracticeEvidence(value, seen) {
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    const visited = seen || new WeakMap();
+    if (visited.has(value)) return visited.get(value);
+    const cleaned = Array.isArray(value) ? [] : {};
+    visited.set(value, cleaned);
+    Object.entries(value).forEach(([key, nestedValue]) => {
+      if (PRIVATE_MEMORY_AID_EVIDENCE_KEYS.has(key)) return;
+      cleaned[key] = stripMemoryAidPracticeEvidence(nestedValue, visited);
+    });
+    return cleaned;
+  }
+
+  function isMemoryAidBoundaryNode(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    return [value.type, value.artifactType].some(candidate =>
+      typeof candidate === 'string'
+      && candidate.trim().toLowerCase().replace(/[\s_]+/g, '-') === 'memory-aid'
+    );
+  }
+
+  // A Memory Aid can travel either as the history item itself or nested in a
+  // lesson/import envelope. Walk neutral containers without treating their
+  // similarly named fields as private, then strip the complete subtree only
+  // after a resource node identifies itself as a Memory Aid.
+  function sanitizeMemoryAidResourceForBoundary(value, seen) {
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    if (isMemoryAidBoundaryNode(value)) return stripMemoryAidPracticeEvidence(value);
+    const visited = seen || new WeakMap();
+    if (visited.has(value)) return visited.get(value);
+    const cleaned = Array.isArray(value) ? [] : {};
+    visited.set(value, cleaned);
+    Object.entries(value).forEach(([key, nestedValue]) => {
+      cleaned[key] = sanitizeMemoryAidResourceForBoundary(nestedValue, visited);
+    });
+    return cleaned;
+  }
+
   // Strip large/binary fields (image URLs, sceneImage blobs, avatars) from
   // history items before writing to Firestore. Keeps the rest of the item
   // intact so reload-from-cloud preserves structure even if visuals are
   // regenerated locally.
   function sanitizeHistoryForCloud(historyItems) {
-    const cleaned = historyItems.filter(item => !isPrivatePersonaHistoryItem(item)).map(item => {
+    const cleaned = historyItems.filter(item => !isPrivatePersonaHistoryItem(item)).map(rawItem => {
+        const item = sanitizeMemoryAidResourceForBoundary(rawItem);
         if (item.type === 'glossary' && Array.isArray(item.data)) {
             const cleanData = item.data.map(gItem => {
                 const { image, ...rest } = gItem;
@@ -132,31 +184,110 @@
   // the whole sync write fails — taking the mnemonics, mastery schedule and
   // student-built loci down with the pictures.
   //
-  // Artwork is REGENERABLE; the rest of a palace is not, and is tiny. So when the
-  // payload will not fit, drop the pictures and keep the palace. The OLDEST items
-  // lose theirs first, so whatever the teacher is working on now keeps its art
-  // longest. Callers see a normal history array, just a lighter one.
+  // Generated artwork is regenerable; uploaded Memory Aid originals are not.
+  // When the payload will not fit, shed generated/legacy art oldest-first, then
+  // uploaded originals only if still necessary. Uploaded omissions keep a small
+  // local-only provenance marker. The authored lesson and learning data remain.
   const CLOUD_ART_BUDGET_BYTES = 850 * 1024;
+
+  const MEMORY_AID_UPLOADED_VISUAL_OMISSION = Object.freeze({
+    schemaVersion: 1,
+    asset: 'visual',
+    reason: 'cloud-artwork-budget',
+    originalSource: 'uploaded',
+    availability: 'originating-device-only',
+    message: 'Uploaded visual omitted from cloud sync; the local original was not changed.'
+  });
+
+  function stripMemoryAidCardArtwork(cards, mode) {
+    if (!Array.isArray(cards)) return { value: cards, changed: false };
+    let changed = false;
+    const value = cards.map(card => {
+      if (!card || typeof card !== 'object' || Array.isArray(card)) return card;
+      const hasVisualImage = typeof card.visualImage === 'string' && !!card.visualImage;
+      const hasLegacyImage = typeof card.imageUrl === 'string' && !!card.imageUrl;
+      if (!hasVisualImage && !hasLegacyImage) return card;
+      const uploaded = String(card.visualSource || '').trim().toLowerCase() === 'uploaded';
+      if ((mode === 'regenerable' && uploaded) || (mode === 'uploaded' && !uploaded)) return card;
+      const next = { ...card };
+      if (hasVisualImage) delete next.visualImage;
+      if (hasLegacyImage) delete next.imageUrl;
+      if (uploaded) next.visualSyncOmission = { ...MEMORY_AID_UPLOADED_VISUAL_OMISSION };
+      changed = true;
+      return next;
+    });
+    return { value: changed ? value : cards, changed };
+  }
+
+  function stripMemoryAidArtworkInEnvelopes(value, mode, insideMemoryAid) {
+    if (!value || typeof value !== 'object' || value instanceof Date) {
+      return { value, changed: false };
+    }
+    if (Array.isArray(value)) {
+      let changed = false;
+      const next = value.map(entry => {
+        const result = stripMemoryAidArtworkInEnvelopes(entry, mode, insideMemoryAid);
+        changed = changed || result.changed;
+        return result.value;
+      });
+      return { value: changed ? next : value, changed };
+    }
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) return { value, changed: false };
+    const explicitlyTyped = typeof value.type === 'string' || typeof value.artifactType === 'string';
+    const inMemoryAid = isMemoryAidBoundaryNode(value)
+      ? true
+      : (explicitlyTyped ? false : insideMemoryAid === true);
+    let next = value;
+    let changed = false;
+    Object.keys(value).forEach(key => {
+      const result = inMemoryAid && key === 'cards'
+        ? stripMemoryAidCardArtwork(value[key], mode)
+        : stripMemoryAidArtworkInEnvelopes(value[key], mode, inMemoryAid);
+      if (!result.changed) return;
+      if (!changed) next = { ...value };
+      next[key] = result.value;
+      changed = true;
+    });
+    return { value: next, changed };
+  }
 
   // Whole-store artwork that lives beside its own metadata. Removing the store's
   // image maps leaves labels, mnemonics, mastery, themes and student-built rooms
   // and loci untouched — a palace that reloads without pictures still walks, and
-  // the frames fall back to their numbered cards.
-  function stripHeavyArtwork(item) {
+  // the frames fall back to their numbered cards. Memory Aid nodes may be nested
+  // in lesson/resource envelopes, so their card art is found through the same
+  // type/artifactType boundary used by the privacy sanitizer.
+  function stripHeavyArtwork(item, options) {
+    const config = options && typeof options === 'object' ? options : {};
+    const memoryAidMode = ['regenerable', 'uploaded'].includes(config.memoryAidMode)
+      ? config.memoryAidMode
+      : 'all';
+    const stripGenericArtwork = config.stripGenericArtwork !== false;
     const data = item && item.data;
-    if (!data || typeof data !== 'object' || Array.isArray(data)) return item;
+    if (!item || typeof item !== 'object') return item;
     let touched = false;
-    const next = { ...data };
-    const palace = next.memoryPalace;
+    let nextItem = item;
+    let next = data;
+    const palace = data && typeof data === 'object' && !Array.isArray(data)
+      ? data.memoryPalace
+      : null;
     // `covered` holds the illustration a decorative stamp is sitting on, so it is
     // base64 too and has to go with the rest of the artwork.
-    if (palace && typeof palace === 'object' && (palace.images || palace.depths || palace.covered)) {
+    if (stripGenericArtwork && palace && typeof palace === 'object' && (palace.images || palace.depths || palace.covered)) {
+      if (!touched) next = { ...data };
       const { images, depths, covered, ...keep } = palace;
       next.memoryPalace = keep;
       touched = true;
     }
-    if (next.conceptArt) { delete next.conceptArt; touched = true; }
-    return touched ? { ...item, data: next } : item;
+    if (stripGenericArtwork && data && typeof data === 'object' && !Array.isArray(data) && data.conceptArt) {
+      if (!touched) next = { ...data };
+      delete next.conceptArt;
+      touched = true;
+    }
+    if (touched) nextItem = { ...item, data: next };
+    const memoryResult = stripMemoryAidArtworkInEnvelopes(nextItem, memoryAidMode, false);
+    return memoryResult.changed ? memoryResult.value : nextItem;
   }
 
   function fitArtworkToBudget(items) {
@@ -164,20 +295,27 @@
     let size = estimateJsonBytes(items);
     if (size <= CLOUD_ART_BUDGET_BYTES) return items;
     const out = items.slice();
-    let dropped = 0;
-    // History is appended, so index 0 is the oldest.
-    for (let i = 0; i < out.length && size > CLOUD_ART_BUDGET_BYTES; i++) {
-      const lighter = stripHeavyArtwork(out[i]);
-      if (lighter === out[i]) continue;          // nothing heavy here; don't re-measure
-      out[i] = lighter;
-      dropped += 1;
-      size = estimateJsonBytes(out);
-    }
-    if (dropped) {
+    const droppedIndexes = new Set();
+    const stripPass = (memoryAidMode, stripGenericArtwork) => {
+      // History is appended, so index 0 is the oldest within each priority.
+      for (let i = 0; i < out.length && size > CLOUD_ART_BUDGET_BYTES; i++) {
+        const lighter = stripHeavyArtwork(out[i], { memoryAidMode, stripGenericArtwork });
+        if (lighter === out[i]) continue;
+        out[i] = lighter;
+        droppedIndexes.add(i);
+        size = estimateJsonBytes(out);
+      }
+    };
+    // AI-generated, AI-refined, and legacy/unknown visuals can be recreated.
+    // Remove those (and the existing generic artwork stores) before touching a
+    // learner or teacher's uploaded original.
+    stripPass('regenerable', true);
+    if (size > CLOUD_ART_BUDGET_BYTES) stripPass('uploaded', false);
+    if (droppedIndexes.size) {
       try {
-        window.__alloLastCloudArtDrop = { items: dropped, bytesAfter: size };
+        window.__alloLastCloudArtDrop = { items: droppedIndexes.size, bytesAfter: size };
         if (typeof window.warnLog === 'function') {
-          window.warnLog(`[FirestoreSync] Cloud payload over budget — dropped generated artwork from ${dropped} history item(s) to fit. Palaces keep their loci, mnemonics and review schedule.`);
+          window.warnLog(`[FirestoreSync] Cloud payload over budget — omitted artwork from ${droppedIndexes.size} history item(s) to fit. Uploaded Memory Aid omissions retain local-only provenance.`);
         }
       } catch (e) { /* diagnostics only */ }
     }
@@ -372,14 +510,17 @@
               data: parsedData,
               gameData: parsedGameData || item.gameData
           };
-          const instructionalText = normalizePersistedInstructionalText(hydratedItem);
-          return instructionalText ? { ...hydratedItem, instructionalText } : hydratedItem;
+          const boundarySafeItem = sanitizeMemoryAidResourceForBoundary(hydratedItem);
+          const instructionalText = normalizePersistedInstructionalText(boundarySafeItem);
+          return instructionalText ? { ...boundarySafeItem, instructionalText } : boundarySafeItem;
       });
   }
 
   // Mirror to window.* so monolith's existing shim references can be
   // upgraded by _upgradeFirestoreSync().
   window.stripUndefined = stripUndefined;
+  window.stripMemoryAidPracticeEvidence = stripMemoryAidPracticeEvidence;
+  window.sanitizeMemoryAidResourceForBoundary = sanitizeMemoryAidResourceForBoundary;
   window.sanitizeHistoryForCloud = sanitizeHistoryForCloud;
   window.hydrateHistory = hydrateHistory;
   window.estimateJsonBytes = estimateJsonBytes;

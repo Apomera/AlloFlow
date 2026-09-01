@@ -163,7 +163,12 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.textContent).toContain('2D side view');
     expect(container.querySelector('canvas')?.getAttribute('aria-label')).toContain('2D view');
     expect(container.querySelector('#sk-playhead')).not.toBeNull();
-    expect(container.querySelector('#sk-playhead')?.getAttribute('aria-describedby')).toBe('sk-phase-times');
+    expect(container.querySelector('#sk-playhead')?.getAttribute('aria-describedby'))
+      .toBe('sk-phase-times sk-phase-insight');
+    expect(container.querySelector('#sk-phase-insight')?.textContent)
+      .toContain('Gravity converts height into speed');
+    expect(container.querySelectorAll('.sk-phase-jump').length).toBeGreaterThanOrEqual(5);
+    expect(container.querySelector('.sk-phase-jump[aria-label^="Jump to apex at"]')).not.toBeNull();
     expect(container.querySelector('#sk-phase-times')?.textContent).toContain('bottom');
     expect(container.querySelector('#sk-phase-times')?.textContent).toContain('re-entry');
     expect(container.querySelector('#sk-phase-times')?.textContent).toContain('return');
@@ -181,6 +186,16 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.querySelector('.sk-live-telemetry')?.getAttribute('aria-label')).toContain('degrees of trick rotation');
     expect(container.querySelector('#sk-canvas-summary')?.textContent).toContain('board follows the local surface tangent');
     expect(contextCalls.some((ctx) => ctx.fillText.mock.calls.some((call) => String(call[0]).startsWith('peak ')))).toBe(true);
+
+    const apexJump = container.querySelector('.sk-phase-jump[aria-label^="Jump to apex at"]');
+    await act(async () => {
+      apexJump.click();
+    });
+    expect(Number(container.querySelector('#sk-playhead')?.value)).toBeGreaterThan(50);
+    expect(container.querySelector('.sk-live-telemetry')?.textContent).toContain('at the apex');
+    expect(container.querySelector('#sk-phase-insight')?.textContent)
+      .toContain('Vertical velocity is momentarily near zero');
+    expect(container.querySelector('.sk-status')?.textContent).toContain('Inspecting at the apex');
 
     const halfpipePlayhead = container.querySelector('#sk-playhead');
     await act(async () => {
@@ -214,7 +229,7 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.textContent).toContain('Launch Jump');
     expect(container.querySelector('#sk-air-drag')?.checked).toBe(true);
     expect(container.querySelector('#sk-landing-compression')?.value).toBe('0.45');
-    expect(container.querySelector('#sk-phase-times')?.textContent).toContain('roll');
+    expect(container.querySelector('#sk-phase-times')?.textContent).toContain('pulse end');
     expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
       .toContain('Support load trace');
     expect(container.querySelector('.sk-timeline-trace')?.getAttribute('aria-label'))
@@ -225,7 +240,8 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.textContent).toContain('Landing angle');
     expect(container.textContent).toContain('Lateral drift');
     expect(container.textContent).toContain('Landing load');
-    expect(container.textContent).toContain('vertical energy absorbed');
+    expect(container.textContent).toContain('vertical kinetic energy removed');
+    expect(container.textContent).toContain('support-work magnitude');
     expect(container.textContent).toContain('net vertical impulse');
     expect(container.textContent).toContain('mean contact force');
     expect(container.textContent).toContain('ideal no-drag reference');
@@ -242,10 +258,49 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.querySelectorAll('.sk-table tbody tr')).toHaveLength(1);
     expect(container.querySelector('#sk-playhead')?.value).toBe('100');
     expect(container.querySelector('.sk-live-telemetry')?.textContent)
-      .toContain('rolling out');
+      .toContain('contact pulse complete');
     expect(container.querySelector('.sk-live-telemetry')?.textContent)
-      .toMatch(/1(?:\.0)? g support/);
+      .toMatch(/COM ↓ 0\.45 m · 1(?:\.0)? g/);
     expect(contextCalls.some((ctx) => ctx.fillText.mock.calls.length > 0)).toBe(true);
+
+    const contactModel = window.__alloSkatePhysicsPure.simGapJump({
+      speedMph: 17,
+      angleDeg: 35,
+      gapFt: 15,
+      riderMassKg: 62,
+      vehicle: 'skate',
+      gravity: 9.81,
+      windId: 'calm',
+      airDrag: true,
+      landingCompressionM: 0.45,
+    });
+    const contactMidPercent = Math.round(100 * (
+      contactModel.approachTime + contactModel.airTime +
+      contactModel.landingStopTimeS * 0.5
+    ) / contactModel.motionDuration);
+    await act(async () => {
+      setControlValue(container.querySelector('#sk-playhead'), contactMidPercent);
+    });
+
+    expect(container.querySelector('#sk-phase-insight')?.textContent)
+      .toContain('board stays on the deck');
+    expect(container.querySelector('#sk-phase-insight')?.textContent)
+      .toContain('center of mass has moved');
+    expect(container.querySelector('.sk-live-telemetry')?.textContent)
+      .toContain('COM ↓');
+    expect(container.querySelector('.sk-live-telemetry')?.getAttribute('aria-label'))
+      .toContain('board supported at deck height');
+    expect(container.querySelector('.sk-live-telemetry')?.getAttribute('aria-label'))
+      .toContain('center-of-mass compression');
+    expect(container.querySelector('.sk-live-telemetry')?.getAttribute('aria-label'))
+      .toContain('net vertical impulse delivered');
+    expect(container.querySelector('#sk-canvas-summary')?.textContent)
+      .toContain('cyan COM marker');
+    expect(container.querySelector('#sk-canvas-summary')?.textContent)
+      .toContain('green marks the moving board-support point');
+    expect(contextCalls.some((ctx) => ctx.fillText.mock.calls.some(
+      ([text]) => String(text).startsWith('COM ↓'),
+    ))).toBe(true);
 
     const landingCompression = container.querySelector('#sk-landing-compression');
     await act(async () => {
@@ -256,7 +311,7 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.querySelector('.sk-stage-legend')?.textContent)
       .toContain('lavender dashed = previous run');
     expect(container.querySelector('#sk-canvas-summary')?.textContent)
-      .toContain('Compared with the previous run:');
+      .toContain('One-variable prediction: Landing absorption increased');
 
     await act(async () => {
       launch.click();
@@ -265,7 +320,107 @@ describe('Skate Lab mounted canvas runtime', () => {
     expect(container.querySelectorAll('.sk-table tbody tr')).toHaveLength(2);
     expect(container.querySelector('.sk-trace-previous')).not.toBeNull();
     expect(container.querySelector('#sk-canvas-summary')?.textContent)
-      .toContain('Compared with the previous run:');
+      .toContain('One-variable result: Landing absorption increased');
+  });
+
+  it('pauses and resumes a live animation without advancing during the pause or logging twice', async () => {
+    window.matchMedia = vi.fn(() => ({
+      matches: false,
+      media: '(prefers-reduced-motion: reduce)',
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    let nextFrameId = 0;
+    const queuedFrames = new Map();
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      nextFrameId += 1;
+      queuedFrames.set(nextFrameId, callback);
+      return nextFrameId;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((frameId) => {
+      queuedFrames.delete(frameId);
+    });
+
+    function advanceFrame(time) {
+      const pending = [...queuedFrames.values()];
+      queuedFrames.clear();
+      pending.forEach((callback) => callback(time));
+    }
+
+    function Host() {
+      const [toolData, setToolData] = React.useState(seed());
+      return toolConfig.render(makeCtx({ toolData, setToolData }));
+    }
+
+    await act(async () => {
+      root.render(React.createElement(Host));
+    });
+    await act(async () => {
+      container.querySelector('[data-skatelab-launch="true"]').click();
+    });
+
+    expect(container.querySelector('[data-skatelab-playback-toggle="true"]')?.textContent)
+      .toBe('Pause motion');
+    await act(async () => {
+      advanceFrame(100);
+      advanceFrame(1200);
+    });
+    const movingProgress = Number(container.querySelector('#sk-playhead')?.value);
+    expect(movingProgress).toBeGreaterThan(0);
+    expect(movingProgress).toBeLessThan(100);
+
+    await act(async () => {
+      container.querySelector('[data-skatelab-playback-toggle="true"]').click();
+    });
+    const pausedProgress = container.querySelector('#sk-playhead')?.value;
+    expect(container.querySelector('[data-skatelab-playback-toggle="true"]')?.textContent)
+      .toBe('Resume motion');
+    expect(container.querySelector('[data-skatelab-launch="true"]')?.textContent).toBe('Paused');
+    expect(container.querySelector('.sk-status')?.textContent).toContain('Paused at');
+    await act(async () => {
+      advanceFrame(9000);
+    });
+    expect(container.querySelector('#sk-playhead')?.value).toBe(pausedProgress);
+
+    await act(async () => {
+      container.querySelector('[data-skatelab-playback-toggle="true"]').click();
+    });
+    await act(async () => {
+      advanceFrame(9000);
+    });
+    expect(container.querySelector('#sk-playhead')?.value).toBe(pausedProgress);
+    await act(async () => {
+      advanceFrame(15000);
+    });
+
+    expect(container.querySelector('#sk-playhead')?.value).toBe('100');
+    expect(container.querySelector('[data-skatelab-playback-toggle="true"]')).toBeNull();
+    expect(container.querySelectorAll('.sk-table tbody tr')).toHaveLength(1);
+  });
+
+  it('uses the measured narrow canvas box without stretching a forced minimum coordinate space', async () => {
+    HTMLCanvasElement.prototype.getBoundingClientRect.mockReturnValue({
+      width: 278,
+      height: 278,
+      top: 0,
+      left: 0,
+      right: 278,
+      bottom: 278,
+    });
+
+    function Host() {
+      const [toolData, setToolData] = React.useState(seed());
+      return toolConfig.render(makeCtx({ toolData, setToolData }));
+    }
+
+    await act(async () => {
+      root.render(React.createElement(Host));
+    });
+
+    const canvas = container.querySelector('canvas');
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    expect(canvas.width).toBe(Math.round(278 * dpr));
+    expect(canvas.height).toBe(Math.round(278 * dpr));
+    expect(contextCalls.some((ctx) => ctx.fillText.mock.calls.length > 0)).toBe(true);
   });
 });
-

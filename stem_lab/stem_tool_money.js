@@ -100,15 +100,49 @@ window.StemLab = window.StemLab || {
             const d = labToolData.moneyMath || {};
             const upd = (key, val) => setLabToolData(prev => ({ ...prev, moneyMath: { ...prev.moneyMath, [key]: val } }));
             var moneyAwardKeys = Object.assign({}, d.moneyAwardKeys || {});
+            var moneyRoundIds = Object.assign({}, d.moneyRoundIds || {});
+            var beginMoneyRound = function(activity) {
+              var nextRound = (Number(moneyRoundIds[activity]) || 0) + 1;
+              moneyRoundIds[activity] = nextRound;
+              upd('moneyRoundIds', Object.assign({}, moneyRoundIds));
+              return nextRound;
+            };
             var awardMoneyXPOnce = function(activity, fingerprint, points, reason) {
-              var key;
-              try { key = JSON.stringify(fingerprint); } catch (e) { key = String(fingerprint); }
-              if (moneyAwardKeys[activity] === key || typeof awardXP !== 'function') return false;
+              var legacyKey;
+              try { legacyKey = JSON.stringify(fingerprint); } catch (e) { legacyKey = String(fingerprint); }
+              var roundId = Number(moneyRoundIds[activity]) || 0;
+              var key = JSON.stringify([roundId, legacyKey]);
+              if (moneyAwardKeys[activity] === key || (roundId === 0 && moneyAwardKeys[activity] === legacyKey) || typeof awardXP !== 'function') return false;
               moneyAwardKeys[activity] = key;
               upd('moneyAwardKeys', Object.assign({}, moneyAwardKeys));
               awardXP('moneyMath', points, reason);
               return true;
             };
+            var normalizeMoneyNumber = function(raw, options) {
+              options = options || {};
+              if (raw === null || raw === undefined || String(raw).trim() === '') return null;
+              var value = Number(raw);
+              if (!Number.isFinite(value)) return null;
+              if (options.integer) value = Math.trunc(value);
+              if (Number.isFinite(options.min)) value = Math.max(options.min, value);
+              if (Number.isFinite(options.max)) value = Math.min(options.max, value);
+              return value;
+            };
+            var moneyDraftValue = function(draftKey, committedValue) {
+              return Object.prototype.hasOwnProperty.call(d, draftKey) && d[draftKey] !== null ? d[draftKey] : committedValue;
+            };
+            var updateMoneyNumberDraft = function(draftKey, valueKey, raw, options) {
+              upd(draftKey, raw);
+              var nextValue = normalizeMoneyNumber(raw, options);
+              if (nextValue !== null) upd(valueKey, nextValue);
+            };
+            var finishMoneyNumberDraft = function(draftKey, valueKey, raw, options, fallback) {
+              var nextValue = normalizeMoneyNumber(raw, options);
+              if (nextValue === null) nextValue = typeof d[valueKey] === 'number' ? d[valueKey] : fallback;
+              upd(valueKey, nextValue);
+              upd(draftKey, null);
+            };
+            var clearMoneyDrafts = function(keys) { keys.forEach(function(key) { upd(key, null); }); };
 
             const tab = d.tab || 'coins';
             const grade = d.grade || 'elementary';
@@ -1333,6 +1367,7 @@ window.StemLab = window.StemLab || {
             };
 
             var genCashierRound = function () {
+              beginMoneyRound('cashier-rush');
               // v3: in 'easy' mode, fewer items per wave too — keeps cognitive load down
               var isEasy = crDifficulty === 'easy';
               var isChallenge = crDifficulty === 'challenge';
@@ -1500,6 +1535,7 @@ window.StemLab = window.StemLab || {
 
             // ── Generate change problem ──
             var genChangeProblem = function () {
+              beginMoneyRound('making-change');
               var maxVal = gc.maxPrice;
               var price = isJPY ? (Math.floor(Math.random() * (maxVal * 0.8)) + 10) : (Math.floor(Math.random() * maxVal * 100) / 100 + 0.25);
               var smallestCashUnit = Math.min.apply(null, cur.coins.map(function (coin) { return coin.value; }));
@@ -1521,6 +1557,7 @@ window.StemLab = window.StemLab || {
 
             // ── Exchange rate problem generator ──
             var genExchangeProblem = function () {
+              beginMoneyRound('currency-conversion');
               var codes = Object.keys(CURRENCIES);
               var from = codes[Math.floor(Math.random() * codes.length)];
               var to = codes[Math.floor(Math.random() * codes.length)];
@@ -1535,6 +1572,7 @@ window.StemLab = window.StemLab || {
 
             // ── Word problem via AI ──
             var genWordProblem = function () {
+              beginMoneyRound('ai-word-problem');
               upd('wpLoading', true); upd('wpProblem', null); upd('wpAnswer', null); upd('wpFeedback', null);
               var levelText = gc.wordProblemLevel;
               var taxNote = gc.includeTax ? ' Include sales tax problems (8% rate).' : '';
@@ -1556,6 +1594,7 @@ window.StemLab = window.StemLab || {
 
             // ── Tip & Discount problem generator ──
             var genTipProblem = function () {
+              beginMoneyRound('tip-calculation');
               var bill = isJPY ? (Math.floor(Math.random() * 80 + 10) * 100) : (Math.floor(Math.random() * (gc.maxPrice * 0.8) * 100) / 100 + 5);
               bill = isJPY ? bill : Math.round(bill * 100) / 100;
               var tipPcts = [10, 15, 18, 20, 25];
@@ -1565,6 +1604,7 @@ window.StemLab = window.StemLab || {
               upd('tipAnswer', null); upd('tipFeedback', null); upd('tipMode', 'tip');
             };
             var genDiscountProblem = function () {
+              beginMoneyRound('discount-calculation');
               var original = isJPY ? (Math.floor(Math.random() * 90 + 10) * 100) : (Math.round((Math.random() * gc.maxPrice * 0.9 + 5) * 100) / 100);
               var discounts = [10, 15, 20, 25, 30, 40, 50, 75];
               var disc = discounts[Math.floor(Math.random() * discounts.length)];
@@ -1618,6 +1658,7 @@ window.StemLab = window.StemLab || {
             var budgetEventCost = budgetEvent ? Math.round(budgetIncome * budgetEvent.pct * changeScale) / changeScale : 0;
             var budgetBorrowCost = Math.round(budgetEventCost * 1.15 * changeScale) / changeScale;
             var generateBudgetEvent = function () {
+              beginMoneyRound('budget-event');
               var choices = budgetEventDefinitions.filter(function (event) { return event.id !== budgetEventId; });
               var nextEvent = choices[Math.floor(Math.random() * choices.length)] || budgetEventDefinitions[0];
               upd('budgetEventId', nextEvent.id); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false);
@@ -1664,6 +1705,7 @@ window.StemLab = window.StemLab || {
 
             // ── Fewest coins challenge ──
             var genFewestCoinsChallenge = function () {
+              beginMoneyRound('fewest-coins');
               var maxC = isJPY ? 5000 : gc.maxPrice;
               var target = isJPY ? (Math.floor(Math.random() * 49 + 1) * 100 + Math.floor(Math.random() * 10) * 10) : (Math.round((Math.random() * maxC + 0.10) * 100) / 100);
               // Snap to the currency's smallest coin, exactly as genChangeProblem does.
@@ -1690,6 +1732,7 @@ window.StemLab = window.StemLab || {
 
             // ── Unit pricing problem ──
             var genUnitPriceProblem = function () {
+              beginMoneyRound('unit-pricing');
               var items = [
                 { name: __alloT('stem.money.apples_2', '\uD83C\uDF4E Apples'), unit: 'lb' }, { name: __alloT('stem.money.bananas_2', '\uD83C\uDF4C Bananas'), unit: 'lb' },
                 { name: __alloT('stem.money.milk', '\uD83E\uDD5B Milk'), unit: 'gallon' }, { name: __alloT('stem.money.juice', '\uD83E\uDDC3 Juice'), unit: 'oz' },
@@ -1709,6 +1752,7 @@ window.StemLab = window.StemLab || {
 
             // ── Estimation Challenge generators ──
             var genEstimateTotal = function () {
+              beginMoneyRound('estimate-total');
               var n = Math.floor(Math.random() * 4) + 3; // 3-6 items
               var items = [];
               var possibleNames = ['\uD83C\uDF4E Apple', '\uD83C\uDF4C Banana', '\uD83E\uDD5B Milk', '\uD83C\uDF5E Bread', '\uD83E\uDDC0 Cheese', '\uD83C\uDF6B Chocolate', '\uD83C\uDF7C Juice', '\uD83E\uDD5C PB', '\uD83C\uDF55 Pizza', '\uD83E\uDD66 Broccoli', '\u2615 Coffee', '\uD83C\uDF6A Cookies'];
@@ -1726,6 +1770,7 @@ window.StemLab = window.StemLab || {
             };
 
             var genChangeCheck = function () {
+              beginMoneyRound('change-check');
               var smallestTender = Math.min.apply(null, cur.coins.map(function (coin) { return coin.value; }));
               var rawPrice = isJPY ? (Math.floor(Math.random() * 40 + 5) * 100) : Math.random() * gc.maxPrice * 0.7 + 1;
               var price = roundCurrency(Math.max(smallestTender, Math.round(rawPrice / smallestTender) * smallestTender), currency);
@@ -1748,6 +1793,7 @@ window.StemLab = window.StemLab || {
             };
 
             var genCouponStack = function () {
+              beginMoneyRound('coupon-stack');
               var original = isJPY ? (Math.floor(Math.random() * 90 + 10) * 100) : (Math.round((Math.random() * gc.maxPrice * 0.8 + 5) * 100) / 100);
               var discounts = [];
               var numDisc = Math.floor(Math.random() * 2) + 2; // 2-3 discounts
@@ -1778,6 +1824,7 @@ window.StemLab = window.StemLab || {
               { template: '{friends} friends split a {bill} bill equally. How much does each person pay?', fields: ['each'], compute: function (v) { return [{ val: Math.round(v.bill / v.friends * 100) / 100, label: __alloT('stem.money.each_pays', 'Each Pays') }]; }, gen: function () { var friends = Math.floor(Math.random() * 5) + 2; return { friends: friends, bill: Math.round(friends * (Math.random() * 15 + 5) * 100) / 100 }; } }
             ];
             var genStructuredProblem = function () {
+              beginMoneyRound('structured-word-problem');
               var prob = STRUCT_PROBLEMS[Math.floor(Math.random() * STRUCT_PROBLEMS.length)];
               var vals = prob.gen();
               var text = prob.template;
@@ -1809,6 +1856,7 @@ window.StemLab = window.StemLab || {
               return { val: item.value, label: item.label || item.name, color: item.color || '#d97706', size: Math.max(28, Math.min(42, (item.size || 32) + Math.floor(index / 3) * 2)) };
             }).sort(function (a, b) { return a.val - b.val; });
             var genCoinDrop = function () {
+              beginMoneyRound('coin-drop');
               if (!COIN_DENOMS.length) return;
               var target = 0;
               var pieceCount = grade === 'elementary' ? 2 + Math.floor(Math.random() * 4) : 3 + Math.floor(Math.random() * 5);
@@ -1831,6 +1879,7 @@ window.StemLab = window.StemLab || {
               { q: 'An emergency fund should ideally cover how many months of expenses?', choices: ['1-2 months', '3-6 months', '12 months', '24 months'], correct: 1, explanation: __alloT('stem.money.financial_advisors_recommend_3_6_month', 'Financial advisors recommend 3-6 months of expenses. This covers most unexpected events like job loss or medical emergencies.') }
             ];
             var genFinQuiz = function () {
+              beginMoneyRound('finance-quiz');
               var idx = Math.floor(Math.random() * FIN_QUIZZES.length);
               upd('fqIdx', idx); upd('fqAnswer', null); upd('fqFb', null);
             };
@@ -2175,7 +2224,10 @@ window.StemLab = window.StemLab || {
                         'fcTarget', 'fcOptimal', 'fcFeedback', 'upItem', 'upA', 'upB', 'upAnswer', 'upFeedback',
                         'estItems', 'estTotal', 'estAnswer', 'estFb', 'ccPrice', 'ccPaid', 'ccProposed', 'ccCorrectAmt', 'ccIsWrong', 'ccAnswer', 'ccFb',
                         'csOriginal', 'csDiscounts', 'csFinal', 'csAnswer', 'csFb', 'spText', 'spAnswers', 'spFb',
-                        'cdTarget', 'cdFb', 'cdStartTime', 'budgetIncome', 'budgetEventId', 'budgetEventChoice', 'budgetEventFb'
+                        'cdTarget', 'cdFb', 'cdStartTime', 'budgetIncome', 'budgetIncomeDraft', 'budgetEventId', 'budgetEventChoice', 'budgetEventFb',
+                        'ciPrincipalDraft', 'ciRateDraft', 'ciYearsDraft', 'retMonthlyDraft', 'retMatchDraft',
+                        'loanAmtDraft', 'loanRateDraft', 'loanTermDraft', 'sgTargetDraft', 'sgHaveDraft', 'sgMonthsDraft', 'sgRateDraft',
+                        'weightInput', 'weightInputDraft', 'weightItemIdx'
                       ].forEach(function (key) { upd(key, null); });
                       upd('placed', []); upd('cart', []); upd('fcPlaced', []); upd('spUserAnswers', []); upd('cdDropped', []);
                       upd('storeItems', null); resetGroceryCheckout();
@@ -2314,7 +2366,7 @@ window.StemLab = window.StemLab || {
                   challengeMode && placed.length > 0 && React.createElement("div", { className: "mt-3 pt-3 border-t border-amber-200 bg-amber-50 rounded-lg p-3" },
                     React.createElement("p", { className: "text-xs font-bold text-amber-700 mb-2" }, __alloT('stem.money.what_s_the_total_add_up_all_the_coins_', '\uD83C\uDFAF What\'s the total? Add up all the coins and bills!')),
                     React.createElement("div", { className: "flex items-center gap-2" },
-                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', "aria-label": "Your guess of the total in " + cur.code, value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); }, className: "px-3 py-2 border border-amber-600 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
+                      React.createElement("input", { type: "number", step: isJPY ? '1' : '0.01', placeholder: cur.symbol + '...', "aria-label": "Your guess of the total in " + cur.code, value: d.coinGuess != null ? d.coinGuess : '', onChange: function (e) { upd('coinGuess', e.target.value === '' ? null : parseFloat(e.target.value)); upd('coinGuessFb', null); }, className: "px-3 py-2 border border-amber-600 rounded-lg text-sm font-bold w-32 focus:ring-2 focus:ring-amber-400 outline-none" }),
                       React.createElement("button", { "aria-label": __alloT('stem.money.check', "Check"), onClick: function () {
                         var guess = d.coinGuess; var actual = boardTotal;
                         var isRight = sameCurrencyAmount(guess, actual, currency);
@@ -2903,7 +2955,7 @@ window.StemLab = window.StemLab || {
                   selectedRecipe && React.createElement("div", { className: "space-y-3" },
                     React.createElement("div", { className: "flex items-center gap-3 bg-white rounded-lg p-3 border border-purple-100" },
                       React.createElement("label", { className: "text-xs font-bold text-purple-700" }, __alloT('stem.money.servings', "\uD83C\uDF7D Servings:")),
-                      React.createElement("input", { type: "range", min: 1, max: 12, value: recipeServings, 'aria-label': __alloT('stem.money.number_of_servings', 'Number of servings'), onChange: function (e) { upd('recipeServings', parseInt(e.target.value)); },
+                      React.createElement("input", { type: "range", min: 1, max: 12, value: recipeServings, 'aria-label': __alloT('stem.money.number_of_servings', 'Number of servings'), onChange: function (e) { upd('recipeServings', parseInt(e.target.value)); upd('recipeFb', null); },
                         className: "flex-1 accent-purple-500" }),
                       React.createElement("span", { className: "text-sm font-black text-purple-600 min-w-[2rem] text-center" }, recipeServings)
                     ),
@@ -2983,11 +3035,14 @@ window.StemLab = window.StemLab || {
                         var isAdding = d.weightItemIdx === ii && isWeighed;
                         // v3: apply storeDifficulty-based price rounding for display + cart-add
                         var displayPrice = getStorePrice(item.price);
+                        var weightValue = normalizeMoneyNumber(d.weightInput, { min: 0.25 });
+                        if (weightValue === null) weightValue = 1;
                         return React.createElement("div", { key: ii, className: "relative" },
                           React.createElement("button", { onClick: function () {
                               if (isWeighed) {
                                 upd('weightItemIdx', isAdding ? null : ii);
                                 upd('weightInput', 1);
+                                upd('weightInputDraft', null);
                               } else {
                                 var existing = cart.findIndex(function (c) { return c.name === item.name; });
                                 if (existing >= 0) {
@@ -3015,17 +3070,18 @@ window.StemLab = window.StemLab || {
                           isAdding && React.createElement("div", { className: "absolute z-20 left-0 right-0 -bottom-2 translate-y-full bg-white rounded-xl p-3 shadow-xl border-2 border-orange-300 space-y-2" },
                             React.createElement("p", { className: "text-[11px] font-bold text-orange-700 text-center" }, "How many " + item.pricePer + "s?"),
                             React.createElement("div", { className: "flex items-center gap-1.5" },
-                              React.createElement("button", { "aria-label": __alloT('stem.money.decrease_item_weight', "Decrease item weight"), onClick: function () { upd('weightInput', Math.max(0.25, (d.weightInput || 1) - 0.25)); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
-                              React.createElement("input", { type: "number", step: "0.25", min: "0.25", value: d.weightInput || 1, 'aria-label': __alloT('stem.money.item_weight_in_pounds', 'Item weight in pounds'), onChange: function (e) { upd('weightInput', parseFloat(e.target.value) || 0.25); }, className: "w-14 text-center px-1 py-1 border border-orange-600 rounded-lg text-xs font-bold focus:ring-2 focus:ring-orange-400 outline-none" }),
-                              React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart', "Add to Cart"), onClick: function () { upd('weightInput', (d.weightInput || 1) + 0.25); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
+                              React.createElement("button", { "aria-label": __alloT('stem.money.decrease_item_weight', "Decrease item weight"), onClick: function () { upd('weightInput', Math.max(0.25, weightValue - 0.25)); upd('weightInputDraft', null); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "\u2212"),
+                              React.createElement("input", { type: "number", step: "0.25", min: "0.25", value: moneyDraftValue('weightInputDraft', weightValue), 'aria-label': __alloT('stem.money.item_weight_in_pounds', 'Item weight in pounds'), onChange: function (e) { updateMoneyNumberDraft('weightInputDraft', 'weightInput', e.target.value, { min: 0.25 }); }, onBlur: function (e) { finishMoneyNumberDraft('weightInputDraft', 'weightInput', e.target.value, { min: 0.25 }, 1); }, className: "w-14 text-center px-1 py-1 border border-orange-600 rounded-lg text-xs font-bold focus:ring-2 focus:ring-orange-400 outline-none" }),
+                              React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart', "Add to Cart"), onClick: function () { upd('weightInput', weightValue + 0.25); upd('weightInputDraft', null); }, className: "transition-colors px-2 py-1 bg-slate-100 rounded-lg text-xs font-bold hover:bg-slate-200" }, "+"),
                               React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, item.pricePer)
                             ),
-                            React.createElement("p", { className: "text-xs font-bold text-center text-emerald-700" }, "= " + fmt(displayPrice * (d.weightInput || 1))),
+                            React.createElement("p", { className: "text-xs font-bold text-center text-emerald-700" }, "= " + fmt(displayPrice * weightValue)),
                             React.createElement("button", { "aria-label": __alloT('stem.money.add_to_cart_2', "Add to Cart"), onClick: function () {
-                              var w = d.weightInput || 1;
+                              var w = weightValue;
                               upd('cart', [].concat(cart, [{ name: item.name, price: displayPrice, weight: w, pricePer: item.pricePer, qty: 1 }]));
                               upd('lastReceipt', null);
                               upd('weightItemIdx', null);
+                              upd('weightInputDraft', null);
                               if (typeof addToast === 'function') addToast('Added ' + w + ' ' + item.pricePer + ' ' + item.name + '!', 'success');
                             }, className: "w-full px-3 py-1.5 bg-orange-700 text-white text-xs font-bold rounded-lg hover:bg-orange-800 transition-all" }, __alloT('stem.money.add_to_cart_3', "\uD83D\uDED2 Add to Cart"))
                           )
@@ -3528,9 +3584,10 @@ window.StemLab = window.StemLab || {
                 // Income input
                 React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
                   React.createElement("label", { className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.monthly_income', "Monthly Income:")),
-                  React.createElement("input", { type: "number", value: budgetIncome,
+                  React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('budgetIncomeDraft', budgetIncome),
                     'aria-label': __alloT('stem.money.monthly_income_2', 'Monthly income'),
-                    onChange: function (e) { upd('budgetIncome', parseFloat(e.target.value) || 0); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false); },
+                    onChange: function (e) { updateMoneyNumberDraft('budgetIncomeDraft', 'budgetIncome', e.target.value, { min: 0 }); upd('budgetEventChoice', null); upd('budgetEventFb', null); upd('budgetEventResolved', false); },
+                    onBlur: function (e) { finishMoneyNumberDraft('budgetIncomeDraft', 'budgetIncome', e.target.value, { min: 0 }, budgetIncome); },
                     className: "px-4 py-2 border border-slate-400 rounded-xl text-sm font-bold w-40 focus:ring-2 focus:ring-indigo-400 outline-none"
                   }),
                   React.createElement("span", { className: "text-xs font-bold " + (budgetUsed === 100 ? 'text-emerald-700' : budgetUsed > 100 ? 'text-red-700' : 'text-amber-700') }, budgetUsed + '% allocated' + (budgetUsed !== 100 ? ' (' + (100 - budgetUsed) + '% remaining)' : ' \u2714'))
@@ -3711,6 +3768,7 @@ window.StemLab = window.StemLab || {
                       cur.bills.slice().reverse().concat(cur.coins.slice().reverse()).map(function (item, idx) {
                         return React.createElement("button", { key: idx, onClick: function () {
                           upd('fcPlaced', [].concat(d.fcPlaced || [], [item.value]));
+                          upd('fcFeedback', null);
                         }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-600 hover:bg-amber-50 transition-all" }, (item.name || fmt(item.value)));
                       })
                     ),
@@ -3724,6 +3782,7 @@ window.StemLab = window.StemLab || {
                         (d.fcPlaced || []).map(function (v, pi) {
                           return React.createElement("button", { key: pi, onClick: function () {
                             upd('fcPlaced', (d.fcPlaced || []).filter(function (_, idx) { return idx !== pi; }));
+                            upd('fcFeedback', null);
                           }, className: "px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[11px] font-bold hover:bg-red-100 hover:text-red-800 transition-all" }, fmt(v) + ' \u2715');
                         })
                       ),
@@ -3742,7 +3801,7 @@ window.StemLab = window.StemLab || {
                             awardMoneyXPOnce('fewest-coins', [currency, d.fcTarget], 10, 'fewest coins challenge');
                           }
                         }, className: "flex-1 px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800 transition-all text-xs" }, __alloT('stem.money.check_14', "\u2714 Check")),
-                        React.createElement("button", { "aria-label": __alloT('stem.money.reset_coin_selection', "Reset coin selection"), onClick: function () { upd('fcPlaced', []); }, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.reset', "\u21BA Reset"))
+                        React.createElement("button", { "aria-label": __alloT('stem.money.reset_coin_selection', "Reset coin selection"), onClick: function () { upd('fcPlaced', []); upd('fcFeedback', null); }, className: "px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-xs" }, __alloT('stem.money.reset', "\u21BA Reset"))
                       ),
                       d.fcFeedback && React.createElement("p", { className: "text-xs font-bold mt-2 " + (d.fcFeedback.ok ? 'text-emerald-600' : 'text-red-500') }, d.fcFeedback.msg)
                     )
@@ -3758,7 +3817,7 @@ window.StemLab = window.StemLab || {
                   d.upItem && d.upA && d.upB && React.createElement("div", { className: "space-y-3" },
                     React.createElement("p", { className: "text-xs text-slate-600 text-center" }, "Which is the better deal for " + d.upItem.name + "?"),
                     React.createElement("div", { className: "grid grid-cols-2 gap-3" },
-                      React.createElement("button", { "aria-label": __alloT('stem.money.option_a', "Option A"), onClick: function () { upd('upAnswer', 'A'); },
+                      React.createElement("button", { "aria-label": __alloT('stem.money.option_a', "Option A"), onClick: function () { upd('upAnswer', 'A'); upd('upFeedback', null); },
                         className: "p-4 rounded-xl border-2 text-center transition-all hover:scale-[1.02] " + (d.upAnswer === 'A' ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-600')
                       },
                         React.createElement("p", { className: "text-2xl mb-1" }, d.upItem.name.split(' ')[0]),
@@ -3766,7 +3825,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("p", { className: "text-xs text-slate-600" }, d.upA.qty + ' ' + d.upItem.unit + (d.upA.qty > 1 ? 's' : '')),
                         React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, __alloT('stem.money.option_a_2', 'Option A'))
                       ),
-                      React.createElement("button", { "aria-label": __alloT('stem.money.option_b', "Option B"), onClick: function () { upd('upAnswer', 'B'); },
+                      React.createElement("button", { "aria-label": __alloT('stem.money.option_b', "Option B"), onClick: function () { upd('upAnswer', 'B'); upd('upFeedback', null); },
                         className: "p-4 rounded-xl border-2 text-center transition-all hover:scale-[1.02] " + (d.upAnswer === 'B' ? 'border-teal-500 bg-teal-50 shadow-md' : 'border-slate-200 bg-white hover:border-teal-600')
                       },
                         React.createElement("p", { className: "text-2xl mb-1" }, d.upItem.name.split(' ')[0]),
@@ -4052,17 +4111,17 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" },
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.principal', "Principal")),
-                      React.createElement("input", { type: "number", value: ciPrincipal, 'aria-label': __alloT('stem.money.principal_amount', 'Principal amount'), onChange: function (e) { upd('ciPrincipal', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('ciPrincipalDraft', ciPrincipal), 'aria-label': __alloT('stem.money.principal_amount', 'Principal amount'), onChange: function (e) { updateMoneyNumberDraft('ciPrincipalDraft', 'ciPrincipal', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('ciPrincipalDraft', 'ciPrincipal', e.target.value, { min: 0 }, 1000); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.annual_rate', "Annual Rate %")),
-                      React.createElement("input", { type: "number", step: "0.5", value: ciRate, 'aria-label': __alloT('stem.money.annual_interest_rate', 'Annual interest rate'), onChange: function (e) { upd('ciRate', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", step: "0.5", value: moneyDraftValue('ciRateDraft', ciRate), 'aria-label': __alloT('stem.money.annual_interest_rate', 'Annual interest rate'), onChange: function (e) { updateMoneyNumberDraft('ciRateDraft', 'ciRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('ciRateDraft', 'ciRate', e.target.value, { min: 0 }, 7); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.years', "Years")),
-                      React.createElement("input", { type: "number", value: ciYears, 'aria-label': __alloT('stem.money.number_of_years', 'Number of years'), onChange: function (e) { upd('ciYears', Math.min(50, Math.max(1, parseInt(e.target.value) || 1))); },
+                      React.createElement("input", { type: "number", min: "1", max: "50", step: "1", value: moneyDraftValue('ciYearsDraft', ciYears), 'aria-label': __alloT('stem.money.number_of_years', 'Number of years'), onChange: function (e) { updateMoneyNumberDraft('ciYearsDraft', 'ciYears', e.target.value, { min: 1, max: 50, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('ciYearsDraft', 'ciYears', e.target.value, { min: 1, max: 50, integer: true }, 10); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
@@ -4131,12 +4190,12 @@ window.StemLab = window.StemLab || {
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.monthly_contribution', "Monthly Contribution")),
-                      React.createElement("input", { type: "number", value: retMonthly, 'aria-label': __alloT('stem.money.monthly_contribution_2', 'Monthly contribution'), onChange: function (e) { upd('retMonthly', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('retMonthlyDraft', retMonthly), 'aria-label': __alloT('stem.money.monthly_contribution_2', 'Monthly contribution'), onChange: function (e) { updateMoneyNumberDraft('retMonthlyDraft', 'retMonthly', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('retMonthlyDraft', 'retMonthly', e.target.value, { min: 0 }, 200); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.employer_match', "Employer Match %")),
-                      React.createElement("input", { type: "number", value: retMatch, 'aria-label': __alloT('stem.money.employer_match_percentage', 'Employer match percentage'), onChange: function (e) { upd('retMatch', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('retMatchDraft', retMatch), 'aria-label': __alloT('stem.money.employer_match_percentage', 'Employer match percentage'), onChange: function (e) { updateMoneyNumberDraft('retMatchDraft', 'retMatch', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('retMatchDraft', 'retMatch', e.target.value, { min: 0 }, 50); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-violet-400 outline-none mt-1" })
                     )
                   ),
@@ -4193,6 +4252,7 @@ window.StemLab = window.StemLab || {
                     Object.keys(loanPresets).map(function (k) {
                       return React.createElement("button", { "aria-label": __alloT('stem.money.loan_amount', "Loan Amount"), key: k, onClick: function () {
                         upd('loanType', k); upd('loanAmt', loanPresets[k].amt); upd('loanRate', loanPresets[k].rate); upd('loanTerm', loanPresets[k].term);
+                        clearMoneyDrafts(['loanAmtDraft', 'loanRateDraft', 'loanTermDraft']);
                       }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-700 text-white shadow-md' : 'bg-white text-rose-700 border border-rose-700 hover:bg-rose-50') }, loanPresets[k].label);
                     })
                   ),
@@ -4200,17 +4260,17 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.loan_amount_2', "Loan Amount")),
-                      React.createElement("input", { type: "number", value: loanAmt, 'aria-label': __alloT('stem.money.loan_amount_3', 'Loan amount'), onChange: function (e) { upd('loanAmt', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('loanAmtDraft', loanAmt), 'aria-label': __alloT('stem.money.loan_amount_3', 'Loan amount'), onChange: function (e) { updateMoneyNumberDraft('loanAmtDraft', 'loanAmt', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('loanAmtDraft', 'loanAmt', e.target.value, { min: 0 }, 25000); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.interest_rate', "Interest Rate %")),
-                      React.createElement("input", { type: "number", step: "0.25", value: loanRate, 'aria-label': __alloT('stem.money.loan_interest_rate', 'Loan interest rate'), onChange: function (e) { upd('loanRate', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", step: "0.25", value: moneyDraftValue('loanRateDraft', loanRate), 'aria-label': __alloT('stem.money.loan_interest_rate', 'Loan interest rate'), onChange: function (e) { updateMoneyNumberDraft('loanRateDraft', 'loanRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('loanRateDraft', 'loanRate', e.target.value, { min: 0 }, 5); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.term_months', "Term (months)")),
-                      React.createElement("input", { type: "number", value: loanTerm, 'aria-label': __alloT('stem.money.loan_term_in_months', 'Loan term in months'), onChange: function (e) { upd('loanTerm', Math.max(1, parseInt(e.target.value) || 1)); },
+                      React.createElement("input", { type: "number", min: "1", step: "1", value: moneyDraftValue('loanTermDraft', loanTerm), 'aria-label': __alloT('stem.money.loan_term_in_months', 'Loan term in months'), onChange: function (e) { updateMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('loanTermDraft', 'loanTerm', e.target.value, { min: 1, integer: true }, 60); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-rose-400 outline-none mt-1" })
                     )
                   ),
@@ -4285,6 +4345,7 @@ window.StemLab = window.StemLab || {
                     Object.keys(sgGoals).map(function (k) {
                       return React.createElement("button", { "aria-label": __alloT('stem.money.target_amount_2', "Target Amount"), key: k, onClick: function () {
                         upd('sgGoal', k); upd('sgTarget', sgGoals[k].target); upd('sgHave', 0);
+                        clearMoneyDrafts(['sgTargetDraft', 'sgHaveDraft']);
                       }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-700 border border-emerald-700 hover:bg-emerald-50') }, sgGoals[k].label);
                     })
                   ),
@@ -4292,22 +4353,22 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" },
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.target_amount_3', "Target Amount")),
-                      React.createElement("input", { type: "number", value: sgTarget, 'aria-label': __alloT('stem.money.savings_target_amount', 'Savings target amount'), onChange: function (e) { upd('sgTarget', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('sgTargetDraft', sgTarget), 'aria-label': __alloT('stem.money.savings_target_amount', 'Savings target amount'), onChange: function (e) { updateMoneyNumberDraft('sgTargetDraft', 'sgTarget', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgTargetDraft', 'sgTarget', e.target.value, { min: 0 }, sgGoals[sgGoal].target); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.already_saved', "Already Saved")),
-                      React.createElement("input", { type: "number", value: sgHave, 'aria-label': __alloT('stem.money.amount_already_saved', 'Amount already saved'), onChange: function (e) { upd('sgHave', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", value: moneyDraftValue('sgHaveDraft', sgHave), 'aria-label': __alloT('stem.money.amount_already_saved', 'Amount already saved'), onChange: function (e) { updateMoneyNumberDraft('sgHaveDraft', 'sgHave', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgHaveDraft', 'sgHave', e.target.value, { min: 0 }, 0); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.timeline_months', "Timeline (months)")),
-                      React.createElement("input", { type: "number", value: sgMonths, 'aria-label': __alloT('stem.money.savings_timeline_in_months', 'Savings timeline in months'), onChange: function (e) { upd('sgMonths', Math.max(1, parseInt(e.target.value) || 1)); },
+                      React.createElement("input", { type: "number", min: "1", step: "1", value: moneyDraftValue('sgMonthsDraft', sgMonths), 'aria-label': __alloT('stem.money.savings_timeline_in_months', 'Savings timeline in months'), onChange: function (e) { updateMoneyNumberDraft('sgMonthsDraft', 'sgMonths', e.target.value, { min: 1, integer: true }); }, onBlur: function (e) { finishMoneyNumberDraft('sgMonthsDraft', 'sgMonths', e.target.value, { min: 1, integer: true }, 24); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.savings_rate', "Savings Rate %")),
-                      React.createElement("input", { type: "number", step: "0.5", value: sgRate, 'aria-label': __alloT('stem.money.savings_interest_rate', 'Savings interest rate'), onChange: function (e) { upd('sgRate', Math.max(0, parseFloat(e.target.value) || 0)); },
+                      React.createElement("input", { type: "number", min: "0", step: "0.5", value: moneyDraftValue('sgRateDraft', sgRate), 'aria-label': __alloT('stem.money.savings_interest_rate', 'Savings interest rate'), onChange: function (e) { updateMoneyNumberDraft('sgRateDraft', 'sgRate', e.target.value, { min: 0 }); }, onBlur: function (e) { finishMoneyNumberDraft('sgRateDraft', 'sgRate', e.target.value, { min: 0 }, 2); },
                         className: "w-full px-3 py-2 border border-slate-400 rounded-lg text-sm font-bold focus:ring-2 focus:ring-emerald-400 outline-none mt-1" })
                     )
                   ),

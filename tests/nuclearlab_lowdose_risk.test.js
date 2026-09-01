@@ -237,10 +237,10 @@ describe('honesty in both directions', () => {
 
 describe('the section renders and can be worked', () => {
   it('is anchored, numbered and reachable', () => {
-    const html = renderTool('nuclearLab', {});
+    const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: true } });
     expect(html).toContain('id="nksec-lowdose"');
     expect(html).toMatch(/12\. How risky is a small dose\?/);
-    expect(html).toContain('Jump to How risky is a small dose?');
+    expect(html).toContain('12. How risky is a small dose? Jump to this topic');
   });
 
   it('shows all four models at once, so the divergence is visible without clicking', () => {

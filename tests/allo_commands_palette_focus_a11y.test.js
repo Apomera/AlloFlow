@@ -152,4 +152,31 @@ describe('AlloCommandPalette focus behavior', () => {
     expect(document.activeElement).toBe(opener);
   });
 
+  it('collapses and removes listbox semantics when a search has no options', async () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(AlloCommandPalette, { ctx: { t: () => null } })));
+
+    act(() => window.dispatchEvent(new window.CustomEvent('alloflow:open-command-palette', {
+      detail: { query: 'zzzx-no-command-match', source: 'accessibility-test' },
+    })));
+    await act(async () => { await Promise.resolve(); });
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const input = dialog.querySelector('[role="combobox"]');
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    expect(input.hasAttribute('aria-controls')).toBe(false);
+    expect(input.hasAttribute('aria-activedescendant')).toBe(false);
+    expect(dialog.querySelector('[role="listbox"]')).toBeNull();
+    expect(dialog.querySelector('#allo-palette-empty')?.textContent).toContain('No matching command');
+    expect(dialog.querySelector('#allo-palette-status')?.textContent).toBe('No matching commands.');
+
+    const axeResults = await axe.run(dialog, { rules: {
+      'color-contrast': { enabled: false },
+      region: { enabled: false },
+    } });
+    expect(axeResults.violations.map((violation) => violation.id)).not.toContain('aria-required-children');
+  });
+
 });

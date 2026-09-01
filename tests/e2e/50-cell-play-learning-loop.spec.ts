@@ -83,6 +83,16 @@ test.describe.configure({ timeout: 200_000 });
 
 test('mission loop tracks the current run and requires a biology reflection', async ({ page }, testInfo) => {
   await desktopHarness.mount(page, playState(false), undefined, { expectCanvas: false });
+  await expect.poll(async () => page.evaluate(() => ({
+    registered: !!(window as any).StemLab?._registry?.cell,
+    hasCheckpoint: !!document.querySelector('[data-cell-mission-checkpoint]'),
+    errors: Array.isArray((window as any).__events?.errors) ? (window as any).__events.errors : [],
+    wrapPreview: (document.getElementById('wrap')?.textContent || '').slice(0, 240),
+  })), { timeout: 5000, message: 'Cell harness should register and render the mission checkpoint without page errors' }).toMatchObject({
+    registered: true,
+    hasCheckpoint: true,
+    errors: [],
+  });
   await page.locator('[data-cell-mission-checkpoint]').waitFor({ state: 'visible' });
   const predictionStage = page.locator('[data-cell-prediction-stage]');
   const predictionCheckpoint = page.locator('[data-cell-checkpoint-step="predict"]');
@@ -175,6 +185,20 @@ test('mission loop tracks the current run and requires a biology reflection', as
   await expect(firstPrediction).toBeFocused();
   await expect(page.locator('[data-cell-tutorial-primary]')).toBeDisabled();
   await page.keyboard.press('Escape');
+  await expect(predictionDialog).toHaveCount(0);
+  await expect(controlLock).toBeFocused();
+  expect(await page.evaluate(() => (window as any).__toolData.cell.playMission)).toMatchObject({ predictionSkipped: false });
+  expect(await page.evaluate(() => (window as any).__toolData.cell.playMission.predictionChoice)).toBeUndefined();
+  await controlLock.click();
+  await expect(predictionDialog).toBeVisible();
+  await expect(firstPrediction).toBeFocused();
+  const dismissPrediction = page.locator('[data-cell-dismiss-prediction]');
+  await expect(dismissPrediction).toHaveAccessibleName('Close Amoeba briefing and keep prediction pending');
+  await dismissPrediction.click();
+  await expect(predictionDialog).toHaveCount(0);
+  await expect(controlLock).toBeFocused();
+  expect(await page.evaluate(() => (window as any).__toolData.cell.playMission.predictionSkipped)).toBe(false);
+  await controlLock.click();
   await expect(predictionDialog).toBeVisible();
   await expect(firstPrediction).toBeFocused();
   const skipPrediction = page.locator('[data-cell-skip-prediction]');
@@ -456,7 +480,7 @@ test('live control cue translates input into organism mechanism and result', asy
   await expect(rightDirection).toHaveAttribute('aria-pressed', 'false');
   await expect(rightDirection).toHaveAttribute('data-cell-move-active', 'false');
   await expect(padReadout).toHaveAttribute('data-cell-pad-state', 'start');
-  await expect(padReadout).toHaveText(/StartPseudopods/);
+  await expect(padReadout).toHaveText('Start');
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-first-action-ready-desktop.png' : testInfo.outputPath('cell-first-action-ready-desktop.png') });
   }
@@ -504,7 +528,7 @@ test('live control cue translates input into organism mechanism and result', asy
   await expect(rightDirection).toHaveAttribute('aria-pressed', 'true');
   await expect(rightDirection).toHaveAttribute('data-cell-move-active', 'true');
   await expect(padReadout).toHaveAttribute('data-cell-pad-state', 'active');
-  await expect(padReadout).toHaveText(/rightInput/i);
+  await expect(padReadout).toHaveText('right');
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-live-action-trace-desktop.png' : testInfo.outputPath('cell-live-action-trace-desktop.png') });
   }
@@ -525,10 +549,34 @@ test('live control cue translates input into organism mechanism and result', asy
   await expect(rightDirection).toHaveAttribute('aria-pressed', 'false');
   await expect(rightDirection).toHaveAttribute('data-cell-move-active', 'false');
   await expect(padReadout).toHaveAttribute('data-cell-pad-state', 'linked');
-  await expect(padReadout).toHaveText(/LinkedPseudopods/);
+  await expect(padReadout).toContainText('Linked');
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-first-action-linked-desktop.png' : testInfo.outputPath('cell-first-action-linked-desktop.png') });
   }
+
+  await expect(canvas).toHaveAttribute('aria-keyshortcuts', 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D');
+  for (const activationKey of ['Space', 'Enter']) {
+    await rightDirection.focus();
+    await expect(rightDirection).toBeFocused();
+    await page.keyboard.down(activationKey);
+    await page.waitForFunction(() => (document.querySelector('[data-cell-sim-canvas]') as any)?._cellSimGetControlResponse?.()?.moving === true);
+    await expect(rightDirection).toBeFocused();
+    await expect(rightDirection).toHaveAttribute('aria-pressed', 'true');
+    await expect(directionPad).toHaveAttribute('data-cell-active-direction', 'right');
+    await page.keyboard.up(activationKey);
+    await page.waitForFunction(() => (document.querySelector('[data-cell-sim-canvas]') as any)?._cellSimGetControlResponse?.()?.moving === false);
+    await expect(rightDirection).toHaveAttribute('aria-pressed', 'false');
+    await expect(directionPad).toHaveAttribute('data-cell-active-direction', 'idle');
+  }
+
+  await rightDirection.focus();
+  await page.keyboard.down('Space');
+  await page.waitForFunction(() => (document.querySelector('[data-cell-sim-canvas]') as any)?._cellSimGetControlResponse?.()?.moving === true);
+  await canvas.focus();
+  await page.waitForFunction(() => (document.querySelector('[data-cell-sim-canvas]') as any)?._cellSimGetControlResponse?.()?.moving === false);
+  await expect(rightDirection).toHaveAttribute('aria-pressed', 'false');
+  await expect(directionPad).toHaveAttribute('data-cell-active-direction', 'idle');
+  await page.keyboard.up('Space');
 
   const parameciumState: any = playState();
   parameciumState.cell.selectedOrganism = 'paramecium';
@@ -559,11 +607,11 @@ test('live control cue translates input into organism mechanism and result', asy
   await expect(directionPad).toHaveAttribute('data-cell-active-direction', 'right');
   await expect(rightDirection).toHaveAttribute('aria-pressed', 'true');
   await expect(padReadout).toHaveAttribute('data-cell-pad-state', 'active');
-  await expect(padReadout).toHaveText(/rightInput/i);
+  await expect(padReadout).toHaveText('right');
   await page.keyboard.up('ArrowRight');
   await expect(directionPad).toHaveAttribute('data-cell-first-action-state', 'registered');
   await expect(padReadout).toHaveAttribute('data-cell-pad-state', 'linked');
-  await expect(padReadout).toContainText('Cilia');
+  await expect(padReadout).toContainText('Linked');
 });
 
 test('briefing traps and restores focus and can restart only the current attempt', async ({ page }) => {
@@ -751,6 +799,7 @@ test('briefing blocks evidence and light credit requires continuous real elapsed
   expect(await page.evaluate(() => (window as any).__toolData.cell.playMission.predictionSkipped)).toBe(true);
   await page.evaluate(() => (document.querySelector('[data-cell-sim-canvas]') as any)._cellSimSetSpeed(5));
   await setMissionScenario(page, { insideLight: true, worldTick: 59 });
+  await page.evaluate(() => (document.querySelector('[data-cell-sim-canvas]') as any)._cellSimFocusOrganism('euglena'));
 
   const partial = await advanceMission(page, 750);
   expect(partial).toMatchObject({ evidenceAllowed: true, successCount: 0, lightInside: true, lightHoldMs: 750, lightProgressPct: 75 });
@@ -764,6 +813,22 @@ test('briefing blocks evidence and light credit requires continuous real elapsed
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-light-dwell-desktop.png' : testInfo.outputPath('cell-light-dwell-desktop.png') });
   }
+
+  const desktopViewport = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 760 });
+  await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '390px'; });
+  const lightRibbon = page.locator('[data-cell-mission-ribbon]');
+  await expect(lightRibbon).toBeVisible();
+  await expect(lightRibbon).toHaveAttribute('data-cell-ribbon-state', 'observe');
+  await expect(lightRibbon.locator('[data-cell-mission-ribbon-primary]')).toContainText('Hold in light · 70%');
+  await expect(lightRibbon.locator('[data-cell-mission-ribbon-secondary]')).toContainText('Inside light');
+  await expect(lightRibbon.locator('[data-cell-mission-ribbon-light-progress]')).toHaveAttribute('aria-valuenow', '70');
+  await expect(page.locator('[data-cell-target-guide-note][data-cell-cue-layout="standalone"]')).toBeHidden();
+  if (process.env.CELL_VISUAL_QA === '1') {
+    await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-light-dwell-mobile.png' : testInfo.outputPath('cell-light-dwell-mobile.png') });
+  }
+  await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '1120px'; });
+  if (desktopViewport) await page.setViewportSize(desktopViewport);
 
   const almost = await advanceMission(page, 249);
   expect(almost).toMatchObject({ successCount: 0, lightHoldMs: 999 });
@@ -1077,9 +1142,11 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
   const tutorialPanel = page.locator('[data-cell-play-tutorial-panel]');
   const tutorialScrollBody = page.locator('[data-cell-tutorial-scroll-body]');
   const tutorialActionBar = page.locator('[data-cell-tutorial-action-bar]');
+  const tutorialReminder = page.locator('[data-cell-tutorial-action-reminder]');
   const mobileTutorialPath = page.locator('[data-cell-tutorial-learning-path]');
   const tutorialPrimary = page.locator('[data-cell-tutorial-primary]');
   const skipPrediction = page.locator('[data-cell-skip-prediction]');
+  const dismissPrediction = page.locator('[data-cell-dismiss-prediction]');
   expect(await tutorialScrollBody.evaluate((body) => body.scrollTop)).toBeLessThanOrEqual(1);
   await expect(mobileTutorialPath).toHaveAttribute('data-cell-tutorial-phase', 'predict');
   await expect(mobileTutorialPath.locator('[data-cell-tutorial-step="predict"]')).toHaveAttribute('data-cell-tutorial-step-state', 'current');
@@ -1088,6 +1155,13 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
   await expect(skipPrediction).toHaveAccessibleName('Start Neutrophil (White Blood Cell) mission without a prediction');
   await expect(tutorialPrimary).toBeInViewport();
   await expect(skipPrediction).toBeInViewport();
+  await expect(dismissPrediction).toBeInViewport();
+  await expect(tutorialReminder).toBeVisible();
+  await expect(tutorialReminder).toHaveAttribute('role', 'note');
+  await expect(tutorialReminder).toHaveAttribute('aria-label', 'Neutrophil (White Blood Cell) control reminder: Direction input; cell response: Pseudopods extend; observable result: Immune cell crawls.');
+  await expect(tutorialReminder.locator('[data-cell-tutorial-reminder-input]')).toHaveText('Direction input');
+  await expect(tutorialReminder.locator('[data-cell-tutorial-reminder-mechanism]')).toHaveText('Pseudopods extend');
+  await expect(tutorialReminder.locator('[data-cell-tutorial-reminder-result]')).toHaveText('Immune cell crawls');
   expect(await page.evaluate(() => {
     const prediction = document.querySelector('[data-cell-prediction-checkpoint]');
     const control = document.querySelector('[data-cell-tutorial-control-map]');
@@ -1112,12 +1186,17 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
     const panel = document.querySelector('[data-cell-play-tutorial-panel]') as HTMLElement;
     const body = document.querySelector('[data-cell-tutorial-scroll-body]') as HTMLElement;
     const action = document.querySelector('[data-cell-tutorial-action-bar]') as HTMLElement;
+    const reminder = document.querySelector('[data-cell-tutorial-action-reminder]') as HTMLElement;
+    const primary = document.querySelector('[data-cell-tutorial-primary]') as HTMLElement;
     const path = document.querySelector('[data-cell-tutorial-learning-path]') as HTMLElement;
     const mapRect = controlMap.getBoundingClientRect();
     const panelRect = panel.getBoundingClientRect();
     const bodyRect = body.getBoundingClientRect();
     const actionRect = action.getBoundingClientRect();
+    const reminderRect = reminder.getBoundingClientRect();
+    const primaryRect = primary.getBoundingClientRect();
     const pathRect = path.getBoundingClientRect();
+    const reminderValues = Array.from(reminder.querySelectorAll('[data-cell-tutorial-reminder-input], [data-cell-tutorial-reminder-mechanism], [data-cell-tutorial-reminder-result]')) as HTMLElement[];
     return {
       viewportWidth: document.documentElement.clientWidth,
       pageScrollWidth: document.documentElement.scrollWidth,
@@ -1134,6 +1213,16 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
       actionRight: actionRect.right,
       actionTop: actionRect.top,
       actionBottom: actionRect.bottom,
+      actionScrollWidth: action.scrollWidth,
+      actionClientWidth: action.clientWidth,
+      reminderLeft: reminderRect.left,
+      reminderRight: reminderRect.right,
+      reminderTop: reminderRect.top,
+      reminderBottom: reminderRect.bottom,
+      reminderScrollWidth: reminder.scrollWidth,
+      reminderClientWidth: reminder.clientWidth,
+      reminderValueFonts: reminderValues.map((value) => parseFloat(getComputedStyle(value).fontSize)),
+      primaryTop: primaryRect.top,
       panelBottom: panelRect.bottom,
       pathLeft: pathRect.left,
       pathRight: pathRect.right,
@@ -1153,9 +1242,19 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
   expect(narrowTutorialLayout.actionLeft).toBeGreaterThanOrEqual(narrowTutorialLayout.panelLeft - 1);
   expect(narrowTutorialLayout.actionRight).toBeLessThanOrEqual(narrowTutorialLayout.panelRight + 1);
   expect(narrowTutorialLayout.actionBottom).toBeLessThanOrEqual(narrowTutorialLayout.panelBottom + 1);
+  expect(narrowTutorialLayout.actionScrollWidth).toBeLessThanOrEqual(narrowTutorialLayout.actionClientWidth + 1);
+  expect(narrowTutorialLayout.reminderLeft).toBeGreaterThanOrEqual(narrowTutorialLayout.actionLeft - 1);
+  expect(narrowTutorialLayout.reminderRight).toBeLessThanOrEqual(narrowTutorialLayout.actionRight + 1);
+  expect(narrowTutorialLayout.reminderTop).toBeGreaterThanOrEqual(narrowTutorialLayout.actionTop - 1);
+  expect(narrowTutorialLayout.reminderBottom).toBeLessThanOrEqual(narrowTutorialLayout.primaryTop - 1);
+  expect(narrowTutorialLayout.reminderScrollWidth).toBeLessThanOrEqual(narrowTutorialLayout.reminderClientWidth + 1);
+  for (const fontSize of narrowTutorialLayout.reminderValueFonts) expect(fontSize).toBeGreaterThanOrEqual(10);
+  await tutorialScrollBody.evaluate((body) => { body.scrollTop = body.scrollHeight; });
   await expect(tutorialActionBar).toBeInViewport({ ratio: 0.99 });
+  await expect(tutorialReminder).toBeInViewport({ ratio: 0.99 });
   await expect(tutorialPrimary).toBeInViewport({ ratio: 0.99 });
   await expect(skipPrediction).toBeInViewport({ ratio: 0.99 });
+  await expect(dismissPrediction).toBeInViewport({ ratio: 0.99 });
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-control-model-tutorial-320.png' : testInfo.outputPath('cell-control-model-tutorial-320.png') });
   }
@@ -1166,6 +1265,9 @@ test('mobile pathogen target key stays legible and inside the stage', async ({ p
   await expect(page.locator('[data-cell-prediction-status]')).toContainText('Prediction saved');
   await expect(tutorialPrimary).toBeEnabled();
   await expect(skipPrediction).toHaveCount(0);
+  await expect(dismissPrediction).toHaveCount(0);
+  await expect(tutorialReminder).toBeVisible();
+  await expect(tutorialReminder).toBeInViewport({ ratio: 0.99 });
   await expect(mobileTutorialPath).toHaveAttribute('data-cell-tutorial-phase', 'control');
   await expect(tutorialPrimary).toHaveAccessibleName('Start Neutrophil (White Blood Cell) mission');
   await expect(tutorialPrimary).toBeInViewport({ ratio: 0.99 });
@@ -1272,6 +1374,7 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await expect(stageHud.locator('[data-cell-learning-phase-label]')).toHaveText('Control');
   await expect(stageHud.locator('[data-cell-progress-dot]:visible')).toHaveCount(0);
   await expect(stageHud.locator('[data-cell-hud-actions]')).toBeVisible();
+  await expect(hudSummary).toBeHidden();
   await expect(hudSummary.locator('[data-cell-hud-organism]')).toHaveText('Amoeba');
   await expect(hudSummary.locator('[data-cell-hud-objective]')).toHaveText('Engulf 3 green food particles.');
   await expect(hudSummary.locator('[data-cell-hud-mechanism]')).toHaveText('Pseudopods');
@@ -1281,8 +1384,11 @@ test('mobile play controls, target key, and learning card stay within the stage 
   const compactTargetKey = page.locator('[data-cell-target-key-compact]');
   const mobileMissionPath = page.locator('[data-cell-approach-meter]');
   const organismGrid = page.locator('[data-cell-organism-grid]');
+  const chooserMobileHint = page.locator('[data-cell-chooser-mobile-hint]');
   const amoebaControlMap = page.locator('[data-cell-organism-option="amoeba"] [data-cell-card-control-map]');
   const plantControlMap = page.locator('[data-cell-organism-option="plantcell"] [data-cell-card-control-map]');
+  const amoebaCardDetail = page.locator('[data-cell-organism-option="amoeba"] [data-cell-organism-card-detail]');
+  const plantCardDetail = page.locator('[data-cell-organism-option="plantcell"] [data-cell-organism-card-detail]');
   const selectedOrganismCard = page.locator('[data-cell-selected-organism-card]');
   const structureSpotlight = selectedOrganismCard.locator('[data-cell-structure-spotlight]');
   const amoebaFocusRows = selectedOrganismCard.locator('[data-cell-mission-focus="true"]');
@@ -1294,6 +1400,16 @@ test('mobile play controls, target key, and learning card stay within the stage 
   const mobileCanvas = page.locator('[data-cell-sim-canvas]');
   const amoebaChoice = page.locator('[data-cell-organism-option="amoeba"]');
   const parameciumChoice = page.locator('[data-cell-organism-option="paramecium"]');
+  const plantChoice = page.locator('[data-cell-organism-option="plantcell"]');
+  await expect(chooserMobileHint).toBeVisible();
+  await expect(chooserMobileHint).toContainText('Tap any compact card to reveal its learning map.');
+  await expect(amoebaChoice).toHaveAttribute('data-cell-organism-priority', 'current');
+  await expect(plantChoice).toHaveAttribute('data-cell-organism-priority', 'standard');
+  await expect(amoebaChoice).toHaveAccessibleDescription('Status: 0 of 3 evidence. Control mapping: Direction input, then Pseudopods extend, producing Cell crawls. Mission: Engulf 3 green food particles.');
+  await expect(plantChoice).toHaveAccessibleDescription('Status: new mission. Control mapping: Select a label, then Structure highlighted, producing Function revealed. Mission: Locate 3 different structures.');
+  await expect(amoebaCardDetail).toBeVisible();
+  await expect(plantCardDetail).toBeHidden();
+  await expect(page.locator('[data-cell-organism-card-detail]:visible')).toHaveCount(1);
   await expect(amoebaControlMap).toHaveAttribute('aria-label', 'Amoeba control mapping: Direction input, then Pseudopods extend.');
   await expect(amoebaControlMap.locator('[data-cell-card-control-input]')).toHaveText('Direction input');
   await expect(amoebaControlMap.locator('[data-cell-card-control-response]')).toHaveText('Pseudopods extend');
@@ -1316,28 +1432,33 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await expect(amoebaStructureRow).toHaveAttribute('data-cell-anatomy-jump', 'true');
   await expect(amoebaStructureRow).toHaveAttribute('aria-label', 'Show Pseudopods in the Amoeba live dish. Mission focus structure. Moves focus to the simulation.');
   await expect(amoebaStructureRow).toContainText('Show in live dish');
+  await page.keyboard.press('Tab');
+  await amoebaStructureRow.focus();
+  await expect(amoebaStructureRow).toBeFocused();
+  const anatomyFocusStyle = await amoebaStructureRow.evaluate((row) => {
+    const style = getComputedStyle(row);
+    return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth), outlineColor: style.outlineColor };
+  });
+  expect(anatomyFocusStyle.outlineStyle).not.toBe('none');
+  expect(anatomyFocusStyle.outlineWidth).toBeGreaterThanOrEqual(2);
+  expect(anatomyFocusStyle.outlineColor).not.toBe('rgba(0, 0, 0, 0)');
   await expect(backToOrganisms).toHaveAttribute('aria-label', 'Return to organism choices from Amoeba details');
   await expect(selectedPrimaryAction).toHaveAttribute('aria-label', 'Review Amoeba tutorial');
   await expect(centerPlayer).toHaveAttribute('aria-label', 'Center Amoeba in the live dish');
-  await expect(centerPlayerLabel).toBeVisible();
-  await expect(tutorialHudLabel).toBeVisible();
+  await expect(centerPlayerLabel).toBeHidden();
+  await expect(tutorialHudLabel).toBeHidden();
   const mobileFirstActionTrace = page.locator('[data-cell-control-loop]');
+  const mobileRibbon = page.locator('[data-cell-mission-ribbon]');
   await expect(mobileFirstActionTrace).toHaveAttribute('data-cell-first-action-state', 'waiting');
   await expect(mobileFirstActionTrace.locator('[data-cell-control-title]')).toHaveText('1 \u00B7 First action');
   await expect(mobileFirstActionTrace.locator('[data-cell-control-input]')).toHaveText('Press / hold a direction');
-  const mobileFirstActionLayout = await mobileFirstActionTrace.evaluate((loop) => {
-    const loopRect = loop.getBoundingClientRect();
-    const legend = loop.closest('[data-cell-target-legend]') as HTMLElement;
-    const legendRect = legend.getBoundingClientRect();
-    return {
-      loopLeft: loopRect.left, loopRight: loopRect.right,
-      legendLeft: legendRect.left, legendRight: legendRect.right,
-      scrollWidth: (loop as HTMLElement).scrollWidth, clientWidth: (loop as HTMLElement).clientWidth,
-    };
-  });
-  expect(mobileFirstActionLayout.loopLeft).toBeGreaterThanOrEqual(mobileFirstActionLayout.legendLeft);
-  expect(mobileFirstActionLayout.loopRight).toBeLessThanOrEqual(mobileFirstActionLayout.legendRight);
-  expect(mobileFirstActionLayout.scrollWidth).toBeLessThanOrEqual(mobileFirstActionLayout.clientWidth + 1);
+  await expect(mobileFirstActionTrace).toBeHidden();
+  await expect(mobileRibbon).toBeVisible();
+  await expect(mobileRibbon).toHaveAttribute('data-cell-ribbon-state', 'control');
+  await expect(mobileRibbon.locator('[data-cell-mission-ribbon-announcement]')).toHaveText('Control step. Press / hold a direction. Pseudopods extend, resulting in Cell crawls.');
+  await expect(mobileRibbon.locator('[data-cell-mission-ribbon-label]')).toHaveText('2 \u00B7 Control');
+  await expect(mobileRibbon.locator('[data-cell-mission-ribbon-primary]')).toHaveText('Press / hold a direction');
+  await expect(mobileRibbon.locator('[data-cell-mission-ribbon-secondary]')).toHaveText('Pseudopods extend \u2192 Cell crawls');
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-first-action-ready-mobile.png' : testInfo.outputPath('cell-first-action-ready-mobile.png') });
   }
@@ -1345,15 +1466,24 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '320px'; });
   await page.waitForFunction(() => document.documentElement.clientWidth === 320);
   await expect(mobileFirstActionTrace).toHaveAttribute('data-cell-first-action-state', 'waiting');
-  await expect(mobileFirstActionTrace.locator('[data-cell-first-action-command="true"]')).toBeVisible();
+  await expect(mobileFirstActionTrace.locator('[data-cell-first-action-command="true"]')).toBeHidden();
   expect(await page.locator('[data-cell-control-lead]:visible').count()).toBe(0);
-  const narrowFirstActionLayout = await mobileFirstActionTrace.evaluate((loop) => ({
-    scrollWidth: (loop as HTMLElement).scrollWidth,
-    clientWidth: (loop as HTMLElement).clientWidth,
-    legendWidth: (loop.closest('[data-cell-target-legend]') as HTMLElement).clientWidth,
-  }));
+  const narrowFirstActionLayout = await mobileRibbon.evaluate((ribbon) => {
+    const rect = ribbon.getBoundingClientRect();
+    const primary = ribbon.querySelector('[data-cell-mission-ribbon-primary]') as HTMLElement;
+    const secondary = ribbon.querySelector('[data-cell-mission-ribbon-secondary]') as HTMLElement;
+    return {
+      height: rect.height,
+      scrollWidth: (ribbon as HTMLElement).scrollWidth,
+      clientWidth: (ribbon as HTMLElement).clientWidth,
+      primaryFont: parseFloat(getComputedStyle(primary).fontSize),
+      secondaryFont: parseFloat(getComputedStyle(secondary).fontSize),
+    };
+  });
   expect(narrowFirstActionLayout.scrollWidth).toBeLessThanOrEqual(narrowFirstActionLayout.clientWidth + 1);
-  expect(narrowFirstActionLayout.clientWidth).toBeLessThanOrEqual(narrowFirstActionLayout.legendWidth);
+  expect(narrowFirstActionLayout.height).toBeLessThanOrEqual(110);
+  expect(narrowFirstActionLayout.primaryFont).toBeGreaterThanOrEqual(14);
+  expect(narrowFirstActionLayout.secondaryFont).toBeGreaterThanOrEqual(12);
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-first-action-ready-320.png' : testInfo.outputPath('cell-first-action-ready-320.png') });
   }
@@ -1401,20 +1531,24 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await centerPlayer.click();
   await expect(mobileCanvas).toBeFocused();
   expect(await organismGrid.evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(' ').length)).toBe(2);
-  await expect(fullTargetKey).toBeVisible();
-  await expect(fullTargetKey).toContainText('Target key');
-  await expect(compactTargetKey).toBeHidden();
-  expect(await page.locator('[data-cell-control-lead]:visible').count()).toBe(3);
-  await expect(mobileMissionPath).toBeVisible();
+  await expect(fullTargetKey).toBeHidden();
+  await expect(compactTargetKey).toBeVisible();
+  await expect(compactTargetKey).toHaveText('FOOD target | Green circle');
+  expect(await page.locator('[data-cell-control-lead]:visible').count()).toBe(0);
+  await expect(mobileMissionPath).toBeHidden();
   await setMissionScenario(page, { particleOffsets: [[120, 0]], resetRuntime: true });
   await advanceMission(page, 0);
   await setMissionScenario(page, { particleOffsets: [[0, 0]] });
   expect((await advanceMission(page, 0)).successCount).toBe(1);
-  await page.locator('[data-cell-evidence-feedback]').waitFor({ state: 'visible' });
+  await expect(page.locator('[data-cell-evidence-feedback]')).toBeHidden();
   await expect(page.locator('[data-cell-evidence-chain]')).toContainText('Pseudopods \u2192 engulfment');
-  await page.locator('[data-cell-mission-cue]').waitFor({ state: 'visible' });
+  await expect(page.locator('[data-cell-mission-cue]')).toBeHidden();
   await expect(page.locator('[data-cell-mission-cue]')).toHaveAttribute('data-cell-cue-layout', 'consolidated');
   await expect(page.locator('[data-cell-evidence-feedback]')).toHaveAttribute('data-cell-evidence-layout', 'consolidated');
+  await expect(mobileRibbon).toBeVisible();
+  await expect(mobileRibbon).toHaveAttribute('data-cell-ribbon-state', 'evidence');
+  await expect(mobileRibbon.locator('[data-cell-mission-ribbon-primary]')).toContainText('Pseudopods \u2192 engulfment');
+  await expect(mobileRibbon.locator('[data-cell-mission-ribbon-progress]')).toHaveText('1/3');
   await mobileCanvas.focus();
   await expect(page.locator('[data-cell-target-legend]')).toHaveAttribute('data-cell-target-state', 'recorded');
   await expect(page.locator('[data-cell-target-proximity]')).toHaveAttribute('data-cell-proximity', 'recorded');
@@ -1445,7 +1579,7 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await expect(page.locator('[data-cell-move="ArrowRight"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-cell-move="ArrowRight"]')).toHaveAttribute('data-cell-move-active', 'true');
   await expect(page.locator('[data-cell-pad-readout]')).toHaveAttribute('data-cell-pad-state', 'active');
-  await expect(page.locator('[data-cell-pad-readout]')).toHaveText(/rightInput/i);
+  await expect(page.locator('[data-cell-pad-readout]')).toHaveText('right');
   if (process.env.CELL_VISUAL_QA === '1') {
     await page.locator('[data-cell-stage]').screenshot({ path: process.env.CELL_VISUAL_QA_DIR ? process.env.CELL_VISUAL_QA_DIR + '/cell-evidence-pulse-mobile.png' : testInfo.outputPath('cell-evidence-pulse-mobile.png') });
   }
@@ -1483,6 +1617,7 @@ test('mobile play controls, target key, and learning card stay within the stage 
       hudActions: box('[data-cell-hud-actions]'),
       hudSummary: box('[data-cell-hud-summary]'),
       legend: box('[data-cell-target-legend]'),
+      ribbon: box('[data-cell-mission-ribbon]'),
       controlLoop: box('[data-cell-control-loop]'),
       feedback: box('[data-cell-evidence-feedback]'),
       cue: box('[data-cell-mission-cue]'),
@@ -1497,15 +1632,14 @@ test('mobile play controls, target key, and learning card stay within the stage 
     };
   });
   expect(bounds.scrollWidth).toBeLessThanOrEqual(bounds.viewportWidth + 1);
-  for (const item of [bounds.stageHud, bounds.hudSummary, bounds.legend, bounds.controlLoop, bounds.cue, bounds.feedback, bounds.pad]) {
+  for (const item of [bounds.stageHud, bounds.legend, bounds.ribbon, bounds.pad]) {
     expect(item).not.toBeNull();
     expect(item!.left).toBeGreaterThanOrEqual(bounds.stage!.left - 1);
     expect(item!.right).toBeLessThanOrEqual(bounds.stage!.right + 1);
   }
-  expect(bounds.hudSummary!.top).toBeGreaterThanOrEqual(Math.max(bounds.hudHeading!.bottom, bounds.hudActions!.bottom) - 1);
   expect(bounds.stageHud!.bottom).toBeLessThanOrEqual(bounds.legend!.top - 4);
-  expect(bounds.cue!.top).toBeGreaterThan(bounds.feedback!.top);
-  expect(bounds.cue!.bottom).toBeLessThanOrEqual(bounds.feedback!.bottom + 1);
+  expect(bounds.ribbon!.top).toBeGreaterThanOrEqual(bounds.legend!.top);
+  expect(bounds.ribbon!.bottom).toBeLessThanOrEqual(bounds.legend!.bottom + 1);
   expect(bounds.checkpoint!.left).toBeGreaterThanOrEqual(0);
   expect(bounds.checkpoint!.right).toBeLessThanOrEqual(bounds.viewportWidth + 1);
   for (const item of [bounds.nextStep, bounds.chooser, bounds.firstOption, bounds.selectedCard, bounds.spotlight, bounds.focusRow]) {
@@ -1514,7 +1648,7 @@ test('mobile play controls, target key, and learning card stay within the stage 
     expect(item!.right).toBeLessThanOrEqual(bounds.viewportWidth + 1);
   }
   await expect(page.locator('[data-cell-next-step]')).toContainText('Continue Amoeba \u00B7 1/3 evidence');
-  expect(bounds.feedback!.bottom).toBeLessThanOrEqual(bounds.stage!.bottom + 1);
+  expect(bounds.legend!.bottom).toBeLessThanOrEqual(bounds.stage!.bottom + 1);
   await expect(page.getByText('Zoom 40x', { exact: true })).toBeHidden();
   await page.setViewportSize({ width: 320, height: 844 });
   await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '320px'; });
@@ -1526,7 +1660,15 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await expect(mobileMissionPath).toBeHidden();
   await expect(centerPlayerLabel).toBeHidden();
   await expect(tutorialHudLabel).toBeHidden();
-  expect(await organismGrid.evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(' ').length)).toBe(1);
+  expect(await organismGrid.evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(' ').length)).toBe(2);
+  await expect(chooserMobileHint).toBeVisible();
+  await expect(amoebaCardDetail).toBeVisible();
+  await expect(plantCardDetail).toBeHidden();
+  await expect(page.locator('[data-cell-organism-card-detail]:visible')).toHaveCount(1);
+  await expect(page.locator('[data-cell-card-identity]:visible')).toHaveCount(11);
+  await expect(page.locator('[data-cell-card-status]:visible')).toHaveCount(11);
+  await expect(plantChoice.locator('[data-cell-card-identity]')).toBeVisible();
+  await expect(plantChoice.locator('[data-cell-card-status]')).toBeVisible();
   const narrowSelectedBounds = await page.evaluate(() => [
     '[data-cell-selected-organism-card]',
     '[data-cell-structure-spotlight]',
@@ -1542,13 +1684,17 @@ test('mobile play controls, target key, and learning card stay within the stage 
   const narrowChooserLayout = await page.evaluate(() => {
     const grid = document.querySelector('[data-cell-organism-grid]') as HTMLElement;
     const firstCard = grid.querySelector('[data-cell-organism-option]') as HTMLElement;
+    const compactCard = grid.querySelector('[data-cell-organism-priority="standard"]') as HTMLElement;
     const map = firstCard.querySelector('[data-cell-card-control-map]') as HTMLElement;
     const gridRect = grid.getBoundingClientRect();
     const cardRect = firstCard.getBoundingClientRect();
+    const compactCardRect = compactCard.getBoundingClientRect();
     const mapRect = map.getBoundingClientRect();
     return {
       grid: { left: gridRect.left, right: gridRect.right },
-      card: { left: cardRect.left, right: cardRect.right },
+      gridHeight: gridRect.height,
+      card: { left: cardRect.left, right: cardRect.right, height: cardRect.height },
+      compactCard: { left: compactCardRect.left, right: compactCardRect.right, height: compactCardRect.height },
       map: { left: mapRect.left, right: mapRect.right },
       pageScrollWidth: document.documentElement.scrollWidth,
       viewportWidth: document.documentElement.clientWidth,
@@ -1557,6 +1703,13 @@ test('mobile play controls, target key, and learning card stay within the stage 
   expect(narrowChooserLayout.pageScrollWidth).toBeLessThanOrEqual(narrowChooserLayout.viewportWidth + 1);
   expect(narrowChooserLayout.card.left).toBeGreaterThanOrEqual(narrowChooserLayout.grid.left - 1);
   expect(narrowChooserLayout.card.right).toBeLessThanOrEqual(narrowChooserLayout.grid.right + 1);
+  expect(narrowChooserLayout.card.right - narrowChooserLayout.card.left).toBeGreaterThanOrEqual(narrowChooserLayout.grid.right - narrowChooserLayout.grid.left - 2);
+  expect(narrowChooserLayout.card.height).toBeGreaterThanOrEqual(112);
+  expect(narrowChooserLayout.compactCard.left).toBeGreaterThanOrEqual(narrowChooserLayout.grid.left - 1);
+  expect(narrowChooserLayout.compactCard.right).toBeLessThanOrEqual(narrowChooserLayout.grid.right + 1);
+  expect(narrowChooserLayout.compactCard.right - narrowChooserLayout.compactCard.left).toBeLessThan((narrowChooserLayout.grid.right - narrowChooserLayout.grid.left) * 0.7);
+  expect(narrowChooserLayout.compactCard.height).toBeGreaterThanOrEqual(68);
+  expect(narrowChooserLayout.gridHeight).toBeLessThan(720);
   expect(narrowChooserLayout.map.left).toBeGreaterThanOrEqual(narrowChooserLayout.card.left - 1);
   expect(narrowChooserLayout.map.right).toBeLessThanOrEqual(narrowChooserLayout.card.right + 1);
   const narrowControl = await readControlResponse(page);
@@ -1571,9 +1724,8 @@ test('mobile play controls, target key, and learning card stay within the stage 
     const hudRect = document.querySelector('[data-cell-stage-hud]')!.getBoundingClientRect();
     const hudHeadingRect = document.querySelector('[data-cell-hud-heading]')!.getBoundingClientRect();
     const hudActionsRect = document.querySelector('[data-cell-hud-actions]')!.getBoundingClientRect();
-    const hudSummaryRect = document.querySelector('[data-cell-hud-summary]')!.getBoundingClientRect();
     const legendRect = document.querySelector('[data-cell-target-legend]')!.getBoundingClientRect();
-    const traceRect = document.querySelector('[data-cell-control-loop]')!.getBoundingClientRect();
+    const ribbonRect = document.querySelector('[data-cell-mission-ribbon]')!.getBoundingClientRect();
     const padRect = document.querySelector('[data-cell-direction-pad]')!.getBoundingClientRect();
     const scaleY = canvas.height / canvasRect.height;
     return {
@@ -1585,29 +1737,25 @@ test('mobile play controls, target key, and learning card stay within the stage 
       hudRight: hudRect.right,
       hudBottom: hudRect.bottom,
       hudFirstRowBottom: Math.max(hudHeadingRect.bottom, hudActionsRect.bottom),
-      hudSummaryLeft: hudSummaryRect.left,
-      hudSummaryRight: hudSummaryRect.right,
-      hudSummaryTop: hudSummaryRect.top,
       legendLeft: legendRect.left,
       legendRight: legendRect.right,
       legendTop: legendRect.top,
       legendBottom: legendRect.bottom,
       legendHeight: legendRect.height,
       openCanvasBand: padRect.top - legendRect.bottom,
-      traceLeft: traceRect.left,
-      traceRight: traceRect.right,
+      ribbonLeft: ribbonRect.left,
+      ribbonRight: ribbonRect.right,
       padTop: padRect.top,
       tagTop: canvasRect.top + response.tagBounds.top / scaleY,
       tagBottom: canvasRect.top + response.tagBounds.bottom / scaleY,
     };
   }, narrowControl);
   expect(narrowLayout.scrollWidth).toBeLessThanOrEqual(narrowLayout.viewportWidth + 1);
-  for (const edge of [narrowLayout.hudLeft, narrowLayout.hudSummaryLeft, narrowLayout.legendLeft, narrowLayout.traceLeft]) expect(edge).toBeGreaterThanOrEqual(narrowLayout.stageLeft - 1);
-  for (const edge of [narrowLayout.hudRight, narrowLayout.hudSummaryRight, narrowLayout.legendRight, narrowLayout.traceRight]) expect(edge).toBeLessThanOrEqual(narrowLayout.stageRight + 1);
-  expect(narrowLayout.hudSummaryTop).toBeGreaterThanOrEqual(narrowLayout.hudFirstRowBottom - 1);
+  for (const edge of [narrowLayout.hudLeft, narrowLayout.legendLeft, narrowLayout.ribbonLeft]) expect(edge).toBeGreaterThanOrEqual(narrowLayout.stageLeft - 1);
+  for (const edge of [narrowLayout.hudRight, narrowLayout.legendRight, narrowLayout.ribbonRight]) expect(edge).toBeLessThanOrEqual(narrowLayout.stageRight + 1);
   expect(narrowLayout.hudBottom).toBeLessThanOrEqual(narrowLayout.legendTop - 4);
-  expect(narrowLayout.legendHeight).toBeLessThanOrEqual(265);
-  expect(narrowLayout.openCanvasBand).toBeGreaterThanOrEqual(100);
+  expect(narrowLayout.legendHeight).toBeLessThanOrEqual(145);
+  expect(narrowLayout.openCanvasBand).toBeGreaterThanOrEqual(180);
   expect(narrowLayout.legendBottom).toBeLessThanOrEqual(narrowLayout.tagTop - 4);
   expect(narrowLayout.tagBottom).toBeLessThanOrEqual(narrowLayout.padTop - 4);
   if (process.env.CELL_VISUAL_QA === '1') {
@@ -1618,8 +1766,8 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '390px'; });
   await page.waitForFunction(() => document.documentElement.clientWidth === 390);
-  await expect(centerPlayerLabel).toBeVisible();
-  await expect(tutorialHudLabel).toBeVisible();
+  await expect(centerPlayerLabel).toBeHidden();
+  await expect(tutorialHudLabel).toBeHidden();
   const mobileRoadmap = page.locator('[data-cell-mission-checkpoint]');
   const mobileObserveCheckpoint = mobileRoadmap.locator('[data-cell-checkpoint-step="observe"]');
   await expect(mobileRoadmap.locator('[data-cell-checkpoint-step]')).toHaveCount(4);
@@ -1659,6 +1807,16 @@ test('mobile play controls, target key, and learning card stay within the stage 
   await expect(page.locator('[data-cell-direction-pad]')).toHaveAttribute('data-cell-active-direction', 'idle');
   await expect(page.locator('[data-cell-move="ArrowRight"]')).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('[data-cell-pad-readout]')).toHaveAttribute('data-cell-pad-state', 'ready');
+  await page.setViewportSize({ width: 768, height: 900 });
+  await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '768px'; });
+  await page.waitForFunction(() => document.documentElement.clientWidth === 768);
+  await expect(chooserMobileHint).toBeHidden();
+  await expect(page.locator('[data-cell-organism-card-detail]:visible')).toHaveCount(11);
+  await expect(plantCardDetail).toBeVisible();
+  expect(await organismGrid.evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(' ').length)).toBe(3);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => { const wrap = document.getElementById('wrap'); if (wrap) wrap.style.width = '390px'; });
+  await page.waitForFunction(() => document.documentElement.clientWidth === 390);
   await page.evaluate(() => {
     const state = (window as any).__toolData.cell;
     state._cellExt.successByOrganism.amoeba = 12;

@@ -136,6 +136,7 @@ function setupEvaluationRepository(config) {
       var lockedExistingActor = currentActor_();
       if (lockedExistingActor.role !== 'admin') throw eeError_('denied', 'Only an administrator can update repository setup.');
       assertNoAnnualRolloverRecovery_();
+      assertNoPendingWorkspaceCommit_();
     }
     var domain = normalizeDomain_(config.allowedDomain || email.split('@')[1]);
     if (!domain || emailDomain_(email) !== domain) throw eeError_('bad_config', 'Allowed domain must match the setup account.');
@@ -159,7 +160,10 @@ function setupEvaluationRepository(config) {
       var spreadsheetFile = DriveApp.getFileById(spreadsheet.getId());
       try { spreadsheetFile.moveTo(folder); } catch (moveErr) {}
       setPrivate_(spreadsheetFile);
-      workspaceFile = folder.createFile('workspace.json', JSON.stringify(initialWorkspace), MimeType.PLAIN_TEXT);
+      // Persist the exact canonical representation that the revision-0 journal
+      // will carry. Recovery deliberately refuses to initialize metadata when
+      // the current file and journal differ by even normalization-only fields.
+      workspaceFile = folder.createFile('workspace.json', JSON.stringify(sanitizeStoredWorkspace_(initialWorkspace)), MimeType.PLAIN_TEXT);
       setPrivate_(workspaceFile);
       pendingFile = folder.createFile('workspace.pending.json', '', MimeType.PLAIN_TEXT);
       setPrivate_(pendingFile);
@@ -195,12 +199,19 @@ function setupEvaluationRepository(config) {
     upsertMemberRow_(spreadsheet, { email: bootstrapAdmin, displayName: safeString_(config.adminDisplayName, 160, 'Repository Administrator'), role: 'admin', teacherId: '', active: true });
     seedMembersAndAssignments_(spreadsheet, setupMembers, setupAssignments, domain);
 
-    if (existing) assertNoPendingWorkspaceCommit_();
     var state = readWorkspaceState_();
     validateRepositoryReferences_(state.workspace);
-    if (!state.metadataExists) writeWorkspaceState_(state.workspace, 0, email, lock);
+    var setupCommitPending = false;
+    if (!state.metadataExists) {
+      var setupCommit = writeWorkspaceState_(state.workspace, 0, email, lock);
+      setupCommitPending = !setupCommit || setupCommit.pending;
+    }
     syncSnapshots_(state.workspace);
     appendOperationAuditBestEffort_({ teacherId: '', event: existing ? 'REPOSITORY_RECONFIGURED' : 'REPOSITORY_CREATED', summary: existing ? 'Repository configuration reviewed' : 'District repository created', entityType: 'repository', entityId: 'repository', version: state.revision }, { email: email, role: 'admin' });
+    if (setupCommitPending) {
+      props.setProperty('EE_SETUP_STATE', 'recovery_required');
+      throw eeError_('commit_recovery_required', 'Initial workspace metadata was not confirmed. Setup health must complete the reviewed pending commit before the repository is ready.');
+    }
     props.setProperty('EE_SETUP_STATE', 'ready');
     return { ok: true, service: EE_SERVICE, version: EE_VERSION, allowedDomain: domain, spreadsheetId: spreadsheet.getId(), folderId: folder.getId(), activeUserEmail: email };
   } finally { lock.releaseLock(); }
@@ -463,6 +474,10 @@ function saveWorkspace(request) {
     freezeCycleWeights_(state.workspace, merged);
     deriveFinalizedSnapshots_(state.workspace, merged, actor, request.mutation);
     var mutation = deriveMutation_(request.mutation, state.workspace, merged, actor);
+    if (!mutation && same_(state.workspace, merged)) {
+      var existingReconciliationPending = !!PropertiesService.getScriptProperties().getProperty('EE_SECONDARY_RECONCILE_REQUIRED');
+      return { ok: true, workspace: filterWorkspaceForActor_(state.workspace, actor), revision: state.revision, version: state.revision, reconciliationPending: existingReconciliationPending };
+    }
     if (mutation) appendWorkspaceAudit_(merged, mutation, actor);
     var nextRevision = state.revision + 1;
     var visible = filterWorkspaceForActor_(merged, actor);
@@ -2199,7 +2214,7 @@ function reconcilePortalWorkspaceIntegrity(request) {
     var afterOutbox=operationAuditOutboxStatus_(journal),finalAudit=auditChainStatus_();
     if(afterIndexes.ambiguous||configurationStatus.ambiguous||afterOutbox.ambiguous||finalAudit.ok!==true)journal.manualReviewRequired=true;
     var pending = journal.workspaceIndexes || journal.configuration || journal.auditEntries.length > 0 || journal.manualReviewRequired || configurationMismatch || afterIndexes.totalMissing > 0 || afterIndexes.ambiguous || afterOutbox.ambiguous || !!props.getProperty('EE_COMMIT_RECOVERY_REQUIRED');
-    if(!pending)props.setProperty('EE_LAST_SUCCESSFUL_INTEGRITY_RECONCILIATION_AT',nowIso_());
+    if(!pending){props.setProperty('EE_LAST_SUCCESSFUL_INTEGRITY_RECONCILIATION_AT',nowIso_());if(props.getProperty('EE_SETUP_STATE')==='recovery_required')props.setProperty('EE_SETUP_STATE','ready');}
     return {
       ok: true,
       status: journal.manualReviewRequired ? 'manual_review_required' : (pending ? 'recovery_pending' : ((commitWasPending || beforeIndexes.totalMissing || beforeConfigurationMismatch || beforeAuditEntries) ? 'completed' : 'none')),
@@ -5259,11 +5274,11 @@ function authorizeWalkthroughUpdate_(old, next, actor) {
   var evaluatorResult = clone_(old);
   var editable = ['date', 'durationMin', 'announced', 'lessonPhase', 'subject', 'evidence', 'interpretation', 'componentTags', 'privacyChecked'];
   for (var i = 0; i < editable.length; i++) evaluatorResult[editable[i]] = clone_(next[editable[i]]);
-  evaluatorResult.updatedAt = nowIso_();
   if (next.publishedAt) {
     if (!evaluatorResult.evidence || !evaluatorResult.privacyChecked) throw eeError_('invalid_transition', 'Publishing requires evidence and privacy review.');
     evaluatorResult.publishedAt = nowIso_();
   }
+  evaluatorResult.updatedAt = sameExcept_(old, evaluatorResult, ['updatedAt']) ? old.updatedAt : nowIso_();
   return evaluatorResult;
 }
 
@@ -5289,7 +5304,7 @@ function teacherObservationUpdate_(old, next) {
     if (!old.evaluatorSignedAt || !result.ackChecked) throw eeError_('invalid_transition', 'Acknowledgment requires the signed assessment and confirmation.');
     result.teacherAcknowledgedAt = nowIso_();
   }
-  result.updatedAt = nowIso_();
+  result.updatedAt = sameExcept_(old, result, ['updatedAt']) ? old.updatedAt : nowIso_();
   return result;
 }
 
@@ -5339,7 +5354,7 @@ function evaluatorObservationUpdate_(old, next, actor) {
     if (!(old.postConferenceAt || result.postConferenceAt) || !completeDomains_(result.ratings) || !completeRationales_(result.rationales)) throw eeError_('invalid_transition', 'Evaluator signature requires the post-conference, all domain ratings, and rationales.');
   }
   if (!old.finalizedAt && next.finalizedAt && !(old.teacherAcknowledgedAt && (old.evaluatorSignedAt || result.evaluatorSignedAt))) throw eeError_('invalid_transition', 'Finalization requires evaluator signature and teacher acknowledgment.');
-  result.updatedAt = nowIso_();
+  result.updatedAt = sameExcept_(old, result, ['updatedAt']) ? old.updatedAt : nowIso_();
   return result;
 }function validateTeacherSpm_(old, next) {
   if (next.status !== 'draft') throw eeError_('invalid_transition', 'Create the SPM draft before submitting it as a separate audited action.');
@@ -5372,7 +5387,7 @@ function teacherSpmUpdate_(old, next) {
   } else if (next.status !== old.status) {
     throw eeError_('immutable', 'Submitted SPM content is awaiting evaluator action.');
   }
-  result.updatedAt = nowIso_();
+  result.updatedAt = sameExcept_(old, result, ['updatedAt']) ? old.updatedAt : nowIso_();
   return result;
 }
 
@@ -5400,7 +5415,7 @@ function evaluatorSpmUpdate_(old, next, actor) {
       result.status = 'locked'; result.lockedAt = nowIso_();
     }
   }
-  result.updatedAt = nowIso_();
+  result.updatedAt = sameExcept_(old, result, ['updatedAt']) ? old.updatedAt : nowIso_();
   return result;
 }
 
@@ -5670,9 +5685,73 @@ function serverRoundedScore_(value) {
   return Math.round((truncated + 1e-12) * 100) / 100;
 }
 
+function materialTeacherProfileState_(teacher) {
+  return {
+    code: teacher.code, name: teacher.name, building: teacher.building, assignment: teacher.assignment,
+    employeeType: teacher.employeeType, buildingData: teacher.buildingData, teacherSpecificData: teacher.teacherSpecificData,
+    active: teacher.active, evaluator: teacher.evaluator, dueDate: teacher.dueDate
+  };
+}
+
+function materialTeacherAnnualJudgmentState_(teacher) {
+  return {
+    ratings: clone_(teacher.ratings || {}),
+    annualRationales: clone_(teacher.annualRationales || {}),
+    annualEvidenceRefs: clone_(teacher.annualEvidenceRefs || {})
+  };
+}
+
+function materialTeacherAuditChanges_(oldWorkspace, nextWorkspace) {
+  var changes = [], oldById = indexById_(oldWorkspace.teachers || []), teachers = nextWorkspace.teachers || [];
+  for (var i = 0; i < teachers.length; i++) {
+    var next = teachers[i], old = oldById[next.id];
+    if (!old) continue;
+    if (!same_(materialTeacherProfileState_(old), materialTeacherProfileState_(next))) {
+      changes.push({ teacherId: next.id, event: 'PROFILE_UPDATED', summary: 'Educator profile updated' });
+    }
+    if (!same_(materialTeacherAnnualJudgmentState_(old), materialTeacherAnnualJudgmentState_(next))) {
+      changes.push({ teacherId: next.id, event: 'RATING_UPDATED', summary: 'Educator annual judgment updated' });
+    }
+  }
+  return changes;
+}
+
+function materialTeacherSaveHasResidualChange_(oldWorkspace, nextWorkspace, change) {
+  var comparable = clone_(nextWorkspace), oldTeacher = findById_(oldWorkspace.teachers || [], change.teacherId), nextTeacher = findById_(comparable.teachers || [], change.teacherId);
+  if (!oldTeacher || !nextTeacher) return true;
+  var allowed = change.event === 'PROFILE_UPDATED'
+    ? ['code', 'name', 'building', 'assignment', 'employeeType', 'buildingData', 'teacherSpecificData', 'active', 'evaluator', 'dueDate']
+    : ['ratings', 'annualRationales', 'annualEvidenceRefs'];
+  // These fields are recomputed by the server as consequences of the accepted
+  // educator change. Everything else must remain byte-for-byte canonical.
+  allowed = allowed.concat(['cycleStatus', 'lastActivityAt', 'cycleLockedAt', 'weightSnapshot', 'finalScore']);
+  for (var i = 0; i < allowed.length; i++) nextTeacher[allowed[i]] = clone_(oldTeacher[allowed[i]]);
+  return !same_(oldWorkspace, comparable);
+}
+
+function canonicalMaterialTeacherMutation_(raw, change, oldWorkspace, nextWorkspace, actor) {
+  if (actor.role === 'teacher') throw eeError_('denied', 'Material educator profile and annual judgment changes require evaluator authority.');
+  requireTeacherAccess_(actor, change.teacherId);
+  var claimedTeacherId = raw.teacherId === undefined || raw.teacherId === null || raw.teacherId === '' ? '' : safeId_(raw.teacherId, true);
+  var claimedEntityId = raw.entityId === undefined || raw.entityId === null || raw.entityId === '' ? '' : safeId_(raw.entityId, true);
+  var claimedEntityType = raw.entityType === undefined || raw.entityType === null || raw.entityType === '' ? '' : safeToken_(raw.entityType, 60);
+  if (claimedTeacherId && claimedTeacherId !== change.teacherId) throw eeError_('invalid_transition', 'Audit educator does not match the material educator change.');
+  if (claimedEntityId && claimedEntityId !== change.teacherId) throw eeError_('invalid_transition', 'Audit entity does not match the material educator change.');
+  if (claimedEntityType && claimedEntityType !== 'educator_cycle' && claimedEntityType !== 'evaluation') throw eeError_('invalid_transition', 'Material educator changes must bind to the educator cycle.');
+  if (materialTeacherSaveHasResidualChange_(oldWorkspace, nextWorkspace, change)) throw eeError_('invalid_transition', 'A material educator change cannot be combined with another persisted change.');
+  return { teacherId: change.teacherId, event: change.event, summary: change.summary, entityType: 'educator_cycle', entityId: change.teacherId, version: clampInt_(raw.version, 1, 1000, 1) };
+}
+
 function deriveMutation_(raw, oldWorkspace, nextWorkspace, actor) {
   raw = isPlainObject_(raw) ? raw : {};
   var event = String(raw.event || '').toUpperCase();
+  var materialChanges = materialTeacherAuditChanges_(oldWorkspace, nextWorkspace);
+  if (materialChanges.length) {
+    if (durableMilestoneChanges_(oldWorkspace, nextWorkspace).length) throw eeError_('invalid_transition', 'A material educator change cannot be combined with a durable workflow milestone.');
+    if (materialChanges.length !== 1) throw eeError_('invalid_transition', 'Each material save must update exactly one educator category.');
+    if (event !== materialChanges[0].event) throw eeError_('invalid_transition', 'The requested audit event does not match the material educator change.');
+    return canonicalMaterialTeacherMutation_(raw, materialChanges[0], oldWorkspace, nextWorkspace, actor);
+  }
   if (['DRAFT_SAVED', 'PROFILE_UPDATED', 'RATING_UPDATED', 'CONFIG_UPDATED', 'UPDATED', ''].indexOf(event) !== -1) { if (durableMilestoneChanges_(oldWorkspace,nextWorkspace).length) throw eeError_('invalid_transition','A durable workflow milestone requires its exact audited action.'); return null; }
   var allowedEvents = {
     CREATED: 'Record created', ASSIGNED: 'Formal observation assigned', OPENED: 'Record first opened by evaluator',
@@ -5792,7 +5871,7 @@ function sanitizeSnapshot_(v) { v=requireObject_(v,'snapshot'); return { id:safe
 
 /* ---------------------------- persistence ------------------------------ */
 
-function repositoryConfigured_() { var p=PropertiesService.getScriptProperties(); return p.getProperty('EE_SETUP_STATE')==='ready'&&!!(p.getProperty('EE_ALLOWED_DOMAIN')&&p.getProperty('EE_SPREADSHEET_ID')&&p.getProperty('EE_WORKSPACE_FILE_ID')&&p.getProperty('EE_PENDING_COMMIT_FILE_ID')); }
+function repositoryConfigured_() { var p=PropertiesService.getScriptProperties(),state=p.getProperty('EE_SETUP_STATE'); return (state==='ready'||state==='recovery_required')&&!!(p.getProperty('EE_ALLOWED_DOMAIN')&&p.getProperty('EE_SPREADSHEET_ID')&&p.getProperty('EE_WORKSPACE_FILE_ID')&&p.getProperty('EE_PENDING_COMMIT_FILE_ID')); }
 function repositorySpreadsheet_() { var id=PropertiesService.getScriptProperties().getProperty('EE_SPREADSHEET_ID'); if(!id)throw eeError_('not_configured','Repository spreadsheet is not configured.'); return SpreadsheetApp.openById(id); }
 function readWorkspaceState_(options) { var p=PropertiesService.getScriptProperties(); var id=p.getProperty('EE_WORKSPACE_FILE_ID'); if(!id)throw eeError_('not_configured','Workspace file is not configured.'); var raw=DriveApp.getFileById(id).getBlob().getDataAsString('UTF-8'); if(raw.length>EE_MAX_WORKSPACE_BYTES)throw eeError_('corrupt','Stored workspace exceeds its limit.'); var workspace; try{workspace=sanitizeStoredWorkspace_(JSON.parse(raw));}catch(err){throw eeError_('corrupt','Stored workspace failed validation.');} var sheet=repositorySpreadsheet_().getSheetByName('Workspace'); var revision=0,exists=false; if(sheet&&sheet.getLastRow()>=2){var row=sheet.getRange(2,1,1,6).getValues()[0],parsedRevision=Number(row[1]);if(String(row[0])!=='workspace'||String(row[2])!==id||Math.floor(parsedRevision)!==parsedRevision||parsedRevision<0||sheetLogicalCell_(row[3])!==hashText_(raw))throw eeError_('corrupt','Workspace metadata integrity check failed; an administrator must restore a matching reviewed backup.');revision=parsedRevision;exists=true;} return {workspace:workspace,revision:revision,metadataExists:exists}; }
 function sanitizeStoredWorkspace_(raw) { var copy=clone_(raw); var audit=Array.isArray(copy.audit)?copy.audit.slice(-EE_MAX_AUDIT):[]; copy.audit=[]; var clean=sanitizeWorkspace_(copy); clean.audit=audit.map(sanitizeAuditObject_); return clean; }

@@ -76,6 +76,32 @@ const CASES = [
     name: `molecule lab ${moleculeMode}`, file: 'stem_lab/stem_tool_molecule.js', id: 'molecule',
     state: { molecule: { moleculeMode } },
   })),
+  {
+    name: 'molecule lab filtered periodic workspace',
+    file: 'stem_lab/stem_tool_molecule.js',
+    id: 'molecule',
+    state: {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+        elementCategory: 'nonmetal',
+        selectedElement: { name: 'Carbon', s: 'C', n: 6, cat: 'nonmetal', c: '#111827' },
+      },
+    },
+  },
+  {
+    name: 'molecule lab reference browser',
+    file: 'stem_lab/stem_tool_molecule.js',
+    id: 'molecule',
+    state: {
+      molecule: {
+        moleculeMode: 'table',
+        tutorialDismissed: true,
+        referenceLibraryOpen: true,
+        referenceLibraryGroup: 'applications',
+      },
+    },
+  },
   ...['titrate', 'challenge', 'incidents', 'equipment', 'molarity', 'buffers'].map((labTab) => ({
     name: `titration lab ${labTab}`, file: 'stem_lab/stem_tool_titration.js', id: 'titrationLab',
     state: { titrationLab: { labTab, titrationReduceMotion: true } },

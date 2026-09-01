@@ -102,6 +102,94 @@ describe('Fisher Lab section scope contract', () => {
   });
 });
 
+describe('Fisher Lab regulation provenance', () => {
+  const provenance = (region, now) => window.__FisherLabCore.getCoreRegulationProvenance(region, now);
+  const reviewedAt = Date.UTC(2026, 7, 31);
+
+  it('maps every practice profile to a reviewed official HTTPS authority page', () => {
+    const expected = {
+      maine: ['Maine Department of Marine Resources', 'www.maine.gov'],
+      chesapeake: ['Maryland Department of Natural Resources', 'dnr.maryland.gov'],
+      pnw: ['Washington Department of Fish and Wildlife', 'wdfw.wa.gov'],
+      greatlakes: ['Michigan Department of Natural Resources', 'www.michigan.gov']
+    };
+
+    Object.entries(expected).forEach(([region, [authority, hostname]]) => {
+      const source = provenance(region, reviewedAt);
+      const url = new URL(source.sourceUrl);
+      expect(source).toMatchObject({
+        region,
+        authority,
+        reviewedOn: '2026-08-31',
+        reviewedLabel: 'August 31, 2026',
+        status: 'source-checked',
+        reviewDue: false
+      });
+      expect(source.sourceLabel).toBeTruthy();
+      expect(source.scopeNote).toBeTruthy();
+      expect(url.protocol).toBe('https:');
+      expect(url.hostname).toBe(hostname);
+    });
+  });
+
+  it('moves to review-due only after the deterministic 180-day source-check window', () => {
+    const day = 86400000;
+    expect(provenance('maine', reviewedAt + 180 * day)).toMatchObject({
+      ageDays: 180,
+      reviewWindowDays: 180,
+      status: 'source-checked',
+      reviewDue: false
+    });
+    expect(provenance('maine', reviewedAt + 181 * day)).toMatchObject({
+      ageDays: 181,
+      status: 'review-due',
+      reviewDue: true
+    });
+  });
+
+  it('falls back to the reviewed Maine source for an unknown or prototype-key region', () => {
+    expect(provenance('unknown', reviewedAt)).toMatchObject({ region: 'maine', ageDays: 0, status: 'source-checked' });
+    expect(provenance('toString', reviewedAt)).toMatchObject({ region: 'maine', authority: 'Maine Department of Marine Resources' });
+  });
+});
+
+describe('Fisher Lab runtime cadence', () => {
+  it('publishes realtime HUD snapshots at 10 Hz, immediately on launch, and after an elapsed-time reset', () => {
+    const { shouldPublishCoreRealtimeHud } = window.__FisherLabCore;
+
+    expect(shouldPublishCoreRealtimeHud(0, Number.NEGATIVE_INFINITY)).toBe(true);
+    expect(shouldPublishCoreRealtimeHud(0.099, 0)).toBe(false);
+    expect(shouldPublishCoreRealtimeHud(0.1, 0)).toBe(true);
+    expect(shouldPublishCoreRealtimeHud(0, 42)).toBe(true);
+    expect(shouldPublishCoreRealtimeHud(Number.NaN, 0)).toBe(false);
+  });
+
+  it('builds automatic voyage checkpoints only when the ten-second cadence is due', () => {
+    const { shouldBuildCoreVoyageCheckpoint } = window.__FisherLabCore;
+
+    expect(shouldBuildCoreVoyageCheckpoint(0, Number.NEGATIVE_INFINITY, false)).toBe(true);
+    expect(shouldBuildCoreVoyageCheckpoint(9.999, 0, false)).toBe(false);
+    expect(shouldBuildCoreVoyageCheckpoint(10, 0, false)).toBe(true);
+    expect(shouldBuildCoreVoyageCheckpoint(0, 42, false)).toBe(true);
+    expect(shouldBuildCoreVoyageCheckpoint(0.25, 0, true)).toBe(true);
+  });
+
+  it('guards expensive checkpoint and HUD payload construction and keeps the active frame loop allocation-free', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const checkpointStart = source.indexOf('function emitVoyageCheckpoint(reason, force)');
+    const checkpointEnd = source.indexOf('function clearVoyageCheckpoint', checkpointStart);
+    const checkpointBlock = source.slice(checkpointStart, checkpointEnd);
+    const tickStart = source.indexOf('function tick()');
+    const tickEnd = source.indexOf('restoredFromCheckpoint = applyInitialVoyageCheckpoint()', tickStart);
+    const tickBlock = source.slice(tickStart, tickEnd);
+
+    expect(checkpointBlock.indexOf('shouldBuildCoreVoyageCheckpoint')).toBeLessThan(checkpointBlock.indexOf('createCurrentVoyageCheckpoint()'));
+    expect(tickBlock).toContain('if (fullHudRefreshPending || shouldPublishCoreRealtimeHud(elapsed, lastHudPublishElapsed))');
+    expect(tickBlock).not.toContain('new THREE.Vector3');
+    expect(tickBlock).toContain('spawnParticle(px, py, pz, vx, vy, vz');
+  });
+});
+
 describe('Fisher Lab stewardship scoring', () => {
   it('rewards decision streaks, resets misses, and never produces a negative score', () => {
     const { scoreCoreDecision } = window.__FisherLabCore;

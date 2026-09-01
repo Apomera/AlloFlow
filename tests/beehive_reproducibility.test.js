@@ -545,6 +545,10 @@ describe('Beehive reproducibility surfaces', () => {
     expect(html.match(/data-experiment-protocol-step=/g)).toHaveLength(8);
     expect(html).toContain('Start a separate Run B');
     expect(html).toContain('data-experiment-check="run"');
+    expect(html).toContain('data-experiment-audit-deck="true"');
+    expect(html).toContain('data-experiment-audit-grid="true"');
+    expect(html).toContain('Evidence integrity');
+    expect(html).toContain('3 linked checks');
     expect(html).toContain('data-experiment-management-audit="true"');
     expect(html).toContain('data-management-audit-status="one-change"');
     expect(html).toContain('data-management-audit-final="true"');
@@ -552,6 +556,13 @@ describe('Beehive reproducibility surfaces', () => {
     expect(html).toContain('data-experiment-plan-alignment="matched"');
     expect(html).toContain('data-experiment-plan-registration="true"');
     expect(html).toContain('data-plan-registration-status="matched"');
+    expect(html).toContain('data-plan-registration-sequence="true"');
+    expect(html).toContain('aria-label="Plan timing sequence"');
+    expect(html.match(/data-plan-registration-node=/g)).toHaveLength(3);
+    expect(html.match(/data-sequence-state="complete"/g)).toHaveLength(3);
+    expect(html).toContain('Current plan');
+    expect(html).toContain('Complete copy saved');
+    expect(html).toContain('Plan and copy match');
     expect(html).toContain('data-experiment-protocol-step="registration"');
     expect(html).toContain('data-experiment-prediction-audit="true"');
     expect(html).toContain('data-prediction-audit-status="aligned"');

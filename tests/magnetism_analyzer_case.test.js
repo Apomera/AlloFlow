@@ -175,7 +175,7 @@ describe('magnetism unknown-ion case file', () => {
       analyzerMysteryRound: 1,
       analyzerMysteryScan: { round: 1, selectedSpeed: 2, analyzerField: 4, radius: 999 },
       analyzerMysteryGuess: 2, analyzerMysteryChecked: true,
-      analyzerMysteryWins: { overlap: true }, notebookOpen: true,
+      analyzerMysteryWins: { overlap: true }, notebookOpen: true, labShellPanel: 'evidence',
     });
     const metrics = physics.notebookMetricSnapshot({ magnetism: completed });
     const keys = metrics.map((metric) => metric.key);

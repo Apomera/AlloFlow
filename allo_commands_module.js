@@ -6537,11 +6537,11 @@ const AlloCommandPalette = ({ ctx }) => {
         placeholder: getCommandAudience(ctx) === "student" ? t("student.actions_search") || "Try \u201Cread directions\u201D, \u201Ccheck my progress\u201D, or \u201Csave my work\u201D\u2026" : t("palette.placeholder", "Type a command \u2014 \u201Cbigger text\u201D, \u201Ceducator hub\u201D, \u201Cread this page\u201D\u2026"),
         "aria-label": t("palette.input_aria", "Search commands"),
         role: "combobox",
-        "aria-expanded": "true",
+        "aria-expanded": commandRowCount > 0,
         "aria-autocomplete": "list",
-        "aria-controls": "allo-palette-list",
+        "aria-controls": commandRowCount > 0 ? "allo-palette-list" : void 0,
         "aria-describedby": "allo-palette-status",
-        "aria-activedescendant": selectedCommandId ? "allo-cmd-" + selectedCommandId : void 0,
+        "aria-activedescendant": commandRowCount > 0 && selectedCommandId ? "allo-cmd-" + selectedCommandId : void 0,
         className: "min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500"
       }
     ), /* @__PURE__ */ React.createElement(
@@ -6567,7 +6567,7 @@ const AlloCommandPalette = ({ ctx }) => {
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")
     )),
     /* @__PURE__ */ React.createElement("div", { id: "allo-palette-status", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, paletteStatus),
-    /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, commandRowCount === 0 && /* @__PURE__ */ React.createElement("li", { role: "presentation", className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")), rows.map((row, i) => row.kind === "header" ? /* @__PURE__ */ React.createElement("li", { key: "h-" + i, role: "presentation", className: "px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none" }, row.label) : /* @__PURE__ */ React.createElement(
+    commandRowCount === 0 ? /* @__PURE__ */ React.createElement("div", { id: "allo-palette-empty", className: "px-4 py-6 text-center text-xs text-slate-600" }, t("palette.no_match", "No matching command. The bot chat (and soon voice) understands free-form requests.")) : /* @__PURE__ */ React.createElement("ul", { id: "allo-palette-list", role: "listbox", "aria-label": t("palette.list_aria", "Matching commands"), className: "max-h-[46vh] overflow-y-auto py-1" }, rows.map((row, i) => row.kind === "header" ? /* @__PURE__ */ React.createElement("li", { key: "h-" + i, role: "presentation", className: "px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none" }, row.label) : /* @__PURE__ */ React.createElement(
       "li",
       {
         key: row.c.id,

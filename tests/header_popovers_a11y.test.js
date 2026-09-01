@@ -9,22 +9,37 @@ describe('Header popover semantics and dismissal', () => {
     expect(source).toContain('aria-expanded={showVoiceSettings}');
     expect(source).toContain('aria-expanded={isJoinPopoverOpen}');
     expect(source).toContain('aria-expanded={showExportMenu}');
-    expect(source.match(/aria-haspopup="dialog"/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(source.match(/aria-haspopup="dialog"/g)?.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('makes all four header dialogs modal, named, trapped, and dismissible', () => {
+  it('makes all five header dialogs modal, named, trapped, and dismissible', () => {
     expect(source).toContain('_headerUseFocusTrap(_setupMenuRef, showSetupPathMenu');
     expect(source).toContain('_headerUseFocusTrap(_textSettingsRef, showTextSettings');
     expect(source).toContain('_headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings');
     expect(source).toContain('_headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen');
+    expect(source).toContain('_headerUseFocusTrap(_exportDialogRef, showExportMenu');
     expect(source).toContain('aria-labelledby="header-text-settings-title"');
     expect(source).toContain('aria-labelledby="header-voice-settings-title"');
     expect(source).toContain('aria-labelledby="header-join-session-title"');
-    expect(source.match(/aria-modal="true"/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(source).toContain('aria-labelledby="header-documents-dialog-title"');
+    expect(source.match(/aria-modal="true"/g)?.length).toBeGreaterThanOrEqual(5);
     expect(source.match(/min-w-6 min-h-6/g)?.length).toBeGreaterThanOrEqual(3);
     expect(source).not.toContain(`document.querySelector('[data-help-key="header_settings_text"]')`);
     expect(source).not.toContain(`document.querySelector('[data-help-key="header_settings_voice"]')`);
     expect(source).not.toContain(`document.querySelector('[data-help-key="header_session_join"]')`);
+  });
+
+  it('uses dialog semantics and viewport-bounded scrolling for mixed Documents controls', () => {
+    const start = source.indexOf('aria-labelledby="header-documents-dialog-title"');
+    const end = source.indexOf('{showExportMenu && <div aria-hidden="true"', start);
+    const documents = source.slice(start, end);
+    expect(documents).toContain('fixed top-4 right-4 bottom-4');
+    expect(documents).toContain('overflow-y-auto overscroll-contain');
+    expect(documents).toContain('id="homework-qr-expiry"');
+    expect(documents).not.toContain('role="menuitem"');
+    expect(source).not.toContain('aria-haspopup="menu"');
+    expect(source).not.toContain('role="menu"');
+    expect(source).toContain('{showExportMenu && _headerPortal(');
   });
 
   it('keeps click-catcher backdrops out of keyboard and accessibility APIs', () => {
@@ -62,6 +77,7 @@ describe('Header popover semantics and dismissal', () => {
     // on top of the panel's `top-28`, eating every tap aimed at the controls.
     expect(source).toContain('{showTextSettings && _headerPortal(');
     expect(source).toContain('{showVoiceSettings && _headerPortal(');
+    expect(source).toContain('{showExportMenu && _headerPortal(');
     expect(source).toContain('window.ReactDOM.createPortal(node, document.body)');
     // The trap is real and still present, so the portal is load-bearing: if
     // either of these z-index values changes, revisit the escape above.

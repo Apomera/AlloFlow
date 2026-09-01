@@ -54,6 +54,7 @@ function ActivityArtifactSummary(props) {
     failed: 'needs retry'
   };
   var readyCount = 0;
+  var generationMeta = item.generationMeta && typeof item.generationMeta === 'object' ? item.generationMeta : null;
   var pills = definitions.map(function (entry) {
     var kind = entry[0];
     var value = kind === 'cover' ? item.coverImage : item[kind];
@@ -71,7 +72,10 @@ function ActivityArtifactSummary(props) {
     "aria-label": (t('brainstorm.resource_status') || 'Activity resources') + ': ' + readyCount + '/' + definitions.length
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] font-black uppercase tracking-wider text-slate-500 mr-1"
-  }, t('brainstorm.resource_status') || 'Resources'), pills);
+  }, t('brainstorm.resource_status') || 'Resources'), pills, generationMeta && generationMeta.attempts > 1 ? /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] font-bold rounded-full border px-2 py-0.5 border-amber-200 bg-amber-50 text-amber-800",
+    title: "The activity response was repaired automatically after an incomplete first response."
+  }, "Recovered after ", generationMeta.attempts, " attempts") : null);
 }
 function DiscussionKitBody(props) {
   var t = props.t;

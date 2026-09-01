@@ -65,8 +65,7 @@ function HomeworkQrDialogView(props) {
   }, ((qrShareModal.resourceCount || 1) === 1 ? t('share_collect.teacher_prepared_resource_one') || '{count} teacher-prepared resource' : t('share_collect.teacher_prepared_resource_many') || '{count} teacher-prepared resources').replace('{count}', String(qrShareModal.resourceCount || 1)), " \xB7 ", qrShareModal.aiPolicy === 'student-byok' ? t('share_collect.personal_ai_optional') || 'Personal AI optional' : t('share_collect.student_ai_off') || 'Student AI off', " \xB7 ", t('share_collect.no_live_session') || 'No live session'), !qrShareModal.noQr && /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center mb-4"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white border-2 border-violet-300 rounded-2xl p-3 w-52 h-52 flex items-center justify-center shadow-sm",
-    "aria-label": t('share_collect.qr_aria') || 'Homework assignment QR code'
+    className: "bg-white border-2 border-violet-300 rounded-2xl p-3 w-52 h-52 flex items-center justify-center shadow-sm"
   }, qrShareSvg ? /*#__PURE__*/React.createElement("div", {
     className: "w-full h-full [&_svg]:w-full [&_svg]:h-full",
     dangerouslySetInnerHTML: {
@@ -86,7 +85,7 @@ function HomeworkQrDialogView(props) {
     className: "text-xs text-slate-800 space-y-1"
   }, qrShareModal.resourceTitles.slice(0, 5).map((name, index) => /*#__PURE__*/React.createElement("li", {
     key: index,
-    className: "truncate"
+    className: "break-words"
   }, index + 1, ". ", name))), qrShareModal.resourceTitles.length > 5 && /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-500 mt-1"
   }, "+", qrShareModal.resourceTitles.length - 5, " ", t('share_collect.more_resources') || 'more resources')), /*#__PURE__*/React.createElement("div", {
@@ -114,8 +113,11 @@ function HomeworkQrDialogView(props) {
     admin: mbConfig?.admin || '',
     addToast: addToast
   }))), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "text-[11px] text-slate-500 mb-3"
-  }, qrShareSvg ? t('share_collect.ready_to_scan') || 'Ready to scan' : qrShareError ? t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below' : t('share_collect.validating_qr_code') || 'Validating QR code...', " \xB7 ", (t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : t('share_collect.expires_default_window') || '14 days after creation')), /*#__PURE__*/React.createElement("div", {
+  }, qrShareModal.noQr ? 'Homework link ready' : qrShareSvg ? t('share_collect.ready_to_scan') || 'Ready to scan' : qrShareError ? t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below' : t('share_collect.validating_qr_code') || 'Validating QR code...', " \xB7 ", (t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : t('share_collect.expires_default_window') || '14 days after creation')), /*#__PURE__*/React.createElement("div", {
     className: "mb-2 grid grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: testHomeworkAsStudent,
@@ -438,14 +440,15 @@ function ClassMailboxSetupView(props) {
       setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).');
     },
     className: "flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2"
-  }, t('mailbox.forget_mailbox') || 'Forget mailbox'))), mbConfig && mbLive && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 mb-3 text-center cursor-pointer",
+  }, t('mailbox.forget_mailbox') || 'Forget mailbox'))), mbConfig && mbLive && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "w-full bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 mb-3 text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
     onClick: () => copyToClipboard(mbLive.code),
     title: t('mailbox.copy_class_code') || 'Copy class code'
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1"
-  }, t('mailbox.class_code_tap_to_copy') || 'Class code (tap to copy)'), /*#__PURE__*/React.createElement("p", {
-    className: "text-4xl font-black tracking-[0.3em] text-indigo-800"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1"
+  }, t('mailbox.class_code_tap_to_copy') || 'Class code (tap to copy)'), /*#__PURE__*/React.createElement("span", {
+    className: "block text-4xl font-black tracking-[0.3em] text-indigo-800"
   }, mbLive.code)), mbQrSvg ? /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -456,6 +459,9 @@ function ClassMailboxSetupView(props) {
   })) : /*#__PURE__*/React.createElement("p", {
     className: "mb-3 text-center text-xs font-bold text-indigo-700"
   }, t('mailbox.validating_live_session_qr') || 'Validating live-session QR...'), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "mb-2 text-center text-[11px] text-indigo-800"
   }, mbQrSvg ? `Ready to scan · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off'} · Active until you end the session` : 'The class code remains available while the QR loads.'), /*#__PURE__*/React.createElement("div", {
     className: "mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4"
@@ -492,29 +498,38 @@ function ClassMailboxSetupView(props) {
   }), /*#__PURE__*/React.createElement("div", {
     className: "mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2"
   }, /*#__PURE__*/React.createElement("p", {
+    id: "alloflow-mailbox-roster-status",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1"
   }, t('mailbox.connected_students') || 'Connected students (', Object.keys(mbRoster).length, (() => {
     const rt = Object.values(mbRoster).filter(s => s.rtc).length;
     return rt ? ` · ${rt} real-time ⚡` : '';
   })(), ")"), Object.keys(mbRoster).length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-400"
-  }, t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'), Object.entries(mbRoster).map(([uid, s]) => {
+  }, t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'), Object.keys(mbRoster).length > 0 && /*#__PURE__*/React.createElement("ul", {
+    "aria-labelledby": "alloflow-mailbox-roster-status",
+    className: "m-0 list-none space-y-0.5 p-0"
+  }, Object.entries(mbRoster).map(([uid, s]) => {
     const stale = mbNow && s.at && mbNow - s.at > 150000;
-    return /*#__PURE__*/React.createElement("div", {
+    return /*#__PURE__*/React.createElement("li", {
       key: uid,
-      className: `flex items-center justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`
+      className: `flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`
     }, /*#__PURE__*/React.createElement("span", {
-      className: "font-bold truncate"
+      className: "min-w-0 break-words text-left font-bold"
     }, s.name, stale ? ' · away?' : ''), /*#__PURE__*/React.createElement("span", {
       className: "flex items-center gap-1 shrink-0"
     }, s.rtc && !stale && /*#__PURE__*/React.createElement("span", {
+      role: "img",
       "aria-label": t('mailbox.rtc_aria') || 'real-time connection',
       title: t('mailbox.rtc_title') || 'Real-time connection'
     }, "\u26A1"), s.hand && /*#__PURE__*/React.createElement("span", {
+      role: "img",
       "aria-label": t('mailbox.hand_aria') || 'hand raised',
       title: t('mailbox.hand_title') || 'Hand raised'
     }, "\u270B")));
-  })), /*#__PURE__*/React.createElement("button", {
+  }))), /*#__PURE__*/React.createElement("button", {
     onClick: () => setMbMode(m => m === 'sync' ? 'async' : 'sync'),
     className: `w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`
   }, mbMode === 'sync' ? 'Teacher-led: students follow your screen (tap to switch)' : 'Student-paced: students explore independently (tap to switch)'), /*#__PURE__*/React.createElement("button", {
@@ -604,7 +619,7 @@ function ClassMailboxSetupView(props) {
     const _self = ev.objectives.filter(o => o.done && !o.confirmed).length;
     return /*#__PURE__*/React.createElement("p", {
       key: ev.uid + '|' + ev.directionsId,
-      className: "text-[10px] text-slate-600 truncate",
+      className: "break-words text-[10px] text-slate-600",
       title: ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label + (o.done ? o.confirmed ? ' (recorded on device)' : ' (self-checked)' : '')).join('\n')
     }, /*#__PURE__*/React.createElement("span", {
       className: 'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')
@@ -617,6 +632,9 @@ function ClassMailboxSetupView(props) {
     onClick: requestEndLiveSession,
     className: "w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all"
   }, t('mailbox.end_session') || 'End session')), mbStatus && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "text-xs text-slate-600 mt-3"
   }, mbStatus));
 }

@@ -73,6 +73,99 @@ test.describe('Pet Lab phone-width core', () => {
     });
   }
 
+  test('Exposure Pathway deep states fit and pass serious axe rules at 320px', async ({ page }) => {
+    const states = [
+      {
+        label: 'active unanswered',
+        practice: { idx: 0, answers: [], score: 0, done: false, bestPct: 0 },
+        selector: '[data-pets-zoon-practice="active"][data-pets-zoon-case="bat-bedroom"]',
+        feedback: false,
+      },
+      {
+        label: 'answered feedback',
+        practice: { idx: 0, answers: [0], score: 0, done: false, bestPct: 0 },
+        selector: '[data-pets-zoon-practice="active"][data-pets-zoon-case="bat-bedroom"]',
+        feedback: true,
+      },
+      {
+        label: 'full results',
+        practice: { idx: 4, answers: [2, 2, 0, 3], score: 3, done: true, bestPct: 75 },
+        selector: '[data-pets-zoon-practice="results"]',
+        feedback: false,
+      },
+      {
+        label: 'focused retry active',
+        practice: {
+          mode: 'focused', idx: 0, answers: [], score: 0, done: false,
+          bestPct: 75, retryQueue: [0, 3], retryTotal: 2,
+        },
+        selector: '[data-pets-zoon-practice="active"][data-pets-zoon-retry="active"]',
+        feedback: false,
+      },
+      {
+        label: 'focused retry answered',
+        practice: {
+          mode: 'focused', idx: 0, answers: [1], score: 0, done: false,
+          bestPct: 75, retryQueue: [0], retryTotal: 1,
+        },
+        selector: '[data-pets-zoon-practice="active"][data-pets-zoon-retry="active"]',
+        feedback: true,
+      },
+      {
+        label: 'focused retry complete',
+        practice: {
+          mode: 'focused', idx: 0, answers: [], score: 1, done: true,
+          bestPct: 75, retryQueue: [], retryTotal: 1,
+        },
+        selector: '[data-pets-zoon-practice="focused-complete"][data-pets-zoon-retry="complete"]',
+        feedback: false,
+      },
+    ];
+    const findings: any[] = [];
+    await page.setViewportSize({ width: 320, height: 1000 });
+
+    for (const state of states) {
+      await page.goto(harness.url + '/__harness');
+      await page.waitForFunction(() => !!(window as any).StemLab?._registry?.petsLab);
+      await page.evaluate((practice) => {
+        localStorage.removeItem('petsLab.state.v2');
+        (window as any).__mount({ petsLab: { view: 'zoonoses', zoonPractice: practice } });
+      }, state.practice);
+      await page.waitForTimeout(350);
+      await page.locator('#wrap').evaluate((el) => { (el as HTMLElement).style.width = '320px'; });
+      await page.waitForTimeout(150);
+
+      await expect(page.locator(state.selector), state.label).toBeVisible();
+      await expect(page.locator('.petslab-zoon-feedback'), `${state.label} feedback`).toHaveCount(state.feedback ? 1 : 0);
+      const result = await page.evaluate(async () => {
+        const wrap = document.getElementById('wrap')!;
+        const axeResult = await (window as any).axe.run(wrap, {
+          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
+        });
+        return {
+          overflow: Math.max(document.documentElement.scrollWidth, wrap.scrollWidth) - window.innerWidth,
+          violations: axeResult.violations
+            .filter((violation: any) => violation.impact === 'critical' || violation.impact === 'serious')
+            .map((violation: any) => ({
+              id: violation.id,
+              impact: violation.impact,
+              nodes: violation.nodes.map((node: any) => ({
+                target: node.target,
+                html: node.html,
+                summary: node.failureSummary,
+              })),
+            })),
+        };
+      });
+      findings.push({ state: state.label, ...result });
+      await page.evaluate(() => (window as any).__destroy());
+    }
+
+    const problems = findings.filter((finding) => finding.overflow > 1 || finding.violations.length);
+    if (problems.length) console.log(JSON.stringify({ width: 320, problems }));
+    expect(problems).toEqual([]);
+  });
+
   test('care inquiry survives partial saved state, logs useful context, and fits at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 1000 });
     await harness.mount(page, {

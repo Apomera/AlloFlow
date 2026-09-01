@@ -2169,6 +2169,7 @@
         onOpenAiSetup,
         onUseArtwork,
         theme: _themeProp,
+        activeProfileId,
         activeSessionCode,
         studentNickname,
         isTeacherMode
@@ -7516,6 +7517,7 @@
             stemLabTool: stemLabTool,
             toolSnapshots: toolSnapshots,
             setToolSnapshots: _safeSetToolSnapshots,
+            activeProfileId: typeof activeProfileId === 'string' ? activeProfileId : '',
             // Wrap addToast so every plugin toast also announces to screen readers.
             // This gives all 57 STEM tools SR announcements without modifying each plugin.
             // _deferSafe wrap: addToast + the inner announceToSR both touch parent
@@ -7697,12 +7699,17 @@
             if (!window.__stemPluginComponents) window.__stemPluginComponents = {};
             if (!window.__stemPluginComponents[stemLabTool]) {
               window.__stemPluginComponents[stemLabTool] = function StemPluginBridge(props) {
+                var pluginInstanceTokenRef = React.useRef(null);
+                if (!pluginInstanceTokenRef.current) {
+                  pluginInstanceTokenRef.current = {};
+                }
+                var pluginCtx = Object.assign({}, props._ctx, { pluginInstanceToken: pluginInstanceTokenRef.current });
                 // Set rendering flag so any setState calls during render get deferred via setTimeout(0)
-                props._ctx._renderingFlag.current = true;
+                pluginCtx._renderingFlag.current = true;
                 try {
-                  return window.StemLab.renderTool(props._toolId, props._ctx);
+                  return window.StemLab.renderTool(props._toolId, pluginCtx);
                 } finally {
-                  props._ctx._renderingFlag.current = false;
+                  pluginCtx._renderingFlag.current = false;
                 }
               };
             }

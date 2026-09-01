@@ -282,7 +282,7 @@
       '.opticslab-wavefield-display{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 7px;}',
       '.opticslab-wavefield-display>span{color:var(--allo-stem-text-soft,#94a3b8);font-size:11px;font-weight:850;margin-right:2px;}',
       '.opticslab-wavefield-display button{border:1px solid var(--allo-stem-border,#475569);border-radius:999px;background:transparent;color:var(--allo-stem-text,#e2e8f0);padding:5px 9px;font-size:11px;font-weight:850;cursor:pointer;}',
-      '.opticslab-wavefield-display button[aria-pressed="true"]{border-color:var(--op-topic-accent,#38bdf8);background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 16%,transparent);color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-wavefield-display button[aria-pressed="true"]{border-color:var(--op-topic-accent,#38bdf8);background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 16%,transparent);color:var(--allo-stem-text,#f8fafc);}',
       '.opticslab-measurement-studio{margin:0 0 10px;border:1px solid color-mix(in srgb,var(--op-topic-accent,#38bdf8) 38%,var(--allo-stem-border,#334155));border-radius:10px;background:linear-gradient(145deg,color-mix(in srgb,var(--op-topic-accent,#38bdf8) 8%,transparent),transparent 55%);overflow:hidden;}',
       '.opticslab-measurement-studio summary{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:8px 10px;cursor:pointer;color:var(--allo-stem-text,#e2e8f0);font-size:12px;font-weight:900;}',
       '.opticslab-measurement-summary{margin-left:auto;color:var(--allo-stem-text-soft,#94a3b8);font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;}',
@@ -290,7 +290,7 @@
       '.opticslab-model-switch{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 8px;}',
       '.opticslab-model-switch>span{color:var(--allo-stem-text-soft,#94a3b8);font-size:11px;font-weight:850;}',
       '.opticslab-model-switch button,.opticslab-profile-export{border:1px solid var(--allo-stem-border,#475569);border-radius:7px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);padding:6px 9px;font-size:11px;font-weight:850;cursor:pointer;}',
-      '.opticslab-model-switch button[aria-pressed="true"]{border-color:var(--op-topic-accent,#38bdf8);background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 18%,transparent);color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-model-switch button[aria-pressed="true"]{border-color:var(--op-topic-accent,#38bdf8);background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 18%,transparent);color:var(--allo-stem-text,#f8fafc);}',
       '.opticslab-measurement-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px;margin:7px 0;}',
       '.opticslab-measurement-control{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 7px;align-items:center;color:var(--allo-stem-text,#cbd5e1);font-size:11px;}',
       '.opticslab-measurement-control input{grid-column:1/-1;width:100%;min-width:0;accent-color:var(--op-topic-accent,#38bdf8);}',
@@ -301,7 +301,67 @@
       '.opticslab-model-validity[data-status="near"]{box-shadow:inset 3px 0 #a78bfa;}',
       '.opticslab-model-compare{display:flex;align-items:center;gap:7px 12px;flex-wrap:wrap;margin:6px 0;color:var(--allo-stem-text-soft,#94a3b8);font-size:11px;font-variant-numeric:tabular-nums;}',
       '.opticslab-model-compare strong{color:var(--allo-stem-text,#e2e8f0);}',
+      '.opticslab-model-compare .is-max-gap{color:var(--op-amber-text,#fbbf24);}',
+      '.opticslab-model-compare .is-max-gap strong{color:inherit;}',
+      '.opticslab-model-profile{margin:7px 0;padding:7px 8px;border:1px solid var(--allo-stem-border,#334155);border-radius:8px;background:var(--allo-stem-deeper,#07111f);}',
+      '.opticslab-model-profile figcaption{display:flex;align-items:center;gap:7px 12px;flex-wrap:wrap;margin-bottom:3px;color:var(--allo-stem-text,#e2e8f0);font-size:11px;font-weight:850;}',
+      '.opticslab-model-profile figcaption span{display:inline-flex;align-items:center;gap:4px;color:var(--allo-stem-text-soft,#94a3b8);font-weight:700;}',
+      '.opticslab-model-profile figcaption i{display:inline-block;width:15px;height:3px;border-radius:999px;}',
+      '.opticslab-model-profile svg{display:block;width:100%;height:auto;max-height:130px;overflow:visible;}',
+      '.opticslab-spectrum{margin:6px 0 4px;}',
+      '.opticslab-spectrum-strip{position:relative;height:16px;border:1px solid rgba(255,255,255,.24);border-radius:999px;background:linear-gradient(90deg,#6d28d9 0%,#2563eb 18%,#06b6d4 35%,#22c55e 47%,#eab308 62%,#f97316 78%,#ef4444 100%);overflow:hidden;}',
+      '.opticslab-spectrum-strip::after{content:\"\";position:absolute;inset:0;z-index:0;background:rgba(2,6,23,.68);}',
+      '.opticslab-spectrum-band{position:absolute;top:1px;bottom:1px;z-index:1;min-width:3px;border:1px solid rgba(255,255,255,.72);border-radius:999px;box-shadow:0 0 11px rgba(255,255,255,.58);}',
+      '.opticslab-spectrum-center{position:absolute;top:-1px;bottom:-1px;z-index:2;width:2px;transform:translateX(-1px);background:#fff;box-shadow:0 0 7px #fff;}',
+      '.opticslab-spectrum-scale{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-top:2px;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;font-variant-numeric:tabular-nums;}',
+      '.opticslab-spectrum-scale strong{color:var(--allo-stem-text,#e2e8f0);font-size:10px;}',
+      '.opticslab-spectrum-scale span:last-child{text-align:right;}',
       '.opticslab-assumptions{margin:7px 0 0;color:var(--allo-stem-text-soft,#94a3b8);font-size:11px;line-height:1.45;}',
+      '.opticslab-measurement-studio[open]{box-shadow:0 14px 34px rgba(2,8,23,.22);}',
+      '.opticslab-measurement-studio summary{position:relative;background:linear-gradient(90deg,color-mix(in srgb,var(--op-topic-accent,#38bdf8) 10%,transparent),transparent 72%);}',
+      '.opticslab-measurement-studio[open] summary{border-bottom:1px solid color-mix(in srgb,var(--op-topic-accent,#38bdf8) 22%,var(--allo-stem-border,#334155));}',
+      '.opticslab-measurement-studio summary::-webkit-details-marker{display:none;}',
+      '.opticslab-measurement-heading{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}',
+      '.opticslab-measurement-heading>i{display:grid;place-items:center;width:21px;height:21px;border-radius:6px;background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 18%,transparent);color:var(--op-accent-text,#7dd3fc);font-size:11px;font-style:normal;}',
+      '.opticslab-measurement-summary{display:flex;justify-content:flex-end;gap:4px;flex-wrap:wrap;}',
+      '.opticslab-measurement-summary span{padding:3px 6px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(2,6,23,.22);white-space:nowrap;}',
+      '.opticslab-signal-path{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:8px 0 10px;padding:0;list-style:none;}',
+      '.opticslab-signal-node{position:relative;display:flex;align-items:center;flex-direction:column;min-width:0;text-align:center;color:var(--allo-stem-text-soft,#94a3b8);font-size:9px;line-height:1.25;}',
+      '.opticslab-signal-node:not(:last-child):after{content:"";position:absolute;z-index:0;top:11px;left:50%;width:calc(100% + 7px);height:1px;background:linear-gradient(90deg,var(--op-topic-accent,#38bdf8),rgba(148,163,184,.25));}',
+      '.opticslab-signal-node strong{margin-top:4px;color:var(--allo-stem-text,#e2e8f0);font-size:10px;font-weight:900;}',
+      '.opticslab-signal-node>span:last-child{display:block;max-width:100%;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;}',
+      '.opticslab-signal-dot{position:relative;z-index:1;display:grid!important;place-items:center;width:22px;height:22px;border:1px solid color-mix(in srgb,var(--op-topic-accent,#38bdf8) 65%,#fff);border-radius:50%;background:var(--allo-stem-canvas,#0f172a);box-shadow:0 0 0 3px color-mix(in srgb,var(--op-topic-accent,#38bdf8) 10%,transparent);color:var(--op-accent-text,#7dd3fc);font-size:9px;font-weight:900;}',
+      '.opticslab-signal-node[data-op-signal-stage="detector"] .opticslab-signal-dot{border-radius:5px;color:#f8fafc;}',
+      '.opticslab-regime-meter{grid-column:1/-1;margin-top:5px;padding-top:2px;}',
+      '.opticslab-regime-rail{position:relative;height:8px;border:1px solid rgba(148,163,184,.28);border-radius:999px;background:linear-gradient(90deg,#0891b2 0 40%,#f59e0b 40% 60%,#8b5cf6 60% 100%);box-shadow:inset 0 1px 2px rgba(2,6,23,.48);}',
+      '.opticslab-regime-marker{position:absolute;top:50%;width:13px;height:13px;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.72),0 0 9px rgba(255,255,255,.5);}',
+      '.opticslab-regime-labels{display:grid;grid-template-columns:2fr 1fr 2fr;margin-top:3px;color:var(--allo-stem-text-soft,#94a3b8);font-size:9px;font-weight:750;}',
+      '.opticslab-regime-labels span:nth-child(2){text-align:center;}.opticslab-regime-labels span:last-child{text-align:right;}',
+      '.opticslab-spectrum-strip{isolation:isolate;}',
+      '.opticslab-spectrum-tick{position:absolute;z-index:1;top:4px;bottom:4px;width:1px;background:rgba(255,255,255,.32);}',
+      '.opticslab-spectrum-band{z-index:2;}.opticslab-spectrum-center{z-index:3;}',
+      '.opticslab-model-profile svg{max-height:145px;}',
+      '.opticslab-wavefield{position:relative;margin:10px 0 0;padding:10px;border:1px solid color-mix(in srgb,var(--op-topic-accent,#38bdf8) 30%,var(--allo-stem-border,#334155));border-radius:11px;background:linear-gradient(150deg,color-mix(in srgb,var(--op-topic-accent,#38bdf8) 7%,var(--allo-stem-canvas,#0f172a)),var(--allo-stem-canvas,#0f172a) 54%);box-shadow:0 14px 30px rgba(2,8,23,.16);overflow:hidden;}',
+      '.opticslab-wavefield:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#22d3ee,#fbbf24,#c084fc);opacity:.72;}',
+      '.opticslab-wavefield-head,.opticslab-wavefield .opticslab-3d-toolbar,.opticslab-wavefield-display,.opticslab-wavefield-probe,.opticslab-wavefield>svg,.opticslab-wavefield-key{position:relative;}',
+      '.opticslab-wavefield-title{font-size:12px;}',
+      '.opticslab-wavefield-context{padding:3px 6px;border-radius:999px;background:rgba(2,6,23,.2);font-variant-numeric:tabular-nums;}',
+      '.opticslab-wavefield-probe{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin:4px 0 8px;}',
+      '.opticslab-wavefield-probe-readout{display:grid;gap:6px;min-width:0!important;}',
+      '.opticslab-wavefield-probe-title{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;}',
+      '.opticslab-wavefield-probe-title strong{color:var(--allo-stem-text,#e2e8f0);font-size:11px;}',
+      '.opticslab-probe-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}',
+      '.opticslab-probe-metric{display:flex;flex-direction:column;min-width:0;padding:6px 7px;border:1px solid rgba(148,163,184,.18);border-radius:7px;background:rgba(2,6,23,.24);font-style:normal;}',
+      '.opticslab-probe-metric small{color:var(--allo-stem-text-soft,#94a3b8);font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;}',
+      '.opticslab-probe-metric strong{margin-top:1px;color:var(--allo-stem-text,#f8fafc);font-size:11px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}',
+      '.opticslab-probe-metric em{margin-top:1px;color:var(--op-accent-text,#7dd3fc);font-size:8px;font-style:normal;font-variant-numeric:tabular-nums;}',
+      '.opticslab-wavefield-probe input{width:100%;min-width:0;accent-color:#fbbf24;}',
+      '.opticslab-wavefield-depth-scale{display:grid;grid-template-columns:1fr auto 1fr;color:var(--allo-stem-text-soft,#94a3b8);font-size:9px;font-variant-numeric:tabular-nums;}',
+      '.opticslab-wavefield-depth-scale strong{text-align:center;color:var(--op-amber-text,#fbbf24);font-size:9px;}.opticslab-wavefield-depth-scale span:last-child{text-align:right;}',
+      '.opticslab-wavefield>svg{border:1px solid rgba(125,211,252,.12);box-shadow:inset 0 0 36px rgba(14,165,233,.04);}',
+      '.opticslab-wavefield-key{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:5px;margin-top:7px;}',
+      '.opticslab-wavefield-key span{display:flex;padding:4px 6px;border-radius:6px;background:rgba(2,6,23,.18);font-size:9px;line-height:1.3;}',
+      '@media (max-width:520px){.opticslab-measurement-summary{width:100%;margin-left:28px;justify-content:flex-start}.opticslab-measurement-summary span{font-size:9px}.opticslab-signal-path{gap:3px}.opticslab-signal-node{font-size:8px}.opticslab-signal-node strong{font-size:9px}.opticslab-signal-node:not(:last-child):after{width:calc(100% + 3px)}.opticslab-probe-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.opticslab-wavefield-key{grid-template-columns:1fr}.opticslab-wavefield{padding:9px}.opticslab-model-profile{padding:6px}}',
       '@media (pointer:coarse){.opticslab-wavefield-slice-hit{stroke-width:26;}}',
       '@keyframes opticslab-wavefield-flow{to{stroke-dashoffset:-36;}}',
       '.opticslab-wavefield-flow{animation:opticslab-wavefield-flow 1.8s linear infinite;}',
@@ -5424,6 +5484,10 @@
   function _opticsSurfaceHeight(sample, display) {
     return display === 'phase' ? sample.field * .55 : sample.intensity;
   }
+  function _opticsSigned(value, digits) {
+    value = isFinite(+value) ? +value : 0;
+    return (value >= 0 ? '+' : '−') + Math.abs(value).toFixed(digits == null ? 3 : digits);
+  }
   function _opticsModelInfo(tab, state, distanceM) {
     var lambda = _opticsWaveSetting(tab, state, 'Lambda', 600) * 1e-9;
     var span;
@@ -5469,14 +5533,14 @@
       var modelInfo = _opticsModelInfo(tab, state, distance);
       var rows = [['section', 'propagation_model', 'wavelength_nm', 'bandwidth_nm', 'detector_width_mm',
         'noise_percent', 'distance_m', 'depth_fraction', 'lateral_mm', 'ideal_intensity',
-        'aperture_averaged_intensity', 'measured_intensity', 'wrapped_phase_rad', 'fresnel_number']];
+        'aperture_averaged_intensity', 'measured_intensity', 'normalized_field_re', 'wrapped_phase_rad', 'fresnel_number']];
       function addRow(section, depth, lateralM, atDistance) {
         var field = _opticsWavefieldSample(tab, state, lateralM, atDistance);
         var measured = _opticsDetectorSample(tab, state, lateralM, atDistance);
         rows.push([section, modelInfo.model, _opticsWaveSetting(tab, state, 'Lambda', 600),
           _opticsWaveSetting(tab, state, 'BandwidthNm', 0), measured.widthMm, measured.noisePercent,
           atDistance, depth, lateralM * 1000, field.intensity, measured.averaged, measured.measured,
-          field.phase, _opticsModelInfo(tab, state, atDistance).fresnelNumber]);
+          field.field, field.phase, _opticsModelInfo(tab, state, atDistance).fresnelNumber]);
       }
       for (var screenIndex = 0; screenIndex <= 120; screenIndex++) {
         addRow('screen_profile', 1, -halfRangeM + 2 * halfRangeM * screenIndex / 120, distance);
@@ -5497,6 +5561,141 @@
       opAnnounce('The wave profile CSV could not be downloaded in this environment.');
     }
   }
+  function _opticsModelComparison(tab, state) {
+    var prefix = tab === 'interference' ? 'int' : 'diff';
+    var modelKey = prefix + 'PropagationModel';
+    var noiseKey = prefix + 'NoisePct';
+    var distance = tab === 'interference' ? _opticsWaveSetting(tab, state, 'ScreenL', 1) : _opticsWaveSetting(tab, state, 'ScreenL', 1.5);
+    var halfRangeMm = tab === 'interference' ? 30 : ((state.diffMode || 'single') === 'single' ? 90 : 500);
+    var detectorMm = clamp(_opticsWaveSetting(tab, state, 'ScreenProbeMm', 0), -halfRangeMm, halfRangeMm);
+    var farState = Object.assign({}, state);
+    var nearState = Object.assign({}, state);
+    farState[modelKey] = 'fraunhofer'; nearState[modelKey] = 'fresnel';
+    farState[noiseKey] = 0; nearState[noiseKey] = 0;
+    var samples = [], maxDelta = -1, maxSample = null;
+    for (var index = 0; index <= 80; index++) {
+      var mm = -halfRangeMm + 2 * halfRangeMm * index / 80;
+      var far = _opticsWavefieldIntensity(tab, farState, mm * 1e-3, distance);
+      var near = _opticsWavefieldIntensity(tab, nearState, mm * 1e-3, distance);
+      var sample = { mm: mm, far: far, near: near, delta: Math.abs(near - far) };
+      samples.push(sample);
+      if (sample.delta > maxDelta + 1e-9
+          || (maxSample && Math.abs(sample.delta - maxDelta) <= 1e-9 && Math.abs(mm) < Math.abs(maxSample.mm))) {
+        maxDelta = sample.delta;
+        maxSample = sample;
+      }
+    }
+    var farReading = _opticsDetectorSample(tab, farState, detectorMm * 1e-3, distance);
+    var nearReading = _opticsDetectorSample(tab, nearState, detectorMm * 1e-3, distance);
+    return {
+      distance: distance, halfRangeMm: halfRangeMm, detectorMm: detectorMm,
+      farState: farState, nearState: nearState, samples: samples,
+      farReading: farReading, nearReading: nearReading,
+      detectorDelta: Math.abs(nearReading.averaged - farReading.averaged),
+      maxDelta: Math.max(0, maxDelta),
+      maxSample: maxSample || { mm: 0, far: 0, near: 0, delta: 0 }
+    };
+  }
+  function _renderOpticsModelComparisonProfile(tab, state, comparison, h) {
+    var W = 360, H = 132, left = 36, right = 8, top = 8, bottom = 36;
+    comparison = comparison || _opticsModelComparison(tab, state);
+    var halfRangeMm = comparison.halfRangeMm;
+    var detectorMm = comparison.detectorMm;
+    var gapGradientId = 'optics-model-gap-' + tab;
+    function px(mm) { return left + (mm + halfRangeMm) / (2 * halfRangeMm) * (W - left - right); }
+    function py(intensity) { return top + (1 - clamp(intensity, 0, 1)) * (H - top - bottom); }
+    function profilePoints(key) {
+      return comparison.samples.map(function(sample) {
+        return px(sample.mm).toFixed(1) + ',' + py(sample[key]).toFixed(1);
+      }).join(' ');
+    }
+    function gapPoints() {
+      return comparison.samples.map(function(sample) {
+        return px(sample.mm).toFixed(1) + ',' + py(sample.far).toFixed(1);
+      }).concat(comparison.samples.slice().reverse().map(function(sample) {
+        return px(sample.mm).toFixed(1) + ',' + py(sample.near).toFixed(1);
+      })).join(' ');
+    }
+    var label = 'Overlaid propagation comparison across the screen. Cyan is the Fraunhofer far-field prediction and violet is the Fresnel near-field prediction. The white line marks the linked detector at '
+      + (detectorMm > 0 ? 'plus ' : detectorMm < 0 ? 'minus ' : '') + Math.abs(detectorMm).toFixed(tab === 'interference' ? 1 : 0)
+      + ' millimeters. Colored dots show the two aperture-averaged detector readings. The largest profile difference is '
+      + (comparison.maxDelta * 100).toFixed(1) + ' percentage points at '
+      + comparison.maxSample.mm.toFixed(tab === 'interference' ? 1 : 0) + ' millimeters.';
+    return h('figure', {
+      className: 'opticslab-model-profile', 'data-op-model-profile': tab,
+      'data-op-max-model-delta': (comparison.maxDelta * 100).toFixed(4),
+      'data-op-max-model-delta-mm': comparison.maxSample.mm.toFixed(3)
+    },
+      h('figcaption', null,
+        h('strong', null, 'Propagation comparison'),
+        h('span', null, h('i', { style: { background: '#22d3ee' }, 'aria-hidden': 'true' }), 'Fraunhofer'),
+        h('span', null, h('i', { style: { background: '#c084fc' }, 'aria-hidden': 'true' }), 'Fresnel'),
+        h('span', null, h('i', { style: { background: '#fbbf24' }, 'aria-hidden': 'true' }), 'largest gap')
+      ),
+      h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label },
+        h('title', null, label),
+        h('defs', null,
+          h('linearGradient', { id: gapGradientId, x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+            h('stop', { offset: '0%', stopColor: '#22d3ee', stopOpacity: .08 }),
+            h('stop', { offset: '50%', stopColor: '#fbbf24', stopOpacity: .34 }),
+            h('stop', { offset: '100%', stopColor: '#c084fc', stopOpacity: .08 })
+          )
+        ),
+        [0, .5, 1].map(function(level) {
+          return h('g', { key: level, 'aria-hidden': 'true' },
+            h('line', { x1: left, x2: W - right, y1: py(level), y2: py(level), stroke: '#334155', strokeWidth: 1, strokeDasharray: level === .5 ? '3 4' : '0' }),
+            h('text', { x: left - 5, y: py(level) + 4, fill: '#94a3b8', fontSize: 13, textAnchor: 'end' }, level.toFixed(1))
+          );
+        }),
+        h('line', { x1: left, x2: W - right, y1: H - bottom, y2: H - bottom, stroke: '#64748b', strokeWidth: 1.2, 'data-axis': 'x' }),
+        h('polygon', {
+          points: gapPoints(), fill: 'url(#' + gapGradientId + ')', stroke: 'none',
+          'data-op-model-profile-gap-area': tab
+        }),
+        h('line', {
+          x1: px(comparison.maxSample.mm), x2: px(comparison.maxSample.mm), y1: top, y2: H - bottom,
+          stroke: '#fbbf24', strokeWidth: 1.1, strokeDasharray: '3 3', opacity: .72,
+          'data-op-model-profile-max-gap': tab, 'data-op-max-gap-mm': comparison.maxSample.mm.toFixed(3)
+        }),
+        h('polyline', {
+          points: profilePoints('far'), fill: 'none', stroke: '#22d3ee', strokeWidth: 2,
+          'data-op-model-profile-line': 'fraunhofer'
+        }),
+        h('polyline', {
+          points: profilePoints('near'), fill: 'none', stroke: '#c084fc', strokeWidth: 2,
+          strokeDasharray: '5 3', 'data-op-model-profile-line': 'fresnel'
+        }),
+        h('line', {
+          x1: px(detectorMm), x2: px(detectorMm), y1: top, y2: H - bottom,
+          stroke: '#f8fafc', strokeWidth: 1.2, strokeDasharray: '2 3',
+          'data-op-model-profile-detector': tab, 'data-op-detector-mm': detectorMm.toFixed(3)
+        }),
+        h('circle', {
+          cx: px(detectorMm) - 2, cy: py(comparison.farReading.averaged), r: 3,
+          fill: '#07111f', stroke: '#22d3ee', strokeWidth: 1.7,
+          'data-op-model-profile-detector-point': 'fraunhofer',
+          'data-op-detector-intensity': comparison.farReading.averaged.toFixed(4)
+        }),
+        h('circle', {
+          cx: px(detectorMm) + 2, cy: py(comparison.nearReading.averaged), r: 3,
+          fill: '#07111f', stroke: '#c084fc', strokeWidth: 1.7,
+          'data-op-model-profile-detector-point': 'fresnel',
+          'data-op-detector-intensity': comparison.nearReading.averaged.toFixed(4)
+        }),
+        [-halfRangeMm, 0, halfRangeMm].map(function(value, index) {
+          return h('g', { key: 'x-' + index, 'data-op-model-profile-x-tick': value.toFixed(3), 'aria-hidden': 'true' },
+            h('line', { x1: px(value), x2: px(value), y1: H - bottom, y2: H - bottom + 4, stroke: '#64748b', strokeWidth: 1 }),
+            h('text', {
+              x: px(value), y: H - bottom + 15, fill: '#94a3b8', fontSize: 11,
+              textAnchor: index === 0 ? 'start' : (index === 2 ? 'end' : 'middle')
+            }, (value > 0 ? '+' : '') + value.toFixed(0))
+          );
+        }),
+        h('text', { x: (left + W - right) / 2, y: H - 5, fill: '#94a3b8', fontSize: 13, textAnchor: 'middle' }, 'screen position y (mm)'),
+        h('text', { x: 11, y: (top + H - bottom) / 2, fill: '#94a3b8', fontSize: 13, textAnchor: 'middle', transform: 'rotate(-90 11 ' + ((top + H - bottom) / 2) + ')' }, 'I / I₀')
+      )
+    );
+  }
   function _renderOpticsMeasurementStudio(tab, state, upd, h) {
     var prefix = tab === 'interference' ? 'int' : 'diff';
     var modelKey = prefix + 'PropagationModel';
@@ -5506,29 +5705,72 @@
     var distance = tab === 'interference' ? _opticsWaveSetting(tab, state, 'ScreenL', 1) : _opticsWaveSetting(tab, state, 'ScreenL', 1.5);
     var detectorMm = _opticsWaveSetting(tab, state, 'ScreenProbeMm', 0);
     var bandwidth = clamp(_opticsWaveSetting(tab, state, 'BandwidthNm', 0), 0, 80);
+    var centerNm = _opticsWaveSetting(tab, state, 'Lambda', 600);
+    var spectrumStartNm = clamp(centerNm - bandwidth / 2, 380, 750);
+    var spectrumEndNm = clamp(centerNm + bandwidth / 2, 380, 750);
+    var spectrumLeftPercent = (spectrumStartNm - 380) / 370 * 100;
+    var spectrumCenterPercent = (centerNm - 380) / 370 * 100;
+    var spectrumWidthPercent = (spectrumEndNm - spectrumStartNm) / 370 * 100;
     var detectorWidth = clamp(_opticsWaveSetting(tab, state, 'DetectorWidthMm', 0), 0, tab === 'interference' ? 6 : 40);
     var noise = clamp(_opticsWaveSetting(tab, state, 'NoisePct', 0), 0, 5);
     var modelInfo = _opticsModelInfo(tab, state, distance);
-    var farState = Object.assign({}, state);
-    var nearState = Object.assign({}, state);
-    farState[modelKey] = 'fraunhofer'; nearState[modelKey] = 'fresnel';
-    farState[noiseKey] = 0; nearState[noiseKey] = 0;
-    var farReading = _opticsDetectorSample(tab, farState, detectorMm * 1e-3, distance);
-    var nearReading = _opticsDetectorSample(tab, nearState, detectorMm * 1e-3, distance);
-    var deltaPoints = Math.abs(nearReading.averaged - farReading.averaged) * 100;
+    var regimePercent = clamp((Math.log(clamp(modelInfo.fresnelNumber, .001, 100)) / Math.LN10 + 3) / 5 * 100, 2, 98);
+    var apertureSpanMm = modelInfo.apertureSpanM * 1000;
+    var apertureSpanLabel = apertureSpanMm >= .1
+      ? apertureSpanMm.toFixed(apertureSpanMm >= 10 ? 0 : 2) + ' mm'
+      : (modelInfo.apertureSpanM * 1e6).toFixed(0) + ' μm';
+    var detectorDigits = tab === 'interference' ? 1 : 0;
+    var comparison = _opticsModelComparison(tab, state);
+    var farReading = comparison.farReading;
+    var nearReading = comparison.nearReading;
+    var deltaPoints = comparison.detectorDelta * 100;
+    var maxDeltaPoints = comparison.maxDelta * 100;
     var transitionPatch = tab === 'interference'
       ? { intPropagationModel: 'fresnel', intSlitSep: .5, intSlitWidth: 200, intScreenL: .2, intShowWavefield3D: true, intWavefieldProbe: .1 }
       : { diffPropagationModel: 'fresnel', diffMode: 'single', diffSlitWidth: 100, diffScreenL: .3, diffShowWavefield3D: true, diffWavefieldProbe: .1 };
     return h('details', { className: 'opticslab-measurement-studio', 'data-op-measurement-studio': tab },
       h('summary', null,
-        h('span', { 'aria-hidden': 'true' }, '◫'),
-        'Measurement studio',
+        h('span', { className: 'opticslab-measurement-heading' },
+          h('i', { 'aria-hidden': 'true' }, '◫'),
+          h('span', null, 'Measurement studio')
+        ),
         h('span', { className: 'opticslab-measurement-summary' },
-          (modelInfo.model === 'fresnel' ? 'Fresnel' : 'Fraunhofer') + ' · Δλ ' + bandwidth.toFixed(0)
-            + ' nm · detector ' + detectorWidth.toFixed(tab === 'interference' ? 1 : 0) + ' mm'
+          h('span', null, modelInfo.model === 'fresnel' ? 'Fresnel' : 'Fraunhofer'),
+          h('span', null, 'Δλ ' + bandwidth.toFixed(0) + ' nm'),
+          h('span', null, 'detector ' + detectorWidth.toFixed(detectorDigits) + ' mm')
         )
       ),
       h('div', { className: 'opticslab-measurement-body' },
+        h('ol', {
+          className: 'opticslab-signal-path', role: 'list',
+          'data-op-optical-path': tab,
+          'aria-label': 'Live optical measurement path from source through aperture and propagation model to detector'
+        },
+          [
+            {
+              id: 'source', symbol: 'λ', label: 'Source',
+              value: centerNm.toFixed(0) + ' nm' + (bandwidth < .5 ? ' line' : ' · Δ' + bandwidth.toFixed(0) + ' nm')
+            },
+            { id: 'aperture', symbol: 'D', label: 'Aperture', value: 'span ' + apertureSpanLabel },
+            {
+              id: 'propagation', symbol: 'F', label: 'Propagation',
+              value: (modelInfo.model === 'fresnel' ? 'Fresnel' : 'Fraunhofer') + ' · F ' + _fmt(modelInfo.fresnelNumber, modelInfo.fresnelNumber < .1 ? 3 : 2)
+            },
+            {
+              id: 'detector', symbol: 'I', label: 'Detector',
+              value: _opticsSigned(detectorMm, detectorDigits) + ' mm · ' + (detectorWidth <= .001 ? 'point' : detectorWidth.toFixed(detectorDigits) + ' mm')
+            }
+          ].map(function(stage) {
+            return h('li', {
+              key: stage.id, className: 'opticslab-signal-node',
+              'data-op-signal-stage': stage.id, 'data-op-signal-value': stage.value
+            },
+              h('span', { className: 'opticslab-signal-dot', 'aria-hidden': 'true' }, stage.symbol),
+              h('strong', null, stage.label),
+              h('span', null, stage.value)
+            );
+          })
+        ),
         h('div', { className: 'opticslab-model-switch', role: 'group', 'aria-label': tab + ' propagation model' },
           h('span', null, 'Propagation'),
           ['fraunhofer', 'fresnel'].map(function(model) {
@@ -5542,7 +5784,7 @@
           h('button', {
             type: 'button', 'data-op-focusable': 'true', 'data-op-load-transition': tab,
             onClick: function() { upd(transitionPatch); },
-            'aria-label': 'Load a ' + tab + ' setup that reveals near-field structure'
+            'aria-label': 'Load ' + (tab === 'interference' ? 'an ' : 'a ') + tab + ' setup that reveals near-field structure'
           }, 'Reveal transition')
         ),
         h('div', {
@@ -5553,7 +5795,66 @@
           h('strong', null, 'F = ' + _fmt(modelInfo.fresnelNumber, modelInfo.fresnelNumber < .1 ? 3 : 2)),
           h('span', null, modelInfo.copy),
           h('span', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)' } }, 'D² / (λL)'),
-          h('span', null, 'D is the illuminated aperture span; smaller F means stronger far-field validity.')
+          h('span', null, 'D is the illuminated aperture span; smaller F means stronger far-field validity.'),
+          h('div', {
+            className: 'opticslab-regime-meter', role: 'img',
+            'data-op-regime-meter': tab, 'data-op-regime-status': modelInfo.status,
+            'data-op-regime-position': regimePercent.toFixed(2),
+            'aria-label': 'Propagation regime meter. Fresnel number ' + _fmt(modelInfo.fresnelNumber, 3)
+              + ' is in the ' + (modelInfo.status === 'far' ? 'far-field' : modelInfo.status === 'near' ? 'near-field' : 'transition') + ' region.'
+          },
+            h('div', { className: 'opticslab-regime-rail', 'aria-hidden': 'true' },
+              h('span', { className: 'opticslab-regime-marker', style: { left: regimePercent.toFixed(2) + '%' } })
+            ),
+            h('div', { className: 'opticslab-regime-labels', 'aria-hidden': 'true' },
+              h('span', null, 'Far field · F ≤ 0.1'),
+              h('span', null, 'Transition'),
+              h('span', null, 'Near field · F ≥ 1')
+            )
+          )
+        ),
+        h('div', { className: 'opticslab-spectrum' },
+          h('div', {
+            className: 'opticslab-spectrum-strip', role: 'img',
+            'data-op-source-spectrum': tab,
+            'data-op-spectrum-mode': bandwidth < .5 ? 'monochromatic' : 'band',
+            'data-op-spectrum-start-nm': spectrumStartNm.toFixed(1),
+            'data-op-spectrum-end-nm': spectrumEndNm.toFixed(1),
+            'data-op-spectrum-center-percent': spectrumCenterPercent.toFixed(3),
+            'aria-label': bandwidth < .5
+              ? 'Visible spectrum scale from 380 to 750 nanometers with a monochromatic source line at ' + centerNm.toFixed(0) + ' nanometers'
+              : 'Visible spectrum scale from 380 to 750 nanometers with the source band from ' + spectrumStartNm.toFixed(0) + ' to ' + spectrumEndNm.toFixed(0) + ' nanometers'
+          },
+            [450, 500, 550, 600, 650, 700].map(function(tickNm) {
+              return h('i', {
+                key: tickNm, className: 'opticslab-spectrum-tick',
+                'data-op-spectrum-tick': tickNm,
+                'aria-hidden': 'true',
+                style: { left: ((tickNm - 380) / 370 * 100).toFixed(3) + '%' }
+              });
+            }),
+            h('span', {
+              className: 'opticslab-spectrum-band', 'aria-hidden': 'true',
+              'data-op-spectrum-band': tab,
+              'data-op-spectrum-left-percent': spectrumLeftPercent.toFixed(3),
+              'data-op-spectrum-width-percent': spectrumWidthPercent.toFixed(3),
+              style: {
+                left: (bandwidth < .5 ? spectrumCenterPercent : spectrumLeftPercent).toFixed(3) + '%',
+                width: bandwidth < .5 ? '3px' : Math.max(.8, spectrumWidthPercent).toFixed(3) + '%',
+                transform: bandwidth < .5 ? 'translateX(-50%)' : undefined,
+                background: 'linear-gradient(90deg,' + wavelengthToRGB(spectrumStartNm) + ',' + wavelengthToRGB(centerNm) + ',' + wavelengthToRGB(spectrumEndNm) + ')'
+              }
+            }),
+            h('span', {
+              className: 'opticslab-spectrum-center', 'aria-hidden': 'true',
+              style: { left: spectrumCenterPercent.toFixed(3) + '%' }
+            })
+          ),
+          h('div', { className: 'opticslab-spectrum-scale', 'aria-hidden': 'true' },
+            h('span', null, '380 nm'),
+            h('strong', null, 'λ ' + centerNm.toFixed(0) + ' nm'),
+            h('span', null, '750 nm')
+          )
         ),
         h('div', { className: 'opticslab-measurement-grid' },
           h('label', { className: 'opticslab-measurement-control' },
@@ -5593,12 +5894,20 @@
         ),
         h('div', {
           className: 'opticslab-model-compare', 'data-op-model-comparison': tab,
-          'data-op-model-delta': deltaPoints.toFixed(4)
+          'data-op-model-delta': deltaPoints.toFixed(4),
+          'data-op-model-max-delta': maxDeltaPoints.toFixed(4),
+          'data-op-model-max-delta-mm': comparison.maxSample.mm.toFixed(3)
         },
           h('span', null, h('strong', null, 'Far field '), (farReading.averaged * 100).toFixed(1) + '%'),
           h('span', null, h('strong', null, 'Near field '), (nearReading.averaged * 100).toFixed(1) + '%'),
-          h('span', null, 'Δ ' + deltaPoints.toFixed(1) + ' percentage points at detector')
+          h('span', null, 'Δ ' + deltaPoints.toFixed(1) + ' percentage points at detector'),
+          h('span', { className: 'is-max-gap' },
+            h('strong', null, 'Max profile Δ '),
+            maxDeltaPoints.toFixed(1) + ' pp at '
+              + comparison.maxSample.mm.toFixed(tab === 'interference' ? 1 : 0) + ' mm'
+          )
         ),
+        _renderOpticsModelComparisonProfile(tab, state, comparison, h),
         h('button', {
           type: 'button', className: 'opticslab-profile-export', 'data-op-focusable': 'true',
           'data-op-wave-profile-export': tab,
@@ -5763,6 +6072,10 @@
         : ', outside the current three-dimensional crop.')
       + ' Select any ridge to move the depth probe; the adjacent slider is the keyboard-accessible equivalent.';
     var probeLabel = _opticsWaveProject(camera, W, H, probeDepth, -1, 0);
+    var apertureLabelX = clamp(baseLeft.x + 5, 10, W - 92);
+    var apertureLabelY = clamp(baseLeft.y + 18, 20, H - 30);
+    var probeLabelX = clamp(probeLabel.x + 8, 10, W - 80);
+    var probeLabelY = clamp(probeLabel.y - 10, 16, H - 30);
     var probeDetectorBase = detectorOnSurface && probeDepth < 1 ? _opticsWaveProject(camera, W, H, probeDepth, detectorLateral, 0) : null;
     var probeDetectorPoint = detectorOnSurface && probeDepth < 1 ? _opticsWaveProject(camera, W, H, probeDepth, detectorLateral,
       _opticsSurfaceHeight({ intensity: probeIntensity, field: measurement.probeField }, display)) : null;
@@ -5901,10 +6214,10 @@
           h('tspan', { x: detectorLabelX, dy: 12, fontWeight: 600 }, detectorValueLabel + ' · ' + (detectorIntensity * 100).toFixed(1) + '%')
         )
       ]),
-      h('text', { x: Math.max(10, baseLeft.x - 4), y: Math.max(14, baseLeft.y - 8), fill: '#fbbf24', stroke: '#07111f', strokeWidth: 2, paintOrder: 'stroke', fontSize: 11 }, apertureLabel),
-      probeDepth < 1 && h('text', { x: clamp(probeLabel.x - 6, 8, W - 72), y: clamp(probeLabel.y - 8, 14, H - 18), fill: OP_RAY.incident, stroke: '#07111f', strokeWidth: 2.2, paintOrder: 'stroke', fontSize: 11, fontWeight: 700 }, 'probe ' + probePercent + '%'),
+      h('text', { x: apertureLabelX, y: apertureLabelY, fill: '#fbbf24', stroke: '#07111f', strokeWidth: 2, paintOrder: 'stroke', fontSize: 11, fontWeight: 700 }, apertureLabel),
+      probeDepth < 1 && h('text', { x: probeLabelX, y: probeLabelY, fill: OP_RAY.incident, stroke: '#07111f', strokeWidth: 2.2, paintOrder: 'stroke', fontSize: 11, fontWeight: 700 }, 'probe ' + probePercent + '%'),
       h('text', { x: Math.min(W - 8, screenRight.x), y: Math.min(H - 8, screenRight.y + 18), fill: '#67e8f9', stroke: '#07111f', strokeWidth: 2.2, paintOrder: 'stroke', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'screen slice'),
-      h('text', { x: W / 2, y: H - 7, fill: '#94a3b8', fontSize: 11, textAnchor: 'middle' },
+      h('text', { x: W / 2, y: H - 10, fill: '#cbd5e1', stroke: '#07111f', strokeWidth: 2, paintOrder: 'stroke', fontSize: 11, textAnchor: 'middle' },
         display === 'phase' ? 'aperture → screen · height = Re(E) / E₀' : 'aperture → screen · height = I / I₀'),
       mesh.hitAreas
     );
@@ -5926,7 +6239,23 @@
     var measurement = _opticsWavefieldMeasurement(tab, state, distance, probeDepth);
     var probeDistance = measurement.probeDistance;
     var probeIntensity = measurement.probeIntensity;
+    var probeField = measurement.probeField;
+    var probePhase = measurement.probePhase;
     var detector = measurement.detector;
+    var probeMetrics = display === 'phase' ? [
+      { id: 'depth', label: 'Depth', value: probeDistance.toFixed(2) + ' m', meta: probePercent + '% path' },
+      { id: 'field', label: 'Re(E) / E₀', value: _opticsSigned(probeField, 3), meta: 'signed field' },
+      { id: 'phase', label: 'φc', value: _opticsSigned(probePhase, 2) + ' rad', meta: 'wrapped phase' },
+      { id: 'intensity', label: 'I / I₀', value: (probeIntensity * 100).toFixed(1) + '%', meta: 'local intensity' }
+    ] : [
+      { id: 'depth', label: 'Depth', value: probeDistance.toFixed(2) + ' m', meta: probePercent + '% path' },
+      { id: 'intensity', label: 'Probe I / I₀', value: (probeIntensity * 100).toFixed(1) + '%', meta: 'local sample' },
+      { id: 'detector', label: 'Screen I / I₀', value: (detector.intensity * 100).toFixed(1) + '%', meta: 'linked detector' },
+      {
+        id: 'position', label: 'Detector y', value: detector.valueLabel,
+        meta: detector.widthMm > .001 ? detector.widthMm.toFixed(tab === 'interference' ? 1 : 0) + ' mm aperture' : 'point detector'
+      }
+    ];
     var characteristic;
     var rangeMultiplier = 3.2;
     if (tab === 'interference') characteristic = lambdaNm * 1e-9 * distance / ((state.intSlitSep || .1) * 1e-3);
@@ -5982,23 +6311,57 @@
         })
       ),
       show && h('label', { className: 'opticslab-wavefield-probe' },
-        h('span', {
+        h('div', {
+          className: 'opticslab-wavefield-probe-readout',
           role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
           'data-op-wavefield-probe-readout': tab,
           'data-op-probe-distance-m': probeDistance.toFixed(3),
-          'data-op-probe-intensity': probeIntensity.toFixed(4)
-        }, h('strong', null, 'Depth probe '), probeDistance.toFixed(2) + ' m · ' + probePercent
-          + '% · I / I₀ ' + (probeIntensity * 100).toFixed(1) + '%'),
+          'data-op-probe-intensity': probeIntensity.toFixed(4),
+          'data-op-probe-field': probeField.toFixed(4),
+          'data-op-probe-phase-rad': probePhase.toFixed(4),
+          'data-op-probe-display': display
+        },
+          h('div', { className: 'opticslab-wavefield-probe-title' },
+            h('strong', null, 'Depth probe'),
+            h('span', null, probeDistance.toFixed(2) + ' m · ' + probePercent + '% · '
+              + (display === 'phase' ? 'phase surface' : 'intensity surface'))
+          ),
+          h('div', { className: 'opticslab-probe-metrics' },
+            probeMetrics.map(function(metric) {
+              return h('span', {
+                key: metric.id, className: 'opticslab-probe-metric',
+                'data-op-probe-metric': metric.id, 'data-op-probe-metric-value': metric.value
+              },
+                h('small', null, metric.label),
+                h('strong', null, metric.value),
+                h('em', null, metric.meta)
+              );
+            })
+          )
+        ),
         h('input', {
           type: 'range', min: 0.1, max: 1, step: 0.1, value: probeDepth,
           'data-op-focusable': 'true', 'data-op-wavefield-depth': tab,
           onChange: function(event) { setProbeDepth(parseFloat(event.target.value)); },
           'aria-label': tab + ' wavefield depth probe',
           'aria-valuetext': probeDistance.toFixed(2) + ' meters from the aperture, ' + probePercent + ' percent of the '
-            + distance.toFixed(2) + ' meter path, linked-position intensity ' + (probeIntensity * 100).toFixed(1)
-            + ' percent' + (probeDepth === 1 ? ', at the screen' : ''),
+            + distance.toFixed(2) + ' meter path'
+            + (display === 'phase'
+              ? ', signed normalized field ' + (probeField < 0 ? 'negative ' : 'positive ') + Math.abs(probeField).toFixed(3)
+                + ', center-wavelength wrapped phase ' + probePhase.toFixed(2) + ' radians, intensity '
+                + (probeIntensity * 100).toFixed(1) + ' percent'
+              : ', linked-position intensity ' + (probeIntensity * 100).toFixed(1) + ' percent')
+            + (probeDepth === 1 ? ', at the screen' : ''),
           'aria-keyshortcuts': 'ArrowLeft ArrowRight Home End'
-        })
+        }),
+        h('span', {
+          className: 'opticslab-wavefield-depth-scale', 'aria-hidden': 'true',
+          'data-op-wavefield-depth-scale': tab
+        },
+          h('span', null, 'Aperture · 0%'),
+          h('strong', null, 'sample ' + probePercent + '%'),
+          h('span', null, 'Screen · 100%')
+        )
       ),
       show && _renderOpticsWavefieldScene(tab, state, camera, W, H, range, distance, motion, probeDepth, measurement, setProbeDepth, h),
       show && h('div', {
@@ -6007,12 +6370,27 @@
         'aria-label': 'Wavefield slice colors and linked detector measurement'
       },
         h('span', null, h('i', { className: 'is-probe-sample', 'aria-hidden': 'true' }),
-          'Probe sample ' + probeDistance.toFixed(2) + ' m · ' + (probeIntensity * 100).toFixed(1) + '%'
+          'Probe sample ' + probeDistance.toFixed(2) + ' m'
+            + (display === 'phase'
+              ? ' · Re(E) / E₀ ' + _opticsSigned(probeField, 3) + ' · φc ' + _opticsSigned(probePhase, 2)
+                + ' rad · I ' + (probeIntensity * 100).toFixed(1) + '%'
+              : ' · ' + (probeIntensity * 100).toFixed(1) + '%')
             + (probeDepth === 1 ? ' · at screen' : '')),
         h('span', null, h('i', { className: 'is-screen', 'aria-hidden': 'true' }),
           'Screen ' + distance.toFixed(2) + ' m · Height = ' + (display === 'phase' ? 'Re(E) / E₀' : 'I / I₀')),
+        display === 'phase' && h('span', null,
+          h('i', { style: { background: '#22d3ee' }, 'aria-hidden': 'true' }),
+          'positive field phase'
+        ),
+        display === 'phase' && h('span', null,
+          h('i', { style: { background: '#c084fc' }, 'aria-hidden': 'true' }),
+          'opposite field phase'
+        ),
         h('span', null, h('i', { className: 'is-detector', 'aria-hidden': 'true' }),
           'Detector ' + detector.valueLabel + ' · ' + (detector.intensity * 100).toFixed(1) + '%'
+            + (display === 'phase'
+              ? ' · Re(E) / E₀ ' + _opticsSigned(detector.field, 3) + ' · φc ' + _opticsSigned(detector.phase, 2) + ' rad'
+              : '')
             + (detector.widthMm > .001 ? ' · ' + detector.widthMm.toFixed(1) + ' mm average' : ' · point sample')
             + (detector.noisePercent > 0 ? ' · ±' + detector.noisePercent.toFixed(1) + '%' : '')
             + (Math.abs(detector.mm * 1e-3 / range) > 1.0001 ? ' · outside crop' : ''))
@@ -6210,7 +6588,7 @@
         style: { background: '#000', borderRadius: 8, maxWidth: 460 }
       },
         // Light source label
-        h('text', { x: pad.l + 4, y: midY - 4, fill: color, fontSize: 10, fontWeight: 700 }, '◦ source'),
+        h('text', { x: pad.l + 4, y: midY - 4, fill: color, fontSize: 11, fontWeight: 700 }, '◦ source'),
         h('rect', { x: pad.l, y: midY - 8, width: 12, height: 16, fill: color, opacity: 0.85, rx: 4 }),
         // Coherent light path from source toward barrier
         h('line', { x1: pad.l + 12, y1: midY, x2: barX, y2: midY, stroke: color, strokeWidth: 2, opacity: 0.55, style: { filter: 'drop-shadow(0 0 4px ' + color + ')' } }),
@@ -6227,7 +6605,7 @@
           onPointerUp: stopInterferenceDrag, onPointerCancel: stopInterferenceDrag,
           onKeyDown: function(event) { adjustInterferenceValue('slit-separation', event); }
         }),
-        h('text', { x: barX + 3, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'barrier'),
+        h('text', { x: barX + 3, y: pad.t + 10, fill: '#94a3b8', fontSize: 11, textAnchor: 'middle' }, 'barrier'),
         // Live wavefronts: animated expanding circles from each slit, clipped
         // to the right of the barrier so they look like wavefronts emerging
         // toward the screen. Three staggered copies per slit create a ripple.
@@ -6608,7 +6986,7 @@
       }
     }
     return h('div', null,
-      h('div', { role: 'note', style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.22)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.45 } },
+      h('div', { role: 'note', style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.22)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.45 } },
         mode === 'single'
           ? 'Physical-scale view: the screen shows a fixed 180 mm window, so narrowing the slit visibly spreads the central maximum.'
           : 'Physical-scale view: the fixed 1000 mm screen reveals the classic 1 m setup\'s first-order peaks. The 50-slit model uses a physical opening fraction, so every opening stays narrower than its groove spacing.'
@@ -6855,7 +7233,7 @@
             var orderLabel = 'm=' + (entry.order > 0 ? '+' : '') + entry.order;
             return h('g', { key: entry.order, 'data-op-grating-order': entry.order },
               h('line', { x1: screenX - 8, y1: orderY, x2: screenX, y2: orderY, stroke: '#fbbf24', strokeWidth: 1.4 }),
-              h('text', { x: screenX - 11, y: orderY + 3, fill: '#fbbf24', fontSize: 9, textAnchor: 'end', fontWeight: 700 }, orderLabel)
+              h('text', { x: screenX - 11, y: orderY + 3, fill: '#fbbf24', fontSize: 11, textAnchor: 'end', fontWeight: 700 }, orderLabel)
             );
           })
         ),
@@ -6864,7 +7242,7 @@
           var firstMinPx = (firstMin_m / screenWindow_m) * screenHeight;
           if (!isFinite(firstMinPx) || firstMinPx < 4) return null;
           if (firstMinPx > screenHeight / 2 - 4) {
-            return h('text', { x: screenX - 10, y: screenTop + 12, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' }, 'first minimum off-screen');
+            return h('text', { x: screenX - 10, y: screenTop + 12, fill: '#fbbf24', fontSize: 11, textAnchor: 'end' }, 'first minimum off-screen');
           }
           var y1 = midY - firstMinPx;
           var y2 = midY;
@@ -7535,6 +7913,7 @@
         bars.push(h('line', { key: 'b' + k, x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#475569', strokeWidth: 0.6, opacity: 0.35 }));
       }
       return h('g', {
+        key: 'polarizer-' + label,
         role: isClickable ? 'slider' : undefined, tabIndex: isClickable ? 0 : undefined,
         'data-op-focusable': isClickable ? 'true' : undefined,
         'data-op-variable': isClickable || undefined,
@@ -8271,14 +8650,46 @@
       var intLambda = +(state.intLambda != null ? state.intLambda : 600) * 1e-9;
       var separationMm = +(state.intSlitSep != null ? state.intSlitSep : 0.1);
       var spacingMm = doubleSlitFringe(1, intLambda, +(state.intScreenL != null ? state.intScreenL : 1), separationMm * 1e-3) * 1000;
-      trial.x = separationMm; trial.y = spacingMm;
-      trial.xLabel = 'Slit separation'; trial.xUnit = 'mm';
-      trial.yLabel = 'Fringe spacing'; trial.yUnit = 'mm';
-      trial.summary = 'Adjacent bright fringes are ' + _fmt(spacingMm, 3) + ' mm apart.';
+      var intAdvanced = _opticsWaveModel('interference', state) === 'fresnel'
+        || _opticsWaveSetting('interference', state, 'BandwidthNm', 0) > 0
+        || _opticsWaveSetting('interference', state, 'DetectorWidthMm', 0) > 0
+        || _opticsWaveSetting('interference', state, 'NoisePct', 0) > 0;
+      if (intAdvanced) {
+        var intDetectorMm = _opticsWaveSetting('interference', state, 'ScreenProbeMm', 0);
+        var intReading = _opticsDetectorSample('interference', state, intDetectorMm * 1e-3, _opticsWaveSetting('interference', state, 'ScreenL', 1));
+        trial.series = 'interference-measured-' + _opticsWaveModel('interference', state);
+        trial.x = intDetectorMm; trial.y = intReading.measured * 100;
+        trial.xLabel = 'Detector position'; trial.xUnit = 'mm';
+        trial.yLabel = 'Measured intensity'; trial.yUnit = '% of I0';
+        trial.summary = (_opticsWaveModel('interference', state) === 'fresnel' ? 'Fresnel' : 'Fraunhofer')
+          + ' detector reading ' + _fmt(trial.y, 2) + '% at ' + _fmt(intDetectorMm, 2) + ' mm; '
+          + (intReading.widthMm > 0 ? _fmt(intReading.widthMm, 1) + ' mm aperture average' : 'point detector')
+          + (intReading.noisePercent > 0 ? ', ±' + _fmt(intReading.noisePercent, 1) + '% uncertainty.' : '.');
+      } else {
+        trial.x = separationMm; trial.y = spacingMm;
+        trial.xLabel = 'Slit separation'; trial.xUnit = 'mm';
+        trial.yLabel = 'Fringe spacing'; trial.yUnit = 'mm';
+        trial.summary = 'Adjacent bright fringes are ' + _fmt(spacingMm, 3) + ' mm apart.';
+      }
     } else if (tab === 'diffraction') {
       var diffLambda = +(state.diffLambda != null ? state.diffLambda : 600) * 1e-9;
       var screenDistance = +(state.diffScreenL != null ? state.diffScreenL : 1.5);
-      if ((state.diffMode || 'single') === 'single') {
+      var diffAdvanced = _opticsWaveModel('diffraction', state) === 'fresnel'
+        || _opticsWaveSetting('diffraction', state, 'BandwidthNm', 0) > 0
+        || _opticsWaveSetting('diffraction', state, 'DetectorWidthMm', 0) > 0
+        || _opticsWaveSetting('diffraction', state, 'NoisePct', 0) > 0;
+      if (diffAdvanced) {
+        var diffDetectorMm = _opticsWaveSetting('diffraction', state, 'ScreenProbeMm', 0);
+        var diffReading = _opticsDetectorSample('diffraction', state, diffDetectorMm * 1e-3, screenDistance);
+        trial.series = 'diffraction-measured-' + _opticsWaveModel('diffraction', state);
+        trial.x = diffDetectorMm; trial.y = diffReading.measured * 100;
+        trial.xLabel = 'Detector position'; trial.xUnit = 'mm';
+        trial.yLabel = 'Measured intensity'; trial.yUnit = '% of I0';
+        trial.summary = (_opticsWaveModel('diffraction', state) === 'fresnel' ? 'Fresnel' : 'Fraunhofer')
+          + ' detector reading ' + _fmt(trial.y, 2) + '% at ' + _fmt(diffDetectorMm, 2) + ' mm; '
+          + (diffReading.widthMm > 0 ? _fmt(diffReading.widthMm, 1) + ' mm aperture average' : 'point detector')
+          + (diffReading.noisePercent > 0 ? ', ±' + _fmt(diffReading.noisePercent, 1) + '% uncertainty.' : '.');
+      } else if ((state.diffMode || 'single') === 'single') {
         var slitWidthUm = +(state.diffSlitWidth != null ? state.diffSlitWidth : 30);
         var firstMinimumMm = singleSlitFirstMin(diffLambda, screenDistance, slitWidthUm * 1e-6) * 1000;
         trial.series = 'diffraction-single';

@@ -15,6 +15,7 @@ let root;
 let host;
 let latest;
 let toasts;
+let setGeneratedContentForTest;
 
 const baseData = () => ({
   schemaVersion: 1,
@@ -72,13 +73,15 @@ afterEach(() => {
   host = null;
   latest = null;
   toasts = [];
+  setGeneratedContentForTest = null;
 });
 
 async function renderChallenge(options = {}) {
-  const initial = { type: 'applied-challenge', id: 'challenge-1', data: options.data || baseData() };
+  const initial = { type: 'applied-challenge', id: options.id || 'challenge-1', data: options.data || baseData() };
   toasts = [];
   function Harness() {
     const [generatedContent, setGeneratedContent] = React.useState(initial);
+    setGeneratedContentForTest = setGeneratedContent;
     latest = generatedContent;
     const handleNoteUpdate = React.useCallback((key, value) => {
       setGeneratedContent((previous) => {
@@ -102,6 +105,13 @@ async function renderChallenge(options = {}) {
   root = ReactDOMClient.createRoot(host);
   await act(async () => {
     root.render(React.createElement(Harness));
+    await Promise.resolve();
+  });
+}
+
+async function replaceChallenge(id, data) {
+  await act(async () => {
+    setGeneratedContentForTest({ type: 'applied-challenge', id, data });
     await Promise.resolve();
   });
 }
@@ -138,7 +148,6 @@ describe('Applied Challenge Studio interactions', () => {
     await renderChallenge();
     const results = await axe.run(host, { rules: {
       'color-contrast': { enabled: false },
-      region: { enabled: false },
     } });
     const serious = results.violations
       .filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')
@@ -207,6 +216,68 @@ describe('Applied Challenge Studio interactions', () => {
     expect(latest.data.brief.factVerified).toBe(false);
   });
 
+  it('returns verified ledger evidence to needs-check when a teacher changes lesson facts', async () => {
+    const data = baseData();
+    data.brief.factVerified = true;
+    data.evidenceLedger = [{
+      id: 'verified-row',
+      claim: 'Gravity supports the route.',
+      evidence: 'Gravity moves water downhill.',
+      status: 'verified',
+      tradeoff: 'The site slope is still unknown.',
+    }];
+    await renderChallenge({ teacher: true, data });
+    expect(latest.data.evidenceLedger[0].status).toBe('verified');
+    await clickButton('Edit challenge');
+    await clickButton('Unlock facts to edit');
+    const facts = Array.from(host.querySelectorAll('textarea')).find((item) => item.getAttribute('aria-label') === 'Teacher-checked lesson facts');
+    await typeInto(facts, 'Revised lesson fact requiring a new evidence connection.');
+    expect(latest.data.brief.factVerified).toBe(false);
+    expect(latest.data.evidenceLedger[0].status).toBe('needs-check');
+  });
+
+  it('persists a complete student-owned Test–Observe–Decide cycle without changing the draft', async () => {
+    const data = baseData();
+    data.workspace.response = 'Recommend a measured pilot before committing to a full route.';
+    await renderChallenge({ data });
+    const originalResponse = latest.data.workspace.response;
+    await clickButton('Start my own check');
+    expect(latest.data.validationCycles).toHaveLength(1);
+    expect(latest.data.feedback).toBeNull();
+
+    await typeInto(host.querySelector('[aria-label="Check 1 test question"]'), 'Can the pilot satisfy the access criterion within the staffing limit?');
+    await typeInto(host.querySelector('[aria-label="Check 1 change threshold"]'), 'Revise if one required shift remains uncovered.');
+    await chooseOption(host.querySelector('[aria-label="Check 1 evidence form"]'), 'data');
+    await chooseOption(host.querySelector('[aria-label="Check 1 outcome"]'), 'mixed');
+    await typeInto(host.querySelector('[aria-label="Check 1 observed evidence"]'), 'The schedule covers weekdays but leaves one weekend shift open.');
+    await chooseOption(host.querySelector('[aria-label="Check 1 decision"]'), 'revise');
+    await typeInto(host.querySelector('[aria-label="Check 1 decision reasoning"]'), 'The evidence supports a smaller weekday pilot while weekend staffing is investigated.');
+    await typeInto(host.querySelector('[aria-label="Check 1 revision summary"]'), 'Narrowed the first phase to weekdays.');
+
+    expect(latest.data.workspace.response).toBe(originalResponse);
+    expect(latest.data.validationCycles[0]).toMatchObject({
+      source: 'self',
+      plan: {
+        methodId: 'strongest-alternative',
+        evidenceMode: 'data',
+        testQuestion: 'Can the pilot satisfy the access criterion within the staffing limit?',
+      },
+      observation: {
+        outcome: 'mixed',
+        evidence: 'The schedule covers weekdays but leaves one weekend shift open.',
+      },
+      decision: {
+        action: 'revise',
+        revisionSummary: 'Narrowed the first phase to weekdays.',
+      },
+    });
+    expect(latest.data.validationCycles[0].completedAt).toBeTruthy();
+    expect(host.textContent).toContain('1 of 1 checks complete');
+
+    const results = await axe.run(host, { rules: { 'color-contrast': { enabled: false } } });
+    expect(results.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact))).toEqual([]);
+  });
+
   it('saves one pressure test separately and marks it when the draft changes', async () => {
     const callGemini = vi.fn(async () => JSON.stringify({
       challenge: 'What if the selected site has insufficient slope for a gravity-fed route?',
@@ -233,12 +304,35 @@ describe('Applied Challenge Studio interactions', () => {
       question: 'What evidence or fallback would make the recommendation more resilient?',
     });
     expect(latest.data.stressTest.draftFingerprint).toMatch(/^[0-9a-f]{8}$/);
+    expect(latest.data.stressTest.contextFingerprint).toMatch(/^[0-9a-f]{8}$/);
     expect(host.textContent).toContain('Current draft');
+
+    await clickButton('Use this pressure point in a check');
+    expect(latest.data.validationCycles).toHaveLength(1);
+    expect(latest.data.validationCycles[0]).toMatchObject({
+      source: 'ai',
+      disposition: 'pending',
+      importedChallenge: {
+        challenge: 'What if the selected site has insufficient slope for a gravity-fed route?',
+      },
+    });
+    await chooseOption(host.querySelector('[aria-label="Check 1 AI challenge choice"]'), 'decline');
+    await typeInto(host.querySelector('[aria-label="Check 1 reason for AI challenge choice"]'), 'The pressure point assumes a route type that my revised criteria already exclude.');
+    expect(latest.data.validationCycles[0].completedAt).toBeTruthy();
+    const preservedCycleId = latest.data.validationCycles[0].id;
+    await clickButton('Refresh stress test');
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(callGemini).toHaveBeenCalledTimes(2);
+    expect(latest.data.validationCycles).toHaveLength(1);
+    expect(latest.data.validationCycles[0].id).toBe(preservedCycleId);
 
     await typeInto(host.querySelector('#applied-workspace-response'), 'Recommend a measured pilot route with a non-gravity fallback.');
     expect(latest.data.stressTest.challenge).toContain('insufficient slope');
     expect(host.textContent).toContain('Created for an earlier draft');
-    expect(host.textContent).toContain('Keep it as part of the revision record');
+    expect(host.textContent).toContain('Save it in a check');
   });
 
   it('discards feedback created for a draft that changed while AI was responding', async () => {
@@ -262,6 +356,30 @@ describe('Applied Challenge Studio interactions', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
+    expect(latest.data.feedback).toBeNull();
+    expect(toasts.some((toast) => toast.message.includes('work changed while feedback'))).toBe(true);
+  });
+
+  it('does not let an AI result land on a different same-content challenge', async () => {
+    let resolveFeedback;
+    const callGemini = vi.fn(() => new Promise((resolvePromise) => { resolveFeedback = resolvePromise; }));
+    const data = baseData();
+    data.workspace.response = 'The same draft appears in both resources.';
+    data.coachHint = '';
+    data.feedback = null;
+    await renderChallenge({ id: 'challenge-original', data, callGemini });
+    await clickButton('Get strengths-first AI feedback');
+    await replaceChallenge('challenge-replacement', structuredClone(data));
+    await act(async () => {
+      resolveFeedback(JSON.stringify({
+        strength: 'Feedback intended for the original resource',
+        nextStep: 'This must not land on the replacement.',
+        status: 'developing',
+      }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(latest.id).toBe('challenge-replacement');
     expect(latest.data.feedback).toBeNull();
     expect(toasts.some((toast) => toast.message.includes('work changed while feedback'))).toBe(true);
   });

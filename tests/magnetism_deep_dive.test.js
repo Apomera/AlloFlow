@@ -3,12 +3,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const AXE_PATH = require.resolve(resolve(MODULES_DIR, 'axe-core'));
-const AXE_SOURCE = require(AXE_PATH).source;
-const { JSDOM } = require(resolve(MODULES_DIR, 'jsdom'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -47,21 +44,7 @@ function mountInteractive(cfg, seed, callbacks = {}) {
 }
 
 async function runSemanticAudit(html, selector) {
-  const fixture = new JSDOM('<!doctype html><html><body><main id="mag-semantic-fixture"></main></body></html>', {
-    runScripts: 'outside-only',
-  });
-  const host = fixture.window.document.querySelector('#mag-semantic-fixture');
-  host.innerHTML = String(html).replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
-  fixture.window.eval(AXE_SOURCE);
-  try {
-    return await fixture.window.axe.run(host.querySelector(selector) || host, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-      rules: { 'color-contrast': { enabled: false } },
-    });
-  } finally {
-    fixture.window.axe.cleanup();
-    fixture.window.close();
-  }
+  return runIsolatedAxe(html, { selector });
 }
 
 describe('magnetism inverse magnetometer investigation', () => {

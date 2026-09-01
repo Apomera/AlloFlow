@@ -424,6 +424,61 @@ describe('Pets Lab structured evidence records', () => {
     expect(forModule('sensory')[0].details).toMatchObject({ perspectives: 0, criterionMet: false });
   });
 
+  it('reconciles and safely formats Zoonoses pathway evidence', () => {
+    const privateText = 'PRIVATE ZOONOSIS SCENARIO OR SELECTED ACTION';
+    const records = Array.from(EVIDENCE_API.normalizeEvidenceRecords([
+      {
+        moduleId: 'zoonoses',
+        kind: 'activity',
+        recordedAt: '2026-08-26T16:00:00.000Z',
+        details: {
+          score: 0,
+          total: 4,
+          scorePct: 100,
+          needsPractice: 0,
+          criterionMet: true,
+          answers: [1, 2, 0, 3],
+          scenarioText: privateText,
+          selectedAction: privateText,
+        },
+      },
+      {
+        moduleId: 'zoonoses',
+        kind: 'activity',
+        recordedAt: '2026-08-26T16:01:00.000Z',
+        details: {
+          score: 3,
+          total: 4,
+          scorePct: 0,
+          bestPct: 50,
+          needsPractice: 4,
+          criterionMet: false,
+        },
+      },
+    ]));
+
+    expect(records[0].details).toEqual({
+      score: 0,
+      total: 4,
+      scorePct: 0,
+      needsPractice: 4,
+      criterionMet: false,
+    });
+    expect(records[1].details).toEqual({
+      score: 3,
+      total: 4,
+      scorePct: 75,
+      bestPct: 75,
+      needsPractice: 1,
+      criterionMet: true,
+    });
+    expect(JSON.stringify(records)).not.toContain(privateText);
+
+    const evidenceOutcome = teacherHelper('function evidenceOutcome(record)', 'function evidenceGrowth(record)');
+    const expected = '3 / 4 (75%) · 1 pathway to revisit';
+    expect(evidenceOutcome(records[1]).startsWith(expected)).toBe(true);
+  });
+
   it('caps at 80 while preserving the latest record for every module', () => {
     const base = Date.parse('2026-08-26T12:00:00.000Z');
     const raw = [{

@@ -3,10 +3,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -276,10 +275,7 @@ describe('magnetism station-aware Socratic coach', () => {
       const coach = host.querySelector('[data-magnetism-socratic-coach="true"]');
       expect(coach.getAttribute('data-response-state')).toBe('answer');
       expect(coach.querySelector('.mag-coach-mode').textContent).toBe('Challenge questions');
-      const results = await axe.run(coach, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await runIsolatedAxe(coach.outerHTML);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
       expect(callGemini).not.toHaveBeenCalled();
     });

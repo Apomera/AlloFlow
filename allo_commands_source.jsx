@@ -5671,7 +5671,7 @@ const AlloCommandPalette = ({ ctx }) => {
               else if (e.key === 'Enter') { e.preventDefault(); const row = rows[sel]; if (row && row.kind === 'cmd') runCmd(row.c); }
             }}
             placeholder={getCommandAudience(ctx) === 'student' ? (t('student.actions_search') || 'Try “read directions”, “check my progress”, or “save my work”…') : t('palette.placeholder', 'Type a command — “bigger text”, “educator hub”, “read this page”…')}
-            aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="allo-palette-list" aria-describedby="allo-palette-status" aria-activedescendant={selectedCommandId ? ('allo-cmd-' + selectedCommandId) : undefined}
+            aria-label={t('palette.input_aria', 'Search commands')} role="combobox" aria-expanded={commandRowCount > 0} aria-autocomplete="list" aria-controls={commandRowCount > 0 ? 'allo-palette-list' : undefined} aria-describedby="allo-palette-status" aria-activedescendant={commandRowCount > 0 && selectedCommandId ? ('allo-cmd-' + selectedCommandId) : undefined}
             className="min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500" />
           <button type="button" onClick={toggleSelectedFavorite} disabled={!selectedCommand || selectedCommand.available === false} aria-pressed={selectedIsFavorite}
              aria-label={(selectedIsFavorite ? t('palette.remove_selected_favorite', 'Remove selected command from favorites') : t('palette.pin_selected_favorite', 'Pin selected command to favorites')) + (selectedCommand ? ': ' + selectedCommand.label : '')}
@@ -5686,11 +5686,13 @@ const AlloCommandPalette = ({ ctx }) => {
           </button>
         </div>
         <div id="allo-palette-status" role="status" aria-live="polite" aria-atomic="true" className="sr-only">{paletteStatus}</div>
-        <ul id="allo-palette-list" role="listbox" aria-label={t('palette.list_aria', 'Matching commands')} className="max-h-[46vh] overflow-y-auto py-1">
-          {commandRowCount === 0 && (
-            <li role="presentation" className="px-4 py-6 text-center text-xs text-slate-600">{t('palette.no_match', 'No matching command. The bot chat (and soon voice) understands free-form requests.')}</li>
-          )}
-          {rows.map((row, i) => (
+        {commandRowCount === 0 ? (
+          <div id="allo-palette-empty" className="px-4 py-6 text-center text-xs text-slate-600">
+            {t('palette.no_match', 'No matching command. The bot chat (and soon voice) understands free-form requests.')}
+          </div>
+        ) : (
+          <ul id="allo-palette-list" role="listbox" aria-label={t('palette.list_aria', 'Matching commands')} className="max-h-[46vh] overflow-y-auto py-1">
+            {rows.map((row, i) => (
             row.kind === 'header' ? (
               <li key={'h-' + i} role="presentation" className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-500 select-none">{row.label}</li>
             ) : (
@@ -5705,8 +5707,9 @@ const AlloCommandPalette = ({ ctx }) => {
                   {i === sel && <kbd className="text-[10px] text-indigo-600 border border-indigo-300 rounded px-1.5 py-0.5 shrink-0">↵</kbd>}
               </li>
             )
-          ))}
-        </ul>
+            ))}
+          </ul>
+        )}
         <div className="px-4 py-2 border-t border-slate-200 text-[10px] text-slate-600 flex items-center gap-3">
           <span><kbd className="border border-slate-300 rounded px-1">↑↓</kbd> {t('palette.nav', 'navigate')}</span>
           <span><kbd className="border border-slate-300 rounded px-1">↵</kbd> {t('palette.run', 'run')}</span>

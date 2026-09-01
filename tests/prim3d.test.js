@@ -5,7 +5,7 @@
 // (fence-stripping, junk → null), buildRecipePrompt (sandbox rules present).
 // buildObject needs a THREE instance (no GL) — covered by a minimal stub.
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -57,6 +57,16 @@ describe('Prim3D.normalizeRecipe (untrusted JSON → safe recipe)', () => {
   it('adds neutral stretch values to legacy recipes', () => {
     const r = P.normalizeRecipe({ parts: [{ shape: 'sphere', size: [0.3] }] });
     expect(r.parts[0].stretch).toEqual([1, 1, 1]);
+    expect(r.parts[0].deform).toEqual({ taper: 0, twist: 0, bulge: 0 });
+  });
+
+  it('normalizes and clamps taper, twist, and bulge modifiers', () => {
+    const r = P.normalizeRecipe({ parts: [
+      { shape: 'box', deform: { taper: 9, twist: -999, bulge: 4 } },
+      { shape: 'sphere', deform: { taper: 'wide', twist: null, bulge: -9 } },
+    ] });
+    expect(r.parts[0].deform).toEqual({ taper: 0.85, twist: -180, bulge: 1.5 });
+    expect(r.parts[1].deform).toEqual({ taper: 0, twist: 0, bulge: -0.75 });
   });
 
   it('validates part labels, finish, opacity, visibility, and locking', () => {
@@ -92,6 +102,8 @@ describe('Prim3D.buildRecipePrompt (the sandbox ask)', () => {
     expect(p).toMatch(/Return ONLY JSON/);
     expect(p).toMatch(/STANDS ON the ground plane/);
     expect(p).toMatch(/school-appropriate/);
+    expect(p).toMatch(/"deform"/);
+    expect(p).toMatch(/taper -0\.85 to 0\.85/);
   });
 });
 
@@ -205,6 +217,89 @@ describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
     expect(g).toBeTruthy();
     expect(g.children.length).toBe(1);
   });
+
+  it('deforms vertices deterministically and recomputes normals and bounds', () => {
+    const values = new Float32Array([
+      1, -1, 0,
+      1, 0, 0,
+      1, 1, 0,
+    ]);
+    const position = {
+      array: values,
+      itemSize: 3,
+      count: 3,
+      getX(index) { return this.array[index * 3]; },
+      getY(index) { return this.array[index * 3 + 1]; },
+      getZ(index) { return this.array[index * 3 + 2]; },
+      setXYZ(index, x, y, z) { this.array.set([x, y, z], index * 3); },
+      needsUpdate: false,
+    };
+    const geometry = {
+      attributes: { position },
+      computeVertexNormals: vi.fn(),
+      computeBoundingBox: vi.fn(),
+      computeBoundingSphere: vi.fn(),
+    };
+    P.deformGeometry(geometry, { taper: 0.5, bulge: 0.5, twist: 0 });
+    expect(values[0]).toBeCloseTo(0.5, 5);
+    expect(values[3]).toBeCloseTo(1.5, 5);
+    expect(values[6]).toBeCloseTo(1.5, 5);
+    expect(position.needsUpdate).toBe(true);
+    expect(geometry.computeVertexNormals).toHaveBeenCalledOnce();
+    expect(geometry.computeBoundingBox).toHaveBeenCalledOnce();
+    expect(geometry.computeBoundingSphere).toHaveBeenCalledOnce();
+  });
+
+  it('leaves neutral geometry untouched and twists top vertices around the vertical axis', () => {
+    const makeGeometry = () => {
+      const values = new Float32Array([1, -1, 0, 1, 1, 0]);
+      const position = {
+        array: values, itemSize: 3, count: 2,
+        getX(index) { return this.array[index * 3]; },
+        getY(index) { return this.array[index * 3 + 1]; },
+        getZ(index) { return this.array[index * 3 + 2]; },
+        setXYZ(index, x, y, z) { this.array.set([x, y, z], index * 3); },
+      };
+      return { values, geometry: { attributes: { position }, computeVertexNormals: vi.fn() } };
+    };
+    const neutral = makeGeometry();
+    P.deformGeometry(neutral.geometry, {});
+    expect(Array.from(neutral.values)).toEqual([1, -1, 0, 1, 1, 0]);
+    expect(neutral.geometry.computeVertexNormals).not.toHaveBeenCalled();
+
+    const twisted = makeGeometry();
+    P.deformGeometry(twisted.geometry, { twist: 180 });
+    expect(twisted.values[3]).toBeCloseTo(0, 5);
+    expect(twisted.values[5]).toBeCloseTo(1, 5);
+  });
+});
+
+describe('Prim3D morph profiles', () => {
+  it('returns fresh built-ins and applies only silhouette fields', () => {
+    const first = P.getMorphProfile('twisted');
+    const second = P.getMorphProfile('twisted');
+    expect(first).not.toBe(second);
+    expect(first.deform).not.toBe(second.deform);
+    first.deform.twist = 0;
+    expect(second.deform.twist).toBe(110);
+
+    const recipe = P.normalizeRecipe({ parts: [{ shape: 'cone', size: [0.4, 0.8], position: [1, 2, 3], rotation: [10, 20, 30], color: '#22c55e', finish: 'metal' }] });
+    const morphed = P.applyMorphProfile(recipe, 0, 'twisted');
+    expect(morphed.parts[0].deform).toEqual({ taper: 0, twist: 110, bulge: 0.12 });
+    expect(morphed.parts[0]).toMatchObject({ shape: 'cone', position: [1, 2, 3], rotation: [10, 20, 30], color: '#22c55e', finish: 'metal' });
+  });
+
+  it('normalizes custom profiles, merges individual deformation edits, and protects locked parts', () => {
+    const custom = P.normalizeMorphProfile({ id: 'mine', name: '  Vase\u0000body  ', stretch: [9, 0, 2], deform: { taper: -9, twist: 999, bulge: 0.4 } });
+    expect(custom).toEqual({ id: 'mine', label: 'Vase body', stretch: [4, 0.1, 2], deform: { taper: -0.85, twist: 180, bulge: 0.4 } });
+
+    const recipe = P.normalizeRecipe({ parts: [{ shape: 'box', deform: { taper: 0.2, twist: 15, bulge: 0.3 } }] });
+    const edited = P.updatePartDeform(recipe, 0, { twist: 45 });
+    expect(edited.parts[0].deform).toEqual({ taper: 0.2, twist: 45, bulge: 0.3 });
+    const locked = P.updatePart(recipe, 0, { locked: true });
+    expect(P.applyMorphProfile(locked, 0, 'bulged')).toEqual(locked);
+    expect(P.updatePartDeform(locked, 0, { taper: 0.8 })).toEqual(locked);
+  });
 });
 
 describe('Prim3D.PRESETS (built-in decoration shelf)', () => {
@@ -272,11 +367,13 @@ describe('Prim3D recipe editing ops (hand-built sculpting seams)', () => {
 
   it('duplicatePart inserts a visible copy; removePart of the last part returns null', () => {
     const r = seed();
-    const protectedRecipe = P.updatePart(r, 0, { label: 'Base', finish: 'metal', opacity: 0.5, hidden: true, locked: true });
+    const protectedRecipe = P.updatePart(r, 0, { label: 'Base', finish: 'metal', opacity: 0.5, deform: { taper: 0.3, twist: 45, bulge: 0.2 }, hidden: true, locked: true });
     const dup = P.duplicatePart(protectedRecipe, 0);
     expect(dup.parts).toHaveLength(3);
     expect(dup.parts[1]).toMatchObject({ shape: 'box', label: 'Base copy', finish: 'metal', opacity: 0.5, hidden: false, locked: false });
     expect(dup.parts[1].position[0]).toBeCloseTo(0.2, 6);
+    expect(dup.parts[1].deform).toEqual({ taper: 0.3, twist: 45, bulge: 0.2 });
+    expect(dup.parts[1].deform).not.toBe(dup.parts[0].deform);
     const one = P.removePart(r, 1);
     expect(one.parts).toHaveLength(1);
     expect(P.removePart(one, 0)).toBe(null);               // cleared

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const readEvaluationSource = () => fs.readFileSync(path.join(process.cwd(), 'educator_evaluation_source.jsx'), 'utf8');
+const readEvaluationSource = () => fs.readFileSync(path.join(process.cwd(), 'educator_evaluation_source.jsx'), 'utf8').replace(/\r\n/g, '\n');
 const readAppsScriptBuilder = () => fs.readFileSync(path.join(process.cwd(), '_build_educator_evaluation_apps_script.js'), 'utf8');
 
 const evaluateSourceFunction = (source, name) => {

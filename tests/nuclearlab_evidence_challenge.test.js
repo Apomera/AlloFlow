@@ -15,6 +15,7 @@ let cfg;
 let host;
 let root;
 let originalGetContext;
+let originalMatchMedia;
 
 beforeAll(() => {
   act = React.act;
@@ -27,6 +28,7 @@ beforeEach(() => {
   host = document.createElement('div');
   document.body.appendChild(host);
   originalGetContext = window.HTMLCanvasElement.prototype.getContext;
+  originalMatchMedia = window.matchMedia;
   // These tests exercise DOM interaction, not pixels. Returning null is the
   // browser-supported "context unavailable" path every chart already handles.
   window.HTMLCanvasElement.prototype.getContext = () => null;
@@ -40,6 +42,10 @@ afterEach(() => {
   host?.remove();
   host = null;
   window.HTMLCanvasElement.prototype.getContext = originalGetContext;
+  if (originalMatchMedia) window.matchMedia = originalMatchMedia;
+  else delete window.matchMedia;
+  vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 function mount(state, overrides = {}, onRender) {
@@ -69,6 +75,17 @@ function enterText(node, value) {
   });
 }
 
+function enterSearch(node, value) {
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    'value',
+  ).set;
+  act(() => {
+    setter.call(node, value);
+    node.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+
 describe('evidence challenge semantics', () => {
   it('renders a named, untimed three-verdict activity with progress', () => {
     host.innerHTML = renderTool('nuclearLab', { _nuclearLab: {} });
@@ -89,6 +106,35 @@ describe('evidence challenge semantics', () => {
     expect(section.textContent).toContain('There is no timer and no penalty for revising an answer.');
   });
 
+  it('describes the active claim from its statement, question, and feedback without competing live regions', () => {
+    host.innerHTML = renderTool('nuclearLab', { _nuclearLab: {} });
+    const claim = host.querySelector('#nk-evidence-claim');
+    const describedBy = (claim.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+
+    expect(describedBy).toEqual(expect.arrayContaining([
+      'nk-evidence-statement',
+      'nk-evidence-question',
+      'nk-evidence-feedback',
+    ]));
+    const statement = host.querySelector('#nk-evidence-statement');
+    const question = host.querySelector('#nk-evidence-question');
+    expect(claim.contains(statement)).toBe(true);
+    expect(claim.contains(question)).toBe(true);
+    expect(statement.textContent.trim().length).toBeGreaterThan(40);
+    expect(question.textContent).toContain('Which verdict is justified');
+
+    const guidance = host.querySelector('#nk-evidence-feedback');
+    expect(guidance.textContent).toBe('Choose a verdict to continue.');
+    expect(guidance.getAttribute('role')).toBeNull();
+    expect(guidance.getAttribute('aria-live')).toBeNull();
+
+    const progress = host.querySelector('progress[aria-label$="evidence claims mastered"]');
+    const masteryCounter = progress.nextElementSibling;
+    expect(masteryCounter.textContent).toBe('0 of 5 mastered');
+    expect(masteryCounter.getAttribute('role')).toBeNull();
+    expect(masteryCounter.getAttribute('aria-live')).toBeNull();
+  });
+
   it('keeps the reading adaptations explicit and exposes a keyboard skip path', () => {
     host.innerHTML = renderTool('nuclearLab', {
       _nuclearLab: { nkLargeText: true, nkReduceMotion: true },
@@ -96,8 +142,8 @@ describe('evidence challenge semantics', () => {
     const lab = host.querySelector('[data-nuclear-lab]');
     expect(lab.getAttribute('data-nk-large-text')).toBe('true');
     expect(lab.getAttribute('data-nk-reduce-motion')).toBe('true');
-    expect(host.querySelector('button[aria-label="Use larger text throughout the nuclear lab"]').getAttribute('aria-pressed')).toBe('true');
-    expect(host.querySelector('button[aria-label="Reduce non-essential motion throughout the nuclear lab"]').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('button[aria-label^="A+ Text."]').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('button[aria-label^="Motion: low."]').getAttribute('aria-pressed')).toBe('true');
     expect(buttonNamed('Skip topic controls and start reading')).toBeTruthy();
     expect(host.querySelector('#nksec-halflife').getAttribute('tabindex')).toBe('-1');
     const adaptations = host.querySelector('style').textContent;
@@ -157,7 +203,8 @@ describe('evidence challenge semantics', () => {
 
     const reflection = host.querySelector('[data-nk-reflection=know]');
     expect(reflection).toBeTruthy();
-    expect(reflection.querySelector('h5').textContent).toBe('Finish your route');
+    expect(reflection.querySelector('h5').textContent).toBe('Reflect on the evidence so far');
+    expect(reflection.textContent).toMatch(/route steps? to open/);
     expect(reflection.textContent).toContain('How do we know all this?');
     expect(reflection.textContent).toContain('There is no right answer and no score.');
     expect(reflection.querySelectorAll('input[type=radio][name=nk-reflection-confidence-know]')).toHaveLength(3);
@@ -214,6 +261,185 @@ describe('reading adaptation interaction', () => {
     expect(buttonNamed('Chart data').getAttribute('aria-pressed')).toBe('false');
     expect(announceToSR).toHaveBeenLastCalledWith('Chart data tables hidden.');
   });
+
+  it('debounces the screen-reader search count while keeping the visible count current', () => {
+    vi.useFakeTimers();
+    vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation(() => 0);
+    mount({ nkOpen: true });
+
+    const search = host.querySelector('#nk-topic-search');
+    const visibleCount = search.nextElementSibling;
+    const liveCount = visibleCount.nextElementSibling;
+    expect(liveCount.getAttribute('role')).toBe('status');
+    expect(liveCount.textContent).toBe('');
+
+    enterSearch(search, 'r');
+    act(() => vi.advanceTimersByTime(200));
+    enterSearch(search, 're');
+    act(() => vi.advanceTimersByTime(200));
+    enterSearch(search, 'reactor');
+
+    expect(visibleCount.textContent).toMatch(/^showing \d+$/);
+    expect(liveCount.textContent, 'an intermediate query was announced').toBe('');
+    act(() => vi.advanceTimersByTime(349));
+    expect(liveCount.textContent, 'the live count was not debounced for 350 ms').toBe('');
+    act(() => vi.advanceTimersByTime(1));
+    expect(liveCount.textContent).toMatch(/^\d+ topics? match the search\.$/);
+  });
+
+  it('keeps slider results visual immediately but debounces their spoken summaries', () => {
+    vi.useFakeTimers();
+    vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation(() => 0);
+    mount({});
+
+    const thickness = host.querySelector('#nk-thick');
+    const shielding = host.querySelector('#nksec-shielding');
+    const shieldLive = shielding.querySelector('p[role="status"].sr-only');
+    enterSearch(thickness, '3');
+    enterSearch(thickness, '4');
+    expect(shielding.textContent).toContain('gets through 4 cm');
+    expect(shieldLive.textContent).toBe('');
+    act(() => vi.advanceTimersByTime(449));
+    expect(shieldLive.textContent).toBe('');
+    act(() => vi.advanceTimersByTime(1));
+    expect(shieldLive.textContent).toContain('gets through 4 cm');
+
+    const altitude = host.querySelector('#ds-alt');
+    const dose = host.querySelector('#nksec-mydose');
+    const doseLive = dose.querySelector('p[role="status"].sr-only');
+    enterSearch(altitude, '500');
+    expect(dose.textContent).toContain('mSv this year');
+    expect(doseLive.textContent).toBe('');
+    act(() => vi.advanceTimersByTime(450));
+    expect(doseLive.textContent).toMatch(/^Estimated annual dose: .* millisieverts\.$/);
+  });
+
+  it('ORs learner and live system motion preferences before syncing the viewer', () => {
+    let matches = true;
+    const listeners = new Set();
+    const motionQuery = {
+      media: '(prefers-reduced-motion: reduce)',
+      get matches() { return matches; },
+      addEventListener(type, listener) {
+        if (type === 'change') listeners.add(listener);
+      },
+      removeEventListener(type, listener) {
+        if (type === 'change') listeners.delete(listener);
+      },
+      addListener(listener) { listeners.add(listener); },
+      removeListener(listener) { listeners.delete(listener); },
+    };
+    window.matchMedia = vi.fn(() => motionQuery);
+
+    resetStemLab();
+    const sync = vi.fn();
+    window.StemLab.makeBayViewer = () => ({
+      attach() {},
+      sync,
+      nudge() {},
+      zoom() {},
+      reset() {},
+      status() { return 'ready'; },
+    });
+    cfg = loadTool('stem_lab/stem_tool_nuclearlab.js', 'nuclearLab');
+    mount({ nkReduceMotion: false });
+
+    const lab = () => host.querySelector('[data-nuclear-lab]');
+    const latestReduced = () => sync.mock.calls.at(-1)[0].reduced;
+    let toggle = host.querySelector('button[aria-label^="Motion: low · system."]');
+    expect(lab().getAttribute('data-nk-reduce-motion')).toBe('true');
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    expect(toggle.disabled, 'the OS reduction could be overridden').toBe(true);
+    expect(latestReduced()).toBe(true);
+
+    act(() => {
+      matches = false;
+      listeners.forEach((listener) => listener({ matches, media: motionQuery.media }));
+    });
+
+    toggle = host.querySelector('button[aria-label^="Motion: standard."]');
+    expect(lab().getAttribute('data-nk-reduce-motion')).toBe('false');
+    expect(toggle.disabled).toBe(false);
+    expect(latestReduced()).toBe(false);
+
+    act(() => toggle.click());
+    expect(lab().getAttribute('data-nk-reduce-motion')).toBe('true');
+    expect(latestReduced()).toBe(true);
+
+    act(() => {
+      matches = true;
+      listeners.forEach((listener) => listener({ matches, media: motionQuery.media }));
+    });
+    expect(lab().getAttribute('data-nk-reduce-motion')).toBe('true');
+    expect(latestReduced()).toBe(true);
+  });
+});
+
+describe('reactor dashboard interaction', () => {
+  it('reveals a persistent text snapshot when current status is requested', () => {
+    const announceToSR = vi.fn();
+    mount({}, { announceToSR });
+
+    const button = host.querySelector('button[aria-label^="Show current status."]');
+    const summary = host.querySelector('#rx-status-summary');
+    expect(button).toBeTruthy();
+    expect(button.getAttribute('aria-controls')).toBe('rx-status-summary');
+    expect(summary.hidden).toBe(true);
+    expect(summary.getAttribute('role')).toBeNull();
+    expect(summary.getAttribute('aria-live')).toBeNull();
+
+    act(() => button.click());
+
+    expect(summary.hidden).toBe(false);
+    expect(summary.textContent).toContain('Current status · paused.');
+    expect(summary.textContent).toContain('Power 100 percent.');
+    expect(summary.textContent).toMatch(/Fuel temperature [\d,.]+ degrees Celsius\./);
+    expect(summary.textContent).toMatch(/Xenon [\d,.]+ times normal\./);
+    expect(summary.textContent).toContain('Objective:');
+    expect(announceToSR).toHaveBeenCalledTimes(1);
+    expect(announceToSR.mock.calls[0][0]).toContain('Reactor status: paused.');
+  });
+
+  it('replays a viewer status reached during attach and reads later status changes', () => {
+    resetStemLab();
+    let viewerStatus = 'loading';
+    let reportStatus;
+    const status = vi.fn(() => viewerStatus);
+    const sync = vi.fn((options) => {
+      reportStatus = options.onStatus;
+    });
+    window.StemLab.makeBayViewer = () => ({
+      attach(node) {
+        // Reproduce the synchronous-ready edge: attach completes before the
+        // following effect installs onStatus through sync().
+        if (node) viewerStatus = 'ready';
+      },
+      sync,
+      nudge() {},
+      zoom() {},
+      reset() {},
+      status,
+    });
+    cfg = loadTool('stem_lab/stem_tool_nuclearlab.js', 'nuclearLab');
+
+    let latestToolData;
+    mount({ rxStatus: 'loading' }, {}, (toolData) => {
+      latestToolData = toolData;
+    });
+
+    expect(sync).toHaveBeenCalled();
+    expect(status).toHaveBeenCalled();
+    expect(latestToolData._nuclearLab.rxStatus).toBe('ready');
+    expect(host.textContent).not.toContain('Loading the 3D core…');
+
+    act(() => {
+      viewerStatus = 'failed';
+      reportStatus('failed');
+    });
+
+    expect(latestToolData._nuclearLab.rxStatus).toBe('failed');
+    expect(host.textContent).toContain('The 3D core could not start here');
+  });
 });
 
 describe('evidence challenge interaction', () => {
@@ -224,8 +450,16 @@ describe('evidence challenge interaction', () => {
     act(() => buttonNamed('Check the evidence').click());
 
     expect(host.querySelector('#nk-evidence-feedback').textContent).toContain('Take another look');
-    expect(host.querySelector('#nk-evidence-feedback').textContent).toContain('Best verdict: Contradicted by this evidence.');
+    expect(host.querySelector('#nk-evidence-feedback').textContent).toContain('Use that evidence to revise');
+    expect(host.querySelector('#nk-evidence-answer').hidden).toBe(true);
     expect(host.textContent).toContain('0 of 5 mastered');
+
+    const reveal = buttonNamed('Show best verdict');
+    reveal.focus();
+    act(() => reveal.click());
+    expect(host.querySelector('#nk-evidence-answer').hidden).toBe(false);
+    expect(host.querySelector('#nk-evidence-answer').textContent).toContain('Best verdict: Contradicted by this evidence.');
+    expect(document.activeElement).toBe(buttonNamed('Hide best verdict'));
 
     const contradicted = host.querySelector('input[name="nk-evidence-verdict"][value="contradicted"]');
     act(() => contradicted.click());
@@ -256,6 +490,20 @@ describe('evidence challenge interaction', () => {
     expect(document.activeElement.id).toBe('nk-evidence-claim');
     expect(document.activeElement.querySelector('legend').textContent).toBe('Claim 2 of 2');
     expect(announceToSR, 'focused claim name was also announced by hand').not.toHaveBeenCalled();
+  });
+
+  it('moves focus from numbered claim navigation to the newly selected claim', () => {
+    const announceToSR = vi.fn();
+    mount({}, { announceToSR });
+    const claimTwo = host.querySelector('nav[aria-label="Evidence challenge claims"] button[aria-label^="Claim 2 of 5"]');
+    expect(claimTwo).toBeTruthy();
+
+    claimTwo.focus();
+    act(() => claimTwo.click());
+
+    expect(document.activeElement).toBe(host.querySelector('#nk-evidence-claim'));
+    expect(document.activeElement.querySelector('legend').textContent).toBe('Claim 2 of 5');
+    expect(announceToSR, 'the focused claim was also announced by hand').not.toHaveBeenCalled();
   });
 
   it('does not show a no-op next control on a one-claim route', () => {
@@ -291,6 +539,23 @@ describe('evidence challenge interaction', () => {
     expect(latestToolData._nuclearLab.evidenceMastered).toEqual(['short-count']);
     expect(latestToolData._nuclearLab.evidenceChoices).toEqual({ 'short-count': 'uncertain' });
     expect(latestToolData._nuclearLab.evidenceChecked).toEqual({ 'short-count': true });
+  });
+
+  it('returns focus to the first claim when the learner starts over', () => {
+    mount({
+      nkPath: 'safety',
+      evidenceIndex: 1,
+      evidenceClaimId: 'neutron-layers',
+    });
+    expect(host.querySelector('#nk-evidence-claim legend').textContent).toBe('Claim 2 of 2');
+
+    const reset = buttonNamed('Start over');
+    reset.focus();
+    act(() => reset.click());
+
+    const claim = host.querySelector('#nk-evidence-claim');
+    expect(claim.querySelector('legend').textContent).toBe('Claim 1 of 2');
+    expect(document.activeElement).toBe(claim);
   });
 
   it('tracks all five claims, celebrates once, and satisfies the quest hook', () => {
@@ -363,5 +628,36 @@ describe('evidence challenge interaction', () => {
     expect(host.querySelector('[data-nk-reflection-status=know]').textContent)
       .toBe('Saved reflection cleared.');
     expect(buttonNamed('Save reflection').disabled).toBe(true);
+  });
+});
+
+describe('reactor status interaction', () => {
+  it('announces one concise, complete snapshot only when requested', () => {
+    const announceToSR = vi.fn();
+    mount({}, { announceToSR });
+    const readStatus = host.querySelector('button[aria-label^="Show current status."]');
+    const statusSummary = host.querySelector('#rx-status-summary');
+    expect(readStatus).toBeTruthy();
+    expect(readStatus.getAttribute('aria-controls')).toBe('rx-status-summary');
+    expect(statusSummary).toBeTruthy();
+    expect(statusSummary.hidden).toBe(true);
+    expect(announceToSR).not.toHaveBeenCalled();
+
+    act(() => readStatus.click());
+
+    expect(announceToSR).toHaveBeenCalledTimes(1);
+    expect(statusSummary.hidden).toBe(false);
+    expect(statusSummary.textContent).toMatch(/current status/i);
+    expect(statusSummary.textContent).toMatch(/power/i);
+    expect(statusSummary.textContent).toMatch(/objective/i);
+    const announcement = announceToSR.mock.calls[0][0];
+    expect(announcement).toMatch(/state|status/i);
+    expect(announcement).toMatch(/power/i);
+    expect(announcement).toMatch(/fuel temperature/i);
+    expect(announcement).toMatch(/net reactivity/i);
+    expect(announcement).toMatch(/xenon/i);
+    expect(announcement).toMatch(/objective/i);
+    expect(announcement).not.toMatch(/NaN|Infinity|undefined/);
+    expect(announcement.length).toBeLessThan(400);
   });
 });

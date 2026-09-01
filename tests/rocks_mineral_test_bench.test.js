@@ -57,12 +57,24 @@ function findAll(node, predicate, acc = []) {
   return acc;
 }
 
+function mountWorkbench(markup) {
+  const host = document.createElement('div');
+  host.setAttribute('data-wb-test-host', 'true');
+  host.innerHTML = markup;
+  document.body.appendChild(host);
+  return host;
+}
+
 beforeEach(() => {
   resetStemLab();
   loadTool(ROCKS_FILE, 'rocks');
   vi.useFakeTimers();
 });
-afterEach(() => { vi.useRealTimers(); });
+afterEach(() => {
+  document.querySelectorAll('[data-wb-test-host]').forEach((host) => host.remove());
+  vi.clearAllTimers();
+  vi.useRealTimers();
+});
 
 describe('streak plate', () => {
   it('draws an empty porcelain plate before the test runs', () => {
@@ -303,12 +315,15 @@ describe('evidence-first Mineral Workbench learning flow', () => {
 
   it('moves visual focus from instruments to comparison after evidence is captured', () => {
     const markup = workbench({ guided: true, lens: true });
+    const recommended = /data-wb-action-tool="([^"]+)"/.exec(markup)?.[1];
     expect(markup).toContain('data-wb-step="observe" data-wb-step-state="in-progress"');
     expect(markup).toContain('data-wb-step="compare" data-wb-step-state="current"');
     expect(markup).toContain('data-wb-tools-state="focused"');
     expect(markup).toContain('data-wb-tools-summary="quiet"');
     expect(markup).toContain('Instrument choices are tucked away while you compare evidence.');
-    expect(markup).toContain('data-wb-open-recommended="penny"');
+    expect(recommended).toBeTruthy();
+    expect(recommended).not.toBe('claim');
+    expect(markup).toContain(`data-wb-open-recommended="${recommended}"`);
     expect(markup).toContain('data-wb-candidates-state="open"');
     expect(markup).toContain('data-wb-candidate="calcite"');
 
@@ -329,13 +344,97 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(workbench(store.rocks.wb)).toContain('data-wb-tools-state="open"');
   });
 
+  it('keeps instrument and candidate controls natively focusable while observations are busy', () => {
+    const started = workbenchTree({ guided: true });
+    const lens = findAll(started.node, (n) =>
+      n.type === 'button' && n.props['data-wb-tool'] === 'lens')[0];
+    expect(lens.props.disabled).toBeUndefined();
+    expect(lens.props['aria-disabled']).toBe(false);
+    lens.props.onClick();
+
+    const busyTools = workbenchTree(started.store.rocks.wb);
+    const busyLens = findAll(busyTools.node, (n) =>
+      n.type === 'button' && n.props['data-wb-tool'] === 'lens')[0];
+    const prevented = vi.fn();
+    expect(busyLens.props.disabled).toBeUndefined();
+    expect(busyLens.props['aria-disabled']).toBe(true);
+    busyLens.props.onClick({ preventDefault: prevented });
+    expect(prevented).toHaveBeenCalledOnce();
+
+    const busyCandidates = workbenchTree({ guided: true, lens: true, anim: 'wrong' });
+    const calcite = findAll(busyCandidates.node, (n) =>
+      n.type === 'button' && n.props['data-wb-candidate'] === 'calcite')[0];
+    expect(calcite, 'busy candidate control').toBeTruthy();
+    expect(calcite.props.disabled).toBeUndefined();
+    expect(calcite.props['aria-disabled']).toBe(true);
+    calcite.props.onClick();
+    expect(busyCandidates.store.rocks.wb.selectedId).toBeUndefined();
+    expect(workbench(busyCandidates.store.rocks.wb)).toContain('aria-busy="true"');
+  });
+
+  it('opens a hidden instrument tray before focusing hardness recovery', () => {
+    const recovery = workbenchTree({
+      guided: true,
+      lens: true,
+      toolsExpanded: false,
+      scratch: { fingernail: 'scratched', diamond_scribe: 'no' },
+      claimEvidence: ['luster', 'hardness'],
+      claimConfidence: 'very',
+    });
+    expect(workbench(recovery.store.rocks.wb)).toContain('data-wb-tools-state="focused"');
+    const clearHardness = findAll(recovery.node, (n) =>
+      n.type === 'button' && n.props['data-wb-recovery-action'] === 'hardness')[0];
+    expect(clearHardness, 'hardness recovery action').toBeTruthy();
+    clearHardness.props.onClick();
+
+    expect(recovery.store.rocks.wb.scratch).toEqual({});
+    expect(recovery.store.rocks.wb.toolsExpanded).toBe(true);
+    expect(recovery.store.rocks.wb.claimEvidence).toEqual(['luster']);
+    expect(recovery.store.rocks.wb.claimConfidence).toBeNull();
+    const host = mountWorkbench(workbench(recovery.store.rocks.wb));
+    expect(host.innerHTML).toContain('data-wb-tools-state="open"');
+    vi.advanceTimersByTime(0);
+    expect(document.activeElement?.getAttribute('data-wb-tool')).toBe('steel_nail');
+  });
+
+  it('returns focus to a rejected candidate when its review closes during wrong-claim feedback', () => {
+    const review = workbenchTree({
+      guided: true,
+      lens: true,
+      scratch: { penny: 'scratched' },
+      guessedWrong: ['halite'],
+      lastRejectedId: 'halite',
+      candidateView: 'setaside',
+      reviewId: 'halite',
+      anim: 'wrong',
+    });
+    const close = findAll(review.node, (n) =>
+      n.type === 'button' && n.props['data-wb-review-close'] === 'halite')[0];
+    expect(close, 'rejected-claim review close').toBeTruthy();
+    expect(close.props.disabled).toBeUndefined();
+    close.props.onClick();
+    expect(review.store.rocks.wb.reviewId).toBeNull();
+    expect(review.store.rocks.wb.anim).toBe('wrong');
+
+    const host = mountWorkbench(workbench(review.store.rocks.wb));
+    const rejected = host.querySelector('[data-wb-candidate="halite"]');
+    expect(rejected).toBeTruthy();
+    expect(rejected.disabled).toBe(false);
+    expect(rejected.getAttribute('aria-disabled')).toBe('true');
+    vi.advanceTimersByTime(0);
+    expect(document.activeElement).toBe(rejected);
+  });
+
   it('lets learners reopen instruments or switch to the full workbench', () => {
     const guided = workbenchTree({ guided: true, lens: true });
-    const openRecommended = findAll(guided.node, (n) => n.type === 'button' && n.props['data-wb-open-recommended'] === 'penny')[0];
+    const openRecommended = findAll(guided.node, (n) =>
+      n.type === 'button' && typeof n.props['data-wb-open-recommended'] === 'string')[0];
     expect(openRecommended, 'open recommended instrument control').toBeTruthy();
+    const recommended = openRecommended.props['data-wb-open-recommended'];
     expect(openRecommended.props['aria-expanded']).toBe(false);
     openRecommended.props.onClick();
     expect(guided.store.rocks.wb.toolsExpanded).toBe(true);
+    expect(workbench(guided.store.rocks.wb)).toContain(`data-wb-tool="${recommended}"`);
 
     const toggle = findAll(guided.node, (n) => n.type === 'button' && n.props['data-wb-guided-toggle'] === 'active')[0];
     expect(toggle, 'guided focus toggle').toBeTruthy();
@@ -360,15 +459,18 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('viewBox="0 0 130 130"');
     expect(markup).toContain('viewBox="0 0 50 50"');
     expect(markup).toContain('UNKNOWN SPECIMEN');
-    expect(markup).toContain('Trigonal (Rhombohedral) crystal form');
+    expect(markup).toContain('Trigonal (Rhombohedral) reference form');
   });
 
   it('recommends a discriminating next test without revealing the answer', () => {
     const markup = workbench({ lens: true });
-    expect(markup).toContain('Try the best hardness reference: 🪙 Copper reference (modeled)');
-    expect(markup).toContain('strongest expected split among the remaining hardness possibilities');
-    expect(markup).toContain('data-wb-tool="penny"');
-    expect(markup).toContain('Recommended next test. Try to scratch the specimen with Copper reference (modeled), Mohs 3.5');
+    const recommended = /data-wb-action-tool="([^"]+)"/.exec(markup)?.[1];
+    expect(recommended).toBeTruthy();
+    expect(markup).not.toContain('data-wb-open-recommended=');
+    expect(markup).toContain(`data-wb-test-forecast="${recommended}"`);
+    expect(markup).toContain(`data-wb-tool="${recommended}"`);
+    expect(markup).toContain('Best expected split: about ');
+    expect(markup).toContain('Estimate assumes each remaining candidate is equally likely.');
     // The notebook records the observation, while the coach never names calcite.
     const coach = markup.slice(markup.indexOf('Next scientific move'), markup.indexOf('Instrument tray'));
     expect(coach).not.toContain('Calcite');
@@ -376,30 +478,34 @@ describe('evidence-first Mineral Workbench learning flow', () => {
 
   it('ranks every useful available test by expected shortlist reduction', () => {
     const markup = workbench({ lens: true });
+    const actionTool = /data-wb-action-tool="([^"]+)"/.exec(markup)?.[1];
+    const informationGain = /data-wb-information-gain="([\d.]+)"/.exec(markup);
     const rankedCount = markup.match(/data-wb-ranked-tests="(\d+)"/);
-    expect(markup).toContain('data-wb-information-gain="2.6"');
+    expect(actionTool).toBeTruthy();
+    expect(informationGain).toBeTruthy();
+    expect(Number(informationGain[1])).toBeGreaterThan(0);
+    expect(Number(informationGain[1])).toBeLessThan(5);
     expect(rankedCount).toBeTruthy();
     expect(Number(rankedCount[1])).toBeGreaterThanOrEqual(4);
-    expect(markup).toContain('Best expected split: about 2.6 candidates would remain after a typical result.');
+    expect(markup).toContain(`Best expected split: about ${informationGain[1]} candidates would remain after a typical result.`);
     expect(markup).toContain('Compared across ' + rankedCount[1] + ' useful available tests.');
-    expect(markup).toContain('data-wb-test-forecast="penny"');
-    expect(markup).toContain('data-wb-forecast-outcomes="2"');
+    expect(markup).toContain(`data-wb-test-forecast="${actionTool}"`);
+    expect(Number(/data-wb-forecast-outcomes="(\d+)"/.exec(markup)?.[1])).toBeGreaterThanOrEqual(2);
   });
 
-  it('shows the current hardness uncertainty and recommended reference on one Mohs interval', () => {
+  it('shows the current hardness uncertainty and only marks a reference when hardness is recommended', () => {
     const initial = workbench({ lens: true });
     expect(initial).toContain('data-wb-mohs-interval="unmeasured"');
     expect(initial).toContain('data-wb-mohs-low="1"');
     expect(initial).toContain('data-wb-mohs-high="10"');
-    expect(initial).toContain('data-wb-mohs-recommended="penny"');
-    expect(initial).toContain('data-wb-mohs-next-marker="penny"');
+    expect(initial).toContain('data-wb-mohs-recommended="none"');
+    expect(initial).not.toContain('data-wb-mohs-next-marker=');
     expect(initial).toContain('Mohs ordinal hardness ranking from 1 to 10.');
     expect(initial).toContain('ordinal ranking');
     expect(initial).toContain('equal spacing does not mean equal increases');
     expect(initial).toContain('1 candidate at Mohs');
     expect(workbench({})).toContain('candidates at Mohs');
-    expect(initial).toContain('Recommended next reference: Copper reference (modeled), Mohs 3.5.');
-    expect(initial).not.toContain('Recommended next reference: 🪙 Copper reference (modeled), Mohs 3.5.');
+    expect(initial).not.toContain('Recommended next reference:');
 
     const bracketed = workbench({ lens: true, scratch: { penny: 'scratched' } });
     expect(bracketed).toContain('data-wb-mohs-interval="narrow"');
@@ -509,6 +615,74 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect((scratchMarkup.match(/stroke-dasharray="4 4"/g) || []).length).toBeGreaterThanOrEqual(2);
   });
 
+  it('shows density arithmetic and filters with the same half-unit measurement band', () => {
+    const run = workbenchTree({
+      spId: 'calcite',
+      guided: true,
+      lens: true,
+      toolsExpanded: true,
+      claimConfidence: 'very',
+    });
+    const balance = findAll(run.node, (n) =>
+      n.type === 'button' && n.props['data-wb-tool'] === 'balance')[0];
+    expect(balance, 'balance and beaker control').toBeTruthy();
+    balance.props.onClick();
+    expect(run.store.rocks.wb.anim).toBe('density');
+    expect(run.store.rocks.wb.claimConfidence).toBeNull();
+
+    const measuring = workbench(run.store.rocks.wb);
+    expect(measuring).toContain('data-wb-bench-observation="density"');
+    expect(measuring).toContain('m = 27.1 g');
+    expect(measuring).toContain('ΔV = 10.0 cm³');
+    expect(measuring).toContain('ρ = 2.71 g/cm³');
+
+    vi.advanceTimersByTime(1900);
+    expect(run.store.rocks.wb.density).toBe(true);
+    const recorded = workbench(run.store.rocks.wb);
+    expect(recorded).toContain('Density calculation: 27.1 g ÷ 10.0 cm³ = 2.71 g/cm³ — 2.5–&lt;3.0 g/cm³ measurement band');
+  });
+
+  it('does not stack scratch, density, and settled streak graphics in one bench station', () => {
+    const settled = workbench({ spId: 'quartz', streakDone: true });
+    expect(settled).toContain('data-wb-bench-observation="streak"');
+
+    const scratching = workbench({
+      spId: 'quartz',
+      streakDone: true,
+      anim: 'scratch',
+      activeScratchRef: 'steel_nail',
+    });
+    expect(scratching).toContain('data-wb-bench-observation="scratch"');
+    expect(scratching).not.toContain('data-wb-bench-observation="streak"');
+    expect(scratching).not.toContain('data-wb-bench-observation="density"');
+
+    const weighing = workbench({ spId: 'quartz', streakDone: true, anim: 'density' });
+    expect(weighing).toContain('data-wb-bench-observation="density"');
+    expect(weighing).not.toContain('data-wb-bench-observation="streak"');
+    expect(weighing).not.toContain('data-wb-bench-observation="scratch"');
+  });
+
+  it('records a streak-plate groove only once when the same plate is also in scratch state', () => {
+    const state = {
+      spId: 'quartz',
+      streakDone: true,
+      scratch: { streak_plate: 'no' },
+      selectedId: 'quartz',
+    };
+    const { node } = workbenchTree(state);
+    const notebookRows = findAll(node, (n) =>
+      n.type === 'li' && n.props['data-wb-evidence-impact'] !== undefined);
+    const hardnessChoices = findAll(node, (n) =>
+      n.type === 'button' && n.props['data-wb-cer-evidence'] === 'hardness');
+    expect(notebookRows).toHaveLength(1);
+    expect(hardnessChoices).toHaveLength(1);
+
+    const markup = workbench(state);
+    expect(markup).toContain('1 / 6 confirmed');
+    expect(markup).toContain('data-wb-evidence-type="streak" data-wb-evidence-state="not-measured"');
+    expect(markup).toContain('data-wb-evidence-type="hardness" data-wb-evidence-state="measured"');
+  });
+
   it('visualizes why the recommended test can split the current candidates', () => {
     const markup = workbench({});
     expect(markup).toContain('data-wb-test-forecast="lens"');
@@ -527,13 +701,19 @@ describe('evidence-first Mineral Workbench learning flow', () => {
 
   it('turns possible outcomes into conditional candidate branches', () => {
     const markup = workbench({ lens: true });
-    expect(markup).toContain('data-wb-forecast-branch="resists"');
+    expect(markup).toContain('data-wb-action-tool="balance"');
+    expect(markup).toContain('data-wb-information-gain="2.2"');
+    expect(markup).toContain('data-wb-test-forecast="balance"');
+    expect(markup).toContain('data-wb-forecast-branch="density-2-5"');
     expect(markup).toContain('data-wb-branch-count="3"');
-    expect(markup).toContain('data-wb-forecast-candidates="quartz,feldspar,fluorite"');
+    expect(markup).toContain('data-wb-forecast-candidates="quartz,feldspar,calcite"');
     expect(markup).toContain('data-wb-branch-remaining="3"');
-    expect(markup).toContain('data-wb-forecast-retained="quartz,feldspar,fluorite"');
-    expect(markup).toContain('data-wb-forecast-branch="scratches"');
-    expect(markup).toContain('data-wb-forecast-candidates="calcite,halite"');
+    expect(markup).toContain('data-wb-forecast-retained="quartz,feldspar,calcite"');
+    expect(markup).toContain('data-wb-forecast-branch="density-2-0"');
+    expect(markup).toContain('data-wb-forecast-candidates="halite"');
+    expect(markup).toContain('data-wb-forecast-branch="density-3-0"');
+    expect(markup).toContain('data-wb-forecast-candidates="fluorite"');
+    expect(markup).toContain('2.5–&lt;3.0 g/cm³ measurement band');
     expect(markup).toContain('Would keep:');
     expect(markup).toContain('Would leave 3 candidates');
     expect(markup).toContain('This branch would leave 3 candidates.');
@@ -549,9 +729,17 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     });
   });
 
+  it('explains when Mohs tolerance makes the projected shortlist wider than an outcome bar', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain('group.count !== group.remainingCount');
+    expect(src).toContain('"data-wb-forecast-tolerance-note": "visible"');
+    expect(src).toContain('Bar widths show exact modeled outcomes.');
+    expect(src).toContain('near-match candidates retained by the ±0.5 Mohs tolerance');
+  });
+
   it('connects a saved prediction to its projected shortlist', () => {
-    const markup = workbench({ lens: true, predictionTool: 'penny', predictionValue: 'resists' });
-    expect(markup).toContain('data-wb-prediction-branch="resists"');
+    const markup = workbench({ lens: true, predictionTool: 'balance', predictionValue: 'density-2-5' });
+    expect(markup).toContain('data-wb-prediction-branch="density-2-5"');
     expect(markup).toContain('data-wb-prediction-remaining="3"');
     expect(markup).toContain('Working hypothesis');
     expect(markup).toContain('3 candidates would remain:');
@@ -583,12 +771,12 @@ describe('evidence-first Mineral Workbench learning flow', () => {
   });
 
   it('keeps eliminated candidates readable and explains the conflicting property', () => {
-    const markup = workbench({ lens: true, streakDone: true, fizz: 'fizz', scratch: { penny: 'scratched' }, candidateView: 'setaside' });
+    const markup = workbench({ fizz: 'fizz', scratch: { penny: 'scratched' }, candidateView: 'setaside' });
     expect(markup).toContain('Evidence comparison board');
     expect(markup).toContain('data-wb-candidate-state="eliminated"');
     expect(markup).toContain('Review why set aside');
     expect(markup).toContain('Mohs: ');
-    expect(markup).toContain('Acid: fizzes');
+    expect(markup).toContain('Acid: no fizz');
     // A strikethrough made the very information students needed to compare
     // harder to read; state is now carried by text, icon, border and color.
     const candidateBoard = markup.slice(markup.indexOf('Evidence comparison board'));
@@ -599,7 +787,8 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     const { store, node } = workbenchTree({ lens: true, streakDone: true, fizz: 'fizz', candidateView: 'setaside' });
     const quartz = findAll(node, (n) => n.type === 'button' && n.props['data-wb-candidate'] === 'quartz')[0];
     expect(quartz, 'eliminated quartz candidate').toBeTruthy();
-    expect(quartz.props.disabled).toBe(false);
+    expect(quartz.props.disabled).toBeUndefined();
+    expect(quartz.props['aria-disabled']).toBeUndefined();
     expect(quartz.props['aria-pressed']).toBeUndefined();
     expect(quartz.props['aria-expanded']).toBe(false);
     expect(quartz.props['data-wb-reviewing']).toBe('false');
@@ -624,6 +813,24 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('Evidence rule: one diagnostic conflict is enough.');
   });
 
+  it('places the set-aside inspector before the candidate grid it explains', () => {
+    const markup = workbench({
+      lens: true,
+      streakDone: true,
+      fizz: 'fizz',
+      scratch: { penny: 'scratched' },
+      candidateView: 'setaside',
+      reviewId: 'quartz',
+    });
+    const inspector = markup.indexOf('data-wb-setaside-inspector="conflict"');
+    const firstCandidate = markup.indexOf('data-wb-candidate="');
+    const claimBuilder = markup.indexOf('data-wb-claim-ready=');
+    expect(inspector).toBeGreaterThan(-1);
+    expect(firstCandidate).toBeGreaterThan(-1);
+    expect(inspector).toBeLessThan(firstCandidate);
+    expect(inspector).toBeLessThan(claimBuilder);
+  });
+
   it('explains when a rejected claim still matches and recommends a new distinction', () => {
     const markup = workbench({
       lens: true, streakDone: true, guessedWrong: ['feldspar'], lastRejectedId: 'feldspar',
@@ -632,15 +839,17 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('data-wb-candidate-state="rejected"');
     expect(markup).toContain('data-wb-setaside-inspector="unresolved"');
     expect(markup).toContain('Every current observation still matches');
-    expect(markup).toContain('Best next distinction: Try the best hardness reference: 🪙 Copper reference (modeled)');
+    expect(markup).toContain('Best next distinction:');
+    expect(markup).toContain('data-wb-action-tool=');
     expect((markup.match(/data-wb-review-state="match"/g) || []).length).toBe(2);
     expect(markup).not.toContain('data-wb-review-state="conflict"');
   });
 
   it('explains Mohs bracketing and physical-lab safety in plain language', () => {
     const markup = workbench({});
-    expect(markup).toContain('Find one tool that leaves no mark and the next harder tool that does');
-    expect(markup).toContain('acid tests require teacher supervision, eye protection');
+    expect(markup).toContain('Find one reference that leaves no mark and the next harder reference that scratches');
+    expect(markup).toContain('wear eye protection');
+    expect(markup).toContain('Acid tests require teacher supervision and a tiny test area.');
     expect(markup).toContain('Mohs 5.5');
   });
 
@@ -699,7 +908,8 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('Luster is reflection, not the specimen’s color.');
     expect(markup).toContain('Powder color may differ from the outside surface color; a groove is hardness evidence');
     expect(markup).toContain('Hardness is not toughness or resistance to breaking.');
-    expect(markup).toContain('No fizz is still evidence');
+    expect(markup).toContain('No immediate visible fizz argues against calcite here');
+    expect(markup).toContain('it does not prove that every carbonate is absent.');
     expect(markup).toContain('Dark color or heavy feel cannot prove magnetism.');
     expect(markup).toContain('Density is not mass alone');
     expect((markup.match(/Diagnostic use:/g) || []).length).toBe(6);
@@ -735,6 +945,24 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(strong).toContain('data-wb-claim-strength="strong"');
     expect(strong).toContain('Strong evidence support');
     expect(strong).toContain('Only one candidate remains after confirmed measurements.');
+  });
+
+  it('names the claim-stage action as strengthening until evidence is ready', () => {
+    const refining = workbench({ lens: true, streakDone: true, selectedId: 'calcite' });
+    const refiningTool = /data-wb-action-tool="([^"]+)"/.exec(refining)?.[1];
+    expect(refiningTool).toBeTruthy();
+    expect(refiningTool).not.toBe('claim');
+    expect(refining).toContain('Next scientific move · Strengthen your claim');
+    expect(refining).toContain('data-wb-step="claim" data-wb-step-state="current"');
+
+    const ready = workbench({
+      lens: true,
+      streakDone: true,
+      fizz: 'fizz',
+      selectedId: 'calcite',
+    });
+    expect(ready).toContain('data-wb-action-tool="claim"');
+    expect(ready).toContain('Next scientific move · Make a claim');
   });
 
   it('does not turn provisional narrowing into strong support', () => {
@@ -879,6 +1107,28 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(complete).toContain('data-wb-cer-ready="true"');
   });
 
+  it('clears confidence but preserves the working CER draft when new evidence starts', () => {
+    const run = workbenchTree({
+      lens: true,
+      streakDone: true,
+      selectedId: 'calcite',
+      claimEvidence: ['luster', 'streak'],
+      claimReasoning: 'both',
+      claimConfidence: 'very',
+      toolsExpanded: true,
+    });
+    const balance = findAll(run.node, (n) =>
+      n.type === 'button' && n.props['data-wb-tool'] === 'balance')[0];
+    expect(balance, 'available new measurement').toBeTruthy();
+    balance.props.onClick();
+    expect(run.store.rocks.wb.anim).toBe('density');
+    expect(run.store.rocks.wb.selectedId).toBe('calcite');
+    expect(run.store.rocks.wb.claimEvidence).toEqual(['luster', 'streak']);
+    expect(run.store.rocks.wb.claimReasoning).toBe('both');
+    expect(run.store.rocks.wb.claimConfidence).toBeNull();
+    expect(workbench(run.store.rocks.wb)).toContain('data-wb-confidence="not-recorded"');
+  });
+
   it('clears candidate-dependent CER choices when the working claim changes', () => {
     const state = {
       lens: true, scratch: { penny: 'scratched' }, selectedId: 'calcite',
@@ -930,6 +1180,26 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('The unknown matches stem.rocks.calcite on luster and acid reaction');
   });
 
+  it('labels CER evidence by whether it is shared with or can refine a look-alike', () => {
+    const shared = workbench({
+      lens: true,
+      streakDone: true,
+      selectedId: 'calcite',
+    });
+    expect(shared).toContain('data-wb-cer-evidence="luster" data-wb-cer-evidence-state="available" data-wb-cer-context="shared"');
+    expect(shared).toContain('data-wb-cer-evidence="streak" data-wb-cer-evidence-state="available" data-wb-cer-context="shared"');
+    expect(shared).toContain('Shared with look-alike');
+
+    const refine = workbench({
+      lens: true,
+      streakDone: true,
+      scratch: { steel_nail: 'scratched' },
+      selectedId: 'calcite',
+    });
+    expect(refine).toContain('data-wb-cer-evidence="hardness" data-wb-cer-evidence-state="available" data-wb-cer-context="refine"');
+    expect(refine).toContain('Refine vs look-alike');
+  });
+
   it('maps every measured property from the unknown to the selected candidate', () => {
     const markup = workbench({
       lens: true,
@@ -939,6 +1209,8 @@ describe('evidence-first Mineral Workbench learning flow', () => {
       selectedId: 'calcite',
     });
     expect(markup).toContain('data-wb-match-map="claim"');
+    expect(markup).toContain('data-wb-match-map-state="collapsed-by-default"');
+    expect(markup).toContain('Review all measured matches');
     expect(markup).toContain('data-wb-match-property="luster"');
     expect(markup).toContain('data-wb-match-property="streak"');
     expect(markup).toContain('data-wb-match-property="hardness"');
@@ -948,15 +1220,14 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect((markup.match(/Matches evidence/g) || []).length).toBe(4);
   });
 
-  it('uses the same density category in filtering and the evidence match map', () => {
-    // Calcite (2.71) and halite (2.17) differ by more than the retired ±0.25
-    // rule, but both are in the modeled below-3.0 density outcome. If halite
-    // remains selectable, its density row must not contradict the filter.
-    const markup = workbench({ spId: 'calcite', lens: true, density: true, selectedId: 'halite' });
+  it('uses the same half-unit density band in filtering and the evidence match map', () => {
+    // Calcite (2.71) and quartz (2.65) share the modeled 2.5–<3.0 g/cm³
+    // balance band, so a selectable quartz card must also show a density match.
+    const markup = workbench({ spId: 'calcite', lens: true, density: true, selectedId: 'quartz' });
     expect(markup).toContain('data-wb-comparison-dock="selected"');
     expect(markup).toContain('data-wb-match-property="density" data-wb-match-state="match"');
-    expect(markup).toContain('2.71 g/cm³ — Light: below 3.0 g/cm³');
-    expect(markup).toContain('2.17 g/cm³ — Light: below 3.0 g/cm³');
+    expect(markup).toContain('2.71 g/cm³ — 2.5–&lt;3.0 g/cm³ measurement band');
+    expect(markup).toContain('2.65 g/cm³ — 2.5–&lt;3.0 g/cm³ measurement band');
     expect(markup).not.toContain('data-wb-match-property="density" data-wb-match-state="conflict"');
   });
 
@@ -975,6 +1246,8 @@ describe('evidence-first Mineral Workbench learning flow', () => {
     expect(markup).toContain('Strongest discriminator');
     expect(markup).toContain('observations across 3 property types');
     expect(markup).toContain('data-wb-match-map="debrief"');
+    expect(markup).toContain('Evidence match map');
+    expect(markup).not.toContain('data-wb-match-map-state="collapsed-by-default"');
     expect(markup).toContain('data-wb-confidence-calibration="very"');
     expect(markup).toContain('Very confident. Evidence level: Strong evidence support.');
     expect(markup).toContain('Surface color alone is not enough');

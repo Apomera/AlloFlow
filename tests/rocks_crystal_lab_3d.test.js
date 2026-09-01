@@ -151,7 +151,7 @@ describe('crystal lab — honesty about what is drawn', () => {
   it('draws the real structure wherever one is simple and well known', () => {
     // These four moved off the generic unit cell once their real arrangements
     // turned out to be both drawable and diagnostic.
-    ['sulfur', 'olivine', 'corundum', 'hematite', 'feldspar', 'magnetite', 'garnet', 'topaz'].forEach((id) => {
+    ['sulfur', 'olivine', 'corundum', 'hematite', 'feldspar', 'garnet', 'topaz'].forEach((id) => {
       const m = render(id);
       expect(m, id).toContain('how the atoms are actually stacked');
       expect(m, id).not.toContain('Model limit');
@@ -172,15 +172,19 @@ describe('crystal lab — honesty about what is drawn', () => {
     expect(render('hematite')).toContain('Mohs 6');
   });
 
-  it('shows magnetite as two iron sites, which is why it is magnetic', () => {
-    // The whole reason magnetite is the one common magnetic mineral is that its
-    // iron occupies two different site types whose magnetic moments do not
-    // cancel. Drawing them as one generic "iron" would lose the explanation.
+  it('shows magnetite as an honestly simplified inverse-spinel occupancy model', () => {
+    // Magnetite is not Fe3+ on A and Fe2+ on B. Fe3+ also occupies half the B
+    // sites, and room-temperature B-site charge is not a static checkerboard.
     const m = render('magnetite');
-    expect(m).toContain('Iron Fe³⁺ (tetrahedral site)');
-    expect(m).toContain('Iron Fe²⁺ (octahedral site)');
+    expect(m).toContain('A simplified teaching model');
+    expect(m).toContain('Iron Fe³⁺ (tetrahedral A site)');
+    expect(m).toContain('Iron Fe³⁺ (octahedral B site)');
+    expect(m).toContain('Iron Fe²⁺ (octahedral B site)');
+    expect(m).toContain('inverse spinel');
+    expect(m).toContain('twice as many octahedral B sites');
     expect(m).toContain('OPPOSITE directions');
-    expect(m).toContain('do not cancel');
+    expect(m).toContain('Fe³⁺ contributions largely cancel');
+    expect(m).toContain('not fixed room-temperature charge positions');
     expect(m).toContain('lodestone');
   });
 
@@ -198,8 +202,9 @@ describe('crystal lab — honesty about what is drawn', () => {
     const KNOWN_LABELS = {
       Na: 'Sodium', Cl: 'Chloride', Pb: 'Lead', S: 'Sulfur', Ca: 'Calcium',
       F: 'Fluoride', C: 'Carbon', O: 'Oxygen', Si: 'Silicon', Fe: 'Iron',
-      Mg: 'Magnesium', Al: 'Aluminium', K: 'Potassium', Fe3: 'tetrahedral',
-      Fe2: 'octahedral',
+      Mg: 'Magnesium', Al: 'Aluminium', K: 'Potassium',
+      Fe3A: 'tetrahedral A site', Fe3B: 'Fe³⁺ (octahedral B site)',
+      Fe2B: 'Fe²⁺ (octahedral B site)',
     };
 
     latticeIds.forEach((id) => {
@@ -213,7 +218,9 @@ describe('crystal lab — honesty about what is drawn', () => {
     expect(render('olivine')).toContain(KNOWN_LABELS.O);
     expect(render('feldspar')).toContain(KNOWN_LABELS.Al);
     expect(render('feldspar')).toContain(KNOWN_LABELS.O);
-    expect(render('magnetite')).toContain(KNOWN_LABELS.Fe2);
+    expect(render('magnetite')).toContain(KNOWN_LABELS.Fe3A);
+    expect(render('magnetite')).toContain(KNOWN_LABELS.Fe3B);
+    expect(render('magnetite')).toContain(KNOWN_LABELS.Fe2B);
   }, 20000);
 
   it('sends the hardness result to the structure that explains it', () => {
@@ -443,6 +450,13 @@ describe('crystal lab structures', () => {
   /** Bonds the scene would draw, applying the same rules the builder applies. */
   function bondsOf(spec) {
     const atoms = fn('rkLatticeAtoms')(spec.kind, spec.a, spec.b, spec.c);
+    if (spec.kind === 'spinel') {
+      return {
+        atoms,
+        bonds: fn('rkSpinelBondPairs')(atoms)
+          .map(([i, j]) => [i, j, atoms[i].sp, atoms[j].sp]),
+      };
+    }
     const cut = cutoffFor(spec.kind);
     const homo = HOMO[spec.kind] || [];
     const pairLimit = spec.kind === 'carbonate'
@@ -487,12 +501,44 @@ describe('crystal lab structures', () => {
     // each other: calcite came out with 109 O-O bonds, 24 Ca-Ca and 12 C-C,
     // and the silicate sheets were laced with Si-Si and Al-Al.
     specs().forEach((spec) => {
-      const { bonds } = bondsOf(spec);
+      const { atoms, bonds } = bondsOf(spec);
       const homo = HOMO[spec.kind] || [];
-      bonds.forEach(([, , p, q]) => {
-        if (p !== q) return;
-        expect(homo, `${spec.id}: drew a ${p}-${q} bond, which does not exist`).toContain(p);
+      bonds.forEach(([i, j, p, q]) => {
+        const pElement = atoms[i].element || p;
+        const qElement = atoms[j].element || q;
+        if (pElement !== qElement) return;
+        expect(homo, spec.id + ': drew a ' + pElement + '-' + qElement + ' bond, which does not exist').toContain(pElement);
       });
+    });
+  });
+
+  it('preserves magnetite inverse-spinel counts and site coordination', () => {
+    const magnetite = specs().find((s) => s.id === 'magnetite');
+    const { atoms, bonds } = bondsOf(magnetite);
+    const oxygen = atoms.filter((a) => a.element === 'O');
+    const iron = atoms.filter((a) => a.element === 'Fe');
+    const aSites = iron.filter((a) => a.site === 'A');
+    const bSites = iron.filter((a) => a.site === 'B');
+    const bFe2 = bSites.filter((a) => a.oxidation === 2);
+    const bFe3 = bSites.filter((a) => a.oxidation === 3);
+
+    expect(magnetite.exact, 'schematic coordinates must not be presented as a crystallographic cell').toBe(false);
+    expect(oxygen).toHaveLength(16);
+    expect(iron).toHaveLength(12);
+    expect(iron.length / oxygen.length, 'Fe:O reduces to 3:4').toBe(3 / 4);
+    expect(aSites).toHaveLength(4);
+    expect(bSites).toHaveLength(8);
+    expect(bSites.length / aSites.length, 'B:A site occupancy').toBe(2);
+    expect(bFe2).toHaveLength(4);
+    expect(bFe3).toHaveLength(4);
+
+    iron.forEach((atom) => {
+      const i = atoms.indexOf(atom);
+      const degree = bonds.filter(([left, right]) => left === i || right === i).length;
+      expect(degree, atom.sp + ' at ' + atom.site + ' site').toBe(atom.site === 'A' ? 4 : 6);
+    });
+    bonds.forEach(([i, j]) => {
+      expect([atoms[i].element, atoms[j].element].sort()).toEqual(['Fe', 'O']);
     });
   });
 
@@ -589,6 +635,7 @@ describe('crystal lab structures', () => {
       expect(atoms.some((a) => a.sp === 'O' || a.sp === 'Si'), `${sp.id} sheet`).toBe(true);
       expect(sp.exact, `${sp.id} is drawn as a layer model, so it must not claim to be exact`).toBe(false);
     });
+    expect(specs().find((sp) => sp.id === 'magnetite').exact).toBe(false);
     // ...and the ones that ARE the real packing still say so.
     const byId = Object.fromEntries(specs().map((x) => [x.id, x]));
     ['halite', 'diamond', 'quartz', 'fluorite'].forEach((id) => expect(byId[id].exact).toBe(true));
@@ -629,6 +676,8 @@ describe('crystal lab — the tests cannot drift from the builder', () => {
     expect(s).toContain("var RK_HOMOATOMIC = { diamond: { C: 1 }, rings: { S: 1 }, pyrite: { S: 1 } };");
     expect(s).toContain("if (p === 'C' || q === 'C') return (p === 'O' || q === 'O') ? 0.60 : 0;");
     expect(s).toContain("pairLimit = function (p, q) { return (p === 'S' && q === 'S') ? 0.70 : 1.15; };");
+    expect(s).toContain("rkSpinelBondPairs(atoms).forEach(function (pair)");
+    expect(s).toContain("if (explicitSpinelBonds && !explicitSpinelBond) continue;");
     expect(s).toContain("&& atoms[i].sp === atoms[j].sp && !homoOk[atoms[i].sp]) continue;");
     expect(s).toContain("var limit = pairLimit ? pairLimit(atoms[i].sp, atoms[j].sp) : bondLen;");
   });

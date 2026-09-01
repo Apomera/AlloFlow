@@ -721,6 +721,7 @@
     var question = stQuestion[0], setQuestion = stQuestion[1];
     var stNotice = React.useState('');
     var notice = stNotice[0], setNotice = stNotice[1];
+    var firstConfidenceRef = React.useRef(null);
     var key = props.routeKey;
     var headingId = 'nk-reflection-heading-' + key;
     var helpId = 'nk-reflection-help-' + key;
@@ -759,6 +760,11 @@
       });
     }
     function clearReflection() {
+      // The Clear button disappears after this update. Hand focus to a control
+      // that remains in the form so keyboard users are not dropped on <body>.
+      if (firstConfidenceRef.current && firstConfidenceRef.current.focus) {
+        firstConfidenceRef.current.focus();
+      }
       setConfidence('');
       setIdea('');
       setQuestion('');
@@ -783,7 +789,9 @@
         id: headingId,
         className: 'text-xs font-black',
         style: { color: dark ? '#22d3ee' : '#0e7490' }
-      }, props.routeQuestion ? 'Finish your route' : 'Capture what you learned'),
+      }, props.routeQuestion
+        ? (props.routeComplete ? 'Finish your route' : 'Reflect on the evidence so far')
+        : 'Capture what you learned'),
       props.routeQuestion
         ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: bodyInk } },
             props.routeIcon + ' ' + props.routeQuestion)
@@ -792,7 +800,11 @@
         id: helpId,
         className: 'text-[11px] mt-1 leading-relaxed',
         style: { color: quietInk }
-      }, 'Optional. There is no right answer and no score. Your note stays with your lab progress.'),
+      }, 'Optional. There is no right answer and no score. Your note stays with your lab progress.'
+        + (props.routeQuestion && !props.routeComplete && props.routeStepsRemaining
+          ? ' You still have ' + props.routeStepsRemaining + ' route step'
+            + (props.routeStepsRemaining === 1 ? '' : 's') + ' to open.'
+          : '')),
       h('form', { className: 'mt-2', onSubmit: submit },
         h('fieldset', { 'aria-describedby': helpId },
           h('legend', { className: 'text-[11px] font-black mb-1', style: { color: bodyInk } },
@@ -816,6 +828,7 @@
                     }
               },
                 h('input', {
+                  ref: option.id === 'building' ? firstConfidenceRef : undefined,
                   type: 'radio',
                   name: 'nk-reflection-confidence-' + key,
                   value: option.id,
@@ -1359,13 +1372,35 @@
       var protectRef = React.useRef(null);
       var shelterRef = React.useRef(null);
       var bioRef = React.useRef(null);
+      var countTakeButtonRef = React.useRef(null);
+      var nkRootRef = React.useRef(null);
+      var nkSearchStatusRef = React.useRef(null);
       // Route buttons swap whole sections in one React commit. Remember the
       // requested destination so focus moves only after that section exists.
       var nkPendingTargetRef = React.useRef(null);
+      // Scroll-spy location is intentionally kept out of React state so reading
+      // a long page does not rerender every section. Keeping the last location
+      // in a ref still lets unrelated renders preserve the collapsed summary.
+      var nkCurrentLocationRef = React.useRef(null);
       // Advancing the evidence challenge removes its Next button. Remember
       // that transition so focus can move into the newly rendered claim rather
       // than falling back to the document body.
       var nkEvidencePendingFocusRef = React.useRef(false);
+      var nkShieldSpeechReadyRef = React.useRef(false);
+      var nkDoseSpeechReadyRef = React.useRef(false);
+      var stNkSystemReducedMotion = React.useState(function () {
+        return !!(typeof window !== 'undefined' && window.matchMedia
+          && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      });
+      var nkSystemReducedMotion = stNkSystemReducedMotion[0];
+      var setNkSystemReducedMotion = stNkSystemReducedMotion[1];
+      var stNkAutoOpen = React.useState(function () {
+        if (typeof window === 'undefined') return true;
+        return !((window.innerWidth > 0 && window.innerWidth < 768)
+          || (window.innerWidth >= 900 && window.innerHeight > 0 && window.innerHeight <= 768));
+      });
+      var nkAutoOpen = stNkAutoOpen[0];
+      var setNkAutoOpen = stNkAutoOpen[1];
       var stGuess = React.useState('');
       var ageGuess = stGuess[0], setAgeGuess = stGuess[1];
       var stShown = React.useState(false);
@@ -1375,8 +1410,35 @@
       // box, which turns a result into a hint.
       var stShownGuess = React.useState(null);
       var shownGuess = stShownGuess[0], setShownGuess = stShownGuess[1];
+      var stNkShieldSpeech = React.useState('');
+      var nkShieldSpeech = stNkShieldSpeech[0], setNkShieldSpeech = stNkShieldSpeech[1];
+      var stNkDoseSpeech = React.useState('');
+      var nkDoseSpeech = stNkDoseSpeech[0], setNkDoseSpeech = stNkDoseSpeech[1];
 
       var d = (ctx.toolData && ctx.toolData._nuclearLab) || {};
+      // Reading preferences are needed by both the DOM and the 3D viewer.
+      // Resolve them before effects are declared so the viewer dependency list
+      // receives the actual value rather than a hoisted, still-undefined var.
+      var nkLargeText = !!d.nkLargeText;
+      var nkShowChartData = !!d.nkShowChartData;
+      // The learner may request LESS motion, never more than the operating
+      // system allows. Keep the system query live so changing it while the lab
+      // is open immediately resynchronises the canvas and 3D core.
+      var nkUserReducedMotion = d.nkReduceMotion === true;
+      var nkReduceMotion = nkSystemReducedMotion || nkUserReducedMotion;
+      React.useEffect(function () {
+        if (typeof window === 'undefined' || !window.matchMedia) return;
+        var query = window.matchMedia('(prefers-reduced-motion: reduce)');
+        var updateSystemMotion = function (event) {
+          setNkSystemReducedMotion(!!event.matches);
+        };
+        if (query.addEventListener) query.addEventListener('change', updateSystemMotion);
+        else if (query.addListener) query.addListener(updateSystemMotion);
+        return function () {
+          if (query.removeEventListener) query.removeEventListener('change', updateSystemMotion);
+          else if (query.removeListener) query.removeListener(updateSystemMotion);
+        };
+      }, []);
       function upd(patch) {
         setToolData(function (prev) {
           var cur = Object.assign({}, (prev && prev._nuclearLab) || {}, patch);
@@ -1384,6 +1446,11 @@
           next._nuclearLab = cur;
           return next;
         });
+      }
+      function nkCelebrate() {
+        // Host celebrations may render outside this component, so CSS alone
+        // cannot honour the learner's or operating system's motion preference.
+        if (!nkReduceMotion && typeof celebrate === 'function') celebrate();
       }
       function pushOnce(key, value) {
         var list = d[key] || [];
@@ -1405,6 +1472,11 @@
         : EVIDENCE_CLAIMS[evidenceSavedIndex].id;
       var evidenceChoices = d.evidenceChoices && typeof d.evidenceChoices === 'object' ? d.evidenceChoices : {};
       var evidenceCheckedMap = d.evidenceChecked && typeof d.evidenceChecked === 'object' ? d.evidenceChecked : {};
+      var evidenceRevealedMap = d.evidenceRevealed
+        && typeof d.evidenceRevealed === 'object'
+        && !Array.isArray(d.evidenceRevealed)
+          ? d.evidenceRevealed
+          : {};
       var evidenceMastered = Array.isArray(d.evidenceMastered)
         ? d.evidenceMastered.filter(function (id, i, all) {
             return all.indexOf(id) === i && EVIDENCE_CLAIMS.some(function (claim) { return claim.id === id; });
@@ -1470,6 +1542,20 @@
       var neutronThrough = Math.exp(-shield.sigR * thick) * 100;
       var neutronCollisions = nkCollisionsToThermal(shield.modA);
       var neutronHydrogenous = shield.modA <= 1;
+      var nkShieldThrough = radId === 'alpha' ? (alphaStopped ? 0 : 100)
+        : (radId === 'beta' ? (betaStopped ? 0 : 100)
+          : (radId === 'neutron' ? neutronThrough : gammaThrough));
+      var nkShieldSpeechText = nkFmt(nkShieldThrough, nkShieldThrough < 1 ? 3 : 1)
+        + '% of the ' + rad.name.toLowerCase() + ' gets through '
+        + nkFmt(thick, 1) + ' cm of ' + shield.name.toLowerCase();
+      React.useEffect(function () {
+        if (!nkShieldSpeechReadyRef.current) {
+          nkShieldSpeechReadyRef.current = true;
+          return;
+        }
+        var timer = setTimeout(function () { setNkShieldSpeech(nkShieldSpeechText); }, 450);
+        return function () { clearTimeout(timer); };
+      }, [radId, shieldId, thick]);
 
       // ── 4. chain reaction ──
       // Start SHUT DOWN, not critical. This defaulted to 50% inserted, which is
@@ -1527,7 +1613,7 @@
         if (ok && net > 0 && sig / net <= 0.05) {
           patch.countPrecise = true;
           if (!d.countPrecise) {
-            if (typeof celebrate === 'function') celebrate();
+            nkCelebrate();
             if (typeof awardXP === 'function') awardXP('nuclear_count', 10, 'Measured a source to better than 5%');
           }
         }
@@ -2134,6 +2220,8 @@
       var rxCanvasRef = React.useRef(null);
       var rxTelemetryRef = React.useRef(null);
       var rxObjectiveRef = React.useRef(null);
+      var rxStartButtonRef = React.useRef(null);
+      var rxRetryFocusRef = React.useRef(false);
       var rxAnim = React.useRef(0);
       var rxWakeRef = React.useRef(function () {});
       var rxInitialScenario = d.rxScenario || 'steady';
@@ -2142,8 +2230,18 @@
         pumps: rxInitialScenario !== 'blackout', scrammed: false
       });
       var rxUi = stRx[0], setRxUi = stRx[1];
+      var stRxSnapshot = React.useState('');
+      var rxStatusSnapshot = stRxSnapshot[0], setRxStatusSnapshot = stRxSnapshot[1];
       var rxUiRef = React.useRef(rxUi);
       rxUiRef.current = rxUi;
+      React.useEffect(function () {
+        if (!rxRetryFocusRef.current || rxUi.verdict) return;
+        rxRetryFocusRef.current = false;
+        var target = rxStartButtonRef.current;
+        if (!target) return;
+        try { target.focus({ preventScroll: true }); }
+        catch (e) { try { target.focus(); } catch (e2) {} }
+      }, [rxUi.verdict]);
 
       function rxPatchUi(patch) {
         setRxUi(function (prev) {
@@ -2190,7 +2288,67 @@
         return { total: rhoRods + rhoT + rhoVoid + rhoXe, rods: rhoRods, temp: rhoT, voidR: rhoVoid, xe: rhoXe, voidFrac: voidFrac };
       }
 
-      function rxWriteTelemetry(s, r, running) {
+      function rxMetricTone(metric, s, r, running, scen) {
+        var rhoPcm = r.total * 1e5;
+        var scenarioId = scen && scen.id ? scen.id : (scen || 'steady');
+        if (metric === 'power') {
+          if (s.power > 150) return { tone: 'danger', label: 'Power excursion' };
+          if (s.power > 110) return { tone: 'caution', label: 'High power' };
+          if (scenarioId === 'xenon' && s.phase <= 1) {
+            if (s.power <= 20) return { tone: 'success', label: 'Low-power goal' };
+            return { tone: running ? 'info' : 'neutral', label: running ? 'Lowering power' : 'Ready' };
+          }
+          if (scenarioId === 'xenon' && s.phase >= 2) {
+            if (s.power > 80) return { tone: 'success', label: 'Recovery goal' };
+            return { tone: running ? 'info' : 'neutral', label: running ? 'Recovering power' : 'Ready' };
+          }
+          if (scenarioId === 'blackout') {
+            if (s.scrammed) return { tone: 'info', label: 'Decay heat' };
+            return { tone: running ? 'caution' : 'neutral', label: running ? 'SCRAM needed' : 'Ready' };
+          }
+          if (running && s.power >= 95 && s.power <= 105) return { tone: 'success', label: 'Target band' };
+          if (running && s.power < 95) return { tone: 'info', label: 'Below band' };
+          return { tone: 'neutral', label: running ? 'Adjusting' : 'Ready' };
+        }
+        if (metric === 'temperature') {
+          if (s.t >= RX_T_CLAD) return { tone: 'danger', label: 'Cladding risk' };
+          if (s.t > 400) return { tone: 'caution', label: 'Running hot' };
+          return { tone: running ? 'success' : 'neutral', label: 'Below 400 °C' };
+        }
+        if (metric === 'reactivity') {
+          if (rhoPcm >= 650 && !s.scrammed) return { tone: 'danger', label: 'Prompt critical' };
+          if (s.scrammed) return { tone: 'info', label: 'Shutdown' };
+          if (Math.abs(rhoPcm) <= 20) return { tone: 'success', label: 'Balanced' };
+          return { tone: 'caution', label: rhoPcm > 0 ? 'Power rising' : 'Power falling' };
+        }
+        if (metric === 'xenon') {
+          if (s.xe > 1.6) return { tone: 'caution', label: 'Elevated' };
+          if (s.xe < 0.8) return { tone: 'info', label: 'Low' };
+          return { tone: running ? 'success' : 'neutral', label: 'Normal' };
+        }
+        if (s.verdict) return s.verdict.ok
+          ? { tone: 'success', label: 'Complete' }
+          : { tone: 'danger', label: 'Ended' };
+        if (s.scrammed) return { tone: 'info', label: 'Scrammed' };
+        if (running && (s.t >= RX_T_CLAD || s.power > 150 || rhoPcm >= 650)) return { tone: 'danger', label: 'Hazard' };
+        if (running && (!s.pumps || s.t > 400 || s.power > 110)) return { tone: 'caution', label: 'Needs action' };
+        if (running) return { tone: 'info', label: 'Running' };
+        return { tone: 'neutral', label: 'Paused' };
+      }
+
+      function rxObjectiveTone(s, progress, running) {
+        if (s.verdict) return s.verdict.ok
+          ? { tone: 'success', label: 'Complete' }
+          : { tone: 'danger', label: 'Run ended' };
+        if (!running) return { tone: 'neutral', label: 'Ready to begin' };
+        if (s.t >= RX_T_CLAD) return { tone: 'danger', label: 'Act now' };
+        if (!s.pumps || s.power > 110) return { tone: 'caution', label: 'Watch conditions' };
+        if (s.scrammed) return { tone: 'info', label: 'Decay heat' };
+        if (progress.value >= progress.max) return { tone: 'success', label: 'Target reached' };
+        return { tone: 'info', label: 'In progress' };
+      }
+
+      function rxWriteTelemetry(s, r, running, scen) {
         var root = rxTelemetryRef.current;
         if (!root) return;
         function put(id, value) {
@@ -2205,9 +2363,21 @@
         put('rx-live-state', s.verdict
           ? (s.verdict.ok ? 'Scenario complete' : 'Run ended')
           : (s.scrammed ? 'Scrammed — decay heat only' : (running ? 'Running' : 'Paused')));
+        [
+          ['rx-live-power', 'power'],
+          ['rx-live-temperature', 'temperature'],
+          ['rx-live-reactivity', 'reactivity'],
+          ['rx-live-xenon', 'xenon'],
+          ['rx-live-state', 'state']
+        ].forEach(function (item) {
+          var card = root.querySelector('[data-rx-metric="' + item[0] + '"]');
+          var tone = rxMetricTone(item[1], s, r, running, scen);
+          if (card) card.dataset.tone = tone.tone;
+          put(item[0] + '-tone', tone.label);
+        });
       }
 
-      function rxWriteObjective(s, scen) {
+      function rxWriteObjective(s, scen, running) {
         var root = rxObjectiveRef.current;
         if (!root) return;
         var progress = rxScenarioProgress(s, scen);
@@ -2217,6 +2387,9 @@
         }
         put('rx-objective-step', progress.label);
         put('rx-objective-detail', progress.detail);
+        var tone = rxObjectiveTone(s, progress, running);
+        root.dataset.tone = tone.tone;
+        put('rx-objective-tone', tone.label);
         var meter = root.querySelector('#rx-objective-meter');
         if (meter) {
           meter.max = progress.max;
@@ -2224,7 +2397,8 @@
           meter.setAttribute('aria-valuetext', progress.detail);
         }
         var previousStage = root.dataset.stage || '';
-        if (previousStage && previousStage !== progress.stage &&
+        if (previousStage && previousStage !== progress.stage && !s.verdict &&
+            !(s.scrammed && previousStage === 'blackout-scram') &&
             typeof announceToSR === 'function') {
           announceToSR(progress.label + '. ' + progress.detail);
         }
@@ -2457,8 +2631,8 @@
             if (!advancing || !s.lastSync || ts - s.lastSync > 400) {
               s.lastSync = ts;
               var runningNow = el.dataset.running === 'on' && !s.verdict;
-              rxWriteTelemetry(s, r, runningNow);
-              rxWriteObjective(s, scen);
+              rxWriteTelemetry(s, r, runningNow, scen);
+              rxWriteObjective(s, scen, runningNow);
               var ui = rxUiRef.current;
               if (rodStep !== ui.rodStep || hotStep !== ui.hotStep || (!!s.verdict) !== (!!ui.verdict) ||
                   s.pumps !== ui.pumps || s.scrammed !== ui.scrammed || runningNow !== ui.running) {
@@ -2475,12 +2649,17 @@
         }
         var ro = typeof ResizeObserver === 'function' ? new ResizeObserver(size) : null;
         if (ro) ro.observe(el);
+        // Watch the whole simulator section, not just the canvas. The controls
+        // sit below the dashboard; after the accessible grouping grew taller,
+        // a learner could scroll to Start or the rods while the canvas itself
+        // was just beyond the margin, which parked the model they were using.
+        var visibilityTarget = el.closest('[data-nk-sec="operate"]') || el;
         var io = typeof IntersectionObserver === 'function' ? new IntersectionObserver(function (entries) {
           if (!entries.length) return;
           inView = !!entries[0].isIntersecting;
           if (inView) wake(); else park();
         }, { rootMargin: '200px' }) : null;
-        if (io) io.observe(el);
+        if (io) io.observe(visibilityTarget);
         function onVisibility() {
           pageVisible = !document.hidden;
           if (pageVisible) wake(); else park();
@@ -2510,6 +2689,7 @@
           selected: d.rxPart || null,
           dark: isDark,
           contrast: ctx.theme === 'contrast',
+          reduced: nkReduceMotion,
           sceneProps: { rods: rxUi.rodStep, hot: rxUi.hotStep / 2 },
           sceneKey: rxUi.rodStep + ':' + rxUi.hotStep,
           onPick: function (id) {
@@ -2519,12 +2699,19 @@
           },
           onStatus: function (n) { upd({ rxStatus: n }); }
         });
-      }, [d.rxPart, isDark, ctx.theme, rxUi.rodStep, rxUi.hotStep]);
+        // attach() can finish synchronously when THREE is already available,
+        // before sync() installs onStatus. Replay that current status so a
+        // loading overlay can never remain over an already-ready core.
+        var viewerStatus = typeof RX_VIEWER.status === 'function' ? RX_VIEWER.status() : null;
+        if (/^(loading|ready|failed)$/.test(viewerStatus || '') && viewerStatus !== d.rxStatus) {
+          upd({ rxStatus: viewerStatus });
+        }
+      }, [d.rxPart, d.rxStatus, isDark, ctx.theme, nkReduceMotion, rxUi.rodStep, rxUi.hotStep]);
 
       React.useEffect(function () {
         if (rxUi.verdict && rxUi.verdict.ok && !d.reactorRun) {
           upd({ reactorRun: true });
-          if (typeof celebrate === 'function') celebrate();
+          nkCelebrate();
           if (typeof awardXP === 'function') awardXP('nuclear_operate', 15, 'Completed a reactor scenario');
         }
       }, [rxUi.verdict, d.reactorRun]);
@@ -2553,9 +2740,27 @@
       var rxReadR = rxReactivity(rxRead, rxModeObj);
       var rxReadRhoPcm = rxReadR.total * 1e5;
       var rxObjective = rxScenarioProgress(rxRead, rxScenObj);
+      var rxObjectiveVisualTone = rxObjectiveTone(rxRead, rxObjective, rxUi.running);
+      var rxViewerStatus = typeof RX_VIEWER.status === 'function' ? RX_VIEWER.status() : d.rxStatus;
       var rxReadState = rxUi.verdict
         ? (rxUi.verdict.ok ? 'Scenario complete' : 'Run ended')
         : (rxUi.scrammed ? 'Scrammed — decay heat only' : (rxUi.running ? 'Running' : 'Paused'));
+
+      function rxAnnounceStatus() {
+        var s = rxRef.current;
+        var r = rxReactivity(s, rxModeObj);
+        var rhoPcm = r.total * 1e5;
+        var objective = rxScenarioProgress(s, rxScenObj);
+        var state = s.verdict
+          ? (s.verdict.ok ? 'scenario complete' : 'run ended')
+          : (s.scrammed ? 'scrammed, decay heat only' : (rxUiRef.current.running ? 'running' : 'paused'));
+        var message = 'Reactor status: ' + state + '. Power ' + nkFmt(s.power, s.power < 10 ? 1 : 0)
+          + ' percent. Fuel temperature ' + nkFmt(s.t, 0) + ' degrees Celsius. Net reactivity '
+          + (rhoPcm >= 0 ? 'plus ' : 'minus ') + nkFmt(Math.abs(rhoPcm), 0) + ' pcm. Xenon '
+          + nkFmt(s.xe, 2) + ' times normal. Objective: ' + objective.label + '. ' + objective.detail;
+        setRxStatusSnapshot(message);
+        if (typeof announceToSR === 'function') announceToSR(message);
+      }
 
       // ── binding energy ──
       var beRef = React.useRef(null);
@@ -2618,6 +2823,16 @@
         { name: 'Flying', v: dsFlightDose, colour: '#22d3ee' },
         { name: 'Medical imaging', v: dsMedical, colour: '#fbbf24' }
       ];
+      React.useEffect(function () {
+        if (!nkDoseSpeechReadyRef.current) {
+          nkDoseSpeechReadyRef.current = true;
+          return;
+        }
+        var timer = setTimeout(function () {
+          setNkDoseSpeech('Estimated annual dose: ' + nkFmt(dsTotal, 2) + ' millisieverts.');
+        }, 450);
+        return function () { clearTimeout(timer); };
+      }, [dsTotal]);
 
       // ── low-dose risk: the same exposure under four models ──
       var ldModel = RISK_MODELS.filter(function (m) { return m.id === d.ldModel; })[0] || RISK_MODELS[0];
@@ -2719,18 +2934,21 @@
         // A route was only walkable from the index: read a step, scroll back up,
         // open the drawer, find the next one. Sections on the active route now
         // carry their own step footer, so it can be followed straight through.
-        var footer = nkRouteFooter(id, accent);
         var routeAt = typeof nkPath !== 'undefined' && nkPath ? nkPath.steps.indexOf(id) : -1;
+        // Keep the journey itself visually stable while the section heading
+        // retains the subject colour inside the card.
+        var frameAccent = routeAt >= 0 && nkPath.accent ? nkPath.accent : accent;
+        var footer = nkRouteFooter(id, frameAccent);
         var routeKickerId = routeAt >= 0 ? 'nk-route-step-' + id : undefined;
         var routeKicker = routeAt >= 0 ? h('div', {
           id: routeKickerId,
           'data-nk-route-step': id,
           className: 'nk-route-kicker flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3 pb-2.5',
-          style: { borderBottom: '1px solid ' + accent + '44' }
+          style: { borderBottom: '1px solid ' + frameAccent + '44' }
         },
           h('span', {
             className: 'nk-route-kicker-badge inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide',
-            style: { background: accent + '20', border: '1px solid ' + accent + '66', color: ink(accent) }
+            style: { background: frameAccent + '20', border: '1px solid ' + frameAccent + '66', color: ink(frameAccent) }
           }, nkPath.icon + ' Route step ' + (routeAt + 1) + ' of ' + nkPath.steps.length),
           h('span', {
             className: 'nk-route-kicker-question min-w-0 text-[11px] font-bold',
@@ -2738,7 +2956,7 @@
           }, nkPath.q)
         ) : null;
         var body = routeKicker ? [routeKicker].concat(children) : children;
-        var node = card.apply(null, [accent].concat(footer ? body.concat([footer]) : body));
+        var node = card.apply(null, [frameAccent].concat(footer ? body.concat([footer]) : body));
         return React.cloneElement(node, {
           key: 'nksec-' + id,
           id: 'nksec-' + id,
@@ -2748,7 +2966,7 @@
           // heading. Give the focus destination an explicit accessible name.
           // Short routes can also be useful landmarks; the 22-section full lab
           // uses groups so landmark navigation does not become another long list.
-          role: nkPath ? 'region' : 'group',
+          role: nkPath ? 'region' : undefined,
           'aria-labelledby': hasHeading ? headingId : undefined,
           'aria-describedby': routeKickerId,
           // tabIndex -1 so nkGoTo can move FOCUS here, not just the viewport.
@@ -2759,7 +2977,7 @@
           tabIndex: -1,
           // Keep a visible focus ring. Programmatic focus is still focus, and
           // removing its outline made a successful keyboard jump look broken.
-          style: Object.assign({}, node.props.style, { scrollMarginTop: '188px' })
+          style: Object.assign({}, node.props.style, { scrollMarginTop: '96px' })
         });
       };
       // A real <h4>, not a styled <p>. Seventeen sections had exactly one
@@ -2770,6 +2988,12 @@
       // Tailwind's preflight resets heading size and weight to inherit, so the
       // classes below still decide how it looks and nothing moves visually.
       var heading = function (accent, text) {
+        // Route kickers already provide the meaningful step order. Omit the
+        // separate full-lab ordinal in route mode so one journey never appears
+        // to have two competing sequences.
+        var visibleText = nkPath
+          ? String(text).replace(/^((?:\S+\s+)?)\d+\.\s+/, '$1')
+          : text;
         return h('h4', {
           className: 'nk-section-heading font-black mb-3 pb-2',
           style: {
@@ -2779,18 +3003,59 @@
             letterSpacing: '-0.01em',
             borderBottom: '1px solid ' + accent + '44'
           }
-        }, text);
+        }, visibleText);
       };
-      var pill = function (on, accent, label, onClick, aria, itemKey) {
+      var pill = function (on, accent, label, onClick, aria, itemKey, explored) {
+        var visibleLabel = (explored ? 'Seen: ' : '') + label;
         return h('button', {
-          key: itemKey || label, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': aria || label,
+          key: itemKey || label, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+          'aria-label': visibleLabel + (aria && aria !== label ? '. ' + aria : ''),
+          'data-nk-explored': explored ? 'true' : 'false',
           onClick: onClick,
           className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
           style: on
             ? { background: accent, color: '#0b1020', border: '1px solid ' + accent }
-            : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
-        }, label);
+            : (explored
+              ? { background: accent + '16', color: ink(accent), border: '1px solid ' + accent }
+              : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') })
+        }, explored ? h('span', { 'aria-hidden': 'true' }, 'Seen: ') : null, label);
       };
+      function nkExploredIds(key, validIds) {
+        var raw = Array.isArray(d[key]) ? d[key] : [];
+        return validIds.filter(function (id, i) {
+          return validIds.indexOf(id) === i && raw.indexOf(id) !== -1;
+        });
+      }
+      function nkExplorationProgress(key, validIds, target, label, accent) {
+        var explored = nkExploredIds(key, validIds);
+        var needed = Math.min(target, validIds.length);
+        var value = Math.min(explored.length, needed);
+        var complete = value >= needed;
+        return h('div', {
+          'data-nk-exploration-progress': key,
+          className: 'nk-exploration-progress flex flex-wrap items-center gap-2 mb-2 rounded-lg border px-2.5 py-1.5',
+          style: {
+            borderColor: complete ? 'rgba(52,211,153,0.55)' : accent + '55',
+            background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(248,250,252,0.94)'
+          }
+        },
+          h('span', {
+            className: 'text-[10px] font-black',
+            style: { color: ink(complete ? '#34d399' : accent) }
+          }, value === 0 ? 'Try another option' : (complete ? 'Comparison goal reached' : 'Keep comparing')),
+          h('progress', {
+            value: value,
+            max: needed,
+            'aria-label': value + ' of ' + needed + ' ' + label + ' deliberately compared',
+            className: 'flex-1 min-w-[7rem] h-2',
+            style: { accentColor: complete ? '#059669' : accent }
+          }),
+          h('span', {
+            className: 'text-[10px] font-bold',
+            style: { color: isDark ? '#cbd5e1' : '#475569' }
+          }, value + ' of ' + needed + ' ' + label + ' deliberately compared')
+        );
+      }
       var slider = function (id, label, min, max, stepv, value, onChange, suffix) {
         var valueText = suffix == null ? String(value) : String(suffix);
         return h('div', { className: 'nk-slider flex items-center gap-2 mt-1.5' },
@@ -2815,22 +3080,24 @@
       // aria-expanded and the body is an ordinary sibling immediately after it,
       // so browse-mode reading order walks straight into it.
       var expandRow = function (key, on, accent, title, sub, body, onClick, aria) {
+        var disclosureId = 'nk-expand-' + String(key).replace(/[^a-zA-Z0-9_-]/g, '-');
         return h('div', {
           key: key, className: 'rounded-lg border transition-colors',
           style: on ? { background: accent + '1f', borderColor: accent }
             : { background: isDark ? 'rgba(148,163,184,0.07)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.22)' : 'rgba(100,116,139,0.2)' }
         },
           h('button', {
-            type: 'button', 'aria-expanded': on ? 'true' : 'false', 'aria-label': aria,
+            type: 'button', 'aria-expanded': on ? 'true' : 'false',
+            'aria-controls': on ? disclosureId : undefined,
             onClick: onClick,
-            className: 'w-full text-left px-2.5 py-2 rounded-lg'
+            className: 'min-h-11 w-full text-left px-2.5 py-2 rounded-lg'
           },
             h('span', { className: 'flex items-center gap-2' },
               h('span', { className: 'flex-1' },
                 h('span', { className: 'block text-[11px] font-bold', style: { color: isDark ? '#fff' : '#1e293b' } }, title),
                 sub ? h('span', { className: 'block text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } }, sub) : null),
               h('span', { className: 'text-[11px] font-bold', 'aria-hidden': 'true', style: { color: ink(accent) } }, on ? '▾' : '›'))),
-          on ? h('div', { className: 'px-2.5 pb-2 -mt-0.5' }, body) : null);
+          on ? h('div', { id: disclosureId, className: 'px-2.5 pb-2 -mt-0.5' }, body) : null);
       };
       // ── Think first, then check ────────────────────────────────────────
       // Five sections ended on a "🤔" question and then stopped. They are good
@@ -2847,6 +3114,7 @@
       // the accessible name and swallow the prose it wraps.
       var ponder = function (id, accent, question, answer) {
         var open = !!(d.ponderOpen || {})[id];
+        var answerId = 'nk-ponder-answer-' + id;
         return h('div', {
           key: 'ponder-' + id, className: 'mt-2 rounded-lg border p-2.5',
           style: { borderColor: accent + '55', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(255,255,255,0.75)' }
@@ -2855,6 +3123,7 @@
           h('button', {
             type: 'button',
             'aria-expanded': open ? 'true' : 'false',
+            'aria-controls': open ? answerId : undefined,
             onClick: function () {
               var map = Object.assign({}, d.ponderOpen || {});
               map[id] = !open;
@@ -2869,7 +3138,7 @@
               border: '1px solid ' + accent
             }
           }, open ? 'Hide the answer' : 'Worked it out? Check'),
-          open ? h('p', { className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, answer) : null);
+          open ? h('p', { id: answerId, className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, answer) : null);
       };
       var para = function (txt, colour) {
         return h('span', { className: 'block text-[11px] leading-relaxed mt-1', style: { color: ink(colour) || (isDark ? '#e2e8f0' : '#334155') } }, txt);
@@ -2944,28 +3213,26 @@
       // one, ignore them all, or search as before. Every route closes with the
       // same evidence challenge so reading ends in an active judgement.
       var NK_PATHS = [
-        { id: 'safe', q: 'Is nuclear power safe?', icon: '⚖️',
+        { id: 'safe', q: 'Is nuclear power safe?', icon: '⚖️', accent: '#fbbf24',
           why: 'Start with the comparison, then the three accidents that shape how people feel about it, then why their death tolls are quoted so differently, then the two problems that are genuinely unsolved.',
           steps: ['compare', 'accidents', 'lowdose', 'shelter', 'waste', 'reactors', 'evidence'] },
-        { id: 'me', q: 'Does this dose matter to me?', icon: '🧍',
+        { id: 'me', q: 'Does this dose matter to me?', icon: '🧍', accent: '#e879f9',
           why: 'What a sievert actually is, what happens once something is inside you, your own yearly total, where it all sits on a scale, and what a small number on that scale does and does not mean.',
           steps: ['weighting', 'biohalf', 'mydose', 'doseladder', 'lowdose', 'evidence'] },
-        { id: 'safety', q: 'How would I protect myself?', icon: '🛡️',
+        { id: 'safety', q: 'How would I protect myself?', icon: '🛡️', accent: '#38bdf8',
           why: 'What stops each kind of radiation, the three levers you can actually pull, and the one emergency decision that is genuinely a judgement call.',
           steps: ['shielding', 'protect', 'shelter', 'evidence'] },
-        { id: 'works', q: 'How does any of it work?', icon: '⚛️',
+        { id: 'works', q: 'How does any of it work?', icon: '⚛️', accent: '#a78bfa',
           why: 'The one rule that never changes, the curve behind both fission and fusion, the chain reaction, and then run one yourself.',
           steps: ['halflife', 'binding', 'criticality', 'enrichment', 'operate', 'evidence'] },
-        { id: 'know', q: 'How do we know all this?', icon: '🔬',
+        { id: 'know', q: 'How do we know all this?', icon: '🔬', accent: '#2dd4bf',
           why: 'Every number in this tool came from an instrument. This is what those instruments are and what they can and cannot tell you.',
           steps: ['detect', 'dating', 'chain', 'evidence'] }
       ];
-      // Open on a laptop, where it costs a fifth of the screen and the routes
-      // are the new way in. Closed on a phone, where the expanded bar measured
-      // half the viewport and would sit there permanently for anyone who
-      // scrolls rather than jumps. An explicit choice always wins over both.
-      var nkNarrow = typeof window !== 'undefined' && window.innerWidth > 0 && window.innerWidth < 700;
-      var nkOpen = typeof d.nkOpen === 'boolean' ? d.nkOpen : !nkNarrow;
+      // Open when the available panel is comfortably wide and tall. Compact on
+      // phones, embedded narrow panels and short laptops, where the expanded
+      // drawer would take over the first screen. An explicit choice always wins.
+      var nkOpen = typeof d.nkOpen === 'boolean' ? d.nkOpen : nkAutoOpen;
       var nkQuery = (d.nkQuery || '').trim().toLowerCase();
       var nkGroup = d.nkGroup || 'all';
       var nkPathId = d.nkPath || null;
@@ -3000,6 +3267,9 @@
       var evidenceChoice = evidenceChoices[evidenceClaim.id] || '';
       var evidenceIsChecked = !!evidenceCheckedMap[evidenceClaim.id];
       var evidenceCorrect = evidenceIsChecked && evidenceChoice === evidenceClaim.verdict;
+      var evidenceAnswerVisible = evidenceCorrect
+        || evidenceMastered.indexOf(evidenceClaim.id) !== -1
+        || !!evidenceRevealedMap[evidenceClaim.id];
       var evidenceVerdict = EVIDENCE_VERDICTS.filter(function (v) {
         return v.id === evidenceClaim.verdict;
       })[0];
@@ -3028,8 +3298,9 @@
       }
       function nkRouteProgressFor(route) {
         var seen = nkRouteSeenFor(route);
+        var everComplete = nkPathsCompleted.indexOf(route.id) !== -1;
         var complete = seen.length === route.steps.length
-          && nkPathsCompleted.indexOf(route.id) !== -1;
+          && nkEvidenceCompleteFor(route, evidenceMastered);
         var nextId = route.steps.filter(function (id) { return seen.indexOf(id) === -1; })[0]
           || (complete ? route.steps[0] : route.steps[route.steps.length - 1]);
         return {
@@ -3037,7 +3308,8 @@
           count: seen.length,
           total: route.steps.length,
           nextId: nextId,
-          complete: complete
+          complete: complete,
+          everComplete: everComplete
         };
       }
       function nkRecordRouteStep(routeId, sectionId) {
@@ -3130,11 +3402,6 @@
         delete next[nkReflectionKey];
         upd({ nkReflections: next });
       }
-      var nkLargeText = !!d.nkLargeText;
-      var nkShowChartData = !!d.nkShowChartData;
-      var nkSystemReducedMotion = !!(typeof window !== 'undefined' && window.matchMedia
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      var nkReduceMotion = typeof d.nkReduceMotion === 'boolean' ? d.nkReduceMotion : nkSystemReducedMotion;
       function nkMatches(s) {
         if (nkGroup !== 'all' && s.grp !== nkGroup) return false;
         if (!nkQuery) return true;
@@ -3147,13 +3414,68 @@
             .map(function (id) { return NK_SECTIONS.filter(function (s) { return s.id === id; })[0]; })
             .filter(Boolean)
         : NK_SECTIONS.filter(nkMatches);
-      function nkGoTo(s) {
+      // The lab can live inside a narrow host panel even when the browser
+      // itself is wide. Let the available container width participate in the
+      // automatic disclosure choice until the learner explicitly opens or
+      // closes the index.
+      var nkHasOpenPreference = typeof d.nkOpen === 'boolean';
+      React.useEffect(function () {
+        if (nkHasOpenPreference || typeof window === 'undefined') return;
+        var root = nkRootRef.current;
+        if (!root) return;
+        // ResizeObserver also fires for height-only changes (for example when a
+        // learner saves a reflection). Track the last WIDTH-derived decision
+        // outside React so those observations do not request a redundant
+        // parent render before React can bail out of a same-value state update.
+        var lastAutoOpen = nkAutoOpen;
+        function updateAutoOpen() {
+          var rect = root.getBoundingClientRect ? root.getBoundingClientRect() : null;
+          var available = rect && rect.width ? rect.width : (root.clientWidth || window.innerWidth || 0);
+          var compact = (window.innerWidth > 0 && window.innerWidth < 768)
+            || (available > 0 && available < 640)
+            || (window.innerWidth >= 900 && window.innerHeight > 0 && window.innerHeight <= 768);
+          var nextAutoOpen = !compact;
+          if (nextAutoOpen === lastAutoOpen) return;
+          lastAutoOpen = nextAutoOpen;
+          setNkAutoOpen(nextAutoOpen);
+        }
+        updateAutoOpen();
+        var observer = typeof ResizeObserver === 'function' ? new ResizeObserver(updateAutoOpen) : null;
+        if (observer) observer.observe(root);
+        window.addEventListener('resize', updateAutoOpen);
+        return function () {
+          if (observer) observer.disconnect();
+          window.removeEventListener('resize', updateAutoOpen);
+        };
+      }, [nkHasOpenPreference]);
+      // Keep the visible result count immediate, but debounce the live message
+      // so typing a word does not queue one screen-reader announcement per key.
+      React.useEffect(function () {
+        var status = nkSearchStatusRef.current;
+        if (!status) return;
+        if (nkPathId || !nkQuery) {
+          status.textContent = '';
+          return;
+        }
+        var timer = setTimeout(function () {
+          status.textContent = nkVisible.length
+            ? nkVisible.length + ' topic' + (nkVisible.length === 1 ? '' : 's') + ' match the search.'
+            : 'No topics match the search.';
+        }, 350);
+        return function () { clearTimeout(timer); };
+      }, [nkQuery, nkVisible.length, nkPathId]);
+      function nkLandOn(s) {
         var target = typeof document !== 'undefined' && document.getElementById('nksec-' + s.id);
         var routeCompletedNow = false;
         if (target) {
           if (nkPath && nkPath.steps.indexOf(s.id) !== -1) {
             routeCompletedNow = nkRecordRouteStep(nkPath.id, s.id);
           }
+          // The index has already folded before this runs. Measure that actual
+          // compact height instead of guessing one scroll margin for a phone,
+          // laptop, large-text mode and every translation.
+          var nav = document.querySelector('[data-nuclear-lab] .nk-topic-nav');
+          if (nav) target.style.scrollMarginTop = Math.ceil(nav.getBoundingClientRect().height + 12) + 'px';
           try { target.scrollIntoView({ behavior: nkReduceMotion ? 'auto' : 'smooth', block: 'start' }); }
           catch (e) { target.scrollIntoView(); }
           // Then take focus with it, so Tab continues from the section the
@@ -3162,15 +3484,23 @@
           try { target.focus({ preventScroll: true }); }
           catch (e2) { try { target.focus(); } catch (e3) {} }
         }
-        // Fold the index once it has been used. Measured on a 390 px phone the
-        // expanded bar takes 48% of the viewport before the routes were added
-        // and 53% after — half the screen, permanently, for navigation the
-        // reader has just finished with.
-        if (d.nkOpen !== false) upd({ nkOpen: false });
-        if (typeof announceToSR === 'function') {
-          announceToSR('Jumped to ' + s.label + '.'
-            + (routeCompletedNow ? ' Route complete: ' + nkPath.q : ''));
+        // Programmatic focus already speaks the named section and its route
+        // context. Only completion is new information worth a live message.
+        if (routeCompletedNow && typeof announceToSR === 'function') {
+          announceToSR('Route complete: ' + nkPath.q);
         }
+      }
+      function nkGoTo(s) {
+        // Collapse first, then measure and scroll after React commits the
+        // compact masthead. Scrolling under the expanded drawer caused the
+        // destination to shift while smooth scrolling and could hide its focus
+        // outline under the sticky bar.
+        if (nkOpen) {
+          nkPendingTargetRef.current = s;
+          upd({ nkOpen: false });
+          return;
+        }
+        nkLandOn(s);
       }
       function nkReviewTopic(id) {
         var section = NK_SECTIONS.filter(function (s) { return s.id === id; })[0];
@@ -3194,19 +3524,29 @@
         var pending = nkPendingTargetRef.current;
         if (!pending || typeof document === 'undefined') return;
         if (!document.getElementById('nksec-' + pending.id)) return;
+        if (nkOpen) {
+          upd({ nkOpen: false });
+          return;
+        }
         nkPendingTargetRef.current = null;
-        nkGoTo(pending);
-      }, [nkPathId]);
-      // Next is intentionally revealed only after feedback. Because that button
-      // unmounts when the next unchecked claim appears, explicitly carry focus
-      // into the newly rendered, named fieldset.
-      React.useEffect(function () {
-        if (!nkEvidencePendingFocusRef.current || typeof document === 'undefined') return;
+        nkLandOn(pending);
+      }, [nkPathId, nkOpen]);
+      function nkFocusEvidenceClaim() {
+        if (typeof document === 'undefined') return;
         var target = document.getElementById('nk-evidence-claim');
         if (!target) return;
-        nkEvidencePendingFocusRef.current = false;
         try { target.focus({ preventScroll: true }); }
         catch (e) { try { target.focus(); } catch (e2) {} }
+      }
+      // Next is intentionally revealed only after feedback. Because that button
+      // unmounts when the next unchecked claim appears, explicitly carry focus
+      // into the newly rendered, named fieldset. Numbered claim navigation uses
+      // the same handoff so every way of changing claims has one predictable
+      // destination and one complete spoken description.
+      React.useEffect(function () {
+        if (!nkEvidencePendingFocusRef.current || typeof document === 'undefined') return;
+        nkEvidencePendingFocusRef.current = false;
+        nkFocusEvidenceClaim();
       }, [evidenceClaim.id]);
       // ── Scroll-spy ───────────────────────────────────────────────────────
       // Twenty-one sections and a very long page. Once the index folds
@@ -3228,19 +3568,44 @@
         var visible = {};
         var dwellTimer = null;
 
+        function updateLocation(id) {
+          var section = NK_SECTIONS.filter(function (item) { return item.id === id; })[0];
+          if (!section) return;
+          var sequence = nkPath ? nkPath.steps : NK_SECTIONS.map(function (item) { return item.id; });
+          var at = sequence.indexOf(id);
+          if (at < 0) return;
+          nkCurrentLocationRef.current = { pathKey: nkPathId || 'all', id: id };
+          var summary = root.querySelector('[data-nk-current-summary]');
+          if (!summary) return;
+          var total = sequence.length;
+          var position = at + 1;
+          var label = summary.querySelector('[data-nk-current-label]');
+          var meter = summary.querySelector('[data-nk-current-meter]');
+          var count = summary.querySelector('[data-nk-current-count]');
+          var locationText = nkPath
+            ? 'Step ' + position + ' of ' + total + ' · ' + section.label
+            : '§ ' + position + ' of ' + total + ' · ' + section.label;
+          if (label) label.textContent = locationText;
+          if (meter) {
+            meter.max = nkPath ? nkActiveRouteProgress.total : total;
+            meter.value = nkPath ? nkActiveRouteProgress.count : position;
+            meter.setAttribute('aria-label', nkPath
+              ? nkPath.q + ': ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' steps opened'
+              : locationText);
+          }
+          if (count) count.textContent = nkPath
+            ? ' · ' + nkActiveRouteProgress.count + '/' + nkActiveRouteProgress.total + ' opened'
+            : ' · ' + position + '/' + total;
+        }
+
         function paint(id, on) {
+          if (on) updateLocation(id);
           var btn = root.querySelector('[data-nk-jump="' + id + '"]');
           if (!btn) return;                       // filtered out of the index
           if (on) {
             btn.setAttribute('aria-current', 'location');
-            btn.style.background = ink('#22d3ee');
-            btn.style.color = '#0b1020';
-            btn.style.borderColor = ink('#22d3ee');
           } else {
             btn.removeAttribute('aria-current');
-            btn.style.background = '';
-            btn.style.color = '';
-            btn.style.borderColor = '';
           }
         }
 
@@ -3315,11 +3680,16 @@
           className: 'flex flex-wrap items-center gap-2 mt-3 pt-2',
           style: { borderTop: '1px dashed ' + accent + '66' }
         },
-          h('span', { className: 'text-[10px] font-black', style: { color: ink('#22d3ee') } },
-            nkPath.icon + ' STEP ' + (at + 1) + ' OF ' + nkPath.steps.length),
+          h('span', {
+            'data-nk-route-footer-count': id,
+            'aria-hidden': 'true',
+            className: 'text-[10px] font-black',
+            style: { color: ink(routeProgress.complete ? '#34d399' : accent) }
+          }, routeProgress.count + '/' + routeProgress.total + ' opened'),
           h('progress', {
-            value: at + 1, max: nkPath.steps.length,
-            'aria-label': 'Step ' + (at + 1) + ' of ' + nkPath.steps.length,
+            value: routeProgress.count, max: nkPath.steps.length,
+            'aria-label': nkPath.q + ': ' + routeProgress.count + ' of ' + nkPath.steps.length
+              + ' steps opened; currently at step ' + (at + 1),
             className: 'nk-route-progress flex-1 min-w-[7rem] h-2',
             style: { accentColor: accent }
           }),
@@ -3338,14 +3708,16 @@
         );
       }
 
-      var nkDisplayToggle = function (on, label, aria, onClick) {
+      var nkDisplayToggle = function (on, label, aria, onClick, locked) {
         return h('button', {
-          key: label, type: 'button', 'aria-pressed': on ? 'true' : 'false',
-          'aria-label': aria, onClick: onClick,
+          type: 'button', 'aria-pressed': on ? 'true' : 'false',
+          'aria-label': label + (aria ? '. ' + aria : ''), onClick: onClick, disabled: !!locked,
+          title: locked ? 'This setting follows your operating-system preference.' : undefined,
           className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold',
-          style: on
+          style: Object.assign({}, on
             ? { background: '#22d3ee', color: '#0b1020', border: '1px solid #22d3ee' }
-            : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
+            : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') },
+            locked ? { cursor: 'not-allowed', opacity: 0.78 } : null)
         }, label);
       };
 
@@ -3361,6 +3733,9 @@
         return h('div', {
           key: 'chart-table-' + id,
           'data-nk-chart-table': id,
+          role: 'region',
+          tabIndex: 0,
+          'aria-label': caption + '. Scroll horizontally to read every column.',
           className: 'nk-chart-table mt-2 rounded-lg border overflow-x-auto',
           style: {
             borderColor: accent + '70',
@@ -3415,6 +3790,29 @@
 
       // Every section stays open, so the index is pure navigation — nothing here
       // marks a topic as engaged. The quest hooks still measure real interaction.
+      var nkSummarySequence = nkPath ? nkPath.steps : NK_SECTIONS.map(function (item) { return item.id; });
+      var nkSummaryPathKey = nkPathId || 'all';
+      var nkSavedLocation = nkCurrentLocationRef.current;
+      var nkSummaryId = nkSavedLocation
+        && nkSavedLocation.pathKey === nkSummaryPathKey
+        && nkSummarySequence.indexOf(nkSavedLocation.id) >= 0
+          ? nkSavedLocation.id
+          : nkSummarySequence[0];
+      var nkSummaryAt = Math.max(0, nkSummarySequence.indexOf(nkSummaryId));
+      var nkSummarySection = NK_SECTIONS.filter(function (item) { return item.id === nkSummaryId; })[0] || NK_SECTIONS[0];
+      var nkSummaryPosition = nkSummaryAt + 1;
+      var nkSummaryLabel = nkPath
+        ? 'Step ' + nkSummaryPosition + ' of ' + nkSummarySequence.length + ' · ' + nkSummarySection.label
+        : '§ ' + nkSummaryPosition + ' of ' + nkSummarySequence.length + ' · ' + nkSummarySection.label;
+      var nkSummaryMeterValue = nkPath ? nkActiveRouteProgress.count : nkSummaryPosition;
+      var nkSummaryMeterMax = nkPath ? nkActiveRouteProgress.total : nkSummarySequence.length;
+      var nkSummaryMeterLabel = nkPath
+        ? nkPath.q + ': ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' steps opened'
+        : nkSummaryLabel;
+      var nkSummaryCount = nkPath
+        ? ' · ' + nkActiveRouteProgress.count + '/' + nkActiveRouteProgress.total + ' opened'
+        : ' · ' + nkSummaryPosition + '/' + nkSummarySequence.length;
+
       var nkIndex = h('nav', {
         'aria-label': 'Nuclear lab topics',
         'data-nk-open': nkOpen ? 'true' : 'false',
@@ -3437,7 +3835,7 @@
             // but aria-expanded already carries the state and pointing at an
             // id that is not in the document is not something to rely on.
             'aria-controls': nkOpen ? 'nk-index-body' : undefined,
-            'aria-label': (nkOpen ? 'Hide' : 'Show') + ' ' + NK_PATHS.length + ' question routes and the topic index, ' + NK_SECTIONS.length + ' topics'
+            'aria-label': 'Routes & display. ' + (nkOpen ? 'Hide' : 'Show') + ' ' + NK_PATHS.length + ' question routes and the topic index, ' + NK_SECTIONS.length + ' topics'
               + (nkPath ? ', currently following the route "' + nkPath.q + '"' : ''),
             onClick: function () { upd({ nkOpen: !nkOpen }); if (typeof beep === 'function') beep(); },
             className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-black',
@@ -3447,22 +3845,28 @@
               border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(167,139,250,0.35)')
             }
           }, '🧭 Routes & display ' + (nkOpen ? '▾' : '▸')),
-          nkPath && !nkOpen
+          !nkOpen
             ? h('div', {
-                className: 'nk-mobile-route-summary flex flex-1 min-w-0 items-center gap-2',
+                'data-nk-current-summary': 'true',
+                className: 'nk-mobile-route-summary nk-current-summary flex flex-1 min-w-0 items-center gap-2',
                 style: { color: ink('#22d3ee') }
               },
-                h('span', { className: 'nk-mobile-route-label min-w-0 text-[11px] font-bold' },
-                  (nkActiveRouteProgress.complete ? '✓ ' : '') + nkPath.icon + ' ' + nkPath.q),
+                h('span', {
+                  'data-nk-current-label': 'true',
+                  className: 'nk-mobile-route-label min-w-0 text-[11px] font-bold'
+                }, nkSummaryLabel),
                 h('progress', {
-                  value: nkActiveRouteProgress.count,
-                  max: nkActiveRouteProgress.total,
-                  'aria-label': nkPath.q + ': ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' steps opened',
+                  'data-nk-current-meter': 'true',
+                  value: nkSummaryMeterValue,
+                  max: nkSummaryMeterMax,
+                  'aria-label': nkSummaryMeterLabel,
                   className: 'nk-mobile-route-meter flex-shrink-0',
                   style: { width: '4rem', height: '0.375rem', accentColor: '#22d3ee' }
                 }),
-                h('span', { className: 'nk-mobile-route-count text-[10px] font-black flex-shrink-0' },
-                  ' · ' + nkActiveRouteProgress.count + '/' + nkActiveRouteProgress.total)
+                h('span', {
+                  'data-nk-current-count': 'true',
+                  className: 'nk-mobile-route-count text-[10px] font-black flex-shrink-0'
+                }, nkSummaryCount)
               )
             : null,
           h('div', { className: 'nk-index-secondary' },
@@ -3479,21 +3883,36 @@
                 border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
               }
             }),
-            h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('span', { className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
               nkPath
                 ? (nkActiveRouteProgress.complete
                   ? 'route complete'
                   : 'route: ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' opened')
                 : (nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length)),
+            h('span', {
+              ref: nkSearchStatusRef,
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              className: 'sr-only'
+            }),
             h('div', { role: 'group', 'aria-label': 'Reading display options', className: 'flex flex-wrap gap-1' },
               nkDisplayToggle(nkLargeText, 'A+ Text', 'Use larger text throughout the nuclear lab', function () {
                 upd({ nkLargeText: !nkLargeText });
                 if (typeof announceToSR === 'function') announceToSR('Larger text ' + (!nkLargeText ? 'on.' : 'off.'));
               }),
-              nkDisplayToggle(nkReduceMotion, nkReduceMotion ? 'Motion: low' : 'Motion: standard', 'Reduce non-essential motion throughout the nuclear lab', function () {
-                upd({ nkReduceMotion: !nkReduceMotion });
-                if (typeof announceToSR === 'function') announceToSR('Low motion ' + (!nkReduceMotion ? 'on.' : 'off.'));
-              }),
+              nkDisplayToggle(
+                nkReduceMotion,
+                nkSystemReducedMotion ? 'Motion: low · system' : (nkReduceMotion ? 'Motion: low' : 'Motion: standard'),
+                nkSystemReducedMotion
+                  ? 'Low motion is on because the operating system requests reduced motion'
+                  : 'Reduce non-essential motion throughout the nuclear lab',
+                function () {
+                  upd({ nkReduceMotion: !nkUserReducedMotion });
+                  if (typeof announceToSR === 'function') announceToSR('Low motion ' + (!nkUserReducedMotion ? 'on.' : 'off.'));
+                },
+                nkSystemReducedMotion
+              ),
               nkDisplayToggle(nkShowChartData, 'Chart data', 'Display numerical data tables beneath charts', function () {
                 upd({ nkShowChartData: !nkShowChartData });
                 if (typeof announceToSR === 'function') announceToSR('Chart data tables ' + (!nkShowChartData ? 'shown.' : 'hidden.'));
@@ -3505,41 +3924,102 @@
         // always one tap away; everything below folds once it has been used.
         // Belt as well as braces: even expanded, the sticky bar must not take
         // the screen. Bounded here rather than left to the sum of its rows.
-        nkOpen ? h('div', { id: 'nk-index-body', style: { maxHeight: '42vh', overflowY: 'auto' } },
+        nkOpen ? h('div', {
+          id: 'nk-index-body',
+          role: 'region',
+          tabIndex: 0,
+          'aria-label': 'Guided routes, topic categories, and topic links',
+          style: { maxHeight: '42vh', overflowY: 'auto' }
+        },
           h('div', { className: 'mt-1.5' },
             h('span', { className: 'block text-[10px] font-black mb-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'START WITH A QUESTION'),
-            h('div', { className: 'flex flex-wrap gap-1' },
+            h('div', { className: 'nk-route-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2' },
               NK_PATHS.map(function (route) {
                 var on = nkPathId === route.id;
                 var progress = nkRouteProgressFor(route);
                 var resume = NK_SECTIONS.filter(function (x) { return x.id === progress.nextId; })[0];
-                var resumeNumber = route.steps.indexOf(progress.nextId) + 1;
-                var visibleLabel = (progress.complete ? '✓ ' : '') + route.icon + ' ' + route.q
-                  + (progress.complete
-                    ? ' · complete'
-                    : (progress.count
-                      ? ' · ' + progress.count + '/' + progress.total
-                      : ' · ' + progress.total + ' steps'));
-                var aria = (on
-                  ? 'Leave the route: '
+                var savedRouteReflection = nkReflections[route.id]
+                  && typeof nkReflections[route.id] === 'object'
+                  && !Array.isArray(nkReflections[route.id])
+                    ? nkReflections[route.id]
+                    : {};
+                var reflectionSaved = !!(savedRouteReflection.confidence
+                  || savedRouteReflection.idea || savedRouteReflection.question);
+                var routeAction = on
+                  ? 'Leave this route'
                   : (progress.complete
-                    ? 'Review completed route: '
-                    : (progress.count ? 'Resume route: ' : 'Follow the route: ')))
-                  + route.q + ' ' + progress.count + ' of ' + progress.total + ' steps opened.'
-                  + (!on && !progress.complete && resume
-                    ? ' Next is step ' + resumeNumber + ': ' + resume.label + '.'
-                    : '');
-                return pill(on, '#22d3ee', visibleLabel, function () {
-                  nkPendingTargetRef.current = on ? null : (resume || null);
-                  // Taking a route clears the search and the category, because
-                  // three filters fighting each other is worse than none.
-                  upd({ nkPath: on ? null : route.id, nkQuery: '', nkGroup: 'all' });
-                  if (!on) {
-                    pushOnce('pathsTried', route.id);
+                    ? 'Review this completed route'
+                    : (progress.everComplete
+                      ? 'Revisit this previously completed route'
+                      : (progress.count ? 'Resume this route' : 'Follow this route')));
+                var stateLabel = progress.complete
+                  ? 'Complete'
+                  : (progress.everComplete ? 'Completed before' : (progress.count ? 'Resume' : 'Start'));
+                var detail = progress.complete
+                  ? progress.total + ' steps opened'
+                  : (progress.everComplete
+                    ? progress.total + ' steps opened · revisit evidence'
+                    : (progress.count
+                      ? progress.count + '/' + progress.total + ' opened · next: ' + (resume ? resume.label : 'evidence')
+                      : progress.total + ' guided steps'));
+                if (reflectionSaved) detail += ' · Reflection saved';
+                return h('button', {
+                  key: route.id,
+                  type: 'button',
+                  'aria-pressed': on ? 'true' : 'false',
+                  'data-nk-route-card': route.id,
+                  'data-state': progress.complete ? 'complete' : (progress.everComplete ? 'review' : (progress.count ? 'started' : 'new')),
+                  onClick: function () {
+                    nkPendingTargetRef.current = on ? null : (resume || null);
+                    // Taking a route clears the search and the category, because
+                    // three filters fighting each other is worse than none.
+                    upd({ nkPath: on ? null : route.id, nkQuery: '', nkGroup: 'all' });
+                    if (!on) pushOnce('pathsTried', route.id);
+                    if (typeof beep === 'function') beep();
+                  },
+                  className: 'nk-route-card min-h-20 rounded-xl border p-2.5 text-left transition-colors',
+                  style: {
+                    borderColor: on ? route.accent : (progress.complete ? '#34d399' : (progress.everComplete ? route.accent : (isDark ? 'rgba(148,163,184,0.34)' : 'rgba(100,116,139,0.28)'))),
+                    background: on
+                      ? (isDark ? route.accent + '20' : route.accent + '12')
+                      : (progress.complete
+                        ? (isDark ? 'rgba(6,78,59,0.25)' : 'rgba(236,253,245,0.98)')
+                        : (progress.everComplete
+                          ? (isDark ? route.accent + '14' : route.accent + '0d')
+                          : (isDark ? 'rgba(30,41,59,0.82)' : 'rgba(255,255,255,0.98)')))
                   }
-                  if (typeof beep === 'function') beep();
-                }, aria, route.id);
+                },
+                  h('span', { className: 'flex items-start gap-2' },
+                    h('span', {
+                      className: 'text-sm flex-shrink-0',
+                      'aria-hidden': 'true'
+                    }, route.icon),
+                    h('span', {
+                      className: 'flex-1 text-[11px] font-black leading-snug',
+                      style: { color: on ? ink(route.accent) : (isDark ? '#f8fafc' : '#1e293b') }
+                    }, route.q),
+                    h('span', {
+                      className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-black flex-shrink-0',
+                      style: {
+                        color: ink(progress.complete ? '#34d399' : ((on || progress.everComplete) ? route.accent : '#94a3b8')),
+                        borderColor: progress.complete ? '#34d399' : ((on || progress.everComplete) ? route.accent : 'rgba(148,163,184,0.42)')
+                      }
+                    }, stateLabel)
+                  ),
+                  h('span', {
+                    className: 'block mt-1 text-[10px] leading-snug',
+                    style: { color: isDark ? '#cbd5e1' : '#475569' }
+                  }, detail),
+                  h('progress', {
+                    value: progress.count,
+                    max: progress.total,
+                    'aria-hidden': 'true',
+                    className: 'block mt-1.5 w-full h-1.5',
+                    style: { accentColor: progress.complete ? '#059669' : route.accent }
+                  }),
+                  h('span', { className: 'sr-only' }, '. ' + routeAction + '.')
+                );
               })
             ),
             nkPath ? h(React.Fragment, null,
@@ -3570,8 +4050,8 @@
                   ? h('button', {
                       type: 'button',
                       onClick: function () { nkGoTo(nkActiveRouteNext); },
-                      'aria-label': 'Continue ' + nkPath.q + ' at step '
-                        + (nkPath.steps.indexOf(nkActiveRouteNext.id) + 1) + ': ' + nkActiveRouteNext.label,
+                      'aria-label': 'Continue: ' + nkActiveRouteNext.label + '. Continue ' + nkPath.q + ' at step '
+                        + (nkPath.steps.indexOf(nkActiveRouteNext.id) + 1),
                       className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-black',
                       style: {
                         background: '#0e7490',
@@ -3589,7 +4069,7 @@
           // the same factor, which is not something to do to a live control.
           nkPath ? h('span', { className: 'block text-[10px] font-black mt-1.5', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'OR BROWSE BY CATEGORY') : null,
-          h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+          h('div', { role: 'group', 'aria-label': 'Browse topics by category', className: 'nk-group-filters flex flex-wrap gap-1 mt-1.5' },
             NK_GROUPS.map(function (g) {
               var n = g.id === 'all' ? NK_SECTIONS.length : NK_SECTIONS.filter(function (s) { return s.grp === g.id; }).length;
               return pill(nkGroup === g.id && !nkPath, '#a78bfa', g.label + ' (' + n + ')', function () {
@@ -3602,15 +4082,19 @@
           ),
           // Cap the list height: 14 pills wrap to several rows, and an uncapped
           // sticky bar would sit on a third of a phone screen permanently.
-          h('div', { className: 'flex flex-wrap gap-1 mt-1.5', style: { maxHeight: '92px', overflowY: 'auto' } },
+          h('div', { className: 'nk-topic-jumps flex flex-wrap gap-1 mt-1.5' },
             nkVisible.length === 0
               ? h('span', { className: 'text-[11px]', style: { color: isDark ? '#cbd5e1' : '#475569' } },
                   'No topic matches “' + (d.nkQuery || '') + '”.')
               : nkVisible.map(function (s, i) {
+                  var opened = !!(nkPath && nkActiveRouteProgress.seen.indexOf(s.id) !== -1);
+                  var jumpLabel = nkPath
+                    ? ((opened ? 'Seen: ' : '') + 'Step ' + (i + 1) + ' — ' + s.label + ' (§' + (NK_SECTIONS.indexOf(s) + 1) + ')')
+                    : ((NK_SECTIONS.indexOf(s) + 1) + '. ' + s.label);
                   return h('button', {
                     key: s.id, type: 'button',
                     onClick: function () { nkGoTo(s); },
-                    'aria-label': 'Jump to ' + s.label,
+                    'aria-label': jumpLabel + ' Jump to this topic' + (opened ? ', already opened' : ''),
                     // The scroll-spy below marks the section currently in view
                     // by writing to this element directly. It deliberately does
                     // not go through React: a state change here would re-render
@@ -3618,15 +4102,16 @@
                     // which measured ~100 ms on a throttled CPU — a hitch on
                     // every scroll, to move a highlight.
                     'data-nk-jump': s.id,
+                    'data-nk-opened': opened ? 'true' : 'false',
                     className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors',
                     style: {
                       background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(167,139,250,0.09)',
                       color: isDark ? '#e2e8f0' : '#334155',
                       border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(167,139,250,0.35)')
                     }
-                  }, nkPath
-                    ? (s.icon + ' Step ' + (i + 1) + ' — ' + s.label + '  (§' + (NK_SECTIONS.indexOf(s) + 1) + ')')
-                    : (s.icon + ' ' + (NK_SECTIONS.indexOf(s) + 1) + '. ' + s.label));
+                  }, h(React.Fragment, null,
+                    h('span', { 'aria-hidden': 'true' }, s.icon + ' '),
+                    jumpLabel));
                 })
           )
         ) : null
@@ -3644,39 +4129,105 @@
         'data-nk-large-text': nkLargeText ? 'true' : 'false',
         'data-nk-reduce-motion': nkReduceMotion ? 'true' : 'false',
         'data-nk-chart-data': nkShowChartData ? 'true' : 'false',
+        ref: nkRootRef,
         className: 'nk-readable relative max-w-5xl mx-auto animate-in fade-in duration-200',
-        style: { background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined, '--nk-focus': isDark ? '#fbbf24' : '#6d28d9' }
+        style: { background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined, colorScheme: isDark ? 'dark' : 'light', containerType: 'inline-size', '--nk-focus': isDark ? '#fbbf24' : '#6d28d9' }
       },
         h('style', null,
           '.nk-readable button:focus-visible,.nk-readable input:focus-visible,.nk-readable textarea:focus-visible,.nk-readable select:focus-visible,.nk-readable a:focus-visible{outline:3px solid var(--nk-focus)!important;outline-offset:3px}' +
           '.nk-readable [data-nk-sec]:focus{outline:3px solid var(--nk-focus);outline-offset:3px}' +
           '.nk-readable .nk-evidence-claim:focus{outline:3px solid var(--nk-focus);outline-offset:3px}' +
+          '.nk-readable .nk-chart-table:focus-visible{outline:3px solid var(--nk-focus);outline-offset:3px}' +
+          '.nk-readable #nk-index-body:focus-visible{outline:3px solid var(--nk-focus);outline-offset:-3px}' +
+          '.nk-readable #nk-index-body{scrollbar-gutter:stable}' +
           '.nk-readable .nk-skip-link{position:absolute;left:-9999px;top:.5rem;z-index:60;min-height:44px;padding:.5rem .75rem;border-radius:.5rem;background:#fbbf24;color:#0b1020;font-weight:800;border:2px solid #0b1020}' +
           '.nk-readable .nk-skip-link:focus{left:.5rem}' +
-          '.nk-readable[data-nk-large-text="true"] .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
-          '.nk-readable[data-nk-large-text="true"] .text-\\[10px\\]{font-size:.8rem!important;line-height:1.2rem!important}' +
-          '.nk-readable[data-nk-large-text="true"] .nk-section-heading{font-size:1rem!important;line-height:1.5rem!important}' +
+          '.nk-readable .text-\\[11px\\]{font-size:.8125rem!important;line-height:1.25rem!important}' +
+          '.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.125rem!important}' +
+          '.nk-readable .nk-section-heading{font-size:1.0625rem!important;line-height:1.55rem!important}' +
+          '.nk-readable .nk-section-card>p.leading-relaxed{max-width:78ch}' +
+          '.nk-readable[data-nk-large-text="true"] .text-\\[11px\\]{font-size:1rem!important;line-height:1.55rem!important}' +
+          '.nk-readable[data-nk-large-text="true"] .text-\\[10px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
+          '.nk-readable[data-nk-large-text="true"] .nk-section-heading{font-size:1.25rem!important;line-height:1.8rem!important}' +
+          '.nk-readable .nk-stat-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr))}' +
+          '.nk-readable .nk-route-card{box-shadow:0 10px 24px -22px rgba(15,23,42,.75);transition:transform .15s ease,background-color .15s ease,border-color .15s ease}' +
+          '.nk-readable[data-nk-reduce-motion="false"] .nk-route-card:hover{transform:translateY(-1px)}' +
+          '.nk-readable .nk-topic-jumps button{box-shadow:none;background:' + (isDark ? 'rgba(148,163,184,.07)' : 'rgba(248,250,252,.9)') + '!important;color:' + (isDark ? '#e2e8f0' : '#334155') + '!important;border-color:' + (isDark ? 'rgba(148,163,184,.24)' : 'rgba(100,116,139,.2)') + '!important}' +
+          '.nk-readable .nk-topic-jumps button[data-nk-opened="true"]{background:' + (isDark ? 'rgba(6,78,59,.2)' : 'rgba(236,253,245,.96)') + '!important;color:' + (isDark ? '#a7f3d0' : '#047857') + '!important;border-color:#34d399!important}' +
+          '.nk-readable .nk-topic-jumps button[aria-current="location"]{background:#22d3ee!important;color:#0b1020!important;border-color:#22d3ee!important}' +
           '.nk-readable .nk-index-secondary{display:contents}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="false"] .nk-index-secondary{display:none!important}' +
+          '.nk-readable .nk-rx-tone{border:1px solid currentColor;background:rgba(148,163,184,.08)}' +
+          '.nk-readable .nk-rx-metric[data-tone="neutral"],.nk-readable .nk-rx-objective[data-tone="neutral"]{border-color:' + (isDark ? 'rgba(148,163,184,.38)' : 'rgba(100,116,139,.34)') + '!important;background:' + (isDark ? 'rgba(148,163,184,.08)' : 'rgba(248,250,252,.98)') + '!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="neutral"] .nk-rx-value,.nk-readable .nk-rx-metric[data-tone="neutral"] .nk-rx-tone,.nk-readable .nk-rx-objective[data-tone="neutral"] #rx-objective-heading,.nk-readable .nk-rx-objective[data-tone="neutral"] #rx-objective-step,.nk-readable .nk-rx-objective[data-tone="neutral"] #rx-objective-detail,.nk-readable .nk-rx-objective[data-tone="neutral"] .nk-rx-tone{color:' + (isDark ? '#cbd5e1' : '#475569') + '!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="info"],.nk-readable .nk-rx-objective[data-tone="info"]{border-color:' + (isDark ? 'rgba(96,165,250,.62)' : 'rgba(37,99,235,.48)') + '!important;background:' + (isDark ? 'rgba(30,58,138,.22)' : 'rgba(239,246,255,.98)') + '!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="info"] .nk-rx-value,.nk-readable .nk-rx-metric[data-tone="info"] .nk-rx-tone,.nk-readable .nk-rx-objective[data-tone="info"] #rx-objective-heading,.nk-readable .nk-rx-objective[data-tone="info"] #rx-objective-step,.nk-readable .nk-rx-objective[data-tone="info"] #rx-objective-detail,.nk-readable .nk-rx-objective[data-tone="info"] .nk-rx-tone{color:' + (isDark ? '#bfdbfe' : '#1d4ed8') + '!important}' +
+          '.nk-readable .nk-rx-objective[data-tone="info"] progress{accent-color:#2563eb!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="success"],.nk-readable .nk-rx-objective[data-tone="success"]{border-color:' + (isDark ? 'rgba(52,211,153,.65)' : 'rgba(5,150,105,.5)') + '!important;background:' + (isDark ? 'rgba(6,78,59,.28)' : 'rgba(236,253,245,.98)') + '!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="success"] .nk-rx-value,.nk-readable .nk-rx-metric[data-tone="success"] .nk-rx-tone,.nk-readable .nk-rx-objective[data-tone="success"] #rx-objective-heading,.nk-readable .nk-rx-objective[data-tone="success"] #rx-objective-step,.nk-readable .nk-rx-objective[data-tone="success"] #rx-objective-detail,.nk-readable .nk-rx-objective[data-tone="success"] .nk-rx-tone{color:' + (isDark ? '#6ee7b7' : '#047857') + '!important}' +
+          '.nk-readable .nk-rx-objective[data-tone="success"] progress{accent-color:#059669!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="caution"],.nk-readable .nk-rx-objective[data-tone="caution"]{border-color:' + (isDark ? 'rgba(251,191,36,.7)' : 'rgba(217,119,6,.55)') + '!important;background:' + (isDark ? 'rgba(120,53,15,.28)' : 'rgba(255,251,235,.98)') + '!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="caution"] .nk-rx-value,.nk-readable .nk-rx-metric[data-tone="caution"] .nk-rx-tone,.nk-readable .nk-rx-objective[data-tone="caution"] #rx-objective-heading,.nk-readable .nk-rx-objective[data-tone="caution"] #rx-objective-step,.nk-readable .nk-rx-objective[data-tone="caution"] #rx-objective-detail,.nk-readable .nk-rx-objective[data-tone="caution"] .nk-rx-tone{color:' + (isDark ? '#fde68a' : '#92400e') + '!important}' +
+          '.nk-readable .nk-rx-objective[data-tone="caution"] progress{accent-color:#d97706!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="danger"],.nk-readable .nk-rx-objective[data-tone="danger"]{border-color:' + (isDark ? 'rgba(248,113,113,.75)' : 'rgba(220,38,38,.58)') + '!important;background:' + (isDark ? 'rgba(127,29,29,.3)' : 'rgba(254,242,242,.98)') + '!important}' +
+          '.nk-readable .nk-rx-metric[data-tone="danger"] .nk-rx-value,.nk-readable .nk-rx-metric[data-tone="danger"] .nk-rx-tone,.nk-readable .nk-rx-objective[data-tone="danger"] #rx-objective-heading,.nk-readable .nk-rx-objective[data-tone="danger"] #rx-objective-step,.nk-readable .nk-rx-objective[data-tone="danger"] #rx-objective-detail,.nk-readable .nk-rx-objective[data-tone="danger"] .nk-rx-tone{color:' + (isDark ? '#fecaca' : '#991b1b') + '!important}' +
+          '.nk-readable .nk-rx-objective[data-tone="danger"] progress{accent-color:#dc2626!important}' +
+          '@media (forced-colors:active){' +
+          '.nk-readable{background:Canvas!important;color:CanvasText!important}' +
+          '.nk-readable .nk-section-card,.nk-readable .nk-topic-nav,.nk-readable fieldset,.nk-readable aside,.nk-readable [data-nk-route-overview],.nk-readable .nk-exploration-progress{background:Canvas!important;background-image:none!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}' +
+          '.nk-readable button,.nk-readable input,.nk-readable select,.nk-readable textarea{forced-color-adjust:auto;border-color:ButtonText!important;color:ButtonText!important}' +
+          '.nk-readable button[aria-pressed="true"],.nk-readable button[aria-current],.nk-readable button[aria-expanded="true"],.nk-readable button[data-nk-opened="true"]{background:Highlight!important;color:HighlightText!important;border:3px double Highlight!important}' +
+          '.nk-readable a{color:LinkText!important}' +
+          '.nk-readable *:focus-visible,.nk-readable [data-nk-sec]:focus{outline:3px solid Highlight!important;outline-offset:3px!important}' +
+          '.nk-readable progress{forced-color-adjust:auto;accent-color:Highlight!important}' +
+          '}' +
           '.nk-readable[data-nk-reduce-motion="true"]{animation:none!important}' +
           '.nk-readable[data-nk-reduce-motion="true"] *,.nk-readable[data-nk-reduce-motion="true"] *::before,.nk-readable[data-nk-reduce-motion="true"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}' +
           '@media (prefers-reduced-motion:reduce){.nk-readable{animation:none!important}.nk-readable *,.nk-readable *::before,.nk-readable *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
           '@media (max-height:500px){.nk-readable nav[aria-label="Nuclear lab topics"]{position:static!important}}' +
-          '@media (max-width:640px){' +
+          '@media (min-width:700px) and (max-height:768px){.nk-readable #nk-index-body{max-height:25vh!important}}' +
+          '@media (max-width:1023px){.nk-readable .nk-rx-core-unavailable{height:150px!important}}' +
+          '@media (max-width:699px){' +
           '.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
           '.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.1rem!important}' +
           '.nk-readable canvas{min-height:220px}' +
+          '.nk-readable .nk-chart-frame{height:220px!important}' +
+          '.nk-readable .nk-chart-frame canvas{min-height:0!important;height:100%!important}' +
           '.nk-readable .nk-slider{display:grid!important;grid-template-columns:minmax(0,1fr) auto;column-gap:.75rem;row-gap:.1rem}' +
           '.nk-readable .nk-slider label{grid-column:1;grid-row:1;width:auto!important;min-width:0}' +
           '.nk-readable .nk-slider input{grid-column:1/-1;grid-row:2;width:100%;min-width:0}' +
           '.nk-readable .nk-slider output{grid-column:2;grid-row:1;width:auto!important;min-width:0}' +
           '.nk-readable .nk-route-progress{flex-basis:100%;order:2}' +
-          '.nk-readable .nk-topic-nav[data-nk-open="false"] .nk-index-secondary{display:none!important}' +
           '.nk-readable .nk-mobile-route-summary{min-width:0;overflow:hidden}' +
           '.nk-readable .nk-mobile-route-label{display:block;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
           '.nk-readable .nk-topic-nav[data-nk-open="true"] .nk-index-secondary{display:flex!important;flex:1 0 100%;flex-wrap:wrap;align-items:center;gap:.375rem}' +
           '.nk-readable .nk-topic-nav[data-nk-open="true"] .nk-index-secondary>input{flex:1 0 100%;min-height:44px}' +
-          '.nk-readable .nk-topic-nav[data-nk-open="true"] #nk-index-body{max-height:35vh!important}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="true"] #nk-index-body{max-height:18vh!important}' +
           '.nk-readable .nk-route-kicker-question{flex-basis:100%}' +
+          '.nk-readable .nk-rx-telemetry{grid-template-columns:repeat(2,minmax(0,1fr))!important}' +
+          '.nk-readable .nk-rx-metric[data-rx-metric="rx-live-state"]{grid-column:1/-1}' +
+          '}' +
+          '@container (max-width:639px){' +
+          '.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
+          '.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.1rem!important}' +
+          '.nk-readable canvas{min-height:220px}' +
+          '.nk-readable .nk-chart-frame{height:220px!important}' +
+          '.nk-readable .nk-chart-frame canvas{min-height:0!important;height:100%!important}' +
+          '.nk-readable .nk-slider{display:grid!important;grid-template-columns:minmax(0,1fr) auto;column-gap:.75rem;row-gap:.1rem}' +
+          '.nk-readable .nk-slider label{grid-column:1;grid-row:1;width:auto!important;min-width:0}' +
+          '.nk-readable .nk-slider input{grid-column:1/-1;grid-row:2;width:100%;min-width:0}' +
+          '.nk-readable .nk-slider output{grid-column:2;grid-row:1;width:auto!important;min-width:0}' +
+          '.nk-readable .nk-route-progress{flex-basis:100%;order:2}' +
+          '.nk-readable .nk-mobile-route-summary{min-width:0;overflow:hidden}' +
+          '.nk-readable .nk-mobile-route-label{display:block;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="true"] .nk-index-secondary{display:flex!important;flex:1 0 100%;flex-wrap:wrap;align-items:center;gap:.375rem}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="true"] .nk-index-secondary>input{flex:1 0 100%;min-height:44px}' +
+          '.nk-readable .nk-topic-nav[data-nk-open="true"] #nk-index-body{max-height:18vh!important}' +
+          '.nk-readable .nk-route-grid{grid-template-columns:minmax(0,1fr)!important}' +
+          '.nk-readable .nk-hero-progress{width:100%;margin-left:0!important;justify-content:flex-start!important}' +
+          '.nk-readable .nk-route-kicker-question{flex-basis:100%}' +
+          '.nk-readable .nk-rx-telemetry{grid-template-columns:repeat(2,minmax(0,1fr))!important}' +
+          '.nk-readable .nk-rx-metric[data-rx-metric="rx-live-state"]{grid-column:1/-1}' +
           '}'),
 
         nkVisible.length ? h('button', {
@@ -3687,14 +4238,32 @@
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.4)' } },
           h('div', { className: 'flex flex-wrap items-center gap-3' },
             ArrowLeft ? h('button', {
+              type: 'button',
               onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
-              className: 'p-1.5 rounded-lg transition-colors',
+              className: 'min-h-11 min-w-11 p-2 rounded-lg transition-colors',
               style: { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(226,232,240,0.18)' },
               'aria-label': t('stem.common.back_to_tools', 'Back to tools')
             }, h(ArrowLeft, { size: 18, className: 'text-slate-100' })) : null,
             h('div', null,
               h('h3', { className: 'text-lg font-black tracking-tight text-white' }, '☢️ Nuclear & Radiation Lab'),
               h('span', { className: 'text-xs', style: { color: 'rgba(196,181,253,0.9)' } }, 'What the numbers actually say — including where they are disputed')
+            ),
+            h('ul', {
+              'aria-label': 'Nuclear lab learning progress',
+              className: 'nk-hero-progress ml-auto flex flex-wrap justify-end gap-1.5'
+            },
+              h('li', {
+                className: 'rounded-full border px-2 py-1 text-[10px] font-bold',
+                style: { color: ink('#22d3ee'), borderColor: 'rgba(34,211,238,0.5)', background: 'rgba(8,145,178,0.18)' }
+              }, NK_PATHS.length + ' guided questions'),
+              h('li', {
+                className: 'rounded-full border px-2 py-1 text-[10px] font-bold',
+                style: { color: ink('#34d399'), borderColor: 'rgba(52,211,153,0.5)', background: 'rgba(6,78,59,0.24)' }
+              }, nkPathsCompleted.length + '/' + NK_PATHS.length + ' routes complete'),
+              h('li', {
+                className: 'rounded-full border px-2 py-1 text-[10px] font-bold',
+                style: { color: ink('#c084fc'), borderColor: 'rgba(192,132,252,0.5)', background: 'rgba(88,28,135,0.22)' }
+              }, evidenceMastered.length + '/' + EVIDENCE_CLAIMS.length + ' evidence mastered')
             )
           )
         ),
@@ -3714,10 +4283,12 @@
                 upd({ isoId: x.id });
                 pushOnce('isoTried', x.id);
                 if (typeof beep === 'function') beep();
-              }, 'Use ' + x.name + ', half-life ' + x.hlText);
+              }, 'Use ' + x.name + ', half-life ' + x.hlText, x.id,
+                nkExploredIds('isoTried', ISOTOPES.map(function (item) { return item.id; })).indexOf(x.id) !== -1);
             })
           ),
-          h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(167,139,250,0.35)', height: '180px' } },
+          nkExplorationProgress('isoTried', ISOTOPES.map(function (item) { return item.id; }), 3, 'isotopes', '#a78bfa'),
+          h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(167,139,250,0.35)', height: '180px' } },
             h('canvas', { ref: decayRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-decay-description',
@@ -3725,7 +4296,7 @@
               style: { width: '100%', height: '100%', display: 'block' } })),
           slider('nk-halves', 'Half-lives', 0, 10, 0.25, halves,
             function (e) { upd({ halves: parseFloat(e.target.value) }); }, nkFmt(halves, 2)),
-          h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
+          h('div', { className: 'nk-stat-grid mt-2 grid gap-2' },
             stat('Still radioactive', nkFmt(remaining * 100, 2) + '%', ink('#a78bfa')),
             stat('Time passed', nkYears(elapsedYears), ink('#c4b5fd')),
             stat('Half-life', iso.hlText, ink('#fbbf24'))
@@ -3759,7 +4330,7 @@
           ponder('halflife', '#a78bfa',
             halves >= 7
               ? 'After ' + nkFmt(halves, 0) + ' half-lives less than 1% is left — but never exactly zero. Why can this curve never actually reach the axis?'
-              : 'Drag to 7 half-lives. What fraction is left, and why is "ten half-lives and it is gone" only roughly true?',
+              : 'Set the model to 7 half-lives. What fraction is left, and why is "ten half-lives and it is gone" only roughly true?',
             'Seven half-lives leaves 1/2⁷, about 0.8%; ten leaves 1/2¹⁰, about 0.1%. The curve never reaches the axis because halving something forever never gets you to nothing — that is arithmetic, not physics. Two things follow. First, "gone after ten half-lives" is a CONVENTION (near enough, below 0.1%), not a law, and whether 0.1% is negligible depends entirely on how much you started with: a tonne of caesium-137 after ten half-lives is still a kilogram of caesium-137. Second, the real world does eventually hit zero, because you have a finite number of atoms rather than a smooth curve — decay is a probability per nucleus per second, and once you are down to the last few, one of them decays at some definite moment and there are none left. The smooth exponential is an average over enormous numbers, and it stops being smooth exactly when the numbers get small. That is the same randomness you can watch directly in section 13.')
         ),
 
@@ -3777,7 +4348,7 @@
                 onChange: function (e) { setAgeGuess(e.target.value); },
                 className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[11px]',
                 style: { border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.32)' : 'rgba(100,116,139,0.3)'), background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } })),
-            h('button', { type: 'button', 'aria-label': 'Reveal the calculated age of the sample',
+            h('button', { type: 'button', 'aria-label': (ageShown ? 'Recalculate' : 'Reveal') + '. Calculate the age of the sample',
               onClick: function () {
                 setAgeShown(true);
                 var g = parseFloat(ageGuess);
@@ -3789,7 +4360,7 @@
                 // out again every time, so the button was an XP tap.
                 if (close && !d.datedClose) {
                   patch.datedClose = true;
-                  if (typeof celebrate === 'function') celebrate();
+                  nkCelebrate();
                   if (typeof awardXP === 'function') awardXP('nuclear_dating', 10, 'Dated a sample from its carbon-14');
                 }
                 upd(patch);
@@ -3838,8 +4409,8 @@
               'aria-label': 'The uranium-238 chain plotted on the chart of nuclides, neutrons across and protons up. It starts at uranium-238 with 92 protons and 146 neutrons, top right, and walks down-left to lead-206 with 82 protons and 124 neutrons, bottom left. Each of the eight alpha steps moves two protons down and two neutrons left; each of the six beta steps moves one proton up and one neutron left, which is the zigzag. Radon-222, the only gas, sits in the middle at 86 protons and 136 neutrons.',
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-chain-description', className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            'Every alpha step takes the same diagonal down-left; every beta step kicks back up-left at a shallower one. That sawtooth is not decoration — it is why the chain crosses the same elements more than once, and why uranium appears twice in the list below. Tap a row to light up its nucleus here.'),
-          h('div', { role: 'list', className: 'space-y-1 max-h-72 overflow-y-auto pr-1' },
+            'Every alpha step takes the same diagonal down-left; every beta step kicks back up-left at a shallower one. That sawtooth is not decoration — it is why the chain crosses the same elements more than once, and why uranium appears twice in the list below. Choose a row to light up its nucleus here.'),
+          h('div', { role: 'list', 'aria-label': 'Uranium-238 decay chain steps', className: 'space-y-1 max-h-72 overflow-y-auto pr-1' },
             U238_CHAIN.map(function (step, i) {
               var on = d.chainPick === i;
               var col = step.kind === 'alpha' ? '#f87171' : (step.kind === 'beta' ? '#60a5fa' : '#94a3b8');
@@ -3852,13 +4423,12 @@
               return h('div', { key: step.sym, role: 'listitem' }, h('button', {
                 type: 'button',
                 'aria-expanded': on ? 'true' : 'false',
-                'aria-label': step.sym + ', half-life ' + step.hl + ', ' + (step.kind === 'stable' ? 'stable, the end of the chain' : step.kind + ' decay') + (step.gas ? '. This one is a gas.' : ''),
                 onClick: function () {
                   upd({ chainPick: on ? null : i });
                   if (!on) pushOnce('chainSeen', step.sym);
                   if (typeof beep === 'function') beep();
                 },
-                className: 'w-full text-left rounded-lg px-2.5 py-1.5 border transition-colors',
+                className: 'min-h-11 w-full text-left rounded-lg px-2.5 py-1.5 border transition-colors',
                 style: on ? { background: col + '22', borderColor: col }
                   : { background: step.gas ? 'rgba(251,191,36,0.09)' : (isDark ? 'rgba(148,163,184,0.06)' : 'rgba(255,255,255,0.9)'),
                       borderColor: step.gas ? 'rgba(251,191,36,0.5)' : (isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)') }
@@ -3873,6 +4443,7 @@
                 on ? h('div', { className: 'px-2.5 pb-1.5 text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, step.note) : null);
             })
           ),
+          nkExplorationProgress('chainSeen', U238_CHAIN.map(function (item) { return item.sym; }), 4, 'chain steps', '#c084fc'),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'Why the whole chain runs at uranium-238\'s pace'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
@@ -3895,13 +4466,12 @@
               return h('div', { key: lv.name, role: 'listitem' }, h('button', {
                 type: 'button',
                 'aria-expanded': on ? 'true' : 'false',
-                'aria-label': lv.name + ', ' + lv.pct + ' percent uranium-235',
                 onClick: function () {
                   upd({ enrPick: on ? null : i });
                   if (!on) pushOnce('enrSeen', lv.name);
                   if (typeof beep === 'function') beep();
                 },
-                className: 'w-full text-left rounded-lg px-2.5 py-1.5 border transition-colors',
+                className: 'min-h-11 w-full text-left rounded-lg px-2.5 py-1.5 border transition-colors',
                 style: on ? { background: col + '22', borderColor: col }
                   : { background: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)' }
               },
@@ -3914,6 +4484,7 @@
                 on ? h('div', { className: 'px-2.5 pb-1.5 text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, lv.use) : null);
             })
           ),
+          nkExplorationProgress('enrSeen', ENRICH_LEVELS.map(function (item) { return item.name; }), 3, 'enrichment levels', '#fb923c'),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(52,211,153,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,253,244,0.9)' } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#059669') } }, 'The answer to "could a reactor explode like a bomb?"'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
@@ -3924,8 +4495,8 @@
         ),
 
         // ── 3. shielding ──
-        sec('shielding', '#f87171',
-          heading(ink('#f87171'), '🛡️ 5. What actually stops it'),
+        sec('shielding', '#38bdf8',
+          heading(ink('#38bdf8'), '🛡️ 5. What actually stops it'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             '"Radiation" is four different things that behave nothing alike. Pick one and try to stop it.'),
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
@@ -3935,9 +4506,11 @@
                 pushOnce('radTried', x.id);
                 if (typeof beep === 'function') beep();
                 if (typeof announceToSR === 'function') announceToSR(x.name + '. ' + x.what + ' Stopped by ' + x.stops);
-              }, 'Study ' + x.name + ' radiation');
+              }, 'Study ' + x.name + ' radiation', x.id,
+                nkExploredIds('radTried', RAD_TYPES.map(function (item) { return item.id; })).indexOf(x.id) !== -1);
             })
           ),
+          nkExplorationProgress('radTried', RAD_TYPES.map(function (item) { return item.id; }), 4, 'radiation types', '#38bdf8'),
           h('div', { className: 'flex flex-wrap gap-1 mb-1' },
             SHIELDS.map(function (s) {
               return pill(shieldId === s.id, '#94a3b8', s.name, function () {
@@ -3990,8 +4563,9 @@
             return h('div', { className: 'mt-2' },
               h('div', { className: 'h-4 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                 h('div', { style: { height: '100%', width: nkClamp(through, 0, 100).toFixed(1) + '%', background: rad.colour, borderRadius: '999px', transition: 'width 160ms linear' } })),
-              h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[11px] font-black mt-1', style: { color: ink(rad.colour) } },
+              h('p', { className: 'text-[11px] font-black mt-1', style: { color: ink(rad.colour) } },
                 nkFmt(through, through < 1 ? 3 : 1) + '% of the ' + rad.name.toLowerCase() + ' gets through ' + nkFmt(thick, 1) + ' cm of ' + shield.name.toLowerCase()),
+              h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, nkShieldSpeech),
               // Neutrons are the one case where a single "% through" bar is not
               // enough to be honest, because two different mechanisms have to
               // both succeed. Show them side by side so the comparison between
@@ -4047,7 +4621,7 @@
                   (state === 'critical' ? '. Every fission causes exactly one more.' : '.'));
               }
             }, rods + '%'),
-          h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
+          h('div', { className: 'nk-stat-grid mt-2 grid gap-2' },
             stat('k (neutron multiplication)', kEff.toFixed(3), ink(kState === 'critical' ? '#34d399' : (kState === 'supercritical' ? '#f87171' : '#60a5fa'))),
             stat('State', kState, ink(kState === 'critical' ? '#34d399' : (kState === 'supercritical' ? '#f87171' : '#60a5fa'))),
             stat('After 12 generations', nkFmt(gens[11], 0) + ' neutrons', ink('#fbbf24'))
@@ -4077,7 +4651,7 @@
           heading(ink('#38bdf8'), '⛰️ 7. One curve explains fission AND fusion'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Binding energy per nucleon is how tightly each particle is held. The curve climbs steeply from hydrogen, peaks, then falls slowly — and HIGHER on this curve means more tightly bound. Move toward the peak from either side and the nuclei end up more tightly bound than they started, so the leftover energy comes out. Light nuclei get there by joining; heavy ones get there by splitting. One curve, two industries.'),
-          h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '190px' } },
+          h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '190px' } },
             h('canvas', { ref: beRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-binding-description',
@@ -4104,12 +4678,14 @@
                 upd({ bePick: r.id });
                 pushOnce('reactionsSeen', r.id);
                 if (typeof beep === 'function') beep();
-              }, 'Work out the energy from ' + r.name);
+              }, 'Work out the energy from ' + r.name, r.id,
+                nkExploredIds('reactionsSeen', REACTIONS.map(function (item) { return item.id; })).indexOf(r.id) !== -1);
             })
           ),
+          nkExplorationProgress('reactionsSeen', REACTIONS.map(function (item) { return item.id; }), 3, 'reactions', '#38bdf8'),
           h('div', { className: 'rounded-lg border p-2.5', style: { borderColor: (beRxn.kind === 'fusion' ? '#f472b6' : beRxn.kind === 'fission' ? '#a78bfa' : '#94a3b8') + '70', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,255,255,0.9)' } },
             h('p', { className: 'text-[11px] font-mono mb-1.5', style: { color: isDark ? '#e2e8f0' : '#334155' } }, beRxn.eq),
-            h('div', { className: 'grid grid-cols-3 gap-2' },
+            h('div', { className: 'nk-stat-grid grid gap-2' },
               stat('Energy released', nkFmt(beRxn.mev, beRxn.mev < 1 ? 6 : 1) + ' MeV', ink('#fbbf24')),
               stat('Per nucleon', nkFmt(beMevPerNucleon, beMevPerNucleon < 0.001 ? 7 : 2) + ' MeV', ink('#38bdf8')),
               stat('Mass converted', nkFmt(beMassPct, beMassPct < 0.001 ? 7 : 3) + '%', ink('#f472b6'))
@@ -4149,9 +4725,11 @@
                 upd({ wrId: x.id });
                 pushOnce('wrTried', x.id);
                 if (typeof beep === 'function') beep();
-              }, x.name + ', radiation weighting factor ' + x.wr);
+              }, x.name + ', radiation weighting factor ' + x.wr, x.id,
+                nkExploredIds('wrTried', RAD_WEIGHTS.map(function (item) { return item.id; })).indexOf(x.id) !== -1);
             })
           ),
+          nkExplorationProgress('wrTried', RAD_WEIGHTS.map(function (item) { return item.id; }), 3, 'radiation types', '#e879f9'),
           h('p', { className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, wr.why),
 
           h('p', { className: 'text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'To which tissue'),
@@ -4208,17 +4786,19 @@
                 upd({ bioId: x.id });
                 pushOnce('bioSeen', x.id);
                 if (typeof beep === 'function') beep();
-              }, 'Compare the physical and biological half-life of ' + x.name);
+              }, 'Compare the physical and biological half-life of ' + x.name, x.id,
+                nkExploredIds('bioSeen', BIO_NUCLIDES.map(function (item) { return item.id; })).indexOf(x.id) !== -1);
             })
           ),
-          h('div', { className: 'grid grid-cols-3 gap-2' },
+          nkExplorationProgress('bioSeen', BIO_NUCLIDES.map(function (item) { return item.id; }), 4, 'nuclides', '#f472b6'),
+          h('div', { className: 'nk-stat-grid grid gap-2' },
             stat('Physical half-life', nkYears(bio.tp / 365.25), ink('#94a3b8')),
             stat('Biological half-life', nkYears(bio.tb / 365.25), ink('#38bdf8')),
             stat('Effective half-life', nkYears(bioEff / 365.25), ink(bio.colour))
           ),
           h('p', { className: 'text-[11px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Where it goes: ' + bio.where + '.'),
-          h('div', { className: 'rounded-lg overflow-hidden border mt-2', style: { borderColor: bio.colour + '59', height: '175px' } },
+          h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mt-2', style: { borderColor: bio.colour + '59', height: '175px' } },
             h('canvas', { ref: bioRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-bio-description',
@@ -4303,7 +4883,8 @@
             })
           ),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(236,254,255,0.9)' } },
-            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-sm font-black mb-1.5', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(dsTotal, 2) + ' mSv this year'),
+            h('p', { className: 'text-sm font-black mb-1.5', style: { color: ink('#0891b2') } }, 'About ' + nkFmt(dsTotal, 2) + ' mSv this year'),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, nkDoseSpeech),
             h('div', { role: 'list', className: 'space-y-1' },
               dsParts.filter(function (p) { return p.v > 0; }).sort(function (x, y) { return y.v - x.v; }).map(function (p) {
                 return h('div', { key: p.name, role: 'listitem', 'aria-label': p.name + ', ' + p.v.toFixed(2) + ' millisieverts', className: 'flex items-center gap-2' },
@@ -4328,7 +4909,7 @@
         sec('doseladder', '#fbbf24',
           heading(ink('#fbbf24'), '📏 11. How much is a lot? The dose ladder'),
           h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Doses span eight orders of magnitude, so this scale is logarithmic — each step along it is ten times the last. Tap any row.'),
+            'Doses span eight orders of magnitude, so this scale is logarithmic — each step along it is ten times the last. Choose any row.'),
           h('div', { role: 'list', className: 'space-y-1' },
             DOSES.map(function (dz, i) {
               var on = d.dosePick === i;
@@ -4337,13 +4918,12 @@
               return h('div', { key: dz.name, role: 'listitem' }, h('button', {
                 type: 'button',
                 'aria-expanded': on ? 'true' : 'false',
-                'aria-label': dz.name + ', ' + dz.mSv + ' millisieverts',
                 onClick: function () {
                   upd({ dosePick: on ? null : i });
                   if (!on) pushOnce('dosesSeen', dz.name);
                   if (typeof beep === 'function') beep();
                 },
-                className: 'w-full text-left rounded-lg px-2.5 py-1.5 border transition-colors',
+                className: 'min-h-11 w-full text-left rounded-lg px-2.5 py-1.5 border transition-colors',
                 style: on ? { background: col + '22', borderColor: col }
                   : { background: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(255,255,255,0.9)', borderColor: isDark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.18)' }
               },
@@ -4356,6 +4936,7 @@
                 on ? h('div', { className: 'px-2.5 pb-1.5 text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, dz.note) : null);
             })
           ),
+          nkExplorationProgress('dosesSeen', DOSES.map(function (item) { return item.name; }), 5, 'dose examples', '#fbbf24'),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(251,191,36,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(255,251,235,0.9)' } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink('#f59e0b') } }, 'Where the science is genuinely unsettled'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
@@ -4518,13 +5099,19 @@
           ),
           h('div', { className: 'flex flex-wrap gap-2 mt-2' },
             h('button', {
+              ref: countTakeButtonRef,
               type: 'button', onClick: cdTakeCount,
-              'aria-label': 'Take a ' + cdTime + ' second count of ' + cdSrc.name + ' at ' + cdDist + ' centimetres, with a matching background count',
+              'aria-label': 'Take a count. Measure ' + cdSrc.name + ' for ' + cdTime + ' seconds at ' + cdDist + ' centimetres, with a matching background count',
               className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-black',
               style: { background: '#2dd4bf', color: '#0b1020', border: '1px solid #2dd4bf' }
             }, '⏱️ Take a count'),
             cdRuns.length ? h('button', {
-              type: 'button', onClick: function () { cdReset({}); },
+              type: 'button', onClick: function () {
+                if (countTakeButtonRef.current && countTakeButtonRef.current.focus) {
+                  countTakeButtonRef.current.focus();
+                }
+                cdReset({});
+              },
               'aria-label': 'Clear the ' + cdRuns.length + ' counts taken so far',
               className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
@@ -4574,7 +5161,7 @@
             );
           })() : null,
 
-          h('div', { className: 'rounded-lg overflow-hidden border mt-2', style: { borderColor: 'rgba(45,212,191,0.35)', height: '170px' } },
+          h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mt-2', style: { borderColor: 'rgba(45,212,191,0.35)', height: '170px' } },
             h('canvas', { ref: countRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-count-description',
@@ -4670,7 +5257,7 @@
           slider('pt-thick', 'Shield thickness', 0, 20, 0.5, ptThick,
             function (e) { upd({ ptThick: parseFloat(e.target.value) }); }, nkFmt(ptThick, 1) + ' cm'),
 
-          h('div', { className: 'rounded-lg overflow-hidden border mt-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '175px' } },
+          h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mt-2', style: { borderColor: 'rgba(56,189,248,0.35)', height: '175px' } },
             h('canvas', { ref: protectRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-protect-summary',
@@ -4820,7 +5407,7 @@
           h('p', { className: 'text-[10px] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Published range for this kind of building: ×' + shPlace.range + '. The tool uses ×' + shPlace.drf + '.'),
 
-          h('div', { className: 'rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(163,230,53,0.35)', height: '180px' } },
+          h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(163,230,53,0.35)', height: '180px' } },
             h('canvas', { ref: shelterRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-shelter-summary',
@@ -4924,13 +5511,12 @@
                 h('button', {
                   type: 'button', 'aria-expanded': on ? 'true' : 'false',
                   'aria-controls': on ? bodyId : undefined,
-                  'aria-label': (on ? 'Hide details for ' : 'Show details for ') + r.name + ', status ' + r.status,
                   onClick: function () {
                     upd({ reactorPick: on ? null : r.id });
                     if (!on) pushOnce('reactorsSeen', r.id);
                     if (typeof beep === 'function') beep();
                   },
-                  className: 'w-full text-left rounded-lg px-2.5 py-2'
+                  className: 'min-h-11 w-full text-left rounded-lg px-2.5 py-2'
                 },
                   h('span', { className: 'flex items-center gap-2 flex-wrap' },
                     h('span', { className: 'text-[11px] font-bold flex-1', style: { color: isDark ? '#fff' : '#1e293b' } }, r.name),
@@ -5020,14 +5606,16 @@
             'A modern reactor, run properly. The two accident conditions are here as engineering case studies — the point is to watch the physics do it, not to score a disaster.'),
 
           h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-2' },
-            h('div', { className: 'relative rounded-xl overflow-hidden border', style: { borderColor: 'rgba(52,211,153,0.4)', height: '260px', background: isDark ? '#0b1220' : '#dfe6ef' } },
+            h('div', { className: 'nk-rx-core-view relative rounded-xl overflow-hidden border' + ((rxViewerStatus === 'failed' || (!rxViewerStatus && RX_MISSING === 'host')) ? ' nk-rx-core-unavailable' : ''), style: { borderColor: 'rgba(52,211,153,0.4)', height: '260px', background: isDark ? '#0b1220' : '#dfe6ef' } },
               h('div', { ref: rxAttach, style: { position: 'absolute', inset: 0 } }),
-              d.rxStatus !== 'ready' ? h('div', { role: 'status', className: 'absolute inset-0 flex items-center justify-center text-center p-4', style: { background: isDark ? 'rgba(11,18,32,0.92)' : 'rgba(223,230,239,0.92)' } },
+              rxViewerStatus !== 'ready' ? h('div', { role: 'status', className: 'absolute inset-0 flex items-center justify-center text-center p-4', style: { background: isDark ? 'rgba(11,18,32,0.92)' : 'rgba(223,230,239,0.92)' } },
                 h('p', { className: 'text-[11px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-                  d.rxStatus === 'loading' ? 'Loading the 3D core…'
+                  rxViewerStatus === 'loading' ? 'Loading the 3D core…'
                     : (RX_MISSING === 'host'
                       ? 'The 3D core needs a newer host module than this build has. The control panel beside it still works in full.'
-                      : 'The 3D core could not start here, usually because WebGL is blocked. The control panel beside it still works in full.'))
+                      : (rxViewerStatus === 'failed'
+                        ? 'The 3D core could not start here, usually because WebGL is blocked. The control panel beside it still works in full.'
+                        : 'Preparing the 3D core…')))
               ) : null),
             h('div', { className: 'rounded-xl overflow-hidden border', style: { borderColor: 'rgba(52,211,153,0.4)', height: '260px' } },
               h('canvas', { ref: rxCanvasRef, role: 'img',
@@ -5040,53 +5628,101 @@
           h('dl', {
             id: 'rx-live-readings', ref: rxTelemetryRef,
             'aria-label': 'Live reactor readings', 'aria-live': 'off',
-            className: 'mt-2 grid grid-cols-2 sm:grid-cols-5 gap-2'
+            className: 'nk-rx-telemetry mt-2 grid grid-cols-2 sm:grid-cols-5 gap-2'
           }, [
-            ['rx-live-power', 'Power', nkFmt(rxRead.power, rxRead.power < 10 ? 1 : 0) + '%'],
-            ['rx-live-temperature', 'Fuel temperature', nkFmt(rxRead.t, 0) + ' °C'],
-            ['rx-live-reactivity', 'Net reactivity', (rxReadRhoPcm >= 0 ? '+' : '') + nkFmt(rxReadRhoPcm, 0) + ' pcm'],
-            ['rx-live-xenon', 'Xenon level', nkFmt(rxRead.xe, 2) + '×'],
-            ['rx-live-state', 'Simulation state', rxReadState]
+            ['rx-live-power', 'Power', nkFmt(rxRead.power, rxRead.power < 10 ? 1 : 0) + '%', 'power'],
+            ['rx-live-temperature', 'Fuel temperature', nkFmt(rxRead.t, 0) + ' °C', 'temperature'],
+            ['rx-live-reactivity', 'Net reactivity', (rxReadRhoPcm >= 0 ? '+' : '') + nkFmt(rxReadRhoPcm, 0) + ' pcm', 'reactivity'],
+            ['rx-live-xenon', 'Xenon level', nkFmt(rxRead.xe, 2) + '×', 'xenon'],
+            ['rx-live-state', 'Simulation state', rxReadState, 'state']
           ].map(function (metric) {
+            var tone = rxMetricTone(metric[3], rxRead, rxReadR, rxUi.running, rxScenObj);
             return h('div', {
-              key: metric[0], className: 'rounded-lg p-2 text-center',
+              key: metric[0],
+              'data-rx-metric': metric[0],
+              'data-tone': tone.tone,
+              className: 'nk-rx-metric rounded-lg p-2 text-center',
               style: { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(167,139,250,0.09)', border: '1px solid rgba(52,211,153,0.35)' }
             },
               h('dt', { className: 'text-[10px] font-bold', style: { color: isDark ? '#cbd5e1' : '#475569' } }, metric[1]),
-              h('dd', { className: 'text-sm font-black', style: { color: isDark ? '#6ee7b7' : '#047857' } },
-                h('output', { id: metric[0] }, metric[2])));
+              h('dd', { className: 'nk-rx-value text-sm font-black', style: { color: isDark ? '#6ee7b7' : '#047857' } },
+                h('output', { id: metric[0] }, metric[2])),
+              h('dd', {
+                id: metric[0] + '-tone',
+                className: 'nk-rx-tone mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-black'
+              }, tone.label));
           })),
 
-          // controls
-          h('div', { className: 'mt-2 flex flex-wrap gap-1' },
-            RX_SCENARIOS.map(function (s) {
-              return pill(rxScenario === s.id, '#34d399', s.name, function () {
-                upd({ rxScenario: s.id });
-                // Pass the destination explicitly: tool-data updates are async,
-                // so closing over rxScenario here would reset the NEW scenario
-                // with the OLD one's starting conditions for one whole commit.
-                rxRestart(s.id);
-                if (typeof beep === 'function') beep();
-              }, 'Run the scenario: ' + s.name + '. ' + s.goal);
-            })
+          h('div', { className: 'mt-2 flex justify-end' },
+            h('button', {
+              type: 'button',
+              'aria-label': 'Show current status. Read a text snapshot of the reactor',
+              'aria-controls': 'rx-status-summary',
+              onClick: rxAnnounceStatus,
+              className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+              style: {
+                background: isDark ? 'rgba(96,165,250,0.14)' : 'rgba(239,246,255,0.96)',
+                color: isDark ? '#bfdbfe' : '#1d4ed8',
+                border: '1px solid ' + (isDark ? 'rgba(96,165,250,0.55)' : 'rgba(37,99,235,0.4)')
+              }
+            }, 'Show current status')
           ),
-          h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-            h('b', null, rxScenObj.goal + ' '), rxScenObj.brief),
+          h('p', {
+            id: 'rx-status-summary',
+            hidden: !rxStatusSnapshot,
+            className: 'mt-2 rounded-lg border p-2.5 text-[11px] leading-relaxed',
+            style: {
+              borderColor: isDark ? 'rgba(96,165,250,0.5)' : 'rgba(37,99,235,0.38)',
+              background: isDark ? 'rgba(30,58,138,0.16)' : 'rgba(239,246,255,0.96)',
+              color: isDark ? '#dbeafe' : '#1e3a8a'
+            }
+          }, h('b', null, 'Current status · '), rxStatusSnapshot
+            ? rxStatusSnapshot.replace(/^Reactor status:\s*/i, '')
+            : 'Choose “Show current status” for a text snapshot.'),
 
-          h('div', {
+          // controls
+          h('fieldset', {
+            'aria-label': '1. Choose scenario',
+            className: 'nk-rx-control-group mt-3 rounded-xl border p-2.5',
+            style: { borderColor: 'rgba(52,211,153,0.4)', background: isDark ? 'rgba(6,78,59,0.1)' : 'rgba(240,253,244,0.7)' }
+          },
+            h('legend', { className: 'px-1.5 text-[11px] font-black', style: { color: ink('#34d399') } }, '1 · Choose scenario'),
+            h('div', { className: 'flex flex-wrap gap-1' },
+              RX_SCENARIOS.map(function (s) {
+                return pill(rxScenario === s.id, '#34d399', s.name, function () {
+                  upd({ rxScenario: s.id });
+                  // Pass the destination explicitly: tool-data updates are async,
+                  // so closing over rxScenario here would reset the NEW scenario
+                  // with the OLD one's starting conditions for one whole commit.
+                  rxRestart(s.id);
+                  if (typeof beep === 'function') beep();
+                }, 'Run the scenario: ' + s.name + '. ' + s.goal);
+              })
+            ),
+            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              h('b', null, rxScenObj.goal + ' '), rxScenObj.brief),
+
+            h('div', {
             id: 'rx-objective-progress', ref: rxObjectiveRef,
             role: 'group', 'aria-labelledby': 'rx-objective-heading',
             'data-stage': rxObjective.stage,
-            className: 'mt-2 rounded-lg border p-2.5',
+            'data-tone': rxObjectiveVisualTone.tone,
+            className: 'nk-rx-objective mt-2 rounded-lg border p-2.5',
             style: {
               borderColor: 'rgba(52,211,153,0.48)',
               background: isDark ? 'rgba(6,78,59,0.2)' : 'rgba(236,253,245,0.92)'
             }
           },
-            h('p', {
-              id: 'rx-objective-heading', className: 'text-[10px] font-black uppercase tracking-wide',
-              style: { color: isDark ? '#6ee7b7' : '#047857' }
-            }, 'Objective progress'),
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('p', {
+                id: 'rx-objective-heading', className: 'text-[10px] font-black uppercase tracking-wide',
+                style: { color: isDark ? '#6ee7b7' : '#047857' }
+              }, 'Objective progress'),
+              h('span', {
+                id: 'rx-objective-tone',
+                className: 'nk-rx-tone inline-flex rounded-full px-2 py-0.5 text-[10px] font-black'
+              }, rxObjectiveVisualTone.label)
+            ),
             h('p', {
               id: 'rx-objective-step', className: 'mt-1 text-[11px] font-black',
               style: { color: isDark ? '#d1fae5' : '#065f46' }
@@ -5102,23 +5738,37 @@
               id: 'rx-objective-detail', className: 'block mt-1 text-[11px] leading-relaxed',
               style: { color: isDark ? '#d1fae5' : '#166534' }
             }, rxObjective.detail)
+            )
           ),
 
-          h('div', { className: 'mt-2 flex flex-wrap gap-1' },
-            RX_MODES.map(function (m) {
-              return pill(rxMode === m.id, m.id === 'rbmk' ? '#f87171' : '#60a5fa', m.name, function () {
-                upd({ rxMode: m.id });
-                rxRestart(rxScenario);
-                if (typeof beep === 'function') beep();
-                if (typeof announceToSR === 'function') announceToSR(m.name + '. ' + m.blurb);
-              }, 'Switch the core to ' + m.name);
-            })
+          h('fieldset', {
+            'aria-label': '2. Choose core design',
+            className: 'nk-rx-control-group mt-2 rounded-xl border p-2.5',
+            style: { borderColor: 'rgba(96,165,250,0.4)', background: isDark ? 'rgba(30,58,138,0.1)' : 'rgba(239,246,255,0.72)' }
+          },
+            h('legend', { className: 'px-1.5 text-[11px] font-black', style: { color: ink('#60a5fa') } }, '2 · Choose core design'),
+            h('div', { className: 'flex flex-wrap gap-1' },
+              RX_MODES.map(function (m) {
+                return pill(rxMode === m.id, m.id === 'rbmk' ? '#f87171' : '#60a5fa', m.name, function () {
+                  upd({ rxMode: m.id });
+                  rxRestart(rxScenario);
+                  if (typeof beep === 'function') beep();
+                  if (typeof announceToSR === 'function') announceToSR(m.name + '. ' + m.blurb);
+                }, 'Switch the core to ' + m.name);
+              })
+            ),
+            h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: rxMode === 'rbmk' ? (isDark ? '#fca5a5' : '#b91c1c') : (isDark ? '#cbd5e1' : '#475569') } }, rxModeObj.blurb)
           ),
-          h('p', { className: 'text-[11px] mt-1.5 leading-relaxed', style: { color: rxMode === 'rbmk' ? (isDark ? '#fca5a5' : '#b91c1c') : (isDark ? '#cbd5e1' : '#475569') } }, rxModeObj.blurb),
 
-          h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-            h('button', { type: 'button', 'aria-pressed': rxUi.running ? 'true' : 'false',
-              'aria-label': rxUi.running ? 'Pause the simulation' : 'Start the simulation',
+          h('fieldset', {
+            'aria-label': '3. Operate the reactor',
+            className: 'nk-rx-control-group mt-2 rounded-xl border p-2.5',
+            style: { borderColor: 'rgba(251,191,36,0.42)', background: isDark ? 'rgba(120,53,15,0.1)' : 'rgba(255,251,235,0.74)' }
+          },
+            h('legend', { className: 'px-1.5 text-[11px] font-black', style: { color: ink('#fbbf24') } }, '3 · Operate the reactor'),
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+            h('button', { ref: rxStartButtonRef, type: 'button', 'aria-pressed': rxUi.running ? 'true' : 'false',
+              'aria-label': rxUi.running ? 'Pause. Pause the simulation' : 'Run. Start the simulation',
               onClick: function () { rxPatchUi({ running: !rxUi.running }); if (typeof beep === 'function') beep(); },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
               style: rxUi.running ? { background: '#f59e0b', color: '#0b1020', border: '1px solid #f59e0b' } : { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
@@ -5132,12 +5782,12 @@
               },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white',
               style: { background: '#dc2626', border: '1px solid #dc2626' } }, '🛑 SCRAM'),
-            h('button', { type: 'button', 'aria-label': 'Reset the reactor to its starting condition',
+            h('button', { type: 'button', 'aria-label': 'Reset. Return the reactor to its starting condition',
               onClick: function () { rxRestart(); if (typeof beep === 'function') beep(); },
               className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '↺ Reset'),
             h('button', { type: 'button', 'aria-pressed': rxUi.pumps ? 'true' : 'false',
-              'aria-label': rxUi.pumps ? 'Stop the coolant pumps' : 'Restore the coolant pumps',
+              'aria-label': rxUi.pumps ? 'Pumps on. Stop the coolant pumps' : 'Pumps off. Restore the coolant pumps',
               onClick: function () {
                 var pumps = !rxRef.current.pumps;
                 rxSet({ pumps: pumps });
@@ -5149,38 +5799,43 @@
                 ? { background: 'rgba(96,165,250,0.18)', color: isDark ? '#bfdbfe' : '#1d4ed8', border: '1px solid #60a5fa' }
                 : { background: 'rgba(248,113,113,0.18)', color: isDark ? '#fecaca' : '#b91c1c', border: '1px solid #f87171' }
             }, rxUi.pumps ? '💧 Pumps on' : '💧 Pumps OFF')
-          ),
+            ),
 
-          h('div', { className: 'flex items-center gap-2 mt-2' },
+            h('div', { className: 'nk-slider flex items-center gap-2 mt-2' },
             h('label', { htmlFor: 'rx-rods', className: 'text-[11px] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Control rods'),
-            h('input', { id: 'rx-rods', type: 'range', min: 0, max: 100, step: 1,
+            h('input', { id: 'rx-rods', type: 'range', min: 0, max: 100, step: 5,
               value: rxUi.rodStep,
               'aria-valuetext': rxUi.rodStep + ' percent inserted',
               onChange: function (e) {
                 var value = parseFloat(e.target.value);
                 rxSet({ rods: value, scrammed: false });
-                rxPatchUi({ rodStep: Math.round(value / 5) * 5, scrammed: false });
+                rxPatchUi({ rodStep: value, scrammed: false });
               },
-              className: 'flex-1 h-6 accent-emerald-500' }),
+              className: 'flex-1 min-h-11 accent-emerald-500' }),
             h('span', { className: 'text-[11px] font-bold w-24 text-right', style: { color: isDark ? '#6ee7b7' : '#047857' } }, rxUi.rodStep + '% in')
-          ),
+            ),
 
-          rxUi.verdict ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5',
+            rxUi.verdict ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5',
             style: { borderColor: rxUi.verdict.ok ? 'rgba(52,211,153,0.6)' : 'rgba(248,113,113,0.6)', background: isDark ? 'rgba(15,23,42,0.7)' : (rxUi.verdict.ok ? 'rgba(240,253,244,0.9)' : 'rgba(254,242,242,0.9)') } },
             h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(rxUi.verdict.ok ? '#059669' : '#dc2626') } }, rxUi.verdict.ok ? '✅ Scenario complete' : '⚠️ Run ended'),
             h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, rxUi.verdict.why),
-            h('button', { type: 'button', 'aria-label': 'Reset and try again',
-              onClick: function () { rxRestart(); },
+            h('button', { type: 'button', 'aria-label': 'Try again. Reset the reactor scenario',
+              onClick: function () {
+                rxRetryFocusRef.current = true;
+                rxRestart();
+              },
               className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-[11px] font-bold text-white',
               style: { background: '#065f46', border: '1px solid #065f46' } }, 'Try again')
-          ) : null,
+            ) : null
+          ),
 
           h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Parts of the core'),
           h('div', { className: 'flex flex-wrap gap-1' },
             RX_PARTS.map(function (p) {
               var on = d.rxPart === p.id;
-              return h('button', { key: p.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
-                'aria-label': (on ? 'Hide' : 'Show') + ' details for ' + p.label,
+              return h('button', { key: p.id, type: 'button',
+                'aria-expanded': on ? 'true' : 'false',
+                'aria-controls': 'nk-rx-part-' + p.id,
                 onClick: function () {
                   upd({ rxPart: on ? null : p.id });
                   if (!on) { pushOnce('rxPartsSeen', p.id); if (typeof announceToSR === 'function') announceToSR(p.label + '. ' + p.desc); }
@@ -5194,7 +5849,7 @@
           ),
           (function () {
             var p = RX_PARTS.filter(function (x) { return x.id === d.rxPart; })[0];
-            return p ? h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: p.color + '80', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.92)' } },
+            return p ? h('div', { id: 'nk-rx-part-' + p.id, className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: p.color + '80', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.92)' } },
               h('p', { className: 'text-[11px] font-black mb-1', style: { color: ink(p.color) } }, p.label),
               h('p', { className: 'text-[11px] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, p.desc)) : null;
           })(),
@@ -5218,7 +5873,7 @@
               'aria-label': activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' evidence claims mastered',
               className: 'flex-1 min-w-[8rem] h-3', style: { accentColor: '#0891b2' }
             }),
-            h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+            h('span', { className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' mastered')
           ),
 
@@ -5233,11 +5888,12 @@
                     'aria-current': current ? 'step' : undefined,
                     'aria-label': 'Claim ' + (i + 1) + ' of ' + evidenceClaims.length + (mastered ? ', mastered' : ', not yet mastered'),
                     onClick: function () {
+                      nkEvidencePendingFocusRef.current = claim.id !== evidenceClaim.id;
                       upd({
                         evidenceIndex: EVIDENCE_CLAIMS.indexOf(claim),
                         evidenceClaimId: claim.id
                       });
-                      if (typeof announceToSR === 'function') announceToSR('Claim ' + (i + 1) + ' of ' + evidenceClaims.length + '.');
+                      if (claim.id === evidenceClaim.id) nkFocusEvidenceClaim();
                     },
                     className: 'min-h-11 min-w-11 px-3 py-2 rounded-lg text-[11px] font-black',
                     style: current
@@ -5251,15 +5907,15 @@
           h('fieldset', {
             id: 'nk-evidence-claim',
             tabIndex: -1,
-            'aria-describedby': 'nk-evidence-intro nk-evidence-feedback',
+            'aria-describedby': 'nk-evidence-statement nk-evidence-question nk-evidence-feedback',
             className: 'nk-evidence-claim mt-2 rounded-xl border p-3',
             style: { borderColor: 'rgba(34,211,238,0.45)', background: isDark ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.96)' }
           },
             h('legend', { className: 'px-1 text-xs font-black', style: { color: ink('#22d3ee') } },
               'Claim ' + (evidenceIndex + 1) + ' of ' + evidenceClaims.length),
-            h('p', { className: 'text-sm font-black leading-relaxed', style: { color: isDark ? '#fff' : '#1e293b' } },
+            h('p', { id: 'nk-evidence-statement', className: 'text-sm font-black leading-relaxed', style: { color: isDark ? '#fff' : '#1e293b' } },
               '“' + evidenceClaim.claim + '”'),
-            h('p', { className: 'text-[10px] mt-1 mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+            h('p', { id: 'nk-evidence-question', className: 'text-[10px] mt-1 mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
               'Which verdict is justified by the evidence in this lab?'),
 
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
@@ -5279,9 +5935,11 @@
                     onChange: function () {
                       var choices = Object.assign({}, evidenceChoices);
                       var checked = Object.assign({}, evidenceCheckedMap);
+                      var revealed = Object.assign({}, evidenceRevealedMap);
                       choices[evidenceClaim.id] = verdict.id;
                       checked[evidenceClaim.id] = false;
-                      upd({ evidenceChoices: choices, evidenceChecked: checked });
+                      delete revealed[evidenceClaim.id];
+                      upd({ evidenceChoices: choices, evidenceChecked: checked, evidenceRevealed: revealed });
                     },
                     style: { width: '1.15rem', height: '1.15rem', accentColor: '#0891b2', flexShrink: 0 }
                   }),
@@ -5301,20 +5959,41 @@
                   },
                     h('p', { className: 'text-[11px] font-black', style: { color: ink(evidenceCorrect ? '#059669' : '#f59e0b') } },
                       evidenceCorrect ? '✓ Evidence match' : '↺ Take another look'),
-                    h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: isDark ? '#f8fafc' : '#1e293b' } },
-                      'Best verdict: ' + evidenceVerdict.label + '.'),
                     h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, evidenceClaim.evidence),
-                    h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#22d3ee') } }, evidenceClaim.takeaway)
+                    !evidenceCorrect && !evidenceAnswerVisible
+                      ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#f59e0b') } },
+                          'Use that evidence to revise your verdict, or reveal the best-supported answer when you need it.')
+                      : null,
+                    h('div', { id: 'nk-evidence-answer', hidden: !evidenceAnswerVisible },
+                      h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: isDark ? '#f8fafc' : '#1e293b' } },
+                        'Best verdict: ' + evidenceVerdict.label + '.'),
+                      h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#22d3ee') } }, evidenceClaim.takeaway)
+                    )
                   ),
-                  h('button', {
-                    type: 'button', onClick: function () { nkReviewTopic(evidenceClaim.section); },
-                    'aria-label': 'Review the lab topic that supports claim ' + (evidenceIndex + 1),
-                    className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-[11px] font-bold',
-                    style: { background: isDark ? 'rgba(148,163,184,0.12)' : '#fff', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
-                  }, 'Review the supporting topic')
+                  h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                    h('button', {
+                      type: 'button', onClick: function () { nkReviewTopic(evidenceClaim.section); },
+                      'aria-label': 'Review the supporting topic for claim ' + (evidenceIndex + 1),
+                      className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                      style: { background: isDark ? 'rgba(148,163,184,0.12)' : '#fff', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
+                    }, 'Review the supporting topic'),
+                    !evidenceCorrect && evidenceMastered.indexOf(evidenceClaim.id) === -1 ? h('button', {
+                      type: 'button',
+                      'aria-expanded': evidenceAnswerVisible ? 'true' : 'false',
+                      'aria-controls': 'nk-evidence-answer',
+                      onClick: function () {
+                        var revealed = Object.assign({}, evidenceRevealedMap);
+                        revealed[evidenceClaim.id] = !evidenceAnswerVisible;
+                        upd({ evidenceRevealed: revealed });
+                        if (typeof beep === 'function') beep();
+                      },
+                      className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                      style: { background: 'transparent', color: isDark ? '#fde68a' : '#92400e', border: '1px solid ' + (isDark ? 'rgba(251,191,36,0.55)' : 'rgba(217,119,6,0.5)') }
+                    }, evidenceAnswerVisible ? 'Hide best verdict' : 'Show best verdict') : null
+                  )
                 )
               : h('p', {
-                  id: 'nk-evidence-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                  id: 'nk-evidence-feedback',
                   className: 'text-[10px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' }
                 }, evidenceChoice ? 'Choice selected. Check the evidence when you are ready.' : 'Choose a verdict to continue.'),
 
@@ -5341,17 +6020,19 @@
                     evidenceMastered: mastered,
                     evidenceAwarded: d.evidenceAwarded || firstCompletion
                   };
-                  if (routeCompletes) patch.pathsCompleted = nkPathsCompleted.concat([nkPath.id]);
+                  if (routeCompletes && nkPathsCompleted.indexOf(nkPath.id) === -1) {
+                    patch.pathsCompleted = nkPathsCompleted.concat([nkPath.id]);
+                  }
                   upd(patch);
                   // The feedback paragraph is already a polite atomic status.
                   // Repeating that same prose through the host announcer makes
                   // screen readers speak every verdict twice. Only completion
                   // is distinct information that is not in that live region.
                   if (routeCompletes && typeof announceToSR === 'function') {
-                    announceToSR('Route complete: ' + nkPath.q + '.');
+                    announceToSR('Route complete: ' + nkPath.q);
                   }
                   if (firstCompletion && !d.evidenceAwarded) {
-                    if (typeof celebrate === 'function') celebrate();
+                    nkCelebrate();
                     if (typeof awardXP === 'function') awardXP('nuclear_evidence', 15, 'Mastered the evidence challenge');
                   }
                 },
@@ -5385,22 +6066,29 @@
                 onClick: function () {
                   var resetChoices = Object.assign({}, evidenceChoices);
                   var resetChecked = Object.assign({}, evidenceCheckedMap);
+                  var resetRevealed = Object.assign({}, evidenceRevealedMap);
                   var resetIds = evidenceClaims.map(function (claim) { return claim.id; });
                   resetIds.forEach(function (id) {
                     delete resetChoices[id];
                     delete resetChecked[id];
+                    delete resetRevealed[id];
                   });
                   var firstClaim = evidenceClaims[0];
+                  var claimChanges = firstClaim.id !== evidenceClaim.id;
+                  nkEvidencePendingFocusRef.current = claimChanges;
                   upd({
                     evidenceIndex: EVIDENCE_CLAIMS.indexOf(firstClaim),
                     evidenceClaimId: firstClaim.id,
                     evidenceChoices: resetChoices,
                     evidenceChecked: resetChecked,
+                    evidenceRevealed: resetRevealed,
                     evidenceMastered: evidenceMastered.filter(function (id) {
                       return resetIds.indexOf(id) === -1;
                     })
                   });
-                  if (typeof announceToSR === 'function') announceToSR('Evidence challenge reset.');
+                  // If claim 1 was already showing, the id does not change and
+                  // the post-commit handoff effect will not run.
+                  if (!claimChanges) nkFocusEvidenceClaim();
                 },
                 className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
                 style: { background: 'transparent', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
@@ -5426,6 +6114,10 @@
             routeKey: nkReflectionKey,
             routeQuestion: nkPath ? nkPath.q : '',
             routeIcon: nkPath ? nkPath.icon : '',
+            routeComplete: nkPath ? nkActiveRouteProgress.complete : true,
+            routeStepsRemaining: nkPath
+              ? Math.max(0, nkActiveRouteProgress.total - nkActiveRouteProgress.count)
+              : 0,
             saved: nkSavedReflection,
             isDark: isDark,
             onSave: nkSaveReflection,
@@ -5443,9 +6135,9 @@
              { id: 'chemBalance', icon: '⚖️', name: 'ChemLab: Reactions & Elements', why: 'Nuclear equations balance mass number and charge, not atoms — and the periodic table atlas lives there.' }
             ].map(function (b) {
               return h('button', {
-                key: b.id, type: 'button', 'aria-label': 'Open ' + b.name + '. ' + b.why,
+                key: b.id, type: 'button',
                 onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(b.id); },
-                className: 'text-left rounded-lg p-2.5 border transition-colors',
+                className: 'min-h-11 text-left rounded-lg p-2.5 border transition-colors',
                 style: { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(255,255,255,0.92)', borderColor: isDark ? 'rgba(148,163,184,0.26)' : 'rgba(100,116,139,0.24)' }
               },
                 h('span', { className: 'flex items-center gap-2' },

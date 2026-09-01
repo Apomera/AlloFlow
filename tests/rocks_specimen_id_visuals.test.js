@@ -769,6 +769,59 @@ describe('swatch renderers declare their loop counters', () => {
   });
 });
 
+describe('mineral catalog science copy stays accurate', () => {
+  const source = () => readFileSync(ROCKS_FILE, 'utf8');
+  const mineralRow = (id) => {
+    const row = source().split('\n').find((line) =>
+      line.includes("{ id: '" + id + "'") && line.includes('hardness:'));
+    expect(row, `${id} catalog row`).toBeTruthy();
+    return row;
+  };
+
+  it('distinguishes upper-mantle olivine from Earth-wide bridgmanite abundance', () => {
+    const row = mineralRow('olivine');
+    expect(row).toContain('Olivine is a dominant mineral in much of Earth');
+    expect(row).toContain('bridgmanite deeper in the mantle');
+    expect(row).toContain('most abundant mineral overall');
+    expect(row).not.toContain('There is more olivine inside Earth than any other mineral');
+  });
+
+  it('attributes volcanic odors to the correct sulfur gases', () => {
+    const row = mineralRow('sulfur');
+    expect(row).toContain('Burning sulfur makes pungent sulfur dioxide gas');
+    expect(row).toContain('rotten-egg odor at some volcanic sites comes from hydrogen sulfide, not sulfur itself');
+    expect(row).not.toContain('rotten-egg smell when heated');
+  });
+
+  it('describes galena cubes as cleavage products rather than fractures', () => {
+    const row = mineralRow('galena');
+    expect(row).toContain('perfect cubic cleavage, so it cleaves into tiny cubes');
+    expect(row).not.toContain('fractures into tiny cubes');
+  });
+
+  it('identifies El-Dorado as a faceted stone cut from larger rough', () => {
+    const row = mineralRow('topaz');
+    expect(row).toContain("one of the world\\'s largest faceted topazes");
+    expect(row).toContain('cut from a much heavier rough crystal');
+    expect(row).not.toContain('largest uncut topaz crystal ever found');
+  });
+
+  it('scopes the acid result to immediate calcite behavior, not every carbonate', () => {
+    const src = source();
+    expect(src).toContain('Calcite typically fizzes immediately; some other carbonates react weakly or only when powdered.');
+    expect(src).toContain('Calcite gives an immediate carbon-dioxide fizz in cold dilute acid; some other carbonates can react slowly.');
+    expect(src).toContain('does not prove that every carbonate is absent.');
+
+    [
+      'Carbonates react by fizzing vigorously.',
+      'The specimen does not contain carbonate minerals',
+      'Carbon dioxide bubbles mean a carbonate mineral.',
+      'Use fizzing as a highly diagnostic carbonate clue.',
+      'No fizz is still evidence: it rules against a carbonate reaction.',
+    ].forEach((stale) => expect(src, `stale acid claim: ${stale}`).not.toContain(stale));
+  });
+});
+
 // ── The quiz has to be answerable ───────────────────────────────────────────
 //
 // A question is marked right by comparing the chosen option to `a` BY VALUE:

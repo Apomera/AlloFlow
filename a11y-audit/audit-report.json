@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-08-27T22:18:35.842Z",
+  "timestamp": "2026-09-01T00:35:12.472Z",
   "summary": {
-    "total": 273,
-    "actionable": 14,
-    "coveredByGlobalBaseline": 163,
-    "notInAccessibilityTree": 96,
-    "critical": 0,
+    "total": 281,
+    "actionable": 15,
+    "coveredByGlobalBaseline": 169,
+    "notInAccessibilityTree": 97,
+    "critical": 1,
     "major": 14,
     "minor": 0,
-    "filesScanned": 523,
+    "filesScanned": 528,
     "checksRun": 14
   },
   "byCheck": [
@@ -17,9 +17,9 @@
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "count": 51,
+      "count": 57,
       "actionable": 0,
-      "coveredByGlobalBaseline": 51,
+      "coveredByGlobalBaseline": 57,
       "notInAccessibilityTree": 0,
       "files": [
         "adventure_source.jsx",
@@ -41,6 +41,7 @@
         "stem_lab\\stem_tool_applab.js",
         "stem_lab\\stem_tool_aquaculture.js",
         "stem_lab\\stem_tool_artstudio.js",
+        "stem_lab\\stem_tool_autorepair.js",
         "stem_lab\\stem_tool_birdlab.js",
         "stem_lab\\stem_tool_brainatlas.js",
         "stem_lab\\stem_tool_cell.js",
@@ -50,6 +51,7 @@
         "stem_lab\\stem_tool_flightsim.js",
         "stem_lab\\stem_tool_geo.js",
         "stem_lab\\stem_tool_geologyexplorer.js",
+        "stem_lab\\stem_tool_magnetism.js",
         "stem_lab\\stem_tool_optics.js",
         "stem_lab\\stem_tool_pets.js",
         "stem_lab\\stem_tool_solarsystem.js",
@@ -86,6 +88,7 @@
         "escape_room_module.js",
         "reading_library_module.js",
         "student_analytics_module.js",
+        "view_full_pack_run_source.jsx",
         "view_header_source.jsx",
         "view_history_panel_source.jsx",
         "view_misc_modals_source.jsx",
@@ -130,18 +133,20 @@
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
       "severity": "critical",
-      "count": 95,
-      "actionable": 0,
+      "count": 97,
+      "actionable": 1,
       "coveredByGlobalBaseline": 0,
-      "notInAccessibilityTree": 95,
+      "notInAccessibilityTree": 96,
       "files": [
         "allohaven_module.js",
         "doc_pipeline_source.jsx",
+        "image_asset_editor_source.jsx",
         "math_fluency_module.js",
         "memory_palace_module.js",
         "studio_module.js",
         "view_pdf_audit_source.jsx",
         "visual_panel_source.jsx",
+        "stem_lab\\stem_tool_artstudio.js",
         "stem_lab\\stem_tool_coasterlab.js",
         "stem_lab\\stem_tool_dinolab.js",
         "stem_lab\\stem_tool_flightsim.js",
@@ -172,7 +177,7 @@
     },
     {
       "file": "allobot_source.jsx",
-      "line": 1634,
+      "line": 1792,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -183,7 +188,7 @@
     },
     {
       "file": "allobot_source.jsx",
-      "line": 1635,
+      "line": 1793,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -193,8 +198,19 @@
       "coveredByGlobalBaseline": true
     },
     {
+      "file": "allobot_source.jsx",
+      "line": 5088,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "className=\"allobot-avatar-action absolute inset-0 z-10 rounded-full bg-transparent focus:outline-none\"",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
       "file": "AlloFlowANTI.txt",
-      "line": 17243,
+      "line": 17584,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -204,7 +220,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 19467,
+      "line": 19808,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -214,7 +230,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 27284,
+      "line": 27727,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -224,7 +240,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 45329,
+      "line": 45841,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -234,7 +250,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 4451,
+      "line": 4452,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -245,7 +261,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 4787,
+      "line": 4788,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -256,7 +272,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 4801,
+      "line": 4802,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -267,7 +283,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9559,
+      "line": 9632,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -278,7 +294,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9637,
+      "line": 9710,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -289,7 +305,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 48114,
+      "line": 48698,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -300,7 +316,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 49731,
+      "line": 49999,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -311,7 +327,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 50098,
+      "line": 50366,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -322,18 +338,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 51018,
-      "checkId": "MOTION-001",
-      "name": "animate-pulse without reduced-motion check",
-      "wcag": "2.3.1 Three Flashes",
-      "severity": "major",
-      "snippet": "{isProcessing ? <RefreshCw className=\"animate-spin text-indigo-600\" size={18} /> : <Sparkles size={18} className=\"text-y",
-      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
-      "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "AlloFlowANTI.txt",
-      "line": 51493,
+      "line": 51217,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -344,7 +349,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 51509,
+      "line": 51233,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -355,7 +360,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 51632,
+      "line": 51356,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -366,7 +371,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 51693,
+      "line": 51417,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -377,7 +382,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 51989,
+      "line": 51713,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -388,7 +393,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 51991,
+      "line": 51715,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -399,7 +404,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 51994,
+      "line": 51718,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -410,7 +415,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 52015,
+      "line": 51739,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -421,7 +426,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 52040,
+      "line": 51764,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -432,7 +437,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 52985,
+      "line": 52715,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -443,7 +448,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 53182,
+      "line": 52912,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -454,7 +459,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 56111,
+      "line": 54994,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -465,7 +470,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 57973,
+      "line": 56544,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -476,7 +481,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 4887,
+      "line": 4939,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -486,7 +491,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 5883,
+      "line": 5935,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -496,7 +501,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9705,
+      "line": 9778,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -506,7 +511,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9781,
+      "line": 9854,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -516,7 +521,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9796,
+      "line": 9869,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -526,7 +531,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9810,
+      "line": 9883,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -536,7 +541,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9818,
+      "line": 9891,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -546,7 +551,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 9824,
+      "line": 9897,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -556,7 +561,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 52330,
+      "line": 52054,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -566,7 +571,7 @@
     },
     {
       "file": "AlloFlowANTI.txt",
-      "line": 53637,
+      "line": 53367,
       "checkId": "DIALOG-001",
       "name": "Modal overlay without dialog semantics",
       "wcag": "4.1.2 Name/Role/Value, 2.4.3 Focus Order",
@@ -620,18 +625,18 @@
     },
     {
       "file": "allo_commands_source.jsx",
-      "line": 5638,
+      "line": 5675,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "snippet": "className=\"flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500\" />",
+      "snippet": "className=\"min-w-0 flex-1 text-sm outline-none bg-transparent text-slate-800 placeholder:text-slate-500\" />",
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
     },
     {
       "file": "allo_commands_source.jsx",
-      "line": 5759,
+      "line": 5796,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -697,7 +702,7 @@
     },
     {
       "file": "doc_pipeline_source.jsx",
-      "line": 20211,
+      "line": 20220,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -771,6 +776,17 @@
       "snippet": "h('div', { className: 'px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (escapeTimeLeft <= 60 ? 'bg-red-900/50 animate",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
       "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "image_asset_editor_source.jsx",
+      "line": 264,
+      "checkId": "CANVAS-001",
+      "name": "Canvas element without text alternative",
+      "wcag": "1.1.1 Non-text Content",
+      "severity": "critical",
+      "snippet": "const canvas = document.createElement('canvas');",
+      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer.",
+      "notInAccessibilityTree": true
     },
     {
       "file": "lingua_practice_module.js",
@@ -1104,7 +1120,7 @@
     },
     {
       "file": "studio_module.js",
-      "line": 4065,
+      "line": 4245,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -1115,7 +1131,7 @@
     },
     {
       "file": "studio_module.js",
-      "line": 4097,
+      "line": 4277,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -1126,7 +1142,7 @@
     },
     {
       "file": "studio_module.js",
-      "line": 4121,
+      "line": 4301,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -1137,7 +1153,7 @@
     },
     {
       "file": "studio_module.js",
-      "line": 4143,
+      "line": 4323,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -1169,8 +1185,19 @@
       "coveredByGlobalBaseline": true
     },
     {
+      "file": "view_full_pack_run_source.jsx",
+      "line": 103,
+      "checkId": "MOTION-001",
+      "name": "animate-pulse without reduced-motion check",
+      "wcag": "2.3.1 Three Flashes",
+      "severity": "major",
+      "snippet": "{isProcessing ? <RefreshCw className=\"animate-spin text-indigo-600\" size={18} /> : <Sparkles size={18} className=\"text-y",
+      "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
+      "coveredByGlobalBaseline": true
+    },
+    {
       "file": "view_header_source.jsx",
-      "line": 1846,
+      "line": 1972,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1181,7 +1208,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 840,
+      "line": 964,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1192,7 +1219,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 1408,
+      "line": 1532,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1203,7 +1230,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 1553,
+      "line": 1677,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1214,7 +1241,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 1724,
+      "line": 1847,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1225,7 +1252,7 @@
     },
     {
       "file": "view_header_source.jsx",
-      "line": 1736,
+      "line": 1859,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1236,7 +1263,7 @@
     },
     {
       "file": "view_history_panel_source.jsx",
-      "line": 623,
+      "line": 740,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1247,7 +1274,7 @@
     },
     {
       "file": "view_history_panel_source.jsx",
-      "line": 657,
+      "line": 774,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1258,7 +1285,7 @@
     },
     {
       "file": "view_history_panel_source.jsx",
-      "line": 682,
+      "line": 799,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -1269,7 +1296,7 @@
     },
     {
       "file": "view_info_modal_source.jsx",
-      "line": 1966,
+      "line": 1977,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1280,7 +1307,7 @@
     },
     {
       "file": "view_misc_modals_source.jsx",
-      "line": 1729,
+      "line": 1780,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1676,7 +1703,18 @@
     },
     {
       "file": "stem_lab\\stem_tool_aquaculture.js",
-      "line": 22634,
+      "line": 11154,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "h('h3', { id: prefix + '-heading', ref: config.focusRef, tabIndex: -1, style: { margin: '4px 0 5px', color: '#f8fafc', f",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "stem_lab\\stem_tool_aquaculture.js",
+      "line": 23048,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1709,35 +1747,78 @@
     },
     {
       "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 3303,
+      "line": 5225,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
       "severity": "critical",
-      "snippet": "React.createElement(\"h1\", { id: \"artstudio-home-title\", tabIndex: -1, className: \"mt-2 text-3xl sm:text-4xl font-black t",
+      "snippet": "React.createElement(\"h2\", { id: \"artstudio-home-title\", tabIndex: -1, className: \"mt-2 text-3xl sm:text-4xl font-black t",
       "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
     },
     {
       "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 3458,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
+      "line": 3685,
+      "checkId": "CANVAS-001",
+      "name": "Canvas element without text alternative",
+      "wcag": "1.1.1 Non-text Content",
       "severity": "critical",
-      "snippet": "className: 'space-y-4 focus:outline-none'",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
-      "coveredByGlobalBaseline": true
+      "snippet": "var exportCanvas = document.createElement('canvas');",
+      "fix": "Add role=\"img\" and a descriptive aria-label, or aria-hidden=\"true\" when the canvas is only an internal/decorative buffer."
     },
     {
       "file": "stem_lab\\stem_tool_artstudio.js",
-      "line": 3762,
+      "line": 5734,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
       "severity": "major",
       "snippet": "currentWorks.status === 'loading' && React.createElement('div', { className: 'mt-4 h-2 overflow-hidden rounded-full bg-e",
       "fix": "Gate animation behind useReducedMotion() or @media (prefers-reduced-motion: reduce).",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "stem_lab\\stem_tool_autorepair.js",
+      "line": 1187,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "'.ar-career-panel { min-width: 0; outline: none; }',",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "stem_lab\\stem_tool_autorepair.js",
+      "line": 1285,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "'.ar-usedcar-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "stem_lab\\stem_tool_autorepair.js",
+      "line": 1434,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "'.ar-tire-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "stem_lab\\stem_tool_autorepair.js",
+      "line": 1813,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "'.ar-ev-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
       "coveredByGlobalBaseline": true
     },
     {
@@ -1819,18 +1900,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 24198,
-      "checkId": "FOCUS-001",
-      "name": "outline:none without visible focus replacement",
-      "wcag": "2.4.7 Focus Visible",
-      "severity": "critical",
-      "snippet": "outline: 'none'",
-      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
-      "coveredByGlobalBaseline": true
-    },
-    {
-      "file": "stem_lab\\stem_tool_cell.js",
-      "line": 26121,
+      "line": 26639,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1841,7 +1911,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 26127,
+      "line": 26645,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -1852,7 +1922,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_cell.js",
-      "line": 24405,
+      "line": 24923,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2457,7 +2527,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_geometryworld.js",
-      "line": 7835,
+      "line": 7837,
       "checkId": "INPUT-001",
       "name": "Input without programmatic label",
       "wcag": "3.3.2 Labels or Instructions",
@@ -2500,6 +2570,28 @@
       "coveredByGlobalBaseline": true
     },
     {
+      "file": "stem_lab\\stem_tool_magnetism.js",
+      "line": 3567,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "'.mag-root .mag-coach-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:end;margin-top:8px}",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "stem_lab\\stem_tool_magnetism.js",
+      "line": 3618,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "'.mag-root .mag-studio-compose{padding:10px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,1",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
       "file": "stem_lab\\stem_tool_manipulatives.js",
       "line": 2156,
       "checkId": "MOTION-001",
@@ -2523,7 +2615,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_money.js",
-      "line": 2436,
+      "line": 2497,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2534,7 +2626,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_money.js",
-      "line": 3256,
+      "line": 3314,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2545,7 +2637,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_money.js",
-      "line": 3899,
+      "line": 3965,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2622,7 +2714,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_optics.js",
-      "line": 279,
+      "line": 328,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -2688,7 +2780,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 10450,
+      "line": 10705,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2699,7 +2791,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 10526,
+      "line": 10781,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2710,7 +2802,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 10562,
+      "line": 10817,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2721,7 +2813,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 10669,
+      "line": 10924,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2732,7 +2824,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 11107,
+      "line": 11362,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2743,7 +2835,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_raptorhunt.js",
-      "line": 11774,
+      "line": 12029,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2754,7 +2846,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_solarsystem.js",
-      "line": 1005,
+      "line": 1075,
       "checkId": "FOCUS-001",
       "name": "outline:none without visible focus replacement",
       "wcag": "2.4.7 Focus Visible",
@@ -2765,7 +2857,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_sourcebook.js",
-      "line": 4260,
+      "line": 5735,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2776,7 +2868,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_spaceexplorer.js",
-      "line": 2440,
+      "line": 4372,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",
@@ -2820,7 +2912,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_treelab.js",
-      "line": 1170,
+      "line": 1564,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2831,7 +2923,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 6862,
+      "line": 6943,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2842,7 +2934,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 6931,
+      "line": 7012,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2853,7 +2945,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 6962,
+      "line": 7043,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2864,7 +2956,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 6999,
+      "line": 7080,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2875,7 +2967,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 7449,
+      "line": 7530,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2886,7 +2978,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 7779,
+      "line": 7860,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2897,7 +2989,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 7815,
+      "line": 7896,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2908,7 +3000,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 10903,
+      "line": 10984,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2919,7 +3011,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 11374,
+      "line": 11455,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2930,7 +3022,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 11441,
+      "line": 11522,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2941,7 +3033,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 11651,
+      "line": 11732,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2952,7 +3044,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 18611,
+      "line": 19776,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2963,7 +3055,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 19518,
+      "line": 20683,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2974,7 +3066,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 20670,
+      "line": 21835,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2985,7 +3077,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 20835,
+      "line": 22000,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -2996,7 +3088,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 21108,
+      "line": 22273,
       "checkId": "CANVAS-001",
       "name": "Canvas element without text alternative",
       "wcag": "1.1.1 Non-text Content",
@@ -3007,7 +3099,7 @@
     },
     {
       "file": "stem_lab\\stem_tool_watercycle.js",
-      "line": 26894,
+      "line": 28059,
       "checkId": "MOTION-001",
       "name": "animate-pulse without reduced-motion check",
       "wcag": "2.3.1 Three Flashes",

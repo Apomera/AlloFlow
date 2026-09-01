@@ -61,6 +61,7 @@ function makeMemoryAidRecallExport() {
       cards: [{
         target: 'States of matter',
         essentialFacts: ['PRIVATE CHECKED FACT: Solids retain shape.'],
+        factVerified: true,
         type: 'analogy-pattern',
         mode: 'generated',
         aiExample: 'PRIVATE AI MODEL ANSWER',
@@ -94,6 +95,7 @@ function makeMemoryAidRecallExport() {
       }, {
         target: 'Visual-only target',
         essentialFacts: ['PRIVATE SECOND CHECKED FACT'],
+        factVerified: true,
         type: 'visual-association',
         mode: 'student-authored',
         visualImage: 'data:image/png;base64,BBBB',
@@ -336,6 +338,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
         cards: [{
           target: 'States <script>alert(1)</script>',
           essentialFacts: ['Solids retain shape.', 'Liquids take the container shape.'],
+          factVerified: true,
           type: 'analogy-pattern',
           mode: 'generated',
           aiExample: 'A statue stays shaped; a guest fits the room.',
@@ -375,6 +378,7 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
         }, {
           target: 'Unsafe visual must be omitted',
           essentialFacts: ['The text worksheet must remain usable.'],
+          factVerified: false,
           type: 'visual-association',
           mode: 'student-authored',
           visualImage: 'javascript:alert(1)',
@@ -391,6 +395,9 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     const section = doc.querySelector('.memory-aid-export');
     expect(section).not.toBeNull();
     expect(section.textContent).toContain('Solids retain shape.');
+    expect(section.textContent).toContain('Teacher-verified facts');
+    expect(section.textContent).toContain('Facts awaiting teacher review');
+    expect(section.textContent).toContain('Do not use this card for recall practice until a teacher verifies the facts.');
     expect(section.textContent).toContain('A statue stays shaped');
     expect(section.textContent).toContain('My cue');
     expect(section.textContent).toContain('The contrast is clear.');
@@ -465,6 +472,32 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     ]) {
       expect(html).not.toContain(privateValue);
     }
+  });
+
+  it('keeps unverified cards authorable but never exports them as recall practice', () => {
+    const memoryAid = makeMemoryAidRecallExport();
+    memoryAid.data.cards[0].factVerified = false;
+    memoryAid.data.cards[0].studentPrompt = 'Revise the statue comparison in your own words.';
+    const html = pipeline.generateFullPackHTML([memoryAid], 'Memory review gate', true, {}, {
+      includeTeacherKey: false,
+      annotations: [],
+    });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const section = doc.querySelector('.memory-aid-export');
+    const pending = section.querySelector('.memory-aid-review-pending');
+    const recallSheets = Array.from(section.querySelectorAll('.memory-aid-recall-sheet'));
+
+    expect(pending).not.toBeNull();
+    expect(pending.textContent).toContain('Authoring only · facts awaiting teacher review');
+    expect(pending.textContent).toContain('Recall practice is unavailable');
+    expect(pending.textContent).toContain('A statue stays shaped; a guest fits the room.');
+    expect(pending.textContent).toContain('Revise the statue comparison in your own words.');
+    expect(pending.textContent).not.toContain('PRIVATE CHECKED FACT');
+    expect(pending.querySelector('[data-allo-print-lines="6"]')).not.toBeNull();
+    expect(pending.querySelector('fieldset')).toBeNull();
+    expect(pending.textContent).not.toContain('What does the cue help you remember?');
+    expect(recallSheets).toHaveLength(1);
+    expect(recallSheets[0].textContent).toContain('Visual-only target');
   });
 
   it('places the full Memory Aid reference only in the optional teacher appendix', () => {

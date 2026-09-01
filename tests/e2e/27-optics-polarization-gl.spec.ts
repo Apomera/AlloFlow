@@ -295,6 +295,85 @@ test.describe('Optics Lab workflow and responsive navigation', () => {
     await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveAttribute('data-isolated-variable', 'true');
   });
 
+  test('compares propagation regimes and carries real measurement settings into 2D, 3D, and CSV', async ({ page }) => {
+    await mountUi(page, {
+      mode: 'interference', intLambda: 600, intSlitSep: .1, intSlitWidth: 50,
+      intScreenL: 1, intScreenProbeMm: 3, intShowWavefield3D: true,
+    });
+
+    const studio = page.locator('details[data-op-measurement-studio="interference"]');
+    await studio.locator('summary').click();
+    await expect(studio).toHaveAttribute('open', '');
+    await expect(studio.locator('[data-op-optical-path="interference"]')).toBeVisible();
+    await expect(studio.locator('[data-op-signal-stage]')).toHaveCount(4);
+    await expect(studio.locator('[data-op-model-validity="interference"]')).toHaveAttribute('data-status', 'far');
+    await expect(studio.locator('[data-op-regime-meter="interference"]')).toHaveAttribute('data-op-regime-status', 'far');
+    await expect(studio.locator('[data-op-spectrum-tick]')).toHaveCount(6);
+    await expect(studio.locator('[data-op-model-profile-line="fraunhofer"]')).toBeVisible();
+    await expect(studio.locator('[data-op-model-profile-line="fresnel"]')).toBeVisible();
+    await expect(studio.locator('[data-op-model-profile-gap-area="interference"]')).toBeVisible();
+    await expect(studio.locator('[data-op-model-profile-x-tick]')).toHaveCount(3);
+
+    await studio.locator('[data-op-load-transition="interference"]').click();
+    await page.waitForFunction(() => {
+      const bucket = (window as any).__bucket();
+      return bucket.intPropagationModel === 'fresnel' && bucket.intScreenL === .2;
+    });
+    await expect(studio.locator('[data-op-model-validity="interference"]')).toHaveAttribute('data-status', 'near');
+    await expect(studio.locator('[data-op-regime-meter="interference"]')).toHaveAttribute('data-op-regime-status', 'near');
+    await expect(studio.getByRole('button', { name: 'Fresnel · near field' })).toHaveAttribute('aria-pressed', 'true');
+
+    await studio.getByRole('slider', { name: 'interference source spectral bandwidth' }).fill('40');
+    await studio.getByRole('slider', { name: 'interference detector aperture width' }).fill('2');
+    await studio.getByRole('slider', { name: 'interference detector uncertainty' }).fill('1.5');
+    await page.waitForFunction(() => {
+      const bucket = (window as any).__bucket();
+      return bucket.intBandwidthNm === 40 && bucket.intDetectorWidthMm === 2 && bucket.intNoisePct === 1.5;
+    });
+    await expect(studio.locator('[data-op-source-spectrum="interference"]')).toHaveAttribute('data-op-spectrum-start-nm', '580.0');
+    await expect(studio.locator('[data-op-source-spectrum="interference"]')).toHaveAttribute('data-op-spectrum-end-nm', '620.0');
+    await expect(studio.locator('[data-op-source-spectrum="interference"]')).toHaveAttribute('data-op-spectrum-mode', 'band');
+    await expect(studio.locator('[data-op-spectrum-band="interference"]')).toHaveAttribute('data-op-spectrum-width-percent', '10.811');
+    await expect(page.locator('[data-op-detector-aperture-readout="interference"]')).toContainText('2.0 mm aperture average');
+    await expect(page.locator('[data-op-detector-aperture-readout="interference"]')).toContainText('±1.5% uncertainty');
+    const comparison = studio.locator('[data-op-model-comparison="interference"]');
+    expect(Number(await comparison.getAttribute('data-op-model-max-delta'))).toBeGreaterThan(1);
+    await expect(comparison).toContainText('Max profile Δ');
+    await expect(studio.locator('[data-op-model-profile-max-gap="interference"]')).toHaveCount(1);
+    await expect(studio.locator('[data-op-model-profile-detector-point]')).toHaveCount(2);
+
+    await page.getByRole('button', { name: 'Phase Re(E) / E₀' }).click();
+    const wavefield = page.locator('[data-op-wavefield-3d="interference"]');
+    const phaseReadout = page.locator('[data-op-wavefield-probe-readout="interference"]');
+    await expect(wavefield).toHaveAttribute('data-op-wavefield-model', 'fresnel');
+    await expect(wavefield).toHaveAttribute('data-op-wavefield-height', 'normalized-field-phase');
+    await expect(phaseReadout).toHaveAttribute('data-op-probe-display', 'phase');
+    await expect(phaseReadout).toHaveAttribute('data-op-probe-field', /^-?\d+\.\d{4}$/);
+    await expect(phaseReadout).toHaveAttribute('data-op-probe-phase-rad', /^-?\d+\.\d{4}$/);
+    await expect(phaseReadout).toContainText('Re(E) / E₀');
+    await expect(phaseReadout).toContainText('φc');
+    await expect(phaseReadout.locator('[data-op-probe-metric]')).toHaveCount(4);
+    await expect(phaseReadout.locator('[data-op-probe-metric="field"]')).toBeVisible();
+    await expect(phaseReadout.locator('[data-op-probe-metric="phase"]')).toBeVisible();
+    await expect(page.locator('[data-op-wavefield-depth-scale="interference"]')).toBeVisible();
+    await expect(page.locator('[data-op-wavefield-key="interference"]')).toContainText('positive field phase');
+    await expect(page.locator('[data-op-wavefield-key="interference"]')).toContainText('opposite field phase');
+
+    const downloadStarted = page.waitForEvent('download');
+    await studio.locator('[data-op-wave-profile-export="interference"]').click();
+    const download = await downloadStarted;
+    expect(download.suggestedFilename()).toBe('optics-lab-interference-wave-profile.csv');
+    const downloadPath = await download.path();
+    expect(downloadPath).not.toBeNull();
+    const csv = await readFile(downloadPath!, 'utf8');
+    expect(csv).toContain('"screen_profile"');
+    expect(csv).toContain('"detector_depth_trail"');
+    expect(csv).toContain('"normalized_field_re"');
+    expect(csv).toContain('"wrapped_phase_rad"');
+    expect(csv).toContain('"fresnel_number"');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
   test('keeps reflected light in front of a plane mirror and construction lines behind it', async ({ page }) => {
     await mountUi(page, {
       mode: 'reflection', reflMirrorType: 'plane', reflDo: 25, reflObjH: 6,

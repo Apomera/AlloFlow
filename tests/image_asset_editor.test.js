@@ -54,8 +54,8 @@ describe('shared image asset safety contract', () => {
     expect(editorIndex).toBeGreaterThan(-1);
     expect(memoryIndex).toBeGreaterThan(editorIndex);
     expect(desktopHost).toContain("loadModule('ImageAssetEditorModule'");
-    const desktopEditorIndex = desktopApp.indexOf("loadModule('ImageAssetEditorModule', './image_asset_editor_module.js')");
-    const desktopMemoryIndex = desktopApp.indexOf("loadModule('MemoryAidModule', './memory_aid_module.js')");
+    const desktopEditorIndex = desktopApp.indexOf("loadModule('ImageAssetEditorModule'");
+    const desktopMemoryIndex = desktopApp.indexOf("loadModule('MemoryAidModule'");
     expect(desktopEditorIndex).toBeGreaterThan(-1);
     expect(desktopMemoryIndex).toBeGreaterThan(desktopEditorIndex);
     expect(readFileSync(resolve(process.cwd(), 'image_asset_editor_module.js'), 'utf8')).toBe(

@@ -34,6 +34,12 @@ describe('Applied Challenge Studio schema', () => {
     expect(Object.keys(AppliedChallenge.APPLIED_CHALLENGE_AGENCY_MODES)).toEqual([
       'progressive', 'ai-framed', 'co-framed', 'student-framed',
     ]);
+    expect(Object.keys(AppliedChallenge.APPLIED_CHALLENGE_VALIDATION_METHODS)).toEqual([
+      'investigate', 'design', 'decide', 'propose', 'explore',
+    ]);
+    Object.values(AppliedChallenge.APPLIED_CHALLENGE_VALIDATION_METHODS).forEach((methods) => {
+      expect(methods).toHaveLength(4);
+    });
   });
 
   it('keeps AI framing and student-authored work in separate objects', () => {
@@ -52,16 +58,18 @@ describe('Applied Challenge Studio schema', () => {
     expect(data.supports.frameStarter).toContain('two materials');
     expect(data.workspace.response).toContain('layered insulation');
     expect(data.feedback.strength).toBe('Clear application');
-    expect(data.schemaVersion).toBe(4);
+    expect(data.schemaVersion).toBe(5);
     expect(data.brief.factVerified).toBe(false);
     expect(data.evidenceLedger).toEqual([]);
     expect(data.stressTest).toBeNull();
+    expect(data.validationCycles).toEqual([]);
     expect(data.workspace).not.toHaveProperty('feedback');
     expect(data.brief).not.toHaveProperty('response');
   });
 
   it('normalizes and bounds the evidence ledger without merging it into student prose', () => {
     const data = H.normalizeAppliedChallengeData({
+      brief: { factVerified: true },
       evidenceLedger: Array.from({ length: 13 }, (_, index) => ({
         id: index < 2 ? 'shared id' : 'row-' + index,
         option: index === 0 ? 'Choose the shaded route' : 'Claim ' + index,
@@ -82,6 +90,10 @@ describe('Applied Challenge Studio schema', () => {
     expect(data.evidenceLedger[1].status).toBe('assumption');
     expect(data.evidenceLedger[2].status).toBe('needs-check');
     expect(data.workspace).not.toHaveProperty('evidenceLedger');
+    expect(H.normalizeAppliedChallengeData({
+      brief: { factVerified: false },
+      evidenceLedger: [{ claim: 'A claim', evidence: 'A lesson fact', status: 'verified' }],
+    }).evidenceLedger[0].status).toBe('needs-check');
   });
 
   it('normalizes bounded stress tests as separate AI support', () => {
@@ -98,6 +110,78 @@ describe('Applied Challenge Studio schema', () => {
     expect(stressTest.question).toContain('change the plan');
     expect(stressTest.draftFingerprint).toBe('draft-123');
     expect(H.normalizeAppliedChallengeStressTest({})).toBeNull();
+  });
+
+  it('migrates, bounds, and idempotently normalizes student validation cycles', () => {
+    const raw = Array.from({ length: 7 }, (_, index) => ({
+      id: index < 2 ? 'same id' : 'cycle-' + index,
+      family: index === 0 ? 'explore' : 'not-a-family',
+      source: index === 0 ? 'ai' : index === 1 ? 'peer' : 'not-a-source',
+      disposition: index === 0 ? 'adapt' : 'decline',
+      dispositionReason: index === 0 ? 'I will narrow the counterexample.' : '',
+      importedChallenge: { challenge: 'Challenge ' + index },
+      plan: {
+        methodId: index === 0 ? 'counterexample' : 'invalid-method',
+        testQuestion: 'Question ' + index,
+        changeThreshold: 'Threshold ' + index,
+        evidenceMode: index === 0 ? 'oral' : 'invalid-mode',
+      },
+      observation: { evidence: 'Evidence ' + index, outcome: index === 0 ? 'mixed' : 'invalid-outcome' },
+      decision: { action: index === 0 ? 'revise' : 'invalid-action', reasoning: 'Reason ' + index },
+      sourceExcerpt: 'Must never persist',
+    }));
+    const cycles = H.normalizeAppliedChallengeValidationCycles(raw, 'propose');
+    expect(cycles).toHaveLength(6);
+    expect(cycles[0]).toMatchObject({
+      id: 'same-id',
+      family: 'explore',
+      source: 'ai',
+      disposition: 'adapt',
+      plan: { methodId: 'counterexample', evidenceMode: 'oral' },
+      observation: { outcome: 'mixed' },
+      decision: { action: 'revise' },
+    });
+    expect(cycles[1].id).not.toBe(cycles[0].id);
+    expect(cycles[1]).toMatchObject({
+      family: 'propose',
+      source: 'peer',
+      disposition: 'use',
+      plan: { methodId: 'feasibility', evidenceMode: 'notes' },
+      observation: { outcome: 'pending' },
+      decision: { action: 'pending' },
+    });
+    expect(cycles[0]).not.toHaveProperty('sourceExcerpt');
+    expect(H.normalizeAppliedChallengeValidationCycles(cycles, 'decide')).toEqual(cycles);
+  });
+
+  it('tracks review, plan, observation, decision, and completion without treating plans as results', () => {
+    const plan = {
+      methodId: 'strongest-alternative',
+      testQuestion: 'Could Option B satisfy the access criterion better?',
+      changeThreshold: 'Revise if Option B serves more people under the same constraint.',
+    };
+    expect(H.appliedChallengeValidationCycleProgress({ family: 'decide', source: 'self' }, 'decide')).toMatchObject({
+      stage: 'plan', completedSteps: 0, totalSteps: 3, complete: false,
+    });
+    expect(H.appliedChallengeValidationCycleProgress({ family: 'decide', source: 'self', plan }, 'decide')).toMatchObject({
+      stage: 'observe', completedSteps: 1, complete: false,
+    });
+    const complete = {
+      family: 'decide',
+      source: 'self',
+      plan,
+      observation: { evidence: 'Option B misses one constraint.', outcome: 'challenges' },
+      decision: { action: 'revise', reasoning: 'I will combine the strongest elements.' },
+    };
+    expect(H.appliedChallengeValidationCycleProgress(complete, 'decide')).toEqual({
+      stage: 'complete', completedSteps: 3, totalSteps: 3, complete: true,
+    });
+    expect(H.appliedChallengeValidationCycleProgress({
+      family: 'decide', source: 'ai', disposition: 'decline', dispositionReason: '',
+    }, 'decide').stage).toBe('review');
+    expect(H.appliedChallengeValidationCycleProgress({
+      family: 'decide', source: 'ai', disposition: 'decline', dispositionReason: 'It assumes a criterion the lesson does not use.',
+    }, 'decide')).toEqual({ stage: 'complete', completedSteps: 1, totalSteps: 1, complete: true });
   });
 
   it('does not let student-framed mode inherit an AI-written question', () => {
@@ -189,6 +273,41 @@ describe('Applied Challenge Studio schema', () => {
       ...base,
       workspace: { response: 'A changed draft' },
     })).not.toBe(H.appliedChallengeDraftFingerprint(base));
+    expect(H.appliedChallengeDraftFingerprint({
+      ...base,
+      brief: { ...base.brief, factVerified: true, criteria: ['A teacher-added criterion'] },
+      validationCycles: [{ source: 'self', plan: { testQuestion: 'A later check' } }],
+    })).toBe(H.appliedChallengeDraftFingerprint(base));
+    const hintFingerprint = H.appliedChallengeRequestFingerprint(base, 'hint', {
+      resourceId: 'resource-a',
+      phaseId: 'tradeoffs',
+    });
+    expect(H.appliedChallengeRequestFingerprint(base, 'hint', {
+      resourceId: 'resource-b',
+      phaseId: 'tradeoffs',
+    })).not.toBe(hintFingerprint);
+    expect(H.appliedChallengeRequestFingerprint({
+      ...base,
+      supports: { phasePrompts: { tradeoffs: 'A changed teacher prompt' } },
+    }, 'hint', {
+      resourceId: 'resource-a',
+      phaseId: 'tradeoffs',
+    })).not.toBe(hintFingerprint);
+    expect(H.appliedChallengeRequestFingerprint(base, 'feedback', {
+      resourceId: 'resource-a',
+      sourceExcerpt: 'First source',
+      gradeLevel: '8th Grade',
+    })).not.toBe(H.appliedChallengeRequestFingerprint(base, 'feedback', {
+      resourceId: 'resource-a',
+      sourceExcerpt: 'Changed source',
+      gradeLevel: '8th Grade',
+    }));
+  });
+
+  it('centralizes family-aware phase labels', () => {
+    expect(H.appliedChallengePhaseLabel('possibilities', 'design')).toBe('3. Possible designs or approaches');
+    expect(H.appliedChallengePhaseLabel('response', 'propose')).toBe('7. Proposal, plan, or pitch');
+    expect(H.appliedChallengePhaseLabel('testReflection', 'explore')).toContain('counterexample');
   });
 
   it('bounds long workspace fields before adding them to AI prompts', () => {
@@ -218,6 +337,42 @@ describe('Applied Challenge Studio schema', () => {
     expect(snapshot).not.toContain('needs-check');
     expect(snapshot.length).toBeLessThan(2600);
   });
+
+  it('builds one bounded untrusted-reference context with plans separated from observations', () => {
+    const repeated = Array.from({ length: 12 }, (_, index) => 'ITEM-' + index + '-' + 'x'.repeat(700));
+    const workspace = Object.fromEntries(AppliedChallenge.APPLIED_CHALLENGE_WORKSPACE_PHASES.map((phase) => [
+      phase.id,
+      phase.id.toUpperCase() + '-' + 'w'.repeat(5000) + '-END',
+    ]));
+    const snapshot = H.appliedChallengePromptContextSnapshot({
+      family: 'design',
+      brief: { lockedLessonFacts: repeated, criteria: repeated, constraints: repeated, openQuestions: repeated },
+      workspace,
+      evidenceLedger: Array.from({ length: 12 }, (_, index) => ({
+        claim: 'Claim ' + index + ' ' + 'c'.repeat(1200),
+        evidence: 'Evidence ' + index + ' ' + 'e'.repeat(1800),
+        status: 'needs-check',
+        tradeoff: 'Tradeoff ' + index + ' ' + 't'.repeat(1200),
+      })),
+      validationCycles: Array.from({ length: 6 }, (_, index) => ({
+        source: 'self',
+        plan: { testQuestion: 'Planned ' + index + ' ' + 'p'.repeat(1600), changeThreshold: 'Threshold ' + index },
+        observation: { evidence: 'Observed ' + index + ' ' + 'o'.repeat(3000), outcome: 'mixed' },
+        decision: { action: 'revise', reasoning: 'Reason ' + index + ' ' + 'r'.repeat(2000) },
+      })),
+    }, {
+      phaseId: 'tradeoffs',
+      includeValidationCycles: true,
+      sourceExcerpt: 'SOURCE-' + 's'.repeat(6000) + '-END',
+      gradeLevel: '8th Grade',
+    });
+    expect(snapshot).toContain('untrusted reference data');
+    expect(snapshot).toContain('plannedCheck');
+    expect(snapshot).toContain('studentReportedObservation');
+    expect(snapshot).toContain('SOURCE-');
+    expect(snapshot).not.toContain('-END');
+    expect(snapshot.length).toBeLessThan(22000);
+  });
 });
 
 describe('Applied Challenge Studio coaching guardrails', () => {
@@ -245,6 +400,26 @@ describe('Applied Challenge Studio coaching guardrails', () => {
       evidence: 'Local staffing capacity has not been confirmed.',
       status: 'needs-check',
       tradeoff: 'A pilot reaches fewer people at first.',
+    }],
+    validationCycles: [{
+      id: 'validation-a',
+      family: 'propose',
+      source: 'self',
+      plan: {
+        methodId: 'feasibility',
+        testQuestion: 'Can the pilot operate within the staffing constraint?',
+        changeThreshold: 'Revise if the required staffing exceeds current capacity.',
+        evidenceMode: 'notes',
+      },
+      observation: {
+        evidence: 'The student-reported schedule shows one uncovered shift.',
+        outcome: 'challenges',
+      },
+      decision: {
+        action: 'revise',
+        reasoning: 'The plan needs a smaller first phase.',
+        revisionSummary: 'Reduced the initial pilot schedule.',
+      },
     }],
   };
 
@@ -278,7 +453,7 @@ describe('Applied Challenge Studio coaching guardrails', () => {
     expect(prompt).toContain('Option A improves access');
     expect(prompt).toContain('Do not invent sources');
     expect(prompt).toContain('Teacher review pending');
-    expect(prompt).toContain('Evidence and decision ledger');
+    expect(prompt).toContain('evidenceLedger');
     expect(prompt).toContain('Local staffing capacity has not been confirmed');
   });
 
@@ -342,6 +517,11 @@ describe('Applied Challenge Studio coaching guardrails', () => {
     expect(prompt).toContain('The budget is unknown');
     expect(prompt).toContain('Access is a core design consideration');
     expect(prompt).toContain('At least one populated ledger row still needs checking');
+    expect(prompt).toContain('plannedCheck');
+    expect(prompt).toContain('studentReportedObservation');
+    expect(prompt).toContain('The student-reported schedule shows one uncovered shift');
+    expect(prompt).toContain('Never invent a validation outcome');
+    expect(prompt).toContain('never penalize the student for adapting or rejecting AI advice');
   });
 
   it('evaluates philosophical reasoning without grading a worldview', () => {

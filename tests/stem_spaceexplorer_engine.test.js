@@ -22,9 +22,9 @@ function extractScope(startMarker, endMarker, returns) {
 const engine = extractScope('var BADGES = [', 'function buildMissionDossier', [
   'BADGES', 'DESTINATIONS', 'TECH_TREE', 'CREW_POOL', 'selectCrew', 'RESOURCES',
   'DESTINATION_DRAINS', 'MISSION_MODIFIERS', 'getInitialResources',
-  'getPipPool', 'normalizeAllocation', 'applyTurnDrain', 'INTERIOR_ZONES', 'INTERIOR_CONDITIONS', 'INTERIOR_ROUTE_POINTS', 'getInteriorCondition',
-  'createInteriorOrientation', 'normalizeInteriorCounter', 'countInteriorCompletedActivities', 'isInteriorReadinessComplete', 'evaluateInteriorActivity', 'applyInteriorActivityDecision',
-  'buildInteriorMotionTrace', 'evaluateInteriorTranslation', 'buildInteriorRoutePlan', 'applyInteriorReadinessBonus'
+  'getPipPool', 'normalizeAllocation', 'applyTurnDrain', 'INTERIOR_ZONES', 'INTERIOR_CONDITIONS', 'INTERIOR_PAYLOADS', 'INTERIOR_ROUTE_POINTS', 'getInteriorCondition', 'getInteriorPayload', 'getInteriorWorkDiagram',
+  'createInteriorOrientation', 'normalizeInteriorCounter', 'countInteriorCompletedActivities', 'getInteriorNavigationDirection', 'getInteriorOrientationChallenge', 'evaluateInteriorOrientationChoice', 'normalizeInteriorOrientationResult', 'countInteriorOrientationChecks', 'applyInteriorOrientationChoice', 'normalizeInteriorRecovery', 'appendInteriorPracticeLog', 'isInteriorReadinessComplete', 'evaluateInteriorActivity', 'applyInteriorActivityDecision', 'deriveInteriorActivityVisualState',
+  'evaluateInteriorRecovery', 'applyInteriorRecoveryDecision', 'buildInteriorMotionTrace', 'evaluateInteriorTranslation', 'buildInteriorRoutePlan', 'buildInteriorPracticeInsight', 'applyInteriorReadinessBonus'
 ]);
 
 const byId = {};
@@ -165,7 +165,76 @@ describe('microgravity interior orientation', () => {
     for (const zone of engine.INTERIOR_ZONES) {
       expect(zone.activity.length, zone.id).toBeGreaterThan(20);
       expect(zone.challenge.length, zone.id).toBeGreaterThan(20);
+      expect(zone.orientationChallenge.prompt.length, zone.id).toBeGreaterThan(20);
+      expect(zone.orientationChallenge.options, zone.id).toHaveLength(3);
+      expect(zone.orientationChallenge.options.filter((option) => option.id === zone.orientationChallenge.correctId), zone.id).toHaveLength(1);
     }
+  });
+
+  it('uses fixed cabin references for optional local-frame checks without changing readiness', () => {
+    expect(engine.getInteriorNavigationDirection('flightdeck', 'engineering')).toBe('engineering');
+    expect(engine.getInteriorNavigationDirection('engineering', 'lab')).toBe('flightdeck');
+    expect(engine.getInteriorNavigationDirection('lab', 'lab')).toBeNull();
+    expect(engine.getInteriorNavigationDirection('bogus', 'lab')).toBeNull();
+
+    for (const zone of engine.INTERIOR_ZONES) {
+      const challenge = engine.getInteriorOrientationChallenge(zone.id);
+      const correct = engine.evaluateInteriorOrientationChoice(zone.id, challenge.correctId);
+      const wrongOption = challenge.options.find((option) => option.id !== challenge.correctId);
+      const wrong = engine.evaluateInteriorOrientationChoice(zone.id, wrongOption.id);
+      expect(correct).toMatchObject({ valid: true, correct: true, zoneId: zone.id });
+      expect(wrong).toMatchObject({ valid: true, correct: false, zoneId: zone.id });
+      expect(correct.principle.length).toBeGreaterThan(20);
+    }
+    expect(engine.evaluateInteriorOrientationChoice('bogus', 'fixed').valid).toBe(false);
+    expect(engine.evaluateInteriorOrientationChoice('lab', 'bogus').valid).toBe(false);
+
+    const initial = {
+      ...engine.createInteriorOrientation(),
+      position: 'lab',
+      target: 'engineering',
+      tasks: { lab: true, medbay: true },
+      controlledMoves: 2,
+      readinessComplete: true,
+    };
+    const initialLog = initial.practiceLog;
+    const missed = engine.applyInteriorOrientationChoice(initial, 'lab', 'floating');
+    expect(missed.result).toMatchObject({ valid: true, correct: false, status: 'Reorient and retry' });
+    expect(missed.state.orientationAttempts.lab).toBe(1);
+    expect(missed.state.orientationResults.lab).toEqual({ choiceId: 'floating', correct: false });
+    expect(missed.state.tasks).toEqual(initial.tasks);
+    expect(missed.state.controlledMoves).toBe(initial.controlledMoves);
+    expect(engine.isInteriorReadinessComplete(missed.state)).toBe(true);
+    expect(initial.orientationAttempts).toEqual({});
+    expect(initial.orientationResults).toEqual({});
+    expect(initial.practiceLog).toBe(initialLog);
+
+    const corrected = engine.applyInteriorOrientationChoice(missed.state, 'lab', 'fixed');
+    expect(corrected.result).toMatchObject({ valid: true, correct: true, status: 'Local frame confirmed' });
+    expect(corrected.state.orientationAttempts.lab).toBe(2);
+    expect(engine.countInteriorOrientationChecks(corrected.state.orientationResults)).toBe(1);
+    expect(engine.normalizeInteriorOrientationResult('lab', { choiceId: 'fixed', correct: false })).toMatchObject({ correct: true });
+    expect(engine.countInteriorOrientationChecks({ lab: { choiceId: 'floating', correct: true }, bogus: { choiceId: 'fixed', correct: true } })).toBe(0);
+    expect(engine.buildInteriorPracticeInsight(corrected.state)).toContain('Local-frame adaptation observed');
+
+    const repeated = engine.applyInteriorOrientationChoice(corrected.state, 'lab', 'fixed');
+    expect(repeated.state).toBe(corrected.state);
+    expect(repeated.state.orientationAttempts.lab).toBe(2);
+
+    const mismatched = engine.applyInteriorOrientationChoice(corrected.state, 'medbay', 'fixed');
+    expect(mismatched.result.valid).toBe(false);
+    expect(mismatched.state).toBe(corrected.state);
+
+    const recovering = {
+      ...initial,
+      activeRecovery: {
+        fromId: 'flightdeck', toId: 'lab', strategy: 'gentle', method: 'Gentle push + brake',
+        conditionId: 'stable', payloadId: 'none', speed: 0.2, stoppingDistance: 0.3, attempts: 0,
+      },
+    };
+    const blocked = engine.applyInteriorOrientationChoice(recovering, 'lab', 'fixed');
+    expect(blocked.result.valid).toBe(false);
+    expect(blocked.state).toBe(recovering);
   });
 
   it('models handrails, gentle translation, and unsafe momentum distinctly', () => {
@@ -212,6 +281,101 @@ describe('microgravity interior orientation', () => {
 
     const fallback = engine.getInteriorCondition('unknown-condition');
     expect(fallback.id).toBe('stable');
+  });
+
+  it('makes payload inertia observable without changing hands-free movement', () => {
+    expect(engine.INTERIOR_PAYLOADS.map((payload) => payload.id)).toEqual(['none', 'specimen', 'toolcase']);
+    expect(engine.getInteriorPayload('unknown-payload').id).toBe('none');
+
+    const handsFree = engine.evaluateInteriorTranslation('flightdeck', 'medbay', 'gentle', 'stable', 'none');
+    const specimen = engine.evaluateInteriorTranslation('flightdeck', 'medbay', 'gentle', 'stable', 'specimen');
+    const toolcase = engine.evaluateInteriorTranslation('flightdeck', 'medbay', 'gentle', 'stable', 'toolcase');
+    expect(handsFree.controlled).toBe(true);
+    expect(specimen.controlled).toBe(true);
+    expect(toolcase.controlled).toBe(false);
+    expect(specimen.speed).toBe(handsFree.speed);
+    expect(toolcase.speed).toBe(handsFree.speed);
+    expect(specimen.stoppingDistance).toBeCloseTo(handsFree.stoppingDistance * 1.15);
+    expect(toolcase.stoppingDistance).toBeCloseTo(handsFree.stoppingDistance * 1.35);
+    expect(toolcase.feedback).toContain('tool case increases the stopping distance');
+
+    const loadedRail = engine.evaluateInteriorTranslation('flightdeck', 'engineering', 'rail', 'maneuver', 'toolcase');
+    expect(loadedRail).toMatchObject({ controlled: true, stoppingDistance: 0, payload: expect.objectContaining({ id: 'toolcase' }) });
+
+    const loadedPlan = engine.buildInteriorRoutePlan('flightdeck', 'engineering', 'staged', 'gentle', 'stable', 'toolcase');
+    expect(loadedPlan.payload.id).toBe('toolcase');
+    expect(loadedPlan.legs.every((leg) => leg.payload.id === 'toolcase')).toBe(true);
+    expect(loadedPlan.controlled).toBe(false);
+
+    const baselineTrace = engine.buildInteriorMotionTrace('flightdeck', 'medbay', false, 'stable', 1);
+    const loadedTrace = engine.buildInteriorMotionTrace('flightdeck', 'medbay', false, 'stable', 1.35);
+    expect(loadedTrace.overshootPixels).toBeGreaterThan(baselineTrace.overshootPixels);
+  });
+
+  it('requires an active recovery response without awarding a controlled move', () => {
+    const active = {
+      ...engine.createInteriorOrientation(),
+      position: 'medbay',
+      target: 'engineering',
+      routeMode: 'staged',
+      condition: 'maneuver',
+      payloadId: 'toolcase',
+      tasks: { lab: true, medbay: true },
+      controlledMoves: 2,
+      recoveryCount: 1,
+      activeRecovery: {
+        fromId: 'flightdeck',
+        toId: 'medbay',
+        strategy: 'gentle',
+        method: 'Gentle push + brake',
+        conditionId: 'maneuver',
+        payloadId: 'toolcase',
+        speed: 0.24,
+        stoppingDistance: 0.32,
+        attempts: 0,
+      },
+    };
+
+    expect(engine.normalizeInteriorRecovery(active.activeRecovery, active.position)).toMatchObject({ toId: 'medbay', payloadId: 'toolcase' });
+    expect(engine.normalizeInteriorRecovery({ fromId: 'bogus' }, 'medbay')).toBeNull();
+    expect(engine.isInteriorReadinessComplete(active)).toBe(false);
+    expect(engine.applyInteriorReadinessBonus({ morale: 70 }, active, false).applied).toBe(false);
+
+    const missed = engine.applyInteriorRecoveryDecision(active, 'counterpush');
+    expect(missed.result).toMatchObject({ valid: true, controlled: false, status: 'Recovery still active' });
+    expect(missed.state.activeRecovery.attempts).toBe(1);
+    expect(missed.state.controlledMoves).toBe(2);
+    expect(missed.state.recoveryCount).toBe(1);
+    expect(missed.state.routeMode).toBe('staged');
+
+    const arrested = engine.applyInteriorRecoveryDecision(missed.state, 'rail');
+    expect(arrested.result).toMatchObject({ valid: true, controlled: true, status: 'Drift arrested' });
+    expect(arrested.state.activeRecovery).toBeNull();
+    expect(arrested.state.position).toBe('medbay');
+    expect(arrested.state.target).toBe('engineering');
+    expect(arrested.state.routeMode).toBe('staged');
+    expect(arrested.state.controlledMoves).toBe(2);
+    expect(arrested.state.recoveryCount).toBe(1);
+    expect(arrested.state.readinessComplete).toBe(true);
+
+    const stableCounterpush = engine.evaluateInteriorRecovery({
+      ...active.activeRecovery,
+      conditionId: 'stable',
+      payloadId: 'none',
+      stoppingDistance: 0.24,
+    }, 'counterpush');
+    expect(stableCounterpush).toMatchObject({ valid: true, controlled: true, resolved: true });
+  });
+
+  it('keeps a bounded practice record and explains an observed strategy change', () => {
+    let log = [];
+    for (let index = 0; index < 12; index += 1) {
+      log = engine.appendInteriorPracticeLog(log, { kind: 'translation', controlled: index === 11, sequence: index });
+    }
+    expect(log).toHaveLength(8);
+    expect(log[0].sequence).toBe(4);
+    expect(log[7].sequence).toBe(11);
+    expect(engine.buildInteriorPracticeInsight({ practiceLog: log })).toContain('Adaptation observed');
   });
 
   it('plans direct and staged maneuver routes without hiding unsafe momentum', () => {
@@ -358,6 +522,91 @@ describe('microgravity interior orientation', () => {
     expect(invalid.state).toBe(initial);
   });
 
+  it('derives cabin work visuals from existing activity state without mutating it', () => {
+    const initial = {
+      ...engine.createInteriorOrientation(),
+      position: 'lab', target: 'lab', condition: 'maneuver'
+    };
+    expect(engine.deriveInteriorActivityVisualState(initial, 'lab', 'maneuver')).toMatchObject({
+      state: 'idle', blocked: false, attemptCount: 0, result: null
+    });
+
+    const open = { ...initial, workStepExpanded: true };
+    expect(engine.deriveInteriorActivityVisualState(open, 'lab', 'maneuver').state).toBe('setup');
+    expect(engine.deriveInteriorActivityVisualState({ ...open, viewMode: 'compartment' }, 'lab', 'maneuver').state).toBe('setup');
+
+    const failed = engine.applyInteriorActivityDecision(initial, 'quick').state;
+    expect(engine.deriveInteriorActivityVisualState(failed, 'lab', 'maneuver')).toMatchObject({
+      state: 'rotation', blocked: false, attemptCount: 1,
+      result: { zoneId: 'lab', conditionId: 'maneuver', controlled: false }
+    });
+    const legacyAttempt = { ...initial, activityAttempts: { lab: 2 } };
+    expect(engine.deriveInteriorActivityVisualState(legacyAttempt, 'lab', 'maneuver').state).toBe('setup');
+    expect(engine.deriveInteriorActivityVisualState({ ...initial, lastActivityResult: { zoneId: 'medbay', conditionId: 'maneuver', controlled: false } }, 'lab', 'maneuver').state).toBe('idle');
+    expect(engine.deriveInteriorActivityVisualState({ ...initial, lastActivityResult: { zoneId: 'lab', conditionId: 'stable', controlled: false } }, 'lab', 'maneuver').state).toBe('idle');
+
+    const secured = engine.applyInteriorActivityDecision(failed, 'secured').state;
+    expect(engine.deriveInteriorActivityVisualState(secured, 'lab', 'maneuver')).toMatchObject({
+      state: 'stabilized', blocked: false, attemptCount: 2,
+      result: { zoneId: 'lab', optionId: 'secured', controlled: true }
+    });
+    expect(engine.deriveInteriorActivityVisualState({ ...secured, activityResults: {}, lastActivityResult: { zoneId: 'lab', conditionId: 'maneuver', controlled: false } }, 'lab', 'maneuver').state).toBe('stabilized');
+
+    const recovery = {
+      ...initial,
+      activeRecovery: {
+        fromId: 'flightdeck', toId: 'lab', strategy: 'gentle', method: 'Gentle push + brake',
+        conditionId: 'maneuver', payloadId: 'none', speed: 0.24, stoppingDistance: 0.24, attempts: 0
+      },
+      workStepExpanded: true
+    };
+    expect(engine.deriveInteriorActivityVisualState(recovery, 'lab', 'maneuver')).toMatchObject({ state: 'idle', blocked: true });
+    expect(engine.deriveInteriorActivityVisualState({ position: 'lab', activityAttempts: null, tasks: null }, 'unknown', 'bogus')).toMatchObject({ state: 'idle', attemptCount: 0 });
+    expect(initial).toEqual({ ...engine.createInteriorOrientation(), position: 'lab', target: 'lab', condition: 'maneuver' });
+  });
+
+  it('maps every compartment to distinct, bounded restraint points and an equipment tether', () => {
+    const workObjects = new Set();
+    for (const zone of engine.INTERIOR_ZONES) {
+      const diagram = engine.getInteriorWorkDiagram(zone.id);
+      workObjects.add(zone.workObject);
+      expect(zone.workObject).toEqual(expect.any(String));
+      expect(zone.workObject.length).toBeGreaterThan(3);
+      expect(diagram.quick.label).toEqual(expect.any(String));
+      expect(diagram.primary.label).toEqual(expect.any(String));
+      expect(diagram.secondary.label).toEqual(expect.any(String));
+      expect(diagram.primary.label).not.toBe(diagram.secondary.label);
+      expect(diagram.tether.label).toEqual(expect.any(String));
+      for (const anchor of [diagram.quick, diagram.primary, diagram.secondary]) {
+        expect(anchor.x).toBeGreaterThanOrEqual(0);
+        expect(anchor.x).toBeLessThanOrEqual(640);
+        expect(anchor.y).toBeGreaterThanOrEqual(0);
+        expect(anchor.y).toBeLessThanOrEqual(270);
+        expect(anchor.contactX).toBeGreaterThanOrEqual(0);
+        expect(anchor.contactX).toBeLessThanOrEqual(640);
+        expect(anchor.contactY).toBeGreaterThanOrEqual(0);
+        expect(anchor.contactY).toBeLessThanOrEqual(270);
+      }
+      const separation = Math.hypot(diagram.secondary.x - diagram.primary.x, diagram.secondary.y - diagram.primary.y);
+      expect(separation).toBeGreaterThanOrEqual(30);
+      for (const key of ['anchorX', 'objectX']) {
+        expect(diagram.tether[key]).toBeGreaterThanOrEqual(0);
+        expect(diagram.tether[key]).toBeLessThanOrEqual(640);
+      }
+      for (const key of ['anchorY', 'objectY']) {
+        expect(diagram.tether[key]).toBeGreaterThanOrEqual(0);
+        expect(diagram.tether[key]).toBeLessThanOrEqual(270);
+      }
+    }
+    expect(workObjects.size).toBe(engine.INTERIOR_ZONES.length);
+    expect(engine.getInteriorWorkDiagram('unknown')).toMatchObject({
+      quick: { label: 'Single handrail' },
+      primary: { label: 'Primary restraint' },
+      secondary: { label: 'Secondary restraint' },
+      tether: { label: 'Equipment tether' }
+    });
+  });
+
   it('applies the cabin readiness morale effect once and respects the resource cap', () => {
     const ready = {
       readinessComplete: true,
@@ -433,6 +682,7 @@ describe('render and deployment', () => {
     expect(src).toContain('outline:3px solid var(--se-focus)');
     expect(src).toContain('@media (prefers-contrast:more)');
     expect(src).toContain('@media (forced-colors:active)');
+    expect(src).toContain('@media (pointer:coarse)');
     expect(src).toContain('@keyframes se-motion-trace-draw');
     expect(src).toContain('.se-shell .se-motion-trace');
     expect(src).toContain('@media (prefers-reduced-motion:reduce){.se-shell .se-motion-trace');
@@ -503,6 +753,9 @@ describe('render and deployment', () => {
     };
     const html = renderTool('spaceExplorer', { spaceExplorer: base });
     expect(html).toContain('data-spaceexplorer-interior="true"');
+    expect(html).toContain('data-spaceexplorer-interior-view-toggle="true"');
+    expect(html).toContain('data-spaceexplorer-interior-view="route"');
+    expect(html).toContain('data-spaceexplorer-interior-view="compartment"');
     expect(html).toContain('data-spaceexplorer-interior-visual="perspective"');
     expect(html).toContain('Perspective view of the mission cabin');
     expect(html).toContain('data-spaceexplorer-interior-target="lab"');
@@ -512,11 +765,189 @@ describe('render and deployment', () => {
     expect(html).toContain('Gentle push + brake');
     expect(html).toContain('Hard push');
     expect(html).toContain('0 of 2 activities');
+    expect(html).toContain('0 of 2 controlled moves');
+    expect(html).toContain('data-spaceexplorer-skip-practice="true"');
+    expect(html).toContain('data-spaceexplorer-payload="toolcase"');
+    expect(html).toContain('data-spaceexplorer-prediction-mode="challenge"');
+    expect(html).toContain('data-spaceexplorer-work-step="closed"');
     expect(html).toContain('data-spaceexplorer-interior-condition="stable"');
     expect(html).toContain('data-spaceexplorer-interior-condition="maneuver"');
     expect(html).toContain('data-spaceexplorer-interior-route-preview="stable"');
     expect(html).toContain('data-spaceexplorer-interior-prediction="gentle"');
     expect(html).toContain('Controlled arrival predicted');
+
+    const inside = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: {
+          ...engine.createInteriorOrientation(),
+          position: 'lab',
+          target: 'engineering',
+          viewMode: 'compartment',
+          orientationAttempts: { lab: 1 },
+          orientationResults: { lab: { choiceId: 'floating', correct: true } },
+        }
+      }
+    });
+    expect(inside).toContain('data-spaceexplorer-interior-visual="compartment"');
+    expect(inside).toContain('data-spaceexplorer-compartment-visual="lab"');
+    expect(inside).toContain('data-spaceexplorer-compartment-next-direction="engineering"');
+    expect(inside).toContain('data-spaceexplorer-compartment-restraint="rail-04"');
+    expect(inside).toContain('data-spaceexplorer-compartment-hazard="specimen"');
+    expect(inside).toContain('data-spaceexplorer-compartment-astronaut="secured"');
+    expect(inside).toContain('data-spaceexplorer-work-visual="idle"');
+    expect(inside).toContain('RACK LAB-2');
+    expect(inside).toContain('data-spaceexplorer-orientation-choice="fixed"');
+    expect(inside).toContain('data-spaceexplorer-orientation-result="retry"');
+    expect(inside).toContain('data-spaceexplorer-orientation-attempts="1"');
+    expect(inside).not.toContain('data-spaceexplorer-interior-visual="perspective"');
+    expect(inside).not.toContain('data-spaceexplorer-route-legend=');
+
+    const setupInside = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: {
+          ...engine.createInteriorOrientation(),
+          position: 'lab', target: 'lab', condition: 'maneuver',
+          viewMode: 'compartment', workStepExpanded: true
+        }
+      }
+    });
+    expect(setupInside).toContain('data-spaceexplorer-work-visual="setup"');
+    expect(setupInside).toContain('data-spaceexplorer-work-diagram="lab"');
+    expect(setupInside).toContain('data-spaceexplorer-work-setup="plan"');
+    expect(setupInside).toContain('data-spaceexplorer-work-anchor="primary"');
+    expect(setupInside).toContain('data-spaceexplorer-work-anchor="secondary"');
+    expect(setupInside).toContain('data-work-anchor-label="Rail 04 brace"');
+    expect(setupInside).toContain('data-work-anchor-label="Waist restraint"');
+    expect(setupInside).toContain('data-work-tether-label="Specimen tether"');
+    expect(setupInside).toContain('PLAN 2 POINTS');
+    expect(setupInside).toContain('Work setup preview: the Rail 04 brace');
+    expect(setupInside).toContain('Focused work view: route direction labels are hidden');
+    expect(setupInside).toContain('data-spaceexplorer-worksite="lab"');
+    expect(setupInside).toContain('data-spaceexplorer-work-visual-summary="setup"');
+    expect(setupInside).not.toContain('data-spaceexplorer-final-target=');
+    expect(setupInside).not.toContain('data-spaceexplorer-orientation-challenge=');
+    expect(setupInside).not.toContain('data-spaceexplorer-svg-label="flight-side"');
+    expect(setupInside).not.toContain('data-spaceexplorer-svg-label="engineering-side"');
+    expect(setupInside).not.toContain('data-spaceexplorer-svg-label="flight-hatch"');
+    expect(setupInside).not.toContain('data-spaceexplorer-svg-label="engineering-hatch"');
+    expect(setupInside).toContain('data-spaceexplorer-hatch-context="muted"');
+
+    const expandedRoute = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: {
+          ...engine.createInteriorOrientation(),
+          position: 'lab', target: 'engineering', condition: 'maneuver',
+          viewMode: 'route', workStepExpanded: true
+        }
+      }
+    });
+    expect(expandedRoute).toContain('data-spaceexplorer-interior-visual="perspective"');
+    expect(expandedRoute).toContain('data-spaceexplorer-final-target="engineering"');
+    expect(expandedRoute).not.toContain('data-spaceexplorer-worksite=');
+    expect(expandedRoute).not.toContain('data-spaceexplorer-work-visual-summary=');
+
+    const expectedWorkDiagrams = {
+      flightdeck: { quick: 'Single handrail', primary: 'Left foot loop', secondary: 'Right foot loop', tether: 'Tablet tether', object: 'command tablet' },
+      lab: { quick: 'Rail 04 handhold', primary: 'Rail 04 brace', secondary: 'Waist restraint', tether: 'Specimen tether', object: 'specimen bag' },
+      medbay: { quick: 'Left caregiver grip', primary: 'Left caregiver grip', secondary: 'Right caregiver grip', tether: 'Medical-kit tether', object: 'medical kit' },
+      engineering: { quick: 'Single handrail', primary: 'Left foot loop', secondary: 'Right foot loop', tether: 'Tool tether', object: 'tool pouch' }
+    };
+    for (const zone of engine.INTERIOR_ZONES) {
+      const zoneState = {
+        ...engine.createInteriorOrientation(),
+        position: zone.id, target: zone.id, condition: 'maneuver',
+        viewMode: 'compartment', workStepExpanded: true
+      };
+      const zoneInside = renderTool('spaceExplorer', {
+        spaceExplorer: {
+          ...base,
+          interiorOrientation: zoneState
+        }
+      });
+      const labels = expectedWorkDiagrams[zone.id];
+      expect(zoneInside).toContain(`data-spaceexplorer-work-diagram="${zone.id}"`);
+      expect(zoneInside).toContain(`data-spaceexplorer-compartment-visual="${zone.id}"`);
+      expect(zoneInside).toContain(`data-work-anchor-label="${labels.primary}"`);
+      expect(zoneInside).toContain(`data-work-anchor-label="${labels.secondary}"`);
+      expect(zoneInside).toContain(`data-work-tether-label="${labels.tether}"`);
+      expect(zoneInside).not.toContain('data-spaceexplorer-orientation-challenge=');
+      expect(zoneInside).not.toContain('data-spaceexplorer-svg-label="flight-side"');
+      expect(zoneInside).not.toContain('data-spaceexplorer-svg-label="engineering-side"');
+      expect(zoneInside).not.toContain('data-spaceexplorer-svg-label="flight-hatch"');
+      expect(zoneInside).not.toContain('data-spaceexplorer-svg-label="engineering-hatch"');
+
+      const failedZoneState = engine.applyInteriorActivityDecision(zoneState, 'quick').state;
+      const failedZoneInside = renderTool('spaceExplorer', {
+        spaceExplorer: { ...base, interiorOrientation: { ...failedZoneState, viewMode: 'compartment' } }
+      });
+      expect(failedZoneInside).toContain(`data-spaceexplorer-work-diagram="${zone.id}"`);
+      expect(failedZoneInside).toContain('data-spaceexplorer-work-visual="rotation"');
+      expect(failedZoneInside).toContain(`data-work-anchor-label="${labels.quick}"`);
+      expect(failedZoneInside).toContain(`data-spaceexplorer-work-loose-object="${labels.object}"`);
+      expect(failedZoneInside).toContain('data-spaceexplorer-work-visual-summary="rotation"');
+      expect(failedZoneInside).not.toContain('data-spaceexplorer-orientation-challenge=');
+      expect(failedZoneInside).not.toContain('data-spaceexplorer-svg-label="flight-side"');
+      expect(failedZoneInside).not.toContain('data-spaceexplorer-svg-label="engineering-side"');
+      expect(failedZoneInside).not.toContain('data-spaceexplorer-svg-label="flight-hatch"');
+      expect(failedZoneInside).not.toContain('data-spaceexplorer-svg-label="engineering-hatch"');
+
+      const stabilizedZoneState = engine.applyInteriorActivityDecision(failedZoneState, 'secured').state;
+      const stabilizedZoneInside = renderTool('spaceExplorer', {
+        spaceExplorer: { ...base, interiorOrientation: { ...stabilizedZoneState, viewMode: 'compartment' } }
+      });
+      expect(stabilizedZoneInside).toContain(`data-spaceexplorer-work-diagram="${zone.id}"`);
+      expect(stabilizedZoneInside).toContain('data-spaceexplorer-work-visual="stabilized"');
+      expect(stabilizedZoneInside).toContain(`data-work-anchor-label="${labels.primary}"`);
+      expect(stabilizedZoneInside).toContain(`data-work-anchor-label="${labels.secondary}"`);
+      expect(stabilizedZoneInside).toContain(`data-work-tether-label="${labels.tether}"`);
+      expect(stabilizedZoneInside).toContain('data-spaceexplorer-work-object-state="secured"');
+      expect(stabilizedZoneInside).toContain('data-spaceexplorer-work-visual-summary="stabilized"');
+      expect(stabilizedZoneInside).not.toContain('data-spaceexplorer-orientation-challenge=');
+      expect(stabilizedZoneInside).not.toContain('data-spaceexplorer-svg-label="flight-side"');
+      expect(stabilizedZoneInside).not.toContain('data-spaceexplorer-svg-label="engineering-side"');
+      expect(stabilizedZoneInside).not.toContain('data-spaceexplorer-svg-label="flight-hatch"');
+      expect(stabilizedZoneInside).not.toContain('data-spaceexplorer-svg-label="engineering-hatch"');
+    }
+
+    const confirmedInside = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: engine.applyInteriorOrientationChoice({
+          ...engine.createInteriorOrientation(),
+          position: 'lab',
+          target: 'engineering',
+          viewMode: 'compartment',
+        }, 'lab', 'fixed').state
+      }
+    });
+    expect(confirmedInside).toContain('data-spaceexplorer-orientation-result="confirmed"');
+    expect(confirmedInside).toContain('data-spaceexplorer-orientation-progress="1"');
+    expect(confirmedInside).toContain('Local frame confirmed');
+
+    const recoveringInside = renderTool('spaceExplorer', {
+      spaceExplorer: {
+        ...base,
+        interiorOrientation: {
+          ...engine.createInteriorOrientation(),
+          position: 'lab',
+          target: 'engineering',
+          viewMode: 'compartment',
+          condition: 'maneuver',
+          activeRecovery: {
+            fromId: 'flightdeck', toId: 'lab', strategy: 'gentle', method: 'Gentle push + brake',
+            conditionId: 'maneuver', payloadId: 'none', speed: 0.24, stoppingDistance: 0.24, attempts: 0,
+          },
+        }
+      }
+    });
+    expect(recoveringInside).toContain('data-spaceexplorer-compartment-astronaut="drifting"');
+    expect(recoveringInside).toContain('data-spaceexplorer-compartment-restraint="recovery-rail"');
+    expect(recoveringInside).toContain('data-spaceexplorer-compartment-hazard="drift"');
+    expect(recoveringInside).toContain('Recovery has priority');
+    expect(recoveringInside).not.toContain('data-spaceexplorer-orientation-choice=');
 
 
     const maneuver = renderTool('spaceExplorer', {
@@ -553,6 +984,10 @@ describe('render and deployment', () => {
             controlled: false, speed: 0.24, distance: 6.4,
             stoppingDistance: 0.24, status: 'Recovery needed'
           },
+          activeRecovery: {
+            fromId: 'flightdeck', toId: 'medbay', strategy: 'gentle', method: 'Gentle push + brake',
+            conditionId: 'maneuver', payloadId: 'none', speed: 0.24, stoppingDistance: 0.24, attempts: 0
+          },
           feedback: 'Recovery needed.', readinessComplete: false
         }
       }
@@ -562,7 +997,10 @@ describe('render and deployment', () => {
     expect(overshootTrace).toContain('data-spaceexplorer-interior-trace-summary="overshoot"');
     expect(overshootTrace).toContain('se-motion-trace');
     expect(overshootTrace).toContain('overshoot and recovery');
-    expect(overshootTrace).toContain('inertia overshoot followed by recovery.');
+    expect(overshootTrace).toContain('data-spaceexplorer-recovery="active"');
+    expect(overshootTrace).toContain('data-spaceexplorer-recovery-action="rail"');
+    expect(overshootTrace).toContain('data-spaceexplorer-recovery-action="counterpush"');
+    expect(overshootTrace).toContain('The astronaut is still drifting beyond the destination');
 
     const ready = renderTool('spaceExplorer', {
       spaceExplorer: {
@@ -609,8 +1047,27 @@ describe('render and deployment', () => {
     expect(failedHtml).toContain('data-spaceexplorer-work-attempts="1"');
     expect(failedHtml).toContain('Work recovery needed');
     expect(failedHtml).toContain('data-spaceexplorer-work-marker="recovery"');
+    expect(failedHtml).toContain('data-spaceexplorer-view-work-result="rotation"');
+    expect(failedHtml).toContain('See one-point pivot');
     expect(failedHtml).toContain('activity remains incomplete');
     expect(failedHtml).not.toContain('data-spaceexplorer-interior-activity-complete="lab"');
+
+    const failedInsideHtml = renderTool('spaceExplorer', {
+      spaceExplorer: { ...base, interiorOrientation: { ...failed, viewMode: 'compartment' } }
+    });
+    expect(failedInsideHtml).toContain('data-spaceexplorer-work-visual="rotation"');
+    expect(failedInsideHtml).toContain('data-spaceexplorer-work-setup="one-point"');
+    expect(failedInsideHtml).toContain('data-spaceexplorer-work-rotation="one-point"');
+    expect(failedInsideHtml).toContain('data-spaceexplorer-work-loose-object="specimen bag"');
+    expect(failedInsideHtml).toContain('data-spaceexplorer-work-object-state="drifting"');
+    expect(failedInsideHtml).toContain('data-work-anchor-label="Rail 04 handhold"');
+    expect(failedInsideHtml).toContain('data-spaceexplorer-work-visual-summary="rotation"');
+    expect(failedInsideHtml).toContain('1-POINT PIVOT');
+    expect(failedInsideHtml).toContain('only the Rail 04 handhold controls the body');
+    expect(failedInsideHtml).not.toContain('data-spaceexplorer-work-anchor="secondary"');
+    expect(failedInsideHtml).not.toContain('data-spaceexplorer-orientation-challenge=');
+    expect(failedInsideHtml).not.toContain('data-spaceexplorer-svg-label="flight-side"');
+    expect(failedInsideHtml).not.toContain('data-spaceexplorer-svg-label="engineering-side"');
 
     const retried = engine.applyInteriorActivityDecision(failed, 'secured').state;
     const securedHtml = renderTool('spaceExplorer', {
@@ -621,7 +1078,42 @@ describe('render and deployment', () => {
     expect(securedHtml).toContain('data-spaceexplorer-interior-activity-complete="lab"');
     expect(securedHtml).toContain('Cabin ready');
     expect(securedHtml).toContain('data-spaceexplorer-work-marker="secured"');
+    expect(securedHtml).toContain('data-spaceexplorer-view-work-result="stabilized"');
     expect(securedHtml).not.toContain('data-spaceexplorer-work-choice=');
+
+    const securedInsideHtml = renderTool('spaceExplorer', {
+      spaceExplorer: { ...base, interiorOrientation: { ...retried, viewMode: 'compartment' } }
+    });
+    expect(securedInsideHtml).toContain('data-spaceexplorer-work-visual="stabilized"');
+    expect(securedInsideHtml).toContain('data-spaceexplorer-work-setup="two-point"');
+    expect(securedInsideHtml).toContain('data-spaceexplorer-work-stabilization="two-point"');
+    expect(securedInsideHtml).toContain('data-spaceexplorer-work-anchor="primary"');
+    expect(securedInsideHtml).toContain('data-spaceexplorer-work-anchor="secondary"');
+    expect(securedInsideHtml).toContain('data-work-anchor-label="Rail 04 brace"');
+    expect(securedInsideHtml).toContain('data-work-anchor-label="Waist restraint"');
+    expect(securedInsideHtml).toContain('data-work-tether-label="Specimen tether"');
+    expect(securedInsideHtml).toContain('data-spaceexplorer-work-object-state="secured"');
+    expect(securedInsideHtml).toContain('data-spaceexplorer-work-visual-summary="stabilized"');
+    expect(securedInsideHtml).toContain('2-POINT STABLE');
+    expect(securedInsideHtml).toContain('the Rail 04 brace and Waist restraint prevent pivot');
+    expect(securedInsideHtml).not.toContain('data-spaceexplorer-work-rotation="one-point"');
+    expect(securedInsideHtml).not.toContain('data-spaceexplorer-orientation-challenge=');
+    expect(securedInsideHtml).not.toContain('data-spaceexplorer-svg-label="flight-side"');
+    expect(securedInsideHtml).not.toContain('data-spaceexplorer-svg-label="engineering-side"');
+
+    const collapsedInsideHtml = renderTool('spaceExplorer', {
+      spaceExplorer: { ...base, interiorOrientation: { ...retried, viewMode: 'compartment', workStepExpanded: false } }
+    });
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-work-visual="idle"');
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-orientation-challenge="lab"');
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-final-target="lab"');
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-svg-label="flight-side"');
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-svg-label="engineering-side"');
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-svg-label="flight-hatch"');
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-svg-label="engineering-hatch"');
+    expect(collapsedInsideHtml).toContain('data-spaceexplorer-hatch-context="navigation"');
+    expect(collapsedInsideHtml).not.toContain('data-spaceexplorer-worksite=');
+    expect(collapsedInsideHtml).not.toContain('data-spaceexplorer-work-visual-summary=');
 
     expect(securedHtml).toContain('Body restraint + specimen tether');
     expect(securedHtml).toContain('Station maneuver');
@@ -640,6 +1132,8 @@ describe('render and deployment', () => {
     expect(debriefHtml).toContain('Work attempts');
     expect(debriefHtml).toContain('Work corrections');
     expect(debriefHtml).toContain('data-spaceexplorer-procedure-summary="true"');
+    expect(debriefHtml).toContain('data-spaceexplorer-practice-insight="true"');
+    expect(debriefHtml).toContain('Adaptation observed');
     expect(debriefHtml).toContain('Lab: Body restraint + specimen tether');
   });
 

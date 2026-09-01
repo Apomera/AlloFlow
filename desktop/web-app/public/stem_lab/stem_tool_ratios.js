@@ -811,10 +811,30 @@
             : t('stem.ratios.this_result_is_above_the_1_000_000_qua', "This result is above the 1,000,000 quantity limit. Adjust the example values.");
         }
         var tapePercent = kind === 'findPercent' ? (result == null ? 0 : result) : percent;
-        var tapeModel = percentReady ? percentTapeModel(tapePercent, 6) : null;
+        var tapeCanRender = percentReady && !(kind === 'findPercent' && result == null);
+        var tapeModel = tapeCanRender ? percentTapeModel(tapePercent, 6) : null;
         var tapeSummary = !percentReady ? resultIssue : (resultIssue || (result == null
           ? (kind === 'findPercent' ? t('stem.ratios.the_percent_is_not_defined_when_the_wh', "The percent is not defined when the whole is zero. Enter a positive whole to build the tape.") : t('stem.ratios.the_whole_is_not_defined_when_the_perc', "The whole is not defined when the percent is zero. Enter a positive percent to build the tape."))
           : percentTapeSummary(tapeModel)));
+
+        function changePercentKind(nextKind) {
+          if (['findPart', 'findPercent', 'findWhole'].indexOf(nextKind) < 0 || nextKind === kind) return;
+          var patch = {
+            percentKind: nextKind,
+            percentWholeDraft: null,
+            percentValueDraft: null,
+            percentPartDraft: null
+          };
+          if (percentReady && result !== null && isFinite(result)) {
+            var transferred = roundTo(result, 6);
+            if (kind === 'findPercent') patch.percentValue = clamp(transferred, 0, MAX_PERCENT);
+            else if (kind === 'findWhole') patch.percentWhole = clamp(transferred, 0, MAX_PERCENT_QUANTITY);
+            else patch.percentPart = clamp(transferred, 0, MAX_PERCENT_QUANTITY);
+          }
+          update(patch);
+          var nextLabel = nextKind === 'findPercent' ? t('stem.ratios.percent', "Percent") : (nextKind === 'findWhole' ? t('stem.ratios.whole', "Whole") : t('stem.ratios.part', "Part"));
+          announce(t('stem.ratios.now_finding', "Now finding ") + nextLabel + '.');
+        }
 
         function renderPercentTape(tape, tapeIndex) {
           var wholeNumber = tape.complete ? tapeIndex + 1 : tapeModel.wholeCount + 1;
@@ -873,9 +893,9 @@
 
         return h('div', { className: "grid lg:grid-cols-[280px_1fr] gap-4" },
           h('div', { className: 'rounded-xl p-4 space-y-3', style: cardStyle },
-            h('label', { className: 'block text-xs font-semibold' },
+            h('label', { className: 'block text-xs font-semibold', htmlFor: 'ratio-percent-kind' },
               h('span', { className: 'block mb-1', style: { color: muted } }, t('stem.ratios.choose_the_unknown', "Choose the unknown")),
-              h('select', { value: kind, onChange: function(event) { update({ percentKind: event.target.value }); }, className: 'w-full rounded-lg px-3 py-2 text-sm', style: inputStyle },
+              h('select', { id: 'ratio-percent-kind', value: kind, onChange: function(event) { changePercentKind(event.target.value); }, className: 'w-full rounded-lg px-3 py-2 text-sm', style: inputStyle },
                 h('option', { value: 'findPart' }, t('stem.ratios.find_the_part', "Find the part")),
                 h('option', { value: 'findPercent' }, t('stem.ratios.find_the_percent', "Find the percent")),
                 h('option', { value: 'findWhole' }, t('stem.ratios.find_the_whole', "Find the whole"))
@@ -888,13 +908,13 @@
           ),
           h('div', { className: 'rounded-xl p-4 space-y-4', style: cardStyle },
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3' },
-              h('div', null,
-                h('div', { className: 'text-xs', style: { color: muted } }, resultLabel),
-                h('div', { className: 'text-3xl font-black', style: { color: result == null ? warning : accent } }, !percentReady ? t('stem.ratios.finish_the_inputs', "Finish the inputs") : (result == null ? t('stem.ratios.not_defined', "Not defined") : formatNumber(result) + (kind === 'findPercent' ? '%' : '')))
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-labelledby': 'ratio-percent-result-label ratio-percent-result-value' },
+                h('div', { id: 'ratio-percent-result-label', className: 'text-xs', style: { color: muted } }, resultLabel),
+                h('div', { id: 'ratio-percent-result-value', className: 'text-3xl font-black', style: { color: result == null ? warning : accent } }, !percentReady ? t('stem.ratios.finish_the_inputs', "Finish the inputs") : (result == null ? t('stem.ratios.not_defined', "Not defined") : formatNumber(result) + (kind === 'findPercent' ? '%' : '')))
               ),
               h('code', { className: 'rounded-lg px-3 py-2 text-xs', style: { background: soft, border: '1px solid ' + border } }, formula)
             ),
-            percentReady ? h('div', { className: 'space-y-3', 'data-percent-tape-total': formatNumber(tapeModel.percent), 'data-percent-tape-count': tapeModel.totalTapeCount },
+            tapeModel ? h('div', { className: 'space-y-3', 'data-percent-tape-total': formatNumber(tapeModel.percent), 'data-percent-tape-count': tapeModel.totalTapeCount },
               h('p', { id: 'ratio-percent-tape-summary', className: 'text-sm font-semibold', style: { color: text } }, tapeSummary),
               h('p', { id: 'ratio-percent-tape-key', className: 'text-xs', style: { color: muted } }, t('stem.ratios.each_outlined_section_is_exactly_10_of', "Each outlined section is exactly 10% of one whole. A partially filled section shows the exact fraction of that 10% section.")),
               h('div', { className: 'space-y-3', 'aria-describedby': 'ratio-percent-tape-summary ratio-percent-tape-key' }, tapeModel.tapes.map(renderPercentTape)),

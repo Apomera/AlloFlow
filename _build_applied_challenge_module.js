@@ -78,6 +78,7 @@ const outputCode = [
   '    appliedChallengeValidationCycleProgress: appliedChallengeValidationCycleProgress,',
   '    appliedChallengeValidationCyclesProgress: appliedChallengeValidationCyclesProgress,',
   '    appliedChallengeValidationCyclesPromptSnapshot: appliedChallengeValidationCyclesPromptSnapshot,',
+  '    appliedChallengePromptContextSnapshot: appliedChallengePromptContextSnapshot,',
   '    buildAppliedChallengeHintPrompt: buildAppliedChallengeHintPrompt,',
   '    buildAppliedChallengeStressTestPrompt: buildAppliedChallengeStressTestPrompt,',
   '    buildAppliedChallengeFeedbackPrompt: buildAppliedChallengeFeedbackPrompt,',

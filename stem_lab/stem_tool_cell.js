@@ -18806,6 +18806,52 @@ var d = labToolData.cell || {};
 
 
 
+            // Read the actual overlay geometry so mission cues and the player tag stay
+            // inside the visible playfield as responsive panels grow or collapse.
+            var missionOverlaySafeBandCache = null;
+            function readCellMissionOverlaySafeBand() {
+              var readAt = Date.now();
+              if (missionOverlaySafeBandCache && readAt - missionOverlaySafeBandCache.readAt < 120) return missionOverlaySafeBandCache;
+              var top = Math.min(HH - 90 * dpr, 260 * dpr);
+              var bottom = Math.max(320 * dpr, HH - 220 * dpr);
+              try {
+                var canvasRect = canvasEl.getBoundingClientRect();
+                if (canvasRect && canvasRect.height > 0) {
+                  var stageScope = canvasEl.closest ? (canvasEl.closest('[data-cell-stage]') || document) : document;
+                  var scaleY = HH / canvasRect.height;
+                  var topCss = 0;
+                  ['[data-cell-stage-hud]', '[data-cell-target-legend]'].forEach(function (selector) {
+                    var element = stageScope.querySelector(selector);
+                    if (!element) return;
+                    var rect = element.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0 && rect.right > canvasRect.left && rect.left < canvasRect.right && rect.bottom > canvasRect.top && rect.top < canvasRect.bottom) {
+                      topCss = Math.max(topCss, rect.bottom - canvasRect.top);
+                    }
+                  });
+                  var bottomCss = canvasRect.height - 12;
+                  ['[data-cell-direction-pad]', '[data-cell-control-lock]', '[data-cell-stage-utility]'].forEach(function (selector) {
+                    Array.prototype.forEach.call(stageScope.querySelectorAll(selector), function (element) {
+                      var rect = element.getBoundingClientRect();
+                      if (rect.width > 0 && rect.height > 0 && rect.right > canvasRect.left && rect.left < canvasRect.right && rect.top > canvasRect.top && rect.top < canvasRect.bottom) {
+                        bottomCss = Math.min(bottomCss, rect.top - canvasRect.top);
+                      }
+                    });
+                  });
+                  top = Math.max(20 * dpr, Math.min(HH - 100 * dpr, (topCss + 8) * scaleY));
+                  bottom = Math.max(top + 60 * dpr, Math.min(HH - 12 * dpr, (bottomCss - 8) * scaleY));
+                }
+              } catch (e) {}
+              if (bottom > HH - 12 * dpr) bottom = HH - 12 * dpr;
+              if (bottom < top + 60 * dpr) {
+                top = Math.max(20 * dpr, Math.min(top, HH - 72 * dpr));
+                bottom = Math.min(HH - 12 * dpr, top + 60 * dpr);
+              }
+              missionOverlaySafeBandCache = { readAt: readAt, top: top, bottom: bottom };
+              return missionOverlaySafeBandCache;
+            }
+
+
+
             function drawPlayerControlTag(o, p, sz, controlResponse) {
               if (!controlResponse) return;
               cctx.save();
@@ -18822,11 +18868,10 @@ var d = labToolData.cell || {};
               playerTagW = Math.min(W - 16 * dpr, playerTagW);
               var playerTagH = (playerTagHasSecondLine ? 42 : 24) * dpr;
               var playerTagX = Math.max(8 * dpr, Math.min(W - playerTagW - 8 * dpr, p.x - playerTagW / 2));
-              var narrowCanvas = W / dpr <= 520;
-              var ultraNarrowCanvas = W / dpr <= 340;
-              var preferredPlayerTagY = ultraNarrowCanvas ? HH - playerTagH - 210 * dpr : narrowCanvas ? HH - playerTagH - 226 * dpr : p.y - sz * 1.55 - playerTagH - 5 * dpr;
-              var minPlayerTagY = (narrowCanvas ? 300 : 78) * dpr;
-              var maxPlayerTagY = ultraNarrowCanvas ? HH - playerTagH - 206 * dpr : narrowCanvas ? HH - playerTagH - 216 * dpr : HH - playerTagH - 8 * dpr;
+              var playerSafeBand = readCellMissionOverlaySafeBand();
+              var preferredPlayerTagY = p.y - sz * 1.55 - playerTagH - 5 * dpr;
+              var minPlayerTagY = playerSafeBand.top + 4 * dpr;
+              var maxPlayerTagY = Math.max(minPlayerTagY, playerSafeBand.bottom - playerTagH - 4 * dpr);
               var playerTagY = Math.max(minPlayerTagY, Math.min(maxPlayerTagY, preferredPlayerTagY));
               cctx.fillStyle = 'rgba(15,23,42,0.92)';
               cctx.fillRect(playerTagX, playerTagY, playerTagW, playerTagH);
@@ -18851,7 +18896,8 @@ var d = labToolData.cell || {};
                 mechanismVisualActive: !!mechanismVisualState.active,
                 mechanismVisualEvidence: !!mechanismVisualState.evidence,
                 tagBounds: { left: playerTagX, top: playerTagY, right: playerTagX + playerTagW, bottom: playerTagY + playerTagH },
-                canvasBounds: { left: 0, top: 0, right: W, bottom: HH }
+                canvasBounds: { left: 0, top: 0, right: W, bottom: HH },
+                overlaySafeBand: { top: playerSafeBand.top, bottom: playerSafeBand.bottom }
               });
               var controlTracePhase = evidenceActive ? 'evidence' : controlResponse.moving ? 'input' : 'ready';
               var controlTraceInput = controlResponse.moving ? controlResponse.direction.toUpperCase() + ' input' : controlResponse.input;
@@ -19928,6 +19974,13 @@ var d = labToolData.cell || {};
               var labelBoxes = [];
               var visibleAnatomy = def.anatomy;
               var activeLabelTutorial = playAsOrg === o ? cellPlayTutorialFor(def) : null;
+              var labelSafeTop = fontSize;
+              var labelSafeBottom = HH - fontSize;
+              if (playAsOrg === o) {
+                var anatomySafeBand = readCellMissionOverlaySafeBand();
+                labelSafeTop = Math.max(labelSafeTop, anatomySafeBand.top + 4 * dpr);
+                labelSafeBottom = Math.min(labelSafeBottom, anatomySafeBand.bottom - 4 * dpr);
+              }
               if (activeLabelTutorial && !activeLabelTutorial.stationary && activeLabelTutorial.focusStructures.length) {
                 var focusedAnatomy = def.anatomy.filter(function (a) { return activeLabelTutorial.focusStructures.indexOf(a.name) !== -1; });
                 if (focusedAnatomy.length) visibleAnatomy = focusedAnatomy;
@@ -19973,7 +20026,7 @@ var d = labToolData.cell || {};
 
                 targetLx = Math.max(fontSize, Math.min(W - textW - fontSize, targetLx));
 
-                targetLy = Math.max(fontSize * 2, Math.min(HH - fontSize * 2, targetLy));
+                targetLy = Math.max(labelSafeTop + fontSize, Math.min(labelSafeBottom - fontSize, targetLy));
 
                 // Smooth lerp: labels follow slowly instead of snapping
 
@@ -19981,9 +20034,11 @@ var d = labToolData.cell || {};
 
                 if (!_labelPositions[lerpKey]) _labelPositions[lerpKey] = { x: targetLx, y: targetLy };
 
-                _labelPositions[lerpKey].x += (targetLx - _labelPositions[lerpKey].x) * 0.08;
+                var labelFollowRate = prefersReducedCellMotion ? 1 : 0.08;
 
-                _labelPositions[lerpKey].y += (targetLy - _labelPositions[lerpKey].y) * 0.08;
+                _labelPositions[lerpKey].x += (targetLx - _labelPositions[lerpKey].x) * labelFollowRate;
+
+                _labelPositions[lerpKey].y += (targetLy - _labelPositions[lerpKey].y) * labelFollowRate;
 
                 var lx = _labelPositions[lerpKey].x;
 
@@ -20001,7 +20056,7 @@ var d = labToolData.cell || {};
 
                 pillX = Math.max(edgePad, Math.min(W - pillW - edgePad, pillX));
 
-                pillY = Math.max(edgePad, Math.min(HH - pillH - edgePad, pillY));
+                pillY = Math.max(labelSafeTop, Math.min(labelSafeBottom - pillH, pillY));
 
                 for (var bi = 0; bi < labelBoxes.length; bi++) {
 
@@ -20019,7 +20074,7 @@ var d = labToolData.cell || {};
 
                     var nudgeUp = b.y - pillH - gapY;
 
-                    pillY = (nudgeDown + pillH + edgePad <= HH || nudgeUp < edgePad) ? Math.min(HH - pillH - edgePad, nudgeDown) : Math.max(edgePad, nudgeUp);
+                    pillY = (nudgeDown + pillH <= labelSafeBottom || nudgeUp < labelSafeTop) ? Math.min(labelSafeBottom - pillH, nudgeDown) : Math.max(labelSafeTop, nudgeUp);
 
                   }
 
@@ -20069,7 +20124,7 @@ var d = labToolData.cell || {};
 
                 cctx.setLineDash([dashLen, dashLen * 0.6]);
 
-                cctx.lineDashOffset = -(tNow * 0.8); // flowing animation
+                cctx.lineDashOffset = prefersReducedCellMotion ? 0 : -(tNow * 0.8); // flowing animation
 
                 cctx.stroke();
 
@@ -20081,7 +20136,7 @@ var d = labToolData.cell || {};
 
                 // Pulsing glow dot at organelle point
 
-                var pulse = 0.6 + Math.sin(tNow * 0.06 + i * 1.2) * 0.4;
+                var pulse = prefersReducedCellMotion ? 0.6 : 0.6 + Math.sin(tNow * 0.06 + i * 1.2) * 0.4;
 
                 var dotR = (2.5 + pulse * 1.5) * dpr;
 
@@ -20316,11 +20371,12 @@ var d = labToolData.cell || {};
               var distance = Math.hypot(dx, dy);
               var ux = distance > 0 ? dx / distance : 1;
               var uy = distance > 0 ? dy / distance : 0;
+              var missionSafeBand = readCellMissionOverlaySafeBand();
               var safeRect = {
                 left: 20 * dpr,
                 right: W - 20 * dpr,
-                top: Math.min(HH - 90 * dpr, 260 * dpr),
-                bottom: Math.max(320 * dpr, HH - 220 * dpr)
+                top: missionSafeBand.top,
+                bottom: missionSafeBand.bottom
               };
               if (safeRect.bottom < safeRect.top + 60 * dpr) safeRect.bottom = safeRect.top + 60 * dpr;
 
@@ -21351,7 +21407,14 @@ var d = labToolData.cell || {};
               }
               // Organisms
 
-              world.organisms.forEach(function (o) { drawOrganism(o); });
+              world.organisms.forEach(function (o) {
+                cctx.save();
+                if (playAsOrg && o !== playAsOrg) {
+                  cctx.globalAlpha = 0.34;
+                }
+                drawOrganism(o);
+                cctx.restore();
+              });
 
               // Organelle labels for selected organism
 
@@ -21359,7 +21422,7 @@ var d = labToolData.cell || {};
 
               world.organisms.forEach(function (o) {
 
-                if (o === selectedOrg || o === playAsOrg) drawOrganelleLabels(o);
+                if (o === playAsOrg || (!playAsOrg && o === selectedOrg)) drawOrganelleLabels(o);
 
               });
 
@@ -22702,6 +22765,8 @@ var d = labToolData.cell || {};
 
             var ro = new ResizeObserver(function () {
 
+              missionOverlaySafeBandCache = null;
+
               W = canvasEl.width = canvasEl.offsetWidth * dpr;
 
               HH = canvasEl.height = canvasEl.offsetHeight * dpr;
@@ -23005,6 +23070,45 @@ var d = labToolData.cell || {};
             activePlayApproachCycleComplete ?
               'Mission path complete: ' + activePlayApproachSteps.join(', then ') + '. Evidence recorded. Next action: ' + activePlayTargetInstruction + '.' :
               'Mission path: ' + activePlayApproachSteps.join(', then ') + '. Current step: ' + activePlayApproachCurrent + '.';
+          var activePlayLightHoldActive = !!(activePlayCue && activePlayCue.kind === 'light' && activePlayCue.phase === 'holding' && activePlayCue.progressPct !== null);
+          var activePlayMissionRibbonState = activePlayPredictionPending ? 'predict' :
+            activeMissionComplete ? 'complete' :
+              activeMissionEvidenceComplete ? 'explain' :
+                activePlayEvidenceMoment ? 'evidence' :
+                  activePlayLightHoldActive ? 'observe' :
+                    activePlayControlPhase === 'input' ? 'control' :
+                      activePlayProgress > 0 ? 'navigate' :
+                        activePlayFirstActionPromptActive || activePlayFirstActionRegisteredReady ? 'control' : 'navigate';
+          var activePlayMissionRibbonLabel = activePlayMissionRibbonState === 'predict' ? '1 · Predict' :
+            activePlayMissionRibbonState === 'control' ? '2 · Control' :
+              activePlayMissionRibbonState === 'evidence' || activePlayMissionRibbonState === 'observe' ? '3 · Observe' :
+                activePlayMissionRibbonState === 'navigate' ? (activePlayProgress > 0 ? '3 · Observe' : '2 · Control') :
+                  activePlayMissionRibbonState === 'explain' ? '4 · Explain' : '✓ Loop complete';
+          var activePlayMissionRibbonPrimary = activePlayMissionRibbonState === 'predict' ? 'Choose what you expect' :
+            activePlayMissionRibbonState === 'control' ? activePlayControlDisplayInput :
+              activePlayMissionRibbonState === 'observe' ? 'Hold in light · ' + activePlayCue.progressPct + '%' :
+                activePlayMissionRibbonState === 'evidence' ? '✓ ' + ((activePlayControlLoop && activePlayControlLoop.evidence) || 'Evidence recorded') :
+                  activePlayMissionRibbonState === 'navigate' ? activePlayTargetInstruction :
+                    activePlayMissionRibbonState === 'explain' ? 'Evidence 3/3 ready' : ((activePlayControlLoop && activePlayControlLoop.evidence) || 'Evidence explained');
+          var activePlayMissionRibbonSecondary = activePlayMissionRibbonState === 'predict' ? 'Controls and evidence unlock after this decision.' :
+            activePlayMissionRibbonState === 'control' ? activePlayControlMechanism + ' → ' + activePlayControlObservation :
+              activePlayMissionRibbonState === 'observe' ? activePlayCue.text :
+                activePlayMissionRibbonState === 'evidence' ? (activePlayCue && activePlayCue.text ? activePlayCue.text : 'Observation recorded. Find the next target.') :
+                  activePlayMissionRibbonState === 'navigate' ? (activePlayTutorial ? cellPlayTargetVisualFor(activePlayTutorial).shortLabel : 'Target') + ' · ' + activePlayTargetProximityLabel + (activePlayTargetDirectionLabel ? ' · ' + activePlayTargetDirectionLabel : '') :
+                    activePlayMissionRibbonState === 'explain' ? 'Use the observations to choose the supported explanation.' : 'Replay or compare another organism.';
+          var activePlayMissionRibbonAria = activePlayMissionRibbonState === 'predict' ?
+            'Predict step. Choose what you expect. Controls and evidence unlock after this decision.' :
+            activePlayMissionRibbonState === 'control' ?
+              'Control step. ' + activePlayControlDisplayInput + '. ' + activePlayControlMechanism + ', resulting in ' + activePlayControlObservation + '.' :
+              activePlayMissionRibbonState === 'observe' ?
+                'Observe step. Hold position in the light zone. Continuous light exposure ' + activePlayCue.progressPct + ' percent of one evidence cycle.' :
+                activePlayMissionRibbonState === 'evidence' ?
+                  'Observe step. Evidence ' + activePlayProgress + ' of 3 recorded. ' + ((activePlayControlLoop && activePlayControlLoop.evidence) || 'Structure produces evidence') + '. Next action: ' + activePlayTargetInstruction + '.' :
+                  activePlayMissionRibbonState === 'navigate' ?
+                    (activePlayProgress > 0 ? 'Observe step. ' : 'Control step. ') + activePlayTargetInstruction + '. Target ' + activePlayTargetProximityLabel + '. Evidence ' + activePlayProgress + ' of 3.' :
+                    activePlayMissionRibbonState === 'explain' ?
+                      'Explain step. Evidence 3 of 3 is ready. Use the observations to choose the supported explanation.' :
+                      'Learning loop complete. Replay or compare another organism.';
           var preferredCellMissionDef = activePlayTutorial && activePlayTutorial.comparison.with ? ORGANISMS.find(function (o) { return o.id === activePlayTutorial.comparison.with; }) : null;
           var fallbackCellMissionDef = activePlayDef ? ORGANISMS.find(function (o) { return o.id !== activePlayDef.id && !completedCellMissions[o.id]; }) : null;
           var nextCellMissionDef = activeMissionComplete ? (preferredCellMissionDef && !completedCellMissions[preferredCellMissionDef.id] ? preferredCellMissionDef : fallbackCellMissionDef) : null;
@@ -23056,7 +23160,12 @@ var d = labToolData.cell || {};
             finishCellPlayTutorial(resumeCanvas);
           }
           function handleCellPlayTutorialKeyDown(e) {
-            if (e.key === 'Escape') { e.stopPropagation(); closeCellPlayTutorial(false); return; }
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              e.stopPropagation();
+              finishCellPlayTutorial(false);
+              return;
+            }
             if (e.key !== 'Tab') return;
             var focusable = Array.prototype.slice.call(e.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])'));
             if (!focusable.length) { e.preventDefault(); return; }
@@ -23522,11 +23631,21 @@ var d = labToolData.cell || {};
               // while tightening only the visible overlay chrome around the organism.
               React.createElement("style", { "data-cell-ultra-narrow-style": true },
                 "@container (max-width: 420px) {"
+                + "[data-cell-stage-hud]{left:8px!important;right:8px!important;top:8px!important;padding:8px!important;}"
                 + "[data-cell-mission-progress]{padding-left:8px!important;padding-right:8px!important;}"
                 + "[data-cell-mission-progress] [data-cell-progress-dot]{display:none!important;}"
-                + "[data-cell-hud-heading]{letter-spacing:.03em!important;}"
+                + "[data-cell-hud-heading]{font-size:12px!important;letter-spacing:.03em!important;}"
                 + "[data-cell-hud-actions]{gap:2px!important;}"
-                + "[data-cell-play-hud],[data-cell-center-player]{padding-left:8px!important;padding-right:8px!important;}"
+                + "[data-cell-hud-summary]{display:none!important;}"
+                + "[data-cell-play-hud],[data-cell-center-player]{min-height:40px!important;min-width:40px!important;justify-content:center!important;padding-left:8px!important;padding-right:8px!important;}"
+                + "[data-cell-center-player-label],[data-cell-play-hud-label]{display:none!important;}"
+                + "[data-cell-target-legend]{left:8px!important;right:8px!important;top:72px!important;width:auto!important;max-width:none!important;padding:8px 10px!important;}"
+                + "[data-cell-target-key-full],[data-cell-target-name-full]{display:none!important;}"
+                + "[data-cell-target-key-compact]{display:block!important;font-size:11px!important;}"
+                + "[data-cell-mission-ribbon]{display:block!important;min-height:76px!important;}"
+                + "[data-cell-target-proximity],[data-cell-approach-meter],[data-cell-control-loop],[data-cell-evidence-feedback],[data-cell-evidence-to-explain]{display:none!important;}"
+                + "[data-cell-target-guide-note]{display:none!important;}"
+                + "[data-cell-target-guide-note][data-cell-guide-critical=\"true\"]{display:block!important;}"
                 + "} @container (max-width: 340px) {"
                 + "[data-cell-target-key-full],[data-cell-target-name-full],[data-cell-control-lead]{display:none!important;}"
                 + "[data-cell-target-key-compact]{display:block!important;}"
@@ -23536,7 +23655,6 @@ var d = labToolData.cell || {};
                 + "[data-cell-evidence-feedback]{margin-top:5px!important;padding:7px!important;}"
                 + "[data-cell-cue-layout=\"consolidated\"]{margin-top:6px!important;padding-top:6px!important;}"
                 + "[data-cell-approach-meter]{display:none!important;}"
-                + "[data-cell-center-player-label],[data-cell-play-hud-label]{display:none!important;}"
                 + "[data-cell-mission-progress-state=\"complete\"] [data-cell-progress-dot]{display:none!important;}"
                 + "[data-cell-mission-progress-state=\"complete\"]{padding-left:8px!important;padding-right:8px!important;}"
                 + "}"
@@ -23566,8 +23684,8 @@ var d = labToolData.cell || {};
                         React.createElement("span", { className: "tabular-nums" }, activePlayProgress + "/3")
                       )
                   ) : React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100" }, "Observed " + observedCount),
-                  React.createElement("span", { className: "hidden rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100 sm:inline-flex" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
-                  React.createElement("span", { className: "hidden rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100 sm:inline-flex" }, effectiveCellPaused ? "Paused" : "Running"),
+                  !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100 sm:inline-flex" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
+                  !activePlayDef && React.createElement("span", { className: "hidden rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100 sm:inline-flex" }, effectiveCellPaused ? "Paused" : "Running"),
                   activePlayDef && React.createElement("button", {
                     type: "button", "data-cell-play-hud": true, onClick: openCellPlayTutorial, "aria-label": "Open " + activePlayDef.label + " mission tutorial",
                     className: "inline-flex items-center gap-1 rounded-full border border-violet-300/50 bg-violet-400/20 px-2.5 py-1 text-[11px] font-black text-violet-100 hover:bg-violet-400/35 active:scale-[0.97]"
@@ -23600,6 +23718,7 @@ var d = labToolData.cell || {};
                 "data-cell-sim-canvas": "", "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy.", "aria-describedby": "cell-sim-status",
 
                 tabIndex: 0,
+                "aria-keyshortcuts": activePlayDef && activePlayTutorial && !activePlayTutorial.stationary && !activePlayPredictionPending && !activeMissionEvidenceComplete ? "ArrowUp ArrowDown ArrowLeft ArrowRight W A S D" : undefined,
 
                 // The canvas is a tab stop, so it needs a visible focus ring. Drawn just
                 // OUTSIDE the canvas box rather than inset: the top of the canvas is a
@@ -23619,6 +23738,18 @@ var d = labToolData.cell || {};
                     React.createElement("span", { "data-cell-target-key-full": true, className: "block text-[9px] font-black uppercase tracking-widest text-slate-300" }, "Target key  |  " + activeTargetVisual.keyline),
                     React.createElement("strong", { "data-cell-target-name-full": true, className: "block text-[11px] leading-tight text-white" }, activePlayTutorial.target),
                     React.createElement("span", { "data-cell-target-key-compact": true, className: "hidden text-[10px] font-black uppercase tracking-wide text-white" }, activeTargetVisual.shortLabel + " target  |  " + activeTargetVisual.compactKeyline)
+                  )
+                ),
+                React.createElement("div", { "data-cell-mission-ribbon": true, "data-cell-ribbon-state": activePlayMissionRibbonState, role: "status", "aria-live": "polite", "aria-atomic": "true", className: "hidden rounded-lg border border-white/15 bg-white/5 px-2.5 py-2" },
+                  React.createElement("span", { "data-cell-mission-ribbon-announcement": true, className: "sr-only" }, activePlayMissionRibbonAria),
+                  React.createElement("div", { className: "flex items-center justify-between gap-2", "aria-hidden": "true" },
+                    React.createElement("strong", { "data-cell-mission-ribbon-label": true, className: "text-[11px] font-black uppercase tracking-wide " + (activePlayMissionRibbonState === 'predict' ? "text-violet-200" : activePlayMissionRibbonState === 'control' ? "text-cyan-200" : activePlayMissionRibbonState === 'explain' ? "text-amber-200" : "text-emerald-200") }, activePlayMissionRibbonLabel),
+                    React.createElement("span", { "data-cell-mission-ribbon-progress": true, className: "rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-black tabular-nums text-white" }, activePlayProgress + "/3")
+                  ),
+                  React.createElement("strong", { "data-cell-mission-ribbon-primary": true, className: "mt-1 block text-[14px] font-black leading-tight text-white", "aria-hidden": "true" }, activePlayMissionRibbonPrimary),
+                  React.createElement("p", { "data-cell-mission-ribbon-secondary": true, className: "mt-1 text-[12px] font-bold leading-snug text-slate-200", "aria-hidden": "true" }, activePlayMissionRibbonSecondary),
+                  activePlayLightHoldActive && React.createElement("div", { "data-cell-mission-ribbon-light-progress": true, className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/20", role: "progressbar", "aria-label": "Continuous light exposure", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": activePlayCue.progressPct, "aria-valuetext": activePlayCue.progressPct + " percent of one light-energy evidence cycle" },
+                    React.createElement("div", { className: "h-full rounded-full bg-amber-300 transition-[width] motion-reduce:transition-none", style: { width: activePlayCue.progressPct + "%" }, "aria-hidden": "true" })
                   )
                 ),
                 React.createElement("div", { "data-cell-target-proximity": true, "data-cell-proximity": activePlayTargetProximity, "data-cell-direction": activePlayTargetDirection || "pending", className: "mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 border-t border-white/10 pt-1.5 text-[10px] leading-snug", "aria-label": activePlayTargetStatusText },
@@ -23656,7 +23787,7 @@ var d = labToolData.cell || {};
                     React.createElement("strong", { "data-cell-control-observation": true, className: "font-black uppercase text-emerald-50" }, activePlayControlObservation)
                   )
                 ),
-                !activeMissionEvidenceComplete && activePlayCue && !activePlayCueConsolidated ? React.createElement("div", { "data-cell-target-guide-note": true, "data-cell-mission-cue": true, "data-cell-cue-layout": "standalone", className: "mt-2 rounded-lg border border-white/10 bg-white/5 p-2" },
+                !activeMissionEvidenceComplete && activePlayCue && !activePlayCueConsolidated ? React.createElement("div", { "data-cell-target-guide-note": true, "data-cell-guide-critical": activePlayCue.phase === 'paused' ? "true" : undefined, "data-cell-mission-cue": true, "data-cell-cue-layout": "standalone", className: "mt-2 rounded-lg border border-white/10 bg-white/5 p-2" },
                   React.createElement("div", { className: "flex items-center justify-between gap-2" },
                     React.createElement("strong", { className: "text-[9px] font-black uppercase tracking-wide text-amber-200" }, activePlayCueLabel),
                     activePlayCue.progressPct !== null && activePlayCue.kind === 'light' && React.createElement("span", { className: "text-[9px] font-black tabular-nums text-white" }, activePlayCue.progressPct + "%")
@@ -23705,7 +23836,6 @@ var d = labToolData.cell || {};
                   var cv = document.querySelector('[data-cell-sim-canvas]');
                   if (cv && cv._cellSimMoveKey) {
                     cv._cellSimMoveKey(key, pressed);
-                    if (pressed && cv.focus) cv.focus({ preventScroll: true });
                   }
                 }
                 function directionButton(key, glyph, label, gridClass) {
@@ -23719,6 +23849,7 @@ var d = labToolData.cell || {};
                     onPointerLeave: function (e) { setPadDirection(key, false, e); },
                     onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') setPadDirection(key, true, e); },
                     onKeyUp: function (e) { if (e.key === 'Enter' || e.key === ' ') setPadDirection(key, false, e); },
+                    onBlur: function (e) { setPadDirection(key, false, e); },
                     className: "relative h-11 w-11 rounded-xl border border-white/30 bg-slate-900/90 text-xl font-black text-white shadow-lg backdrop-blur transition motion-reduce:transition-none hover:bg-violet-700 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white active:scale-95 " + gridClass,
                     style: isActiveDirection ? { touchAction: 'none', background: '#fef08a', color: '#0f172a', borderColor: '#ffffff', boxShadow: '0 0 0 3px rgba(250,204,21,0.48)' } : { touchAction: 'none' }
                   }, React.createElement("span", { "aria-hidden": "true" }, glyph));
@@ -23736,17 +23867,11 @@ var d = labToolData.cell || {};
                 return React.createElement("div", { "data-cell-direction-pad": true, "data-cell-active-direction": activePlayControlMoving ? activePlayControlDirection : "idle", "data-cell-first-action-state": activePlayFirstActionState, className: "absolute bottom-14 left-1/2 z-20 grid -translate-x-1/2 grid-cols-3 gap-1 rounded-2xl border border-white/20 bg-slate-950/70 p-2 shadow-2xl backdrop-blur", style: padStyle, role: "group", "aria-label": "Move " + activePlayDef.label + (activePlayControlMoving ? ". Current input: " + activePlayControlDirection + "." : ". No direction pressed.") + (padOnboarding ? " First action: press or hold any direction." : padRegistered ? " First control registered. Repeat a direction to keep steering." : ""), "aria-describedby": "cell-live-biology-loop" },
                   directionButton('ArrowUp', '\u2191', 'Move up - model ' + activePlayTutorial.movement, 'col-start-2'),
                   directionButton('ArrowLeft', '\u2190', 'Move left - model ' + activePlayTutorial.movement, 'col-start-1 row-start-2'),
-                  React.createElement("div", { "data-cell-pad-readout": true, "data-cell-pad-state": activePlayControlMoving ? "active" : padOnboarding ? "start" : padRegistered ? "linked" : "ready", className: "col-start-2 row-start-2 flex h-11 w-11 flex-col items-center justify-center rounded-xl bg-white/10 px-1 text-center text-[8px] font-black uppercase leading-tight text-emerald-100", "aria-hidden": "true" },
+                  React.createElement("div", { "data-cell-pad-readout": true, "data-cell-pad-state": activePlayControlMoving ? "active" : padOnboarding ? "start" : padRegistered ? "linked" : "ready", className: "col-start-2 row-start-2 flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 px-1 text-center text-[10px] font-black uppercase leading-tight text-emerald-100", "aria-hidden": "true" },
                     activePlayControlMoving ? React.createElement(React.Fragment, null,
-                      React.createElement("span", { className: "block text-[9px] text-amber-100" }, activePlayControlDirection),
-                      React.createElement("span", { className: "block text-[7px] text-white" }, "Input")
-                    ) : padOnboarding ? React.createElement(React.Fragment, null,
-                      React.createElement("span", { className: "block text-[8px] text-amber-100" }, "Start"),
-                      React.createElement("span", { className: "block text-[7px] text-white" }, activePlayTutorial.controlLoop.short)
-                    ) : padRegistered ? React.createElement(React.Fragment, null,
-                      React.createElement("span", { className: "block text-[8px] text-emerald-200" }, "\u2713 Linked"),
-                      React.createElement("span", { className: "block text-[7px] text-white" }, activePlayTutorial.controlLoop.short)
-                    ) : activePlayTutorial.controlLoop.short
+                      React.createElement("span", { className: "block text-[11px] text-amber-100" }, activePlayControlDirection)
+                    ) : padOnboarding ? React.createElement("span", { className: "block text-[10px] text-amber-100" }, "Start") :
+                      padRegistered ? React.createElement("span", { className: "block text-[10px] text-emerald-200" }, "\u2713 Linked") : "Ready"
                   ),
                   directionButton('ArrowRight', '\u2192', 'Move right - model ' + activePlayTutorial.movement, 'col-start-3 row-start-2'),
                   directionButton('ArrowDown', '\u2193', 'Move down - model ' + activePlayTutorial.movement, 'col-start-2 row-start-3')
@@ -23754,7 +23879,7 @@ var d = labToolData.cell || {};
               })(),
               // Zoom overlay
 
-              React.createElement("div", { className: "absolute bottom-12 sm:bottom-3 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600" },
+              React.createElement("div", { "data-cell-stage-utility": "zoom", className: "absolute bottom-12 sm:bottom-3 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600" },
 
                 "\uD83D\uDD2C",
 
@@ -23781,7 +23906,7 @@ var d = labToolData.cell || {};
 
               // Speed controls
 
-              React.createElement("div", { className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-600" },
+              React.createElement("div", { "data-cell-stage-utility": "speed", className: "absolute bottom-2 right-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-3 py-1.5 text-[11px] font-bold text-slate-600" },
 
                 "\u23E9",
 
@@ -23824,6 +23949,7 @@ var d = labToolData.cell || {};
                 var tutorialControlResult = tutorialControlLoop.outcome || tutorial.watch;
                 var tutorialControlEvidence = tutorialControlLoop.evidence || tutorial.evidence;
                 var tutorialControlAria = 'Control model: ' + tutorialControlInput + ', then ' + tutorialControlMechanism + ', then ' + tutorialControlResult + '. Evidence to collect: ' + tutorialControlEvidence + '.';
+                var tutorialControlReminderAria = org.label + ' control reminder: ' + tutorialControlInput + '; cell response: ' + tutorialControlMechanism + '; observable result: ' + tutorialControlResult + '.';
                 var tutorialFirstActionComplete = !!(tutorialMissionMatches && (activePlayProgress > 0 || activePlayMission.firstActionRegistered));
                 var tutorialReadyToExplain = !!(tutorialMissionMatches && activeMissionEvidenceComplete && !activeReflectionComplete);
                 var tutorialActionText = tutorialPredictionPending ? 'Choose a prediction to start' : tutorialReadyToExplain ? 'Go to explanation' : (tutorialPreviouslySeen ? 'Continue mission' : 'Start mission');
@@ -24009,12 +24135,32 @@ var d = labToolData.cell || {};
                     // Footer
 
                     React.createElement("div", { "data-cell-tutorial-action-bar": true, className: "flex-shrink-0 space-y-2 border-t border-slate-200 bg-white px-5 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]" },
+                      React.createElement("div", { "data-cell-tutorial-action-reminder": true, role: "note", "aria-label": tutorialControlReminderAria, className: "rounded-xl border border-sky-200 bg-gradient-to-r from-violet-50 via-sky-50 to-emerald-50 px-2.5 py-2" },
+                        React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-[0.14em] text-sky-900" }, "Control causes a biological response"),
+                        React.createElement("div", { className: "mt-1 grid items-stretch gap-1", style: { gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr)' } },
+                          React.createElement("div", { className: "min-w-0 text-center" },
+                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-violet-700" }, "Your input"),
+                            React.createElement("strong", { "data-cell-tutorial-reminder-input": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-900" }, tutorialControlInput)
+                          ),
+                          React.createElement("span", { className: "self-center text-xs font-black text-sky-600", "aria-hidden": "true" }, "\u2192"),
+                          React.createElement("div", { className: "min-w-0 text-center" },
+                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-sky-700" }, "Cell response"),
+                            React.createElement("strong", { "data-cell-tutorial-reminder-mechanism": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-900" }, tutorialControlMechanism)
+                          ),
+                          React.createElement("span", { className: "self-center text-xs font-black text-emerald-600", "aria-hidden": "true" }, "\u2192"),
+                          React.createElement("div", { className: "min-w-0 text-center" },
+                            React.createElement("span", { className: "block text-[8px] font-black uppercase tracking-wide text-emerald-700" }, "Watch for"),
+                            React.createElement("strong", { "data-cell-tutorial-reminder-result": true, className: "mt-0.5 block text-[10px] leading-tight text-slate-900" }, tutorialControlResult)
+                          )
+                        )
+                      ),
                       React.createElement("button", { type: "button", "data-cell-tutorial-primary": true, "aria-label": tutorialActionLabel, disabled: tutorialPredictionPending,
                         onClick: function () { if (tutorialPredictionPending) return; recordCellTutorialSeen(org.id); if (tutorialReadyToExplain) { upd('showPlayInstructions', false); focusCellPlayRegion('[data-cell-mission-checkpoint]', '[data-cell-explanation-option]'); } else closeCellPlayTutorial(true); },
                         className: "w-full rounded-xl py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100",
                         style: { background: 'linear-gradient(135deg, ' + org.color + ', ' + org.color + 'cc)' }
                       }, "\uD83D\uDE80 " + tutorialActionText),
                       tutorialPredictionPending && React.createElement("button", { type: "button", "data-cell-skip-prediction": true, "aria-label": "Start " + org.label + " mission without a prediction", onClick: function () { recordCellPlayPredictionSkip(org.id); recordCellTutorialSeen(org.id); finishCellPlayTutorial(true); }, className: "min-h-10 w-full rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-black text-amber-950 hover:border-amber-500 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700" }, "Start without prediction"),
+                      tutorialPredictionPending && React.createElement("button", { type: "button", "data-cell-dismiss-prediction": true, "aria-label": "Close " + org.label + " briefing and keep prediction pending", onClick: function () { finishCellPlayTutorial(false); }, className: "min-h-10 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:border-violet-400 hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700" }, "Not now · return to choices"),
                       tutorialCanRestart && React.createElement("button", { type: "button", "data-cell-restart-attempt": true, onClick: function () { launchCellPlayMission(org.id, true); }, className: "w-full rounded-xl border border-slate-500 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-50" }, "Restart current attempt"),
                       tutorialCanRestart && React.createElement("p", { className: "text-center text-[10px] leading-snug text-slate-500" }, "Resets this attempt's 0-3 evidence. Completed mastery remains saved.")
                     )
@@ -24273,13 +24419,20 @@ var d = labToolData.cell || {};
             d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("section", { "data-cell-organism-chooser": true, "aria-labelledby": "cell-organism-chooser-title", className: "mt-3 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm", style: { containerType: 'inline-size' } },
 
               React.createElement("style", null,
-                "@container (max-width: 340px) {" +
-                " [data-cell-organism-grid] { grid-template-columns: minmax(0, 1fr) !important; }" +
-                " [data-cell-organism-grid] [data-cell-organism-option] { min-height: 0 !important; } }"),
+                "@container (max-width: 420px) {" +
+                " [data-cell-chooser-mobile-hint] { display: block !important; }" +
+                " [data-cell-organism-grid] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }" +
+                " [data-cell-organism-grid] [data-cell-organism-option] { min-height: 68px !important; padding: 8px !important; }" +
+                " [data-cell-organism-option][data-cell-organism-priority=\"current\"], [data-cell-organism-option][data-cell-organism-priority=\"selected\"], [data-cell-organism-option][data-cell-organism-priority=\"recommended\"] { grid-column: 1 / -1 !important; min-height: 112px !important; }" +
+                " [data-cell-organism-option][data-cell-organism-priority=\"standard\"] [data-cell-organism-card-detail] { display: none !important; }" +
+                " } @container (max-width: 340px) {" +
+                " [data-cell-organism-option][data-cell-organism-priority=\"standard\"] [data-cell-organism-card-header] { display: block !important; }" +
+                " [data-cell-organism-option][data-cell-organism-priority=\"standard\"] [data-cell-card-status] { display: inline-flex !important; margin-top: 6px !important; } }"),
               React.createElement("div", { className: "col-span-full mb-1 flex flex-wrap items-end justify-between gap-2 border-b border-slate-100 pb-2" },
                 React.createElement("div", null,
                   React.createElement("h4", { id: "cell-organism-chooser-title", className: "text-sm font-black text-slate-900" }, d.mode === 'play' ? "Choose your organism" : "Choose an organism to inspect"),
-                  React.createElement("p", { className: "text-[11px] text-slate-500" }, d.mode === 'play' ? "Compare what you do, how the cell responds, and each mission goal\u2014or follow your recommended next step." : "Each card previews its movement strategy and activity.")
+                  React.createElement("p", { className: "text-[11px] text-slate-500" }, d.mode === 'play' ? "Compare what you do, how the cell responds, and each mission goal\u2014or follow your recommended next step." : "Each card previews its movement strategy and activity."),
+                  d.mode === 'play' && React.createElement("p", { "data-cell-chooser-mobile-hint": true, className: "mt-1 hidden text-[10px] font-bold leading-snug text-violet-700" }, "Current, selected, and recommended cards stay expanded. Tap any compact card to reveal its learning map.")
                 ),
                 React.createElement("span", { "data-cell-mastery-summary": d.mode === 'play' ? true : undefined, className: "rounded-full px-2.5 py-1 text-[10px] font-black " + (d.mode === 'play' ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600") }, d.mode === 'play' ? completedCellMissionCount + " / " + ORGANISMS.length + " missions complete" : ORGANISMS.length + " models")
               ),
@@ -24326,9 +24479,11 @@ var d = labToolData.cell || {};
                 var chooserRecommended = !!(recommendedCellMissionDef && recommendedCellMissionDef.id === org.id);
                 var chooserStatusText = chooserCurrentAttempt ? (activeMissionEvidenceComplete ? "Explain" : activePlayProgress + "/3") : chooserMissionComplete ? "Mastered" : "New";
                 var chooserStatusDetail = chooserCurrentAttempt ? (activeMissionEvidenceComplete ? "3 of 3 evidence; explanation needed" : activePlayProgress + " of 3 evidence") : chooserMissionComplete ? "mission mastered" : "new mission";
+                var chooserPriority = d.mode !== 'play' ? 'standard' : (chooserCurrentAttempt || d.playAsOrganism === org.id) ? 'current' : d.selectedOrganism === org.id ? 'selected' : chooserRecommended ? 'recommended' : 'standard';
                 var chooserDescriptionId = "cell-organism-summary-" + org.id;
+                var chooserAccessibleSummary = chooserTutorial ? "Status: " + chooserStatusDetail + ". Control mapping: " + chooserControlLoop.input + ", then " + chooserControlLoop.action + ", producing " + chooserControlLoop.outcome + ". Mission: " + chooserTutorial.objective : org.activity;
 
-                return React.createElement("button", { key: org.id, type: "button", "data-cell-organism-option": org.id, "data-cell-recommended-card": d.mode === 'play' && chooserRecommended ? org.id : undefined, "aria-label": d.mode === 'play' ? "Preview " + org.label + " mission" : "Inspect " + org.label, "aria-describedby": d.mode === 'play' ? chooserDescriptionId : undefined,
+                return React.createElement("button", { key: org.id, type: "button", "data-cell-organism-option": org.id, "data-cell-organism-priority": chooserPriority, "data-cell-recommended-card": d.mode === 'play' && chooserRecommended ? org.id : undefined, "aria-label": d.mode === 'play' ? "Preview " + org.label + " mission" : "Inspect " + org.label, "aria-describedby": d.mode === 'play' ? chooserDescriptionId : undefined,
 
                   onClick: function () {
 
@@ -24386,8 +24541,8 @@ var d = labToolData.cell || {};
                   style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color, background: org.color + '0D' } : {}
 
                 },
-                  React.createElement("span", { className: "flex items-start justify-between gap-2 text-xs font-black" },
-                    React.createElement("span", { className: "flex min-w-0 items-center gap-2" }, React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, org.icon), React.createElement("span", null, org.label)),
+                  React.createElement("span", { "data-cell-organism-card-header": true, className: "flex items-start justify-between gap-2 text-xs font-black" },
+                    React.createElement("span", { "data-cell-card-identity": true, className: "flex min-w-0 items-center gap-2" }, React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, org.icon), React.createElement("span", null, org.label)),
                     d.mode === 'play' && React.createElement("span", { "data-cell-card-status": chooserStatusText, className: "flex-shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide " + (chooserCurrentAttempt ? "bg-violet-100 text-violet-800" : chooserMissionComplete ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700") }, chooserStatusText)
                   ),
                   d.mode === 'play' && (d.playAsOrganism === org.id || chooserMissionComplete || (chooserRecommended && !chooserCurrentAttempt)) && React.createElement("span", { className: "mt-2 flex flex-wrap gap-1" },
@@ -24395,8 +24550,8 @@ var d = labToolData.cell || {};
                     chooserRecommended && !chooserCurrentAttempt && React.createElement("span", { className: "inline-flex rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-amber-950" }, "\u2605 Recommended"),
                     chooserMissionComplete && React.createElement("span", { "data-cell-mission-mastered": org.id, className: "inline-flex rounded-full bg-emerald-700 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white" }, "\u2713 Mission complete")
                   ),
-                  React.createElement("span", { id: chooserDescriptionId, className: "block" },
-                    d.mode === 'play' && React.createElement("span", { className: "sr-only" }, "Status: " + chooserStatusDetail + ". "),
+                  d.mode === 'play' && React.createElement("span", { id: chooserDescriptionId, className: "sr-only" }, chooserAccessibleSummary),
+                  React.createElement("span", { "data-cell-organism-card-detail": true, "aria-hidden": d.mode === 'play' ? "true" : undefined, className: "block" },
                     d.mode === 'play' && chooserTutorial ? React.createElement("span", { "data-cell-card-control-map": true, "aria-label": org.label + " control mapping: " + chooserControlLoop.input + ", then " + chooserControlLoop.action + ".", className: "mt-2 block" },
                       React.createElement("span", { className: "block text-[9px] font-black uppercase tracking-wide text-slate-500" }, "Your input ", React.createElement("span", { className: "text-cyan-700", "aria-hidden": "true" }, "\u2192"), " Cell response"),
                       React.createElement("span", { className: "mt-0.5 flex flex-wrap items-baseline gap-x-1 text-[10px] font-black leading-snug" },
@@ -24587,13 +24742,11 @@ var d = labToolData.cell || {};
 
                         cursor: 'pointer',
 
-                        transition: 'all 0.2s',
-
-                        outline: 'none'
+                        transition: 'all 0.2s'
 
                       },
 
-                      className: "transition-colors hover:bg-slate-50 active:bg-slate-100 rounded-lg w-full text-left active:scale-[0.97]"
+                      className: "transition-colors hover:bg-slate-50 active:bg-slate-100 rounded-lg w-full text-left active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
 
                     },
 

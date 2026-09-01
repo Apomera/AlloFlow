@@ -67,13 +67,21 @@
         name: safeText(candidate.name, 80),
         parts: candidate.parts.slice(0, 24).map(function (part) {
           var stretch = Array.isArray(part.stretch) ? part.stretch : [1, 1, 1];
+          var deform = part.deform && typeof part.deform === 'object' ? part.deform : {};
+          var requestedFinish = typeof part.finish === 'string' ? part.finish.toLowerCase().trim() : '';
           return {
             shape: String(part.shape).toLowerCase(),
+            label: safeText(part.label, 40),
             size: [clamp(part.size[0], 0.02, 4, 0.4), clamp(part.size[1], 0.02, 4, 0.4), clamp(part.size[2], 0.02, 4, 0.4)],
             stretch: [clamp(stretch[0], 0.1, 4, 1), clamp(stretch[1], 0.1, 4, 1), clamp(stretch[2], 0.1, 4, 1)],
+            deform: { taper: clamp(deform.taper, -0.85, 0.85, 0), twist: clamp(deform.twist, -180, 180, 0), bulge: clamp(deform.bulge, -0.75, 1.5, 0) },
             position: [clamp(part.position[0], -4, 4, 0), clamp(part.position[1], -4, 8, 0.5), clamp(part.position[2], -4, 4, 0)],
             rotation: [clamp(part.rotation[0], -360, 360, 0), clamp(part.rotation[1], -360, 360, 0), clamp(part.rotation[2], -360, 360, 0)],
-            color: part.color && /^#[0-9a-f]{6}$/i.test(String(part.color)) ? String(part.color).toLowerCase() : '#818cf8'
+            color: part.color && /^#[0-9a-f]{6}$/i.test(String(part.color)) ? String(part.color).toLowerCase() : '#818cf8',
+            finish: ['standard', 'matte', 'gloss', 'metal', 'wire'].indexOf(requestedFinish) !== -1 ? requestedFinish : 'standard',
+            opacity: clamp(part.opacity, 0.15, 1, 1),
+            hidden: part.hidden === true,
+            locked: part.locked === true
           };
         }),
         scale: clamp(candidate.scale, 0.25, 5, 1),

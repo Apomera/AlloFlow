@@ -373,10 +373,75 @@ describe('Educator Evaluation Apps Script hardened setup and request boundary', 
     const recovered = owner.invoke('setupEvaluationRepository', { allowedDomain: DOMAIN, bootstrapAdmin: ADMIN });
     expect(recovered.ok).toBe(true);
     expect(owner.properties.get('EE_SETUP_STATE')).toBe('ready');
+    const pendingFile = owner.driveFiles.get(owner.properties.get('EE_PENDING_COMMIT_FILE_ID'));
+    const workspaceFileId = owner.properties.get('EE_WORKSPACE_FILE_ID');
+    const workspaceFile = owner.driveFiles.get(workspaceFileId);
+    const workspaceRows = owner.rows('Workspace');
+    expect(pendingFile.content).toBe('');
+    expect(owner.properties.has('EE_COMMIT_RECOVERY_REQUIRED')).toBe(false);
+    expect(workspaceRows).toHaveLength(2);
+    expect(workspaceRows[1].slice(0, 3)).toEqual(['workspace', 0, workspaceFileId]);
+    expect(workspaceRows[1][3]).toBe(createHash('sha256').update(workspaceFile.content).digest('base64url'));
     expect(GS_SOURCE).toContain('DriveApp.Permission.VIEW');
     expect(GS_SOURCE).not.toContain('DriveApp.Permission.NONE);');
   });
 
+  it('reports initial commit recovery and becomes ready only after reviewed reconciliation', () => {
+    const harness = makeAppsScriptHarness();
+    harness.setFailSheetAppend('Workspace', true);
+    const error = harness.invokeError('setupEvaluationRepository', {
+      allowedDomain: DOMAIN,
+      bootstrapAdmin: ADMIN,
+    });
+    const pendingId = harness.properties.get('EE_PENDING_COMMIT_FILE_ID');
+
+    expect(error.code).toBe('commit_recovery_required');
+    expect(harness.properties.get('EE_SETUP_STATE')).toBe('recovery_required');
+    expect(harness.properties.get('EE_COMMIT_RECOVERY_REQUIRED')).toBe('1');
+    expect(harness.driveFiles.get(pendingId).content.length).toBeGreaterThan(0);
+    expect(harness.rows('Workspace')).toHaveLength(1);
+    expect(harness.scriptLockSnapshot().held).toBe(false);
+    expect(harness.invoke('bootstrap')).toMatchObject({ ok: true, revision: 0 });
+
+    const repositoryIds = {
+      folder: harness.properties.get('EE_FOLDER_ID'),
+      spreadsheet: harness.properties.get('EE_SPREADSHEET_ID'),
+      workspace: harness.properties.get('EE_WORKSPACE_FILE_ID'),
+      pending: pendingId,
+    };
+    const configRows = harness.rows('Config');
+    const retryError = harness.invokeError('setupEvaluationRepository', {
+      allowedDomain: DOMAIN,
+      bootstrapAdmin: ADMIN,
+      organization: 'Must not be applied before recovery',
+    });
+    expect(retryError.code).toBe('commit_recovery_required');
+    expect({
+      folder: harness.properties.get('EE_FOLDER_ID'),
+      spreadsheet: harness.properties.get('EE_SPREADSHEET_ID'),
+      workspace: harness.properties.get('EE_WORKSPACE_FILE_ID'),
+      pending: harness.properties.get('EE_PENDING_COMMIT_FILE_ID'),
+    }).toEqual(repositoryIds);
+    expect(harness.rows('Config')).toEqual(configRows);
+
+    harness.setFailSheetAppend('Workspace', false);
+    const review = harness.invoke('reviewPortalWorkspaceIntegrity').review;
+    const repaired = harness.invoke('reconcilePortalWorkspaceIntegrity', {
+      reviewToken: review.token,
+      acknowledgeRepair: true,
+    });
+
+    expect(repaired).toMatchObject({
+      ok: true,
+      status: 'completed',
+      recoveryPending: false,
+      repaired: { pendingCommit: true },
+    });
+    expect(harness.properties.get('EE_SETUP_STATE')).toBe('ready');
+    expect(harness.properties.has('EE_COMMIT_RECOVERY_REQUIRED')).toBe(false);
+    expect(harness.driveFiles.get(pendingId).content).toBe('');
+    expect(harness.rows('Workspace')).toHaveLength(2);
+  });
   it('fails closed when workspace metadata file id or digest is altered', () => {
     const harness = repositoryFixture();
     harness.setSheetCell('Workspace', 1, 3, 'tampered-digest');
@@ -772,16 +837,17 @@ describe('Educator Evaluation Apps Script SPM authority', () => {
 });
 
 describe('Educator Evaluation Apps Script server-derived lifecycle records', () => {
-  it('omits audit entries for drafts and freezes server-policy weights at first activity', () => {
+  it('audits annual judgment activity and freezes server-policy weights at first activity', () => {
     const harness = repositoryFixture();
     harness.setActiveEmail(EVALUATOR);
     const auditRows = harness.rows('Audit').length;
     let boot = harness.invoke('bootstrap');
     let peer = boot.workspace.teachers.find(item => item.id === 'peer-02');
     peer.ratings.domains.d1 = 1;
-    const saved = harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { teacherId: 'peer-02', event: 'DRAFT_SAVED', entityType: 'educator_cycle', entityId: 'peer-02' } });
+    const saved = harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { teacherId: 'peer-02', event: 'RATING_UPDATED', entityType: 'educator_cycle', entityId: 'peer-02' } });
     peer = saved.workspace.teachers.find(item => item.id === 'peer-02');
-    expect(harness.rows('Audit')).toHaveLength(auditRows);
+    expect(harness.rows('Audit')).toHaveLength(auditRows + 1);
+    expect(harness.rows('Audit').at(-1).slice(1, 6)).toEqual(['peer-02', 'RATING_UPDATED', 'Educator annual judgment updated', 'educator_cycle', 'peer-02']);
     expect(peer.cycleLockedAt).toBe(FIXED_NOW);
     // Frozen under the workspace default, which is Maine since 2026-08-18: a
     // practice-only composition. The point is that the snapshot freezes, not
@@ -804,10 +870,16 @@ describe('Educator Evaluation Apps Script server-derived lifecycle records', () 
     boot.workspace.walkthroughs.push({ id: 'annual-evidence-peer-01', teacherId: 'peer-01', date: '2026-08-12', evidence: 'Published annual-review evidence.', privacyChecked: true, publishedAt: '2000-01-01T00:00:00.000Z' });
     harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { teacherId: 'peer-01', event: 'EVIDENCE_PUBLISHED', entityType: 'walkthrough', entityId: 'annual-evidence-peer-01', version: 1 } });
     boot = harness.invoke('bootstrap');
-    const peer = boot.workspace.teachers.find(item => item.id === 'peer-01');
+    let peer = boot.workspace.teachers.find(item => item.id === 'peer-01');
     peer.ratings = { domains: { d1: 2, d2: 2, d3: 2, d4: 2 }, building: 2, teacher: 2, lea: 2 };
     peer.annualRationales = { d1: 'Annual rationale 1', d2: 'Annual rationale 2', d3: 'Annual rationale 3', d4: 'Annual rationale 4' };
     peer.annualEvidenceRefs = { d1: ['walkthrough:annual-evidence-peer-01'], d2: ['walkthrough:annual-evidence-peer-01'], d3: ['walkthrough:annual-evidence-peer-01'], d4: ['walkthrough:annual-evidence-peer-01'] };
+    harness.invoke('saveWorkspace', {
+      expectedVersion: boot.revision, workspace: boot.workspace,
+      mutation: { teacherId: 'peer-01', event: 'RATING_UPDATED', entityType: 'educator_cycle', entityId: 'peer-01', version: 1 },
+    });
+    boot = harness.invoke('bootstrap');
+    peer = boot.workspace.teachers.find(item => item.id === 'peer-01');
     peer.weightSnapshot = [{ id: 'observation', label: 'Forged', short: 'X', weight: 100, color: '#000000' }];
     peer.cycleLockedAt = '2000-01-01T00:00:00.000Z';
     peer.finalizedAt = '2000-01-01T00:00:00.000Z';

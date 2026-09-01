@@ -13,7 +13,7 @@ function HomeworkQrDialogView(props) {
             <p className="text-xs text-slate-600 mb-4">{((qrShareModal.resourceCount || 1) === 1 ? (t('share_collect.teacher_prepared_resource_one') || '{count} teacher-prepared resource') : (t('share_collect.teacher_prepared_resource_many') || '{count} teacher-prepared resources')).replace('{count}', String(qrShareModal.resourceCount || 1))} &middot; {qrShareModal.aiPolicy === 'student-byok' ? (t('share_collect.personal_ai_optional') || 'Personal AI optional') : (t('share_collect.student_ai_off') || 'Student AI off')} &middot; {t('share_collect.no_live_session') || 'No live session'}</p>
             {!qrShareModal.noQr && (
             <div className="flex justify-center mb-4">
-              <div className="bg-white border-2 border-violet-300 rounded-2xl p-3 w-52 h-52 flex items-center justify-center shadow-sm" aria-label={t('share_collect.qr_aria') || 'Homework assignment QR code'}>
+              <div className="bg-white border-2 border-violet-300 rounded-2xl p-3 w-52 h-52 flex items-center justify-center shadow-sm">
                 {qrShareSvg
                   ? <div className="w-full h-full [&_svg]:w-full [&_svg]:h-full" dangerouslySetInnerHTML={{ __html: qrShareSvg }} />
                   : <span className="text-xs font-bold text-violet-700 text-center">{qrShareError ? 'QR unavailable - copy the homework link below' : 'Preparing homework QR...'}</span>}
@@ -28,7 +28,7 @@ function HomeworkQrDialogView(props) {
             {Array.isArray(qrShareModal.resourceTitles) && qrShareModal.resourceTitles.length > 0 && (
               <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3 text-left">
                 <p className="text-[11px] font-black uppercase tracking-wider text-slate-600 mb-1">{t('share_collect.assignment_contents') || 'Assignment contents'}</p>
-                <ul className="text-xs text-slate-800 space-y-1">{qrShareModal.resourceTitles.slice(0, 5).map((name, index) => <li key={index} className="truncate">{index + 1}. {name}</li>)}</ul>
+                <ul className="text-xs text-slate-800 space-y-1">{qrShareModal.resourceTitles.slice(0, 5).map((name, index) => <li key={index} className="break-words">{index + 1}. {name}</li>)}</ul>
                 {qrShareModal.resourceTitles.length > 5 && <p className="text-[11px] text-slate-500 mt-1">+{qrShareModal.resourceTitles.length - 5} {t('share_collect.more_resources') || 'more resources'}</p>}
               </div>
             )}
@@ -51,7 +51,7 @@ function HomeworkQrDialogView(props) {
                 </div>
               </details>
             )}
-            <p className="text-[11px] text-slate-500 mb-3">{qrShareSvg ? (t('share_collect.ready_to_scan') || 'Ready to scan') : qrShareError ? (t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below') : (t('share_collect.validating_qr_code') || 'Validating QR code...')} &middot; {(t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : (t('share_collect.expires_default_window') || '14 days after creation'))}</p>
+            <p role="status" aria-live="polite" aria-atomic="true" className="text-[11px] text-slate-500 mb-3">{qrShareModal.noQr ? 'Homework link ready' : qrShareSvg ? (t('share_collect.ready_to_scan') || 'Ready to scan') : qrShareError ? (t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below') : (t('share_collect.validating_qr_code') || 'Validating QR code...')} &middot; {(t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : (t('share_collect.expires_default_window') || '14 days after creation'))}</p>
             <div className="mb-2 grid grid-cols-2 gap-2">
               <button onClick={testHomeworkAsStudent} className="flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
                 {t('share_collect.test_as_student') || 'Test as student'} <ExternalLink size={12}/>
@@ -238,10 +238,10 @@ function ClassMailboxSetupView(props) {
             )}
             {mbConfig && mbLive && (
               <div>
-                <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 mb-3 text-center cursor-pointer" onClick={() => copyToClipboard(mbLive.code)} title={t('mailbox.copy_class_code') || 'Copy class code'}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{t('mailbox.class_code_tap_to_copy') || 'Class code (tap to copy)'}</p>
-                  <p className="text-4xl font-black tracking-[0.3em] text-indigo-800">{mbLive.code}</p>
-                </div>
+                <button type="button" className="w-full bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 mb-3 text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" onClick={() => copyToClipboard(mbLive.code)} title={t('mailbox.copy_class_code') || 'Copy class code'}>
+                  <span className="block text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{t('mailbox.class_code_tap_to_copy') || 'Class code (tap to copy)'}</span>
+                  <span className="block text-4xl font-black tracking-[0.3em] text-indigo-800">{mbLive.code}</span>
+                </button>
                 {mbQrSvg ? (
                   <div className="flex justify-center mb-3">
                     <div className="bg-white border border-slate-200 rounded-xl p-3 w-48 h-48 [&_svg]:w-full [&_svg]:h-full shadow-sm" dangerouslySetInnerHTML={{ __html: mbQrSvg }} />
@@ -249,7 +249,7 @@ function ClassMailboxSetupView(props) {
                 ) : (
                   <p className="mb-3 text-center text-xs font-bold text-indigo-700">{t('mailbox.validating_live_session_qr') || 'Validating live-session QR...'}</p>
                 )}
-                <p className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? `Ready to scan · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off'} · Active until you end the session` : 'The class code remains available while the QR loads.'}</p>
+                <p role="status" aria-live="polite" aria-atomic="true" className="mb-2 text-center text-[11px] text-indigo-800">{mbQrSvg ? `Ready to scan · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off'} · Active until you end the session` : 'The class code remains available while the QR loads.'}</p>
                 <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
                   <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-[11px] font-bold text-indigo-800 hover:border-indigo-500">
                     {t('mailbox.copy_link') || 'Copy link'} <Copy size={12}/>
@@ -266,20 +266,20 @@ function ClassMailboxSetupView(props) {
                 </div>
                 <input aria-label={t('mailbox.join_link_aria') || 'Selectable mailbox live join link'} readOnly value={mbLive.joinUrl || ''} onFocus={event => event.target.select()} className="mb-3 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
                 <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{t('mailbox.connected_students') || 'Connected students ('}{Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
+                  <p id="alloflow-mailbox-roster-status" role="status" aria-live="polite" aria-atomic="true" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{t('mailbox.connected_students') || 'Connected students ('}{Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
                   {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">{t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'}</p>}
-                  {Object.entries(mbRoster).map(([uid, s]) => {
+                  {Object.keys(mbRoster).length > 0 && <ul aria-labelledby="alloflow-mailbox-roster-status" className="m-0 list-none space-y-0.5 p-0">{Object.entries(mbRoster).map(([uid, s]) => {
                     const stale = mbNow && s.at && (mbNow - s.at > 150000);
                     return (
-                      <div key={uid} className={`flex items-center justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`}>
-                        <span className="font-bold truncate">{s.name}{stale ? ' · away?' : ''}</span>
+                      <li key={uid} className={`flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`}>
+                        <span className="min-w-0 break-words text-left font-bold">{s.name}{stale ? ' · away?' : ''}</span>
                         <span className="flex items-center gap-1 shrink-0">
-                          {s.rtc && !stale && <span aria-label={t('mailbox.rtc_aria') || 'real-time connection'} title={t('mailbox.rtc_title') || 'Real-time connection'}>⚡</span>}
-                          {s.hand && <span aria-label={t('mailbox.hand_aria') || 'hand raised'} title={t('mailbox.hand_title') || 'Hand raised'}>✋</span>}
+                          {s.rtc && !stale && <span role="img" aria-label={t('mailbox.rtc_aria') || 'real-time connection'} title={t('mailbox.rtc_title') || 'Real-time connection'}>⚡</span>}
+                          {s.hand && <span role="img" aria-label={t('mailbox.hand_aria') || 'hand raised'} title={t('mailbox.hand_title') || 'Hand raised'}>✋</span>}
                         </span>
-                      </div>
+                      </li>
                     );
-                  })}
+                  })}</ul>}
                 </div>
                 <button onClick={() => setMbMode(m => m === 'sync' ? 'async' : 'sync')} className={`w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`}>
                   {mbMode === 'sync' ? 'Teacher-led: students follow your screen (tap to switch)' : 'Student-paced: students explore independently (tap to switch)'}
@@ -325,7 +325,7 @@ function ClassMailboxSetupView(props) {
                         const _obs = ev.objectives.filter(o => o.done && o.confirmed).length;
                         const _self = ev.objectives.filter(o => o.done && !o.confirmed).length;
                         return (
-                          <p key={ev.uid + '|' + ev.directionsId} className="text-[10px] text-slate-600 truncate" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label + (o.done ? (o.confirmed ? ' (recorded on device)' : ' (self-checked)') : '')).join('\n')}>
+                          <p key={ev.uid + '|' + ev.directionsId} className="break-words text-[10px] text-slate-600" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label + (o.done ? (o.confirmed ? ' (recorded on device)' : ' (self-checked)') : '')).join('\n')}>
                             <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
                             {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
                             {(_obs > 0 || _self > 0) && (
@@ -348,7 +348,7 @@ function ClassMailboxSetupView(props) {
                 <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">{t('mailbox.end_session') || 'End session'}</button>
               </div>
             )}
-            {mbStatus && <p className="text-xs text-slate-600 mt-3">{mbStatus}</p>}
+            {mbStatus && <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-slate-600 mt-3">{mbStatus}</p>}
           </div>
   );
 }

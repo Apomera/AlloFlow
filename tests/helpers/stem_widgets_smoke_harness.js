@@ -118,6 +118,13 @@ export function makeCtx(overrides, store) {
       store.dirty = true;
     }
   }
+  // React state setters keep the same identity for the lifetime of a mounted
+  // component. Preserve that contract across SSR settle passes so tools that
+  // key instance-local resources by setter do not mistake every pass for a new
+  // mount and leave redundant timers behind.
+  store._stableSetters = store._stableSetters || {};
+  if (!store._stableSetters.toolData) store._stableSetters.toolData = function (fn) { applyUpdater('toolData', fn); };
+  if (!store._stableSetters.labToolData) store._stableSetters.labToolData = function (fn) { applyUpdater('labToolData', fn); };
   const Icons = new Proxy({}, {
     get: function () {
       // Every icon is a function component that renders an empty span.
@@ -134,9 +141,9 @@ export function makeCtx(overrides, store) {
     // "Loading..." placeholder) and only show their real UI once state exists.
     // Discarding the write pinned those tools' snapshots to the placeholder.
     // renderTool() below replays until the writes stop.
-    setToolData: function (fn) { applyUpdater('toolData', fn); },
+    setToolData: store._stableSetters.toolData,
     labToolData: store.labToolData,
-    setLabToolData: function (fn) { applyUpdater('labToolData', fn); },
+    setLabToolData: store._stableSetters.labToolData,
     update: function (k, v) {
       applyUpdater('toolData', function (p) { const n = Object.assign({}, p); n[k] = v; return n; });
     },

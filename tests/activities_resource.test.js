@@ -209,6 +209,19 @@ describe.each([
 });
 
 describe.each([
+  'view_brainstorm_source.jsx',
+  'view_brainstorm_module.js',
+  path.join('desktop', 'web-app', 'public', 'view_brainstorm_module.js'),
+])('%s — recovery visibility', (relPath) => {
+  const src = read(relPath);
+
+  it('shows automatic structured-activity recovery without exposing raw markup', () => {
+    expect(src).toMatch(/generationMeta/);
+    expect(src).toMatch(/Recovered after/);
+  });
+});
+
+describe.each([
   'generate_dispatcher_source.jsx',
   'generate_dispatcher_module.js',
   path.join('desktop', 'web-app', 'public', 'generate_dispatcher_module.js'),
@@ -221,6 +234,12 @@ describe.each([
     expect(src).toMatch(/401\|403\|quota\|safety/);
     expect(src).toMatch(/error && \(error\.status \|\| error\.statusCode \|\| error\.httpStatus\)/);
     expect(src).toMatch(/RECOVERY:/);
+  });
+
+  it('records structured-activity recovery attempts for the Activity shelf', () => {
+    expect(src).toMatch(/generationMeta/);
+    expect(src).toMatch(/attempts: generated\.attempts/);
+    expect(src).toMatch(/recovered: generated\.attempts > 1/);
   });
 });
 

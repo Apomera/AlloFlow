@@ -96,7 +96,7 @@ describe('quiz — covers what the new modules teach', () => {
   });
 
   it('asks about voltage drop across a bad connection', () => {
-    expect(asks(/at the cable CLAMP/i)).toBe(true);
+    expect(asks(/across the positive battery post-to-clamp joint/i)).toBe(true);
   });
 
   it('asks where the jack goes', () => {

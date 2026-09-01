@@ -315,8 +315,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   // ───────────────────────────────────────────────────────────
   // DATA: REGIONS
   // ───────────────────────────────────────────────────────────
-  // Maine ships complete. Chesapeake / PNW / Great Lakes are
-  // placeholders so the toggle works without breaking v1.
+  // Maine ships complete. The other regions provide bounded practice
+  // profiles; most long-form expedition curriculum remains Maine-specific.
   var REGIONS = {
     maine: {
       id: 'maine', label: 'Maine (Gulf of Maine)',
@@ -325,6 +325,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portCoords: 'Custom House Wharf · 43.6571° N, 70.2476° W',
       landmarks: ['Portland Head Light', 'Ram Island Ledge', 'Halfway Rock', 'Casco Bay'],
       dmrAuthority: 'Maine Department of Marine Resources',
+      regulationSourceLabel: 'Maine fishing regulations',
+      regulationSourceUrl: 'https://www.maine.gov/dmr/marine-patrol/fishing-regulations',
+      regulationReviewedOn: '2026-08-31',
+      regulationScopeNote: 'Maine state marine waters; federal and local requirements may also apply.',
       complete: true
     },
     chesapeake: {
@@ -334,6 +338,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portCoords: 'Sparks Wharf · 38.9784° N, 76.4922° W',
       landmarks: ['Thomas Point Shoal Light', 'Sandy Point', 'Kent Island', 'Severn River'],
       dmrAuthority: 'Maryland Department of Natural Resources',
+      regulationSourceLabel: 'Maryland fishing regulations',
+      regulationSourceUrl: 'https://dnr.maryland.gov/Fisheries/Pages/regulations/index.aspx',
+      regulationReviewedOn: '2026-08-31',
+      regulationScopeNote: 'Maryland waters in this Chesapeake Bay practice profile; neighboring jurisdictions may differ.',
       complete: false
     },
     pnw: {
@@ -343,6 +351,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portCoords: 'Cap Sante Marina · 48.5186° N, 122.6083° W',
       landmarks: ['Lime Kiln Light', 'Burrows Island', 'Guemes Channel', 'Mount Baker View'],
       dmrAuthority: 'Washington Department of Fish and Wildlife',
+      regulationSourceLabel: 'Washington fishing regulations',
+      regulationSourceUrl: 'https://wdfw.wa.gov/fishing/regulations',
+      regulationReviewedOn: '2026-08-31',
+      regulationScopeNote: 'Washington waters in this Anacortes practice profile; emergency rules can supersede the annual rulebook.',
       complete: false
     },
     greatlakes: {
@@ -351,11 +363,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portName: 'Sault Ste. Marie',
       portCoords: 'Soo Locks Marina · 46.5011° N, 84.3622° W',
       landmarks: ['Point Iroquois Light', 'Whitefish Point', 'St. Marys River', 'Round Island'],
-      dmrAuthority: 'Michigan Department of Natural Resources for the Sault Ste. Marie training port',
+      dmrAuthority: 'Michigan Department of Natural Resources',
+      regulationSourceLabel: 'Michigan fishing regulations',
+      regulationSourceUrl: 'https://www.michigan.gov/dnr/things-to-do/fishing/fishing-regulations',
+      regulationReviewedOn: '2026-08-31',
+      regulationScopeNote: 'Michigan waters near the Sault Ste. Marie practice port; neighboring and tribal jurisdictions may differ.',
       complete: false
     }
   };
   var DEFAULT_REGION = 'maine';
+  var CORE_REGULATION_REVIEW_WINDOW_DAYS = 180;
+
+  function getCoreRegulationProvenance(region, referenceTimeMs) {
+    var activeRegion = Object.prototype.hasOwnProperty.call(REGIONS, region) ? region : DEFAULT_REGION;
+    var profile = REGIONS[activeRegion];
+    var reviewedOn = String(profile.regulationReviewedOn || '');
+    var reviewedMs = Date.parse(reviewedOn + 'T00:00:00Z');
+    var nowMs = Number(referenceTimeMs);
+    if (!isFinite(nowMs)) nowMs = Date.now();
+    var ageDays = isFinite(reviewedMs) ? Math.max(0, Math.floor((nowMs - reviewedMs) / 86400000)) : null;
+    var reviewDue = ageDays === null || ageDays > CORE_REGULATION_REVIEW_WINDOW_DAYS;
+    var reviewedParts = reviewedOn.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var reviewedLabel = reviewedParts
+      ? monthNames[Number(reviewedParts[2]) - 1] + ' ' + Number(reviewedParts[3]) + ', ' + reviewedParts[1]
+      : 'date unavailable';
+    return {
+      region: activeRegion,
+      authority: profile.dmrAuthority,
+      sourceLabel: profile.regulationSourceLabel,
+      sourceUrl: profile.regulationSourceUrl,
+      scopeNote: profile.regulationScopeNote,
+      reviewedOn: reviewedOn,
+      reviewedLabel: reviewedLabel,
+      ageDays: ageDays,
+      reviewWindowDays: CORE_REGULATION_REVIEW_WINDOW_DAYS,
+      reviewDue: reviewDue,
+      status: reviewDue ? 'review-due' : 'source-checked'
+    };
+  }
 
   // ───────────────────────────────────────────────────────────
   // DATA: MAINE SPECIES (Gulf of Maine focus)
@@ -820,6 +866,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
   function isCoreSimulatorLaunchCurrent(activeGeneration, callbackGeneration, mounted) {
     return mounted === true && activeGeneration === callbackGeneration;
+  }
+  var CORE_REALTIME_HUD_INTERVAL_SECONDS = 0.1;
+  var CORE_VOYAGE_AUTOSAVE_INTERVAL_SECONDS = 10;
+  function hasCoreCadenceElapsed(currentElapsed, priorElapsed, intervalSeconds) {
+    var current = Number(currentElapsed);
+    var prior = Number(priorElapsed);
+    var interval = Number(intervalSeconds);
+    if (!isFinite(current) || !isFinite(interval) || interval < 0) return false;
+    if (!isFinite(prior) || current < prior) return true;
+    return current - prior >= interval;
+  }
+  function shouldPublishCoreRealtimeHud(currentElapsed, priorElapsed) {
+    return hasCoreCadenceElapsed(currentElapsed, priorElapsed, CORE_REALTIME_HUD_INTERVAL_SECONDS);
+  }
+  function shouldBuildCoreVoyageCheckpoint(currentElapsed, priorElapsed, force) {
+    return force === true || hasCoreCadenceElapsed(currentElapsed, priorElapsed, CORE_VOYAGE_AUTOSAVE_INTERVAL_SECONDS);
   }
   function getCoreVoyageMode(mode) {
     return Object.prototype.hasOwnProperty.call(CORE_VOYAGE_MODES, mode) ? CORE_VOYAGE_MODES[mode] : CORE_VOYAGE_MODES.guided;
@@ -5717,11 +5779,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreNavLightLocalX: getCoreNavLightLocalX,
     getCoreSimProfile: getCoreSimProfile,
     getCoreTrainingChartBrief: getCoreTrainingChartBrief,
+    getCoreRegulationProvenance: getCoreRegulationProvenance,
     getCoreSectionScope: getCoreSectionScope,
     getCoreTrapActionLabel: getCoreTrapActionLabel,
     getCoreTrapSceneProfile: getCoreTrapSceneProfile,
     shouldIgnoreCoreRepeatedKey: shouldIgnoreCoreRepeatedKey,
     isCoreSimulatorLaunchCurrent: isCoreSimulatorLaunchCurrent,
+    shouldPublishCoreRealtimeHud: shouldPublishCoreRealtimeHud,
+    shouldBuildCoreVoyageCheckpoint: shouldBuildCoreVoyageCheckpoint,
     getCoreVoyageBuoyageCheck: getCoreVoyageBuoyageCheck,
     getCoreVoyageBuoyageLayout: getCoreVoyageBuoyageLayout,
     getCoreVoyageMode: getCoreVoyageMode,
@@ -14279,12 +14344,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var T_ = { disc: 1, glow: 0, glitter: 0.6, rain: 0, stars: 0 };
         var C_ = { disc: 1, glow: 0, glitter: 0, rain: 0, stars: 0 };
         var wacc = 0, sacc = 0;
+        var effectPositionScratch = new THREE.Vector3();
 
         function spawnWake() {
           var w = wake[wcur]; wcur = (wcur + 1) % wake.length;
           var offset = (Math.random() - 0.5) * 1.7;
-          var p = boat.localToWorld(new THREE.Vector3(offset, 0.16, -2.6));
-          w.position.copy(p); w.position.y = 0.09;
+          boat.localToWorld(effectPositionScratch.set(offset, 0.16, -2.6));
+          w.position.copy(effectPositionScratch); w.position.y = 0.09;
           w.userData.max = 1.1 + Math.random() * 0.7; w.userData.life = w.userData.max;
           w.material.opacity = 0.5; w.scale.setScalar(0.35); w.visible = true;
           // Foam is dropped in the water and left behind, which the old code
@@ -14303,8 +14369,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
         function spawnSpray() {
           var s = spray[scur]; scur = (scur + 1) % spray.length;
-          var p = boat.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 1.1, 0.4, 2.7));
-          s.position.copy(p);
+          boat.localToWorld(effectPositionScratch.set((Math.random() - 0.5) * 1.1, 0.4, 2.7));
+          s.position.copy(effectPositionScratch);
           s.userData.max = 0.5 + Math.random() * 0.3; s.userData.life = s.userData.max; s.userData.vy = 1.8 + Math.random() * 1.6;
           s.material.opacity = 0.7; s.scale.setScalar(0.18); s.visible = true;
         }
@@ -14905,13 +14971,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       });
     }
     var nextParticleIdx = 0;
-    function spawnParticle(pos, vel, life) {
+    function spawnParticle(x, y, z, vx, vy, vz, life) {
       var p = particles[nextParticleIdx];
-      p.mesh.position.copy(pos);
+      p.mesh.position.set(x, y, z);
       p.mesh.visible = true;
       p.mesh.material.opacity = 0.6;
-      p.pos.copy(pos);
-      p.vel.copy(vel);
+      p.pos.set(x, y, z);
+      p.vel.set(vx, vy, vz);
       p.age = 0;
       p.life = life;
       nextParticleIdx = (nextParticleIdx + 1) % maxParticles;
@@ -15428,11 +15494,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     var cameraTarget = new THREE.Vector3();
     var camRigEye = new THREE.Vector3();   // scratch for the eased follow rigs
+    var haulRightScratch = new THREE.Vector3();
+    var haulPositionScratch = new THREE.Vector3();
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
     var lastHud = {};
+    var fullHudRefreshPending = false;
+    function publishHudSnapshot(snapshot) {
+      lastHud = snapshot || {};
+      fullHudRefreshPending = false;
+      lastHudPublishElapsed = elapsed;
+      hudCb(lastHud);
+      return lastHud;
+    }
     function publishHudPatch(patch) {
       lastHud = Object.assign({}, lastHud, patch || {});
+      fullHudRefreshPending = true;
       hudCb(lastHud);
       return lastHud;
     }
@@ -15551,9 +15628,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       });
     }
     function emitVoyageCheckpoint(reason, force) {
+      if (!shouldBuildCoreVoyageCheckpoint(elapsed, lastCheckpointElapsed, force)) return null;
       var checkpoint = createCurrentVoyageCheckpoint();
       if (!checkpoint) return null;
-      if (!force && elapsed - lastCheckpointElapsed < 10) return null;
       lastCheckpointElapsed = elapsed;
       if (opts && opts.onCheckpoint) {
         try { opts.onCheckpoint(checkpoint, reason || 'progress'); } catch (_) {}
@@ -15714,7 +15791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatX: boatState.pos.x,
         boatZ: boatState.pos.z
       };
-      hudCb(lastHud);
+      publishHudSnapshot(lastHud);
       statusCb({ type: 'system', text: 'Saved voyage restored at a safe paused helm state. Resume when ready.' });
       return true;
     }
@@ -15948,6 +16025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var lastT = t0;
     var elapsed = 0;
     var lastCheckpointElapsed = -Infinity;
+    var lastHudPublishElapsed = -Infinity;
 
     function notifyGraphicsContextChange(lost, reason) {
       if (!opts || !opts.onGraphicsContextChange) return;
@@ -16126,11 +16204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var vz = Math.cos(boatState.heading) * speedFactor + (Math.random() - 0.5) * 0.5;
           var vy = Math.random() * 0.3;
 
-          spawnParticle(
-            new THREE.Vector3(px, py, pz),
-            new THREE.Vector3(vx, vy, vz),
-            0.8 + Math.random() * 0.6
-          );
+          spawnParticle(px, py, pz, vx, vy, vz, 0.8 + Math.random() * 0.6);
         }
       }
 
@@ -16149,14 +16223,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           var pz = boat.position.z + rightZ * 0.8 - forwardZ * 1.8;
           var vx = -rightX * (1.5 + Math.random() * 1.5) + forwardX * (boatState.speed * 0.3);
           var vz = rightZ * (1.5 + Math.random() * 1.5) - forwardZ * (boatState.speed * 0.3);
-          spawnParticle(new THREE.Vector3(px, 0.1, pz), new THREE.Vector3(vx, 1.0 + Math.random() * 1.2, vz), 0.4 + Math.random() * 0.3);
+          spawnParticle(px, 0.1, pz, vx, 1.0 + Math.random() * 1.2, vz, 0.4 + Math.random() * 0.3);
         }
         if (emitStarboard) {
           var px = boat.position.x + rightX * 0.8 + forwardX * 1.8;
           var pz = boat.position.z - rightZ * 0.8 - forwardZ * 1.8;
           var vx = rightX * (1.5 + Math.random() * 1.5) + forwardX * (boatState.speed * 0.3);
           var vz = -rightZ * (1.5 + Math.random() * 1.5) - forwardZ * (boatState.speed * 0.3);
-          spawnParticle(new THREE.Vector3(px, 0.1, pz), new THREE.Vector3(vx, 1.0 + Math.random() * 1.2, vz), 0.4 + Math.random() * 0.3);
+          spawnParticle(px, 0.1, pz, vx, 1.0 + Math.random() * 1.2, vz, 0.4 + Math.random() * 0.3);
         }
       }
 
@@ -16228,11 +16302,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (haulActive) {
         haulTimer += dt;
         haulTrapMesh.visible = true;
-        var rightVec = new THREE.Vector3(Math.cos(boatState.heading), 0, -Math.sin(boatState.heading));
-        var haulPos = boat.position.clone().addScaledVector(rightVec, 1.4);
+        haulRightScratch.set(Math.cos(boatState.heading), 0, -Math.sin(boatState.heading));
+        haulPositionScratch.copy(boat.position).addScaledVector(haulRightScratch, 1.4);
         var ratio = Math.min(1.0, haulTimer / haulDuration);
-        haulPos.y = -6.0 + ratio * 6.45;
-        haulTrapMesh.position.copy(haulPos);
+        haulPositionScratch.y = -6.0 + ratio * 6.45;
+        haulTrapMesh.position.copy(haulPositionScratch);
         haulTrapMesh.rotation.y = boatState.heading;
 
         if (haulTimer >= haulDuration) {
@@ -16300,8 +16374,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           if (bb.userData.type !== buoyageCheck.markType) continue;
           var d = boat.position.distanceTo(bb.position);
           if (d < 7) {
-            var toBuoy = new THREE.Vector3().subVectors(bb.position, boat.position);
-            var localX = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
+            var buoyOffsetX = bb.position.x - boat.position.x;
+            var buoyOffsetZ = bb.position.z - boat.position.z;
+            var localX = Math.cos(boatState.heading) * buoyOffsetX + Math.sin(boatState.heading) * buoyOffsetZ;
             var observedSide = localX > 0.5 ? 'starboard' : 'port';
             var buoyPass = evaluateCoreBuoyPass(buoyageCheck.direction, buoyageCheck.color, observedSide);
             if (buoyPass.correct) {
@@ -16476,6 +16551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // the eased follow behavior; paused view changes apply the same rig once.
       var cameraView = applyCameraRig(false);
 
+      if (fullHudRefreshPending || shouldPublishCoreRealtimeHud(elapsed, lastHudPublishElapsed)) {
       var objective = getCoreObjective(boatState, missionProfile, encounterProfile, buoyageCheck);
       var objectiveTarget = rock;
       if (objective.id === 'buoy') {
@@ -16588,8 +16664,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatX: boatState.pos.x,
         boatZ: boatState.pos.z
       };
-      lastHud = hudPayload;
-      hudCb(hudPayload);
+      publishHudSnapshot(hudPayload);
+      }
       emitVoyageCheckpoint('cruise', false);
 
       AF.update(dt, elapsed);
@@ -20827,6 +20903,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var currentSpeciesList = getSpeciesForRegion(activeRegion);
       var currentAuthority = REGIONS[activeRegion].dmrAuthority;
       var currentTitle = '📜 ' + REGIONS[activeRegion].label + ' Regulations Lookup';
+      var regulationProvenance = getCoreRegulationProvenance(activeRegion, Date.now());
 
       return h('div', null,
         regionBar(),
@@ -20834,6 +20911,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, currentTitle),
           h('p', { style: { fontSize: 11, color: '#fb923c', marginBottom: 12, fontStyle: 'italic' } },
             '⚠ Live rules change. Treat in-tool numbers as instructional. Always confirm with ' + currentAuthority + ' before fishing.'),
+          h('aside', {
+            role: 'note',
+            'data-fisherlab-regulation-provenance': regulationProvenance.status,
+            'data-fisherlab-regulation-reviewed-on': regulationProvenance.reviewedOn,
+            'aria-labelledby': 'fl-regulation-source-title',
+            style: {
+              padding: 12,
+              marginBottom: 14,
+              borderRadius: 9,
+              border: '1px solid ' + (regulationProvenance.reviewDue ? 'rgba(251,146,60,0.58)' : 'rgba(74,222,128,0.42)'),
+              background: regulationProvenance.reviewDue ? 'rgba(124,45,18,0.18)' : 'rgba(20,83,45,0.16)'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+              h('div', { id: 'fl-regulation-source-title', style: { fontSize: 12, fontWeight: 900, color: '#e2e8f0' } }, 'Official rule source'),
+              h('span', {
+                style: {
+                  padding: '3px 7px',
+                  borderRadius: 999,
+                  background: regulationProvenance.reviewDue ? 'rgba(251,146,60,0.18)' : 'rgba(74,222,128,0.16)',
+                  color: regulationProvenance.reviewDue ? '#fdba74' : '#86efac',
+                  fontSize: 10,
+                  fontWeight: 900,
+                  letterSpacing: '0.03em',
+                  textTransform: 'uppercase'
+                }
+              }, regulationProvenance.reviewDue ? 'Source review due' : 'Source checked')),
+            h('p', { style: { margin: '0 0 9px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5 } },
+              regulationProvenance.authority + '. ' + regulationProvenance.scopeNote),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+              h('a', {
+                className: 'fl-btn',
+                href: regulationProvenance.sourceUrl,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                'aria-label': 'Open current fishing regulations from ' + regulationProvenance.authority + ' in a new tab',
+                style: {
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  minHeight: 34,
+                  padding: '7px 10px',
+                  borderRadius: 7,
+                  border: '1px solid rgba(56,189,248,0.55)',
+                  background: 'rgba(14,165,233,0.16)',
+                  color: '#bae6fd',
+                  fontSize: 11,
+                  fontWeight: 800,
+                  textDecoration: 'none'
+                }
+              }, 'Open official regulations ↗'),
+              h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10.5 } },
+                'Instructional source reviewed ' + regulationProvenance.reviewedLabel + '.')),
+            h('p', {
+              style: {
+                margin: '9px 0 0',
+                color: regulationProvenance.reviewDue ? '#fdba74' : 'var(--allo-stem-text-soft, #94a3b8)',
+                fontSize: 10.5,
+                lineHeight: 1.45,
+                fontWeight: regulationProvenance.reviewDue ? 800 : 400
+              }
+            }, regulationProvenance.reviewDue
+              ? 'This source check is overdue. Do not rely on the profile numbers; open the official rules before making a harvest decision.'
+              : 'A recent source check confirms this link, not that every live rule is unchanged. Use the official page for current decisions.')),
           // ★ The same rules on a shared axis. Bounds come from the parser the
           // simulator scores catches with, so the picture cannot show a limit
           // the sim does not enforce — or hide one it does.

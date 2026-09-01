@@ -92,7 +92,7 @@ describe('solar system visual science model', () => {
     expect(source).toContain('Rings shown on all four giant planets');
     expect(source).toContain('className: "solar-world-thumb"');
     expect(source).toContain("ctx.roundRect(captionX, captionY, captionW, 56, 12)");
-    expect(source).toContain('Select a feature \\u2022 drag to rotate');
+    expect(source).toContain('Drag to rotate \\u2022 evidence controls below');
   });
 
   it('keeps primary explorer labels readable and responsive without hiding long world names', () => {
@@ -145,7 +145,7 @@ describe('solar system visual science model', () => {
     expect(overviewSource).not.toContain('(GRAVITY_MAP[sel.key] || 1) * 42');
     expect(overviewSource).not.toContain('((PLANET_RADII[sel.key] || 6371) / 6371) * 9');
     expect(source).toContain('"data-solarsystem-surface-conditions": sel.key');
-    expect(source).toContain('className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2"');
+    expect(source).toContain('className: "grid grid-cols-3 gap-1.5 sm:gap-2 mb-2"');
   });
 
   it('fills the mission-control column with a responsive, scientifically disclosed world spotlight', () => {
@@ -179,6 +179,44 @@ describe('solar system visual science model', () => {
     expect(source).toContain('let H = canvas.clientHeight || 340;');
     expect(source).toContain('W = w; H = h;');
     expect(source).toContain('max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis');
+  });
+
+  it('turns Surface mode into a compact, canvas-safe observation console', () => {
+    const surfaceStart = source.indexOf("(d.viewTab) === 'surface'");
+    const surfaceEnd = source.indexOf("(d.viewTab) === 'interior'", surfaceStart);
+    const surfaceSource = source.slice(surfaceStart, surfaceEnd);
+
+    expect(surfaceStart).toBeGreaterThan(-1);
+    expect(surfaceEnd).toBeGreaterThan(surfaceStart);
+    expect(source).toContain('function getSolarPlanetAccent(planet)');
+    expect(source).toContain('var selectedAccent = getSolarPlanetAccent(sel);');
+    expect(surfaceSource).not.toContain('sel.color');
+    expect(surfaceSource).toContain('"data-solar-surface-stage": sel.key');
+    expect(surfaceSource).toContain("height: 'clamp(300px, 78vw, 350px)'");
+    expect(surfaceSource).toContain('surfaceLayout = W < 520 ? \'compact\' : \'wide\';');
+    expect(surfaceSource).toContain('surfacePixelRatio = Math.min(2');
+    expect(surfaceSource).toContain('ctx.setTransform(surfacePixelRatio, 0, 0, surfacePixelRatio, 0, 0);');
+    expect(surfaceSource).toContain("cvEl.addEventListener('pointerdown'");
+    expect(surfaceSource).toContain("cvEl.addEventListener('pointermove'");
+    expect(surfaceSource).not.toContain("cvEl.addEventListener('mousedown'");
+    expect(surfaceSource).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
+    expect(surfaceSource).toContain('if (!surfaceReducedMotion && surfacePageVisible)');
+    expect(surfaceSource).toContain('if (cvEl._surfaceCleanup) cvEl._surfaceCleanup();');
+    expect(surfaceSource).toContain('cvEl._surfaceCleanup = function()');
+    expect(surfaceSource).toContain("ctx.fillText('Landmark note below'");
+    expect(surfaceSource).not.toMatch(/ctx\.font = '(?:6|7|8)px/);
+    expect(surfaceSource).toContain('var moonOrbitLimit = Math.max');
+    expect(surfaceSource).toContain('"data-solar-surface-console": sel.key');
+    expect(surfaceSource).toContain('"data-solar-surface-evidence-button": btn.key');
+    expect(surfaceSource).toContain('"data-solar-surface-feature-button": featureIndex');
+    expect(surfaceSource).toContain('"data-solar-surface-landmark-readout"');
+    expect(surfaceSource).toContain('"aria-controls": panelId');
+    expect(surfaceSource).toContain('min-h-[44px]');
+    ['moons', 'atmosphere', 'magnetic', 'nightsky', 'composition'].forEach((panel) => {
+      expect(surfaceSource).toContain('id: "solar-surface-panel-' + panel + '-"');
+    });
+    expect(surfaceSource).not.toContain('text-slate-600');
+    expect(surfaceSource).toContain('they are not plotted on one linear scale');
   });
 
   it('keeps planet anatomy readable across compact and wide cutaways', () => {

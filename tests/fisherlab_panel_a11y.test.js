@@ -36,6 +36,18 @@ describe('Fisher Lab active panel accessibility', () => {
     expect(source).not.toContain("label: '📜 DMR Regs'");
   });
 
+  it('labels the regulations provenance note and opens official sources securely', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const regs = source.slice(source.indexOf('function regsTab()'), source.indexOf('// ─── LICENSE LADDER tab'));
+
+    expect(regs).toContain("'data-fisherlab-regulation-provenance': regulationProvenance.status");
+    expect(regs).toContain("'data-fisherlab-regulation-reviewed-on': regulationProvenance.reviewedOn");
+    expect(regs).toContain("'aria-labelledby': 'fl-regulation-source-title'");
+    expect(regs).toContain("target: '_blank'");
+    expect(regs).toContain("rel: 'noopener noreferrer'");
+    expect(regs).toContain("'aria-label': 'Open current fishing regulations from ' + regulationProvenance.authority + ' in a new tab'");
+  });
+
   it('uses the regional gear action in both pointer and keyboard controls', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     const sim = source.slice(source.indexOf('function simTab()'), source.indexOf('function headingToCompass'));

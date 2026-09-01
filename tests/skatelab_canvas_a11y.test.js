@@ -29,4 +29,35 @@ describe('Skate Lab motion canvas semantics', () => {
       'canvas should declare aria-label once, not twice').toBe(0);
     expect(source).toContain("'aria-describedby': 'sk-canvas-summary'");
   });
+
+  it('draws the actual aerodynamic force in both views and describes its energy transfer', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const laneStart = source.indexOf('function drawLaneInset2D(ctx, sim, sample, width)');
+    const sideStart = source.indexOf('function drawGap2D(ctx, width, height, sim, sample, config)');
+    const orbitStart = source.indexOf('function drawGap3D(ctx, width, height, sim, sample, config)');
+    const sceneStart = source.indexOf('function drawScene(canvas, sim, progress, config)');
+
+    expect(laneStart).toBeGreaterThan(-1);
+    expect(sideStart).toBeGreaterThan(laneStart);
+    expect(orbitStart).toBeGreaterThan(sideStart);
+    expect(sceneStart).toBeGreaterThan(orbitStart);
+
+    const laneInset = source.slice(laneStart, sideStart);
+    const sideView = source.slice(sideStart, orbitStart);
+    const orbitView = source.slice(orbitStart, sceneStart);
+
+    expect(laneInset).toContain('sample.airForceZ');
+    expect(laneInset).toContain("'F_air,z'");
+    expect(sideView).toContain('sample.airForceX');
+    expect(sideView).toContain('sample.airForceY');
+    expect(sideView).toContain("'F_air'");
+    expect(orbitView).toContain('sample.airForceX');
+    expect(orbitView).toContain('sample.airForceY');
+    expect(orbitView).toContain('sample.airForceZ');
+    expect(orbitView).toContain("'F_air'");
+    expect(source).toContain('The amber F-air arrow points opposite air-relative motion.');
+    expect(source).toContain('air-relative dissipation');
+    expect(source).toContain('resulting net aerodynamic energy change');
+    expect(source).toContain('.sk-ledger-wind{background:var(--sk-compare)}');
+  });
 });

@@ -215,6 +215,25 @@ describe('Aquaculture blue-mussel health station', () => {
     const freshetCrop = helpers.missionScenarioProbeReading('freshet', 'crop', 'guided-2d', false);
     const heatCrop = helpers.missionScenarioProbeReading('heat-slack', 'crop', 'guided-2d', false);
     expect(helpers.fieldMissionScenario('unknown').id).toBe('training');
+    const currentCases = [
+      { id: 'training', expected: { phase: 'flood', x: 0, z: -.05 }, direction: /up-river.*landing.*lease/i, effect: /assists inbound travel.*resists the return leg/i, displacement: { x: 0, z: -.4 } },
+      { id: 'freshet', expected: { phase: 'ebb', x: .03, z: .09 }, direction: /down-river.*landing.*eastward cross-channel set/i, effect: /opposes inbound travel.*steering corrections/i, displacement: { x: .24, z: .72 } },
+      { id: 'heat-slack', expected: { phase: 'slack', x: .003, z: .008 }, direction: /near-slack.*outward residual set/i, effect: /little assistance.*very little flushing/i, displacement: { x: .024, z: .064 } },
+    ];
+    const describedCurrents = currentCases.map((currentCase) => {
+      const current = helpers.describeMissionCurrent(currentCase.id);
+      expect(current).toMatchObject(currentCase.expected);
+      expect(current.direction).toMatch(currentCase.direction);
+      expect(current.effect).toMatch(currentCase.effect);
+      expect(current.narrative).toContain(current.direction);
+      expect(current.narrative).toContain(current.effect);
+      const displacement = helpers.missionCurrentDisplacement(currentCase.id, 1);
+      expect(displacement.x).toBeCloseTo(currentCase.displacement.x, 8);
+      expect(displacement.z).toBeCloseTo(currentCase.displacement.z, 8);
+      return current;
+    });
+    expect(describedCurrents[2].magnitude).toBeLessThan(describedCurrents[0].magnitude);
+    expect(describedCurrents[0].magnitude).toBeLessThan(describedCurrents[1].magnitude);
     expect(trainingSurface).toMatchObject({ depth: 'surface', DO: '8.45', salinity: '28.4' });
     expect(freshetSurface).toMatchObject({ depth: 'surface', salinity: '13.5' });
     expect(freshetSurface.warnings.join(' ')).toContain('Salinity low');
@@ -418,7 +437,7 @@ describe('Aquaculture blue-mussel health station', () => {
 
     const briefing = host.querySelector('.aq-field-mission-briefing');
     expect(briefing).toBeTruthy();
-    expect(briefing.querySelector('svg title').textContent).toContain('Clear-water training sampling cross-section');
+    expect(briefing.querySelector('svg title').textContent).toBe('Clear-water training sampling and current diagram');
     expect(briefing.querySelector('svg desc').textContent).toContain('two probe depths');
     let choices = Array.from(briefing.querySelectorAll('.aq-field-scenario-choice'));
     expect(choices).toHaveLength(3);

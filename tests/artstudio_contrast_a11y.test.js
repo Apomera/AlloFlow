@@ -75,8 +75,48 @@ describe('Art Studio Contrast Checker accessibility', () => {
 
     expect(latest.artStudio.bgL).toBe(0);
     expect(host.querySelector('#artstudio-contrast-bgL').value).toBe('0');
-    expect(host.querySelector('[role="status"]').textContent).toContain('21.00:1');
-    expect(host.querySelector('[role="status"]').textContent).toContain('Pass AA Normal');
+    const contrastResult = host.querySelector('[aria-labelledby="artstudio-contrast-result-heading"]');
+    expect(contrastResult.textContent).toContain('21.00:1');
+    expect(contrastResult.textContent).toContain('Pass AA Normal');
+  });
+
+  it('uses the Thread Kit accessibility intention as the primary live goal', async () => {
+    await mount({
+      studioHome: false,
+      studioStarted: true,
+      fgH: 0,
+      fgS: 0,
+      fgL: 0,
+      bgH: 0,
+      bgS: 0,
+      bgL: 50,
+      studioThreadKit: { schemaVersion: 1, accessibilityTarget: 4.5 },
+    });
+
+    let contrastResult = host.querySelector('[aria-labelledby="artstudio-contrast-result-heading"]');
+    expect(contrastResult.textContent).toContain('5.28:1');
+    expect(contrastResult.textContent).toContain('Meets selected AA goal of 4.5:1');
+    expect(contrastResult.className).toContain('border-green-400');
+
+    const aaaButton = [...host.querySelectorAll('button')].find((button) => button.textContent.trim() === 'AAA 7:1');
+    expect(aaaButton).toBeTruthy();
+    await act(async () => {
+      aaaButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(latest.artStudio.studioThreadKit.runs[0].accessibilityTarget).toBe(7);
+    const applyGoal = [...host.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Use AAA goal in Contrast');
+    expect(applyGoal).toBeTruthy();
+    await act(async () => {
+      applyGoal.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(latest.artStudio.contrastAccessibilityTarget).toBe(7);
+    contrastResult = host.querySelector('[aria-labelledby="artstudio-contrast-result-heading"]');
+    expect(contrastResult.textContent).toContain('Does not meet selected AAA goal of 7:1');
+    expect(contrastResult.className).toContain('border-red-400');
   });
 
   it('uses explicit fail text rather than color alone', () => {

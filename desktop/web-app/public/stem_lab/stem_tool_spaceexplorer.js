@@ -76,15 +76,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       '.se-shell button:focus-visible,.se-shell summary:focus-visible,.se-shell textarea:focus-visible,.se-shell input:focus-visible,.se-shell a[data-se-action]:focus-visible{outline:3px solid var(--se-focus)!important;outline-offset:3px!important;box-shadow:0 0 0 2px var(--se-surface)!important}',
       '.se-shell textarea::placeholder{color:#aebdd0!important;opacity:1}',
       '.se-shell .se-choice-card{border-width:2px}',
+      '.se-shell .se-work-step>summary{list-style:none;cursor:pointer}.se-shell .se-work-step>summary::-webkit-details-marker{display:none}',
       '.se-shell [style*="background"]>.text-slate-400{color:#334155!important}',
       '.se-shell .se-locked-badge{opacity:.65!important;filter:grayscale(1)}',
       '.se-shell .se-sr-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
       '@keyframes se-motion-trace-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}',
       '.se-shell .se-motion-trace{stroke-dasharray:1;stroke-dashoffset:1;animation:se-motion-trace-draw .65s cubic-bezier(.2,.8,.2,1) forwards;vector-effect:non-scaling-stroke}',
+      '.se-shell [data-spaceexplorer-compartment-visual]:focus{outline:3px solid #22d3ee;outline-offset:-4px}',
       '@media (prefers-reduced-motion:reduce){.se-shell .se-motion-trace{animation:none;stroke-dashoffset:0}}',
-      '@media (max-width:520px){.se-shell .se-destination-grid,.se-shell .se-two-column-grid{grid-template-columns:minmax(0,1fr)!important}.se-shell .se-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.se-shell .se-toolbar{align-items:stretch;flex-direction:column}.se-shell .se-toolbar>*{width:100%}.se-shell .se-debrief-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}}',
+      '@media (pointer:coarse){.se-shell button,.se-shell summary{min-width:44px}}',
+      '@media (max-width:520px){.se-shell .se-destination-grid,.se-shell .se-two-column-grid,.se-shell .se-interior-choice-grid{grid-template-columns:minmax(0,1fr)!important}.se-shell .se-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.se-shell .se-toolbar{align-items:stretch;flex-direction:column}.se-shell .se-toolbar>*{width:100%}.se-shell .se-debrief-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}}',
       '@media (prefers-contrast:more){.se-shell [class*="border-"]{border-color:#94a3b8!important}.se-shell [class*="bg-white/5"]{background-color:#1e293b!important}.se-shell button:disabled{opacity:1!important}.se-shell .se-locked-badge{opacity:1!important}}',
-      '@media (forced-colors:active){.se-shell button,.se-shell summary,.se-shell textarea,.se-shell input,.se-shell a[data-se-action]{border:1px solid ButtonText}.se-shell .se-choice-card{forced-color-adjust:auto}}'
+      '@media (forced-colors:active){.se-shell button,.se-shell summary,.se-shell textarea,.se-shell input,.se-shell select,.se-shell a[data-se-action]{border:1px solid ButtonText}.se-shell .se-choice-card{forced-color-adjust:auto}.se-shell [data-spaceexplorer-direct-route],.se-shell [data-spaceexplorer-staged-route-visual] polyline,.se-shell .se-motion-trace,.se-shell [data-spaceexplorer-compartment-restraint],.se-shell [data-spaceexplorer-compartment-hazard],.se-shell [data-spaceexplorer-work-anchor],.se-shell [data-spaceexplorer-work-rotation],.se-shell [data-spaceexplorer-work-tether],.se-shell [data-spaceexplorer-work-stabilization],.se-shell [data-spaceexplorer-work-loose-object]{stroke:CanvasText!important}.se-shell [data-spaceexplorer-compartment-visual] text{fill:CanvasText!important}.se-shell [data-spaceexplorer-compartment-visual]{forced-color-adjust:auto}.se-shell [data-spaceexplorer-compartment-visual]:focus{outline-color:Highlight!important}}'
     ].join('');
     document.head.appendChild(_seUx);
   }
@@ -372,8 +375,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   var INTERIOR_ZONES = [
     {
       id: 'flightdeck', name: 'Flight deck', short: 'Flight', icon: '\uD83E\uDDED',
-      activity: 'Confirm the attitude reference and secure the command tablet.',
+      activity: 'Confirm the attitude reference and secure the command tablet.', workObject: 'command tablet',
+      workDiagram: {
+        quick: { label: 'Single handrail', x: 282, y: 225, contactX: 304, contactY: 211 },
+        primary: { label: 'Left foot loop', x: 282, y: 225, contactX: 305, contactY: 211 },
+        secondary: { label: 'Right foot loop', x: 358, y: 225, contactX: 336, contactY: 211 },
+        tether: { label: 'Tablet tether', anchorX: 420, anchorY: 181, objectX: 457, objectY: 121 }
+      },
       challenge: 'Floating controls can drift into the crew path during a maneuver.',
+      orientationChallenge: {
+        prompt: 'After a maneuver, which cue reliably re-establishes the spacecraft\u2019s forward direction?',
+        principle: 'Spacecraft axes and fixed labels define the local frame \u2014 not gravity or a drifting object.',
+        correctId: 'fixed',
+        correctFeedback: 'Correct. The attitude display and labeled forward hatch stay fixed to the spacecraft, so they restore a shared local frame.',
+        retryFeedback: 'That cue can drift or change with your body position. Reorient with a label or instrument fixed to the spacecraft.',
+        options: [
+          { id: 'floating', label: 'Direction of the loose tablet' },
+          { id: 'fixed', label: 'Attitude display + forward hatch' },
+          { id: 'floor', label: 'Whichever wall looks like the floor' }
+        ]
+      },
       activityOptions: [
         { id: 'secured', label: 'Foot restraint + tablet tether', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'The foot restraint gives your body a reaction point while the tether keeps the tablet within reach.' },
         { id: 'quick', label: 'One handrail + tablet tether', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'In the stable cabin, the handrail provides enough leverage for this light task.', recoveryFeedback: 'During the maneuver, one handrail does not fully control your body as the tablet changes direction. Re-brace at two points before retrying.' }
@@ -381,8 +402,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     },
     {
       id: 'lab', name: 'Science lab', short: 'Lab', icon: '\uD83E\uDDEA',
-      activity: 'Tether the specimen bag before opening the experiment rack.',
+      activity: 'Tether the specimen bag before opening the experiment rack.', workObject: 'specimen bag',
+      workDiagram: {
+        quick: { label: 'Rail 04 handhold', x: 282, y: 181, contactX: 304, contactY: 204 },
+        primary: { label: 'Rail 04 brace', x: 270, y: 181, contactX: 304, contactY: 205 },
+        secondary: { label: 'Waist restraint', x: 358, y: 225, contactX: 336, contactY: 211 },
+        tether: { label: 'Specimen tether', anchorX: 420, anchorY: 181, objectX: 462, objectY: 122 }
+      },
       challenge: 'A loose sample keeps moving until a hand, rail, or wall stops it.',
+      orientationChallenge: {
+        prompt: 'Which cue keeps your body aligned with the experiment rack?',
+        principle: 'Numbered handrails and rack labels are fixed references; floating samples are not.',
+        correctId: 'fixed',
+        correctFeedback: 'Correct. The numbered rail and rack label define the worksite even while your body rotates.',
+        retryFeedback: 'That cue does not stay fixed to the lab. Use the rack label and numbered handrail to rebuild your local frame.',
+        options: [
+          { id: 'fixed', label: 'Rack label + numbered handrail' },
+          { id: 'floating', label: 'Direction of the specimen bag' },
+          { id: 'floor', label: 'The wall nearest your feet' }
+        ]
+      },
       activityOptions: [
         { id: 'secured', label: 'Body restraint + specimen tether', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'Your body restraint supplies a reaction point while the specimen tether prevents a loose sample.' },
         { id: 'quick', label: 'One handrail + specimen tether', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'With the cabin stable, one firm handrail contact controls the small rack-opening force.', recoveryFeedback: 'During the maneuver, the rack force pulls your one-point brace off line and the specimen starts to drift. Re-brace at two points before retrying.' }
@@ -390,8 +429,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     },
     {
       id: 'medbay', name: 'Medical bay', short: 'Med', icon: '\uD83E\uDE7A',
-      activity: 'Stow the medical kit and brace the patient restraint.',
+      activity: 'Stow the medical kit and brace the patient restraint.', workObject: 'medical kit',
+      workDiagram: {
+        quick: { label: 'Left caregiver grip', x: 223, y: 149, contactX: 304, contactY: 197 },
+        primary: { label: 'Left caregiver grip', x: 223, y: 149, contactX: 304, contactY: 197 },
+        secondary: { label: 'Right caregiver grip', x: 417, y: 149, contactX: 336, contactY: 197 },
+        tether: { label: 'Medical-kit tether', anchorX: 420, anchorY: 181, objectX: 467, objectY: 116 }
+      },
       challenge: 'Crew and equipment both need restraint during treatment.',
+      orientationChallenge: {
+        prompt: 'Which cue gives the caregiver and patient the same treatment orientation?',
+        principle: 'Shared fixed labels create a common frame for coordinated care in microgravity.',
+        correctId: 'fixed',
+        correctFeedback: 'Correct. Head/foot labels and caregiver handholds give both crew members the same treatment frame.',
+        retryFeedback: 'That cue can move independently of the patient. Use the restraint labels and fixed caregiver grips.',
+        options: [
+          { id: 'floor', label: 'The Earth-facing wall' },
+          { id: 'floating', label: 'Direction of the loose medical kit' },
+          { id: 'fixed', label: 'Head/foot labels + caregiver grips' }
+        ]
+      },
       activityOptions: [
         { id: 'secured', label: 'Caregiver restraint + patient restraint', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'Restraining both caregiver and patient creates a stable treatment frame while the kit stays tethered.' },
         { id: 'quick', label: 'Handrail + patient restraint', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'In the stable cabin, a handrail keeps the caregiver aligned with the restrained patient.', recoveryFeedback: 'During the maneuver, the caregiver pivots around the single handhold and loses alignment with the patient. Add a body restraint before retrying.' }
@@ -399,8 +456,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     },
     {
       id: 'engineering', name: 'Engineering', short: 'Engineering', icon: '\u2699\uFE0F',
-      activity: 'Inspect the oxygen scrubber and lock the tool pouch.',
+      activity: 'Inspect the oxygen scrubber and lock the tool pouch.', workObject: 'tool pouch',
+      workDiagram: {
+        quick: { label: 'Single handrail', x: 282, y: 225, contactX: 304, contactY: 211 },
+        primary: { label: 'Left foot loop', x: 302, y: 207, contactX: 310, contactY: 216 },
+        secondary: { label: 'Right foot loop', x: 338, y: 207, contactX: 330, contactY: 216 },
+        tether: { label: 'Tool tether', anchorX: 420, anchorY: 181, objectX: 464, objectY: 120 }
+      },
       challenge: 'Turning a tool can rotate an unbraced astronaut in the opposite direction.',
+      orientationChallenge: {
+        prompt: 'Before applying tool torque, which cue sets a safe bracing direction?',
+        principle: 'Align restraint with the fixed torque reference so the station can absorb the reaction force.',
+        correctId: 'fixed',
+        correctFeedback: 'Correct. The torque arrow and foot restraint align your body so the station absorbs the opposite rotation.',
+        retryFeedback: 'That cue does not define a safe reaction line. Match the panel torque arrow to a fixed body restraint.',
+        options: [
+          { id: 'floating', label: 'Direction of the drifting tool pouch' },
+          { id: 'floor', label: 'The visually lowest wall' },
+          { id: 'fixed', label: 'Torque arrow + foot restraint' }
+        ]
+      },
       activityOptions: [
         { id: 'secured', label: 'Foot restraint + tool tether', hint: 'Two control points \u2022 maneuver-ready', controlLevel: 2, feedback: 'The foot restraint resists the tool torque while the tether keeps every tool attached.' },
         { id: 'quick', label: 'One handrail + tool tether', hint: 'Lower control margin \u2022 stable cabin only', controlLevel: 1, feedback: 'In the stable cabin, a handrail supplies enough counter-torque for the inspection.', recoveryFeedback: 'During the maneuver, tool torque rotates you around the single handhold. Add a second restraint point before retrying.' }
@@ -425,6 +500,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     }
   ];
 
+  var INTERIOR_PAYLOADS = [
+    {
+      id: 'none', label: 'Hands free', short: 'No payload', icon: '\u25CB', massKg: 0, inertiaFactor: 1,
+      description: 'Baseline movement. Your body still has mass, but no carried object adds inertia.'
+    },
+    {
+      id: 'specimen', label: 'Specimen bag', short: '4 kg specimen', icon: '\uD83E\uDDEA', massKg: 4, inertiaFactor: 1.15,
+      description: 'A secured sample adds a small but measurable amount of braking distance.'
+    },
+    {
+      id: 'toolcase', label: 'Tool case', short: '10 kg tool case', icon: '\uD83E\uDDF0', massKg: 10, inertiaFactor: 1.35,
+      description: 'The heavy case strongly resists changes in motion and reduces the safe range of a gentle push.'
+    }
+  ];
+
   var INTERIOR_ROUTE_POINTS = {
     flightdeck: { x: 105, y: 211 },
     lab: { x: 253, y: 160 },
@@ -436,11 +526,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     return INTERIOR_CONDITIONS.find(function(condition) { return condition.id === conditionId; }) || INTERIOR_CONDITIONS[0];
   }
 
+  function getInteriorPayload(payloadId) {
+    return INTERIOR_PAYLOADS.find(function(payload) { return payload.id === payloadId; }) || INTERIOR_PAYLOADS[0];
+  }
+
+  var DEFAULT_INTERIOR_WORK_DIAGRAM = {
+    quick: { label: 'Single handrail', x: 282, y: 225, contactX: 304, contactY: 211 },
+    primary: { label: 'Primary restraint', x: 282, y: 225, contactX: 305, contactY: 211 },
+    secondary: { label: 'Secondary restraint', x: 358, y: 225, contactX: 336, contactY: 211 },
+    tether: { label: 'Equipment tether', anchorX: 420, anchorY: 181, objectX: 458, objectY: 125 }
+  };
+
+  function normalizeInteriorWorkAnchor(value, fallback) {
+    var item = value && typeof value === 'object' ? value : {};
+    var base = fallback || DEFAULT_INTERIOR_WORK_DIAGRAM.primary;
+    function coordinate(key, max) {
+      var number = Number(item[key]);
+      return isFinite(number) && number >= 0 && number <= max ? number : base[key];
+    }
+    return {
+      label: typeof item.label === 'string' && item.label.trim() ? item.label.trim() : base.label,
+      x: coordinate('x', 640),
+      y: coordinate('y', 270),
+      contactX: coordinate('contactX', 640),
+      contactY: coordinate('contactY', 270)
+    };
+  }
+
+  function normalizeInteriorWorkTether(value, fallback) {
+    var item = value && typeof value === 'object' ? value : {};
+    var base = fallback || DEFAULT_INTERIOR_WORK_DIAGRAM.tether;
+    function coordinate(key, max) {
+      var number = Number(item[key]);
+      return isFinite(number) && number >= 0 && number <= max ? number : base[key];
+    }
+    return {
+      label: typeof item.label === 'string' && item.label.trim() ? item.label.trim() : base.label,
+      anchorX: coordinate('anchorX', 640),
+      anchorY: coordinate('anchorY', 270),
+      objectX: coordinate('objectX', 640),
+      objectY: coordinate('objectY', 270)
+    };
+  }
+
+  function getInteriorWorkDiagram(zoneId) {
+    var zone = INTERIOR_ZONES.find(function(item) { return item.id === zoneId; });
+    var diagram = zone && zone.workDiagram && typeof zone.workDiagram === 'object' ? zone.workDiagram : {};
+    return {
+      quick: normalizeInteriorWorkAnchor(diagram.quick, DEFAULT_INTERIOR_WORK_DIAGRAM.quick),
+      primary: normalizeInteriorWorkAnchor(diagram.primary, DEFAULT_INTERIOR_WORK_DIAGRAM.primary),
+      secondary: normalizeInteriorWorkAnchor(diagram.secondary, DEFAULT_INTERIOR_WORK_DIAGRAM.secondary),
+      tether: normalizeInteriorWorkTether(diagram.tether, DEFAULT_INTERIOR_WORK_DIAGRAM.tether)
+    };
+  }
+
   function createInteriorOrientation() {
     return {
       position: 'flightdeck', target: 'lab', routeMode: 'direct', condition: 'stable', tasks: {},
+      payloadId: 'none', predictionMode: 'guided', predictionStrategy: 'gentle', predictionChoice: null,
       controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0,
       activityAttempts: {}, activityRecoveryCount: 0, activityResults: {},
+      viewMode: 'route', orientationAttempts: {}, orientationResults: {},
+      activeRecovery: null, lastRecoveryResult: null, practiceLog: [], workStepExpanded: false,
       lastResult: null, lastActivityResult: null, feedback: '', readinessComplete: false
     };
   }
@@ -455,9 +602,206 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     return INTERIOR_ZONES.filter(function(zone) { return completedTasks[zone.id] === true; }).length;
   }
 
+  function getInteriorNavigationDirection(fromId, toId) {
+    var fromIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === fromId; });
+    var toIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === toId; });
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return null;
+    return toIndex > fromIndex ? 'engineering' : 'flightdeck';
+  }
+
+  function getInteriorCompactZoneLabel(zone) {
+    if (!zone) return 'END CAP';
+    if (zone.id === 'flightdeck') return 'FLIGHT';
+    if (zone.id === 'engineering') return 'ENG';
+    return zone.short.toUpperCase();
+  }
+
+  function getInteriorOrientationChallenge(zoneId) {
+    var zone = INTERIOR_ZONES.find(function(item) { return item.id === zoneId; });
+    return zone && zone.orientationChallenge ? zone.orientationChallenge : null;
+  }
+
+  function evaluateInteriorOrientationChoice(zoneId, choiceId) {
+    var challenge = getInteriorOrientationChallenge(zoneId);
+    var option = challenge && challenge.options.find(function(item) { return item.id === choiceId; });
+    if (!challenge || !option) {
+      return {
+        valid: false, correct: false, zoneId: zoneId || null, choiceId: choiceId || null,
+        status: 'Choose a fixed reference',
+        feedback: 'Choose one of the visible local-reference cues.'
+      };
+    }
+    var correct = option.id === challenge.correctId;
+    return {
+      valid: true,
+      correct: correct,
+      zoneId: zoneId,
+      choiceId: option.id,
+      choiceLabel: option.label,
+      status: correct ? 'Local frame confirmed' : 'Reorient and retry',
+      feedback: correct ? challenge.correctFeedback : challenge.retryFeedback,
+      principle: challenge.principle
+    };
+  }
+
+  function normalizeInteriorOrientationResult(zoneId, value) {
+    if (!value || typeof value !== 'object') return null;
+    var evaluated = evaluateInteriorOrientationChoice(zoneId, value.choiceId);
+    return evaluated.valid ? evaluated : null;
+  }
+
+  function countInteriorOrientationChecks(results) {
+    var saved = results && typeof results === 'object' ? results : {};
+    return INTERIOR_ZONES.reduce(function(total, zone) {
+      var result = normalizeInteriorOrientationResult(zone.id, saved[zone.id]);
+      return total + (result && result.correct ? 1 : 0);
+    }, 0);
+  }
+
+  function applyInteriorOrientationChoice(orientation, zoneId, choiceId) {
+    var current = orientation || createInteriorOrientation();
+    if (current.position !== zoneId || normalizeInteriorRecovery(current.activeRecovery, current.position)) {
+      return {
+        state: current,
+        result: {
+          valid: false, correct: false, zoneId: zoneId || null, choiceId: choiceId || null,
+          status: 'Reference check unavailable',
+          feedback: 'Finish the current drift recovery before checking local references.'
+        }
+      };
+    }
+    var result = evaluateInteriorOrientationChoice(zoneId, choiceId);
+    if (!result.valid) return { state: current, result: result };
+    var existing = normalizeInteriorOrientationResult(zoneId, (current.orientationResults || {})[zoneId]);
+    if (existing && existing.correct) {
+      return {
+        state: current,
+        result: Object.assign({}, existing, { status: 'Local frame already confirmed' })
+      };
+    }
+    var attempts = Object.assign({}, current.orientationAttempts || {});
+    attempts[zoneId] = normalizeInteriorCounter(attempts[zoneId]) + 1;
+    var results = Object.assign({}, current.orientationResults || {});
+    results[zoneId] = { choiceId: result.choiceId, correct: result.correct };
+    return {
+      state: Object.assign({}, current, {
+        orientationAttempts: attempts,
+        orientationResults: results,
+        practiceLog: appendInteriorPracticeLog(current.practiceLog, {
+          kind: 'orientation', zoneId: zoneId, choiceId: result.choiceId, correct: result.correct
+        })
+      }),
+      result: result
+    };
+  }
+
+  function normalizeInteriorRecovery(value, positionId) {
+    if (!value || typeof value !== 'object') return null;
+    var fromZone = INTERIOR_ZONES.find(function(zone) { return zone.id === value.fromId; });
+    var toZone = INTERIOR_ZONES.find(function(zone) { return zone.id === value.toId; });
+    var validStrategy = ['rail', 'gentle', 'hard'].indexOf(value.strategy) >= 0;
+    var speed = Number(value.speed);
+    var stoppingDistance = Number(value.stoppingDistance);
+    if (!fromZone || !toZone || fromZone.id === toZone.id || !validStrategy || !isFinite(speed) || speed < 0 || !isFinite(stoppingDistance) || stoppingDistance < 0) return null;
+    if (positionId && toZone.id !== positionId) return null;
+    return {
+      fromId: fromZone.id,
+      toId: toZone.id,
+      strategy: value.strategy,
+      method: value.method || value.strategy,
+      conditionId: getInteriorCondition(value.conditionId).id,
+      payloadId: getInteriorPayload(value.payloadId).id,
+      speed: speed,
+      stoppingDistance: stoppingDistance,
+      attempts: normalizeInteriorCounter(value.attempts)
+    };
+  }
+
+  function appendInteriorPracticeLog(log, record) {
+    var current = Array.isArray(log) ? log.slice(-7) : [];
+    if (record && typeof record === 'object') current.push(Object.assign({}, record));
+    return current.slice(-8);
+  }
+
   function isInteriorReadinessComplete(orientation) {
     var current = orientation || {};
-    return countInteriorCompletedActivities(current.tasks) >= 2 && normalizeInteriorCounter(current.controlledMoves) >= 2;
+    return !normalizeInteriorRecovery(current.activeRecovery, current.position) && countInteriorCompletedActivities(current.tasks) >= 2 && normalizeInteriorCounter(current.controlledMoves) >= 2;
+  }
+
+  function evaluateInteriorRecovery(recovery, actionId) {
+    var current = normalizeInteriorRecovery(recovery);
+    if (!current) return { valid: false, controlled: false, status: 'No recovery needed', feedback: 'Choose a movement method before attempting a recovery.' };
+    var condition = getInteriorCondition(current.conditionId);
+    var payload = getInteriorPayload(current.payloadId);
+    var action = actionId === 'rail' ? 'rail' : actionId === 'counterpush' ? 'counterpush' : '';
+    if (!action) return { valid: false, controlled: false, status: 'Choose a recovery action', feedback: 'Select the marked handrail or attempt a counter-push.' };
+    var controlled = action === 'rail' || (condition.id === 'stable' && current.stoppingDistance <= 0.3);
+    var actionLabel = action === 'rail' ? 'Grab the marked handrail' : 'Counter-push and tuck';
+    var feedback = controlled
+      ? (action === 'rail'
+        ? 'Hand contact arrests the drift. Secure the payload before beginning another translation.'
+        : 'The counter-push removes the remaining drift while the cabin reference is stable.')
+      : (condition.id === 'maneuver'
+        ? 'The changing cabin reference makes the counter-push miss its braking line. Use the marked handrail.'
+        : 'There is too much momentum for one counter-push. Protect the ' + (payload.id === 'none' ? 'crew member' : payload.label.toLowerCase()) + ' and grab the marked handrail.');
+    return {
+      valid: true,
+      controlled: controlled,
+      resolved: controlled,
+      actionId: action,
+      actionLabel: actionLabel,
+      condition: condition,
+      payload: payload,
+      status: controlled ? 'Drift arrested' : 'Recovery still active',
+      feedback: feedback
+    };
+  }
+
+  function applyInteriorRecoveryDecision(orientation, actionId) {
+    var current = orientation || createInteriorOrientation();
+    var recovery = normalizeInteriorRecovery(current.activeRecovery, current.position);
+    var result = evaluateInteriorRecovery(recovery, actionId);
+    if (!result.valid) return { state: current, result: result };
+    var recoveryRecord = {
+      kind: 'recovery',
+      actionId: result.actionId,
+      actionLabel: result.actionLabel,
+      fromId: recovery.fromId,
+      toId: recovery.toId,
+      conditionId: recovery.conditionId,
+      payloadId: recovery.payloadId,
+      controlled: result.controlled,
+      status: result.status
+    };
+    var nextLog = appendInteriorPracticeLog(current.practiceLog, recoveryRecord);
+    if (!result.controlled) {
+      var nextRecovery = Object.assign({}, recovery, { attempts: recovery.attempts + 1 });
+      return {
+        state: Object.assign({}, current, {
+          activeRecovery: nextRecovery,
+          lastRecoveryResult: recoveryRecord,
+          practiceLog: nextLog,
+          feedback: result.feedback,
+          readinessComplete: false
+        }),
+        result: Object.assign({}, result, recoveryRecord)
+      };
+    }
+    var nextState = Object.assign({}, current, {
+      activeRecovery: null,
+      lastRecoveryResult: recoveryRecord,
+      practiceLog: nextLog,
+      workStepExpanded: true,
+      lastResult: Object.assign({}, current.lastResult || {}, {
+        recoveryResolved: true,
+        recoveryActionId: result.actionId,
+        recoveryActionLabel: result.actionLabel,
+        status: 'Recovery complete'
+      }),
+      feedback: result.feedback
+    });
+    nextState.readinessComplete = isInteriorReadinessComplete(nextState);
+    return { state: nextState, result: Object.assign({}, result, recoveryRecord) };
   }
 
   function evaluateInteriorActivity(zoneId, optionId, conditionId) {
@@ -527,11 +871,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     };
     var nextActivityResults = Object.assign({}, current.activityResults || {});
     if (result.controlled) nextActivityResults[zoneId] = activityRecord;
-    var nextState = Object.assign({}, nextBase, { activityResults: nextActivityResults, lastActivityResult: activityRecord, feedback: message });
+    var nextState = Object.assign({}, nextBase, {
+      activityResults: nextActivityResults,
+      lastActivityResult: activityRecord,
+      practiceLog: appendInteriorPracticeLog(current.practiceLog, {
+        kind: 'activity',
+        zoneId: zoneId,
+        optionId: result.option.id,
+        conditionId: result.condition.id,
+        controlled: result.controlled,
+        status: result.status
+      }),
+      workStepExpanded: true,
+      feedback: message
+    });
     return { state: nextState, result: Object.assign({}, result, activityRecord) };
   }
 
-  function buildInteriorMotionTrace(fromId, toId, controlled, conditionId) {
+  function deriveInteriorActivityVisualState(orientation, zoneId, conditionId) {
+    var current = orientation || {};
+    var zone = INTERIOR_ZONES.find(function(item) { return item.id === zoneId; });
+    if (!zone || current.position !== zone.id) {
+      return { state: 'idle', blocked: false, attemptCount: 0, result: null };
+    }
+    var attemptCount = normalizeInteriorCounter((current.activityAttempts || {})[zone.id]);
+    var completed = (current.tasks || {})[zone.id] === true;
+    var blocked = !!normalizeInteriorRecovery(current.activeRecovery, zone.id);
+    var activeConditionId = getInteriorCondition(conditionId || current.condition).id;
+    var candidate = current.lastActivityResult;
+    var matchingResult = candidate && typeof candidate === 'object' &&
+      candidate.zoneId === zone.id && candidate.conditionId === activeConditionId &&
+      typeof candidate.controlled === 'boolean' ? candidate : null;
+    var state = completed
+      ? 'stabilized'
+      : blocked
+        ? 'idle'
+        : matchingResult && matchingResult.controlled === false
+          ? 'rotation'
+          : (current.workStepExpanded || attemptCount > 0)
+            ? 'setup'
+            : 'idle';
+    return {
+      state: state,
+      blocked: blocked,
+      attemptCount: attemptCount,
+      result: completed ? ((current.activityResults || {})[zone.id] || matchingResult) : matchingResult
+    };
+  }
+
+  function buildInteriorMotionTrace(fromId, toId, controlled, conditionId, inertiaFactor) {
     var start = INTERIOR_ROUTE_POINTS[fromId];
     var destination = INTERIOR_ROUTE_POINTS[toId];
     if (!start || !destination || fromId === toId) return null;
@@ -541,7 +929,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     var length = Math.sqrt(dx * dx + dy * dy) || 1;
     var unitX = dx / length;
     var unitY = dy / length;
-    var overshootPixels = controlled ? 0 : Math.min(48, 24 + length * 0.08);
+    var traceInertia = Number(inertiaFactor);
+    if (!isFinite(traceInertia) || traceInertia < 1) traceInertia = 1;
+    var overshootPixels = controlled ? 0 : Math.min(64, (24 + length * 0.08) * traceInertia);
     var unclampedEndX = destination.x + unitX * overshootPixels;
     var unclampedEndY = destination.y + unitY * overshootPixels;
     var end = {
@@ -562,6 +952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       toId: toId,
       controlled: !!controlled,
       condition: condition,
+      inertiaFactor: traceInertia,
       start: { x: rounded(start.x), y: rounded(start.y) },
       destination: { x: rounded(destination.x), y: rounded(destination.y) },
       end: { x: rounded(end.x), y: rounded(end.y) },
@@ -572,7 +963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     };
   }
 
-  function evaluateInteriorTranslation(fromId, toId, strategy, conditionId) {
+  function evaluateInteriorTranslation(fromId, toId, strategy, conditionId, payloadId) {
     var fromIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === fromId; });
     var toIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === toId; });
     if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
@@ -584,13 +975,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       };
     }
     var condition = getInteriorCondition(conditionId);
+    var payload = getInteriorPayload(payloadId);
     var span = Math.abs(toIndex - fromIndex);
     var distance = span * 3.2;
     var method = strategy === 'rail' ? 'Handrail travel' : strategy === 'gentle' ? 'Gentle push + brake' : 'Hard push';
     var baseSpeed = strategy === 'rail' ? 0.08 : strategy === 'gentle' ? 0.18 + Math.max(0, span - 1) * 0.03 : 0.75;
     var speed = strategy === 'rail' ? baseSpeed : baseSpeed * condition.speedFactor;
-    var stoppingDistance = strategy === 'rail' ? 0 : (speed * speed) / 0.24;
-    var controlled = strategy === 'rail' || (strategy === 'gentle' && span <= condition.gentleSpanLimit);
+    var stoppingDistance = strategy === 'rail' ? 0 : ((speed * speed) / 0.24) * payload.inertiaFactor;
+    var controlled = strategy === 'rail' || (strategy === 'gentle' && span <= condition.gentleSpanLimit && stoppingDistance <= 0.22);
     var feedback = controlled
       ? (strategy === 'rail'
         ? (condition.id === 'maneuver'
@@ -604,6 +996,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ? 'During an attitude maneuver, the changing cabin reference makes this crossing harder to predict. Use the handrail or break the route into one-compartment legs.'
           : 'The longer crossing builds more drift than one gentle counter-push can safely remove. Break the route into shorter legs.')
         : 'With no air drag to brake the crew member, the hard push carries too much momentum into the destination.');
+    if (payload.id !== 'none' && strategy !== 'rail') {
+      feedback += ' The ' + payload.label.toLowerCase() + ' increases the stopping distance to about ' + stoppingDistance.toFixed(2) + ' m.';
+    } else if (payload.id !== 'none' && strategy === 'rail') {
+      feedback += ' Continuous contact transfers the added payload inertia into the station structure.';
+    }
     return {
       valid: true,
       from: INTERIOR_ZONES[fromIndex],
@@ -611,6 +1008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       strategy: strategy,
       method: method,
       condition: condition,
+      payload: payload,
       span: span,
       distance: distance,
       speed: speed,
@@ -621,7 +1019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     };
   }
 
-  function buildInteriorRoutePlan(fromId, finalTargetId, routeMode, strategy, conditionId) {
+  function buildInteriorRoutePlan(fromId, finalTargetId, routeMode, strategy, conditionId, payloadId) {
     var fromIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === fromId; });
     var targetIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === finalTargetId; });
     var validStrategies = ['rail', 'gentle', 'hard'];
@@ -655,13 +1053,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     var legStartId = fromId;
     waypointIndexes.forEach(function(index) {
       var waypointId = INTERIOR_ZONES[index].id;
-      legs.push(evaluateInteriorTranslation(legStartId, waypointId, strategy, conditionId));
+      legs.push(evaluateInteriorTranslation(legStartId, waypointId, strategy, conditionId, payloadId));
       legStartId = waypointId;
     });
     var waypointIds = waypointIndexes.map(function(index) { return INTERIOR_ZONES[index].id; });
     return {
       valid: legs.length > 0 && legs.every(function(leg) { return leg.valid; }),
       mode: mode,
+      payload: getInteriorPayload(payloadId),
       finalTarget: INTERIOR_ZONES[targetIndex],
       waypointIds: waypointIds,
       waypoints: waypointIndexes.map(function(index) { return INTERIOR_ZONES[index]; }),
@@ -671,6 +1070,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       controlled: legs.length > 0 && legs.every(function(leg) { return leg.controlled; }),
       remainingStops: Math.max(0, waypointIds.length - 1)
     };
+  }
+
+  function buildInteriorPracticeInsight(orientation) {
+    var current = orientation || {};
+    var log = Array.isArray(current.practiceLog) ? current.practiceLog : [];
+    if (normalizeInteriorRecovery(current.activeRecovery, current.position)) {
+      return 'The final translation still needed an active recovery. Grabbing a handrail before cabin work would restore a stable reference.';
+    }
+    var firstUnsafeMove = log.findIndex(function(entry) { return entry.kind === 'translation' && entry.controlled === false; });
+    var laterControlledMove = firstUnsafeMove >= 0 && log.slice(firstUnsafeMove + 1).some(function(entry) { return entry.kind === 'translation' && entry.controlled === true; });
+    if (laterControlledMove) {
+      return 'Adaptation observed: after an overshoot, the crew changed the movement plan and completed a controlled translation.';
+    }
+    var failedRecovery = log.findIndex(function(entry) { return entry.kind === 'recovery' && entry.controlled === false; });
+    var laterRailRecovery = failedRecovery >= 0 && log.slice(failedRecovery + 1).some(function(entry) { return entry.kind === 'recovery' && entry.actionId === 'rail' && entry.controlled === true; });
+    if (laterRailRecovery) {
+      return 'Adaptation observed: the crew recognized that a counter-push was insufficient and transferred momentum through a handrail.';
+    }
+    var correctedWork = log.some(function(entry, index) {
+      return entry.kind === 'activity' && entry.controlled === false && log.slice(index + 1).some(function(later) {
+        return later.kind === 'activity' && later.zoneId === entry.zoneId && later.controlled === true;
+      });
+    });
+    if (correctedWork) {
+      return 'Adaptation observed: an unstable one-point pivot was revised so two restraints carried reaction forces into the station structure.';
+    }
+    var missedOrientation = log.findIndex(function(entry) { return entry.kind === 'orientation' && entry.correct === false; });
+    var correctedOrientation = missedOrientation >= 0 && log.slice(missedOrientation + 1).some(function(entry) {
+      return entry.kind === 'orientation' && entry.zoneId === log[missedOrientation].zoneId && entry.correct === true;
+    });
+    if (correctedOrientation) {
+      return 'Local-frame adaptation observed: a drifting or body-relative cue was replaced with a fixed spacecraft landmark.';
+    }
+    var confirmedOrientation = log.find(function(entry) { return entry.kind === 'orientation' && entry.correct === true; });
+    if (confirmedOrientation) {
+      return 'Local-frame evidence recorded: fixed labels and restraints were used instead of an imagined floor.';
+    }
+    var payloadMove = log.find(function(entry) { return entry.kind === 'translation' && entry.payloadId && entry.payloadId !== 'none'; });
+    if (payloadMove) {
+      return 'Payload evidence recorded: added mass increased braking distance, while continuous hand contact remained reliable.';
+    }
+    return log.length ? 'The practice record shows the crew compared movement control and restraint choices before launch.' : 'No cabin practice evidence was recorded before launch.';
   }
 
   function applyInteriorReadinessBonus(resources, orientation, alreadyApplied) {
@@ -1552,15 +1993,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var activityRecoveryCount = normalizeInteriorCounter(interiorOrientation.activityRecoveryCount);
         var conditionId = interiorOrientation.condition || 'stable';
         var condition = getInteriorCondition(conditionId);
+        var payload = getInteriorPayload(interiorOrientation.payloadId);
+        var activeRecovery = normalizeInteriorRecovery(interiorOrientation.activeRecovery, positionId);
+        var predictionMode = interiorOrientation.predictionMode === 'challenge' ? 'challenge' : 'guided';
+        var predictionStrategy = ['rail', 'gentle', 'hard'].indexOf(interiorOrientation.predictionStrategy) >= 0 ? interiorOrientation.predictionStrategy : 'gentle';
+        var predictionChoice = interiorOrientation.predictionChoice === 'controlled' || interiorOrientation.predictionChoice === 'recovery' ? interiorOrientation.predictionChoice : null;
+        var workStepExpanded = !!interiorOrientation.workStepExpanded;
+        var viewMode = interiorOrientation.viewMode === 'compartment' ? 'compartment' : 'route';
         var routeMode = interiorOrientation.routeMode === 'staged' ? 'staged' : 'direct';
-        var directGentlePrediction = evaluateInteriorTranslation(positionId, targetId, 'gentle', conditionId);
-        var stagedRoutePlan = buildInteriorRoutePlan(positionId, targetId, 'staged', 'gentle', conditionId);
+        var directGentlePrediction = evaluateInteriorTranslation(positionId, targetId, 'gentle', conditionId, payload.id);
+        var stagedRoutePlan = buildInteriorRoutePlan(positionId, targetId, 'staged', 'gentle', conditionId, payload.id);
         var recommendedBrakeZone = stagedRoutePlan.valid ? INTERIOR_ZONES.find(function(zone) { return zone.id === stagedRoutePlan.nextTargetId; }) : null;
         var recommendedRouteLabel = stagedRoutePlan.valid ? [positionZone].concat(stagedRoutePlan.waypoints).map(function(zone) { return zone.short; }).join(' \u2192 ') : '';
         var stagedRouteRecommended = routeMode === 'direct' && directGentlePrediction.valid && !directGentlePrediction.controlled && stagedRoutePlan.valid && stagedRoutePlan.controlled && stagedRoutePlan.waypointIds.length > 1;
-        var activeRoutePlan = buildInteriorRoutePlan(positionId, targetId, routeMode, 'gentle', conditionId);
+        var activeRoutePlan = buildInteriorRoutePlan(positionId, targetId, routeMode, 'gentle', conditionId, payload.id);
         var movementTargetId = routeMode === 'staged' && activeRoutePlan.valid ? activeRoutePlan.nextTargetId : targetId;
         var movementTargetZone = INTERIOR_ZONES.find(function(zone) { return zone.id === movementTargetId; }) || targetZone;
+        var positionZoneIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === positionId; });
+        var flightSideZone = positionZoneIndex > 0 ? INTERIOR_ZONES[positionZoneIndex - 1] : null;
+        var engineeringSideZone = positionZoneIndex >= 0 && positionZoneIndex < INTERIOR_ZONES.length - 1 ? INTERIOR_ZONES[positionZoneIndex + 1] : null;
+        var navigationDirection = getInteriorNavigationDirection(positionId, movementTargetId);
+        var orientationChallenge = getInteriorOrientationChallenge(positionId);
+        var orientationAttempts = interiorOrientation.orientationAttempts || {};
+        var orientationResult = normalizeInteriorOrientationResult(positionId, (interiorOrientation.orientationResults || {})[positionId]);
+        var orientationAttemptCount = normalizeInteriorCounter(orientationAttempts[positionId]);
+        var orientationChecksCompleted = countInteriorOrientationChecks(interiorOrientation.orientationResults);
         var nextBrakeZone = routeMode === 'staged' && activeRoutePlan.valid ? movementTargetZone : null;
         var activeRoutePointIds = routeMode === 'staged' && activeRoutePlan.valid ? [positionZone.id].concat(activeRoutePlan.waypointIds) : [];
         var activeRoutePoints = activeRoutePointIds.map(function(id) { return INTERIOR_ROUTE_POINTS[id]; }).filter(Boolean);
@@ -1572,15 +2029,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           { id: 'hard', label: 'Hard push', hint: 'Fast \u2022 recovery likely', cls: 'border-amber-500 bg-amber-950/50' }
         ];
         var routePredictions = {};
-        movementMethods.forEach(function(method) { routePredictions[method.id] = evaluateInteriorTranslation(positionId, movementTargetId, method.id, conditionId); });
+        movementMethods.forEach(function(method) { routePredictions[method.id] = evaluateInteriorTranslation(positionId, movementTargetId, method.id, conditionId, payload.id); });
         var activityPredictions = {};
         (positionZone.activityOptions || []).forEach(function(option) { activityPredictions[option.id] = evaluateInteriorActivity(positionId, option.id, conditionId); });
         var visibleActivityResult = lastActivityResult && lastActivityResult.zoneId === positionId && lastActivityResult.conditionId === condition.id ? lastActivityResult : null;
-        var motionTrace = !visibleActivityResult && lastResult && lastResult.fromId && lastResult.toId ? buildInteriorMotionTrace(lastResult.fromId, lastResult.toId, lastResult.controlled, lastResult.conditionId) : null;
-        var feedbackResult = visibleActivityResult
+        var activityVisual = deriveInteriorActivityVisualState(interiorOrientation, positionId, condition.id);
+        var workDiagram = getInteriorWorkDiagram(positionId);
+        var workVisualState = workStepExpanded && !activeRecovery ? activityVisual.state : 'idle';
+        var workVisualActive = viewMode === 'compartment' && workVisualState !== 'idle';
+        var workObjectState = workVisualState === 'stabilized' ? 'secured' : workVisualState === 'rotation' ? 'drifting' : 'loose';
+        var workObjectStroke = workVisualState === 'stabilized' ? '#86efac' : '#fdba74';
+        var workObjectFill = workVisualState === 'stabilized' ? '#14532d' : '#422006';
+        var workVisualLabel = workVisualState === 'rotation'
+          ? '1-POINT PIVOT'
+          : workVisualState === 'stabilized'
+            ? '2-POINT STABLE'
+            : 'PLAN 2 POINTS';
+        var workVisualDescription = workVisualState === 'rotation'
+          ? 'Work result: only the ' + workDiagram.quick.label + ' controls the body, allowing the astronaut to pivot while the ' + positionZone.workObject + ' remains in motion.'
+          : workVisualState === 'stabilized'
+            ? 'Work result: the ' + workDiagram.primary.label + ' and ' + workDiagram.secondary.label + ' prevent pivot, while the ' + workDiagram.tether.label + ' secures the ' + positionZone.workObject + '.'
+            : workVisualState === 'setup'
+              ? 'Work setup preview: the ' + workDiagram.primary.label + ', ' + workDiagram.secondary.label + ', and ' + workDiagram.tether.label + ' are outlined.'
+              : '';
+        var workVisualSummary = workVisualState === 'rotation'
+          ? '1 fixed point (' + workDiagram.quick.label + ') \u2192 body pivots; ' + positionZone.workObject + ' drifts.'
+          : workVisualState === 'stabilized'
+            ? workDiagram.primary.label + ' + ' + workDiagram.secondary.label + ' + ' + workDiagram.tether.label + ' \u2192 stable work.'
+            : workVisualState === 'setup'
+              ? 'Plan: connect ' + workDiagram.primary.label + ', ' + workDiagram.secondary.label + ', and ' + workDiagram.tether.label + ' before applying force.'
+              : '';
+        var motionTrace = !visibleActivityResult && lastResult && lastResult.fromId && lastResult.toId ? buildInteriorMotionTrace(lastResult.fromId, lastResult.toId, lastResult.controlled, lastResult.conditionId, lastResult.inertiaFactor) : null;
+        var feedbackResult = activeRecovery
+          ? 'recovery-active'
+          : visibleActivityResult
           ? (visibleActivityResult.controlled ? 'work-secured' : 'work-recovery')
-          : lastResult ? (lastResult.controlled ? 'controlled' : 'recovery') : 'ready';
-        var feedbackIsRecovery = visibleActivityResult ? !visibleActivityResult.controlled : !!(lastResult && !lastResult.controlled);
+          : lastResult ? (lastResult.recoveryResolved ? 'recovered' : lastResult.controlled ? 'controlled' : 'recovery') : 'ready';
+        var feedbackIsRecovery = !!activeRecovery || (visibleActivityResult ? !visibleActivityResult.controlled : !!(lastResult && !lastResult.controlled && !lastResult.recoveryResolved));
         var feedbackIsSecured = !!(visibleActivityResult && visibleActivityResult.controlled);
         var zoneLayout = {
           flightdeck: { x: 28, y: 180, w: 154, h: 62 },
@@ -1591,6 +2076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var positionLayout = zoneLayout[positionId] || zoneLayout.flightdeck;
         var positionRoutePoint = INTERIOR_ROUTE_POINTS[positionZone.id];
         var targetRoutePoint = INTERIOR_ROUTE_POINTS[targetZone.id];
+        var astronautRoutePoint = activeRecovery && motionTrace ? motionTrace.end : positionRoutePoint;
         var activityRoutePoint = positionRoutePoint;
         var activityMarkerPoint = {
           x: Math.min(610, positionLayout.x + positionLayout.w - 8),
@@ -1601,13 +2087,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           upd('interiorOrientation', Object.assign({}, interiorOrientation, patch));
         }
 
+        function chooseInteriorView(id) {
+          setInteriorOrientation({ viewMode: id === 'compartment' ? 'compartment' : 'route' });
+        }
+
+        function showInteriorWorkVisual() {
+          setInteriorOrientation({ viewMode: 'compartment' });
+          if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+            window.setTimeout(function() {
+              var visual = document.querySelector('[data-spaceexplorer-compartment-visual]');
+              if (visual && typeof visual.focus === 'function') visual.focus();
+            }, 0);
+          }
+        }
+
+        function tryInteriorOrientationChoice(choiceId) {
+          var decision = applyInteriorOrientationChoice(interiorOrientation, positionId, choiceId);
+          if (!decision.result.valid) {
+            announceToSR(decision.result.feedback);
+            return;
+          }
+          upd('interiorOrientation', decision.state);
+          if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+            window.setTimeout(function() {
+              var feedback = document.getElementById('se-orientation-feedback');
+              if (feedback && typeof feedback.focus === 'function') feedback.focus();
+            }, 0);
+          }
+        }
+
         function chooseInteriorTarget(id) {
+          if (activeRecovery) return;
           setInteriorOrientation({ target: id, routeMode: 'direct', feedback: id === positionId ? 'You are already in this compartment. Choose another destination or complete its activity.' : '' });
         }
 
         function chooseInteriorCondition(id) {
+          if (activeRecovery) return;
           var nextCondition = getInteriorCondition(id);
           setInteriorOrientation({ condition: nextCondition.id, feedback: nextCondition.description, lastResult: null, lastActivityResult: null });
+        }
+
+        function chooseInteriorPayload(id) {
+          if (activeRecovery) return;
+          var nextPayload = getInteriorPayload(id);
+          setInteriorOrientation({
+            payloadId: nextPayload.id,
+            routeMode: 'direct',
+            predictionChoice: null,
+            feedback: nextPayload.description,
+            lastResult: null,
+            lastActivityResult: null
+          });
+        }
+
+        function choosePredictionMode(id) {
+          if (activeRecovery) return;
+          var nextMode = id === 'challenge' ? 'challenge' : 'guided';
+          setInteriorOrientation({
+            predictionMode: nextMode,
+            predictionChoice: null,
+            feedback: nextMode === 'challenge' ? 'Prediction mode active. Choose a method and predict its result before testing.' : 'Guided mode restored. Movement outcomes are visible before you move.'
+          });
         }
 
         function focusInteriorRouteCard(id) {
@@ -1619,7 +2159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         }
 
         function activateStagedRoute() {
-          if (!stagedRoutePlan.valid || !stagedRoutePlan.nextTargetId) return;
+          if (activeRecovery || !stagedRoutePlan.valid || !stagedRoutePlan.nextTargetId) return;
           var firstBrake = INTERIOR_ZONES.find(function(zone) { return zone.id === stagedRoutePlan.nextTargetId; });
           setInteriorOrientation({
             routeMode: 'staged',
@@ -1631,6 +2171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         }
 
         function useDirectRoute() {
+          if (activeRecovery) return;
           setInteriorOrientation({
             routeMode: 'direct',
             feedback: 'Direct route restored. Compare the predicted control margin before moving.',
@@ -1641,7 +2182,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         }
 
         function tryInteriorTranslation(strategy) {
-          var result = evaluateInteriorTranslation(positionId, movementTargetId, strategy, conditionId);
+          if (activeRecovery) return;
+          var result = evaluateInteriorTranslation(positionId, movementTargetId, strategy, conditionId, payload.id);
           if (!result.valid) {
             setInteriorOrientation({ feedback: result.feedback, lastResult: null, lastActivityResult: null });
             return;
@@ -1649,18 +2191,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           var nextControlled = controlledMoves + (result.controlled ? 1 : 0);
           var nextManeuverControlled = maneuverControlledMoves + (result.controlled && result.condition.id === 'maneuver' ? 1 : 0);
           var nextRecoveries = normalizeInteriorCounter(interiorOrientation.recoveryCount) + (result.controlled ? 0 : 1);
-          var nextReady = isInteriorReadinessComplete({ tasks: tasks, controlledMoves: nextControlled });
+          var nextActiveRecovery = result.controlled ? null : {
+            fromId: result.from.id,
+            toId: result.to.id,
+            strategy: result.strategy,
+            method: result.method,
+            conditionId: result.condition.id,
+            payloadId: result.payload.id,
+            speed: result.speed,
+            stoppingDistance: result.stoppingDistance,
+            attempts: 0
+          };
+          var nextReady = isInteriorReadinessComplete({
+            position: result.to.id,
+            tasks: tasks,
+            controlledMoves: nextControlled,
+            activeRecovery: nextActiveRecovery
+          });
           var translationFeedback = result.feedback;
           if (routeMode === 'staged') {
             if (result.to.id === targetId) {
-              translationFeedback += ' Final destination reached: ' + targetZone.name + '.';
+              translationFeedback += result.controlled ? ' Final destination reached: ' + targetZone.name + '.' : ' The destination area is reached, but the drift must be arrested before work begins.';
             } else {
-              var continuingRoute = buildInteriorRoutePlan(result.to.id, targetId, 'staged', 'gentle', conditionId);
+              var continuingRoute = buildInteriorRoutePlan(result.to.id, targetId, 'staged', 'gentle', conditionId, payload.id);
               var continuingZone = INTERIOR_ZONES.find(function(zone) { return zone.id === continuingRoute.nextTargetId; });
               translationFeedback += result.controlled ? ' Braking point secured.' : ' Recover at this braking point before continuing.';
               if (continuingZone) translationFeedback += ' Next braking point: ' + continuingZone.name + '. Final goal: ' + targetZone.name + '.';
             }
           }
+          if (!result.controlled) translationFeedback += ' Choose a recovery response before changing the route or beginning cabin work.';
+          var predictedOutcome = result.controlled ? 'controlled' : 'recovery';
+          var predictionCorrect = predictionMode === 'challenge' && predictionChoice ? predictionChoice === predictedOutcome : null;
           setInteriorOrientation({
             position: result.to.id,
             routeMode: result.to.id === targetId ? 'direct' : routeMode,
@@ -1669,6 +2230,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             maneuverControlledMoves: nextManeuverControlled,
             recoveryCount: nextRecoveries,
             readinessComplete: nextReady,
+            activeRecovery: nextActiveRecovery,
+            lastRecoveryResult: null,
+            predictionChoice: null,
+            workStepExpanded: result.controlled ? true : workStepExpanded,
+            practiceLog: appendInteriorPracticeLog(interiorOrientation.practiceLog, {
+              kind: 'translation',
+              fromId: result.from.id,
+              toId: result.to.id,
+              strategy: result.strategy,
+              routeMode: routeMode,
+              conditionId: result.condition.id,
+              payloadId: result.payload.id,
+              controlled: result.controlled,
+              prediction: predictionMode === 'challenge' ? predictionChoice : null,
+              predictionCorrect: predictionCorrect
+            }),
             lastResult: {
               fromId: result.from.id,
               fromName: result.from.name,
@@ -1677,18 +2254,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               method: result.method,
               conditionId: result.condition.id,
               conditionLabel: result.condition.label,
+              payloadId: result.payload.id,
+              payloadLabel: result.payload.label,
+              payloadMassKg: result.payload.massKg,
+              inertiaFactor: result.payload.inertiaFactor,
               controlled: result.controlled,
               speed: result.speed,
               distance: result.distance,
               stoppingDistance: result.stoppingDistance,
-              status: result.status
+              status: result.status,
+              prediction: predictionMode === 'challenge' ? predictionChoice : null,
+              predictionCorrect: predictionCorrect
             },
             lastActivityResult: null,
             feedback: translationFeedback
           });
         }
 
+        function resolveInteriorRecovery(actionId) {
+          var decision = applyInteriorRecoveryDecision(interiorOrientation, actionId);
+          if (!decision.result.valid) {
+            announceToSR(decision.result.feedback);
+            return;
+          }
+          var nextState = decision.state;
+          if (decision.result.controlled && nextState.routeMode === 'staged' && nextState.position !== nextState.target) {
+            var resumedRoute = buildInteriorRoutePlan(nextState.position, nextState.target, 'staged', 'gentle', nextState.condition, nextState.payloadId);
+            var resumedZone = INTERIOR_ZONES.find(function(zone) { return zone.id === resumedRoute.nextTargetId; });
+            if (resumedZone) nextState = Object.assign({}, nextState, { feedback: decision.result.feedback + ' Next braking point: ' + resumedZone.name + '.' });
+          }
+          upd('interiorOrientation', nextState);
+          focusInteriorRouteCard(decision.result.controlled ? 'se-interior-feedback' : 'se-interior-recovery');
+        }
+
         function tryInteriorActivity(optionId) {
+          if (activeRecovery) return;
           var decision = applyInteriorActivityDecision(interiorOrientation, optionId);
           if (!decision.result.valid) {
             announceToSR(decision.result.feedback);
@@ -1716,29 +2316,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('div', null,
               h('div', { className: 'text-xs font-bold uppercase tracking-wide text-cyan-200' }, 'Optional practice \u2022 launch remains available'),
               h('h2', { id: 'se-interior-title', className: 'mt-1 text-base font-black text-white' }, 'Float through the mission cabin'),
-              h('p', { id: 'se-interior-help', className: 'mt-1 text-xs leading-relaxed text-slate-200' }, 'Choose a compartment, compare movement methods, then select a restraint setup for its activity. In microgravity, weightlessness removes foot friction \u2014 not mass or inertia.')
+              h('p', { id: 'se-interior-help', className: 'mt-1 text-xs leading-relaxed text-slate-200' }, 'Choose a compartment, compare movement methods, then select a restraint setup for its activity. In microgravity, weightlessness removes foot friction \u2014 not mass or inertia.'),
+              h('button', {
+                type: 'button',
+                'data-spaceexplorer-skip-practice': 'true',
+                onClick: function() { updAll({ missionPhase: 'allocate', confirmAbort: false }); },
+                className: 'mt-2 rounded-lg border border-purple-300 bg-purple-700 px-3 py-2 text-xs font-black text-white hover:bg-purple-600'
+              }, 'Skip practice \u00B7 Continue to power setup')
             ),
             h('div', {
               'data-spaceexplorer-interior-progress': 'true',
-              className: 'min-w-[132px] rounded-lg border border-slate-600 bg-slate-800 p-2 text-right'
+              role: 'list',
+              'aria-label': 'Cabin readiness requirements',
+              className: 'min-w-[176px] rounded-lg border border-slate-600 bg-slate-800 p-2'
             },
-              h('div', { className: 'text-xs font-bold ' + (readinessComplete ? 'text-green-200' : 'text-cyan-100') }, readinessComplete ? 'Cabin ready' : completedActivities + ' of 2 activities'),
-              h('div', { className: 'mt-1 text-[11px] text-slate-200' }, controlledMoves + ' controlled move' + (controlledMoves === 1 ? '' : 's')),
+              h('div', { className: 'text-xs font-black ' + (readinessComplete ? 'text-green-200' : activeRecovery ? 'text-amber-100' : 'text-cyan-100') }, readinessComplete ? 'Cabin ready' : activeRecovery ? 'Recovery in progress' : 'Readiness checklist'),
+              h('div', {
+                role: 'listitem',
+                'data-spaceexplorer-readiness-requirement': 'activities',
+                'data-requirement-complete': completedActivities >= 2 ? 'true' : 'false',
+                className: 'mt-1 flex items-center gap-1 text-[11px] ' + (completedActivities >= 2 ? 'text-green-200' : 'text-slate-100')
+              }, h('span', { 'aria-hidden': 'true' }, completedActivities >= 2 ? '\u2713' : '\u25CB'), completedActivities + ' of 2 activities'),
+              h('div', {
+                role: 'listitem',
+                'data-spaceexplorer-readiness-requirement': 'moves',
+                'data-requirement-complete': controlledMoves >= 2 ? 'true' : 'false',
+                className: 'mt-1 flex items-center gap-1 text-[11px] ' + (controlledMoves >= 2 ? 'text-green-200' : 'text-slate-100')
+              }, h('span', { 'aria-hidden': 'true' }, controlledMoves >= 2 ? '\u2713' : '\u25CB'), controlledMoves + ' of 2 controlled moves'),
               maneuverControlledMoves > 0 && h('div', { 'data-spaceexplorer-maneuver-safe': String(maneuverControlledMoves), className: 'mt-1 text-[11px] font-bold text-orange-200' }, maneuverControlledMoves + ' maneuver-safe'),
               activityRecoveryCount > 0 && h('div', { 'data-spaceexplorer-work-corrections': String(activityRecoveryCount), className: 'mt-1 text-[11px] font-bold text-amber-200' }, activityRecoveryCount + ' work correction' + (activityRecoveryCount === 1 ? '' : 's'))
             )
           ),
           h('div', { className: 'se-two-column-grid grid grid-cols-2 items-start gap-3' },
             h('div', { className: 'overflow-hidden rounded-xl border border-slate-600 bg-slate-950' },
-              h('svg', {
+              h('div', {
+                'data-spaceexplorer-interior-view-toggle': 'true',
+                className: 'flex flex-wrap items-center justify-between gap-2 border-b border-slate-600 bg-slate-900 p-2'
+              },
+                h('span', { className: 'text-xs font-black text-white' }, 'Cabin visual'),
+                h('div', { className: 'grid grid-cols-2 gap-1', role: 'group', 'aria-label': 'Cabin visual view' },
+                  h('button', {
+                    type: 'button',
+                    'data-spaceexplorer-interior-view': 'route',
+                    'aria-pressed': viewMode === 'route',
+                    'aria-controls': 'se-interior-visual-panel',
+                    onClick: function() { chooseInteriorView('route'); },
+                    className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (viewMode === 'route' ? 'border-cyan-200 bg-cyan-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100 hover:bg-slate-700')
+                  }, 'Route map'),
+                  h('button', {
+                    type: 'button',
+                    'data-spaceexplorer-interior-view': 'compartment',
+                    'aria-pressed': viewMode === 'compartment',
+                    'aria-controls': 'se-interior-visual-panel',
+                    onClick: function() { chooseInteriorView('compartment'); },
+                    className: 'rounded-md border px-2 py-1 text-[11px] font-bold ' + (viewMode === 'compartment' ? 'border-cyan-200 bg-cyan-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100 hover:bg-slate-700')
+                  }, 'Inside view')
+                )
+              ),
+              viewMode === 'route' && h('svg', {
+                id: 'se-interior-visual-panel',
                 viewBox: '0 0 640 270',
                 className: 'block h-auto w-full',
                 role: 'img',
-                'aria-labelledby': 'se-interior-visual-title se-interior-visual-desc',
-                'data-spaceexplorer-interior-visual': 'perspective'
+                'aria-labelledby': 'se-interior-visual-title',
+                'aria-describedby': 'se-interior-visual-desc',
+                'data-spaceexplorer-interior-visual': 'perspective',
+                'data-spaceexplorer-route-view': 'true'
               },
                 h('title', { id: 'se-interior-visual-title' }, 'Perspective view of the mission cabin'),
-                h('desc', { id: 'se-interior-visual-desc' }, 'A connected interior route from the flight deck through the science lab and medical bay to engineering. Current compartment: ' + positionZone.name + '. Final destination: ' + targetZone.name + '. Cabin condition: ' + condition.label + '. ' + condition.description + (routeMode === 'staged' && activeRoutePlan.valid ? ' Guided braking route: ' + stagedRouteLabel + '. Next braking point: ' + nextBrakeZone.name + '.' : ' Direct route selected.') + (visibleActivityResult ? ' Latest work procedure in ' + visibleActivityResult.zoneName + ': ' + visibleActivityResult.status.toLowerCase() + ' using ' + visibleActivityResult.optionLabel + '.' : motionTrace ? ' Last movement: ' + (lastResult.fromName || lastResult.fromId) + ' to ' + (lastResult.toName || lastResult.toId) + ', ' + (motionTrace.controlled ? 'controlled stop.' : 'inertia overshoot followed by recovery.') : '')),
+                h('desc', { id: 'se-interior-visual-desc' }, 'A connected interior route from the flight deck through the science lab and medical bay to engineering. Current compartment: ' + positionZone.name + '. Final destination: ' + targetZone.name + '. Cabin condition: ' + condition.label + '. Payload: ' + payload.label + ', ' + payload.massKg + ' kilograms. ' + condition.description + (routeMode === 'staged' && activeRoutePlan.valid ? ' Guided braking route: ' + stagedRouteLabel + '. Next braking point: ' + nextBrakeZone.name + '.' : ' Direct route selected.') + (activeRecovery ? ' The astronaut is still drifting beyond the destination and must recover using a handrail or counter-push.' : visibleActivityResult ? ' Latest work procedure in ' + visibleActivityResult.zoneName + ': ' + visibleActivityResult.status.toLowerCase() + ' using ' + visibleActivityResult.optionLabel + '.' : motionTrace ? ' Last movement: ' + (lastResult.fromName || lastResult.fromId) + ' to ' + (lastResult.toName || lastResult.toId) + ', ' + (motionTrace.controlled ? 'controlled stop.' : lastResult.recoveryResolved ? 'overshoot followed by a completed recovery.' : 'inertia overshoot requiring recovery.') : '')),
                 h('defs', null,
                   h('linearGradient', { id: 'se-cabin-wall', x1: '0', y1: '0', x2: '0', y2: '1' },
                     h('stop', { offset: '0%', stopColor: '#172554' }),
@@ -1773,9 +2419,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('polyline', { 'data-spaceexplorer-cabin-route': 'true', points: '105,211 253,160 386,120 535,81', fill: 'none', stroke: '#64748b', strokeWidth: 3, strokeDasharray: '7 7', 'aria-hidden': 'true' }),
                 directGentlePrediction.valid && h('line', {
                   'data-spaceexplorer-direct-route': routeMode,
+                  'data-route-safety': predictionMode === 'challenge' ? 'hidden' : directGentlePrediction.controlled ? 'controlled' : 'recovery',
                   x1: positionRoutePoint.x, y1: positionRoutePoint.y,
                   x2: targetRoutePoint.x, y2: targetRoutePoint.y,
-                  stroke: '#fb923c', strokeWidth: 4, strokeDasharray: '10 7', strokeLinecap: 'round',
+                  stroke: predictionMode === 'challenge' ? '#cbd5e1' : directGentlePrediction.controlled ? '#86efac' : '#fb923c', strokeWidth: 4, strokeDasharray: '10 7', strokeLinecap: 'round',
                   opacity: routeMode === 'staged' ? 0.38 : 0.9, 'aria-hidden': 'true'
                 }),
                 routeMode === 'staged' && activeRoutePlan.valid && h('g', {
@@ -1808,6 +2455,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     complete && !current && !target && !nextBrake && h('path', { d: 'M ' + (box.x + box.w - 24) + ' ' + (box.y + 16) + ' l 5 5 l 10 -12', fill: 'none', stroke: '#ccfbf1', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' })
                   );
                 }),
+                h('g', {
+                  'data-spaceexplorer-astronaut-state': activeRecovery ? 'drifting' : 'secured',
+                  transform: 'translate(' + astronautRoutePoint.x + ' ' + (astronautRoutePoint.y - 17) + ') rotate(' + (activeRecovery ? 24 : condition.id === 'maneuver' ? 10 : -6) + ')',
+                  'aria-hidden': 'true'
+                },
+                  h('circle', { cx: 0, cy: -8, r: 6, fill: '#f8fafc', stroke: activeRecovery ? '#fdba74' : '#67e8f9', strokeWidth: 3 }),
+                  h('path', { d: 'M 0 -2 L 0 13 M -10 3 L 10 3 M 0 13 L -8 23 M 0 13 L 8 23', fill: 'none', stroke: '#f8fafc', strokeWidth: 4, strokeLinecap: 'round' }),
+                  payload.id !== 'none' && h('g', { 'data-spaceexplorer-payload-marker': payload.id },
+                    h('line', { x1: 8, y1: 7, x2: 18, y2: 14, stroke: '#fde68a', strokeWidth: 2, strokeDasharray: '3 2' }),
+                    h('rect', { x: 16, y: 10, width: payload.id === 'toolcase' ? 18 : 14, height: payload.id === 'toolcase' ? 13 : 10, rx: 3, fill: '#713f12', stroke: '#fde68a', strokeWidth: 3 })
+                  )
+                ),
                 motionTrace && !motionTrace.controlled && h('g', { 'data-spaceexplorer-interior-overshoot-marker': 'true', 'aria-hidden': 'true' },
                   h('circle', { cx: motionTrace.end.x, cy: motionTrace.end.y, r: 11, fill: '#431407', stroke: '#fdba74', strokeWidth: 3 }),
                   h('line', { x1: motionTrace.end.x - 5, y1: motionTrace.end.y - 5, x2: motionTrace.end.x + 5, y2: motionTrace.end.y + 5, stroke: '#ffedd5', strokeWidth: 3 }),
@@ -1840,24 +2499,264 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('rect', { x: 438, y: 3, width: 184, height: 46, rx: 7, fill: condition.id === 'maneuver' ? '#7c2d12' : '#14532d', stroke: condition.id === 'maneuver' ? '#fdba74' : '#86efac', strokeWidth: 3, 'aria-hidden': 'true' }),
                 h('text', { 'data-spaceexplorer-svg-label': 'condition', x: 530, y: 38, textAnchor: 'middle', fill: condition.id === 'maneuver' ? '#ffedd5' : '#dcfce7', fontSize: 32, fontWeight: 700 }, condition.id === 'maneuver' ? 'MANEUVER' : 'STABLE')
               ),
+              viewMode === 'compartment' && h('svg', {
+                id: 'se-interior-visual-panel',
+                viewBox: '0 0 640 270',
+                className: 'block h-auto w-full',
+                role: 'img',
+                tabIndex: -1,
+                'aria-labelledby': 'se-compartment-visual-title',
+                'aria-describedby': 'se-compartment-visual-desc',
+                'data-spaceexplorer-interior-visual': 'compartment',
+                'data-spaceexplorer-compartment-view': 'true',
+                'data-spaceexplorer-compartment-visual': positionZone.id,
+                'data-spaceexplorer-work-diagram': positionZone.id,
+                'data-spaceexplorer-work-visual': workVisualState
+              },
+                h('title', { id: 'se-compartment-visual-title' }, positionZone.name + ' interior close-up'),
+                h('desc', { id: 'se-compartment-visual-desc' },
+                  'A close-up inside ' + positionZone.name + ' with fixed handrails, labeled work equipment, a floating object, and the astronaut. ' +
+                  (workVisualActive
+                    ? 'Focused work view: route direction labels are hidden while the restraint setup is examined. '
+                    : 'The flight-deck side leads to ' + (flightSideZone ? flightSideZone.name : 'an end cap') + '. The engineering side leads to ' + (engineeringSideZone ? engineeringSideZone.name : 'an end cap') + '. ' +
+                      (navigationDirection ? 'The next route cue points toward the ' + navigationDirection + ' side for ' + movementTargetZone.name + '. ' : 'The current compartment is the selected destination. ')) +
+                  'Cabin condition: ' + condition.label + '. Payload: ' + payload.label + '. ' +
+                  (activeRecovery ? 'The astronaut is drifting and the nearest handrail is highlighted for recovery.' : positionZone.challenge) +
+                  (workVisualDescription ? ' ' + workVisualDescription : '')
+                ),
+                h('defs', null,
+                  h('linearGradient', { id: 'se-closeup-back-wall', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#1e3a5f' }),
+                    h('stop', { offset: '100%', stopColor: '#0f172a' })
+                  ),
+                  h('linearGradient', { id: 'se-closeup-floor', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#111827' }),
+                    h('stop', { offset: '50%', stopColor: '#334155' }),
+                    h('stop', { offset: '100%', stopColor: '#111827' })
+                  ),
+                  h('marker', { id: 'se-closeup-nav-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' },
+                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a5f3fc' })
+                  ),
+                  h('marker', { id: 'se-closeup-drift-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto' },
+                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#fdba74' })
+                  )
+                ),
+                h('rect', { width: 640, height: 270, fill: '#020617' }),
+                h('polygon', { points: '0,0 640,0 490,62 150,62', fill: '#172033', stroke: '#64748b', strokeWidth: 2 }),
+                h('polygon', { points: '150,62 490,62 560,230 80,230', fill: 'url(#se-closeup-back-wall)', stroke: '#64748b', strokeWidth: 2 }),
+                h('polygon', { points: '0,0 150,62 80,230 0,270', fill: '#0f2744', stroke: '#475569', strokeWidth: 2 }),
+                h('polygon', { points: '640,0 490,62 560,230 640,270', fill: '#1e1b4b', stroke: '#475569', strokeWidth: 2 }),
+                h('polygon', { points: '80,230 560,230 640,270 0,270', fill: 'url(#se-closeup-floor)', stroke: '#64748b', strokeWidth: 2 }),
+                h('g', { fill: 'none', stroke: '#64748b', strokeWidth: 2, opacity: 0.75, 'aria-hidden': 'true' },
+                  h('line', { x1: 185, y1: 62, x2: 150, y2: 230 }),
+                  h('line', { x1: 250, y1: 62, x2: 235, y2: 230 }),
+                  h('line', { x1: 390, y1: 62, x2: 405, y2: 230 }),
+                  h('line', { x1: 455, y1: 62, x2: 490, y2: 230 }),
+                  h('line', { x1: 112, y1: 150, x2: 528, y2: 150 })
+                ),
+                h('g', { 'data-spaceexplorer-compartment-hatch': 'flightdeck', 'data-spaceexplorer-hatch-context': workVisualActive ? 'muted' : 'navigation', opacity: workVisualActive ? 0.36 : flightSideZone ? 1 : 0.48 },
+                  h('rect', { x: 24, y: 78, width: 116, height: 142, rx: 50, fill: '#0f172a', stroke: navigationDirection === 'flightdeck' ? '#a5f3fc' : '#94a3b8', strokeWidth: navigationDirection === 'flightdeck' ? 6 : 3 }),
+                  h('rect', { x: 42, y: 95, width: 80, height: 108, rx: 35, fill: '#020617', stroke: '#475569', strokeWidth: 2 }),
+                  h('line', { x1: 82, y1: 102, x2: 82, y2: 196, stroke: '#64748b', strokeWidth: 3 }),
+                  !workVisualActive && h('text', { 'data-spaceexplorer-svg-label': 'flight-hatch', x: 82, y: 158, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 32, fontWeight: 700 }, getInteriorCompactZoneLabel(flightSideZone))
+                ),
+                h('g', { 'data-spaceexplorer-compartment-hatch': 'engineering', 'data-spaceexplorer-hatch-context': workVisualActive ? 'muted' : 'navigation', opacity: workVisualActive ? 0.36 : engineeringSideZone ? 1 : 0.48 },
+                  h('rect', { x: 500, y: 78, width: 116, height: 142, rx: 50, fill: '#0f172a', stroke: navigationDirection === 'engineering' ? '#a5f3fc' : '#94a3b8', strokeWidth: navigationDirection === 'engineering' ? 6 : 3 }),
+                  h('rect', { x: 518, y: 95, width: 80, height: 108, rx: 35, fill: '#020617', stroke: '#475569', strokeWidth: 2 }),
+                  h('line', { x1: 558, y1: 102, x2: 558, y2: 196, stroke: '#64748b', strokeWidth: 3 }),
+                  !workVisualActive && h('text', { 'data-spaceexplorer-svg-label': 'engineering-hatch', x: 558, y: 158, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 32, fontWeight: 700 }, getInteriorCompactZoneLabel(engineeringSideZone))
+                ),
+                navigationDirection && !workVisualActive && h('g', { 'data-spaceexplorer-compartment-next-direction': navigationDirection, 'aria-hidden': 'true' },
+                  h('line', {
+                    x1: 320, y1: 53, x2: navigationDirection === 'flightdeck' ? 156 : 484, y2: 53,
+                    stroke: '#a5f3fc', strokeWidth: 5, strokeLinecap: 'round', markerEnd: 'url(#se-closeup-nav-arrow)'
+                  }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'next-cue', x: 320, y: 80, textAnchor: 'middle', fill: '#cffafe', fontSize: 32, fontWeight: 700 }, 'NEXT: ' + getInteriorCompactZoneLabel(movementTargetZone))
+                ),
+                positionId === 'flightdeck' && h('g', { 'data-spaceexplorer-fixed-reference': 'attitude-display' },
+                  h('rect', { x: 218, y: 91, width: 204, height: 94, rx: 10, fill: '#082f49', stroke: '#67e8f9', strokeWidth: 3 }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'equipment', x: 320, y: 116, textAnchor: 'middle', fill: '#ecfeff', fontSize: 32, fontWeight: 700 }, 'ATTITUDE'),
+                  h('circle', { cx: 286, cy: 149, r: 24, fill: '#0f172a', stroke: '#a5f3fc', strokeWidth: 3 }),
+                  h('line', { x1: 286, y1: 125, x2: 286, y2: 173, stroke: '#86efac', strokeWidth: 3 }),
+                  h('line', { x1: 262, y1: 149, x2: 310, y2: 149, stroke: '#fdba74', strokeWidth: 3 }),
+                  h('path', { d: 'M 339 161 L 386 135 L 377 154', fill: 'none', stroke: '#a5f3fc', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'fixed-cue', x: 373, y: 181, textAnchor: 'middle', fill: '#cffafe', fontSize: 32, fontWeight: 700 }, 'FWD')
+                ),
+                positionId === 'flightdeck' && h('g', { 'data-spaceexplorer-compartment-hazard': 'tablet', 'data-spaceexplorer-work-object-state': workObjectState, transform: 'translate(457 121) rotate(14)', fill: 'none', stroke: workObjectStroke, strokeWidth: 3 },
+                  h('rect', { x: -20, y: -13, width: 40, height: 27, rx: 5, fill: workObjectFill }),
+                  h('line', { x1: -12, y1: -5, x2: 11, y2: -5 }),
+                  h('line', { x1: -12, y1: 3, x2: 5, y2: 3 })
+                ),
+                positionId === 'lab' && h('g', { 'data-spaceexplorer-fixed-reference': 'rack-and-rail' },
+                  h('rect', { x: 213, y: 86, width: 214, height: 107, rx: 9, fill: '#083344', stroke: '#67e8f9', strokeWidth: 3 }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'equipment', x: 320, y: 113, textAnchor: 'middle', fill: '#ecfeff', fontSize: 32, fontWeight: 700 }, 'RACK LAB-2'),
+                  h('line', { x1: 232, y1: 131, x2: 408, y2: 131, stroke: '#64748b', strokeWidth: 3 }),
+                  [258, 292, 326, 360, 394].map(function(x) { return h('circle', { key: x, cx: x, cy: 158, r: 10, fill: '#164e63', stroke: '#a5f3fc', strokeWidth: 2 }); }),
+                  h('line', { 'data-spaceexplorer-compartment-restraint': 'rail-04', x1: 235, y1: 181, x2: 405, y2: 181, stroke: '#67e8f9', strokeWidth: 7, strokeLinecap: 'round' }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'fixed-cue', x: 320, y: 184, textAnchor: 'middle', fill: '#cffafe', fontSize: 32, fontWeight: 700 }, 'RAIL 04')
+                ),
+                positionId === 'lab' && h('g', { 'data-spaceexplorer-compartment-hazard': 'specimen', 'data-spaceexplorer-work-object-state': workObjectState, transform: 'translate(462 122) rotate(-12)', fill: 'none', stroke: workObjectStroke, strokeWidth: 3 },
+                  h('path', { d: 'M -18 -18 Q 0 -26 18 -18 L 14 18 Q 0 25 -14 18 Z', fill: workObjectFill }),
+                  h('circle', { cx: 0, cy: 1, r: 7 })
+                ),
+                positionId === 'medbay' && h('g', { 'data-spaceexplorer-fixed-reference': 'patient-restraint' },
+                  h('rect', { x: 208, y: 91, width: 224, height: 98, rx: 40, fill: '#312e81', stroke: '#c4b5fd', strokeWidth: 3 }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'equipment', x: 320, y: 116, textAnchor: 'middle', fill: '#f5f3ff', fontSize: 32, fontWeight: 700 }, 'PATIENT RESTRAINT'),
+                  h('circle', { cx: 265, cy: 151, r: 15, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 3 }),
+                  h('path', { d: 'M 282 151 H 374 M 315 136 V 169 M 348 136 V 169', fill: 'none', stroke: '#e2e8f0', strokeWidth: 5, strokeLinecap: 'round' }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'fixed-cue', x: 243, y: 185, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 32, fontWeight: 700 }, 'HEAD'),
+                  h('text', { 'data-spaceexplorer-svg-label': 'fixed-cue', x: 395, y: 185, textAnchor: 'middle', fill: '#ddd6fe', fontSize: 32, fontWeight: 700 }, 'FEET'),
+                  h('line', { 'data-spaceexplorer-compartment-restraint': 'caregiver-grip', x1: 223, y1: 128, x2: 223, y2: 170, stroke: '#67e8f9', strokeWidth: 7, strokeLinecap: 'round' }),
+                  h('line', { 'data-spaceexplorer-compartment-restraint': 'caregiver-grip', x1: 417, y1: 128, x2: 417, y2: 170, stroke: '#67e8f9', strokeWidth: 7, strokeLinecap: 'round' })
+                ),
+                positionId === 'medbay' && h('g', { 'data-spaceexplorer-compartment-hazard': 'medical-kit', 'data-spaceexplorer-work-object-state': workObjectState, transform: 'translate(467 116) rotate(11)', fill: 'none', stroke: workObjectStroke, strokeWidth: 3 },
+                  h('rect', { x: -19, y: -15, width: 38, height: 30, rx: 6, fill: workObjectFill }),
+                  h('path', { d: 'M -8 0 H 8 M 0 -8 V 8', stroke: '#ffedd5', strokeWidth: 4 })
+                ),
+                positionId === 'engineering' && h('g', { 'data-spaceexplorer-fixed-reference': 'torque-panel' },
+                  h('rect', { x: 214, y: 85, width: 212, height: 108, rx: 9, fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 3 }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'equipment', x: 320, y: 112, textAnchor: 'middle', fill: '#f8fafc', fontSize: 32, fontWeight: 700 }, 'OXYGEN SCRUBBER'),
+                  h('circle', { cx: 272, cy: 150, r: 27, fill: '#0f172a', stroke: '#67e8f9', strokeWidth: 3 }),
+                  h('circle', { cx: 272, cy: 150, r: 12, fill: 'none', stroke: '#a5f3fc', strokeWidth: 3, strokeDasharray: '5 4' }),
+                  h('path', { d: 'M 334 164 A 31 31 0 1 1 386 139', fill: 'none', stroke: '#fdba74', strokeWidth: 5, markerEnd: 'url(#se-closeup-drift-arrow)' }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'fixed-cue', x: 365, y: 187, textAnchor: 'middle', fill: '#fed7aa', fontSize: 32, fontWeight: 700 }, 'TORQUE'),
+                  h('path', { 'data-spaceexplorer-compartment-restraint': 'foot-restraint', d: 'M 286 201 H 354 M 302 193 V 216 M 338 193 V 216', fill: 'none', stroke: '#67e8f9', strokeWidth: 6, strokeLinecap: 'round' })
+                ),
+                positionId === 'engineering' && h('g', { 'data-spaceexplorer-compartment-hazard': 'tool-pouch', 'data-spaceexplorer-work-object-state': workObjectState, transform: 'translate(464 120) rotate(-16)', fill: 'none', stroke: workObjectStroke, strokeWidth: 3 },
+                  h('path', { d: 'M -21 -14 H 21 L 16 17 H -16 Z', fill: workObjectFill }),
+                  h('line', { x1: -12, y1: -3, x2: 12, y2: -3 }),
+                  h('line', { x1: 0, y1: -12, x2: 0, y2: 12 })
+                ),
+                h('g', { 'data-spaceexplorer-compartment-restraint': activeRecovery ? 'recovery-rail' : 'cabin-rails', fill: 'none', stroke: activeRecovery ? '#fdba74' : '#67e8f9', strokeLinecap: 'round' },
+                  h('line', { x1: 158, y1: 67, x2: 482, y2: 67, strokeWidth: activeRecovery ? 9 : 7 }),
+                  h('line', { x1: 154, y1: 225, x2: 486, y2: 225, strokeWidth: activeRecovery ? 9 : 7 }),
+                  [205, 282, 358, 435].map(function(x) { return h('line', { key: x, x1: x, y1: 217, x2: x, y2: 234, strokeWidth: 4 }); })
+                ),
+                workVisualState === 'setup' && h('g', { 'data-spaceexplorer-work-setup': 'plan', 'aria-hidden': 'true' },
+                  h('line', { 'data-spaceexplorer-work-stabilization': 'planned', x1: workDiagram.primary.x, y1: workDiagram.primary.y, x2: workDiagram.primary.contactX, y2: workDiagram.primary.contactY, stroke: '#a5f3fc', strokeWidth: 5, strokeDasharray: '6 5', strokeLinecap: 'round' }),
+                  h('line', { 'data-spaceexplorer-work-stabilization': 'planned', x1: workDiagram.secondary.x, y1: workDiagram.secondary.y, x2: workDiagram.secondary.contactX, y2: workDiagram.secondary.contactY, stroke: '#a5f3fc', strokeWidth: 5, strokeDasharray: '6 5', strokeLinecap: 'round' }),
+                  h('circle', { 'data-spaceexplorer-work-anchor': 'primary', 'data-work-anchor-label': workDiagram.primary.label, cx: workDiagram.primary.x, cy: workDiagram.primary.y, r: 9, fill: '#0f172a', stroke: '#a5f3fc', strokeWidth: 4 }),
+                  h('circle', { 'data-spaceexplorer-work-anchor': 'secondary', 'data-work-anchor-label': workDiagram.secondary.label, cx: workDiagram.secondary.x, cy: workDiagram.secondary.y, r: 9, fill: '#0f172a', stroke: '#a5f3fc', strokeWidth: 4 }),
+                  h('line', { 'data-spaceexplorer-work-tether': 'planned', 'data-work-tether-label': workDiagram.tether.label, x1: workDiagram.tether.anchorX, y1: workDiagram.tether.anchorY, x2: workDiagram.tether.objectX, y2: workDiagram.tether.objectY, stroke: '#a5f3fc', strokeWidth: 4, strokeDasharray: '6 5', strokeLinecap: 'round' })
+                ),
+                workVisualState === 'rotation' && h('g', { 'data-spaceexplorer-work-setup': 'one-point', 'aria-hidden': 'true' },
+                  h('line', { 'data-spaceexplorer-work-tether': 'one-point', x1: workDiagram.quick.x, y1: workDiagram.quick.y, x2: workDiagram.quick.contactX, y2: workDiagram.quick.contactY, stroke: '#fdba74', strokeWidth: 6, strokeLinecap: 'round' }),
+                  h('circle', { 'data-spaceexplorer-work-anchor': 'primary', 'data-work-anchor-label': workDiagram.quick.label, cx: workDiagram.quick.x, cy: workDiagram.quick.y, r: 10, fill: '#431407', stroke: '#fdba74', strokeWidth: 4 }),
+                  h('path', { 'data-spaceexplorer-work-rotation': 'one-point', d: 'M 285 177 A 44 44 0 1 1 360 211', fill: 'none', stroke: '#fdba74', strokeWidth: 6, strokeDasharray: '8 5', markerEnd: 'url(#se-closeup-drift-arrow)' }),
+                  h('path', { 'data-spaceexplorer-work-loose-object': positionZone.workObject, d: 'M ' + workDiagram.tether.objectX + ' ' + workDiagram.tether.objectY + ' Q ' + Math.min(600, workDiagram.tether.objectX + 32) + ' ' + Math.max(55, workDiagram.tether.objectY - 18) + ' ' + Math.min(610, workDiagram.tether.objectX + 58) + ' ' + Math.max(45, workDiagram.tether.objectY - 43), pathLength: 1, className: 'se-motion-trace', fill: 'none', stroke: '#fdba74', strokeWidth: 5, strokeDasharray: '7 5', markerEnd: 'url(#se-closeup-drift-arrow)' })
+                ),
+                workVisualState === 'stabilized' && h('g', { 'data-spaceexplorer-work-setup': 'two-point', 'data-spaceexplorer-work-stabilization': 'two-point', 'aria-hidden': 'true' },
+                  h('line', { 'data-spaceexplorer-work-stabilization': 'two-point', x1: workDiagram.primary.x, y1: workDiagram.primary.y, x2: workDiagram.primary.contactX, y2: workDiagram.primary.contactY, stroke: '#67e8f9', strokeWidth: 6, strokeLinecap: 'round' }),
+                  h('line', { 'data-spaceexplorer-work-stabilization': 'two-point', x1: workDiagram.secondary.x, y1: workDiagram.secondary.y, x2: workDiagram.secondary.contactX, y2: workDiagram.secondary.contactY, stroke: '#67e8f9', strokeWidth: 6, strokeLinecap: 'round' }),
+                  h('circle', { 'data-spaceexplorer-work-anchor': 'primary', 'data-work-anchor-label': workDiagram.primary.label, cx: workDiagram.primary.x, cy: workDiagram.primary.y, r: 10, fill: '#14532d', stroke: '#86efac', strokeWidth: 4 }),
+                  h('circle', { 'data-spaceexplorer-work-anchor': 'secondary', 'data-work-anchor-label': workDiagram.secondary.label, cx: workDiagram.secondary.x, cy: workDiagram.secondary.y, r: 10, fill: '#14532d', stroke: '#86efac', strokeWidth: 4 }),
+                  h('line', { 'data-spaceexplorer-work-tether': 'secured-object', 'data-work-tether-label': workDiagram.tether.label, x1: workDiagram.tether.anchorX, y1: workDiagram.tether.anchorY, x2: workDiagram.tether.objectX, y2: workDiagram.tether.objectY, stroke: '#86efac', strokeWidth: 5, strokeLinecap: 'round' }),
+                  h('path', { d: 'M ' + (workDiagram.tether.objectX + 16) + ' ' + (workDiagram.tether.objectY - 22) + ' l 8 8 l 16 -20', fill: 'none', stroke: '#bbf7d0', strokeWidth: 6, strokeLinecap: 'round', strokeLinejoin: 'round' })
+                ),
+                activeRecovery && h('g', { 'data-spaceexplorer-compartment-hazard': 'drift', 'aria-hidden': 'true' },
+                  h('path', { d: 'M 292 194 Q 386 166 476 106', pathLength: 1, className: 'se-motion-trace', fill: 'none', stroke: '#fdba74', strokeWidth: 6, strokeDasharray: '9 6', markerEnd: 'url(#se-closeup-drift-arrow)' }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'drift', x: 455, y: 101, textAnchor: 'middle', fill: '#ffedd5', fontSize: 32, fontWeight: 700 }, 'DRIFT')
+                ),
+                h('g', {
+                  'data-spaceexplorer-compartment-astronaut': activeRecovery ? 'drifting' : workVisualState === 'rotation' ? 'pivoting' : 'secured',
+                  transform: 'translate(320 205) rotate(' + (activeRecovery ? 23 : workVisualState === 'rotation' ? 18 : condition.id === 'maneuver' ? 9 : -5) + ')',
+                  fill: 'none',
+                  stroke: '#f8fafc',
+                  strokeWidth: 5,
+                  strokeLinecap: 'round',
+                  'aria-hidden': 'true'
+                },
+                  h('circle', { cx: 0, cy: -30, r: 12, fill: '#e2e8f0', stroke: activeRecovery || workVisualState === 'rotation' ? '#fdba74' : '#67e8f9', strokeWidth: 4 }),
+                  h('path', { d: 'M 0 -17 V 17 M -23 -5 L 22 4 M 0 17 L -18 40 M 0 17 L 20 37' }),
+                  payload.id !== 'none' && h('g', { 'data-spaceexplorer-payload-marker': payload.id },
+                    h('line', { x1: 18, y1: 6, x2: 34, y2: 20, stroke: '#fde68a', strokeWidth: 3, strokeDasharray: '5 3' }),
+                    h('rect', { x: 31, y: 16, width: payload.id === 'toolcase' ? 28 : 22, height: payload.id === 'toolcase' ? 20 : 16, rx: 4, fill: '#713f12', stroke: '#fde68a', strokeWidth: 3 })
+                  )
+                ),
+                workVisualActive && h('g', { 'data-spaceexplorer-work-visual-label': workVisualState, 'aria-hidden': 'true' },
+                  h('rect', { x: 160, y: 47, width: 270, height: 41, rx: 8, fill: workVisualState === 'rotation' ? '#7c2d12' : workVisualState === 'stabilized' ? '#14532d' : '#164e63', stroke: workVisualState === 'rotation' ? '#fdba74' : workVisualState === 'stabilized' ? '#86efac' : '#a5f3fc', strokeWidth: 3 }),
+                  h('text', { 'data-spaceexplorer-svg-label': 'work-state', x: 295, y: 79, textAnchor: 'middle', fill: '#f8fafc', fontSize: 32, fontWeight: 700 }, workVisualLabel)
+                ),
+                h('text', { 'data-spaceexplorer-svg-label': 'title', x: 18, y: 37, fill: '#cffafe', fontSize: 32, fontWeight: 700 }, (workVisualActive ? getInteriorCompactZoneLabel(positionZone) : positionZone.name).toUpperCase()),
+                h('rect', { x: 438, y: 4, width: 184, height: 44, rx: 7, fill: condition.id === 'maneuver' ? '#7c2d12' : '#14532d', stroke: condition.id === 'maneuver' ? '#fdba74' : '#86efac', strokeWidth: 3, 'aria-hidden': 'true' }),
+                h('text', { 'data-spaceexplorer-svg-label': 'condition', x: 530, y: 37, textAnchor: 'middle', fill: condition.id === 'maneuver' ? '#ffedd5' : '#dcfce7', fontSize: 32, fontWeight: 700 }, condition.id === 'maneuver' ? 'MANEUVER' : 'STABLE'),
+                !workVisualActive && h('text', { 'data-spaceexplorer-svg-label': 'flight-side', x: 105, y: 258, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 32, fontWeight: 700 }, flightSideZone ? '\u25C0 ' + getInteriorCompactZoneLabel(flightSideZone) : 'END CAP'),
+                !workVisualActive && h('text', { 'data-spaceexplorer-svg-label': 'engineering-side', x: 535, y: 258, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 32, fontWeight: 700 }, engineeringSideZone ? getInteriorCompactZoneLabel(engineeringSideZone) + ' \u25B6' : 'END CAP')
+              ),
               h('div', { className: 'grid grid-cols-2 gap-2 border-t border-slate-600 p-2 text-[11px]' },
-                h('div', null, h('span', { className: 'text-slate-300' }, 'Current: '), h('strong', { 'data-spaceexplorer-interior-position': positionZone.id, className: 'text-green-200' }, positionZone.name)),
-                h('div', { className: 'text-right' }, h('span', { className: 'text-slate-300' }, 'Final goal: '), h('strong', { 'data-spaceexplorer-final-target': targetZone.id, className: 'text-purple-200' }, targetZone.name)),
+                workVisualActive && h('div', { 'data-spaceexplorer-worksite': positionZone.id, className: 'col-span-2 border-b border-cyan-900 pb-1' }, h('span', { className: 'text-slate-300' }, 'Worksite: '), h('strong', { 'data-spaceexplorer-interior-position': positionZone.id, className: 'text-cyan-100' }, positionZone.name)),
+                !workVisualActive && h('div', null, h('span', { className: 'text-slate-300' }, 'Current: '), h('strong', { 'data-spaceexplorer-interior-position': positionZone.id, className: 'text-green-200' }, positionZone.name)),
+                !workVisualActive && h('div', { className: 'text-right' }, h('span', { className: 'text-slate-300' }, 'Final goal: '), h('strong', { 'data-spaceexplorer-final-target': targetZone.id, className: 'text-purple-200' }, targetZone.name)),
+                h('div', { 'data-spaceexplorer-payload-status': payload.id, className: 'col-span-2 border-t border-slate-700 pt-1' }, h('span', { className: 'text-slate-300' }, 'Payload: '), h('strong', { className: 'text-yellow-100' }, payload.icon + ' ' + payload.label + ' \u2022 ' + payload.massKg + ' kg \u2022 ' + payload.inertiaFactor.toFixed(2) + '\u00D7 inertia')),
+                activeRecovery && h('div', { 'data-spaceexplorer-drift-status': 'active', className: 'col-span-2 border-t border-amber-700 pt-1 font-bold text-amber-100' }, 'Status: drifting beyond ' + positionZone.name + ' \u2022 recovery response required'),
                 routeMode === 'staged' && activeRoutePlan.valid && h('div', { 'data-spaceexplorer-active-next-brake': nextBrakeZone.id, className: 'col-span-2 border-t border-slate-700 pt-1' }, h('span', { className: 'text-slate-300' }, 'Next braking point: '), h('strong', { className: 'text-cyan-100' }, nextBrakeZone.name)),
                 h('div', { className: 'col-span-2 border-t border-slate-700 pt-1' }, h('span', { className: 'text-slate-300' }, 'Condition: '), h('strong', { 'data-spaceexplorer-interior-condition-status': condition.id, className: condition.id === 'maneuver' ? 'text-orange-200' : 'text-green-200' }, condition.icon + ' ' + condition.label)),
-                h('div', { 'data-spaceexplorer-route-legend': routeMode, className: 'col-span-2 border-t border-slate-700 pt-1 text-slate-200' }, routeMode === 'staged' && activeRoutePlan.valid ? 'Cyan segmented route = guided braking \u2022 bright ring = next braking point' : 'Amber dashed line = direct translation \u2022 cyan rails = handholds'),
+                workVisualActive && h('div', { 'data-spaceexplorer-work-visual-summary': workVisualState, className: 'col-span-2 border-t border-cyan-800 pt-1 font-bold text-cyan-100' }, workVisualSummary),
+                viewMode === 'route' && h('div', { 'data-spaceexplorer-route-legend': routeMode, className: 'col-span-2 border-t border-slate-700 pt-1 text-slate-200' }, routeMode === 'staged' && activeRoutePlan.valid ? 'Cyan segmented route = guided braking \u2022 bright ring = next braking point' : predictionMode === 'challenge' ? 'Neutral dashed line = direct route \u2022 outcome hidden until test' : directGentlePrediction.controlled ? 'Green dashed line = controlled direct route \u2022 cyan rails = handholds' : 'Amber dashed line = recovery-risk direct route \u2022 cyan rails = handholds'),
                 motionTrace && h('div', { 'data-spaceexplorer-interior-trace-summary': motionTrace.controlled ? 'controlled' : 'overshoot', className: 'col-span-2 border-t border-slate-700 pt-1 font-bold ' + (motionTrace.controlled ? 'text-green-200' : 'text-orange-200') }, 'Last trace: ' + (lastResult.fromName || lastResult.fromId) + ' \u2192 ' + (lastResult.toName || lastResult.toId) + ' \u2022 ' + (motionTrace.controlled ? 'controlled stop' : 'overshoot and recovery'))
+              ),
+              viewMode === 'compartment' && !workVisualActive && h('div', {
+                'data-spaceexplorer-orientation-challenge': positionZone.id,
+                className: 'border-t border-slate-600 bg-slate-900/80 p-2.5'
+              },
+                activeRecovery
+                  ? h('div', { className: 'rounded-md border border-amber-600 bg-amber-950/50 p-2 text-xs text-amber-100' },
+                      h('strong', { className: 'block' }, 'Recovery has priority'),
+                      h('span', { className: 'mt-1 block text-slate-100' }, 'Use the highlighted handrail to arrest the drift before checking local references.')
+                    )
+                  : h('div', null,
+                      h('div', { className: 'flex flex-wrap items-center justify-between gap-1' },
+                        h('strong', { className: 'text-xs text-cyan-100' }, 'Local reference check'),
+                        h('span', { 'data-spaceexplorer-orientation-progress': String(orientationChecksCompleted), className: 'text-[11px] font-bold text-slate-200' }, orientationChecksCompleted + ' of ' + INTERIOR_ZONES.length + ' confirmed')
+                      ),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-white' }, orientationChallenge.prompt),
+                      h('div', { className: 'mt-2 space-y-1.5', role: 'group', 'aria-label': 'Local reference choices for ' + positionZone.name },
+                        orientationChallenge.options.map(function(option) {
+                          var selected = !!(orientationResult && orientationResult.choiceId === option.id);
+                          var confirmed = !!(orientationResult && orientationResult.correct);
+                          return h('button', {
+                            key: option.id,
+                            type: 'button',
+                            disabled: confirmed,
+                            'data-spaceexplorer-orientation-choice': option.id,
+                            'aria-pressed': selected,
+                            onClick: function() { tryInteriorOrientationChoice(option.id); },
+                            className: 'w-full rounded-md border px-2.5 py-2 text-left text-xs font-bold ' +
+                              (selected && orientationResult.correct
+                                ? 'border-green-300 bg-green-800 text-white'
+                                : selected
+                                  ? 'border-amber-300 bg-amber-900 text-white'
+                                  : 'border-slate-500 bg-slate-800 text-slate-100 hover:bg-slate-700')
+                          }, option.label);
+                        })
+                      ),
+                      orientationAttemptCount > 0 && h('p', { 'data-spaceexplorer-orientation-attempts': String(orientationAttemptCount), className: 'mt-2 text-[11px] text-slate-300' }, orientationAttemptCount + ' reference check' + (orientationAttemptCount === 1 ? '' : 's') + ' in this compartment'),
+                      orientationResult && h('div', {
+                        id: 'se-orientation-feedback',
+                        tabIndex: -1,
+                        role: 'status',
+                        'aria-live': 'polite',
+                        'aria-atomic': 'true',
+                        'data-spaceexplorer-orientation-result': orientationResult.correct ? 'confirmed' : 'retry',
+                        className: 'mt-2 rounded-md border p-2 ' + (orientationResult.correct ? 'border-green-500 bg-green-950/60' : 'border-amber-500 bg-amber-950/50')
+                      },
+                        h('strong', { className: 'block text-xs ' + (orientationResult.correct ? 'text-green-100' : 'text-amber-100') }, (orientationResult.correct ? '\u2713 ' : '\u21BA ') + orientationResult.status),
+                        h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-100' }, orientationResult.feedback),
+                        h('p', { className: 'mt-1 text-[11px] leading-relaxed text-cyan-100' }, 'Why it works: ' + orientationResult.principle)
+                      )
+                    )
               )
             ),
             h('div', { className: 'space-y-3' },
               h('div', null,
                 h('h3', { className: 'text-xs font-black text-white' }, '1. Choose a final compartment'),
-                h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Interior destination' },
+                h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Interior destination' },
                   INTERIOR_ZONES.map(function(zone) {
                     var selected = zone.id === targetId;
                     return h('button', {
                       key: zone.id,
                       type: 'button',
+                      disabled: !!activeRecovery,
                       'data-spaceexplorer-interior-target': zone.id,
                       'aria-pressed': selected,
                       onClick: function() { chooseInteriorTarget(zone.id); },
@@ -1871,12 +2770,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('div', null,
                 h('h3', { className: 'text-xs font-black text-white' }, '2. Set the cabin condition'),
-                h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Cabin condition' },
+                h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Cabin condition' },
                   INTERIOR_CONDITIONS.map(function(item) {
                     var selected = item.id === condition.id;
                     return h('button', {
                       key: item.id,
                       type: 'button',
+                      disabled: !!activeRecovery,
                       'data-spaceexplorer-interior-condition': item.id,
                       'aria-pressed': selected,
                       onClick: function() { chooseInteriorCondition(item.id); },
@@ -1890,17 +2790,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('div', null,
                 h('h3', { className: 'text-xs font-black text-white' }, '3. Choose how to move'),
+                h('div', { className: 'mt-2 rounded-lg border border-slate-600 bg-slate-900/80 p-2' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-1' },
+                    h('strong', { className: 'text-[11px] text-white' }, 'Carry a payload'),
+                    h('span', { className: 'text-[11px] text-slate-300' }, 'Same speed \u2022 more mass = more braking distance')
+                  ),
+                  h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-3 gap-2', role: 'group', 'aria-label': 'Payload carried during translation' },
+                    INTERIOR_PAYLOADS.map(function(item) {
+                      var selected = item.id === payload.id;
+                      return h('button', {
+                        key: item.id,
+                        type: 'button',
+                        disabled: !!activeRecovery,
+                        'data-spaceexplorer-payload': item.id,
+                        'aria-pressed': selected,
+                        onClick: function() { chooseInteriorPayload(item.id); },
+                        className: 'rounded-lg border p-2 text-left ' + (selected ? 'border-yellow-200 bg-yellow-900/70 text-white' : 'border-slate-500 bg-slate-800 text-slate-100 hover:bg-slate-700')
+                      },
+                        h('span', { className: 'block text-xs font-black' }, item.icon + ' ' + item.label),
+                        h('span', { className: 'mt-1 block text-[11px] text-slate-200' }, item.massKg + ' kg \u2022 ' + item.inertiaFactor.toFixed(2) + '\u00D7 inertia')
+                      );
+                    })
+                  )
+                ),
+                h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-600 bg-slate-900/80 p-2' },
+                  h('div', null,
+                    h('strong', { className: 'block text-[11px] text-white' }, 'Outcome support'),
+                    h('span', { className: 'block text-[11px] text-slate-300' }, predictionMode === 'guided' ? 'See control predictions before moving.' : 'Predict first, then compare with the result.')
+                  ),
+                  h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Movement prediction mode' },
+                    h('button', {
+                      type: 'button',
+                      disabled: !!activeRecovery,
+                      'data-spaceexplorer-prediction-mode': 'guided',
+                      'aria-pressed': predictionMode === 'guided',
+                      onClick: function() { choosePredictionMode('guided'); },
+                      className: 'rounded-lg border px-3 py-2 text-xs font-bold ' + (predictionMode === 'guided' ? 'border-cyan-200 bg-cyan-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100')
+                    }, 'Guided'),
+                    h('button', {
+                      type: 'button',
+                      disabled: !!activeRecovery,
+                      'data-spaceexplorer-prediction-mode': 'challenge',
+                      'aria-pressed': predictionMode === 'challenge',
+                      onClick: function() { choosePredictionMode('challenge'); },
+                      className: 'rounded-lg border px-3 py-2 text-xs font-bold ' + (predictionMode === 'challenge' ? 'border-purple-200 bg-purple-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100')
+                    }, 'Predict first')
+                  )
+                ),
                 h('div', {
                   id: 'se-interior-route-preview',
                   tabIndex: -1,
+                  role: 'region',
+                  'aria-label': 'Current interior route',
                   'data-spaceexplorer-interior-route-preview': condition.id,
                   className: 'mt-2 rounded-lg border border-slate-600 bg-slate-900 p-2 text-[11px] text-slate-100'
                 }, positionId === targetId
                   ? 'Choose a different compartment to preview the route.'
-                  : positionZone.short + ' \u2192 ' + movementTargetZone.short + ' \u2022 ' + routePredictions.rail.distance.toFixed(1) + ' m \u2022 ' + condition.label + (routeMode === 'staged' ? ' \u2022 staged leg toward ' + targetZone.short : '')),
-                stagedRouteRecommended && h('div', {
+                  : positionZone.short + ' \u2192 ' + movementTargetZone.short + ' \u2022 ' + routePredictions.rail.distance.toFixed(1) + ' m \u2022 ' + condition.label + ' \u2022 ' + payload.short + (routeMode === 'staged' ? ' \u2022 staged leg toward ' + targetZone.short : '')),
+                !activeRecovery && stagedRouteRecommended && h('div', {
                   id: 'se-staged-route-recommendation',
                   tabIndex: -1,
+                  role: 'region',
+                  'aria-label': 'Safer staged route recommendation',
                   'data-spaceexplorer-staged-route': 'recommendation',
                   className: 'mt-2 rounded-lg border border-cyan-400 bg-cyan-950/70 p-2.5 text-slate-100'
                 },
@@ -1917,6 +2868,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 routeMode === 'staged' && activeRoutePlan.valid && h('div', {
                   id: 'se-staged-route-status',
                   tabIndex: -1,
+                  role: 'region',
+                  'aria-label': 'Active guided braking route',
                   'data-spaceexplorer-staged-route': 'active',
                   className: 'mt-2 rounded-lg border border-cyan-300 bg-cyan-950/70 p-2.5 text-slate-100'
                 },
@@ -1925,35 +2878,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-200' }, 'Next braking point: ' + nextBrakeZone.name + ' \u2022 final goal: ' + targetZone.name),
                   h('button', {
                     type: 'button',
+                    disabled: !!activeRecovery,
                     'data-spaceexplorer-use-direct-route': 'true',
                     onClick: useDirectRoute,
                     className: 'mt-2 min-h-[44px] w-full rounded-lg border border-slate-400 bg-slate-800 px-3 py-2 text-left text-xs font-bold text-white hover:bg-slate-700'
                   }, 'Use direct route instead')
                 ),
-                h('div', { className: 'mt-2 space-y-2', role: 'group', 'aria-label': 'Microgravity movement method' },
-                  movementMethods.map(function(method) {
-                    var prediction = routePredictions[method.id];
-                    return h('button', {
-                      key: method.id,
-                      type: 'button',
-                      disabled: positionId === targetId,
-                      'data-spaceexplorer-interior-strategy': method.id,
-                      onClick: function() { tryInteriorTranslation(method.id); },
-                      className: 'w-full rounded-lg border p-2 text-left text-white ' + method.cls
+                activeRecovery
+                  ? h('div', {
+                      id: 'se-interior-recovery',
+                      tabIndex: -1,
+                      role: 'region',
+                      'aria-labelledby': 'se-interior-recovery-title',
+                      'data-spaceexplorer-recovery': 'active',
+                      className: 'mt-2 rounded-lg border-2 border-amber-400 bg-amber-950/70 p-3'
                     },
-                      h('span', { className: 'block text-xs font-bold' }, method.label),
-                      h('span', { className: 'mt-0.5 block text-[11px] text-slate-200' }, method.hint),
-                      h('span', {
-                        'data-spaceexplorer-interior-prediction': method.id,
-                        'data-predicted-control': prediction.valid ? (prediction.controlled ? 'controlled' : 'recovery') : 'unavailable',
-                        className: 'mt-1 block text-[11px] font-bold ' + (prediction.valid && prediction.controlled ? 'text-green-200' : 'text-amber-200')
-                      }, prediction.valid ? (prediction.controlled ? 'Controlled arrival predicted' : 'Recovery likely') + ' \u2022 ' + prediction.speed.toFixed(2) + ' m/s' : 'Choose another compartment')
-                    );
-                  })
-                )
+                      h('strong', { id: 'se-interior-recovery-title', className: 'block text-sm text-amber-100' }, 'Arrest the drift'),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-100' }, 'You crossed into ' + positionZone.name + ', but inertia is still carrying you past the work area. Choose how to create an external braking force.'),
+                      h('p', { className: 'mt-2 rounded-md bg-slate-950/70 p-2 text-[11px] font-mono text-cyan-100' }, payload.label + ' \u2022 ' + condition.label + ' \u2022 ' + activeRecovery.speed.toFixed(2) + ' m/s \u2022 about ' + activeRecovery.stoppingDistance.toFixed(2) + ' m to stop'),
+                      activeRecovery.attempts > 0 && h('p', { 'data-spaceexplorer-recovery-attempts': String(activeRecovery.attempts), className: 'mt-2 text-[11px] font-bold text-amber-100' }, activeRecovery.attempts + ' recovery adjustment' + (activeRecovery.attempts === 1 ? '' : 's') + ' attempted'),
+                      h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Drift recovery response' },
+                        h('button', {
+                          type: 'button',
+                          'data-spaceexplorer-recovery-action': 'rail',
+                          onClick: function() { resolveInteriorRecovery('rail'); },
+                          className: 'rounded-lg border border-green-300 bg-green-800 p-2 text-left text-white hover:bg-green-700'
+                        }, h('span', { className: 'block text-xs font-black' }, 'Grab the marked handrail'), h('span', { className: 'mt-1 block text-[11px] text-green-50' }, 'Always transfers momentum into the station')),
+                        h('button', {
+                          type: 'button',
+                          'data-spaceexplorer-recovery-action': 'counterpush',
+                          onClick: function() { resolveInteriorRecovery('counterpush'); },
+                          className: 'rounded-lg border border-amber-300 bg-amber-800 p-2 text-left text-white hover:bg-amber-700'
+                        }, h('span', { className: 'block text-xs font-black' }, 'Counter-push and tuck'), h('span', { className: 'mt-1 block text-[11px] text-amber-50' }, 'May work only with stable, lower momentum'))
+                      )
+                    )
+                  : predictionMode === 'challenge'
+                  ? h('div', { 'data-spaceexplorer-prediction-challenge': 'true', className: 'mt-2 rounded-lg border border-purple-400 bg-purple-950/45 p-2.5' },
+                      h('label', { htmlFor: 'se-prediction-strategy', className: 'block text-xs font-bold text-purple-100' }, 'Movement method'),
+                      h('select', {
+                        id: 'se-prediction-strategy',
+                        value: predictionStrategy,
+                        onChange: function(e) { setInteriorOrientation({ predictionStrategy: e.target.value, predictionChoice: null }); },
+                        className: 'mt-1 min-h-[44px] w-full rounded-lg border border-slate-400 bg-slate-900 px-3 py-2 text-xs text-white'
+                      },
+                        movementMethods.map(function(method) { return h('option', { key: method.id, value: method.id }, method.label); })
+                      ),
+                      h('p', { className: 'mt-2 text-xs text-slate-200' }, 'What will happen on this route with the current payload?'),
+                      h('div', { className: 'se-interior-choice-grid mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Predicted movement outcome' },
+                        h('button', {
+                          type: 'button',
+                          'data-spaceexplorer-prediction-choice': 'controlled',
+                          'aria-pressed': predictionChoice === 'controlled',
+                          onClick: function() { setInteriorOrientation({ predictionChoice: 'controlled' }); },
+                          className: 'rounded-lg border p-2 text-xs font-bold ' + (predictionChoice === 'controlled' ? 'border-green-200 bg-green-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100')
+                        }, 'Controlled arrival'),
+                        h('button', {
+                          type: 'button',
+                          'data-spaceexplorer-prediction-choice': 'recovery',
+                          'aria-pressed': predictionChoice === 'recovery',
+                          onClick: function() { setInteriorOrientation({ predictionChoice: 'recovery' }); },
+                          className: 'rounded-lg border p-2 text-xs font-bold ' + (predictionChoice === 'recovery' ? 'border-amber-200 bg-amber-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100')
+                        }, 'Recovery needed')
+                      ),
+                      h('button', {
+                        type: 'button',
+                        disabled: positionId === targetId || !predictionChoice,
+                        'data-spaceexplorer-test-prediction': predictionStrategy,
+                        onClick: function() { tryInteriorTranslation(predictionStrategy); },
+                        className: 'mt-2 w-full rounded-lg border border-purple-200 bg-purple-700 px-3 py-2 text-xs font-black text-white hover:bg-purple-600'
+                      }, predictionChoice ? 'Test prediction with ' + movementMethods.find(function(method) { return method.id === predictionStrategy; }).label : 'Choose a prediction to test')
+                    )
+                  : h('div', { className: 'mt-2 space-y-2', role: 'group', 'aria-label': 'Microgravity movement method' },
+                      movementMethods.map(function(method) {
+                        var prediction = routePredictions[method.id];
+                        return h('button', {
+                          key: method.id,
+                          type: 'button',
+                          disabled: positionId === targetId,
+                          'data-spaceexplorer-interior-strategy': method.id,
+                          onClick: function() { tryInteriorTranslation(method.id); },
+                          className: 'w-full rounded-lg border p-2 text-left text-white ' + method.cls
+                        },
+                          h('span', { className: 'block text-xs font-bold' }, method.label),
+                          h('span', { className: 'mt-0.5 block text-[11px] text-slate-200' }, method.hint),
+                          h('span', {
+                            'data-spaceexplorer-interior-prediction': method.id,
+                            'data-predicted-control': prediction.valid ? (prediction.controlled ? 'controlled' : 'recovery') : 'unavailable',
+                            className: 'mt-1 block text-[11px] font-bold ' + (prediction.valid && prediction.controlled ? 'text-green-200' : 'text-amber-200')
+                          }, prediction.valid ? (prediction.controlled ? 'Controlled arrival predicted' : 'Recovery likely') + ' \u2022 ' + prediction.speed.toFixed(2) + ' m/s \u2022 stop about ' + prediction.stoppingDistance.toFixed(2) + ' m' : 'Choose another compartment')
+                        );
+                      })
+                    )
               ),
-              h('div', { className: 'rounded-lg border border-slate-600 bg-slate-900 p-2.5' },
-                h('h3', { className: 'text-xs font-black text-white' }, '4. Choose a work setup'),
+              h('details', {
+                open: workStepExpanded,
+                onToggle: function(e) {
+                  var isOpen = !!e.currentTarget.open;
+                  if (isOpen !== workStepExpanded) setInteriorOrientation({ workStepExpanded: isOpen });
+                },
+                'data-spaceexplorer-work-step': workStepExpanded ? 'open' : 'closed',
+                className: 'se-work-step rounded-lg border border-slate-600 bg-slate-900 p-2.5'
+              },
+                h('summary', {
+                  'data-spaceexplorer-work-step-toggle': 'true',
+                  className: 'flex min-h-[44px] items-center justify-between gap-2 rounded-md px-1 text-left'
+                },
+                  h('span', { className: 'text-xs font-black text-white' }, '4. Work in the current compartment'),
+                  h('span', { className: 'text-[11px] font-bold ' + (tasks[positionId] ? 'text-green-200' : activeRecovery ? 'text-amber-100' : 'text-cyan-100') }, tasks[positionId] ? '\u2713 Secured' : activeRecovery ? 'Recover first' : workStepExpanded ? 'Hide setup' : 'Show setup')
+                ),
+                activeRecovery && h('p', { className: 'mt-1 rounded-md border border-amber-600 bg-amber-950/50 p-2 text-xs text-amber-100' }, 'Cabin work is locked until you arrest the drift.'),
                 h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-100' },
                   h('strong', { className: 'text-cyan-100' }, 'Task: '), positionZone.activity
                 ),
@@ -1985,6 +3018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                         return h('button', {
                           key: option.id,
                           type: 'button',
+                          disabled: !!activeRecovery,
                           'data-spaceexplorer-work-choice': option.id,
                           'data-spaceexplorer-interior-work-choice': option.id,
                           'data-work-control-level': String(option.controlLevel),
@@ -2016,13 +3050,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             className: 'mt-3 rounded-lg border p-2.5 ' + (readinessComplete ? 'border-green-500 bg-green-950/60' : feedbackIsRecovery ? 'border-amber-500 bg-amber-950/50' : feedbackIsSecured ? 'border-emerald-500 bg-emerald-950/50' : 'border-slate-600 bg-slate-900')
           },
             h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('strong', { className: 'text-xs ' + (readinessComplete || feedbackIsSecured ? 'text-green-200' : feedbackIsRecovery ? 'text-amber-100' : 'text-white') }, readinessComplete ? 'Cabin ready \u2022 orientation complete' : visibleActivityResult ? visibleActivityResult.status : lastResult ? lastResult.status : 'Ready for interior practice'),
+              h('strong', { className: 'text-xs ' + (readinessComplete || feedbackIsSecured || (lastResult && lastResult.recoveryResolved) ? 'text-green-200' : feedbackIsRecovery ? 'text-amber-100' : 'text-white') }, readinessComplete ? 'Cabin ready \u2022 orientation complete' : activeRecovery ? 'Recovery required \u2022 arrest the drift' : visibleActivityResult ? visibleActivityResult.status : lastResult ? lastResult.status : 'Ready for interior practice'),
               h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-200' }, interiorOrientation.feedback || 'Start on the flight deck. Compare movement control, then choose a restraint setup for the current task.'),
               visibleActivityResult
                 ? h('p', { className: 'mt-1 text-[11px] font-mono text-cyan-100' }, visibleActivityResult.conditionLabel + ' \u2022 ' + visibleActivityResult.optionLabel + ' \u2022 ' + (visibleActivityResult.controlled ? 'controlled work' : 'recovery and retry'))
-                : lastResult && h('p', { className: 'mt-1 text-[11px] font-mono text-cyan-100' }, (lastResult.conditionLabel || 'Stable cabin') + ' \u2022 ' + lastResult.method + ' \u2022 ' + lastResult.speed.toFixed(2) + ' m/s \u2022 ' + lastResult.distance.toFixed(1) + ' m route \u2022 about ' + lastResult.stoppingDistance.toFixed(2) + ' m to stop')
+                : lastResult && h('p', { className: 'mt-1 text-[11px] font-mono text-cyan-100' }, (lastResult.conditionLabel || 'Stable cabin') + ' \u2022 ' + (lastResult.payloadLabel || 'Hands free') + ' \u2022 ' + lastResult.method + ' \u2022 ' + lastResult.speed.toFixed(2) + ' m/s \u2022 ' + lastResult.distance.toFixed(1) + ' m route \u2022 about ' + lastResult.stoppingDistance.toFixed(2) + ' m to stop'),
+              lastResult && lastResult.prediction && h('p', {
+                'data-spaceexplorer-prediction-result': lastResult.predictionCorrect ? 'correct' : 'revise',
+                className: 'mt-1 text-[11px] font-bold ' + (lastResult.predictionCorrect ? 'text-green-200' : 'text-amber-100')
+              }, lastResult.predictionCorrect ? '\u2713 Prediction matched the observed motion.' : 'Revise the prediction: payload, route length, and cabin condition changed the stopping margin.')
             ),
-            h('div', { className: 'mt-2 flex justify-end border-t border-slate-700 pt-2' },
+            h('div', { className: 'mt-2 flex flex-wrap items-center gap-2 border-t border-slate-700 pt-2 ' + (visibleActivityResult && viewMode === 'route' ? 'justify-between' : 'justify-end') },
+              visibleActivityResult && viewMode === 'route' && h('button', {
+                type: 'button',
+                'data-spaceexplorer-view-work-result': visibleActivityResult.controlled ? 'stabilized' : 'rotation',
+                onClick: showInteriorWorkVisual,
+                className: 'min-h-[44px] rounded-md border border-cyan-400 bg-cyan-950 px-2.5 py-2 text-[11px] font-black text-cyan-50 hover:bg-cyan-900'
+              }, visibleActivityResult.controlled ? 'See two-point stable setup' : 'See one-point pivot'),
               h('button', { type: 'button', onClick: resetInteriorOrientation, className: 'rounded-md border border-slate-500 bg-slate-800 px-2 py-1 text-[11px] font-bold text-white hover:bg-slate-700' }, 'Reset practice')
             )
           )
@@ -3562,7 +4606,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var pct = decisionLog.length > 0 ? Math.round(optCount / decisionLog.length * 100) : 0;
         var interiorCompletedActivities = countInteriorCompletedActivities(interiorOrientation.tasks);
         var interiorWorkAttempts = Object.keys(interiorOrientation.activityAttempts || {}).reduce(function(total, key) { return total + normalizeInteriorCounter(interiorOrientation.activityAttempts[key]); }, 0);
+        var interiorOrientationChecks = countInteriorOrientationChecks(interiorOrientation.orientationResults);
         var interiorReady = isInteriorReadinessComplete(interiorOrientation);
+        var interiorPracticeInsight = buildInteriorPracticeInsight(interiorOrientation);
         var interiorProcedureSummary = INTERIOR_ZONES.filter(function(zone) { return (interiorOrientation.tasks || {})[zone.id] === true; }).map(function(zone) { var result = (interiorOrientation.activityResults || {})[zone.id]; return zone.short + ': ' + (result ? result.optionLabel : 'secured procedure'); });
         return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'debrief', 'aria-label': 'Mission debrief for ' + destination.name },
           renderMissionProgress('debrief'),
@@ -3594,6 +4640,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('span', { className: 'text-xs font-bold ' + (interiorReady ? 'text-green-200' : 'text-slate-200') }, interiorReady ? 'Completed before launch' : 'Optional practice not completed')
             ),
             h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-200' }, interiorReady ? 'The crew rehearsed controlled movement and real cabin tasks before committing mission resources.' : 'The mission remained playable without practice. Rehearsing first can make the first crew transition more coordinated.'),
+            h('p', {
+              'data-spaceexplorer-practice-insight': 'true',
+              className: 'mt-2 rounded-lg border border-cyan-700 bg-slate-900/70 p-2 text-xs leading-relaxed text-cyan-50'
+            }, h('strong', { className: 'text-cyan-200' }, 'What changed: '), interiorPracticeInsight),
+            interiorOrientationChecks > 0 && h('p', {
+              'data-spaceexplorer-orientation-summary': String(interiorOrientationChecks),
+              className: 'mt-2 text-xs font-bold text-cyan-100'
+            }, 'Fixed-reference checks: ' + interiorOrientationChecks + ' of ' + INTERIOR_ZONES.length + ' compartments confirmed.'),
             h('div', { className: 'mt-2 grid grid-cols-2 gap-2 md:grid-cols-3', role: 'list', 'aria-label': 'Cabin practice results' },
               [
                 ['Activities', interiorCompletedActivities + ' completed', 'activities'],

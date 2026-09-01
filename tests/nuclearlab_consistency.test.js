@@ -19,6 +19,7 @@
 
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const SRC = fs.readFileSync('stem_lab/stem_tool_nuclearlab.js', 'utf8');
 
@@ -349,6 +350,158 @@ describe('reactor objectives expose the scoring state learners are trying to con
       scrammed: true, holdOk: 120, verdict: { ok: true },
     }, 'blackout');
     expect(complete).toMatchObject({ stage: 'complete', value: 2, max: 2 });
+  });
+});
+
+describe('the reactor dashboard communicates state without relying on colour', () => {
+  const tones = ['neutral', 'info', 'success', 'caution', 'danger'];
+
+  function renderReactor(state = {}) {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_nuclearlab.js', 'nuclearLab');
+    const host = document.createElement('div');
+    host.innerHTML = renderTool('nuclearLab', { _nuclearLab: state });
+    return host;
+  }
+
+  function productionTones() {
+    const open = SRC.indexOf('      function rxMetricTone(');
+    const close = SRC.indexOf('\n\n      function rxWriteTelemetry', open);
+    const clad = /var RX_T_CLAD = ([\d.]+)/.exec(SRC);
+    expect(open, 'rxMetricTone helper not found').toBeGreaterThan(-1);
+    expect(close, 'end of reactor tone helpers not found').toBeGreaterThan(open);
+    expect(clad, 'cladding threshold not found').toBeTruthy();
+    return new Function(
+      'RX_T_CLAD',
+      SRC.slice(open, close) + '\nreturn { metric: rxMetricTone, objective: rxObjectiveTone };',
+    )(parseFloat(clad[1]));
+  }
+
+  it('gives every live reading a semantic tone and a visible status tag', () => {
+    const host = renderReactor();
+    const readings = host.querySelector('#rx-live-readings');
+    expect(readings).toBeTruthy();
+
+    const metrics = [...readings.children];
+    expect(metrics, 'all five reactor readings need a semantic card').toHaveLength(5);
+    expect(metrics.every((metric) => metric.matches('div[data-rx-metric]'))).toBe(true);
+    expect(new Set(metrics.map((metric) => metric.getAttribute('data-rx-metric'))).size)
+      .toBe(metrics.length);
+
+    for (const metric of metrics) {
+      expect(tones, metric.getAttribute('data-rx-metric') + ' has an unknown tone')
+        .toContain(metric.getAttribute('data-tone'));
+      const status = metric.querySelector('.nk-rx-tone');
+      expect(status, metric.getAttribute('data-rx-metric') + ' has no text status').toBeTruthy();
+      expect(status.textContent.trim()).not.toBe('');
+      expect(status.getAttribute('aria-hidden')).not.toBe('true');
+      // A definition list may group each metric in a div, but that div may
+      // contain only terms and descriptions. Keeping the visible tone as a
+      // second dd avoids the invalid span sibling that screen readers flatten.
+      expect([...metric.children].every((node) => ['DT', 'DD'].includes(node.tagName))).toBe(true);
+      expect([...metric.children].filter((node) => node.tagName === 'DT')).toHaveLength(1);
+      expect([...metric.children].filter((node) => node.tagName === 'DD')).toHaveLength(2);
+      expect(status.tagName).toBe('DD');
+    }
+  });
+
+  it('gives objective progress a semantic tone and visible status', () => {
+    const host = renderReactor({ rxScenario: 'blackout' });
+    const objective = host.querySelector('#rx-objective-progress');
+    expect(objective).toBeTruthy();
+    expect(tones).toContain(objective.getAttribute('data-tone'));
+
+    const status = objective.querySelector('#rx-objective-tone');
+    expect(status).toBeTruthy();
+    expect(status.textContent.trim()).not.toBe('');
+    expect(status.getAttribute('aria-hidden')).not.toBe('true');
+  });
+
+  it('uses truthful scenario-aware labels and aggregates hazardous state', () => {
+    const tone = productionTones();
+    const nominal = {
+      power: 100, t: 310, xe: 1, pumps: true, scrammed: false, verdict: null,
+    };
+    const reactivity = (pcm) => ({ total: pcm / 1e5 });
+
+    expect(tone.metric('power', nominal, reactivity(0), true, { id: 'steady' }))
+      .toEqual({ tone: 'success', label: 'Target band' });
+    expect(tone.metric(
+      'power', { ...nominal, power: 20, phase: 1 }, reactivity(0), true, { id: 'xenon' },
+    )).toEqual({ tone: 'success', label: 'Low-power goal' });
+    expect(tone.metric(
+      'power', { ...nominal, power: 240 }, reactivity(0), true, { id: 'steady' },
+    )).toEqual({ tone: 'danger', label: 'Power excursion' });
+    expect(tone.metric(
+      'temperature', nominal, reactivity(0), false, { id: 'steady' },
+    )).toEqual({ tone: 'neutral', label: 'Below 400 °C' });
+    expect(tone.metric(
+      'temperature', { ...nominal, t: 1200 }, reactivity(0), true, { id: 'steady' },
+    )).toMatchObject({ tone: 'danger', label: 'Cladding risk' });
+    expect(tone.metric(
+      'reactivity', nominal, reactivity(700), true, { id: 'steady' },
+    )).toMatchObject({ tone: 'danger', label: 'Prompt critical' });
+
+    expect(tone.metric(
+      'state', { ...nominal, power: 240 }, reactivity(0), true, { id: 'steady' },
+    )).toEqual({ tone: 'danger', label: 'Hazard' });
+    expect(tone.metric(
+      'state', { ...nominal, pumps: false }, reactivity(0), true, { id: 'blackout' },
+    )).toEqual({ tone: 'caution', label: 'Needs action' });
+    expect(tone.metric(
+      'state', nominal, reactivity(0), false, { id: 'steady' },
+    )).toEqual({ tone: 'neutral', label: 'Paused' });
+  });
+
+  it('distinguishes a paused objective from a running, failed, or completed one', () => {
+    const tone = productionTones();
+    const nominal = {
+      power: 100, t: 310, xe: 1, pumps: true, scrammed: false, verdict: null,
+    };
+    const progress = { value: 0, max: 2 };
+
+    expect(tone.objective(nominal, progress, false))
+      .toEqual({ tone: 'neutral', label: 'Ready to begin' });
+    expect(tone.objective(nominal, progress, true))
+      .toEqual({ tone: 'info', label: 'In progress' });
+    expect(tone.objective({ ...nominal, pumps: false }, progress, false))
+      .toEqual({ tone: 'neutral', label: 'Ready to begin' });
+    expect(tone.objective({ ...nominal, pumps: false }, progress, true))
+      .toEqual({ tone: 'caution', label: 'Watch conditions' });
+    expect(tone.objective({ ...nominal, verdict: { ok: false } }, progress, false))
+      .toEqual({ tone: 'danger', label: 'Run ended' });
+    expect(tone.objective({ ...nominal, verdict: { ok: true } }, { value: 2, max: 2 }, false))
+      .toEqual({ tone: 'success', label: 'Complete' });
+  });
+
+  it('labels the three simulator control groups in task order', () => {
+    const host = renderReactor();
+    const labels = [
+      '1. Choose scenario',
+      '2. Choose core design',
+      '3. Operate the reactor',
+    ];
+    const groups = [...host.querySelectorAll('fieldset')]
+      .filter((field) => labels.includes(field.getAttribute('aria-label')));
+
+    expect(groups.map((field) => field.getAttribute('aria-label'))).toEqual(labels);
+    expect(groups[0].querySelectorAll('button').length).toBeGreaterThanOrEqual(3);
+    expect(groups[1].querySelectorAll('button').length).toBeGreaterThanOrEqual(2);
+    expect(groups[2].querySelectorAll('button').length).toBeGreaterThanOrEqual(4);
+    expect(groups[2].querySelector('input[type="range"]')).toBeTruthy();
+  });
+
+  it('passes the learner motion preference into the 3D viewer and resyncs when it changes', () => {
+    const syncAt = SRC.indexOf('RX_VIEWER.sync({');
+    const effectAt = SRC.lastIndexOf('React.useEffect(function () {', syncAt);
+    const effectEnd = SRC.indexOf('\n\n      React.useEffect(function () {', syncAt);
+    expect(syncAt, '3D viewer sync not found').toBeGreaterThan(-1);
+    expect(effectAt, 'viewer sync effect not found').toBeGreaterThan(-1);
+    expect(effectEnd, 'end of viewer sync effect not found').toBeGreaterThan(syncAt);
+
+    const effect = SRC.slice(effectAt, effectEnd);
+    expect(effect).toMatch(/\breduced:\s*nkReduceMotion\b/);
+    expect(effect).toMatch(/\},\s*\[[^\]]*\bnkReduceMotion\b[^\]]*\]\);/);
   });
 });
 

@@ -14,13 +14,27 @@ const DISSECTION_PATHS = [
 const STEM_SHARED_PATHS = [
   'stem_lab/stem_lab_module.js',
   'desktop/web-app/public/stem_lab/stem_lab_module.js',
+  'desktop/web-app/public/stem_lab_module.js',
 ];
 
-describe('dissection improvement contracts', { timeout: 20000 }, () => {
+describe('dissection improvement contracts', { timeout: 60000 }, () => {
   it('keeps the desktop runtime mirror byte-identical to the source tool', () => {
     const source = readFileSync(DISSECTION_PATHS[0]);
     const desktopMirror = readFileSync(DISSECTION_PATHS[1]);
     expect(desktopMirror.equals(source)).toBe(true);
+  });
+
+  it('provides one stable object identity per mounted plugin bridge', () => {
+    const canonicalBridge = readFileSync(STEM_SHARED_PATHS[0]);
+    for (const filePath of STEM_SHARED_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(readFileSync(filePath).equals(canonicalBridge)).toBe(true);
+      expect(source).toContain('var pluginInstanceTokenRef = React.useRef(null);');
+      expect(source).toContain('pluginInstanceTokenRef.current = {};');
+      expect(source).toContain('var pluginCtx = Object.assign({}, props._ctx, { pluginInstanceToken: pluginInstanceTokenRef.current });');
+      expect(source).toContain('return window.StemLab.renderTool(props._toolId, pluginCtx);');
+      expect(source).not.toContain('__stemPluginInstanceCounter');
+    }
   });
 
   it('keeps progress specimen-specific and persists learner evidence', () => {
@@ -30,14 +44,40 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('scheduleDissectionSave(activeDissectionSaveKey');
       expect(source).toContain('var _disSaveQueue = Object.create(null);');
       expect(source).toContain('var _disSaveAccess = Object.create(null);');
+      expect(source).toContain('var _disSaveStatusByKey = Object.create(null);');
+      expect(source).toContain('function dissectionSaveOwnerFor(identity)');
+      expect(source).toContain('function dissectionSaveSlot(key, owner)');
+      expect(source).toContain('var dissectionSaveOwner = dissectionSaveOwnerFor(ctx.pluginInstanceToken || setLabToolData);');
+      expect(source).toContain('"data-dissection-save-key": activeDissectionSaveKey');
+      expect(source).toContain('"data-dissection-save-owner": dissectionSaveOwner');
+      expect(source).toContain('function releaseDissectionSaveOwner(owner)');
+      expect(source).toContain('releaseDissectionSaveOwner(dissectionSaveOwner)');
+      expect(source).toContain('detachedRoot._alloDissectionRefreshSaveAccess = null;');
+      expect(source).toContain('function scopedDissectionQuery(root, selector)');
+      expect(source).toContain("? '[id=\"' + String(selector).slice(1) + '\"]'");
+      expect(source).toContain("scopedDissectionQuery(focusRoot, '#' + targetId)");
+      expect(source).toContain("scopedDissectionQuery(focusRoot, '#diss-organ-' + organId)");
+      expect(source).toContain("scopedDissectionQuery(specimenRoot, '#diss-specimen-tab-' + nextKey)");
+      expect(source).not.toContain('_disSaveQueue[key]');
+      expect(source).not.toContain('_disSaveAccess[key]');
       expect(source).toContain('function inspectDissectionStoredValue(key)');
-      expect(source).toContain("currentDissectionSaveAccess(key).state !== 'writable'");
-      expect(source).toContain('function prepareDissectionSaveAccess(key, specimenName)');
-      expect(source).toContain('var previous = _disSaveQueue[key];');
-      expect(source).toContain('function flushDissectionSave(key)');
-      expect(source).toContain("flushDissectionSave('dissection_progress_' + specimen)");
-      expect(source).toContain('function cancelDissectionSave(key)');
-      expect(source).toContain('cancelDissectionSave(resetSaveKey);');
+      expect(source).toContain('writeInspection.raw !== saveAccess.baselineRaw');
+      expect(source).toContain("kind: 'concurrent-change'");
+      expect(source).toContain('window.__alloDissectionSaveStorageHandler');
+      expect(source).toContain('function retryProtectedDissectionSave()');
+      expect(source).toContain("loadIsProtectedRetry && loadInspection.kind === 'empty'");
+      expect(source).toContain('currentDissectionSaveStatus(activeDissectionSaveKey, dissectionSaveOwner)');
+      expect(source).toContain('function formatAccessibleDuration(seconds)');
+      expect(source).toContain("currentDissectionSaveAccess(key, saveOwner).state !== 'writable'");
+      expect(source).toContain('function prepareDissectionSaveAccess(key, specimenName, owner)');
+      expect(source).toContain('var previous = _disSaveQueue[saveSlot];');
+      expect(source).toContain('function flushDissectionSave(key, requireComplete, owner)');
+      expect(source).toContain("var departureSaveKey = 'dissection_progress_' + specimen;");
+      expect(source).toContain('var departureHadPendingSave = !!_disSaveQueue[dissectionSaveSlot(departureSaveKey, dissectionSaveOwner)];');
+      expect(source).toContain('if (departureHadPendingSave && !departureSaved)');
+      expect(source).toContain("if ((saveResult && saveResult.complete) || currentDissectionSaveAccess(key, saveOwner).state !== 'writable') delete _disSaveQueue[saveSlot];");
+      expect(source).toContain('function cancelDissectionSave(key, owner)');
+      expect(source).toContain('cancelDissectionSave(resetSaveKey, dissectionSaveOwner);');
       expect(source).not.toContain('var _disSaveTimer = null;');
       expect(source).toContain('revealedLayers: d.revealedLayers || {}');
       expect(source).toContain('organNotes: d.organNotes || {}');
@@ -55,10 +95,22 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('assessmentRecordedTotal: data.assessmentRecordedTotal == null ? (Number(data.quizFirstAttemptTotal) || 0)');
       expect(source).toContain('assessmentEvidence: d.assessmentEvidence || {}');
       expect(source).toContain('var understandingGoal = targetCount;');
+      expect(source).toContain('var unresolvedTargetIds = targetIds.filter');
+      expect(source).toContain('var ambiguousTargetIds = targetIds.filter');
+      expect(source).toContain('var targetCount = Math.max(1, targetIds.length);');
+      expect(source).toContain('var objectiveComplete = mappingComplete && observedCount === targetCount && recordedCount === targetCount && understoodCount === targetCount;');
+      expect(source).toContain('if (!objectiveComplete) objectivePct = Math.min(99, objectivePct);');
       expect(source).not.toContain('requiresEveryVerification');
       expect(source).toContain('quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : []');
       expect(source).toContain('var encounteredQuizPool = specimenQuizPool.filter');
       expect(source).toContain('var quizSessionLimit = Math.min(5, orderedQuizPool.length);');
+      expect(source).toContain('dissStableOrder(specimenQuizPool.filter');
+      expect(source).toContain('var remainingReviewIds = d.quizReviewMode ? quizReviewIds.filter');
+      expect(source).toContain('var validSpecimenOrganIds = Object.create(null);');
+      expect(source).toContain('&& objectivesDemonstrated;');
+      expect(source).toContain('Object.prototype.hasOwnProperty.call(validSpecimenOrganIds');
+      expect(source).toContain('if (!masteryComplete) masteryOverallPct = Math.min(99, masteryOverallPct);');
+      expect(source).toContain('function unsafeSavedProcedureField(record, prefix)');
       expect(source).toContain("var quizKind = requestedQuizKind === 'location' && hotspotQuizAvailable && sameRegionCandidates.length === 1 ? 'location' : 'function';");
       expect(source).toContain("var quizSalt = specimen + '|assessment|' + (d.quizSeed || 'default');");
       expect(source).toContain("if (d.quizMode) {\n              setProcedureFeedback('Layer navigation is locked during an assessment so the current question stays stable.'");
@@ -77,10 +129,21 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('var practicalEndsAt = Date.now() + 120000;');
       expect(source).toContain('Math.ceil((practicalDeadline - Date.now()) / 1000)');
       expect(source).toContain('var finalScore = Number(latest.quizScore) || 0;');
+      expect(source).toContain("'Time up! No responses recorded.'");
       expect(source).not.toContain('var remaining = 120;');
       expect(source).toContain('window.print();');
-      expect(source).toContain('function cancelDissectionLayerTimers()');
-      expect(source).toContain('cancelDissectionLayerTimers();');
+      expect(source).toContain('function scheduleDissectionCanvasTimer(canvas, name, callback, delay)');
+      expect(source).toContain('function clearAllDissectionCanvasTimers(canvas)');
+      expect(source).toContain('function cancelDissectionLayerTimers(canvas)');
+      expect(source).toContain('cancelDissectionLayerTimers(peelCanvas);');
+      expect(source).toContain("scheduleDissectionCanvasTimer(replayCanvas, 'procedureReplay'");
+      expect(source).toContain("scheduleDissectionCanvasTimer(compareCanvas, 'compareReplay'");
+      expect(source).toContain("scheduleDissectionCanvasTimer(demoCanvas, 'procedureDemo'");
+      expect(source).toContain("scheduleDissectionCanvasTimer(viewTransitionCanvas, 'viewTransition'");
+      expect(source).toContain("scheduleDissectionCanvasTimer(layerBrowseCanvas, 'layerBrowseTransition'");
+      expect(source).not.toContain('__alloDissectionDemoTimer');
+      expect(source).not.toContain('__alloDissectionReplayTimer');
+      expect(source).not.toContain('__alloDissectionCompareReplayTimer');
       expect(source).toContain('_incisionAnim: null, _layerTransition: null');
       expect(source).toContain("quizExplanation: d.practicalMode ? null : quizQ.fn.split('.')");
       expect(source).not.toContain('d.practicalMode && !correct ? null');
@@ -239,7 +302,7 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("ctx.fillText('Layer cross-section'");
       expect(source).toContain('anatomicalView: anatomicalView');
       expect(source).toContain('renderQuality: renderQuality');
-      expect(source).toContain('Instructor assessment thresholds');
+      expect(source).toContain('Scenario assessment thresholds');
       expect(source).toContain('function drawProcedureOpening(points, extended)');
       expect(source).toContain('function drawAnatomicalAccessCorridor(points)');
       expect(source).toContain('The access corridor shows full instrument clearance, travel direction, endpoints, and depth risk instead of a single target line.');
@@ -1530,6 +1593,11 @@ describe('dissection improved UI render', () => {
       expect(host.querySelector('[data-dissection-save-status]').textContent).toContain('newer lab version');
       expect(host.querySelector('[data-dissection-protected-save]')).not.toBeNull();
 
+      await act(async () => { host.querySelector('#diss-specimen-tab-pig').click(); await Promise.resolve(); });
+      expect(latestToolData.dissection.specimen).toBe('frog');
+      expect(latestToolData.dissection.procedureFeedback.message).toContain('specimen was not changed');
+      expect(localStorage.getItem('dissection_progress_frog')).toBe(protectedRaw);
+
       await act(async () => {
         host.querySelector('#diss-protected-save-reset').click();
         await Promise.resolve();
@@ -1615,6 +1683,415 @@ describe('dissection improved UI render', () => {
       if (host) host.remove();
       await new Promise((resolve) => setTimeout(resolve, 150));
       localStorage.removeItem('dissection_progress_frog');
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('quarantines empty and unsafe nested save records byte-for-byte', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const cases = [
+      { specimen: 'frog', activeLayer: 'skin', raw: '' },
+      { specimen: 'pig', activeLayer: 'skin', raw: JSON.stringify({ schemaVersion: 21, annotations: [null], attemptArchive: { skin: [{ actionLog: {} }] } }) },
+      { specimen: 'earthworm', activeLayer: 'skin', raw: JSON.stringify({ schemaVersion: 21, procedureByLayer: { skin: { history: ['inspect', { unsafe: true }], actionLog: [] } } }) },
+      { specimen: 'perch', activeLayer: 'external', raw: JSON.stringify({ schemaVersion: 21, procedureByLayer: { external: { history: ['inspect'], actionLog: [{ action: 'inspect', label: { unsafe: true }, outcome: 'Recorded', at: 1 }] } } }) },
+      { specimen: 'crayfish', activeLayer: 'skin', raw: JSON.stringify({ schemaVersion: 21, procedureByLayer: { skin: { history: [], actionLog: [], learningChecks: { inspect: { predictionFeedback: { unsafe: true } } } } } }) },
+      { specimen: 'sheepEye', activeLayer: 'skin', raw: JSON.stringify({ schemaVersion: 21, procedureByLayer: { skin: { history: ['dropper'], actionLog: [{ action: 'dropper', label: 'Hydrate', outcome: 'Recorded', at: 1, undoState: { learningChecks: {} } }] } } }) },
+      { specimen: 'sheepHeart', activeLayer: 'skin', raw: JSON.stringify({ schemaVersion: 21, procedureByLayer: { skin: { history: ['pin'], actionLog: [{ action: 'pin', label: 'Pin', outcome: 'Recorded', at: 1, undoState: { pins: {} } }] } } }) },
+    ];
+
+    try {
+      for (const testCase of cases) {
+        const key = 'dissection_progress_' + testCase.specimen;
+        localStorage.setItem(key, testCase.raw);
+        let root;
+        let host;
+
+        function Component() {
+          const [toolData, setToolData] = React.useState({
+            dissection: {
+              specimen: testCase.specimen,
+              activeLayer: testCase.activeLayer,
+              _dissLoadedSpec: testCase.specimen,
+              exploredOrgans: { [testCase.specimen + '|temporary']: true },
+            },
+          });
+          return config.render(makeCtx({ toolData, setToolData }));
+        }
+
+        try {
+          host = document.createElement('div');
+          document.body.appendChild(host);
+          root = ReactDOMClient.createRoot(host);
+          await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+          await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+          window.dispatchEvent(new Event('pagehide'));
+
+          expect(localStorage.getItem(key)).toBe(testCase.raw);
+          const protectedBanner = host.querySelector('[data-dissection-protected-save]');
+          expect(protectedBanner, 'protected banner for ' + testCase.specimen).not.toBeNull();
+        } finally {
+          if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+          if (host) host.remove();
+          localStorage.removeItem(key);
+        }
+      }
+    } finally {
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('preserves a valid save changed in another tab and safely reloads it on retry', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const key = 'dissection_progress_frog';
+    const externalRaw = JSON.stringify({
+      schemaVersion: 21,
+      activeLayer: 'skin',
+      exploredOrgans: { 'frog|dorsal_skin': true },
+      organNotes: { 'frog|dorsal_skin': 'Observation saved in another tab.' },
+      organConfidence: { 'frog|dorsal_skin': 3 },
+    });
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+          exploredOrgans: { 'frog|tympanum': true },
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      localStorage.removeItem(key);
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+
+      const previousRaw = localStorage.getItem(key);
+      expect(previousRaw).not.toBeNull();
+      localStorage.setItem(key, externalRaw);
+      const storageEvent = new Event('storage');
+      Object.defineProperty(storageEvent, 'key', { configurable: true, value: key });
+      await act(async () => {
+        window.dispatchEvent(storageEvent);
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      });
+
+      expect(localStorage.getItem(key)).toBe(externalRaw);
+      expect(host.querySelector('[data-dissection-save-status]').getAttribute('data-state')).toBe('warning');
+      expect(host.querySelector('[data-dissection-save-status]').textContent).toContain('another lab, tab, or window');
+      expect(host.querySelector('[data-dissection-protected-save]')).not.toBeNull();
+      window.dispatchEvent(new Event('pagehide'));
+      expect(localStorage.getItem(key)).toBe(externalRaw);
+
+      const protectedRetry = host.querySelector('#diss-protected-save-retry');
+      protectedRetry.focus();
+      expect(document.activeElement).toBe(protectedRetry);
+      await act(async () => {
+        protectedRetry.click();
+        await Promise.resolve();
+      });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 80)); });
+      expect(latestToolData.dissection.organNotes['frog|dorsal_skin']).toBe('Observation saved in another tab.');
+      expect(latestToolData.dissection.exploredOrgans).toEqual({ 'frog|dorsal_skin': true });
+      expect(host.querySelector('[data-dissection-protected-save]')).toBeNull();
+      expect(document.activeElement).toBe(host.querySelector('#diss-specimen-tab-frog'));
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem(key);
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('keeps an inactive specimen storage conflict out of the active specimen save UI', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const frogKey = 'dissection_progress_frog';
+    const pigKey = 'dissection_progress_pig';
+    const externalFrogRaw = JSON.stringify({
+      schemaVersion: 21,
+      activeLayer: 'skin',
+      organNotes: { 'frog|heart': 'Changed in the other frog tab.' },
+    });
+    let updateToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+          exploredOrgans: { 'frog|tympanum': true },
+        },
+      });
+      updateToolData = setToolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem(frogKey);
+      localStorage.removeItem(pigKey);
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+
+      await act(async () => {
+        host.querySelector('#diss-specimen-tab-pig').click();
+        await Promise.resolve();
+      });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 220)); });
+
+      const activeRoot = host.querySelector('[data-dissection-root]');
+      expect(activeRoot.getAttribute('data-dissection-save-key')).toBe(pigKey);
+      const statusBefore = host.querySelector('[data-dissection-save-status]');
+      const stateBefore = statusBefore.getAttribute('data-state');
+      const textBefore = statusBefore.textContent;
+      expect(stateBefore).toBe('saved');
+
+      localStorage.setItem(frogKey, externalFrogRaw);
+      const storageEvent = new Event('storage');
+      Object.defineProperty(storageEvent, 'key', { configurable: true, value: frogKey });
+      await act(async () => {
+        window.dispatchEvent(storageEvent);
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      });
+
+      const statusAfter = host.querySelector('[data-dissection-save-status]');
+      expect(statusAfter.getAttribute('data-state')).toBe(stateBefore);
+      expect(statusAfter.textContent).toBe(textBefore);
+      expect(statusAfter.textContent).not.toContain('another lab, tab, or window');
+      expect(host.querySelector('[data-dissection-protected-save]')).toBeNull();
+      expect(localStorage.getItem(frogKey)).toBe(externalFrogRaw);
+
+      // A later pig save must remain an ordinary save, not claim that the
+      // unrelated frog conflict was "recovered."
+      await act(async () => {
+        updateToolData((previous) => ({
+          ...previous,
+          dissection: { ...previous.dissection, timeSpent: 41 },
+        }));
+        await Promise.resolve();
+      });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+      expect(host.querySelector('[data-dissection-save-status]').getAttribute('data-state')).toBe('saved');
+      expect(host.querySelector('[data-dissection-save-status]').textContent).not.toContain('restored');
+      expect(localStorage.getItem(frogKey)).toBe(externalFrogRaw);
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem(frogKey);
+      localStorage.removeItem(pigKey);
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('detects a valid external save change even when no storage event arrives', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const key = 'dissection_progress_frog';
+    const externalRaw = JSON.stringify({ schemaVersion: 21, activeLayer: 'skin', organNotes: { 'frog|heart': 'External current-version record.' } });
+    let updateToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({ dissection: { specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog' } });
+      updateToolData = setToolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      localStorage.removeItem(key);
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+
+      localStorage.setItem(key, externalRaw);
+      await act(async () => {
+        updateToolData((previous) => ({ ...previous, dissection: { ...previous.dissection, timeSpent: 41 } }));
+        await Promise.resolve();
+      });
+      await act(async () => {
+        window.dispatchEvent(new Event('pagehide'));
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      });
+
+      expect(localStorage.getItem(key)).toBe(externalRaw);
+      expect(host.querySelector('[data-dissection-save-status]').textContent).toContain('another lab, tab, or window');
+      expect(host.querySelector('[data-dissection-protected-save]')).not.toBeNull();
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem(key);
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('keeps temporary work while protected-save retry remains unreadable', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const key = 'dissection_progress_frog';
+    const savedRaw = JSON.stringify({
+      schemaVersion: 21,
+      activeLayer: 'skin',
+      exploredOrgans: { 'frog|dorsal_skin': true },
+      organNotes: { 'frog|dorsal_skin': 'Recovered protected observation.' },
+    });
+    const nativeGetItem = Storage.prototype.getItem;
+    let readRestored = false;
+    let latestToolData;
+    let root;
+    let host;
+
+    localStorage.setItem(key, savedRaw);
+    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (requestedKey) {
+      if (requestedKey === key) throw new DOMException('Simulated temporary read failure', 'SecurityError');
+      return nativeGetItem.call(this, requestedKey);
+    });
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+          exploredOrgans: { 'frog|tympanum': true },
+          organNotes: { 'frog|tympanum': 'Temporary-session observation.' },
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      expect(host.querySelector('[data-dissection-protected-save]')).not.toBeNull();
+
+      await act(async () => {
+        host.querySelector('#diss-protected-save-retry').click();
+        await new Promise((resolve) => setTimeout(resolve, 40));
+      });
+      expect(nativeGetItem.call(localStorage, key)).toBe(savedRaw);
+      expect(latestToolData.dissection.organNotes['frog|tympanum']).toBe('Temporary-session observation.');
+      expect(host.querySelector('[data-dissection-protected-save]')).not.toBeNull();
+
+      getItemSpy.mockRestore();
+      readRestored = true;
+      await act(async () => {
+        host.querySelector('#diss-protected-save-retry').click();
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      });
+      expect(latestToolData.dissection.organNotes['frog|dorsal_skin']).toBe('Recovered protected observation.');
+      expect(host.querySelector('[data-dissection-protected-save]')).toBeNull();
+    } finally {
+      if (!readRestored) getItemSpy.mockRestore();
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem(key);
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('keeps temporary work when transient storage failure recovers with no saved record', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const key = 'dissection_progress_frog';
+    const nativeGetItem = Storage.prototype.getItem;
+    let storageReadable = false;
+    let latestToolData;
+    let root;
+    let host;
+
+    localStorage.removeItem(key);
+    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(function (requestedKey) {
+      if (requestedKey === key && !storageReadable) {
+        throw new DOMException('Simulated temporary read failure', 'SecurityError');
+      }
+      return nativeGetItem.call(this, requestedKey);
+    });
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+          exploredOrgans: { 'frog|tympanum': true },
+          organNotes: { 'frog|tympanum': 'Keep this temporary observation.' },
+          organConfidence: { 'frog|tympanum': 3 },
+          timeSpent: 37,
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      expect(host.querySelector('[data-dissection-protected-save]')).not.toBeNull();
+      expect(nativeGetItem.call(localStorage, key)).toBeNull();
+
+      storageReadable = true;
+      const emptyRetry = host.querySelector('#diss-protected-save-retry');
+      emptyRetry.focus();
+      await act(async () => {
+        emptyRetry.click();
+        await Promise.resolve();
+      });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 220)); });
+
+      expect(latestToolData.dissection._dissLoadedSpec).toBe('frog');
+      expect(document.activeElement).toBe(host.querySelector('#diss-specimen-tab-frog'));
+      expect(latestToolData.dissection._dissSaveRetrying).toBe(false);
+      expect(latestToolData.dissection.exploredOrgans).toEqual({ 'frog|tympanum': true });
+      expect(latestToolData.dissection.organNotes).toEqual({ 'frog|tympanum': 'Keep this temporary observation.' });
+      expect(latestToolData.dissection.organConfidence).toEqual({ 'frog|tympanum': 3 });
+      expect(latestToolData.dissection.procedureFeedback.message).toContain('Temporary-session work was kept');
+      expect(host.querySelector('[data-dissection-protected-save]')).toBeNull();
+
+      const persisted = JSON.parse(nativeGetItem.call(localStorage, key));
+      expect(persisted.exploredOrgans).toEqual({ 'frog|tympanum': true });
+      expect(persisted.organNotes).toEqual({ 'frog|tympanum': 'Keep this temporary observation.' });
+      expect(persisted.organConfidence).toEqual({ 'frog|tympanum': 3 });
+      expect(persisted.timeSpent).toBe(37);
+    } finally {
+      getItemSpy.mockRestore();
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem(key);
       contextSpy.mockRestore();
       window._dissectionKeyHandler = null;
       document.getElementById('allo-live-dissection')?.remove();
@@ -1841,6 +2318,7 @@ describe('dissection improved UI render', () => {
     const nativeSetItem = Storage.prototype.setItem;
     let storageMode = 'reject-images';
     let requestSave;
+    let latestToolData;
     let root;
     let host;
 
@@ -1890,6 +2368,7 @@ describe('dissection improved UI render', () => {
           dissInquiry: { ...previous.dissection.dissInquiry, hypothesis },
         },
       }));
+      latestToolData = toolData;
       return config.render(makeCtx({ toolData, setToolData }));
     }
 
@@ -1911,6 +2390,14 @@ describe('dissection improved UI render', () => {
       expect(saveStatus.getAttribute('data-state')).toBe('warning');
       expect(saveStatus.textContent).toContain('Progress and notes saved');
       expect(saveStatus.textContent).toContain('evidence images could not be stored');
+
+      await act(async () => {
+        host.querySelector('#diss-specimen-tab-pig').click();
+        await Promise.resolve();
+      });
+      expect(latestToolData.dissection.specimen).toBe('frog');
+      expect(latestToolData.dissection.visualEvidence).toHaveLength(2);
+      expect(host.querySelector('[data-diss-tool-status]').textContent).toContain('specimen was not changed');
 
       storageMode = 'reject-all';
       await act(async () => {
@@ -1937,6 +2424,12 @@ describe('dissection improved UI render', () => {
       saveStatus = host.querySelector('[data-dissection-save-status]');
       expect(saveStatus.getAttribute('data-state')).toBe('recovered');
       expect(saveStatus.textContent).toContain('Full progress saving has been restored');
+
+      await act(async () => {
+        host.querySelector('#diss-specimen-tab-pig').click();
+        await Promise.resolve();
+      });
+      expect(latestToolData.dissection.specimen).toBe('pig');
     } finally {
       storageMode = 'normal';
       setItemSpy.mockRestore();
@@ -2615,11 +3108,12 @@ describe('dissection improved UI render', () => {
     document.body.innerHTML = advancedHtml;
     expect(getComputedStyle(document.querySelector('.diss-scenario-console')).display).not.toBe('none');
     document.body.innerHTML = '';
-  });
+  }, 60000);
 
   it('deactivates hidden challenge state when switching from Advanced to Essentials', async () => {
     const canvasContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     const config = window.StemLab._registry.dissection;
+    const announceToSR = vi.fn();
     let latestToolData;
     let root;
     let host;
@@ -2628,16 +3122,18 @@ describe('dissection improved UI render', () => {
       const [toolData, setToolData] = React.useState({
         dissection: {
           specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
-          workspaceMode: 'advanced', procedureMode: 'independent',
+          workspaceMode: 'advanced', procedureMode: 'independent', toolbarStudyOpen: true,
           procedureScenario: 'restricted-tray', scenarioStartedAt: 1000,
           scenarioTimeRemaining: 180, activeInstrument: 'dropper',
+          practicalMode: true, practicalTimer: 75, practicalEndsAt: Date.now() + 75000,
+          practicalTargetIds: ['dorsal_skin'], quizMode: true, labelMode: 'hidden', _prePracticalLabelMode: 'show',
           crossSectionMode: true, relationshipMode: true, beforeTechniqueView: true,
           splitComparison: true, referenceEvidenceId: 1,
           visualEvidence: [{ id: 1, image: 'data:image/jpeg;base64,eA==', layer: 'skin' }],
         },
       });
       latestToolData = toolData;
-      return config.render(makeCtx({ toolData, setToolData }));
+      return config.render(makeCtx({ toolData, setToolData, announceToSR }));
     }
 
     try {
@@ -2645,6 +3141,10 @@ describe('dissection improved UI render', () => {
       document.body.appendChild(host);
       root = ReactDOMClient.createRoot(host);
       await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+
+      expect(host.querySelector('[aria-label="End timed practical"]')).not.toBeNull();
+      expect(host.querySelector('#diss-practical-time-status[role="timer"]')?.getAttribute('aria-live')).toBe('off');
+      expect(host.querySelector('#diss-practical-time-status')?.textContent).toMatch(/Timed practical: 1 minute (?:1[0-5]|[0-9]) seconds remaining/);
 
       const essentialsButton = Array.from(host.querySelectorAll('.diss-workspace-mode__choices button'))
         .find((button) => button.textContent.includes('Essentials'));
@@ -2654,6 +3154,15 @@ describe('dissection improved UI render', () => {
       expect(latestToolData.dissection.procedureScenario).toBe('precision-access');
       expect(latestToolData.dissection.scenarioStartedAt).toBe(0);
       expect(latestToolData.dissection.scenarioTimeRemaining).toBe(0);
+      expect(latestToolData.dissection.practicalMode).toBe(false);
+      expect(latestToolData.dissection.practicalTimer).toBe(0);
+      expect(latestToolData.dissection.practicalEndsAt).toBe(0);
+      expect(latestToolData.dissection.practicalTargetIds).toEqual([]);
+      expect(latestToolData.dissection.quizMode).toBe(false);
+      expect(latestToolData.dissection.labelMode).toBe('show');
+      expect(window.__alloDissectionPracticalInterval).toBeNull();
+      expect(latestToolData.dissection.procedureFeedback.message).toContain('timed practical ended');
+      expect(announceToSR.mock.calls.filter(([message]) => String(message).includes('timed practical ended'))).toHaveLength(1);
       expect(latestToolData.dissection.procedureMode).toBe('independent');
       expect(host.querySelector('.diss-procedure__mode button[aria-pressed="true"]')?.textContent).toContain('Guided');
       expect(host.querySelector('.diss-canvas-layout')?.getAttribute('data-split')).toBe('false');
@@ -2708,7 +3217,25 @@ describe('dissection improved UI render', () => {
     expect(comparisonObjective?.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe('83');
     expect(comparisonObjective?.textContent).toContain('2/2 targets observed');
     expect(comparisonObjective?.textContent).toContain('2/2 evidence records');
-    expect(comparisonObjective?.textContent).toContain('Next: verify');
+    expect(comparisonObjective?.textContent).toContain('1/2 targets verified for understanding');
+    expect(comparisonObjective?.textContent).toContain('Next: verify Lungs in Guided investigation, or answer the corresponding assessment question correctly on the first attempt.');
+
+    const demonstratedComparisonHtml = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog', activeLayer: 'organs', _dissLoadedSpec: 'frog',
+        exploredOrgans: { 'frog|dorsal_skin': true, 'frog|lungs': true },
+        organNotes: { 'frog|dorsal_skin': 'Moist skin supports gas exchange.', 'frog|lungs': 'Pulmonary sacs support gas exchange.' },
+        organConfidence: { 'frog|dorsal_skin': 3, 'frog|lungs': 3 },
+        verifiedIdentifications: { 'frog|dorsal_skin': { status: 'verified' } },
+        assessmentEvidence: { 'frog|lungs': { correct: true } },
+      },
+    });
+    document.body.innerHTML = demonstratedComparisonHtml;
+    const demonstratedComparisonObjective = document.querySelectorAll('.diss-objective-item')[1];
+    expect(demonstratedComparisonObjective?.getAttribute('data-objective-status')).toBe('demonstrated');
+    expect(demonstratedComparisonObjective?.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe('100');
+    expect(demonstratedComparisonObjective?.textContent).toContain('2/2 targets verified for understanding');
+    expect(demonstratedComparisonObjective?.textContent).toContain('Evidence demonstrated');
     document.body.innerHTML = '';
   });
 
@@ -2865,7 +3392,7 @@ describe('dissection improved UI render', () => {
     expect(studyPanel).not.toBeNull();
     expect(studyPanel.querySelector('[aria-label="Flashcard"]').getAttribute('aria-pressed')).toBe('false');
     expect(studyPanel.querySelector('[aria-label="Compare"]').getAttribute('aria-pressed')).toBe('false');
-    expect(studyPanel.querySelector('[aria-label="Toggle practical exam mode"]').getAttribute('aria-pressed')).toBe('false');
+    expect(studyPanel.querySelector('[aria-label="Start 2-minute timed practical"]').getAttribute('aria-pressed')).toBe('false');
   });
 
   it('freezes the practical target pool and locks directory and view changes', () => {
@@ -2898,10 +3425,10 @@ describe('dissection improved UI render', () => {
     expect(readFileSync(DISSECTION_PATHS[0], 'utf8')).toContain('The anatomical view is locked during an assessment so the current question stays stable.');
 
     const practicalAnswers = Array.from(page.querySelectorAll('#diss-quiz-panel button[aria-label]'))
-      .map((button) => button.getAttribute('aria-label'))
-      .filter((label) => ['Dorsal Skin', 'Tympanic Membrane', 'Ventral Skin', 'Nictitating Membrane'].includes(label))
-      .sort();
-    expect(practicalAnswers).toEqual(['Dorsal Skin', 'Tympanic Membrane']);
+      .map((button) => button.getAttribute('aria-label'));
+    expect(practicalAnswers).toHaveLength(4);
+    expect(new Set(practicalAnswers).size).toBe(4);
+    expect(practicalAnswers.some((label) => ['Dorsal Skin', 'Tympanic Membrane'].includes(label))).toBe(true);
   });
 
   it('does not reveal timed-practical correctness through answer explanations', async () => {
@@ -2965,8 +3492,10 @@ describe('dissection improved UI render', () => {
     const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     const config = window.StemLab._registry.dissection;
     const addToast = vi.fn();
+    const announceToSR = vi.fn();
     let latestToolData;
     let setVisible;
+    let setToolDataExternally;
     let root;
     let host;
 
@@ -2976,12 +3505,13 @@ describe('dissection improved UI render', () => {
         dissection: {
           specimen: 'frog', activeLayer: 'skin', anatomicalView: 'dorsal',
           _dissLoadedSpec: 'frog', workspaceMode: 'advanced', toolbarStudyOpen: true,
-          reducedMotion: true,
+          reducedMotion: true, quizReviewQueue: ['tympanum'],
         },
       });
       setVisible = updateVisible;
+      setToolDataExternally = setToolData;
       latestToolData = toolData;
-      return visible ? config.render(makeCtx({ toolData, setToolData, addToast })) : React.createElement('div', { id: 'other-tool' });
+      return visible ? config.render(makeCtx({ toolData, setToolData, addToast, announceToSR })) : React.createElement('div', { id: 'other-tool' });
     }
 
     try {
@@ -2994,13 +3524,14 @@ describe('dissection improved UI render', () => {
       });
 
       await act(async () => {
-        host.querySelector('[aria-label="Toggle practical exam mode"]').click();
+        host.querySelector('[aria-label="Start 2-minute timed practical"]').click();
         await Promise.resolve();
         vi.advanceTimersByTime(0);
       });
       expect(latestToolData.dissection.practicalMode).toBe(true);
       expect(latestToolData.dissection.practicalEndsAt).toBe(startedAt + 120000);
       expect(latestToolData.dissection.practicalTimer).toBe(120);
+      expect(latestToolData.dissection.quizReviewQueue).toEqual(['tympanum']);
 
       await act(async () => {
         setVisible(false);
@@ -3008,15 +3539,15 @@ describe('dissection improved UI render', () => {
         await Promise.resolve();
       });
       expect(window.__alloDissectionPracticalInterval).toBeNull();
-      vi.setSystemTime(startedAt + 30000);
+      await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
       expect(latestToolData.dissection.practicalTimer).toBe(120);
 
       await act(async () => {
         setVisible(true);
         await Promise.resolve();
-        await vi.advanceTimersByTimeAsync(0);
         await Promise.resolve();
       });
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); await Promise.resolve(); });
       expect(latestToolData.dissection.practicalMode).toBe(true);
       expect(latestToolData.dissection.practicalEndsAt).toBe(startedAt + 120000);
       expect(latestToolData.dissection.practicalTimer).toBe(90);
@@ -3025,13 +3556,26 @@ describe('dissection improved UI render', () => {
       await act(async () => { vi.advanceTimersByTime(1000); await Promise.resolve(); });
       expect(latestToolData.dissection.practicalTimer).toBe(58);
 
+      await act(async () => {
+        setToolDataExternally((previous) => ({
+          ...previous,
+          dissection: { ...previous.dissection, quizScore: 3, quizTotal: 5 },
+        }));
+        await Promise.resolve();
+      });
+      window.__alloDissectionPracticalScore = 99;
       vi.setSystemTime(startedAt + 121000);
       await act(async () => { vi.advanceTimersByTime(1000); await Promise.resolve(); });
       expect(latestToolData.dissection.practicalMode).toBe(false);
       expect(latestToolData.dissection.quizMode).toBe(false);
       expect(latestToolData.dissection.practicalEndsAt).toBe(0);
       expect(addToast).toHaveBeenCalledTimes(1);
-      expect(addToast).toHaveBeenCalledWith('Time up! Score: 0', 'info');
+      expect(addToast).toHaveBeenCalledWith('Time up! Score: 3/5', 'info');
+      expect(announceToSR.mock.calls.filter(([message]) => message === 'Practical assessment complete. Score 3 out of 5.')).toHaveLength(1);
+      expect(latestToolData.dissection.quizReviewQueue).toEqual(['tympanum']);
+      await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
+      expect(addToast).toHaveBeenCalledTimes(1);
+      expect(announceToSR.mock.calls.filter(([message]) => message === 'Practical assessment complete. Score 3 out of 5.')).toHaveLength(1);
     } finally {
       if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
       if (host) host.remove();
@@ -3217,7 +3761,7 @@ describe('dissection improved UI render', () => {
 
     async function choose(labelStart) {
       const button = Array.from(host.querySelectorAll('#diss-quiz-panel button')).find((candidate) => candidate.getAttribute('aria-label')?.startsWith(labelStart));
-      expect(button).not.toBeNull();
+      expect(button).toBeDefined();
       await act(async () => { button.click(); await Promise.resolve(); });
     }
 
@@ -3228,7 +3772,10 @@ describe('dissection improved UI render', () => {
       await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
 
       expect(host.textContent).toContain('Lighter, thinner ventral surface');
-      await choose('Dorsal Skin');
+      const wrongAnswer = Array.from(host.querySelectorAll('#diss-quiz-panel button[aria-label]'))
+        .find((candidate) => !candidate.getAttribute('aria-label').startsWith('Ventral Skin'));
+      expect(wrongAnswer).toBeDefined();
+      await act(async () => { wrongAnswer.click(); await Promise.resolve(); });
       expect(latestToolData.dissection.quizFirstAttemptScore).toBe(0);
       expect(latestToolData.dissection.quizFirstAttemptTotal).toBe(1);
       expect(latestToolData.dissection.quizTotal || 0).toBe(0);
@@ -3287,6 +3834,12 @@ describe('dissection improved UI render', () => {
       document.body.appendChild(host);
       root = ReactDOMClient.createRoot(host);
       await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+
+      const reviewChoices = Array.from(host.querySelectorAll('#diss-quiz-panel button[aria-label]'))
+        .map((button) => button.getAttribute('aria-label'));
+      expect(reviewChoices).toHaveLength(4);
+      expect(new Set(reviewChoices).size).toBe(4);
+      expect(reviewChoices).toContain('Ventral Skin');
 
       const correctAnswer = Array.from(host.querySelectorAll('#diss-quiz-panel button'))
         .find((button) => button.getAttribute('aria-label') === 'Ventral Skin');
@@ -3474,7 +4027,7 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Scenario lab');
     expect(html).toContain('Debrief');
     expect(html).toContain('Next improvement');
-    expect(html).toContain('Instructor thresholds');
+    expect(html).toContain('Scenario thresholds');
     expect(html).toContain('Target score: 80');
     expect(html).toContain('Tool control');
     expect(html).toContain('Not scored');
@@ -4005,8 +4558,6 @@ describe('dissection improved UI render', () => {
       })),
     });
     localStorage.removeItem('dissection_accessibility_preferences');
-    if (window.__alloDissectionCompareReplayTimer) clearTimeout(window.__alloDissectionCompareReplayTimer);
-    window.__alloDissectionCompareReplayTimer = null;
     const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     const config = window.StemLab._registry.dissection;
     const announcements = [];
@@ -4068,7 +4619,7 @@ describe('dissection improved UI render', () => {
 
       expect(latestToolData.dissection.compareReplayProgress).toBe(1);
       expect(latestToolData.dissection.compareReplayPlaying).toBe(false);
-      expect(window.__alloDissectionCompareReplayTimer).toBeNull();
+      expect(host.querySelector('[data-diss-canvas]')._dissTimers?.compareReplay).toBeUndefined();
       expect(host.querySelector('[data-diss-compare-progress]').value).toBe('100');
       expect(host.querySelector('.diss-attempt-comparison__scrub output').textContent).toBe('100% · Full paths');
       expect(announcements.filter((message) => message.includes('final frame because reduced motion'))).toEqual([
@@ -4080,7 +4631,6 @@ describe('dissection improved UI render', () => {
       await new Promise((resolve) => setTimeout(resolve, 150));
       contextSpy.mockRestore();
       Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: originalMatchMedia });
-      window.__alloDissectionCompareReplayTimer = null;
       window._dissectionKeyHandler = null;
       document.getElementById('allo-live-dissection')?.remove();
     }
@@ -4093,7 +4643,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain('function cancelSpecimenReset()');
       expect(source).toContain('function confirmSpecimenReset()');
       expect(source).toContain("var resetSaveKey = 'dissection_progress_' + specimen");
-      expect(source).toContain('cancelDissectionSave(resetSaveKey);');
+      expect(source).toContain('cancelDissectionSave(resetSaveKey, dissectionSaveOwner);');
       expect(source).toContain("focusResetControl('diss-reset-confirm')");
       expect(source).toContain("if (d.resetConfirmPending) cancelSpecimenReset()");
       expect(source).toContain('"aria-controls": "diss-directory-results"');
@@ -4610,12 +5160,16 @@ describe('dissection improved UI render', () => {
       expect(source).toContain('"aria-live": "polite"');
       expect(source).toContain('"data-tool-status": "true"');
       expect(source).toContain('diss-stage__live[data-tool-status="true"][data-tone="ready"]');
-      expect(source).toContain("document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
-      expect(source).toContain("var liveStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
-      expect(source).toContain("var resistanceStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
-      expect(source).toContain("var strokeSafetyStatus = document.querySelector('#diss-canvas-status') || document.querySelector('[data-diss-tool-status]')");
+      expect(source).toContain("queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]')");
+      expect(source).toContain("var liveStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]')");
+      expect(source).toContain("var resistanceStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]')");
+      expect(source).toContain("var strokeSafetyStatus = queryDissectionNode('#diss-canvas-status') || queryDissectionNode('[data-diss-tool-status]')");
       expect(source).toContain("'Next: ' + stageHandoffLabel + ' \\u00B7 ' + stageHandoffDetail");
-      expect(source).toContain("window.__alloStemFS(stage); setProcedureFeedback('Exited fullscreen specimen mode.");
+      expect(source).toContain('function enterDissectionFullscreen(control)');
+      expect(source).toContain('function exitDissectionFullscreen(control)');
+      expect(source).toContain("root.querySelector('[data-diss-fullscreen-stage]')");
+      expect(source).toContain('focusDissectionFullscreenExit(stage)');
+      expect(source).toContain('restoreDissectionFullscreenFocus(stage)');
     }
     for (const filePath of STEM_SHARED_PATHS) {
       const source = readFileSync(filePath, 'utf8');
@@ -4641,7 +5195,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain("setAccessibilityPreference('simplifiedInstructions'");
       expect(source).toContain('canvas._adaptiveFrameFloor');
       expect(source).toContain('"data-diss-fullscreen-stage": true');
-      expect(source).toContain("document.querySelector('[data-diss-fullscreen-stage]')");
+      expect(source).toContain("root.querySelector('[data-diss-fullscreen-stage]')");
       expect(source).toContain('window.__alloStemFS(stage)');
       expect(source).toContain('Fullscreen specimen view and tools');
       expect(source).toContain('Exit fullscreen');
@@ -4660,7 +5214,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain('id: "diss-scenario-select"');
       expect(source).toContain('Restart scenario');
       expect(source).toContain('function onDissectionFullscreenChange()');
-      expect(source).toContain('window.__alloDissectionFullscreenReturn = document.activeElement');
+      expect(source).toContain('window.__alloDissectionFullscreenReturn = control');
       expect(source).toContain("document.addEventListener('fullscreenchange', onDissectionFullscreenChange)");
       expect(source).toContain('difficulty: scenarioDefinition.difficulty');
       expect(source).toContain("status: scenarioStatus.complete ? 'complete'");
@@ -4727,5 +5281,617 @@ expect(html).toContain('Scenario center');
     expect(timedHtml).toContain('Timed practical');
     expect(timedHtml).toContain('2:05 remaining');
     expect(timedHtml).toContain('role="timer"');
+  });
+
+  it('undoes a repeated learning-checked action without losing the earlier state or stale completion evidence', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog', workspaceMode: 'advanced',
+          scenarioCompletedAt: 99,
+          procedureByLayer: {
+            skin: {
+              surfaceCleared: true,
+              dropperPoint: { x: 0.8, y: 0.7 },
+              dropperDragMetrics: { control: 92 },
+              history: ['dropper', 'dropper'],
+              actionLog: [
+                { action: 'dropper', label: 'Hydrate', outcome: 'First drop', at: 1, undoState: {} },
+                { action: 'dropper', label: 'Hydrate', outcome: 'Second drop', at: 2, undoState: { surfaceCleared: true, dropperPoint: { x: 0.2, y: 0.3 }, dropperDragMetrics: { control: 71 } } },
+              ],
+              learningChecks: { dropper: { reflectionChoice: 'observe', reflectionCorrect: true, reflectionFeedback: 'Verified.' } },
+            },
+          },
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      localStorage.removeItem('dissection_progress_frog');
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+
+      const undo = host.querySelector('[aria-label="Undo the last technique action and visually restore the previous tissue state"]');
+      expect(undo).not.toBeNull();
+      expect(undo.disabled).toBe(false);
+      await act(async () => { undo.click(); await Promise.resolve(); });
+
+      const procedure = latestToolData.dissection.procedureByLayer.skin;
+      expect(procedure.surfaceCleared).toBe(true);
+      expect(procedure.dropperPoint).toEqual({ x: 0.2, y: 0.3 });
+      expect(procedure.dropperDragMetrics).toEqual({ control: 71 });
+      expect(procedure.history).toEqual(['dropper']);
+      expect(procedure.actionLog).toHaveLength(1);
+      expect(procedure.learningChecks.dropper).toMatchObject({
+        reflectionChoice: null,
+        reflectionCorrect: false,
+        reflectionFeedback: 'Repeat the action, then explain the new observed response.',
+      });
+      expect(latestToolData.dissection.scenarioCompletedAt).toBe(0);
+
+      const firstActionUndo = host.querySelector('[aria-label="Undo the last technique action and visually restore the previous tissue state"]');
+      expect(firstActionUndo).not.toBeNull();
+      await act(async () => { firstActionUndo.click(); await Promise.resolve(); });
+      const clearedProcedure = latestToolData.dissection.procedureByLayer.skin;
+      expect(clearedProcedure.surfaceCleared).toBe(false);
+      expect(clearedProcedure.dropperPoint).toBeNull();
+      expect(clearedProcedure.dropperDragMetrics).toBeNull();
+      expect(clearedProcedure.history).toEqual([]);
+      expect(clearedProcedure.actionLog).toEqual([]);
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem('dissection_progress_frog');
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('keeps one persistence owner when the host recreates deferred setter wrappers', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let updateToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog',
+          activeLayer: 'skin',
+          anatomicalView: 'dorsal',
+          _dissLoadedSpec: 'frog',
+          organNotes: {},
+        },
+      });
+      const pluginInstanceTokenRef = React.useRef(null);
+      if (!pluginInstanceTokenRef.current) pluginInstanceTokenRef.current = {};
+      latestToolData = toolData;
+      updateToolData = setToolData;
+      // This mirrors the production host: the deferred wrapper itself is a
+      // fresh function on every parent render, while the bridge token is stable.
+      const freshDeferredWrapper = function (updater) { setToolData(updater); };
+      return config.render(makeCtx({
+        toolData,
+        setToolData: freshDeferredWrapper,
+        pluginInstanceToken: pluginInstanceTokenRef.current,
+      }));
+    }
+
+    try {
+      localStorage.removeItem('dissection_progress_frog');
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+
+      const initialOwner = host.querySelector('[data-dissection-root]').getAttribute('data-dissection-save-owner');
+      expect(initialOwner).toMatch(/^lab-\d+$/);
+
+      await act(async () => {
+        updateToolData((previous) => ({
+          ...previous,
+          dissection: {
+            ...previous.dissection,
+            organNotes: { 'frog|dorsal_skin': 'First observation.' },
+          },
+        }));
+        await Promise.resolve();
+      });
+      expect(host.querySelector('[data-dissection-root]').getAttribute('data-dissection-save-owner')).toBe(initialOwner);
+
+      await act(async () => {
+        updateToolData((previous) => ({
+          ...previous,
+          dissection: {
+            ...previous.dissection,
+            organNotes: { 'frog|dorsal_skin': 'Latest observation survives wrapper churn.' },
+            timeSpent: 42,
+          },
+        }));
+        await Promise.resolve();
+      });
+      expect(host.querySelector('[data-dissection-root]').getAttribute('data-dissection-save-owner')).toBe(initialOwner);
+      expect(latestToolData.dissection.timeSpent).toBe(42);
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 180));
+      });
+      const persisted = JSON.parse(localStorage.getItem('dissection_progress_frog'));
+      expect(persisted.organNotes).toEqual({ 'frog|dorsal_skin': 'Latest observation survives wrapper churn.' });
+      expect(persisted.timeSpent).toBe(42);
+      expect(host.querySelector('[data-dissection-protected-save]')).toBeNull();
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem('dissection_progress_frog');
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const previousFullscreenHelper = window.__alloStemFS;
+    const fullscreenHelper = vi.fn((stage) => {
+      stage.__alloFsOn = !stage.__alloFsOn;
+      if (stage.__alloFsOn) stage.setAttribute('data-allo-fullscreen-active', 'true');
+      else stage.removeAttribute('data-allo-fullscreen-active');
+    });
+    window.__alloStemFS = fullscreenHelper;
+    let latestA;
+    let latestB;
+    let rootA;
+    let rootB;
+    let hostA;
+    let hostB;
+
+    function LabA() {
+      const [toolData, setToolData] = React.useState({ dissection: { specimen: 'frog', activeLayer: 'skin', anatomicalView: 'dorsal', _dissLoadedSpec: 'frog', toolbarViewOpen: true } });
+      latestA = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+    function LabB() {
+      const [toolData, setToolData] = React.useState({ dissection: { specimen: 'frog', activeLayer: 'skin', anatomicalView: 'dorsal', _dissLoadedSpec: 'frog', toolbarViewOpen: true } });
+      latestB = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      localStorage.removeItem('dissection_progress_frog');
+      hostA = document.createElement('div');
+      hostB = document.createElement('div');
+      document.body.append(hostA, hostB);
+      rootA = ReactDOMClient.createRoot(hostA);
+      rootB = ReactDOMClient.createRoot(hostB);
+      await act(async () => {
+        rootA.render(React.createElement(LabA));
+        rootB.render(React.createElement(LabB));
+        await Promise.resolve();
+      });
+
+      const canvasA = hostA.querySelector('[data-diss-canvas]');
+      const canvasB = hostB.querySelector('[data-diss-canvas]');
+      const ownerA = hostA.querySelector('[data-dissection-root]').getAttribute('data-dissection-save-owner');
+      const ownerB = hostB.querySelector('[data-dissection-root]').getAttribute('data-dissection-save-owner');
+      expect(ownerA).toMatch(/^lab-\d+$/);
+      expect(ownerB).toMatch(/^lab-\d+$/);
+      expect(ownerA).not.toBe(ownerB);
+      expect(canvasA._dissAlive).toBe(true);
+      expect(canvasB._dissAlive).toBe(true);
+      expect(canvasA._dissKeyHandler).toEqual(expect.any(Function));
+      expect(canvasB._dissKeyHandler).toEqual(expect.any(Function));
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+
+      await act(async () => {
+        canvasA.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', bubbles: true }));
+        await Promise.resolve();
+      });
+      expect(latestA.dissection.anatomicalView).toBe('ventral');
+      expect(latestB.dissection.anatomicalView).toBe('dorsal');
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+
+      const handlerA = canvasA._dissKeyHandler;
+      canvasA._dissKeyHandler = null;
+      await act(async () => {
+        canvasA.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', bubbles: true }));
+        await Promise.resolve();
+      });
+      expect(latestA.dissection.anatomicalView).toBe('ventral');
+      expect(latestB.dissection.anatomicalView).toBe('dorsal');
+      canvasA._dissKeyHandler = handlerA;
+
+      const skipToCanvasB = Array.from(hostB.querySelectorAll('.diss-skip-link'))
+        .find((link) => link.textContent.includes('interactive specimen'));
+      expect(skipToCanvasB).toBeDefined();
+      const canvasFocusSpy = vi.spyOn(canvasB, 'focus');
+      skipToCanvasB.focus();
+      expect(document.activeElement).toBe(skipToCanvasB);
+      await act(async () => {
+        skipToCanvasB.click();
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+      expect(latestB.dissection.procedureFeedback && latestB.dissection.procedureFeedback.message).toContain('Interactive specimen focused');
+      expect(canvasFocusSpy).toHaveBeenCalled();
+      expect(document.activeElement).toBe(canvasB);
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+      expect(JSON.parse(localStorage.getItem('dissection_progress_frog')).anatomicalView).toBe('ventral');
+      expect(hostA.querySelector('[data-dissection-protected-save]')).toBeNull();
+      expect(hostB.querySelector('[data-dissection-protected-save]')).not.toBeNull();
+
+      const entryB = hostB.querySelector('[aria-label="Enter fullscreen specimen mode with view and tool controls"]');
+      const stageA = hostA.querySelector('[data-diss-fullscreen-stage]');
+      const stageB = hostB.querySelector('[data-diss-fullscreen-stage]');
+      entryB.focus();
+      await act(async () => {
+        entryB.click();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      expect(fullscreenHelper).toHaveBeenLastCalledWith(stageB);
+      expect(fullscreenHelper).not.toHaveBeenCalledWith(stageA);
+      expect(document.activeElement).toBe(hostB.querySelector('[data-diss-fullscreen-exit]'));
+
+      await act(async () => {
+        hostB.querySelector('[data-diss-fullscreen-exit]').click();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      expect(document.activeElement).toBe(entryB);
+
+      await act(async () => { rootB.unmount(); await Promise.resolve(); });
+      rootB = null;
+      expect(canvasA._dissAlive).toBe(true);
+      await act(async () => {
+        canvasA.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', bubbles: true }));
+        await Promise.resolve();
+      });
+      expect(latestA.dissection.anatomicalView).toBe('lateral');
+    } finally {
+      if (rootB) await act(async () => { rootB.unmount(); await Promise.resolve(); });
+      if (rootA) await act(async () => { rootA.unmount(); await Promise.resolve(); });
+      if (hostA) hostA.remove();
+      if (hostB) hostB.remove();
+      localStorage.removeItem('dissection_progress_frog');
+      window.__alloStemFS = previousFullscreenHelper;
+      window.__alloDissectionFullscreenReturn = null;
+      window.__alloDissectionFullscreenStage = null;
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+      contextSpy.mockRestore();
+    }
+  }, 60000);
+
+  it('keeps layer and teaching timers isolated when a sibling lab unmounts', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestA;
+    let rootA;
+    let rootB;
+    let hostA;
+    let hostB;
+
+    function LabA() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog',
+          activeLayer: 'skin',
+          anatomicalView: 'ventral',
+          _dissLoadedSpec: 'frog',
+          workspaceMode: 'advanced',
+          activeInstrument: 'probe',
+          exploredOrgans: {
+            'frog|dorsal_skin': true,
+            'frog|ventral_skin': true,
+            'frog|tympanum': true,
+            'frog|nictitating': true,
+          },
+          organNotes: {
+            'frog|dorsal_skin': 'Protective pigmented surface.',
+            'frog|ventral_skin': 'Thin vascular surface.',
+            'frog|tympanum': 'External sound membrane.',
+            'frog|nictitating': 'Protective transparent eyelid.',
+          },
+          organConfidence: {
+            'frog|dorsal_skin': 2,
+            'frog|ventral_skin': 2,
+            'frog|tympanum': 2,
+            'frog|nictitating': 2,
+          },
+          procedureByLayer: {
+            skin: {
+              inspected: true,
+              incisionStarted: true,
+              incisionExtended: true,
+              retracted: true,
+              pins: [{ x: 0.3, y: 0.5 }, { x: 0.7, y: 0.5 }],
+              probed: true,
+              probedOrganId: 'ventral_skin',
+              history: ['inspect', 'pin', 'scalpel', 'scissors', 'forceps', 'probe'],
+              actionLog: [{ action: 'inspect', label: 'Inspect', outcome: 'Orientation recorded', at: 1 }],
+            },
+          },
+        },
+      });
+      latestA = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    function LabB() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'pig',
+          activeLayer: 'skin',
+          anatomicalView: 'ventral',
+          _dissLoadedSpec: 'pig',
+        },
+      });
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      localStorage.removeItem('dissection_progress_frog');
+      localStorage.removeItem('dissection_progress_pig');
+      hostA = document.createElement('div');
+      hostB = document.createElement('div');
+      document.body.append(hostA, hostB);
+      rootA = ReactDOMClient.createRoot(hostA);
+      rootB = ReactDOMClient.createRoot(hostB);
+      await act(async () => {
+        rootA.render(React.createElement(LabA));
+        rootB.render(React.createElement(LabB));
+        await Promise.resolve();
+      });
+
+      const canvasA = hostA.querySelector('[data-diss-canvas]');
+      await act(async () => {
+        hostA.querySelector('[aria-label="Show a generalized safe-technique demonstration on the specimen"]').click();
+        await Promise.resolve();
+      });
+      const demoTimer = canvasA._dissTimers?.procedureDemo;
+      expect(demoTimer).toBeDefined();
+      expect(latestA.dissection._procedureDemo).toMatchObject({ layer: 'skin', duration: 3200 });
+
+      await act(async () => {
+        hostA.querySelector('[aria-label="Replay the recorded technique attempt on the specimen"]').click();
+        await Promise.resolve();
+      });
+      const replayTimer = canvasA._dissTimers?.procedureReplay;
+      expect(replayTimer).toBeDefined();
+      expect(latestA.dissection._procedureReplay?.actions).toHaveLength(1);
+
+      const revealButton = hostA.querySelector('[data-next-action="peel-layer"] .diss-next-action__primary');
+      expect(revealButton).not.toBeNull();
+      await act(async () => {
+        revealButton.click();
+        await Promise.resolve();
+      });
+      const peelTimer = canvasA._dissTimers?.layerPeel;
+      expect(peelTimer).toBeDefined();
+      expect(latestA.dissection._incisionAnim?.active).toBe(true);
+
+      await act(async () => {
+        rootB.unmount();
+        rootB = null;
+        await Promise.resolve();
+      });
+
+      expect(canvasA._dissTimers?.procedureDemo).toBe(demoTimer);
+      expect(canvasA._dissTimers?.procedureReplay).toBe(replayTimer);
+      expect(canvasA._dissTimers?.layerPeel).toBe(peelTimer);
+
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 700));
+      });
+      expect(latestA.dissection.revealedLayers).toMatchObject({ skin: true });
+      expect(latestA.dissection.activeLayer).toBe('muscle');
+      expect(canvasA._dissTimers?.layerPeel).toBeUndefined();
+      expect(canvasA._dissTimers?.layerTransition).toBeDefined();
+      expect(latestA.dissection._procedureDemo).not.toBeNull();
+      expect(latestA.dissection._procedureReplay).not.toBeNull();
+    } finally {
+      if (rootB) await act(async () => { rootB.unmount(); await Promise.resolve(); });
+      if (rootA) await act(async () => { rootA.unmount(); await Promise.resolve(); });
+      if (hostA) hostA.remove();
+      if (hostB) hostB.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem('dissection_progress_frog');
+      localStorage.removeItem('dissection_progress_pig');
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+      contextSpy.mockRestore();
+    }
+  }, 60000);
+
+  it('retains a transiently failed snapshot and blocks specimen switching until the save succeeds', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const frogKey = 'dissection_progress_frog';
+    const pigKey = 'dissection_progress_pig';
+    const nativeSetItem = Storage.prototype.setItem;
+    let failFrogWrite = false;
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (key, value) {
+      if (failFrogWrite && key === frogKey) throw new DOMException('Temporary quota failure', 'QuotaExceededError');
+      return nativeSetItem.call(this, key, value);
+    });
+    let latestToolData;
+    let updateToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({ dissection: { specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog' } });
+      latestToolData = toolData;
+      updateToolData = setToolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      localStorage.removeItem(frogKey);
+      localStorage.removeItem(pigKey);
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 180)); });
+
+      failFrogWrite = true;
+      await act(async () => {
+        updateToolData((previous) => ({
+          ...previous,
+          dissection: { ...previous.dissection, organNotes: { 'frog|dorsal_skin': 'Unsaved transient observation.' } },
+        }));
+        await Promise.resolve();
+      });
+      let pigTab = null;
+      for (let renderAttempt = 0; renderAttempt < 10 && !pigTab; renderAttempt += 1) {
+        pigTab = host.querySelector('[id="diss-specimen-tab-pig"]');
+        if (!pigTab) await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      }
+      expect(pigTab).not.toBeNull();
+      await act(async () => { pigTab.click(); await Promise.resolve(); });
+
+      expect(latestToolData.dissection.specimen).toBe('frog');
+      expect(host.querySelector('[data-diss-tool-status]').textContent).toContain('specimen was not changed');
+
+      failFrogWrite = false;
+      await act(async () => { host.querySelector('[id="diss-specimen-tab-pig"]').click(); await Promise.resolve(); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+      expect(latestToolData.dissection.specimen).toBe('pig');
+      expect(JSON.parse(localStorage.getItem(frogKey)).organNotes['frog|dorsal_skin']).toBe('Unsaved transient observation.');
+    } finally {
+      failFrogWrite = false;
+      setItemSpy.mockRestore();
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem(frogKey);
+      localStorage.removeItem(pigKey);
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+      contextSpy.mockRestore();
+    }
+  }, 60000);
+
+  it('keeps review items beyond the five-question batch and rejects phantom verification credit', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const reviewIds = ['dorsal_skin', 'ventral_skin', 'tympanum', 'nictitating', 'heart', 'lungs'];
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+          quizMode: true, quizReviewMode: true, quizReviewQueue: reviewIds,
+          quizIdx: 4, quizTotal: 5, quizFeedback: { correct: true, chosen: 'dorsal_skin', supported: true }, quizSeed: 42, quizAnswerMode: 'choices',
+          assessmentCompletedAt: 123, assessmentRecordedScore: 3, assessmentRecordedTotal: 5,
+          verifiedIdentifications: { 'frog|toString': { status: 'verified' }, 'frog|constructor': { status: 'verified' } },
+          instructorRequiredStructures: 2,
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+
+      const advance = host.querySelector('button[aria-label="View assessment summary"]');
+      expect(advance).not.toBeNull();
+      await act(async () => { advance.click(); await Promise.resolve(); });
+
+      expect(latestToolData.dissection.quizComplete).toBe(true);
+      expect(latestToolData.dissection.quizReviewQueue).toHaveLength(1);
+      expect(reviewIds).toContain(latestToolData.dissection.quizReviewQueue[0]);
+      expect(host.textContent).toContain('Review remaining structures');
+      expect(host.textContent).toContain('0/2 guided identifications verified');
+      expect(host.textContent).not.toContain('2/2 guided identifications verified');
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem('dissection_progress_frog');
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+      contextSpy.mockRestore();
+    }
+  }, 60000);
+
+  it('ignores retired review IDs and announces reset confirmation only once', async () => {
+    const staleHtml = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+        quizMode: true, quizComplete: true, quizReviewQueue: ['retired-structure-id'],
+        assessmentCompletedAt: 123, assessmentRecordedScore: 3, assessmentRecordedTotal: 5,
+      },
+    });
+    expect(staleHtml).toContain('No missed structures are waiting for supported review.');
+    expect(staleHtml).not.toContain('Review missed structures');
+    expect(staleHtml).not.toContain('retired-structure-id');
+
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    const announceToSR = vi.fn();
+    let root;
+    let host;
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      function Component() {
+        const [toolData, setToolData] = React.useState({ dissection: { specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog', workspaceMode: 'advanced', toolbarToolsOpen: true } });
+        return config.render(makeCtx({ toolData, setToolData, announceToSR }));
+      }
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      announceToSR.mockClear();
+      await act(async () => { host.querySelector('#diss-reset-specimen').click(); await new Promise((resolve) => setTimeout(resolve, 0)); });
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
+
+      const resetAnnouncements = announceToSR.mock.calls.filter(([message]) => String(message).startsWith('Reset confirmation opened.'));
+      expect(resetAnnouncements).toHaveLength(1);
+      expect(document.activeElement).toBe(host.querySelector('#diss-reset-confirm'));
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem('dissection_progress_frog');
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+      contextSpy.mockRestore();
+    }
+  }, 60000);
+
+  it('preserves a deliberate zero-caution scenario threshold', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced', instructorMaxCautions: 0,
+      },
+    });
+    expect(html).toContain('Max cautions: 0');
+    expect(html).toContain('Scenario thresholds');
   });
 });

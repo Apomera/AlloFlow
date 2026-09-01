@@ -256,8 +256,8 @@ describe('Art Studio home and workspace accessibility', () => {
     document.body.appendChild(mountedHost);
     mountedRoot = ReactDOMClient.createRoot(mountedHost);
     const snapshots = [
-      { id: 'one', tool: 'artStudio' },
-      { id: 'two', tool: 'artStudio' },
+      { id: 'one', tool: 'artStudio', artStudioStudy: { schemaVersion: 1 } },
+      { id: 'two', tool: 'artStudio', artStudioStudy: { schemaVersion: 1 } },
       { id: 'other', tool: 'dataStudio' },
     ];
 
@@ -275,7 +275,7 @@ describe('Art Studio home and workspace accessibility', () => {
 
     const details = mountedHost.querySelector('details');
     const summary = details.querySelector('summary[aria-label="Studio actions"]');
-    expect(mountedHost.querySelector('#artstudio-snapshot-count').textContent).toBe('2 saved studies in this session');
+    expect(mountedHost.querySelector('#artstudio-snapshot-count').textContent).toBe('2 saved studies');
 
     details.open = true;
     summary.focus();
@@ -294,7 +294,7 @@ describe('Art Studio home and workspace accessibility', () => {
     }));
     const tabs = [...host.querySelectorAll('[role="tab"]')];
     const activeTab = host.querySelector('[role="tab"][aria-selected="true"]');
-    const panels = [...host.querySelectorAll('[role="tabpanel"]')];
+    const panels = [...host.querySelectorAll('[id^="artstudio-panel-"][role="tabpanel"]')];
     const visiblePanels = panels.filter((panel) => !panel.hidden);
 
     for (const tab of tabs) {

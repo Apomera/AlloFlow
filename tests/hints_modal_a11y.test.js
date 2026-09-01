@@ -50,6 +50,11 @@ describe('Hints modal accessibility', () => {
     expect(source).not.toContain('relative focus:outline-none');
   });
 
+  it('keeps selected section text at WCAG AA contrast', () => {
+    expect(source).toContain("tab === id ? 'bg-yellow-700 text-white'");
+    expect(source).not.toContain("tab === id ? 'bg-yellow-600 text-white'");
+  });
+
   // L9/D4: toasts auto-dismiss on a reading-length timer, so the log is the only
   // place a slower reader can get a notice back. These are the parts that make it
   // reachable rather than merely stored.

@@ -37,7 +37,7 @@ function HintsModal({
   const [tab, setTab] = React.useState(initialTab === "messages" && messages.length ? "messages" : "hints");
   const hintStatus = isGeneratingExtension ? t("hints.synthesizing") : `${t("hints.title")}: ${hintHistory.length}`;
   const messagesLabel = (t("hints.tab_messages") || "Messages") + (messages.length ? ` (${messages.length})` : "");
-  const tabButtonStyle = (id) => `min-h-11 rounded-lg px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600 ${tab === id ? "bg-yellow-600 text-white" : "bg-white text-yellow-800 border border-yellow-200 hover:bg-yellow-100"}`;
+  const tabButtonStyle = (id) => `min-h-11 rounded-lg px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600 ${tab === id ? "bg-yellow-700 text-white" : "bg-white text-yellow-800 border border-yellow-200 hover:bg-yellow-100"}`;
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return void 0;

@@ -2801,9 +2801,14 @@ window.StemLab = window.StemLab || {
       upd({ challenge: ch, answer: '', feedback: null, challengeTypesUsed: newTypes });
     };
 
+    var challengeSubmissionPending = false;
     var checkChallenge = function() {
-      if (!challenge || challenge.answered) return;
-      var ans = parseInt(answer);
+      if (!challenge || challenge.answered || challengeSubmissionPending) return;
+      var answerText = String(answer == null ? '' : answer).trim();
+      if (!/^[+-]?\d+(?:\.0*)?$/.test(answerText)) return;
+      var ans = Number(answerText);
+      if (!Number.isSafeInteger(ans)) return;
+      challengeSubmissionPending = true;
       var ok = ans === challenge.answer;
       var newStreak = ok ? streak + 1 : 0;
       var newBest = Math.max(bestStreak, newStreak);
@@ -11536,12 +11541,14 @@ window.StemLab = window.StemLab || {
                   type: 'number', value: answer,
                   onChange: function(e) { upd({ answer: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
+                  disabled: !!challenge.answered,
                   placeholder: __alloT('stem.fractions.your_answer', 'Your answer...'),
                   className: 'flex-1 px-3 py-2 border border-rose-600 rounded-lg text-sm font-mono'
                 }),
                 h('button', { 'aria-label': __alloT('stem.fractions.check_3', 'Check'),
                   onClick: checkChallenge,
-                  className: 'transition-colors px-4 py-2 bg-rose-600 text-white font-bold rounded-lg text-sm hover:bg-rose-700'
+                  disabled: !answer || !!challenge.answered,
+                  className: 'transition-colors px-4 py-2 bg-rose-600 text-white font-bold rounded-lg text-sm hover:bg-rose-700 disabled:opacity-50'
                 }, __alloT('stem.fractions.check_4', 'Check'))
               ),
               feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),

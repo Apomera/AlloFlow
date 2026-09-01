@@ -217,10 +217,10 @@ describe('every canvas actually draws', () => {
     expect(host.querySelector('#rx-live-power').textContent).toBe('100%');
     expect(flushRaf(1100), 'idle reactor unexpectedly queued another frame').toBe(0);
 
-    const stopPumps = host.querySelector('button[aria-label="Stop the coolant pumps"]');
+    const stopPumps = host.querySelector('button[aria-label^="Pumps on."]');
     expect(stopPumps, 'pump control missing').toBeTruthy();
     act(() => stopPumps.click());
-    const restorePumps = host.querySelector('button[aria-label="Restore the coolant pumps"]');
+    const restorePumps = host.querySelector('button[aria-label^="Pumps off."]');
     expect(restorePumps, 'pump label did not follow the state change').toBeTruthy();
     expect(restorePumps.getAttribute('aria-pressed')).toBe('false');
     expect(rafCallbacks.size, 'pump change did not wake the parked panel').toBeGreaterThan(0);
@@ -228,19 +228,49 @@ describe('every canvas actually draws', () => {
     expect(clears()).toBeGreaterThan(initialClears);
     expect(rafCallbacks.size, 'paused panel did not park again after repainting').toBe(0);
 
-    const start = host.querySelector('button[aria-label="Start the simulation"]');
+    const start = host.querySelector('button[aria-label^="Run."]');
     act(() => start.click());
     expect(flushRafFrames(6, 1300, 100)).toBeGreaterThan(0);
     expect(host.querySelector('#rx-live-state').textContent).toBe('Running');
     expect(rafCallbacks.size, 'running simulation failed to keep its loop alive').toBeGreaterThan(0);
 
-    const reset = host.querySelector('button[aria-label="Reset the reactor to its starting condition"]');
+    const reset = host.querySelector('button[aria-label^="Reset."]');
     act(() => reset.click());
     flushRaf(2000);
     expect(host.querySelector('#rx-live-state').textContent).toBe('Paused');
     expect(host.querySelector('#rx-live-power').textContent).toBe('100%');
-    expect(host.querySelector('button[aria-label="Stop the coolant pumps"]').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('button[aria-label^="Pumps on."]').getAttribute('aria-pressed')).toBe('true');
     expect(rafCallbacks.size, 'reset reactor did not return to its parked state').toBe(0);
+  });
+
+  it('returns focus to the persistent start button after Try again clears a verdict', () => {
+    mountInteractive({});
+    act(() => host.querySelector('button[aria-label^="Pumps on."]').click());
+    const rods = host.querySelector('#rx-rods');
+    const setRangeValue = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value',
+    ).set;
+    act(() => {
+      setRangeValue.call(rods, '0');
+      rods.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    act(() => host.querySelector('button[aria-label^="Run."]').click());
+
+    // Fully withdrawn rods plus no cooling make the verdict deterministic.
+    // The loop parks as soon as the limit is reached, so the large ceiling is
+    // cheap while avoiding a brittle frame-count dependency.
+    expect(flushRafFrames(1000, 1500, 500)).toBeGreaterThan(0);
+    const retry = host.querySelector('button[aria-label^="Try again."]');
+    expect(retry, 'the run never reached a verdict').toBeTruthy();
+
+    retry.focus();
+    act(() => retry.click());
+
+    const start = host.querySelector('button[aria-label^="Run."]');
+    expect(retry.isConnected).toBe(false);
+    expect(document.activeElement).toBe(start);
+    expect(document.activeElement).not.toBe(document.body);
   });
 
   it('exposes objective progress semantically and updates it without a live-region timer', () => {
@@ -260,14 +290,14 @@ describe('every canvas actually draws', () => {
     expect(canvas.getAttribute('aria-describedby').split(/\s+/))
       .toEqual(expect.arrayContaining(['rx-live-readings', 'rx-objective-progress']));
 
-    act(() => host.querySelector('button[aria-label="Start the simulation"]').click());
+    act(() => host.querySelector('button[aria-label^="Run."]').click());
     // Use the simulator's real frame cadence. Half-second jumps hit its safety
     // dt clamp and exaggerate the thermal feedback into a test-only oscillation.
     expect(flushRafFrames(180, 1017, 16.7)).toBeGreaterThan(0);
     expect(meter.value, 'objective timer did not advance with the physics loop').toBeGreaterThan(0);
     expect(meter.getAttribute('aria-valuetext')).toMatch(/[1-9]\d* of 60 continuous seconds/);
 
-    act(() => host.querySelector('button[aria-label="Reset the reactor to its starting condition"]').click());
+    act(() => host.querySelector('button[aria-label^="Reset."]').click());
     flushRaf(8000);
     expect(meter.value).toBe(0);
     expect(meter.getAttribute('aria-valuetext')).toContain('0 of 60 continuous seconds');
@@ -276,24 +306,24 @@ describe('every canvas actually draws', () => {
   it('starts and resets a station blackout with coolant pumps offline', () => {
     mountInteractive({});
     const scenario = (name) => [...host.querySelectorAll('button')].find((button) =>
-      (button.getAttribute('aria-label') || '').startsWith('Run the scenario: ' + name));
+      button.textContent.trim() === name);
 
     act(() => scenario('Station blackout').click());
     flushRaf();
-    let pumps = host.querySelector('button[aria-label="Restore the coolant pumps"]');
+    let pumps = host.querySelector('button[aria-label^="Pumps off."]');
     expect(pumps, 'blackout still begins with powered coolant pumps').toBeTruthy();
     expect(pumps.getAttribute('aria-pressed')).toBe('false');
     expect(host.querySelector('#rx-objective-progress').dataset.stage).toBe('blackout-scram');
     expect(host.querySelector('#rx-objective-detail').textContent).toContain('Cooling is offline');
 
-    act(() => host.querySelector('button[aria-label="Reset the reactor to its starting condition"]').click());
+    act(() => host.querySelector('button[aria-label^="Reset."]').click());
     flushRaf(2000);
-    pumps = host.querySelector('button[aria-label="Restore the coolant pumps"]');
+    pumps = host.querySelector('button[aria-label^="Pumps off."]');
     expect(pumps, 'blackout reset silently restored grid power').toBeTruthy();
 
     act(() => scenario('Hold at full power').click());
     flushRaf(3000);
-    expect(host.querySelector('button[aria-label="Stop the coolant pumps"]'),
+    expect(host.querySelector('button[aria-label^="Pumps on."]'),
       'ordinary operation did not restore its pumps-on starting state').toBeTruthy();
   });
 });
@@ -303,8 +333,7 @@ describe('route-mounted canvas lifecycle', () => {
     mountInteractive({ nkPath: 'safe', nkOpen: true });
     expect(host.querySelector('#nksec-halflife')).toBeNull();
 
-    const works = [...host.querySelectorAll('button')].find((button) =>
-      (button.getAttribute('aria-label') || '').startsWith('Follow the route: How does any of it work?'));
+    const works = host.querySelector('[data-nk-route-card="works"]');
     expect(works).toBeTruthy();
     act(() => works.click());
     flushRaf();

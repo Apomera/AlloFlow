@@ -232,7 +232,7 @@ describe('Art Studio graphic and form semantics', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
 
     expect(source).toContain("var databaseName = 'alloflow-artstudio'");
-    expect(source).toContain("var storeName = 'watercolorStates'");
+    expect(source).toContain('var storeName = _artStudioDatabase.stores.watercolor');
     expect(source).toContain("packed: compact ? 'uint16-v1' : ''");
     expect(source).toContain('_artStudioWatercolorCache.undo.push(captureState(true))');
     expect(source).toContain('_artStudioWatercolorStateStore.save(durableStateKey, durableState)');

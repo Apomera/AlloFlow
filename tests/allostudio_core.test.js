@@ -805,6 +805,23 @@ describe('resource shelf + portfolio continuity helpers', () => {
       sourceRevision: 'hash-7'
     });
   });
+  it('carries structured Activity recovery metadata into the resource shelf', () => {
+    const cues = ST.stBuildResourceCues([{
+      id: 'activities-1',
+      type: 'brainstorm',
+      title: 'Discussion activities',
+      data: [{
+        kind: 'discussion',
+        title: 'Water cycle seminar',
+        openingQuestion: 'Where does rain go?',
+        generationMeta: { status: 'ready', attempts: 2, recovered: true, updatedAt: '2026-08-31T00:00:00.000Z' }
+      }]
+    }], { limit: 20 });
+    expect(cues.find(cue => cue.kind === 'activity')).toMatchObject({
+      activityKind: 'discussion',
+      generationMeta: { status: 'ready', attempts: 2, recovered: true }
+    });
+  });
   it('filters source cues by kind and search text for a calmer shelf', () => {
     const cues = [
       { id: 'img', kind: 'image', label: 'Cloud diagram', text: 'Water cycle visual', sourceTitle: 'Science pack' },

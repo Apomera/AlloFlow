@@ -475,6 +475,68 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).not.toMatch(/NaN|Infinity/);
   });
 
+  it('records coil-to-body moisture mismatch locally and carries it into joining, drying, visuals, and evidence', () => {
+    const pure = window.__alloPotteryPure;
+    const vessel = pure.makeVessel('stoneware', 'cylinder');
+    vessel.moisture = 0.72;
+    const placement = { pressure: 55, rpm: 0, method: 'coil', handSupport: 50, lubrication: 30, contactSpan: 3 };
+    const matched = pure.applyTool(vessel, 'add-coil', 4, { ...placement, coilMoisture: 72 });
+    const drier = pure.applyTool(vessel, 'add-coil', 31, { ...placement, coilMoisture: 35 });
+    const matchedProfile = pure.summarizeCoilJoints(matched);
+    const drierProfile = pure.summarizeCoilJoints(drier);
+    const moistureReading = pure.summarizeCoilMoistureDelta(-0.37);
+    const stacked = pure.applyTool(drier, 'add-coil', 2, { ...placement, coilMoisture: 72 });
+    const matchedDryingRisk = pure.estimateDryingRisk(matched, { humidity: 10, dryingRate: 100, method: 'coil' });
+    const drierDryingRisk = pure.estimateDryingRisk(drier, { humidity: 10, dryingRate: 100, method: 'coil' });
+    const dried = pure.dryVessel(drier, { humidity: 10, dryingRate: 100, method: 'coil' });
+    const previewHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'shape', vessel, method: 'coil', activeTool: 'add-coil', pressure: 55, handSupport: 50, lubrication: 30, coilMoisture: 35, showFormingPreview: true } });
+    const joinedHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'shape', vessel: drier, method: 'coil', activeTool: 'paddle', workRing: 31, pressure: 55, handSupport: 50, lubrication: 30 } });
+    const scienceHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'science', vessel: drier, method: 'coil' } });
+    const legacy = { ...drier };
+    delete legacy.coilJointMoistureDelta;
+    const normalizedLegacy = pure.normalizeVessel(legacy);
+    const legacyProfile = pure.summarizeCoilJoints(normalizedLegacy);
+
+    expect(vessel.coilJointMoistureDelta).toHaveLength(pure.RING_COUNT);
+    expect(vessel.coilJointMoistureDelta.every((value) => value === null)).toBe(true);
+    expect(moistureReading.status).toBe('high');
+    expect(moistureReading.direction).toBe('drier');
+    expect(moistureReading.mismatchPct).toBeCloseTo(37, 8);
+    expect(matched.coilJoints[31]).toBeGreaterThan(drier.coilJoints[31]);
+    expect(matched.coilJointMoistureDelta[31]).toBeCloseTo(0, 8);
+    expect(drier.coilJointMoistureDelta[31]).toBeCloseTo(-0.37, 8);
+    expect(matchedProfile.overallMoistureStatus).toBe('matched');
+    expect(drierProfile.overallMoistureStatus).toBe('high');
+    expect(drierProfile.worstMoistureRing).toBe(31);
+    expect(drierProfile.worstMoistureDirection).toBe('drier');
+    expect(drierProfile.worstMoistureMismatchPct).toBeCloseTo(37, 8);
+    expect(stacked.coilJointMoistureDelta[27]).toBeCloseTo(-0.37, 8);
+    expect(stacked.coilJointMoistureDelta[31]).toBeCloseTo(0, 8);
+    expect(drierDryingRisk).toBeGreaterThan(matchedDryingRisk);
+    expect(dried.defects).toContain('coil separation');
+    expect(dried.coilSeparationRing).toBe(31);
+    expect(dried.lastOutcome).toContain('37-point coil-to-body moisture gap');
+    expect(normalizedLegacy.coilJointMoistureDelta.every((value) => value === null)).toBe(true);
+    expect(legacyProfile.overallMoistureStatus).toBe('unrecorded');
+    expect(legacyProfile.moistureUnknownCount).toBe(1);
+
+    expect(previewHtml).toContain('data-wheel-fire-coil-moisture-control="true"');
+    expect(previewHtml).toContain('id="wheel-fire-coil-moisture"');
+    expect(previewHtml).toContain('data-wheel-fire-coil-moisture-state="high"');
+    expect(previewHtml).toContain('data-wheel-fire-coil-moisture-gap="37.0"');
+    expect(previewHtml).toContain('data-wheel-fire-new-coil-moisture-gap="37.0"');
+    expect(previewHtml).toContain('coil/body gap 37 pts');
+    expect(previewHtml).toContain('37-point gap');
+    expect(joinedHtml).not.toContain('id="wheel-fire-coil-moisture"');
+    expect(joinedHtml).toContain('data-wheel-fire-coil-joint-moisture-state="high"');
+    expect(joinedHtml).toContain('data-wheel-fire-coil-moisture-gap="32"');
+    expect(joinedHtml).toContain('data-wheel-fire-coil-moisture-gap-pct="37.0"');
+    expect(joinedHtml).toContain('data-wheel-fire-coil-moisture-gap-direction="drier"');
+    expect(scienceHtml).toContain('largest moisture gap 37 pts at ring 32');
+    expect(previewHtml).not.toMatch(/NaN|Infinity/);
+    expect(joinedHtml).not.toMatch(/NaN|Infinity/);
+  });
+
   it('loads only contacted coil seams during reshaping and previews the load direction', () => {
     const pure = window.__alloPotteryPure;
     const vessel = pure.makeVessel('stoneware', 'cylinder');

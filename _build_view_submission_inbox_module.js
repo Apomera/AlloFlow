@@ -11,6 +11,7 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_submission_inbox_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_submission_inbox_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_submission_inbox_module.js');
+const DESKTOP_PACKAGE_OUT = path.join(ROOT, 'desktop', 'app-build', 'view_submission_inbox_module.js');
 const TMP = path.join(ROOT, '_tmp_submission_inbox_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
@@ -84,5 +85,11 @@ ${compiled}
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
 fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+if (fs.existsSync(path.dirname(DESKTOP_PACKAGE_OUT))) {
+    fs.writeFileSync(DESKTOP_PACKAGE_OUT, outputCode, 'utf-8');
+}
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines)`);
 console.log(`Synced to ${DEPLOY_OUT}`);
+if (fs.existsSync(path.dirname(DESKTOP_PACKAGE_OUT))) {
+    console.log(`Synced to ${DESKTOP_PACKAGE_OUT}`);
+}

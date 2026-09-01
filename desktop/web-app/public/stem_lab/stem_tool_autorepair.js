@@ -112,16 +112,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '.ar-bay-orientation{display:flex;justify-content:space-between;gap:6px;margin-top:8px;color:#cbd5e1!important;font-size:10px;font-weight:850;letter-spacing:.045em}',
       '.ar-bay-orientation span:nth-child(2){color:#fbbf24}',
       '.ar-bay-controls{display:flex;gap:6px;margin-top:8px;padding:7px;flex-wrap:wrap;align-items:center;border:1px solid rgba(100,116,139,.4);border-radius:10px;background:rgba(2,6,23,.48)}',
-      '.ar-bay-controls>button{min-width:38px!important;min-height:38px!important;border-color:rgba(148,163,184,.44)!important;background:rgba(15,23,42,.78)!important;color:#e2e8f0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}',
+      '.ar-bay-controls>button{min-width:44px!important;min-height:44px!important;border-color:rgba(148,163,184,.44)!important;background:rgba(15,23,42,.78)!important;color:#e2e8f0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}',
       '.ar-bay-controls>button[aria-pressed="true"]{color:#0f172a!important}',
       '.ar-bay-hint{margin-top:8px!important;padding:8px 9px;border-left:3px solid #38bdf8;border-radius:0 7px 7px 0;background:rgba(15,23,42,.72);color:#cbd5e1!important}',
       '.ar-repair-engine-state{position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}',
       '.ar-repair-engine-state[data-ar-engine-state="running"]{box-shadow:0 0 0 2px rgba(245,158,11,.12),inset 4px 0 0 #f59e0b}',
+      '.ar-meter-bench{position:relative;margin-top:10px;padding:12px;overflow:hidden;border:1px solid rgba(56,189,248,.48);border-radius:15px;background:radial-gradient(circle at 84% 0,rgba(56,189,248,.16),transparent 31%),linear-gradient(145deg,rgba(15,23,42,.98),rgba(2,6,23,.98));box-shadow:0 14px 30px rgba(2,6,23,.28),inset 0 1px 0 rgba(255,255,255,.06);color:#e2e8f0}',
+      '.ar-meter-bench::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#ef4444 0 48%,#111827 48% 52%,#94a3b8 52%);opacity:.9}',
+      '.ar-meter-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}',
+      '.ar-meter-head-copy{min-width:0}',
+      '.ar-meter-eyebrow{display:block;margin-bottom:3px;color:#7dd3fc;font-size:9.5px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}',
+      '.ar-meter-head strong{display:block;color:#f8fafc;font-size:13px;line-height:1.35;overflow-wrap:anywhere}',
+      '.ar-meter-state-chip{flex:0 0 auto;display:inline-flex;align-items:center;min-height:25px;padding:3px 8px;border:1px solid rgba(148,163,184,.45);border-radius:999px;background:rgba(15,23,42,.86);color:#cbd5e1;font-size:9px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}',
+      '.ar-meter-device-row{display:grid;grid-template-columns:minmax(168px,.62fr) minmax(0,1fr);gap:10px;align-items:stretch}',
+      '.ar-meter-device{position:relative;min-height:158px;padding:12px 12px 10px;border:3px solid #273244;border-radius:16px;background:linear-gradient(155deg,#263244,#0f172a 62%,#05080f);box-shadow:inset 0 0 0 2px #020617,0 8px 18px rgba(0,0,0,.35)}',
+      '.ar-meter-screen{min-height:67px;padding:8px 10px;border:5px solid #111827;border-radius:8px;background:linear-gradient(155deg,#d9e7a5,#a9bd72);box-shadow:inset 0 2px 5px rgba(36,50,24,.38);color:#17210f;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-shadow:0 1px rgba(255,255,255,.34)}',
+      '.ar-meter-screen-main{display:flex;align-items:baseline;justify-content:flex-end;gap:5px;min-height:31px;white-space:nowrap}',
+      '.ar-meter-value{font-size:29px;font-weight:950;line-height:1;letter-spacing:.035em}',
+      '.ar-meter-unit{font-size:10px;font-weight:950;text-transform:uppercase}',
+      '.ar-meter-screen-sub{display:flex;justify-content:space-between;gap:5px;margin-top:5px;font-size:8.5px;font-weight:900;letter-spacing:.055em;text-transform:uppercase}',
+      '.ar-meter-hardware{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}',
+      '.ar-meter-dial{position:relative;display:inline-block;width:43px;height:43px;flex:0 0 43px;border:4px solid #475569;border-radius:999px;background:radial-gradient(circle,#cbd5e1 0 17%,#111827 19% 60%,#64748b 62%);box-shadow:0 3px 8px rgba(0,0,0,.4)}',
+      '.ar-meter-dial-pointer{position:absolute;left:calc(50% - 2px);top:5px;width:4px;height:16px;border-radius:999px;background:#f8fafc;transform-origin:2px 16px;transition:transform 160ms ease}',
+      '.ar-meter-ports{display:flex;align-items:flex-end;gap:8px}',
+      '.ar-meter-port{display:grid;place-items:center;width:30px;height:30px;border:4px solid currentColor;border-radius:999px;background:#020617;color:#94a3b8;font-size:7px;font-weight:950}',
+      '.ar-meter-port-red{color:#ef4444}',
+      '.ar-meter-summary{min-width:0;display:grid;gap:7px;align-content:start}',
+      '.ar-meter-summary-row{min-width:0;padding:8px 9px;border:1px solid rgba(148,163,184,.28);border-radius:9px;background:rgba(15,23,42,.7);overflow-wrap:anywhere}',
+      '.ar-meter-summary-row span{display:block;margin-bottom:3px;color:#7dd3fc;font-size:9px;font-weight:950;letter-spacing:.075em;text-transform:uppercase}',
+      '.ar-meter-summary-row strong,.ar-meter-summary-row p{display:block;margin:0;color:#e2e8f0;font-size:11px;line-height:1.45}',
+      '.ar-meter-setup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}',
+      '.ar-meter-step{min-width:0;padding:9px;border:1px solid rgba(148,163,184,.28);border-radius:10px;background:rgba(15,23,42,.62)}',
+      '.ar-meter-step-title{display:block;margin-bottom:6px;color:#cbd5e1;font-size:9.5px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}',
+      '.ar-meter-options{display:grid;gap:5px}',
+      '.ar-meter-option{min-width:0;min-height:44px!important;padding:6px 7px!important;border:1px solid rgba(148,163,184,.46)!important;border-radius:8px!important;background:rgba(2,6,23,.62)!important;color:#e2e8f0!important;text-align:left!important;font-size:10px!important;font-weight:750!important;line-height:1.3!important;overflow-wrap:anywhere}',
+      '.ar-meter-option[aria-pressed="true"]{border-color:#38bdf8!important;background:rgba(14,116,144,.32)!important;box-shadow:inset 3px 0 0 #38bdf8,0 0 0 1px rgba(56,189,248,.18)!important}',
+      '.ar-meter-probe-dot{display:inline-block;width:9px;height:9px;margin-right:5px;border:2px solid currentColor;border-radius:999px;background:#020617;vertical-align:-1px}',
+      '.ar-meter-probe-red{color:#f87171}.ar-meter-probe-black{color:#cbd5e1}',
+      '.ar-meter-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap}',
+      '.ar-meter-actions>button{min-height:44px!important}',
+      '.ar-meter-feedback{flex:1 1 230px;margin:0;padding:8px 9px;border-radius:8px;font-size:11px;font-weight:750;line-height:1.45}',
+      '.ar-meter-feedback[data-ar-meter-feedback="error"]{border-left:4px solid #f59e0b;background:rgba(120,53,15,.28);color:#fde68a}',
+      '.ar-meter-output{display:block;margin-top:10px;padding:10px;border:1px solid rgba(52,211,153,.52);border-left:4px solid #34d399;border-radius:9px;background:rgba(6,78,59,.22);color:#ecfdf5}',
+      '.ar-meter-output strong{display:block;font-size:12px;line-height:1.4}.ar-meter-output span{display:block;margin-top:3px;font-size:11px;line-height:1.5}',
+      '.ar-meter-bench:not([data-ar-meter-state="setup"]) .ar-meter-setup{display:none}',
+      '@keyframes ar-rb-verify-scan{0%,100%{transform:translateX(-12%);opacity:.18}50%{transform:translateX(112%);opacity:.72}}',
+      '@keyframes ar-rb-verify-ready{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.34),0 0 16px rgba(52,211,153,.28)}50%{box-shadow:0 0 0 7px rgba(52,211,153,0),0 0 24px rgba(52,211,153,.46)}}',
+      '.ar-rb-workflow{position:relative;margin-top:14px;padding:12px;border:1px solid rgba(100,116,139,.45);border-radius:14px;background:linear-gradient(145deg,rgba(15,23,42,.92),rgba(2,6,23,.96));color:#e2e8f0;overflow:hidden}',
+      '.ar-rb-workflow::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,#38bdf8,#a78bfa,#34d399)}',
+      '.ar-rb-workflow-title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}',
+      '.ar-rb-workflow-title strong{display:block;color:#f8fafc;font-size:12.5px;line-height:1.35}.ar-rb-workflow-title span{display:block;margin-top:2px;color:#94a3b8;font-size:10px;line-height:1.4}',
+      '.ar-rb-workflow-chip{flex:0 0 auto!important;display:inline-flex!important;align-items:center;min-height:26px;padding:3px 8px;border:1px solid rgba(125,211,252,.48);border-radius:999px;background:rgba(14,116,144,.2);color:#bae6fd!important;font-size:8.5px!important;font-weight:950;letter-spacing:.075em;text-transform:uppercase}',
+      '.ar-rb-stage-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}',
+      '.ar-rb-stage{position:relative;min-width:0;min-height:58px;display:grid;grid-template-columns:30px minmax(0,1fr);gap:7px;align-items:center;padding:8px;border:1px solid rgba(148,163,184,.25);border-radius:10px;background:rgba(15,23,42,.72)}',
+      '.ar-rb-stage[data-ar-stage-state="active"]{border-color:#38bdf8;background:rgba(14,116,144,.2);box-shadow:inset 3px 0 0 #38bdf8}.ar-rb-stage[data-ar-stage-state="complete"]{border-color:rgba(52,211,153,.6);background:rgba(6,78,59,.2)}',
+      '.ar-rb-stage-index{width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(148,163,184,.48);border-radius:999px;background:#0f172a;color:#cbd5e1;font-size:10px;font-weight:950}',
+      '.ar-rb-stage[data-ar-stage-state="active"] .ar-rb-stage-index{border-color:#38bdf8;background:#0e7490;color:#f0f9ff}.ar-rb-stage[data-ar-stage-state="complete"] .ar-rb-stage-index{border-color:#34d399;background:#047857;color:#ecfdf5}',
+      '.ar-rb-stage-copy{min-width:0}.ar-rb-stage-copy strong,.ar-rb-stage-copy span{display:block;overflow-wrap:anywhere}.ar-rb-stage-copy strong{color:#f8fafc;font-size:10.5px;line-height:1.3}.ar-rb-stage-copy span{margin-top:2px;color:#94a3b8;font-size:8.8px;line-height:1.35}',
+      '.ar-rb-verify{position:relative;margin-top:12px;padding:clamp(13px,2.5vw,18px);overflow:hidden;border:1px solid rgba(56,189,248,.5);border-radius:17px;background:radial-gradient(circle at 88% 0,rgba(167,139,250,.18),transparent 28%),radial-gradient(circle at 4% 100%,rgba(52,211,153,.13),transparent 31%),linear-gradient(145deg,#172033,#060a12 68%);box-shadow:0 18px 38px rgba(2,6,23,.32),inset 0 1px 0 rgba(255,255,255,.06);color:#e2e8f0}',
+      '.ar-rb-verify::before{content:"";position:absolute;top:0;bottom:0;left:-22%;width:22%;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(125,211,252,.13),transparent);animation:ar-rb-verify-scan 6s ease-in-out infinite}',
+      '.ar-rb-verify[data-ar-verify-state="passed"]{border-color:rgba(52,211,153,.7);box-shadow:0 18px 38px rgba(2,6,23,.32),inset 4px 0 0 #34d399}',
+      '.ar-rb-verify-head{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:12px}',
+      '.ar-rb-verify-icon{width:46px;height:46px;display:grid;place-items:center;border:1px solid rgba(125,211,252,.46);border-radius:13px;background:linear-gradient(145deg,rgba(14,116,144,.48),rgba(15,23,42,.88));font-size:21px;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}',
+      '.ar-rb-verify-heading{min-width:0}.ar-rb-verify-eyebrow{display:block;margin-bottom:3px;color:#7dd3fc;font-size:9px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}',
+      '.ar-rb-verify-heading h2{margin:0;color:#f8fafc;font-size:clamp(16px,2.4vw,20px);line-height:1.2;overflow-wrap:anywhere}.ar-rb-verify-heading p{margin:4px 0 0;color:#cbd5e1;font-size:11px;line-height:1.5}',
+      '.ar-rb-verify-status{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border:1px solid rgba(148,163,184,.4);border-radius:999px;background:rgba(15,23,42,.78);color:#cbd5e1;font-size:8.5px;font-weight:950;letter-spacing:.075em;text-transform:uppercase}',
+      '.ar-rb-verify[data-ar-verify-state="passed"] .ar-rb-verify-status{border-color:#34d399;background:#065f46;color:#ecfdf5;animation:ar-rb-verify-ready 2.2s ease-in-out infinite}',
+      '.ar-rb-repair-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.58fr);gap:9px;margin-bottom:12px}',
+      '.ar-rb-repair-card>div{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.27);border-radius:10px;background:rgba(15,23,42,.62)}',
+      '.ar-rb-repair-card strong{display:block;margin-bottom:4px;color:#7dd3fc;font-size:9px;font-weight:950;letter-spacing:.075em;text-transform:uppercase}.ar-rb-repair-card p{margin:0;color:#e2e8f0;font-size:11px;line-height:1.5;overflow-wrap:anywhere}',
+      '.ar-rb-verify fieldset{position:relative;min-width:0;margin:0;padding:0;border:0}.ar-rb-verify legend{width:100%;margin:0 0 8px;padding:0;color:#f8fafc;font-size:12.5px;font-weight:850;line-height:1.5;overflow-wrap:anywhere}',
+      '.ar-rb-plan-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+      '.ar-rb-plan{position:relative;min-width:0;min-height:108px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start;padding:10px;border:1px solid rgba(148,163,184,.34);border-radius:11px;background:rgba(2,6,23,.48);cursor:pointer;overflow-wrap:anywhere;transition:transform 130ms ease,border-color 130ms ease,background 130ms ease}',
+      '.ar-rb-plan:hover{transform:translateY(-1px);border-color:rgba(125,211,252,.65)}.ar-rb-plan[data-ar-selected="true"]{border-color:#38bdf8;background:rgba(14,116,144,.25);box-shadow:inset 3px 0 0 #38bdf8}',
+      '.ar-rb-plan input{width:18px;height:18px;margin:2px 0 0;accent-color:#38bdf8}.ar-rb-plan-copy{min-width:0}.ar-rb-plan-copy strong{display:block;color:#f8fafc;font-size:11px;line-height:1.35}.ar-rb-plan-copy span{display:block;margin-top:4px;color:#aebdce;font-size:9.5px;line-height:1.45}',
+      '.ar-rb-verify-actions{display:flex;align-items:center;gap:9px;margin-top:11px;flex-wrap:wrap}.ar-rb-verify-actions>button{min-height:44px!important}',
+      '.ar-rb-verify-hint{flex:1 1 250px;margin:0;color:#94a3b8;font-size:10px;line-height:1.45}',
+      '.ar-rb-verify-output{position:relative;display:block;margin-top:11px;padding:11px 12px;border:1px solid rgba(245,158,11,.58);border-left:4px solid #f59e0b;border-radius:10px;background:rgba(120,53,15,.2);color:#fef3c7;overflow-wrap:anywhere}',
+      '.ar-rb-verify-output[data-ar-result="pass"]{border-color:rgba(52,211,153,.62);border-left-color:#34d399;background:rgba(6,78,59,.24);color:#ecfdf5}',
+      '.ar-rb-verify-output strong,.ar-rb-verify-output span{display:block}.ar-rb-verify-output strong{font-size:12px;line-height:1.4}.ar-rb-verify-output span{margin-top:4px;font-size:10.5px;line-height:1.5}',
+      '.ar-rb-release{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;margin-top:10px;padding:10px;border:1px solid rgba(52,211,153,.5);border-radius:10px;background:rgba(6,78,59,.18)}.ar-rb-release[data-ar-release="refer"]{border-color:rgba(245,158,11,.58);background:rgba(120,53,15,.18)}',
+      '.ar-rb-release-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:rgba(52,211,153,.18);font-size:17px}.ar-rb-release strong{display:block;color:#f8fafc;font-size:11px;line-height:1.4}.ar-rb-release span{display:block;margin-top:3px;color:#cbd5e1;font-size:10px;line-height:1.5}',
+      '@media(max-width:720px){.ar-meter-device-row{grid-template-columns:1fr}.ar-meter-device{min-height:145px}.ar-meter-setup{grid-template-columns:1fr}.ar-meter-options{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-meter-step:nth-child(2) .ar-meter-options{grid-template-columns:1fr}}',
+      '@media(max-width:700px){.ar-rb-verify{padding:12px}.ar-rb-stage-list,.ar-rb-plan-list,.ar-rb-repair-card{grid-template-columns:1fr}.ar-rb-stage{min-height:50px}.ar-rb-plan{min-height:76px}.ar-rb-verify-head{grid-template-columns:auto minmax(0,1fr)}.ar-rb-verify-status{grid-column:2;justify-self:start}.ar-rb-verify-actions{align-items:stretch;flex-direction:column}.ar-rb-verify-actions>button{width:100%}.ar-rb-verify-hint{flex-basis:auto}}',
+      '@media(max-width:420px){.ar-meter-bench{padding:10px}.ar-meter-head{align-items:stretch;flex-direction:column}.ar-meter-state-chip{width:fit-content}.ar-meter-bench[data-ar-meter-state="setup"] .ar-meter-summary{display:none}.ar-meter-device{min-height:132px}.ar-meter-options,.ar-meter-step:nth-child(2) .ar-meter-options{grid-template-columns:repeat(3,minmax(0,1fr))}.ar-meter-option{padding:5px!important;font-size:8.8px!important}.ar-meter-actions{align-items:stretch;flex-direction:column}.ar-meter-actions>button{width:100%}.ar-meter-feedback{flex-basis:auto}}',
       '@media(max-width:560px){.ar-bay-viewer-frame{padding:7px;border-radius:13px}.ar-bay-viewport-hud{top:7px;right:7px}.ar-bay-orientation{font-size:8.5px;letter-spacing:.02em}.ar-bay-controls{gap:5px;padding:6px}.ar-bay-controls>button{flex:1 1 40px}}',
-      '@media(prefers-reduced-motion:reduce){.ar-bay-viewport[data-ar-bay-state="running"] .ar-bay-viewport-hud-dot{animation:none!important}}',
-      '@media(forced-colors:active){.ar-bay-viewer-frame,.ar-bay-viewport,.ar-bay-controls,.ar-bay-hint,.ar-repair-engine-state,.ar-bay-controls>button{forced-color-adjust:auto;border:2px solid CanvasText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.ar-bay-viewport-hud{border:2px solid CanvasText!important;background:Canvas!important;color:CanvasText!important}.ar-bay-viewport-hud-dot{background:Highlight!important;box-shadow:none!important}.ar-bay-controls>button:focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}',
-      '@media print{.ar-bay-viewer-frame{border:1px solid #000!important;background:#fff!important;box-shadow:none!important;break-inside:avoid}.ar-bay-viewer-frame::before,.ar-bay-viewport::before,.ar-bay-viewport-hud,.ar-bay-controls{display:none!important}.ar-bay-viewport{border:1px solid #000!important;box-shadow:none!important}.ar-bay-viewport canvas{filter:grayscale(1)!important}.ar-bay-orientation,.ar-bay-hint{color:#000!important;background:#fff!important}}',
-      'button[data-ar-focusable][aria-pressed="true"]:not([data-ar-roadside-choice]):not([data-ar-safety-item]) {',
+      '@media(prefers-reduced-motion:reduce){.ar-bay-viewport[data-ar-bay-state="running"] .ar-bay-viewport-hud-dot{animation:none!important}.ar-meter-dial-pointer,.ar-rb-plan{transition:none!important}.ar-rb-verify::before,.ar-rb-verify-status{animation:none!important}.ar-rb-plan:hover{transform:none!important}}',
+      '@media(forced-colors:active){.ar-bay-viewer-frame,.ar-bay-viewport,.ar-bay-controls,.ar-bay-hint,.ar-repair-engine-state,.ar-bay-controls>button,.ar-meter-bench,.ar-meter-device,.ar-meter-screen,.ar-meter-summary-row,.ar-meter-step,.ar-meter-option,.ar-meter-output,.ar-rb-workflow,.ar-rb-stage,.ar-rb-verify,.ar-rb-repair-card>div,.ar-rb-plan,.ar-rb-verify-output,.ar-rb-release{forced-color-adjust:auto;border:2px solid CanvasText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.ar-meter-bench::before,.ar-rb-workflow::before,.ar-rb-verify::before{display:none}.ar-meter-option[aria-pressed="true"],.ar-rb-plan[data-ar-selected="true"]{outline:3px solid Highlight!important;outline-offset:2px}.ar-bay-viewport-hud{border:2px solid CanvasText!important;background:Canvas!important;color:CanvasText!important}.ar-bay-viewport-hud-dot,.ar-rb-stage-index{background:Highlight!important;color:HighlightText!important;box-shadow:none!important}.ar-bay-controls>button:focus-visible,.ar-meter-option:focus-visible,.ar-rb-plan:focus-within,.ar-rb-verify-actions>button:focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}',
+      '@media print{.ar-bay-viewer-frame,.ar-meter-bench,.ar-rb-workflow,.ar-rb-verify{border:1px solid #000!important;background:#fff!important;color:#000!important;box-shadow:none!important;break-inside:avoid}.ar-bay-viewer-frame::before,.ar-bay-viewport::before,.ar-bay-viewport-hud,.ar-bay-controls,.ar-meter-bench::before,.ar-meter-setup,.ar-meter-actions,.ar-rb-workflow::before,.ar-rb-verify::before,.ar-rb-verify-actions{display:none!important}.ar-bay-viewport{border:1px solid #000!important;box-shadow:none!important}.ar-bay-viewport canvas{filter:grayscale(1)!important}.ar-bay-orientation,.ar-bay-hint,.ar-meter-device,.ar-meter-screen,.ar-meter-summary-row,.ar-meter-output,.ar-rb-stage,.ar-rb-repair-card>div,.ar-rb-plan,.ar-rb-verify-output,.ar-rb-release{color:#000!important;background:#fff!important;border-color:#000!important}.ar-rb-plan-list{grid-template-columns:1fr!important}}',
+      'button[data-ar-focusable][aria-pressed="true"]:not([data-ar-roadside-choice]):not([data-ar-safety-item]):not([data-ar-meter-choice]) {',
       '  border-color: #fbbf24 !important;',
       '  box-shadow: 0 4px 10px rgba(251,191,36,0.25);',
       '}',
@@ -1433,6 +1512,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  .ar-tire-lab, .ar-tire-section, .ar-tire-size-part, .ar-tire-choice, .ar-tire-detail { break-inside: avoid; page-break-inside: avoid; }',
       '}',
 
+      '.ar-maint-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-maint-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .48fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(18px, 3vw, 26px); border-radius: 17px; overflow: hidden; }',
+      '.ar-maint-hero-copy { min-width: 0; max-width: 700px; }',
+      '.ar-maint-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }',
+      '.ar-maint-title { margin: 7px 0 7px; font-size: clamp(24px, 3.5vw, 34px); line-height: 1.08; letter-spacing: -.025em; overflow-wrap: anywhere; }',
+      '.ar-maint-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-maint-bucket { min-width: 0; min-height: 76px; display: flex !important; align-items: center !important; gap: 9px !important; padding: 10px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }',
+      '.ar-maint-bucket:hover { transform: translateY(-1px); }',
+      '.ar-maint-bucket-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 10px; font-size: 17px; font-weight: 950; }',
+      '.ar-maint-bucket-copy { min-width: 0; }',
+      '.ar-maint-bucket-copy strong, .ar-maint-bucket-copy span { display: block; }',
+      '.ar-maint-bucket-copy strong { font-size: 19px; line-height: 1; }',
+      '.ar-maint-bucket-copy span { margin-top: 4px; font-size: 10px; font-weight: 800; line-height: 1.3; }',
+      '.ar-maint-form { margin-bottom: 14px; padding: 16px; border-radius: 14px; }',
+      '.ar-maint-form-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-maint-form-head h2 { margin: 0 0 4px; font-size: 18px; line-height: 1.3; }',
+      '.ar-maint-form-head p { margin: 0; max-width: 760px; font-size: 12px; line-height: 1.55; }',
+      '.ar-maint-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-maint-field { min-width: 0; display: flex; flex-direction: column; gap: 5px; }',
+      '.ar-maint-field-label { font-size: 12px; font-weight: 850; line-height: 1.35; }',
+      '.ar-maint-field input { width: 100%; min-width: 0; min-height: 44px; padding: 9px 10px; border-radius: 8px; box-sizing: border-box; font-size: 14px; }',
+      '.ar-maint-field-hint, .ar-maint-field-error { display: block; font-size: 10px; line-height: 1.4; overflow-wrap: anywhere; }',
+      '.ar-maint-field-error { font-weight: 800; }',
+      '.ar-maint-form-status { margin-top: 11px; padding: 9px 10px; border-left: 4px solid currentColor; border-radius: 7px; font-size: 11px; line-height: 1.5; }',
+      '.ar-maint-layout, .ar-maint-workbench { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(285px, .65fr); gap: 14px; align-items: stretch; margin-bottom: 14px; }',
+      '.ar-maint-layout > .ar-maint-scene-card:only-child { grid-column: 1 / -1; }',
+      '.ar-maint-scene-card, .ar-maint-detail { min-width: 0; border-radius: 15px; overflow: hidden; }',
+      '.ar-maint-scene-card { padding: 14px; }',
+      '.ar-maint-scene-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }',
+      '.ar-maint-scene-head h2 { margin: 0 0 4px; font-size: 18px; line-height: 1.3; }',
+      '.ar-maint-scene-head p { margin: 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-maint-scene-chip { flex: 0 0 auto; display: inline-flex; padding: 5px 8px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: .045em; text-transform: uppercase; }',
+      '.ar-maint-scene { position: relative; min-width: 0; min-height: 430px; overflow: hidden; border-radius: 13px; isolation: isolate; perspective: 1100px; background: radial-gradient(circle at 50% 16%, rgba(125,211,252,.17), transparent 36%), linear-gradient(160deg, #1e293b 0%, #0f172a 54%, #020617 100%); }',
+      '.ar-maint-scene::before { content: ""; position: absolute; z-index: 0; inset: 55% -16% -25%; opacity: .32; background-image: linear-gradient(rgba(148,163,184,.42) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.42) 1px, transparent 1px); background-size: 34px 34px; transform: rotateX(62deg); transform-origin: top center; }',
+      '.ar-maint-scene::after { content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none; box-shadow: inset 0 0 70px rgba(2,6,23,.72); }',
+      '.ar-maint-scene-frame, .ar-maint-frame { position: absolute; z-index: 1; inset: 16px 20px 58px; display: grid; place-items: center; transform-style: preserve-3d; transform: rotateX(4deg) translateZ(0); transition: transform 220ms ease; }',
+      '.ar-maint-scene:hover .ar-maint-scene-frame, .ar-maint-scene:hover .ar-maint-frame { transform: rotateX(1deg) translateZ(8px); }',
+      '.ar-maint-svg { width: 100%; height: 100%; min-height: 340px; overflow: visible; filter: drop-shadow(0 18px 20px rgba(2,6,23,.52)); }',
+      '.ar-maint-scan { position: absolute; z-index: 2; top: 8%; bottom: 17%; left: 10%; width: 2px; pointer-events: none; opacity: .7; background: linear-gradient(180deg, transparent, #7dd3fc 18%, #f8fafc 52%, #7dd3fc 82%, transparent); box-shadow: 0 0 13px #38bdf8, 0 0 28px rgba(56,189,248,.5); animation: arMaintScan 5.8s ease-in-out infinite; }',
+      '.ar-maint-warning-lights { transform-box: fill-box; transform-origin: center; animation: arMaintSignal 2.8s ease-in-out infinite; }',
+      '.ar-maint-markers { position: absolute; z-index: 4; inset: 0; pointer-events: none; }',
+      '.ar-maint-marker { position: absolute; min-width: 118px; min-height: 46px; display: flex !important; align-items: center !important; gap: 7px !important; padding: 6px 8px !important; border-radius: 999px !important; text-align: left !important; pointer-events: auto; box-shadow: 0 8px 18px rgba(2,6,23,.42); transition: transform 140ms ease, box-shadow 140ms ease; }',
+      '.ar-maint-marker:hover { transform: translateY(-2px); box-shadow: 0 11px 24px rgba(2,6,23,.5); }',
+      '.ar-maint-marker[data-ar-maint-marker-index="0"] { left: 3%; bottom: 4%; }',
+      '.ar-maint-marker[data-ar-maint-marker-index="1"] { left: 22%; bottom: 12%; }',
+      '.ar-maint-marker[data-ar-maint-marker-index="2"] { left: 42%; bottom: 4%; }',
+      '.ar-maint-marker[data-ar-maint-marker-index="3"] { right: 20%; bottom: 12%; }',
+      '.ar-maint-marker[data-ar-maint-marker-index="4"] { right: 3%; bottom: 4%; }',
+      '.ar-maint-marker-dot { width: 29px; height: 29px; flex: 0 0 29px; display: grid; place-items: center; border-radius: 999px; font-size: 10px; font-weight: 950; }',
+      '.ar-maint-marker-copy { min-width: 0; display: block; }',
+      '.ar-maint-marker-copy strong, .ar-maint-marker-copy small { display: block; overflow-wrap: anywhere; }',
+      '.ar-maint-marker-copy strong { font-size: 9px; line-height: 1.25; }',
+      '.ar-maint-marker-copy small { margin-top: 2px; font-size: 8px; line-height: 1.25; }',
+      '.ar-maint-detail { padding: 16px; }',
+      '.ar-maint-detail-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }',
+      '.ar-maint-detail-icon { width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center; border-radius: 12px; font-size: 21px; font-weight: 950; }',
+      '.ar-maint-detail-heading { min-width: 0; flex: 1; }',
+      '.ar-maint-detail-kicker { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }',
+      '.ar-maint-detail h2 { margin: 0; font-size: 18px; line-height: 1.35; overflow-wrap: anywhere; }',
+      '.ar-maint-detail-block { padding: 11px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-maint-detail-block + .ar-maint-detail-block { margin-top: 9px; }',
+      '.ar-maint-detail-block strong { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 900; letter-spacing: .045em; text-transform: uppercase; }',
+      '.ar-maint-detail-block p { margin: 0; font-size: 12px; line-height: 1.55; }',
+      '.ar-maint-basis { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 11px; line-height: 1.45; }',
+      '.ar-maint-basis-axis { display: inline !important; margin: 0 6px 0 0 !important; }',
+      '.ar-maint-conditional { display: flex; gap: 7px; align-items: flex-start; margin-top: 10px; padding: 9px; border-radius: 9px; font-size: 11px; line-height: 1.45; }',
+      '.ar-maint-service-log-action { width: 100%; margin-top: 12px; min-height: 48px; }',
+      '.ar-maint-catalog { padding: 16px; border-radius: 15px; }',
+      '.ar-maint-catalog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-maint-catalog-head h2 { margin: 0 0 4px; font-size: 19px; line-height: 1.3; }',
+      '.ar-maint-catalog-head p { margin: 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-maint-filter-note { flex: 0 0 auto; display: inline-flex; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 850; }',
+      '.ar-maint-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }',
+      '.ar-maint-filter { min-height: 44px; padding: 8px 13px; border-radius: 999px; font-size: 11px; font-weight: 850; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-maint-filter:hover { transform: translateY(-1px); }',
+      '.ar-maint-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: 0; padding: 0; list-style: none; }',
+      '.ar-maint-item-wrap { display: contents; }',
+      '.ar-maint-item { min-width: 0; min-height: 126px; display: grid !important; grid-template-columns: auto minmax(0, 1fr); gap: 10px !important; align-items: start !important; padding: 12px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-maint-item[hidden] { display: none !important; }',
+      '.ar-maint-item:hover { transform: translateY(-1px); }',
+      '.ar-maint-item-marker { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 10px; font-size: 14px; font-weight: 950; }',
+      '.ar-maint-item-copy { min-width: 0; }',
+      '.ar-maint-item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 7px; margin-bottom: 5px; }',
+      '.ar-maint-item-title { min-width: 0; font-size: 13px; line-height: 1.35; }',
+      '.ar-maint-item-state { flex: 0 0 auto; display: inline-flex; padding: 3px 6px; border-radius: 999px; font-size: 8px; font-weight: 900; line-height: 1.3; text-transform: uppercase; }',
+      '.ar-maint-item-interval, .ar-maint-item-note { display: block; font-size: 10.5px; line-height: 1.45; }',
+      '.ar-maint-item-note { margin-top: 5px; }',
+      '.ar-maint-item-conditional { display: inline-flex; margin-top: 6px; padding: 3px 6px; border-radius: 999px; font-size: 8px; font-weight: 900; }',
+      '.ar-maint-empty { min-height: 100px; display: grid; place-items: center; align-content: center; margin-bottom: 14px; padding: 16px; border-radius: 13px; text-align: center; }',
+      '.ar-maint-empty strong { font-size: 15px; line-height: 1.4; }',
+      '.ar-maint-empty span { margin-top: 4px; font-size: 11px; line-height: 1.5; }',
+      '.ar-maint-shell button { min-height: 44px; }',
+      '@keyframes arMaintScan { 0%,100% { left: 10%; opacity: .18; } 50% { left: 90%; opacity: .86; } }',
+      '@keyframes arMaintSignal { 0%,100% { opacity: .78; } 50% { opacity: 1; } }',
+      '@media (max-width: 900px) {',
+      '  .ar-maint-hero, .ar-maint-layout, .ar-maint-workbench { grid-template-columns: 1fr; }',
+      '  .ar-maint-summary { max-width: 620px; }',
+      '  .ar-maint-detail { position: static; min-height: 0; }',
+      '}',
+      '@media (max-width: 620px) {',
+      '  .ar-maint-shell { padding: 10px; }',
+      '  .ar-maint-hero { grid-template-columns: 1fr; padding: 15px; border-radius: 14px; }',
+      '  .ar-maint-summary, .ar-maint-form-grid, .ar-maint-list { grid-template-columns: 1fr; }',
+      '  .ar-maint-form, .ar-maint-scene-card, .ar-maint-detail, .ar-maint-catalog { padding: 13px; }',
+      '  .ar-maint-scene-head { flex-direction: column; }',
+      '  .ar-maint-scene-chip { align-self: flex-start; }',
+      '  .ar-maint-scene { min-height: 360px; }',
+      '  .ar-maint-scene-frame, .ar-maint-frame { inset: 10px 7px 50px; }',
+      '  .ar-maint-svg { min-height: 300px; }',
+      '  .ar-maint-marker { width: 42px; min-width: 42px; height: 42px; min-height: 42px; justify-content: center !important; padding: 5px !important; }',
+      '  .ar-maint-marker-dot { width: 30px; height: 30px; flex-basis: 30px; }',
+      '  .ar-maint-marker-copy { position: absolute !important; width: 1px !important; height: 1px !important; margin: -1px !important; padding: 0 !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }',
+      '  .ar-maint-marker-copy small { display: none; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-maint-scene-frame, .ar-maint-item, .ar-maint-filter { transition: none !important; }',
+      '  .ar-maint-scan, .ar-maint-warning-lights { animation: none !important; }',
+      '  .ar-maint-bucket, .ar-maint-frame, .ar-maint-marker { transition: none !important; }',
+      '  .ar-maint-bucket:hover, .ar-maint-scene:hover .ar-maint-frame, .ar-maint-scene:hover .ar-maint-scene-frame, .ar-maint-marker:hover, .ar-maint-item:hover, .ar-maint-filter:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-maint-hero, .ar-maint-bucket, .ar-maint-form, .ar-maint-field input, .ar-maint-scene-card, .ar-maint-scene, .ar-maint-detail, .ar-maint-detail-block, .ar-maint-conditional, .ar-maint-catalog, .ar-maint-item, .ar-maint-filter, .ar-maint-empty { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-maint-bucket[aria-pressed="true"], .ar-maint-marker[aria-pressed="true"], .ar-maint-item[aria-pressed="true"], .ar-maint-filter[aria-pressed="true"] { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-maint-bucket:focus-visible, .ar-maint-marker:focus-visible, .ar-maint-item:focus-visible, .ar-maint-filter:focus-visible, .ar-maint-service-log-action:focus-visible, .ar-maint-field input:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-maint-bucket-icon, .ar-maint-marker-dot, .ar-maint-item-marker, .ar-maint-detail-icon { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-maint-vehicle-body { fill: Canvas !important; stroke: CanvasText !important; }',
+      '  .ar-maint-svg [data-ar-maint-object="vehicle"] *, .ar-maint-svg [data-ar-maint-object="lift"] * { fill: Canvas !important; stroke: CanvasText !important; }',
+      '  .ar-maint-svg [data-ar-maint-object="service-lane"] * { stroke: Highlight !important; }',
+      '  .ar-maint-scan { display: none !important; }',
+      '}',
+      '@media print {',
+      '  .ar-maint-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-maint-shell, .ar-maint-shell * { color: black !important; }',
+      '  .ar-maint-form, .ar-maint-filters, .ar-maint-scan, .ar-maint-markers, .ar-maint-service-log-action, [data-ar-maint-print-hide="true"] { display: none !important; }',
+      '  .ar-maint-scene::before, .ar-maint-scene::after { display: none !important; }',
+      '  .ar-maint-scene-frame, .ar-maint-frame, .ar-maint-scene:hover .ar-maint-frame, .ar-maint-scene:hover .ar-maint-scene-frame { transform: none !important; }',
+      '  .ar-maint-item-wrap[hidden] { display: contents !important; }',
+      '  [data-ar-maint-item][hidden] { display: grid !important; }',
+      '  .ar-maint-hero, .ar-maint-bucket, .ar-maint-scene-card, .ar-maint-scene, .ar-maint-detail, .ar-maint-detail-block, .ar-maint-conditional, .ar-maint-catalog, .ar-maint-item, .ar-maint-empty { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-maint-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '}',
+
       '.ar-walk-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
       '.ar-walk-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(245px, .38fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
       '.ar-walk-hero-copy { min-width: 0; max-width: 735px; }',
@@ -1773,6 +1994,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  .ar-path-week-list::before { background: black !important; opacity: 1; }',
       '}',
 
+      '.ar-roi-shell { width: 100%; max-width: 1140px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-roi-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .52fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(18px, 3vw, 27px); border-radius: 18px; overflow: hidden; }',
+      '.ar-roi-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-roi-eyebrow { display: inline-flex; font-size: 11px; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }',
+      '.ar-roi-title { margin: 7px 0; font-size: clamp(24px, 3.6vw, 35px); line-height: 1.08; letter-spacing: -.025em; overflow-wrap: anywhere; }',
+      '.ar-roi-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-roi-stat { min-width: 0; min-height: 82px; display: grid; align-content: center; padding: 10px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-roi-stat strong, .ar-roi-stat span { display: block; }',
+      '.ar-roi-stat strong { font-size: 19px; line-height: 1.1; }',
+      '.ar-roi-stat span { margin-top: 4px; font-size: 10.5px; font-weight: 800; line-height: 1.35; text-transform: uppercase; }',
+      '.ar-roi-form { margin-bottom: 14px; padding: 16px; border-radius: 15px; }',
+      '.ar-roi-form-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-roi-form-head h2 { margin: 0 0 4px; font-size: 19px; line-height: 1.3; }',
+      '.ar-roi-form-head p { margin: 0; max-width: 760px; font-size: 12px; line-height: 1.55; }',
+      '.ar-roi-stage-list { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-roi-stage { min-width: 0; min-height: 64px; display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 9px; border-radius: 10px; }',
+      '.ar-roi-stage-marker { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 999px; font-size: 12px; font-weight: 950; }',
+      '.ar-roi-stage-copy strong, .ar-roi-stage-copy span { display: block; overflow-wrap: anywhere; }',
+      '.ar-roi-stage-copy strong { font-size: 11px; line-height: 1.35; }',
+      '.ar-roi-stage-copy span { margin-top: 2px; font-size: 9.5px; line-height: 1.35; }',
+      '.ar-roi-stage-state { font-size: 9px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }',
+      '.ar-roi-presets { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }',
+      '.ar-roi-preset, .ar-roi-reset { min-height: 44px; padding: 8px 11px; border-radius: 999px; font-size: 10px; font-weight: 850; transition: transform 120ms ease, border-color 120ms ease; }',
+      '.ar-roi-preset:hover, .ar-roi-reset:hover { transform: translateY(-1px); }',
+      '.ar-roi-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-roi-field { min-width: 0; display: flex; flex-direction: column; gap: 5px; }',
+      '.ar-roi-field-label { font-size: 12px; font-weight: 850; line-height: 1.35; }',
+      '.ar-roi-field input, .ar-roi-field select { width: 100%; min-width: 0; min-height: 44px; padding: 9px 10px; border-radius: 8px; box-sizing: border-box; font-size: 14px; }',
+      '.ar-roi-field-hint, .ar-roi-field-error { display: block; font-size: 10px; line-height: 1.4; overflow-wrap: anywhere; }',
+      '.ar-roi-field-error { font-weight: 850; }',
+      '.ar-roi-form-status { margin-top: 11px; padding: 9px 10px; border-left: 4px solid currentColor; border-radius: 8px; font-size: 11px; line-height: 1.5; }',
+      '.ar-roi-empty { min-height: 106px; display: grid; place-items: center; align-content: center; margin-bottom: 14px; padding: 16px; border-radius: 13px; text-align: center; }',
+      '.ar-roi-empty strong { font-size: 15px; line-height: 1.4; }',
+      '.ar-roi-empty span { margin-top: 4px; max-width: 760px; font-size: 11px; line-height: 1.55; }',
+      '.ar-roi-workbench { display: grid; grid-template-columns: minmax(0, 1.28fr) minmax(300px, .72fr); gap: 14px; align-items: start; margin-bottom: 14px; }',
+      '.ar-roi-scene-card, .ar-roi-result { min-width: 0; padding: 15px; border-radius: 15px; overflow: hidden; }',
+      '.ar-roi-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }',
+      '.ar-roi-panel-head h2 { margin: 0 0 4px; font-size: 19px; line-height: 1.3; }',
+      '.ar-roi-panel-head p { margin: 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-roi-chip { flex: 0 0 auto; display: inline-flex; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; text-transform: uppercase; }',
+      '.ar-roi-scene { position: relative; min-height: 365px; overflow: hidden; border-radius: 13px; perspective: 1100px; isolation: isolate; }',
+      '.ar-roi-scene::before { content: ""; position: absolute; inset: 54% -12% -36%; opacity: .28; background-image: linear-gradient(rgba(148,163,184,.42) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.42) 1px, transparent 1px); background-size: 30px 30px; transform: rotateX(62deg); transform-origin: top center; }',
+      '.ar-roi-board { position: relative; z-index: 1; min-height: 315px; margin: 16px; padding: 16px; border-radius: 13px; transform-style: preserve-3d; transform: rotateX(3deg) translateZ(0); transition: transform 180ms ease; }',
+      '.ar-roi-scene:hover .ar-roi-board { transform: rotateX(1deg) translateZ(5px); }',
+      '.ar-roi-scale { position: relative; height: 24px; margin: 0 8px 4px 118px; font-size: 9.5px; font-weight: 850; }',
+      '.ar-roi-scale span { position: absolute; transform: translateX(-50%); }',
+      '.ar-roi-meter { display: grid; grid-template-columns: 106px minmax(0, 1fr); gap: 10px; align-items: center; min-height: 68px; }',
+      '.ar-roi-meter + .ar-roi-meter { margin-top: 8px; }',
+      '.ar-roi-meter-label strong, .ar-roi-meter-label span { display: block; overflow-wrap: anywhere; }',
+      '.ar-roi-meter-label strong { font-size: 11px; line-height: 1.35; }',
+      '.ar-roi-meter-label span { margin-top: 3px; font-size: 10px; line-height: 1.35; }',
+      '.ar-roi-rail { position: relative; height: 42px; overflow: hidden; border-radius: 9px; }',
+      '.ar-roi-gate { position: absolute; z-index: 2; top: 0; bottom: 0; width: 1px; border-left: 1px dashed currentColor; opacity: .7; }',
+      '.ar-roi-bar { position: absolute; z-index: 1; inset: 6px auto 6px 0; min-width: 3px; max-width: 100%; border-radius: 6px; transition: width 260ms ease; }',
+      '.ar-roi-rail-value { position: absolute; z-index: 3; right: 7px; top: 50%; transform: translateY(-50%); padding: 3px 5px; border-radius: 5px; font-size: 10px; font-weight: 950; }',
+      '.ar-roi-lanes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 14px; }',
+      '.ar-roi-path { min-width: 0; min-height: 95px; padding: 11px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-roi-path strong, .ar-roi-path span { display: block; }',
+      '.ar-roi-path strong { font-size: 11px; }',
+      '.ar-roi-path-value { margin-top: 5px; font-size: 20px; font-weight: 950; line-height: 1.1; }',
+      '.ar-roi-path-note { margin-top: 5px; font-size: 10px; line-height: 1.45; }',
+      '.ar-roi-result { position: sticky; top: 10px; }',
+      '.ar-roi-signal { padding: 12px; border-radius: 11px; }',
+      '.ar-roi-signal-kicker { display: block; font-size: 10px; font-weight: 900; letter-spacing: .055em; text-transform: uppercase; }',
+      '.ar-roi-signal h2 { margin: 5px 0 7px; font-size: 20px; line-height: 1.25; overflow-wrap: anywhere; }',
+      '.ar-roi-signal p { margin: 0; font-size: 12px; line-height: 1.58; }',
+      '.ar-roi-lenses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 11px 0; }',
+      '.ar-roi-lens { min-width: 0; min-height: 44px; padding: 7px; border-radius: 8px; font-size: 11px; font-weight: 850; overflow-wrap: anywhere; transition: transform 120ms ease; }',
+      '.ar-roi-lens:hover { transform: translateY(-1px); }',
+      '.ar-roi-detail { min-height: 158px; padding: 11px; border-radius: 10px; }',
+      '.ar-roi-detail h3 { margin: 0 0 6px; font-size: 13px; line-height: 1.4; }',
+      '.ar-roi-detail p, .ar-roi-detail li { font-size: 10.5px; line-height: 1.52; }',
+      '.ar-roi-detail p { margin: 0; }',
+      '.ar-roi-detail ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }',
+      '.ar-roi-evidence { margin-top: 14px; padding: 15px; border-radius: 15px; }',
+      '.ar-roi-evidence-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }',
+      '.ar-roi-evidence h2 { margin: 0 0 4px; font-size: 18px; }',
+      '.ar-roi-evidence p { margin: 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-roi-evidence-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-roi-evidence-item { min-width: 0; min-height: 72px; display: flex; align-items: flex-start; gap: 8px; padding: 10px; border-radius: 9px; font-size: 11px; font-weight: 750; line-height: 1.45; }',
+      '.ar-roi-evidence-item input { width: 20px; height: 20px; flex: 0 0 20px; margin: 1px 0 0; }',
+      '.ar-roi-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }',
+      '.ar-roi-actions button { min-height: 44px; flex: 1 1 170px; }',
+      '.ar-roi-reference { margin-top: 14px; padding: 12px; border-radius: 10px; font-size: 11px; line-height: 1.55; }',
+      '.ar-roi-reference a { font-weight: 800; }',
+      '.ar-roi-shell button { min-height: 44px; }',
+      '@media (max-width: 900px) {',
+      '  .ar-roi-hero, .ar-roi-workbench { grid-template-columns: 1fr; }',
+      '  .ar-roi-result { position: static; }',
+      '  .ar-roi-evidence-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '}',
+      '@media (max-width: 620px) {',
+      '  .ar-roi-shell { padding: 10px; }',
+      '  .ar-roi-hero { grid-template-columns: 1fr; padding: 15px; border-radius: 14px; }',
+      '  .ar-roi-stats, .ar-roi-stage-list, .ar-roi-form-grid, .ar-roi-lanes, .ar-roi-evidence-list { grid-template-columns: 1fr; }',
+      '  .ar-roi-form, .ar-roi-scene-card, .ar-roi-result, .ar-roi-evidence { padding: 13px; }',
+      '  .ar-roi-scene { min-height: 320px; }',
+      '  .ar-roi-board { min-height: 280px; margin: 8px; padding: 11px; transform: none; }',
+      '  .ar-roi-scale { margin-left: 84px; }',
+      '  .ar-roi-meter { grid-template-columns: 74px minmax(0, 1fr); gap: 7px; }',
+      '  .ar-roi-lenses { grid-template-columns: 1fr; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-roi-board, .ar-roi-bar, .ar-roi-preset, .ar-roi-reset, .ar-roi-lens { transition: none !important; }',
+      '  .ar-roi-scene:hover .ar-roi-board, .ar-roi-preset:hover, .ar-roi-reset:hover, .ar-roi-lens:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-roi-hero, .ar-roi-stat, .ar-roi-form, .ar-roi-stage, .ar-roi-stage-marker, .ar-roi-field input, .ar-roi-field select, .ar-roi-scene-card, .ar-roi-scene, .ar-roi-board, .ar-roi-rail, .ar-roi-path, .ar-roi-result, .ar-roi-signal, .ar-roi-lens, .ar-roi-detail, .ar-roi-evidence, .ar-roi-evidence-item, .ar-roi-reference { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-roi-bar { background: Highlight !important; }',
+      '  .ar-roi-lens[aria-pressed="true"], .ar-roi-preset[aria-pressed="true"] { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-roi-preset:focus-visible, .ar-roi-reset:focus-visible, .ar-roi-lens:focus-visible, .ar-roi-actions button:focus-visible, .ar-roi-field input:focus-visible, .ar-roi-field select:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '}',
+      '@media print {',
+      '  .ar-roi-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-roi-shell, .ar-roi-shell * { color: black !important; }',
+      '  .ar-roi-form, .ar-roi-presets, .ar-roi-lenses, .ar-roi-actions, [data-ar-roi-print-hide="true"] { display: none !important; }',
+      '  .ar-roi-board, .ar-roi-scene:hover .ar-roi-board { transform: none !important; }',
+      '  .ar-roi-hero, .ar-roi-stat, .ar-roi-scene-card, .ar-roi-scene, .ar-roi-board, .ar-roi-rail, .ar-roi-path, .ar-roi-result, .ar-roi-signal, .ar-roi-detail, .ar-roi-evidence, .ar-roi-evidence-item, .ar-roi-reference { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-roi-scene-card, .ar-roi-result, .ar-roi-evidence, .ar-roi-reference { break-inside: avoid; page-break-inside: avoid; }',
+      '}',
+
       '.ar-log-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
       '.ar-log-hero { margin-bottom: 14px; padding: clamp(16px, 3vw, 24px); border-radius: 16px; overflow: hidden; }',
       '.ar-log-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }',
@@ -1990,6 +2332,209 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '  .ar-stripe-anim, .ar-warning-blink, .ar-pulse-ring { animation: none !important; }',
       '  body { background: white !important; color: black !important; }',
       '}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(st);
+  })();
+
+  // VIN Decoder — dimensional vehicle identity bench
+  (function injectVinStyles() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-ar-vin-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-ar-vin-css';
+    st.textContent = [
+      '.ar-vin-shell { width: 100%; max-width: 1160px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; color: var(--vin-text); }',
+      '.ar-vin-shell *, .ar-vin-shell *::before, .ar-vin-shell *::after { box-sizing: border-box; }',
+      '.ar-vin-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); gap: clamp(18px, 4vw, 42px); align-items: center; min-height: 286px; padding: clamp(22px, 5vw, 48px); overflow: hidden; border: 1px solid var(--vin-border); border-radius: 24px; background: radial-gradient(circle at 12% 8%, rgba(34,211,238,.15), transparent 34%), radial-gradient(circle at 88% 86%, rgba(245,158,11,.13), transparent 36%), linear-gradient(145deg, var(--vin-card), var(--vin-card-alt)); box-shadow: 0 24px 56px rgba(2,6,23,.24), inset 0 1px rgba(255,255,255,.08); }',
+      '.ar-vin-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .28; background-image: linear-gradient(rgba(148,163,184,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.12) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(90deg, black, transparent 72%); }',
+      '.ar-vin-hero-copy, .ar-vin-location-card { position: relative; z-index: 1; min-width: 0; }',
+      '.ar-vin-eyebrow { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--vin-accent-hi); font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }',
+      '.ar-vin-eyebrow::before { content: ""; width: 28px; height: 2px; background: linear-gradient(90deg, var(--vin-accent), var(--vin-accent-hi)); box-shadow: 0 0 12px var(--vin-accent); }',
+      '.ar-vin-title { max-width: 720px; margin: 0; color: var(--vin-text); font-size: clamp(28px, 4.4vw, 50px); line-height: .98; letter-spacing: -.045em; }',
+      '.ar-vin-lede { max-width: 650px; margin: 16px 0 0; color: var(--vin-muted); font-size: 14px; line-height: 1.65; }',
+      '.ar-vin-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }',
+      '.ar-vin-chip { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 10px; border: 1px solid var(--vin-border); border-radius: 999px; background: rgba(15,23,42,.18); color: var(--vin-text); font-size: 11px; font-weight: 800; }',
+      '.ar-vin-chip[data-tone="local"]::before, .ar-vin-chip[data-tone="limited"]::before { content: ""; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; }',
+      '.ar-vin-chip[data-tone="local"]::before { background: var(--vin-good); box-shadow: 0 0 10px var(--vin-good); }',
+      '.ar-vin-chip[data-tone="limited"]::before { background: var(--vin-warn); box-shadow: 0 0 10px var(--vin-warn); }',
+      '.ar-vin-location-card { min-height: 210px; padding: 12px; border: 1px solid rgba(148,163,184,.25); border-radius: 20px; background: linear-gradient(155deg, rgba(15,23,42,.72), rgba(15,23,42,.38)); box-shadow: 0 18px 30px rgba(2,6,23,.24), inset 0 1px rgba(255,255,255,.1); }',
+      '.ar-vin-location-card svg { display: block; width: 100%; height: auto; min-height: 178px; filter: drop-shadow(0 16px 16px rgba(2,6,23,.26)); }',
+      '.ar-vin-location-label { display: flex; justify-content: space-between; gap: 12px; padding: 4px 6px 0; color: #cbd5e1; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }',
+      '.ar-vin-location-pulse { transform-box: fill-box; transform-origin: center; animation: ar-vin-location 2.2s ease-out infinite; }',
+      '.ar-vin-workbench { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .55fr); gap: 16px; margin-top: 16px; align-items: stretch; }',
+      '.ar-vin-console, .ar-vin-evidence, .ar-vin-results, .ar-vin-lookups, .ar-vin-caveat { border: 1px solid var(--vin-border); background: var(--vin-card); box-shadow: 0 14px 34px rgba(2,6,23,.13); }',
+      '.ar-vin-console { min-width: 0; padding: clamp(16px, 3vw, 24px); border-radius: 20px; overflow: hidden; }',
+      '.ar-vin-console-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }',
+      '.ar-vin-kicker { margin: 0 0 4px; color: var(--vin-accent-hi); font-size: 10px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }',
+      '.ar-vin-console-title { margin: 0; color: var(--vin-text); font-size: 18px; line-height: 1.2; }',
+      '.ar-vin-counter { flex: 0 0 auto; display: grid; place-items: center; min-width: 66px; min-height: 54px; border: 1px solid var(--vin-border); border-radius: 12px; background: var(--vin-card-alt); color: var(--vin-accent-hi); font: 900 18px/1 ui-monospace, SFMono-Regular, Consolas, monospace; box-shadow: inset 0 1px rgba(255,255,255,.08); }',
+      '.ar-vin-counter small { display: block; margin-top: 3px; color: var(--vin-dim); font: 800 8px/1 system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }',
+      '.ar-vin-label { display: block; margin-bottom: 7px; color: var(--vin-text); font-size: 12px; font-weight: 850; }',
+      '.ar-vin-input-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }',
+      '.ar-vin-input { width: 100%; min-width: 0; min-height: 48px; padding: 11px 13px; border: 1px solid var(--vin-border); border-radius: 10px; outline: 0; background: var(--vin-bg); color: var(--vin-text); font: 800 clamp(16px, 2.2vw, 20px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .09em; text-transform: uppercase; transition: border-color .18s ease, box-shadow .18s ease; }',
+      '.ar-vin-input:focus-visible { border-color: var(--vin-accent); box-shadow: 0 0 0 3px rgba(34,211,238,.22); }',
+      '.ar-vin-input[aria-invalid="true"] { border-color: var(--vin-bad); box-shadow: 0 0 0 3px rgba(248,113,113,.16); }',
+      '.ar-vin-button { min-height: 44px; padding: 9px 13px; border: 1px solid var(--vin-border); border-radius: 10px; background: var(--vin-card-alt); color: var(--vin-text); font: 800 11px/1.15 system-ui, sans-serif; cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease; }',
+      '.ar-vin-button:hover { transform: translateY(-1px); border-color: var(--vin-accent); }',
+      '.ar-vin-button:focus-visible, .ar-vin-segment:focus-visible, .ar-vin-link-card:focus-visible { outline: 3px solid var(--vin-accent-hi); outline-offset: 3px; }',
+      '.ar-vin-format-hint { margin: 8px 0 0; color: var(--vin-dim); font-size: 11px; line-height: 1.5; }',
+      '.ar-vin-progress { width: 100%; height: 5px; margin: 12px 0 0; overflow: hidden; border-radius: 999px; background: var(--vin-border); }',
+      '.ar-vin-progress > span { display: block; width: var(--vin-progress); height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--vin-accent), var(--vin-accent-hi)); box-shadow: 0 0 12px var(--vin-accent); transition: width .22s ease; }',
+      '.ar-vin-status { display: flex; align-items: flex-start; gap: 9px; min-height: 42px; margin-top: 12px; padding: 10px 12px; border: 1px solid var(--vin-border); border-radius: 10px; background: var(--vin-card-alt); color: var(--vin-muted); font-size: 12px; line-height: 1.45; }',
+      '.ar-vin-status::before { content: "i"; flex: 0 0 auto; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--vin-accent); color: #06101a; font-weight: 950; }',
+      '.ar-vin-shell[data-ar-vin-state="invalid"] .ar-vin-status { border-color: var(--vin-bad); color: var(--vin-bad); }',
+      '.ar-vin-shell[data-ar-vin-state="invalid"] .ar-vin-status::before { content: "!"; background: var(--vin-bad); }',
+      '.ar-vin-shell[data-ar-vin-state="decoded"] .ar-vin-status::before { content: "✓"; background: var(--vin-good); }',
+      '.ar-vin-shell[data-ar-vin-state="warning"] .ar-vin-status { border-color: var(--vin-warn); color: var(--vin-warn); }',
+      '.ar-vin-shell[data-ar-vin-state="warning"] .ar-vin-status::before { content: "!"; background: var(--vin-warn); }',
+      '.ar-vin-plate-stage { position: relative; margin-top: 18px; padding: clamp(18px, 3vw, 30px) clamp(8px, 2vw, 20px) 26px; perspective: 900px; border: 1px solid rgba(148,163,184,.2); border-radius: 18px; overflow: hidden; background: radial-gradient(ellipse at 50% -20%, rgba(34,211,238,.14), transparent 48%), linear-gradient(180deg, #172033, #0b101b 72%); }',
+      '.ar-vin-plate-stage::after { content: "WORK SURFACE  •  ID STATION 02"; position: absolute; right: 12px; bottom: 7px; color: rgba(203,213,225,.38); font: 800 8px/1 ui-monospace, monospace; letter-spacing: .1em; }',
+      '.ar-vin-plate { position: relative; width: 100%; min-height: 118px; padding: 30px clamp(12px, 2vw, 22px) 22px; border: 1px solid #94a3b8; border-radius: 10px; overflow: hidden; transform: rotateX(3deg) rotateZ(-.22deg); transform-origin: center; background: repeating-linear-gradient(92deg, rgba(255,255,255,.08) 0 1px, rgba(15,23,42,.03) 1px 4px), linear-gradient(155deg, #d6dde5, #788492 44%, #c5cdd5 70%, #647180); box-shadow: 0 18px 24px rgba(0,0,0,.42), inset 0 2px 1px rgba(255,255,255,.62), inset 0 -3px 4px rgba(15,23,42,.3); transition: transform .2s ease; }',
+      '.ar-vin-plate::before { content: "VEHICLE IDENTIFICATION NUMBER"; position: absolute; top: 9px; left: 26px; color: #263240; text-shadow: 0 1px rgba(255,255,255,.5); font: 900 8px/1 ui-monospace, monospace; letter-spacing: .17em; }',
+      '.ar-vin-rivet { position: absolute; z-index: 3; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #f8fafc 0 12%, #94a3b8 24%, #334155 70%, #0f172a); box-shadow: 0 1px 2px rgba(0,0,0,.55); }',
+      '.ar-vin-rivet:nth-child(1) { top: 8px; left: 8px; } .ar-vin-rivet:nth-child(2) { top: 8px; right: 8px; } .ar-vin-rivet:nth-child(3) { bottom: 8px; left: 8px; } .ar-vin-rivet:nth-child(4) { bottom: 8px; right: 8px; }',
+      '.ar-vin-cell-rail { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(17, minmax(0, 1fr)); gap: clamp(1px, .35vw, 4px); }',
+      '.ar-vin-cell { position: relative; display: grid; place-items: center; min-width: 0; min-height: 43px; border: 1px solid rgba(30,41,59,.42); border-top: 4px solid var(--vin-cell-tone, #475569); border-radius: 3px; overflow: hidden; background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(15,23,42,.08)); color: #111827; text-shadow: 0 1px rgba(255,255,255,.52), 0 -1px rgba(15,23,42,.22); font: 950 clamp(10px, 1.65vw, 18px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; }',
+      '.ar-vin-cell::after { content: attr(data-position); position: absolute; right: 2px; bottom: 2px; color: rgba(15,23,42,.58); font: 800 6px/1 ui-monospace, monospace; }',
+      '.ar-vin-cell[data-empty="true"] { color: rgba(30,41,59,.28); }',
+      '.ar-vin-cell[data-group="wmi"] { --vin-cell-tone: #0891b2; } .ar-vin-cell[data-group="vds"] { --vin-cell-tone: #7c3aed; } .ar-vin-cell[data-group="check"] { --vin-cell-tone: #e11d48; } .ar-vin-cell[data-group="year"] { --vin-cell-tone: #d97706; } .ar-vin-cell[data-group="plant"] { --vin-cell-tone: #16a34a; } .ar-vin-cell[data-group="sequence"] { --vin-cell-tone: #2563eb; }',
+      '.ar-vin-scan { position: absolute; z-index: 5; top: 18px; bottom: 18px; left: 3%; width: 2px; pointer-events: none; opacity: 0; background: #67e8f9; box-shadow: 0 0 7px #22d3ee, 0 0 22px #22d3ee; }',
+      '.ar-vin-shell[data-ar-vin-state="partial"] .ar-vin-scan, .ar-vin-shell[data-ar-vin-state="decoded"] .ar-vin-scan, .ar-vin-shell[data-ar-vin-state="warning"] .ar-vin-scan { opacity: .85; animation: ar-vin-scan 3.4s ease-in-out infinite; }',
+      '.ar-vin-position-map { display: grid; grid-template-columns: repeat(17, minmax(0, 1fr)); gap: 2px; margin: 12px 6px 0; color: #94a3b8; font: 700 7px/1 ui-monospace, monospace; text-align: center; }',
+      '.ar-vin-segments { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; margin-top: 14px; }',
+      '.ar-vin-segment { position: relative; min-height: 56px; padding: 8px 6px 7px; border: 1px solid var(--vin-border); border-top: 4px solid var(--segment-tone); border-radius: 10px; background: var(--vin-card-alt); color: var(--vin-muted); cursor: pointer; text-align: left; transition: transform .16s ease, border-color .16s ease, background .16s ease; }',
+      '.ar-vin-segment strong { display: block; color: var(--vin-text); font-size: 10px; } .ar-vin-segment span { display: block; margin-top: 3px; font-size: 9px; }',
+      '.ar-vin-segment[aria-pressed="true"] { transform: translateY(-2px); border-color: var(--segment-tone); background: var(--vin-card); box-shadow: 0 8px 18px rgba(2,6,23,.15); }',
+      '.ar-vin-evidence { display: flex; flex-direction: column; min-width: 0; padding: 20px; border-radius: 20px; }',
+      '.ar-vin-evidence-mark { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 16px; border: 1px solid var(--detail-tone); border-radius: 14px; background: var(--vin-card-alt); color: var(--detail-tone); font: 950 14px/1 ui-monospace, monospace; box-shadow: inset 0 1px rgba(255,255,255,.08); }',
+      '.ar-vin-detail-label { margin: 0 0 5px; color: var(--detail-tone); font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }',
+      '.ar-vin-detail-title { margin: 0; color: var(--vin-text); font-size: 21px; line-height: 1.15; }',
+      '.ar-vin-detail-value { min-height: 34px; margin: 16px 0 0; padding: 10px 12px; border-left: 3px solid var(--detail-tone); background: var(--vin-card-alt); color: var(--vin-text); font: 900 16px/1 ui-monospace, monospace; overflow-wrap: anywhere; }',
+      '.ar-vin-detail-copy { margin: 14px 0 0; color: var(--vin-muted); font-size: 12px; line-height: 1.6; }',
+      '.ar-vin-detail-limit { margin-top: auto; padding-top: 16px; color: var(--vin-dim); font-size: 10px; line-height: 1.5; }',
+      '.ar-vin-results { margin-top: 16px; padding: clamp(16px, 3vw, 24px); border-radius: 20px; }',
+      '.ar-vin-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }',
+      '.ar-vin-section-head h2 { margin: 0; color: var(--vin-text); font-size: 18px; }',
+      '.ar-vin-confidence { display: inline-flex; align-items: center; min-height: 28px; padding: 5px 9px; border: 1px solid currentColor; border-radius: 999px; color: var(--vin-good); font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }',
+      '.ar-vin-confidence[data-ar-vin-confidence="mismatch"] { color: var(--vin-bad); } .ar-vin-confidence[data-ar-vin-confidence="limited"] { color: var(--vin-warn); }',
+      '.ar-vin-result-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 0; }',
+      '.ar-vin-field { min-width: 0; padding: 13px; border: 1px solid var(--vin-border); border-radius: 12px; background: var(--vin-card-alt); }',
+      '.ar-vin-field dt { margin: 0 0 6px; color: var(--vin-dim); font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }',
+      '.ar-vin-field dd { margin: 0; color: var(--vin-text); font-size: 13px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }',
+      '.ar-vin-field small { display: block; margin-top: 6px; color: var(--vin-dim); font-size: 9px; line-height: 1.45; }',
+      '.ar-vin-caveat { margin-top: 16px; padding: 16px 18px; border-left: 4px solid var(--vin-warn); border-radius: 14px; color: var(--vin-muted); font-size: 11px; line-height: 1.65; }',
+      '.ar-vin-caveat strong { color: var(--vin-text); }',
+      '.ar-vin-lookups { margin-top: 16px; padding: clamp(16px, 3vw, 24px); border-radius: 20px; }',
+      '.ar-vin-link-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-vin-link-card { position: relative; display: flex; flex-direction: column; min-height: 118px; padding: 13px; border: 1px solid var(--vin-border); border-radius: 13px; overflow: hidden; background: var(--vin-card-alt); color: var(--vin-text); text-decoration: none; transition: transform .16s ease, border-color .16s ease; }',
+      '.ar-vin-link-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--lookup-tone); }',
+      '.ar-vin-link-card:hover { transform: translateY(-2px); border-color: var(--lookup-tone); }',
+      '.ar-vin-link-badge { align-self: flex-start; margin-bottom: 16px; padding: 4px 6px; border-radius: 999px; background: var(--vin-bg); color: var(--lookup-tone); font-size: 8px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }',
+      '.ar-vin-link-card strong { font-size: 12px; line-height: 1.35; } .ar-vin-link-card span:last-child { margin-top: auto; color: var(--vin-dim); font-size: 9px; }',
+      '.ar-vin-privacy { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; padding: 12px 14px; border: 1px dashed var(--vin-border); border-radius: 12px; color: var(--vin-muted); font-size: 10px; line-height: 1.55; }',
+      '.ar-vin-privacy strong { color: var(--vin-accent-hi); }',
+      '@keyframes ar-vin-scan { 0%, 100% { left: 3%; opacity: .15; } 48%, 52% { opacity: .95; } 50% { left: 97%; } }',
+      '@keyframes ar-vin-location { 0% { transform: scale(.65); opacity: .95; } 75%, 100% { transform: scale(1.8); opacity: 0; } }',
+      '@media (max-width: 900px) { .ar-vin-hero, .ar-vin-workbench { grid-template-columns: 1fr; } .ar-vin-location-card { max-width: 560px; width: 100%; margin: 0 auto; } .ar-vin-result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ar-vin-link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }',
+      '@media (max-width: 620px) { .ar-vin-shell { padding: 10px; } .ar-vin-hero { min-height: 0; padding: 20px 16px; border-radius: 18px; } .ar-vin-title { font-size: clamp(27px, 10vw, 38px); } .ar-vin-location-card { min-height: 0; } .ar-vin-console, .ar-vin-evidence, .ar-vin-results, .ar-vin-lookups { border-radius: 16px; } .ar-vin-input-row { grid-template-columns: 1fr 1fr; } .ar-vin-input { grid-column: 1 / -1; letter-spacing: .045em; } .ar-vin-plate-stage { min-width: 0; padding-inline: 5px; } .ar-vin-plate { padding-inline: 7px; transform: none; } .ar-vin-cell-rail { gap: 1px; } .ar-vin-cell { min-height: 38px; border-top-width: 3px; font-size: clamp(8px, 3vw, 13px); } .ar-vin-cell::after { display: none; } .ar-vin-position-map { margin-inline: 0; font-size: 6px; } .ar-vin-segments { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ar-vin-result-grid, .ar-vin-link-grid { grid-template-columns: 1fr; } .ar-vin-section-head { flex-direction: column; } }',
+      '@media (prefers-reduced-motion: reduce) { .ar-vin-location-pulse, .ar-vin-scan { animation: none !important; } .ar-vin-scan { display: none; } .ar-vin-input, .ar-vin-button, .ar-vin-segment, .ar-vin-link-card, .ar-vin-progress > span, .ar-vin-plate { transition: none !important; } .ar-vin-button:hover, .ar-vin-segment[aria-pressed="true"], .ar-vin-link-card:hover { transform: none; } }',
+      '@media (forced-colors: active) { .ar-vin-hero, .ar-vin-location-card, .ar-vin-console, .ar-vin-evidence, .ar-vin-results, .ar-vin-lookups, .ar-vin-caveat, .ar-vin-field, .ar-vin-segment, .ar-vin-status, .ar-vin-link-card, .ar-vin-plate-stage, .ar-vin-plate { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; } .ar-vin-hero::before, .ar-vin-scan { display: none !important; } .ar-vin-segment[aria-pressed="true"] { outline: 3px solid Highlight; } .ar-vin-progress > span, .ar-vin-confidence { forced-color-adjust: none; } .ar-vin-cell { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; text-shadow: none !important; } }',
+      '@media print { .ar-vin-shell { max-width: none !important; padding: 0 !important; color: black !important; } .ar-vin-shell, .ar-vin-shell * { color: black !important; box-shadow: none !important; text-shadow: none !important; } .ar-vin-hero { min-height: 0; grid-template-columns: 1fr; padding: 12px; background: white !important; border: 1px solid black; break-inside: avoid; } .ar-vin-location-card, .ar-vin-chips, .ar-vin-input-row, .ar-vin-progress, .ar-vin-status, .ar-vin-segments, .ar-vin-scan, .ar-vin-lookups { display: none !important; } .ar-vin-workbench { display: block; } .ar-vin-console, .ar-vin-evidence, .ar-vin-results, .ar-vin-caveat { margin-top: 10px; padding: 12px; background: white !important; border: 1px solid black; break-inside: avoid; } .ar-vin-plate-stage, .ar-vin-plate, .ar-vin-field { background: white !important; border-color: black !important; } .ar-vin-plate { transform: none; } .ar-vin-evidence { display: none; } }'
+    ].join('\n');
+    if (document.head) document.head.appendChild(st);
+  })();
+
+  // First Car — dimensional four-week ownership route
+  (function injectFirstCarStyles() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-ar-firstcar-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-ar-firstcar-css';
+    st.textContent = [
+      '.ar-firstcar-shell { width: 100%; max-width: 1160px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; color: var(--fc-text); }',
+      '.ar-firstcar-shell *, .ar-firstcar-shell *::before, .ar-firstcar-shell *::after { box-sizing: border-box; }',
+      '.ar-firstcar-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr); gap: clamp(20px, 4vw, 44px); align-items: center; min-height: 330px; padding: clamp(24px, 5vw, 50px); overflow: hidden; border: 1px solid var(--fc-border); border-radius: 26px; background: radial-gradient(circle at 8% 4%, rgba(251,191,36,.19), transparent 34%), radial-gradient(circle at 90% 90%, rgba(45,212,191,.16), transparent 38%), linear-gradient(145deg, var(--fc-card), var(--fc-card-alt)); box-shadow: 0 26px 58px rgba(2,6,23,.22), inset 0 1px rgba(255,255,255,.09); }',
+      '.ar-firstcar-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .23; background-image: radial-gradient(circle at center, rgba(148,163,184,.36) 1px, transparent 1.5px); background-size: 24px 24px; mask-image: linear-gradient(110deg, black, transparent 66%); }',
+      '.ar-firstcar-hero-copy, .ar-firstcar-route-card { position: relative; z-index: 1; min-width: 0; }',
+      '.ar-firstcar-eyebrow { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--fc-accent-hi); font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }',
+      '.ar-firstcar-eyebrow::before { content: ""; width: 30px; height: 2px; background: linear-gradient(90deg, var(--fc-warn), var(--fc-accent-hi)); box-shadow: 0 0 12px var(--fc-warn); }',
+      '.ar-firstcar-title { max-width: 690px; margin: 0; color: var(--fc-text); font-size: clamp(30px, 4.8vw, 54px); line-height: .98; letter-spacing: -.05em; }',
+      '.ar-firstcar-lede { max-width: 650px; margin: 17px 0 0; color: var(--fc-muted); font-size: 14px; line-height: 1.68; }',
+      '.ar-firstcar-progress-cluster { display: flex; align-items: center; gap: 16px; margin-top: 22px; }',
+      '.ar-firstcar-progress-dial { position: relative; flex: 0 0 auto; display: grid; place-items: center; width: 94px; height: 94px; border-radius: 50%; background: conic-gradient(var(--fc-good) 0 var(--fc-progress), var(--fc-border) var(--fc-progress) 100%); box-shadow: 0 12px 24px rgba(2,6,23,.2), 0 0 0 1px var(--fc-border); }',
+      '.ar-firstcar-progress-dial::before { content: ""; position: absolute; inset: 9px; border-radius: inherit; background: var(--fc-card); box-shadow: inset 0 1px rgba(255,255,255,.1); }',
+      '.ar-firstcar-progress-number { position: relative; z-index: 1; color: var(--fc-text); font: 950 22px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }',
+      '.ar-firstcar-progress-number small { display: block; margin-top: 5px; color: var(--fc-dim); font: 800 8px/1 system-ui, sans-serif; letter-spacing: .09em; text-align: center; text-transform: uppercase; }',
+      '.ar-firstcar-progress-copy { min-width: 0; } .ar-firstcar-progress-copy strong { display: block; color: var(--fc-text); font-size: 14px; } .ar-firstcar-progress-copy span { display: block; margin-top: 5px; color: var(--fc-muted); font-size: 11px; line-height: 1.5; }',
+      '.ar-firstcar-hero-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }',
+      '.ar-firstcar-chip { display: inline-flex; align-items: center; min-height: 29px; padding: 5px 9px; border: 1px solid var(--fc-border); border-radius: 999px; background: rgba(15,23,42,.12); color: var(--fc-text); font-size: 10px; font-weight: 850; }',
+      '.ar-firstcar-route-card { min-height: 250px; margin: 0; padding: 12px; border: 1px solid rgba(148,163,184,.28); border-radius: 21px; background: linear-gradient(165deg, rgba(15,23,42,.78), rgba(15,23,42,.42)); box-shadow: 0 20px 34px rgba(2,6,23,.25), inset 0 1px rgba(255,255,255,.1); }',
+      '.ar-firstcar-route-card svg { display: block; width: 100%; height: auto; min-height: 215px; filter: drop-shadow(0 14px 14px rgba(2,6,23,.26)); }',
+      '.ar-firstcar-route-caption { display: flex; justify-content: space-between; gap: 12px; padding: 2px 5px 0; color: #cbd5e1; font-size: 9px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase; }',
+      '.ar-firstcar-scene-car { transform-box: fill-box; transform-origin: center bottom; animation: ar-firstcar-idle 2.4s ease-in-out infinite; transition: transform .48s cubic-bezier(.22,.8,.28,1); }',
+      '.ar-firstcar-scene-beacon { transform-box: fill-box; transform-origin: center; animation: ar-firstcar-beacon 2.1s ease-out infinite; }',
+      '.ar-firstcar-gate { display: grid; grid-template-columns: minmax(220px, .42fr) minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 16px; padding: clamp(16px, 3vw, 22px); border: 1px solid var(--fc-warn); border-left: 5px solid var(--fc-warn); border-radius: 18px; background: linear-gradient(115deg, rgba(245,158,11,.11), var(--fc-card) 44%); box-shadow: 0 13px 30px rgba(2,6,23,.11); }',
+      '.ar-firstcar-gate-head { display: flex; align-items: flex-start; gap: 11px; }',
+      '.ar-firstcar-gate-icon { flex: 0 0 auto; display: grid; place-items: center; width: 42px; height: 42px; border: 2px solid var(--fc-warn); border-radius: 13px; background: var(--fc-card-alt); color: var(--fc-warn); font: 950 19px/1 ui-monospace, monospace; }',
+      '.ar-firstcar-gate h2 { margin: 0; color: var(--fc-text); font-size: 16px; line-height: 1.3; }',
+      '.ar-firstcar-gate ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin: 0; padding: 0; list-style: none; }',
+      '.ar-firstcar-gate li { position: relative; padding-left: 17px; color: var(--fc-muted); font-size: 10px; line-height: 1.55; }',
+      '.ar-firstcar-gate li::before { content: ""; position: absolute; top: .48em; left: 0; width: 7px; height: 7px; border: 2px solid var(--fc-warn); border-radius: 50%; }',
+      '.ar-firstcar-timeline { position: relative; margin: 16px 0 0; padding: 14px; border: 1px solid var(--fc-border); border-radius: 20px; background: var(--fc-card); box-shadow: 0 14px 34px rgba(2,6,23,.12); }',
+      '.ar-firstcar-timeline-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 2px 11px; } .ar-firstcar-timeline-head h2 { margin: 0; color: var(--fc-text); font-size: 16px; } .ar-firstcar-timeline-head span { color: var(--fc-dim); font-size: 10px; }',
+      '.ar-firstcar-week-list { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 0; padding: 0; list-style: none; }',
+      '.ar-firstcar-week-list::before { content: ""; position: absolute; top: 24px; left: 8%; right: 8%; height: 2px; background: linear-gradient(90deg, #f59e0b, #22d3ee, #a78bfa, #34d399); opacity: .5; }',
+      '.ar-firstcar-week-list li { position: relative; min-width: 0; }',
+      '.ar-firstcar-week-stop { position: relative; z-index: 1; width: 100%; min-height: 92px; padding: 11px 10px 10px; border: 1px solid var(--fc-border); border-top: 4px solid var(--week-tone); border-radius: 13px; background: var(--fc-card-alt); color: var(--fc-text); cursor: pointer; text-align: left; transition: transform .17s ease, border-color .17s ease, box-shadow .17s ease; }',
+      '.ar-firstcar-week-stop:hover { transform: translateY(-2px); border-color: var(--week-tone); }',
+      '.ar-firstcar-week-stop:focus-visible, .ar-firstcar-check:focus-visible, .ar-firstcar-action:focus-visible, .ar-firstcar-next-button:focus-visible { outline: 3px solid var(--fc-accent-hi); outline-offset: 3px; }',
+      '.ar-firstcar-week-stop[aria-pressed="true"] { transform: translateY(-3px); border-color: var(--week-tone); box-shadow: 0 12px 22px rgba(2,6,23,.18), inset 0 0 0 1px var(--week-tone); }',
+      '.ar-firstcar-week-index { display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 8px; border: 2px solid var(--week-tone); border-radius: 50%; background: var(--fc-card); color: var(--fc-text); font: 950 12px/1 ui-monospace, monospace; }',
+      '.ar-firstcar-week-stop strong { display: block; font-size: 11px; line-height: 1.25; } .ar-firstcar-week-stop small { display: block; margin-top: 5px; color: var(--fc-muted); font-size: 9px; line-height: 1.3; }',
+      '.ar-firstcar-week-meter { display: block; height: 4px; margin-top: 8px; overflow: hidden; border-radius: 999px; background: var(--fc-border); } .ar-firstcar-week-meter > span { display: block; width: var(--week-progress); height: 100%; border-radius: inherit; background: var(--week-tone); transition: width .24s ease; }',
+      '.ar-firstcar-workspace { display: grid; grid-template-columns: minmax(0, 1.48fr) minmax(300px, .52fr); gap: 16px; margin-top: 16px; align-items: start; }',
+      '.ar-firstcar-week-panel, .ar-firstcar-next, .ar-firstcar-stack, .ar-firstcar-complete { border: 1px solid var(--fc-border); background: var(--fc-card); box-shadow: 0 14px 34px rgba(2,6,23,.12); }',
+      '.ar-firstcar-week-panel { min-width: 0; padding: clamp(17px, 3vw, 25px); border-radius: 20px; }',
+      '.ar-firstcar-week-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 13px; align-items: start; padding-bottom: 15px; border-bottom: 1px solid var(--fc-border); }',
+      '.ar-firstcar-week-icon { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid var(--week-tone); border-radius: 14px; background: var(--fc-card-alt); font-size: 22px; box-shadow: inset 0 1px rgba(255,255,255,.08); }',
+      '.ar-firstcar-week-kicker { margin: 0 0 4px; color: var(--week-tone); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }',
+      '.ar-firstcar-week-title { margin: 0; color: var(--fc-text); font-size: clamp(19px, 3vw, 26px); line-height: 1.08; }',
+      '.ar-firstcar-week-focus { margin: 7px 0 0; color: var(--fc-muted); font-size: 11px; line-height: 1.5; }',
+      '.ar-firstcar-week-score { min-width: 62px; padding: 8px; border: 1px solid var(--fc-border); border-radius: 11px; background: var(--fc-card-alt); color: var(--fc-text); font: 950 14px/1 ui-monospace, monospace; text-align: center; } .ar-firstcar-week-score small { display: block; margin-top: 4px; color: var(--fc-dim); font: 800 8px/1 system-ui, sans-serif; text-transform: uppercase; }',
+      '.ar-firstcar-outcome { margin: 14px 0; padding: 11px 13px; border-left: 4px solid var(--week-tone); border-radius: 9px; background: var(--fc-card-alt); color: var(--fc-muted); font-size: 11px; line-height: 1.55; } .ar-firstcar-outcome strong { color: var(--fc-text); }',
+      '.ar-firstcar-task-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }',
+      '.ar-firstcar-task { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 11px; align-items: start; min-width: 0; padding: 13px; border: 1px solid var(--fc-border); border-radius: 13px; background: var(--fc-card-alt); transition: border-color .17s ease, transform .17s ease, background .17s ease; }',
+      '.ar-firstcar-task:hover { transform: translateY(-1px); border-color: var(--week-tone); }',
+      '.ar-firstcar-task[data-ar-firstcar-task-state="complete"] { border-color: var(--fc-good); background: linear-gradient(110deg, rgba(16,185,129,.11), var(--fc-card-alt) 52%); }',
+      '.ar-firstcar-check { position: relative; display: grid; place-items: center; width: 46px; min-width: 46px; min-height: 46px; padding: 0; border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-card); color: var(--fc-dim); cursor: pointer; font-size: 19px; }',
+      '.ar-firstcar-check[aria-pressed="true"] { border-color: var(--fc-good); background: var(--fc-good); color: var(--fc-on-strong); box-shadow: 0 8px 16px rgba(16,185,129,.2); }',
+      '.ar-firstcar-task-copy { min-width: 0; }',
+      '.ar-firstcar-task-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 5px; }',
+      '.ar-firstcar-task-icon { font-size: 15px; }',
+      '.ar-firstcar-kind { padding: 3px 6px; border: 1px solid var(--week-tone); border-radius: 999px; color: var(--week-tone); font-size: 8px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }',
+      '.ar-firstcar-task-title { margin: 0; color: var(--fc-text); font-size: 13px; line-height: 1.5; }',
+      '.ar-firstcar-why { margin: 7px 0 0; color: var(--fc-muted); font-size: 10px; line-height: 1.55; } .ar-firstcar-why strong { color: var(--fc-dim); }',
+      '.ar-firstcar-action { align-self: center; min-height: 44px; max-width: 132px; padding: 8px 10px; border: 1px solid var(--week-tone); border-radius: 10px; background: var(--fc-card); color: var(--fc-text); cursor: pointer; font-size: 9px; font-weight: 850; line-height: 1.3; text-align: center; text-decoration: none; transition: transform .16s ease, background .16s ease; } .ar-firstcar-action:hover { transform: translateY(-1px); background: var(--fc-card-alt); }',
+      '.ar-firstcar-sidebar { display: grid; gap: 12px; min-width: 0; }',
+      '.ar-firstcar-next, .ar-firstcar-stack, .ar-firstcar-complete { padding: 18px; border-radius: 18px; }',
+      '.ar-firstcar-side-kicker { margin: 0 0 6px; color: var(--fc-accent-hi); font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }',
+      '.ar-firstcar-next h2, .ar-firstcar-stack h2, .ar-firstcar-complete h2 { margin: 0; color: var(--fc-text); font-size: 17px; line-height: 1.25; }',
+      '.ar-firstcar-next-task { margin: 14px 0 0; padding: 13px; border: 1px solid var(--next-tone); border-radius: 12px; background: var(--fc-card-alt); }',
+      '.ar-firstcar-next-task strong { display: block; color: var(--fc-text); font-size: 12px; line-height: 1.45; } .ar-firstcar-next-task span { display: block; margin-top: 6px; color: var(--fc-muted); font-size: 10px; line-height: 1.5; }',
+      '.ar-firstcar-next-button { width: 100%; min-height: 44px; margin-top: 11px; padding: 9px 12px; border: 0; border-radius: 10px; background: var(--next-tone); color: #08111d; cursor: pointer; font-size: 10px; font-weight: 900; }',
+      '.ar-firstcar-stack-list { display: grid; gap: 7px; margin-top: 13px; }',
+      '.ar-firstcar-stack-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 9px; align-items: center; padding: 9px 10px; border: 1px solid var(--fc-border); border-radius: 10px; background: var(--fc-card-alt); }',
+      '.ar-firstcar-stack-row span:first-child { font-size: 17px; } .ar-firstcar-stack-row strong { color: var(--fc-text); font-size: 10px; line-height: 1.25; } .ar-firstcar-stack-row small { color: var(--fc-dim); font: 850 9px/1 ui-monospace, monospace; }',
+      '.ar-firstcar-complete { border-color: var(--fc-good); background: radial-gradient(circle at 90% 10%, rgba(52,211,153,.16), transparent 34%), var(--fc-card); } .ar-firstcar-complete p { margin: 9px 0 0; color: var(--fc-muted); font-size: 11px; line-height: 1.55; }',
+      '.ar-firstcar-status { min-height: 42px; margin-top: 12px; padding: 10px 12px; border: 1px dashed var(--fc-border); border-radius: 11px; background: var(--fc-card); color: var(--fc-muted); box-shadow: 0 10px 24px rgba(2,6,23,.09); font-size: 10px; line-height: 1.5; }',
+      '@keyframes ar-firstcar-idle { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }',
+      '@keyframes ar-firstcar-beacon { 0% { opacity: .9; scale: .72; } 75%, 100% { opacity: 0; scale: 1.7; } }',
+      '@media (max-width: 900px) { .ar-firstcar-hero, .ar-firstcar-workspace, .ar-firstcar-gate { grid-template-columns: 1fr; } .ar-firstcar-route-card { width: 100%; max-width: 620px; margin-inline: auto; } .ar-firstcar-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ar-firstcar-complete, .ar-firstcar-status { grid-column: 1 / -1; } }',
+      '@media (max-width: 680px) { .ar-firstcar-week-list, .ar-firstcar-gate ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ar-firstcar-week-list::before { display: none; } .ar-firstcar-sidebar { grid-template-columns: 1fr; } .ar-firstcar-complete, .ar-firstcar-status { grid-column: auto; } .ar-firstcar-task { grid-template-columns: auto minmax(0, 1fr); } .ar-firstcar-action { grid-column: 2; justify-self: stretch; max-width: none; } }',
+      '@media (max-width: 440px) { .ar-firstcar-shell { padding: 10px; } .ar-firstcar-hero { min-height: 0; padding: 21px 16px; border-radius: 18px; } .ar-firstcar-title { font-size: clamp(29px, 11vw, 39px); } .ar-firstcar-progress-cluster { align-items: flex-start; } .ar-firstcar-progress-dial { width: 82px; height: 82px; } .ar-firstcar-route-card { min-height: 0; } .ar-firstcar-week-list, .ar-firstcar-gate ul { grid-template-columns: 1fr; } .ar-firstcar-week-stop { min-height: 78px; } .ar-firstcar-week-head { grid-template-columns: auto minmax(0, 1fr); } .ar-firstcar-week-score { grid-column: 2; justify-self: start; } .ar-firstcar-task { padding: 11px; } .ar-firstcar-check { width: 44px; min-width: 44px; min-height: 44px; } }',
+      '@media (prefers-reduced-motion: reduce) { .ar-firstcar-scene-car, .ar-firstcar-scene-beacon { animation: none !important; } .ar-firstcar-scene-beacon { display: none; } .ar-firstcar-week-stop, .ar-firstcar-week-meter > span, .ar-firstcar-task, .ar-firstcar-action, .ar-firstcar-scene-car { transition: none !important; } .ar-firstcar-week-stop:hover, .ar-firstcar-week-stop[aria-pressed="true"], .ar-firstcar-task:hover, .ar-firstcar-action:hover { transform: none; } }',
+      '@media (forced-colors: active) { .ar-firstcar-hero, .ar-firstcar-route-card, .ar-firstcar-gate, .ar-firstcar-timeline, .ar-firstcar-week-stop, .ar-firstcar-week-panel, .ar-firstcar-task, .ar-firstcar-next, .ar-firstcar-stack, .ar-firstcar-complete, .ar-firstcar-stack-row, .ar-firstcar-next-task, .ar-firstcar-outcome { background: Canvas !important; color: CanvasText !important; border: 2px solid CanvasText !important; box-shadow: none !important; } .ar-firstcar-hero::before, .ar-firstcar-scene-beacon { display: none !important; } .ar-firstcar-week-stop[aria-pressed="true"], .ar-firstcar-check[aria-pressed="true"] { outline: 3px solid Highlight !important; } .ar-firstcar-progress-dial, .ar-firstcar-week-meter > span, .ar-firstcar-check[aria-pressed="true"] { forced-color-adjust: none; } }',
+      '@media print { .ar-firstcar-shell { max-width: none !important; padding: 0 !important; color: black !important; } .ar-firstcar-shell, .ar-firstcar-shell * { color: black !important; box-shadow: none !important; text-shadow: none !important; } .ar-firstcar-hero { min-height: 0; grid-template-columns: 1fr; padding: 12px; background: white !important; border: 1px solid black; break-inside: avoid; } .ar-firstcar-route-card, .ar-firstcar-timeline, .ar-firstcar-sidebar, .ar-firstcar-check, .ar-firstcar-action { display: none !important; } .ar-firstcar-gate { display: block; padding: 10px; background: white !important; border: 2px solid black; break-inside: avoid; } .ar-firstcar-gate ul { display: block; margin-top: 8px; } .ar-firstcar-gate li { margin-top: 4px; } .ar-firstcar-workspace { display: block; } .ar-firstcar-week-panel { display: block !important; margin-top: 10px; padding: 12px; background: white !important; border: 1px solid black; break-before: auto; } .ar-firstcar-task { display: block; margin-top: 6px; background: white !important; border: 1px solid black; break-inside: avoid; } .ar-firstcar-task::after { display: block; margin-top: 5px; font-weight: 800; } .ar-firstcar-task[data-ar-firstcar-task-state="complete"]::after { content: "Status: Complete"; } .ar-firstcar-task[data-ar-firstcar-task-state="todo"]::after { content: "Status: To do"; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(st);
   })();
@@ -4043,56 +4588,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // so you don\'t miss anything important.
   // ─────────────────────────────────────────────────────────
   var FIRST_CAR_PLAN = [
-    { week: 1, title: 'Week 1 — Paperwork + safety walk',
+    { week: 1, id: 'paperwork', title: 'Paperwork + safety walk', range: 'Days 1–7', icon: '📄',
+      focus: 'Protect the legal and visible-safety baseline.',
+      outcome: 'Coverage is active, paperwork is moving, and recalls and exterior lights are checked.',
       tasks: [
-        { do: 'Title transfer at Maine BMV (within 30 days; faster is better). Bring bill of sale, old title, ID. ~$35.',
-          why: 'Driving on the seller\'s title is illegal after 30 days. BMV is busy — go early.' },
-        { do: 'Insurance: switch coverage to your name, add this car to your policy. Get quotes from 2–3 carriers (Geico, Progressive, AAA, local agent).',
-          why: 'You\'re uninsured the moment you drive off the seller\'s lot if you didn\'t arrange this in advance. Maine minimum: 50/100/25 liability + $50/$100K UM.' },
-        { do: 'Find the owner\'s manual. Read the maintenance section.',
-          why: 'Tells you fluid specs, service intervals, fuse locations, recommended tires. The single most useful 30 minutes you spend.' },
-        { do: 'Check all lights externally with a friend pressing the brake.',
-          why: 'Burnt bulb is a $5 + 5-min fix you want to discover NOW, not at inspection.' },
-        { do: 'NHTSA recall check on VIN: nhtsa.gov/recalls.',
-          why: 'Recalls are FREE at any dealer. Schedule them now.' }
+        { id: 'title-transfer', icon: '🧾', kind: 'required',
+          do: 'Submit the title and registration paperwork to Maine BMV within 30 days. Bring the assigned title, bill of sale, ID, proof of insurance, and payment.',
+          why: 'Maine lists a $50 late-filing penalty after 30 days. The standard title application is currently $33; registration, excise tax, and other fees vary.',
+          action: { type: 'external', label: 'Check Maine BMV requirements', url: 'https://www.maine.gov/sos/bmv/vehicles/register-a-passenger-vehicle' } },
+        { id: 'insurance-active', icon: '🛡️', kind: 'required',
+          do: 'Confirm active insurance before driving and keep proof available for registration. Compare coverage—not only price—with an insurer or licensed agent.',
+          why: 'Maine requires vehicle owners or operators to carry insurance. The state minimum includes 50/100/25 liability, uninsured/underinsured coverage, and medical-payments coverage; higher limits may be appropriate.',
+          action: { type: 'external', label: 'Review Maine insurance rules', url: 'https://www.maine.gov/pfr/insurance/consumers/auto-insurance/insurance-required-by-law' } },
+        { id: 'owners-manual', icon: '📘', kind: 'baseline',
+          do: 'Find the owner\'s manual and read the maintenance, fluids, tires, and roadside sections.',
+          why: 'It contains the exact fluid specifications, service intervals, fuse locations, tire pressures, and lifting points for this vehicle.' },
+        { id: 'exterior-lights', icon: '💡', kind: 'safety',
+          do: 'Check every exterior light with a helper operating the brakes, signals, hazards, and reverse lights.',
+          why: 'A complete walk-around catches visibility and communication failures before nighttime driving or inspection.',
+          action: { type: 'view', label: 'Open Walk-Around', view: 'walk' } },
+        { id: 'recall-check', icon: '📣', kind: 'safety',
+          do: 'Copy the VIN carefully and check for open NHTSA safety recalls.',
+          why: 'Recall repairs are completed by an authorized dealer at no charge. Confirm the VIN and schedule any open campaign.',
+          action: { type: 'view', label: 'Open VIN Decoder', view: 'vin' } }
       ]
     },
-    { week: 2, title: 'Week 2 — Fluids + filters baseline',
+    { week: 2, id: 'baseline', title: 'Fluids + filters baseline', range: 'Days 8–14', icon: '🧪',
+      focus: 'Replace guesswork with documented starting conditions.',
+      outcome: 'Service dates, correct specifications, fluid levels, and filter condition are recorded.',
       tasks: [
-        { do: 'Oil change with the correct grade (per owner\'s manual). Note the mileage on a sticker.',
-          why: 'You don\'t know when the previous owner last changed it. Start your own clock.' },
-        { do: 'Top off all 5 fluids (or note for service): coolant, brake fluid, power steering (if hydraulic), washer fluid, transmission (if dipstick).',
-          why: 'Establishes baseline and catches any seller-hidden low-fluid issues.' },
-        { do: 'Replace cabin air filter ($15) and engine air filter ($20) if visibly dirty.',
-          why: 'Cheap insurance for your first 6 months of clean baseline. 10 minutes total.' },
-        { do: 'Inspect wiper blades. Replace if streaking.',
-          why: 'Maine: do this before slush season. New blades cost less than one re-inspection visit.' }
+        { id: 'oil-baseline', icon: '🛢️', kind: 'baseline',
+          do: 'If prior oil service cannot be verified, schedule an oil-and-filter change using the exact grade and specification in the owner\'s manual. Record date and mileage.',
+          why: 'A documented service creates your own maintenance clock without guessing what the previous owner used.',
+          action: { type: 'view', label: 'Build Maintenance Plan', view: 'maint' } },
+        { id: 'fluid-levels', icon: '💧', kind: 'safety',
+          do: 'With the vehicle level and following the manual, inspect accessible fluid levels and condition. Record anything low, leaking, contaminated, or unclear for service.',
+          why: 'Do not blindly top off brake, transmission, power-steering, or coolant systems. Use only the exact specification and procedure, and never open a hot cooling system.',
+          action: { type: 'view', label: 'Open Under-Hood Tour', view: 'underhood' } },
+        { id: 'air-filters', icon: '🌬️', kind: 'baseline',
+          do: 'Inspect the engine and cabin air filters; replace them only if dirty, damaged, or due by the maintenance schedule.',
+          why: 'Condition-based replacement establishes a clean baseline without discarding serviceable parts.',
+          action: { type: 'view', label: 'Find Under-Hood Parts', view: 'underhood' } },
+        { id: 'wiper-blades', icon: '🌧️', kind: 'safety',
+          do: 'Inspect and wet-test the wiper blades. Replace blades that chatter, split, skip, or leave vision-blocking streaks.',
+          why: 'Clear glass is active safety equipment, especially during Maine rain, slush, salt spray, and early darkness.',
+          action: { type: 'view', label: 'Open Cold-Weather Prep', view: 'cold' } }
       ]
     },
-    { week: 3, title: 'Week 3 — Underbody + tires',
+    { week: 3, id: 'road-contact', title: 'Underbody + tires', range: 'Days 15–21', icon: '🛞',
+      focus: 'Inspect the systems that hold, stop, and connect the car to the road.',
+      outcome: 'Rust risk, tire condition, cold pressure, and roadside equipment are understood.',
       tasks: [
-        { do: 'Crawl under (or jack up safely) and inspect frame, brake lines, fuel lines, exhaust.',
-          why: 'Maine salt damage hides until you look. You want to know NOW, not when something fails.' },
-        { do: 'Penny test all 4 tires + sidewall inspection.',
-          why: 'Old / unsafe tires are negotiating leverage with the seller (small-claims if hidden) and a winter-safety issue.' },
-        { do: 'Set tire pressure to door-jamb spec on a cold morning.',
-          why: 'Most cars are run under-inflated, which wears tires faster + cuts fuel economy 1–3%.' },
-        { do: 'Test the spare. Where is it? Is it inflated? Where\'s the jack + lug wrench?',
-          why: 'You don\'t want to be looking for the spare in a snowstorm at 6am.' }
+        { id: 'underbody-inspection', icon: '🔦', kind: 'safety',
+          do: 'Arrange a safe underbody inspection of the frame or structure, brake and fuel lines, suspension, and exhaust.',
+          why: 'Never get beneath a vehicle supported only by a jack. Use a professional lift or rated stands on firm, level ground with wheels chocked—or ask a qualified shop to inspect it.',
+          action: { type: 'view', label: 'Open Inspection Prep', view: 'inspection' } },
+        { id: 'tire-condition', icon: '📏', kind: 'safety',
+          do: 'Measure tread depth across all four tires and inspect sidewalls, date codes, matching axle pairs, and uneven wear.',
+          why: 'A tread gauge and complete condition check reveal more than a penny test. Wet and winter traction can become poor before the legal minimum.',
+          action: { type: 'view', label: 'Open Tire Deep Dive', view: 'tires' } },
+        { id: 'cold-pressure', icon: '🌡️', kind: 'baseline',
+          do: 'Set all four cold tire pressures to the driver-door-jamb specification, then check again after the first major temperature change.',
+          why: 'Correct cold pressure improves predictable handling, tire life, and efficiency. Do not use the maximum pressure molded on the tire sidewall.',
+          action: { type: 'view', label: 'Review Tire Pressure', view: 'tires' } },
+        { id: 'spare-and-tools', icon: '🧰', kind: 'readiness',
+          do: 'Locate and inspect the spare or inflator kit, jack, wheel-lock key, lug wrench, and the vehicle\'s approved lifting points.',
+          why: 'Practice locating the equipment now so a dark, cold roadside is not the first time you discover something is missing.',
+          action: { type: 'view', label: 'Practice a Tire Change', view: 'tyre' } }
       ]
     },
-    { week: 4, title: 'Week 4 — Maine inspection prep + emergency kit',
+    { week: 4, id: 'ready', title: 'Inspection + owner readiness', range: 'Days 22–30', icon: '✅',
+      focus: 'Turn the baseline into repeatable habits and emergency readiness.',
+      outcome: 'The vehicle is inspection-ready, documented, equipped, and familiar in normal driving.',
       tasks: [
-        { do: 'Pre-walk Maine inspection (this tool\'s Inspection Prep module).',
-          why: 'Schedule the actual inspection with confidence. Catch fails BEFORE the sticker visit.' },
-        { do: 'Build winter trunk kit (this tool\'s Roadside Emergency module).',
-          why: 'Maine rural drivers should not be without jumper cables, blanket, flashlight, and snacks in the trunk.' },
-        { do: 'Set up service-record system. Phone notes app or a small notebook in the glovebox.',
-          why: 'Future-you (or the next buyer) needs records. A car with records sells for more.' },
-        { do: 'Schedule first oil change reminder for 5,000 miles or 6 months from now.',
-          why: 'Your phone calendar is more reliable than memory. The pattern is the win, not any single change.' },
-        { do: 'Drive it in different conditions before winter: highway, hard accel, hard brake, sharp turns. Listen for new noises.',
-          why: 'You\'re building a baseline of what NORMAL sounds like. Future deviations are easier to notice.' }
+        { id: 'inspection-prewalk', icon: '🌲', kind: 'required',
+          do: 'Complete the Maine Inspection Prep pre-walk and schedule the official inspection when required.',
+          why: 'A systematic pre-walk finds common failures before the appointment and helps you ask a shop specific questions.',
+          action: { type: 'view', label: 'Open Inspection Prep', view: 'inspection' } },
+        { id: 'winter-kit', icon: '🎒', kind: 'readiness',
+          do: 'Build a season-appropriate trunk kit and save a roadside plan in your phone.',
+          why: 'Maine conditions can turn a short delay into a cold-weather exposure problem. Match supplies to the season and trip.',
+          action: { type: 'view', label: 'Build Roadside Kit', view: 'roadside' } },
+        { id: 'service-records', icon: '🗂️', kind: 'baseline',
+          do: 'Start a service record with the date, mileage, work performed, parts or fluids used, cost, and receipts.',
+          why: 'Consistent records improve maintenance decisions, warranty conversations, and future resale transparency.',
+          action: { type: 'view', label: 'Open Service Log', view: 'log' } },
+        { id: 'service-reminder', icon: '📅', kind: 'baseline',
+          do: 'Set the next service reminders from the owner\'s manual and the vehicle\'s actual mileage, time, and use pattern.',
+          why: 'A calendar and odometer trigger are more reliable than memory. Use the manufacturer\'s schedule rather than a universal interval.',
+          action: { type: 'view', label: 'Build Maintenance Plan', view: 'maint' } },
+        { id: 'driving-baseline', icon: '👂', kind: 'readiness',
+          do: 'In legal, low-risk conditions, notice normal starting, idling, highway cruising, firm braking, turning, and parking behavior.',
+          why: 'Do not stage abrupt maneuvers in traffic. A calm baseline of normal sound, feel, and warning lights makes future changes easier to recognize.',
+          action: { type: 'view', label: 'Open Diagnostic Guide', view: 'diagnose' } }
       ]
     }
   ];
@@ -4379,59 +4967,157 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
   // ─────────────────────────────────────────────────────────
   // SECTION 9.92: VIN DECODER — parse a 17-char VIN, cross-link recall + history
-  // VIN structure (since 1981):
-  //   chars 1-3: World Manufacturer Identifier (country + maker)
-  //   chars 4-8: Vehicle Descriptor Section (model, body, engine)
-  //   char 9:    check digit
-  //   char 10:   model year
-  //   char 11:   plant code
-  //   chars 12-17: serial number
+  // VIN structure (since 1981). The six-part split below follows the useful
+  // North-American convention; several fields are manufacturer/market specific.
+  //   chars 1-3: World Manufacturer Identifier (WMI)
+  //   chars 4-8: descriptor core
+  //   char 9:    validation character (check digit in regulated markets)
+  //   char 10:   model-year code (repeats every 30 years)
+  //   char 11:   plant code (manufacturer specific)
+  //   chars 12-17: identifier tail / production sequence
   // ─────────────────────────────────────────────────────────
-  var VIN_COUNTRY = {
+  var VIN_REGION = {
     '1': 'United States', '4': 'United States', '5': 'United States',
     '2': 'Canada', '3': 'Mexico',
-    'J': 'Japan', 'K': 'South Korea',
-    'L': 'China', 'V': 'France',
-    'W': 'Germany', 'S': 'United Kingdom',
-    'Y': 'Sweden / Finland', 'Z': 'Italy'
+    'J': 'Japan', 'K': 'South Korea', 'L': 'China',
+    'S': 'Europe', 'V': 'Europe', 'W': 'Europe', 'Y': 'Europe', 'Z': 'Europe'
   };
-  var VIN_MAKER = {
-    '1G': 'General Motors (US)', '1C': 'Chrysler (US)', '1F': 'Ford (US)',
-    '1H': 'Honda (US plant)', '1N': 'Nissan (US plant)',
-    '4T': 'Toyota (US plant)', '5N': 'Hyundai (US plant)', '5Y': 'Mazda (US plant)',
-    '2G': 'GM (Canada)', '2T': 'Toyota (Canada)', '2H': 'Honda (Canada)',
-    'JH': 'Honda (Japan)', 'JT': 'Toyota (Japan)', 'JN': 'Nissan (Japan)',
-    'JF': 'Subaru (Japan)', 'JM': 'Mazda (Japan)',
-    'KM': 'Hyundai (Korea)', 'KN': 'Kia (Korea)',
-    'WB': 'BMW (Germany)', 'WD': 'Mercedes-Benz (Germany)', 'WV': 'Volkswagen (Germany)',
-    'WP': 'Porsche (Germany)', 'WA': 'Audi (Germany)',
-    'YV': 'Volvo (Sweden)', 'ZF': 'Ferrari (Italy)', 'ZA': 'Alfa Romeo (Italy)'
+  // Deliberately small and exact: WMI is three characters. Unknown entries are
+  // sent to vPIC rather than guessed from the first two characters.
+  var VIN_WMI = {
+    '1HG': { maker: 'Honda', country: 'United States' },
+    '1HD': { maker: 'Harley-Davidson', country: 'United States' },
+    '1G1': { maker: 'Chevrolet', country: 'United States' },
+    '1FA': { maker: 'Ford', country: 'United States' },
+    '1N4': { maker: 'Nissan', country: 'United States' },
+    '1M8': { maker: 'MCI', country: 'United States' },
+    '2HG': { maker: 'Honda', country: 'Canada' },
+    '2T1': { maker: 'Toyota', country: 'Canada' },
+    '3VW': { maker: 'Volkswagen', country: 'Mexico' },
+    '4T1': { maker: 'Toyota', country: 'United States' },
+    '5YJ': { maker: 'Tesla', country: 'United States' },
+    'JHM': { maker: 'Honda', country: 'Japan' },
+    'JTD': { maker: 'Toyota', country: 'Japan' },
+    'JN1': { maker: 'Nissan', country: 'Japan' },
+    'JF1': { maker: 'Subaru', country: 'Japan' },
+    'KMH': { maker: 'Hyundai', country: 'South Korea' },
+    'KNA': { maker: 'Kia', country: 'South Korea' },
+    'VSS': { maker: 'SEAT', country: 'Spain' },
+    'WBA': { maker: 'BMW', country: 'Germany' },
+    'WDB': { maker: 'Mercedes-Benz', country: 'Germany' },
+    'WVW': { maker: 'Volkswagen', country: 'Germany' },
+    'WP0': { maker: 'Porsche', country: 'Germany' },
+    'WAU': { maker: 'Audi', country: 'Germany' },
+    'YV1': { maker: 'Volvo', country: 'Sweden' }
   };
-  var VIN_YEAR = {
-    'A': 2010, 'B': 2011, 'C': 2012, 'D': 2013, 'E': 2014, 'F': 2015, 'G': 2016,
-    'H': 2017, 'J': 2018, 'K': 2019, 'L': 2020, 'M': 2021, 'N': 2022, 'P': 2023,
-    'R': 2024, 'S': 2025, 'T': 2026, 'V': 2027, 'W': 2028, 'X': 2029, 'Y': 2030,
-    '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005, '6': 2006, '7': 2007,
-    '8': 2008, '9': 2009
+  var VIN_YEAR_SEQUENCE = 'ABCDEFGHJKLMNPRSTVWXY123456789';
+  var VIN_CHECK_WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
+  var VIN_TRANSLITERATION = {
+    A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8,
+    J: 1, K: 2, L: 3, M: 4, N: 5, P: 7, R: 9,
+    S: 2, T: 3, U: 4, V: 5, W: 6, X: 7, Y: 8, Z: 9
   };
 
-  function decodeVin(vin) {
-    if (!vin || vin.length !== 17) return { error: 'VIN must be exactly 17 characters.' };
-    var v = vin.toUpperCase().replace(/[IOQ]/g, '');
-    if (v.length !== 17) return { error: 'VINs cannot contain I, O, or Q (avoids confusion with 1, 0, Q). Re-check your VIN.' };
-    var c1 = v[0];
-    var c12 = v.substring(0, 2);
-    var c10 = v[9];
-    var c11 = v[10];
-    var country = VIN_COUNTRY[c1] || 'Unknown country';
-    var maker = VIN_MAKER[c12] || 'Manufacturer not in this lookup (' + c12 + ')';
-    var year = VIN_YEAR[c10] || 'Unknown year (' + c10 + ')';
-    var serial = v.substring(11);
+  function normalizeVin(value) {
+    return String(value == null ? '' : value).trim().toUpperCase();
+  }
+
+  function validateVinFormat(value) {
+    var vin = normalizeVin(value);
+    if (vin.length !== 17) {
+      return { valid: false, code: 'length', vin: vin, error: 'A modern VIN must contain exactly 17 characters.' };
+    }
+    if (/[IOQ]/.test(vin)) {
+      return { valid: false, code: 'forbidden', vin: vin, error: 'VINs do not use I, O, or Q because they can be confused with 1 and 0.' };
+    }
+    if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) {
+      return { valid: false, code: 'characters', vin: vin, error: 'Use only VIN letters and numbers—no spaces or punctuation.' };
+    }
+    return { valid: true, code: 'ready', vin: vin };
+  }
+
+  function calculateVinCheckDigit(value) {
+    var vin = normalizeVin(value);
+    if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) return null;
+    var sum = 0;
+    for (var i = 0; i < vin.length; i += 1) {
+      var ch = vin[i];
+      var numeric = /[0-9]/.test(ch) ? parseInt(ch, 10) : VIN_TRANSLITERATION[ch];
+      if (typeof numeric !== 'number') return null;
+      sum += numeric * VIN_CHECK_WEIGHTS[i];
+    }
+    var remainder = sum % 11;
+    return remainder === 10 ? 'X' : String(remainder);
+  }
+
+  function vinYearCandidates(code, throughYear) {
+    var idx = VIN_YEAR_SEQUENCE.indexOf(String(code || '').toUpperCase());
+    if (idx < 0) return [];
+    var limit = typeof throughYear === 'number' ? throughYear : (new Date().getFullYear() + 1);
+    var years = [];
+    for (var year = 1980 + idx; year <= limit; year += 30) years.push(year);
+    return years;
+  }
+
+  function resolveWmi(value) {
+    var vin = normalizeVin(value);
+    var wmi = vin.substring(0, 3);
+    var exact = VIN_WMI[wmi];
+    if (exact) {
+      return { wmi: wmi, maker: exact.maker, country: exact.country, scope: 'exact' };
+    }
     return {
-      vin: v, country: country, maker: maker, year: year,
-      plant: 'Plant code: ' + c11 + ' (manufacturer-specific)',
-      serial: 'Serial #: ' + serial,
-      check: 'Check digit: ' + v[8]
+      wmi: wmi,
+      maker: 'Not in this small local WMI table',
+      country: VIN_REGION[vin[0]] ? VIN_REGION[vin[0]] + ' region hint' : 'Region not resolved locally',
+      scope: 'unknown'
+    };
+  }
+
+  function splitVinFields(value) {
+    var vin = normalizeVin(value);
+    return {
+      wmi: vin.substring(0, 3),
+      descriptor: vin.substring(3, 8),
+      checkCharacter: vin.substring(8, 9),
+      yearCode: vin.substring(9, 10),
+      plantCode: vin.substring(10, 11),
+      identifier: vin.substring(11, 17)
+    };
+  }
+
+  function decodeVin(value) {
+    var format = validateVinFormat(value);
+    if (!format.valid) return { error: format.error, errorCode: format.code, vin: format.vin };
+    var vin = format.vin;
+    var fields = splitVinFields(vin);
+    var wmi = resolveWmi(vin);
+    var yearCandidates = vinYearCandidates(fields.yearCode);
+    var expected = calculateVinCheckDigit(vin);
+    var actual = fields.checkCharacter;
+    var required = /^[1-5]/.test(vin);
+    var matches = expected === actual;
+    return {
+      vin: vin,
+      fields: fields,
+      wmi: fields.wmi,
+      country: wmi.country,
+      maker: wmi.maker,
+      makerScope: wmi.scope,
+      yearCode: fields.yearCode,
+      yearCandidates: yearCandidates,
+      year: yearCandidates.length ? yearCandidates.join(' or ') : 'Year code not resolved',
+      plantCode: fields.plantCode,
+      plant: 'Code ' + fields.plantCode + ' · manufacturer-specific',
+      identifier: fields.identifier,
+      serial: 'Identifier tail ' + fields.identifier,
+      check: {
+        actual: actual,
+        expected: expected,
+        matches: matches,
+        required: required,
+        status: matches ? 'pass' : (required ? 'fail' : 'advisory')
+      }
     };
   }
 
@@ -4440,65 +5126,155 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // Generic OEM-agnostic schedule. Vehicle-specific is in owner\'s manual.
   // ─────────────────────────────────────────────────────────
   var MAINT_INTERVALS = [
-    { item: 'Engine oil + filter', miles: 5000, months: 6, severity: 'standard',
+    { id: 'oil-filter', item: 'Engine oil + filter', miles: 5000, months: 6, severity: 'standard',
       note: 'Synthetic full-flow filter. Maine winter short-trip drivers: closer to 3,000 if you only drive short distances.' },
-    { item: 'Tire rotation', miles: 5000, months: 6, severity: 'standard',
+    { id: 'tire-rotation', item: 'Tire rotation', miles: 5000, months: 6, severity: 'standard',
       note: 'Free at the shop where you bought tires. DIY in 30 min with jack + stands + torque wrench.' },
-    { item: 'Tire pressure check', miles: 0, months: 1, severity: 'standard',
+    { id: 'tire-pressure', item: 'Tire pressure check', miles: 0, months: 1, severity: 'standard',
       note: 'Monthly. Cold pressure drops ~1 psi per 10°F drop.' },
-    { item: 'Cabin air filter', miles: 15000, months: 12, severity: 'low',
+    { id: 'cabin-filter', item: 'Cabin air filter', miles: 15000, months: 12, severity: 'low',
       note: 'DIY $15 + 5 min. Replace more often if you drive dusty roads or have pollen allergies.' },
-    { item: 'Engine air filter', miles: 30000, months: 24, severity: 'low',
+    { id: 'engine-air-filter', item: 'Engine air filter', miles: 30000, months: 24, severity: 'low',
       note: 'DIY $20 + 5 min.' },
-    { item: 'Brake fluid flush', miles: 30000, months: 36, severity: 'standard',
+    { id: 'brake-fluid', item: 'Brake fluid flush', miles: 30000, months: 36, severity: 'standard',
       note: 'Maine humidity: every 2 years not 3. Brake fluid absorbs water + corrodes ABS.' },
-    { item: 'Transmission fluid (drain + fill)', miles: 60000, months: 60, severity: 'standard',
+    { id: 'transmission-fluid', item: 'Transmission fluid (drain + fill)', miles: 60000, months: 60, severity: 'standard',
       note: 'Drain-and-fill is safer than machine-flush on high-mileage cars (>100K with no service history).' },
-    { item: 'Coolant flush', miles: 60000, months: 60, severity: 'standard',
+    { id: 'coolant', item: 'Coolant flush', miles: 60000, months: 60, severity: 'standard',
       note: 'Match OEM coolant chemistry (HOAT/OAT/IAT). Pre-mixed 50/50 is foolproof.' },
-    { item: 'Spark plugs (iridium)', miles: 100000, months: 0, severity: 'standard',
+    { id: 'spark-iridium', item: 'Spark plugs (iridium)', miles: 100000, months: 0, severity: 'standard',
+      conditional: 'Verify your vehicle specifies iridium plugs.',
       note: 'Verify gap on new plugs. Anti-seize on threads. Torque to spec.' },
-    { item: 'Spark plugs (copper)', miles: 30000, months: 0, severity: 'standard',
+    { id: 'spark-copper', item: 'Spark plugs (copper)', miles: 30000, months: 0, severity: 'standard',
+      conditional: 'Older vehicles only; verify the specified plug type.',
       note: 'Older cars only. Modern vehicles use iridium.' },
-    { item: 'Timing belt (if equipped)', miles: 100000, months: 0, severity: 'critical',
+    { id: 'timing-belt', item: 'Timing belt (if equipped)', miles: 100000, months: 0, severity: 'critical',
+      conditional: 'Verify whether this engine uses a timing belt or timing chain.',
       note: 'CHECK if your engine has a belt or chain. Belt: replace per OEM. Chain: usually lifetime.' },
-    { item: 'Battery test', miles: 0, months: 12, severity: 'standard',
+    { id: 'battery-test', item: 'Battery test', miles: 0, months: 12, severity: 'standard',
       note: 'Annually in October — Maine cold doubles the load. Free at parts stores.' },
-    { item: 'Wiper blades', miles: 0, months: 6, severity: 'low',
+    { id: 'wiper-blades', item: 'Wiper blades', miles: 0, months: 6, severity: 'low',
       note: 'Twice a year (spring + fall). Maine: winter blades October to April.' },
-    { item: 'Maine state inspection', miles: 0, months: 12, severity: 'critical',
+    { id: 'maine-inspection', item: 'Maine state inspection', miles: 0, months: 12, severity: 'critical',
       note: 'Required annually ($12.50). 60 days to repair after a fail.' },
-    { item: 'Serpentine belt', miles: 60000, months: 60, severity: 'standard',
+    { id: 'serpentine-belt', item: 'Serpentine belt', miles: 60000, months: 60, severity: 'standard',
       note: 'Inspect for cracks every oil change. Replace at OEM interval or if visibly aged.' },
-    { item: 'Fuel filter (in-tank)', miles: 100000, months: 0, severity: 'low',
+    { id: 'fuel-filter', item: 'Fuel filter (in-tank)', miles: 100000, months: 0, severity: 'low',
+      conditional: 'Verify whether the filter is serviceable and the OEM specifies an interval.',
       note: 'Modern in-tank filters often lifetime. Older external filters every 30K-60K.' },
-    { item: 'Wheel alignment', miles: 0, months: 12, severity: 'standard',
+    { id: 'wheel-alignment', item: 'Wheel alignment', miles: 0, months: 12, severity: 'standard',
       note: 'After hitting a curb, suspension work, or annually as preventive. Check tire wear pattern.' }
   ];
 
-  function buildMaintSchedule(currentMiles, monthsSinceLastService, vehicleYear) {
-    var currentYear = new Date().getFullYear();
-    var vehicleAge = vehicleYear ? (currentYear - vehicleYear) : 0;
-    var upcoming = MAINT_INTERVALS.map(function(m) {
+  function arNormalizeMaintState(input, yearNow) {
+    var source = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+    var currentYear = Number.isInteger(yearNow) ? yearNow : new Date().getFullYear();
+
+    function field(value, min, max, label) {
+      var scalar = typeof value === 'string' || typeof value === 'number';
+      var raw = scalar ? String(value).trim() : '';
+      var safeRaw = /^(?:nan|[+-]?infinity)$/i.test(raw) ? '' : raw;
+      var provided = value !== undefined && value !== null && (scalar ? raw !== '' : true);
+      if (!provided) return { raw: '', provided: false, valid: true, value: null, error: '' };
+      if (!scalar || !/^\d+$/.test(raw)) {
+        return { raw: safeRaw, provided: true, valid: false, value: null, error: label + ' must be a whole number.' };
+      }
+      var parsed = Number(raw);
+      if (!isFinite(parsed) || !Number.isInteger(parsed) || parsed < min || parsed > max) {
+        return { raw: raw, provided: true, valid: false, value: null, error: label + ' must be from ' + min.toLocaleString() + ' to ' + max.toLocaleString() + '.' };
+      }
+      return { raw: raw, provided: true, valid: true, value: parsed, error: '' };
+    }
+
+    var mileage = field(source.mileage, 0, 1500000, 'Odometer');
+    var months = field(source.months, 0, 240, 'Baseline age');
+    var year = field(source.year, 1981, currentYear + 1, 'Vehicle year');
+    var valid = mileage.valid && months.valid && year.valid;
+    var hasAxis = (mileage.provided && mileage.valid) || (months.provided && months.valid);
+    return {
+      mileage: mileage,
+      months: months,
+      year: year,
+      currentYear: currentYear,
+      valid: valid,
+      state: valid ? (hasAxis ? 'ready' : 'empty') : 'invalid'
+    };
+  }
+
+  function buildMaintSchedule(currentMiles, monthsSinceBaseline, vehicleYear, yearNow) {
+    var currentYear = Number.isInteger(yearNow) ? yearNow : new Date().getFullYear();
+    var hasMileage = typeof currentMiles === 'number' && isFinite(currentMiles) && Number.isInteger(currentMiles) && currentMiles >= 0 && currentMiles <= 1500000;
+    var hasMonths = typeof monthsSinceBaseline === 'number' && isFinite(monthsSinceBaseline) && Number.isInteger(monthsSinceBaseline) && monthsSinceBaseline >= 0 && monthsSinceBaseline <= 240;
+    var hasYear = typeof vehicleYear === 'number' && isFinite(vehicleYear) && Number.isInteger(vehicleYear) && vehicleYear >= 1981 && vehicleYear <= currentYear + 1;
+    var vehicleAge = hasYear ? Math.max(0, currentYear - vehicleYear) : null;
+
+    return MAINT_INTERVALS.map(function(m, index) {
       var milesUntil = null;
-      if (m.miles > 0) {
-        var nextMileMark = Math.ceil(currentMiles / m.miles) * m.miles;
-        if (nextMileMark === currentMiles) nextMileMark += m.miles;
-        milesUntil = nextMileMark - currentMiles;
-      }
       var monthsUntil = null;
-      if (m.months > 0) {
-        monthsUntil = Math.max(0, m.months - monthsSinceLastService);
+      var mileageState = 'reference';
+      var timeState = 'reference';
+      var reasons = [];
+      var basis = [];
+
+      if (hasMileage && m.miles > 0) {
+        var remainder = currentMiles % m.miles;
+        milesUntil = currentMiles > 0 && remainder === 0 ? 0 : m.miles - remainder;
+        var soonWindow = Math.min(1500, Math.max(500, Math.round(m.miles * 0.1)));
+        if (milesUntil === 0) {
+          mileageState = 'review';
+          var milestoneReason = 'Current mileage milestone: odometer ' + currentMiles.toLocaleString() + ' is exactly on this ' + m.miles.toLocaleString() + '-mile interval point (0 miles away).';
+          reasons.push(milestoneReason);
+          basis.push({ axis: 'mileage', text: milestoneReason });
+        } else if (milesUntil <= soonWindow) {
+          mileageState = 'soon';
+          var soonMileageReason = milesUntil.toLocaleString() + ' miles to the next interval point.';
+          reasons.push(soonMileageReason);
+          basis.push({ axis: 'mileage', text: soonMileageReason });
+        } else {
+          var mileageReason = milesUntil.toLocaleString() + ' miles to the next interval point.';
+          reasons.push(mileageReason);
+          basis.push({ axis: 'mileage', text: mileageReason });
+        }
       }
-      var status;
-      if (m.miles > 0 && currentMiles >= m.miles && currentMiles % m.miles < (m.miles * 0.1)) status = 'overdue-miles';
-      else if (m.months > 0 && monthsSinceLastService >= m.months) status = 'overdue-time';
-      else if (milesUntil !== null && milesUntil < 1500) status = 'soon-miles';
-      else if (monthsUntil !== null && monthsUntil < 2) status = 'soon-time';
-      else status = 'ok';
-      return Object.assign({}, m, { milesUntil: milesUntil, monthsUntil: monthsUntil, status: status, vehicleAge: vehicleAge });
+
+      if (hasMonths && m.months > 0) {
+        monthsUntil = m.months - monthsSinceBaseline;
+        if (monthsUntil <= 0) {
+          timeState = 'review';
+          var reviewTimeReason = 'The service-record baseline is at or beyond this ' + m.months + '-month interval.';
+          reasons.push(reviewTimeReason);
+          basis.push({ axis: 'time', text: reviewTimeReason });
+        } else if (monthsUntil <= 2) {
+          timeState = 'soon';
+          var soonTimeReason = monthsUntil + ' month' + (monthsUntil === 1 ? '' : 's') + ' to this interval from the baseline.';
+          reasons.push(soonTimeReason);
+          basis.push({ axis: 'time', text: soonTimeReason });
+        } else {
+          var timeReason = monthsUntil + ' months to this interval from the baseline.';
+          reasons.push(timeReason);
+          basis.push({ axis: 'time', text: timeReason });
+        }
+      }
+
+      var status = mileageState === 'review' || timeState === 'review'
+        ? 'review'
+        : (mileageState === 'soon' || timeState === 'soon' ? 'soon' : 'reference');
+      if (!reasons.length) {
+        reasons.push('Enter a matching mileage or time baseline to estimate this interval.');
+        basis.push({ axis: 'reference', text: reasons[0] });
+      }
+      return Object.assign({}, m, {
+        sourceIndex: index,
+        milesUntil: milesUntil,
+        monthsUntil: monthsUntil,
+        mileageState: mileageState,
+        timeState: timeState,
+        status: status,
+        reasons: reasons,
+        basis: basis,
+        vehicleAge: vehicleAge
+      });
     });
-    return upcoming;
   }
 
   // Service-log helpers stay pure so validation, legacy-data cleanup and CSV
@@ -4798,68 +5574,164 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   };
 
   // ─────────────────────────────────────────────────────────
-  // SECTION 9.96: REPAIR ROI CALCULATOR — keep-or-sell decision tool
-  // Inputs: vehicle value, repair cost, age (years), mileage, looming issues.
-  // Output: rule-based recommendation with reasoning.
+  // SECTION 9.96: REPAIR DECISION LAB — evidence-first cost comparison
+  // Inputs: vehicle value, quoted/known work, replacement path, and context.
+  // Output: transparent ratios, cash-path comparison, and evidence gaps.
   // ─────────────────────────────────────────────────────────
+  var REPAIR_DECISION_PRESETS = [
+    { id: 'routine-repair', label: 'Routine repair', vehicleValue: 8500, repairCost: 900, loomingCost: 300, replacementCost: 18000, asIsOffer: 7000, age: 9, miles: 110000, attachment: 'medium' },
+    { id: 'narrow-margin', label: 'Narrow margin', vehicleValue: 6000, repairCost: 2400, loomingCost: 1500, replacementCost: 14000, asIsOffer: 3000, age: 14, miles: 165000, attachment: 'low' },
+    { id: 'major-work', label: 'Major known work', vehicleValue: 4000, repairCost: 2500, loomingCost: 1500, replacementCost: 12000, asIsOffer: 1500, age: 12, miles: 180000, attachment: 'high' }
+  ];
+
+  function arNormalizeROIState(input) {
+    var source = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+
+    function numberField(value, min, max, label, allowCents) {
+      var scalar = typeof value === 'string' || typeof value === 'number';
+      var raw = scalar ? String(value).trim() : '';
+      var safeRaw = /^(?:nan|[+-]?infinity)$/i.test(raw) ? '' : raw;
+      var provided = value !== undefined && value !== null && (scalar ? raw !== '' : true);
+      var pattern = allowCents ? /^\d+(?:\.\d{1,2})?$/ : /^\d+$/;
+      if (!provided) return { raw: '', provided: false, valid: true, value: null, error: '' };
+      if (!scalar || !pattern.test(raw)) {
+        return { raw: safeRaw, provided: true, valid: false, value: null, error: label + ' must be a ' + (allowCents ? 'number with at most two decimal places.' : 'whole number.') };
+      }
+      var parsed = Number(raw);
+      if (!isFinite(parsed) || parsed < min || parsed > max) {
+        return { raw: safeRaw, provided: true, valid: false, value: null, error: label + ' must be from ' + min.toLocaleString() + ' to ' + max.toLocaleString() + '.' };
+      }
+      return { raw: raw, provided: true, valid: true, value: parsed, error: '' };
+    }
+
+    var vehicleValue = numberField(source.vehicleValue, 1, 1000000, 'Vehicle value', true);
+    var repairCost = numberField(source.repairCost, 1, 1000000, 'Repair quote', true);
+    var loomingCost = numberField(source.loomingCost, 0, 1000000, 'Known upcoming work', true);
+    var replacementCost = numberField(source.replacementCost, 1, 1000000, 'Comparable replacement price', true);
+    var asIsOffer = numberField(source.asIsOffer, 0, 1000000, 'Actual as-is proceeds', true);
+    var age = numberField(source.age, 0, 100, 'Vehicle age', false);
+    var miles = numberField(source.miles, 0, 2000000, 'Mileage', false);
+    var valid = vehicleValue.valid && repairCost.valid && loomingCost.valid && replacementCost.valid && asIsOffer.valid && age.valid && miles.valid;
+    var requiredCount = (vehicleValue.provided && vehicleValue.valid ? 1 : 0) + (repairCost.provided && repairCost.valid ? 1 : 0);
+    var anyProvided = [vehicleValue, repairCost, loomingCost, replacementCost, asIsOffer, age, miles].some(function(field) { return field.provided; });
+    var compareCount = (replacementCost.provided && replacementCost.valid ? 1 : 0) + (asIsOffer.provided && asIsOffer.valid ? 1 : 0);
+    var attachments = ['low', 'medium', 'high'];
+    var lenses = ['cost', 'condition', 'replacement'];
+    var attachment = typeof source.attachment === 'string' && attachments.indexOf(source.attachment) >= 0 ? source.attachment : 'medium';
+    var lens = typeof source.lens === 'string' && lenses.indexOf(source.lens) >= 0 ? source.lens : 'cost';
+    var evidenceSource = source.evidence && typeof source.evidence === 'object' && !Array.isArray(source.evidence) ? source.evidence : {};
+    var evidence = {
+      diagnosis: evidenceSource.diagnosis === true,
+      secondQuote: evidenceSource.secondQuote === true,
+      warranty: evidenceSource.warranty === true,
+      asIsOffer: evidenceSource.asIsOffer === true
+    };
+
+    return {
+      vehicleValue: vehicleValue,
+      repairCost: repairCost,
+      loomingCost: loomingCost,
+      replacementCost: replacementCost,
+      asIsOffer: asIsOffer,
+      age: age,
+      miles: miles,
+      attachment: attachment,
+      lens: lens,
+      evidence: evidence,
+      evidenceCount: Object.keys(evidence).filter(function(key) { return evidence[key] === true; }).length,
+      compareState: compareCount === 2 ? 'ready' : (compareCount === 1 ? 'partial' : 'empty'),
+      valid: valid,
+      state: !valid
+        ? 'invalid'
+        : (requiredCount < 2
+            ? (anyProvided ? 'incomplete' : 'empty')
+            : (compareCount === 2 ? 'ready-compare' : 'ready-share'))
+    };
+  }
+
   function repairROI(opts) {
-    var vehicleValue = opts.vehicleValue || 0;
-    var repairCost = opts.repairCost || 0;
-    var age = opts.age || 0;
-    var miles = opts.miles || 0;
-    var loomingCost = opts.loomingCost || 0;
-    var attachment = opts.attachment || 'medium';
-    var ratio = vehicleValue > 0 ? (repairCost / vehicleValue) : 999;
-    var totalLooming = repairCost + loomingCost;
-    var loomingRatio = vehicleValue > 0 ? (totalLooming / vehicleValue) : 999;
+    var source = opts && typeof opts === 'object' ? opts : {};
+    var vehicleValue = typeof source.vehicleValue === 'number' && isFinite(source.vehicleValue) && source.vehicleValue > 0 ? source.vehicleValue : 0;
+    var repairCost = typeof source.repairCost === 'number' && isFinite(source.repairCost) && source.repairCost > 0 ? source.repairCost : 0;
+    var age = typeof source.age === 'number' && isFinite(source.age) && source.age >= 0 ? source.age : 0;
+    var miles = typeof source.miles === 'number' && isFinite(source.miles) && source.miles >= 0 ? source.miles : 0;
+    var loomingCost = typeof source.loomingCost === 'number' && isFinite(source.loomingCost) && source.loomingCost >= 0 ? source.loomingCost : 0;
+    var replacementCost = typeof source.replacementCost === 'number' && isFinite(source.replacementCost) && source.replacementCost > 0 ? source.replacementCost : null;
+    var asIsOffer = typeof source.asIsOffer === 'number' && isFinite(source.asIsOffer) && source.asIsOffer >= 0 ? source.asIsOffer : null;
+    var attachment = ['low', 'medium', 'high'].indexOf(source.attachment) >= 0 ? source.attachment : 'medium';
+    var vehicleCents = Math.round(vehicleValue * 100);
+    var repairCents = Math.round(repairCost * 100);
+    var loomingCents = Math.round(loomingCost * 100);
+    var ratio = vehicleCents > 0 ? (repairCents / vehicleCents) : 999;
+    var totalKnownCents = repairCents + loomingCents;
+    var totalLooming = totalKnownCents / 100;
+    var loomingRatio = vehicleCents > 0 ? (totalKnownCents / vehicleCents) : 999;
+    var hasComparison = replacementCost !== null && asIsOffer !== null;
+    var replaceUpfrontCents = hasComparison ? Math.round(replacementCost * 100) - Math.round(asIsOffer * 100) : null;
+    var replaceUpfront = hasComparison ? replaceUpfrontCents / 100 : null;
+    var cashDifference = hasComparison ? (replaceUpfrontCents - totalKnownCents) / 100 : null;
+    var repairPercent = Math.floor((ratio * 10000) + 0.000000001) / 100;
+    var combinedPercent = Math.floor((loomingRatio * 10000) + 0.000000001) / 100;
 
     var reasons = [];
     var verdict = 'fix';
 
-    if (ratio > 0.50) {
+    if (ratio >= 0.50) {
       verdict = 'consider-selling';
-      reasons.push('Repair cost (' + Math.round(ratio * 100) + '% of vehicle value) exceeds the 50% threshold where the math typically favors selling.');
-    } else if (ratio > 0.30) {
+      reasons.push('The quote is ' + repairPercent + '% of the entered vehicle value, reaching this planner\'s 50% compare-both-paths marker.');
+    } else if (ratio >= 0.30) {
       verdict = 'fix-cautiously';
-      reasons.push('Repair is ' + Math.round(ratio * 100) + '% of vehicle value — high but not yet a deal-breaker. Check if other items are looming.');
+      reasons.push('The quote is ' + repairPercent + '% of the entered value. Verify the diagnosis, warranty, and remaining known work before authorizing it.');
     } else {
-      reasons.push('Repair is ' + Math.round(ratio * 100) + '% of vehicle value — usually worth fixing.');
+      reasons.push('The quote is ' + repairPercent + '% of the entered value, leaving room to investigate the repair path before comparing alternatives.');
     }
 
-    if (loomingRatio > 0.70) {
+    if (loomingCost > 0 && loomingRatio >= 0.70) {
       verdict = 'consider-selling';
-      reasons.push('Total of this repair + looming work (' + Math.round(loomingRatio * 100) + '% of value) tips the math toward selling.');
+      reasons.push('This quote plus known upcoming work equals ' + combinedPercent + '% of the entered value, reaching the 70% full-plan comparison marker.');
     } else if (loomingCost > 0) {
-      reasons.push('Looming work adds $' + loomingCost + ' on top — total ' + Math.round(loomingRatio * 100) + '% of value.');
+      reasons.push('Known upcoming work adds $' + loomingCost.toLocaleString() + '; the entered work total is ' + combinedPercent + '% of value.');
     }
 
     if (age >= 15) {
-      reasons.push('Age ' + age + ' years: every repair is closer to "the next thing breaking." Maine salt-state cars at 15+ accelerate downhill.');
-      if (verdict === 'fix') verdict = 'fix-cautiously';
+      reasons.push('At ' + age + ' years, an underbody and safety inspection matters more than age alone; condition and service history vary widely.');
     }
 
     if (miles >= 200000) {
-      reasons.push('Mileage ' + miles.toLocaleString() + ': mainstream cars at 200K+ are end-of-design-life. Some makes (Toyota, Honda, certain diesels) go 300K+; many do not.');
-      if (verdict === 'fix') verdict = 'fix-cautiously';
+      reasons.push('At ' + miles.toLocaleString() + ' miles, use actual inspection and service history rather than mileage alone to estimate remaining life.');
     }
 
     if (attachment === 'high' && verdict === 'consider-selling') {
-      reasons.push('You said you\'re emotionally attached. The math says sell, but life isn\'t only math. Just go in eyes-open.');
+      reasons.push('Sentimental value is real, but keep it separate from safety, affordability, and the evidence behind the quote.');
     }
     if (attachment === 'low' && verdict === 'fix') {
-      reasons.push('Low attachment + favorable math = repair is rational. But also a fine moment to upgrade if you wanted to.');
+      reasons.push('Low attachment makes a replacement comparison easier, but it does not change the entered repair math.');
     }
 
     var summary;
     if (verdict === 'consider-selling') {
-      summary = 'Math suggests selling as-is or for parts. Get 2-3 trade-in or junk quotes; compare to (vehicle value − repair cost). If repair cost is more than the difference, sell.';
+      summary = 'Compare both paths before deciding. Verify the repair, inspect the rest of the vehicle, and price a realistic replacement including financing, tax, registration, insurance, and near-term maintenance.';
     } else if (verdict === 'fix-cautiously') {
-      summary = 'Repair is borderline. Worth doing IF nothing else is about to break. Get a comprehensive inspection ($80-150) before authorizing.';
+      summary = 'The repair path may still work, but the missing condition and replacement evidence could change the choice. Get a written quote and whole-vehicle inspection first.';
     } else {
-      summary = 'Math favors repair. Get a written estimate, ask about warranty on parts + labor, and approve.';
+      summary = 'The entered cost leaves room to pursue the repair path. Verify the diagnosis and warranty, then compare it with the actual cost of a suitable replacement.';
     }
 
-    return { verdict: verdict, summary: summary, reasons: reasons, ratio: ratio, loomingRatio: loomingRatio };
+    return {
+      verdict: verdict,
+      summary: summary,
+      reasons: reasons,
+      ratio: ratio,
+      loomingRatio: loomingRatio,
+      repairPercent: repairPercent,
+      combinedPercent: combinedPercent,
+      totalKnown: totalLooming,
+      hasComparison: hasComparison,
+      replacementCost: replacementCost,
+      asIsOffer: asIsOffer,
+      replaceUpfront: replaceUpfront,
+      cashDifference: cashDifference
+    };
   }
 
   // ─────────────────────────────────────────────────────────
@@ -4904,7 +5776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       modules: [
         { id: 'estimate', why: '21 common shop-quote line items. Know what\'s standard, DIY-able, or upsell BEFORE you authorize work.' },
         { id: 'scams', why: '12 known shop scams + how to push back politely. Maine consumer-rights footer.' },
-        { id: 'roi', why: 'Repair-or-sell calculator. Run the math on a hypothetical scenario.' },
+        { id: 'roi', why: 'Compare a written quote with vehicle value, add a realistic replacement path, and document what still needs verification.' },
         { id: 'usedcar', why: 'If you\'re car-shopping, walk through the 10 red flags + 9-step pre-purchase walkaround.' },
         { id: 'career', why: 'ASE A1-A8 + Maine vocational programs. Even if you\'re not headed to mechanic school, the pathway is interesting.' },
         { id: 'race', why: 'For sports-minded learners: the path from Maine high school auto shop to NASCAR runs through here.' }
@@ -5661,8 +6533,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       },
       tests: [
         { id: 'v-off', label: 'Measure battery voltage, engine OFF', needs: 'off', key: true,
+          meter: { mode: 'dcv', connection: 'post-to-post', load: 'none', reading: '12.4', unit: 'V', trend: 'steady', resultState: 'rest-charge-okay', reference: '12.4–12.8 V rested', interpretation: 'Rested state of charge looks normal; this does not prove cranking capacity.' },
           text: '12.4 V. That is a healthy rested battery — a little down from a full 12.6 V, which is exactly what you would expect after it was drained and jumped.' },
         { id: 'v-run', label: 'Measure battery voltage, engine RUNNING', needs: 'running', key: true,
+          meter: { mode: 'dcv', connection: 'post-to-post', load: 'none', reading: '12.1', unit: 'V', trend: 'falling', resultState: 'charging-output-low', reference: '13.7–14.7 V at idle', interpretation: 'Voltage is below resting level and falling, so the charging system is not replacing the energy being used.' },
           text: '12.1 V and drifting DOWN. A working charging system holds roughly 13.7–14.7 V at idle. This is below resting voltage, which means nothing is charging — the car is running off the battery alone and flattening it as it goes.' },
         { id: 'obd', label: 'Scan for OBD-II codes', needs: 'any', key: false,
           text: 'P0562 — System Voltage Low. Confirms the symptom; does not by itself name the part.' }
@@ -5751,23 +6625,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       },
       tests: [
         { id: 'v-post', label: 'Measure voltage at the battery POST, engine off', needs: 'off', key: true,
+          meter: { mode: 'dcv', connection: 'post-to-post', load: 'none', reading: '12.5', unit: 'V', trend: 'steady', resultState: 'source-charge-okay', reference: '12.4–12.8 V rested', interpretation: 'The battery itself has a healthy state of charge.' },
           text: '12.5 V. On the post itself, this is a healthy rested battery with plenty left in it.' },
-        { id: 'v-clamp', label: 'Measure voltage at the CABLE CLAMP, engine off', needs: 'off', key: true,
-          text: '10.9 V — one and a half volts LOST between the post and the clamp sitting on it. That gap is being burned up crossing corrosion and a loose connection. The battery is not the problem; getting its power out is.' },
+        { id: 'v-clamp', label: 'Measure voltage drop across the positive post-to-clamp joint while cranking', needs: 'off', key: true,
+          meter: { mode: 'dcv', connection: 'positive-joint', load: 'starter', reading: '1.6', unit: 'V drop', trend: 'loaded', resultState: 'connection-drop-high', reference: 'Below 0.2 V across one connection under load', interpretation: 'The connection is consuming 1.6 V while current flows. Corrosion and looseness are starving the starter.' },
+          text: '1.6 V lost ACROSS the positive post-to-clamp joint while cranking. A healthy connection should stay below roughly 0.2 V under load. At rest, almost no current flows and this fault can hide; the cranking load is what makes the voltage drop appear.' },
         { id: 'lights', label: 'Switch the headlights on and watch them', needs: 'any', key: false,
           text: 'They come on, then dim heavily under load. Consistent with a supply that collapses when current is demanded.' }
       ],
       choices: [
         { id: 'clean', label: 'Clean the corrosion off and tighten the terminal, then re-test', verdict: 'correct',
-          why: 'The cheapest fix in the bay, and it is the right one. 12.5 V at the post and 10.9 V at the clamp means the fault lives in the connection, not the component. Re-testing afterwards is what confirms it rather than assuming it.' },
+          why: 'The cheapest fix in the bay, and it is the right one. Losing 1.6 V across a single post-to-clamp joint under cranking load means the fault lives in the connection, not the component. Re-testing afterwards is what confirms it rather than assuming it.' },
         { id: 'batt', label: 'Replace the battery', verdict: 'trap',
           why: 'You measured 12.5 V at the post — that is a good battery. Fitting a new one bolts a healthy battery to the same corroded, loose clamp, and the car will click at you again. Check the connection before condemning the component.' },
         { id: 'starter', label: 'Replace the starter', verdict: 'trap',
-          why: 'A click can be a failing starter, so this is not a silly thought — but you already found only 10.9 V reaching the cable. Starve any starter of voltage and it will click instead of turning. Fix the supply, THEN re-test. Diagnosing a component through a known-bad connection tells you nothing.' },
+          why: 'A click can be a failing starter, so this is not a silly thought — but you already measured a 1.6 V loss across one corroded joint while cranking. Starve any starter of voltage and it will click instead of turning. Fix the supply, THEN re-test. Diagnosing a component through a known-bad connection tells you nothing.' },
         { id: 'jump', label: 'Jump-start it and send them on their way', verdict: 'wrong',
           why: 'That gets them home once. The corroded clamp is still there tomorrow morning, probably in a car park, probably in the rain.' }
       ],
-      teaching: 'Voltage drop is the measurement that finds bad connections, and almost nobody thinks to take it. Measure across the joint: healthy connections lose almost nothing. If the post reads good and the clamp reads low, the fault is the few millimetres in between — and it costs a wire brush, not a part.'
+      teaching: 'Voltage drop is the measurement that finds bad connections, and almost nobody thinks to take it. Measure ACROSS the joint while current is flowing: healthy connections lose almost nothing. A large loaded drop means the fault is the few millimetres between post and clamp — and it costs a wire brush, not a part. At rest, the same bad joint can look normal because the meter itself draws almost no current.'
     },
 
     {
@@ -5843,10 +6719,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       },
       tests: [
         { id: 'v-rest', label: 'Measure resting voltage, engine OFF', needs: 'off', key: true,
+          meter: { mode: 'dcv', connection: 'post-to-post', load: 'none', reading: '12.4', unit: 'V', trend: 'steady', resultState: 'rest-charge-okay', reference: '12.4–12.8 V rested', interpretation: 'Resting voltage looks plausible, but it measures state of charge—not remaining battery capacity.' },
           text: '12.4 V rested. Nothing alarming — and this is precisely the number that fools people into declaring the battery healthy and going looking elsewhere.' },
         { id: 'load', label: 'Load-test the battery', needs: 'off', key: true,
+          meter: { mode: 'dcv', connection: 'post-to-post', load: 'carbon-pile', reading: '8.9', unit: 'V', trend: 'collapsing', resultState: 'capacity-fail', reference: 'About 9.6 V minimum at 70°F under a 15-second half-CCA load', interpretation: 'Voltage collapses under a controlled load, proving the battery cannot deliver enough current.' },
           text: 'Under load the voltage collapses to 8.9 V and recovers slowly. A healthy battery should hold above roughly 9.6 V through the test. This one can hold a voltage sitting still but cannot deliver current when asked.' },
         { id: 'v-run', label: 'Measure charging voltage, engine RUNNING', needs: 'running', key: true,
+          meter: { mode: 'dcv', connection: 'post-to-post', load: 'none', reading: '14.1', unit: 'V', trend: 'steady', resultState: 'charging-output-normal', reference: '13.7–14.7 V at idle', interpretation: 'Charging output is normal, so the alternator is doing its job.' },
           text: '14.1 V at idle. The charging system is doing its job perfectly. Whatever is wrong, it is not the alternator.' }
       ],
       choices: [
@@ -5862,6 +6741,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       teaching: 'This case exists to stop the earlier ones teaching the wrong lesson. "Replace the battery" was a trap twice — but the rule was never "never replace batteries," it was TEST BEFORE YOU REPLACE. Resting voltage and a load test answer different questions: resting voltage tells you state of charge, a load test tells you remaining capacity. Only the second one answers "will this crank the engine at minus ten." A battery that reads 12.4 V and fails a load test is finished, and replacing it is the right call.'
     }
   ];
+
+  // A diagnosis is not finished when the new part goes on. Each Repair Bay
+  // case now closes with the proof a professional would collect before a
+  // vehicle is released (or, for the head-gasket case, safely referred).
+  // Keeping these plans in the case model makes the science inspectable and
+  // lets the accessible controls and the 3D bay tell the same story.
+  var REPAIR_VERIFICATIONS = {
+    charging: {
+      action: 'Alternator replaced; belt routing, electrical connector, and output-cable torque checked.',
+      prompt: 'Which close-out test proves the charging system works when the vehicle is actually using electricity?',
+      criterion: 'Battery-post voltage must remain about 13.7–14.7 V with the engine running and normal electrical loads switched on.',
+      passObservation: '14.2 V at idle and 14.1 V with headlights, blower, and rear defogger on. The warning lamp stays off and the restart is normal.',
+      customerNote: 'Charging output restored and verified under load; battery state of charge should be rechecked after a full recharge.',
+      release: 'release',
+      plans: [
+        { id: 'loaded-output', adequate: true, label: 'Run a loaded charging-output test', detail: 'Measure at the battery posts at idle and about 2,000 rpm with headlights, blower, and rear defogger on; confirm the warning lamp stays off.', feedback: 'That repeats the customer’s failure condition while measuring the system against its running-voltage specification.' },
+        { id: 'lamp-only', adequate: false, label: 'Confirm only that the battery lamp is off', detail: 'Start the engine, look at the cluster, then release the vehicle.', feedback: 'A lamp can stay off while output is marginal. Measure charging voltage under electrical load before release.' },
+        { id: 'rest-only', adequate: false, label: 'Measure resting battery voltage only', detail: 'Shut the engine off and accept any reading near 12.6 V.', feedback: 'Resting voltage describes battery charge, not alternator output. The repair must be proved with the engine running under load.' }
+      ]
+    },
+    squeal: {
+      action: 'Serpentine belt renewed; pulley alignment and automatic-tensioner travel checked.',
+      prompt: 'Which check proves the belt repair under the same conditions that produced the complaint?',
+      criterion: 'From a cold start, the belt must track centrally without slip, squeal, fraying, or abnormal tensioner movement as accessory load changes.',
+      passObservation: 'Cold start is quiet. The belt tracks centrally and remains quiet with steering and electrical loads applied; the tensioner stays controlled.',
+      customerNote: 'Accessory-drive belt replaced and cold/load verification passed; tensioner and pulleys showed no abnormal movement.',
+      release: 'release',
+      plans: [
+        { id: 'cold-load-cycle', adequate: true, label: 'Repeat a cold start and load the accessories', detail: 'Observe belt tracking and tensioner motion from a safe distance, then apply the steering/electrical load that used to trigger the squeal.', feedback: 'This recreates the original cold, high-load condition and checks both sound and belt control.' },
+        { id: 'warm-idle', adequate: false, label: 'Listen only after the engine is fully warm', detail: 'Let it idle warm for one minute and release it if quiet.', feedback: 'The original symptom faded when warm. A warm-only check avoids the failure condition instead of proving the repair.' },
+        { id: 'visual-only', adequate: false, label: 'Look at the new belt with the engine off', detail: 'Confirm the printing is clean and the ribs look new.', feedback: 'Appearance confirms installation, not grip or tracking under load. Repeat the cold/load condition safely.' }
+      ]
+    },
+    overheat: {
+      action: 'Correct 30 A cooling-fan fuse installed; fan circuit inspected for the over-current cause.',
+      prompt: 'What verifies both that low-speed cooling has returned and that the replacement fuse is not masking another fault?',
+      criterion: 'The fan must cycle on command/at temperature, coolant temperature must stabilize, and the correct-rated fuse must remain intact through repeated cycles.',
+      passObservation: 'The fan completes three smooth cycles with A/C and temperature demand. Temperature stabilizes at idle and the 30 A fuse remains intact.',
+      customerNote: 'Low-speed cooling restored; fan operation and fuse integrity verified through three cycles. Reinspect if the fuse opens again.',
+      release: 'release',
+      plans: [
+        { id: 'fan-fuse-cycles', adequate: true, label: 'Cycle the fan repeatedly and recheck the fuse', detail: 'Command the fan with A/C and normal temperature demand, watch coolant temperature stabilize at idle, then inspect the correct-rated fuse after three cycles.', feedback: 'This proves airflow returned and checks whether the underlying over-current fault immediately returns.' },
+        { id: 'fuse-look', adequate: false, label: 'Look through the new fuse once', detail: 'Confirm its link appears unbroken before starting the engine.', feedback: 'An intact fuse before use proves only that it was installed. Load the fan circuit repeatedly and confirm temperature control.' },
+        { id: 'highway-only', adequate: false, label: 'Take a highway drive only', detail: 'Release it if the gauge stays normal at speed.', feedback: 'Highway ram air already hid this fault. Verification must include low-speed/idle fan operation.' }
+      ]
+    },
+    nocrank: {
+      action: 'Positive battery post and clamp cleaned to bright metal, protected, seated fully, and tightened.',
+      prompt: 'Which measurement proves the repaired joint can carry starter current?',
+      criterion: 'Voltage drop across the positive post-to-clamp joint must stay below about 0.2 V while cranking, followed by normal repeated starts.',
+      passObservation: 'Loaded drop is 0.06 V across the repaired joint. The starter cranks normally on three restarts and the clamp does not move by hand.',
+      customerNote: 'Positive terminal connection restored; 0.06 V loaded drop and three normal restarts verified.',
+      release: 'release',
+      plans: [
+        { id: 'loaded-drop-restart', adequate: true, label: 'Repeat the loaded voltage-drop test and restart', detail: 'Probe across the positive post and clamp while cranking, compare with the 0.2 V limit, then perform three normal restarts.', feedback: 'This loads the exact repaired joint and measures whether it still wastes voltage when current is highest.' },
+        { id: 'rest-reading', adequate: false, label: 'Read battery voltage at rest', detail: 'Accept 12.5 V at the battery posts as proof.', feedback: 'The bad joint also looked normal with almost no current flowing. Measure across it while cranking.' },
+        { id: 'wiggle-only', adequate: false, label: 'Wiggle the clamp by hand only', detail: 'Release it if the clamp no longer moves.', feedback: 'Mechanical tightness matters, but it does not quantify electrical loss. Add the loaded post-to-clamp drop test.' }
+      ]
+    },
+    headgasket: {
+      action: 'Vehicle placed on a no-run hold; converging evidence documented for engine-repair referral.',
+      prompt: 'What is the safe professional close-out when this bay cannot perform the internal-engine repair?',
+      criterion: 'Do not restart or road-test. Record the internal-leak evidence, isolate the vehicle, and arrange tow/referral to an equipped engine-repair shop.',
+      passObservation: 'No further run attempted. Low coolant, contaminated oil, persistent white exhaust, and positive block-test evidence are documented; tow/referral is arranged.',
+      customerNote: 'Vehicle is not released for road use. Internal coolant leak suspected; tow to an equipped engine-repair facility is required.',
+      release: 'refer',
+      plans: [
+        { id: 'document-tow', adequate: true, label: 'Document the evidence and arrange a tow', detail: 'Keep the engine off, tag the vehicle no-run, record the converging findings and positive block test, and transfer it to an equipped engine-repair shop.', feedback: 'Professional verification here is a safe boundary: preserve the evidence, prevent more damage, and hand the vehicle over without another run.' },
+        { id: 'road-test', adequate: false, label: 'Road-test until the temperature rises', detail: 'Drive it to reproduce the coolant loss one more time.', feedback: 'Do not road-test a confirmed internal coolant leak. Another run risks bearing damage, overheating, or hydrolock.' },
+        { id: 'top-up-release', adequate: false, label: 'Top up both fluids and let the customer drive it', detail: 'Ask the customer to watch the gauges on the way to another shop.', feedback: 'Adding fluid does not restore the failed seal. Keep it off the road and arrange a tow.' }
+      ]
+    },
+    oilpressure: {
+      action: 'Oil restored to specification and the confirmed external leak repaired; area cleaned for inspection.',
+      prompt: 'Which close-out proves lubrication has returned and the leak is no longer lowering the level?',
+      criterion: 'At warm idle, the warning lamp and valve-train tick must remain absent, the repaired area must stay dry, and the level must remain correct after shutdown and settling.',
+      passObservation: 'After warm idle the warning lamp stays off, top-end tick is gone, the cleaned repair area remains dry, and the settled level remains at FULL.',
+      customerNote: 'Oil level restored and leak repaired; warm-idle warning/noise, leak inspection, and settled-level checks all passed.',
+      release: 'release',
+      plans: [
+        { id: 'warm-leak-level', adequate: true, label: 'Warm-idle, leak, and settled-level check', detail: 'Warm the engine while monitoring the oil warning and noise, inspect the cleaned repair area, shut down, wait, and recheck the dipstick on level ground.', feedback: 'This checks immediate lubrication plus the cause that made the level fall, then confirms the final fill after oil drains back.' },
+        { id: 'lamp-only', adequate: false, label: 'Check only that the warning lamp goes out at startup', detail: 'Release the vehicle as soon as the lamp turns off.', feedback: 'A startup lamp check does not prove the repaired area stays dry or the level remains correct at warm idle.' },
+        { id: 'driveway-later', adequate: false, label: 'Ask the customer to look for spots next week', detail: 'Skip a bay leak check and make future spots the verification.', feedback: 'The shop must inspect its repair before release. Customer monitoring can supplement—not replace—the warm leak and level checks.' }
+      ]
+    },
+    badbattery: {
+      action: 'Correct-specification battery installed, secured, and terminals torqued and protected.',
+      prompt: 'Which sequence proves the new battery has capacity and the vehicle will keep it charged?',
+      criterion: 'The battery must pass the maker/temperature-adjusted load or conductance test, crank repeatedly, and show normal charging voltage with the engine running.',
+      passObservation: 'Replacement holds 10.2 V through the specified load test, completes three strong restarts, and reads 14.1 V running.',
+      customerNote: 'Battery replaced and secured; capacity, repeated restart, and charging-output checks passed.',
+      release: 'release',
+      plans: [
+        { id: 'capacity-restart-charge', adequate: true, label: 'Test capacity, repeated cranking, and charging output', detail: 'Apply the correct temperature-adjusted load/conductance test, perform three restarts, then measure charging voltage running.', feedback: 'This proves the replacement stores and delivers current, then confirms the vehicle can replenish it.' },
+        { id: 'rest-only', adequate: false, label: 'Accept a 12.6 V resting reading', detail: 'Measure once with the engine off and release the vehicle.', feedback: 'The failed old battery also held plausible resting voltage. Verify capacity under load and confirm charging output.' },
+        { id: 'start-once', adequate: false, label: 'Start the engine once', detail: 'Release it if that single crank sounds normal.', feedback: 'One start is useful but incomplete. Add a capacity test, repeated restarts, and a charging-system check.' }
+      ]
+    }
+  };
+  REPAIR_CASES.forEach(function (repairCase) {
+    repairCase.verification = REPAIR_VERIFICATIONS[repairCase.id];
+  });
 
   // ── 3D under-hood viewer ────────────────────────────────────────────────
   // Deliberately hook-free. This tool's render() calls no React hooks at all,
@@ -6442,6 +7423,473 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // the scene and hand back the pickable meshes. Knows nothing about React,
   // lifecycle, or the DOM - which is what lets the same viewer drive the
   // wheel-corner scene.
+  function buildDiagnosticMeterScene(THREE, api, repairCaseId, meterSetup) {
+    function applyDiagnosticShadows(object) {
+      if (!object || !api.wantShadow || !object.traverse) return;
+      object.traverse(function (node) {
+        if (!node.isMesh) return;
+        node.castShadow = true;
+        node.receiveShadow = true;
+      });
+    }
+    var physicalLoad = meterSetup.appliedLoad || 'none';
+    var meterGroup = new THREE.Group();
+    meterGroup.name = 'diagnostic-digital-multimeter';
+    meterGroup.position.set(-1.70, 0.43, 0.82);
+    meterGroup.rotation.y = -0.08;
+    meterGroup.userData.testId = meterSetup.testId || '';
+    meterGroup.userData.mode = meterSetup.selectedMode || '';
+    meterGroup.userData.reading = meterSetup.settled ? meterSetup.reading : null;
+    meterGroup.userData.unit = meterSetup.settled ? meterSetup.unit : null;
+    meterGroup.userData.resultState = meterSetup.settled ? meterSetup.resultState : 'setup';
+    meterGroup.userData.redContact = meterSetup.redContact || null;
+    meterGroup.userData.blackContact = meterSetup.blackContact || null;
+    meterGroup.userData.selectedLoad = meterSetup.selectedLoad || '';
+    meterGroup.userData.loadState = physicalLoad !== 'none'
+      ? physicalLoad
+      : ((meterSetup.selectedLoad && meterSetup.selectedLoad !== 'none') ? 'staged' : 'none');
+    meterGroup.userData.settled = !!meterSetup.settled;
+
+    var meterBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.46, 0.075, 0.66),
+      new THREE.MeshPhongMaterial({
+        color: api.contrast ? 0xffffff : 0x172033,
+        shininess: api.contrast ? 0 : 22,
+        specular: api.contrast ? 0x000000 : 0x53657d
+      })
+    );
+    meterBody.name = 'diagnostic-multimeter-rubber-case';
+    meterGroup.add(meterBody);
+    var meterFace = new THREE.Mesh(
+      new THREE.BoxGeometry(0.40, 0.018, 0.59),
+      api.trim(api.contrast ? 0x000000 : 0x263449, 34)
+    );
+    meterFace.name = 'diagnostic-multimeter-face';
+    meterFace.position.y = 0.047;
+    meterGroup.add(meterFace);
+
+    var meterScreen = new THREE.Mesh(
+      new THREE.BoxGeometry(0.34, 0.022, 0.19),
+      new THREE.MeshPhongMaterial({
+        color: api.contrast ? 0xffffff : 0xb5c986,
+        emissive: api.contrast ? 0x000000 : 0x28351a,
+        emissiveIntensity: meterSetup.settled ? 0.42 : 0.16,
+        shininess: api.contrast ? 0 : 66,
+        specular: api.contrast ? 0x000000 : 0xe8f4bd
+      })
+    );
+    meterScreen.name = 'diagnostic-multimeter-screen';
+    meterScreen.position.set(0, 0.061, -0.145);
+    meterScreen.userData.reading = meterSetup.settled ? meterSetup.reading : null;
+    meterScreen.userData.unit = meterSetup.settled ? meterSetup.unit : null;
+    meterScreen.userData.resultState = meterSetup.settled ? meterSetup.resultState : 'setup';
+    meterGroup.add(meterScreen);
+
+    // Code-native seven-segment digits keep the reading legible without
+    // depending on a font, canvas texture, network asset, or GPU text library.
+    var meterDigitMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0x000000 : 0x17210f,
+      emissive: api.contrast ? 0x000000 : 0x101807,
+      emissiveIntensity: meterSetup.settled ? 0.34 : 0.08,
+      shininess: 2
+    });
+    var meterDigitPatterns = {
+      '0': [0, 1, 2, 4, 5, 6],
+      '1': [2, 5],
+      '2': [0, 2, 3, 4, 6],
+      '3': [0, 2, 3, 5, 6],
+      '4': [1, 2, 3, 5],
+      '5': [0, 1, 3, 5, 6],
+      '6': [0, 1, 3, 4, 5, 6],
+      '7': [0, 2, 5],
+      '8': [0, 1, 2, 3, 4, 5, 6],
+      '9': [0, 1, 2, 3, 5, 6],
+      '-': [3]
+    };
+    function addMeterDigit(character, digitX, digitIndex) {
+      var activeSegments = meterDigitPatterns[character] || meterDigitPatterns['-'];
+      var segmentSpecs = [
+        [0, -0.039, 0.040, 0.011],
+        [-0.024, -0.020, 0.011, 0.036],
+        [0.024, -0.020, 0.011, 0.036],
+        [0, 0, 0.040, 0.011],
+        [-0.024, 0.020, 0.011, 0.036],
+        [0.024, 0.020, 0.011, 0.036],
+        [0, 0.039, 0.040, 0.011]
+      ];
+      activeSegments.forEach(function (segmentIndex) {
+        var spec = segmentSpecs[segmentIndex];
+        var segment = new THREE.Mesh(
+          new THREE.BoxGeometry(spec[2], 0.008, spec[3]),
+          meterDigitMat
+        );
+        segment.name = 'diagnostic-meter-digit-' + digitIndex + '-segment-' + segmentIndex;
+        segment.position.set(digitX + spec[0], 0.076, -0.145 + spec[1]);
+        meterGroup.add(segment);
+      });
+    }
+    var meterDisplayText = meterSetup.settled && meterSetup.reading
+      ? String(meterSetup.reading)
+      : '----';
+    var meterDisplayDigits = 0;
+    for (var displayCountIndex = 0; displayCountIndex < meterDisplayText.length; displayCountIndex++) {
+      if (meterDisplayText.charAt(displayCountIndex) !== '.') meterDisplayDigits++;
+    }
+    var meterDigitSpacing = 0.064;
+    var meterDigitStart = -((meterDisplayDigits - 1) * meterDigitSpacing) * 0.5;
+    var meterDigitCursor = 0;
+    for (var meterDisplayIndex = 0; meterDisplayIndex < meterDisplayText.length; meterDisplayIndex++) {
+      var meterCharacter = meterDisplayText.charAt(meterDisplayIndex);
+      if (meterCharacter === '.') {
+        var decimalDot = new THREE.Mesh(
+          new THREE.SphereGeometry(0.008, 8, 6),
+          meterDigitMat
+        );
+        decimalDot.name = 'diagnostic-meter-decimal-point';
+        decimalDot.position.set(
+          meterDigitStart + (meterDigitCursor - 1) * meterDigitSpacing + 0.032,
+          0.078,
+          -0.103
+        );
+        meterGroup.add(decimalDot);
+      } else {
+        addMeterDigit(
+          meterCharacter,
+          meterDigitStart + meterDigitCursor * meterDigitSpacing,
+          meterDigitCursor
+        );
+        meterDigitCursor++;
+      }
+    }
+
+    var meterDial = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.080, 0.080, 0.052, 24),
+      api.trim(api.contrast ? 0xffffff : 0x111827, 38)
+    );
+    meterDial.name = 'diagnostic-multimeter-selector-dial';
+    meterDial.position.set(-0.070, 0.072, 0.095);
+    meterGroup.add(meterDial);
+    var meterDialPointer = new THREE.Mesh(
+      new THREE.BoxGeometry(0.018, 0.010, 0.068),
+      api.trim(api.contrast ? 0x000000 : 0xd1d5db, 56)
+    );
+    meterDialPointer.name = 'diagnostic-multimeter-dial-pointer';
+    meterDialPointer.position.set(-0.070, 0.102, 0.075);
+    var meterDialAngles = {
+      dcv: -0.62,
+      resistance: 0.05,
+      acv: 0.72
+    };
+    meterDialPointer.rotation.y = Object.prototype.hasOwnProperty.call(
+      meterDialAngles, meterSetup.selectedMode)
+      ? meterDialAngles[meterSetup.selectedMode]
+      : -1.22;
+    meterGroup.add(meterDialPointer);
+    var meterPorts = {};
+    [
+      { name: 'com', x: 0.052, color: api.contrast ? 0xffffff : 0x0b1019 },
+      { name: 'volts', x: 0.135, color: api.contrast ? 0xffff00 : 0xdc2626 }
+    ].forEach(function (portSpec) {
+      var port = new THREE.Mesh(
+        new THREE.TorusGeometry(0.025, 0.010, 8, 20),
+        api.trim(portSpec.color, 32)
+      );
+      port.name = 'diagnostic-multimeter-' + portSpec.name + '-port';
+      port.rotation.x = Math.PI / 2;
+      port.position.set(portSpec.x, 0.086, 0.215);
+      meterGroup.add(port);
+      meterPorts[portSpec.name] = port;
+    });
+    applyDiagnosticShadows(meterGroup);
+    api.scene.add(meterGroup);
+    meterGroup.updateMatrixWorld(true);
+    var blackLeadStart = meterPorts.com.getWorldPosition(new THREE.Vector3());
+    var redLeadStart = meterPorts.volts.getWorldPosition(new THREE.Vector3());
+
+    var batteryContacts = {
+      // Surface points, not mesh centers: the pointed probe endpoint sits on
+      // exposed metal instead of disappearing into the battery geometry.
+      'positive-post': new THREE.Vector3(-1.262, 0.547, 0.600),
+      'negative-post': new THREE.Vector3(-0.938, 0.547, 0.600),
+      'positive-clamp': new THREE.Vector3(
+        repairCaseId === 'nocrank' ? -1.236 : -1.262,
+        0.533,
+        repairCaseId === 'nocrank' ? 0.681 : 0.669
+      ),
+      'negative-clamp': new THREE.Vector3(-0.938, 0.533, 0.669)
+    };
+    var connectionContacts = {
+      'post-to-post': { red: 'positive-post', black: 'negative-post' },
+      'positive-joint': { red: 'positive-post', black: 'positive-clamp' },
+      'clamp-to-clamp': { red: 'positive-clamp', black: 'negative-clamp' }
+    };
+    var selectedContacts = meterSetup.connectProbes
+      ? (connectionContacts[meterSetup.selectedConnection] || null)
+      : null;
+    function addDiagnosticLead(name, probeName, color, start, contactName) {
+      var target = batteryContacts[contactName];
+      if (!target) return;
+      var leadEnd = target.clone();
+      leadEnd.y += 0.235;
+      var leadCurve = new THREE.CatmullRomCurve3([
+        start,
+        new THREE.Vector3(
+          (start.x + leadEnd.x) * 0.5,
+          Math.max(start.y, leadEnd.y) + 0.24,
+          (start.z + leadEnd.z) * 0.5 + 0.08
+        ),
+        leadEnd
+      ]);
+      var lead = new THREE.Mesh(
+        new THREE.TubeGeometry(leadCurve, 28, 0.012, 8, false),
+        api.trim(api.contrast ? 0xffffff : color, 28)
+      );
+      lead.name = name;
+      lead.userData.contact = contactName;
+      lead.userData.testId = meterSetup.testId || '';
+      applyDiagnosticShadows(lead);
+      api.scene.add(lead);
+
+      var probe = new THREE.Group();
+      probe.name = probeName;
+      probe.userData.contact = contactName;
+      probe.userData.testId = meterSetup.testId || '';
+      var handle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.024, 0.020, 0.150, 12),
+        api.trim(api.contrast ? 0xffffff : color, 36)
+      );
+      handle.position.y = 0.160;
+      probe.add(handle);
+      var tip = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.007, 0.003, 0.085, 9),
+        api.trim(api.contrast ? 0x000000 : 0xb7c0cb, 70)
+      );
+      // The tapered lower endpoint is exactly y=0 in probe-local space.
+      tip.position.y = 0.0425;
+      probe.add(tip);
+      probe.position.copy(target);
+      applyDiagnosticShadows(probe);
+      api.scene.add(probe);
+    }
+    if (selectedContacts) {
+      meterGroup.userData.redContact = selectedContacts.red;
+      meterGroup.userData.blackContact = selectedContacts.black;
+      addDiagnosticLead(
+        'diagnostic-red-test-lead',
+        'meter-red-probe',
+        0xdc2626,
+        redLeadStart,
+        selectedContacts.red
+      );
+      addDiagnosticLead(
+        'diagnostic-black-test-lead',
+        'meter-black-probe',
+        0x151c27,
+        blackLeadStart,
+        selectedContacts.black
+      );
+    }
+
+    // A DMM reads voltage; it cannot apply a starter-sized load. Capacity
+    // testing therefore gets a separate carbon-pile attachment and heavy leads.
+    if (meterSetup.selectedLoad === 'carbon-pile') {
+      var loadTester = new THREE.Group();
+      loadTester.name = 'diagnostic-battery-load-tester';
+      loadTester.userData.loadState = physicalLoad === 'carbon-pile'
+        ? 'half-cca-15-seconds'
+        : 'staged-not-connected';
+      loadTester.userData.testId = meterSetup.testId || '';
+      loadTester.position.set(-1.62, 0.49, 0.30);
+      var loadBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.34, 0.11, 0.24),
+        api.trim(api.contrast ? 0xffffff : 0xb45309, 46)
+      );
+      loadBody.name = 'diagnostic-load-tester-body';
+      loadTester.add(loadBody);
+      for (var loadVentIndex = 0; loadVentIndex < 4; loadVentIndex++) {
+        var loadVent = new THREE.Mesh(
+          new THREE.BoxGeometry(0.045, 0.012, 0.19),
+          api.trim(api.contrast ? 0x000000 : 0x3f2a1d, 22)
+        );
+        loadVent.name = 'diagnostic-load-tester-vent-' + loadVentIndex;
+        loadVent.position.set(-0.105 + loadVentIndex * 0.070, 0.061, 0);
+        loadTester.add(loadVent);
+      }
+      var loadGauge = new THREE.Mesh(
+        new THREE.TorusGeometry(0.050, 0.010, 9, 24, Math.PI),
+        api.trim(api.contrast ? 0x000000 : 0xe2e8f0, 44)
+      );
+      loadGauge.name = 'diagnostic-load-tester-gauge';
+      loadGauge.rotation.x = -Math.PI / 2;
+      loadGauge.position.set(0, 0.073, -0.010);
+      loadTester.add(loadGauge);
+      applyDiagnosticShadows(loadTester);
+      api.scene.add(loadTester);
+      if (physicalLoad === 'carbon-pile') {
+        [
+          { name: 'diagnostic-load-tester-positive-cable', color: 0xb91c1c, target: batteryContacts['positive-post'], startX: -1.73 },
+          { name: 'diagnostic-load-tester-negative-cable', color: 0x161d28, target: batteryContacts['negative-post'], startX: -1.51 }
+        ].forEach(function (cableSpec) {
+          var cableCurve = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(cableSpec.startX, 0.53, 0.36),
+            new THREE.Vector3(
+              (cableSpec.startX + cableSpec.target.x) * 0.5,
+              0.71,
+              0.47
+            ),
+            cableSpec.target.clone().add(new THREE.Vector3(0, 0.045, 0))
+          ]);
+          var cable = new THREE.Mesh(
+            new THREE.TubeGeometry(cableCurve, 24, 0.020, 9, false),
+            api.trim(api.contrast ? 0xffffff : cableSpec.color, 24)
+          );
+          cable.name = cableSpec.name;
+          applyDiagnosticShadows(cable);
+          api.scene.add(cable);
+        });
+      }
+    } else if (physicalLoad === 'starter') {
+      var starterLoadCue = new THREE.Group();
+      starterLoadCue.name = 'diagnostic-starter-load-cue';
+      starterLoadCue.userData.loadState = 'cranking';
+      starterLoadCue.userData.testId = meterSetup.testId || '';
+      for (var currentRingIndex = 0; currentRingIndex < 3; currentRingIndex++) {
+        var currentRing = new THREE.Mesh(
+          new THREE.TorusGeometry(0.090 + currentRingIndex * 0.030, 0.008, 7, 26),
+          api.trim(api.contrast ? 0xffff00 : 0xf59e0b, 48)
+        );
+        currentRing.name = 'diagnostic-starter-current-ring-' + currentRingIndex;
+        currentRing.rotation.x = Math.PI / 2;
+        starterLoadCue.add(currentRing);
+      }
+      starterLoadCue.position.set(-1.245, 0.555, 0.610);
+      applyDiagnosticShadows(starterLoadCue);
+      api.scene.add(starterLoadCue);
+    }
+  }
+
+  function buildRepairVerificationScene(THREE, api, caseId, repairState) {
+    if (!repairState) return null;
+    var verified = repairState === 'verified';
+    var referred = verified && caseId === 'headgasket';
+    var statusColor = referred ? 0xf59e0b : (verified ? 0x22c55e : 0x38bdf8);
+    var cart = new THREE.Group();
+    cart.name = 'repair-verification-cart';
+    // The service-floor top is about -0.38 in this scene; this puts the caster
+    // tread on it instead of leaving the cart visibly floating.
+    cart.position.set(2.52, -0.43, 1.42);
+    cart.rotation.y = -0.18;
+    cart.userData.caseId = caseId;
+    cart.userData.repairState = repairState;
+    cart.userData.verified = verified;
+    cart.userData.releaseState = referred ? 'tow-referral' : (verified ? 'ready-for-release' : 'proof-test-required');
+
+    var cartMetal = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0x27364a,
+      shininess: api.contrast ? 0 : 58,
+      specular: api.contrast ? 0x000000 : 0x9fb1c8
+    });
+    var cartRubber = api.trim(api.contrast ? 0xffffff : 0x101820, 8);
+    var paperMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0xe7edf3,
+      shininess: 8,
+      specular: api.contrast ? 0x000000 : 0x798696
+    });
+    var statusMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : statusColor,
+      emissive: api.contrast ? 0x000000 : statusColor,
+      emissiveIntensity: verified ? 0.34 : 0.18,
+      shininess: api.contrast ? 0 : 82,
+      specular: api.contrast ? 0x000000 : 0xffffff
+    });
+    function cartMesh(name, geometry, material, position, rotation) {
+      var mesh = new THREE.Mesh(geometry, material);
+      mesh.name = name;
+      mesh.position.set(position[0], position[1], position[2]);
+      if (rotation) mesh.rotation.set(rotation[0], rotation[1], rotation[2]);
+      if (api.wantShadow) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+      }
+      cart.add(mesh);
+      return mesh;
+    }
+
+    cartMesh('repair-verification-cart-frame', new THREE.BoxGeometry(0.70, 0.075, 0.48), cartMetal, [0, 0.20, 0]);
+    cartMesh('repair-verification-cart-lower-shelf', new THREE.BoxGeometry(0.62, 0.045, 0.40), cartMetal, [0, 0.49, 0]);
+    cartMesh('repair-verification-cart-top', new THREE.BoxGeometry(0.76, 0.055, 0.52), cartMetal, [0, 0.79, 0]);
+    [-0.29, 0.29].forEach(function (legX) {
+      [-0.17, 0.17].forEach(function (legZ) {
+        cartMesh('repair-verification-cart-leg', new THREE.BoxGeometry(0.045, 0.58, 0.045), cartMetal, [legX, 0.49, legZ]);
+        var caster = cartMesh('repair-verification-cart-caster', new THREE.CylinderGeometry(0.055, 0.055, 0.035, 12), cartRubber, [legX, 0.11, legZ], [Math.PI / 2, 0, 0]);
+        caster.userData.verified = verified;
+      });
+    });
+
+    // A dimensional work order makes the close-out state readable even when
+    // the learner is not using the canvas for interaction.
+    var workOrder = new THREE.Group();
+    workOrder.name = 'repair-verification-work-order';
+    workOrder.userData.caseId = caseId;
+    workOrder.userData.stage = verified ? 'documented' : 'awaiting-proof';
+    var clipboard = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.028, 0.48), cartMetal);
+    clipboard.name = 'repair-verification-clipboard';
+    workOrder.add(clipboard);
+    var paper = new THREE.Mesh(new THREE.BoxGeometry(0.33, 0.012, 0.40), paperMat);
+    paper.name = 'repair-verification-work-order-sheet';
+    paper.position.y = 0.022;
+    workOrder.add(paper);
+    var orderHeader = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.010, 0.042), statusMat);
+    orderHeader.name = 'repair-verification-work-order-status';
+    orderHeader.position.set(0, 0.032, -0.14);
+    workOrder.add(orderHeader);
+    for (var orderLine = 0; orderLine < 4; orderLine++) {
+      var line = new THREE.Mesh(
+        new THREE.BoxGeometry(0.24 - orderLine * 0.018, 0.008, 0.012),
+        api.trim(api.contrast ? 0x000000 : 0x536273, 10)
+      );
+      line.name = 'repair-verification-work-order-line-' + orderLine;
+      line.position.set(-0.02, 0.033, -0.07 + orderLine * 0.065);
+      workOrder.add(line);
+    }
+    workOrder.position.set(0, 0.84, 0.01);
+    workOrder.rotation.x = -0.16;
+    cart.add(workOrder);
+
+    var qaUnit = new THREE.Group();
+    qaUnit.name = 'repair-verification-qa-unit';
+    qaUnit.userData.caseId = caseId;
+    qaUnit.userData.result = verified ? (referred ? 'safe-referral' : 'pass') : 'pending';
+    var qaBody = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.25), cartMetal);
+    qaBody.name = 'repair-verification-qa-body';
+    qaUnit.add(qaBody);
+    var qaScreen = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.13, 0.018), statusMat);
+    qaScreen.name = 'repair-verification-qa-screen';
+    qaScreen.position.set(0, 0.025, 0.134);
+    qaUnit.add(qaScreen);
+    [-0.07, 0, 0.07].forEach(function (x, lightIndex) {
+      var indicator = new THREE.Mesh(new THREE.SphereGeometry(0.017, 9, 7), lightIndex === 2 && verified ? statusMat : cartRubber);
+      indicator.name = 'repair-verification-qa-indicator-' + lightIndex;
+      indicator.position.set(x, -0.065, 0.148);
+      qaUnit.add(indicator);
+    });
+    qaUnit.position.set(0.12, 0.62, -0.02);
+    cart.add(qaUnit);
+
+    var beacon = cartMesh('repair-verification-pass-beacon', new THREE.CylinderGeometry(0.050, 0.062, 0.075, 16), statusMat, [-0.26, 0.86, -0.12]);
+    beacon.userData.state = verified ? (referred ? 'referral-secured' : 'verification-passed') : 'verification-pending';
+    var beaconLens = cartMesh('repair-verification-beacon-lens', new THREE.SphereGeometry(0.050, 12, 8), statusMat, [-0.26, 0.925, -0.12]);
+    beaconLens.userData.state = beacon.userData.state;
+
+    cart.traverse(function (node) {
+      if (!node.isMesh || !api.wantShadow) return;
+      node.castShadow = true;
+      node.receiveShadow = true;
+    });
+    api.scene.add(cart);
+    return cart;
+  }
+
   function buildEngineBayScene(THREE, api) {
     var meshes = {};
     var picks = [];
@@ -6449,9 +7897,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var repairCaseId = api.sceneProps && typeof api.sceneProps.caseId === 'string'
       ? api.sceneProps.caseId
       : '';
+    var repairState = api.sceneProps && typeof api.sceneProps.repairState === 'string'
+      ? api.sceneProps.repairState
+      : '';
+    var repairVerified = repairState === 'verified';
+    // Referral proves the professional boundary, but it does not pretend the
+    // internal engine fault has been repaired in this bay.
+    var faultResolved = repairVerified && repairCaseId !== 'headgasket';
     var openPart = api.sceneProps && typeof api.sceneProps.openPart === 'string'
       ? api.sceneProps.openPart
       : '';
+    var meterSetup = api.sceneProps && api.sceneProps.meter &&
+      typeof api.sceneProps.meter === 'object'
+      ? api.sceneProps.meter
+      : null;
     var coolingFan = null;
     var beltPulleys = [];
     var alternatorRotor = null;
@@ -6934,7 +8393,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
     coolingFan = new THREE.Group();
     coolingFan.name = 'radiator-cooling-fan';
-    coolingFan.userData.faultState = repairCaseId === 'overheat' ? 'failed-stopped' : 'operational';
+    coolingFan.userData.faultState = repairCaseId === 'overheat' && !faultResolved ? 'failed-stopped' : 'operational';
     var fanMat = api.trim(api.contrast ? 0xffffff : 0x202936, 24);
     coolingFan.add(new THREE.Mesh(
       new THREE.TorusGeometry(0.31, 0.025, 8, 28), fanMat));
@@ -7169,7 +8628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           alternatorRotor = alternatorPulley;
         }
       } else if (p.shape === 'belt') {
-        var beltSurfaceMat = repairCaseId === 'squeal'
+        var beltSurfaceMat = repairCaseId === 'squeal' && !faultResolved
           ? new THREE.MeshPhongMaterial({
               color: api.contrast ? 0xffffff : 0x2b2d33,
               shininess: api.contrast ? 0 : 96,
@@ -7181,7 +8640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         beltMesh.name = 'serpentine-belt-loop';
         beltMesh.rotation.y = Math.PI / 2;
         group.add(beltMesh);
-        if (repairCaseId === 'squeal') {
+        if (repairCaseId === 'squeal' && !faultResolved) {
           var glazedBeltSurface = new THREE.Mesh(
             new THREE.TorusGeometry(p.size[0] * 1.002, p.size[2] * 1.035, 12, 44),
             new THREE.MeshPhongMaterial({
@@ -7297,11 +8756,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           api.trim(api.contrast ? 0xffff00 : 0xb8c0ca, 60)
         );
         positiveClamp.name = 'battery-positive-terminal-clamp';
-        positiveClamp.rotation.x = Math.PI / 2 + (repairCaseId === 'nocrank' ? -0.14 : 0);
+        positiveClamp.rotation.x = Math.PI / 2 + (repairCaseId === 'nocrank' && !faultResolved ? -0.14 : 0);
         positiveClamp.position.set(
-          posT.position.x + (repairCaseId === 'nocrank' ? 0.026 : 0),
+          posT.position.x + (repairCaseId === 'nocrank' && !faultResolved ? 0.026 : 0),
           p.size[1] * 0.59,
-          repairCaseId === 'nocrank' ? 0.012 : 0
+          repairCaseId === 'nocrank' && !faultResolved ? 0.012 : 0
         );
         group.add(positiveClamp);
         var negativeClamp = new THREE.Mesh(
@@ -7334,7 +8793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         negativePolarity.name = 'battery-negative-polarity-mark';
         negativePolarity.position.set(p.size[0] * 0.28, p.size[1] * 0.53, -p.size[2] * 0.34);
         group.add(negativePolarity);
-        if (repairCaseId === 'nocrank') {
+        if (repairCaseId === 'nocrank' && !faultResolved) {
           var corrosionMat = api.trim(api.contrast ? 0xffff00 : 0x9bd3d1, 16);
           for (var corrosionIndex = 0; corrosionIndex < 6; corrosionIndex++) {
             var corrosionAngle = corrosionIndex / 6 * Math.PI * 2;
@@ -7385,7 +8844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         maxMark.position.y = maxY;
         stickAssembly.add(maxMark);
         var milkyOil = repairCaseId === 'headgasket';
-        var lowOil = repairCaseId === 'oilpressure';
+        var lowOil = repairCaseId === 'oilpressure' && !faultResolved;
         var oilFilmHeight = lowOil ? 0.042 : 0.116;
         var oilFilm = new THREE.Mesh(
           new THREE.BoxGeometry(0.028, oilFilmHeight, 0.013),
@@ -7736,7 +9195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             fuseSpecs.forEach(function (fuseSpec) {
               var fuseAssembly = new THREE.Group();
               var isFanFuse = fuseSpec.id === 'cooling-fan';
-              var blownFuse = isFanFuse && repairCaseId === 'overheat';
+              var blownFuse = isFanFuse && repairCaseId === 'overheat' && !faultResolved;
               fuseAssembly.name = isFanFuse
                 ? 'fusebox-cooling-fan-fuse'
                 : 'fusebox-' + fuseSpec.id + '-fuse-' + fuseSpec.amp + 'a';
@@ -7872,13 +9331,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       api.scene.add(group);
       meshes[p.id] = group;
     });
+    if (repairState) {
+      var repairTargetByCase = {
+        charging: 'alternator', squeal: 'belt', overheat: 'fusebox',
+        nocrank: 'battery', headgasket: 'engine', oilpressure: 'dipstick',
+        badbattery: 'battery'
+      };
+      var repairTarget = meshes[repairTargetByCase[repairCaseId]];
+      if (repairTarget) {
+        repairTarget.userData.repairState = repairState;
+        repairTarget.userData.verified = repairVerified;
+        repairTarget.userData.releaseState = repairVerified
+          ? (repairCaseId === 'headgasket' ? 'tow-referral' : 'ready-for-release')
+          : 'proof-test-required';
+      }
+      buildRepairVerificationScene(THREE, api, repairCaseId, repairState);
+    }
+    if (meterSetup) {
+      buildDiagnosticMeterScene(THREE, api, repairCaseId, meterSetup);
+    }
     return {
       meshes: meshes,
       picks: picks,
       anchor: floor,
       frame: engineRunning && !api.reduced ? function (now) {
         var spin = (now * 0.0062) % (Math.PI * 2);
-        if (coolingFan && repairCaseId !== 'overheat') {
+        if (coolingFan && (repairCaseId !== 'overheat' || faultResolved)) {
           coolingFan.rotation.z = spin;
         }
         for (var pulleyIndex = 0; pulleyIndex < beltPulleys.length; pulleyIndex++) {
@@ -8086,7 +9564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q26', icon: '🆔',
       stem: 'Which character in a 17-character VIN tells you the model year?',
       choices: ['Character 1', 'Character 10', 'Character 17', 'There\'s no year in the VIN'],
-      correct: 1, why: 'VIN char 10 = model year (using a letter+number cycle). Char 1 = country of origin; chars 1-3 = manufacturer; char 9 = checksum; chars 12-17 = serial.' },
+      correct: 1, why: 'VIN position 10 carries a model-year code that repeats every 30 years. Positions 1–3 are the WMI; position 9 is a validation character/check digit in regulated markets; positions 12–17 are a manufacturer-specific identifier tail.' },
     { id: 'q27', icon: '🌳',
       stem: 'In a graded diagnostic scenario, the customer reports a flashing CEL + rough idle. Your highest-scoring first move is...',
       choices: ['Replace all plugs and coils as a precaution, since a rough idle with a flashing light is nearly always ignition', 'Tell them not to drive (cat-damage-in-progress) and pull codes when they leave it', 'Drive the car to "feel" the problem', 'Disconnect the battery to clear the light'],
@@ -8116,9 +9594,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       choices: ['Over-inflation', 'Toe alignment is OUT — wheels pointing too far in or out — overdue for an alignment', 'Bad tire from the manufacturer, with a belt that shifted inside the casing and pulled the tread to one edge', 'Cold weather'],
       correct: 1, why: 'Inside-edge feathered wear = toe alignment off. After replacing the tire (because it\'s ruined), get a 4-wheel alignment immediately or the new tire wears the same way.' },
     { id: 'q34', icon: '💵',
-      stem: 'Your 12-year-old car (worth $4,000) needs a $2,500 transmission rebuild AND has another $1,500 of looming work. ROI math?',
-      choices: ['Always repair', 'Repair-cost (62%) + looming (38%) = 100% of car value. Math suggests selling as-is or for parts and replacing the vehicle.', 'Always sell', 'Get the transmission rebuilt, then sell: a car that shifts cleanly sells for $2,500 more, so the rebuild pays for itself and the buyer inherits the looming work'],
-      correct: 1, why: '$2500 + $1500 = $4000 on a $4000 car. The 70% threshold rule says consider selling. A pre-purchase inspection on a comparable replacement is a better use of the same money.' },
+      stem: 'Your 12-year-old car (worth $4,000) needs a $2,500 transmission rebuild and has another $1,500 of known upcoming work. What can the worksheet conclude?',
+      choices: ['Always repair', 'Entered known work equals 100% of entered value. Pause, verify the diagnosis and whole-vehicle condition, then price a realistic replacement path before deciding.', 'Always sell', 'The transmission rebuild will automatically add $2,500 to the sale price, so the repair pays for itself'],
+      correct: 1, why: '$2,500 + $1,500 = $4,000, which reaches the worksheet\'s compare-both-paths marker but proves neither choice. Next evidence includes verified scope, a whole-vehicle inspection, a comparable replacement price, and an actual as-is offer.' },
     { id: 'q35', icon: '🌀',
       stem: 'A shop quotes you "your rotors are warped" but you suspect rust pitting from sitting all winter. What\'s the diagnostic difference?',
       choices: ['Both are the same', 'Real warp shows >0.005" runout on a dial indicator. Rust pitting causes pulse without runout. The fix differs.', 'Warp is more expensive to fix, because the rotor has to be replaced, while rust pitting cleans up with a few hard stops on the highway', 'No way to tell'],
@@ -8242,9 +9720,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       choices: ['Measure the resting voltage again', 'A load test', 'Check alternator output only', 'Nothing — 12.4 V proves it is healthy'],
       correct: 1, why: 'Resting voltage tells you state of CHARGE; a load test tells you remaining CAPACITY. A battery can hold a respectable voltage sitting still and still be unable to deliver cranking current. Under load a healthy one stays above roughly 9.6 V — one that collapses well below that is finished no matter what it reads at rest.' },
     { id: 'q64', icon: '🔌',
-      stem: 'A car clicks and will not crank. You measure 12.5 V at the battery POST but only 10.9 V at the cable CLAMP sitting on that post. What does that tell you?',
+      stem: 'A car clicks and will not crank. While the starter is loaded, you measure 1.6 V ACROSS the positive battery post-to-clamp joint. What does that tell you?',
       choices: ['The battery is dead', 'The starter has failed', 'The connection itself is bad — corroded or loose between post and clamp', 'The alternator is overcharging, and the extra voltage is dropping across the clamp'],
-      correct: 2, why: 'That missing volt and a half is being burned crossing a bad joint. A healthy connection loses almost nothing, so measuring across it is how you find bad connections. The battery is fine; its power cannot get out. Clean and tighten first — and never try to judge a starter through a connection you already know is bad.' },
+      correct: 2, why: 'That 1.6 V drop is being burned crossing a bad joint while current flows. A healthy post-to-clamp connection stays close to zero, so measuring across it under load is how you find resistance that can hide at rest. The battery is fine; its power cannot get out. Clean and tighten first — and never try to judge a starter through a connection you already know is bad.' },
     { id: 'q65', icon: '📍',
       stem: 'Where does the jack go when you lift a car to change a wheel?',
       choices: ['Anywhere flat underneath', 'On the reinforced jack point shown in the manual, usually marked on the sill', 'Under a suspension arm, since it is strong enough to carry the car and sits close to the wheel', 'Under the floor pan near the wheel'],
@@ -8369,7 +9847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           'aria-label': navigationLabel || undefined,
           style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border }
         },
-          h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_menu', 'Back to menu'),
+          h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_menu', 'Back to menu'),
             onClick: function() { setView('menu'); }, style: btnGhost() }, __alloT('stem.autorepair.menu', '← Menu')),
           !navigationLabel && h('h1', { style: { margin: 0, fontSize: 18, color: T.text } }, title)
         );
@@ -8378,7 +9856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       function disclaimerFooter() {
         return h('div', { role: 'note', 'aria-label': __alloT('stem.autorepair.educational_disclaimer', 'Educational disclaimer'),
           style: { marginTop: 18, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-          __alloT('stem.autorepair.educational_only_always_cross_referenc', 'Educational only. Always cross-reference your vehicle\'s factory service manual for torque specs and procedures. Get hands-on training through Maine CTE programs, community college, or ASE-certified mentorship before attempting major repairs. Maine inspection stations certify safety-critical repairs.')
+          __alloT('stem.autorepair.educational_only_always_cross_referenc', 'Educational only. Always cross-reference your vehicle\'s factory service manual for torque specs and procedures. Get hands-on training through Maine CTE programs, community college, or ASE-certified mentorship before attempting major repairs. A Maine inspection checks compliance at that moment; it is not a repair-quality certification or a pre-purchase inspection.')
         );
       }
 
@@ -8518,7 +9996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             modules: [
               { id: 'diagnose', icon: '🔍', label: __alloT('stem.autorepair.diagnose', 'Diagnose'), desc: __alloT('stem.autorepair.obd_ii_listening_fluids_visual', 'OBD-II, listening, fluids, visual.') },
               { id: 'tree', icon: '🌳', label: __alloT('stem.autorepair.decision_tree', 'Decision tree'), desc: __alloT('stem.autorepair.6_interactive_symptom_flowcharts', '6 interactive symptom flowcharts.') },
-              { id: 'repairbay', icon: '🔧', label: __alloT('stem.autorepair.repair_bay_menu', 'Repair Bay (3D)'), desc: __alloT('stem.autorepair.7_cases_inspect_test_commit_graded_on_', '7 cases. Inspect the 3D bay, run tests, commit one repair. Graded on evidence and safety.') },
+              { id: 'repairbay', icon: '🔧', label: __alloT('stem.autorepair.repair_bay_menu', 'Repair Bay (3D)'), desc: __alloT('stem.autorepair.7_cases_inspect_test_commit_graded_on_', '7 cases. Inspect, test, repair, then prove the result before release. Graded on evidence, verification, and safety.') },
               { id: 'lab', icon: '🧪', label: __alloT('stem.autorepair.hands_on_lab_simulator', 'Hands-on lab simulator'), desc: __alloT('stem.autorepair.6_graded_diagnostic_scenarios_with_let', '6 graded diagnostic scenarios with letter grades.') },
               { id: 'damage', icon: '🔬', label: __alloT('stem.autorepair.damage_id_game', 'Damage ID game'), desc: __alloT('stem.autorepair.15_visual_pattern_cases_build_tech_eye', '15 visual-pattern cases. Build tech eye.') },
               { id: 'glossary', icon: '📖', label: __alloT('stem.autorepair.glossary', 'Glossary'), desc: __alloT('stem.autorepair.50_essential_auto_terms', '50+ essential auto terms.') }
@@ -8533,12 +10011,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             ]
           },
           { id: 'consumer-cat', icon: '🛒', name: __alloT('stem.autorepair.savvy_consumer', 'Savvy consumer'),
-            desc: __alloT('stem.autorepair.buying_quoting_deciding_when_to_fix_vs', 'Buying, quoting, deciding when to fix vs sell.'),
+            desc: __alloT('stem.autorepair.buying_quoting_comparing_repair_replacement', 'Buying, quoting, and comparing repair with replacement evidence.'),
             modules: [
               { id: 'usedcar', icon: '🛒', label: __alloT('stem.autorepair.buying_a_used_car', 'Buying a used car'), desc: __alloT('stem.autorepair.10_red_flags_9_step_walkaround', '10 red flags + 9-step walkaround.') },
               { id: 'estimate', icon: '💵', label: __alloT('stem.autorepair.estimate_decoder', 'Estimate decoder'), desc: __alloT('stem.autorepair.21_line_items_standard_diy_upsell', '21 line items: standard, DIY, upsell.') },
               { id: 'scams', icon: '🚩', label: __alloT('stem.autorepair.common_scams', 'Common scams'), desc: __alloT('stem.autorepair.12_known_shop_scams_how_to_push_back', '12 known shop scams + how to push back.') },
-              { id: 'roi', icon: '💰', label: __alloT('stem.autorepair.repair_roi_calculator', 'Repair ROI calculator'), desc: __alloT('stem.autorepair.should_i_fix_it_or_sell_it', 'Should I fix it or sell it?') }
+              { id: 'roi', icon: '💰', label: __alloT('stem.autorepair.repair_decision_lab', 'Repair Decision Lab'), desc: __alloT('stem.autorepair.compare_known_repair_replacement_costs', 'Compare known repair and replacement costs—without an automatic verdict.') }
             ]
           },
           { id: 'career-cat', icon: '🏅', name: __alloT('stem.autorepair.career_paths', 'Career paths'),
@@ -8578,11 +10056,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var walkResolvedCount = WALK_AROUND_STEPS.filter(function(step) {
           return menuWalkChecked[step.n] === true || menuWalkFlags[step.n] === true;
         }).length;
+        var menuROI = arNormalizeROIState({
+          vehicleValue: d.roiVehVal, repairCost: d.roiRepCost, loomingCost: d.roiLooming,
+          replacementCost: d.roiReplacement, asIsOffer: d.roiAsIsOffer,
+          age: d.roiAge, miles: d.roiMiles, attachment: d.roiAttach,
+          lens: d.roiLens, evidence: d.roiEvidence
+        });
+        var roiFields = [menuROI.vehicleValue, menuROI.repairCost, menuROI.loomingCost, menuROI.replacementCost, menuROI.asIsOffer, menuROI.age, menuROI.miles];
+        var roiStarted = roiFields.some(function(field) { return field.provided; }) || menuROI.evidenceCount > 0;
+        var roiRequiredReady = menuROI.valid && menuROI.vehicleValue.provided && menuROI.vehicleValue.valid && menuROI.repairCost.provided && menuROI.repairCost.valid;
+        var roiStageCount = roiRequiredReady ? 1 : 0;
+        if (roiRequiredReady && menuROI.compareState === 'ready') roiStageCount = 2;
+        if (roiStageCount === 2 && menuROI.evidenceCount === 4) roiStageCount = 3;
         var moduleProgress = {
           underhood: uhSeenCount > 0 ? uhSeenCount + '/' + UNDER_HOOD_PARTS.length : null,
           repairbay: Object.keys(rbDoneRec).length > 0 ? rbSolved + '/' + REPAIR_CASES.length : null,
           tyre: tcSteps > 0 ? tcSteps + '/' + TIRE_STEPS.length : null,
-          walk: walkResolvedCount > 0 ? walkResolvedCount + '/' + WALK_AROUND_STEPS.length : null
+          walk: walkResolvedCount > 0 ? walkResolvedCount + '/' + WALK_AROUND_STEPS.length : null,
+          roi: roiStarted ? roiStageCount + '/3' : null
         };
 
         function parseMenuProgress(value) {
@@ -8644,6 +10135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         var resumeOptions = [
           { id: 'walk', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around') },
+          { id: 'roi', label: __alloT('stem.autorepair.repair_decision_lab', 'Repair Decision Lab') },
           { id: 'underhood', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)') },
           { id: 'repairbay', label: __alloT('stem.autorepair.repair_bay_menu', 'Repair Bay (3D)') },
           { id: 'tyre', label: __alloT('stem.autorepair.change_a_tyre_menu', 'Change a tyre (3D)') }
@@ -8871,7 +10363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             ),
             h('div', { className: 'ar-menu-stats', 'aria-label': __alloT('stem.autorepair.learning_status', 'Learning status') },
               menuStat(totalModules, __alloT('stem.autorepair.modules_to_explore', 'modules to explore'), '▦'),
-              menuStat(activeProgressCount, __alloT('stem.autorepair.hands_on_modules_active', 'hands-on modules active'), '◴'),
+              menuStat(activeProgressCount, __alloT('stem.autorepair.modules_in_progress', 'modules in progress'), '◴'),
               menuStat(badgeCount, __alloT('stem.autorepair.badges_earned_lower', 'badges earned'), '★')
             )
           ),
@@ -9006,8 +10498,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 },
                   cat.modules.map(function(m) {
                     var progressInfo = parseMenuProgress(moduleProgress[m.id]);
+                    var isDecisionLab = m.id === 'roi';
                     var progressText = progressInfo
-                      ? progressInfo.current + ' of ' + progressInfo.maximum + ' ' + __alloT('stem.autorepair.complete_lower', 'complete')
+                      ? progressInfo.current + ' of ' + progressInfo.maximum + ' ' + (isDecisionLab ? 'preparation stages' : __alloT('stem.autorepair.complete_lower', 'complete'))
                       : '';
                     return h('button', {
                       'data-ar-focusable': true,
@@ -9043,14 +10536,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       progressInfo && h('span', { style: { display: 'block', marginTop: 2 } },
                         h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 5, fontSize: 11, fontWeight: 800, color: T.text } },
                           h('span', null, progressInfo.current === progressInfo.maximum
-                            ? __alloT('stem.autorepair.complete', 'Complete')
+                            ? (isDecisionLab ? 'Worksheet prepared' : __alloT('stem.autorepair.complete', 'Complete'))
                             : __alloT('stem.autorepair.in_progress', 'In progress')),
                           h('span', null, progressText)
                         ),
                         h('span', {
                           role: 'progressbar',
                           'data-ar-progress': m.id,
-                          'aria-label': m.label + ' progress',
+                          'data-ar-progress-kind': isDecisionLab ? 'worksheet' : 'module',
+                          'aria-label': m.label + (isDecisionLab ? ' worksheet preparation' : ' progress'),
                           'aria-valuemin': 0,
                           'aria-valuemax': progressInfo.maximum,
                           'aria-valuenow': progressInfo.current,
@@ -12830,47 +14324,302 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // FIRST-CAR view — 30-day onboarding plan
       // ─────────────────────────────────────────
       function renderFirstCar() {
-        var done = d.firstCarDone || {};
-        var totalTasks = FIRST_CAR_PLAN.reduce(function(acc, w) { return acc + w.tasks.length; }, 0);
-        var doneCount = Object.keys(done).filter(function(k) { return done[k]; }).length;
-        var pct = Math.round((doneCount / totalTasks) * 100);
-        if (doneCount === totalTasks) awardBadge('first-car-30day', '30-Day Plan Complete');
+        var rawDone = d.firstCarDone && typeof d.firstCarDone === 'object' && !Array.isArray(d.firstCarDone) ? d.firstCarDone : {};
+        var taskEntries = [];
+        FIRST_CAR_PLAN.forEach(function(week) {
+          week.tasks.forEach(function(task, index) {
+            taskEntries.push({
+              week: week,
+              task: task,
+              index: index,
+              stableKey: 'firstcar-' + task.id,
+              legacyKey: 'w' + week.week + '-' + index
+            });
+          });
+        });
+        function hasOwn(object, key) {
+          return Object.prototype.hasOwnProperty.call(object, key);
+        }
+        function entryIsDone(entry, source) {
+          var map = source || rawDone;
+          if (hasOwn(map, entry.stableKey)) return map[entry.stableKey] === true;
+          return map[entry.legacyKey] === true;
+        }
+        function entryFor(weekNumber, taskId) {
+          return taskEntries.filter(function(entry) { return entry.week.week === weekNumber && entry.task.id === taskId; })[0];
+        }
+        var totalTasks = taskEntries.length;
+        var doneCount = taskEntries.filter(function(entry) { return entryIsDone(entry); }).length;
+        var pct = totalTasks ? Math.round((doneCount / totalTasks) * 100) : 0;
+        var overallState = doneCount === 0 ? 'not-started' : (doneCount === totalTasks ? 'complete' : 'in-progress');
+        var weekTones = { 1: '#f59e0b', 2: '#22d3ee', 3: '#a78bfa', 4: '#34d399' };
+        var weekSummaries = FIRST_CAR_PLAN.map(function(week) {
+          var weekEntries = taskEntries.filter(function(entry) { return entry.week.week === week.week; });
+          var count = weekEntries.filter(function(entry) { return entryIsDone(entry); }).length;
+          return { week: week, entries: weekEntries, count: count, total: weekEntries.length };
+        });
+        var currentSummary = weekSummaries.filter(function(summary) { return summary.count < summary.total; })[0] || weekSummaries[weekSummaries.length - 1];
+        var currentWeek = currentSummary ? currentSummary.week.week : 1;
+        var requestedWeek = parseInt(d.firstCarWeek, 10);
+        var selectedWeek = requestedWeek >= 1 && requestedWeek <= 4 ? requestedWeek : currentWeek;
+        var selectedSummary = weekSummaries.filter(function(summary) { return summary.week.week === selectedWeek; })[0] || weekSummaries[0];
+        var nextEntry = taskEntries.filter(function(entry) { return !entryIsDone(entry); })[0] || null;
+        var carPositions = { 1: 'translate(38px, 150px)', 2: 'translate(166px, 70px)', 3: 'translate(318px, 124px)', 4: 'translate(444px, 42px)' };
+        var themeVars = {
+          '--fc-bg': T.bg, '--fc-card': T.card, '--fc-card-alt': T.cardAlt,
+          '--fc-text': T.text, '--fc-muted': T.muted, '--fc-dim': T.dim,
+          '--fc-border': T.border, '--fc-accent': T.accent, '--fc-accent-hi': T.accentHi,
+          '--fc-good': T.good, '--fc-warn': T.warn, '--fc-bad': T.bad,
+          '--fc-on-strong': onStrongFill, '--fc-progress': pct + '%'
+        };
+        function weekState(summary) {
+          if (summary.count === summary.total) return 'complete';
+          if (summary.week.week === currentWeek) return summary.count > 0 ? 'in-progress · current' : 'current';
+          if (summary.count > 0) return 'in-progress';
+          return summary.week.week < currentWeek ? 'review' : 'upcoming';
+        }
+        function selectFirstCarWeek(weekNumber) {
+          upd('firstCarWeek', weekNumber);
+          arAnnounce('Week ' + weekNumber + ' selected: ' + FIRST_CAR_PLAN[weekNumber - 1].title + '.');
+        }
+        function toggleFirstCarTask(entry) {
+          var wasDone = entryIsDone(entry);
+          var nextDone = !wasDone;
+          var nextMap = Object.assign({}, rawDone);
+          delete nextMap[entry.legacyKey];
+          if (nextDone) nextMap[entry.stableKey] = true;
+          else delete nextMap[entry.stableKey];
+          var nextCount = doneCount + (nextDone ? 1 : -1);
+          upd('firstCarDone', nextMap);
+          arAnnounce((nextDone ? 'Completed: ' : 'Reopened: ') + entry.task.do + ' ' + nextCount + ' of ' + totalTasks + ' items marked.');
+          if (nextDone && nextCount === totalTasks) awardBadge('first-car-30day', 'First-Month Setup Reviewed');
+        }
+        function renderTaskAction(task, tone) {
+          if (!task.action) return null;
+          if (task.action.type === 'external') {
+            return h('a', {
+              className: 'ar-firstcar-action', href: task.action.url, target: '_blank', rel: 'noopener noreferrer',
+              'data-ar-firstcar-link': task.id, 'data-ar-firstcar-link-kind': 'official',
+              style: { '--week-tone': tone },
+              'aria-label': task.action.label + ', opens in a new tab'
+            }, task.action.label + ' ↗');
+          }
+          return h('button', {
+            type: 'button', className: 'ar-firstcar-action', 'data-ar-focusable': true,
+            'data-ar-firstcar-link': task.id, 'data-ar-firstcar-link-kind': 'module',
+            style: { '--week-tone': tone },
+            onClick: function() { setView(task.action.view); }
+          }, task.action.label + ' →');
+        }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🚗 First car — 30 day plan'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.just_bought_your_first_car', '🚗 Just bought your first car?')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.week_by_week_30_day_plan_to_set_yourse', 'Week-by-week 30-day plan to set yourself up. Don\'t skip steps — Week 1 paperwork is non-negotiable Maine law. '),
-              h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalTasks + ' (' + pct + '%)')
+        return h('main', {
+          className: 'ar-firstcar-shell',
+          'data-ar-firstcar-shell': true,
+          'data-ar-firstcar-state': overallState,
+          'data-ar-firstcar-count': doneCount,
+          style: themeVars
+        },
+          backBar('First car — 30-day plan', 'First Car plan navigation'),
+          h('header', { className: 'ar-firstcar-hero', 'data-ar-firstcar-hero': true, 'aria-labelledby': 'autorepair-firstcar-title' },
+            h('div', { className: 'ar-firstcar-hero-copy' },
+              h('p', { className: 'ar-firstcar-eyebrow' }, 'First-car ownership · four-week baseline'),
+              h('h1', { className: 'ar-firstcar-title', id: 'autorepair-firstcar-title' }, 'Turn a new-to-you car into a known car.'),
+              h('p', { className: 'ar-firstcar-lede' }, 'Follow one focused route through paperwork, maintenance evidence, road-contact safety, and owner readiness. The checkmarks record what you reviewed; they are not a safety certification or permission to drive.'),
+              h('div', { className: 'ar-firstcar-progress-cluster' },
+                h('div', {
+                  className: 'ar-firstcar-progress-dial', role: 'progressbar',
+                  'data-ar-firstcar-progress': true,
+                  'aria-label': 'First-month setup progress', 'aria-valuemin': 0, 'aria-valuemax': totalTasks,
+                  'aria-valuenow': doneCount, 'aria-valuetext': doneCount + ' of ' + totalTasks + ' items marked reviewed or complete'
+                }, h('span', { className: 'ar-firstcar-progress-number' }, pct + '%', h('small', null, doneCount + ' of ' + totalTasks))),
+                h('div', { className: 'ar-firstcar-progress-copy' },
+                  h('strong', null, overallState === 'complete' ? 'First-month setup reviewed' : ('Current route: Week ' + currentWeek)),
+                  h('span', null, overallState === 'complete' ? 'Keep using the service log and manufacturer schedule.' : (totalTasks - doneCount) + ' items remain across the flexible 30-day route.'),
+                  h('div', { className: 'ar-firstcar-hero-chips' },
+                    h('span', { className: 'ar-firstcar-chip' }, '18 evidence-based items'),
+                    h('span', { className: 'ar-firstcar-chip' }, 'Saved on this device'),
+                    h('span', { className: 'ar-firstcar-chip' }, 'Maine-focused links')
+                  )
+                )
+              )
+            ),
+            h('figure', { className: 'ar-firstcar-route-card', 'data-ar-firstcar-scene': 'ownership-route' },
+              h('svg', { viewBox: '0 0 520 250', role: 'img', 'aria-labelledby': 'ar-firstcar-route-title ar-firstcar-route-desc' },
+                h('title', { id: 'ar-firstcar-route-title' }, 'Four-week first-car ownership route'),
+                h('desc', { id: 'ar-firstcar-route-desc' }, 'A compact car follows a winding road through paperwork, maintenance, tire and underbody checks, and owner-readiness stations.'),
+                h('defs', null,
+                  h('linearGradient', { id: 'ar-firstcar-sky', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#172554' }), h('stop', { offset: '56%', stopColor: '#0f3b5b' }), h('stop', { offset: '100%', stopColor: '#134e4a' })),
+                  h('linearGradient', { id: 'ar-firstcar-carpaint', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#fbbf24' }), h('stop', { offset: '55%', stopColor: '#f97316' }), h('stop', { offset: '100%', stopColor: '#9a3412' }))
+                ),
+                h('rect', { x: '0', y: '0', width: '520', height: '250', rx: '17', fill: 'url(#ar-firstcar-sky)' }),
+                h('circle', { cx: '430', cy: '43', r: '48', fill: '#fbbf24', opacity: '.14' }),
+                h('path', { d: 'M0 216 Q82 174 150 196 T280 190 T410 174 T520 190 V250 H0Z', fill: '#052e2b', opacity: '.72' }),
+                h('path', { d: 'M36 192 C118 198 120 108 203 107 S304 184 370 153 S433 74 492 73', fill: 'none', stroke: '#111827', strokeWidth: '34', strokeLinecap: 'round', 'data-ar-firstcar-object': 'road' }),
+                h('path', { d: 'M36 192 C118 198 120 108 203 107 S304 184 370 153 S433 74 492 73', fill: 'none', stroke: '#cbd5e1', strokeWidth: '2', strokeDasharray: '12 11', strokeLinecap: 'round', opacity: '.82' }),
+                [
+                  { week: 1, x: 62, y: 189, icon: '📄', label: 'Paperwork', object: 'keys' },
+                  { week: 2, x: 194, y: 107, icon: '💧', label: 'Baseline', object: 'fluids' },
+                  { week: 3, x: 345, y: 161, icon: '🛞', label: 'Road contact', object: 'tire' },
+                  { week: 4, x: 469, y: 74, icon: '✓', label: 'Ready habits', object: 'shield' }
+                ].map(function(stop) {
+                  var summary = weekSummaries[stop.week - 1];
+                  var stopComplete = summary.count === summary.total;
+                  var isCurrent = stop.week === currentWeek && overallState !== 'complete';
+                  return h('g', { key: 'route-stop-' + stop.week, 'data-ar-firstcar-object': stop.object },
+                    isCurrent && h('circle', { className: 'ar-firstcar-scene-beacon', cx: stop.x, cy: stop.y, r: '22', fill: 'none', stroke: weekTones[stop.week], strokeWidth: '3' }),
+                    h('circle', { cx: stop.x, cy: stop.y, r: '21', fill: stopComplete ? '#059669' : '#0f172a', stroke: weekTones[stop.week], strokeWidth: '3' }),
+                    h('text', { x: stop.x, y: stop.y + 6, textAnchor: 'middle', fill: '#f8fafc', fontSize: '17', fontWeight: '900' }, stopComplete ? '✓' : stop.icon),
+                    h('rect', { x: stop.x - 34, y: stop.y - 45, width: '68', height: '18', rx: '8', fill: '#020617', opacity: '.83' }),
+                    h('text', { x: stop.x, y: stop.y - 33, textAnchor: 'middle', fill: '#e2e8f0', fontSize: '8', fontWeight: '800' }, 'W' + stop.week + ' · ' + stop.label)
+                  );
+                }),
+                h('g', { className: 'ar-firstcar-scene-car', transform: carPositions[currentWeek], 'data-ar-firstcar-object': 'vehicle' },
+                  h('ellipse', { cx: '18', cy: '24', rx: '29', ry: '6', fill: '#020617', opacity: '.45' }),
+                  h('path', { d: 'M-12 12 L-4 0 Q0 -6 9 -6 H23 Q29 -5 33 1 L39 9 Q45 11 47 18 H-16 Q-16 14 -12 12Z', fill: 'url(#ar-firstcar-carpaint)', stroke: '#fed7aa', strokeWidth: '1.5' }),
+                  h('path', { d: 'M3 0 L9 -4 H22 L29 3 H2Z', fill: '#bae6fd', opacity: '.84' }),
+                  h('circle', { cx: '-5', cy: '18', r: '7', fill: '#0f172a', stroke: '#94a3b8', strokeWidth: '2' }),
+                  h('circle', { cx: '36', cy: '18', r: '7', fill: '#0f172a', stroke: '#94a3b8', strokeWidth: '2' })
+                ),
+                h('g', { transform: 'translate(20 18)', 'data-ar-firstcar-object': 'key-tag' },
+                  h('circle', { cx: '9', cy: '9', r: '7', fill: 'none', stroke: '#fbbf24', strokeWidth: '3' }),
+                  h('path', { d: 'M15 13 L30 28 M25 23 L30 18 M29 27 L34 22', fill: 'none', stroke: '#fbbf24', strokeWidth: '3', strokeLinecap: 'round' })
+                )
+              ),
+              h('figcaption', { className: 'ar-firstcar-route-caption' },
+                h('span', null, 'Your marker follows the first unfinished week'), h('span', null, pct + '% reviewed')
+              )
+            )
           ),
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
-            FIRST_CAR_PLAN.map(function(w) {
-              return h('div', { key: w.week, style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-                h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, w.title),
-                h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-                  w.tasks.map(function(t, i) {
-                    var key = 'w' + w.week + '-' + i;
-                    var isDone = !!done[key];
-                    return h('div', { key: key, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
-                      'aria-label': t.do + (isDone ? ' (done)' : ''),
-                      'aria-pressed': isDone ? 'true' : 'false',
-                      onClick: function() {
-                        var nv = Object.assign({}, done); nv[key] = !nv[key];
-                        upd('firstCarDone', nv);
+          h('section', { className: 'ar-firstcar-gate', 'data-ar-firstcar-before-drive': true, 'aria-labelledby': 'ar-firstcar-gate-title' },
+            h('div', { className: 'ar-firstcar-gate-head' },
+              h('span', { className: 'ar-firstcar-gate-icon', 'aria-hidden': 'true' }, '!'),
+              h('div', null, h('p', { className: 'ar-firstcar-side-kicker' }, 'Before driving'), h('h2', { id: 'ar-firstcar-gate-title' }, 'The calendar is flexible. These checks are not.'))
+            ),
+            h('ul', null,
+              h('li', null, 'Do not drive until your insurer confirms effective coverage and you have current legal operating authority, registration, or the correct permit.'),
+              h('li', null, 'Match the VIN on the dashboard, title, registration, and insurance documents.'),
+              h('li', null, 'Confirm inspection status and basic roadworthiness; a sticker is not a substitute for a pre-purchase or safety inspection.'),
+              h('li', null, 'Check open recalls and any do-not-drive instruction, then follow the manufacturer or NHTSA remedy directions.'),
+              h('li', null, 'If brakes, tires, steering, structure, leaks, warning lights, or service history are uncertain, arrange a qualified inspection or tow.')
+            )
+          ),
+          h('nav', { className: 'ar-firstcar-timeline', 'data-ar-firstcar-timeline': true, 'aria-labelledby': 'ar-firstcar-timeline-title' },
+            h('div', { className: 'ar-firstcar-timeline-head' }, h('h2', { id: 'ar-firstcar-timeline-title' }, 'Your four-week ownership route'), h('span', null, 'Choose a station to review its tasks')),
+            h('ol', { className: 'ar-firstcar-week-list' },
+              weekSummaries.map(function(summary) {
+                var tone = weekTones[summary.week.week];
+                var state = weekState(summary);
+                return h('li', { key: 'week-stop-' + summary.week.week },
+                  h('button', {
+                    type: 'button', className: 'ar-firstcar-week-stop', 'data-ar-focusable': true,
+                    'data-ar-firstcar-week': summary.week.week, 'data-ar-firstcar-week-state': state,
+                    'aria-pressed': selectedWeek === summary.week.week,
+                    'aria-current': summary.week.week === currentWeek && overallState !== 'complete' ? 'step' : undefined,
+                    'aria-controls': 'ar-firstcar-week-panel-' + summary.week.week,
+                    style: { '--week-tone': tone, '--week-progress': Math.round((summary.count / summary.total) * 100) + '%' },
+                    onClick: function() { selectFirstCarWeek(summary.week.week); }
+                  },
+                    h('span', { className: 'ar-firstcar-week-index', 'aria-hidden': 'true' }, summary.count === summary.total ? '✓' : summary.week.week),
+                    h('strong', null, summary.week.title),
+                    h('small', null, state + ' · ' + summary.count + '/' + summary.total),
+                    h('span', { className: 'ar-firstcar-week-meter', 'aria-hidden': 'true' }, h('span', null))
+                  )
+                );
+              })
+            )
+          ),
+          h('div', { className: 'ar-firstcar-workspace' },
+            h('div', null,
+              weekSummaries.map(function(summary) {
+                var week = summary.week;
+                var tone = weekTones[week.week];
+                var visible = selectedWeek === week.week;
+                return h('section', {
+                  key: 'week-panel-' + week.week,
+                  id: 'ar-firstcar-week-panel-' + week.week,
+                  className: 'ar-firstcar-week-panel',
+                  'data-ar-firstcar-week-panel': week.week,
+                  'data-ar-firstcar-week-state': weekState(summary),
+                  'aria-labelledby': 'ar-firstcar-week-title-' + week.week,
+                  'aria-hidden': visible ? undefined : 'true',
+                  style: { '--week-tone': tone, display: visible ? undefined : 'none' }
+                },
+                  h('div', { className: 'ar-firstcar-week-head' },
+                    h('span', { className: 'ar-firstcar-week-icon', 'aria-hidden': 'true' }, week.icon),
+                    h('div', null,
+                      h('p', { className: 'ar-firstcar-week-kicker' }, 'Week ' + week.week + ' · ' + week.range),
+                      h('h2', { className: 'ar-firstcar-week-title', id: 'ar-firstcar-week-title-' + week.week }, week.title),
+                      h('p', { className: 'ar-firstcar-week-focus' }, week.focus)
+                    ),
+                    h('div', { className: 'ar-firstcar-week-score', 'aria-label': summary.count + ' of ' + summary.total + ' week tasks marked' }, summary.count + '/' + summary.total, h('small', null, 'marked'))
+                  ),
+                  h('p', { className: 'ar-firstcar-outcome' }, h('strong', null, 'Week outcome: '), week.outcome),
+                  h('ol', { className: 'ar-firstcar-task-list' },
+                    week.tasks.map(function(task) {
+                      var entry = entryFor(week.week, task.id);
+                      var isDone = entryIsDone(entry);
+                      var titleId = 'ar-firstcar-task-title-' + task.id;
+                      var whyId = 'ar-firstcar-task-why-' + task.id;
+                      return h('li', {
+                        key: task.id, className: 'ar-firstcar-task',
+                        'data-ar-firstcar-task': task.id,
+                        'data-ar-firstcar-storage-key': entry.stableKey,
+                        'data-ar-firstcar-legacy-key': entry.legacyKey,
+                        'data-ar-firstcar-task-state': isDone ? 'complete' : 'todo',
+                        style: { '--week-tone': tone }
                       },
-                      style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text, cursor: 'pointer' } },
-                      h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
-                        h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
-                        h('strong', { style: { fontSize: 13, color: isDone ? '#d1fae5' : T.text, flex: 1, lineHeight: 1.5 } }, t.do)
-                      ),
-                      h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
-                        h('strong', { style: { color: T.dim } }, 'Why: '), t.why)
-                    ));
+                        h('button', {
+                          type: 'button', className: 'ar-firstcar-check', 'data-ar-focusable': true,
+                          'aria-pressed': isDone, 'aria-labelledby': titleId, 'aria-describedby': whyId,
+                          onClick: function() { toggleFirstCarTask(entry); }
+                        }, h('span', { 'aria-hidden': 'true' }, isDone ? '✓' : String(entry.index + 1))),
+                        h('div', { className: 'ar-firstcar-task-copy' },
+                          h('div', { className: 'ar-firstcar-task-meta' },
+                            h('span', { className: 'ar-firstcar-task-icon', 'aria-hidden': 'true' }, task.icon),
+                            h('span', { className: 'ar-firstcar-kind' }, task.kind)
+                          ),
+                          h('h3', { className: 'ar-firstcar-task-title', id: titleId }, task.do),
+                          h('p', { className: 'ar-firstcar-why', id: whyId, 'data-ar-firstcar-why': task.id }, h('strong', null, 'Why this matters: '), task.why)
+                        ),
+                        renderTaskAction(task, tone)
+                      );
+                    })
+                  )
+                );
+              })
+            ),
+            h('aside', { className: 'ar-firstcar-sidebar', 'aria-label': 'First Car route summary' },
+              nextEntry && h('section', { className: 'ar-firstcar-next', 'data-ar-firstcar-next': nextEntry.task.id, style: { '--next-tone': weekTones[nextEntry.week.week] }, 'aria-labelledby': 'ar-firstcar-next-title' },
+                h('p', { className: 'ar-firstcar-side-kicker' }, 'Next unfinished item'),
+                h('h2', { id: 'ar-firstcar-next-title' }, 'One clear next move'),
+                h('div', { className: 'ar-firstcar-next-task' },
+                  h('strong', null, nextEntry.task.icon + ' ' + nextEntry.task.do),
+                  h('span', null, 'Week ' + nextEntry.week.week + ' · ' + nextEntry.week.title)
+                ),
+                h('button', { type: 'button', className: 'ar-firstcar-next-button', 'data-ar-focusable': true, onClick: function() { selectFirstCarWeek(nextEntry.week.week); } }, 'Open Week ' + nextEntry.week.week)
+              ),
+              h('section', { className: 'ar-firstcar-stack', 'data-ar-firstcar-owner-stack': true, 'aria-labelledby': 'ar-firstcar-stack-title' },
+                h('p', { className: 'ar-firstcar-side-kicker' }, 'Owner stack'),
+                h('h2', { id: 'ar-firstcar-stack-title' }, 'Four baselines, one vehicle'),
+                h('div', { className: 'ar-firstcar-stack-list' },
+                  weekSummaries.map(function(summary) {
+                    return h('div', { key: 'stack-' + summary.week.week, className: 'ar-firstcar-stack-row' },
+                      h('span', { 'aria-hidden': 'true' }, summary.week.icon),
+                      h('strong', null, summary.week.title),
+                      h('small', null, summary.count + '/' + summary.total)
+                    );
                   })
                 )
-              );
-            })
+              ),
+              overallState === 'complete' && h('section', { className: 'ar-firstcar-complete', 'data-ar-firstcar-complete': true, 'aria-labelledby': 'ar-firstcar-complete-title' },
+                h('p', { className: 'ar-firstcar-side-kicker' }, 'Baseline built'),
+                h('h2', { id: 'ar-firstcar-complete-title' }, 'First-month setup reviewed'),
+                h('p', null, 'You marked all 18 items. Keep the manual, service log, insurer, BMV, and qualified technicians as the sources of truth for this specific vehicle.')
+              ),
+              h('div', { className: 'ar-firstcar-status', role: 'status', 'aria-live': 'polite', 'data-ar-firstcar-status': true },
+                overallState === 'complete' ? '18 of 18 self-reported setup items are marked. This does not certify vehicle safety or legal status.' : doneCount + ' of ' + totalTasks + ' self-reported setup items are marked; ' + (totalTasks - doneCount) + ' remain.'
+              )
+            )
           ),
           disclaimerFooter()
         );
@@ -13483,65 +15232,245 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // VIN DECODER view
       // ─────────────────────────────────────────
       function renderVin() {
-        var input = d.vinInput || '';
-        var decoded = input.length === 17 ? decodeVin(input) : null;
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🆔 VIN decoder'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.17_character_vin_decoder', '🆔 17-character VIN decoder')),
-            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.enter_your_vin_driver_side_dash_door_j', 'Enter your VIN (driver-side dash, door jamb, title, registration, or insurance card) to decode country, manufacturer, model year, and link to free recall + history lookups.')),
-            h('input', { type: 'text', 'data-ar-focusable': true,
-              'aria-label': __alloT('stem.autorepair.vin_input_17_characters', 'VIN input (17 characters)'),
-              maxLength: 17,
-              placeholder: __alloT('stem.autorepair.e_g_1hgcm82633a123456', 'e.g. 1HGCM82633A123456'),
-              value: input,
-              onChange: function(e) { upd('vinInput', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); },
-              style: { width: '100%', padding: 12, borderRadius: 8, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 16, fontFamily: 'monospace', letterSpacing: 1, marginBottom: 6, boxSizing: 'border-box' } }),
-            h('div', { style: { fontSize: 11, color: T.dim } }, input.length + ' / 17 characters')
-          ),
-          decoded && decoded.error && h('div', { style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid ' + T.bad, color: '#fed7aa', fontSize: 13 } },
-            '⚠️ ' + decoded.error),
-          decoded && !decoded.error && h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi, fontFamily: 'monospace' } }, '🔍 ' + decoded.vin),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
-                [
-                  { label: __alloT('stem.autorepair.country_of_origin', '🌍 Country of origin'), val: decoded.country },
-                  { label: __alloT('stem.autorepair.manufacturer', '🏭 Manufacturer'), val: decoded.maker },
-                  { label: __alloT('stem.autorepair.model_year', '📅 Model year'), val: String(decoded.year) },
-                  { label: __alloT('stem.autorepair.plant', '🏗️ Plant'), val: decoded.plant },
-                  { label: __alloT('stem.autorepair.serial', '🔢 Serial'), val: decoded.serial },
-                  { label: __alloT('stem.autorepair.check', '✅ Check'), val: decoded.check }
-                ].map(function(r) {
-                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                    h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
-                    h('div', { style: { fontSize: 13, color: T.text, fontWeight: 600, lineHeight: 1.4 } }, r.val)
-                  );
-                })
+        var input = typeof d.vinInput === 'string' ? d.vinInput : (d.vinInput == null ? '' : String(d.vinInput));
+        var invalidCharacter = input.length > 0 && !/^[A-HJ-NPR-Z0-9]*$/.test(input);
+        var complete = input.length === 17 && !invalidCharacter;
+        var decoded = complete ? decodeVin(input) : null;
+        var formatError = input.length > 17 || invalidCharacter || (decoded && decoded.error);
+        var state = input.length === 0 ? 'empty' : (formatError ? 'invalid' : (input.length < 17 ? 'partial' : ((decoded.check && !decoded.check.matches) ? 'warning' : 'decoded')));
+        var segments = [
+          { id: 'wmi', label: 'WMI', range: '1–3', start: 1, end: 3, tone: '#22d3ee', icon: 'WMI', title: 'World manufacturer identifier', copy: 'These three positions identify a manufacturer and region assignment. This local bench only names a small set of exact three-character WMIs.', limit: 'A low-volume manufacturer can extend its identifier into positions 12–14.' },
+          { id: 'vds', label: 'Descriptor', range: '4–8', start: 4, end: 8, tone: '#a78bfa', icon: 'VDS', title: 'Descriptor core', copy: 'Manufacturers use this area for model, body, restraint, engine, and other vehicle attributes.', limit: 'The meaning is manufacturer-specific. Use the official vPIC result or factory information to interpret it.' },
+          { id: 'check', label: 'Check', range: '9', start: 9, end: 9, tone: '#fb7185', icon: '#9', title: 'Validation character', copy: 'In regulated North-American VINs, position 9 is calculated from the other sixteen characters. A match catches many transcription errors.', limit: 'A formula match is not proof that the vehicle, title, or seller is legitimate; other markets can use this position differently.' },
+          { id: 'year', label: 'Year', range: '10', start: 10, end: 10, tone: '#f59e0b', icon: '#10', title: 'Model-year code', copy: 'This code follows a 30-character cycle beginning with A for 1980. The same code returns every thirty years.', limit: 'Use the vehicle context and official records to choose among candidate years.' },
+          { id: 'plant', label: 'Plant', range: '11', start: 11, end: 11, tone: '#4ade80', icon: '#11', title: 'Assembly-plant code', copy: 'The manufacturer assigns this position to an assembly plant or production location.', limit: 'There is no universal plant-code dictionary; this bench preserves the code without inventing a plant name.' },
+          { id: 'sequence', label: 'Identifier', range: '12–17', start: 12, end: 17, tone: '#60a5fa', icon: 'VIS', title: 'Identifier tail', copy: 'This tail commonly carries the production sequence used to distinguish one vehicle from another.', limit: 'Its exact construction is manufacturer-specific and can participate in extended low-volume identification.' }
+        ];
+        function groupForPosition(position) {
+          if (position <= 3) return 'wmi';
+          if (position <= 8) return 'vds';
+          if (position === 9) return 'check';
+          if (position === 10) return 'year';
+          if (position === 11) return 'plant';
+          return 'sequence';
+        }
+        var automaticGroup = groupForPosition(Math.max(1, Math.min(17, input.length || 1)));
+        var selected = segments.filter(function(segment) { return segment.id === d.vinGroup; })[0] || segments.filter(function(segment) { return segment.id === automaticGroup; })[0] || segments[0];
+        var selectedValue = input.substring(selected.start - 1, selected.end) || '—';
+        var statusText = '';
+        if (state === 'empty') statusText = 'Start with the 17-character code on the dashboard plate or driver-door certification label.';
+        else if (state === 'invalid') {
+          if (/[IOQ]/.test(input)) statusText = 'I, O, and Q are not used in a VIN. Recheck the stamped character.';
+          else if (input.length > 17) statusText = 'This entry is longer than 17 characters. Remove the extra characters.';
+          else statusText = 'VINs use letters and numbers only—no spaces or punctuation.';
+        } else if (state === 'partial') statusText = (17 - input.length) + ' character' + ((17 - input.length) === 1 ? '' : 's') + ' remaining. Partial entries stay on the plate while you compare the source.';
+        else if (state === 'warning' && decoded.check.required) statusText = 'Structure is complete, but position 9 does not match the North-American formula: expected ' + decoded.check.expected + ', found ' + decoded.check.actual + '. Recheck the VIN before lookup.';
+        else if (state === 'warning') statusText = 'Structure is complete. The formula does not match, but this market may use position 9 differently—confirm with vPIC.';
+        else statusText = 'Structure is complete and the check-digit formula matches. This checks transcription structure, not vehicle identity or history.';
+        var progress = Math.max(0, Math.min(100, (input.length / 17) * 100));
+        var themeVars = {
+          '--vin-bg': T.bg, '--vin-card': T.card, '--vin-card-alt': T.cardAlt,
+          '--vin-text': T.text, '--vin-muted': T.muted, '--vin-dim': T.dim,
+          '--vin-border': T.border, '--vin-accent': T.accent, '--vin-accent-hi': T.accentHi,
+          '--vin-good': T.good, '--vin-warn': T.warn, '--vin-bad': T.bad,
+          '--vin-progress': progress + '%'
+        };
+        var encodedVin = decoded && !decoded.error ? encodeURIComponent(decoded.vin) : '';
+        var resultFields = decoded && !decoded.error ? [
+          { id: 'region', label: 'WMI region / country hint', value: decoded.country, note: decoded.makerScope === 'exact' ? 'From an exact WMI entry in the local table.' : 'Broad first-character region hint; verify officially.' },
+          { id: 'maker', label: 'Manufacturer assignment', value: decoded.maker, note: decoded.makerScope === 'exact' ? 'Exact local three-character WMI match.' : 'No exact local match. vPIC has the larger official dataset.' },
+          { id: 'year', label: 'Model-year candidate', value: decoded.year, note: 'Position 10 code ' + decoded.yearCode + ' repeats on a 30-year cycle.' },
+          { id: 'plant', label: 'Plant code', value: decoded.plantCode, note: 'Code only; its meaning is manufacturer-specific.' },
+          { id: 'sequence', label: 'Identifier tail', value: decoded.identifier, note: 'Usually a production sequence; exact use varies.' },
+          { id: 'check', label: 'Formula comparison', value: decoded.check.matches ? ('Matches · ' + decoded.check.actual) : ('Found ' + decoded.check.actual + ' · expected ' + decoded.check.expected), note: decoded.check.required ? 'North-American check-digit formula.' : 'Formula advisory; this market may use position 9 differently.' }
+        ] : [];
+        var confidence = decoded && !decoded.error ? (!decoded.check.matches ? 'mismatch' : (decoded.makerScope === 'exact' ? 'matched' : 'limited')) : 'limited';
+        var confidenceLabel = confidence === 'mismatch' ? 'Formula mismatch' : (confidence === 'matched' ? 'Structure + checksum consistent' : 'Checksum consistent · local data limited');
+
+        return h('main', {
+          className: 'ar-vin-shell',
+          'data-ar-vin-shell': true,
+          'data-ar-vin-state': state,
+          'data-ar-vin-count': input.length,
+          style: themeVars
+        },
+          backBar('VIN decoder', 'VIN Decoder navigation'),
+          h('header', { className: 'ar-vin-hero', 'data-ar-vin-hero': true },
+            h('div', { className: 'ar-vin-hero-copy' },
+              h('p', { className: 'ar-vin-eyebrow' }, 'VIN structure + official verification'),
+              h('h1', { className: 'ar-vin-title' }, 'Read the stamped identity before you trust the listing.'),
+              h('p', { className: 'ar-vin-lede' }, 'Map all 17 positions, catch common transcription errors, and carry the exact code into official recall and vehicle-information searches.'),
+              h('div', { className: 'ar-vin-chips', 'aria-label': 'Decoder capabilities' },
+                h('span', { className: 'ar-vin-chip', 'data-tone': 'local' }, 'Runs locally'),
+                h('span', { className: 'ar-vin-chip', 'data-tone': 'limited' }, 'Small WMI reference'),
+                h('span', { className: 'ar-vin-chip' }, '17-position anatomy')
               )
             ),
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.free_paid_lookups_for_this_vin', '🔗 Free + paid lookups for this VIN')),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-                h('a', { href: 'https://www.nhtsa.gov/recalls?vin=' + decoded.vin, target: '_blank', rel: 'noopener',
-                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, color: T.good, textDecoration: 'none', fontSize: 13 } },
-                  '🛑 NHTSA Recalls (free) → nhtsa.gov/recalls?vin=' + decoded.vin),
-                h('a', { href: 'https://vpic.nhtsa.dot.gov/decoder/Decoder?vin=' + decoded.vin, target: '_blank', rel: 'noopener',
-                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, color: T.good, textDecoration: 'none', fontSize: 13 } },
-                  __alloT('stem.autorepair.nhtsa_full_vpic_decoder_free_vpic_nhts', '📋 NHTSA full vPIC decoder (free) → vpic.nhtsa.dot.gov')),
-                h('a', { href: 'https://www.carfax.com/vehicle/' + decoded.vin, target: '_blank', rel: 'noopener',
-                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, color: T.warn, textDecoration: 'none', fontSize: 13 } },
-                  __alloT('stem.autorepair.carfax_history_report_paid_40_carfax_c', '📋 CarFax history report (paid, ~$40) → carfax.com')),
-                h('a', { href: 'https://www.iihs.org/ratings/vehicle/' + decoded.maker.split(' ')[0].toLowerCase(), target: '_blank', rel: 'noopener',
-                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accentHi, color: T.accentHi, textDecoration: 'none', fontSize: 13 } },
-                  __alloT('stem.autorepair.iihs_crash_test_ratings_free_iihs_org', '🛡️ IIHS crash-test ratings (free) → iihs.org'))
+            h('figure', { className: 'ar-vin-location-card', 'data-ar-vin-scene': 'location-map' },
+              h('svg', { viewBox: '0 0 420 210', role: 'img', 'aria-labelledby': 'ar-vin-location-title ar-vin-location-desc', 'data-ar-vin-object': 'vehicle-location-map' },
+                h('title', { id: 'ar-vin-location-title' }, 'Common VIN locations on a passenger car'),
+                h('desc', { id: 'ar-vin-location-desc' }, 'A vehicle diagram highlights the lower driver-side windshield and the driver-door jamb.'),
+                h('defs', null,
+                  h('linearGradient', { id: 'ar-vin-car-body', x1: '0', y1: '0', x2: '1', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#38bdf8' }), h('stop', { offset: '48%', stopColor: '#0369a1' }), h('stop', { offset: '100%', stopColor: '#082f49' })
+                  ),
+                  h('linearGradient', { id: 'ar-vin-car-glass', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#dbeafe', stopOpacity: '.9' }), h('stop', { offset: '100%', stopColor: '#334155', stopOpacity: '.88' })
+                  )
+                ),
+                h('ellipse', { cx: '210', cy: '179', rx: '171', ry: '17', fill: '#020617', opacity: '.48' }),
+                h('path', { d: 'M39 142 L54 107 Q61 94 80 90 L132 82 L172 43 Q181 33 199 31 L280 31 Q295 32 304 43 L340 86 L379 98 Q394 104 398 120 L401 145 Q398 158 382 160 L55 160 Q40 157 39 142Z', fill: 'url(#ar-vin-car-body)', stroke: '#7dd3fc', strokeWidth: '2' }),
+                h('path', { d: 'M150 81 L182 47 Q188 41 201 40 L231 40 L231 82Z', fill: 'url(#ar-vin-car-glass)', stroke: '#bae6fd' }),
+                h('path', { d: 'M239 40 L278 40 Q287 41 294 51 L320 82 L239 82Z', fill: 'url(#ar-vin-car-glass)', stroke: '#bae6fd' }),
+                h('path', { d: 'M233 39 L233 153 M146 84 L132 153 M321 85 L340 153', fill: 'none', stroke: '#0c4a6e', strokeWidth: '3' }),
+                h('path', { d: 'M61 108 Q83 99 129 96 M344 96 L379 107', fill: 'none', stroke: '#e0f2fe', strokeWidth: '4', strokeLinecap: 'round', opacity: '.65' }),
+                h('circle', { cx: '111', cy: '157', r: '28', fill: '#0f172a', stroke: '#64748b', strokeWidth: '5' }),
+                h('circle', { cx: '111', cy: '157', r: '11', fill: '#94a3b8', stroke: '#e2e8f0', strokeWidth: '3' }),
+                h('circle', { cx: '337', cy: '157', r: '28', fill: '#0f172a', stroke: '#64748b', strokeWidth: '5' }),
+                h('circle', { cx: '337', cy: '157', r: '11', fill: '#94a3b8', stroke: '#e2e8f0', strokeWidth: '3' }),
+                h('rect', { x: '178', y: '76', width: '35', height: '7', rx: '2', fill: '#fbbf24', stroke: '#fde68a', 'data-ar-vin-object': 'dashboard-plate' }),
+                h('rect', { x: '137', y: '111', width: '8', height: '26', rx: '2', fill: '#fbbf24', stroke: '#fde68a', 'data-ar-vin-object': 'door-jamb-label' }),
+                h('circle', { className: 'ar-vin-location-pulse', cx: '195', cy: '80', r: '12', fill: 'none', stroke: '#fbbf24', strokeWidth: '3' }),
+                h('circle', { className: 'ar-vin-location-pulse', cx: '141', cy: '124', r: '12', fill: 'none', stroke: '#fbbf24', strokeWidth: '3', style: { animationDelay: '.8s' } }),
+                h('path', { d: 'M195 72 L195 18 L303 18', fill: 'none', stroke: '#fbbf24', strokeWidth: '1.5', strokeDasharray: '4 4' }),
+                h('text', { x: '307', y: '22', fill: '#fde68a', fontSize: '10', fontWeight: '800' }, 'LOWER WINDSHIELD'),
+                h('path', { d: 'M137 124 L82 124 L68 194', fill: 'none', stroke: '#fbbf24', strokeWidth: '1.5', strokeDasharray: '4 4' }),
+                h('text', { x: '7', y: '207', fill: '#fde68a', fontSize: '10', fontWeight: '800' }, 'DRIVER-DOOR JAMB')
+              ),
+              h('figcaption', { className: 'ar-vin-location-label' },
+                h('span', null, 'Also: title + registration'), h('span', null, 'Match every character')
               )
             )
           ),
-          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.privacy', '🔒 Privacy: ')),
-            __alloT('stem.autorepair.this_decoder_runs_locally_your_vin_is_', 'This decoder runs locally — your VIN is not sent anywhere. The lookup links open in a new tab. NHTSA + CarFax handle their own privacy.')),
+          h('div', { className: 'ar-vin-workbench' },
+            h('section', { className: 'ar-vin-console', 'data-ar-vin-form': true, 'aria-labelledby': 'ar-vin-console-title' },
+              h('div', { className: 'ar-vin-console-head' },
+                h('div', null,
+                  h('p', { className: 'ar-vin-kicker' }, 'Identity station 02'),
+                  h('h2', { className: 'ar-vin-console-title', id: 'ar-vin-console-title' }, 'Transcribe the plate')
+                ),
+                h('div', { className: 'ar-vin-counter', id: 'ar-vin-count', 'data-ar-vin-count': true, 'aria-label': input.length + ' of 17 characters entered' },
+                  input.length + '/17', h('small', null, 'characters')
+                )
+              ),
+              h('label', { className: 'ar-vin-label', htmlFor: 'ar-vin-input' }, 'Vehicle identification number'),
+              h('div', { className: 'ar-vin-input-row' },
+                h('input', {
+                  id: 'ar-vin-input', className: 'ar-vin-input', type: 'text', maxLength: 17,
+                  value: input, placeholder: '1HGCM82633A004352', autoCapitalize: 'characters', autoComplete: 'off', spellCheck: false,
+                  'data-ar-focusable': true, 'data-ar-vin-input': true,
+                  'aria-invalid': state === 'invalid',
+                  'aria-describedby': 'ar-vin-format-hint ar-vin-count' + (state === 'invalid' ? ' ar-vin-status' : ''),
+                  onChange: function(e) { upd('vinInput', String(e.target.value || '').toUpperCase().slice(0, 17)); }
+                }),
+                h('button', { type: 'button', className: 'ar-vin-button', 'data-ar-focusable': true,
+                  onClick: function() { upd('vinInput', '1HGCM82633A004352'); upd('vinGroup', 'check'); arAnnounce('Checksum-matched training VIN loaded.'); }
+                }, 'Load sample'),
+                h('button', { type: 'button', className: 'ar-vin-button', 'data-ar-focusable': true, disabled: !input,
+                  onClick: function() {
+                    upd('vinInput', ''); upd('vinGroup', 'wmi'); arAnnounce('VIN cleared.');
+                    setTimeout(function() { var el = document.getElementById('ar-vin-input'); if (el) el.focus(); }, 0);
+                  }
+                }, 'Clear')
+              ),
+              h('p', { className: 'ar-vin-format-hint', id: 'ar-vin-format-hint' }, 'Use exactly 17 letters and numbers. VINs never contain I, O, or Q.'),
+              h('div', { className: 'ar-vin-progress', 'aria-hidden': 'true' }, h('span', null)),
+              h('div', {
+                className: 'ar-vin-status', id: 'ar-vin-status',
+                role: state === 'invalid' ? 'alert' : 'status',
+                'aria-live': (state === 'decoded' || state === 'warning') ? 'polite' : undefined,
+                'data-ar-vin-status': true,
+                'data-ar-vin-error': state === 'invalid' ? true : undefined
+              }, statusText),
+              h('div', { className: 'ar-vin-plate-stage', 'data-ar-vin-scene': 'identity-plate' },
+                h('div', {
+                  className: 'ar-vin-plate', role: 'img',
+                  'aria-label': input ? ('Stamped VIN plate showing ' + input.split('').join(' ')) : 'Blank 17-position VIN plate',
+                  'data-ar-vin-object': 'plate'
+                },
+                  [0, 1, 2, 3].map(function(i) { return h('span', { key: 'rivet-' + i, className: 'ar-vin-rivet', 'aria-hidden': 'true', 'data-ar-vin-object': 'rivet' }); }),
+                  h('span', { className: 'ar-vin-scan', 'aria-hidden': 'true', 'data-ar-vin-object': 'scanner' }),
+                  h('div', { className: 'ar-vin-cell-rail', 'aria-hidden': 'true', 'data-ar-vin-object': 'stamp' },
+                    Array.from({ length: 17 }).map(function(_, index) {
+                      var character = input[index] || '·';
+                      return h('span', {
+                        key: 'vin-cell-' + index, className: 'ar-vin-cell',
+                        'data-ar-vin-cell': true, 'data-position': index + 1,
+                        'data-ar-vin-position': index + 1, 'data-group': groupForPosition(index + 1),
+                        'data-ar-vin-group': groupForPosition(index + 1), 'data-empty': input[index] ? 'false' : 'true'
+                      }, character);
+                    })
+                  ),
+                  h('div', { className: 'ar-vin-position-map', 'aria-hidden': 'true', 'data-ar-vin-object': 'position-map' },
+                    Array.from({ length: 17 }).map(function(_, index) { return h('span', { key: 'pos-' + index }, index + 1); })
+                  )
+                )
+              ),
+              h('div', { className: 'ar-vin-segments', role: 'group', 'aria-label': 'VIN position groups' },
+                segments.map(function(segment) {
+                  return h('button', {
+                    key: segment.id, type: 'button', className: 'ar-vin-segment',
+                    'data-ar-focusable': true, 'data-ar-vin-segment': segment.id,
+                    'aria-pressed': selected.id === segment.id, 'aria-controls': 'ar-vin-group-detail',
+                    style: { '--segment-tone': segment.tone },
+                    onClick: function() { upd('vinGroup', segment.id); arAnnounce(segment.title + ' selected.'); }
+                  }, h('strong', null, segment.label), h('span', null, 'Positions ' + segment.range));
+                })
+              )
+            ),
+            h('aside', {
+              className: 'ar-vin-evidence', id: 'ar-vin-group-detail',
+              'data-ar-vin-detail': selected.id, 'aria-live': 'polite',
+              style: { '--detail-tone': selected.tone }
+            },
+              h('div', { className: 'ar-vin-evidence-mark', 'aria-hidden': 'true' }, selected.icon),
+              h('p', { className: 'ar-vin-detail-label' }, 'Positions ' + selected.range),
+              h('h2', { className: 'ar-vin-detail-title' }, selected.title),
+              h('div', { className: 'ar-vin-detail-value' }, selectedValue),
+              h('p', { className: 'ar-vin-detail-copy' }, selected.copy),
+              h('p', { className: 'ar-vin-detail-limit' }, 'Limit: ' + selected.limit)
+            )
+          ),
+          decoded && !decoded.error && h('section', { className: 'ar-vin-results', 'data-ar-vin-results': true, 'aria-labelledby': 'ar-vin-results-title' },
+            h('div', { className: 'ar-vin-section-head' },
+              h('div', null, h('p', { className: 'ar-vin-kicker' }, 'Local structure read'), h('h2', { id: 'ar-vin-results-title' }, 'What these positions suggest')),
+              h('span', { className: 'ar-vin-confidence', 'data-ar-vin-confidence': confidence }, confidenceLabel)
+            ),
+            h('dl', { className: 'ar-vin-result-grid' },
+              resultFields.map(function(field) {
+                return h('div', { key: field.id, className: 'ar-vin-field', 'data-ar-vin-field': field.id },
+                  h('dt', null, field.label), h('dd', null, field.value), h('small', null, field.note)
+                );
+              })
+            )
+          ),
+          h('aside', { className: 'ar-vin-caveat', role: 'note' },
+            h('strong', null, 'Read the plate; verify the vehicle. '),
+            'This local tool explains structure and checks the standard formula. It cannot prove title status, collision history, odometer accuracy, options, or that the plate belongs to the vehicle. Year codes repeat every 30 years, and descriptor, plant, and identifier meanings vary by manufacturer.'
+          ),
+          decoded && !decoded.error && h('section', { className: 'ar-vin-lookups', 'data-ar-vin-lookups': true, 'aria-labelledby': 'ar-vin-lookups-title' },
+            h('div', { className: 'ar-vin-section-head' },
+              h('div', null, h('p', { className: 'ar-vin-kicker' }, 'Independent evidence'), h('h2', { id: 'ar-vin-lookups-title' }, 'Continue with official and third-party records'))
+            ),
+            h('nav', { className: 'ar-vin-link-grid', 'aria-label': 'VIN lookup providers' },
+              h('a', { className: 'ar-vin-link-card', href: 'https://www.nhtsa.gov/recalls?vin=' + encodedVin, target: '_blank', rel: 'noopener noreferrer', 'data-ar-vin-lookup': 'recalls', style: { '--lookup-tone': T.good }, 'aria-label': 'NHTSA recall lookup, official and free, opens in a new tab' },
+                h('span', { className: 'ar-vin-link-badge' }, 'Official · free'), h('strong', null, 'NHTSA recalls'), h('span', null, 'Safety campaigns tied to this VIN →')
+              ),
+              h('a', { className: 'ar-vin-link-card', href: 'https://vpic.nhtsa.dot.gov/decoder/Decoder?vin=' + encodedVin, target: '_blank', rel: 'noopener noreferrer', 'data-ar-vin-lookup': 'vpic', style: { '--lookup-tone': T.accentHi }, 'aria-label': 'NHTSA vPIC decoder, official and free, opens in a new tab' },
+                h('span', { className: 'ar-vin-link-badge' }, 'Official · free'), h('strong', null, 'NHTSA vPIC'), h('span', null, 'Full federal vehicle-data decode →')
+              ),
+              h('a', { className: 'ar-vin-link-card', href: 'https://www.carfax.com/vehicle/' + encodedVin, target: '_blank', rel: 'noopener noreferrer', 'data-ar-vin-lookup': 'carfax', style: { '--lookup-tone': T.warn }, 'aria-label': 'Carfax vehicle history report, paid price varies, opens in a new tab' },
+                h('span', { className: 'ar-vin-link-badge' }, 'Paid · price varies'), h('strong', null, 'Carfax history'), h('span', null, 'Commercial history report →')
+              ),
+              h('a', { className: 'ar-vin-link-card', href: 'https://www.iihs.org/ratings', target: '_blank', rel: 'noopener noreferrer', 'data-ar-vin-lookup': 'iihs', style: { '--lookup-tone': '#a78bfa' }, 'aria-label': 'IIHS crash test ratings search, free, opens in a new tab' },
+                h('span', { className: 'ar-vin-link-badge' }, 'Independent · free'), h('strong', null, 'IIHS ratings search'), h('span', null, 'Search by confirmed make, model, and year →')
+              )
+            ),
+            h('div', { className: 'ar-vin-privacy', 'data-ar-vin-privacy': true },
+              h('span', { 'aria-hidden': 'true' }, '🔒'),
+              h('span', null, h('strong', null, 'Local until you choose a lookup. '), 'Typing and decoding stay on this device. Activating a provider link shares the full VIN with that provider in a new tab, under its privacy policy.')
+            )
+          ),
           disclaimerFooter()
         );
       }
@@ -13549,7 +15478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       // MAINTENANCE SCHEDULE view
       // ─────────────────────────────────────────
-      function renderMaint() {
+      function renderMaintLegacy() {
         var miles = parseInt(d.maintMiles || 0, 10) || 0;
         var monthsSince = parseInt(d.maintMonths || 6, 10) || 6;
         var year = parseInt(d.maintYear || 0, 10) || 0;
@@ -13631,6 +15560,411 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           !schedule && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
             __alloT('stem.autorepair.enter_your_odometer_mileage_above_to_s', 'Enter your odometer mileage above to see what\'s due soon.')),
           disclaimerFooter()
+        );
+      }
+
+      function renderMaint() {
+        var normalized = arNormalizeMaintState({
+          mileage: d.maintMiles,
+          months: d.maintMonths,
+          year: d.maintYear
+        });
+        var ready = normalized.state === 'ready';
+        var schedule = buildMaintSchedule(
+          ready && normalized.mileage.provided ? normalized.mileage.value : null,
+          ready && normalized.months.provided ? normalized.months.value : null,
+          ready && normalized.year.provided ? normalized.year.value : null,
+          normalized.currentYear
+        );
+        var priorityOrder = { review: 0, soon: 1, reference: 2 };
+        var sorted = schedule.slice().sort(function(a, b) {
+          return priorityOrder[a.status] - priorityOrder[b.status] || a.sourceIndex - b.sourceIndex;
+        });
+        var filters = ['all', 'review', 'soon', 'reference'];
+        var filter = typeof d.maintFilter === 'string' && filters.indexOf(d.maintFilter) >= 0 ? d.maintFilter : 'all';
+        var requestedFocus = typeof d.maintFocus === 'string' ? d.maintFocus : '';
+        var filteredSchedule = filter === 'all' ? sorted : sorted.filter(function(item) { return item.status === filter; });
+        var requestedItem = schedule.filter(function(item) { return item.id === requestedFocus; })[0];
+        var selected = requestedItem && (filter === 'all' || requestedItem.status === filter)
+          ? requestedItem
+          : (filteredSchedule[0] || sorted[0]);
+        var reviewCount = schedule.filter(function(item) { return item.status === 'review'; }).length;
+        var soonCount = schedule.filter(function(item) { return item.status === 'soon'; }).length;
+        var referenceCount = schedule.length - reviewCount - soonCount;
+        var filteredCount = filteredSchedule.length;
+        var sceneItems = filteredSchedule.slice(0, 5);
+        var currentMilesLabel = normalized.mileage.provided && normalized.mileage.valid
+          ? normalized.mileage.value.toLocaleString()
+          : '—';
+        var vehicleAge = normalized.year.provided && normalized.year.valid
+          ? Math.max(0, normalized.currentYear - normalized.year.value)
+          : null;
+        var heroBg = isContrast ? T.bg : (isDark
+          ? 'linear-gradient(135deg, #1e293b 0%, #172033 58%, #0f172a 100%)'
+          : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 58%, #e0f2fe 100%)');
+
+        function statusColor(status) {
+          return status === 'review' ? T.bad : (status === 'soon' ? T.warn : T.link);
+        }
+        function statusIcon(status) {
+          return status === 'review' ? '!' : (status === 'soon' ? '↗' : 'i');
+        }
+        function statusLabel(status) {
+          return status === 'review' ? 'Review now' : (status === 'soon' ? 'Coming up' : 'Reference');
+        }
+        function intervalText(item) {
+          var parts = [];
+          if (item.miles > 0) parts.push('Every ' + item.miles.toLocaleString() + ' miles');
+          if (item.months > 0) parts.push('Every ' + item.months + ' months');
+          return parts.join(' or ');
+        }
+        function selectItem(id) {
+          upd('maintFocus', id);
+          var item = schedule.filter(function(entry) { return entry.id === id; })[0];
+          if (item) arAnnounce(item.item + ' selected. Planning detail is beside the service bay.');
+        }
+        function selectFilter(nextFilter) {
+          var firstMatch = nextFilter === 'all' ? sorted[0] : sorted.filter(function(item) { return item.status === nextFilter; })[0];
+          updMulti({ maintFilter: nextFilter, maintFocus: firstMatch ? firstMatch.id : selected.id });
+          arAnnounce((nextFilter === 'all' ? 'All intervals' : statusLabel(nextFilter)) + ' filter selected.');
+        }
+        function fieldBlock(key, field, label, hint, min, max, step) {
+          var inputId = 'ar-maint-' + key;
+          var hintId = inputId + '-hint';
+          var errorId = inputId + '-error';
+          return h('label', {
+            className: 'ar-maint-field', 'data-ar-maint-field': key,
+            'data-ar-maint-field-state': field.valid ? (field.provided ? 'valid' : 'empty') : 'invalid',
+            htmlFor: inputId
+          },
+            h('span', { className: 'ar-maint-field-label', style: { color: T.text } }, label),
+            h('input', {
+              id: inputId, type: 'number', inputMode: 'numeric', min: min, max: max, step: step,
+              value: field.raw, placeholder: key === 'mileage' ? '85000' : (key === 'months' ? '6' : String(normalized.currentYear - 10)),
+              'data-ar-focusable': true, 'aria-invalid': field.valid ? 'false' : 'true',
+              'aria-describedby': field.valid ? hintId : hintId + ' ' + errorId,
+              onChange: function(event) {
+                var stateKey = key === 'mileage' ? 'maintMiles' : (key === 'months' ? 'maintMonths' : 'maintYear');
+                upd(stateKey, event.target.value);
+              },
+              style: { background: T.bg, color: T.text, border: '1px solid ' + (field.valid ? T.border : T.bad) }
+            }),
+            h('span', { id: hintId, className: 'ar-maint-field-hint', style: { color: T.muted } }, hint),
+            !field.valid && h('span', { id: errorId, className: 'ar-maint-field-error', role: 'alert', style: { color: T.bad } }, field.error)
+          );
+        }
+        function summaryBucket(id, count, icon, label) {
+          var active = filter === id;
+          var tone = id === 'review' ? T.bad : (id === 'soon' ? T.warn : T.link);
+          return h('button', {
+            key: id, type: 'button', className: 'ar-maint-bucket',
+            'data-ar-maint-bucket': id,
+            'data-ar-focusable': true, 'aria-pressed': active ? 'true' : 'false',
+            onClick: function() { selectFilter(id); },
+            style: { background: active ? T.cardAlt : T.card, color: T.text, border: '1px solid ' + (active ? tone : T.border), borderRadius: 11, boxShadow: active && !isContrast ? '0 8px 18px rgba(15,23,42,.1)' : 'none' }
+          },
+            h('span', { className: 'ar-maint-bucket-icon', 'aria-hidden': 'true', style: { background: tone, color: onStrongFill } }, icon),
+            h('span', { className: 'ar-maint-bucket-copy' },
+              h('strong', { style: { color: T.text } }, count),
+              h('span', { style: { color: T.muted } }, label))
+          );
+        }
+        function filterButton(id) {
+          var active = filter === id;
+          var label = id === 'all' ? 'All intervals' : statusLabel(id);
+          var tone = id === 'review' ? T.bad : (id === 'soon' ? T.warn : (id === 'reference' ? T.link : T.accentHi));
+          return h('button', {
+            key: id, type: 'button', className: 'ar-maint-filter',
+            'data-ar-maint-filter': id, 'data-ar-focusable': true,
+            'aria-pressed': active ? 'true' : 'false',
+            onClick: function() { selectFilter(id); },
+            style: { background: active ? tone : T.cardAlt, color: active ? onStrongFill : T.text, border: '1px solid ' + (active ? tone : T.border) }
+          }, label);
+        }
+
+        return h('main', {
+          className: 'ar-maint-shell', 'data-ar-maint-shell': 'true',
+          'data-ar-maint-state': normalized.state, 'data-ar-maint-count': String(schedule.length),
+          style: { color: T.text }
+        },
+          backBar('📅 Maintenance schedule', 'Maintenance Planner navigation'),
+          h('header', {
+            className: 'ar-maint-hero', 'data-ar-maint-hero': 'true',
+            'aria-labelledby': 'ar-maint-title',
+            style: { background: heroBg, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : '0 16px 35px rgba(15,23,42,.12)' }
+          },
+            h('div', { className: 'ar-maint-hero-copy' },
+              h('span', { className: 'ar-maint-eyebrow', style: { color: T.accentHi } }, 'Service Bay Planner · ' + MAINT_INTERVALS.length + ' intervals'),
+              h('h1', { id: 'ar-maint-title', className: 'ar-maint-title', style: { color: T.text } }, 'See the service runway before it becomes a surprise'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } },
+                'Build a generic planning baseline from your odometer and records. “Review now” means verify the item against actual history and your owner’s manual—it does not prove the service is late.')
+            ),
+            h('div', { className: 'ar-maint-summary', 'data-ar-maint-summary': 'true', 'aria-labelledby': 'ar-maint-summary-title' },
+              h('span', { id: 'ar-maint-summary-title', className: 'sr-only' }, 'Maintenance planning signal summary'),
+              summaryBucket('review', reviewCount, '!', 'Review now'),
+              summaryBucket('soon', soonCount, '↗', 'Coming up'),
+              summaryBucket('reference', referenceCount, 'i', 'Reference')
+            )
+          ),
+          h('form', {
+            className: 'ar-maint-form', 'data-ar-maint-form': 'true',
+            'aria-labelledby': 'ar-maint-form-title', noValidate: true,
+            onSubmit: function(event) { event.preventDefault(); },
+            style: { background: T.card, border: '1px solid ' + T.border }
+          },
+            h('div', { className: 'ar-maint-form-head' },
+              h('div', null,
+                h('h2', { id: 'ar-maint-form-title', style: { color: T.text } }, 'Set a planning baseline'),
+                h('p', { style: { color: T.muted } }, 'Mileage and time remain separate signals. Leave either one blank when you do not know it.')),
+              h('span', { className: 'ar-maint-scene-chip', style: { background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.border } },
+                ready ? 'Estimate ready' : (normalized.state === 'invalid' ? 'Check inputs' : 'Add mileage or time'))
+            ),
+            h('div', { className: 'ar-maint-form-grid' },
+              fieldBlock('mileage', normalized.mileage, '🚗 Current odometer', 'Whole miles from 0 to 1,500,000.', 0, 1500000, 1),
+              fieldBlock('months', normalized.months, '📅 Months since record baseline', 'Use the age of your best-known service baseline; 0 is valid.', 0, 240, 1),
+              fieldBlock('year', normalized.year, '🏷 Vehicle year (optional)', 'Used only for age context, not to invent an interval.', 1981, normalized.currentYear + 1, 1)
+            ),
+            h('div', {
+              className: 'ar-maint-form-status', 'data-ar-maint-status': 'true', role: 'status', 'aria-live': 'polite',
+              style: { color: normalized.state === 'invalid' ? T.bad : (ready ? T.good : T.accentHi), background: T.cardAlt }
+            },
+              normalized.state === 'invalid'
+                ? 'Fix the highlighted value before the planner calculates a baseline.'
+                : (ready
+                    ? 'Baseline ready' + (vehicleAge !== null ? ' · vehicle age context: ' + vehicleAge + ' year' + (vehicleAge === 1 ? '' : 's') : '') + '.'
+                    : 'Enter a valid odometer or month baseline. The dimensional service bay remains available for orientation.')
+            )
+          ),
+          normalized.state !== 'ready' && h('div', {
+            className: 'ar-maint-empty', 'data-ar-maint-empty': normalized.state,
+            style: { background: T.cardAlt, border: '1px dashed ' + (normalized.state === 'invalid' ? T.bad : T.border) }
+          },
+            h('strong', { style: { color: T.text } }, normalized.state === 'invalid' ? 'The bay is waiting for a valid baseline' : 'Explore first, personalize when ready'),
+            h('span', { style: { color: T.muted } }, 'The dimensional bay stays available to orient you. Add a valid odometer or time baseline to open the personalized interval list.')
+          ),
+          h('section', {
+            className: 'ar-maint-layout ar-maint-workbench', 'data-ar-maint-lab': 'true',
+            'aria-labelledby': 'ar-maint-lab-title'
+          },
+            h('article', { className: 'ar-maint-scene-card', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-maint-scene-head' },
+                h('div', null,
+                  h('h2', { id: 'ar-maint-lab-title', style: { color: T.text } }, 'Dimensional service bay'),
+                  h('p', { style: { color: T.muted } }, 'Select a runway marker to open the interval and its exact planning basis.')),
+                h('span', { className: 'ar-maint-scene-chip', style: { background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.border } },
+                  currentMilesLabel === '—' ? 'Odometer not set' : currentMilesLabel + ' mi')
+              ),
+              renderMaintScene(ready ? sceneItems : [], selected, reviewCount, soonCount, currentMilesLabel, selectItem, normalized.state)
+            ),
+            ready && filteredCount > 0 && h('aside', {
+              id: 'ar-maint-detail', className: 'ar-maint-detail', 'data-ar-maint-detail': selected.id,
+              'aria-labelledby': 'ar-maint-detail-title',
+              'aria-live': 'polite',
+              style: { background: T.card, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : '0 12px 28px rgba(15,23,42,.1)' }
+            },
+              h('div', { className: 'ar-maint-detail-head' },
+                h('span', { className: 'ar-maint-detail-icon', 'aria-hidden': 'true', style: { background: statusColor(selected.status), color: onStrongFill } }, statusIcon(selected.status)),
+                h('div', { className: 'ar-maint-detail-heading' },
+                  h('span', { className: 'ar-maint-detail-kicker', style: { color: statusColor(selected.status) } }, statusLabel(selected.status) + ' · planning signal'),
+                  h('h2', { id: 'ar-maint-detail-title', style: { color: T.text } }, selected.item))
+              ),
+              h('div', { className: 'ar-maint-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('strong', { style: { color: T.accentHi } }, 'Generic interval'),
+                h('p', { style: { color: T.text } }, intervalText(selected))),
+              h('div', { className: 'ar-maint-detail-block', style: { background: T.cardAlt, border: '1px solid ' + statusColor(selected.status) } },
+                h('strong', { style: { color: statusColor(selected.status) } }, 'Why it is in this bucket'),
+                h('ul', { className: 'ar-maint-basis' }, selected.basis.map(function(entry, reasonIndex) {
+                  return h('li', {
+                    key: selected.id + '-reason-' + reasonIndex,
+                    'data-ar-maint-basis': entry.axis,
+                    style: { color: T.text }
+                  }, h('strong', { className: 'ar-maint-basis-axis', style: { color: statusColor(selected.status) } }, entry.axis), entry.text);
+                }))),
+              h('div', { className: 'ar-maint-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.borderSoft } },
+                h('strong', { style: { color: T.accentHi } }, 'Service note'),
+                h('p', { style: { color: T.text } }, selected.note)),
+              selected.conditional && h('div', {
+                className: 'ar-maint-conditional', 'data-ar-maint-conditional': selected.id,
+                style: { background: isContrast ? T.bg : (isDark ? '#3f2a0c' : '#fffbeb'), border: '1px solid ' + T.warn, color: T.text }
+              }, h('span', { 'aria-hidden': 'true' }, '◇'), h('span', null, selected.conditional)),
+              h('button', {
+                type: 'button', className: 'ar-maint-service-log-action',
+                'data-ar-maint-service-log-action': selected.id, 'data-ar-focusable': true,
+                onClick: function() { setView('log'); arAnnounce('Opened the Service Log.'); },
+                style: btnPrimary()
+              }, '📓 Open Service Log')
+            )
+          ),
+          ready && h('section', {
+            className: 'ar-maint-catalog', 'aria-labelledby': 'ar-maint-list-title',
+            style: { background: T.card, border: '1px solid ' + T.border }
+          },
+            h('div', { className: 'ar-maint-catalog-head' },
+              h('div', null,
+                h('h2', { id: 'ar-maint-list-title', style: { color: T.text } }, 'Complete service interval reference'),
+                h('p', { style: { color: T.muted } }, 'All ' + MAINT_INTERVALS.length + ' intervals stay in the document and print view; filters only simplify the screen.')),
+              h('span', { className: 'ar-maint-filter-note', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } },
+                filteredCount + ' shown · ' + (filter === 'all' ? 'All intervals' : statusLabel(filter)))
+            ),
+            h('div', {
+              className: 'ar-maint-filters', role: 'group', 'aria-label': 'Filter service intervals',
+              'data-ar-maint-print-hide': 'true'
+            }, filters.map(filterButton)),
+            filteredCount === 0 && h('div', { className: 'ar-maint-empty', 'data-ar-maint-filter-empty': filter, style: { background: T.cardAlt, border: '1px dashed ' + T.border } },
+              h('strong', { style: { color: T.text } }, 'No intervals in this bucket'),
+              h('span', { style: { color: T.muted } }, 'Choose All intervals to keep exploring.')),
+            h('ul', { className: 'ar-maint-list', 'data-ar-maint-list': 'true', 'aria-labelledby': 'ar-maint-list-title' },
+              sorted.map(function(item) {
+                var isSelected = item.id === selected.id;
+                var hiddenByFilter = filter !== 'all' && item.status !== filter;
+                var color = statusColor(item.status);
+                var titleId = 'ar-maint-item-title-' + item.id;
+                var descId = 'ar-maint-item-desc-' + item.id;
+                var stateId = 'ar-maint-item-state-' + item.id;
+                var intervalId = 'ar-maint-item-interval-' + item.id;
+                var conditionalId = 'ar-maint-item-conditional-' + item.id;
+                var describedBy = [stateId, intervalId, descId].concat(item.conditional ? [conditionalId] : []).join(' ');
+                return h('li', { key: item.id, className: 'ar-maint-item-wrap', hidden: hiddenByFilter },
+                  h('button', {
+                    type: 'button', className: 'ar-maint-item',
+                    'data-ar-maint-item': item.id, 'data-ar-maint-item-state': item.status,
+                    hidden: hiddenByFilter, 'aria-hidden': hiddenByFilter ? 'true' : 'false',
+                    'data-ar-focusable': true, 'aria-pressed': isSelected ? 'true' : 'false',
+                    'aria-labelledby': titleId, 'aria-describedby': describedBy, 'aria-controls': 'ar-maint-detail',
+                    onClick: function() { selectItem(item.id); },
+                    style: { background: isSelected ? T.cardAlt : T.card, color: T.text, border: '1px solid ' + (isSelected ? color : T.border), borderRadius: 11 }
+                  },
+                    h('span', { className: 'ar-maint-item-marker', 'aria-hidden': 'true', style: { background: color, color: onStrongFill } }, statusIcon(item.status)),
+                    h('span', { className: 'ar-maint-item-copy' },
+                      h('span', { className: 'ar-maint-item-top' },
+                        h('strong', { id: titleId, className: 'ar-maint-item-title', style: { color: T.text } }, item.item),
+                        h('span', { id: stateId, className: 'ar-maint-item-state', style: { color: color, border: '1px solid ' + color } }, statusLabel(item.status))),
+                      h('span', { id: intervalId, className: 'ar-maint-item-interval', style: { color: T.text } }, intervalText(item)),
+                      h('span', { id: descId, className: 'ar-maint-item-note', style: { color: T.muted } }, item.note),
+                      item.conditional && h('span', {
+                        id: conditionalId, className: 'ar-maint-item-conditional', 'data-ar-maint-conditional': item.id,
+                        style: { color: T.warn, border: '1px solid ' + T.warn }
+                      }, 'Verify equipped / specified')
+                    )
+                  )
+                );
+              })
+            )
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      function renderMaintScene(items, selected, reviewCount, soonCount, currentMilesLabel, selectItem, state) {
+        var ready = state === 'ready';
+        var bodyFill = isContrast ? T.bg : (isDark ? 'url(#ar-maint-body-dark)' : 'url(#ar-maint-body-light)');
+        var glassFill = isContrast ? T.bg : '#15314a';
+        var activeLabel = ready && selected ? selected.item : 'No planning baseline selected';
+
+        return h('div', {
+          className: 'ar-maint-scene', 'data-ar-maint-scene': state,
+          'data-ar-maint-scene-state': state
+        },
+          h('div', { className: 'ar-maint-scan', 'aria-hidden': 'true' }),
+          h('div', { className: 'ar-maint-scene-frame ar-maint-frame' },
+            h('svg', {
+              className: 'ar-maint-svg', viewBox: '0 0 760 390', role: 'img',
+              'aria-labelledby': 'ar-maint-scene-title', 'aria-describedby': 'ar-maint-scene-desc',
+              preserveAspectRatio: 'xMidYMid meet'
+            },
+              h('title', { id: 'ar-maint-scene-title' }, 'Dimensional vehicle maintenance service bay'),
+              h('desc', { id: 'ar-maint-scene-desc' },
+                'A three-quarter vehicle sits on a two-post lift above a marked service lane. An odometer panel and planning signal lights summarize the current maintenance baseline.'),
+              h('defs', null,
+                h('linearGradient', { id: 'ar-maint-body-light', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#f8fafc' }),
+                  h('stop', { offset: '42%', stopColor: '#94a3b8' }),
+                  h('stop', { offset: '70%', stopColor: '#475569' }),
+                  h('stop', { offset: '100%', stopColor: '#e2e8f0' })),
+                h('linearGradient', { id: 'ar-maint-body-dark', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#64748b' }),
+                  h('stop', { offset: '45%', stopColor: '#1e293b' }),
+                  h('stop', { offset: '72%', stopColor: '#0f172a' }),
+                  h('stop', { offset: '100%', stopColor: '#475569' })),
+                h('linearGradient', { id: 'ar-maint-lift-metal', x1: '0%', y1: '0%', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#334155' }),
+                  h('stop', { offset: '45%', stopColor: '#cbd5e1' }),
+                  h('stop', { offset: '100%', stopColor: '#475569' })),
+                h('radialGradient', { id: 'ar-maint-wheel', cx: '42%', cy: '38%', r: '62%' },
+                  h('stop', { offset: '0%', stopColor: '#94a3b8' }),
+                  h('stop', { offset: '33%', stopColor: '#334155' }),
+                  h('stop', { offset: '38%', stopColor: '#0f172a' }),
+                  h('stop', { offset: '100%', stopColor: '#020617' }))
+              ),
+              h('g', { 'data-ar-maint-object': 'service-lane' },
+                h('path', { d: 'M72 334 L226 212 L596 212 L716 334 Z', fill: '#0b1220', stroke: '#334155', strokeWidth: 3 }),
+                h('path', { d: 'M202 334 L302 218 M586 334 L520 218', fill: 'none', stroke: '#38bdf8', strokeWidth: 3, strokeDasharray: '14 12', opacity: .8 }),
+                h('path', { d: 'M363 334 L385 219', fill: 'none', stroke: '#f8fafc', strokeWidth: 2, strokeDasharray: '9 12', opacity: .52 }),
+                h('path', { d: 'M89 334 H706', fill: 'none', stroke: '#64748b', strokeWidth: 4, opacity: .55 })
+              ),
+              h('g', { 'data-ar-maint-object': 'lift' },
+                h('path', { d: 'M159 315 V90 H187 V315 M575 315 V90 H603 V315', fill: 'url(#ar-maint-lift-metal)', stroke: '#cbd5e1', strokeWidth: 2 }),
+                h('path', { d: 'M142 315 H207 M558 315 H623', fill: 'none', stroke: '#94a3b8', strokeWidth: 12, strokeLinecap: 'round' }),
+                h('path', { d: 'M176 238 L300 277 M589 238 L482 277 M176 244 L292 216 M589 244 L495 216', fill: 'none', stroke: '#f59e0b', strokeWidth: 10, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                h('circle', { cx: 300, cy: 277, r: 10, fill: '#0f172a', stroke: '#fbbf24', strokeWidth: 3 }),
+                h('circle', { cx: 482, cy: 277, r: 10, fill: '#0f172a', stroke: '#fbbf24', strokeWidth: 3 }),
+                h('circle', { cx: 292, cy: 216, r: 9, fill: '#0f172a', stroke: '#fbbf24', strokeWidth: 3 }),
+                h('circle', { cx: 495, cy: 216, r: 9, fill: '#0f172a', stroke: '#fbbf24', strokeWidth: 3 })
+              ),
+              h('g', { 'data-ar-maint-object': 'vehicle', transform: 'translate(0 -2)' },
+                h('ellipse', { cx: 391, cy: 281, rx: 205, ry: 28, fill: '#020617', opacity: .58 }),
+                h('ellipse', { cx: 292, cy: 270, rx: 42, ry: 49, fill: 'url(#ar-maint-wheel)', stroke: '#020617', strokeWidth: 7 }),
+                h('ellipse', { cx: 530, cy: 265, rx: 39, ry: 46, fill: 'url(#ar-maint-wheel)', stroke: '#020617', strokeWidth: 7 }),
+                h('path', {
+                  className: 'ar-maint-vehicle-body',
+                  d: 'M199 240 Q214 200 264 187 L320 128 Q341 108 381 107 L473 112 Q504 116 527 142 L573 193 Q608 203 622 230 L616 260 Q604 276 566 278 L565 254 Q556 222 525 219 Q493 218 480 250 L472 279 H342 L330 250 Q320 216 288 216 Q253 217 244 252 L238 271 Q210 267 197 253 Z',
+                  fill: bodyFill, stroke: '#e2e8f0', strokeWidth: 3, strokeLinejoin: 'round'
+                }),
+                h('path', { d: 'M326 133 Q344 116 382 116 L427 119 L430 181 L279 184 Z', fill: glassFill, stroke: '#7dd3fc', strokeWidth: 2, opacity: .92 }),
+                h('path', { d: 'M439 120 L472 124 Q496 129 515 151 L547 187 L442 181 Z', fill: glassFill, stroke: '#7dd3fc', strokeWidth: 2, opacity: .92 }),
+                h('path', { d: 'M434 118 L437 246', fill: 'none', stroke: '#94a3b8', strokeWidth: 2, opacity: .7 }),
+                h('path', { d: 'M220 211 Q392 191 588 207', fill: 'none', stroke: '#f8fafc', strokeWidth: 3, opacity: .66 }),
+                h('path', { d: 'M364 254 H463', fill: 'none', stroke: '#020617', strokeWidth: 5, strokeLinecap: 'round', opacity: .64 }),
+                h('path', { d: 'M584 208 L614 222 L607 241 L578 232 Z', fill: '#f8fafc', stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('path', { d: 'M205 228 L231 219 L238 238 L209 244 Z', fill: '#fb7185', stroke: '#fecdd3', strokeWidth: 2 }),
+                h('path', { d: 'M478 181 Q507 182 545 191', fill: 'none', stroke: '#38bdf8', strokeWidth: 2, opacity: .7 })
+              ),
+              h('g', { 'data-ar-maint-object': 'odometer', transform: 'translate(548 34)' },
+                h('rect', { x: 0, y: 0, width: 166, height: 60, rx: 12, fill: '#020617', stroke: '#38bdf8', strokeWidth: 2 }),
+                h('text', { x: 15, y: 20, fill: '#7dd3fc', fontSize: 10, fontWeight: 800, letterSpacing: 1.2 }, 'ODOMETER BASELINE'),
+                h('text', { x: 15, y: 45, fill: '#f8fafc', fontSize: 22, fontWeight: 900 }, currentMilesLabel === '—' ? 'NOT SET' : currentMilesLabel + ' MI')
+              ),
+              h('g', { className: 'ar-maint-warning-lights', 'data-ar-maint-object': 'warning-lights', transform: 'translate(48 35)' },
+                h('rect', { x: 0, y: 0, width: 193, height: 65, rx: 12, fill: '#020617', stroke: '#475569', strokeWidth: 2 }),
+                h('circle', { cx: 25, cy: 24, r: 9, fill: reviewCount ? '#fb7185' : '#475569' }),
+                h('text', { x: 42, y: 29, fill: '#f8fafc', fontSize: 13, fontWeight: 850 }, reviewCount + ' REVIEW'),
+                h('circle', { cx: 25, cy: 48, r: 9, fill: soonCount ? '#fbbf24' : '#475569' }),
+                h('text', { x: 42, y: 53, fill: '#f8fafc', fontSize: 13, fontWeight: 850 }, soonCount + ' COMING UP')
+              ),
+              h('g', { transform: 'translate(260 326)', 'aria-hidden': 'true' },
+                h('rect', { x: 0, y: 0, width: 274, height: 34, rx: 17, fill: '#020617', stroke: ready ? '#38bdf8' : '#64748b', strokeWidth: 2, opacity: .94 }),
+                h('text', { x: 137, y: 22, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 800 }, activeLabel.length > 38 ? activeLabel.slice(0, 36) + '…' : activeLabel)
+              )
+            )
+          ),
+          items.length > 0 && h('div', { className: 'ar-maint-markers', role: 'group', 'aria-label': 'Priority service markers' },
+            items.map(function(item, index) {
+              var markerLabel = item.status === 'review' ? 'Review now' : (item.status === 'soon' ? 'Coming up' : 'Reference');
+              var markerColor = item.status === 'review' ? T.bad : (item.status === 'soon' ? T.warn : T.link);
+              return h('button', {
+                key: item.id, type: 'button', className: 'ar-maint-marker',
+                'data-ar-maint-marker': item.id, 'data-ar-maint-marker-index': String(index),
+                'data-ar-focusable': true, 'aria-controls': 'ar-maint-detail',
+                'aria-pressed': selected && selected.id === item.id ? 'true' : 'false',
+                onClick: function() { selectItem(item.id); },
+                style: { background: T.card, color: T.text, border: '1px solid ' + markerColor }
+              },
+                h('span', { className: 'ar-maint-marker-dot', 'aria-hidden': 'true', style: { background: markerColor, color: onStrongFill } }, index + 1),
+                h('span', { className: 'ar-maint-marker-copy' },
+                  h('strong', { style: { color: T.text } }, item.item),
+                  h('small', { style: { color: markerColor } }, markerLabel))
+              );
+            }))
         );
       }
 
@@ -14148,84 +16482,308 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ROI CALCULATOR view — keep-or-sell decision tool
       // ─────────────────────────────────────────
       function renderROI() {
-        var vehVal = parseInt(d.roiVehVal || 0, 10) || 0;
-        var repCost = parseInt(d.roiRepCost || 0, 10) || 0;
-        var age = parseInt(d.roiAge || 0, 10) || 0;
-        var miles = parseInt(d.roiMiles || 0, 10) || 0;
-        var loomingCost = parseInt(d.roiLooming || 0, 10) || 0;
-        var attachment = d.roiAttach || 'medium';
-        var result = (vehVal > 0 && repCost > 0) ? repairROI({ vehicleValue: vehVal, repairCost: repCost, age: age, miles: miles, loomingCost: loomingCost, attachment: attachment }) : null;
-        var verdictColor = function(v) {
-          if (v === 'fix') return T.good;
-          if (v === 'fix-cautiously') return T.warn;
-          if (v === 'consider-selling') return T.bad;
-          return T.muted;
+        var n = arNormalizeROIState({
+          vehicleValue: d.roiVehVal, repairCost: d.roiRepCost, loomingCost: d.roiLooming,
+          replacementCost: d.roiReplacement, asIsOffer: d.roiAsIsOffer,
+          age: d.roiAge, miles: d.roiMiles, attachment: d.roiAttach,
+          lens: d.roiLens, evidence: d.roiEvidence
+        });
+        var ready = n.state === 'ready-share' || n.state === 'ready-compare';
+        var result = ready ? repairROI({
+          vehicleValue: n.vehicleValue.value, repairCost: n.repairCost.value,
+          loomingCost: n.loomingCost.provided ? n.loomingCost.value : 0,
+          replacementCost: n.replacementCost.provided ? n.replacementCost.value : null,
+          asIsOffer: n.asIsOffer.provided ? n.asIsOffer.value : null,
+          age: n.age.provided ? n.age.value : 0, miles: n.miles.provided ? n.miles.value : 0,
+          attachment: n.attachment
+        }) : null;
+        var decisionStage = ready ? 1 : 0;
+        if (n.state === 'ready-compare') decisionStage = 2;
+        if (decisionStage === 2 && n.evidenceCount === 4) decisionStage = 3;
+        var presetCandidate = typeof d.roiPreset === 'string'
+          ? REPAIR_DECISION_PRESETS.find(function(p) { return p.id === d.roiPreset; })
+          : null;
+        var presetFields = ['vehicleValue', 'repairCost', 'loomingCost', 'replacementCost', 'asIsOffer', 'age', 'miles'];
+        var selectedPreset = presetCandidate && presetFields.every(function(key) {
+          return n[key].provided && n[key].valid && n[key].value === presetCandidate[key];
+        }) && n.attachment === presetCandidate.attachment ? presetCandidate.id : '';
+        var stateKeys = {
+          'vehicle-value': 'roiVehVal', 'repair-cost': 'roiRepCost', 'looming-cost': 'roiLooming',
+          'replacement-cost': 'roiReplacement', 'as-is-offer': 'roiAsIsOffer', age: 'roiAge', miles: 'roiMiles'
         };
-        var verdictLabel = function(v) {
-          if (v === 'fix') return '✅ Math favors REPAIR';
-          if (v === 'fix-cautiously') return '⚠️ Repair, but cautiously';
-          if (v === 'consider-selling') return '🚩 Consider SELLING';
-          return v;
-        };
-
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('💵 Repair ROI calculator'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.should_i_fix_it_or_sell_it_2', '💵 Should I fix it or sell it?')),
-            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.rule_of_thumb_when_repair_cost_exceeds', 'Rule of thumb: when repair cost exceeds 50% of vehicle value (or 70% with looming work added), the math typically favors selling. Inputs below.')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
-              [
-                { id: 'roiVehVal', label: __alloT('stem.autorepair.current_vehicle_value', '🚗 Current vehicle value ($)'), placeholder: '4000', val: vehVal, type: 'number' },
-                { id: 'roiRepCost', label: __alloT('stem.autorepair.repair_cost_quoted', '🔧 Repair cost quoted ($)'), placeholder: '2500', val: repCost, type: 'number' },
-                { id: 'roiLooming', label: __alloT('stem.autorepair.other_looming_work', '⏳ Other looming work ($)'), placeholder: '0', val: loomingCost, type: 'number' },
-                { id: 'roiAge', label: __alloT('stem.autorepair.vehicle_age_years', '📅 Vehicle age (years)'), placeholder: '12', val: age, type: 'number' },
-                { id: 'roiMiles', label: __alloT('stem.autorepair.mileage', '🛣️ Mileage'), placeholder: '180000', val: miles, type: 'number' }
-              ].map(function(f) {
-                return h('label', { key: f.id, style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                  h('span', { style: { fontWeight: 700 } }, f.label),
-                  h('input', { type: f.type, 'data-ar-focusable': true,
-                    'aria-label': f.label,
-                    placeholder: f.placeholder,
-                    value: f.val || '',
-                    onChange: function(e) { upd(f.id, e.target.value); },
-                    style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
-                );
-              }),
-              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.emotional_attachment', '❤️ Emotional attachment')),
-                h('select', { 'data-ar-focusable': true,
-                  'aria-label': __alloT('stem.autorepair.emotional_attachment_to_vehicle', 'Emotional attachment to vehicle'),
-                  value: attachment,
-                  onChange: function(e) { upd('roiAttach', e.target.value); },
-                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
-                  h('option', { value: 'low' }, __alloT('stem.autorepair.low_would_happily_upgrade', 'Low — would happily upgrade')),
-                  h('option', { value: 'medium' }, __alloT('stem.autorepair.medium_fine_either_way', 'Medium — fine either way')),
-                  h('option', { value: 'high' }, __alloT('stem.autorepair.high_sentimental_value', 'High — sentimental value'))
-                )
-              )
-            )
-          ),
-          result && h('div', { style: { padding: 16, borderRadius: 10, background: T.card, border: '2px solid ' + verdictColor(result.verdict), marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, __alloT('stem.autorepair.recommendation', 'Recommendation')),
-            h('div', { style: { fontSize: 22, fontWeight: 800, color: verdictColor(result.verdict), marginBottom: 8 } },
-              verdictLabel(result.verdict)),
-            h('p', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.55 } }, result.summary),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.reasoning', 'Reasoning')),
-            h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
-              result.reasons.map(function(r, i) { return h('li', { key: i }, r); })
-            )
-          ),
-          !result && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
-            __alloT('stem.autorepair.enter_vehicle_value_repair_cost_to_see', 'Enter vehicle value + repair cost to see the recommendation.')),
-          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.how_to_find_vehicle_value', '🎯 How to find vehicle value: ')),
-            h('a', { href: 'https://www.kbb.com/whats-my-car-worth/', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.autorepair.kelley_blue_book', 'Kelley Blue Book')),
+        function money(value) {
+          if (typeof value !== 'number' || !isFinite(value)) return 'Not entered';
+          var amount = Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+          return (value < 0 ? '-$' : '$') + amount;
+        }
+        function signalColor(verdict) {
+          if (verdict === 'fix') return isContrast ? T.link : (isDark ? '#38bdf8' : '#0369a1');
+          if (verdict === 'fix-cautiously') return T.accentHi;
+          return isContrast ? T.warn : (isDark ? '#c084fc' : '#7e22ce');
+        }
+        function signalLabel(verdict) {
+          return verdict === 'fix' ? 'Repair path has room to investigate' : (verdict === 'fix-cautiously' ? 'Pause and verify the full repair plan' : (result && result.hasComparison ? 'Verify both paths before deciding' : 'Price both paths before deciding'));
+        }
+        function stateLabel() {
+          if (n.state === 'invalid') return 'Check highlighted inputs';
+          if (n.state === 'incomplete') return 'Add both required values';
+          if (n.state === 'ready-compare') return 'Two cash paths ready';
+          if (n.state === 'ready-share') return n.compareState === 'partial' ? 'Quote share ready · comparison incomplete' : 'Quote share ready';
+          return 'Start with value and quote';
+        }
+        function field(key, data, label, hint, min, max, step, required) {
+          var id = 'ar-roi-' + key, hintId = id + '-hint', errorId = id + '-error';
+          var placeholders = { 'vehicle-value': '8500', 'repair-cost': '1200', 'looming-cost': '0', 'replacement-cost': '18000', 'as-is-offer': '6500', age: '10', miles: '120000' };
+          return h('label', { className: 'ar-roi-field', 'data-ar-roi-field': key, 'data-ar-roi-field-state': data.valid ? (data.provided ? 'valid' : 'empty') : 'invalid', htmlFor: id },
+            h('span', { className: 'ar-roi-field-label', style: { color: T.text } }, label),
+            h('input', { id: id, type: 'number', inputMode: step === 1 ? 'numeric' : 'decimal', min: min, max: max, step: step, value: data.raw,
+              required: required === true, 'aria-required': required === true ? 'true' : 'false',
+              placeholder: placeholders[key] || '', 'data-ar-focusable': true,
+              'aria-invalid': data.valid ? 'false' : 'true', 'aria-describedby': data.valid ? hintId : hintId + ' ' + errorId,
+              onChange: function(e) { var next = { roiPreset: '' }; next[stateKeys[key]] = e.target.value; updMulti(next); },
+              style: { background: T.bg, color: T.text, border: '1px solid ' + (data.valid ? T.border : T.bad) } }),
+            h('span', { id: hintId, className: 'ar-roi-field-hint', style: { color: T.muted } }, hint),
+            !data.valid && h('span', { id: errorId, className: 'ar-roi-field-error', style: { color: T.bad } }, data.error));
+        }
+        function applyPreset(p) {
+          updMulti({ roiVehVal: String(p.vehicleValue), roiRepCost: String(p.repairCost), roiLooming: String(p.loomingCost),
+            roiReplacement: String(p.replacementCost), roiAsIsOffer: String(p.asIsOffer), roiAge: String(p.age), roiMiles: String(p.miles),
+            roiAttach: p.attachment, roiPreset: p.id, roiLens: 'cost', roiEvidence: {} });
+          arAnnounce(p.label + ' practice scenario loaded.');
+        }
+        function resetDecision() {
+          updMulti({ roiVehVal: '', roiRepCost: '', roiLooming: '', roiReplacement: '', roiAsIsOffer: '', roiAge: '', roiMiles: '',
+            roiAttach: 'medium', roiPreset: '', roiLens: 'cost', roiEvidence: {} });
+          arAnnounce('Repair Decision Lab reset.');
+        }
+        function updateEvidence(id, checked) {
+          var next = Object.assign({}, n.evidence); next[id] = checked === true; upd('roiEvidence', next);
+        }
+        function meter(id, label, detail, percent, color, objectName) {
+          var drawn = Math.max(0, Math.min(100, percent));
+          return h('div', { className: 'ar-roi-meter', 'data-ar-roi-meter': id },
+            h('div', { className: 'ar-roi-meter-label' }, h('strong', { style: { color: '#f8fafc' } }, label), h('span', { style: { color: '#cbd5e1' } }, detail)),
+            h('div', { className: 'ar-roi-rail', role: 'meter', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': drawn,
+              'aria-valuetext': percent + '% of entered vehicle value' + (percent > 100 ? '; drawing capped at 100%' : ''),
+              'data-ar-roi-object': 'value-rail', style: { background: '#111827', border: '1px solid #64748b', color: '#cbd5e1' } },
+              [30, 50, 70].map(function(gate) { return h('span', { key: gate, className: 'ar-roi-gate', style: { left: gate + '%' }, 'aria-hidden': 'true' }); }),
+              h('span', { className: 'ar-roi-bar', 'data-ar-roi-object': objectName, style: { width: drawn + '%', background: color } }),
+              h('span', { className: 'ar-roi-rail-value', style: { background: '#020617', color: '#f8fafc' } }, percent + '%')));
+        }
+        function lensButton(id, label) {
+          var active = n.lens === id;
+          return h('button', { key: id, type: 'button', className: 'ar-roi-lens', 'data-ar-roi-lens': id, 'data-ar-focusable': true,
+            'aria-pressed': active ? 'true' : 'false', 'aria-controls': 'ar-roi-detail',
+            onClick: function() { upd('roiLens', id); arAnnounce(label + ' evidence opened.'); },
+            style: { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, border: '1px solid ' + (active ? T.accent : T.border) } }, label);
+        }
+        function lensDetail() {
+          if (n.lens === 'condition') return h('div', null,
+            h('h3', { style: { color: T.text } }, 'Condition is evidence, not a hidden score'),
+            h('p', { style: { color: T.muted } }, (n.age.provided ? n.age.value + ' years' : 'Age not entered') + ' · ' + (n.miles.provided ? n.miles.value.toLocaleString() + ' miles' : 'Mileage not entered') + '. Neither value changes the cash arithmetic. Rust, safety, service history, and repair longevity require inspection.'),
+            h('p', { 'data-ar-roi-assumption': 'attachment', style: { color: T.muted, marginTop: 8 } }, 'Attachment: ' + n.attachment + '. It remains context only and never changes the signal.'));
+          if (n.lens === 'replacement') return h('div', null,
+            h('h3', { style: { color: T.text } }, 'Replacement reality'),
+            h('p', { style: { color: T.muted } }, result.hasComparison ? money(result.replacementCost) + ' comparable price minus ' + money(result.asIsOffer) + ' actual as-is proceeds = ' + money(result.replaceUpfront) + ' entered replacement cash. Taxes, financing, registration, insurance, and near-term maintenance remain outside this worksheet.' : 'Add both a comparable replacement price and a real as-is offer to unlock an upfront cash comparison.'));
+          return h('div', null, h('h3', { style: { color: T.text } }, 'What the entered ratios say'),
+            h('ul', null, result.reasons.map(function(reason, index) { return h('li', { key: 'roi-reason-' + index, style: { color: T.muted } }, reason); })));
+        }
+        function stat(id, value, label, color) {
+          return h('div', { className: 'ar-roi-stat', 'data-ar-roi-stat': id, style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: color || T.text } }, value), h('span', { style: { color: T.muted } }, label));
+        }
+        function pathCard(id, label, value, note, color) {
+          return h('div', { className: 'ar-roi-path', 'data-ar-roi-path': id, 'data-ar-roi-object': id + '-lane', style: { background: 'rgba(15,23,42,.9)', color: '#f8fafc', border: '1px solid ' + color } }, h('strong', null, label), h('span', { className: 'ar-roi-path-value' }, value), h('span', { className: 'ar-roi-path-note', style: { color: '#cbd5e1' } }, note));
+        }
+        function renderDecisionStages() {
+          var stages = [
+            { id: 'quote', label: 'Quote share', note: 'Value + written quote' },
+            { id: 'comparison', label: 'Cash paths', note: 'Replacement price + as-is offer' },
+            { id: 'evidence', label: 'Evidence pack', note: 'Four verification checks' }
+          ];
+          return h('ol', { className: 'ar-roi-stage-list', 'data-ar-roi-stages': decisionStage + '/3', 'aria-label': 'Worksheet preparation stages' },
+            stages.map(function(stage, index) {
+              var number = index + 1;
+              var state = decisionStage >= number ? 'complete' : (decisionStage + 1 === number ? 'current' : 'upcoming');
+              return h('li', { key: stage.id, className: 'ar-roi-stage', 'data-ar-roi-stage': stage.id, 'data-ar-roi-stage-state': state,
+                'aria-current': state === 'current' ? 'step' : undefined, style: { background: T.cardAlt, border: '1px solid ' + (state === 'complete' ? T.good : (state === 'current' ? T.accent : T.border)) } },
+                h('span', { className: 'ar-roi-stage-marker', 'aria-hidden': 'true', style: { background: state === 'complete' ? T.good : (state === 'current' ? T.accent : T.bg), color: state === 'complete' || state === 'current' ? onStrongFill : T.text } }, state === 'complete' ? '✓' : number),
+                h('span', { className: 'ar-roi-stage-copy' }, h('strong', { style: { color: T.text } }, stage.label), h('span', { style: { color: T.muted } }, stage.note)),
+                h('span', { className: 'ar-roi-stage-state', style: { color: state === 'complete' ? T.good : (state === 'current' ? T.accentHi : T.muted) } }, state === 'complete' ? 'Prepared' : (state === 'current' ? 'Current' : 'Next')));
+            }));
+        }
+        function renderDecisionForm() {
+          return h('form', { className: 'ar-roi-form', 'data-ar-roi-form': 'true', noValidate: true, 'aria-labelledby': 'ar-roi-inputs-title',
+            onSubmit: function(e) { e.preventDefault(); }, style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-roi-form-head' },
+              h('div', null,
+                h('h2', { id: 'ar-roi-inputs-title', style: { color: T.text } }, 'Build the comparison'),
+                h('p', { style: { color: T.muted } }, 'Required values create a quote-share signal. The replacement pair adds an actual upfront cash comparison. Optional context never changes the arithmetic.')),
+              h('button', { type: 'button', className: 'ar-roi-reset', 'data-ar-roi-reset': 'true', 'data-ar-focusable': true,
+                onClick: resetDecision, style: btnGhost() }, 'Reset worksheet')),
+            renderDecisionStages(),
+            h('div', { className: 'ar-roi-presets', role: 'group', 'aria-label': 'Practice scenarios' },
+              REPAIR_DECISION_PRESETS.map(function(preset) {
+                var active = selectedPreset === preset.id;
+                return h('button', { key: preset.id, type: 'button', className: 'ar-roi-preset', 'data-ar-roi-preset': preset.id,
+                  'data-ar-focusable': true, 'aria-pressed': active ? 'true' : 'false', onClick: function() { applyPreset(preset); },
+                  style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text,
+                    borderColor: active ? T.accent : T.border }) }, preset.label);
+              })),
+            h('div', { className: 'ar-roi-form-grid', 'aria-labelledby': 'ar-roi-inputs-title' },
+              field('vehicle-value', n.vehicleValue, 'Current vehicle value ($)', 'Use a realistic private-party or trade-in value.', 1, 1000000, 0.01, true),
+              field('repair-cost', n.repairCost, 'Written repair quote ($)', 'Use the total with labor, parts, fees, and tax.', 1, 1000000, 0.01, true),
+              field('looming-cost', n.loomingCost, 'Known upcoming work ($)', 'Only work already identified; zero is valid.', 0, 1000000, 0.01, false),
+              field('replacement-cost', n.replacementCost, 'Comparable replacement price ($)', 'Price a vehicle that actually meets the same needs.', 1, 1000000, 0.01, false),
+              field('as-is-offer', n.asIsOffer, 'Actual as-is proceeds ($)', 'Use a written trade or purchase offer; zero is valid.', 0, 1000000, 0.01, false),
+              field('age', n.age, 'Vehicle age (years)', 'Condition context only; use a whole number.', 0, 100, 1, false),
+              field('miles', n.miles, 'Mileage', 'Service-history context only; use a whole number.', 0, 2000000, 1, false),
+              h('label', { className: 'ar-roi-field', 'data-ar-roi-field': 'attachment', htmlFor: 'ar-roi-attachment' },
+                h('span', { className: 'ar-roi-field-label', style: { color: T.text } }, 'Personal attachment'),
+                h('select', { id: 'ar-roi-attachment', value: n.attachment, 'data-ar-focusable': true,
+                  'aria-describedby': 'ar-roi-attachment-hint', onChange: function(e) { updMulti({ roiAttach: e.target.value, roiPreset: '' }); },
+                  style: { background: T.bg, color: T.text, border: '1px solid ' + T.border } },
+                  h('option', { value: 'low' }, 'Low — ready for a change'),
+                  h('option', { value: 'medium' }, 'Medium — either path could work'),
+                  h('option', { value: 'high' }, 'High — meaningful history or fit')),
+                h('span', { id: 'ar-roi-attachment-hint', className: 'ar-roi-field-hint', style: { color: T.muted } }, 'Shown as context only; never changes the signal.'))),
+            h('div', { className: 'ar-roi-form-status', 'data-ar-roi-status': n.state, role: n.state === 'invalid' ? 'alert' : 'status',
+              'aria-live': n.state === 'invalid' ? 'assertive' : 'polite', 'aria-atomic': 'true', style: { background: T.cardAlt, color: n.state === 'invalid' ? T.bad : T.muted } },
+              stateLabel(), n.compareState === 'partial' ? ' — enter both replacement fields or clear the partial entry.' : ''));
+        }
+        function renderDecisionHero() {
+          return h('section', { className: 'ar-roi-hero', 'data-ar-roi-hero': 'true', 'aria-labelledby': 'ar-roi-title',
+            style: { background: heroBg, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-roi-hero-copy' },
+              h('span', { className: 'ar-roi-eyebrow', style: { color: T.accentHi } }, 'Repair Decision Bay · evidence before decisions'),
+              h('h1', { id: 'ar-roi-title', className: 'ar-roi-title', style: { color: T.text } }, 'Compare the known costs. Name what is still unknown.'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.62 } }, 'Turn a written quote into a visual share of vehicle value, then compare it with a realistic replacement path. This is a planning aid—not a recommendation or appraisal.')),
+            h('div', { className: 'ar-roi-stats', 'aria-label': 'Decision worksheet summary' },
+              stat('readiness', ready ? (n.state === 'ready-compare' ? '2 paths' : '1 signal') : 'Not ready', 'comparison readiness', ready ? T.good : T.muted),
+              stat('quote-share', result ? result.repairPercent + '%' : '—', 'quote share of value', result ? signalColor(result.verdict) : T.muted),
+              stat('evidence', n.evidenceCount + '/4', 'evidence checks', n.evidenceCount === 4 ? T.good : T.accentHi)));
+        }
+        function renderDecisionEmpty() {
+          if (ready) return null;
+          return h('section', { className: 'ar-roi-empty', 'data-ar-roi-empty': n.state, role: 'region', 'aria-label': 'Decision bay status',
+            style: { background: T.cardAlt, border: '1px solid ' + (n.state === 'invalid' ? T.bad : T.border) } },
+            h('strong', { style: { color: n.state === 'invalid' ? T.bad : T.text } }, stateLabel()),
+            h('span', { style: { color: T.muted } }, emptyCopy));
+        }
+        function renderDecisionWorkbench() {
+          if (!ready || !result) return null;
+          var tone = signalColor(result.verdict);
+          var repairLaneTone = isContrast ? T.link : (isDark ? '#38bdf8' : '#0369a1');
+          var replacementLaneTone = isContrast ? T.accentHi : (isDark ? '#c084fc' : '#7e22ce');
+          var comparisonNote = 'Replacement cash stays unknown until both a comparable price and an actual as-is offer are entered.';
+          if (result.hasComparison && result.cashDifference === 0) {
+            comparisonNote = 'The two entered cash paths are equal before unentered ownership costs. This tie is not a recommendation.';
+          } else if (result.hasComparison) {
+            comparisonNote = 'Entered replacement cash is ' + money(Math.abs(result.cashDifference)) + (result.cashDifference > 0 ? ' more than' : ' less than') + ' entered known repair work. This difference is not a recommendation.';
+          }
+          return h('section', { className: 'ar-roi-workbench', 'data-ar-roi-workbench': 'true', 'data-ar-roi-print-sheet': 'true',
+            'aria-label': 'Repair and replacement cost workbench' },
+            h('article', { className: 'ar-roi-scene-card', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-roi-panel-head' },
+                h('div', null,
+                  h('h2', { id: 'ar-roi-scene-title', style: { color: T.text } }, 'Known-cost value rail'),
+                  h('p', { style: { color: T.muted } }, 'Percentages are shown to two decimals; bars stop at the 100% edge so the scale stays readable.')),
+                h('span', { className: 'ar-roi-chip', style: { color: tone, border: '1px solid ' + tone, background: T.cardAlt } }, 'Measured, not judged')),
+              h('div', { className: 'ar-roi-scene', 'data-ar-roi-scene': 'value-rail', role: 'group',
+                'aria-labelledby': 'ar-roi-scene-title', 'aria-describedby': 'ar-roi-scene-desc',
+                style: { background: 'radial-gradient(circle at 82% 4%,rgba(56,189,248,.18),transparent 28%),linear-gradient(145deg,#1e293b 0%,#0f172a 58%,#020617 100%)', border: '1px solid #475569' } },
+                h('div', { className: 'ar-roi-board', 'data-ar-roi-object': 'comparison-board', style: { background: 'rgba(2,6,23,.76)', border: '1px solid #475569', boxShadow: '0 18px 42px rgba(2,6,23,.42)' } },
+                  h('div', { className: 'ar-roi-scale', 'aria-hidden': 'true', style: { color: '#cbd5e1' } },
+                    [0, 30, 50, 70, 100].map(function(mark) { return h('span', { key: mark, style: { left: mark + '%' } }, mark + '%'); })),
+                  meter('quote-share', 'Written quote', money(n.repairCost.value) + ' ÷ ' + money(n.vehicleValue.value), result.repairPercent, tone, 'repair-block'),
+                  meter('known-exposure', 'Known repair work', money(result.totalKnown) + ' ÷ ' + money(n.vehicleValue.value), result.combinedPercent, result.combinedPercent >= 70 ? tone : repairLaneTone, 'looming-block'),
+                  h('div', { className: 'ar-roi-lanes', 'aria-label': 'Entered cash paths' },
+                    pathCard('repair', 'Repair path · entered known work', money(result.totalKnown), 'Written quote plus entered known upcoming work.', repairLaneTone),
+                    pathCard('replace', 'Replacement path · entered upfront cash', result.hasComparison ? money(result.replaceUpfront) : 'Not ready', result.hasComparison ? 'Comparable price minus actual as-is proceeds.' : 'Add both replacement fields to calculate it.', result.hasComparison ? replacementLaneTone : '#64748b')),
+                  h('p', { id: 'ar-roi-scene-desc', 'data-ar-roi-compare-gap': result.hasComparison ? 'ready' : n.compareState,
+                    style: { margin: '12px 0 0', color: '#cbd5e1', fontSize: 10, lineHeight: 1.5 } }, 'Reference markers at 30%, 50%, and 70% prompt deeper comparison; they do not decide the outcome. ' + comparisonNote)))),
+            h('aside', { className: 'ar-roi-result', 'data-ar-roi-result': 'true', 'aria-labelledby': 'ar-roi-signal-title',
+              style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-roi-signal', 'data-ar-roi-signal': result.verdict, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                style: { background: T.cardAlt, border: '2px solid ' + tone } },
+                h('span', { className: 'ar-roi-signal-kicker', style: { color: tone } }, 'Heuristic signal · not a recommendation'),
+                h('h2', { id: 'ar-roi-signal-title', style: { color: tone } }, signalLabel(result.verdict)),
+                h('p', { style: { color: T.text } }, result.summary)),
+              h('div', { className: 'ar-roi-lenses', role: 'group', 'aria-label': 'Decision evidence lenses' },
+                lensButton('cost', 'Cost ratios'), lensButton('condition', 'Condition'), lensButton('replacement', 'Replacement')),
+              h('div', { id: 'ar-roi-detail', className: 'ar-roi-detail', 'data-ar-roi-detail': n.lens, role: 'region',
+                'aria-label': 'Selected decision evidence',
+                style: { background: T.cardAlt, border: '1px solid ' + T.border } }, lensDetail())));
+        }
+        function renderDecisionEvidence() {
+          if (!ready) return null;
+          var checks = [
+            { id: 'diagnosis', label: 'Written diagnosis and quoted scope match' },
+            { id: 'secondQuote', label: 'Second quote or independent scope review' },
+            { id: 'warranty', label: 'Parts and labor warranty is written down' },
+            { id: 'asIsOffer', label: 'Actual as-is offer is documented' }
+          ];
+          var actions = [
+            { id: 'estimate', label: 'Decode the quote', primary: true },
+            { id: 'inspection', label: 'Inspect the whole vehicle' },
+            { id: 'usedcar', label: 'Check a replacement' },
+            { id: 'log', label: 'Record completed work' }
+          ];
+          return h('section', { className: 'ar-roi-evidence', 'data-ar-roi-evidence': 'true', 'aria-labelledby': 'ar-roi-evidence-title',
+            style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-roi-evidence-head' },
+              h('div', null,
+                h('h2', { id: 'ar-roi-evidence-title', style: { color: T.text } }, 'Evidence before authorization'),
+                h('p', { style: { color: T.muted } }, 'These checks improve the inputs; they do not mark a repair safe, complete, or approved.')),
+              h('span', { className: 'ar-roi-chip', 'aria-label': n.evidenceCount + ' of 4 evidence checks complete',
+                style: { color: n.evidenceCount === 4 ? T.good : T.accentHi, background: T.cardAlt, border: '1px solid ' + T.border } }, n.evidenceCount + ' of 4 checked')),
+            h('div', { className: 'ar-roi-evidence-list' },
+              checks.map(function(check) {
+                var checked = n.evidence[check.id] === true;
+                return h('label', { key: check.id, className: 'ar-roi-evidence-item', 'data-ar-roi-evidence-item': check.id,
+                  'data-ar-roi-evidence-state': checked ? 'checked' : 'unchecked',
+                  style: { background: T.cardAlt, color: T.text, border: '1px solid ' + (checked ? T.good : T.border) } },
+                  h('input', { type: 'checkbox', checked: checked, 'data-ar-roi-evidence-check': check.id,
+                    onChange: function(e) { updateEvidence(check.id, e.target.checked); } }),
+                  h('span', null, check.label));
+              })),
+            h('div', { className: 'ar-roi-actions', 'data-ar-roi-actions': 'true' },
+              actions.map(function(action) {
+                return h('button', { key: action.id, type: 'button', 'data-ar-focusable': true, 'data-ar-roi-next-step': action.id,
+                  onClick: function() { setView(action.id); }, style: action.primary ? btnPrimary() : btnSecondary() }, action.label + ' →');
+              })));
+        }
+        function renderDecisionReference() {
+          return h('aside', { className: 'ar-roi-reference', 'data-ar-roi-reference': 'true',
+            style: { background: T.cardAlt, color: T.muted, border: '1px solid ' + T.border } },
+            h('strong', { style: { color: T.text } }, 'Ground the worksheet in real evidence. '),
+            'AAA describes repair-versus-replace as an individual cost and condition decision, not a one-size-fits-all rule. Check a current value with ',
+            h('a', { href: 'https://www.kbb.com/whats-my-car-worth/', target: '_blank', rel: 'noopener noreferrer',
+              'aria-label': 'Kelley Blue Book vehicle value, opens in a new tab', style: { color: T.link } }, 'Kelley Blue Book'),
             ' or ',
-            h('a', { href: 'https://www.edmunds.com/appraisal/', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.autorepair.edmunds_appraisal', 'Edmunds appraisal')),
-            __alloT('stem.autorepair.use_the_private_party_sale_or_trade_in', '. Use the "Private Party Sale" or "Trade-in" value, NOT the dealer-retail price (which inflates your input).')),
-          disclaimerFooter()
-        );
+            h('a', { href: 'https://www.edmunds.com/appraisal/', target: '_blank', rel: 'noopener noreferrer',
+              'aria-label': 'Edmunds appraisal, opens in a new tab', style: { color: T.link } }, 'Edmunds'),
+            ', and review ',
+            h('a', { href: 'https://cluballiance.aaa.com/insurance/askanagent/auto-repair-replace', target: '_blank', rel: 'noopener noreferrer',
+              'aria-label': 'AAA repair versus replace guidance, opens in a new tab', style: { color: T.link } }, 'AAA repair-versus-replace guidance'),
+            '. Market values and ownership costs change; confirm every number before spending.');
+        }
+        var heroBg = isContrast ? T.bg : (isDark
+          ? 'linear-gradient(135deg,#201f35 0%,#172033 56%,#0f172a 100%)'
+          : 'linear-gradient(135deg,#fff 0%,#f8fafc 54%,#ede9fe 100%)');
+        var emptyCopy = n.state === 'invalid'
+          ? 'Correct the highlighted entries. The planner ignores malformed, negative, and out-of-range values.'
+          : (n.state === 'incomplete'
+              ? 'Enter both the vehicle value and written repair quote to activate the cost rail.'
+              : 'Start with the vehicle value and written repair quote, or load a practice scenario.');
+        return h('main', { className: 'ar-roi-shell', 'data-ar-roi-shell': 'true', 'data-ar-roi-state': n.state, 'data-ar-roi-compare-state': n.compareState, style: { color: T.text } },
+          backBar('💵 Repair Decision Lab', 'Repair Decision Lab navigation'),
+          renderDecisionHero(),
+          renderDecisionForm(),
+          renderDecisionEmpty(),
+          renderDecisionWorkbench(),
+          renderDecisionEvidence(),
+          renderDecisionReference(),
+          disclaimerFooter());
       }
 
       // ─────────────────────────────────────────
@@ -15427,7 +17985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           glossary: 'Glossary', diagnose: 'Diagnose', tree: 'Decision tree', damage: 'Damage ID game',
           lab: 'Hands-on lab simulator', repairbay: 'Repair Bay (3D)', safety: 'Safety modules', tools: 'Tool selection',
           repair: 'Repair scenarios', tyre: 'Change a tyre (3D)', log: 'Service log', estimate: 'Estimate decoder',
-          scams: 'Common scams', roi: 'Repair ROI calculator', usedcar: 'Buying a used car',
+          scams: 'Common scams', roi: 'Repair Decision Lab', usedcar: 'Buying a used car',
           career: 'Career path', race: 'Race mechanic'
         };
         var weekCounts = {};
@@ -16821,26 +19379,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         if (!kase) {
           UH3D.sync({ selected: null, dark: isDark, contrast: isContrast, onPick: null, onStatus: function (n) { upd('uh3dStatus', n); } });
           var solved = 0;
-          REPAIR_CASES.forEach(function (c) { if (done[c.id] && done[c.id].verdict === 'correct') solved++; });
+          var verifiedSolved = 0;
+          REPAIR_CASES.forEach(function (c) {
+            if (done[c.id] && done[c.id].verdict === 'correct') {
+              solved++;
+              if (done[c.id].verified === true) verifiedSolved++;
+            }
+          });
           return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.repair_bay', 'Repair Bay'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
-            backBar(__alloT('stem.autorepair.repair_bay_title', '🔧 Repair Bay — diagnose & fix')),
+            backBar(__alloT('stem.autorepair.repair_bay_title', '🔧 Repair Bay — diagnose, repair & verify')),
             h('p', { style: { margin: '0 0 6px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
-              __alloT('stem.autorepair.rb_intro', 'A car comes in with a complaint. Inspect it, run the tests that actually separate the possibilities, then commit to one repair. You are graded on your evidence and your safety, not just on getting the right answer.')),
+              __alloT('stem.autorepair.rb_intro', 'A car comes in with a complaint. Inspect it, run tests that separate the possibilities, commit to one repair, then prove the result before release. You are graded on evidence, verification, and safety—not just the right answer.')),
             h('div', { role: 'note', style: { margin: '0 0 14px', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.text, lineHeight: 1.55 } },
               h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.rb_rule_lead', 'The rule this bay teaches: ')),
               __alloT('stem.autorepair.rb_rule', 'diagnose before you replace. Every case has a wrong answer that looks obvious and costs the customer real money. Guessing right still scores badly here — because on a real car, a guess that happens to work teaches you nothing and the next one strands somebody.')),
-            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } }, solved + ' / ' + REPAIR_CASES.length + __alloT('stem.autorepair.rb_solved', ' cases correctly diagnosed')),
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } },
+              verifiedSolved + ' / ' + REPAIR_CASES.length + ' cases repair-verified' +
+              (solved > verifiedSolved ? ' · ' + (solved - verifiedSolved) + ' diagnosed in an earlier version' : '')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
               REPAIR_CASES.map(function (c) {
                 var rec = done[c.id];
+                var recState = rec && rec.verdict === 'correct'
+                  ? (rec.verified === true ? 'Verified' : 'Diagnosed')
+                  : (rec ? 'Revisit' : 'Not started');
                 return h('button', { key: c.id, 'data-ar-focusable': true,
-                  'aria-label': 'Open case: ' + c.title + (rec ? ' — previously graded ' + rec.grade : ''),
-                  onClick: function () { updMulti({ rbCase: c.id, rbEngine: 'off', rbFound: {}, rbSel: null, rbOpenPart: null, rbVerdict: null, rbViolations: [], rbNotes: '' }); arAnnounce('Case opened: ' + c.title); },
+                  'aria-label': 'Open case: ' + c.title + (rec ? ' — ' + recState + ', grade ' + rec.grade : ''),
+                  onClick: function () { updMulti({
+                    rbCase: c.id, rbEngine: 'off', rbFound: {}, rbSel: null,
+                    rbOpenPart: null, rbVerdict: null, rbViolations: [], rbNotes: '',
+                    rbMeterCase: null, rbMeterTest: null, rbMeterDraft: null,
+                    rbMeterFeedback: null, rbActiveTest: null,
+                    rbPhase: 'diagnose', rbVerifyChoice: null,
+                    rbVerifyResult: null, rbPendingGrade: null
+                  }); arAnnounce('Case opened: ' + c.title); },
                   style: { textAlign: 'left', padding: 13, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + (rec && rec.verdict === 'correct' ? T.good : T.border), color: T.text, cursor: 'pointer' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, c.icon),
                     h('strong', { style: { fontSize: 13.5, color: T.accentHi } }, c.title),
-                    rec && h('span', { style: { marginLeft: 'auto', fontSize: 12, fontWeight: 800, color: rec.verdict === 'correct' ? T.good : T.warn } }, rec.grade)
+                    rec && h('span', { style: { marginLeft: 'auto', fontSize: 11, fontWeight: 800, color: rec.verdict === 'correct' ? T.good : T.warn } }, recState + ' · ' + rec.grade)
                   ),
                   h('div', { style: { fontSize: 11.5, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } }, '“' + c.complaint.slice(0, 96) + (c.complaint.length > 96 ? '…' : '') + '”')
                 );
@@ -16859,6 +19435,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           : '';
         var verdict = d.rbVerdict || null;
         var violations = d.rbViolations || [];
+        var verification = kase.verification || null;
+        var rbPhase = typeof d.rbPhase === 'string' ? d.rbPhase : 'diagnose';
+        var verifyChoice = typeof d.rbVerifyChoice === 'string' ? d.rbVerifyChoice : '';
+        var verifyResult = d.rbVerifyResult && typeof d.rbVerifyResult === 'object'
+          ? d.rbVerifyResult
+          : null;
+        // Historical completion stays on the case card, but every new run is
+        // a fresh diagnostic attempt. Only this attempt's complete phase may
+        // render the fault as resolved or unlock the debrief.
+        var verifyPassed = rbPhase === 'complete' && !!(
+          done[kase.id] && done[kase.id].verdict === 'correct' && done[kase.id].verified === true
+        );
+        var meterTest = null;
+        if (d.rbMeterCase === kase.id && typeof d.rbMeterTest === 'string') {
+          for (var meterTestIndex = 0; meterTestIndex < kase.tests.length; meterTestIndex++) {
+            if (kase.tests[meterTestIndex].id === d.rbMeterTest &&
+                kase.tests[meterTestIndex].meter) {
+              meterTest = kase.tests[meterTestIndex];
+              break;
+            }
+          }
+        }
+        var meterDraft = meterTest && d.rbMeterDraft && typeof d.rbMeterDraft === 'object'
+          ? d.rbMeterDraft
+          : { mode: '', connection: '', load: '' };
+        var meterFeedback = meterTest && typeof d.rbMeterFeedback === 'string'
+          ? d.rbMeterFeedback
+          : '';
+        var meterSettled = !!(meterTest && found['t:' + meterTest.id]);
+        var meterConnectionContacts = {
+          'post-to-post': { red: 'positive-post', black: 'negative-post' },
+          'positive-joint': { red: 'positive-post', black: 'positive-clamp' },
+          'clamp-to-clamp': { red: 'positive-clamp', black: 'negative-clamp' }
+        };
+        var selectedMeterContacts = meterConnectionContacts[meterDraft.connection] || null;
+        var meterScene = meterTest ? Object.assign({}, meterTest.meter, {
+          testId: meterTest.id,
+          selectedMode: meterDraft.mode || '',
+          selectedConnection: meterDraft.connection || '',
+          selectedLoad: meterDraft.load || '',
+          redContact: selectedMeterContacts ? selectedMeterContacts.red : null,
+          blackContact: selectedMeterContacts ? selectedMeterContacts.black : null,
+          connectProbes: !!meterDraft.mode && meterDraft.mode !== 'resistance',
+          appliedLoad: meterSettled ? (meterDraft.load || 'none') : 'none',
+          settled: meterSettled
+        }) : null;
 
         var keyTotal = 0, keyGot = 0;
         Object.keys(kase.findings).forEach(function (pid) {
@@ -16917,15 +19539,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function runTest(t) {
           if (verdict) return;
           if (t.needs !== 'any' && t.needs !== engine) {
-            arAnnounce('Cannot run that test with the engine ' + engine);
+            arAnnounce(t.label + ' requires the engine ' + t.needs.toUpperCase() +
+              '. The engine is currently ' + engine.toUpperCase() + '.');
             return;
           }
           if (t.hazard && engine === 'running' && RB_RUNNING_HAZARD[t.hazard]) {
             logViolation(RB_RUNNING_HAZARD[t.hazard]);
           }
+          if (t.meter) {
+            var wasSettled = !!found['t:' + t.id];
+            var nextMeterDraft = wasSettled ? {
+              mode: t.meter.mode,
+              connection: t.meter.connection,
+              load: t.meter.load
+            } : ((d.rbMeterCase === kase.id && d.rbMeterTest === t.id &&
+              d.rbMeterDraft && typeof d.rbMeterDraft === 'object')
+                ? d.rbMeterDraft
+                : { mode: '', connection: '', load: '' });
+            updMulti({
+              rbMeterCase: kase.id,
+              rbMeterTest: t.id,
+              rbMeterDraft: nextMeterDraft,
+              rbMeterFeedback: '',
+              rbActiveTest: wasSettled ? t.id : null
+            });
+            if (UH3D.focus) UH3D.focus('battery');
+            arAnnounce(wasSettled
+              ? 'Meter reading reopened: ' + t.meter.reading + ' ' + t.meter.unit + '.'
+              : 'Meter setup opened for ' + t.label + '. Choose the mode, probe connection, and load before taking the reading.');
+            return;
+          }
           var nf = Object.assign({}, found); nf['t:' + t.id] = true;
-          upd('rbFound', nf);
+          updMulti({
+            rbFound: nf,
+            rbMeterCase: null,
+            rbMeterTest: null,
+            rbMeterDraft: null,
+            rbMeterFeedback: null,
+            rbActiveTest: null
+          });
           arAnnounce(t.label + '. ' + t.text);
+        }
+
+        function setMeterChoice(key, value) {
+          if (!meterTest || verdict) return;
+          var nextDraft = Object.assign({}, meterDraft);
+          nextDraft[key] = value;
+          updMulti({
+            rbMeterDraft: nextDraft,
+            rbMeterFeedback: '',
+            rbActiveTest: null
+          });
+        }
+
+        function takeMeterReading() {
+          if (!meterTest || !meterTest.meter || verdict) return;
+          var expected = meterTest.meter;
+          var error = '';
+          if (!meterDraft.mode || !meterDraft.connection || !meterDraft.load) {
+            error = 'Complete all three setup steps before taking the reading.';
+          } else if (meterDraft.mode !== expected.mode) {
+            error = 'Use DC volts for a 12-volt vehicle circuit. Resistance mode is not used on a powered circuit, and AC volts will not answer this test.';
+          } else if (meterDraft.connection !== expected.connection) {
+            error = expected.connection === 'positive-joint'
+              ? 'To measure the loss across one connection, place one probe on the positive POST and the other on its positive CLAMP.'
+              : 'To read battery voltage, place the red probe on the positive post and the black probe on the negative post.';
+          } else if (meterDraft.load !== expected.load) {
+            error = expected.load === 'starter'
+              ? 'This resistance only reveals itself while high current flows. Apply the cranking load, then measure across the joint.'
+              : (expected.load === 'carbon-pile'
+                ? 'A resting meter cannot measure battery capacity. Apply the separate half-CCA load tester for 15 seconds.'
+                : 'This reading is taken without an added load. Remove the load attachment and try again.');
+          }
+          if (error) {
+            upd('rbMeterFeedback', error);
+            arAnnounce('Meter setup needs correction. ' + error);
+            return;
+          }
+          var nextFound = Object.assign({}, found);
+          nextFound['t:' + meterTest.id] = true;
+          updMulti({
+            rbFound: nextFound,
+            rbMeterFeedback: '',
+            rbActiveTest: meterTest.id
+          });
+          if (UH3D.focus) UH3D.focus('battery');
+          arAnnounce('Reading settled: ' + expected.reading + ' ' + expected.unit +
+            '. Reference: ' + expected.reference + '. ' + expected.interpretation);
         }
 
         var costs = RB_COSTS[kase.id] || {};
@@ -16935,7 +19635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return null;
         }
 
-        function commit(choice) {
+        function calculateRepairGrade(choice) {
           var grade;
           if (choice.verdict !== 'correct') grade = 'F';
           else {
@@ -16945,18 +19645,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             else if (ratio >= 0.6) grade = 'B';
             else grade = 'C';
           }
+          return grade;
+        }
+
+        function commit(choice) {
+          var grade = calculateRepairGrade(choice);
+          if (choice.verdict === 'correct' && verification) {
+            updMulti({
+              rbVerdict: choice.id,
+              rbEngine: 'off',
+              rbOpenPart: null,
+              rbPhase: 'verify',
+              rbVerifyChoice: null,
+              rbVerifyResult: null,
+              rbPendingGrade: grade,
+              rbMeterCase: null,
+              rbMeterTest: null,
+              rbMeterDraft: null,
+              rbMeterFeedback: null,
+              rbActiveTest: null
+            });
+            arAnnounce('Diagnosis accepted: ' + choice.label + '. Grade pending. Prove the repair before release.');
+            if (typeof requestAnimationFrame === 'function' && typeof document !== 'undefined') {
+              requestAnimationFrame(function () {
+                var verificationHeading = document.getElementById('ar-repair-verify-title');
+                if (verificationHeading && verificationHeading.focus) verificationHeading.focus();
+              });
+            }
+            return;
+          }
           var nd = Object.assign({}, done);
-          nd[kase.id] = { verdict: choice.verdict, grade: grade, evidence: keyGot + '/' + keyTotal, violations: violations.length, cost: rbCost(choice) };
-          updMulti({ rbVerdict: choice.id, rbDone: nd });
+          nd[kase.id] = {
+            verdict: choice.verdict,
+            grade: grade,
+            evidence: keyGot + '/' + keyTotal,
+            violations: violations.length,
+            cost: rbCost(choice),
+            verified: false
+          };
+          updMulti({
+            rbVerdict: choice.id,
+            rbDone: nd,
+            rbPhase: 'debrief',
+            rbVerifyChoice: null,
+            rbVerifyResult: null,
+            rbPendingGrade: null
+          });
           arAnnounce('Committed: ' + choice.label + '. Grade ' + grade);
-          var allRight = REPAIR_CASES.every(function (c) { return nd[c.id] && nd[c.id].verdict === 'correct'; });
+        }
+
+        function selectVerificationPlan(planId) {
+          if (!verification || verifyPassed) return;
+          updMulti({ rbVerifyChoice: planId, rbVerifyResult: null });
+          arAnnounce('Verification plan selected. Run the proof test when ready.');
+        }
+
+        function runVerification() {
+          if (!verification || verifyPassed) return;
+          var selectedPlan = null;
+          for (var verifyIndex = 0; verifyIndex < verification.plans.length; verifyIndex++) {
+            if (verification.plans[verifyIndex].id === verifyChoice) {
+              selectedPlan = verification.plans[verifyIndex];
+              break;
+            }
+          }
+          if (!selectedPlan) {
+            upd('rbVerifyResult', {
+              id: '', adequate: false,
+              feedback: 'Choose one verification plan before running the proof test.'
+            });
+            arAnnounce('Choose a verification plan before running the proof test.');
+            return;
+          }
+          if (!selectedPlan.adequate) {
+            upd('rbVerifyResult', {
+              id: selectedPlan.id,
+              adequate: false,
+              feedback: selectedPlan.feedback
+            });
+            arAnnounce('Verification incomplete. ' + selectedPlan.feedback);
+            return;
+          }
+          var correct = correctChoice();
+          var verifiedGrade = typeof d.rbPendingGrade === 'string'
+            ? d.rbPendingGrade
+            : calculateRepairGrade(correct || { verdict: 'correct' });
+          var nd = Object.assign({}, done);
+          nd[kase.id] = {
+            verdict: 'correct',
+            grade: verifiedGrade,
+            evidence: keyGot + '/' + keyTotal,
+            violations: violations.length,
+            cost: correct ? rbCost(correct) : 0,
+            verified: true,
+            verificationId: selectedPlan.id,
+            verificationResult: verification.passObservation,
+            release: verification.release
+          };
+          updMulti({
+            rbDone: nd,
+            rbPhase: 'complete',
+            rbVerifyResult: {
+              id: selectedPlan.id,
+              adequate: true,
+              feedback: selectedPlan.feedback,
+              observation: verification.passObservation
+            },
+            rbPendingGrade: null
+          });
+          arAnnounce((verification.release === 'refer' ? 'Safe referral verified. ' : 'Repair verified. ') +
+            verification.passObservation + ' Grade ' + verifiedGrade + '.');
+          var allRight = REPAIR_CASES.every(function (c) {
+            return nd[c.id] && nd[c.id].verdict === 'correct';
+          });
           if (allRight) awardBadge('repair-bay-ace', __alloT('stem.autorepair.repair_bay_ace', 'Repair Bay Ace'));
         }
 
+        var meterSceneKey = meterScene
+          ? [
+              'meter', meterScene.testId || 'test',
+              meterScene.selectedMode || 'mode',
+              meterScene.selectedConnection || 'connection',
+              meterScene.selectedLoad || 'load',
+              meterScene.settled ? 'settled' : 'setup'
+            ].join('-')
+          : 'meter-none';
         UH3D.sync({
           selected: sel, marks: marks, dark: isDark, contrast: isContrast,
-          sceneKey: 'repair-bay-' + kase.id + '-' + engine + '-' + (openPart || 'closed'),
-          sceneProps: { engineRunning: engine === 'running', caseId: kase.id, openPart: openPart },
+          sceneKey: 'repair-bay-' + kase.id + '-' + engine + '-' +
+            (openPart || 'closed') + '-' + meterSceneKey + '-' +
+            (verifyPassed ? 'verified' : (rbPhase === 'verify' ? 'diagnosed' : 'unrepaired')),
+          sceneProps: {
+            engineRunning: engine === 'running',
+            caseId: kase.id,
+            openPart: openPart,
+            meter: meterScene,
+            repairState: verifyPassed ? 'verified' : (rbPhase === 'verify' ? 'diagnosed' : '')
+          },
           onPick: inspect,
           onStatus: function (n) { upd('uh3dStatus', n); }
         });
@@ -16972,6 +19797,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             break;
           }
         }
+        var meterModeOptions = [
+          { id: 'dcv', label: 'DC volts (V⎓)' },
+          { id: 'resistance', label: 'Resistance (Ω)' },
+          { id: 'acv', label: 'AC volts (V~)' }
+        ];
+        var meterConnectionOptions = [
+          { id: 'post-to-post', label: 'Red + post · Black − post' },
+          { id: 'positive-joint', label: 'Across + joint: post → clamp' },
+          { id: 'clamp-to-clamp', label: 'Red + clamp · Black − clamp' }
+        ];
+        var meterLoadOptions = [
+          { id: 'none', label: 'No added load' },
+          { id: 'starter', label: 'Cranking / starter load' },
+          { id: 'carbon-pile', label: 'Half-CCA load tester · 15 s' }
+        ];
+        var meterGroupTitleIds = {
+          mode: 'ar-meter-mode-title',
+          connection: 'ar-meter-connection-title',
+          load: 'ar-meter-load-title'
+        };
+        var meterDialDegrees = {
+          dcv: -36,
+          resistance: 3,
+          acv: 41
+        };
+        function meterOptionLabel(options, value, emptyLabel) {
+          for (var optionIndex = 0; optionIndex < options.length; optionIndex++) {
+            if (options[optionIndex].id === value) return options[optionIndex].label;
+          }
+          return emptyLabel;
+        }
+        function meterOptionButtons(field, options) {
+          return h('div', {
+            className: 'ar-meter-options',
+            role: 'group',
+            'aria-labelledby': meterGroupTitleIds[field]
+          },
+            options.map(function (option) {
+              var pressed = meterDraft[field] === option.id;
+              return h('button', {
+                key: option.id,
+                type: 'button',
+                'data-ar-focusable': true,
+                'data-ar-meter-choice': field + ':' + option.id,
+                'data-ar-probe-contact': field === 'connection' ? option.id : undefined,
+                className: 'ar-meter-option',
+                disabled: meterSettled || !!verdict,
+                'aria-pressed': pressed ? 'true' : 'false',
+                onClick: function () { setMeterChoice(field, option.id); }
+              },
+                field === 'connection' && h('span', {
+                  className: 'ar-meter-probe-dot ' +
+                    (option.id === 'positive-joint' ? 'ar-meter-probe-red' : 'ar-meter-probe-black'),
+                  'aria-hidden': 'true'
+                }),
+                option.label
+              );
+            })
+          );
+        }
         var rec = done[kase.id];
 
         function panel(title, body, tone) {
@@ -16985,7 +19870,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
             h('button', { 'data-ar-focusable': true, 'aria-label': 'Back to case list',
               onClick: function () {
-                updMulti({ rbCase: null, rbSel: null, rbOpenPart: null });
+                updMulti({
+                  rbCase: null, rbSel: null, rbOpenPart: null, rbVerdict: null,
+                  rbMeterCase: null, rbMeterTest: null, rbMeterDraft: null,
+                  rbMeterFeedback: null, rbActiveTest: null,
+                  rbPhase: 'diagnose', rbVerifyChoice: null,
+                  rbVerifyResult: null, rbPendingGrade: null
+                });
                 if (UH3D.returnToScene) UH3D.returnToScene();
               }, style: btnGhost() }, __alloT('stem.autorepair.rb_cases', '← Cases')),
             h('h1', { style: { margin: 0, fontSize: 17, color: T.text } },
@@ -17011,7 +19902,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 var next = engine === 'running' ? 'off' : 'running';
                 updMulti({
                   rbEngine: next,
-                  rbOpenPart: next === 'running' ? null : openPart
+                  rbOpenPart: next === 'running' ? null : openPart,
+                  rbMeterCase: null,
+                  rbMeterTest: null,
+                  rbMeterDraft: null,
+                  rbMeterFeedback: null,
+                  rbActiveTest: null
                 });
                 // Some cases need the engine run to produce evidence but are
                 // being damaged by running. That is a caution, not a
@@ -17132,7 +20028,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   var got = !!found['t:' + t.id];
                   var avail = (t.needs === 'any' || t.needs === engine);
                   return h('div', { key: t.id },
-                    h('button', { 'data-ar-focusable': true, disabled: !!verdict || !avail,
+                    h('button', { 'data-ar-focusable': true, disabled: !!verdict,
+                      'aria-disabled': (!!verdict || !avail) ? 'true' : 'false',
+                      'data-ar-meter-test-trigger': t.meter ? t.id : undefined,
                       'aria-label': t.label + (avail ? '' : ' — requires the engine ' + t.needs),
                       onClick: function () { runTest(t); },
                       style: { width: '100%', textAlign: 'left', padding: '8px 10px', borderRadius: 8, fontSize: 12.5,
@@ -17140,11 +20038,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                         background: got ? T.cardAlt : T.card, color: T.text,
                         border: '1px solid ' + (got ? T.good : T.border), fontWeight: got ? 700 : 600 } },
                       (got ? '✓ ' : '') + t.label,
+                      t.meter && !got && avail && h('span', { style: { display: 'block', fontSize: 10.5, color: T.accentHi, fontWeight: 700, marginTop: 2 } },
+                        'Digital meter setup required'),
                       !avail && h('span', { style: { display: 'block', fontSize: 10.5, color: T.dim, fontWeight: 600, marginTop: 2 } },
                         __alloT('stem.autorepair.rb_needs_engine', 'Needs the engine ') + t.needs.toUpperCase())),
                     got && h('div', { style: { padding: '7px 10px', fontSize: 12, color: T.text, lineHeight: 1.55, background: T.card, borderLeft: '3px solid ' + (t.key ? T.good : T.border), marginTop: 3, borderRadius: 4 } }, t.text)
                   );
                 })
+              ),
+              meterTest && h('section', {
+                className: 'ar-meter-bench',
+                'data-ar-meter-test': meterTest.id,
+                'data-ar-meter-state': meterSettled ? meterTest.meter.resultState : 'setup',
+                'aria-labelledby': 'ar-meter-bench-title'
+              },
+                h('div', { className: 'ar-meter-head' },
+                  h('div', { className: 'ar-meter-head-copy' },
+                    h('span', { className: 'ar-meter-eyebrow' }, 'Electrical diagnostic bench'),
+                    h('strong', { id: 'ar-meter-bench-title' }, meterTest.label)
+                  ),
+                  h('span', { className: 'ar-meter-state-chip' },
+                    meterSettled ? 'Reading settled' : 'Setup in progress')
+                ),
+                h('div', { className: 'ar-meter-device-row' },
+                  h('div', {
+                    className: 'ar-meter-device',
+                    role: 'img',
+                    'aria-label': meterSettled
+                      ? 'Digital multimeter reading ' + meterTest.meter.reading + ' ' +
+                        meterTest.meter.unit + '. Mode ' +
+                        meterOptionLabel(meterModeOptions, meterDraft.mode, 'not selected') + '.'
+                      : 'Digital multimeter awaiting a complete setup.'
+                  },
+                    h('div', { className: 'ar-meter-screen', 'aria-hidden': 'true' },
+                      h('div', { className: 'ar-meter-screen-main' },
+                        h('span', { className: 'ar-meter-value' },
+                          meterSettled ? meterTest.meter.reading : '– – – –'),
+                        h('span', { className: 'ar-meter-unit' },
+                          meterSettled ? meterTest.meter.unit : 'SETUP')
+                      ),
+                      h('div', { className: 'ar-meter-screen-sub' },
+                        h('span', null,
+                          meterOptionLabel(meterModeOptions, meterDraft.mode, 'Select mode')),
+                        h('span', null, meterSettled ? meterTest.meter.trend : engine.toUpperCase())
+                      )
+                    ),
+                    h('div', { className: 'ar-meter-hardware', 'aria-hidden': 'true' },
+                      h('span', {
+                        className: 'ar-meter-dial',
+                        'data-ar-meter-dial-mode': meterDraft.mode || 'off'
+                      },
+                        h('span', {
+                          className: 'ar-meter-dial-pointer',
+                          style: {
+                            transform: 'rotate(' +
+                              (Object.prototype.hasOwnProperty.call(meterDialDegrees, meterDraft.mode)
+                                ? meterDialDegrees[meterDraft.mode]
+                                : -70) + 'deg)'
+                          }
+                        })
+                      ),
+                      h('span', { className: 'ar-meter-ports' },
+                        h('span', { className: 'ar-meter-port' }, 'COM'),
+                        h('span', { className: 'ar-meter-port ar-meter-port-red' }, 'VΩ')
+                      )
+                    )
+                  ),
+                  h('div', { className: 'ar-meter-summary' },
+                    h('div', { className: 'ar-meter-summary-row' },
+                      h('span', null, 'Probe path'),
+                      h('strong', null,
+                        meterOptionLabel(meterConnectionOptions, meterDraft.connection, 'Not selected'))
+                    ),
+                    h('div', { className: 'ar-meter-summary-row' },
+                      h('span', null, 'Circuit load'),
+                      h('strong', null,
+                        meterOptionLabel(meterLoadOptions, meterDraft.load, 'Not selected'))
+                    ),
+                    h('div', { className: 'ar-meter-summary-row' },
+                      h('span', null, 'Reference'),
+                      h('p', null, meterTest.meter.reference)
+                    )
+                  )
+                ),
+                h('div', { className: 'ar-meter-setup', 'aria-label': 'Multimeter setup steps' },
+                  h('div', { className: 'ar-meter-step' },
+                    h('span', { id: 'ar-meter-mode-title', className: 'ar-meter-step-title' }, '1 · Select meter mode'),
+                    meterOptionButtons('mode', meterModeOptions)
+                  ),
+                  h('div', { className: 'ar-meter-step' },
+                    h('span', { id: 'ar-meter-connection-title', className: 'ar-meter-step-title' }, '2 · Place both probes'),
+                    meterOptionButtons('connection', meterConnectionOptions)
+                  ),
+                  h('div', { className: 'ar-meter-step' },
+                    h('span', { id: 'ar-meter-load-title', className: 'ar-meter-step-title' }, '3 · Set circuit load'),
+                    meterOptionButtons('load', meterLoadOptions)
+                  )
+                ),
+                h('div', { className: 'ar-meter-actions' },
+                  !meterSettled && h('button', {
+                    type: 'button',
+                    'data-ar-focusable': true,
+                    'data-ar-meter-action': 'take-reading',
+                    onClick: takeMeterReading,
+                    style: btnPrimary()
+                  }, 'Take reading'),
+                  h('button', {
+                    type: 'button',
+                    'data-ar-focusable': true,
+                    'data-ar-meter-action': 'focus',
+                    onClick: function () {
+                      if (UH3D.focus) UH3D.focus('battery');
+                      arAnnounce('Camera focused on the battery and diagnostic probes.');
+                    },
+                    style: btnSecondary()
+                  }, '◎ Focus measurement setup'),
+                  meterFeedback && h('p', {
+                    role: 'alert',
+                    className: 'ar-meter-feedback',
+                    'data-ar-meter-feedback': 'error'
+                  }, meterFeedback)
+                ),
+                meterSettled && h('output', {
+                  className: 'ar-meter-output',
+                  'data-ar-meter-reading': meterTest.meter.reading,
+                  'data-ar-meter-unit': meterTest.meter.unit,
+                  'data-ar-meter-result': meterTest.meter.resultState,
+                  'aria-labelledby': 'ar-meter-bench-title'
+                },
+                  h('strong', null, 'Reading: ' + meterTest.meter.reading + ' ' +
+                    meterTest.meter.unit + ' · ' + meterTest.meter.reference),
+                  h('span', null, meterTest.meter.interpretation),
+                  h('span', null,
+                    (meterDraft.load === 'starter'
+                      ? 'Engine not running; starter engaged for the cranking load. '
+                      : 'Engine state: ' + engine.toUpperCase() + '. ') +
+                    meterOptionLabel(meterConnectionOptions, meterDraft.connection, '') +
+                    '. ' + meterOptionLabel(meterLoadOptions, meterDraft.load, '') + '.')
+                )
               ),
               h('div', { style: { marginTop: 10, fontSize: 11.5, color: T.muted } },
                 h('strong', { style: { color: keyGot === keyTotal ? T.good : T.warn } }, __alloT('stem.autorepair.rb_evidence', 'Key evidence: ') + keyGot + ' / ' + keyTotal))
@@ -17201,7 +20232,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             )
           ),
 
-          chosen && h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (chosen.verdict === 'correct' ? T.good : T.bad) } },
+          chosen && chosen.verdict === 'correct' && verification && h('section', {
+            className: 'ar-rb-workflow',
+            'data-ar-repair-workflow': rbPhase,
+            'aria-labelledby': 'ar-rb-workflow-title'
+          },
+            h('div', { className: 'ar-rb-workflow-title' },
+              h('div', null,
+                h('strong', { id: 'ar-rb-workflow-title' }, 'Repair work order'),
+                h('span', null, 'Diagnosis alone does not release a vehicle. Complete the proof test and document the result.')),
+              h('span', { className: 'ar-rb-workflow-chip' }, verifyPassed ? 'Close-out complete' : 'Release hold')
+            ),
+            h('ol', { className: 'ar-rb-stage-list', 'aria-label': 'Repair close-out stages' },
+              h('li', {
+                className: 'ar-rb-stage',
+                'data-ar-work-order-stage': 'repair',
+                'data-ar-stage-state': 'complete'
+              },
+                h('span', { className: 'ar-rb-stage-index', 'aria-hidden': 'true' }, '✓'),
+                h('span', { className: 'ar-rb-stage-copy' },
+                  h('strong', null, verification.release === 'refer' ? 'Hold & refer' : 'Repair'),
+                  h('span', null, 'Correct action committed'))
+              ),
+              h('li', {
+                className: 'ar-rb-stage',
+                'data-ar-work-order-stage': 'verify',
+                'data-ar-stage-state': verifyPassed ? 'complete' : 'active',
+                'aria-current': verifyPassed ? undefined : 'step'
+              },
+                h('span', { className: 'ar-rb-stage-index', 'aria-hidden': 'true' }, verifyPassed ? '✓' : '2'),
+                h('span', { className: 'ar-rb-stage-copy' },
+                  h('strong', null, 'Prove the result'),
+                  h('span', null, verifyPassed ? 'Acceptance criteria met' : 'Choose an authentic proof test'))
+              ),
+              h('li', {
+                className: 'ar-rb-stage',
+                'data-ar-work-order-stage': 'document',
+                'data-ar-stage-state': verifyPassed ? 'complete' : 'locked'
+              },
+                h('span', { className: 'ar-rb-stage-index', 'aria-hidden': 'true' }, verifyPassed ? '✓' : '3'),
+                h('span', { className: 'ar-rb-stage-copy' },
+                  h('strong', null, verification.release === 'refer' ? 'Document & transfer' : 'Document & release'),
+                  h('span', null, verifyPassed ? 'Work order closed' : 'Unlocks after verification'))
+              )
+            )
+          ),
+
+          chosen && chosen.verdict === 'correct' && verification && h('section', {
+            className: 'ar-rb-verify',
+            'data-ar-repair-verify': kase.id,
+            'data-ar-verify-state': verifyPassed ? 'passed' : (verifyResult ? 'needs-correction' : 'ready'),
+            'aria-labelledby': 'ar-repair-verify-title'
+          },
+            h('div', { className: 'ar-rb-verify-head' },
+              h('span', { className: 'ar-rb-verify-icon', 'aria-hidden': 'true' }, verifyPassed ? (verification.release === 'refer' ? '🚛' : '✓') : '🧪'),
+              h('div', { className: 'ar-rb-verify-heading' },
+                h('span', { className: 'ar-rb-verify-eyebrow' }, 'Repair & verify · case-aware proof'),
+                h('h2', { id: 'ar-repair-verify-title', tabIndex: -1 },
+                  verifyPassed ? (verification.release === 'refer' ? 'Safe transfer verified' : 'Repair verified for release') : 'Prove the repair before release'),
+                h('p', null, verifyPassed
+                  ? 'The acceptance result is documented on the work order below.'
+                  : 'Pick the test that recreates the original demand and measures the repaired system against a specification.')),
+              h('span', { className: 'ar-rb-verify-status' }, verifyPassed ? 'Verified' : 'Proof required')
+            ),
+            h('div', { className: 'ar-rb-repair-card' },
+              h('div', { 'data-ar-repair-action': kase.id },
+                h('strong', null, verification.release === 'refer' ? 'Safe action completed' : 'Repair performed'),
+                h('p', null, verification.action)),
+              h('div', { id: 'ar-rb-verify-criterion', 'data-ar-acceptance-criterion': kase.id },
+                h('strong', null, 'Acceptance criterion'),
+                h('p', null, verification.criterion))
+            ),
+            h('fieldset', {
+              disabled: verifyPassed,
+              'aria-describedby': 'ar-rb-verify-criterion'
+            },
+              h('legend', null, verification.prompt),
+              h('div', { className: 'ar-rb-plan-list' },
+                verification.plans.map(function (plan) {
+                  var planInputId = 'ar-rb-verify-' + kase.id + '-' + plan.id;
+                  var planDetailId = planInputId + '-detail';
+                  return h('label', {
+                    key: plan.id,
+                    className: 'ar-rb-plan',
+                    'data-ar-verify-plan': plan.id,
+                    'data-ar-selected': verifyChoice === plan.id ? 'true' : 'false',
+                    htmlFor: planInputId
+                  },
+                    h('input', {
+                      id: planInputId,
+                      type: 'radio',
+                      name: 'ar-rb-verify-plan-' + kase.id,
+                      value: plan.id,
+                      checked: verifyChoice === plan.id,
+                      disabled: verifyPassed,
+                      'aria-describedby': planDetailId,
+                      onChange: function () { selectVerificationPlan(plan.id); }
+                    }),
+                    h('span', { className: 'ar-rb-plan-copy' },
+                      h('strong', null, plan.label),
+                      h('span', { id: planDetailId }, plan.detail))
+                  );
+                })
+              )
+            ),
+            !verifyPassed && h('div', { className: 'ar-rb-verify-actions' },
+              h('button', {
+                type: 'button',
+                'data-ar-focusable': true,
+                'data-ar-verify-action': 'run',
+                onClick: runVerification,
+                style: btnPrimary()
+              }, 'Run proof test'),
+              h('p', { className: 'ar-rb-verify-hint' },
+                'A symptom disappearing once is not proof. Recreate the demand, measure the result, and compare it with the acceptance limit.')
+            ),
+            h('output', {
+              id: 'ar-rb-verify-result',
+              className: 'ar-rb-verify-output',
+              'data-ar-verify-result': verifyResult ? (verifyResult.adequate ? 'pass' : 'retry') : 'waiting',
+              'data-ar-result': verifyResult && verifyResult.adequate ? 'pass' : 'pending',
+              'aria-live': 'polite'
+            },
+              h('strong', null, verifyResult
+                ? (verifyResult.adequate ? 'Acceptance criteria met' : 'Verification is not complete yet')
+                : 'Awaiting a verification plan'),
+              h('span', null, verifyResult
+                ? (verifyResult.adequate ? verification.passObservation : verifyResult.feedback)
+                : 'Select a plan and run the proof test. The vehicle remains on release hold.'),
+              verifyResult && verifyResult.adequate && h('span', null, verification.customerNote)
+            ),
+            verifyPassed && h('div', {
+              className: 'ar-rb-release',
+              'data-ar-release': verification.release
+            },
+              h('span', { className: 'ar-rb-release-icon', 'aria-hidden': 'true' }, verification.release === 'refer' ? '🚛' : '📋'),
+              h('div', null,
+                h('strong', null, verification.release === 'refer' ? 'NO ROAD RELEASE · tow/referral documented' : 'READY FOR RELEASE · result documented'),
+                h('span', null, verification.customerNote))
+            )
+          ),
+
+          chosen && (chosen.verdict !== 'correct' || verifyPassed) && h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (chosen.verdict === 'correct' ? T.good : T.bad) } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: chosen.verdict === 'correct' ? T.good : T.bad, marginBottom: 4 } },
               __alloT('stem.autorepair.rb_grade', 'Grade: ') + (rec ? rec.grade : '')),
             h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8 } },
@@ -17245,9 +20417,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               'bad'),
             panel(__alloT('stem.autorepair.rb_takeaway', 'What this case teaches'), kase.teaching, 'good'),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
-              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({ rbEngine: 'off', rbFound: {}, rbSel: null, rbVerdict: null, rbViolations: [], rbNotes: '' }); arAnnounce('Case reset'); },
+              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({
+                rbEngine: 'off', rbFound: {}, rbSel: null, rbOpenPart: null,
+                rbVerdict: null, rbViolations: [], rbNotes: '',
+                rbMeterCase: null, rbMeterTest: null, rbMeterDraft: null,
+                rbMeterFeedback: null, rbActiveTest: null,
+                rbPhase: 'diagnose', rbVerifyChoice: null,
+                rbVerifyResult: null, rbPendingGrade: null
+              }); arAnnounce('Case reset'); },
                 style: btnSecondary() }, __alloT('stem.autorepair.rb_retry', '↺ Run it again')),
-              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({ rbCase: null, rbSel: null }); },
+              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({
+                rbCase: null, rbSel: null, rbOpenPart: null, rbVerdict: null,
+                rbMeterCase: null, rbMeterTest: null, rbMeterDraft: null,
+                rbMeterFeedback: null, rbActiveTest: null,
+                rbPhase: 'diagnose', rbVerifyChoice: null,
+                rbVerifyResult: null, rbPendingGrade: null
+              }); },
                 style: btnPrimary() }, __alloT('stem.autorepair.rb_next_case', 'Next case →'))
             )
           ),
@@ -17568,7 +20753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             { id: 'winter-prep', icon: '🌨️', name: __alloT('stem.autorepair.maine_winter_prepped', 'Maine Winter Prepped'), how: 'Complete all 12 cold-weather prep items.' },
             { id: 'kit-packed', icon: '🎒', name: __alloT('stem.autorepair.trunk_kit_packed', 'Trunk Kit Packed'), how: 'Pack all 16 roadside-emergency kit items.' },
             { id: 'roadside-decisions', icon: '🚨', name: 'Roadside Decision Ready', how: 'Score at least 3 out of 4 in Roadside Emergency practice.' },
-            { id: 'first-car-30day', icon: '🚗', name: __alloT('stem.autorepair.30_day_plan_complete', '30-Day Plan Complete'), how: 'Finish all 17 first-car-owner tasks.' },
+            { id: 'first-car-30day', icon: '🚗', name: __alloT('stem.autorepair.30_day_plan_complete', 'First-Month Setup Reviewed'), how: 'Review all 18 first-car-owner setup items.' },
             { id: 'underhood-tour', icon: '🔎', name: __alloT('stem.autorepair.under_hood_navigator', 'Under-Hood Navigator'), how: 'Explore all 12 parts in the 3D under-hood tour.' },
             { id: 'tyre-change-clean', icon: '🛞', name: __alloT('stem.autorepair.roadside_ready', 'Roadside Ready'), how: 'Change a tyre with every step in the right order and no unsafe actions.' },
             { id: 'walkaround-pro', icon: '🚶', name: __alloT('stem.autorepair.walk_around_pro', 'Walk-Around Pro'), how: 'Complete all 10 pre-drive walk-around steps.' },

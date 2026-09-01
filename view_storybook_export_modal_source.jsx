@@ -12,6 +12,74 @@
  *   setShowStorybookExportModal              — direct setter
  *   t                                        — translation function
  */
+function _useStorybookDialogFocus(dialogRef, onClose, busy) {
+  const onCloseRef = React.useRef(onClose);
+  const busyRef = React.useRef(busy);
+  onCloseRef.current = onClose;
+  busyRef.current = busy;
+  React.useEffect(() => {
+    const root = dialogRef.current;
+    if (!root || typeof document === 'undefined') return undefined;
+    const previouslyFocused = document.activeElement;
+    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trap = { root };
+    trapStack.push(trap);
+    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const getFocusable = () => Array.from(root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
+    const handleKeyDown = (event) => {
+      if (!isTopTrap()) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!busyRef.current && typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        root.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!root.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    const focusable = getFocusable();
+    const requestedFocus = root.querySelector('[data-autofocus]');
+    const initialFocus = requestedFocus && focusable.includes(requestedFocus)
+      ? requestedFocus
+      : (focusable[0] || root);
+    initialFocus.focus();
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      const wasTopTrap = isTopTrap();
+      const trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body
+          && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
+    };
+  }, [dialogRef]);
+}
+
 function StorybookExportModal({
   handleExportStorybook,
   handleSetShowStorybookExportModalToFalse,
@@ -26,6 +94,8 @@ function StorybookExportModal({
   const [localProcessing, setLocalProcessing] = React.useState(false);
   const [progress, setProgress] = React.useState(null);
   const busy = !!isProcessing || localProcessing;
+  const dialogRef = React.useRef(null);
+  _useStorybookDialogFocus(dialogRef, handleSetShowStorybookExportModalToFalse, busy);
 
   const runExport = async (includeImages) => {
     if (busy) return;
@@ -64,7 +134,9 @@ function StorybookExportModal({
       }}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-300"
+        ref={dialogRef}
+        tabIndex={-1}
+        className="bg-white rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] max-w-md w-full overflow-y-auto p-6 animate-in zoom-in-95 duration-300"
         role="dialog"
         aria-modal="true"
         aria-labelledby="storybook-export-title"
@@ -91,6 +163,7 @@ function StorybookExportModal({
               id="storybook-include-narration"
               type="checkbox"
               checked={includeNarration}
+              data-autofocus="true"
               onChange={event => setIncludeNarration(event.target.checked)}
               disabled={busy}
               className="mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
@@ -107,7 +180,7 @@ function StorybookExportModal({
         <div className="flex flex-col gap-3">
           <button
             type="button"
-            aria-label={t('common.toggle_images')}
+            aria-label={t('adventure.include_images')}
             onClick={() => runExport(true)}
             disabled={busy}
             aria-busy={busy}
@@ -130,6 +203,7 @@ function StorybookExportModal({
           </button>
           <button
             type="button"
+            data-alloflow-close-on-escape="true"
             onClick={handleSetShowStorybookExportModalToFalse}
             disabled={busy}
             className="w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

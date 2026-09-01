@@ -370,6 +370,145 @@ describe('Money Math regression refinements', () => {
     await React.act(async () => { root.unmount(); });
   });
 
+  it('allows finance number fields to remain blank while editing and normalizes on blur', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({
+        _moneyMath: { tab: 'finance', finSub: 'loans', loanAmt: 25000, loanRate: 5, loanTerm: 60 },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    function setInputValue(input, value) {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      setter.call(input, value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    document.body.innerHTML = '<div id="money-root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    let amount = document.querySelector('input[aria-label="Loan amount"]');
+    await React.act(async () => { setInputValue(amount, ''); });
+    amount = document.querySelector('input[aria-label="Loan amount"]');
+    expect(amount.value).toBe('');
+    expect(latest._moneyMath.loanAmt).toBe(25000);
+    expect(latest._moneyMath.loanAmtDraft).toBe('');
+    expect(document.body.innerHTML).not.toMatch(/NaN|Infinity/);
+
+    await React.act(async () => { setInputValue(amount, '30000'); });
+    amount = document.querySelector('input[aria-label="Loan amount"]');
+    expect(amount.value).toBe('30000');
+    expect(latest._moneyMath.loanAmt).toBe(30000);
+    await React.act(async () => { amount.dispatchEvent(new FocusEvent('focusout', { bubbles: true })); });
+    expect(latest._moneyMath.loanAmtDraft).toBeNull();
+    expect(document.querySelector('input[aria-label="Loan amount"]').value).toBe('30000');
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('keeps the grocery weight field blank while editing and commits a valid replacement', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({
+        _moneyMath: {
+          tab: 'store', grade: 'elementary', currency: 'USD',
+          storeItems: [{ name: '\uD83C\uDF4E Apples', price: 1.49, cat: 'Produce', pricePer: 'lb' }],
+          weightItemIdx: 0, weightInput: 1, cart: [],
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    function setInputValue(input, value) {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      setter.call(input, value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    document.body.innerHTML = '<div id="money-root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+
+    let weight = document.querySelector('input[aria-label="Item weight in pounds"]');
+    expect(weight.value).toBe('1');
+    await React.act(async () => { setInputValue(weight, ''); });
+    weight = document.querySelector('input[aria-label="Item weight in pounds"]');
+    expect(weight.value).toBe('');
+    expect(latest._moneyMath.weightInput).toBe(1);
+    expect(latest._moneyMath.weightInputDraft).toBe('');
+
+    await React.act(async () => { weight.dispatchEvent(new FocusEvent('focusout', { bubbles: true })); });
+    weight = document.querySelector('input[aria-label="Item weight in pounds"]');
+    expect(weight.value).toBe('1');
+    expect(latest._moneyMath.weightInputDraft).toBeNull();
+
+    await React.act(async () => { setInputValue(weight, '2.5'); });
+    expect(latest._moneyMath.weightInput).toBe(2.5);
+    const addToCart = [...document.querySelectorAll('button')].find((button) => button.textContent.includes('\uD83D\uDED2 Add to Cart'));
+    await React.act(async () => { addToCart.click(); });
+    expect(latest._moneyMath.cart[0].weight).toBe(2.5);
+    expect(latest._moneyMath.weightInputDraft).toBeNull();
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('awards two consecutive identical generated quizzes as distinct rounds without double-crediting either', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    const awardXP = vi.fn();
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({ _moneyMath: { tab: 'finance', finSub: 'quiz' } });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState, awardXP }));
+    }
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0);
+    document.body.innerHTML = '<div id="money-root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+
+    await React.act(async () => { document.querySelector('button[aria-label="Gen Fin Quiz"]').click(); });
+    let correctChoice = [...document.querySelectorAll('button')].find((button) => button.textContent.startsWith('B. $1,967'));
+    await React.act(async () => { correctChoice.click(); });
+    let submit = document.querySelector('button[aria-label="Submit Answer"]');
+    await React.act(async () => { submit.click(); submit.click(); });
+    expect(awardXP).toHaveBeenCalledTimes(1);
+
+    await React.act(async () => { document.querySelector('button[aria-label="Next Question"]').click(); });
+    correctChoice = [...document.querySelectorAll('button')].find((button) => button.textContent.startsWith('B. $1,967'));
+    await React.act(async () => { correctChoice.click(); });
+    submit = document.querySelector('button[aria-label="Submit Answer"]');
+    await React.act(async () => { submit.click(); submit.click(); });
+    expect(awardXP).toHaveBeenCalledTimes(2);
+    expect(latest._moneyMath.moneyRoundIds['finance-quiz']).toBe(2);
+    random.mockRestore();
+    await React.act(async () => { root.unmount(); });
+  });
+
+  it('clears stale Unit Pricing feedback as soon as the learner changes the answer', async () => {
+    const tool = window.StemLab._registry.moneyMath;
+    let latest;
+    function App() {
+      const [state, setState] = React.useState({
+        _moneyMath: {
+          tab: 'cents', storeItems: [],
+          upItem: { name: 'Coffee', unit: 'oz' },
+          upA: { qty: 2, price: 4 }, upB: { qty: 4, price: 6 },
+          upAnswer: 'A', upFeedback: { ok: false, msg: 'Old result' },
+        },
+      });
+      latest = state;
+      return tool.render(makeCtx({ toolData: state, setToolData: setState }));
+    }
+    document.body.innerHTML = '<div id="money-root"></div>';
+    const root = ReactDOMClient.createRoot(document.getElementById('money-root'));
+    await React.act(async () => { root.render(React.createElement(App)); });
+    expect(document.body.textContent).toContain('Old result');
+    await React.act(async () => { document.querySelector('button[aria-label="Option B"]').click(); });
+    expect(latest._moneyMath.upAnswer).toBe('B');
+    expect(latest._moneyMath.upFeedback).toBeNull();
+    expect(document.body.textContent).not.toContain('Old result');
+    await React.act(async () => { root.unmount(); });
+  });
+
   it('routes all rewards through the scoped host helper and recognizes object feedback in the quest hook', () => {
     expect(src).not.toMatch(/\b(?:addXP|awardStemXP)\s*\(/);
     const hook = window.StemLab._registry.moneyMath.questHooks.find((item) => item.id === 'make_change');

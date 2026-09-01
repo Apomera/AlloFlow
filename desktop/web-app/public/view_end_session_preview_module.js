@@ -51,9 +51,23 @@ function EndSessionPreview({
     }
   };
   React.useEffect(() => {
+    let focusTimer = null;
     try {
-      if (dialogRef && dialogRef.current) dialogRef.current.focus();
+      focusTimer = window.setTimeout(() => {
+        try {
+          if (!dialogRef || !dialogRef.current) return;
+          dialogRef.current.scrollTop = 0;
+          dialogRef.current.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      }, 0);
     } catch (_) {}
+    return () => {
+      try {
+        if (focusTimer !== null) window.clearTimeout(focusTimer);
+      } catch (_) {}
+    };
   }, [dialogRef]);
 
   // Keep the extracted markup readable while exposing only the minimum host
@@ -89,14 +103,16 @@ function EndSessionPreview({
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "end-session-summary-title",
-    className: "bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100"
+    "aria-describedby": "end-session-summary-description",
+    className: "allo-docsuite bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 border-2 border-indigo-100"
   }, /*#__PURE__*/React.createElement("h2", {
     id: "end-session-summary-title",
     className: "text-xl font-black text-slate-800"
   }, tx('end_session.title', 'End session')), /*#__PURE__*/React.createElement("p", {
+    id: "end-session-summary-description",
     className: "text-sm text-slate-600 mt-1"
   }, tx('end_session.review_summary', 'Review the privacy-limited roster summary before temporary live-session data is deleted.')), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-3 gap-2 my-4"
+    className: "grid grid-cols-1 sm:grid-cols-3 gap-2 my-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-emerald-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
@@ -209,7 +225,6 @@ function EndSessionPreview({
       followUpResourceId: event.target.value,
       followUpStatus: ''
     } : prev),
-    "aria-label": tx('end_session.choose_follow_up_resource', 'Choose the student-safe resource to send to an evidence cohort'),
     className: "mt-1 min-h-11 w-full rounded-lg border border-violet-300 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
   }, (endSessionPreview.followUpResources || []).map(resource => /*#__PURE__*/React.createElement("option", {
     key: resource.id,
@@ -220,6 +235,13 @@ function EndSessionPreview({
     const connectedCount = resolveEndSessionCohortUids(cohort.codenames).length;
     const supportCohort = cohort.intent === 'support';
     const sending = endSessionPreview.followUpBusy === cohort.code;
+    const sendActionLabel = sending ? tx('end_session.sending', 'Sending...') : tx('end_session.send_to_count', 'Send to {count}', {
+      count: connectedCount
+    });
+    const sendActionDescription = tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}', {
+      count: connectedCount,
+      cohort: cohort.label
+    });
     return /*#__PURE__*/React.createElement("div", {
       key: cohort.code,
       className: 'rounded-lg border p-2 ' + (supportCohort ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50')
@@ -235,17 +257,13 @@ function EndSessionPreview({
       type: "button",
       disabled: !!endSessionPreview.followUpBusy || endSessionPreview.busy,
       onClick: () => sendEndSessionEvidenceCohort(cohort),
-      "aria-label": tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}', {
-        count: connectedCount,
-        cohort: cohort.label
-      }),
+      "aria-label": sendActionLabel + '. ' + sendActionDescription,
       className: "min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white hover:bg-violet-800 disabled:opacity-50"
-    }, sending ? tx('end_session.sending', 'Sending...') : tx('end_session.send_to_count', 'Send to {count}', {
-      count: connectedCount
-    }))), /*#__PURE__*/React.createElement("details", {
+    }, sendActionLabel)), /*#__PURE__*/React.createElement("details", {
       className: "mt-1"
     }, /*#__PURE__*/React.createElement("summary", {
-      className: "cursor-pointer text-[10px] font-bold text-slate-600"
+      tabIndex: 0,
+      className: "cursor-pointer rounded text-[10px] font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }, tx('end_session.review_codenames', 'Review codenames')), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 text-[10px] text-slate-600"
     }, (cohort.codenames || []).join(', '))));
@@ -299,7 +317,8 @@ function EndSessionPreview({
   }, tx('end_session.delivery_keep_open', 'The session can stay open while learners receive the resource. Ending removes temporary connections.'))), /*#__PURE__*/React.createElement("details", {
     className: "rounded-xl border border-slate-200 p-3 mb-4"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer text-sm font-bold text-slate-700"
+    tabIndex: 0,
+    className: "cursor-pointer rounded text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
   }, tx('end_session.what_will_be_saved', 'What will be saved?')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-2"
   }, tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.'))), /*#__PURE__*/React.createElement("label", {
@@ -338,7 +357,7 @@ function EndSessionPreview({
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     onClick: () => completeLiveSessionEnd(true, true),
-    className: "px-4 py-2.5 rounded-xl bg-amber-600 text-white font-bold shadow-lg disabled:opacity-50"
+    className: "px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold shadow-lg hover:bg-amber-800 disabled:opacity-50"
   }, endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,

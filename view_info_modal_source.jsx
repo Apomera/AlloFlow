@@ -299,12 +299,12 @@ function FeaturedCard({ item }) {
   const ExternalLink = window.ExternalLink || noop;
   const Code = window.Code || noop;
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col shadow-sm hover:shadow-md hover:border-indigo-200 transition-all">
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <h5 className="font-bold text-slate-800 text-sm leading-tight">{item.name}</h5>
-        <span className="shrink-0 text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">{item.license}</span>
+    <div className="min-w-0 bg-white rounded-xl border border-slate-200 p-4 flex flex-col shadow-sm hover:shadow-md hover:border-indigo-200 transition-all">
+      <div className="min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-1">
+        <h5 className="min-w-0 break-words font-bold text-slate-800 text-sm leading-tight">{item.name}</h5>
+        <span className="max-w-full self-start sm:self-auto text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words">{item.license}</span>
       </div>
-      {item.owner && <p className="text-[11px] text-slate-400 font-medium mb-2">{item.owner}</p>}
+      {item.owner && <p className="text-[11px] text-slate-600 font-medium mb-2">{item.owner}</p>}
       <p className="text-xs text-slate-600 leading-relaxed flex-1">{item.blurb}</p>
       <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
         {item.site && (
@@ -433,7 +433,7 @@ function OpenSourceTab({ t }) {
         </div>
       </details>
 
-      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+      <p className="text-[10px] text-slate-600 leading-relaxed pt-1 border-t border-slate-200">
         {t('about.oss_credits_footer') || 'Hosted AI features use the provider configured in AI settings (such as Gemini, OpenAI, Claude, or an OpenAI-compatible endpoint); those services are not bundled software. Software libraries above are credited with their copyright notices in THIRD_PARTY_LICENSES.md, and full verbatim license texts ship with the source in the licenses/ folder — bundled into the School Box desktop app too. Reading works retain title-level attribution, source, and rights notices in the catalog and reader. Spot something we should credit or correct? Let us know.'}
       </p>
     </div>
@@ -910,9 +910,9 @@ const ATLAS_HUBS = [
 // has a strict prerequisite relationship.
 const ATLAS_HUB_VISUALS = {
   'Documents & Literacy': { eyebrow: 'Learning-resource flow', description: 'Turn source material into clear, supported, accessible resources.', route: ['Source', 'Adapt', 'Support', 'Share'], surface: 'from-indigo-50 to-violet-50', border: 'border-indigo-200', accent: 'bg-indigo-600', text: 'text-indigo-900', launchLabel: 'Open Document Builder', launchQuery: 'document builder' },
-  'STEAM Lab': { eyebrow: 'Exploration constellation', description: 'Move among mathematical, scientific, engineering, and technology experiences.', route: ['Math', 'Science', 'Engineering', 'Technology'], surface: 'from-sky-50 to-cyan-50', border: 'border-sky-200', accent: 'bg-sky-600', text: 'text-sky-900', launchLabel: 'Open STEAM Lab', launchQuery: 'stem lab' },
+  'STEAM Lab': { eyebrow: 'Exploration constellation', description: 'Move among mathematical, scientific, engineering, and technology experiences.', route: ['Math', 'Science', 'Engineering', 'Technology'], surface: 'from-sky-50 to-cyan-50', border: 'border-sky-200', accent: 'bg-sky-700', text: 'text-sky-900', launchLabel: 'Open STEAM Lab', launchQuery: 'stem lab' },
   'SEL Hub': { eyebrow: 'Growth map', description: 'Connect understanding yourself with caring for others and community.', route: ['Self', 'Regulate', 'Relate', 'Contribute'], surface: 'from-rose-50 to-orange-50', border: 'border-rose-200', accent: 'bg-rose-600', text: 'text-rose-900', launchLabel: 'Open SEL Hub', launchQuery: 'sel hub' },
-  'Research Hub': { eyebrow: 'Inquiry cycle', description: 'Follow an idea from a strong question to evidence-based communication.', route: ['Question', 'Investigate', 'Make sense', 'Share'], surface: 'from-amber-50 to-yellow-50', border: 'border-amber-200', accent: 'bg-amber-600', text: 'text-amber-900', launchLabel: 'Open Research Hub', launchQuery: 'research hub' },
+  'Research Hub': { eyebrow: 'Inquiry cycle', description: 'Follow an idea from a strong question to evidence-based communication.', route: ['Question', 'Investigate', 'Make sense', 'Share'], surface: 'from-amber-50 to-yellow-50', border: 'border-amber-200', accent: 'bg-amber-700', text: 'text-amber-900', launchLabel: 'Open Research Hub', launchQuery: 'research hub' },
   'Studios & Surfaces': { eyebrow: 'Creative toolkit', description: 'Open flexible spaces for making, organizing, presenting, and reflecting.', route: ['Create', 'Organize', 'Present', 'Reflect'], surface: 'from-fuchsia-50 to-purple-50', border: 'border-fuchsia-200', accent: 'bg-fuchsia-600', text: 'text-fuchsia-900', launchLabel: 'Open Educator Hub', launchQuery: 'educator hub' },
 };
 
@@ -1008,11 +1008,11 @@ function AtlasHubRoute({ hub, visual }) {
         <p className="text-[10px] text-slate-500">A guide, not a required sequence</p>
       </div>
       <p className="sr-only">{hub.hub} overview: {visual.route.join(', ')}.</p>
-      <div aria-hidden="true" className="flex items-center gap-1.5">
+      <div aria-hidden="true" className="grid grid-cols-1 gap-1.5 sm:flex sm:items-center">
         {visual.route.map((step, index) => (
           <React.Fragment key={step}>
-            {index > 0 && <span className="h-px min-w-2 flex-1 bg-slate-300" />}
-            <span className="min-w-0 flex-1 rounded-lg border border-white/90 bg-white/80 px-2 py-1.5 text-center text-[10px] font-bold text-slate-700 shadow-sm">
+            {index > 0 && <span className="hidden sm:block h-px min-w-2 flex-1 bg-slate-300" />}
+            <span className="min-w-0 sm:flex-1 whitespace-normal break-words rounded-lg border border-white/90 bg-white/80 px-2 py-1.5 text-center text-[10px] font-bold text-slate-700 shadow-sm">
               {step}
             </span>
           </React.Fragment>
@@ -1086,7 +1086,7 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
             <span className="font-bold text-xs leading-tight text-slate-800 block"><AtlasHighlight text={cat.name} query={query} /></span>
             <span className="text-[10px] leading-relaxed text-slate-500 block mt-0.5"><AtlasHighlight text={areaDescription} query={query} /></span>
             <span className="block mt-2">
-              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-1">Area focus</span>
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-600 block mb-1">Area focus</span>
               <span role="list" aria-label={cat.name + ' focus'} className="flex flex-wrap gap-1">
                 {areaLens.map((focus) => (
                   <span role="listitem" key={focus} className={'inline-flex items-center gap-1 rounded-full border ' + visual.border + ' bg-white px-1.5 py-0.5 text-[9px] font-bold text-slate-600'}>
@@ -1097,7 +1097,7 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
               </span>
             </span>
             <span className="text-[9px] leading-relaxed text-slate-500 block mt-1.5">
-              <span className="font-black uppercase tracking-wider text-slate-400">Examples: </span>
+              <span className="font-black uppercase tracking-wider text-slate-600">Examples: </span>
               {sampleTools.join(' / ')}
             </span>
           </span>
@@ -1107,7 +1107,7 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
         </span>
       </summary>
       <div className="px-3 pb-3 pt-1 border-t border-slate-200/80">
-        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-2">Catalog entries in this area</p>
+        <p className="text-[9px] font-black uppercase tracking-wider text-slate-600 mb-2">Catalog entries in this area</p>
         <div role="list" className="flex flex-wrap gap-1.5" aria-label={cat.name + ' catalog entries'}>
           {cat.tools.map((tool, i) => (
             <span role="listitem" key={tool + i} className="text-[10px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5">
@@ -1134,17 +1134,17 @@ function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query, onLau
       onToggle={(event) => onToggle(hub.hub, event.currentTarget.open)}
       className={'scroll-mt-4 bg-white rounded-xl border ' + visual.border + ' shadow-sm group'}
     >
-      <summary className="min-h-11 cursor-pointer select-none p-4 flex items-center gap-2 hover:bg-slate-50 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
-        <span className={'w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br ' + visual.surface + ' border ' + visual.border + ' flex items-center justify-center text-xl leading-none'} aria-hidden="true">{hub.icon}</span>
-        <span className="min-w-0 flex-1">
+      <summary className="min-h-11 cursor-pointer select-none p-4 grid grid-cols-[auto_minmax(0,1fr)_auto] items-start sm:flex sm:items-center gap-2 hover:bg-slate-50 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
+        <span className={'col-start-1 row-start-1 w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br ' + visual.surface + ' border ' + visual.border + ' flex items-center justify-center text-xl leading-none'} aria-hidden="true">{hub.icon}</span>
+        <span className="col-start-2 row-start-1 min-w-0 flex-1">
           <span className="font-bold text-slate-800 text-sm block"><AtlasHighlight text={hub.hub} query={query} /></span>
           <span className="text-[11px] text-slate-500 font-normal leading-snug block mt-0.5"><AtlasHighlight text={visual.description} query={query} /></span>
-          <span className="text-[9px] font-bold text-slate-400 leading-snug block mt-1"><AtlasHighlight text={hub.sourceLabel || 'Curated product index'} query={query} /></span>
+          <span className="text-[9px] font-bold text-slate-600 leading-snug block mt-1"><AtlasHighlight text={hub.sourceLabel || 'Curated product index'} query={query} /></span>
         </span>
-        <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap">
+        <span className="col-start-2 col-span-2 row-start-2 mt-2 justify-self-start max-w-full text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words sm:mt-0 sm:shrink-0 sm:whitespace-nowrap">
           {isFiltered ? resultLabel : hub.total + ' entries' + (catCount > 1 ? ' / ' + catCount + ' areas' : '')}
         </span>
-        <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform motion-reduce:transition-none text-xs">&gt;</span>
+        <span aria-hidden="true" className="col-start-3 row-start-1 self-center text-slate-400 group-open:rotate-90 transition-transform motion-reduce:transition-none text-xs">&gt;</span>
       </summary>
       <div className="px-4 pb-4 pt-0 space-y-4">
         <AtlasHubRoute hub={hub} visual={visual} />
@@ -1210,7 +1210,6 @@ function AtlasLandscape({ hubs, onChooseHub }) {
             <button
               key={hub.hub}
               type="button"
-              aria-controls={atlasHubId(hub.hub)}
               aria-label={hub.hub + ': ' + hub.total + ' catalog entries across ' + catCount + ' ' + (catCount === 1 ? 'area' : 'areas') + '. ' + (hub.sourceLabel || 'Curated product index') + '. Open directory.'}
               onClick={() => onChooseHub(hub.hub)}
               className={'min-h-11 text-left rounded-xl border ' + visual.border + ' bg-gradient-to-br ' + visual.surface + ' p-3 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ' + (isLastOdd ? 'sm:col-span-2 sm:w-[calc(50%-0.3125rem)] sm:justify-self-center' : '')}
@@ -1287,7 +1286,7 @@ function AtlasJourneys({ onChooseHub }) {
     <section aria-labelledby="atlas-journeys-title" className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Cross-hub connections</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Cross-hub connections</p>
           <h5 id="atlas-journeys-title" className="text-sm font-black text-slate-900 mt-0.5">Common routes through AlloFlow</h5>
         </div>
         <p className="text-[10px] text-slate-500">Examples only - mix and match freely.</p>
@@ -1491,6 +1490,7 @@ function AtlasTab({ t, onRequestClose }) {
               <input
                 id="atlas-search-input"
                 type="search"
+                data-info-modal-escape-clears="true"
                 value={atlasQuery}
                 onChange={(event) => setAtlasQuery(event.target.value)}
                 onKeyDown={(event) => {
@@ -1502,7 +1502,7 @@ function AtlasTab({ t, onRequestClose }) {
                 }}
                 aria-describedby="atlas-search-status"
                 placeholder="Try 'fractions', 'self-regulation', or 'research'..."
-                className="w-full min-h-11 appearance-none rounded-lg border border-slate-300 bg-slate-50 pl-9 pr-12 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:border-indigo-600"
+                className="w-full min-h-11 appearance-none rounded-lg border border-slate-300 bg-slate-50 pl-9 pr-12 py-2 text-sm text-slate-800 placeholder:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:border-indigo-600"
               />
               {atlasQuery && (
                 <button
@@ -1525,7 +1525,7 @@ function AtlasTab({ t, onRequestClose }) {
           </section>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-            <h5 id="atlas-directory-title" className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Catalog directory</h5>
+            <h5 id="atlas-directory-title" className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-600">Catalog directory</h5>
             <div role="group" aria-label="Atlas hub visibility" className="flex flex-wrap gap-1.5">
               <button
                 type="button"
@@ -1580,7 +1580,7 @@ function AtlasTab({ t, onRequestClose }) {
         </>
       )}
 
-      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+      <p className="text-[10px] text-slate-600 leading-relaxed pt-1 border-t border-slate-200">
         {t('about.atlas_footer') || 'Registry-backed sections are generated from current catalogs; curated and mixed sections are labeled in the map. Counts are searchable catalog entries, not unique-tool totals. An automated freshness check flags generated-data drift.'}
       </p>
     </div>
@@ -1698,7 +1698,7 @@ function PrivacyTab({ t }) {
         </ul>
       </div>
 
-      <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
+      <p className="text-[10px] text-slate-600 leading-relaxed pt-1 border-t border-slate-200">
         {t('about.privacy_footer') || 'This is a plain-language product summary, not legal advice or a compliance certification. Your institution remains responsible for its FERPA and privacy determinations, provider agreements, configuration, consent, retention, and deletion practices. Provider terms can change; review the linked current policies.'}
       </p>
     </div>
@@ -1723,7 +1723,7 @@ function AccessibilityNote({ t }) {
         <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Keyboard navigation and screen-reader labels</span></li>
         <li className="flex items-start gap-1.5"><span aria-hidden="true" className="text-teal-600 font-bold shrink-0">✓</span><span>Braille (.brf) export — Grade 1, with contracted UEB Grade 2 where available — plus tagged PDF/UA export</span></li>
       </ul>
-      <p className="text-[10px] text-slate-400 leading-relaxed mt-2">
+      <p className="text-[10px] text-slate-600 leading-relaxed mt-2">
         {t('about.a11y_footer') || 'Found a barrier? Tell us — accessibility bugs jump the queue.'}
       </p>
     </div>
@@ -1782,10 +1782,14 @@ function InfoModal({
   const MessageCircleQuestion = window.MessageCircleQuestion || noop;
   const MonitorPlay = window.MonitorPlay || noop;
 
+  const dialogRef = React.useRef(null);
+  const tabListRef = React.useRef(null);
+  const panelRef = React.useRef(null);
   const [selectedFeature, setSelectedFeature] = React.useState(null);
   const [featureQuery, setFeatureQuery] = React.useState('');
   const featureBackRef = React.useRef(null);
   const featureReturnFocusRef = React.useRef(null);
+  const featureReturnFocusKeyRef = React.useRef('');
   const featureDetailsWereOpenRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -1794,6 +1798,7 @@ function InfoModal({
 
   const openFeatureDetails = (feature, categoryName, trigger) => {
     featureReturnFocusRef.current = trigger;
+    featureReturnFocusKeyRef.current = String(feature?.title || '');
     setSelectedFeature({ ...feature, categoryName });
   };
 
@@ -1834,15 +1839,16 @@ function InfoModal({
     if (!featureDetailsWereOpenRef.current) return undefined;
     featureDetailsWereOpenRef.current = false;
     const frame = window.requestAnimationFrame(() => {
-      const trigger = featureReturnFocusRef.current;
+      const originalTrigger = featureReturnFocusRef.current;
+      const trigger = originalTrigger?.isConnected
+        ? originalTrigger
+        : Array.from(panelRef.current?.querySelectorAll('[data-feature-guide-key]') || [])
+          .find((candidate) => candidate.getAttribute('data-feature-guide-key') === featureReturnFocusKeyRef.current);
       if (trigger?.isConnected && typeof trigger.focus === 'function') trigger.focus();
     });
     return () => window.cancelAnimationFrame(frame);
   }, [selectedFeature]);
 
-  const dialogRef = React.useRef(null);
-  const tabListRef = React.useRef(null);
-  const panelRef = React.useRef(null);
   const closeHandlerRef = React.useRef(handleSetShowInfoModalToFalse);
   closeHandlerRef.current = handleSetShowInfoModalToFalse;
 
@@ -1875,6 +1881,8 @@ function InfoModal({
 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
+        const escapeClearTarget = event.target?.closest?.('[data-info-modal-escape-clears="true"]');
+        if (escapeClearTarget?.value) return;
         event.preventDefault();
         closeHandlerRef.current?.();
         return;
@@ -2244,7 +2252,7 @@ function InfoModal({
                     }[selectedFeature.icon] || Sparkles, { size: 24, 'aria-hidden': true })}
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-75 block">
+                    <span className="text-[10px] font-bold uppercase tracking-wider block">
                       {selectedFeature.categoryName}
                     </span>
                     <h4 className="font-extrabold text-xl leading-none mt-1">{selectedFeature.title}</h4>
@@ -2369,6 +2377,7 @@ function InfoModal({
                     <input
                       id="feature-guide-search"
                       type="search"
+                      data-info-modal-escape-clears="true"
                       value={featureQuery}
                       onChange={(event) => setFeatureQuery(event.target.value)}
                       onKeyDown={(event) => {
@@ -2379,7 +2388,7 @@ function InfoModal({
                         }
                       }}
                       placeholder="Search by feature, category, or purpose…"
-                      className="w-full min-h-11 rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full min-h-11 rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   {featureQuery && (
@@ -2420,13 +2429,14 @@ function InfoModal({
                           <button
                             type="button"
                             key={feature.title || idx}
+                            data-feature-guide-key={feature.title}
                             onClick={(event) => openFeatureDetails(feature, categoryTitle, event.currentTarget)}
                             className={`w-full min-h-11 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${colorClass}`}
                           >
                             <span className="font-bold flex items-center gap-2 mb-1 text-sm">
                               <IconComponent size={16} aria-hidden="true"/> {feature.title}
                             </span>
-                            <span className="block text-xs opacity-90 leading-snug">{feature.desc}</span>
+                            <span className="block text-xs leading-snug">{feature.desc}</span>
                           </button>
                         );
                       })}

@@ -33,7 +33,7 @@ function evidenceApi() {
 }
 
 describe('Pets mini-game evidence and completion policy', () => {
-  it('allowlists only aggregate Toxic Foods and Lifespan attempt evidence', () => {
+  it('allowlists only aggregate scored mini-game attempt evidence', () => {
     const { normalizeEvidenceRecords } = evidenceApi();
     const privateText = 'PRIVATE SELECTED ANSWER OR COACHING';
     const records = Array.from(normalizeEvidenceRecords([
@@ -67,9 +67,24 @@ describe('Pets mini-game evidence and completion policy', () => {
           rationale: privateText,
         },
       },
+      {
+        moduleId: 'zoonoses',
+        kind: 'activity',
+        recordedAt: '2026-08-26T12:02:00.000Z',
+        details: {
+          score: 3,
+          total: 4,
+          scorePct: 75,
+          bestPct: 75,
+          needsPractice: 1,
+          criterionMet: true,
+          answers: [1, 2, 0, 3],
+          scenarioText: privateText,
+        },
+      },
     ]));
 
-    expect(records).toHaveLength(2);
+    expect(records).toHaveLength(3);
     expect(records[0]).toMatchObject({
       moduleId: 'nutrition',
       kind: 'activity',
@@ -92,17 +107,32 @@ describe('Pets mini-game evidence and completion policy', () => {
         criterionMet: false,
       },
     });
+    expect(records[2]).toMatchObject({
+      moduleId: 'zoonoses',
+      kind: 'activity',
+      details: {
+        score: 3,
+        total: 4,
+        scorePct: 75,
+        bestPct: 75,
+        needsPractice: 1,
+        criterionMet: true,
+      },
+    });
     expect(Object.keys(records[0].details).sort()).toEqual([
       'criterionMet', 'needsPractice', 'score', 'scorePct', 'total',
     ]);
     expect(Object.keys(records[1].details).sort()).toEqual([
       'criterionMet', 'needsPractice', 'score', 'scorePct', 'total',
     ]);
+    expect(Object.keys(records[2].details).sort()).toEqual([
+      'bestPct', 'criterionMet', 'needsPractice', 'score', 'scorePct', 'total',
+    ]);
     expect(JSON.stringify(records)).not.toContain(privateText);
   });
 
-  it('records both ten-item activity boundaries with complete aggregate metadata', () => {
-    for (const moduleId of ['nutrition', 'lifespan']) {
+  it('records every scored mini-game boundary with complete aggregate metadata', () => {
+    for (const moduleId of ['nutrition', 'zoonoses', 'lifespan']) {
       const marker = "completeModule('" + moduleId + "'";
       const start = SRC.indexOf(marker);
       expect(start, moduleId + ' completion call').toBeGreaterThan(-1);
@@ -116,5 +146,25 @@ describe('Pets mini-game evidence and completion policy', () => {
       expect(call).toMatch(/criterionMet\s*:/);
       expect(call).not.toMatch(/responses\s*:|selectedAnswer\s*:|coaching\s*:|rationale\s*:/);
     }
+  });
+
+  it('activity-gates Zoonoses alongside the other scored mini-games', () => {
+    const gateSource = between(
+      SRC,
+      'var PETS_ACTIVITY_COMPLETION_MODULES =',
+      'function recordEvidence('
+    );
+    const gate = vm.runInNewContext(
+      `(function () { ${gateSource}; return {
+        PETS_ACTIVITY_COMPLETION_MODULES,
+        requiresActivityCompletion
+      }; })()`
+    );
+
+    for (const moduleId of ['nutrition', 'zoonoses', 'lifespan']) {
+      expect(gate.PETS_ACTIVITY_COMPLETION_MODULES[moduleId], moduleId).toBe(true);
+      expect(gate.requiresActivityCompletion(moduleId), moduleId).toBe(true);
+    }
+    expect(gate.requiresActivityCompletion('dogs')).toBe(false);
   });
 });

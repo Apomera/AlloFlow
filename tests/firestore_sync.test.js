@@ -25,6 +25,8 @@ beforeAll(() => {
 describe('sanitizeHistoryForCloud — cloud privacy boundary', () => {
   it('is registered', () => {
     expect(typeof sanitize).toBe('function');
+    expect(typeof window.stripMemoryAidPracticeEvidence).toBe('function');
+    expect(typeof window.sanitizeMemoryAidResourceForBoundary).toBe('function');
   });
 
   it('strips a fluency-record raw voice clip but keeps the scored result', () => {
@@ -110,6 +112,111 @@ describe('sanitizeHistoryForCloud — cloud privacy boundary', () => {
     expect(out).toEqual(item);
   });
 
+  it('recursively strips legacy Memory Aid practice evidence without mutating authored content', () => {
+    const item = {
+      id: 'memory-1',
+      type: 'memory-aid',
+      title: 'States of matter',
+      data: {
+        rationalePrompt: 'Explain why your cue works.',
+        cards: [{
+          id: 'solid',
+          target: 'Solid',
+          essentialFacts: ['Keeps its shape'],
+          studentDraft: 'Solid stays set.',
+          practiceAttempts: [{ response: 'private recall', confidence: 2 }],
+          legacy: {
+            retrievalAttempts: [{ response: 'older private recall' }],
+            teacherFeedback: 'Keep the alliteration.',
+          },
+        }],
+        revisionHistory: [{
+          note: 'Changed the cue',
+          snapshot: { practiceAttempts: [{ response: 'nested private recall' }], cue: 'Set solid' },
+        }],
+      },
+      retrievalAttempts: [{ response: 'top-level legacy evidence' }],
+    };
+
+    const [out] = sanitize([item]);
+    const serialized = JSON.stringify(out);
+    expect(serialized).not.toContain('practiceAttempts');
+    expect(serialized).not.toContain('retrievalAttempts');
+    expect(serialized).not.toContain('private recall');
+    expect(out).toMatchObject({
+      id: 'memory-1',
+      type: 'memory-aid',
+      title: 'States of matter',
+      data: {
+        rationalePrompt: 'Explain why your cue works.',
+        cards: [{
+          id: 'solid',
+          target: 'Solid',
+          essentialFacts: ['Keeps its shape'],
+          studentDraft: 'Solid stays set.',
+          legacy: { teacherFeedback: 'Keep the alliteration.' },
+        }],
+        revisionHistory: [{ note: 'Changed the cue', snapshot: { cue: 'Set solid' } }],
+      },
+    });
+    expect(item.data.cards[0].practiceAttempts).toHaveLength(1);
+    expect(item.data.cards[0].legacy.retrievalAttempts).toHaveLength(1);
+  });
+
+  it('finds nested Memory Aid nodes in lesson envelopes while preserving sibling domain fields', () => {
+    const item = {
+      id: 'lesson-envelope-1',
+      type: 'lesson',
+      practiceAttempts: [{ phase: 'teacher rehearsal' }],
+      data: {
+        analytics: { retrievalAttempts: 12 },
+        resources: [{
+          id: 'nested-memory-type',
+          type: 'memory-aid',
+          data: {
+            cards: [{ cue: 'PMAT', practiceAttempts: [{ response: 'private type evidence' }] }],
+          },
+        }, {
+          id: 'nested-memory-artifact',
+          artifactType: 'memory_aid',
+          payload: {
+            retrievalAttempts: [{ response: 'private artifact evidence' }],
+            cue: 'King Philip Came Over',
+          },
+        }, {
+          id: 'research-sibling',
+          type: 'research-log',
+          practiceAttempts: 4,
+          nested: { retrievalAttempts: 'legitimate research field' },
+        }],
+      },
+    };
+
+    const [out] = sanitize([item]);
+    expect(out.practiceAttempts).toEqual([{ phase: 'teacher rehearsal' }]);
+    expect(out.data.analytics.retrievalAttempts).toBe(12);
+    expect(out.data.resources[0].data.cards[0]).toEqual({ cue: 'PMAT' });
+    expect(out.data.resources[1].payload).toEqual({ cue: 'King Philip Came Over' });
+    expect(out.data.resources[2]).toMatchObject({
+      practiceAttempts: 4,
+      nested: { retrievalAttempts: 'legitimate research field' },
+    });
+    expect(item.data.resources[0].data.cards[0].practiceAttempts).toHaveLength(1);
+    expect(item.data.resources[1].payload.retrievalAttempts).toHaveLength(1);
+  });
+
+  it('does not strip similarly named fields from non-Memory-Aid resources', () => {
+    const item = {
+      id: 'research-1',
+      type: 'research-log',
+      data: {
+        practiceAttempts: 3,
+        nested: { retrievalAttempts: 'A legitimate domain field' },
+      },
+    };
+    expect(sanitize([item])[0]).toEqual(item);
+  });
+
   it('SECURITY: serialized cloud payload contains no raw voice/image data', () => {
     const history = [
       { type: 'fluency-record', data: { metrics: { wcpm: 90 }, audioRecording: 'RAWVOICEAUDIOBASE64', mimeType: 'audio/webm' } },
@@ -158,6 +265,54 @@ describe('prepareSessionResourcesForWrite — live session Firestore size guard'
 
     expect(out.resources.map((item) => item.id)).toEqual(['safe']);
     expect(JSON.stringify(out.resources)).not.toContain('private');
+  });
+
+  it('strips legacy Memory Aid evidence before live-session persistence', () => {
+    const out = prepareResources([{
+      id: 'memory-session-1',
+      type: 'memory-aid',
+      data: {
+        cards: [{
+          id: 'card-1',
+          target: 'Mitosis',
+          cue: 'PMAT',
+          practiceAttempts: [{ response: 'student response' }],
+          nested: { retrievalAttempts: [{ response: 'legacy response' }], keep: true },
+        }],
+      },
+    }], { maxBytes: 20000 });
+
+    expect(JSON.stringify(out.resources)).not.toContain('Attempts');
+    expect(out.resources[0].data.cards[0]).toMatchObject({
+      id: 'card-1',
+      target: 'Mitosis',
+      cue: 'PMAT',
+      nested: { keep: true },
+    });
+  });
+
+  it('strips Memory Aid evidence nested in live lesson resources without touching non-Memory-Aid evidence fields', () => {
+    const out = prepareResources([{
+      id: 'live-lesson-envelope',
+      type: 'lesson',
+      data: {
+        resources: [{
+          id: 'memory-in-live-lesson',
+          artifactType: 'memory-aid',
+          data: { practiceAttempts: [{ response: 'private live recall' }], cue: 'ROYGBIV' },
+        }, {
+          id: 'lab-log',
+          type: 'lab-log',
+          data: { practiceAttempts: ['trial 1'], retrievalAttempts: 'sample retrieval method' },
+        }],
+      },
+    }], { maxBytes: 20000 });
+
+    expect(out.resources[0].data.resources[0].data).toEqual({ cue: 'ROYGBIV' });
+    expect(out.resources[0].data.resources[1].data).toEqual({
+      practiceAttempts: ['trial 1'],
+      retrievalAttempts: 'sample retrieval method',
+    });
   });
 
   it('keeps the newest resources when the payload must be trimmed', () => {
@@ -220,6 +375,60 @@ describe('prepareSessionResourcesForWrite — live session Firestore size guard'
       complexity: { requestedGrade: '4th Grade' },
     });
   });
+
+  it('strips embedded legacy Memory Aid evidence while hydrating cloud/import data', () => {
+    const source = {
+      id: 'legacy-memory',
+      type: 'memory-aid',
+      data: JSON.stringify({
+        title: 'Legacy memory aid',
+        cards: [{
+          id: 'legacy-card',
+          target: 'Planets',
+          finalMnemonic: 'My Very Educated Mother',
+          practiceAttempts: [{ response: 'private response' }],
+          wrapper: { retrievalAttempts: [{ response: 'private older response' }], keep: 'yes' },
+        }],
+      }),
+    };
+
+    const [out] = hydrate([source]);
+    expect(JSON.stringify(out)).not.toContain('Attempts');
+    expect(out.data.cards[0]).toMatchObject({
+      id: 'legacy-card',
+      target: 'Planets',
+      finalMnemonic: 'My Very Educated Mother',
+      wrapper: { keep: 'yes' },
+    });
+    expect(source.data).toContain('practiceAttempts');
+  });
+
+  it('sanitizes nested Memory Aid artifacts after hydrating a serialized import envelope', () => {
+    const source = {
+      id: 'imported-lesson',
+      type: 'lesson',
+      data: JSON.stringify({
+        retrievalAttempts: 'lesson-level import metadata',
+        artifacts: [{
+          artifactType: 'memory-aid',
+          title: 'Imported mnemonic',
+          data: {
+            practiceAttempts: [{ response: 'private imported recall' }],
+            nested: { retrievalAttempts: [{ response: 'older private import' }], cue: 'HOMES' },
+          },
+        }, {
+          artifactType: 'rubric',
+          data: { practiceAttempts: 'rubric criterion label' },
+        }],
+      }),
+    };
+
+    const [out] = hydrate([source]);
+    expect(out.data.retrievalAttempts).toBe('lesson-level import metadata');
+    expect(out.data.artifacts[0].data).toEqual({ nested: { cue: 'HOMES' } });
+    expect(out.data.artifacts[1].data.practiceAttempts).toBe('rubric criterion label');
+    expect(source.data).toContain('private imported recall');
+  });
 });
 
 // ── Generated artwork vs the Firestore 1 MiB document cap ─────────────────
@@ -249,6 +458,30 @@ describe('sanitizeHistoryForCloud — artwork budget', () => {
         extraLoci: [{ id: 'xl1', room: 'b0', label: 'My own fact', lx: 12, lz: -30 }],
         theme: 'gallery',
       },
+    },
+  });
+
+  const memoryAid = (id, imageCount = 4) => ({
+    id,
+    type: 'memory-aid',
+    title: 'Memory Aid ' + id,
+    data: {
+      title: 'Remember the water cycle',
+      instructions: 'Use each cue, then retrieve the checked facts.',
+      lessonRef: { gradeLevel: '5th Grade', nested: { visualImage: 'KEEP NESTED NON-CARD FIELD' } },
+      cards: Array.from({ length: imageCount }, (_, index) => ({
+        id: id + '-card-' + index,
+        target: 'Water-cycle target ' + index,
+        essentialFacts: ['Fact ' + index],
+        studentDraft: 'Cue ' + index,
+        visualImage: art,
+        visualAlt: 'A specific description for cue ' + index,
+        visualSource: index % 2 ? 'uploaded' : 'ai-generated',
+        visualCheck: { alignment: 'supports', concern: 'None identified' },
+        visualReview: { status: 'approved', note: 'Teacher reviewed cue ' + index },
+        nested: { visualImage: 'KEEP CARD-NESTED NON-TARGET FIELD', note: 'Keep this too' },
+      })),
+      neighboring: { visualImage: 'KEEP RESOURCE-NESTED NON-TARGET FIELD' },
     },
   });
 
@@ -301,5 +534,141 @@ describe('sanitizeHistoryForCloud — artwork budget', () => {
     const out = sanitize([plain, palace('p1'), palace('p2'), palace('p3'), palace('p4')]);
     expect(out[0].data.memoryPalace).toBeUndefined();
     expect(out[0].data.main).toBe('no palace here');
+  });
+
+  it('drops regenerable Memory Aid art before uploaded originals while preserving metadata and nested fields', () => {
+    const items = [
+      memoryAid('m1', 9), memoryAid('m2', 9), memoryAid('m3', 9), memoryAid('m4', 9),
+    ];
+    expect(estimateBytes(items)).toBeGreaterThan(BUDGET);
+
+    const out = sanitize(items);
+    expect(estimateBytes(out)).toBeLessThanOrEqual(BUDGET);
+    expect(out[0].data.cards.filter(card => card.visualSource !== 'uploaded')
+      .every(card => card.visualImage === undefined)).toBe(true);
+    expect(out[0].data.cards.filter(card => card.visualSource === 'uploaded')
+      .every(card => card.visualImage === art)).toBe(true);
+    expect(out[0].data.cards[0]).toMatchObject({
+      target: 'Water-cycle target 0',
+      essentialFacts: ['Fact 0'],
+      studentDraft: 'Cue 0',
+      visualAlt: 'A specific description for cue 0',
+      visualSource: 'ai-generated',
+      visualCheck: { alignment: 'supports', concern: 'None identified' },
+      visualReview: { status: 'approved', note: 'Teacher reviewed cue 0' },
+      nested: { visualImage: 'KEEP CARD-NESTED NON-TARGET FIELD', note: 'Keep this too' },
+    });
+    expect(out[0].data.lessonRef.nested.visualImage).toBe('KEEP NESTED NON-CARD FIELD');
+    expect(out[0].data.neighboring.visualImage).toBe('KEEP RESOURCE-NESTED NON-TARGET FIELD');
+    expect(items[0].data.cards[0].visualImage).toBe(art);
+  });
+
+  it('keeps Memory Aid visuals when the cloud payload already fits and sheds oldest regenerable art first', () => {
+    const compact = memoryAid('compact', 1);
+    const compactOut = sanitize([compact]);
+    expect(compactOut[0].data.cards[0].visualImage).toBe(art);
+
+    const oversized = [
+      memoryAid('oldest', 9), memoryAid('middle-a', 9),
+      memoryAid('middle-b', 9), memoryAid('newest', 9),
+    ];
+    const out = sanitize(oversized);
+    expect(out[0].data.cards.filter(card => card.visualSource !== 'uploaded')
+      .every(card => card.visualImage === undefined)).toBe(true);
+    expect(out[0].data.cards.filter(card => card.visualSource === 'uploaded')
+      .every(card => card.visualImage === art)).toBe(true);
+    expect(out[out.length - 1].data.cards.every(card => card.visualImage === art)).toBe(true);
+  });
+
+  it('records bounded local-only provenance only when uploaded originals must be omitted', () => {
+    const uploaded = (id) => {
+      const item = memoryAid(id, 9);
+      item.data.cards = item.data.cards.map(card => ({ ...card, visualSource: 'uploaded' }));
+      return item;
+    };
+    const items = [uploaded('oldest'), uploaded('middle-a'), uploaded('middle-b'), uploaded('newest')];
+    expect(estimateBytes(items)).toBeGreaterThan(BUDGET);
+
+    const out = sanitize(items);
+    expect(estimateBytes(out)).toBeLessThanOrEqual(BUDGET);
+    expect(out[0].data.cards.every(card => card.visualImage === undefined)).toBe(true);
+    expect(out[0].data.cards[0]).toMatchObject({
+      visualAlt: 'A specific description for cue 0',
+      visualSource: 'uploaded',
+      visualCheck: { alignment: 'supports' },
+      visualReview: { status: 'approved', note: 'Teacher reviewed cue 0' },
+      visualSyncOmission: {
+        schemaVersion: 1,
+        asset: 'visual',
+        reason: 'cloud-artwork-budget',
+        originalSource: 'uploaded',
+        availability: 'originating-device-only',
+        message: 'Uploaded visual omitted from cloud sync; the local original was not changed.',
+      },
+    });
+    expect(JSON.stringify(out[0].data.cards[0].visualSyncOmission).length).toBeLessThan(300);
+    expect(out[out.length - 1].data.cards.every(card => card.visualImage === art)).toBe(true);
+    expect(out[out.length - 1].data.cards.every(card => card.visualSyncOmission === undefined)).toBe(true);
+    expect(items[0].data.cards.every(card => card.visualImage === art)).toBe(true);
+    expect(items[0].data.cards.every(card => card.visualSyncOmission === undefined)).toBe(true);
+  });
+
+  it('finds type/artifactType Memory Aids in nested envelopes and strips visualImage/imageUrl only from their cards', () => {
+    const nestedCards = Array.from({ length: 34 }, (_, index) => ({
+      id: 'nested-card-' + index,
+      target: 'Nested target ' + index,
+      visualSource: index % 2 ? 'legacy' : 'ai-refined',
+      visualAlt: 'Nested description ' + index,
+      visualReview: { status: 'needs-revision', note: 'Keep review ' + index },
+      ...(index % 2 ? { imageUrl: art } : { visualImage: art }),
+      nested: { visualImage: 'KEEP NESTED CARD FIELD', imageUrl: 'KEEP NESTED LEGACY FIELD' },
+    }));
+    const item = {
+      id: 'lesson-envelope',
+      type: 'lesson',
+      data: {
+        heading: 'Keep lesson heading',
+        resources: [{
+          id: 'artifact-memory',
+          artifactType: 'memory_aid',
+          payload: { cards: nestedCards, note: 'Keep artifact note' },
+        }, {
+          id: 'typed-memory',
+          type: 'memory-aid',
+          data: {
+            cards: [{ id: 'small-card', visualImage: art, visualSource: 'ai-generated', visualAlt: 'Keep alt' }],
+          },
+        }, {
+          id: 'non-memory',
+          type: 'research-log',
+          data: {
+            cards: [{ id: 'research-card', visualImage: art, imageUrl: art }],
+            visualImage: 'KEEP RESOURCE IMAGE FIELD',
+          },
+        }],
+      },
+    };
+    expect(estimateBytes([item])).toBeGreaterThan(BUDGET);
+
+    const [out] = sanitize([item]);
+    const artifact = out.data.resources[0];
+    const typed = out.data.resources[1];
+    const nonMemory = out.data.resources[2];
+    expect(estimateBytes([out])).toBeLessThanOrEqual(BUDGET);
+    expect(artifact.payload.cards.every(card => card.visualImage === undefined && card.imageUrl === undefined)).toBe(true);
+    expect(artifact.payload.cards[0]).toMatchObject({
+      target: 'Nested target 0',
+      visualAlt: 'Nested description 0',
+      visualSource: 'ai-refined',
+      visualReview: { status: 'needs-revision', note: 'Keep review 0' },
+      nested: { visualImage: 'KEEP NESTED CARD FIELD', imageUrl: 'KEEP NESTED LEGACY FIELD' },
+    });
+    expect(artifact.payload.note).toBe('Keep artifact note');
+    expect(typed.data.cards[0].visualImage).toBeUndefined();
+    expect(nonMemory.data.cards[0]).toMatchObject({ visualImage: art, imageUrl: art });
+    expect(nonMemory.data.visualImage).toBe('KEEP RESOURCE IMAGE FIELD');
+    expect(out.data.heading).toBe('Keep lesson heading');
+    expect(item.data.resources[0].payload.cards[0].visualImage).toBe(art);
+    expect(item.data.resources[1].data.cards[0].visualImage).toBe(art);
   });
 });

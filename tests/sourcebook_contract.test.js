@@ -390,6 +390,7 @@ describe('Sourcebook initial feature contract', () => {
       expect(host.querySelector('[data-sourcebook-live-status="loading"]')).toBeTruthy();
       expect(host.textContent).toContain('Checking saved source-verified assets before showing them');
       expect(host.textContent).toContain('Verifying saved source records before restoring this board');
+      expect(host.querySelector('#sourcebook-results-board')?.getAttribute('aria-busy')).toBe('true');
     } finally {
       if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
       host.remove();
@@ -788,9 +789,33 @@ describe('Sourcebook initial feature contract', () => {
       });
       const card = host.querySelector('[data-sourcebook-result-card="cma-binakol"]');
       expect(card).toBeTruthy();
+      const board = host.querySelector('#sourcebook-results-board');
+      expect(board).toBeTruthy();
+      expect(board.getAttribute('role')).toBe('region');
+      expect(board.getAttribute('aria-labelledby')).toBe('sourcebook-results-title');
+      expect(board.getAttribute('aria-busy')).toBe('false');
+      expect(host.querySelector('#sourcebook-results-title')).toBeTruthy();
       expect(card.querySelector('[data-sourcebook-card-provider]')?.textContent).toBe('Cleveland Museum of Art');
       expect(card.querySelectorAll('[data-sourcebook-card-rights="pd"]')).toHaveLength(1);
-      const inspect = card.querySelector('button[data-sourcebook-inspect="cma-binakol"]');
+      expect(card.querySelector('[data-sourcebook-card-reuse="pd"]')?.textContent).toBe('Reuse: Public domain');
+      expect(card.querySelectorAll('[data-sourcebook-card-print]')).toHaveLength(1);
+      expect(card.querySelector('[data-sourcebook-card-print]')?.textContent).toMatch(/^Print(?: estimate)?: /);
+      const save = Array.from(card.querySelectorAll('button')).find((button) => button.textContent.includes('Save to palette'));
+      const compare = card.querySelector('[data-sourcebook-compare-toggle="cma-binakol"]');
+      const source = Array.from(card.querySelectorAll('a')).find((link) => link.textContent.includes('Source record'));
+      expect(save.getAttribute('aria-label')).toContain('Binakol textile fragment');
+      expect(compare.getAttribute('aria-label')).toBe('Add Binakol textile fragment to comparison');
+      expect(source.getAttribute('aria-label')).toContain('in a new tab');
+      expect(save.getAttribute('aria-pressed')).toBe('false');
+      expect(save.getAttribute('aria-label')).toBe('Save Binakol textile fragment to the Sourcebook palette');
+      const paletteView = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.startsWith('Palette ('));
+      const resultsView = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.startsWith('Results ('));
+      await ReactLib.act(async () => { paletteView.click(); });
+      expect(host.querySelector('#sourcebook-results-board')).toBeTruthy();
+      expect(host.querySelector('#sourcebook-results-board')?.getAttribute('aria-busy')).toBe('false');
+      expect(host.querySelectorAll('#sourcebook-results-board [data-sourcebook-result-card]')).toHaveLength(0);
+      await ReactLib.act(async () => { resultsView.click(); });
+      const inspect = host.querySelector('button[data-sourcebook-inspect="cma-binakol"]');
       expect(inspect).toBeTruthy();
       expect(inspect.getAttribute('aria-label')).toContain('Cleveland Museum of Art');
       expect(inspect.getAttribute('aria-label')).toContain('Public domain');
@@ -800,6 +825,15 @@ describe('Sourcebook initial feature contract', () => {
       expect(host.querySelector('[data-sourcebook-result-card="cma-binakol"]')?.getAttribute('data-sourcebook-active')).toBe('true');
       expect(host.querySelector('.sb-detail')?.textContent).toContain('Binakol textile fragment');
       expect(host.querySelector('.sb-detail')?.textContent).toContain('Cleveland Museum of Art');
+      ctx.toolData.sourcebook = { collection: ['cma-binakol'] };
+      await ReactLib.act(async () => {
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      const savedCard = host.querySelector('[data-sourcebook-result-card="cma-binakol"]');
+      const remove = Array.from(savedCard.querySelectorAll('button')).find((button) => button.textContent.includes('Saved'));
+      expect(remove.getAttribute('aria-pressed')).toBe('true');
+      expect(remove.getAttribute('aria-label')).toBe('Remove Binakol textile fragment from the Sourcebook palette');
+      expect(savedCard.querySelectorAll('[data-sourcebook-card-print]')).toHaveLength(1);
     } finally {
       if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
       host.remove();
@@ -2319,7 +2353,7 @@ describe('Sourcebook initial feature contract', () => {
 
   it('presents only known live provider identities and exposes Yale, Rijksmuseum, and Museums Victoria through the central registry', () => {
     const window = loadSourcebook();
-    expect(window.SourcebookProviders.version).toBe(58);
+    expect(window.SourcebookProviders.version).toBe(59);
     expect(window.SourcebookProviders.providerPresentation('Yale University Art Gallery Open Access')).toEqual({
       name: 'Yale University Art Gallery Open Access', mark: 'YUAG', known: true
     });
@@ -4177,8 +4211,32 @@ describe('Sourcebook initial feature contract', () => {
     expect(window.SourcebookProviders.preparationDimensions({ mode: 'crop', aspect: 'portrait' })).toEqual({ aspect: 'portrait', width: 1200, height: 1600, label: 'Portrait 3:4' });
     expect(window.SourcebookProviders.preparationDimensions({ mode: 'crop', aspect: 'banner' })).toEqual({ aspect: 'banner', width: 1600, height: 600, label: 'Header banner 8:3' });
     expect(window.SourcebookProviders.preparationDescription({ mode: 'tile', aspect: 'banner', tile: 140 })).toBe('Repeat / tile at 140 px - Header banner 8:3 (1600 x 600 px)');
-    expect(pluginSource).toContain('canvas.width = dimensions.width');
-    expect(pluginSource).toContain('canvas.height = dimensions.height');
+    expect(window.SourcebookProviders.preparationGeometry({ mode: 'fit' }, 2400, 1600)).toMatchObject({
+      known: true, mode: 'fit', outputWidth: 2400, outputHeight: 1600, scale: 1, upscale: 1
+    });
+    const zoomGeometry = window.SourcebookProviders.preparationGeometry(
+      { mode: 'crop', aspect: 'banner', zoom: 220, x: 25, y: 75 }, 1600, 900
+    );
+    expect(zoomGeometry).toMatchObject({
+      known: true, mode: 'crop', outputWidth: 1600, outputHeight: 600,
+      coverScale: 1, zoomScale: 2.2, scale: 2.2, upscale: 2.2
+    });
+    expect(zoomGeometry.drawWidth).toBeCloseTo(3520);
+    expect(zoomGeometry.drawHeight).toBeCloseTo(1980);
+    expect(zoomGeometry.drawX).toBeCloseTo(-480);
+    expect(zoomGeometry.drawY).toBeCloseTo(-1035);
+    expect(window.SourcebookProviders.preparationGeometry(
+      { mode: 'crop', aspect: 'banner', zoom: 100 }, 900, 1200
+    )).toMatchObject({ mode: 'crop', coverScale: 1600 / 900, upscale: 1600 / 900 });
+    expect(window.SourcebookProviders.preparationGeometry(
+      { mode: 'tile', aspect: 'banner', tile: 60 }, 1200, 600
+    )).toMatchObject({
+      known: true, mode: 'tile', outputWidth: 1600, outputHeight: 600,
+      scale: 0.05, upscale: 1, tileWidth: 60, tileHeight: 30, columns: 27, rows: 20
+    });
+    expect(window.SourcebookProviders.preparationGeometry({ mode: 'crop' }, 0, 1200)).toMatchObject({ known: false, scale: 0 });
+    expect(pluginSource).toContain('canvas.width = geometry.outputWidth');
+    expect(pluginSource).toContain('canvas.height = geometry.outputHeight');
 
     const drawCalls = [];
     const canvas = {
@@ -4193,8 +4251,8 @@ describe('Sourcebook initial feature contract', () => {
     };
     class MockImage {
       set src(value) {
-        this.width = 800;
-        this.height = 400;
+        this.width = 1400;
+        this.height = 700;
         this.onload();
       }
     }
@@ -4209,6 +4267,82 @@ describe('Sourcebook initial feature contract', () => {
     expect(canvas).toMatchObject({ width: 1600, height: 600 });
     expect(drawCalls[0]).toEqual(['fillRect', 0, 0, 1600, 600]);
     expect(drawCalls.some((call) => call[0] === 'drawImage')).toBe(true);
+
+    const cropPreparation = { mode: 'crop', aspect: 'banner', zoom: 100, x: 50, y: 50 };
+    const receipt = await renderingWindow.SourcebookProviders.prepareImageReceipt(
+      'data:image/png;base64,AAAA', cropPreparation
+    );
+    expect(receipt).toMatchObject({
+      dataUrl: 'data:image/png;base64,BBBB',
+      sourceWidth: 1400, sourceHeight: 700,
+      outputWidth: 1600, outputHeight: 600
+    });
+    expect(Object.isFrozen(receipt)).toBe(true);
+    expect(receipt.geometry.scale).toBeCloseTo(1600 / 1400);
+    const fitReceipt = await renderingWindow.SourcebookProviders.prepareImageReceipt(
+      'data:image/png;base64,AAAA', { mode: 'fit' }
+    );
+    expect(fitReceipt).toMatchObject({
+      dataUrl: 'data:image/png;base64,AAAA',
+      sourceWidth: 1400, sourceHeight: 700,
+      outputWidth: 1400, outputHeight: 700
+    });
+
+    const catalogItem = {
+      ...Array.from(renderingWindow.SourcebookProviders.materials)[0],
+      id: 'decoded-rendition-truth', pixelWidth: 5000, pixelHeight: 2500
+    };
+    const artwork = renderingWindow.SourcebookProviders.buildPageDesignerArtwork(
+      catalogItem, cropPreparation, receipt
+    );
+    expect(artwork).toMatchObject({
+      catalogPixelWidth: 5000, catalogPixelHeight: 2500,
+      sourcePixelWidth: 1400, sourcePixelHeight: 700,
+      preparedOutputPixelWidth: 1600, preparedOutputPixelHeight: 600,
+      printReadiness: 'Some upscaling',
+      printReadinessEvidence: 'decoded-fetched-rendition'
+    });
+    expect(renderingWindow.SourcebookProviders.buildPageDesignerArtwork(
+      catalogItem, cropPreparation, receipt.dataUrl
+    )).toMatchObject({
+      sourcePixelWidth: 5000, sourcePixelHeight: 2500,
+      printReadinessEvidence: 'catalog-estimate'
+    });
+    const exactPackage = renderingWindow.SourcebookProviders.buildSourcePackage(
+      catalogItem, cropPreparation, receipt
+    );
+    expect(exactPackage).toContain('Some upscaling - 1400 x 700 px decoded fetched rendition; 5.3 x 2.0 in prepared output at 300 DPI');
+    expect(exactPackage).not.toContain('5000 x 2500 px');
+    const exactPalette = renderingWindow.SourcebookProviders.buildPalettePackage(
+      [catalogItem], { [catalogItem.id]: cropPreparation }, 'Decoded output truth',
+      { [catalogItem.id]: receipt }
+    );
+    expect(exactPalette).toContain('1400 x 700 px decoded fetched rendition');
+    expect(exactPalette).not.toContain('5000 x 2500 px');
+
+    const forgedReceipt = { ...receipt, outputWidth: 1200 };
+    expect(renderingWindow.SourcebookProviders.buildPageDesignerArtwork(
+      catalogItem, cropPreparation, forgedReceipt
+    )).toBeNull();
+    expect(renderingWindow.SourcebookProviders.buildSourcePackage(
+      catalogItem, cropPreparation, forgedReceipt
+    )).toBe('');
+    expect(renderingWindow.SourcebookProviders.buildPalettePackage(
+      [catalogItem], { [catalogItem.id]: cropPreparation }, 'Forged receipt',
+      { [catalogItem.id]: forgedReceipt }
+    )).toBe('');
+    const copiedReceipt = { ...receipt };
+    expect(renderingWindow.SourcebookProviders.buildPageDesignerArtwork(
+      catalogItem, cropPreparation, copiedReceipt
+    )).toBeNull();
+    const internallyConsistentForgery = {
+      dataUrl: receipt.dataUrl,
+      sourceWidth: 5000, sourceHeight: 2500,
+      outputWidth: 1600, outputHeight: 600
+    };
+    expect(renderingWindow.SourcebookProviders.buildSourcePackage(
+      catalogItem, cropPreparation, internallyConsistentForgery
+    )).toBe('');
   });
 
   it('scores print readiness conservatively and prefers sharper equally relevant results', () => {
@@ -4226,6 +4360,27 @@ describe('Sourcebook initial feature contract', () => {
       { mode: 'crop', aspect: 'banner' }
     );
     expect(caution).toMatchObject({ status: 'caution', label: 'Some upscaling', upscale: 1.33 });
+    expect(caution).toMatchObject({ samplingScale: 1.333, outputPixelWidth: 1600, outputPixelHeight: 600 });
+    expect(caution.print300).toBe('5.3 x 2.0 in prepared output at 300 DPI');
+    const zoomedCrop = window.SourcebookProviders.printReadiness(
+      { pixelWidth: 1600, pixelHeight: 900 },
+      { mode: 'crop', aspect: 'banner', zoom: 220 }
+    );
+    expect(zoomedCrop).toMatchObject({ status: 'low', label: 'Low resolution', upscale: 2.2, samplingScale: 2.2 });
+    const efficientTile = window.SourcebookProviders.printReadiness(
+      { pixelWidth: 1200, pixelHeight: 600 },
+      { mode: 'tile', aspect: 'banner', tile: 60 }
+    );
+    expect(efficientTile).toMatchObject({
+      status: 'ready', label: 'Print ready', upscale: 1, samplingScale: 0.05,
+      tileWidth: 60, tileHeight: 30, outputPixelWidth: 1600, outputPixelHeight: 600
+    });
+    expect(efficientTile.note).toContain('full source at 60 px wide');
+    const enlargedTile = window.SourcebookProviders.printReadiness(
+      { pixelWidth: 120, pixelHeight: 80 },
+      { mode: 'tile', aspect: 'square', tile: 360 }
+    );
+    expect(enlargedTile).toMatchObject({ status: 'low', label: 'Low resolution', upscale: 3, samplingScale: 3 });
     const low = window.SourcebookProviders.printReadiness(
       { pixelWidth: 640, pixelHeight: 480 },
       { mode: 'crop', aspect: 'banner' }
@@ -4377,7 +4532,7 @@ describe('Sourcebook initial feature contract', () => {
       mode: 'tile', aspect: 'banner', tile: 140, usageIntent: 'texture',
       altText: 'Contour lines for a mountain region.', altTextCustomized: true
     }, dataUrl);
-    expect(window.SourcebookProviders.version).toBe(58);
+    expect(window.SourcebookProviders.version).toBe(59);
     expect(html).toContain('<!doctype html>');
     expect(html).toContain(`<img src="${dataUrl}"`);
     expect(html).toContain('download="contour-map-line-drawing.png"');
@@ -4389,7 +4544,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(html).toContain('Repeat / tile at 140 px');
     expect(html).toContain('Header banner 8:3 (1600 x 600 px)');
     expect(html).toContain('<dt>Print readiness</dt>');
-    expect(html).toContain('Print ready - 3600 x 2400 px; 12.0 x 8.0 in at 300 DPI');
+    expect(html).toContain('Print ready - 3600 x 2400 px catalog estimate; 5.3 x 2.0 in prepared output at 300 DPI');
     expect(html).toContain(item.license);
     expect(html).toContain(item.sourceUrl);
     expect(html).toContain('Credit and provenance');

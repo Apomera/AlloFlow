@@ -62,7 +62,10 @@
 > save-back returns the new token to Page Designer, allowing repeated saves
 > in one session. Resource shelf cues, imported Studio objects, decks, and
 > durable worksheet documents preserve parentResourceId, activityIndex,
-> activityKind, artifactType, artifactId, and sourceRevision.
+> activityKind, artifactType, artifactId, and sourceRevision. Discussion and
+> Jigsaw core items also retain generationMeta (status, attempts, recovered,
+> and updatedAt), and the Activity card/shelf surfaces show when automatic
+> repair was needed.
 
 ## 1. Summary
 

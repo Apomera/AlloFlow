@@ -34,6 +34,12 @@ describe('Gemini Bridge WCAG dialog behavior', () => {
     expect(source).toContain("'Start listening for Person A'");
     expect(source).toContain("'Start listening for Person B'");
   });
+
+  it('exposes receive projection and reaction selection state and announces submission', () => {
+    expect(source).toContain('aria-pressed={bridgeProjectionMode}');
+    expect(source).toContain('aria-pressed={_sel}');
+    expect(source).toContain('<div role="status" aria-live="polite"');
+  });
 });
 
 describe('Gemini Bridge reduced motion and generated copies', () => {

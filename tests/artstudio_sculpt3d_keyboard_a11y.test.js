@@ -68,11 +68,13 @@ function makePrim3D() {
     parts: (recipe.parts || []).map((part) => ({
       size: [0.4, 0.4, 0.4],
       stretch: [1, 1, 1],
+      deform: { taper: 0, twist: 0, bulge: 0 },
       position: [0, 0.5, 0],
       rotation: [0, 0, 0],
       ...part,
       size: (part.size || [0.4, 0.4, 0.4]).slice(),
       stretch: (part.stretch || [1, 1, 1]).slice(),
+      deform: { taper: 0, twist: 0, bulge: 0, ...(part.deform || {}) },
       position: (part.position || [0, 0.5, 0]).slice(),
       rotation: (part.rotation || [0, 0, 0]).slice(),
     })),
@@ -82,15 +84,38 @@ function makePrim3D() {
     next.parts = next.parts.map((part, partIndex) => partIndex === index ? { ...part, ...patch } : part);
     return next;
   };
+  const MORPH_PROFILES = [
+    { id: 'original', label: 'Original', stretch: [1, 1, 1], deform: { taper: 0, twist: 0, bulge: 0 } },
+    { id: 'twisted', label: 'Twisted', stretch: [1, 1.2, 1], deform: { taper: 0.15, twist: 110, bulge: 0.2 } },
+  ];
+  const normalizeMorphProfile = (profile) => profile ? {
+    id: String(profile.id || ''),
+    label: String(profile.label || profile.name || 'Custom form'),
+    stretch: (profile.stretch || [1, 1, 1]).slice(),
+    deform: { taper: 0, twist: 0, bulge: 0, ...(profile.deform || {}) },
+  } : null;
   return {
     PRESETS: [{ id: 'robot', label: 'Robot', emoji: '🤖' }],
     SHAPES: ['box'],
+    MORPH_PROFILES,
     normalizeRecipe,
+    normalizeMorphProfile,
     getPreset: () => normalizeRecipe({ name: 'Robot', parts: [{ shape: 'box', color: '#ff0000' }] }),
     buildObject: () => ({ traverse: () => {} }),
-    newPart: (shape) => ({ shape, size: [0.4, 0.4, 0.4], stretch: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#ff0000' }),
+    newPart: (shape) => ({ shape, size: [0.4, 0.4, 0.4], stretch: [1, 1, 1], deform: { taper: 0, twist: 0, bulge: 0 }, position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#ff0000' }),
     addPart: (recipe, shape) => normalizeRecipe({ name: 'Custom', parts: [...(recipe?.parts || []), { shape, color: '#ff0000' }] }),
     updatePart,
+    updatePartDeform: (recipe, index, patch) => {
+      const next = normalizeRecipe(recipe);
+      if (next.parts[index].locked) return next;
+      return updatePart(next, index, { deform: { ...next.parts[index].deform, ...patch } });
+    },
+    applyMorphProfile: (recipe, index, profile) => {
+      const next = normalizeRecipe(recipe);
+      if (next.parts[index].locked) return next;
+      const clean = normalizeMorphProfile(typeof profile === 'string' ? MORPH_PROFILES.find((item) => item.id === profile) : profile);
+      return updatePart(next, index, { stretch: clean.stretch.slice(), deform: { ...clean.deform } });
+    },
     duplicatePart: (recipe, index) => {
       const next = normalizeRecipe(recipe);
       const source = next.parts[index];
@@ -98,6 +123,7 @@ function makePrim3D() {
         ...source,
         size: source.size.slice(),
         stretch: source.stretch.slice(),
+        deform: { ...source.deform },
         position: source.position.slice(),
         rotation: source.rotation.slice(),
       });
@@ -209,11 +235,20 @@ describe('Art Studio Sculpt 3D accessibility', () => {
     expect(html).toContain('Stretch / morph');
     expect(html).toContain('Morph selected part on X axis');
     expect(html).toContain('Reset selected part stretch');
+    expect(html).toContain('Morph selected form');
+    expect(html).toContain('Apply Twisted form profile');
+    expect(html).toContain('Save selected form as reusable profile');
+    expect(html).toContain('Shape deformation');
+    expect(html).toContain('Taper selected part form');
+    expect(html).toContain('Twist selected part form');
+    expect(html).toContain('Bulge selected part form');
+    expect(html).toContain('Reset selected part deformation');
     expect(html).toContain('Start from or morph a preset');
     expect(html).toContain('role="group" aria-label="3D preview actions"');
     expect(html).toContain('aria-label="Pause 3D preview rotation" aria-pressed="false"');
     expect(html).toContain('aria-label="Export sculpture JSON model"');
     expect(html).toContain('aria-label="Import sculpture JSON model"');
+    expect(html).toContain('focus-within:ring-4');
     expect(html).toContain('aria-label="Refine sculpture with AI"');
     expect(html).toContain('aria-label="Save sculpture to gallery"');
     expect(html).toContain('role="group" aria-labelledby="artstudio-sculpt-add-label"');
@@ -400,6 +435,64 @@ describe('Art Studio Sculpt 3D accessibility', () => {
     });
     expect(latest.artStudio.sculptRecipe.parts[0].position).toEqual(positionBefore);
     expect(announce).toHaveBeenCalledWith('Part 1 is locked. Use its part controls before transforming it.');
+    expect(host.querySelector('button[aria-label="Apply Twisted form profile"]').disabled).toBe(true);
+  });
+
+  it('applies, fine-tunes, saves, and reuses a custom parametric form with coalesced undo', async () => {
+    await mount({
+      sculptRecipe: { name: 'Custom', parts: [{ shape: 'box', color: '#ff0000' }] },
+    });
+    const nativeValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    const twisted = host.querySelector('button[aria-label="Apply Twisted form profile"]');
+    await act(async () => {
+      twisted.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].stretch).toEqual([1, 1.2, 1]);
+    expect(latest.artStudio.sculptRecipe.parts[0].deform).toEqual({ taper: 0.15, twist: 110, bulge: 0.2 });
+    expect(latest.artStudio.sculptUndo).toHaveLength(1);
+    expect(announce).toHaveBeenCalledWith('Applied Twisted form profile to part 1.');
+
+    const twist = host.querySelector('input[aria-label="Twist selected part form"]');
+    await act(async () => {
+      twist.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+      nativeValueSetter.call(twist, '60');
+      twist.dispatchEvent(new Event('input', { bubbles: true }));
+      nativeValueSetter.call(twist, '80');
+      twist.dispatchEvent(new Event('input', { bubbles: true }));
+      twist.dispatchEvent(new Event('pointerup', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].deform.twist).toBe(80);
+    expect(latest.artStudio.sculptUndo).toHaveLength(2);
+
+    const profileName = host.querySelector('input[aria-label="Name for reusable form profile"]');
+    await act(async () => {
+      nativeValueSetter.call(profileName, 'Vase body');
+      profileName.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    const save = host.querySelector('button[aria-label="Save selected form as reusable profile"]');
+    await act(async () => {
+      save.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptFormProfiles).toHaveLength(1);
+    expect(latest.artStudio.sculptFormProfiles[0]).toMatchObject({ label: 'Vase body', deform: { twist: 80 } });
+    expect(announce).toHaveBeenCalledWith('Saved reusable form profile Vase body.');
+
+    const reset = host.querySelector('button[aria-label="Reset selected part deformation"]');
+    await act(async () => {
+      reset.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].deform).toEqual({ taper: 0, twist: 0, bulge: 0 });
+    const applySaved = host.querySelector('button[aria-label="Apply saved Vase body form profile"]');
+    await act(async () => {
+      applySaved.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.sculptRecipe.parts[0].deform.twist).toBe(80);
   });
 
   it('imports an editable model, preserves undo history, and exports it again', async () => {
@@ -416,7 +509,7 @@ describe('Art Studio Sculpt 3D accessibility', () => {
     const input = host.querySelector('input[aria-label="Import sculpture JSON model"]');
     Object.defineProperty(input, 'files', {
       configurable: true,
-      value: [{ size: 256, contents: JSON.stringify({ name: 'Loaded form', parts: [{ shape: 'box', color: '#22c55e', stretch: [1.5, 0.75, 2] }] }) }],
+      value: [{ size: 256, contents: JSON.stringify({ name: 'Loaded form', parts: [{ shape: 'box', color: '#22c55e', stretch: [1.5, 0.75, 2], deform: { taper: 0.25, twist: 35, bulge: 0.6 } }] }) }],
     });
 
     await act(async () => {
@@ -425,6 +518,7 @@ describe('Art Studio Sculpt 3D accessibility', () => {
     });
     expect(latest.artStudio.sculptRecipe.name).toBe('Loaded form');
     expect(latest.artStudio.sculptRecipe.parts[0].stretch).toEqual([1.5, 0.75, 2]);
+    expect(latest.artStudio.sculptRecipe.parts[0].deform).toEqual({ taper: 0.25, twist: 35, bulge: 0.6 });
     expect(latest.artStudio.sculptUndo.at(-1).name).toBe('Old form');
     expect(announce).toHaveBeenCalledWith('Imported Loaded form with 1 part.');
 

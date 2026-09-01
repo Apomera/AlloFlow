@@ -18,6 +18,14 @@ describe('Info modal accessibility', () => {
     expect(source).toContain("if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus()");
   });
 
+  it('lets populated modal searches consume Escape before the dialog closes', () => {
+    expect(source.match(/data-info-modal-escape-clears="true"\r?\n/g)).toHaveLength(2);
+    expect(source).toContain(`event.target?.closest?.('[data-info-modal-escape-clears="true"]')`);
+    expect(source).toContain('if (escapeClearTarget?.value) return');
+    expect(source.match(/if \(event.key === 'Escape' && (atlasQuery|featureQuery)\)/g)).toHaveLength(2);
+    expect(source.match(/event\.stopPropagation\(\)/g).length).toBeGreaterThanOrEqual(2);
+  });
+
   it('implements the five-section selector as a keyboard-operable tablist', () => {
     expect(source).toContain('role="tablist"');
     expect(source.match(/id="info-tab-[^"]+" role="tab"/g)).toHaveLength(5);
@@ -78,5 +86,22 @@ describe('Info modal accessibility', () => {
     expect(source).toContain("activeTab?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })");
     expect(source).toContain('aria-orientation="horizontal"');
     expect(source.match(/shrink-0 sm:flex-1 min-w-\[7rem\]/g)).toHaveLength(5);
+  });
+
+  it('allows long open-source names and license badges to reflow at 320px', () => {
+    expect(source).toContain('min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between');
+    expect(source).toContain('min-w-0 break-words font-bold text-slate-800');
+    expect(source).toContain('max-w-full self-start sm:self-auto');
+    expect(source).toContain('whitespace-normal break-words');
+    expect(source).not.toContain('whitespace-nowrap">{item.license}');
+  });
+
+  it('keeps clipped metadata, footnotes, and search placeholders at readable contrast', () => {
+    expect(source).toContain('text-[11px] text-slate-600 font-medium mb-2">{item.owner}');
+    expect(source).toContain('tracking-[0.2em] text-slate-600">Cross-hub connections');
+    expect(source.match(/text-\[10px\] text-slate-600 leading-relaxed pt-1 border-t/g)).toHaveLength(3);
+    expect(source).toContain('text-[10px] text-slate-600 leading-relaxed mt-2');
+    expect(source.match(/placeholder:text-slate-600/g)).toHaveLength(2);
+    expect(source).not.toContain('placeholder:text-slate-400');
   });
 });

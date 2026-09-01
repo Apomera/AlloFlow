@@ -312,11 +312,14 @@ describe('Art Studio Process Shelf', () => {
     expect(slots[0].compareDocumentPosition(slots[1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('reuses saved setup by merging data and clearing transient stereogram playback', async () => {
+  it('forks only the saved lab setup, preserves workflow state, and clears transient playback', async () => {
     const saved = studySnapshot({
       id: 'stereo-study',
       tab: 'stereogram',
       timestamp: 300,
+      runId: 'current-run',
+      threadId: 'tiny-night-world',
+      stepIndex: 2,
       data: {
         stereoAnimMode: 'animate',
         stereoAnimPlaying: true,
@@ -327,6 +330,9 @@ describe('Art Studio Process Shelf', () => {
         stereoAnimAiGenerating: true,
         stereoAnimAiMotionStatus: 'Generating',
         savedOnlySetting: 'restored',
+        studioThreadId: 'old-thread',
+        studioThreadRunId: 'old-run',
+        studioThreadStep: 0,
       },
     });
     await mount({
@@ -336,17 +342,24 @@ describe('Art Studio Process Shelf', () => {
         studioStarted: true,
         pixelData: {},
         currentOnlySetting: 'preserved',
+        studioThreadId: 'tiny-night-world',
+        studioThreadRunId: 'current-run',
+        studioThreadStep: 2,
+        studioCurrentProjectRunId: 'current-run',
       },
       snapshots: [saved],
     });
     const shelf = await openProcessShelf();
 
-    await click(findButton(shelf, /^Reuse setup(?:\s|$)/i));
+    await click(findButton(shelf, /^Fork /i));
 
     expect(latestToolData.artStudio).toMatchObject({
       tab: 'stereogram',
       currentOnlySetting: 'preserved',
-      savedOnlySetting: 'restored',
+      studioThreadId: 'tiny-night-world',
+      studioThreadRunId: 'current-run',
+      studioThreadStep: 2,
+      studioCurrentProjectRunId: 'current-run',
       stereoAnimPlaying: false,
       stereoAnimRendering: false,
       stereoAnimHasFrames: false,
@@ -355,5 +368,241 @@ describe('Art Studio Process Shelf', () => {
       stereoAnimAiGenerating: false,
       stereoAnimAiMotionStatus: '',
     });
+    expect(latestToolData.artStudio.savedOnlySetting).toBeUndefined();
+    expect(latestToolData.artStudio.stereoAnimDepthTouchMode).toBe('scroll');
+  });
+
+  it('does not change unrelated stereogram playback when forking a non-stereogram study', async () => {
+    const saved = studySnapshot({
+      id: 'pixel-study',
+      tab: 'pixel',
+      timestamp: 350,
+      data: { pixelGrid: 8, pixelData: { '0,0': '#ff0000' }, activePalette: 'nature', hue: 75, sat: 65, lit: 35 },
+    });
+    await mount({
+      artStudio: {
+        tab: 'colorWheel',
+        studioHome: false,
+        studioStarted: true,
+        hue: 10,
+        sat: 20,
+        lit: 30,
+        pixelActivePalette: 'warm',
+        stereoAnimPlaying: true,
+        stereoAnimRendering: true,
+        stereoAnimHasFrames: true,
+        stereoAnimProgress: 72,
+        stereoAnimIndex: 4,
+        stereoAnimAiGenerating: true,
+        stereoAnimAiMotionStatus: 'Generating',
+      },
+      snapshots: [saved],
+    });
+    const shelf = await openProcessShelf();
+    await click(findButton(shelf, /^Fork /i));
+
+    expect(latestToolData.artStudio).toMatchObject({
+      tab: 'pixel',
+      pixelActivePalette: 'nature',
+      pixelHue: 75,
+      pixelSat: 65,
+      pixelLit: 35,
+      hue: 10,
+      sat: 20,
+      lit: 30,
+      stereoAnimPlaying: true,
+      stereoAnimRendering: true,
+      stereoAnimHasFrames: true,
+      stereoAnimProgress: 72,
+      stereoAnimIndex: 4,
+      stereoAnimAiGenerating: true,
+      stereoAnimAiMotionStatus: 'Generating',
+    });
+  });
+
+  it('uses one stable free-project ID for successive ordinary studies', async () => {
+    await mount({
+      artStudio: { tab: 'pixel', studioHome: false, studioStarted: true, pixelData: {} },
+    });
+
+    await click(findButton(host, /^Save (?:current )?study$/i));
+    await click(findButton(host, /^Save (?:current )?study$/i));
+
+    expect(latestSnapshots).toHaveLength(2);
+    expect(latestSnapshots[0].artStudioStudy.runId).toBeTruthy();
+    expect(latestSnapshots[1].artStudioStudy.runId).toBe(latestSnapshots[0].artStudioStudy.runId);
+    expect(latestToolData.artStudio.studioCurrentProjectRunId).toBe(latestSnapshots[0].artStudioStudy.runId);
+  });
+
+  it('lets learners reveal current, free, recent, and all saved-work views', async () => {
+    const snapshots = [
+      studySnapshot({ id: 'thread-a', tab: 'pixel', timestamp: 100, runId: 'run-a', threadId: 'tiny-night-world', stepIndex: 0 }),
+      studySnapshot({ id: 'thread-b', tab: 'watercolor', timestamp: 200, runId: 'run-b', threadId: 'pattern-with-a-pulse', stepIndex: 0 }),
+      studySnapshot({ id: 'free-a', tab: 'pixel', timestamp: 300, runId: 'free-run' }),
+    ];
+    await mount({
+      artStudio: { tab: 'pixel', studioHome: false, studioStarted: true, studioCurrentProjectRunId: 'run-b', pixelData: {} },
+      snapshots,
+    });
+    const shelf = await openProcessShelf();
+
+    expect(shelf.querySelectorAll('ol[data-artstudio-study-cards=\"true\"] > li')).toHaveLength(1);
+    await click(findButton(shelf, /^Free studies/i));
+    expect(shelf.querySelectorAll('ol[data-artstudio-study-cards=\"true\"] > li')).toHaveLength(1);
+    await click(findButton(shelf, /^All studies/i));
+    expect(shelf.querySelectorAll('ol[data-artstudio-study-cards=\"true\"] > li')).toHaveLength(3);
+    expect(shelf.textContent).toContain('Showing 3 of 3 active saved studies');
+  });
+
+  it('reviews the last completed project instead of a newer unrelated run', async () => {
+    const completed = studySnapshot({
+      id: 'completed-a',
+      tab: 'pixel',
+      timestamp: 100,
+      runId: 'run-a',
+      threadId: 'tiny-night-world',
+      stepIndex: 0,
+    });
+    const unrelated = studySnapshot({
+      id: 'unrelated-b',
+      tab: 'watercolor',
+      timestamp: 200,
+      runId: 'run-b',
+    });
+    await mount({
+      artStudio: {
+        tab: 'colorWheel',
+        studioHome: true,
+        studioStarted: false,
+        studioCurrentProjectRunId: 'run-b',
+        studioLastCompletedThreadRunId: 'run-a',
+        studioLastCompletedThreadId: 'tiny-night-world',
+      },
+      snapshots: [completed, unrelated],
+    });
+
+    await click(findButton(host, /^Review your last Art Studio project/i));
+
+    const shelf = host.querySelector('#artstudio-process-shelf');
+    expect(latestToolData.artStudio.studioCurrentProjectRunId).toBe('run-a');
+    expect(shelf.querySelectorAll('[data-artstudio-study-cards] > li')).toHaveLength(1);
+    expect(shelf.textContent).toContain('Pixel Art');
+    expect(shelf.textContent).not.toContain('Watercolor saved study');
+  });
+
+  it('archives and restores studies without deleting branches, with focus-safe recovery', async () => {
+    const rootStudy = studySnapshot({ id: 'archive-root', tab: 'pixel', timestamp: 100, runId: 'archive-run' });
+    const childStudy = studySnapshot({ id: 'archive-child', tab: 'pixel', timestamp: 200, runId: 'archive-run' });
+    childStudy.artStudioStudy.parentStudyId = 'archive-root';
+    childStudy.artStudioStudy.branchDepth = 1;
+    await mount({
+      artStudio: {
+        tab: 'pixel',
+        studioHome: false,
+        studioStarted: true,
+        studioCurrentProjectRunId: 'archive-run',
+        pixelData: {},
+      },
+      snapshots: [rootStudy, childStudy],
+    });
+
+    const shelf = await openProcessShelf();
+    const rootCard = shelf.querySelector('[data-artstudio-study-cards] > li');
+    await click(findButton(rootCard, /^Select .* for comparison$/i));
+    const refreshedRootCard = shelf.querySelector('[data-artstudio-study-cards] > li');
+    await click(findButton(refreshedRootCard, /^Archive /i));
+
+    expect(shelf.querySelectorAll('[data-artstudio-study-cards] > li')).toHaveLength(1);
+    expect(latestSnapshots).toHaveLength(2);
+    expect(latestSnapshots.find((study) => study.id === 'archive-root').artStudioStudy.archivedAt).toBeTruthy();
+    expect(latestSnapshots.find((study) => study.id === 'archive-child').artStudioStudy.archivedAt).toBeUndefined();
+    expect(document.activeElement?.id).toBe('artstudio-archive-undo-button');
+
+    await click(findButton(shelf, /^Archived \(1\)$/i));
+    expect(shelf.querySelectorAll('[data-artstudio-study-cards] > li')).toHaveLength(1);
+    expect(findButton(shelf, /^Fork /i)).toBeNull();
+    expect(findButton(shelf, /^Select .* for comparison$/i)).toBeNull();
+    await click(findButton(shelf, /^Restore .* to the Process Shelf$/i));
+
+    expect(latestSnapshots.find((study) => study.id === 'archive-root').artStudioStudy.archivedAt).toBeUndefined();
+    expect(document.activeElement?.id).toBe('artstudio-process-title');
+    await click(findButton(shelf, /^All studies \(2\)$/i));
+    expect(shelf.querySelectorAll('[data-artstudio-study-cards] > li')).toHaveLength(2);
+  });
+
+  it('clears newer settings owned by a lab when forking a sparse saved setup', async () => {
+    const savedDefault = studySnapshot({
+      id: 'default-color-wheel',
+      tab: 'colorWheel',
+      timestamp: 100,
+      data: {},
+    });
+    await mount({
+      artStudio: {
+        tab: 'colorWheel',
+        studioHome: false,
+        studioStarted: true,
+        harmony: 'triadic',
+        pixelGrid: 32,
+      },
+      snapshots: [savedDefault],
+    });
+
+    const shelf = await openProcessShelf();
+    await click(findButton(shelf, /^Fork /i));
+
+    expect(latestToolData.artStudio.harmony).toBeUndefined();
+    expect(latestToolData.artStudio.pixelGrid).toBe(32);
+  });
+
+  it('keeps an archived deterministic Thread checkpoint when a new checkpoint uses that step', async () => {
+    const archived = studySnapshot({
+      id: 'art-study-variation-run-1',
+      tab: 'pixel',
+      timestamp: 100,
+      runId: 'variation-run',
+      threadId: 'tiny-night-world',
+      stepIndex: 1,
+    });
+    archived.artStudioStudy.archivedAt = 123;
+    await mount({
+      artStudio: {
+        tab: 'pixel',
+        studioHome: false,
+        studioStarted: true,
+        studioThreadId: 'tiny-night-world',
+        studioThreadRunId: 'variation-run',
+        studioCurrentProjectRunId: 'variation-run',
+        studioThreadStep: 1,
+        studioThreadCompletedSteps: [0],
+        pixelData: {},
+      },
+      snapshots: [archived],
+    });
+
+    await click(findButton(host, /^Save current study$/i));
+
+    expect(latestSnapshots).toHaveLength(2);
+    expect(new Set(latestSnapshots.map((study) => study.id)).size).toBe(2);
+    expect(latestSnapshots.some((study) => study.id === 'art-study-variation-run-1' && study.artStudioStudy.archivedAt === 123)).toBe(true);
+    expect(latestSnapshots.some((study) => study.id.startsWith('art-study-variation-run-1-copy-'))).toBe(true);
+  });
+
+  it('rehydrates a saved reflection when a learner revisits that Thread step', async () => {
+    const saved = studySnapshot({ id: 'reflected-step', tab: 'colorWheel', timestamp: 100, runId: 'thread-run', threadId: 'tiny-night-world', stepIndex: 0 });
+    saved.artStudioStudy.reflection = 'wonder';
+    saved.artStudioStudy.note = 'Could the accent become the horizon?';
+    await mount({
+      artStudio: {
+        tab: 'pixel', studioHome: false, studioStarted: true,
+        studioThreadId: 'tiny-night-world', studioThreadRunId: 'thread-run', studioThreadStep: 1,
+        studioCurrentProjectRunId: 'thread-run', studioThreadCompletedSteps: [0], pixelData: {},
+      },
+      snapshots: [saved],
+    });
+
+    await click(findButton(host, /^Go to step 1:/i));
+    expect(host.querySelector('input[type="radio"][value="wonder"]').checked).toBe(true);
+    expect(host.querySelector('#artstudio-thread-reflection-note').value).toBe('Could the accent become the horizon?');
   });
 });

@@ -4071,6 +4071,24 @@ function aeRemoteScopedWorkspace(value, currentUser) {
   normalized.cycleSnapshots = normalized.cycleSnapshots.filter((item) => item.teacherId === teacherId);
   return normalized;
 }
+function aeRemoteSaveJobMeta(mutation) {
+  const event = aeString(mutation && mutation.event, 40, "").toUpperCase();
+  const debounced = ["DRAFT_SAVED", "PROFILE_UPDATED", "CONFIG_UPDATED", "RATING_UPDATED"].includes(event);
+  const material = ["PROFILE_UPDATED", "RATING_UPDATED"].includes(event);
+  return {
+    debounced,
+    material,
+    coalescingScope: JSON.stringify([
+      event,
+      aeSafeId(mutation && mutation.teacherId, ""),
+      aeString(mutation && mutation.entityType, 60, ""),
+      aeSafeId(mutation && mutation.entityId, "")
+    ])
+  };
+}
+function aeRemoteSaveScopeBoundary(left, right) {
+  return !!left && !!right && (left.material || right.material) && left.coalescingScope !== right.coalescingScope;
+}
 function EducatorEvaluationPanel(props) {
   const { onClose = (() => {
   }), addToast = (() => {
@@ -4116,7 +4134,7 @@ function EducatorEvaluationPanel(props) {
   const remoteSaveGenerationRef = React.useRef(0);
   const remoteDebounceRef = React.useRef(null);
   const remotePendingRef = React.useRef(null);
-  const remoteQueuedSaveRef = React.useRef(null);
+  const remoteQueuedSaveRef = React.useRef([]);
   const remoteActiveSaveRef = React.useRef(null);
   const remoteMountedRef = React.useRef(true);
   const remoteUserRef = React.useRef(null);
@@ -4153,8 +4171,13 @@ function EducatorEvaluationPanel(props) {
     setLiveMessage({ text: String(message || ""), id: Date.now() });
   }, [addToast]);
   const requestClose = React.useCallback(() => {
+    if (notificationRequestRef.current || releaseRequestRef.current) {
+      const message = notificationRequestRef.current ? t("educator_evaluation.close_blocked_notification_outcome_pending_20260831", "Close blocked while the portal-notice outcome is being prepared, sent, or checked. Keep this window open until the exact notification outcome is confirmed.") : t("educator_evaluation.close_blocked_release_outcome_pending_20260831", "Close blocked while released-summary access is being reviewed or changed. Keep this window open until the exact disclosure outcome is confirmed.");
+      notify(message, "error");
+      return false;
+    }
     if (isRemote) {
-      const savePending = remoteInFlightRef.current || remoteState.status === "saving" || !!remoteDebounceRef.current || !!remotePendingRef.current || !!remoteQueuedSaveRef.current || !!remoteActiveSaveRef.current;
+      const savePending = remoteInFlightRef.current || remoteState.status === "saving" || !!remoteDebounceRef.current || !!remotePendingRef.current || remoteQueuedSaveRef.current.length > 0 || !!remoteActiveSaveRef.current;
       const connectedSaveFailure = !!remoteState.currentUser && ["error", "conflict"].includes(remoteState.status);
       if (savePending || connectedSaveFailure) {
         const message = remoteState.status === "conflict" ? t("educator_evaluation.close_blocked_resolve_concurrent_edit_20260830", "Close blocked because a concurrent edit still needs review. Choose which district version to keep before closing.") : remoteState.status === "error" ? t("educator_evaluation.close_blocked_remote_change_unconfirmed_20260830", "Close blocked because the last district change is not confirmed. Review the save error and recover or reload the district copy before closing.") : t("educator_evaluation.close_blocked_remote_save_pending_20260830", "Close blocked while a district save is still pending. Keep this window open until saving finishes.");
@@ -4280,16 +4303,17 @@ function EducatorEvaluationPanel(props) {
       remoteMountedRef.current = false;
       if (remoteDebounceRef.current) clearTimeout(remoteDebounceRef.current);
       remotePendingRef.current = null;
-      remoteQueuedSaveRef.current = null;
+      remoteQueuedSaveRef.current = [];
       remoteActiveSaveRef.current = null;
     };
   }, [isRemote, loadRemoteWorkspace]);
   React.useEffect(() => {
     if (!isRemote) return void 0;
     const beforeUnload = (event) => {
-      const pending = remoteInFlightRef.current || remoteState.status === "saving" || !!remoteDebounceRef.current || !!remotePendingRef.current || !!remoteQueuedSaveRef.current || !!remoteActiveSaveRef.current;
+      const pending = remoteInFlightRef.current || remoteState.status === "saving" || !!remoteDebounceRef.current || !!remotePendingRef.current || remoteQueuedSaveRef.current.length > 0 || !!remoteActiveSaveRef.current;
       const unresolved = !!remoteState.currentUser && ["error", "conflict"].includes(remoteState.status);
-      if (!pending && !unresolved) return;
+      const externalActionPending = notificationRequestRef.current || releaseRequestRef.current;
+      if (!pending && !unresolved && !externalActionPending) return;
       event.preventDefault();
       event.returnValue = "";
     };
@@ -4652,11 +4676,20 @@ function EducatorEvaluationPanel(props) {
   const enqueueRemoteSave = React.useCallback((job) => {
     if (!isRemote || !job) return;
     if (remoteInFlightRef.current) {
-      const queued = remoteQueuedSaveRef.current;
+      const queue = remoteQueuedSaveRef.current;
       const active = remoteActiveSaveRef.current;
-      remoteQueuedSaveRef.current = Object.assign({}, job, {
-        baseWorkspace: aeClone(queued && queued.baseWorkspace || active && active.baseWorkspace || job.baseWorkspace || job.workspace)
-      });
+      const queued = queue.length ? queue[queue.length - 1] : null;
+      if (queued && queued.debounced && job.debounced && !aeRemoteSaveScopeBoundary(queued, job)) {
+        queue[queue.length - 1] = Object.assign({}, job, {
+          baseWorkspace: aeClone(queued.baseWorkspace || job.baseWorkspace || job.workspace),
+          restoreFocusOnSuccess: !!(queued.restoreFocusOnSuccess || job.restoreFocusOnSuccess)
+        });
+      } else {
+        const predecessor = queued || active;
+        queue.push(Object.assign({}, job, {
+          baseWorkspace: aeClone(predecessor && predecessor.workspace || job.baseWorkspace || job.workspace)
+        }));
+      }
       setRemoteState((current) => ({ ...current, status: "saving", error: "", inFlight: true }));
       return;
     }
@@ -4686,11 +4719,10 @@ function EducatorEvaluationPanel(props) {
       if (!remoteMountedRef.current) {
         remoteInFlightRef.current = false;
         remoteActiveSaveRef.current = null;
-        remoteQueuedSaveRef.current = null;
+        remoteQueuedSaveRef.current = [];
         return;
       }
-      const queued = remoteQueuedSaveRef.current;
-      remoteQueuedSaveRef.current = null;
+      const queued = remoteQueuedSaveRef.current.shift() || null;
       remoteInFlightRef.current = false;
       remoteActiveSaveRef.current = null;
       if (queued) {
@@ -4710,12 +4742,12 @@ function EducatorEvaluationPanel(props) {
         setRemoteState((current) => ({ ...current, inFlight: false }));
       }
     }).catch(async (error) => {
-      const recoveryJob = [job, remoteQueuedSaveRef.current, remotePendingRef.current].filter(Boolean).reduce((latest, candidate) => candidate.generation > latest.generation ? candidate : latest);
+      const recoveryJob = [job].concat(remoteQueuedSaveRef.current, remotePendingRef.current || []).filter(Boolean).reduce((latest, candidate) => candidate.generation > latest.generation ? candidate : latest);
       if (recoveryJob !== job) recoveryJob.baseWorkspace = aeClone(job.baseWorkspace || recoveryJob.baseWorkspace || job.workspace);
       if (remoteDebounceRef.current) clearTimeout(remoteDebounceRef.current);
       remoteDebounceRef.current = null;
       remotePendingRef.current = null;
-      remoteQueuedSaveRef.current = null;
+      remoteQueuedSaveRef.current = [];
       remoteActiveSaveRef.current = null;
       remoteInFlightRef.current = false;
       if (!remoteMountedRef.current || recoveryJob.generation !== remoteSaveGenerationRef.current) return;
@@ -4757,24 +4789,34 @@ function EducatorEvaluationPanel(props) {
       entityId: aeSafeId(audit.entityId, ""),
       version: Math.max(1, parseInt(audit.version, 10) || 1)
     } : null;
-    const carriedBase = remotePendingRef.current && remotePendingRef.current.baseWorkspace;
-    const job = { workspace: aeClone(snapshot), baseWorkspace: aeClone(carriedBase || baseSnapshot || workspaceRef.current), mutation, generation };
-    const debounced = mutation && ["DRAFT_SAVED", "PROFILE_UPDATED", "CONFIG_UPDATED", "RATING_UPDATED"].includes(mutation.event);
-    if (debounced) {
+    const meta = aeRemoteSaveJobMeta(mutation);
+    const priorPending = remotePendingRef.current;
+    const scopeBoundary = !!priorPending && meta.debounced && aeRemoteSaveScopeBoundary(priorPending, meta);
+    const carriedBase = priorPending && !scopeBoundary ? priorPending.baseWorkspace : null;
+    const job = Object.assign({ workspace: aeClone(snapshot), baseWorkspace: aeClone(carriedBase || baseSnapshot || workspaceRef.current), mutation, generation }, meta);
+    if (meta.debounced) {
+      if (scopeBoundary) {
+        if (remoteDebounceRef.current) clearTimeout(remoteDebounceRef.current);
+        remoteDebounceRef.current = null;
+        remotePendingRef.current = null;
+        enqueueRemoteSave(priorPending);
+      }
       remotePendingRef.current = job;
       if (remoteDebounceRef.current) clearTimeout(remoteDebounceRef.current);
       setRemoteState((current) => ({ ...current, status: "saving", error: "" }));
       remoteDebounceRef.current = setTimeout(() => {
         remoteDebounceRef.current = null;
-        const pending = remotePendingRef.current;
+        const pending2 = remotePendingRef.current;
         remotePendingRef.current = null;
-        enqueueRemoteSave(pending);
+        enqueueRemoteSave(pending2);
       }, 700);
       return;
     }
     if (remoteDebounceRef.current) clearTimeout(remoteDebounceRef.current);
     remoteDebounceRef.current = null;
+    const pending = remotePendingRef.current;
     remotePendingRef.current = null;
+    if (pending) enqueueRemoteSave(pending);
     enqueueRemoteSave(job);
   }, [isRemote, enqueueRemoteSave]);
   const commit = React.useCallback((mutator, audit, message) => {

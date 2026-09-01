@@ -387,7 +387,8 @@ describe('dissection canvas animation loop', () => {
       canvas._toolContactPulse = { replay: true };
       canvas._toolOutcomePulse = { tone: 'success' };
       compareTimer = setTimeout(() => {}, 60000);
-      window.__alloDissectionCompareReplayTimer = compareTimer;
+      canvas._dissTimers = Object.create(null);
+      canvas._dissTimers.compareReplay = compareTimer;
 
       await act(async () => {
         root.unmount();
@@ -402,7 +403,7 @@ describe('dissection canvas animation loop', () => {
       expect(canvas._dissReducedOutcomeTimer).toBeNull();
       expect(canvas._toolContactPulse).toBeNull();
       expect(canvas._toolOutcomePulse).toBeNull();
-      expect(window.__alloDissectionCompareReplayTimer).toBeNull();
+      expect(canvas._dissTimers).toBeNull();
       expect(window.__alloDissectionCanvasCleanup).toBeNull();
       expect(window._dissectionKeyHandler).toBeNull();
       expect(canvas._dissCleanup).toBeNull();
@@ -415,10 +416,6 @@ describe('dissection canvas animation loop', () => {
           root.unmount();
           await Promise.resolve();
         });
-      }
-      if (window.__alloDissectionCompareReplayTimer) {
-        clearTimeout(window.__alloDissectionCompareReplayTimer);
-        window.__alloDissectionCompareReplayTimer = null;
       }
       if (window.__alloDissectionCanvasCleanup) window.__alloDissectionCanvasCleanup();
       window._dissectionKeyHandler = null;

@@ -366,10 +366,14 @@ window.StemLab = window.StemLab || {
 
           // ═══ CHECK ANSWER ═══
           var rLen = range.max - range.min;
+          var challengeSubmissionPending = false;
           var checkAnswer = function() {
-            if (!challenge) return;
-            var ans = parseFloat(answer);
-            if (isNaN(ans)) return;
+            if (!challenge || challengeSubmissionPending || challenge.solved) return;
+            var answerText = String(answer == null ? '' : answer).trim().replace(/\u2212/g, '-');
+            if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(answerText)) return;
+            var ans = Number(answerText);
+            if (!Number.isFinite(ans)) return;
+            challengeSubmissionPending = true;
 
             var ok;
             if (challenge._checkFn) {
@@ -408,6 +412,7 @@ window.StemLab = window.StemLab || {
             }
 
             upd({
+              challenge: ok ? Object.assign({}, challenge, { solved: true }) : challenge,
               feedback: ok
                 ? { correct: true, msg: '\u2705 Correct!' + (challenge.hint ? '' : '') }
                 : { correct: false, msg: '\u274C ' + (challenge.type === 'estimate' ? 'The value is approximately ' + challenge.answer + '.' : 'The correct answer is ' + challenge.answer + '.') + (challenge.hint ? ' (' + challenge.hint + ')' : '') },
@@ -825,15 +830,16 @@ window.StemLab = window.StemLab || {
                       h('div', { className: 'flex flex-col sm:flex-row gap-2 sm:items-center' },
                         h('input', {
                           type: 'number', value: answer, step: challenge.type === 'fraction' ? '0.1' : '1', min: challenge.type === 'place' ? range.min : undefined, max: challenge.type === 'place' ? range.max : undefined,
-                          onChange: function(e) { upd({ answer: e.target.value }); },
+                          onChange: function(e) { upd({ answer: e.target.value, feedback: null }); },
                           onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
+                          disabled: !!(feedback && feedback.correct),
                           placeholder: challenge.type === 'place' ? t('stem.numberline.placement_value', 'Value to place') : t('stem.numberline.your_answer', 'Your answer'),
                           'aria-label': challenge.type === 'place' ? t('stem.numberline.keyboard_placement_value', 'Placement value') : t('stem.numberline.challenge_answer', 'Challenge answer'),
                           className: 'flex-1 px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono'
                         }),
                         h('button', { 'aria-label': t('stem.numberline.check_answer', 'Check Answer'),
                           onClick: checkAnswer,
-                          disabled: challenge.type === 'place' && !answer,
+                          disabled: !answer || !!(feedback && feedback.correct),
                           className: 'px-4 py-2 bg-blue-600 text-white font-bold rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-all'
                         }, challenge.type === 'place' ? 'Check Placement' : 'Check')
                       ),

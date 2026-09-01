@@ -118,6 +118,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-vital]::before { content:""; position:absolute; inset:0 auto 0 0; width:.25rem; background:rgb(var(--bee-vital-rgb,79,70,229)); }' +
       '[data-beehive-vital][data-tone="good"] { --bee-vital-rgb:5,150,105; } [data-beehive-vital][data-tone="warn"] { --bee-vital-rgb:217,119,6; } [data-beehive-vital][data-tone="danger"] { --bee-vital-rgb:225,29,72; } [data-beehive-vital][data-tone="info"] { --bee-vital-rgb:79,70,229; }' +
       '[data-beehive-vital-bar] { height:.3rem; overflow:hidden; border-radius:999px; background:rgba(100,116,139,.18); } [data-beehive-vital-bar] > span { display:block; height:100%; border-radius:inherit; background:rgb(var(--bee-vital-rgb)); transition:width .35s ease; }' +
+      '[data-experiment-audit-deck="true"] { margin-top:.8rem; overflow:hidden; border:1px solid rgba(var(--bee-accent-rgb),.20); border-radius:1rem; padding:.75rem; background:linear-gradient(135deg,rgba(var(--bee-accent-rgb),.06),rgba(255,255,255,.55),rgba(var(--bee-secondary-rgb),.055)); box-shadow:0 14px 34px rgba(15,23,42,.07),inset 0 1px 0 rgba(255,255,255,.76); }' +
+      '[data-beehive-theme="dark"] [data-experiment-audit-deck="true"] { background:linear-gradient(135deg,rgba(var(--bee-accent-rgb),.10),rgba(15,23,42,.72),rgba(var(--bee-secondary-rgb),.07)); box-shadow:0 16px 38px rgba(2,6,23,.25),inset 0 1px 0 rgba(255,255,255,.045); }' +
+      '[data-experiment-audit-grid="true"] { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); align-items:stretch; gap:.65rem; } [data-experiment-audit-grid="true"] > section { height:100%; margin-top:0 !important; }' +
+      '[data-plan-registration-sequence="true"] { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.55rem; margin-top:.65rem; list-style:none; }' +
+      '[data-plan-registration-node] { position:relative; min-width:0; border:1px solid rgba(100,116,139,.22); border-radius:.75rem; padding:.55rem; background:rgba(255,255,255,.68); }' +
+      '[data-beehive-theme="dark"] [data-plan-registration-node] { background:rgba(2,6,23,.34); border-color:rgba(255,255,255,.12); }' +
+      '[data-plan-registration-node]:not(:last-child)::after { content:""; position:absolute; z-index:2; left:calc(100% + .08rem); top:1.15rem; width:.4rem; height:.14rem; border-radius:999px; background:rgba(100,116,139,.34); }' +
+      '[data-plan-registration-node][data-sequence-state="complete"] { border-color:rgba(5,150,105,.42); box-shadow:inset 0 0 0 1px rgba(5,150,105,.08); } [data-plan-registration-node][data-sequence-state="attention"] { border-color:rgba(217,119,6,.48); box-shadow:inset 0 0 0 1px rgba(217,119,6,.08); }' +
+      '[data-plan-registration-step] { display:grid; width:1.55rem; height:1.55rem; flex:0 0 auto; place-items:center; border-radius:999px; background:#64748b; color:#fff; font-size:.68rem; font-weight:900; box-shadow:0 0 0 .2rem rgba(100,116,139,.12); }' +
+      '[data-sequence-state="complete"] [data-plan-registration-step] { background:#047857; box-shadow:0 0 0 .2rem rgba(5,150,105,.14); } [data-sequence-state="attention"] [data-plan-registration-step] { background:#b45309; box-shadow:0 0 0 .2rem rgba(217,119,6,.14); }' +
       '[data-beehive-stage] { isolation:isolate; border-color:rgba(var(--bee-accent-rgb),.58) !important; box-shadow:0 26px 62px rgba(15,23,42,.22),0 0 0 1px rgba(var(--bee-accent-rgb),.20),inset 0 1px 0 rgba(255,255,255,.18) !important; }' +
       '[data-beehive-stage]:focus-within { box-shadow:0 28px 68px rgba(15,23,42,.26),0 0 0 3px rgba(var(--bee-accent-rgb),.34),inset 0 1px 0 rgba(255,255,255,.18) !important; }' +
       '[data-beehive-stage]::after { content:""; position:absolute; inset:0; z-index:2; pointer-events:none; border-radius:inherit; opacity:.62; }' +
@@ -166,8 +176,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-focus-panel] { animation:bee-panel-arrive .22s ease-out both; }' +
       '@keyframes bee-cycle-clock { from{transform:scaleX(0)} to{transform:scaleX(1)} } @keyframes bee-stage-breathe { 0%,100%{opacity:.48} 50%{opacity:.74} } @keyframes bee-live-pulse { 0%,100%{opacity:.66;transform:scale(.86)} 50%{opacity:1;transform:scale(1.08)} } @keyframes bee-progress-sheen { 0%,55%{transform:translateX(-120%)} 85%,100%{transform:translateX(120%)} } @keyframes bee-panel-arrive { from{opacity:0;transform:translateY(-6px) scale(.992)} to{opacity:1;transform:none} } @keyframes bee-build-zone-pulse { 0%,100%{box-shadow:inset 0 0 38px rgba(16,185,129,.10),0 0 18px rgba(16,185,129,.10)} 50%{box-shadow:inset 0 0 48px rgba(16,185,129,.18),0 0 30px rgba(16,185,129,.22)} }' +
       '@media (prefers-reduced-motion:reduce) { [data-beehive-cycle-fill],[data-beehive-rts-live-dot],[data-beehive-stage]::after,[data-beehive-build-zone],[data-beehive-build-selection="true"],[data-beehive-focus-panel],[data-beehive-root="true"] [role="progressbar"] > *::after { animation:none !important; } [data-beehive-mode-tab],[data-structure-selected="true"],[data-beehive-root="true"] :is([data-command-ready="true"],[data-structure-ready="true"],[data-action-ready="true"]):hover,[data-mobile-rail="drone-difficulty"] button,[data-flight-control],[data-placement-zone],[data-beehive-start-strategy="true"],#beehive-next-day:hover,[data-management-action]:hover { transform:none !important; } }' +
-      '@media (forced-colors:active) { [data-beehive-root="true"],[data-beehive-hero="true"],[data-beehive-mode-switcher="true"],[data-beehive-stage],[data-beehive-stage-chip],[data-beehive-build-zone],[data-beehive-rival-zone],[data-beehive-build-selection],[data-beehive-cycle-track],[data-beehive-beekeeper-paused-overlay],[data-beehive-flight-paused-overlay],[data-flight-envelope-item],[data-beehive-vital],[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-focus-panel]) { background:Canvas !important; border-color:CanvasText !important; box-shadow:none !important; backdrop-filter:none !important; } [data-beehive-root="true"]::before,[data-beehive-hero="true"]::after,[data-beehive-stage]::after,[data-beehive-root="true"] [role="progressbar"] > *::after { display:none !important; } [data-beehive-cycle-fill] { background:Highlight !important; } [data-beehive-mode-tab][aria-checked="true"] { outline:2px solid Highlight !important; transform:none; } }' +
-      '@media (max-width:639px) { [data-beehive-root="true"] { border-radius:1.25rem; padding:.5rem; } [data-beehive-hero="true"] { min-height:0; } [data-beehive-hero="true"]::after { width:10rem; right:-3rem; top:-7rem; } [data-beehive-mode-tab] { min-height:6.5rem; } [data-beehive-pulse="true"] { grid-template-columns:1fr; gap:.4rem; } [data-beehive-vital] { min-height:0; padding:.65rem .75rem .6rem .9rem; } [data-beehive-stage-chip] { min-height:1.65rem; padding:.25rem .5rem; font-size:.65rem; } [data-beehive-build-zone] > span,[data-beehive-rival-zone] > span { padding:.3rem .45rem; font-size:.6rem; } [data-beehive-stage] { border-radius:1rem !important; } }';
+      '@media (forced-colors:active) { [data-beehive-root="true"],[data-beehive-hero="true"],[data-beehive-mode-switcher="true"],[data-beehive-stage],[data-beehive-stage-chip],[data-beehive-build-zone],[data-beehive-rival-zone],[data-beehive-build-selection],[data-beehive-cycle-track],[data-beehive-beekeeper-paused-overlay],[data-beehive-flight-paused-overlay],[data-flight-envelope-item],[data-beehive-vital],[data-experiment-audit-deck="true"],[data-plan-registration-node],[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-focus-panel]) { background:Canvas !important; border-color:CanvasText !important; box-shadow:none !important; backdrop-filter:none !important; } [data-beehive-root="true"]::before,[data-beehive-hero="true"]::after,[data-beehive-stage]::after,[data-plan-registration-node]::after,[data-beehive-root="true"] [role="progressbar"] > *::after { display:none !important; } [data-beehive-cycle-fill] { background:Highlight !important; } [data-beehive-mode-tab][aria-checked="true"] { outline:2px solid Highlight !important; transform:none; } }' +
+      '@media (max-width:639px) { [data-beehive-root="true"] { border-radius:1.25rem; padding:.5rem; } [data-beehive-hero="true"] { min-height:0; } [data-beehive-hero="true"]::after { width:10rem; right:-3rem; top:-7rem; } [data-beehive-mode-tab] { min-height:6.5rem; } [data-beehive-pulse="true"] { grid-template-columns:1fr; gap:.4rem; } [data-beehive-vital] { min-height:0; padding:.65rem .75rem .6rem .9rem; } [data-plan-registration-sequence="true"] { grid-template-columns:1fr; } [data-plan-registration-node]:not(:last-child)::after { left:1.25rem; top:100%; width:.14rem; height:.55rem; } [data-beehive-stage-chip] { min-height:1.65rem; padding:.25rem .5rem; font-size:.65rem; } [data-beehive-build-zone] > span,[data-beehive-rival-zone] > span { padding:.3rem .45rem; font-size:.6rem; } [data-beehive-stage] { border-radius:1rem !important; } }';
     document.head.appendChild(st);
   })();
 
@@ -25274,12 +25284,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
             }
             var issueItems = audit.status === 'changed' ? audit.differences : audit.status === 'incomplete' ? audit.missing : [];
+            var currentPlanMissing = bhExperimentPlanMissing(experimentNotebook);
+            var planFieldTotal = BEEHIVE_EXPERIMENT_PLAN_REQUIRED_FIELDS.length;
+            var tiedCopy = audit.registeredPlan;
+            var timingStages = [
+              {
+                id: 'plan',
+                state: currentPlanMissing.length ? 'attention' : 'complete',
+                label: 'Current plan',
+                meta: (planFieldTotal - currentPlanMissing.length) + ' of ' + planFieldTotal + ' fields ready'
+              },
+              {
+                id: 'copy',
+                state: tiedCopy ? (tiedCopy.complete ? 'complete' : 'attention') : (experimentComparison.status === 'same-run' ? 'waiting' : 'attention'),
+                label: 'Run B copy',
+                meta: tiedCopy ? (tiedCopy.complete ? 'Complete copy saved' : 'Incomplete copy saved') : (experimentComparison.status === 'same-run' ? 'Saves when Run B starts' : 'No copy tied to these runs')
+              },
+              {
+                id: 'result',
+                state: audit.status === 'matched' ? 'complete' : (experimentComparison.status === 'same-run' ? 'waiting' : 'attention'),
+                label: 'Timing result',
+                meta: audit.status === 'matched' ? 'Plan and copy match' : audit.status === 'changed' ? 'Current plan changed' : audit.status === 'incomplete' ? 'Run B began incomplete' : experimentComparison.status === 'same-run' ? 'Waiting for Run B' : 'Restart to protect'
+              }
+            ];
             return h('section', { 'data-experiment-plan-registration': 'true', 'data-plan-registration-status': audit.status, className: 'mt-3 rounded-xl border p-3 ' + tone, 'aria-labelledby': 'beehive-plan-registration-title' },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
                 h('div', null,
                   h('h5', { id: 'beehive-plan-registration-title', className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Plan timing check'),
                   h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + bodyTone }, detail)),
                 h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, badgeLabel)),
+              h('ol', { 'data-plan-registration-sequence': 'true', className: 'm-0 p-0', 'aria-label': 'Plan timing sequence' }, timingStages.map(function(stage, index) {
+                return h('li', { key: stage.id, 'data-plan-registration-node': stage.id, 'data-sequence-state': stage.state, 'aria-label': (index + 1) + '. ' + stage.label + ': ' + stage.meta },
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('span', { 'data-plan-registration-step': 'true', 'aria-hidden': 'true' }, index + 1),
+                    h('span', { className: 'min-w-0 text-[10px] font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, stage.label)),
+                  h('p', { className: 'mt-1.5 text-[9px] font-semibold leading-relaxed ' + bodyTone }, stage.meta));
+              })),
               issueItems.length > 0 && h('ul', { className: 'mt-2 flex flex-wrap gap-1.5', 'aria-label': audit.status === 'changed' ? 'Plan items edited after Run B began' : 'Plan items missing when Run B began' }, issueItems.map(function(item) {
                 return h('li', { key: item.id, className: 'rounded-full border px-2 py-1 text-[9px] font-bold ' + cardTone }, item.label);
               })),
@@ -25420,9 +25460,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('span', { className: check.matched ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-amber-300' : 'text-amber-800') }, check.matched ? 'Matched' : 'Different')),
                   h('p', { className: 'mt-1 break-words text-[9px] leading-relaxed ' + bodyTone }, 'Run A: ' + check.baseline + ' / Run B: ' + check.current));
               })),
-              renderManagementChoiceAudit(),
-              renderPlanRegistrationAudit(),
-              renderPredictionAudit(),
+              h('section', { 'data-experiment-audit-deck': 'true', 'aria-labelledby': 'beehive-evidence-integrity-title' },
+                h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2 px-1' },
+                  h('div', null,
+                    h('h5', { id: 'beehive-evidence-integrity-title', className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Evidence integrity'),
+                    h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + bodyTone }, 'Read left to right: what changed, when the plan was protected, and whether the displayed result matched the prediction.')),
+                  h('span', { className: 'rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-wide ' + (dk ? 'border-white/15 text-slate-200' : 'border-slate-300 text-slate-700') }, '3 linked checks')),
+                h('div', { 'data-experiment-audit-grid': 'true' },
+                  renderManagementChoiceAudit(),
+                  renderPlanRegistrationAudit(),
+                  renderPredictionAudit())),
               h('div', { role: 'region', tabIndex: 0, 'aria-label': 'Scrollable Run A and Run B metric comparison', className: 'mt-3 overflow-x-auto rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-white/10' : 'border-slate-200') },
                 h('table', { 'data-experiment-compare-table': 'true', className: 'w-full min-w-[34rem] border-collapse text-left text-[10px]' },
                   h('caption', { className: 'px-3 py-2 text-left font-bold ' + bodyTone }, 'Colony metrics: Run A at Day ' + experimentComparison.baseline.capturedDay + ' and Run B at Day ' + experimentComparison.current.capturedDay),
@@ -25567,7 +25614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           BEEHIVE_DEBUG && console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
-        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '44', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
+        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '45', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
           // Header
           h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
             h('div', { className: 'flex items-center gap-3 min-w-0' },

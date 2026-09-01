@@ -606,9 +606,10 @@ function repositoryFixture() {
   ]));
   // Keep the explicit test-only canonical state in parity with the protected
   // snapshot ledger; replaceWorkspace preserves the seeded repository revision.
+  // Normalize first because this helper bypasses the production write path.
   const canonicalWorkspace = harness.invoke('bootstrap').workspace;
   canonicalWorkspace.cycleSnapshots = protectedSnapshots;
-  harness.replaceWorkspace(canonicalWorkspace);
+  harness.replaceWorkspace(harness.invoke('sanitizeStoredWorkspace_', canonicalWorkspace));
   return { ...harness, peerIds, revision: seeded.revision };
 }
 

@@ -287,6 +287,13 @@
     return match ? match[0].toLowerCase() : (ARCH_MAT_COLOR[material] || ARCH_MAT_COLOR.stone);
   }
 
+  function parseArchCoordinate(value) {
+    if (value == null || typeof value === 'boolean') return null;
+    if (typeof value === 'string' && value.trim() === '') return null;
+    var number = Number(value);
+    return isFinite(number) ? Math.round(number) : null;
+  }
+
   // Shared validation boundary for saved and shared builds. It keeps malformed
   // or oversized imports from making the renderer unusable, and also repairs
   // older builds that stored CSS variables instead of plain colours.
@@ -296,8 +303,8 @@
     for (var i = 0; i < input.length && clean.length < ARCH_MAX_BLOCKS; i++) {
       var raw = input[i];
       if (!raw || typeof raw !== 'object') continue;
-      var x = Math.round(Number(raw.x)), y = Math.round(Number(raw.y)), z = Math.round(Number(raw.z));
-      if (!isFinite(x) || !isFinite(y) || !isFinite(z)) continue;
+      var x = parseArchCoordinate(raw.x), y = parseArchCoordinate(raw.y), z = parseArchCoordinate(raw.z);
+      if (x == null || y == null || z == null) continue;
       if (x < ARCH_XZ_MIN || x > ARCH_XZ_MAX || z < ARCH_XZ_MIN || z > ARCH_XZ_MAX || y < ARCH_Y_MIN || y > ARCH_Y_MAX) continue;
       var key = x + ',' + y + ',' + z;
       if (seen[key]) continue;
@@ -313,6 +320,43 @@
       });
     }
     return clean;
+  }
+
+  // Keep ordinary in-memory builds referentially stable, while repairing data
+  // restored from older/corrupt persistence before any analysis or rendering.
+  function getArchRuntimeBlocks(input) {
+    if (!Array.isArray(input) || input.length > ARCH_MAX_BLOCKS) return sanitizeArchBlocks(input);
+    var seen = {};
+    for (var i = 0; i < input.length; i++) {
+      var raw = input[i];
+      if (!raw || typeof raw !== 'object') return sanitizeArchBlocks(input);
+      var x = raw.x, y = raw.y, z = raw.z;
+      if (typeof x !== 'number' || typeof y !== 'number' || typeof z !== 'number'
+          || !isFinite(x) || !isFinite(y) || !isFinite(z)
+          || Math.round(x) !== x || Math.round(y) !== y || Math.round(z) !== z
+          || x < ARCH_XZ_MIN || x > ARCH_XZ_MAX || z < ARCH_XZ_MIN || z > ARCH_XZ_MAX
+          || y < ARCH_Y_MIN || y > ARCH_Y_MAX) return sanitizeArchBlocks(input);
+      var key = x + ',' + y + ',' + z;
+      if (seen[key]) return sanitizeArchBlocks(input);
+      seen[key] = true;
+      if (!Object.prototype.hasOwnProperty.call(ARCH_SHAPE_IDS, raw.shape)
+          || !Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, raw.material)) return sanitizeArchBlocks(input);
+    }
+    return input;
+  }
+
+  function getArchHistoryStack(input) {
+    if (!Array.isArray(input)) return [];
+    return input.filter(function (frame) { return Array.isArray(frame); }).slice(-50);
+  }
+
+  function getArchDominantNormalStep(normal) {
+    normal = normal || {};
+    var x = Number(normal.x) || 0, y = Number(normal.y) || 0, z = Number(normal.z) || 0;
+    var ax = Math.abs(x), ay = Math.abs(y), az = Math.abs(z);
+    if (ay >= ax && ay >= az) return { x: 0, y: y < 0 ? -1 : 1, z: 0 };
+    if (ax >= az) return { x: x < 0 ? -1 : 1, y: 0, z: 0 };
+    return { x: 0, y: 0, z: z < 0 ? -1 : 1 };
   }
 
   function reflectArchRotation(rotation, axis) {
@@ -349,6 +393,51 @@
     });
     settled.sort(function (a, b) { return a.y - b.y || a.x - b.x || a.z - b.z; });
     return { blocks: settled, moved: moved };
+  }
+
+  function simulateArchEarthquake(currentBlocks, quakeIntensity, randomSource) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    var intensityLevel = Math.max(1, Math.min(10, Math.round(Number(quakeIntensity) || 5)));
+    var random = typeof randomSource === 'function' ? randomSource : null;
+    if (!random) {
+      var randomState = (Number(randomSource) >>> 0) || 0x6d2b79f5;
+      random = function () {
+        randomState ^= randomState << 13;
+        randomState ^= randomState >>> 17;
+        randomState ^= randomState << 5;
+        return (randomState >>> 0) / 4294967296;
+      };
+    }
+    var occupied = {};
+    current.forEach(function (b) { occupied[b.x + ',' + b.y + ',' + b.z] = true; });
+    var survivors = [], keepMap = {};
+    var sorted = current.slice().sort(function (a, b) { return a.y - b.y || a.x - b.x || a.z - b.z; });
+    sorted.forEach(function (b) {
+      var onGround = b.y === ARCH_Y_MIN;
+      var supported = onGround || keepMap[b.x + ',' + (b.y - 1) + ',' + b.z];
+      var neighbors = 0;
+      [[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]].forEach(function (n) {
+        if (occupied[(b.x+n[0])+','+(b.y+n[1])+','+(b.z+n[2])]) neighbors++;
+      });
+      var normalizedIntensity = intensityLevel / 10;
+      var chance = supported ? 0.95 - (normalizedIntensity * 0.4) + (neighbors * 0.08) : 0.3 - (normalizedIntensity * 0.25);
+      if (b.material === 'glass') chance -= 0.15;
+      if (b.material === 'metal' || b.material === 'stone') chance += 0.05;
+      if (b.shape === 'pyramid' || b.shape === 'dome') chance += 0.1;
+      if (random() < Math.max(0.05, Math.min(0.99, chance))) {
+        survivors.push(b);
+        keepMap[b.x + ',' + b.y + ',' + b.z] = true;
+      }
+    });
+    var survivedPct = current.length ? Math.round((survivors.length / current.length) * 100) : 100;
+    return {
+      blocks: survivors,
+      fallen: current.length - survivors.length,
+      survived: survivors.length,
+      pct: survivedPct,
+      rating: survivedPct >= 90 ? 'Earthquake-proof!' : survivedPct >= 70 ? 'Minor damage' : survivedPct >= 40 ? 'Significant damage' : 'Catastrophic failure',
+      intensity: intensityLevel
+    };
   }
 
   function changeArchCamera(current, action) {
@@ -564,7 +653,7 @@
       var cubeCount = cubeBlocks.length;
       if (cubeCount && (!batch || capacity < cubeCount)) {
         if (batch) batch.dispose(scene);
-        capacity = Math.max(64, cubeCount);
+        capacity = Math.min(ARCH_MAX_BLOCKS, Math.max(64, cubeCount, capacity ? capacity * 2 : 64));
         batch = window.StemLab.makeVoxelBatch(T, {
           capacity: capacity, size: 0.94, edges: true, edgeOpacity: 0.26
         });
@@ -673,6 +762,7 @@
       renderer.setSize(w, hh, false);
       camera.aspect = w / hh;
       camera.updateProjectionMatrix();
+      appliedCamSig = '';
       invalidate();
     }
 
@@ -760,13 +850,14 @@
               normal = normal.clone();
               if (hit.object !== (batch && batch.mesh) && normal.transformDirection) normal.transformDirection(hit.object.matrixWorld);
             }
+            var step = getArchDominantNormalStep(normal);
             return {
               kind: 'block',
               block: { x: b.x, y: b.y, z: b.z },
               place: {
-                x: b.x + Math.round(normal.x || 0),
-                y: b.y + Math.round(normal.y || 0),
-                z: b.z + Math.round(normal.z || 0)
+                x: b.x + step.x,
+                y: b.y + step.y,
+                z: b.z + step.z
               }
             };
           }
@@ -921,6 +1012,7 @@
       return changed ? painted : current;
     }
     if (current.some(atCell)) return current;
+    if (current.length >= ARCH_MAX_BLOCKS) return current;
     return current.concat([{
       x: x, y: y, z: z,
       shape: edit.shape || 'block',
@@ -1032,6 +1124,34 @@
     };
   }
 
+  function mirrorArchBlocksWithinLimit(currentBlocks, axis) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    if (!current.length) return { blocks: current, added: 0, skipped: 0 };
+    var useZ = axis === 'z';
+    var values = current.map(function (b) { return useZ ? b.z : b.x; });
+    var mid = (Math.min.apply(null, values) + Math.max.apply(null, values)) / 2;
+    var mirrored = current.map(function (b) {
+      var next = Object.assign({}, b, { rotation: reflectArchRotation(b.rotation, useZ ? 'z' : 'x') });
+      if (useZ) next.z = Math.round(mid + (mid - b.z));
+      else next.x = Math.round(mid + (mid - b.x));
+      return next;
+    });
+    var occupied = {};
+    current.forEach(function (b) { occupied[archBlockKey(b)] = true; });
+    return mergeArchBlocksWithinLimit(current, mirrored.filter(function (b) { return !occupied[archBlockKey(b)]; }));
+  }
+
+  function duplicateArchBlocksWithinLimit(currentBlocks, dx, dy, dz) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    if (!current.length) return { blocks: current, added: 0, skipped: 0 };
+    var copied = sanitizeArchBlocks(current.map(function (b) {
+      return Object.assign({}, b, { x: b.x + dx, y: b.y + dy, z: b.z + dz });
+    }));
+    var occupied = {};
+    current.forEach(function (b) { occupied[archBlockKey(b)] = true; });
+    return mergeArchBlocksWithinLimit(current, copied.filter(function (b) { return !occupied[archBlockKey(b)]; }));
+  }
+
   function nearestArchOccupiedLayer(currentBlocks, preferredLayer) {
     var preferred = Math.max(ARCH_Y_MIN, Math.min(ARCH_Y_MAX, Math.round(Number(preferredLayer) || 0)));
     var layers = {}, best = preferred, bestDistance = Infinity;
@@ -1039,7 +1159,8 @@
       var y = Math.max(ARCH_Y_MIN, Math.min(ARCH_Y_MAX, Math.round(Number(b.y) || 0)));
       layers[y] = true;
     });
-    if (layers[preferred] || Object.keys(layers).length === 0) return preferred;
+    if (Object.keys(layers).length === 0) return ARCH_Y_MIN;
+    if (layers[preferred]) return preferred;
     Object.keys(layers).forEach(function (key) {
       var y = Number(key);
       var distance = Math.abs(y - preferred);
@@ -1049,6 +1170,52 @@
       }
     });
     return best;
+  }
+
+  // A compact fingerprint keeps analysis produced for one structure from
+  // masquerading as current after the student edits, loads, or replays a
+  // different build. Two independently seeded 32-bit hashes make accidental
+  // collisions vanishingly unlikely without persisting the whole structure.
+  function getArchBuildSignature(currentBlocks) {
+    var list = Array.isArray(currentBlocks) ? currentBlocks : [];
+    var hashA = 2166136261;
+    var hashB = 2246822519;
+    var feed = function (value) {
+      var str = String(value == null ? '' : value);
+      for (var i = 0; i < str.length; i++) {
+        var code = str.charCodeAt(i);
+        hashA = Math.imul(hashA ^ code, 16777619);
+        hashB = Math.imul(hashB ^ code, 3266489917);
+      }
+      hashA = Math.imul(hashA ^ 31, 16777619);
+      hashB = Math.imul(hashB ^ 127, 3266489917);
+    };
+    list.forEach(function (b) {
+      b = b || {};
+      feed(Math.round(Number(b.x) || 0));
+      feed(Math.round(Number(b.y) || 0));
+      feed(Math.round(Number(b.z) || 0));
+      feed(b.shape || 'block');
+      feed(b.material || 'stone');
+      feed(String(b.color || '').toLowerCase());
+      feed(normalizeArchRotation(b.rotation));
+    });
+    return list.length + ':' + (hashA >>> 0).toString(36) + ':' + (hashB >>> 0).toString(36);
+  }
+
+  function getArchReplacementViewState(nextBlocks, preferredLayer) {
+    return {
+      viewLayer: -1,
+      showSlice: false,
+      sliceZSelected: false,
+      filterMaterial: '',
+      filterShape: '',
+      editLayer: nearestArchOccupiedLayer(nextBlocks, preferredLayer),
+      gridCursorX: null,
+      gridCursorZ: null,
+      selectedBlockKey: '',
+      quakeResult: null
+    };
   }
 
   function getArchGridAxisBounds(hasBlocks, minValue, maxValue, focusValue) {
@@ -1119,13 +1286,20 @@
   try { window.__alloArchMoveGridCursor = moveArchGridCursor; } catch (e) {}
   try { window.__alloArchDisplayBlocks = selectArchDisplayBlocks; } catch (e) {}
   try { window.__alloArchSanitizeBlocks = sanitizeArchBlocks; } catch (e) {}
+  try { window.__alloArchRuntimeBlocks = getArchRuntimeBlocks; } catch (e) {}
+  try { window.__alloArchDominantNormalStep = getArchDominantNormalStep; } catch (e) {}
   try { window.__alloArchSettleBlocks = settleArchBlocks; } catch (e) {}
   try { window.__alloArchUnsupportedKeys = getArchUnsupportedKeys; } catch (e) {}
   try { window.__alloArchChangeCamera = changeArchCamera; } catch (e) {}
   try { window.__alloArchReflectRotation = reflectArchRotation; } catch (e) {}
   try { window.__alloArchBlockAction = applyArchBlockAction; } catch (e) {}
   try { window.__alloArchMergeBlocks = mergeArchBlocksWithinLimit; } catch (e) {}
+  try { window.__alloArchMirrorBlocks = mirrorArchBlocksWithinLimit; } catch (e) {}
+  try { window.__alloArchDuplicateBlocks = duplicateArchBlocksWithinLimit; } catch (e) {}
   try { window.__alloArchNearestLayer = nearestArchOccupiedLayer; } catch (e) {}
+  try { window.__alloArchReplacementViewState = getArchReplacementViewState; } catch (e) {}
+  try { window.__alloArchBuildSignature = getArchBuildSignature; } catch (e) {}
+  try { window.__alloArchSimulateEarthquake = simulateArchEarthquake; } catch (e) {}
 
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
@@ -1159,7 +1333,8 @@
     var a11yClick = ctx.a11yClick;
 
     // ── State ──
-    var blocks = d.blocks || [];
+    var blocks = getArchRuntimeBlocks(d.blocks);
+    var currentBuildSignature = getArchBuildSignature(blocks);
     var activeShape = d.activeShape || 'block';
     var activeMaterial = d.activeMaterial || 'stone';
     var activeColor = d.activeColor || '#94a3b8';
@@ -1169,33 +1344,40 @@
     var showAnalysis = d.showAnalysis || false;
     var showChallenges = d.showChallenges || false;
     var activeChallenge = d.activeChallenge != null ? d.activeChallenge : -1;
-    var completedChallenges = d.completedChallenges || {};
+    var completedChallenges = d.completedChallenges && typeof d.completedChallenges === 'object' && !Array.isArray(d.completedChallenges) ? d.completedChallenges : {};
     var threeReady = ctx.toolData && ctx.toolData._threeLoaded;
 
     // New state
-    var undoStack = d.undoStack || [];
-    var redoStack = d.redoStack || [];
+    var undoStack = getArchHistoryStack(d.undoStack);
+    var redoStack = getArchHistoryStack(d.redoStack);
     var activeRotation = d.activeRotation || 0;
     var symmetryMode = d.symmetryMode || false;
     var showGallery = d.showGallery || false;
     var showTemplates = d.showTemplates || false;
-    var viewLayer = d.viewLayer != null ? d.viewLayer : -1; // -1 = all layers
+    var restoredViewLayer = parseArchCoordinate(d.viewLayer);
+    var viewLayer = restoredViewLayer != null && restoredViewLayer >= ARCH_Y_MIN && restoredViewLayer <= ARCH_Y_MAX ? restoredViewLayer : -1; // -1 = all layers
     var editorView = d.editorView || '3d';
     var editLayer = d.editLayer != null ? Math.max(0, Math.min(31, d.editLayer)) : 0;
     var gridCursorX = d.gridCursorX != null && isFinite(d.gridCursorX) ? Math.round(Number(d.gridCursorX)) : null;
     var gridCursorZ = d.gridCursorZ != null && isFinite(d.gridCursorZ) ? Math.round(Number(d.gridCursorZ)) : null;
-    var showSlice = d.showSlice || false;
-    var sliceZ = d.sliceZ != null ? d.sliceZ : -1;
-    var sliceZSelected = d.sliceZSelected === true || (d.sliceZSelected == null && d.sliceZ != null && d.sliceZ >= 0);
-    var showHeatmap = d.showHeatmap || false;
-    var showReplay = d.showReplay || false;
-    var replayStep = d.replayStep != null ? d.replayStep : -1;
-    var filterMaterial = d.filterMaterial || '';
-    var filterShape = d.filterShape || '';
+    var showSlice = d.showSlice === true;
+    var restoredSliceZ = parseArchCoordinate(d.sliceZ);
+    var sliceZValid = restoredSliceZ != null && restoredSliceZ >= ARCH_XZ_MIN && restoredSliceZ <= ARCH_XZ_MAX;
+    var sliceZ = sliceZValid ? restoredSliceZ : -1;
+    var sliceZSelected = sliceZValid && (d.sliceZSelected === true || (d.sliceZSelected == null && d.sliceZ != null));
+    var showHeatmap = d.showHeatmap === true;
+    var showReplay = d.showReplay === true && undoStack.length > 0;
+    var restoredReplayStep = parseArchCoordinate(d.replayStep);
+    var replayStep = showReplay ? Math.max(0, Math.min(undoStack.length, restoredReplayStep == null ? 0 : restoredReplayStep)) : -1;
+    var filterMaterial = typeof d.filterMaterial === 'string' && ARCH_MATERIAL_IDS[d.filterMaterial] ? d.filterMaterial : '';
+    var filterShape = typeof d.filterShape === 'string' && ARCH_SHAPE_IDS[d.filterShape] ? d.filterShape : '';
     var budgetEnabled = d.budgetEnabled || false;
     var budget = d.budget != null ? d.budget : 200;
-    var aiAdvice = d.aiAdvice || '';
-    var aiLoading = d.aiLoading || false;
+    var aiAdvice = d.aiAdviceBuildSignature === currentBuildSignature ? (d.aiAdvice || '') : '';
+    var aiLoading = !!window.__archAiPendingReqId
+      && d.aiRequestId === window.__archAiPendingReqId
+      && d.aiRequestBuildSignature === currentBuildSignature
+      && d.aiLoading === true;
     var showAI = d.showAI || false;
     var showInquiryLab = d.showInquiryLab || false;
     var soundEnabled = d.soundEnabled != null ? d.soundEnabled : true;
@@ -1262,7 +1444,7 @@
     materials.forEach(function (m) { matColorLookup[m.id] = m.color; matWeightLookup[m.id] = m.weight; matCostLookup[m.id] = m.cost; });
 
     var archReplayFrame = showReplay && replayStep >= 0 && replayStep < undoStack.length
-      ? undoStack[replayStep]
+      ? getArchRuntimeBlocks(undoStack[replayStep])
       : blocks;
     var archDisplayBlocks = selectArchDisplayBlocks(archReplayFrame, {
       showReplay: false,
@@ -1277,11 +1459,13 @@
     });
 
     var archUnsupportedKeys = getArchUnsupportedKeys(blocks);
+    var archHeatmapBlocks = showReplay ? archReplayFrame : blocks;
+    var archHeatmapUnsupportedKeys = showHeatmap ? getArchUnsupportedKeys(archHeatmapBlocks) : {};
     var archBlockLoads = {};
     var archMaxLoad = 0;
-    if (showHeatmap && blocks.length) {
+    if (showHeatmap && archHeatmapBlocks.length) {
       var archColumns = {};
-      blocks.forEach(function (b) {
+      archHeatmapBlocks.forEach(function (b) {
         var columnKey = b.x + ',' + b.z;
         if (!archColumns[columnKey]) archColumns[columnKey] = [];
         archColumns[columnKey].push(b);
@@ -1317,7 +1501,7 @@
       // analysis colours remain truthful while an object is selected.
       if (showHeatmap && archMaxLoad > 0) {
         var loadKey = b.x + ',' + b.y + ',' + b.z;
-        if (archUnsupportedKeys[loadKey]) return 0xef4444;
+        if (archHeatmapUnsupportedKeys[loadKey]) return 0xef4444;
         var load = archBlockLoads[loadKey] || 0;
         var pct = Math.max(0, Math.min(1, load / archMaxLoad));
         var from = pct < 0.5 ? [34, 197, 94] : [234, 179, 8];
@@ -1338,16 +1522,19 @@
       + (archDisplayBlocks.length === 1 ? ' visible block' : ' visible blocks')
       + (archDisplayBlocks.length !== blocks.length ? ' of ' + blocks.length + ' total' : '')
       + (selectedBlock ? '. Selected block at X ' + selectedBlock.x + ', Y ' + selectedBlock.y + ', Z ' + selectedBlock.z : '')
+      + (showHeatmap ? '. Structural load heatmap is active' : '')
       + '. Use the camera controls to look around it.';
-    if (archShow3d) {
+    var mainUse3d = archShow3d && editorView !== 'grid';
+    var archRenderBlocks = mainUse3d ? archDisplayBlocks.map(function (b) {
+      return {
+        x: b.x || 0, y: b.y || 0, z: b.z || 0,
+        shape: b.shape || 'block', material: b.material || 'stone',
+        rotation: b.rotation || 0, hex: archHexFor(b), selected: archBlockKey(b) === selectedBlockKey
+      };
+    }) : [];
+    if (mainUse3d) {
       ArchGL.submit({
-        blocks: archDisplayBlocks.map(function (b) {
-          return {
-            x: b.x || 0, y: b.y || 0, z: b.z || 0,
-            shape: b.shape || 'block', material: b.material || 'stone',
-            rotation: b.rotation || 0, hex: archHexFor(b), selected: archBlockKey(b) === selectedBlockKey
-          };
-        }),
+        blocks: archRenderBlocks,
         rotX: archRot.rotX, rotY: archRot.rotY, scale: archRot.scale || 1,
         blueprintView: blueprintView,
         styleMode: styleMode,
@@ -1356,16 +1543,14 @@
           upd('hide3d', true);
           if (typeof addToast === 'function') addToast('The 3D view could not load. Showing floor plans.', 'info');
         },
-        sig: archDisplayBlocks.map(function (b) {
+        sig: archRenderBlocks.map(function (b) {
           return (b.x || 0) + ',' + (b.y || 0) + ',' + (b.z || 0) + ',' + (b.shape || 'block') + ','
-            + (b.material || '') + ',' + (b.color || '') + ',' + (b.rotation || 0);
-        }).join('|') + '|view:' + (blueprintView ? 'blueprint' : 'perspective')
-          + '|style:' + styleMode + '|heat:' + (showHeatmap ? 'on' : 'off')
+            + (b.material || '') + ',' + (b.rotation || 0) + ',' + b.hex;
+        }).join('|') + '|style:' + styleMode + '|heat:' + (showHeatmap ? 'on' : 'off')
           + '|selected:' + selectedBlockKey
       });
     }
     var archGlLive = archShow3d && ArchGL.isReady();
-    var mainUse3d = archShow3d && editorView !== 'grid';
 
     // ── Basic Stats ──
     var totalBlocks = blocks.length;
@@ -1510,7 +1695,7 @@
       challengeProgress = { challenge: ch, passed: passed };
       if (passed && !completedChallenges[ch.id]) justCompleted = true;
     }
-    var completedCount = Object.keys(completedChallenges).length;
+    var completedCount = challenges.filter(function (challenge) { return !!completedChallenges[challenge.id]; }).length;
 
     var completeChallenge = function () {
       if (!challengeProgress || !challengeProgress.passed) return;
@@ -1531,6 +1716,12 @@
       stack.push(JSON.parse(JSON.stringify(currentBlocks)));
       if (stack.length > 50) stack = stack.slice(-50);
       return stack;
+    };
+
+    var pushUndoFromState = function (archState) {
+      var stack = getArchHistoryStack(archState.undoStack);
+      stack.push(JSON.parse(JSON.stringify(getArchRuntimeBlocks(archState.blocks))));
+      return stack.length > 50 ? stack.slice(-50) : stack;
     };
 
     var requireLiveBuild = function () {
@@ -1564,7 +1755,12 @@
           if (!cell && attempts++ < 4) { setTimeout(focusWhenReady, 16); return; }
         }
         if (!cell) cell = grid.querySelector('[role="gridcell"][tabindex="0"]') || grid.querySelector('[role="gridcell"]');
-        if (cell && typeof cell.focus === 'function') cell.focus();
+        if (cell && typeof cell.focus === 'function') {
+          cell.focus();
+          if (typeof cell.scrollIntoView === 'function') {
+            try { cell.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (_) { cell.scrollIntoView(); }
+          }
+        }
       };
       setTimeout(focusWhenReady, 0);
     };
@@ -1652,10 +1848,15 @@
       if (typeof ctx.setToolData === 'function') {
         ctx.setToolData(function (p) {
           var a = Object.assign({}, p.archStudio || {});
-          var current = a.blocks || [];
+          if (a.showReplay) return p;
+          var current = getArchRuntimeBlocks(a.blocks);
           var next = applyArchEdit(current, edit);
           if (next === current) return p;
-          var history = (a.undoStack || []).slice();
+          var committedEditLayer = mode === 'erase' ? nearestArchOccupiedLayer(next, a.editLayer) : a.editLayer;
+          var committedViewLayer = a.viewLayer != null && a.viewLayer >= 0 && mode === 'erase'
+            ? (next.length ? nearestArchOccupiedLayer(next, a.viewLayer) : -1)
+            : a.viewLayer;
+          var history = getArchHistoryStack(a.undoStack);
           history.push(JSON.parse(JSON.stringify(current)));
           if (history.length > 50) history = history.slice(-50);
           var materialsSeen = Object.assign({}, a.materialsUsed || {});
@@ -1668,11 +1869,25 @@
             redoStack: [],
             materialsUsed: materialsSeen,
             stylesUsed: stylesSeen,
-            selectedBlockKey: selectedAfterEdit
+            selectedBlockKey: selectedAfterEdit,
+            editLayer: committedEditLayer,
+            viewLayer: committedViewLayer,
+            filterMaterial: next.length ? a.filterMaterial : '',
+            filterShape: next.length ? a.filterShape : '',
+            showSlice: next.length ? a.showSlice : false,
+            sliceZSelected: next.length ? a.sliceZSelected : false,
+            quakeResult: null
           }) });
         });
       } else {
-        upd({ blocks: preview, undoStack: pushUndo(blocks), redoStack: [], selectedBlockKey: selectedAfterEdit });
+        upd({
+          blocks: preview, undoStack: pushUndo(blocks), redoStack: [], selectedBlockKey: selectedAfterEdit,
+          editLayer: mode === 'erase' ? nearestArchOccupiedLayer(preview, editLayer) : editLayer,
+          viewLayer: viewLayer >= 0 && mode === 'erase' ? (preview.length ? nearestArchOccupiedLayer(preview, viewLayer) : -1) : viewLayer,
+          filterMaterial: preview.length ? filterMaterial : '', filterShape: preview.length ? filterShape : '',
+          showSlice: preview.length ? showSlice : false, sliceZSelected: preview.length ? sliceZSelected : false,
+          quakeResult: null
+        });
       }
 
       if (soundEnabled) {
@@ -1752,14 +1967,19 @@
       if (typeof ctx.setToolData === 'function') {
         ctx.setToolData(function (p) {
           var a = Object.assign({}, p.archStudio || {});
+          if (a.showReplay) return p;
           if (a.selectedBlockKey !== sourceSelectedKey) return p;
-          var current = a.blocks || [];
+          var current = getArchRuntimeBlocks(a.blocks);
           var liveBlock = current.find(function (b) { return archBlockKey(b) === sourceSelectedKey; });
           if (!liveBlock) return p;
           var liveAction = Object.assign({}, fullAction, { cell: liveBlock });
           var next = applyArchBlockAction(current, liveAction);
           if (next === current) return p;
-          var history = (a.undoStack || []).slice();
+          var committedEditLayer = fullAction.type === 'delete' ? nearestArchOccupiedLayer(next, a.editLayer) : nextEditLayer;
+          var committedViewLayer = a.viewLayer != null && a.viewLayer >= 0
+            ? (fullAction.type === 'delete' ? (next.length ? nearestArchOccupiedLayer(next, a.viewLayer) : -1) : nextEditLayer)
+            : a.viewLayer;
+          var history = getArchHistoryStack(a.undoStack);
           history.push(JSON.parse(JSON.stringify(current)));
           if (history.length > 50) history = history.slice(-50);
           var materialsSeen = Object.assign({}, a.materialsUsed || {});
@@ -1772,10 +1992,15 @@
             undoStack: history,
             redoStack: [],
             selectedBlockKey: nextSelectedKey,
-            editLayer: nextEditLayer,
-            viewLayer: a.viewLayer != null && a.viewLayer >= 0 && fullAction.type !== 'delete' ? nextEditLayer : a.viewLayer,
+            editLayer: committedEditLayer,
+            viewLayer: committedViewLayer,
+            filterMaterial: next.length ? a.filterMaterial : '',
+            filterShape: next.length ? a.filterShape : '',
+            showSlice: next.length ? a.showSlice : false,
+            sliceZSelected: next.length ? a.sliceZSelected : false,
             materialsUsed: materialsSeen,
-            stylesUsed: stylesSeen
+            stylesUsed: stylesSeen,
+            quakeResult: null
           }) });
         });
       } else {
@@ -1784,8 +2009,11 @@
           undoStack: pushUndo(blocks),
           redoStack: [],
           selectedBlockKey: nextSelectedKey,
-          editLayer: nextEditLayer,
-          viewLayer: viewLayer >= 0 && fullAction.type !== 'delete' ? nextEditLayer : viewLayer
+          editLayer: fullAction.type === 'delete' ? nearestArchOccupiedLayer(preview, editLayer) : nextEditLayer,
+          viewLayer: viewLayer >= 0 ? (fullAction.type === 'delete' ? (preview.length ? nearestArchOccupiedLayer(preview, viewLayer) : -1) : nextEditLayer) : viewLayer,
+          filterMaterial: preview.length ? filterMaterial : '', filterShape: preview.length ? filterShape : '',
+          showSlice: preview.length ? showSlice : false, sliceZSelected: preview.length ? sliceZSelected : false,
+          quakeResult: null
         });
         transaction.committed = true;
       }
@@ -1835,50 +2063,85 @@
 
     var doUndo = function () {
       if (!requireLiveBuild()) return;
-      if (!undoStack || undoStack.length === 0) return;
-      var stack = undoStack.slice();
-      var prev = stack.pop();
-      var redo = (redoStack || []).slice();
-      redo.push(JSON.parse(JSON.stringify(blocks)));
-      if (redo.length > 50) redo = redo.slice(-50);
+      var transaction = { committed: false, reported: false, count: 0 };
+      var report = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (soundEnabled) sfxUndo();
+        if (announceToSR) announceToSR('Undo. ' + transaction.count + ' blocks.');
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
+        if (a.showReplay) return p;
+        var stack = getArchHistoryStack(a.undoStack);
+        if (!stack.length) return p;
+        var prev = getArchRuntimeBlocks(stack.pop());
+        var redo = getArchHistoryStack(a.redoStack);
+        redo.push(JSON.parse(JSON.stringify(getArchRuntimeBlocks(a.blocks))));
+        if (redo.length > 50) redo = redo.slice(-50);
         var restoredEditLayer = nearestArchOccupiedLayer(prev, a.editLayer != null ? a.editLayer : editLayer);
         var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(prev, a.viewLayer) : a.viewLayer;
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: prev, undoStack: stack, redoStack: redo, selectedBlockKey: '', editLayer: restoredEditLayer, viewLayer: restoredViewLayer }) });
+        transaction.committed = true;
+        transaction.count = prev ? prev.length : 0;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, {
+          blocks: prev, undoStack: stack, redoStack: redo, selectedBlockKey: '',
+          editLayer: restoredEditLayer, viewLayer: restoredViewLayer,
+          gridCursorX: null, gridCursorZ: null, quakeResult: null
+        }) });
       });
-      if (soundEnabled) sfxUndo();
-      if (announceToSR) announceToSR('Undo. ' + (prev ? prev.length : 0) + ' blocks.');
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     var doRedo = function () {
       if (!requireLiveBuild()) return;
-      if (!redoStack || redoStack.length === 0) return;
-      var stack = redoStack.slice();
-      var next = stack.pop();
-      var undo = (undoStack || []).slice();
-      undo.push(JSON.parse(JSON.stringify(blocks)));
-      if (undo.length > 50) undo = undo.slice(-50);
+      var transaction = { committed: false, reported: false, count: 0 };
+      var report = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (soundEnabled) sfxRedo();
+        if (announceToSR) announceToSR('Redo. ' + transaction.count + ' blocks.');
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
+        if (a.showReplay) return p;
+        var stack = getArchHistoryStack(a.redoStack);
+        if (!stack.length) return p;
+        var next = getArchRuntimeBlocks(stack.pop());
+        var undo = getArchHistoryStack(a.undoStack);
+        undo.push(JSON.parse(JSON.stringify(getArchRuntimeBlocks(a.blocks))));
+        if (undo.length > 50) undo = undo.slice(-50);
         var restoredEditLayer = nearestArchOccupiedLayer(next, a.editLayer != null ? a.editLayer : editLayer);
         var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(next, a.viewLayer) : a.viewLayer;
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: next, undoStack: undo, redoStack: stack, selectedBlockKey: '', editLayer: restoredEditLayer, viewLayer: restoredViewLayer }) });
+        transaction.committed = true;
+        transaction.count = next ? next.length : 0;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, {
+          blocks: next, undoStack: undo, redoStack: stack, selectedBlockKey: '',
+          editLayer: restoredEditLayer, viewLayer: restoredViewLayer,
+          gridCursorX: null, gridCursorZ: null, quakeResult: null
+        }) });
       });
-      if (soundEnabled) sfxRedo();
-      if (announceToSR) announceToSR('Redo. ' + (next ? next.length : 0) + ' blocks.');
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     // Clear all (with undo snapshot)
     var clearAll = function () {
       if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
-      var newUndo = pushUndo(blocks);
+      var transaction = { committed: false, reported: false };
+      var report = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (announceToSR) announceToSR('All blocks cleared.');
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: [], undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
+        if (a.showReplay || !getArchRuntimeBlocks(a.blocks).length) return p;
+        transaction.committed = true;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a,
+          getArchReplacementViewState([], a.editLayer),
+          { blocks: [], undoStack: pushUndoFromState(a), redoStack: [] }) });
       });
-      if (announceToSR) announceToSR('All blocks cleared.');
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -1911,14 +2174,17 @@
 
     var loadBuild = function (item) {
       if (!requireLiveBuild()) return;
-      var newUndo = pushUndo(blocks);
+      var loadedBlocks = sanitizeArchBlocks(item && item.blocks);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: item.blocks, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
+        if (a.showReplay) return p;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a,
+          getArchReplacementViewState(loadedBlocks, a.editLayer),
+          { blocks: loadedBlocks, undoStack: pushUndoFromState(a), redoStack: [] }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Loaded: ' + item.name, 'info');
       if (soundEnabled) sfxLoad();
-      if (announceToSR) announceToSR('Loaded build: ' + item.name + '. ' + (item.blocks ? item.blocks.length : 0) + ' blocks.');
+      if (announceToSR) announceToSR('Loaded build: ' + item.name + '. ' + loadedBlocks.length + ' blocks.');
     };
 
     var deleteBuild = function (id) {
@@ -1940,10 +2206,12 @@
       if (!requireLiveBuild()) return;
       var newBlocks = (tpl.blocks)();
       newBlocks = sanitizeArchBlocks(newBlocks);
-      var newUndo = pushUndo(blocks);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: newBlocks, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
+        if (a.showReplay) return p;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a,
+          getArchReplacementViewState(newBlocks, a.editLayer),
+          { blocks: newBlocks, undoStack: pushUndoFromState(a), redoStack: [] }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCC2 Template loaded: ' + tpl.name, 'info');
       if (soundEnabled) sfxLoad();
@@ -1956,84 +2224,77 @@
     var mirrorBuildX = function () {
       if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
-      var newUndo = pushUndo(blocks);
-      var mid = (minX + maxX) / 2;
-      var mirrored = blocks.map(function (b) {
-        return Object.assign({}, b, {
-          x: Math.round(mid + (mid - b.x)),
-          rotation: reflectArchRotation(b.rotation, 'x')
-        });
-      });
-      // Merge: keep original + add non-overlapping mirrored
-      var existing = {};
-      blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
-      var eligible = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
-      var mergeResult = mergeArchBlocksWithinLimit(blocks, eligible);
+      var mergeResult = mirrorArchBlocksWithinLimit(blocks, 'x');
       var added = mergeResult.added;
       if (!added) {
         if (blocks.length >= ARCH_MAX_BLOCKS && ctx.addToast) ctx.addToast('The build already has the maximum of ' + ARCH_MAX_BLOCKS + ' blocks.', 'info');
         else if (ctx.addToast) ctx.addToast('The build is already mirrored across its X centerline.', 'info');
         return;
       }
-      var limited = eligible.length > added;
-      var merged = mergeResult.blocks;
-      if (!merged.length) {
-        if (ctx.addToast) ctx.addToast('The build is already mirrored across its X centerline.', 'info');
-        return;
-      }
+      var transaction = { committed: false, reported: false, added: 0, limited: false };
+      var report = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along X axis! +' + transaction.added + ' blocks' + (transaction.limited ? '; maximum reached.' : ''), 'info');
+        if (soundEnabled) sfxPlace();
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
+        if (a.showReplay) return p;
+        var liveResult = mirrorArchBlocksWithinLimit(getArchRuntimeBlocks(a.blocks), 'x');
+        if (!liveResult.added) return p;
+        transaction.committed = true;
+        transaction.added = liveResult.added;
+        transaction.limited = liveResult.skipped > 0;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: liveResult.blocks, undoStack: pushUndoFromState(a), redoStack: [], quakeResult: null }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along X axis! +' + added + ' blocks' + (limited ? '; maximum reached.' : ''), 'info');
-      if (soundEnabled) sfxPlace();
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     var mirrorBuildZ = function () {
       if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
-      var newUndo = pushUndo(blocks);
-      var mid = (minZ + maxZ) / 2;
-      var mirrored = blocks.map(function (b) {
-        return Object.assign({}, b, {
-          z: Math.round(mid + (mid - b.z)),
-          rotation: reflectArchRotation(b.rotation, 'z')
-        });
-      });
-      var existing = {};
-      blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
-      var eligible = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
-      var mergeResult = mergeArchBlocksWithinLimit(blocks, eligible);
+      var mergeResult = mirrorArchBlocksWithinLimit(blocks, 'z');
       var added = mergeResult.added;
       if (!added) {
         if (blocks.length >= ARCH_MAX_BLOCKS && ctx.addToast) ctx.addToast('The build already has the maximum of ' + ARCH_MAX_BLOCKS + ' blocks.', 'info');
         else if (ctx.addToast) ctx.addToast('The build is already mirrored across its Z centerline.', 'info');
         return;
       }
-      var limited = eligible.length > added;
-      var merged = mergeResult.blocks;
-      if (!merged.length) {
-        if (ctx.addToast) ctx.addToast('The build is already mirrored across its Z centerline.', 'info');
-        return;
-      }
+      var transaction = { committed: false, reported: false, added: 0, limited: false };
+      var report = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along Z axis! +' + transaction.added + ' blocks' + (transaction.limited ? '; maximum reached.' : ''), 'info');
+        if (soundEnabled) sfxPlace();
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
+        if (a.showReplay) return p;
+        var liveResult = mirrorArchBlocksWithinLimit(getArchRuntimeBlocks(a.blocks), 'z');
+        if (!liveResult.added) return p;
+        transaction.committed = true;
+        transaction.added = liveResult.added;
+        transaction.limited = liveResult.skipped > 0;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: liveResult.blocks, undoStack: pushUndoFromState(a), redoStack: [], quakeResult: null }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83E\uDE9E Mirrored along Z axis! +' + added + ' blocks' + (limited ? '; maximum reached.' : ''), 'info');
-      if (soundEnabled) sfxPlace();
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     // ══════════════════════════════════════════════════════════════
     // ── AI Architect Advisor ──
     // ══════════════════════════════════════════════════════════════
     var askAIArchitect = function () {
-      if (!callGemini || aiLoading) return;
+      if (!callGemini || aiLoading || (window.__archAiPendingReqId && window.__archAiPendingSignature === currentBuildSignature)) return;
       // Request-ID guard: prevents stale advice from overwriting newer
       // context if student edits the build while a fetch is mid-flight.
       window.__archAiReqId = (window.__archAiReqId || 0) + 1;
       var thisReqId = window.__archAiReqId;
-      upd({ aiLoading: true, showAI: true });
+      var requestBuildSignature = currentBuildSignature;
+      window.__archAiPendingReqId = thisReqId;
+      window.__archAiPendingSignature = requestBuildSignature;
+      upd({ aiLoading: true, showAI: true, aiRequestId: thisReqId, aiRequestBuildSignature: requestBuildSignature });
+      if (announceToSR) announceToSR('AI Architect is analyzing this build.');
 
       var desc = totalBlocks === 0
         ? 'The student has not placed any blocks yet.'
@@ -2047,20 +2308,35 @@
         'Include one real-world architecture fact. Use emoji. Keep it fun and educational for ages 8-14. ' +
         'Return JSON: { "tips": ["tip1", "tip2", "tip3"], "funFact": "..." }';
 
-      callGemini(prompt, true, false, 0.8).then(function (resp) {
+      var finishAiRequest = function (advice) {
+        if (thisReqId !== window.__archAiReqId) return;
+        if (window.__archAiPendingReqId === thisReqId) {
+          window.__archAiPendingReqId = 0;
+          window.__archAiPendingSignature = '';
+        }
+        upd({ aiAdvice: advice, aiAdviceBuildSignature: requestBuildSignature, aiRequestId: 0, aiRequestBuildSignature: '', aiLoading: false });
+        if (announceToSR) announceToSR(advice.indexOf('\u26A0\uFE0F') === 0 ? 'AI Architect could not finish. Try again later.' : 'AI Architect advice is ready.');
+      };
+      var request;
+      try {
+        request = callGemini(prompt, true, false, 0.8);
+      } catch (e) {
+        finishAiRequest('\u26A0\uFE0F Could not reach AI advisor. Try again later!');
+        return;
+      }
+      Promise.resolve(request).then(function (resp) {
         if (thisReqId !== window.__archAiReqId) return;
         try {
           var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g, '').replace(/```/g, '').trim()) : resp;
           var advice = '';
           if (parsed.tips) parsed.tips.forEach(function (t, i) { advice += (i > 0 ? '\n' : '') + t; });
           if (parsed.funFact) advice += '\n\n\uD83C\uDFDB\uFE0F ' + parsed.funFact;
-          upd({ aiAdvice: advice, aiLoading: false });
+          finishAiRequest(advice);
         } catch (e) {
-          upd({ aiAdvice: typeof resp === 'string' ? resp : 'Ask me again!', aiLoading: false });
+          finishAiRequest(typeof resp === 'string' ? resp : 'Ask me again!');
         }
       }).catch(function () {
-        if (thisReqId !== window.__archAiReqId) return;
-        upd({ aiAdvice: '\u26A0\uFE0F Could not reach AI advisor. Try again later!', aiLoading: false });
+        finishAiRequest('\u26A0\uFE0F Could not reach AI advisor. Try again later!');
       });
     };
 
@@ -2068,52 +2344,40 @@
     // ── Earthquake Simulator ──
     // ══════════════════════════════════════════════════════════════
     var quakeIntensity = d.quakeIntensity || 5; // 1-10 Richter-ish scale
-    var quakeResult = d.quakeResult || null;
+    var storedQuakeResult = d.quakeResult || null;
+    var quakeResult = storedQuakeResult && storedQuakeResult.buildSignature === currentBuildSignature ? storedQuakeResult : null;
 
     var runEarthquake = function () {
       if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
-      var newUndo = pushUndo(blocks);
-      var intensity = quakeIntensity / 10; // 0.1 - 1.0
-      // Blocks survive based on: support (ground or block below), stability contribution, and randomness
-      var survivors = [];
-      var fallen = 0;
-      // Sort by Y ascending so we evaluate from ground up
-      var sorted = blocks.slice().sort(function (a, b) { return a.y - b.y; });
-      var keepMap = {};
-      sorted.forEach(function (b) {
-        var onGround = b.y === minY;
-        var supported = onGround || keepMap[b.x + ',' + (b.y - 1) + ',' + b.z];
-        var hasNeighbors = 0;
-        [[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]].forEach(function (n) {
-          if (blockMap[(b.x+n[0])+','+(b.y+n[1])+','+(b.z+n[2])]) hasNeighbors++;
-        });
-        var survivalChance = supported ? 0.95 - (intensity * 0.4) + (hasNeighbors * 0.08) : 0.3 - (intensity * 0.25);
-        // Heavy materials (metal, marble) are more stable; glass is fragile
-        if (b.material === 'glass') survivalChance -= 0.15;
-        if (b.material === 'metal' || b.material === 'stone') survivalChance += 0.05;
-        // Pyramids and domes are more earthquake resistant
-        if (b.shape === 'pyramid' || b.shape === 'dome') survivalChance += 0.1;
-        if (Math.random() < Math.max(0.05, Math.min(0.99, survivalChance))) {
-          survivors.push(b);
-          keepMap[b.x + ',' + b.y + ',' + b.z] = true;
-        } else {
-          fallen++;
-        }
-      });
-      var pctSurvived = totalBlocks > 0 ? Math.round((survivors.length / totalBlocks) * 100) : 100;
-      var rating = pctSurvived >= 90 ? 'Earthquake-proof!' : pctSurvived >= 70 ? 'Minor damage' : pctSurvived >= 40 ? 'Significant damage' : 'Catastrophic failure';
+      var quakeSeed = ((Math.random() * 4294967296) >>> 0) || 0x6d2b79f5;
+      var transaction = { committed: false, reported: false, result: null };
+      var report = function () {
+        if (!transaction.committed || transaction.reported || !transaction.result) return;
+        transaction.reported = true;
+        var result = transaction.result;
+        if (ctx.addToast) ctx.addToast('\uD83C\uDF0B Earthquake ' + result.intensity + '/10: ' + result.rating + ' (' + result.fallen + ' blocks fell)', result.pct >= 70 ? 'success' : 'error');
+        playTone(80, 0.4, 'sawtooth', 0.15);
+        setTimeout(function () { playTone(60, 0.5, 'sawtooth', 0.12); }, 200);
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
+        if (a.showReplay) return p;
+        var current = getArchRuntimeBlocks(a.blocks);
+        if (!current.length) return p;
+        var result = simulateArchEarthquake(current, quakeIntensity, quakeSeed);
+        var survivors = result.blocks;
+        var restoredEditLayer = nearestArchOccupiedLayer(survivors, a.editLayer);
+        var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(survivors, a.viewLayer) : a.viewLayer;
+        transaction.committed = true;
+        transaction.result = result;
         return Object.assign({}, p, { archStudio: Object.assign({}, a, {
-          blocks: survivors, undoStack: newUndo, redoStack: [], selectedBlockKey: '',
-          quakeResult: { fallen: fallen, survived: survivors.length, pct: pctSurvived, rating: rating, intensity: quakeIntensity }
+          blocks: survivors, undoStack: pushUndoFromState(a), redoStack: [], selectedBlockKey: '',
+          editLayer: restoredEditLayer, viewLayer: restoredViewLayer, gridCursorX: null, gridCursorZ: null,
+          quakeResult: { fallen: result.fallen, survived: result.survived, pct: result.pct, rating: result.rating, intensity: result.intensity, buildSignature: getArchBuildSignature(survivors) }
         }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83C\uDF0B Earthquake ' + quakeIntensity + '/10: ' + rating + ' (' + fallen + ' blocks fell)', pctSurvived >= 70 ? 'success' : 'error');
-      // Shake sound
-      playTone(80, 0.4, 'sawtooth', 0.15);
-      setTimeout(function () { playTone(60, 0.5, 'sawtooth', 0.12); }, 200);
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -2178,7 +2442,7 @@
     // ── Build Sharing (Import/Export JSON) ──
     // ══════════════════════════════════════════════════════════════
     var showShare = d.showShare || false;
-    var shareCode = d.shareCode || '';
+    var shareCode = d.shareCodeBuildSignature === currentBuildSignature ? (d.shareCode || '') : '';
 
     var exportShareCode = function () {
       if (blocks.length === 0) return;
@@ -2187,7 +2451,7 @@
         var data = { v: 1, b: exportBlocks.map(function (b) { return [b.x, b.y, b.z, b.shape, b.material, b.color, b.rotation]; }) };
         var json = JSON.stringify(data);
         var code = btoa(json);
-        upd({ shareCode: code, showShare: true });
+        upd({ shareCode: code, shareCodeBuildSignature: getArchBuildSignature(exportBlocks), showShare: true });
         // Copy to clipboard
         if (navigator.clipboard) {
           navigator.clipboard.writeText(code).then(function () {
@@ -2219,10 +2483,12 @@
         var imported = sanitizeArchBlocks(decoded);
         if (data.b.length && !imported.length) throw new Error('No valid blocks');
         var skipped = data.b.length - imported.length;
-        var newUndo = pushUndo(blocks);
         ctx.setToolData(function (p) {
           var a = Object.assign({}, p.archStudio || {});
-          return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: imported, undoStack: newUndo, redoStack: [], importCode: '', selectedBlockKey: '' }) });
+          if (a.showReplay) return p;
+          return Object.assign({}, p, { archStudio: Object.assign({}, a,
+            getArchReplacementViewState(imported, a.editLayer),
+            { blocks: imported, undoStack: pushUndoFromState(a), redoStack: [], importCode: '' }) });
         });
         if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Imported ' + imported.length + ' blocks' + (skipped ? '; skipped ' + skipped + ' invalid or duplicate entr' + (skipped === 1 ? 'y' : 'ies') : '') + '.', skipped ? 'info' : 'success');
         if (soundEnabled) sfxLoad();
@@ -2257,33 +2523,31 @@
     var duplicateBuild = function (dx, dy, dz) {
       if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
-      var duped = blocks.map(function (b) {
-        return Object.assign({}, b, { x: b.x + dx, y: b.y + dy, z: b.z + dz });
-      });
-      duped = sanitizeArchBlocks(duped);
-      var existing = {};
-      blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
-      var eligible = duped.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
-      var mergeResult = mergeArchBlocksWithinLimit(blocks, eligible);
+      var mergeResult = duplicateArchBlocksWithinLimit(blocks, dx, dy, dz);
       var added = mergeResult.added;
       if (!added) {
         if (blocks.length >= ARCH_MAX_BLOCKS && ctx.addToast) ctx.addToast('The build already has the maximum of ' + ARCH_MAX_BLOCKS + ' blocks.', 'info');
         else if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No blocks could be copied inside the build limits.', 'info');
         return;
       }
-      var limited = eligible.length > added;
-      if (!mergeResult.blocks.length) {
-        if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No blocks could be copied inside the build limits.', 'info');
-        return;
-      }
-      var newUndo = pushUndo(blocks);
-      var merged = mergeResult.blocks;
+      var transaction = { committed: false, reported: false, added: 0, limited: false };
+      var report = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Duplicated +' + transaction.added + ' blocks (offset ' + dx + ',' + dy + ',' + dz + ')' + (transaction.limited ? '; maximum reached.' : ''), 'info');
+        if (soundEnabled) sfxPlace();
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: merged, undoStack: newUndo, redoStack: [] }) });
+        if (a.showReplay) return p;
+        var liveResult = duplicateArchBlocksWithinLimit(getArchRuntimeBlocks(a.blocks), dx, dy, dz);
+        if (!liveResult.added) return p;
+        transaction.committed = true;
+        transaction.added = liveResult.added;
+        transaction.limited = liveResult.skipped > 0;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: liveResult.blocks, undoStack: pushUndoFromState(a), redoStack: [], quakeResult: null }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Duplicated +' + added + ' blocks (offset ' + dx + ',' + dy + ',' + dz + ')' + (limited ? '; maximum reached.' : ''), 'info');
-      if (soundEnabled) sfxPlace();
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -2339,20 +2603,37 @@
     var applyGravity = function () {
       if (!requireLiveBuild()) return;
       if (blocks.length === 0) return;
-      var result = settleArchBlocks(blocks);
-      if (result.moved === 0) {
-        if (ctx.addToast) ctx.addToast('\u2705 Every block is already settled on the ground or a support.', 'info');
-        return;
-      }
-      var newUndo = pushUndo(blocks);
+      var transaction = { committed: false, reported: false, moved: 0, alreadySettled: false };
+      var report = function () {
+        if (transaction.reported) return;
+        if (!transaction.committed && !transaction.alreadySettled) return;
+        transaction.reported = true;
+        if (transaction.alreadySettled) {
+          if (ctx.addToast) ctx.addToast('\u2705 Every block is already settled on the ground or a support.', 'info');
+          return;
+        }
+        if (ctx.addToast) ctx.addToast('\u2B07\uFE0F Gravity applied! ' + transaction.moved + ' block' + (transaction.moved !== 1 ? 's' : '') + ' dropped.', 'info');
+        if (announceToSR) announceToSR('Gravity applied. ' + transaction.moved + ' block' + (transaction.moved !== 1 ? 's' : '') + ' dropped to the ground or nearest support.');
+        playTone(200, 0.3, 'sine', 0.1);
+        setTimeout(function () { playTone(120, 0.4, 'sine', 0.08); }, 150);
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: result.blocks, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
+        if (a.showReplay) return p;
+        var current = getArchRuntimeBlocks(a.blocks);
+        if (!current.length) return p;
+        var result = settleArchBlocks(current);
+        if (!result.moved) { transaction.alreadySettled = true; return p; }
+        var restoredEditLayer = nearestArchOccupiedLayer(result.blocks, a.editLayer);
+        var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(result.blocks, a.viewLayer) : a.viewLayer;
+        transaction.committed = true;
+        transaction.moved = result.moved;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, {
+          blocks: result.blocks, undoStack: pushUndoFromState(a), redoStack: [], selectedBlockKey: '', quakeResult: null,
+          editLayer: restoredEditLayer, viewLayer: restoredViewLayer, gridCursorX: null, gridCursorZ: null
+        }) });
       });
-      if (ctx.addToast) ctx.addToast('\u2B07\uFE0F Gravity applied! ' + result.moved + ' block' + (result.moved !== 1 ? 's' : '') + ' dropped.', 'info');
-      if (announceToSR) announceToSR('Gravity applied. ' + result.moved + ' block' + (result.moved !== 1 ? 's' : '') + ' dropped to the ground or nearest support.');
-      playTone(200, 0.3, 'sine', 0.1);
-      setTimeout(function () { playTone(120, 0.4, 'sine', 0.08); }, 150);
+      if (transaction.committed || transaction.alreadySettled) report(); else setTimeout(report, 0);
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -2370,7 +2651,6 @@
 
     var generateRandom = function (presetId) {
       if (!requireLiveBuild()) return;
-      var newUndo = pushUndo(blocks);
       var gen = [];
       var matPool = ['stone', 'brick', 'wood', 'marble', 'metal'];
       var rMat = function () { return matPool[Math.floor(Math.random() * matPool.length)]; };
@@ -2432,9 +2712,13 @@
         gen.push({ x: 0, y: 3, z: 0, shape: 'column', material: 'metal', color: rColor('metal') }); gen.push({ x: bl - 1, y: 3, z: 0, shape: 'column', material: 'metal', color: rColor('metal') });
       }
 
+      gen = sanitizeArchBlocks(gen);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: gen, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
+        if (a.showReplay) return p;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a,
+          getArchReplacementViewState(gen, a.editLayer),
+          { blocks: gen, undoStack: pushUndoFromState(a), redoStack: [] }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83C\uDFB2 Generated ' + gen.length + ' blocks!', 'success');
       if (soundEnabled) sfxLoad();
@@ -2505,22 +2789,42 @@
     var deleteFiltered = function () {
       if (!requireLiveBuild()) return;
       if (!filterActive || filteredBlocks.length === 0) return;
-      var newUndo = pushUndo(blocks);
-      var removeSet = {};
-      filteredBlocks.forEach(function (b) { removeSet[b.x + ',' + b.y + ',' + b.z] = true; });
-      var remaining = blocks.filter(function (b) { return !removeSet[b.x + ',' + b.y + ',' + b.z]; });
+      var requestedMaterial = filterMaterial;
+      var requestedShape = filterShape;
+      var transaction = { committed: false, reported: false, removed: 0 };
+      var report = function () {
+        if (!transaction.committed || transaction.reported) return;
+        transaction.reported = true;
+        if (ctx.addToast) ctx.addToast('\uD83D\uDDD1\uFE0F Removed ' + transaction.removed + ' matching blocks', 'info');
+      };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: remaining, undoStack: newUndo, redoStack: [], selectedBlockKey: '' }) });
+        if (a.showReplay) return p;
+        var current = getArchRuntimeBlocks(a.blocks);
+        var remaining = current.filter(function (b) {
+          if (requestedMaterial && (b.material || 'stone') !== requestedMaterial) return true;
+          if (requestedShape && (b.shape || 'block') !== requestedShape) return true;
+          return false;
+        });
+        if (remaining.length === current.length) return p;
+        var restoredEditLayer = nearestArchOccupiedLayer(remaining, a.editLayer);
+        var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(remaining, a.viewLayer) : a.viewLayer;
+        transaction.committed = true;
+        transaction.removed = current.length - remaining.length;
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, {
+          blocks: remaining, undoStack: pushUndoFromState(a), redoStack: [], selectedBlockKey: '', quakeResult: null,
+          editLayer: restoredEditLayer, viewLayer: restoredViewLayer, gridCursorX: null, gridCursorZ: null,
+          filterMaterial: '', filterShape: '', showSlice: false, sliceZSelected: false
+        }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83D\uDDD1\uFE0F Removed ' + filteredBlocks.length + ' matching blocks', 'info');
+      if (transaction.committed) report(); else setTimeout(report, 0);
     };
 
     // ══════════════════════════════════════════════════════════════
     // ── Achievement Badges ──
     // ══════════════════════════════════════════════════════════════
     var showBadges = d.showBadges || false;
-    var earnedBadges = d.earnedBadges || {};
+    var earnedBadges = d.earnedBadges && typeof d.earnedBadges === 'object' && !Array.isArray(d.earnedBadges) ? d.earnedBadges : {};
     var badges = [
       { id: 'first_block', icon: '\uD83E\uDDF1', name: t('stem.archstudio.first_block', 'First Block'), desc: t('stem.archstudio.place_your_very_first_block', 'Place your very first block'), check: function () { return totalBlocks >= 1; } },
       { id: 'hundred_club', icon: '\uD83D\uDCAF', name: t('stem.archstudio.100_club', '100 Club'), desc: t('stem.archstudio.have_100_blocks_in_one_build', 'Have 100+ blocks in one build'), check: function () { return totalBlocks >= 100; } },
@@ -2529,7 +2833,7 @@
       { id: 'sky_high', icon: '\uD83D\uDE80', name: t('stem.archstudio.sky_high', 'Sky High'), desc: t('stem.archstudio.build_20_blocks_tall', 'Build 20+ blocks tall'), check: function () { return buildH >= 20; } },
       { id: 'rock_solid', icon: '\uD83E\uDEA8', name: t('stem.archstudio.rock_solid', 'Rock Solid'), desc: t('stem.archstudio.50_blocks_with_95_stability', '50+ blocks with 95%+ stability'), check: function () { return totalBlocks >= 50 && analysis.stability >= 95; } },
       { id: 'perfect_sym', icon: '\uD83E\uDE9E', name: t('stem.archstudio.perfectly_balanced', 'Perfectly Balanced'), desc: t('stem.archstudio.symmetry_score_100', 'Symmetry score 100%'), check: function () { return totalBlocks >= 10 && analysis.symmetry >= 100; } },
-      { id: 'quake_proof', icon: '\uD83C\uDF0B', name: 'Quake-Proof', desc: t('stem.archstudio.survive_intensity_10_earthquake', 'Survive intensity 10 earthquake'), check: function () { var qr = d.quakeResult; return qr && qr.intensity >= 10 && qr.pct >= 80; } },
+      { id: 'quake_proof', icon: '\uD83C\uDF0B', name: 'Quake-Proof', desc: t('stem.archstudio.survive_intensity_10_earthquake', 'Survive intensity 10 earthquake'), check: function () { return quakeResult && quakeResult.intensity >= 10 && quakeResult.pct >= 80; } },
       { id: 'five_saves', icon: '\uD83D\uDCBE', name: t('stem.archstudio.collector', 'Collector'), desc: t('stem.archstudio.save_5_builds_to_gallery', 'Save 5+ builds to gallery'), check: function () { return galleryItems.length >= 5; } },
       { id: 'challenger', icon: '\uD83C\uDFC6', name: t('stem.archstudio.challenger', 'Challenger'), desc: t('stem.archstudio.complete_all_10_challenges', 'Complete all 10 challenges'), check: function () { return completedCount >= 10; } },
       { id: 'mega_build', icon: '\uD83C\uDFF0', name: t('stem.archstudio.mega_build', 'Mega Build'), desc: t('stem.archstudio.200_blocks_in_one_build', '200+ blocks in one build'), check: function () { return totalBlocks >= 200; } },
@@ -2544,16 +2848,56 @@
       }
     });
     if (newBadges.length > 0) {
-      var updatedBadges = Object.assign({}, earnedBadges);
-      newBadges.forEach(function (b) {
-        updatedBadges[b.id] = Date.now();
-        if (ctx.addToast) ctx.addToast('\uD83C\uDFC5 Badge Earned: ' + b.icon + ' ' + b.name + '!', 'success');
-        if (ctx.awardXP) ctx.awardXP('archStudio_badge_' + b.id, 5, 'Badge: ' + b.name);
-      });
-      // defer state update to avoid render loop
-      setTimeout(function () { upd('earnedBadges', updatedBadges); }, 0);
+      var pendingBadges = window.__archPendingBadgeIds || (window.__archPendingBadgeIds = {});
+      var queuedBadges = newBadges.filter(function (badge) { return !pendingBadges[badge.id]; });
+      if (queuedBadges.length) {
+        queuedBadges.forEach(function (badge) { pendingBadges[badge.id] = true; });
+        var badgeBuildSignature = currentBuildSignature;
+        setTimeout(function () {
+          var awarded = {};
+          var reportAwards = function () {
+            queuedBadges.forEach(function (badge) { delete pendingBadges[badge.id]; });
+            Object.keys(awarded).forEach(function (id) {
+              var badge = awarded[id];
+              if (ctx.addToast) ctx.addToast('\uD83C\uDFC5 Badge Earned: ' + badge.icon + ' ' + badge.name + '!', 'success');
+              if (ctx.awardXP) ctx.awardXP('archStudio_badge_' + badge.id, 5, 'Badge: ' + badge.name);
+            });
+          };
+          if (typeof ctx.setToolData === 'function') {
+            var badgeReportScheduled = false;
+            ctx.setToolData(function (p) {
+              var a = Object.assign({}, p.archStudio || {});
+              var scheduleBadgeReport = function () {
+                if (badgeReportScheduled) return;
+                badgeReportScheduled = true;
+                setTimeout(reportAwards, 0);
+              };
+              if (getArchBuildSignature(getArchRuntimeBlocks(a.blocks)) !== badgeBuildSignature) { scheduleBadgeReport(); return p; }
+              var latestEarned = Object.assign({}, a.earnedBadges || {});
+              var changed = false;
+              queuedBadges.forEach(function (badge) {
+                if (latestEarned[badge.id]) return;
+                latestEarned[badge.id] = Date.now();
+                awarded[badge.id] = badge;
+                changed = true;
+              });
+              scheduleBadgeReport();
+              return changed ? Object.assign({}, p, { archStudio: Object.assign({}, a, { earnedBadges: latestEarned }) }) : p;
+            });
+          } else {
+            var fallbackEarned = Object.assign({}, earnedBadges);
+            queuedBadges.forEach(function (badge) {
+              if (fallbackEarned[badge.id]) return;
+              fallbackEarned[badge.id] = Date.now();
+              awarded[badge.id] = badge;
+            });
+            upd('earnedBadges', fallbackEarned);
+            reportAwards();
+          }
+        }, 0);
+      }
     }
-    var badgeCount = Object.keys(earnedBadges).length;
+    var badgeCount = badges.filter(function (badge) { return !!earnedBadges[badge.id]; }).length;
 
     // ══════════════════════════════════════════════════════════════
     // ── Wind Resistance Analyzer ──
@@ -2763,7 +3107,7 @@
     };
 
     var pillBtn = function (label, isActive, activeBg, activeBorder, activeColor, onClick) {
-      return el('button', { onClick: onClick, style: {
+      return el('button', { className: 'arch-studio-pill', type: 'button', 'aria-pressed': !!isActive, onClick: onClick, style: {
         background: isActive ? activeBg : 'rgba(71,85,105,.3)',
         border: '1px solid ' + (isActive ? activeBorder : '#475569'),
         color: isActive ? activeColor : '#94a3b8',
@@ -2868,8 +3212,8 @@
                 width: cellPx, height: cellPx, padding: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 borderRadius: 5,
-                border: isSelected ? '3px solid #fbbf24' : b ? '2px solid rgba(255,255,255,.55)' : '1px solid rgba(100,116,139,.55)',
-                background: b ? (b.color || matColorLookup[b.material || 'stone'] || '#94a3b8') : 'rgba(30,41,59,.72)',
+                border: '2px solid ' + (isSelected ? '#fbbf24' : b ? 'rgba(255,255,255,.55)' : 'rgba(100,116,139,.42)'),
+                background: b ? (showHeatmap ? '#' + ('000000' + archHexFor(b).toString(16)).slice(-6) : (b.color || matColorLookup[b.material || 'stone'] || '#94a3b8')) : 'rgba(30,41,59,.72)',
                 color: b ? '#fff' : '#64748b',
                 fontSize: b ? Math.max(14, Math.floor(cellPx * 0.42)) : 13,
                 cursor: (mode === 'erase' || mode === 'paint' || mode === 'pick') ? (b ? (mode === 'pick' ? 'copy' : 'pointer') : 'default') : 'pointer',
@@ -2939,45 +3283,101 @@
         else doRedo();
       }
       else if (e.ctrlKey || e.metaKey || e.altKey) { return; }
-      else if (k === 'p' || k === 'P') { e.preventDefault(); upd('mode', 'place'); if (announceToSR) announceToSR('Place mode.'); }
-      else if (k === 'e' || k === 'E') { e.preventDefault(); upd('mode', 'erase'); if (announceToSR) announceToSR('Erase mode.'); }
-      else if (k === 'a' || k === 'A') { e.preventDefault(); upd('mode', 'paint'); if (announceToSR) announceToSR('Paint mode.'); }
-      else if (k === 'i' || k === 'I') { e.preventDefault(); upd('mode', 'pick'); if (announceToSR) announceToSR('Pick properties mode. Select an existing block.'); }
+      else if ((k === 'p' || k === 'P') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'place'); if (announceToSR) announceToSR('Place mode.'); }
+      else if ((k === 'e' || k === 'E') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'erase'); if (announceToSR) announceToSR('Erase mode.'); }
+      else if ((k === 'a' || k === 'A') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'paint'); if (announceToSR) announceToSR('Paint mode.'); }
+      else if ((k === 'i' || k === 'I') && authoringShortcutSurface) { e.preventDefault(); ArchGL.clearPreview(); upd('mode', 'pick'); if (announceToSR) announceToSR('Pick properties mode. Select an existing block.'); }
       else if (k === 'Escape' && selectedBlock && (authoringShortcutSurface || inInspector)) { e.preventDefault(); clearSelectedBlock(inInspector); }
       else if (k === 'Delete' && selectedBlock && authoringShortcutSurface) { e.preventDefault(); commitSelectedAction({ type: 'delete' }); }
       else if ((k === 'd' || k === 'D') && selectedBlock && authoringShortcutSurface) { e.preventDefault(); commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }
-      else if (k === 's' || k === 'S') { e.preventDefault(); takeScreenshot(); }
+      else if ((k === 's' || k === 'S') && authoringShortcutSurface) { e.preventDefault(); takeScreenshot(); }
       else if ((k === 'g' || k === 'G') && authoringShortcutSurface) {
         e.preventDefault();
         if (showReplay) { if (announceToSR) announceToSR('Exit construction replay before editing.'); }
         else applyGravity();
       }
-      else if (k === 'r' || k === 'R') {
+      else if ((k === 'r' || k === 'R') && authoringShortcutSurface) {
         e.preventDefault();
+        ArchGL.clearPreview();
         var nextDeg = (activeRotation + 90) % 360;
         upd('activeRotation', nextDeg);
         if (announceToSR) announceToSR('Rotated to ' + nextDeg + ' degrees.');
-      } else if (k === 'PageUp' || k === 'PageDown') {
+      } else if ((k === 'PageUp' || k === 'PageDown') && authoringShortcutSurface) {
         e.preventDefault();
         var nextLayer = Math.max(0, Math.min(31, editLayer + (k === 'PageUp' ? 1 : -1)));
         upd('editLayer', nextLayer);
         if (announceToSR) announceToSR('Editing floor Y equals ' + nextLayer + '.');
-      } else if (k >= '1' && k <= '9') {
+      } else if (k >= '1' && k <= '9' && authoringShortcutSurface) {
         var idx = parseInt(k, 10) - 1;
         if (modes[idx]) {
           e.preventDefault();
+          ArchGL.clearPreview();
           upd('mode', modes[idx].id);
           if (announceToSR) announceToSR(modes[idx].label + ' mode.');
         }
       }
     }
 
+    // Keep every display-changing mode visible beside the build. Several of
+    // these settings continue filtering the viewport after their sidebar card
+    // is closed, so this dock is also the quickest route back to the full model.
+    var activeViewChips = [];
+    if (viewLayer >= 0) activeViewChips.push({
+      id: 'layer', label: 'Layer Y=' + viewLayer, clearLabel: 'Show all floor layers',
+      tone: { border: '#38bdf8', bg: 'rgba(56,189,248,.13)', color: '#bae6fd' },
+      clear: function () { upd('viewLayer', -1); }
+    });
+    if (showSlice && sliceZSelected) activeViewChips.push({
+      id: 'slice', label: 'Slice Z=' + sliceZ, clearLabel: 'Clear Z cross-section',
+      tone: { border: '#22d3ee', bg: 'rgba(34,211,238,.13)', color: '#a5f3fc' },
+      clear: function () { upd({ sliceZ: -1, sliceZSelected: false }); }
+    });
+    if (filterMaterial) {
+      var hudMaterial = materials.find(function (m) { return m.id === filterMaterial; });
+      activeViewChips.push({
+        id: 'material', label: 'Material: ' + (hudMaterial ? hudMaterial.label : filterMaterial), clearLabel: 'Clear material filter',
+        tone: { border: '#60a5fa', bg: 'rgba(96,165,250,.13)', color: '#bfdbfe' },
+        clear: function () { upd('filterMaterial', ''); }
+      });
+    }
+    if (filterShape) {
+      var hudShape = shapes.find(function (s) { return s.id === filterShape; });
+      activeViewChips.push({
+        id: 'shape', label: 'Shape: ' + (hudShape ? hudShape.label : filterShape), clearLabel: 'Clear shape filter',
+        tone: { border: '#a78bfa', bg: 'rgba(167,139,250,.13)', color: '#ddd6fe' },
+        clear: function () { upd('filterShape', ''); }
+      });
+    }
+    if (showHeatmap) activeViewChips.push({
+      id: 'heatmap', label: 'Load Heatmap', clearLabel: 'Turn off load heatmap',
+      tone: { border: '#f87171', bg: 'rgba(248,113,113,.13)', color: '#fecaca' },
+      clear: function () { upd('showHeatmap', false); }
+    });
+    if (showReplay) activeViewChips.push({
+      id: 'replay', label: 'Replay ' + replayLabel, clearLabel: 'Exit construction replay',
+      tone: { border: '#fbbf24', bg: 'rgba(251,191,36,.13)', color: '#fde68a' },
+      clear: exitReplay
+    });
+    if (blueprintView) activeViewChips.push({
+      id: 'blueprint', label: 'Blueprint', clearLabel: 'Exit blueprint view',
+      tone: { border: '#2dd4bf', bg: 'rgba(45,212,191,.13)', color: '#99f6e4' },
+      clear: function () { upd('blueprintView', false); }
+    });
+    var resetArchView = function () {
+      upd({
+        viewLayer: -1, showSlice: false, sliceZ: -1, sliceZSelected: false,
+        filterMaterial: '', filterShape: '', showHeatmap: false,
+        showReplay: false, replayStep: -1, blueprintView: false
+      });
+      if (announceToSR) announceToSR('View reset. Showing the entire live build.');
+    };
+
     return el('div', {
       key: 'archStudio',
       id: 'arch-studio-region',
-      style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden' },
+      style: { display: 'flex', flexDirection: 'column', height: '100%', background: 'radial-gradient(circle at 74% 14%,rgba(56,189,248,.075),transparent 30%),var(--allo-stem-canvas, #0f172a)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 22px 58px rgba(2,6,23,.22)' },
       role: 'region',
-      'aria-label': t('stem.archstudio.architecture_studio_keyboard_shortcuts', 'Architecture Studio. Keyboard shortcuts: P Place, E Erase, A Paint, I Pick properties, R Rotate, D Duplicate selected, Delete removes selected, Escape clears selection, Page Up and Page Down change floor.'),
+      'aria-label': t('stem.archstudio.architecture_studio_keyboard_shortcuts', 'Architecture Studio. On the build canvas or floor grid: P Place, E Erase, A Paint, I Pick properties, R Rotate, G Gravity, S Screenshot, D Duplicate selected, Delete removes selected, Escape clears selection, number keys choose tools, and Page Up or Page Down changes floor. Control Z and Control Y undo and redo.'),
       tabIndex: 0,
       onKeyDown: onArchKey
     },
@@ -3000,26 +3400,94 @@
         '#arch-studio-region{'
         + '--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#020617;'
         + '--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-border:#334155;'
-        + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;}'
-        + '.theme-contrast #arch-studio-region{'
+        + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;'
+        + '--arch-glow:rgba(56,189,248,.18);--arch-shadow:0 18px 44px rgba(2,6,23,.34);}'
+        + '#arch-studio-region,#arch-studio-region *{box-sizing:border-box;}'
+        + '#arch-studio-region button{font-family:inherit;}'
+        + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'
+        + '#arch-studio-region button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px);}'
+        + '#arch-studio-region button:not(:disabled):active{transform:translateY(0) scale(.98);}'
+        + '#arch-studio-region button:focus-visible,#arch-studio-region input:focus-visible,#arch-studio-region textarea:focus-visible{outline:2px solid #38bdf8;outline-offset:2px;}'
+        + '#arch-studio-region button:disabled{opacity:.66;}'
+        + '#arch-studio-region .arch-studio-pill{white-space:nowrap;flex:0 0 auto;}'
+        + '#arch-studio-region .arch-studio-title-row,#arch-studio-region .arch-studio-feature-strip,#arch-studio-region .arch-studio-stats{scrollbar-width:thin;scrollbar-color:#475569 transparent;}'
+        + '#arch-studio-region .arch-studio-sidebar{scrollbar-width:thin;scrollbar-color:#475569 transparent;}'
+        + '#arch-studio-region .arch-studio-sidebar>div{padding:9px;border:1px solid rgba(71,85,105,.55);border-radius:11px;background:linear-gradient(145deg,rgba(30,41,59,.72),rgba(15,23,42,.48));box-shadow:0 8px 18px rgba(2,6,23,.13);}'
+        + '#arch-studio-region .arch-studio-sidebar>div:hover{border-color:rgba(100,116,139,.8);}'
+        + '#arch-studio-region .arch-studio-stage{background:radial-gradient(circle at 50% 34%,rgba(56,189,248,.11),transparent 42%),linear-gradient(180deg,#0b1220 0%,#020617 100%);box-shadow:inset 0 0 60px rgba(2,6,23,.45);isolation:isolate;overflow:hidden;}'
+        + '#arch-studio-region .arch-studio-floating-panel{box-sizing:border-box;box-shadow:var(--arch-shadow);max-height:calc(100% - 132px);overflow-y:auto;animation:arch-panel-in .2s ease-out;}'
+        + '#arch-studio-region .arch-studio-floating-header{position:sticky;top:-12px;z-index:3;margin:-12px -14px 8px;padding:10px 12px 8px;background:rgba(15,23,42,.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(71,85,105,.55);}'
+        + '#arch-studio-region .arch-studio-view-hud{scrollbar-width:thin;scrollbar-color:#475569 transparent;box-shadow:0 -8px 22px rgba(2,6,23,.2);}'
+        + '#arch-studio-region .arch-studio-view-chip{flex:0 0 auto;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:750;white-space:nowrap;}'
+        + '#arch-studio-region .arch-studio-has-view-hud .arch-studio-floating-panel{max-height:calc(100% - 170px);}'
+        + '#arch-studio-region .arch-studio-stat{min-width:82px;padding:6px 9px;border:1px solid rgba(71,85,105,.55);border-radius:9px;background:rgba(15,23,42,.58);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);}'
+        + '#arch-studio-region .arch-studio-empty-state{animation:arch-panel-in .2s ease-out;box-shadow:0 16px 38px rgba(2,6,23,.38);}'
+        + '#arch-studio-region .arch-studio-coach{box-shadow:0 -8px 22px rgba(2,6,23,.16);}'
+        + '#arch-studio-region .arch-studio-inquiry{max-height:42vh;overflow-y:auto;flex:none;}'
+        + '@keyframes arch-panel-in{from{opacity:0;transform:translateY(5px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}'
+        + '.theme-contrast #arch-studio-region{background:#000!important;box-shadow:none!important;'
         + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
         + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
         + '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;}'
+        + '.theme-contrast #arch-studio-region button:focus-visible{outline-color:#00ff00;}'
+        + '.theme-contrast #arch-studio-region .arch-studio-sidebar>div{background:#000;border-color:#ffff00;}'
+        + '@media(max-width:900px) and (min-width:681px){'
+        + '#arch-studio-region .arch-studio-floating-panel{width:calc(50% - 12px)!important;}'
+        + '#arch-studio-region .arch-studio-help-overlay{display:none!important;}'
+        + '#arch-studio-region .arch-studio-selection-chip{bottom:52px!important;max-width:calc(100% - 16px)!important;}'
+        + '}'
         + '@media(max-width:680px){'
-        + '#arch-studio-region .arch-studio-header{flex-wrap:nowrap!important;overflow-x:auto;}'
-        + '#arch-studio-region .arch-studio-main{flex-direction:column;overflow:auto!important;}'
-        + '#arch-studio-region .arch-studio-sidebar{width:auto!important;max-height:230px;flex:none;border-right:0!important;border-bottom:1px solid #334155;}'
-        + '#arch-studio-region .arch-studio-viewport{min-height:360px;flex:none!important;}'
+        + '#arch-studio-region .arch-studio-title-row,#arch-studio-region .arch-studio-feature-strip{flex-wrap:nowrap!important;overflow-x:auto!important;}'
+        + '#arch-studio-region .arch-studio-title-row>*{flex:0 0 auto;}'
+        + '#arch-studio-region .arch-studio-main{flex-direction:column;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;}'
+        + '#arch-studio-region .arch-studio-sidebar{width:auto!important;max-height:240px;flex:none;border-right:0!important;border-bottom:1px solid #334155;}'
+        + '#arch-studio-region .arch-studio-mode-card{position:sticky;top:0;z-index:4;}'
+        + '#arch-studio-region .arch-studio-viewport{min-height:420px;flex:none!important;overflow:visible;}'
+        + '#arch-studio-region .arch-studio-stage{min-height:360px;flex:none!important;}'
+        + '#arch-studio-region .arch-studio-help-overlay{display:none!important;}'
+        + '#arch-studio-region .arch-studio-floating-panel{position:relative!important;inset:auto!important;width:auto!important;max-height:220px;margin:8px 8px 0;animation:none;}'
+        + '#arch-studio-region .arch-studio-has-view-hud .arch-studio-floating-panel{max-height:220px;}'
+        + '#arch-studio-region .arch-studio-stats{justify-content:flex-start!important;}'
+        + '#arch-studio-region .arch-studio-inquiry-controls{grid-template-columns:1fr!important;}'
+        + '}'
+        + '@media(max-width:440px){'
+        + '#arch-studio-region .arch-studio-sidebar{max-height:210px;}'
+        + '#arch-studio-region .arch-studio-stage{min-height:330px;}'
+        + '#arch-studio-region .arch-studio-help-overlay{display:none!important;}'
+        + '#arch-studio-region .arch-studio-view-switch{left:auto!important;right:8px!important;transform:none!important;}'
+        + '#arch-studio-region .arch-studio-selection-chip{bottom:52px!important;max-width:calc(100% - 16px)!important;}'
+        + '}'
+        + '@media(max-width:480px){#arch-studio-region .arch-studio-selection-chip{bottom:52px!important;max-width:calc(100% - 16px)!important;}}'
+        + '@media(max-height:600px) and (min-width:681px){'
+        + '#arch-studio-region .arch-studio-main{overflow:auto!important;}'
+        + '#arch-studio-region .arch-studio-viewport{min-height:380px!important;flex:none!important;}'
+        + '#arch-studio-region .arch-studio-stage{min-height:300px;}'
+        + '#arch-studio-region .arch-studio-inquiry{max-height:30vh;}'
         + '}'),
 
       // ── Header bar ──
-      el('div', { className: 'arch-studio-header', style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderBottom: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
-        el('button', { onClick: function () { ctx.setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
-        el('span', { style: { fontSize: 18 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
-        el('span', { style: { fontWeight: 700, fontSize: 15, color: '#f8fafc' } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
-        el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, totalBlocks + ' blocks'),
+      el('div', { className: 'arch-studio-header', style: { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5, padding: '7px 10px 6px', background: 'linear-gradient(115deg,rgba(30,41,59,.98),rgba(15,23,42,.98) 52%,rgba(8,47,73,.82))', borderBottom: '1px solid var(--allo-stem-border, #334155)', boxShadow: '0 10px 28px rgba(2,6,23,.2)', flexShrink: 0 } },
+        el('div', { className: 'arch-studio-title-row', style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, overflowX: 'auto', padding: '1px 1px 2px' } },
+          el('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.45)', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '\u2190 Back'),
+          el('span', { 'aria-hidden': 'true', style: { flex: '0 0 auto', display: 'grid', placeItems: 'center', width: 30, height: 30, borderRadius: 9, fontSize: 18, background: styleMode === 'bricks' ? 'rgba(239,68,68,.13)' : 'rgba(56,189,248,.12)', border: '1px solid ' + (styleMode === 'bricks' ? 'rgba(248,113,113,.35)' : 'rgba(56,189,248,.35)') } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
+          el('div', { style: { minWidth: 0, whiteSpace: 'nowrap' } },
+            el('div', { style: { fontWeight: 800, fontSize: 15, color: '#f8fafc', letterSpacing: .1 } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
+            el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 1 } }, totalBlocks + ' blocks \u2022 ' + (blocks.length ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : 'ready to design'))
+          ),
+          el('div', { style: { flex: 1, minWidth: 8 } }),
+          el('button', { type: 'button', onClick: doUndo, disabled: showReplay || !undoStack.length, title: showReplay ? 'Exit construction replay to undo' : t('stem.archstudio.undo_multi_level', 'Undo (multi-level)'), style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.4)', color: !showReplay && undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && undoStack.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\u21A9 Undo' + (undoStack.length ? ' ' + undoStack.length : '')),
+          el('button', { type: 'button', onClick: doRedo, disabled: showReplay || !redoStack.length, title: showReplay ? 'Exit construction replay to redo' : t('stem.archstudio.redo', 'Redo'), style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.4)', color: !showReplay && redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && redoStack.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\u21AA Redo' + (redoStack.length ? ' ' + redoStack.length : '')),
+          el('button', { type: 'button', onClick: saveBuild, disabled: !blocks.length, title: t('stem.archstudio.save_to_gallery', 'Save to gallery'), style: { flex: '0 0 auto', background: blocks.length ? 'rgba(34,197,94,.16)' : 'rgba(71,85,105,.25)', border: blocks.length ? '1px solid rgba(34,197,94,.55)' : '1px solid transparent', color: blocks.length ? '#86efac' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' } }, '\uD83D\uDCBE Save'),
+          el('button', { type: 'button', onClick: clearAll, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to clear the build' : 'Clear the live build', style: { flex: '0 0 auto', background: !showReplay && blocks.length ? 'rgba(239,68,68,.14)' : 'rgba(71,85,105,.25)', border: !showReplay && blocks.length ? '1px solid rgba(239,68,68,.45)' : '1px solid transparent', color: !showReplay && blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDD1\uFE0F Clear')
+        ),
+        el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': 'Architecture Studio features and actions', style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
         // Toggle pills
-        pillBtn(styleMode === 'bricks' ? '\uD83E\uDDF1 Bricks' : '\uD83C\uDFDB\uFE0F Architect', true, styleMode === 'bricks' ? 'rgba(239,68,68,.2)' : 'rgba(99,102,241,.15)', styleMode === 'bricks' ? '#f87171' : '#6366f1', styleMode === 'bricks' ? '#fca5a5' : '#a5b4fc', function () { upd('styleMode', styleMode === 'architect' ? 'bricks' : 'architect'); }),
+        el('div', { role: 'group', 'aria-label': 'Editor style', style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
+          [{ id: 'architect', label: '\uD83C\uDFDB\uFE0F Architect', color: '#a5b4fc', bg: 'rgba(99,102,241,.24)' }, { id: 'bricks', label: '\uD83E\uDDF1 Bricks', color: '#fca5a5', bg: 'rgba(239,68,68,.22)' }].map(function (option) {
+            var selectedStyle = styleMode === option.id;
+            return el('button', { key: option.id, type: 'button', 'aria-pressed': selectedStyle, onClick: function () { upd('styleMode', option.id); }, style: { padding: '3px 9px', borderRadius: 16, border: '1px solid ' + (selectedStyle ? option.color : 'transparent'), background: selectedStyle ? option.bg : 'transparent', color: selectedStyle ? option.color : '#64748b', cursor: 'pointer', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap', boxShadow: selectedStyle ? '0 0 14px ' + option.bg : 'none' } }, option.label);
+          })
+        ),
         pillBtn(blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View', blueprintView, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('blueprintView', !blueprintView); }),
         pillBtn('\uD83C\uDFC6 ' + completedCount + '/10', showChallenges, 'rgba(245,158,11,.2)', '#f59e0b', '#fbbf24', function () { upd('showChallenges', !showChallenges); }),
         pillBtn('\uD83D\uDCD0 Analysis', showAnalysis, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showAnalysis', !showAnalysis); }),
@@ -3045,16 +3513,11 @@
         // Screenshot + Sound
         el('button', { type: 'button', onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), 'aria-label': t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
         el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        el('div', { style: { flex: 1 } }),
-        // Undo / Redo / Clear
-        el('button', { onClick: doUndo, disabled: showReplay || !undoStack.length, title: showReplay ? 'Exit construction replay to undo' : t('stem.archstudio.undo_multi_level', 'Undo (multi-level)'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: !showReplay && undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: !showReplay && undoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21A9 Undo' + (undoStack.length ? ' (' + undoStack.length + ')' : '')),
-        el('button', { onClick: doRedo, disabled: showReplay || !redoStack.length, title: showReplay ? 'Exit construction replay to redo' : t('stem.archstudio.redo', 'Redo'), style: { background: 'rgba(71,85,105,.5)', border: 'none', color: !showReplay && redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: !showReplay && redoStack.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\u21AA Redo' + (redoStack.length ? ' (' + redoStack.length + ')' : '')),
-        el('button', { onClick: clearAll, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to clear the build' : 'Clear the live build', style: { background: !showReplay && blocks.length ? 'rgba(239,68,68,.3)' : 'rgba(71,85,105,.3)', border: !showReplay && blocks.length ? '1px solid rgba(239,68,68,.4)' : '1px solid transparent', color: !showReplay && blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 600 } }, '\uD83D\uDDD1\uFE0F Clear'),
-        el('button', { onClick: saveBuild, disabled: !blocks.length, title: t('stem.archstudio.save_to_gallery', 'Save to gallery'), style: { background: blocks.length ? 'rgba(34,197,94,.2)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22c55e' : '1px solid transparent', color: blocks.length ? '#4ade80' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCBE Save'),
         // Export buttons
         el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG'),
         el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG'),
-        el('button', { onClick: exportSTL, disabled: !blocks.length, style: { background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCE5 STL')
+        el('button', { onClick: exportSTL, disabled: !blocks.length, style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDCE5 STL')
+        )
       ),
 
       // ── Main content: sidebar + viewport ──
@@ -3063,84 +3526,96 @@
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('div', { className: 'arch-studio-sidebar', style: { width: 185, flexShrink: 0, background: 'var(--allo-stem-panel, #1e293b)', padding: '10px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 12 } },
+        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar', 'aria-label': 'Architecture tools', style: { width: 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           // Mode selector
-          el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Mode'),
-            el('div', { style: { display: 'flex', gap: 4 } },
+          el('div', { className: 'arch-studio-mode-card' },
+            el('div', { id: 'arch-mode-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Mode'),
+            el('div', { role: 'group', 'aria-labelledby': 'arch-mode-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 4 } },
               modes.map(function (m) {
-                return el('button', { key: m.id, type: 'button', 'aria-label': m.label + ' mode', 'aria-pressed': mode === m.id, title: m.label + ' mode' + (m.id === 'pick' ? ' (I)' : ''), onClick: function () { upd('mode', m.id); }, style: {
-                  flex: 1, padding: '5px 4px', fontSize: 11, fontWeight: 600,
-                  border: mode === m.id ? '2px solid #f59e0b' : '1px solid #475569',
-                  borderRadius: 8, background: mode === m.id ? 'rgba(245,158,11,.15)' : 'rgba(30,41,59,.8)',
-                  color: mode === m.id ? '#fbbf24' : '#94a3b8', cursor: 'pointer', textAlign: 'center'
+                var modeActive = mode === m.id;
+                var modeTone = modeVisuals[m.id] || modeVisuals.place;
+                return el('button', { key: m.id, type: 'button', 'aria-label': m.label + ' mode', 'aria-pressed': modeActive, title: m.label + ' mode' + (m.id === 'pick' ? ' (I)' : ''), onClick: function () { ArchGL.clearPreview(); upd('mode', m.id); }, style: {
+                  minHeight: 34, padding: '6px 4px', fontSize: 11, fontWeight: 700,
+                  border: '2px solid ' + (modeActive ? modeTone.border : '#475569'),
+                  borderRadius: 8, background: modeActive ? modeTone.bg : 'rgba(30,41,59,.8)',
+                  color: modeActive ? modeTone.color : '#94a3b8', cursor: 'pointer', textAlign: 'center',
+                  boxShadow: modeActive ? '0 0 14px ' + modeTone.bg : 'none'
                 } }, m.icon + ' ' + m.label);
               })
             )
           ),
 
           selectedBlock && el('section', {
+            className: 'arch-studio-inspector',
             'data-arch-inspector': 'true',
             'data-arch-selected-key': selectedBlockKey,
             'aria-label': 'Selected block inspector',
-            style: { padding: 8, borderRadius: 10, border: '1px solid #f59e0b', background: 'rgba(245,158,11,.08)' }
+            'aria-labelledby': 'arch-selected-heading',
+            style: { padding: 9, borderRadius: 11, border: '2px solid #f59e0b', background: 'linear-gradient(145deg,rgba(120,53,15,.2),rgba(15,23,42,.82))', boxShadow: '0 10px 26px rgba(245,158,11,.13)' }
           },
-            el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 } },
-              el('span', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, flex: 1 } }, '\uD83D\uDCCC Selected Block'),
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7 } },
+              el('span', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', width: 30, height: 30, flexShrink: 0, borderRadius: 8, background: 'rgba(15,23,42,.75)', border: '1px solid rgba(251,191,36,.45)', fontSize: 17 } }, selectedShapeMeta ? selectedShapeMeta.icon : '\uD83D\uDFE6'),
+              el('div', { style: { minWidth: 0, flex: 1 } },
+                el('h3', { id: 'arch-selected-heading', style: { margin: 0, color: '#fde68a', fontSize: 12, fontWeight: 850, letterSpacing: .2 } }, 'Selected Object'),
+                el('div', { 'data-arch-inspector-identity': 'true', style: { marginTop: 1, color: '#cbd5e1', fontSize: 10, fontWeight: 650, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } },
+                  (selectedShapeMeta ? selectedShapeMeta.label : 'Block') + ' \u2022 ' + (selectedMaterialMeta ? selectedMaterialMeta.label : 'Stone'))
+              ),
+              el('span', { style: { flexShrink: 0, padding: '2px 5px', borderRadius: 999, fontSize: 10, fontWeight: 800, color: archUnsupportedKeys[selectedBlockKey] ? '#fecaca' : '#bbf7d0', background: archUnsupportedKeys[selectedBlockKey] ? 'rgba(239,68,68,.16)' : 'rgba(34,197,94,.14)', border: '1px solid ' + (archUnsupportedKeys[selectedBlockKey] ? 'rgba(248,113,113,.55)' : 'rgba(74,222,128,.45)') } }, archUnsupportedKeys[selectedBlockKey] ? 'Floating' : 'Supported'),
               el('button', { type: 'button', 'aria-label': 'Clear selected block', title: 'Deselect (Escape)', onClick: function () { clearSelectedBlock(true); }, style: { minWidth: 28, minHeight: 28, border: '1px solid transparent', borderRadius: 6, background: 'transparent', color: '#fca5a5', cursor: 'pointer', padding: 4, fontSize: 13 } }, '\u2715')
             ),
-            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, marginBottom: 5 } },
+            el('div', { 'data-arch-inspector-coordinates': 'true', role: 'group', 'aria-label': 'Selected object coordinates', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 6 } },
               [['X', selectedBlock.x], ['Y', selectedBlock.y], ['Z', selectedBlock.z]].map(function (entry) {
-                return el('div', { key: entry[0], style: { padding: '3px 2px', borderRadius: 5, background: 'rgba(15,23,42,.72)', textAlign: 'center', color: '#e2e8f0', fontSize: 10 } },
-                  el('span', { style: { color: '#94a3b8' } }, entry[0] + ' '), el('strong', null, entry[1]));
+                return el('div', { key: entry[0], style: { padding: '4px 3px', borderRadius: 6, background: 'rgba(15,23,42,.72)', border: '1px solid rgba(71,85,105,.55)', textAlign: 'center' } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, entry[0]),
+                  el('strong', { style: { display: 'block', marginTop: 1, color: '#f8fafc', fontSize: 13 } }, entry[1]));
               })
             ),
-            el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, padding: '5px 6px', marginBottom: 5, borderRadius: 6, background: 'rgba(15,23,42,.55)', color: '#cbd5e1', fontSize: 10, lineHeight: 1.35 } },
-              el('span', { 'aria-hidden': 'true', style: { width: 16, height: 16, borderRadius: 3, flexShrink: 0, background: normalizeArchColor(selectedBlock.color, selectedBlock.material || 'stone'), border: '1px solid rgba(255,255,255,.45)' } }),
-              el('span', null, (selectedShapeMeta ? selectedShapeMeta.label : 'Block') + ' \u2022 ' + (selectedMaterialMeta ? selectedMaterialMeta.label : 'Stone') + ' \u2022 Color ' + selectedColorLabel + ' \u2022 ' + normalizeArchRotation(selectedBlock.rotation) + '\u00B0')
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 7, padding: '6px 7px', marginBottom: 6, borderRadius: 7, background: 'rgba(15,23,42,.58)', color: '#cbd5e1', fontSize: 10, lineHeight: 1.35 } },
+              el('span', { 'aria-hidden': 'true', style: { width: 22, height: 22, borderRadius: 5, flexShrink: 0, background: normalizeArchColor(selectedBlock.color, selectedBlock.material || 'stone'), border: '1px solid rgba(255,255,255,.55)', boxShadow: '0 0 10px rgba(255,255,255,.08)' } }),
+              el('span', null, 'Color ', el('strong', { style: { color: '#f8fafc' } }, selectedColorLabel), el('span', { style: { color: '#64748b', margin: '0 5px' } }, '\u2022'), 'Rotation ', el('strong', { style: { color: '#f8fafc' } }, normalizeArchRotation(selectedBlock.rotation) + '\u00B0'))
             ),
-            archUnsupportedKeys[selectedBlockKey] && el('div', { role: 'status', style: { marginBottom: 5, padding: '3px 5px', borderRadius: 5, background: 'rgba(239,68,68,.13)', color: '#fca5a5', fontSize: 9, fontWeight: 700 } }, '\u26A0 Floating: move down or add support'),
-            el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Move one cell'),
-            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 6 } },
+            archUnsupportedKeys[selectedBlockKey] && el('div', { role: 'status', style: { marginBottom: 6, padding: '5px 6px', borderRadius: 6, background: 'rgba(239,68,68,.13)', border: '1px solid rgba(248,113,113,.35)', color: '#fecaca', fontSize: 10, fontWeight: 750 } }, '\u26A0 Floating: move down or add support'),
+            el('div', { style: { fontSize: 10, color: '#cbd5e1', fontWeight: 750, marginBottom: 4 } }, 'Move one cell'),
+            el('div', { 'data-arch-inspector-moves': 'true', role: 'group', 'aria-label': 'Move selected object one cell', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, marginBottom: 7 } },
               selectedMoves.map(function (move) {
                 var available = canSelectedAction(move);
                 return el('button', { key: move.label, type: 'button', 'aria-label': move.label, title: move.label, disabled: !available, onClick: function () { commitSelectedAction(move); }, style: {
-                  minHeight: 28, padding: '5px 3px', borderRadius: 5, border: '1px solid ' + (available ? '#64748b' : '#334155'), background: 'rgba(30,41,59,.8)', color: available ? '#e2e8f0' : '#475569', cursor: available ? 'pointer' : 'default', fontSize: 10, fontWeight: 700
+                  minHeight: 32, padding: '6px 3px', borderRadius: 6, border: '1px solid ' + (available ? '#64748b' : '#334155'), background: 'rgba(30,41,59,.8)', color: available ? '#e2e8f0' : '#475569', cursor: available ? 'pointer' : 'default', fontSize: 11, fontWeight: 750
                 } }, move.glyph);
               })
             ),
-            el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
-              el('button', { type: 'button', 'aria-label': 'Reveal selected block', onClick: revealSelectedBlock, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #38bdf8', background: 'rgba(56,189,248,.1)', color: '#7dd3fc', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, '\uD83D\uDC41 Reveal'),
-              el('button', { type: 'button', 'aria-label': 'Duplicate selected block above', title: 'Duplicate selected block above (D)', disabled: !canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }), onClick: function () { commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.1)', color: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? '#93c5fd' : '#475569', cursor: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 700 } }, '\u2398 Copy \u2191'),
-              el('button', { type: 'button', 'aria-label': 'Apply current properties to selected block', disabled: !canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }), onClick: function () { commitSelectedAction({ type: 'replace' }); }, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #a855f7', background: 'rgba(168,85,247,.1)', color: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? '#d8b4fe' : '#475569', cursor: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 700 } }, '\u2728 Apply'),
-              el('button', { type: 'button', 'aria-label': 'Delete selected block', title: 'Delete selected block (Delete)', disabled: showReplay, onClick: function () { commitSelectedAction({ type: 'delete' }); }, style: { minHeight: 30, padding: '6px 4px', borderRadius: 6, border: '1px solid #ef4444', background: 'rgba(239,68,68,.1)', color: showReplay ? '#475569' : '#fca5a5', cursor: showReplay ? 'default' : 'pointer', fontSize: 10, fontWeight: 700 } }, '\uD83D\uDDD1 Delete')
+            el('div', { 'data-arch-inspector-actions': 'true', role: 'group', 'aria-label': 'Selected object actions', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 } },
+              el('button', { type: 'button', 'aria-label': 'Reveal selected block', onClick: revealSelectedBlock, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #38bdf8', background: 'rgba(56,189,248,.1)', color: '#7dd3fc', cursor: 'pointer', fontSize: 10, fontWeight: 750 } }, '\uD83D\uDC41 Reveal'),
+              el('button', { type: 'button', 'aria-label': 'Duplicate selected block above', title: 'Duplicate selected block above (D)', disabled: !canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }), onClick: function () { commitSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.1)', color: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? '#93c5fd' : '#475569', cursor: canSelectedAction({ type: 'duplicate', dx: 0, dy: 1, dz: 0 }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 750 } }, '\u2398 Copy \u2191'),
+              el('button', { type: 'button', 'aria-label': 'Apply current properties to selected block', disabled: !canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }), onClick: function () { commitSelectedAction({ type: 'replace' }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #a855f7', background: 'rgba(168,85,247,.1)', color: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? '#d8b4fe' : '#475569', cursor: canSelectedAction({ type: 'replace', shape: activeShape, material: activeMaterial, color: activeColor, rotation: activeRotation }) ? 'pointer' : 'default', fontSize: 10, fontWeight: 750 } }, '\u2728 Apply Palette'),
+              el('button', { type: 'button', 'aria-label': 'Delete selected block', title: 'Delete selected block (Delete)', disabled: showReplay, onClick: function () { commitSelectedAction({ type: 'delete' }); }, style: { minHeight: 34, padding: '7px 4px', borderRadius: 7, border: '1px solid #ef4444', background: 'rgba(239,68,68,.1)', color: showReplay ? '#475569' : '#fca5a5', cursor: showReplay ? 'default' : 'pointer', fontSize: 10, fontWeight: 750 } }, '\uD83D\uDDD1 Delete')
             )
           ),
 
           // Shape palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Shapes'),
-            el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 } },
+            el('div', { id: 'arch-shapes-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Shapes'),
+            el('div', { role: 'group', 'aria-labelledby': 'arch-shapes-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 4 } },
               shapes.map(function (s) {
                 return el('button', { key: s.id, type: 'button', 'aria-label': s.label + ' shape', 'aria-pressed': activeShape === s.id, onClick: function () { upd('activeShape', s.id); }, style: {
-                  padding: '6px 3px', fontSize: 10, fontWeight: 600,
-                  border: activeShape === s.id ? '2px solid #60a5fa' : '1px solid #334155',
+                  minHeight: 46, padding: '6px 3px', fontSize: 11, fontWeight: 650,
+                  border: '2px solid ' + (activeShape === s.id ? '#60a5fa' : '#334155'),
                   borderRadius: 8, background: activeShape === s.id ? 'rgba(96,165,250,.12)' : 'transparent',
                   color: activeShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer', textAlign: 'center', lineHeight: 1.2
-                } }, el('div', { style: { fontSize: 16 } }, s.icon), s.label);
+                } }, el('div', { style: { fontSize: 18 } }, s.icon), s.label);
               })
             )
           ),
 
           // Rotation selector
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD04 Rotation'),
-            el('div', { style: { display: 'flex', gap: 3 } },
+            el('div', { id: 'arch-rotation-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD04 Rotation'),
+            el('div', { role: 'group', 'aria-labelledby': 'arch-rotation-heading', style: { display: 'flex', gap: 3 } },
               rotations.map(function (r) {
                 return el('button', { key: r.deg, type: 'button', 'aria-label': 'Use ' + r.label + ' rotation', 'aria-pressed': activeRotation === r.deg, onClick: function () { upd('activeRotation', r.deg); }, style: {
                   flex: 1, padding: '4px 2px', fontSize: 10, fontWeight: 600,
-                  border: activeRotation === r.deg ? '2px solid #f59e0b' : '1px solid #334155',
+                  border: '2px solid ' + (activeRotation === r.deg ? '#f59e0b' : '#334155'),
                   borderRadius: 6, background: activeRotation === r.deg ? 'rgba(245,158,11,.12)' : 'transparent',
                   color: activeRotation === r.deg ? '#fbbf24' : '#94a3b8', cursor: 'pointer', textAlign: 'center'
                 } }, r.icon + ' ' + r.label);
@@ -3150,18 +3625,18 @@
 
           // Material palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Materials'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+            el('div', { id: 'arch-materials-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, 'Materials'),
+            el('div', { role: 'group', 'aria-labelledby': 'arch-materials-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 4 } },
               materials.map(function (m) {
                 return el('button', { key: m.id, type: 'button', 'aria-label': 'Use ' + m.label + ' material', 'aria-pressed': activeMaterial === m.id, onClick: function () { upd({ activeMaterial: m.id, activeColor: m.color }); }, style: {
-                  display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px', fontSize: 10, fontWeight: 600,
-                  border: activeMaterial === m.id ? '2px solid ' + m.color : '1px solid #334155',
+                  minHeight: 40, display: 'flex', alignItems: 'center', gap: 4, padding: '6px 5px', fontSize: 10, fontWeight: 650,
+                  border: '2px solid ' + (activeMaterial === m.id ? m.color : '#334155'),
                   borderRadius: 8, background: activeMaterial === m.id ? 'rgba(255,255,255,.06)' : 'transparent',
                   color: activeMaterial === m.id ? '#f8fafc' : '#94a3b8', cursor: 'pointer', textAlign: 'left'
                 } },
-                  el('span', { style: { width: 16, height: 16, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.15)' } }),
+                  el('span', { 'aria-hidden': 'true', style: { width: 18, height: 18, borderRadius: 4, background: m.color, display: 'inline-block', flexShrink: 0, border: '1px solid rgba(255,255,255,.2)' } }),
                   m.icon + ' ' + m.label,
-                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\uD83D\uDCB2' + m.cost)
+                  budgetEnabled && el('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\uD83D\uDCB2' + m.cost)
                 );
               })
             )
@@ -3169,14 +3644,14 @@
 
           // Custom Color Palette
           el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
-            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3 } },
+            el('div', { id: 'arch-colors-heading', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Custom Color'),
+            el('div', { role: 'group', 'aria-labelledby': 'arch-colors-heading', style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
               ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#64748b','#1e293b'].map(function (c) {
                 return el('button', { key: c, type: 'button', onClick: function () { upd('activeColor', c); }, title: c, 'aria-label': 'Use custom color ' + c, 'aria-pressed': activeColor === c, style: {
-                  width: 24, height: 24, borderRadius: 5, background: c, cursor: 'pointer',
-                  border: activeColor === c ? '3px solid #fff' : '1px solid rgba(255,255,255,.2)',
-                  boxShadow: activeColor === c ? '0 0 6px ' + c + '88' : 'none',
-                  transform: activeColor === c ? 'scale(1.15)' : 'scale(1)', transition: 'all 0.15s ease'
+                  width: 28, height: 28, borderRadius: 6, background: c, cursor: 'pointer',
+                  border: '2px solid ' + (activeColor === c ? '#fff' : 'rgba(255,255,255,.2)'),
+                  boxShadow: activeColor === c ? '0 0 0 2px #0f172a,0 0 9px ' + c + '88' : 'none',
+                  transition: 'box-shadow 0.15s ease,border-color 0.15s ease'
                 } });
               })
             )
@@ -3217,13 +3692,13 @@
             if (!rows.length) return null;
             var sum = rows.reduce(function(s, r) { return s + r.cost; }, 0) || 1;
             return el('div', { style: { marginTop: 6 } },
-              el('div', { style: { fontSize: 9, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 } }, 'Cost by material'),
+              el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 } }, 'Cost by material'),
               el('div', { style: { display: 'flex', height: 10, borderRadius: 4, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' } },
                 rows.map(function(r) { return el('div', { key: r.m.id, title: r.m.label + ': ' + r.count + ' x $' + (matCostLookup[r.m.id] || 0) + ' = $' + r.cost, style: { width: (r.cost / sum * 100) + '%', background: r.m.color } }); })
               ),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 } },
                 rows.map(function(r) {
-                  return el('div', { key: r.m.id, style: { display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  return el('div', { key: r.m.id, style: { display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                     el('span', { style: { width: 8, height: 8, borderRadius: 2, background: r.m.color, display: 'inline-block', border: '1px solid rgba(148,163,184,0.4)' } }),
                     el('span', null, r.m.icon + ' ' + r.count + 'x  $' + r.cost));
                 })
@@ -3259,7 +3734,7 @@
                   el('span', { style: { fontSize: 13, flexShrink: 0 } }, done ? '\u2705' : chItem.icon),
                   el('div', { style: { flex: 1, minWidth: 0 } },
                     el('div', { style: { fontWeight: 700, fontSize: 10 } }, chItem.title),
-                    el('div', { style: { fontSize: 8, color: done ? '#22c55e' : '#94a3b8' } }, done ? 'Done!' : chItem.desc)
+                    el('div', { style: { fontSize: 10, lineHeight: 1.35, color: done ? '#22c55e' : '#94a3b8' } }, done ? 'Done!' : chItem.desc)
                   ),
                   el('span', { style: { fontSize: 11, color: done ? '#22c55e' : '#f59e0b', fontWeight: 700, flexShrink: 0 } }, done ? '\u2605' : '+' + chItem.xp)
                 );
@@ -3268,7 +3743,7 @@
             justCompleted && challengeProgress && el('button', { onClick: completeChallenge, style: {
               marginTop: 6, width: '100%', padding: '7px 10px', borderRadius: 10, border: 'none',
               background: 'linear-gradient(135deg,#b45309,#92400e)', color: '#fff',
-              fontWeight: 700, fontSize: 11, cursor: 'pointer', animation: 'pulse 1.5s ease-in-out infinite'
+              fontWeight: 700, fontSize: 11, cursor: 'pointer', animation: 'pulse 1.5s ease-in-out 2'
             } }, '\uD83C\uDFC6 Claim +' + challengeProgress.challenge.xp + ' XP!')
           ),
 
@@ -3282,7 +3757,7 @@
                   return el('div', { key: item.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '5px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)' } },
                     el('div', { style: { flex: 1, minWidth: 0 } },
                       el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, item.name),
-                      el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
+                      el('div', { style: { fontSize: 10, lineHeight: 1.35, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, item.blockCount + ' blocks \u2022 ' + item.dims)
                     ),
                     el('button', { type: 'button', 'aria-label': 'Load saved build ' + item.name, title: showReplay ? 'Exit construction replay to load this build' : 'Load ' + item.name, disabled: showReplay, onClick: function () { loadBuild(item); }, style: { background: 'rgba(96,165,250,.15)', border: '1px solid #60a5fa', color: showReplay ? '#475569' : '#93c5fd', borderRadius: 6, padding: '3px 8px', fontSize: 11, fontWeight: 700, cursor: showReplay ? 'default' : 'pointer' } }, '\u21E9'),
                     el('button', { type: 'button', 'aria-label': 'Delete saved build ' + item.name, title: 'Delete ' + item.name, onClick: function () { deleteBuild(item.id); }, style: { background: 'rgba(239,68,68,.15)', border: '1px solid #ef4444', color: '#fca5a5', borderRadius: 6, padding: '3px 6px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
@@ -3304,7 +3779,7 @@
                   el('span', { style: { fontSize: 16, flexShrink: 0 } }, tpl.icon),
                   el('div', { style: { flex: 1 } },
                     el('div', { style: { fontWeight: 700, color: '#f8fafc', fontSize: 11 } }, tpl.name),
-                    el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, tpl.desc)
+                    el('div', { style: { fontSize: 10, lineHeight: 1.35, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, tpl.desc)
                   )
                 );
               })
@@ -3356,18 +3831,18 @@
             el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2, fontWeight: 600 } }, 'By Material:'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               bomMaterialEntries.map(function (e) {
-                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
+                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 10 } },
                   el('span', null, e.icon),
                   el('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, flex: 1 } }, e.label),
                   el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u00D7' + e.count),
-                  budgetEnabled && el('span', { style: { color: '#fbbf24', fontSize: 8 } }, '\uD83D\uDCB2' + e.cost)
+                  budgetEnabled && el('span', { style: { color: '#fbbf24', fontSize: 10 } }, '\uD83D\uDCB2' + e.cost)
                 );
               })
             ),
             el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2, marginTop: 6, fontWeight: 600 } }, 'By Shape:'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
               bomShapeEntries.map(function (e) {
-                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '3px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 9 } },
+                return el('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 6px', background: 'rgba(30,41,59,.4)', borderRadius: 6, fontSize: 10 } },
                   el('span', null, e.icon),
                   el('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, flex: 1 } }, e.label),
                   el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\u00D7' + e.count)
@@ -3422,7 +3897,7 @@
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 } },
                     el('span', { style: { fontSize: 14 } }, st.icon),
                     el('span', { style: { fontWeight: 700, fontSize: 11, color: '#f8fafc' } }, st.name),
-                    el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 'auto' } }, st.era)
+                    el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 'auto' } }, st.era)
                   ),
                   el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4, marginBottom: 3 } }, st.features),
                   el('div', { style: { fontSize: 11, color: '#60a5fa', fontWeight: 600 } }, '\uD83D\uDCA1 ' + st.tips)
@@ -3445,7 +3920,7 @@
                   el('div', { style: { height: 4, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 2, overflow: 'hidden', marginBottom: 2 } },
                     el('div', { style: { height: '100%', width: phPct + '%', background: 'linear-gradient(90deg,#2dd4bf,#14b8a6)', borderRadius: 2 } })
                   ),
-                  el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, Object.keys(ph.mats).map(function (m) { return m + ':\u00D7' + ph.mats[m]; }).join(' \u2022 '))
+                  el('div', { style: { fontSize: 10, lineHeight: 1.35, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, Object.keys(ph.mats).map(function (m) { return m + ':\u00D7' + ph.mats[m]; }).join(' \u2022 '))
                 );
               })
             )
@@ -3462,7 +3937,7 @@
             shareCode && el('div', { style: { marginBottom: 4 } },
               el('textarea', { value: shareCode, readOnly: true, 'aria-label': t('stem.archstudio.share_code', 'Share code to copy'), onClick: function (e) { e.target.select(); }, style: {
                 width: '100%', height: 50, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6,
-                color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 8, fontFamily: 'monospace', resize: 'none'
+                color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontFamily: 'monospace', resize: 'none'
               }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
             ),
             el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, 'Paste a code below to import:'),
@@ -3470,7 +3945,7 @@
               el('input', { type: 'text', placeholder: t('stem.archstudio.paste_share_code', 'Paste share code...'), value: d.importCode || '',
                 'aria-label': t('stem.archstudio.paste_share_code_to_import_a_design', 'Paste share code to import a design'),
                 onChange: function (e) { upd('importCode', e.target.value); },
-                style: { flex: 1, padding: '5px 8px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 9 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
+                style: { flex: 1, padding: '5px 8px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
               }),
               el('button', { onClick: function () { importShareCode(d.importCode); }, disabled: showReplay, title: showReplay ? 'Exit construction replay to import a build' : 'Import build', style: {
                 padding: '5px 10px', borderRadius: 6, border: 'none',
@@ -3482,7 +3957,7 @@
           // Keyboard Shortcuts Reference
           el('div', { style: { marginTop: 4, padding: '6px 8px', background: 'rgba(15,23,42,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #1e293b)' } },
             el('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #475569)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\u2328\uFE0F Shortcuts'),
-            el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.6 } },
+            el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.6 } },
               el('div', null, 'Ctrl+Z Undo \u2022 Ctrl+Y or Ctrl+Shift+Z Redo'),
               el('div', null, 'P Place \u2022 E Erase \u2022 A Paint \u2022 I Pick'),
               el('div', null, '1-4 Modes \u2022 R Rotate \u2022 Page Up/Down Floor'),
@@ -3503,7 +3978,7 @@
                   el('span', { style: { fontSize: 14 } }, preset.icon),
                   el('div', null,
                     el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, preset.name),
-                    el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, preset.desc)
+                    el('div', { style: { fontSize: 10, lineHeight: 1.35, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, preset.desc)
                   )
                 );
               })
@@ -3515,7 +3990,7 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFA8 Color Palette'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3, marginBottom: 6 } },
               colorSwatches.map(function (c) {
-                return el('button', { key: c, onClick: function () { upd({ activeColor: c, customColor: c }); }, style: {
+                return el('button', { key: c, type: 'button', 'aria-label': 'Use colour ' + c.toUpperCase(), 'aria-pressed': customColor === c, title: c.toUpperCase(), onClick: function () { upd({ activeColor: c, customColor: c }); }, style: {
                   width: 24, height: 24, borderRadius: 4, border: customColor === c ? '2px solid #fff' : '1px solid #475569',
                   background: c, cursor: 'pointer', padding: 0
                 } });
@@ -3524,7 +3999,7 @@
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
               el('input', { type: 'color', 'aria-label': t('stem.archstudio.custom_color', 'Custom color'), value: customColor, onChange: function (e) { upd({ activeColor: e.target.value, customColor: e.target.value }); }, style: { width: 28, height: 22, border: 'none', padding: 0, cursor: 'pointer', background: 'transparent' } }),
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, customColor),
-              el('button', { onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
+              el('button', { type: 'button', onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
                 marginLeft: 'auto', padding: '3px 8px', borderRadius: 6, border: 'none',
                 background: 'linear-gradient(135deg,#be185d,#9d174d)', color: '#fff', fontWeight: 700, fontSize: 11, cursor: 'pointer'
               } }, '\uD83C\uDFA8 Paint')
@@ -3535,12 +4010,12 @@
           showSlice && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD2C Cross-Section (Z)'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 } },
-              el('button', { onClick: function () { upd({ sliceZ: -1, sliceZSelected: false }); }, style: {
+              el('button', { type: 'button', 'aria-label': 'Show all Z cross-sections', 'aria-pressed': !sliceZSelected, onClick: function () { upd({ sliceZ: -1, sliceZSelected: false }); }, style: {
                 padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                 background: !sliceZSelected ? 'rgba(34,211,238,.2)' : 'transparent', border: !sliceZSelected ? '1px solid #22d3ee' : '1px solid #334155', color: !sliceZSelected ? '#67e8f9' : '#94a3b8'
               } }, 'All'),
               sliceZLevels.map(function (z) {
-                return el('button', { key: z, onClick: function () { upd({ sliceZ: z, sliceZSelected: true }); }, style: {
+                return el('button', { key: z, type: 'button', 'aria-label': 'Show Z cross-section ' + z, 'aria-pressed': sliceZSelected && sliceZ === z, onClick: function () { upd({ sliceZ: z, sliceZSelected: true }); }, style: {
                   padding: '3px 6px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                   background: sliceZSelected && sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZSelected && sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZSelected && sliceZ === z ? '#67e8f9' : '#94a3b8'
                 } }, 'Z=' + z);
@@ -3551,7 +4026,7 @@
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 3 } },
                 sliceBlocks.map(function (b, i) {
                   var sh = shapes.find(function (s) { return s.id === (b.shape || 'block'); });
-                  return el('span', { key: i, style: { fontSize: 8, padding: '1px 4px', background: 'rgba(30,41,59,.8)', borderRadius: 4, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                  return el('span', { key: i, style: { fontSize: 10, padding: '2px 5px', background: 'rgba(30,41,59,.8)', borderRadius: 4, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     (sh ? sh.icon : '') + ' (' + b.x + ',' + b.y + ')'
                   );
                 })
@@ -3569,7 +4044,7 @@
               el('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #22c55e, #eab308, #ef4444)' } }),
               el('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', position: 'absolute', fontSize: 7, color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none' } })
             ),
-            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
               el('span', null, 'Low'),
               el('span', null, 'Max: ' + maxLoad.toFixed(1))
             ),
@@ -3578,7 +4053,7 @@
                 var load = blockLoads[key];
                 var pct = maxLoad > 0 ? Math.round((load / maxLoad) * 100) : 0;
                 var heatColor = pct > 66 ? '#ef4444' : pct > 33 ? '#eab308' : '#22c55e';
-                return el('div', { key: key, style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 8 } },
+                return el('div', { key: key, style: { display: 'flex', alignItems: 'center', gap: 4, fontSize: 10 } },
                   el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 50, fontFamily: 'monospace' } }, key),
                   el('div', { style: { flex: 1, height: 4, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 2, overflow: 'hidden' } },
                     el('div', { style: { height: '100%', width: pct + '%', background: heatColor, borderRadius: 2 } })
@@ -3596,6 +4071,8 @@
               ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'No undo history yet. Build something first!')
               : el('div', null,
                   el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
+                  el('div', { role: 'note', style: { fontSize: 10, color: '#cbd5e1', marginBottom: 6, textAlign: 'center', lineHeight: 1.4 } },
+                    'Viewport and heatmap show this historical step. Analysis, wind, badges, and totals describe the live build.'),
                   el('div', { style: { display: 'flex', gap: 4, justifyContent: 'center' } },
                     el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_first', 'Replay first construction step'), onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
                     el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_previous', 'Replay previous construction step'), onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
@@ -3618,18 +4095,18 @@
             el('div', { style: { marginBottom: 4 } },
               el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Material:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { onClick: function () { upd('filterMaterial', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
+                el('button', { type: 'button', 'aria-label': 'Show all materials', 'aria-pressed': !filterMaterial, onClick: function () { upd('filterMaterial', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterMaterial ? '1px solid #60a5fa' : '1px solid #334155', background: !filterMaterial ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterMaterial ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 materials.map(function (m) {
-                  return el('button', { key: m.id, onClick: function () { upd('filterMaterial', m.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterMaterial === m.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterMaterial === m.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterMaterial === m.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, m.icon + ' ' + m.label);
+                  return el('button', { key: m.id, type: 'button', 'aria-label': 'Filter by ' + m.label + ' material', 'aria-pressed': filterMaterial === m.id, onClick: function () { upd('filterMaterial', m.id); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: filterMaterial === m.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterMaterial === m.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterMaterial === m.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, m.icon + ' ' + m.label);
                 })
               )
             ),
             el('div', { style: { marginBottom: 4 } },
               el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, 'Shape:'),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2 } },
-                el('button', { onClick: function () { upd('filterShape', ''); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
+                el('button', { type: 'button', 'aria-label': 'Show all shapes', 'aria-pressed': !filterShape, onClick: function () { upd('filterShape', ''); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: !filterShape ? '1px solid #60a5fa' : '1px solid #334155', background: !filterShape ? 'rgba(96,165,250,.15)' : 'transparent', color: !filterShape ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, 'All'),
                 shapes.map(function (s) {
-                  return el('button', { key: s.id, onClick: function () { upd('filterShape', s.id); }, style: { padding: '2px 6px', borderRadius: 4, fontSize: 8, border: filterShape === s.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterShape === s.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, s.icon);
+                  return el('button', { key: s.id, type: 'button', 'aria-label': 'Filter by ' + s.label + ' shape', 'aria-pressed': filterShape === s.id, title: s.label, onClick: function () { upd('filterShape', s.id); }, style: { padding: '3px 7px', borderRadius: 5, fontSize: 10, border: filterShape === s.id ? '1px solid #60a5fa' : '1px solid #334155', background: filterShape === s.id ? 'rgba(96,165,250,.15)' : 'transparent', color: filterShape === s.id ? '#93c5fd' : '#94a3b8', cursor: 'pointer' } }, s.icon);
                 })
               )
             ),
@@ -3652,7 +4129,7 @@
                   el('span', { style: { fontSize: 16, filter: earned ? 'none' : 'grayscale(1)' } }, badge.icon),
                   el('div', { style: { flex: 1 } },
                     el('div', { style: { fontSize: 10, fontWeight: 700, color: earned ? '#f8fafc' : '#94a3b8' } }, badge.name),
-                    el('div', { style: { fontSize: 8, color: earned ? '#94a3b8' : '#475569' } }, badge.desc)
+                    el('div', { style: { fontSize: 10, lineHeight: 1.35, color: earned ? '#94a3b8' : '#64748b' } }, badge.desc)
                   ),
                   earned && el('span', { style: { fontSize: 10, color: '#fb923c' } }, '\u2713')
                 );
@@ -3668,7 +4145,7 @@
               el('div', null, '\uD83D\uDCD0 Frontal area: ' + windAnalysis.frontalArea + ' u\u00B2'),
               el('div', null, '\uD83D\uDCD0 Side area: ' + windAnalysis.sideArea + ' u\u00B2'),
               el('div', null, '\uD83C\uDF2C\uFE0F Drag coeff: ' + windAnalysis.dragCoeff),
-              el('div', { style: { marginTop: 2, fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+              el('div', { style: { marginTop: 2, fontSize: 10, lineHeight: 1.35, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 parseFloat(windAnalysis.dragCoeff) > 0.8 ? '\uD83D\uDCA1 Use domes, pyramids, or cylinders to reduce drag!' :
                 parseFloat(windAnalysis.dragCoeff) > 0.5 ? '\uD83D\uDCA1 Good mix of aerodynamic shapes!' :
                 '\u2705 Very aerodynamic design!')
@@ -3700,7 +4177,7 @@
                 return el('div', { key: floor.y, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
                     el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, 'Y=' + floor.y),
-                    el('span', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, floor.count + ' blocks')
+                    el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, floor.count + ' blocks')
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + fW + ', ' + cellPx + 'px)', gap: 1, justifyContent: 'center' } }, cells)
                 );
@@ -3712,7 +4189,8 @@
         // ══════════════════════════════════════════════════════════
         // ── Main viewport area ──
         // ══════════════════════════════════════════════════════════
-        el('div', { className: 'arch-studio-viewport', style: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
+        el('div', { className: 'arch-studio-viewport' + (activeViewChips.length ? ' arch-studio-has-view-hud' : ''), style: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' } },
+          el('div', { className: 'arch-studio-stage', 'data-arch-stage': 'true', style: { flex: 1, minHeight: 260, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
           // The build itself. This viewport previously rendered a spinner that
           // never resolved: threeReady reads a host flag this tool never set,
           // and the canvas behind it had no ref and no renderer anywhere in the
@@ -3728,7 +4206,7 @@
             'data-a11y-static': 'true',
             'aria-describedby': 'arch-gl-description',
             'aria-label': archGlAlt,
-            style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: showReplay ? 'default' : mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : mode === 'pick' ? 'copy' : 'pointer' },
+            style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: showReplay ? 'default' : mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : mode === 'pick' ? 'copy' : 'pointer', touchAction: 'none' },
             onPointerDown: function (ev) {
               ArchGL.clearPreview();
               archDrag.suppressClick = false;
@@ -3778,26 +4256,41 @@
               }
             },
             onWheel: function (ev) {
+              ev.preventDefault();
+              ev.stopPropagation();
               upd('rot3d', Object.assign({}, archRot, {
                 scale: Math.max(0.3, Math.min(3, (archRot.scale || 1) + (ev.deltaY > 0 ? -0.12 : 0.12)))
               }));
             }
           }),
-          mainUse3d && !archGlLive && el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14 } },
-            el('div', { style: { textAlign: 'center' } },
-              el('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '⚙️'),
-              el('div', null, 'Loading 3D engine...'),
-              el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { marginTop: 10, padding: '6px 10px', borderRadius: 7, border: '1px solid #64748b', background: 'rgba(30,41,59,.8)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Build in the floor grid now')
+          mainUse3d && !archGlLive && el('div', { role: 'status', 'aria-live': 'polite', 'aria-busy': 'true', style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14, padding: 20 } },
+            el('div', { style: { width: 'min(300px,90%)', textAlign: 'center', padding: '20px 18px', borderRadius: 16, background: 'rgba(15,23,42,.78)', border: '1px solid rgba(100,116,139,.55)', boxShadow: '0 18px 42px rgba(2,6,23,.35)', backdropFilter: 'blur(10px)' } },
+              el('div', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', width: 46, height: 46, margin: '0 auto 10px', borderRadius: 14, fontSize: 25, background: 'rgba(56,189,248,.1)', border: '1px solid rgba(56,189,248,.3)', animation: 'spin 2s linear infinite' } }, '⚙️'),
+              el('div', { style: { color: '#e2e8f0', fontWeight: 800, fontSize: 13 } }, 'Preparing your 3D studio'),
+              el('div', { style: { marginTop: 4, fontSize: 10, lineHeight: 1.45 } }, 'The editable floor grid is ready while the renderer starts.'),
+              el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { marginTop: 12, padding: '7px 12px', borderRadius: 8, border: '1px solid #2dd4bf', background: 'rgba(45,212,191,.15)', color: '#99f6e4', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, 'Open Floor Grid')
             )
           ),
           !mainUse3d && renderBuildGrid(),
-          mainUse3d && archGlLive && archDisplayBlocks.length === 0 && el('div', { role: 'status', style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none', padding: '8px 12px', borderRadius: 9, background: 'rgba(15,23,42,.78)', border: '1px solid #475569', color: '#e2e8f0', fontSize: 12, fontWeight: 700, textAlign: 'center' } },
-            blocks.length === 0 ? (mode === 'pick' ? '\uD83C\uDFAF There are no blocks to pick yet. Switch to Place to start building.' : '\uD83E\uDDF1 Click the ground to place your first ' + activeShape) : 'No blocks match the current layer, slice, replay, or filter view.'),
+          mainUse3d && archGlLive && archDisplayBlocks.length === 0 && el('div', { className: 'arch-studio-empty-state', 'data-arch-empty-state': 'true', role: 'status', style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'auto', width: 'min(330px,calc(100% - 32px))', padding: '16px 18px', borderRadius: 16, background: 'rgba(15,23,42,.9)', border: '1px solid rgba(100,116,139,.7)', color: '#e2e8f0', textAlign: 'center', backdropFilter: 'blur(12px)', zIndex: 5 } },
+            el('div', { 'aria-hidden': 'true', style: { fontSize: 28, marginBottom: 6 } }, blocks.length === 0 ? (mode === 'pick' ? '\uD83C\uDFAF' : '\uD83C\uDFD7\uFE0F') : (showReplay ? '\u23EA' : '\uD83D\uDC41\uFE0F')),
+            el('div', { style: { fontSize: 14, fontWeight: 850, color: '#f8fafc' } }, blocks.length === 0 ? (mode === 'pick' ? 'Nothing to pick yet' : 'Start your first structure') : (showReplay ? 'No blocks at this replay step' : 'Nothing matches this view')),
+            el('div', { style: { marginTop: 4, fontSize: 10, lineHeight: 1.5, color: '#94a3b8' } }, blocks.length === 0 ? (mode === 'pick' ? 'Switch to Place, then click the ground or use the floor grid.' : 'Click the ground to place a ' + activeShape + ', or begin precisely in the floor grid.') : (showReplay ? 'Move to another step or return to the live build.' : 'A layer, slice, or filter is hiding the live structure.')),
+            el('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 6, marginTop: 11 } },
+              blocks.length === 0 && mode === 'pick' && el('button', { type: 'button', onClick: function () { upd('mode', 'place'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #22c55e', background: 'rgba(34,197,94,.16)', color: '#86efac', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Switch to Place'),
+              blocks.length === 0 && el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #2dd4bf', background: 'rgba(45,212,191,.16)', color: '#99f6e4', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Open Floor Grid'),
+              blocks.length > 0 && showReplay && replayStep < replayFrames && el('button', { type: 'button', onClick: function () { stepReplay(1); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #fbbf24', background: 'rgba(251,191,36,.14)', color: '#fde68a', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Next Step'),
+              blocks.length > 0 && showReplay && el('button', { type: 'button', onClick: exitReplay, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #64748b', background: 'rgba(71,85,105,.3)', color: '#cbd5e1', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Return to Live Build'),
+              blocks.length > 0 && !showReplay && el('button', { type: 'button', onClick: function () { upd({ viewLayer: -1, showSlice: false, sliceZSelected: false, filterMaterial: '', filterShape: '' }); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.16)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Show Entire Build')
+            )
+          ),
           el('p', { id: 'arch-gl-description', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } },
-            'A three-dimensional view of the structure you have built, coloured by material. Click the ground or a block face to build, or choose Pick to copy an existing block\'s properties. Drag or use the arrow keys to orbit, scroll or use plus and minus to zoom, and press Home or zero to reset. Press Enter to open the keyboard-authoring floor grid, then use arrow keys to move between cells.'),
+            showReplay
+              ? 'Read-only construction replay. Use the replay controls to inspect earlier build steps. Exit replay before changing blocks.'
+              : 'A three-dimensional view of the structure you have built, coloured by material. Click the ground or a block face to build, or choose Pick to copy an existing block\'s properties. Drag or use the arrow keys to orbit, scroll or use plus and minus to zoom, and press Home or zero to reset. Press Enter to open the keyboard-authoring floor grid, then use arrow keys to move between cells.'),
 
           // Controls overlay (top-right)
-          mainUse3d && el('div', { style: { position: 'absolute', top: 8, right: 8, pointerEvents: 'none', background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+          mainUse3d && el('div', { className: 'arch-studio-help-overlay', style: { position: 'absolute', top: 8, right: 8, pointerEvents: 'none', background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
             el('div', { style: { opacity: 0.9 } }, showReplay ? '\u23EA Replay is read-only' : '\uD83D\uDC49 Click \u2014 ' + activeModeVisual.action),
@@ -3805,9 +4298,9 @@
             symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
 
-          mainUse3d && el('div', { role: 'group', 'aria-label': 'Three-dimensional camera controls', style: {
+          mainUse3d && el('div', { className: 'arch-studio-camera-controls', role: 'group', 'aria-label': 'Three-dimensional camera controls', style: {
             position: 'absolute', right: 8, bottom: 8, zIndex: 7, display: 'flex', flexWrap: 'wrap', gap: 3,
-            maxWidth: 228, padding: 4, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155'
+            width: 'max-content', maxWidth: 'calc(100% - 16px)', padding: 4, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155'
           } },
             cameraBtn('Rotate view left', '\u21B6', 'left'),
             cameraBtn('Rotate view right', '\u21B7', 'right'),
@@ -3820,9 +4313,10 @@
 
           // A real keyboard-operable authoring surface is always available;
           // it also becomes the automatic fallback if WebGL cannot start.
-          el('div', { style: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none', display: 'flex', gap: 3, padding: 3, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155' } },
+          el('div', { className: 'arch-studio-view-switch', style: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none', display: 'flex', gap: 3, padding: 3, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155' } },
             archShow3d && el('button', { type: 'button', 'aria-pressed': mainUse3d, onClick: function () { upd('editorView', '3d'); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: mainUse3d ? '1px solid #60a5fa' : '1px solid transparent', background: mainUse3d ? 'rgba(96,165,250,.2)' : 'transparent', color: mainUse3d ? '#bfdbfe' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, '3D Build'),
-            el('button', { type: 'button', 'aria-pressed': !mainUse3d, onClick: function () { upd('editorView', 'grid'); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: !mainUse3d ? '1px solid #2dd4bf' : '1px solid transparent', background: !mainUse3d ? 'rgba(45,212,191,.18)' : 'transparent', color: !mainUse3d ? '#99f6e4' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Floor Grid')
+            !archShow3d && el('button', { type: 'button', 'aria-label': 'Retry the three-dimensional view', onClick: function () { upd({ hide3d: false, editorView: '3d' }); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: '1px solid #60a5fa', background: 'rgba(96,165,250,.14)', color: '#bfdbfe', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Retry 3D'),
+            el('button', { type: 'button', 'aria-pressed': !mainUse3d, onClick: openArchGridForKeyboard, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: !mainUse3d ? '1px solid #2dd4bf' : '1px solid transparent', background: !mainUse3d ? 'rgba(45,212,191,.18)' : 'transparent', color: !mainUse3d ? '#99f6e4' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Floor Grid')
           ),
 
           // Mode indicator (top-left)
@@ -3831,12 +4325,47 @@
             mode === 'place' && activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 11, color: '#fbbf24' } }, activeRotation + '\u00B0')
           ),
 
-          mainUse3d && selectedBlock && el('div', { 'data-arch-selection-chip': 'true', 'aria-hidden': 'true', style: { position: 'absolute', left: 8, bottom: 8, pointerEvents: 'none', zIndex: 7, maxWidth: 230, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,.9)', border: '1px solid #f59e0b', color: '#fde68a', fontSize: 10, fontWeight: 700 } },
+          mainUse3d && selectedBlock && el('div', { className: 'arch-studio-empty-state arch-studio-selection-chip', 'data-arch-selection-chip': 'true', 'aria-hidden': 'true', style: { position: 'absolute', left: 8, bottom: 8, pointerEvents: 'none', zIndex: 7, maxWidth: 230, padding: '6px 9px', borderRadius: 9, background: 'rgba(15,23,42,.92)', border: '1px solid #f59e0b', boxShadow: '0 0 20px rgba(245,158,11,.16)', color: '#fde68a', fontSize: 10, fontWeight: 750 } },
             '\uD83D\uDCCC Selected X ' + selectedBlock.x + ' \u2022 Y ' + selectedBlock.y + ' \u2022 Z ' + selectedBlock.z + ' \u2022 ' + (selectedShapeMeta ? selectedShapeMeta.label : 'Block')),
 
+          ),
+
+          activeViewChips.length > 0 && el('div', {
+            className: 'arch-studio-view-hud',
+            'data-arch-view-hud': 'true',
+            role: 'group',
+            'aria-label': mainUse3d ? 'Active view settings' : 'Three-dimensional view settings',
+            style: { display: 'flex', alignItems: 'center', gap: 5, padding: '6px 8px', flexShrink: 0, overflowX: 'auto', overflowY: 'hidden', background: 'linear-gradient(90deg,rgba(2,6,23,.96),rgba(15,23,42,.96))', borderTop: '1px solid #334155', borderBottom: '1px solid #334155' }
+          },
+            el('span', { style: { flex: '0 0 auto', fontSize: 10, fontWeight: 850, color: '#e2e8f0', whiteSpace: 'nowrap' } },
+              mainUse3d ? '\uD83D\uDC41 Active View \u2022 ' + archDisplayBlocks.length + '/' + archReplayFrame.length + ' visible' : '\uD83D\uDC41 3D View Settings'),
+            activeViewChips.map(function (chip) {
+              return el('button', {
+                key: chip.id,
+                type: 'button',
+                className: 'arch-studio-view-chip',
+                'data-arch-view-chip': chip.id,
+                'aria-label': chip.clearLabel,
+                title: chip.clearLabel,
+                onClick: function () { chip.clear(); if (announceToSR) announceToSR(chip.clearLabel + '.'); },
+                style: { border: '1px solid ' + chip.tone.border, background: chip.tone.bg, color: chip.tone.color, cursor: 'pointer' }
+              }, chip.label, el('span', { 'aria-hidden': 'true' }, ' \u00D7'));
+            }),
+            el('button', {
+              type: 'button',
+              'data-arch-reset-view': 'true',
+              'aria-label': 'Reset layer, slice, filters, heatmap, replay, and blueprint view settings',
+              onClick: resetArchView,
+              style: { flex: '0 0 auto', padding: '4px 9px', borderRadius: 7, border: '1px solid #64748b', background: 'rgba(71,85,105,.3)', color: '#e2e8f0', cursor: 'pointer', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' }
+            }, '\u21BA Reset View')
+          ),
+
           // Analysis overlay (right side)
-          showAnalysis && totalBlocks > 0 && el('div', { style: { position: 'absolute', top: 70, right: 8, width: 210, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid var(--allo-stem-border, #334155)', zIndex: 10 } },
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 } }, '\uD83D\uDCD0 Structural Analysis'),
+          showAnalysis && totalBlocks > 0 && el('div', { className: 'arch-studio-floating-panel arch-studio-analysis-panel', role: 'region', 'aria-label': showReplay ? 'Live build analysis' : 'Structural analysis', style: { position: 'absolute', top: 70, right: 8, width: 238, background: 'rgba(15,23,42,.93)', borderRadius: 14, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid rgba(168,85,247,.35)', zIndex: 10 } },
+            el('div', { className: 'arch-studio-floating-header', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
+              el('div', { style: { fontSize: 10, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83D\uDCD0 ' + (showReplay ? 'Live Build Analysis' : 'Structural Analysis')),
+              el('button', { type: 'button', 'aria-label': 'Close structural analysis', onClick: function () { upd('showAnalysis', false); }, style: { marginLeft: 'auto', width: 24, height: 24, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 14 } }, '\u00D7')
+            ),
             el('div', { style: { textAlign: 'center', marginBottom: 10, padding: '8px 0', background: 'rgba(30,41,59,.6)', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)' } },
               el('div', { style: { fontSize: 24, marginBottom: 2 } }, analysis.stabilityEmoji),
               el('div', { style: { fontSize: 20, fontWeight: 800, color: analysis.stability >= 70 ? '#4ade80' : analysis.stability >= 40 ? '#fbbf24' : '#f87171' } }, analysis.stability + '%'),
@@ -3852,7 +4381,7 @@
                 { label: t('stem.archstudio.floating', 'Floating'), value: analysis.unsupported, icon: analysis.unsupported > 0 ? '\u26A0\uFE0F' : '\u2705' }
               ].map(function (r) {
                 return el('div', { key: r.label, style: { background: 'rgba(30,41,59,.5)', borderRadius: 8, padding: '4px 6px', textAlign: 'center' } },
-                  el('div', { style: { fontSize: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, r.icon + ' ' + r.label),
+                  el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, r.icon + ' ' + r.label),
                   el('div', { style: { fontSize: 11, fontWeight: 700, color: r.label === 'Floating' && analysis.unsupported > 0 ? '#f87171' : '#f8fafc' } }, r.value)
                 );
               })
@@ -3863,36 +4392,37 @@
           ),
 
           // AI Architect overlay (left side, below mode indicator)
-          showAI && el('div', { style: { position: 'absolute', top: 44, left: 8, width: 240, background: 'rgba(15,23,42,.92)', borderRadius: 12, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid var(--allo-stem-border, #334155)', zIndex: 10 } },
-            el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
+          showAI && el('div', { className: 'arch-studio-floating-panel arch-studio-ai-panel', role: 'region', 'aria-label': 'AI Architect advice', 'aria-busy': aiLoading, style: { position: 'absolute', top: 44, left: 8, width: 264, background: 'rgba(15,23,42,.93)', borderRadius: 14, padding: '12px 14px', backdropFilter: 'blur(12px)', border: '1px solid rgba(244,114,182,.35)', zIndex: 10 } },
+            el('div', { className: 'arch-studio-floating-header', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
               el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f9a8d4', textTransform: 'uppercase', letterSpacing: 1.2 } }, '\uD83E\uDD16 AI Architect'),
-              el('button', { onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask Again')
+              el('button', { type: 'button', onClick: askAIArchitect, disabled: aiLoading, style: { marginLeft: 'auto', background: aiLoading ? 'rgba(71,85,105,.5)' : 'linear-gradient(135deg,#f472b6,#ec4899)', border: 'none', color: '#fff', borderRadius: 7, padding: '4px 9px', fontSize: 10, fontWeight: 800, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3 Working' : '\u2728 Ask Again'),
+              el('button', { type: 'button', 'aria-label': 'Close AI Architect', onClick: function () { upd('showAI', false); }, style: { width: 24, height: 24, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 14 } }, '\u00D7')
             ),
-            aiLoading && !aiAdvice
-              ? el('div', { style: { textAlign: 'center', padding: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
-                el('div', { style: { fontSize: 20, animation: 'spin 2s linear infinite', marginBottom: 4 } }, '\uD83E\uDD16'),
-                'Analyzing your structure...'
-              )
-              : aiAdvice
-                ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, whiteSpace: 'pre-line' } }, aiAdvice)
-                : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Click "Ask Again" for personalized architecture tips!')
+            aiLoading && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: aiAdvice ? 8 : 0, padding: '7px 8px', borderRadius: 8, background: 'rgba(244,114,182,.1)', border: '1px solid rgba(244,114,182,.24)', color: '#fbcfe8', fontSize: 10, fontWeight: 700 } },
+              el('span', { 'aria-hidden': 'true', style: { animation: 'spin 1.5s linear infinite' } }, '\u2726'),
+              aiAdvice ? 'Refreshing advice for this build\u2026' : 'Analyzing your structure\u2026'
+            ),
+            aiAdvice
+              ? el('div', { style: { opacity: aiLoading ? .58 : 1, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, whiteSpace: 'pre-line', transition: 'opacity .18s ease' } }, aiAdvice)
+              : !aiLoading && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } }, 'Ask for personalized architecture tips based on this build.')
           ),
 
           // Bottom stats bar
-          el('div', { style: { display: 'flex', gap: 12, justifyContent: 'center', padding: '6px 12px', background: 'linear-gradient(0deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderTop: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
+          el('div', { className: 'arch-studio-stats', 'data-arch-stats': 'true', style: { display: 'grid', gridAutoFlow: 'column', gridAutoColumns: 'minmax(82px,1fr)', gap: 5, justifyContent: 'stretch', padding: '7px 8px', background: 'linear-gradient(0deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.96))', borderTop: '1px solid var(--allo-stem-border, #334155)', overflowX: 'auto', overflowY: 'hidden', flexShrink: 0 } },
             [
               { label: t('stem.archstudio.blocks', 'Blocks'), value: totalBlocks, icon: '\uD83E\uDDF1' },
-              { label: t('stem.archstudio.size', 'Size'), value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
-              { label: t('stem.archstudio.volume', 'Volume'), value: totalVolume + 'u\u00B3', icon: '\uD83D\uDCE6' },
-              { label: t('stem.archstudio.footprint', 'Footprint'), value: footprint + 'u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
-              { label: t('stem.archstudio.surface', 'Surface'), value: surfaceArea + 'u\u00B2', icon: '\uD83D\uDCC0' },
               { label: t('stem.archstudio.stability', 'Stability'), value: analysis.stabilityEmoji + analysis.stability + '%', icon: '\uD83C\uDFD7\uFE0F' },
               budgetEnabled && { label: t('stem.archstudio.cost', 'Cost'), value: '\uD83D\uDCB2' + totalCost + '/' + budget, icon: '\uD83D\uDCB0' },
+              { label: t('stem.archstudio.size', 'Size'), value: blocks.length > 0 ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : '\u2014', icon: '\uD83D\uDCCF' },
+              { label: t('stem.archstudio.footprint', 'Footprint'), value: footprint + 'u\u00B2', icon: '\uD83D\uDDFA\uFE0F' },
+              { label: t('stem.archstudio.volume', 'Volume'), value: totalVolume + 'u\u00B3', icon: '\uD83D\uDCE6' },
+              { label: t('stem.archstudio.surface', 'Surface'), value: surfaceArea + 'u\u00B2', icon: '\uD83D\uDCC0' },
               { label: t('stem.archstudio.challenges', 'Challenges'), value: completedCount + '/10', icon: '\uD83C\uDFC6' }
             ].filter(Boolean).map(function (stat) {
-              return el('div', { key: stat.label, style: { textAlign: 'center' } },
+              var statColor = stat.label === t('stem.archstudio.stability', 'Stability') ? (analysis.stability >= 70 ? '#86efac' : analysis.stability >= 40 ? '#fde68a' : '#fca5a5') : stat.label === t('stem.archstudio.cost', 'Cost') && overBudget ? '#fca5a5' : '#f8fafc';
+              return el('div', { className: 'arch-studio-stat', key: stat.label, style: { textAlign: 'center' } },
                 el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, stat.icon + ' ' + stat.label),
-                el('div', { style: { fontSize: 14, fontWeight: 700, color: '#f8fafc' } }, stat.value)
+                el('div', { style: { marginTop: 1, fontSize: 13, fontWeight: 800, color: statColor } }, stat.value)
               );
             })
           )
@@ -3900,7 +4430,7 @@
       ),
 
       // ── Coach panel ──
-      el('div', { style: { padding: '8px 14px', background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
+      el('div', { className: 'arch-studio-coach', role: 'status', style: { padding: '9px 14px', background: 'linear-gradient(90deg,rgba(30,41,59,.98),rgba(15,23,42,.98))', borderTop: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid rgba(56,189,248,.55)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, flexShrink: 0 } },
         coachTip
       ),
 
@@ -3920,14 +4450,17 @@
           mod:      { label: t('stem.archstudio.moderate', '🟡 Moderate'),       color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.archstudio.approaching_failure_threshold_marginal', 'Approaching failure threshold. Marginal under stress.') },
           unstable: { label: t('stem.archstudio.unstable', '🔴 Unstable'),       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.archstudio.likely_collapse_under_load', 'Likely collapse under load.') }
         }[state];
-        return el('div', { style: { padding: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid #334155', color: '#e2e8f0' } },
-          el('h3', { style: { fontSize: 13, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, '⚖️ Gravity-rigidity discovery'),
+        return el('div', { className: 'arch-studio-inquiry', style: { padding: 12, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', borderTop: '1px solid #334155', color: '#e2e8f0' } },
+          el('div', { className: 'arch-studio-inquiry-header', style: { position: 'sticky', top: -12, zIndex: 3, margin: '-12px -12px 8px', padding: '10px 12px 8px', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(15,23,42,.97)', borderBottom: '1px solid #334155', backdropFilter: 'blur(12px)' } },
+            el('h3', { style: { flex: 1, fontSize: 13, fontWeight: 800, color: '#a78bfa', margin: 0 } }, '⚖️ Gravity-rigidity discovery'),
+            el('button', { type: 'button', 'aria-label': 'Close gravity-rigidity discovery', onClick: function () { upd('showInquiryLab', false); }, style: { width: 26, height: 26, padding: 0, borderRadius: 7, border: '1px solid #475569', background: 'rgba(71,85,105,.25)', color: '#cbd5e1', cursor: 'pointer', fontSize: 15 } }, '\u00D7')
+          ),
           el('p', { style: { fontSize: 11, color: '#cbd5e1', marginBottom: 8 } }, 'Sliders for gravity multiplier, rigidity, mass. Discrete stability outcome. No score, no reveal.'),
           el('div', { style: { padding: 8, borderRadius: 6, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 8 } },
             el('div', { style: { fontSize: 13, fontWeight: 900, color: sm.color } }, sm.label),
             el('div', { style: { fontSize: 10, color: '#475569', marginTop: 2 } }, sm.desc)
           ),
-          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 } },
+          el('div', { className: 'arch-studio-inquiry-controls', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 } },
             [{ k: 'gravMult', l: 'Gravity ×', mn: 0.5, mx: 8, st: 0.1 },
              { k: 'rigidity', l: 'Rigidity %', mn: 30, mx: 100, st: 5 },
              { k: 'mass',     l: 'Load mass', mn: 10, mx: 200, st: 5 }].map(function(s) {
@@ -3953,7 +4486,7 @@
             el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
           iq.understood && el('textarea', { 'aria-label': t('stem.archstudio.explanation', 'Explain structural stability'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.archstudio.explain_how_gravity_rigidity_and_mass_', 'Explain how gravity, rigidity, and mass interact to determine stability.'),
             style: { width: '100%', minHeight: 60, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginTop: 4 }, rows: 3 }),
-          el('div', { style: { marginTop: 6, fontSize: 9, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state structural marker; no FEM score; no reveal — by design.')
+          el('div', { style: { marginTop: 6, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state structural marker; no FEM score; no reveal — by design.')
         );
       })()
     );

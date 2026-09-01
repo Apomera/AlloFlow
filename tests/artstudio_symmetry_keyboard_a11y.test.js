@@ -19,6 +19,8 @@ function makeCanvasContext() {
   return {
     arc: vi.fn(),
     beginPath: vi.fn(),
+    clearRect: vi.fn(),
+    drawImage: vi.fn(),
     fill: vi.fn(),
     fillRect: vi.fn(),
     globalAlpha: 1,
@@ -87,7 +89,8 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     expect(html).toContain('Dot stamp stroke mode');
     expect(html).toContain('Continuous freehand stroke mode');
     expect(html).toContain('Straight line stroke mode');
-    expect(html).toContain('Pointer: drag for dots or freehand');
+    expect(html).toContain('Symmetric continuous eraser mode');
+    expect(html).toContain('Pointer: drag for dots, freehand, or symmetric erasing');
     expect(html).toContain('Rotational symmetry pattern');
     expect(html).toContain('Kaleidoscope reflected symmetry pattern');
     expect(html).toContain('Bilateral mirror symmetry pattern');
@@ -100,7 +103,15 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     expect(html).toContain('Symmetry origin vertical position');
     expect(html).toContain('Normal symmetry brush blending');
     expect(html).toContain('Glow symmetry brush blending');
-    expect(html).toContain('Changing the origin starts a fresh canvas');
+    expect(html).toContain('Pattern, fold, and origin changes affect new marks; existing artwork stays');
+    expect(html).toContain('Pattern rotation, repeat variation &amp; canvas');
+    expect(html).toContain('Symmetry pattern rotation');
+    expect(html).toContain('Symmetry mirror axis angle');
+    expect(html).toContain('Hue change per symmetry copy');
+    expect(html).toContain('Brush size change per symmetry copy');
+    expect(html).toContain('Opacity change per symmetry copy');
+    expect(html).toContain('Show symmetry guides');
+    expect(html).toContain('Transparent symmetry canvas background');
     expect(html).toContain('Undo symmetry change');
     expect(html).toContain('Control+Z');
     expect(html).toMatch(/aria-label="8 symmetry folds" aria-pressed="true"/);
@@ -189,6 +200,8 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     canvas.onpointerdown({ button: 0, clientX: 100, clientY: 120, pointerId: 10, preventDefault: vi.fn() });
     canvas.onpointerup({ clientX: 100, clientY: 120, pointerId: 10 });
     expect(context.arc).toHaveBeenCalledTimes(6);
+    const originalCanvas = canvas;
+    const originalHistoryLength = canvas._symUndo.length;
 
     const kaleidoscope = Array.from(host.querySelectorAll('button')).find((button) => button.getAttribute('aria-label') === 'Kaleidoscope reflected symmetry pattern');
     await act(async () => {
@@ -196,6 +209,8 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
       await Promise.resolve();
     });
     canvas = host.querySelector('#symmetryCanvas');
+    expect(canvas).toBe(originalCanvas);
+    expect(canvas._symUndo).toHaveLength(originalHistoryLength);
     context.arc.mockClear();
     canvas.onpointerdown({ button: 0, clientX: 100, clientY: 120, pointerId: 11, preventDefault: vi.fn() });
     canvas.onpointerup({ clientX: 100, clientY: 120, pointerId: 11 });
@@ -308,11 +323,73 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     });
     canvas.onpointerup({ clientX: 140, clientY: 140, pointerId: 40 });
 
-    expect(context.lineTo).toHaveBeenCalledTimes(12);
+    expect(context.lineTo).toHaveBeenCalledTimes(18);
     expect(context.lineTo.mock.calls[0][0]).toBeCloseTo(110, 5);
     expect(context.lineTo.mock.calls[0][1]).toBeCloseTo(110, 5);
     expect(context.lineTo.mock.calls[6][0]).toBeCloseTo(125, 5);
     expect(context.lineTo.mock.calls[6][1]).toBeCloseTo(125, 5);
+    expect(context.lineTo.mock.calls[12][0]).toBeCloseTo(132.5, 5);
+    expect(context.lineTo.mock.calls[12][1]).toBeCloseTo(132.5, 5);
+  });
+
+  it('rotates repeat geometry and varies hue, size, and opacity per copy', async () => {
+    await mount({
+      symmetryFolds: 3,
+      symStrokeMode: 'dots',
+      symPatternMode: 'rotate',
+      symHue: 10,
+      symSat: 80,
+      symLit: 50,
+      brushSize: 2,
+      symPhaseDeg: 90,
+      symCopyHueStep: 30,
+      symCopySizeStep: 10,
+      symCopyOpacityStep: -10,
+    });
+    const canvas = host.querySelector('#symmetryCanvas');
+    const fillStates = [];
+    context.fill.mockImplementation(() => fillStates.push({ color: context.fillStyle, alpha: context.globalAlpha }));
+    context.arc.mockClear();
+    canvas.onpointerdown({ button: 0, clientX: 356, clientY: 256, pointerId: 44, preventDefault: vi.fn() });
+    canvas.onpointerup({ clientX: 356, clientY: 256, pointerId: 44 });
+
+    expect(context.arc).toHaveBeenCalledTimes(3);
+    expect(context.arc.mock.calls[0][0]).toBeCloseTo(256, 5);
+    expect(context.arc.mock.calls[0][1]).toBeCloseTo(356, 5);
+    expect(context.arc.mock.calls.map((call) => call[2])).toEqual([2, 2.2, 2.4]);
+    expect(fillStates).toEqual([
+      { color: 'hsl(10,80%,50%)', alpha: 1 },
+      { color: 'hsl(40,80%,50%)', alpha: 0.9 },
+      { color: 'hsl(70,80%,50%)', alpha: 0.8 },
+    ]);
+  });
+
+  it('reflects around a custom mirror axis and erases artwork without touching guides', async () => {
+    await mount({ symStrokeMode: 'dots', symPatternMode: 'bilateral', symMirrorAxisDeg: 45 });
+    let canvas = host.querySelector('#symmetryCanvas');
+    context.arc.mockClear();
+    canvas.onpointerdown({ button: 0, clientX: 356, clientY: 256, pointerId: 45, preventDefault: vi.fn() });
+    canvas.onpointerup({ clientX: 356, clientY: 256, pointerId: 45 });
+    expect(context.arc).toHaveBeenCalledTimes(2);
+    expect(context.arc.mock.calls[1][0]).toBeCloseTo(256, 5);
+    expect(context.arc.mock.calls[1][1]).toBeCloseTo(356, 5);
+    expect(canvas.parentElement.querySelector('svg')).toBeTruthy();
+
+    const eraser = host.querySelector('button[aria-label="Symmetric continuous eraser mode"]');
+    await act(async () => {
+      eraser.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    canvas = host.querySelector('#symmetryCanvas');
+    canvas.onpointerdown({ button: 0, clientX: 320, clientY: 256, pointerId: 46, preventDefault: vi.fn() });
+    canvas.onpointerup({ clientX: 330, clientY: 256, pointerId: 46 });
+    expect(context.globalCompositeOperation).toBe('destination-out');
+
+    context.clearRect.mockClear();
+    canvas._symClearAction();
+    expect(context.clearRect).toHaveBeenCalledWith(0, 0, 512, 512);
+    expect(context.globalCompositeOperation).toBe('source-over');
+    expect(canvas.parentElement.querySelector('svg')).toBeTruthy();
   });
 
   it('uses stylus pressure for brush width without changing mouse behavior', async () => {

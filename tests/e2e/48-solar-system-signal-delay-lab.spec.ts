@@ -84,5 +84,22 @@ test('keeps the signal investigation usable and exclusive at 340px', async ({ pa
   await expect(lab.locator('[data-signal-one-way]')).toHaveText('44.1 min');
   await expect(lab.getByRole('button', { name: 'Send a light-speed ping' })).toBeVisible();
 
+  const stage = lab.getByRole('region', { name: /Scrollable signal-delay geometry diagram/ });
+  await stage.focus();
+  await expect(stage).toBeFocused();
+  const diagram = await stage.evaluate((el) => {
+    const svg = el.querySelector('svg');
+    const label = [...el.querySelectorAll('text')].find((node) => node.textContent?.includes('ORBIT RADII USE A LOG DISPLAY SCALE'));
+    if (!svg || !label) throw new Error('Signal geometry diagram did not render');
+    const svgRect = svg.getBoundingClientRect();
+    const labelRect = label.getBoundingClientRect();
+    el.scrollLeft = 120;
+    return { clientWidth: el.clientWidth, scrollWidth: el.scrollWidth, scrollLeft: el.scrollLeft, svgWidth: svgRect.width, labelHeight: labelRect.height };
+  });
+  expect(diagram.scrollWidth).toBeGreaterThan(diagram.clientWidth);
+  expect(diagram.svgWidth).toBeGreaterThanOrEqual(719);
+  expect(diagram.labelHeight).toBeGreaterThanOrEqual(9);
+  expect(diagram.scrollLeft).toBeGreaterThan(0);
+
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });

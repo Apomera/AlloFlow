@@ -19,6 +19,13 @@ const contextKeys: Record<string, number> = {
   'rabbit-pain': 2,
 };
 
+const zoonosisKeys: Record<string, number> = {
+  'bat-bedroom': 1,
+  'litter-pregnancy': 2,
+  'turtle-kitchen': 0,
+  'bird-cage-dust': 3,
+};
+
 test.describe('Pets Lab learning-quality enhancements', () => {
   test.describe.configure({ timeout: 150_000 });
   test.beforeAll(async () => { await harness.start(); });
@@ -190,6 +197,206 @@ test.describe('Pets Lab learning-quality enhancements', () => {
     });
   });
 
+  test('Exposure Pathway Check gates completion, traces four routes, and focuses missed-case retry', async ({ page }) => {
+    await harness.mount(page, {
+      petsLab: {
+        view: 'zoonoses',
+        zoonPractice: null,
+      },
+    }, undefined, { expectCanvas: false });
+
+    const start = page.locator('[data-pets-zoon-practice="start"]');
+    await expect(start.getByRole('heading', { name: /Exposure Pathway Check/ })).toBeVisible();
+    await expect(start.locator('[data-pets-pathway-model="four-links"] li')).toHaveCount(4);
+    await expect(start).toContainText('not medical diagnosis');
+    await expect(page.locator('.petslab-activity-completion-hint')).toHaveText('Activity completion required');
+    await expect(page.locator('.petslab-complete-button')).toHaveCount(0);
+    expect(await page.evaluate(() => ({
+      completion: (window as any).__toolData.petsLab.modulesCompleted?.zoonoses,
+      evidence: ((window as any).__toolData.petsLab.evidenceRecords || []).filter((row: any) => row.moduleId === 'zoonoses'),
+    }))).toEqual({ completion: undefined, evidence: [] });
+    await start.getByRole('button', { name: 'Start 4-case Exposure Pathway Check' }).click();
+
+    const question = page.locator('.petslab-zoon-question-heading');
+    const feedback = page.locator('.petslab-zoon-feedback');
+    await expect(question).toBeFocused();
+
+    for (let index = 0; index < 4; index += 1) {
+      const current = await page.evaluate(() => {
+        const state = (window as any).__toolData.petsLab.zoonPractice;
+        return { id: ['bat-bedroom', 'litter-pregnancy', 'turtle-kitchen', 'bird-cage-dust'][state.idx], idx: state.idx };
+      });
+      expect(current.idx).toBe(index);
+      const correct = zoonosisKeys[current.id];
+      const active = page.locator('[data-pets-zoon-practice="active"]');
+      const optionGroup = active.getByRole('group');
+      const options = optionGroup.getByRole('button');
+      await expect(active.getByRole('progressbar')).toHaveAttribute('aria-valuetext', new RegExp(`Case ${index + 1} of 4`));
+      await expect(optionGroup).toHaveAttribute('aria-labelledby', /-prompt$/);
+      await expect(active.locator('[role="status"]')).toHaveCount(0);
+      await options.nth(index === 0 ? (correct + 1) % 4 : correct).click();
+      await expect(feedback).toBeFocused();
+      await expect(feedback).toHaveAttribute('role', 'region');
+      await expect(feedback).toContainText(index === 0 ? 'leaves part of the pathway open' : 'Safest response');
+      await expect(page.locator('[data-pets-pathway-chain] [data-pets-pathway-part]')).toHaveCount(4);
+      const sourceLink = active.getByRole('link');
+      await expect(sourceLink).toHaveAttribute('href', /^https:\/\/www\.cdc\.gov\//);
+      await expect(sourceLink).toHaveAttribute('aria-label', /opens in a new tab/);
+      await expect(sourceLink).toHaveCSS('text-decoration-line', 'underline');
+      await expect(sourceLink).toHaveCSS('min-height', '44px');
+      const locked = await options.evaluateAll((buttons) => buttons.map((button) => ({
+        disabled: button.getAttribute('aria-disabled'),
+        tabIndex: (button as HTMLButtonElement).tabIndex,
+      })));
+      expect(locked.every((item) => item.disabled === 'true' && item.tabIndex === -1)).toBe(true);
+      await page.getByRole('button', {
+        name: index < 3 ? /Next pathway case/ : /See pathway result/,
+      }).click();
+      if (index < 3) await expect(question).toBeFocused();
+    }
+
+    const result = page.locator('.petslab-zoon-result-heading');
+    await expect(result).toBeFocused();
+    await expect(result).toHaveText('3 / 4 pathways interrupted');
+    await expect(page.locator('[data-pets-zoon-practice="results"] [role="status"]')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => {
+      const pets = (window as any).__toolData.petsLab;
+      const rows = pets.evidenceRecords || [];
+      return {
+        practice: pets.zoonPractice,
+        evidence: rows[rows.length - 1],
+        completion: pets.modulesCompleted?.zoonoses,
+      };
+    })).toEqual({
+      practice: {
+        idx: 4,
+        answers: [2, 2, 0, 3],
+        score: 3,
+        done: true,
+        bestPct: 75,
+      },
+      evidence: expect.objectContaining({
+        moduleId: 'zoonoses',
+        kind: 'activity',
+        details: {
+          score: 3,
+          total: 4,
+          scorePct: 75,
+          bestPct: 75,
+          needsPractice: 1,
+          criterionMet: true,
+        },
+      }),
+      completion: expect.objectContaining({
+        reason: 'Finished all 4 Exposure Pathway decisions',
+      }),
+    });
+    expect(JSON.stringify(await page.evaluate(() => (
+      (window as any).__toolData.petsLab.zoonPractice
+    )))).not.toContain('sleeping person');
+
+    await page.getByRole('button', { name: 'Retry 1 missed pathway' }).click();
+    await expect(question).toBeFocused();
+    const focused = page.locator('[data-pets-zoon-retry="active"]');
+    await expect(focused).toHaveAttribute('data-pets-zoon-case', 'bat-bedroom');
+    await expect(focused.getByRole('progressbar')).toHaveAttribute(
+      'aria-valuetext',
+      '0 of 1 missed pathways cleared; 1 still in rotation',
+    );
+
+    const retryOptions = focused.getByRole('group').getByRole('button');
+    await retryOptions.nth(0).click();
+    await expect(feedback).toBeFocused();
+    await expect(feedback).toContainText('leaves part of the pathway open');
+    await page.getByRole('button', { name: 'Keep this pathway in rotation' }).click();
+    await expect(question).toBeFocused();
+    await expect.poll(() => page.evaluate(() => (
+      (window as any).__toolData.petsLab.zoonPractice
+    ))).toEqual({
+      mode: 'focused', idx: 0, answers: [], score: 0, done: false,
+      bestPct: 75, retryQueue: [0], retryTotal: 1,
+    });
+
+    await focused.getByRole('group').getByRole('button').nth(zoonosisKeys['bat-bedroom']).click();
+    await expect(feedback).toBeFocused();
+    await page.getByRole('button', { name: 'Finish focused retry' }).click();
+    const focusedComplete = page.getByRole('heading', { name: 'Focused pathway retry complete' });
+    await expect(focusedComplete).toBeFocused();
+    await expect(page.locator('[data-pets-zoon-retry="complete"]')).toContainText(
+      'does not replace the original four-case result',
+    );
+    await expect.poll(() => page.evaluate(() => {
+      const pets = (window as any).__toolData.petsLab;
+      return {
+        practice: pets.zoonPractice,
+        evidenceCount: (pets.evidenceRecords || []).filter((row: any) => row.moduleId === 'zoonoses').length,
+        completionReason: pets.modulesCompleted?.zoonoses?.reason,
+      };
+    })).toEqual({
+      practice: {
+        mode: 'focused', idx: 0, answers: [], score: 1, done: true,
+        bestPct: 75, retryQueue: [], retryTotal: 1,
+      },
+      evidenceCount: 1,
+      completionReason: 'Finished all 4 Exposure Pathway decisions',
+    });
+
+    await page.getByRole('button', { name: 'Try all 4 cases for a new target result' }).click();
+    await expect(question).toBeFocused();
+    await expect.poll(() => page.evaluate(() => (
+      (window as any).__toolData.petsLab.zoonPractice
+    ))).toEqual({ idx: 0, answers: [], score: 0, done: false, bestPct: 75 });
+  });
+
+  test('a hostile mid-session pathway update heals without forging completion or retaining raw text', async ({ page }) => {
+    await harness.mount(page, {
+      petsLab: { view: 'zoonoses', zoonPractice: null },
+    }, undefined, { expectCanvas: false });
+    await page.evaluate(() => localStorage.clear());
+
+    const privateText = 'PRIVATE RAW EXPOSURE SHOULD NOT PERSIST';
+    await page.evaluate((rawScenario) => {
+      (window as any).__ctx.update('petsLab', 'zoonPractice', {
+        idx: 3,
+        answers: [1, 99, 0, 3],
+        score: 4,
+        done: true,
+        bestPct: -10,
+        rawScenario,
+      });
+    }, privateText);
+
+    await expect(page.locator('.petslab-zoon-question-heading')).toContainText('Pregnancy and litter care');
+    await expect(page.locator('.petslab-zoon-result-heading')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => {
+      const pets = (window as any).__toolData.petsLab;
+      return {
+        practice: pets.zoonPractice,
+        completion: pets.modulesCompleted?.zoonoses,
+        evidence: (pets.evidenceRecords || []).filter((row: any) => row.moduleId === 'zoonoses'),
+      };
+    })).toEqual({
+      practice: { idx: 1, answers: [1], score: 1, done: false, bestPct: 0 },
+      completion: undefined,
+      evidence: [],
+    });
+
+    await page.waitForTimeout(220);
+    const persisted = await page.evaluate(() => {
+      const storage: Record<string, string | null> = {};
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index)!;
+        storage[key] = localStorage.getItem(key);
+      }
+      return JSON.stringify({
+        toolData: (window as any).__toolData.petsLab,
+        windowSnapshot: (window as any).__alloflowPetsLab,
+        storage,
+      });
+    });
+    expect(persisted).not.toContain(privateText);
+  });
+
   test('a valid full-quiz transition earns badges and strand-aware evidence', async ({ page }) => {
     await harness.mount(page, {
       petsLab: {
@@ -210,7 +417,7 @@ test.describe('Pets Lab learning-quality enhancements', () => {
       'Husbandry — temperature gradient',
       'task-trained for a disability',
       'Chocolate',
-      'Indoor cats fed only commercial food',
+      'Keep the cat',
       'Concentrated genetic disorders',
       'Indoor cats live substantially longer',
       'adult primary caregiver',

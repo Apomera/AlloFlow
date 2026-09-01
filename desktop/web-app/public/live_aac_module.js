@@ -328,6 +328,41 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   const sanitizeHistoryForCloud = deps && deps.sanitizeHistoryForCloud;
   const stripUndefined = deps && deps.stripUndefined;
   if (!item || typeof item !== 'object' || !item.id || !item.type) return null;
+  // Student packs are an independent egress boundary. A lesson or import
+  // can wrap Memory Aids several levels down, so both the shared helper and
+  // this fail-closed local gate inspect the entire resource graph. Evidence
+  // fields on neutral sibling resources remain untouched.
+  const sharedMemoryAidSanitizer = deps && deps.sanitizeMemoryAidResourceForBoundary || typeof window !== 'undefined' && window.sanitizeMemoryAidResourceForBoundary;
+  if (typeof sharedMemoryAidSanitizer === 'function') {
+    try {
+      const sharedSafeItem = sharedMemoryAidSanitizer(item);
+      if (sharedSafeItem && typeof sharedSafeItem === 'object') item = sharedSafeItem;
+    } catch (_) {}
+  }
+  // Always run the local pass as the last gate: a stale/identity helper must
+  // not silently turn offline, QR, or mailbox delivery into a pass-through.
+  const privateEvidenceKeys = new Set(['practiceAttempts', 'retrievalAttempts']);
+  const isMemoryAidNode = value => value && typeof value === 'object' && !Array.isArray(value) && [value.type, value.artifactType].some(candidate => typeof candidate === 'string' && candidate.trim().toLowerCase().replace(/[\s_]+/g, '-') === 'memory-aid');
+  const sanitizeNestedMemoryAidEvidence = (value, inMemoryAid, seen) => {
+    if (!value || typeof value !== 'object' || value instanceof Date) return value;
+    const prototype = Object.getPrototypeOf(value);
+    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    const memoryAidScope = !!inMemoryAid || isMemoryAidNode(value);
+    const visited = seen || {
+      neutral: new WeakMap(),
+      memoryAid: new WeakMap()
+    };
+    const cache = memoryAidScope ? visited.memoryAid : visited.neutral;
+    if (cache.has(value)) return cache.get(value);
+    const safeValue = Array.isArray(value) ? [] : {};
+    cache.set(value, safeValue);
+    Object.entries(value).forEach(([key, nestedValue]) => {
+      if (memoryAidScope && privateEvidenceKeys.has(key)) return;
+      safeValue[key] = sanitizeNestedMemoryAidEvidence(nestedValue, memoryAidScope, visited);
+    });
+    return safeValue;
+  };
+  item = sanitizeNestedMemoryAidEvidence(item, false);
   // AAC homework and QR packs use an explicit portable-media contract.
   // The package privacy flag is the teacher's per-export consent boundary:
   // prepared speech may travel only when that flag is true. Custom voice

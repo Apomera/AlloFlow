@@ -82,6 +82,45 @@ describe('Auto Repair menu visual dashboard', () => {
     expect(host.querySelector('[data-ar-primary-action="underhood"]')).toBeTruthy();
   });
 
+  it('resumes Decision Lab preparation without calling the financial choice complete', () => {
+    const states = [
+      [{ roiLooming: '200' }, 0, true],
+      [{ roiVehVal: '8500', roiRepCost: '900' }, 1, true],
+      [{ roiVehVal: '8500', roiRepCost: '900', roiReplacement: '18000', roiAsIsOffer: '7000' }, 2, true],
+      [{ roiVehVal: '8500', roiRepCost: '900', roiReplacement: '18000', roiAsIsOffer: '7000', roiEvidence: { diagnosis: true, secondQuote: true, warranty: true, asIsOffer: true } }, 3, false]
+    ];
+
+    for (const [autoRepair, expectedStage, shouldResume] of states) {
+      const host = hostFor(renderTool(ID, { autoRepair }));
+      const card = host.querySelector('[data-ar-module-card="roi"]');
+      const progress = host.querySelector('[data-ar-progress="roi"]');
+      expect(card).toBeTruthy();
+      expect(card.textContent).toMatch(/Repair Decision Lab/i);
+      expect(card.textContent).toMatch(/without an automatic verdict/i);
+      expect(progress.dataset.arProgressKind).toBe('worksheet');
+      expect(progress.getAttribute('aria-label')).toMatch(/worksheet preparation/i);
+      expect(progress.getAttribute('aria-valuemin')).toBe('0');
+      expect(progress.getAttribute('aria-valuemax')).toBe('3');
+      expect(progress.getAttribute('aria-valuenow')).toBe(String(expectedStage));
+      expect(progress.getAttribute('aria-valuetext')).toBe(expectedStage + ' of 3 preparation stages');
+      expect(card.textContent).toContain(expectedStage + ' of 3 preparation stages');
+      expect(Boolean(host.querySelector('[data-ar-primary-action="roi"]'))).toBe(shouldResume);
+      if (expectedStage === 3) {
+        expect(card.textContent).toMatch(/Worksheet prepared/i);
+        expect(card.textContent).not.toMatch(/decision complete|sell|always repair/i);
+      } else {
+        expect(card.textContent).toMatch(/In progress/i);
+      }
+      expect(host.textContent).toMatch(/modules in progress/i);
+    }
+
+    const untrusted = hostFor(renderTool(ID, { autoRepair: {
+      roiVehVal: '8500', roiRepCost: '900', roiReplacement: '18000', roiAsIsOffer: '7000',
+      roiEvidence: { diagnosis: 1, secondQuote: 'true', warranty: {}, asIsOffer: [] }
+    } }));
+    expect(untrusted.querySelector('[data-ar-progress="roi"]').getAttribute('aria-valuenow')).toBe('2');
+  });
+
   it('keeps the dashboard safe across themes and responsive interaction modes', () => {
     const themes = [
       { isDark: false, isContrast: false },
@@ -119,4 +158,3 @@ describe('Auto Repair menu visual dashboard', () => {
     expect(Buffer.compare(canonical, mirror)).toBe(0);
   });
 });
-

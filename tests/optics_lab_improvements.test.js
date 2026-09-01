@@ -72,7 +72,9 @@ describe('Optics Lab improvement regressions', () => {
     const mirrorOffScale = render({ mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10, reflDo: 10.5 });
     expect(mirrorOffScale).toContain('Diagram scale');
     expect(render({ mode: 'diffraction', diffMode: 'grating' })).toContain('50-slit model uses a physical opening fraction');
-    expect(source).toContain('singleSlitIntensity(aperture.openingM, lambda, theta, 1) * grating');
+    expect(source).toContain('function _opticsFraunhoferField');
+    expect(source).toContain('amplitude = _opticsSinc(beta) * gratingAmplitude;');
+    expect(source).toContain('function _opticsFresnelField');
     expect(source).toContain("rows.push(['Open fraction'");
     expect(render({ mode: 'diffraction', diffMode: 'grating' })).toContain('opening envelope controls relative order brightness.');
     expect(render({ mode: 'diffraction', diffMode: 'grating', diffShowMath: true })).toContain('The physical opening envelope controls relative order brightness.');

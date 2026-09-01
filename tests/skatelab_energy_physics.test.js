@@ -36,6 +36,32 @@ function gap(overrides = {}) {
   });
 }
 
+function contactSample(sim, fraction) {
+  const contactTime = sim.approachTime + sim.airTime +
+    sim.landingStopTimeS * fraction;
+  return physics.sampleGapJump(sim, contactTime / sim.motionDuration);
+}
+
+function expectAerodynamicEnergyClosure(sim, precision = 8) {
+  expect(sim.aerodynamicDissipationJ).toBeGreaterThanOrEqual(-1e-9);
+  expect(sim.minimumAerodynamicDissipationJ).toBeGreaterThanOrEqual(-1e-9);
+  expect(sim.aerodynamicBodyWorkJ).toBeCloseTo(
+    sim.windWorkJ - sim.aerodynamicDissipationJ,
+    precision,
+  );
+  expect(sim.aerodynamicNetWorkJ).toBeCloseTo(
+    sim.windWorkJ - sim.aerodynamicDissipationJ,
+    precision,
+  );
+  expect(sim.flightMechanicalEnergyJ + sim.aerodynamicDissipationJ)
+    .toBeCloseTo(sim.energyInputJ + sim.windWorkJ, precision);
+  expect(sim.energyClosureResidualJ).toBeCloseTo(0, precision);
+  expect(sim.energyBalanceOutputJ).toBeCloseTo(
+    sim.energyBalanceInputJ,
+    precision,
+  );
+}
+
 describe('Skate Lab halfpipe energy ledger', () => {
   it('conserves input energy across mechanical and thermal reservoirs', () => {
     for (const surfaceId of ['wax', 'standard', 'rough']) {
@@ -343,15 +369,172 @@ describe('Skate Lab deeper motion model', () => {
     expect(heavy.airTime).toBeCloseTo(light.airTime, 10);
   });
 
-  it('uses quadratic air drag while preserving the jump energy ledger', () => {
-    const ideal = gap({ airDrag: false });
-    const drag = gap({ airDrag: true });
+  it('closes moving-air work minus air-relative dissipation for every wind direction', () => {
+    const ideal = gap({ airDrag: false, windId: 'tail_strong' });
+    const idealCalm = gap({ airDrag: false, windId: 'calm' });
 
-    expect(drag.rangeM).toBeLessThan(ideal.rangeM);
     expect(ideal.rangeM).toBeCloseTo(ideal.rangeIdealM, 2);
+    expect(ideal.rangeM).toBeCloseTo(idealCalm.rangeM, 10);
+    expect(ideal.aerodynamicBodyWorkJ).toBe(0);
+    expect(ideal.aerodynamicNetWorkJ).toBe(0);
+    expect(ideal.aerodynamicDissipationJ).toBe(0);
+    expect(ideal.windWorkJ).toBe(0);
     expect(ideal.thermalJ).toBe(0);
-    expect(drag.thermalJ).toBeGreaterThan(0);
-    expect(drag.mechanicalJ + drag.thermalJ).toBeCloseTo(drag.energyInputJ, 10);
+    expect(ideal.flightMechanicalEnergyJ).toBeCloseTo(ideal.energyInputJ, 10);
+    expectAerodynamicEnergyClosure(ideal, 10);
+
+    for (const windId of [
+      'calm',
+      'head_strong',
+      'tail_strong',
+      'cross_left',
+      'cross_right',
+    ]) {
+      const result = gap({ airDrag: true, windId });
+
+      expect(result.aerodynamicDissipationJ).toBeGreaterThan(0);
+      expect(result.thermalJ).toBeCloseTo(result.aerodynamicDissipationJ, 10);
+      expectAerodynamicEnergyClosure(result);
+    }
+
+    const calmDrag = gap({ airDrag: true, windId: 'calm' });
+    expect(calmDrag.rangeM).toBeLessThan(idealCalm.rangeM);
+    expect(calmDrag.windWorkJ).toBeCloseTo(0, 10);
+    expect(calmDrag.aerodynamicNetWorkJ).toBeLessThan(0);
+  });
+
+  it('allows a strong tailwind to add more energy than the wake dissipates', () => {
+    const result = gap({
+      speedMph: 8,
+      angleDeg: 35,
+      gapFt: 2,
+      windId: 'tail_strong',
+      airDrag: true,
+    });
+    const contactEnd = physics.sampleGapJump(result, 1);
+
+    expect(result.windWorkJ).toBeGreaterThan(result.aerodynamicDissipationJ);
+    expect(result.aerodynamicNetWorkJ).toBeGreaterThan(0);
+    expect(result.flightMechanicalEnergyJ).toBeGreaterThan(result.energyInputJ);
+    expect(result.hasLandingContact).toBe(true);
+    expect(contactEnd.currentMechanicalEnergyJ).toBeLessThan(0);
+    expect(contactEnd.peJ).toBeLessThan(0);
+    expect(contactEnd.currentMechanicalEnergyJ).toBeCloseTo(
+      contactEnd.keJ + contactEnd.peJ,
+      8,
+    );
+    expectAerodynamicEnergyClosure(result);
+  });
+
+  it('uses signed deck-relative potential below the platform', () => {
+    const result = gap({
+      speedMph: 17,
+      angleDeg: 10,
+      gapFt: 8,
+      windId: 'head_strong',
+      airDrag: true,
+    });
+    const finalSample = physics.sampleGapJump(result, 1);
+
+    expect(result.hasLandingContact).toBe(false);
+    expect(result.terminationPoint.y).toBeLessThan(0);
+    expect(result.flightPotentialEnergyJ).toBeLessThan(0);
+    expect(result.flightPotentialEnergyJ).toBeCloseTo(
+      result.massKg * result.gravity * result.terminationPoint.y,
+      10,
+    );
+    expect(finalSample.peJ).toBeCloseTo(result.flightPotentialEnergyJ, 10);
+    expect(finalSample.currentMechanicalEnergyJ).toBeCloseTo(
+      finalSample.keJ + finalSample.peJ,
+      8,
+    );
+    expectAerodynamicEnergyClosure(result);
+  });
+
+  it('samples cumulative aerodynamic energy monotonically and freezes it on contact', () => {
+    const result = gap({ windId: 'cross_right', airDrag: true });
+    const indexes = [
+      0,
+      Math.floor(result.flightPath.length * 0.2),
+      Math.floor(result.flightPath.length * 0.4),
+      Math.floor(result.flightPath.length * 0.6),
+      Math.floor(result.flightPath.length * 0.8),
+      result.flightPath.length - 1,
+    ];
+    let previousDissipationJ = -1e-10;
+
+    for (const index of indexes) {
+      const pathPoint = result.flightPath[index];
+      const sample = physics.sampleGapJump(
+        result,
+        (result.approachTime + pathPoint.t) / result.motionDuration,
+      );
+
+      expect(sample.aerodynamicDissipationJ).toBeGreaterThanOrEqual(
+        previousDissipationJ - 1e-8,
+      );
+      expect(sample.aerodynamicNetWorkJ).toBeCloseTo(
+        sample.windWorkJ - sample.aerodynamicDissipationJ,
+        10,
+      );
+      expect(sample.currentMechanicalEnergyJ).toBeCloseTo(
+        result.energyInputJ + sample.windWorkJ -
+          sample.aerodynamicDissipationJ -
+          sample.landingSupportWorkAbsorbedSoFarJ,
+        10,
+      );
+      expect(sample.energyClosureResidualJ).toBeCloseTo(0, 7);
+      previousDissipationJ = sample.aerodynamicDissipationJ;
+    }
+
+    expect(result.hasLandingContact).toBe(true);
+    const touchdown = contactSample(result, 0);
+    for (const fraction of [0.2, 0.5, 0.8, 1]) {
+      const sample = contactSample(result, fraction);
+
+      expect(sample.aerodynamicDissipationJ)
+        .toBeCloseTo(touchdown.aerodynamicDissipationJ, 10);
+      expect(sample.windWorkJ).toBeCloseTo(touchdown.windWorkJ, 10);
+      expect(sample.aerodynamicNetWorkJ)
+        .toBeCloseTo(touchdown.aerodynamicNetWorkJ, 10);
+      expect(sample.currentMechanicalEnergyJ).toBeCloseTo(
+        sample.keJ + sample.peJ,
+        7,
+      );
+    }
+  });
+
+  it('reports an actual air-force vector opposite relative-air velocity', () => {
+    const result = gap({ windId: 'cross_right', airDrag: true });
+    const flightPoint = result.flightPath[
+      Math.max(1, Math.floor(result.flightPath.length * 0.35))
+    ];
+    const sample = physics.sampleGapJump(
+      result,
+      (result.approachTime + flightPoint.t) / result.motionDuration,
+    );
+    const relativeAirX = sample.vx - result.wind.xMps;
+    const relativeAirY = sample.vy;
+    const relativeAirZ = sample.vz - result.wind.zMps;
+    const forceDotRelativeAir =
+      sample.airForceX * relativeAirX +
+      sample.airForceY * relativeAirY +
+      sample.airForceZ * relativeAirZ;
+    const idealResult = gap({ windId: 'cross_right', airDrag: false });
+    const idealSample = physics.sampleGapJump(
+      idealResult,
+      (idealResult.approachTime + idealResult.peakTime * 0.5) /
+        idealResult.motionDuration,
+    );
+
+    expect(sample.phase).toBe('rising');
+    expect(sample.relativeAirSpeedMps).toBeGreaterThan(0);
+    expect(sample.airForceMagnitudeN).toBeGreaterThan(0);
+    expect(forceDotRelativeAir).toBeLessThan(0);
+    expect(idealSample.airForceMagnitudeN).toBe(0);
+    expect(idealSample.airForceX).toBeCloseTo(0, 10);
+    expect(idealSample.airForceY).toBeCloseTo(0, 10);
+    expect(idealSample.airForceZ).toBeCloseTo(0, 10);
   });
 
   it('builds an exact no-drag reference path beside the modeled trajectory', () => {
@@ -384,6 +567,9 @@ describe('Skate Lab deeper motion model', () => {
     const expectedStopTime = 2 * result.landingCompressionM / verticalSpeed;
     const expectedNetImpulse = result.massKg * verticalSpeed;
     const expectedAbsorbedEnergy = 0.5 * result.massKg * verticalSpeed ** 2;
+    const expectedGravityWork = result.massKg * result.gravity *
+      result.landingCompressionM;
+    const expectedSupportWork = expectedAbsorbedEnergy + expectedGravityWork;
     const expectedPeakLoad = 1 + (Math.PI / 2) * (expectedLoad - 1);
     const expectedAverageForce = result.massKg * result.gravity * expectedLoad;
     const expectedPeakForce = result.massKg * result.gravity * expectedPeakLoad;
@@ -392,7 +578,7 @@ describe('Skate Lab deeper motion model', () => {
       result.approachTime + result.airTime + result.landingStopTimeS * 0.5
     ) / result.motionDuration;
     const impactSample = physics.sampleGapJump(result, impactProgress);
-    const rolloutSample = physics.sampleGapJump(result, 1);
+    const contactEndSample = physics.sampleGapJump(result, 1);
     let integratedDeltaV = 0;
     const pulseSlices = 2000;
     for (let pulseIndex = 0; pulseIndex < pulseSlices; pulseIndex += 1) {
@@ -414,31 +600,105 @@ describe('Skate Lab deeper motion model', () => {
     expect(result.landingStopTimeS).toBeCloseTo(expectedStopTime, 10);
     expect(result.landingNetImpulseNs).toBeCloseTo(expectedNetImpulse, 10);
     expect(result.landingAbsorbedEnergyJ).toBeCloseTo(expectedAbsorbedEnergy, 10);
+    expect(result.landingVerticalKineticRemovedJ).toBeCloseTo(expectedAbsorbedEnergy, 10);
+    expect(result.landingGravityWorkJ).toBeCloseTo(expectedGravityWork, 10);
+    expect(result.landingSupportWorkAbsorbedJ).toBeCloseTo(expectedSupportWork, 10);
     expect(result.landingAverageForceN).toBeCloseTo(expectedAverageForce, 10);
     expect(result.landingPeakForceN).toBeCloseTo(expectedPeakForce, 10);
     expect(result.landingContactImpulseNs).toBeCloseTo(expectedContactImpulse, 10);
     expect(integratedDeltaV).toBeCloseTo(verticalSpeed, 5);
     expect(result.landingImpactG).toBeGreaterThan(1);
-    expect(result.settleTime).toBeGreaterThan(result.landingStopTimeS);
+    expect(result.settleTime).toBeCloseTo(result.landingStopTimeS, 10);
+    expect(result.rolloutDistanceM).toBe(0);
+    expect(result.contactTravelM).toBeCloseTo(
+      result.postContactVelocityMps * result.landingStopTimeS,
+      10,
+    );
     expect(result.motionDuration).toBeCloseTo(
       result.approachTime + result.airTime + result.settleTime,
       10,
     );
     expect(impactSample.phase).toBe('absorbing the landing');
     expect(impactSample.normalG).toBeCloseTo(result.landingPeakG, 10);
+    expect(impactSample.supportForceN).toBeCloseTo(result.landingPeakForceN, 8);
     expect(impactSample.landingPulse).toBeCloseTo(1, 10);
-    expect(impactSample.landingSquat).toBeCloseTo(1, 10);
     expect(impactSample.landingCompressionUsedM).toBeCloseTo(
       result.landingCompressionM * (0.5 + 1 / Math.PI),
       8,
     );
+    expect(impactSample.comCompressionM).toBeCloseTo(
+      impactSample.landingCompressionUsedM,
+      10,
+    );
+    expect(impactSample.comCompressionRatio).toBeCloseTo(
+      0.5 + 1 / Math.PI,
+      8,
+    );
+    expect(impactSample.landingSquat).toBeCloseTo(
+      impactSample.comCompressionRatio,
+      10,
+    );
+    expect(impactSample.boardY).toBeCloseTo(0, 10);
+    expect(impactSample.boardRotationDeg).toBeCloseTo(0, 10);
+    expect(impactSample.rotation).toBeCloseTo(0, 10);
     expect(Math.abs(impactSample.vy)).toBeCloseTo(verticalSpeed * 0.5, 8);
+    expect(impactSample.comVerticalVelocityMps).toBeCloseTo(impactSample.vy, 10);
+    expect(impactSample.landingNetImpulseDeliveredNs).toBeCloseTo(
+      expectedNetImpulse * 0.5,
+      8,
+    );
+    expect(impactSample.landingSupportImpulseDeliveredNs).toBeCloseTo(
+      expectedNetImpulse * 0.5 +
+        result.massKg * result.gravity * result.landingStopTimeS * 0.5,
+      8,
+    );
+    expect(impactSample.landingVerticalKineticRemainingJ).toBeCloseTo(
+      expectedAbsorbedEnergy * 0.25,
+      8,
+    );
+    expect(impactSample.landingVerticalKineticRemovedJ).toBeCloseTo(
+      expectedAbsorbedEnergy * 0.75,
+      8,
+    );
+    expect(impactSample.landingGravityWorkSoFarJ).toBeCloseTo(
+      result.massKg * result.gravity * impactSample.comCompressionM,
+      8,
+    );
+    expect(impactSample.landingSupportWorkAbsorbedSoFarJ).toBeCloseTo(
+      impactSample.landingVerticalKineticRemovedJ +
+        impactSample.landingGravityWorkSoFarJ,
+      8,
+    );
     expect(impactSample.thermalJ).toBeGreaterThan(result.thermalJ);
-    expect(rolloutSample.phase).toBe('rolling out');
-    expect(rolloutSample.normalG).toBeCloseTo(1, 10);
-    expect(rolloutSample.vy).toBeCloseTo(0, 10);
-    expect(rolloutSample.x).toBeCloseTo(result.rolloutEndM, 8);
-    expect(rolloutSample.thermalJ).toBeCloseTo(result.landingAbsorbedEnergyJ, 8);
+    expect(contactEndSample.phase).toBe('contact pulse complete');
+    expect(contactEndSample.normalG).toBeCloseTo(1, 10);
+    expect(contactEndSample.vy).toBeCloseTo(0, 10);
+    expect(contactEndSample.comCompressionM).toBeCloseTo(result.landingCompressionM, 10);
+    expect(contactEndSample.comCompressionRatio).toBeCloseTo(1, 10);
+    expect(contactEndSample.landingSquat).toBeCloseTo(1, 10);
+    expect(contactEndSample.landingNetImpulseDeliveredNs).toBeCloseTo(
+      result.landingNetImpulseNs,
+      10,
+    );
+    expect(contactEndSample.landingSupportImpulseDeliveredNs).toBeCloseTo(
+      result.landingContactImpulseNs,
+      10,
+    );
+    expect(contactEndSample.landingVerticalKineticRemainingJ).toBeCloseTo(0, 10);
+    expect(contactEndSample.landingVerticalKineticRemovedJ).toBeCloseTo(
+      result.landingVerticalKineticRemovedJ,
+      10,
+    );
+    expect(contactEndSample.landingSupportWorkAbsorbedSoFarJ).toBeCloseTo(
+      result.landingSupportWorkAbsorbedJ,
+      10,
+    );
+    expect(contactEndSample.vx).toBeCloseTo(result.postContactVelocityXMps, 10);
+    expect(contactEndSample.x).toBeCloseTo(result.contactEndM, 8);
+    expect(contactEndSample.thermalJ).toBeCloseTo(
+      result.aerodynamicDissipationJ + result.landingSupportWorkAbsorbedJ,
+      8,
+    );
     expect(steep.landingImpactG).toBeGreaterThan(shallow.landingImpactG);
     expect(shortStop.rangeM).toBeCloseTo(longStop.rangeM, 10);
     expect(shortStop.landingVelocity.y).toBeCloseTo(longStop.landingVelocity.y, 10);
@@ -452,6 +712,84 @@ describe('Skate Lab deeper motion model', () => {
     expect(shortStop.landingContactImpulseNs).toBeLessThan(longStop.landingContactImpulseNs);
     expect(gap({ landingCompressionM: 0 }).landingCompressionM).toBe(0.1);
     expect(gap({ landingCompressionM: 2 }).landingCompressionM).toBe(0.9);
+  });
+
+  it('keeps contact position, COM kinematics, force, impulse, and work mutually consistent', () => {
+    const result = gap({ airDrag: false });
+    const start = contactSample(result, 0);
+    const end = contactSample(result, 1);
+    const fraction = 0.37;
+    const epsilon = 0.0001;
+    const before = contactSample(result, fraction - epsilon);
+    const middle = contactSample(result, fraction);
+    const after = contactSample(result, fraction + epsilon);
+    const deltaTime = 2 * epsilon * result.landingStopTimeS;
+    const compressionRate = (after.comCompressionM - before.comCompressionM) /
+      deltaTime;
+    const netImpulseRate = (
+      after.landingNetImpulseDeliveredNs -
+      before.landingNetImpulseDeliveredNs
+    ) / deltaTime;
+
+    expect(start.phase).toBe('platform contact');
+    expect(start.comCompressionM).toBeCloseTo(0, 10);
+    expect(start.landingNetImpulseDeliveredNs).toBeCloseTo(0, 10);
+    expect(start.landingVerticalKineticRemainingJ).toBeCloseTo(
+      result.landingAbsorbedEnergyJ,
+      8,
+    );
+    expect(end.boardY).toBeCloseTo(0, 10);
+    expect(end.comCompressionM).toBeCloseTo(result.landingCompressionM, 10);
+    expect(end.comVerticalVelocityMps).toBeCloseTo(0, 10);
+    expect(compressionRate).toBeCloseTo(
+      Math.abs(middle.comVerticalVelocityMps),
+      5,
+    );
+    expect(netImpulseRate).toBeCloseTo(
+      middle.supportForceN - result.massKg * result.gravity,
+      3,
+    );
+
+    let previous = contactSample(result, 0);
+    for (let step = 1; step <= 40; step += 1) {
+      const current = contactSample(result, step / 40);
+      expect(current.boardY).toBeCloseTo(0, 10);
+      expect(current.comCompressionM).toBeGreaterThanOrEqual(
+        previous.comCompressionM - 1e-10,
+      );
+      expect(current.landingNetImpulseDeliveredNs).toBeGreaterThanOrEqual(
+        previous.landingNetImpulseDeliveredNs - 1e-8,
+      );
+      expect(current.landingVerticalKineticRemovedJ).toBeGreaterThanOrEqual(
+        previous.landingVerticalKineticRemovedJ - 1e-8,
+      );
+      expect(current.landingSupportWorkAbsorbedSoFarJ).toBeGreaterThanOrEqual(
+        previous.landingSupportWorkAbsorbedSoFarJ - 1e-8,
+      );
+      previous = current;
+    }
+  });
+
+  it('explains the board and rider COM as separate landing states', () => {
+    const result = gap({ airDrag: false });
+    const contact = contactSample(result, 0);
+    const absorbing = contactSample(result, 0.5);
+    const complete = contactSample(result, 1);
+
+    expect(physics.phaseLearningText(result, contact))
+      .toContain('board is supported at deck height');
+    expect(physics.phaseLearningText(result, contact))
+      .toContain('center of mass still moves downward');
+    expect(physics.phaseLearningText(result, absorbing))
+      .toContain('board stays on the deck');
+    expect(physics.phaseLearningText(result, absorbing))
+      .toContain('center of mass has moved');
+    expect(physics.phaseLearningText(result, absorbing))
+      .toContain('g support load');
+    expect(physics.phaseLearningText(result, complete))
+      .toContain('COM compression has reached');
+    expect(physics.phaseLearningText(result, complete))
+      .toContain('vertical speed is zero');
   });
 
   it('responds directionally to headwinds, tailwinds, and crosswinds', () => {
@@ -484,11 +822,23 @@ describe('Skate Lab deeper motion model', () => {
     expect(apex.y).toBeCloseTo(sim.peakM, 2);
     expect(impact.phase).toBe('absorbing the landing');
     expect(impact.normalG).toBeCloseTo(sim.landingPeakG, 10);
-    expect(end.phase).toBe('rolling out');
+    expect(end.phase).toBe('contact pulse complete');
     expect(end.time).toBeCloseTo(sim.motionDuration, 10);
-    expect(end.x).toBeCloseTo(sim.rolloutEndM, 10);
+    expect(end.x).toBeCloseTo(sim.contactEndM, 10);
     expect(end.x).toBeGreaterThan(sim.rangeM);
-    expect(end.z).toBeCloseTo(sim.crossDriftM, 10);
+    expect(end.vx).toBeCloseTo(sim.postContactVelocityXMps, 10);
+    expect(end.vz).toBeCloseTo(sim.postContactVelocityZMps, 10);
+    expect(end.vz).toBeCloseTo(sim.landingVelocity.z, 10);
+    expect(end.z).toBeCloseTo(sim.contactEndZ, 10);
+    expect(sim.contactTravelZM).toBeCloseTo(
+      sim.postContactVelocityZMps * sim.landingStopTimeS,
+      10,
+    );
+    expect(sim.contactTravelM).toBeCloseTo(
+      Math.hypot(sim.contactTravelXM, sim.contactTravelZM),
+      10,
+    );
+    expect(Math.abs(end.z)).toBeGreaterThan(Math.abs(sim.crossDriftM));
     expect(end.vy).toBeCloseTo(0, 10);
   });
 });

@@ -1113,6 +1113,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   const alloSheetReviewDialogRef = useRef(null);
   const alloSheetReturnFocusRef = useRef(null);
   const alloSheetBusyRef = useRef(false);
+  const bulkGradingRef = useRef(false);
 
   const containDialogFocus = (event, container) => {
     if (event.key === 'Escape') {
@@ -1784,6 +1785,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   // rubric (and per-row override if one exists). Runs sequentially so the
   // Gemini API isn't hammered + so the teacher can see progress.
   const gradeAllDecrypted = async () => {
+    if (bulkGradingRef.current) return;
     if (!(globalRubric.rubric || '').trim()) {
       addToast && addToast(tr('Add a class rubric at the top before bulk grading.'), 'warn');
       setGlobalRubricOpen(true);
@@ -1797,6 +1799,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       addToast && addToast(tr('No decrypted submissions to grade.'), 'warn');
       return;
     }
+    bulkGradingRef.current = true;
     setBulkGrading(true);
     setBulkProgress({ current: 0, total: decryptedIdxs.length });
     let totalOk = 0, totalFail = 0, totalSkipped = 0;
@@ -1810,6 +1813,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
         if (result.skipped) totalSkipped += 1;
       }
     }
+    bulkGradingRef.current = false;
     setBulkGrading(false);
     setBulkProgress({ current: 0, total: 0 });
     addToast && addToast(
@@ -2862,12 +2866,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             /*#__PURE__*/React.createElement('div', null,
               /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e3a8a', marginBottom: 2 } }, tr('1. Class key file')),
               privateJwk
-                ? /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#1e40af' } },
+                ? /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#1e40af' } },
                     tr('✓ Loaded'),
                     classKeyMeta?.className ? ' for "' + classKeyMeta.className + '"' : '',
                     classKeyMeta?.createdAt ? ' (created ' + classKeyMeta.createdAt.slice(0, 10) + ')' : ''
                   )
-                : /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#64748b' } },
+                : /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#64748b' } },
                     tr('Pick the class-key_*.alloflow file you saved when setting up offline submissions.')
                   )
             ),
@@ -2887,7 +2891,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
           /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
             /*#__PURE__*/React.createElement('div', null,
               /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#166534', marginBottom: 2 } }, tr('2. Student submission files')),
-              /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#475569' } },
+              /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#475569' } },
                 queue.length === 0
                   ? tr('Select the files students saved — encrypted .alloflow.html (needs the class key) or plain .json (no key needed).')
                   : (queue.length + ' file' + (queue.length === 1 ? '' : 's') + ' loaded · ' +
@@ -2920,6 +2924,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             /*#__PURE__*/React.createElement('button', {
               type: 'button',
               onClick: () => setGlobalRubricOpen(!globalRubricOpen),
+              'aria-expanded': globalRubricOpen,
+              'aria-controls': 'submission-inbox-class-rubric-panel',
               style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#3730a3', fontSize: '0.9rem' }
             },
               tr('🎯 Class rubric'),
@@ -2927,18 +2933,21 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
               /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#6366f1' } }, globalRubricOpen ? '▾' : '▸')
             ),
             /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-              !bulkGrading && /*#__PURE__*/React.createElement('button', {
+              /*#__PURE__*/React.createElement('button', {
                 type: 'button',
-                onClick: gradeAllDecrypted,
-                disabled: (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim(),
+                onClick: () => { if (!bulkGrading) gradeAllDecrypted(); },
+                disabled: !bulkGrading && ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()),
+                'aria-disabled': bulkGrading ? 'true' : undefined,
+                'aria-busy': bulkGrading ? 'true' : undefined,
+                'aria-describedby': bulkGrading ? 'submission-inbox-bulk-progress-label' : undefined,
                 title: (globalRubric.rubric || '').trim()
                   ? tr('Grade every decrypted submission in the queue with this rubric')
                   : tr('Set a class rubric first'),
                 style: {
                   padding: '8px 16px',
-                  background: ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? '#cbd5e1' : '#4f46e5',
+                  background: (!bulkGrading && ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim())) ? '#cbd5e1' : '#4f46e5',
                   color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem',
-                  cursor: ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? 'not-allowed' : 'pointer'
+                  cursor: bulkGrading ? 'wait' : (((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? 'not-allowed' : 'pointer')
                 }
               }, '🎯 Grade entire queue (' + (counts.decrypted || 0) + ')'),
               !bulkGrading && (() => {
@@ -2950,25 +2959,35 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                   style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
                 }, '💾 Save all graded (' + gradedCount + ')');
               })(),
-              bulkGrading && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: '#3730a3', fontWeight: 700 } },
-                /*#__PURE__*/React.createElement('span', null, 'Grading ' + bulkProgress.current + ' / ' + bulkProgress.total + '…'),
-                /*#__PURE__*/React.createElement('div', { style: { width: 120, height: 8, background: '#c7d2fe', borderRadius: 999, overflow: 'hidden' } },
+              bulkGrading && /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: '0.85rem', color: '#3730a3', fontWeight: 700 } },
+                /*#__PURE__*/React.createElement('span', { id: 'submission-inbox-bulk-progress-label' }, 'Grading ' + bulkProgress.current + ' / ' + bulkProgress.total + '…'),
+                /*#__PURE__*/React.createElement('div', {
+                  role: 'progressbar',
+                  'aria-labelledby': 'submission-inbox-bulk-progress-label',
+                  'aria-valuemin': 0,
+                  'aria-valuemax': bulkProgress.total,
+                  'aria-valuenow': bulkProgress.current,
+                  'aria-valuetext': bulkProgress.current + ' of ' + bulkProgress.total + ' submissions',
+                  style: { width: 120, maxWidth: '100%', height: 8, background: '#c7d2fe', borderRadius: 999, overflow: 'hidden' }
+                },
                   /*#__PURE__*/React.createElement('div', { style: { width: (bulkProgress.total ? (bulkProgress.current / bulkProgress.total * 100) : 0) + '%', height: '100%', background: '#4f46e5', transition: 'width 0.3s' } })
                 )
               )
             )
           ),
-          globalRubricOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #c7d2fe' } },
-            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, tr('Rubric for this batch — what does full credit look like?')),
+          globalRubricOpen && /*#__PURE__*/React.createElement('div', { id: 'submission-inbox-class-rubric-panel', style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #c7d2fe' } },
+            /*#__PURE__*/React.createElement('label', { htmlFor: 'submission-inbox-class-rubric', style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, tr('Rubric for this batch — what does full credit look like?')),
             /*#__PURE__*/React.createElement('textarea', {
+              id: 'submission-inbox-class-rubric',
               value: globalRubric.rubric,
               onChange: e => setGlobalRubric(prev => ({ ...prev, rubric: e.target.value })),
               placeholder: tr('e.g., "Each response should name the main idea, cite at least one specific detail from the text, and explain reasoning in 2-3 complete sentences."'),
               rows: 3,
               style: { width: '100%', padding: 8, border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.88rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 }
             }),
-            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, tr('Assignment context (optional)')),
+            /*#__PURE__*/React.createElement('label', { htmlFor: 'submission-inbox-class-context', style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, tr('Assignment context (optional)')),
             /*#__PURE__*/React.createElement('input', {
+              id: 'submission-inbox-class-context',
               type: 'text',
               value: globalRubric.context,
               onChange: e => setGlobalRubric(prev => ({ ...prev, context: e.target.value })),
@@ -3018,10 +3037,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                 Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('div', { style: { position: 'relative' } },
                   /*#__PURE__*/React.createElement('button', {
                     type: 'button', onClick: () => setPresetsMenuOpen(!presetsMenuOpen),
+                    'aria-expanded': presetsMenuOpen,
+                    'aria-controls': 'submission-inbox-presets-panel',
                     title: tr('Load a saved preset'),
                     style: { padding: '5px 12px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }
                   }, '📂 Load (' + Object.keys(rubricPresets).length + ') ' + (presetsMenuOpen ? '▴' : '▾')),
-                  presetsMenuOpen && /*#__PURE__*/React.createElement('div', { style: { position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: 'white', border: '1px solid #c7d2fe', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 280, maxHeight: 320, overflowY: 'auto', zIndex: 5 } },
+                  presetsMenuOpen && /*#__PURE__*/React.createElement('div', {
+                    id: 'submission-inbox-presets-panel',
+                    role: 'region',
+                    'aria-label': tr('Saved rubric presets'),
+                    style: { position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: 'white', border: '1px solid #c7d2fe', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', width: 'min(280px, calc(100vw - 96px))', maxWidth: 'calc(100vw - 96px)', minWidth: 0, maxHeight: 320, overflowY: 'auto', overflowX: 'hidden', zIndex: 5 }
+                  },
                     Object.entries(rubricPresets)
                       .sort(([, a], [, b]) => (b.lastUsed || '').localeCompare(a.lastUsed || ''))
                       .map(([key, p]) => /*#__PURE__*/React.createElement('div', {
@@ -3030,9 +3056,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                       },
                         /*#__PURE__*/React.createElement('button', {
                           type: 'button', onClick: () => loadPreset(key),
-                          style: { flex: 1, textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }
+                          style: { flex: 1, minWidth: 0, textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }
                         },
-                          /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' } }, p.name),
+                          /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', overflowWrap: 'anywhere' } }, p.name),
                           /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#475569' } },
                             (p.anchors ? p.anchors.length : 0) + ' anchor' + (p.anchors && p.anchors.length === 1 ? '' : 's'),
                             ' · last used ',
@@ -3083,6 +3109,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             /*#__PURE__*/React.createElement('button', {
               type: 'button',
               onClick: () => setGradebookOpen(!gradebookOpen),
+              'aria-expanded': gradebookOpen,
+              'aria-controls': 'submission-inbox-gradebook-panel',
               style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#166534', fontSize: '0.9rem' }
             },
               tr('📊 Gradebook'),
@@ -3090,13 +3118,15 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
               /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#16a34a' } }, gradebookOpen ? '▾' : '▸')
             ),
             gradebookEntries.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '100%' } },
-              /*#__PURE__*/React.createElement('div', { style: { display: 'inline-flex', background: 'white', border: '1px solid #86efac', borderRadius: 6, padding: 2, fontSize: '0.74rem', fontWeight: 600 } },
+              /*#__PURE__*/React.createElement('div', { role: 'group', 'aria-label': tr('Group gradebook by'), style: { display: 'inline-flex', background: 'white', border: '1px solid #86efac', borderRadius: 6, padding: 2, fontSize: '0.74rem', fontWeight: 600 } },
                 /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: () => setGradebookGroupBy('submission'),
+                  'aria-pressed': gradebookGroupBy === 'submission',
                   style: { padding: '4px 10px', background: gradebookGroupBy === 'submission' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'submission' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
                 }, tr('Submissions')),
                 /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: () => setGradebookGroupBy('student'),
+                  'aria-pressed': gradebookGroupBy === 'student',
                   style: { padding: '4px 10px', background: gradebookGroupBy === 'student' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'student' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
                 }, tr('By student'))
               ),
@@ -3113,13 +3143,18 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
               }, tr('⬇ Export CSV'))
             )
           ),
-          gradebookOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #bbf7d0' } },
+          gradebookOpen && /*#__PURE__*/React.createElement('div', { id: 'submission-inbox-gradebook-panel', style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #bbf7d0' } },
             gradebookEntries.length === 0
-              ? /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#166534', fontStyle: 'italic' } },
+              ? /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '0.85rem', color: '#166534', fontStyle: 'italic' } },
                   tr('No saved grades yet. Grade some submissions and click "💾 Save all graded" or the per-row "Save to gradebook" button to populate this list.')
                 )
               : /*#__PURE__*/React.createElement('div', null,
-                  /*#__PURE__*/React.createElement('div', { style: { border: '1px solid #bbf7d0', borderRadius: 8, overflow: 'hidden', background: 'white' } },
+                  /*#__PURE__*/React.createElement('div', {
+                    role: 'region',
+                    'aria-label': tr('Saved gradebook table'),
+                    tabIndex: 0,
+                    style: { border: '1px solid #bbf7d0', borderRadius: 8, overflowX: 'auto', overflowY: 'hidden', maxWidth: '100%', background: 'white' }
+                  },
                     /*#__PURE__*/React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' } },
                       /*#__PURE__*/React.createElement('thead', null,
                         /*#__PURE__*/React.createElement('tr', { style: { background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' } },
@@ -3153,11 +3188,20 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                                 const studentKey = s.nickname + '|' + (s.className || '');
                                 const isExpanded = expandedStudent === studentKey;
                                 return /*#__PURE__*/React.createElement(React.Fragment, { key: i },
-                                  /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }, onClick: () => setExpandedStudent(isExpanded ? null : studentKey) },
+                                  /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9' } },
                                     /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontWeight: 700, color: '#1e293b' } },
-                                      /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', marginRight: 6, fontSize: '0.7rem', color: '#475569' } }, isExpanded ? '▾' : '▸'),
-                                      s.nickname,
-                                      s.className && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#475569', fontWeight: 400, marginLeft: 14 } }, s.className)
+                                      /*#__PURE__*/React.createElement('button', {
+                                        type: 'button',
+                                        onClick: () => setExpandedStudent(isExpanded ? null : studentKey),
+                                        'aria-expanded': isExpanded,
+                                        style: { display: 'inline-flex', alignItems: 'flex-start', gap: 6, maxWidth: '100%', padding: 0, border: 'none', background: 'transparent', color: '#1e293b', font: 'inherit', fontWeight: 700, textAlign: 'left', cursor: 'pointer' }
+                                      },
+                                        /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true', style: { display: 'inline-block', fontSize: '0.7rem', color: '#475569', flexShrink: 0 } }, isExpanded ? '▾' : '▸'),
+                                        /*#__PURE__*/React.createElement('span', { style: { minWidth: 0, overflowWrap: 'anywhere' } },
+                                          /*#__PURE__*/React.createElement('span', { style: { display: 'block' } }, s.nickname),
+                                          s.className && /*#__PURE__*/React.createElement('span', { style: { display: 'block', fontSize: '0.72rem', color: '#475569', fontWeight: 400 } }, s.className)
+                                        )
+                                      )
                                     ),
                                     /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', color: '#475569' } },
                                       s.entries.length + ' submission' + (s.entries.length === 1 ? '' : 's')
@@ -3171,7 +3215,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                                       lastGraded ? new Date(lastGraded).toLocaleDateString() : '—'
                                     ),
                                     /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', textAlign: 'right', fontSize: '0.72rem', color: '#475569' } },
-                                      isExpanded ? tr('click to collapse') : tr('click for detail')
+                                      isExpanded ? tr('use the learner button to collapse') : tr('use the learner button for detail')
                                     )
                                   ),
                                   isExpanded && s.entries.map((entry, j) => {
@@ -3250,6 +3294,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             /*#__PURE__*/React.createElement('button', {
               type: 'button',
               onClick: () => setAnchorsPanelOpen(!anchorsPanelOpen),
+              'aria-expanded': anchorsPanelOpen,
+              'aria-controls': 'submission-inbox-anchors-panel',
               style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#92400e', fontSize: '0.9rem' }
             },
               '📌 Calibration anchors (' + anchors.length + ')',
@@ -3261,7 +3307,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                 : 'Each AI grading run will use these ' + anchors.length + ' anchor' + (anchors.length === 1 ? '' : 's') + ' as few-shot examples.'
             )
           ),
-          anchorsPanelOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid #fde68a' } },
+          anchorsPanelOpen && /*#__PURE__*/React.createElement('div', { id: 'submission-inbox-anchors-panel', style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid #fde68a' } },
             anchors.length === 0
               ? /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#92400e', fontStyle: 'italic' } },
                   tr('No anchors yet. Anchors are individual student responses you score by hand; the AI uses them as calibration examples when grading every other response. 3-5 anchors that span the score range usually gives the best results.')
@@ -3312,10 +3358,15 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
 
         // Queue table
         queue.length === 0
-          ? /*#__PURE__*/React.createElement('div', { style: { padding: '40px 20px', textAlign: 'center', color: '#475569', fontSize: '0.95rem', border: '2px dashed #e2e8f0', borderRadius: 12 } },
+          ? /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', style: { padding: '40px 20px', textAlign: 'center', color: '#475569', fontSize: '0.95rem', border: '2px dashed #e2e8f0', borderRadius: 12 } },
               tr('No submissions loaded yet. Load your class key, then add files.')
             )
-          : /*#__PURE__*/React.createElement('div', { style: { border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' } },
+          : /*#__PURE__*/React.createElement('div', {
+              role: 'region',
+              'aria-label': tr('Imported submission queue table'),
+              tabIndex: 0,
+              style: { border: '1px solid #e2e8f0', borderRadius: 10, overflowX: 'auto', overflowY: 'hidden', maxWidth: '100%' }
+            },
               /*#__PURE__*/React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' } },
                 /*#__PURE__*/React.createElement('thead', null,
                   /*#__PURE__*/React.createElement('tr', { style: { background: '#f8fafc', borderBottom: '1px solid #e2e8f0' } },
@@ -3349,7 +3400,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                       ),
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px' } },
                         statusBadge(row.status),
-                        row.status === 'error' && /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, fontSize: '0.75rem', color: '#991b1b' } }, row.error),
+                        row.status === 'error' && /*#__PURE__*/React.createElement('div', { role: 'alert', style: { marginTop: 4, fontSize: '0.75rem', color: '#991b1b' } }, row.error),
                         row.status === 'decrypted' && row.payload && (() => {
                           const prior = previousGradesFor(row.payload.nickname, row.payload.docTitle);
                           // Filter out matches whose timestamp is the same as this submission
@@ -3366,6 +3417,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px', textAlign: 'right' } },
                         row.status === 'decrypted' && /*#__PURE__*/React.createElement('button', {
                           type: 'button', onClick: () => setExpandedRow(expandedRow === idx ? null : idx),
+                          'aria-expanded': expandedRow === idx,
+                          'aria-controls': 'submission-inbox-row-details-' + idx,
                           style: { marginRight: 6, padding: '4px 10px', background: '#eef2ff', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }
                         }, expandedRow === idx ? 'Hide' : 'View'),
                         /*#__PURE__*/React.createElement('button', {
@@ -3374,7 +3427,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                         }, tr('Remove'))
                       )
                     ),
-                    expandedRow === idx && row.payload && /*#__PURE__*/React.createElement('tr', null,
+                    expandedRow === idx && row.payload && /*#__PURE__*/React.createElement('tr', { id: 'submission-inbox-row-details-' + idx },
                       /*#__PURE__*/React.createElement('td', { colSpan: 4, style: { padding: 0 } },
                         /*#__PURE__*/React.createElement('div', { style: { background: '#fafafa', padding: '12px 16px', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' } },
                           /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
@@ -3495,29 +3548,30 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                             /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
                               tr('🎯 AI Grade with rubric')
                             ),
-                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
+                            /*#__PURE__*/React.createElement('label', { htmlFor: 'submission-inbox-row-rubric-' + idx, style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
                               tr('Rubric (what full credit looks like)'),
                               (globalRubric.rubric || '').trim() && !((rubrics[idx] && rubrics[idx].rubric) || '').trim()
                                 ? /*#__PURE__*/React.createElement('span', { style: { fontWeight: 400, color: '#475569', marginLeft: 6, fontSize: '0.72rem' } }, tr('— using class rubric above (override here for this submission only)'))
                                 : null
                             ),
                             /*#__PURE__*/React.createElement('textarea', {
-                              'aria-label': tr('Rubric for this submission'),
+                              id: 'submission-inbox-row-rubric-' + idx,
                               value: (rubrics[idx] && rubrics[idx].rubric) || '',
                               onChange: e => updateRubric(idx, { rubric: e.target.value }),
                               placeholder: (globalRubric.rubric || '').trim() ? globalRubric.rubric : tr('e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."'),
                               rows: 3,
                               style: { width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 8 }
                             }),
-                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, tr('Assignment context (optional)')),
+                            /*#__PURE__*/React.createElement('label', { htmlFor: 'submission-inbox-row-context-' + idx, style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, tr('Assignment context (optional)')),
                             /*#__PURE__*/React.createElement('input', {
-                              type: 'text', 'aria-label': tr('Assignment context for this submission'),
+                              id: 'submission-inbox-row-context-' + idx,
+                              type: 'text',
                               value: (rubrics[idx] && rubrics[idx].context) || '',
                               onChange: e => updateRubric(idx, { context: e.target.value }),
                               placeholder: tr('e.g., "Reading response to chapter 3"'),
                               style: { width: '100%', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', marginBottom: 8 }
                             }),
-                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
+                            /*#__PURE__*/React.createElement('label', { htmlFor: 'submission-inbox-row-exemplar-' + idx, style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
                               tr('Quick exemplar (optional) '),
                               /*#__PURE__*/React.createElement('span', { style: { fontWeight: 400, color: '#475569', fontSize: '0.75rem' } },
                                 anchors.length > 0
@@ -3526,7 +3580,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                               )
                             ),
                             /*#__PURE__*/React.createElement('textarea', {
-                              'aria-label': tr('Quick exemplar for this submission'),
+                              id: 'submission-inbox-row-exemplar-' + idx,
                               value: (rubrics[idx] && rubrics[idx].exemplar) || '',
                               onChange: e => updateRubric(idx, { exemplar: e.target.value }),
                               placeholder: tr('Paste an example of a 95/100 response so the AI matches your scoring.'),
@@ -3551,7 +3605,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                                 onClick: () => saveRowToGradebook(idx),
                                 style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
                               }, tr('💾 Save to gradebook')),
-                              Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.78rem', color: '#64748b' } },
+                              Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '0.78rem', color: '#64748b' } },
                                 (() => { const summary = rowGradeSummary(idx); return 'Avg: ' + (summary.average == null ? '—' : summary.average + '/100') + ' · ' + summary.scored + ' of ' + summary.total + (summary.expectedCountKnown ? ' expected' : ' captured') + ' responses scored'; })()
                               )
                             )

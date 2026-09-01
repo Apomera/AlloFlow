@@ -13426,7 +13426,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=c92ce2b50'); }; })();
     window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=81c55f6e'); }; })();
     window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=b1e106e9'); }; })();
-    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=69bc4956'); }; })();
+    window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=71332dc7'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=abe0a8e6'); }; })();
     window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=c92ce2b50'); }; })();
     window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=c92ce2b50'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
@@ -52526,6 +52526,7 @@ ${_alloActivityContext(activity)}
                     handleNoteUpdate, callGemini, callImagen, callGeminiImageEdit, callGeminiVision,
                     handleSpeak, handleDownloadAudio, downloadingContentId,
                     addToast, gradeLevel, universalImageStyle,
+                    activeProfileId: selectedProfileId,
                 })}
                 {activeView === 'applied-challenge' && window.AlloModules && window.AlloModules.AppliedChallengeView && React.createElement(window.AlloModules.AppliedChallengeView, {
                     generatedContent, isTeacherMode, isProcessing,
@@ -55118,6 +55119,7 @@ ${_alloActivityContext(activity)}
                   callTTS, callImagen,
                   activeStation, setActiveStation,
                   theme,
+                  activeProfileId: selectedProfileId,
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>

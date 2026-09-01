@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, React } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
 const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
 const { act } = React;
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 
 // The root tool and its deploy mirror must stay byte-identical in behaviour.
 const TOOL_PATHS = [
@@ -906,7 +906,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(auditHost, AXE_OPTIONS);
+      const results = await runIsolatedAxe(auditHost.outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -915,7 +915,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
 
   it('renders the learning cycle and active tab panel for every station', () => {
     ['field', 'electro', 'motor', 'induce', 'materials', 'crane', 'maze', 'transformer', 'earth', 'quiz'].forEach((tab) => {
-      const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab }));
+      const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab, labShellPanel: 'guide' }));
       expect(html).toContain('1 · Predict');
       expect(html).toContain('2 · Test');
       expect(html).toContain('3 · Explain');
@@ -943,7 +943,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     try {
       const missionControl = auditHost.querySelector('[role="region"][aria-label="Mission Control"]');
       expect(missionControl).not.toBeNull();
-      const results = await axe.run(missionControl, AXE_OPTIONS);
+      const results = await runIsolatedAxe(missionControl.outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -1023,7 +1023,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     }));
     expect(compared).toContain('Previous trial comparison');
     expect(compared).toContain('Recorded setup: I 3 A · B 4.');
-    expect(compared).toContain('Live 1.00');
+    expect(compared).toContain('· live 1.00× ·');
   });
 
   it('renders an accessible force-to-power bridge with linked speed and work controls', async () => {
@@ -1047,7 +1047,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(requiredAuditTarget(auditHost, 'section[aria-label="Magnetic work and power bridge"]'), AXE_OPTIONS);
+      const results = await runIsolatedAxe(requiredAuditTarget(auditHost, 'section[aria-label="Magnetic work and power bridge"]').outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -1077,7 +1077,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(requiredAuditTarget(auditHost, 'section[aria-label="Right-hand-rule wire-force lab"]'), AXE_OPTIONS);
+      const results = await runIsolatedAxe(requiredAuditTarget(auditHost, 'section[aria-label="Right-hand-rule wire-force lab"]').outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -1285,7 +1285,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Velocity selector + mass analyzer"]'), AXE_OPTIONS);
+      const results = await runIsolatedAxe(requiredAuditTarget(auditHost, '[role="region"][aria-label="Velocity selector + mass analyzer"]').outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -1509,7 +1509,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
         expect(auditHost.querySelector('label[for="' + range.id + '"]')).not.toBeNull();
         expect(range.getAttribute('aria-valuetext')).toBeTruthy();
       });
-      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Coupled motor–generator engineering bench"]'), AXE_OPTIONS);
+      const results = await runIsolatedAxe(requiredAuditTarget(auditHost, '[role="region"][aria-label="Coupled motor–generator engineering bench"]').outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -1593,7 +1593,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Quantitative Field Mapping Lab"]'), AXE_OPTIONS);
+      const results = await runIsolatedAxe(requiredAuditTarget(auditHost, '[role="region"][aria-label="Quantitative Field Mapping Lab"]').outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -1683,11 +1683,11 @@ describe('magnetism tool — jsdom mount smoke', () => {
   });
 
   it('supports guided and challenge investigations without giving away the challenge path', () => {
-    const guided = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'maze', learningMode: 'guided' }));
+    const guided = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'maze', learningMode: 'guided', labShellPanel: 'guide' }));
     expect(guided).toContain('1 · Predict');
     expect(guided).toContain('gold-outlined step');
 
-    const challenge = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'maze', learningMode: 'challenge' }));
+    const challenge = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'maze', learningMode: 'challenge', labShellPanel: 'guide' }));
     expect(challenge).toContain('Design your own fair test');
     expect(challenge).toContain('No path hint is shown');
     expect(challenge).not.toContain('gold-outlined step');
@@ -2090,7 +2090,7 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
       auditHost.innerHTML = mountWithSeed(cfg, seed);
       document.body.appendChild(auditHost);
       try {
-        const results = await axe.run(active3DAuditTarget(auditHost), AXE_OPTIONS);
+        const results = await runIsolatedAxe(active3DAuditTarget(auditHost).outerHTML, { options: AXE_OPTIONS });
         expect(results.violations.map((violation) => violation.id)).toEqual([]);
       } finally {
         auditHost.remove();
@@ -2195,7 +2195,7 @@ describe('magnetism tool — energy and space-weather visual refinement', () => 
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Rotating-coil generator — see the phase shift"]'), AXE_OPTIONS);
+      const results = await runIsolatedAxe(requiredAuditTarget(auditHost, '[role="region"][aria-label="Rotating-coil generator — see the phase shift"]').outerHTML, { options: AXE_OPTIONS });
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();

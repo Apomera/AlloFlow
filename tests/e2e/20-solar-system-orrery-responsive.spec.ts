@@ -263,6 +263,9 @@ test('keeps mobile stage guidance readable instead of squeezing it into a corner
   }, undefined, { expectCanvas: false });
 
   await page.locator('#wrap').evaluate((wrap) => { (wrap as HTMLElement).style.width = '320px'; });
+  const compactCanvas = page.locator('canvas[role="application"]').first();
+  await compactCanvas.scrollIntoViewIfNeeded();
+  await expect(compactCanvas).toHaveAttribute('data-canvas-layout', 'compact');
   await expect(page.locator('#orrery-model-scale-note')).toContainText('not one literal scale');
   await expect(page.locator('#orrery-model-scale-note')).toContainText('compressed and clamped for visibility');
   await expect(page.locator('canvas[role="application"]')).toHaveAttribute('aria-describedby', 'orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip orrery-stage-readout');
@@ -320,7 +323,329 @@ test('keeps mobile stage guidance readable instead of squeezing it into a corner
   expect(readoutLayout.left).toBeGreaterThanOrEqual(readoutLayout.stageLeft + 8);
   expect(readoutLayout.right).toBeLessThanOrEqual(readoutLayout.stageRight - 8);
 
+  const stageFlow = await page.locator('.orr-orbit-stage').evaluate((stage) => {
+    const viewport = stage.querySelector('[data-orrery-viewport]') as HTMLElement | null;
+    const rail = stage.querySelector('[data-orrery-instrument-rail]') as HTMLElement | null;
+    const hud = stage.querySelector('.orr-stage-hud') as HTMLElement | null;
+    const canvas = stage.querySelector('canvas[role="application"]') as HTMLCanvasElement | null;
+    const readout = stage.querySelector('#orrery-stage-readout') as HTMLElement | null;
+    const key = stage.querySelector('#orrery-stage-key') as HTMLElement | null;
+    const tip = stage.querySelector('#orrery-stage-tip') as HTMLElement | null;
+    if (!viewport || !rail || !hud || !canvas || !readout || !key || !tip) {
+      throw new Error('Responsive Orrery stage structure did not mount');
+    }
+    const rectOf = (element: Element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height };
+    };
+    const state = (canvas as any).__canvasPanelState;
+    if (!state) throw new Error('Responsive Orrery canvas state was not available');
+    return {
+      stage: rectOf(stage),
+      viewport: rectOf(viewport),
+      rail: rectOf(rail),
+      hud: rectOf(hud),
+      canvas: rectOf(canvas),
+      readout: rectOf(readout),
+      key: rectOf(key),
+      tip: rectOf(tip),
+      railPosition: getComputedStyle(rail).position,
+      readoutPosition: getComputedStyle(readout).position,
+      keyPosition: getComputedStyle(key).position,
+      tipPosition: getComputedStyle(tip).position,
+      canvasLayout: canvas.getAttribute('data-canvas-layout'),
+      logicalWidth: state.viewportWidth,
+      logicalHeight: state.viewportHeight,
+      hitDiameter: state.canvasHitRadius * 2,
+      backingWidth: canvas.width,
+      backingHeight: canvas.height,
+      dpr: (canvas as any)._dpr,
+      stageClientWidth: (stage as HTMLElement).clientWidth,
+      stageScrollWidth: (stage as HTMLElement).scrollWidth,
+    };
+  });
+
+  const containsRect = (outer: typeof stageFlow.stage, inner: typeof stageFlow.stage) =>
+    inner.left >= outer.left - 1 && inner.right <= outer.right + 1 && inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1;
+  const disjointRects = (first: typeof stageFlow.stage, second: typeof stageFlow.stage) =>
+    first.right <= second.left + 1 || second.right <= first.left + 1 || first.bottom <= second.top + 1 || second.bottom <= first.top + 1;
+
+  expect(containsRect(stageFlow.stage, stageFlow.viewport)).toBe(true);
+  expect(containsRect(stageFlow.stage, stageFlow.rail)).toBe(true);
+  expect(containsRect(stageFlow.viewport, stageFlow.hud)).toBe(true);
+  expect(containsRect(stageFlow.rail, stageFlow.readout)).toBe(true);
+  expect(containsRect(stageFlow.rail, stageFlow.key)).toBe(true);
+  expect(containsRect(stageFlow.rail, stageFlow.tip)).toBe(true);
+  expect(stageFlow.rail.top).toBeGreaterThanOrEqual(stageFlow.viewport.bottom - 1);
+  expect(disjointRects(stageFlow.readout, stageFlow.key)).toBe(true);
+  expect(disjointRects(stageFlow.readout, stageFlow.tip)).toBe(true);
+  expect(disjointRects(stageFlow.key, stageFlow.tip)).toBe(true);
+  expect(stageFlow.railPosition).toBe('relative');
+  expect([stageFlow.readoutPosition, stageFlow.keyPosition, stageFlow.tipPosition]).toEqual(['static', 'static', 'static']);
+  expect(stageFlow.canvasLayout).toBe('compact');
+  expect(stageFlow.canvas.height).toBeGreaterThanOrEqual(339);
+  expect(stageFlow.rail.height).toBeLessThan(230);
+  expect(Math.abs(stageFlow.logicalWidth - stageFlow.canvas.width)).toBeLessThanOrEqual(2);
+  expect(Math.abs(stageFlow.logicalHeight - stageFlow.canvas.height)).toBeLessThanOrEqual(2);
+  expect(stageFlow.backingWidth / stageFlow.logicalWidth).toBeCloseTo(stageFlow.dpr, 1);
+  expect(stageFlow.backingHeight / stageFlow.logicalHeight).toBeCloseTo(stageFlow.dpr, 1);
+  expect(stageFlow.dpr).toBeLessThanOrEqual(2);
+  expect(11 * stageFlow.canvas.width / stageFlow.logicalWidth).toBeGreaterThanOrEqual(10.5);
+  expect(stageFlow.hitDiameter).toBeGreaterThanOrEqual(28);
+  expect(stageFlow.stageScrollWidth).toBeLessThanOrEqual(stageFlow.stageClientWidth + 1);
+
+  const compactKey = page.locator('#orrery-stage-key');
+  const compactKeyAffordance = await page.locator('.orr-stage-key-shell').evaluate((shell) => {
+    const key = shell.querySelector('#orrery-stage-key') as HTMLElement | null;
+    const cue = shell.querySelector('#orrery-stage-key-scroll-hint') as HTMLElement | null;
+    if (!key || !cue) throw new Error('Compact Orrery key affordance did not mount');
+    return {
+      clientWidth: key.clientWidth,
+      scrollWidth: key.scrollWidth,
+      cueDisplay: getComputedStyle(cue).display,
+      cueText: cue.textContent || '',
+      role: key.getAttribute('role'),
+      tabIndex: key.tabIndex,
+    };
+  });
+  expect(compactKeyAffordance.scrollWidth).toBeGreaterThan(compactKeyAffordance.clientWidth + 40);
+  expect(compactKeyAffordance.cueDisplay).toBe('flex');
+  expect(compactKeyAffordance.cueText).toContain('More key items');
+  expect(compactKeyAffordance.role).toBe('region');
+  expect(compactKeyAffordance.tabIndex).toBe(0);
+  await compactKey.focus();
+  await compactKey.press('ArrowRight');
+  await expect.poll(async () => compactKey.evaluate((key) => key.scrollLeft)).toBeGreaterThan(0);
+
+  const touchHitDiameter = await page.locator('canvas[role="application"]').evaluate((canvas) => {
+    const rect = canvas.getBoundingClientRect();
+    const init = { bubbles: true, pointerType: 'touch', pointerId: 91, clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 };
+    canvas.dispatchEvent(new PointerEvent('pointerdown', init));
+    window.dispatchEvent(new PointerEvent('pointerup', init));
+    return (canvas as any).__canvasPanelState.canvasHitRadius * 2;
+  });
+  expect(touchHitDiameter).toBeGreaterThanOrEqual(44);
+
   await harness.destroy(page);
+});
+test('remeasures the Orrery canvas and preserves its normalized camera across container resizes', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 1600 });
+  await harness.mount(page, {
+    solarSystem: {
+      tutorialDismissed: true,
+      orreryMode: true,
+      orr_tab: 0,
+      orr_zoom: 'full',
+      orr_sel: 'earth',
+      orr_paused: true,
+    },
+  }, undefined, { expectCanvas: false });
+
+  const wrap = page.locator('#wrap');
+  const canvas = page.locator('canvas[role="application"]').first();
+  await wrap.evaluate((element) => { (element as HTMLElement).style.width = '1024px'; });
+  await canvas.scrollIntoViewIfNeeded();
+  const readLabelAudit = () => canvas.evaluate((element) => {
+    const state = (element as any).__canvasPanelState;
+    const layout = (element as any)._orreryLabelLayout;
+    if (!state || !layout) return null;
+    const rendered = layout.rendered || [];
+    let maxOverlapArea = 0;
+    for (let first = 0; first < rendered.length; first += 1) {
+      for (let second = first + 1; second < rendered.length; second += 1) {
+        const a = rendered[first];
+        const b = rendered[second];
+        const overlapWidth = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+        const overlapHeight = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+        if (overlapWidth > 0 && overlapHeight > 0) maxOverlapArea = Math.max(maxOverlapArea, overlapWidth * overlapHeight);
+      }
+    }
+    return {
+      selectedRendered: rendered.some((item: any) => item.id === 'earth' && item.selected),
+      renderedCount: rendered.length,
+      suppressedCount: (layout.suppressed || []).length,
+      contained: rendered.every((item: any) => item.x >= 3 && item.y >= 3 && item.x + item.w <= state.viewportWidth - 3 && item.y + item.h <= state.viewportHeight - 3),
+      maxOverlapArea,
+    };
+  });
+  const readResponsiveCamera = () => canvas.evaluate((element) => {
+    const state = (element as any).__canvasPanelState;
+    if (!state || !state.viewportWidth || !state.viewportHeight || !state.canvasFit) return null;
+    const rect = element.getBoundingClientRect();
+    return {
+      viewportWidth: state.viewportWidth,
+      viewportHeight: state.viewportHeight,
+      fit: state.canvasFit,
+      normalizedOffsetX: (state.cx - state.viewportWidth / 2) / state.canvasFit,
+      normalizedOffsetY: (state.cy - state.viewportHeight / 2) / state.canvasFit,
+      normalizedScale: state.scale / state.canvasFit,
+      rectWidth: rect.width,
+      rectHeight: rect.height,
+      backingWidth: (element as HTMLCanvasElement).width,
+      backingHeight: (element as HTMLCanvasElement).height,
+      dpr: (element as any)._dpr,
+    };
+  });
+
+  await expect.poll(async () => (await readResponsiveCamera())?.viewportWidth || 0).toBeGreaterThan(1000);
+  const wideKeyLayout = await page.locator('#orrery-stage-key').evaluate((key) => {
+    const cue = key.parentElement?.querySelector('#orrery-stage-key-scroll-hint') as HTMLElement | null;
+    const rowCounts = new Map<number, number>();
+    key.querySelectorAll('.orr-stage-key-item').forEach((item) => {
+      const top = Math.round(item.getBoundingClientRect().top);
+      rowCounts.set(top, (rowCounts.get(top) || 0) + 1);
+    });
+    return {
+      display: getComputedStyle(key).display,
+      itemCount: Number(key.getAttribute('data-key-items')),
+      cueDisplay: cue ? getComputedStyle(cue).display : 'missing',
+      rows: Array.from(rowCounts.entries()).sort((a, b) => a[0] - b[0]).map((entry) => entry[1]),
+    };
+  });
+  expect(wideKeyLayout.display).toBe('grid');
+  expect(wideKeyLayout.itemCount).toBe(7);
+  expect(wideKeyLayout.cueDisplay).toBe('none');
+  expect(wideKeyLayout.rows).toEqual([4, 3]);
+  await expect.poll(async () => (await readLabelAudit())?.selectedRendered || false).toBe(true);
+  const wideLabelAudit = await readLabelAudit();
+  if (!wideLabelAudit) throw new Error('Wide Orrery label diagnostics were unavailable');
+  expect(wideLabelAudit.contained).toBe(true);
+  expect(wideLabelAudit.maxOverlapArea).toBeLessThanOrEqual(1);
+  await canvas.focus();
+  await canvas.press('ArrowRight');
+  await canvas.press('ArrowDown');
+  const before = await readResponsiveCamera();
+  if (!before) throw new Error('Wide responsive camera state was not available');
+
+  await wrap.evaluate((element) => { (element as HTMLElement).style.width = '360px'; });
+  await canvas.scrollIntoViewIfNeeded();
+  await expect.poll(async () => (await readResponsiveCamera())?.viewportWidth || 999).toBeLessThan(360);
+  const after = await readResponsiveCamera();
+  if (!after) throw new Error('Compact responsive camera state was not available');
+
+  expect(after.viewportHeight).toBeGreaterThanOrEqual(339);
+  expect(Math.abs(after.viewportWidth - after.rectWidth)).toBeLessThanOrEqual(2);
+  expect(Math.abs(after.viewportHeight - after.rectHeight)).toBeLessThanOrEqual(2);
+  expect(after.normalizedOffsetX).toBeCloseTo(before.normalizedOffsetX, 1);
+  expect(after.normalizedOffsetY).toBeCloseTo(before.normalizedOffsetY, 1);
+  expect(after.normalizedScale).toBeCloseTo(before.normalizedScale, 1);
+  expect(after.backingWidth / after.viewportWidth).toBeCloseTo(after.dpr, 1);
+  expect(after.backingHeight / after.viewportHeight).toBeCloseTo(after.dpr, 1);
+  expect(after.dpr).toBeLessThanOrEqual(2);
+  await expect.poll(async () => (await readLabelAudit())?.selectedRendered || false).toBe(true);
+  const compactLabelAudit = await readLabelAudit();
+  if (!compactLabelAudit) throw new Error('Compact Orrery label diagnostics were unavailable');
+  expect(compactLabelAudit.contained).toBe(true);
+  expect(compactLabelAudit.maxOverlapArea).toBeLessThanOrEqual(1);
+  expect(compactLabelAudit.renderedCount).toBeLessThanOrEqual(wideLabelAudit.renderedCount);
+
+  await canvas.press('Home');
+  await expect.poll(async () => canvas.evaluate((element) => {
+    const state = (element as any).__canvasPanelState;
+    if (!state) return false;
+    return Math.abs(state.cx - state.viewportWidth / 2) <= 0.5 &&
+      Math.abs(state.cy - state.viewportHeight / 2) <= 0.5 &&
+      Math.abs(state.scale - 10 * state.canvasFit) <= 0.01;
+  })).toBe(true);
+  const resetState = await canvas.evaluate((element) => (element as any).__canvasPanelState);
+  expect(Math.round(resetState.cy)).toBe(Math.round(resetState.viewportHeight / 2));
+  expect(resetState.scale).toBeCloseTo(10 * resetState.canvasFit, 2);
+
+  await harness.destroy(page);
+});
+test('caps HiDPI rendering and preserves 44px touch interaction in the responsive Orrery', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 1600 },
+    deviceScaleFactor: 3,
+    hasTouch: true,
+    isMobile: true,
+  });
+  const touchPage = await context.newPage();
+  let mounted = false;
+  try {
+    await touchPage.emulateMedia({ reducedMotion: 'reduce' });
+    await harness.mount(touchPage, {
+      solarSystem: {
+        tutorialDismissed: true,
+        orreryMode: true,
+        orr_tab: 0,
+        orr_zoom: 'inner',
+        orr_showComets: false,
+        orr_showDwarfs: false,
+        orr_paused: true,
+      },
+    }, undefined, { expectCanvas: false });
+    mounted = true;
+    await touchPage.locator('#wrap').evaluate((element) => { (element as HTMLElement).style.width = '360px'; });
+    const canvas = touchPage.locator('canvas[role="application"]').first();
+    await canvas.scrollIntoViewIfNeeded();
+    await expect(canvas).toHaveAttribute('data-canvas-dpr', '2');
+    await expect(canvas).toHaveAttribute('data-canvas-layout', 'compact');
+
+    const raster = await canvas.evaluate((element) => {
+      const canvas = element as HTMLCanvasElement;
+      const rect = canvas.getBoundingClientRect();
+      const state = (canvas as any).__canvasPanelState;
+      const sample = canvas.getContext('2d')?.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1).data;
+      return {
+        rectWidth: rect.width,
+        rectHeight: rect.height,
+        logicalWidth: state.viewportWidth,
+        logicalHeight: state.viewportHeight,
+        backingWidth: canvas.width,
+        backingHeight: canvas.height,
+        dpr: (canvas as any)._dpr,
+        hitDiameter: state.canvasHitRadius * 2,
+        centerAlpha: sample ? sample[3] : 0,
+      };
+    });
+    expect(raster.dpr).toBe(2);
+    expect(raster.backingWidth).toBe(Math.round(raster.logicalWidth * 2));
+    expect(raster.backingHeight).toBe(Math.round(raster.logicalHeight * 2));
+    expect(Math.abs(raster.logicalWidth - raster.rectWidth)).toBeLessThanOrEqual(2);
+    expect(Math.abs(raster.logicalHeight - raster.rectHeight)).toBeLessThanOrEqual(2);
+    expect(raster.hitDiameter).toBeGreaterThanOrEqual(44);
+    expect(raster.centerAlpha).toBeGreaterThan(0);
+
+    const controlMetrics = await touchPage.locator('.orr-btn:visible, input.orr-slider:visible, .orr-body-navigator select:visible').evaluateAll((elements) =>
+      elements.map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { tag: element.tagName, label: element.getAttribute('aria-label') || element.textContent || '', width: rect.width, height: rect.height };
+      })
+    );
+    expect(controlMetrics.length).toBeGreaterThan(5);
+    for (const metric of controlMetrics) {
+      expect(metric.width, metric.tag + ' ' + metric.label).toBeGreaterThanOrEqual(43.5);
+      expect(metric.height, metric.tag + ' ' + metric.label).toBeGreaterThanOrEqual(43.5);
+    }
+
+    const readMercuryTarget = () => canvas.evaluate((element) => {
+      const state = (element as any).__canvasPanelState;
+      const body = (element as any)._liveState?.bodies?.mercury;
+      if (!state || !body) return null;
+      const rect = element.getBoundingClientRect();
+      return {
+        x: rect.left + (state.cx + body.x * state.scale) * rect.width / state.viewportWidth,
+        y: rect.top + (state.cy - body.y * state.scale) * rect.height / state.viewportHeight,
+      };
+    });
+    await expect.poll(readMercuryTarget).not.toBeNull();
+    const insideTarget = await readMercuryTarget();
+    if (!insideTarget) throw new Error('Mercury touch target was unavailable');
+    await touchPage.touchscreen.tap(insideTarget.x, insideTarget.y + 21);
+    await expect.poll(() => touchPage.evaluate(() => (window as any).__toolData.solarSystem.orr_sel || null)).toBe('mercury');
+
+    await touchPage.evaluate(() => (window as any).__ctx.updateMulti('solarSystem', { orr_sel: null, orr_follow: null, orr_focus_body: null }));
+    await expect.poll(() => touchPage.evaluate(() => (window as any).__toolData.solarSystem.orr_sel || null)).toBeNull();
+    const outsideTarget = await readMercuryTarget();
+    if (!outsideTarget) throw new Error('Mercury rejection target was unavailable');
+    await touchPage.touchscreen.tap(outsideTarget.x, outsideTarget.y + 23);
+    await touchPage.waitForTimeout(250);
+    expect(await touchPage.evaluate(() => (window as any).__toolData.solarSystem.orr_sel || null)).toBeNull();
+  } finally {
+    if (mounted) await harness.destroy(touchPage);
+    await context.close();
+  }
 });
 test('mirrors canvas hover evidence into an accessible status', async ({ page }) => {
   await page.setViewportSize({ width: 736, height: 1600 });
@@ -345,8 +670,8 @@ test('mirrors canvas hover evidence into an accessible status', async ({ page })
     if (!state || !body) return null;
     const rect = element.getBoundingClientRect();
     return {
-      clientX: rect.left + (state.cx + body.x * state.scale) * rect.width / 960,
-      clientY: rect.top + (state.cy - body.y * state.scale) * rect.height / 640,
+      clientX: rect.left + (state.cx + body.x * state.scale) * rect.width / (state.viewportWidth || 960),
+      clientY: rect.top + (state.cy - body.y * state.scale) * rect.height / (state.viewportHeight || 640),
     };
   });
   await expect.poll(readTarget, { timeout: 10000 }).not.toBeNull();
@@ -386,8 +711,8 @@ test('does not select hidden worlds and clears a selected world when its layer i
     const haumeaX = 43.13 * (1 - 0.1912);
     const rect = element.getBoundingClientRect();
     return {
-      clientX: rect.left + (state.cx + haumeaX * state.scale) * rect.width / 960,
-      clientY: rect.top + state.cy * rect.height / 640,
+      clientX: rect.left + (state.cx + haumeaX * state.scale) * rect.width / (state.viewportWidth || 960),
+      clientY: rect.top + state.cy * rect.height / (state.viewportHeight || 640),
     };
   });
   await expect.poll(readHiddenDwarfTarget, { timeout: 10000 }).not.toBeNull();
@@ -441,8 +766,8 @@ test('reselects a world normally after Escape clears the selection', async ({ pa
     if (!state || !body) return null;
     const rect = element.getBoundingClientRect();
     return {
-      clientX: rect.left + (state.cx + body.x * state.scale) * rect.width / 960,
-      clientY: rect.top + (state.cy - body.y * state.scale) * rect.height / 640,
+      clientX: rect.left + (state.cx + body.x * state.scale) * rect.width / (state.viewportWidth || 960),
+      clientY: rect.top + (state.cy - body.y * state.scale) * rect.height / (state.viewportHeight || 640),
     };
   });
 
@@ -1102,16 +1427,22 @@ test('makes zoom presets reset and announce the active camera view', async ({ pa
   }, undefined, { expectCanvas: false });
 
   const canvas = page.locator('#wrap canvas[role="application"]');
+  await canvas.scrollIntoViewIfNeeded();
   await expect(canvas).toHaveAttribute('data-view-preset', 'full');
   expect(await canvas.getAttribute('aria-label')).toContain('Current view is the full solar system');
-  await expect(page.locator('#orrery-live-map-scale')).toHaveText('Ruler: 10 AU');
+  await expect(page.locator('#orrery-live-map-scale')).toHaveText('Ruler: 20 AU');
 
   const readCamera = () => canvas.evaluate((element) => {
     const state = (element as any).__canvasPanelState;
-    return state ? { cx: state.cx, cy: state.cy, scale: state.scale } : null;
+    return state ? { cx: state.cx, cy: state.cy, scale: state.scale, viewportWidth: state.viewportWidth, viewportHeight: state.viewportHeight, fit: state.canvasFit } : null;
   });
   const initialCamera = await readCamera();
   if (!initialCamera) throw new Error('Initial Orrery camera state was not available');
+  const expectedFullCamera = {
+    cx: Math.round(initialCamera.viewportWidth / 2),
+    cy: Math.round(initialCamera.viewportHeight / 2),
+    scale: Math.round(10 * initialCamera.fit * 100) / 100,
+  };
   await canvas.focus();
   await canvas.press('ArrowRight');
   await canvas.press('ArrowDown');
@@ -1120,27 +1451,30 @@ test('makes zoom presets reset and announce the active camera view', async ({ pa
   await expect.poll(async () => {
     const camera = await readCamera();
     return camera ? { cx: Math.round(camera.cx), cy: Math.round(camera.cy), scale: Math.round(camera.scale * 100) / 100 } : null;
-  }).toEqual({ cx: 480, cy: 320, scale: 10 });
+  }).toEqual(expectedFullCamera);
 
   await page.getByRole('button', { name: 'Zoom to inner planets', exact: true }).click();
+  await canvas.scrollIntoViewIfNeeded();
   await expect(canvas).toHaveAttribute('data-view-preset', 'inner');
   expect(await canvas.getAttribute('aria-label')).toContain('Current view is inner planets');
   await expect(page.locator('#orrery-live-map-scale')).toHaveText('Ruler: 1 AU');
 
   await page.getByRole('button', { name: 'Zoom to outer planets', exact: true }).click();
+  await canvas.scrollIntoViewIfNeeded();
   await expect(canvas).toHaveAttribute('data-view-preset', 'outer');
   expect(await canvas.getAttribute('aria-label')).toContain('Current view is outer planets');
   await expect(page.locator('#orrery-live-map-scale')).toHaveText('Ruler: 50 AU');
 
   await page.getByRole('button', { name: 'Reset orbit time, camera view, and selection', exact: true }).click();
+  await canvas.scrollIntoViewIfNeeded();
   await expect(canvas).toHaveAttribute('data-view-preset', 'full');
   expect(await canvas.getAttribute('aria-label')).toContain('Current view is the full solar system');
-  await expect(page.locator('#orrery-live-map-scale')).toHaveText('Ruler: 10 AU');
+  await expect(page.locator('#orrery-live-map-scale')).toHaveText('Ruler: 20 AU');
   await expect(page.locator('#orrery-body-navigator')).toHaveValue('');
   await expect.poll(async () => {
     const camera = await readCamera();
     return camera ? { cx: Math.round(camera.cx), cy: Math.round(camera.cy), scale: Math.round(camera.scale * 100) / 100 } : null;
-  }).toEqual({ cx: 480, cy: 320, scale: 10 });
+  }).toEqual(expectedFullCamera);
 
   await harness.destroy(page);
 });

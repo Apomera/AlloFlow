@@ -286,6 +286,269 @@ test.describe('Nuclear Lab — the sticky index must not eat the screen', () => 
       }
     });
   }
+
+  test('chooses the compact default from both viewport width and height', async ({ page }) => {
+    const results: Array<Record<string, unknown>> = [];
+    for (const viewport of [
+      { width: 640, height: 844 },
+      { width: 641, height: 844 },
+      { width: 699, height: 844 },
+      { width: 700, height: 844 },
+      { width: 1024, height: 768 },
+      { width: 1199, height: 700 },
+      { width: 1366, height: 768 },
+      { width: 768, height: 1024 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await harness.mount(page, {}, undefined, { expectCanvas: false });
+      await page.evaluate((size) => {
+        const wrap = document.getElementById('wrap')!;
+        wrap.style.display = 'block';
+        wrap.style.height = 'auto';
+        wrap.style.width = size.width + 'px';
+        wrap.style.maxWidth = '100%';
+      }, viewport);
+      await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+      results.push(await page.evaluate((size) => {
+        const nav = document.querySelector('.nk-topic-nav') as HTMLElement;
+        const secondary = nav.querySelector('.nk-index-secondary') as HTMLElement;
+        const toggle = nav.querySelector('button') as HTMLButtonElement;
+        return {
+          width: size.width,
+          height: size.height,
+          open: nav.dataset.nkOpen,
+          expanded: toggle.getAttribute('aria-expanded'),
+          secondaryDisplay: getComputedStyle(secondary).display,
+          hasBody: !!nav.querySelector('#nk-index-body'),
+          pageOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+        };
+      }, viewport));
+    }
+
+    results.forEach((result) => {
+      expect(result.pageOverflow, `page overflow at ${result.width}×${result.height}`).toBeLessThanOrEqual(1);
+    });
+    expect(results.map(({ pageOverflow: _overflow, ...state }) => state)).toEqual([
+      { width: 640, height: 844, open: 'false', expanded: 'false', secondaryDisplay: 'none', hasBody: false },
+      { width: 641, height: 844, open: 'false', expanded: 'false', secondaryDisplay: 'none', hasBody: false },
+      { width: 699, height: 844, open: 'false', expanded: 'false', secondaryDisplay: 'none', hasBody: false },
+      { width: 700, height: 844, open: 'false', expanded: 'false', secondaryDisplay: 'none', hasBody: false },
+      { width: 1024, height: 768, open: 'false', expanded: 'false', secondaryDisplay: 'none', hasBody: false },
+      { width: 1199, height: 700, open: 'false', expanded: 'false', secondaryDisplay: 'none', hasBody: false },
+      { width: 1366, height: 768, open: 'false', expanded: 'false', secondaryDisplay: 'none', hasBody: false },
+      { width: 768, height: 1024, open: 'true', expanded: 'true', secondaryDisplay: 'contents', hasBody: true },
+    ]);
+  });
+
+  test('a narrow host auto-compacts and opens one labeled scroll drawer', async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 900 });
+    await page.goto(harness.url + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.display = 'block';
+      wrap.style.width = '420px';
+      wrap.style.maxWidth = '420px';
+      wrap.style.height = 'auto';
+      (window as any).__mount({});
+    });
+    await layout(page);
+
+    const nav = page.locator('.nk-topic-nav');
+    await expect.poll(async () => nav.getAttribute('data-nk-open'), {
+      message: 'the auto index ignored its 420px host container',
+    }).toBe('false');
+    await expect(nav.locator('.nk-index-secondary')).toHaveCSS('display', 'none');
+    await expect(nav.locator('#nk-index-body')).toHaveCount(0);
+
+    // Keep a state-independent locator: the accessible name changes from Show
+    // to Hide when React replaces the compact button after activation.
+    const toggle = nav.locator('button').first();
+    await expect(toggle).toHaveAccessibleName(/Show 5 question routes/);
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toHaveAttribute('aria-controls', 'nk-index-body');
+    const drawer = page.getByRole('region', {
+      name: 'Guided routes, topic categories, and topic links',
+    });
+    await expect(drawer).toHaveCount(1);
+
+    const metrics = await page.evaluate(() => {
+      const body = document.getElementById('nk-index-body') as HTMLElement;
+      const topicList = body.querySelector('.nk-topic-jumps') as HTMLElement;
+      const nestedVerticalScrollers = [...body.querySelectorAll('*')]
+        .filter((node) => {
+          const el = node as HTMLElement;
+          const overflow = getComputedStyle(el).overflowY;
+          return /^(auto|scroll)$/.test(overflow) && el.scrollHeight > el.clientHeight + 1;
+        })
+        .map((node) => (node as HTMLElement).className || node.tagName);
+      const overflow = (node: HTMLElement) => ({
+        x: Math.max(0, node.scrollWidth - node.clientWidth),
+        y: Math.max(0, node.scrollHeight - node.clientHeight),
+      });
+      return {
+        idCount: document.querySelectorAll('#nk-index-body').length,
+        tabIndex: body.tabIndex,
+        overflowY: getComputedStyle(body).overflowY,
+        body: overflow(body),
+        topicListOverflowY: getComputedStyle(topicList).overflowY,
+        topicList: overflow(topicList),
+        nestedVerticalScrollers,
+        navX: overflow(document.querySelector('.nk-topic-nav') as HTMLElement).x,
+        wrapX: overflow(document.getElementById('wrap')!).x,
+        pageX: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+      };
+    });
+    expect(metrics.idCount).toBe(1);
+    expect(metrics.tabIndex).toBe(0);
+    expect(metrics.overflowY).toBe('auto');
+    expect(metrics.body.y, 'the labeled drawer is not the bounded scroll region').toBeGreaterThan(1);
+    expect(metrics.body.x, 'the index drawer overflows horizontally').toBeLessThanOrEqual(1);
+    expect(metrics.topicListOverflowY, 'the topic list regained a nested vertical scroller')
+      .not.toMatch(/^(auto|scroll)$/);
+    expect(metrics.topicList.y, 'the topic list clips content inside the drawer').toBeLessThanOrEqual(1);
+    expect(metrics.nestedVerticalScrollers, 'the drawer contains a nested vertical scroll trap').toEqual([]);
+    expect(metrics.navX, 'the compact navigation overflows its 420px host').toBeLessThanOrEqual(1);
+    expect(metrics.wrapX, 'the nuclear lab widens its 420px host').toBeLessThanOrEqual(1);
+    expect(metrics.pageX, 'the narrow host widens the browser page').toBeLessThanOrEqual(1);
+  });
+
+  test('route cards and statistic grids reflow at phone width with larger text', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount2d(page, {
+      _nuclearLab: {
+        nkOpen: true,
+        nkLargeText: true,
+        nkRouteSeen: {
+          safe: ['compare', 'accidents', 'lowdose', 'shelter', 'waste', 'reactors', 'evidence'],
+          safety: ['shielding'],
+        },
+        pathsCompleted: ['safe'],
+      },
+    });
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.width = '390px';
+      wrap.style.maxWidth = '100%';
+    });
+
+    const layoutMetrics = await page.evaluate(() => {
+      const routeGrid = document.querySelector('.nk-route-grid') as HTMLElement;
+      const cards = [...routeGrid.querySelectorAll('[data-nk-route-card]')]
+        .map((node, index) => {
+          const card = node as HTMLElement;
+          const row = card.children[0] as HTMLElement;
+          const detail = card.children[1] as HTMLElement;
+          const progress = card.querySelector(':scope > progress') as HTMLProgressElement;
+          const rect = card.getBoundingClientRect();
+          const rowRect = row.getBoundingClientRect();
+          const detailRect = detail.getBoundingClientRect();
+          return {
+            index,
+            state: card.dataset.state,
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            width: Math.round(rect.width),
+            rowThenDetail: detailRect.top >= rowRect.bottom - 1,
+            status: row.lastElementChild?.textContent?.trim(),
+            detail: detail.textContent?.trim(),
+            progress: { value: progress.value, max: progress.max },
+          };
+        });
+      const statGrids = [...document.querySelectorAll('.nk-stat-grid')]
+        .map((node, index) => {
+          const grid = node as HTMLElement;
+          const rect = grid.getBoundingClientRect();
+          const children = [...grid.children].map((child) => child.getBoundingClientRect());
+          const rows = new Set(children.map((child) => Math.round(child.top)));
+          return {
+            index,
+            count: children.length,
+            rows: rows.size,
+            overflowX: Math.max(0, grid.scrollWidth - grid.clientWidth),
+            childrenInside: children.every((child) =>
+              child.left >= rect.left - 1 && child.right <= rect.right + 1),
+          };
+        });
+      return {
+        cards,
+        statGrids,
+        routeGridOverflow: Math.max(0, routeGrid.scrollWidth - routeGrid.clientWidth),
+        pageOverflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+      };
+    });
+
+    expect(layoutMetrics.cards).toHaveLength(5);
+    expect(new Set(layoutMetrics.cards.map((card) => card.left)).size,
+      'route cards did not collapse to one column').toBe(1);
+    expect(new Set(layoutMetrics.cards.map((card) => card.width)).size,
+      'route cards do not share the single-column width').toBe(1);
+    expect(layoutMetrics.cards.map((card) => card.state)).toEqual([
+      'review', 'new', 'started', 'new', 'new',
+    ]);
+    expect(new Set(layoutMetrics.cards.map((card) => card.status))).toEqual(
+      new Set(['Completed before', 'Start', 'Resume']),
+    );
+    layoutMetrics.cards.forEach((card) => {
+      expect(card.rowThenDetail, `route card ${card.index + 1} lost its second line`).toBe(true);
+      expect(card.detail, `route card ${card.index + 1} has no progress detail`).toBeTruthy();
+      expect(card.progress.max, `route card ${card.index + 1} has no progress range`).toBeGreaterThan(0);
+      expect(card.right, `route card ${card.index + 1} extends past the phone`).toBeLessThanOrEqual(390);
+    });
+    expect(layoutMetrics.routeGridOverflow, 'route cards overflow their grid').toBeLessThanOrEqual(1);
+    expect(layoutMetrics.statGrids).toHaveLength(4);
+    layoutMetrics.statGrids.forEach((grid) => {
+      expect(grid.count, `stat grid ${grid.index + 1} lost a statistic`).toBe(3);
+      expect(grid.rows, `stat grid ${grid.index + 1} did not reflow below three columns`).toBeGreaterThan(1);
+      expect(grid.overflowX, `stat grid ${grid.index + 1} overflows horizontally`).toBeLessThanOrEqual(1);
+      expect(grid.childrenInside, `stat grid ${grid.index + 1} does not bound its cards`).toBe(true);
+    });
+    expect(layoutMetrics.pageOverflow, 'phone/A+ layout widened the page').toBeLessThanOrEqual(1);
+  });
+
+  test('keeps primary touch targets large and a jumped section below the folded nav', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount2d(page, {
+      _nuclearLab: { nkOpen: true, nkLargeText: true, nkReduceMotion: true },
+    });
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.width = '390px';
+      wrap.style.maxWidth = '100%';
+    });
+
+    const targets = await page.evaluate(() => {
+      const box = (node: Element) => {
+        const rect = node.getBoundingClientRect();
+        return { width: Math.round(rect.width), height: Math.round(rect.height) };
+      };
+      return {
+        back: box(document.querySelector('[aria-label="Back to tools"]')!),
+        rods: box(document.getElementById('rx-rods')!),
+        chainRows: [...document.querySelectorAll('#nksec-chain [role="listitem"] > button')]
+          .map((node) => box(node)),
+      };
+    });
+    expect(targets.back.width, 'header back target is narrower than 44 px').toBeGreaterThanOrEqual(44);
+    expect(targets.back.height, 'header back target is shorter than 44 px').toBeGreaterThanOrEqual(44);
+    expect(targets.rods.height, 'reactor control-rod range is shorter than 44 px').toBeGreaterThanOrEqual(44);
+    expect(targets.chainRows.length, 'decay-chain row targets are missing').toBeGreaterThan(0);
+    expect(Math.min(...targets.chainRows.map((target) => target.height)),
+      'a decay-chain row target is shorter than 44 px').toBeGreaterThanOrEqual(44);
+
+    const waste = page.locator('#nksec-waste');
+    await page.locator('[data-nk-jump="waste"]').click();
+    await expect(page.locator('.nk-topic-nav')).toHaveAttribute('data-nk-open', 'false');
+    await expect(waste).toBeFocused();
+    await expect.poll(async () => page.evaluate(() => {
+      const nav = document.querySelector('.nk-topic-nav')!.getBoundingClientRect();
+      const section = document.getElementById('nksec-waste')!.getBoundingClientRect();
+      return Math.round(section.top - nav.bottom);
+    }), {
+      message: 'the focused section or its outline is hidden beneath the folded sticky nav',
+    }).toBeGreaterThanOrEqual(3);
+  });
 });
 
 test.describe('Nuclear Lab — knowing where you are', () => {
@@ -362,7 +625,131 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     expect(phone.sectionRight, 'route section extends past the phone viewport').toBeLessThanOrEqual(phone.viewportWidth);
   });
 
-  test('costs no re-render — the spy must not go through React', async ({ page }) => {
+  test('keeps route chrome coherent while prose and disclosures stay readable', async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await mount2d(page, { _nuclearLab: { nkPath: 'safety', nkOpen: false } });
+
+    const audit = await page.evaluate(() => {
+      const rgbChannels = (value: string) => {
+        const channels = value.match(/[\d.]+/g) || [];
+        return channels.slice(0, 3).map((channel) => Math.round(Number(channel))).join(',');
+      };
+      const isVisibleCount = (node: Element) => {
+        const style = getComputedStyle(node);
+        const box = node.getBoundingClientRect();
+        return style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && Number(style.opacity || 1) > 0
+          && box.width > 8
+          && box.height > 8;
+      };
+
+      const sections = [...document.querySelectorAll<HTMLElement>('.nk-route-section')];
+      const steps = sections.map((section) => {
+        const kicker = section.querySelector<HTMLElement>('[data-nk-route-step]')!;
+        const heading = section.querySelector<HTMLElement>('h4')!;
+        const footer = section.querySelector<HTMLElement>('nav[aria-label*="route progress"]')!;
+        const visibleCount = [...footer.querySelectorAll('span, output, p')].some((node) =>
+          /\b\d+\s*(?:\/|of)\s*4\b/i.test(node.textContent || '') && isVisibleCount(node));
+        return {
+          id: section.getAttribute('data-nk-sec'),
+          rail: rgbChannels(getComputedStyle(section).borderLeftColor),
+          kicker: rgbChannels(getComputedStyle(kicker).borderBottomColor),
+          footer: rgbChannels(getComputedStyle(footer).borderTopColor),
+          headingColour: rgbChannels(getComputedStyle(heading).color),
+          headingSize: parseFloat(getComputedStyle(heading).fontSize),
+          headingText: (heading.textContent || '').trim(),
+          hasFullLabOrdinal: /\b(?:5|14|16|21)\.\s/.test(heading.textContent || ''),
+          visibleCount,
+        };
+      });
+
+      const measuringCanvas = document.createElement('canvas');
+      const measuringContext = measuringCanvas.getContext('2d')!;
+      const prose = sections.flatMap((section) =>
+        [...section.querySelectorAll<HTMLElement>(':scope > p.leading-relaxed')])
+        .filter((paragraph) => (paragraph.textContent || '').trim().length >= 120)
+        .map((paragraph) => {
+          const style = getComputedStyle(paragraph);
+          measuringContext.font = style.font
+            || `${style.fontSize} ${style.fontFamily}`;
+          const ch = measuringContext.measureText('0').width
+            || parseFloat(style.fontSize) * 0.5;
+          return {
+            text: (paragraph.textContent || '').trim().slice(0, 72),
+            width: paragraph.getBoundingClientRect().width,
+            max78ch: ch * 78,
+            declaredMaxWidth: style.maxWidth,
+          };
+        });
+
+      return { steps, prose };
+    });
+
+    expect(audit.steps.map((step) => step.id)).toEqual([
+      'shielding', 'protect', 'shelter', 'evidence',
+    ]);
+    const rails = new Set(audit.steps.map((step) => step.rail));
+    const kickers = new Set(audit.steps.map((step) => step.kicker));
+    const footers = new Set(audit.steps.map((step) => step.footer));
+    expect(rails.size, 'route sections use more than one rail accent').toBe(1);
+    expect(kickers.size, 'route kickers use more than one route accent').toBe(1);
+    expect(footers.size, 'route footers use more than one route accent').toBe(1);
+    expect([...kickers][0], 'kicker accent diverges from the route rail').toBe([...rails][0]);
+    expect([...footers][0], 'footer accent diverges from the route rail').toBe([...rails][0]);
+    expect(new Set(audit.steps.map((step) => step.headingColour)).size,
+      'topic accents were flattened into the route accent').toBeGreaterThan(1);
+    audit.steps.forEach((step) => {
+      expect(step.hasFullLabOrdinal, `${step.id} still exposes its full-lab ordinal in route mode`).toBe(false);
+      expect(step.headingSize, `${step.id} heading is smaller than 17 px`).toBeGreaterThanOrEqual(17);
+      expect(step.visibleCount, `${step.id} footer has no visible route progress count`).toBe(true);
+    });
+
+    expect(audit.prose.length, 'expected several long direct-reading route paragraphs').toBeGreaterThanOrEqual(3);
+    audit.prose.forEach((paragraph) => {
+      expect(paragraph.width,
+        `long paragraph exceeds 78ch: ${paragraph.text} (${paragraph.declaredMaxWidth})`)
+        .toBeLessThanOrEqual(paragraph.max78ch + 3);
+    });
+
+    // The safety route exercises the route-level chrome above. The safe-power
+    // route owns the accident and waste disclosures, so remount that route for
+    // the disclosure target check instead of requiring every route to invent
+    // supporting detail it does not need.
+    await harness.destroy(page);
+    await mount2d(page, { _nuclearLab: { nkPath: 'safe', nkOpen: false } });
+    const disclosures = page.locator('.nk-route-section button[aria-expanded]');
+    expect(await disclosures.count(), 'safe-power route has no progressively disclosed supporting detail')
+      .toBeGreaterThan(0);
+    const firstDisclosure = disclosures.first();
+    if (await firstDisclosure.getAttribute('aria-expanded') !== 'true') {
+      await firstDisclosure.click();
+    }
+    await expect(firstDisclosure).toHaveAttribute('aria-expanded', 'true');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.width = '390px';
+      wrap.style.maxWidth = '100%';
+    });
+    const expandedTargets = await page.locator(
+      '.nk-route-section button[aria-expanded="true"]',
+    ).evaluateAll((buttons) => buttons.map((button) => ({
+      label: button.getAttribute('aria-label') || button.textContent || '',
+      height: button.getBoundingClientRect().height,
+      right: button.getBoundingClientRect().right,
+    })));
+    expect(expandedTargets.length, 'no disclosure remained expanded after the phone reflow').toBeGreaterThan(0);
+    expandedTargets.forEach((target) => {
+      expect(target.height, `${target.label} disclosure target is shorter than 44 px`)
+        .toBeGreaterThanOrEqual(43.5);
+      expect(target.right, `${target.label} disclosure target extends past the phone`)
+        .toBeLessThanOrEqual(390.5);
+    });
+  });
+
+  test('updates the folded location quietly without moving focus or repainting charts', async ({ page }) => {
     // If the highlight were React state, every boundary crossed would rebuild
     // the document. Proxy the canvases: a full re-render re-runs the chart
     // effects, so any repaint here means the spy is doing far more than it
@@ -370,18 +757,32 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     await page.goto(harness.url + '/__harness');
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
     await instrumentCanvases(page);
-    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkOpen: true } }));
+    await page.evaluate(() => (window as any).__mount({ _nuclearLab: { nkOpen: false } }));
     await layout(page);
     await page.evaluate(() => { (window as any).__clears = {}; });
-    await page.evaluate(async () => {
-      for (const id of ['nksec-halflife', 'nksec-binding', 'nksec-waste', 'nksec-compare']) {
+    const result = await page.evaluate(async () => {
+      const toggle = document.querySelector('.nk-topic-nav button') as HTMLButtonElement;
+      toggle.focus();
+      const focusBefore = document.activeElement;
+      const summaries: string[] = [];
+      for (const id of ['nksec-halflife', 'nksec-waste']) {
         document.getElementById(id)!.scrollIntoView();
-        await new Promise((r) => setTimeout(r, 250));
+        await new Promise((r) => setTimeout(r, 600));
+        summaries.push((document.querySelector('[data-nk-current-label]')?.textContent || '').trim());
       }
+      return {
+        summaries,
+        focusPreserved: document.activeElement === focusBefore,
+        clears: (window as any).__clears,
+      };
     });
-    const clears = await page.evaluate(() => (window as any).__clears);
-    console.log('canvas clears while scrolling four sections: ' + JSON.stringify(clears));
-    const total = Object.values(clears).reduce((a: number, b: any) => a + b, 0);
+    console.log('folded location updates: ' + JSON.stringify(result));
+    expect(result.summaries).toEqual([
+      '§ 1 of 21 · Half-life',
+      '§ 18 of 21 · The waste question',
+    ]);
+    expect(result.focusPreserved, 'scroll-spy moved keyboard focus').toBe(true);
+    const total = Object.values(result.clears).reduce((a: number, b: any) => a + b, 0);
     expect(total, 'scrolling triggered chart redraws — the spy is re-rendering').toBeLessThanOrEqual(1);
   });
 
@@ -390,7 +791,11 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
     await instrumentCanvases(page);
     await page.evaluate(() => (window as any).__mount({
-      _nuclearLab: { nkPath: 'know', nkOpen: true },
+      _nuclearLab: {
+        nkPath: 'know',
+        nkOpen: false,
+        nkRouteSeen: { know: ['detect'] },
+      },
     }));
     await layout(page);
     await page.evaluate(() => { (window as any).__clears = {}; });
@@ -398,13 +803,28 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     await page.evaluate(() => document.getElementById('nksec-chain')!.scrollIntoView());
     await page.waitForTimeout(1150);
 
-    const result = await page.evaluate(() => ({
-      seen: (window as any).__toolData?._nuclearLab?.nkRouteSeen?.know || [],
-      clears: (window as any).__clears || {},
-    }));
+    const result = await page.evaluate(() => {
+      const summary = document.querySelector('[data-nk-current-summary]')!;
+      const meter = summary.querySelector('[data-nk-current-meter]') as HTMLProgressElement;
+      return {
+        seen: (window as any).__toolData?._nuclearLab?.nkRouteSeen?.know || [],
+        location: summary.querySelector('[data-nk-current-label]')?.textContent?.trim(),
+        count: summary.querySelector('[data-nk-current-count]')?.textContent?.trim(),
+        meter: { value: meter.value, max: meter.max, label: meter.getAttribute('aria-label') },
+        clears: (window as any).__clears || {},
+      };
+    });
     const totalClears = Object.values(result.clears)
       .reduce((total: number, count: any) => total + count, 0);
     expect(result.seen, 'the route forgot a section read by ordinary scrolling').toContain('chain');
+    expect(result.location, 'route location changed into a completion count after the dwell')
+      .toBe('Step 3 of 4 · Uranium decay chain');
+    expect(result.count).toBe('· 2/4 opened');
+    expect(result.meter).toEqual({
+      value: 2,
+      max: 4,
+      label: 'How do we know all this?: 2 of 4 steps opened',
+    });
     expect(totalClears, 'saving route progress repainted an unchanged chart').toBeLessThanOrEqual(1);
   });
 
@@ -442,18 +862,27 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     expect(sectionOrder, 'route controls and DOM reading order diverged').toEqual([
       'detect', 'dating', 'chain', 'evidence',
     ]);
-    const foot = page.locator('#nksec-detect').getByText(/STEP 1 OF 4/);
+    const foot = page.locator('#nksec-detect').getByRole('navigation', {
+      name: /route progress, step 1 of 4/i,
+    });
     await expect(foot).toBeVisible();
+    await expect(foot.getByRole('progressbar')).toHaveAccessibleName(
+      /1 of 4 steps opened; currently at step 1/i,
+    );
     // Follow the route forward without touching the index.
     await page.locator('#nksec-detect').getByRole('button', { name: /On to step 2/ }).click();
     await page.waitForTimeout(600);
     const dating = page.locator('#nksec-dating');
-    await expect(dating.getByText(/STEP 2 OF 4/)).toBeVisible();
+    await expect(dating.getByRole('navigation', {
+      name: /route progress, step 2 of 4/i,
+    })).toBeVisible();
     await expect(dating).toBeFocused();
     await expect(dating).toHaveAccessibleName(/Read a date out of the decay/);
     await dating.getByRole('button', { name: /On to step 3/ }).click();
     await page.waitForTimeout(600);
-    await expect(page.locator('#nksec-chain').getByText(/STEP 3 OF 4/)).toBeVisible();
+    await expect(page.locator('#nksec-chain').getByRole('navigation', {
+      name: /route progress, step 3 of 4/i,
+    })).toBeVisible();
     await page.locator('#nksec-chain').getByRole('button', { name: /On to step 4/ }).click();
     await page.waitForTimeout(600);
     await expect(page.locator('#nksec-evidence').getByText(/Route complete/)).toBeVisible();
@@ -461,6 +890,53 @@ test.describe('Nuclear Lab — knowing where you are', () => {
 });
 
 test.describe('Nuclear Lab - chart data on a phone', () => {
+  test('each chart frame contains its canvas without hidden overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount2d(page);
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.width = '390px';
+      wrap.style.maxWidth = '100%';
+    });
+
+    const frames = await page.locator('.nk-chart-frame').evaluateAll((nodes) => nodes.map((node, index) => {
+      const frame = node as HTMLElement;
+      const canvas = frame.querySelector('canvas') as HTMLCanvasElement | null;
+      const frameRect = frame.getBoundingClientRect();
+      const canvasRect = canvas?.getBoundingClientRect();
+      const style = getComputedStyle(frame);
+      const border = {
+        left: parseFloat(style.borderLeftWidth),
+        top: parseFloat(style.borderTopWidth),
+        right: parseFloat(style.borderRightWidth),
+        bottom: parseFloat(style.borderBottomWidth),
+      };
+      return {
+        index,
+        hasCanvas: !!canvas,
+        canvasWidth: canvasRect?.width || 0,
+        canvasHeight: canvasRect?.height || 0,
+        hiddenX: frame.scrollWidth - frame.clientWidth,
+        hiddenY: frame.scrollHeight - frame.clientHeight,
+        insideLeft: !canvasRect || canvasRect.left >= frameRect.left + border.left - 0.5,
+        insideTop: !canvasRect || canvasRect.top >= frameRect.top + border.top - 0.5,
+        insideRight: !canvasRect || canvasRect.right <= frameRect.right - border.right + 0.5,
+        insideBottom: !canvasRect || canvasRect.bottom <= frameRect.bottom - border.bottom + 0.5,
+      };
+    }));
+
+    expect(frames).toHaveLength(6);
+    frames.forEach((frame) => {
+      expect(frame.hasCanvas, `chart frame ${frame.index + 1} has no canvas`).toBe(true);
+      expect(frame.canvasWidth, `chart frame ${frame.index + 1} has a zero-width canvas`).toBeGreaterThan(0);
+      expect(frame.canvasHeight, `chart frame ${frame.index + 1} has a zero-height canvas`).toBeGreaterThan(0);
+      expect(frame.hiddenX, `chart frame ${frame.index + 1} clips horizontally`).toBeLessThanOrEqual(1);
+      expect(frame.hiddenY, `chart frame ${frame.index + 1} clips vertically`).toBeLessThanOrEqual(1);
+      expect(frame.insideLeft && frame.insideTop && frame.insideRight && frame.insideBottom,
+        `chart frame ${frame.index + 1} does not bound its canvas`).toBe(true);
+    });
+  });
+
   test('wide tables scroll locally without widening the page', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await mount2d(page);
@@ -470,6 +946,7 @@ test.describe('Nuclear Lab - chart data on a phone', () => {
       wrap.style.maxWidth = '100%';
     });
 
+    await page.getByRole('button', { name: /Show 5 question routes and the topic index/ }).click();
     await page.getByRole('button', { name: 'Display numerical data tables beneath charts' }).click();
     await expect(page.locator('[data-nk-chart-table]')).toHaveCount(6);
 

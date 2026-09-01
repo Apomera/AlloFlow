@@ -80,15 +80,38 @@ describe('Print Lab workflow surface', () => {
 
     const fallback = window.StemLab.printLabPure.normalizePersistedRecipe({
       name: 'A'.repeat(120), scale: 99, rotY: -90, tint: '#ABCDEF', extra: 'drop me',
-      parts: [{ shape: 'BOX', size: [99, 0.001, 1], stretch: [9, 1, 0], position: [99, -99, 2], rotation: [999, 0, -999], color: '#ABCDEF', privateNote: 'drop me' }],
+      parts: [{ shape: 'BOX', label: 'Base', size: [99, 0.001, 1], stretch: [9, 1, 0], deform: { taper: 9, twist: -999, bulge: 0.4 }, position: [99, -99, 2], rotation: [999, 0, -999], color: '#ABCDEF', finish: 'GLOSS', opacity: 0.05, hidden: true, locked: true, privateNote: 'drop me' }],
     }, {});
     expect(fallback).toMatchObject({ version: 'p3d/1', scale: 5, rotY: 270, tint: '#abcdef' });
     expect(fallback.name).toHaveLength(80);
     expect(fallback.parts[0]).toEqual({
-      shape: 'box', size: [4, 0.02, 1], stretch: [4, 1, 0.1], position: [4, -4, 2], rotation: [360, 0, -360], color: '#abcdef',
+      shape: 'box', label: 'Base', size: [4, 0.02, 1], stretch: [4, 1, 0.1], deform: { taper: 0.85, twist: -180, bulge: 0.4 }, position: [4, -4, 2], rotation: [360, 0, -360], color: '#abcdef', finish: 'gloss', opacity: 0.15, hidden: true, locked: true,
     });
     expect(fallback).not.toHaveProperty('extra');
     expect(fallback.parts[0]).not.toHaveProperty('privateNote');
+  });
+
+  it('normalizes sculpture metadata identically before and after Prim3D loads', () => {
+    const candidate = {
+      name: 'Reusable vase', scale: 1.4, rotY: 25, tint: '#abcdef',
+      parts: [{
+        shape: 'cylinder', label: 'Vase body', size: [0.4, 1.2, 0.4], stretch: [0.8, 1.5, 0.8],
+        deform: { taper: 0.35, twist: 45, bulge: 0.6 }, position: [0, 0.6, 0], rotation: [0, 10, 0],
+        color: '#22c55e', finish: 'metal', opacity: 0.65, hidden: true, locked: true,
+      }],
+    };
+    const cold = window.StemLab.printLabPure.normalizePersistedRecipe(candidate, {});
+    const previousModules = window.AlloModules;
+    try {
+      window.AlloModules = { ...(window.AlloModules || {}) };
+      delete window.AlloModules.Prim3D;
+      // eslint-disable-next-line no-new-func
+      new Function(readFileSync(resolve(process.cwd(), 'prim3d_module.js'), 'utf8'))();
+      const warm = window.StemLab.printLabPure.normalizePersistedRecipe(candidate, window.AlloModules.Prim3D);
+      expect(cold).toEqual(warm);
+    } finally {
+      window.AlloModules = previousModules;
+    }
   });
 
   it('keeps preflight advisory and requires the slicer and trained staff review', () => {

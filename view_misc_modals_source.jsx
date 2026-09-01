@@ -2278,7 +2278,7 @@ function AIBackendModalBody(props) {
                             <strong>Auto:</strong> Gemini voices for cloud backends, Edge TTS voices for local backends.
                             Narrator voice selection is in the header bar (🎧 button).
                         </p>
-                        <p className="text-[11px] text-emerald-600 mt-1">
+                        <p className="text-[11px] text-emerald-800 mt-1">
                             <strong>{t('ai_backend.local_cascade_label') || 'Local cascade:'}</strong> Kokoro (:8880, 8 langs) → Edge TTS (:5500, 40+ langs) → Browser fallback
                         </p>
                     </div>
@@ -2310,7 +2310,7 @@ function AIBackendModalBody(props) {
                         <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
                             <strong>Imagen:</strong> Google Cloud (requires Blaze plan). High quality, fast.
                         </p>
-                        <p className="text-[11px] text-amber-600 mt-1">
+                        <p className="text-[11px] text-amber-800 mt-1">
                             <strong>FLUX:</strong> Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency.
                         </p>
                     </div>

@@ -40,6 +40,37 @@ function bay(extra) {
   return renderTool(ID, { autoRepair: Object.assign({ view: 'repairbay' }, extra || {}) });
 }
 
+// Correct Repair Bay calls now remain on release hold until an adequate
+// case-specific proof test is run. Build the authentic completed state here
+// so debrief assertions cannot pass vacuously against a diagnosis-only view.
+function verifiedChargingBay(extra) {
+  const overrides = extra || {};
+  const priorDone = overrides.rbDone || {};
+  const verifiedRecord = Object.assign({
+    verdict: 'correct',
+    grade: 'A',
+    verified: true,
+    verificationId: 'loaded-output',
+    verificationResult: '14.2 V at idle and 14.1 V under electrical load.',
+    release: 'release'
+  }, priorDone.charging || {});
+  const state = Object.assign({
+    rbCase: 'charging',
+    rbVerdict: 'alt',
+    rbPhase: 'complete',
+    rbVerifyChoice: 'loaded-output',
+    rbVerifyResult: {
+      id: 'loaded-output',
+      adequate: true,
+      feedback: 'The loaded charging-output test proves the repaired system under demand.',
+      observation: '14.2 V at idle and 14.1 V under electrical load.'
+    },
+    rbPendingGrade: null
+  }, overrides);
+  state.rbDone = Object.assign({}, priorDone, { charging: verifiedRecord });
+  return bay(state);
+}
+
 function hostFor(html) {
   const host = document.createElement('div');
   host.innerHTML = html;
@@ -58,7 +89,7 @@ describe('repair bay — wiring', () => {
 
   it('renders the case picker', () => {
     const html = bay();
-    expect(html).toContain('diagnose &amp; fix');
+    expect(html).toContain('diagnose, repair &amp; verify');
     for (const c of CASES) expect(html, 'case missing: ' + c.title).toContain(c.title);
   });
 
@@ -224,8 +255,8 @@ describe('repair bay — grading rewards evidence, not luck', () => {
   });
 
   it('calls out a correct answer reached on thin evidence', () => {
-    const html = bay({ rbCase: 'charging', rbVerdict: 'alt', rbFound: {},
-      rbDone: { charging: { verdict: 'correct', grade: 'C' } } });
+    const html = verifiedChargingBay({ rbFound: {},
+      rbDone: { charging: { grade: 'C' } } });
     expect(html).toContain('Right answer, thin evidence');
   });
 
@@ -234,8 +265,7 @@ describe('repair bay — grading rewards evidence, not luck', () => {
     const full = {};
     Object.keys(c.findings).forEach((p) => { if (c.findings[p].key) full['p:' + p] = true; });
     c.tests.forEach((t) => { if (t.key) full['t:' + t.id] = true; });
-    const html = bay({ rbCase: 'charging', rbVerdict: 'alt', rbFound: full,
-      rbDone: { charging: { verdict: 'correct', grade: 'A' } } });
+    const html = verifiedChargingBay({ rbFound: full });
     expect(html).not.toContain('Right answer, thin evidence');
   });
 
@@ -244,6 +274,128 @@ describe('repair bay — grading rewards evidence, not luck', () => {
       rbDone: { charging: { verdict: 'trap', grade: 'F' } } });
     expect(html).toContain('Trap answer');
     expect(html).toContain('What this case teaches');
+  });
+});
+
+describe('repair bay — guided multimeter workflow', () => {
+  const meterTests = CASES.flatMap((repairCase) =>
+    repairCase.tests
+      .filter((test) => test.meter)
+      .map((test) => ({ caseId: repairCase.id, ...test }))
+  );
+
+  it('authors complete meter metadata for all seven electrical measurements', () => {
+    expect(meterTests.map((test) => test.caseId + '/' + test.id)).toEqual([
+      'charging/v-off',
+      'charging/v-run',
+      'nocrank/v-post',
+      'nocrank/v-clamp',
+      'badbattery/v-rest',
+      'badbattery/load',
+      'badbattery/v-run'
+    ]);
+
+    for (const test of meterTests) {
+      expect(test.meter.mode, test.caseId + '/' + test.id + ' mode').toBe('dcv');
+      expect(['post-to-post', 'positive-joint'], test.caseId + '/' + test.id + ' connection')
+        .toContain(test.meter.connection);
+      expect(['none', 'starter', 'carbon-pile'], test.caseId + '/' + test.id + ' load')
+        .toContain(test.meter.load);
+      expect(test.meter.reading, test.caseId + '/' + test.id + ' reading').toBeTruthy();
+      expect(test.meter.unit, test.caseId + '/' + test.id + ' unit').toBeTruthy();
+      expect(test.meter.trend, test.caseId + '/' + test.id + ' trend').toBeTruthy();
+      expect(test.meter.resultState, test.caseId + '/' + test.id + ' result state').toBeTruthy();
+      expect(test.meter.reference, test.caseId + '/' + test.id + ' reference').toBeTruthy();
+      expect(test.meter.interpretation, test.caseId + '/' + test.id + ' interpretation')
+        .toBeTruthy();
+    }
+  });
+
+  it('keeps an unavailable engine-state test keyboard focusable and aria-disabled', () => {
+    const host = hostFor(bay({ rbCase: 'charging', rbEngine: 'off' }));
+    const trigger = host.querySelector('[data-ar-meter-test-trigger="v-run"]');
+
+    expect(trigger).toBeTruthy();
+    expect(trigger.disabled).toBe(false);
+    expect(trigger.tabIndex).toBe(0);
+    expect(trigger.getAttribute('aria-disabled')).toBe('true');
+    expect(trigger.getAttribute('aria-label')).toMatch(/requires the engine running/i);
+    expect(trigger.textContent).toMatch(/needs the engine running/i);
+  });
+
+  it('opens a meter setup without awarding evidence', () => {
+    const host = hostFor(bay({
+      rbCase: 'charging',
+      rbEngine: 'off',
+      rbFound: {},
+      rbMeterCase: 'charging',
+      rbMeterTest: 'v-off',
+      rbMeterDraft: { mode: '', connection: '', load: '' }
+    }));
+
+    expect(host.querySelector('[data-ar-meter-test="v-off"]')?.dataset.arMeterState)
+      .toBe('setup');
+    expect(host.querySelector('[data-ar-meter-reading]')).toBeNull();
+    expect(host.textContent).toContain('Key evidence: 0 / 4');
+  });
+
+  it('keeps a wrong setup out of evidence and exposes corrective feedback', () => {
+    const feedback = 'Use DC volts for a 12-volt vehicle circuit. Resistance mode is not used on a powered circuit, and AC volts will not answer this test.';
+    const host = hostFor(bay({
+      rbCase: 'charging',
+      rbEngine: 'off',
+      rbFound: {},
+      rbMeterCase: 'charging',
+      rbMeterTest: 'v-off',
+      rbMeterDraft: { mode: 'resistance', connection: 'post-to-post', load: 'none' },
+      rbMeterFeedback: feedback
+    }));
+    const alert = host.querySelector('[data-ar-meter-feedback="error"]');
+
+    expect(alert).toBeTruthy();
+    expect(alert.getAttribute('role')).toBe('alert');
+    expect(alert.textContent).toBe(feedback);
+    expect(host.querySelector('[data-ar-meter-reading]')).toBeNull();
+    expect(host.textContent).toContain('Key evidence: 0 / 4');
+  });
+
+  it('renders a correct settled reading as evidence with its science context', () => {
+    const host = hostFor(bay({
+      rbCase: 'charging',
+      rbEngine: 'off',
+      rbFound: { 't:v-off': true },
+      rbMeterCase: 'charging',
+      rbMeterTest: 'v-off',
+      rbMeterDraft: { mode: 'dcv', connection: 'post-to-post', load: 'none' },
+      rbActiveTest: 'v-off'
+    }));
+    const output = host.querySelector('[data-ar-meter-reading="12.4"]');
+
+    expect(output).toBeTruthy();
+    expect(output.dataset.arMeterUnit).toBe('V');
+    expect(output.dataset.arMeterResult).toBe('rest-charge-okay');
+    expect(output.textContent).toContain('12.4–12.8 V rested');
+    expect(output.textContent).toMatch(/does not prove cranking capacity/i);
+    expect(host.textContent).toContain('Key evidence: 1 / 4');
+  });
+
+  it('teaches the no-crank fault as a loaded 1.6 V post-to-clamp drop', () => {
+    const test = meterTests.find((item) => item.caseId === 'nocrank' && item.id === 'v-clamp');
+    const repairCase = CASES.find((item) => item.id === 'nocrank');
+
+    expect(test.meter).toMatchObject({
+      mode: 'dcv',
+      connection: 'positive-joint',
+      load: 'starter',
+      reading: '1.6',
+      unit: 'V drop',
+      trend: 'loaded',
+      resultState: 'connection-drop-high'
+    });
+    expect(test.meter.reference).toMatch(/below 0\.2 V.*under load/i);
+    expect(test.text).toMatch(/ACROSS the positive post-to-clamp joint while cranking/i);
+    expect(test.text).toMatch(/fault can hide.*cranking load/i);
+    expect(repairCase.teaching).toMatch(/measure ACROSS the joint while current is flowing/i);
   });
 });
 
@@ -296,13 +448,13 @@ describe('repair bay — cost model', () => {
   });
 
   it('bills a correct call for the repair only', () => {
-    const html = bay({ rbCase: 'charging', rbVerdict: 'alt', rbDone: { charging: { verdict: 'correct', grade: 'A' } } });
+    const html = verifiedChargingBay();
     expect(html).toContain('the repair it actually needed');
     expect(html).not.toContain('avoidable');
   });
 
   it('labels the money as teaching figures, never as quotes', () => {
-    const html = bay({ rbCase: 'charging', rbVerdict: 'alt', rbDone: { charging: { verdict: 'correct', grade: 'A' } } });
+    const html = verifiedChargingBay();
     expect(html).toMatch(/not quotes/i);
     expect(html).toMatch(/vary a lot by vehicle/i);
   });
@@ -316,15 +468,13 @@ describe('repair bay — working notes', () => {
   });
 
   it('reflects the notes back in the debrief', () => {
-    const html = bay({ rbCase: 'charging', rbNotes: 'I think the alternator is not charging.',
-      rbVerdict: 'alt', rbDone: { charging: { verdict: 'correct', grade: 'A' } } });
+    const html = verifiedChargingBay({ rbNotes: 'I think the alternator is not charging.' });
     expect(html).toContain('What you wrote before you committed');
     expect(html).toContain('I think the alternator is not charging.');
   });
 
   it('omits the notes panel when nothing was written', () => {
-    const html = bay({ rbCase: 'charging', rbNotes: '   ',
-      rbVerdict: 'alt', rbDone: { charging: { verdict: 'correct', grade: 'A' } } });
+    const html = verifiedChargingBay({ rbNotes: '   ' });
     expect(html).not.toContain('What you wrote before you committed');
   });
 });
@@ -371,7 +521,8 @@ describe('repair bay — copy cannot drift from the data', () => {
   // Nothing enforced it, so nothing caught it. Now something does.
   it('states the real case count on the menu tile', () => {
     const menu = renderTool(ID, {});
-    expect(menu).toContain(CASES.length + ' cases. Inspect the 3D bay');
+    expect(menu).toContain(CASES.length + ' cases. Inspect, test, repair, then prove the result before release.');
+    expect(menu).toContain('Graded on evidence, verification, and safety.');
   });
 
   it('states the real case count on the completion badge', () => {
@@ -380,7 +531,7 @@ describe('repair bay — copy cannot drift from the data', () => {
   });
 
   it('counts progress out of the real case count', () => {
-    expect(bay()).toContain('0 / ' + CASES.length + ' cases correctly diagnosed');
+    expect(bay()).toContain('0 / ' + CASES.length + ' cases repair-verified');
   });
 });
 

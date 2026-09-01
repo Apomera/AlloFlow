@@ -57,10 +57,10 @@ function EvaluationPortalQr(props) {
   };
   return (
     <div className="mt-4 grid gap-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4 sm:grid-cols-[auto,1fr] sm:items-center">
-      <div className="flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3" aria-label={t('project_settings.portal_qr_aria') || "Educator Evaluation district portal QR code"}>
+      <div className="flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3">
         {state.status === 'ready' && state.svg
-          ? <div className="h-40 w-40 [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: state.svg }} />
-          : <span className="px-3 text-center text-xs font-bold text-violet-800">{state.status === 'error' ? 'QR unavailable' : 'Preparing QR code…'}</span>}
+          ? <div role="img" aria-label={t('project_settings.portal_qr_aria') || "Educator Evaluation district portal QR code"} className="h-40 w-40 [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: state.svg }} />
+          : <span role={state.status === 'error' ? 'alert' : 'status'} aria-live="polite" aria-atomic="true" className="px-3 text-center text-xs font-bold text-violet-800">{state.status === 'error' ? 'QR unavailable' : 'Preparing QR code…'}</span>}
       </div>
       <div>
         <p className="text-xs font-black uppercase tracking-wider text-violet-700">{t('project_settings.portal_qr_label') || "Portal QR code"}</p>
@@ -71,6 +71,62 @@ function EvaluationPortalQr(props) {
       </div>
     </div>
   );
+}
+
+function ProjectSettingsDialogFocusManager(props) {
+  var React = window.React;
+  React.useEffect(function() {
+    var root = document.getElementById(props.dialogId);
+    if (!root) return undefined;
+    var previouslyFocused = document.activeElement;
+    var trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    var trap = { root: root };
+    trapStack.push(trap);
+    var isTopTrap = function() {
+      return trapStack[trapStack.length - 1] === trap;
+    };
+    var getFocusableElements = function() {
+      return Array.from(root.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+      )).filter(function(element) {
+        if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        var style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      });
+    };
+    var handleKeyDown = function(event) {
+      if (!isTopTrap() || event.key !== 'Tab') return;
+      var focusableElements = getFocusableElements();
+      if (!focusableElements.length) {
+        event.preventDefault();
+        root.focus();
+        return;
+      }
+      var first = focusableElements[0];
+      var last = focusableElements[focusableElements.length - 1];
+      var activeIndex = focusableElements.indexOf(document.activeElement);
+      if (event.shiftKey && (activeIndex <= 0 || !root.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (activeIndex === -1 || activeIndex === focusableElements.length - 1)) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    try { root.focus(); } catch (_) {}
+    return function() {
+      document.removeEventListener('keydown', handleKeyDown);
+      var wasTopTrap = isTopTrap();
+      var trapIndex = trapStack.indexOf(trap);
+      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body
+          && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
+        try { previouslyFocused.focus(); } catch (_) {}
+      }
+    };
+  }, [props.dialogId]);
+  return null;
 }
 
 function ProjectSettingsView(props) {
@@ -310,8 +366,11 @@ function ProjectSettingsView(props) {
       onMouseDown={(event) => { if (event.target === event.currentTarget) handleSetIsProjectSettingsOpenToFalse(); }}
       onKeyDown={(event) => { if (event.key === 'Escape') { event.preventDefault(); handleSetIsProjectSettingsOpenToFalse(); } }}
     >
+      <ProjectSettingsDialogFocusManager dialogId="project-settings-dialog" />
       <section
-        className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-2xl"
+        id="project-settings-dialog"
+        tabIndex={-1}
+        className="allo-docsuite flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="project-settings-title"
@@ -435,7 +494,7 @@ function ProjectSettingsView(props) {
                         <li>They give you the deployment URL ending in <code>/exec</code>. Paste it above.</li>
                       </ol>
                       <p>AlloFlow stores only that launcher address, on this device. It never holds the records. Access is decided by Google sign-in and the assignments your district configured, so sharing the link or the QR code does not give anyone access they do not already have.</p>
-                      <p>The full setup and compliance checklist ships with the package, at <code>apps_script/educator_evaluation/README.md</code>.</p>
+                      <p>The full setup and compliance checklist ships with the package, at <code className="break-all">apps_script/educator_evaluation/README.md</code>.</p>
                     </div>
                   </details>
                   <EvaluationPortalQr t={t} url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />
@@ -605,7 +664,6 @@ function ProjectSettingsView(props) {
               }
             }}
             className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
-            aria-label={t('a11y.report_problem')}
           >
             <CircleHelp size={14} aria-hidden="true"/>
             {tx('project_settings.feedback', 'Report a problem or send feedback')}

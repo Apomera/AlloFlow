@@ -428,6 +428,34 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect((await page.evaluate(() => (window as any).__gl())).blockCount).toBe(1);
   });
 
+  test('offers a one-step recovery when filters hide the entire live build', async ({ page }) => {
+    const blocks = tower();
+    await mount3d(page, {
+      blocks,
+      viewLayer: 31,
+      showSlice: true,
+      sliceZSelected: true,
+      sliceZ: 64,
+      filterMaterial: 'glass',
+      filterShape: 'dome',
+    });
+
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(0);
+    await expect(page.locator('[data-arch-empty-state="true"]')).toContainText('Nothing matches this view');
+
+    await page.getByRole('button', { name: 'Show Entire Build' }).click();
+
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket())).toMatchObject({
+      viewLayer: -1,
+      showSlice: false,
+      sliceZSelected: false,
+      filterMaterial: '',
+      filterShape: '',
+    });
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(blocks.length);
+    await expect(page.locator('[data-arch-empty-state="true"]')).toHaveCount(0);
+  });
+
   test('heatmap, Brick Builder, and Blueprint visibly reach the renderer', async ({ page }) => {
     const stack = [
       { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
@@ -446,6 +474,25 @@ test.describe('Architecture Studio — real WebGL', () => {
 
     await mount3d(page, { blocks: stack, blueprintView: true });
     expect((await page.evaluate(() => (window as any).__gl())).viewMode).toBe('blueprint');
+  });
+
+  test('replay heatmap derives support and load colors from the historical frame', async ({ page }) => {
+    const foundation = [
+      { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
+      { x: 1, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
+    ];
+    const liveBuild = foundation.concat([
+      { x: 0, y: 1, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
+      { x: 0, y: 2, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
+    ]);
+
+    await mount3d(page, {
+      blocks: liveBuild, showReplay: true, replayStep: 0,
+      undoStack: [foundation], showHeatmap: true,
+    });
+    const replay = await page.evaluate(() => (window as any).__gl());
+    expect(replay.blockCount).toBe(2);
+    expect(new Set(replay.renderHexes).size).toBe(1);
   });
 
   test('downloads real PNG and STL exports from the active renderer', async ({ page }) => {
@@ -524,6 +571,30 @@ test.describe('Architecture Studio — real WebGL', () => {
     await expect(page.locator('button[data-arch-cell="64,0,64"]')).toBeVisible();
   });
 
+  test('reveals a replacement template instead of inheriting stale hidden-view filters', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({
+      editorView: 'grid', blocks: [{ x: 64, y: 31, z: 64, shape: 'dome', material: 'glass' }],
+      editLayer: 31, viewLayer: 31, showSlice: true, sliceZSelected: true, sliceZ: 64,
+      filterMaterial: 'glass', filterShape: 'dome', gridCursorX: 64, gridCursorZ: 64,
+    }));
+
+    await page.getByRole('button', { name: /Templates/ }).click();
+    await page.getByTitle('Cottage').click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket())).toMatchObject({
+      viewLayer: -1,
+      showSlice: false,
+      sliceZSelected: false,
+      filterMaterial: '',
+      filterShape: '',
+      editLayer: 3,
+      gridCursorX: null,
+      gridCursorZ: null,
+    });
+    await expect(page.locator('button[data-arch-cell="0,3,0"]')).toBeVisible();
+  });
+
   test('falls back to a fully editable floor grid when WebGL fails', async ({ page }) => {
     await page.goto(`${base}/__harness`);
     await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
@@ -572,6 +643,293 @@ test.describe('Architecture Studio — real WebGL', () => {
     await expect(cell).toBeVisible();
     await cell.click();
     await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
+  });
+
+  test('keeps camera and selection chrome inside the build stage above sibling stats', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), selectedBlockKey: '0,0,0' });
+
+    const stage = page.locator('[data-arch-stage="true"]');
+    const camera = page.locator('.arch-studio-camera-controls');
+    const selection = page.locator('[data-arch-selection-chip="true"]');
+    const stats = page.locator('[data-arch-stats="true"]');
+
+    await expect(stage.locator('.arch-studio-camera-controls')).toHaveCount(1);
+    await expect(stage.locator('[data-arch-selection-chip="true"]')).toHaveCount(1);
+    expect(await page.evaluate(() => {
+      const stageNode = document.querySelector('[data-arch-stage="true"]');
+      const statsNode = document.querySelector('[data-arch-stats="true"]');
+      return !!stageNode && !!statsNode && stageNode.parentElement === statsNode.parentElement;
+    })).toBe(true);
+    expect(await stage.evaluate((node) => !node.contains(document.querySelector('[data-arch-stats="true"]')))).toBe(true);
+
+    const [stageBox, cameraBox, selectionBox, statsBox] = await Promise.all([
+      stage.boundingBox(), camera.boundingBox(), selection.boundingBox(), stats.boundingBox(),
+    ]);
+    expect(stageBox).not.toBeNull();
+    expect(cameraBox).not.toBeNull();
+    expect(selectionBox).not.toBeNull();
+    expect(statsBox).not.toBeNull();
+
+    for (const overlay of [cameraBox!, selectionBox!]) {
+      expect(overlay.x).toBeGreaterThanOrEqual(stageBox!.x - 1);
+      expect(overlay.y).toBeGreaterThanOrEqual(stageBox!.y - 1);
+      expect(overlay.x + overlay.width).toBeLessThanOrEqual(stageBox!.x + stageBox!.width + 1);
+      expect(overlay.y + overlay.height).toBeLessThanOrEqual(stageBox!.y + stageBox!.height + 1);
+      expect(overlay.y + overlay.height).toBeLessThanOrEqual(statsBox!.y + 1);
+    }
+    expect(stageBox!.y + stageBox!.height).toBeLessThanOrEqual(statsBox!.y + 1);
+  });
+
+  test('flows AI and Analysis cards below the stage without overlap on a narrow screen', async ({ page }) => {
+    await page.setViewportSize({ width: 500, height: 700 });
+    await mount3d(page, {
+      blocks: tower(),
+      showAI: true,
+      showAnalysis: true,
+      aiAdvice: 'Use a wider foundation and repeat the strongest structural rhythm.',
+    });
+
+    const stage = page.locator('[data-arch-stage="true"]');
+    const analysis = page.locator('.arch-studio-analysis-panel');
+    const ai = page.locator('.arch-studio-ai-panel');
+    await expect(analysis).toHaveCount(1);
+    await expect(ai).toHaveCount(1);
+    expect(await analysis.evaluate((node) => getComputedStyle(node).position)).toBe('relative');
+    expect(await ai.evaluate((node) => getComputedStyle(node).position)).toBe('relative');
+
+    const [stageBox, analysisBox, aiBox] = await Promise.all([
+      stage.boundingBox(), analysis.boundingBox(), ai.boundingBox(),
+    ]);
+    expect(stageBox).not.toBeNull();
+    expect(analysisBox).not.toBeNull();
+    expect(aiBox).not.toBeNull();
+    expect(stageBox!.y + stageBox!.height).toBeLessThanOrEqual(analysisBox!.y + 1);
+    expect(analysisBox!.y + analysisBox!.height).toBeLessThanOrEqual(aiBox!.y + 1);
+  });
+
+  test('keeps primary actions exposed while the feature rail scrolls on a narrow screen', async ({ page }) => {
+    await page.setViewportSize({ width: 500, height: 700 });
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({
+      editorView: 'grid',
+      blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone' }],
+      undoStack: [[]],
+    }));
+
+    const titleRow = page.locator('.arch-studio-title-row');
+    const featureStrip = page.locator('.arch-studio-feature-strip');
+    const undo = titleRow.getByRole('button', { name: /Undo/ });
+    const save = titleRow.getByRole('button', { name: /Save/ });
+
+    const initiallyExposed = await titleRow.evaluate((row) => {
+      const rowRect = row.getBoundingClientRect();
+      const buttons = Array.from(row.querySelectorAll('button'));
+      const visible = (pattern: RegExp) => {
+        const button = buttons.find((candidate) => pattern.test(candidate.textContent || ''));
+        if (!button) return false;
+        const rect = button.getBoundingClientRect();
+        return rect.left >= rowRect.left - 1 && rect.right <= rowRect.right + 1;
+      };
+      return { scrollLeft: row.scrollLeft, undo: visible(/Undo/), save: visible(/Save/) };
+    });
+    expect(initiallyExposed).toEqual({ scrollLeft: 0, undo: true, save: true });
+    await expect(undo).toBeVisible();
+    await expect(save).toBeVisible();
+
+    const railBefore = await featureStrip.evaluate((rail) => ({
+      clientWidth: rail.clientWidth,
+      scrollWidth: rail.scrollWidth,
+      scrollLeft: rail.scrollLeft,
+    }));
+    expect(railBefore.scrollWidth).toBeGreaterThan(railBefore.clientWidth);
+    expect(railBefore.scrollLeft).toBe(0);
+    await featureStrip.evaluate((rail) => { rail.scrollLeft = rail.scrollWidth; });
+    await expect.poll(() => featureStrip.evaluate((rail) => rail.scrollLeft)).toBeGreaterThan(0);
+  });
+
+  test('keeps selected floor-grid cells border-box sized and separated', async ({ page }) => {
+    await page.setViewportSize({ width: 500, height: 700 });
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({
+      editorView: 'grid',
+      selectedBlockKey: '0,0,0',
+      blocks: [
+        { x: 0, y: 0, z: 0, shape: 'block', material: 'stone' },
+        { x: 1, y: 0, z: 0, shape: 'block', material: 'brick' },
+      ],
+    }));
+
+    const selected = page.locator('button[data-arch-cell="0,0,0"]');
+    const adjacent = page.locator('button[data-arch-cell="1,0,0"]');
+    await expect(selected).toHaveAttribute('aria-selected', 'true');
+    expect(await selected.evaluate((node) => getComputedStyle(node).boxSizing)).toBe('border-box');
+
+    const [selectedBox, adjacentBox] = await Promise.all([selected.boundingBox(), adjacent.boundingBox()]);
+    expect(selectedBox).not.toBeNull();
+    expect(adjacentBox).not.toBeNull();
+    expect(Math.abs(selectedBox!.width - adjacentBox!.width)).toBeLessThan(0.5);
+    expect(Math.abs(selectedBox!.height - adjacentBox!.height)).toBeLessThan(0.5);
+    expect(selectedBox!.x + selectedBox!.width).toBeLessThanOrEqual(adjacentBox!.x + 0.5);
+  });
+
+  test('keeps the Active View dock in normal flow and resets every visible restriction', async ({ page }) => {
+    await mount3d(page, {
+      blocks: tower(),
+      viewLayer: 1,
+      showSlice: true,
+      sliceZSelected: true,
+      sliceZ: 0,
+      filterMaterial: 'brick',
+      filterShape: 'block',
+      showHeatmap: true,
+      blueprintView: true,
+    });
+
+    const viewport = page.locator('.arch-studio-viewport');
+    const stage = page.locator('[data-arch-stage="true"]');
+    const hud = page.locator('[data-arch-view-hud="true"]');
+    const stats = page.locator('[data-arch-stats="true"]');
+
+    await expect(hud).toBeVisible();
+    await expect(hud.locator('[data-arch-view-chip]')).toHaveCount(6);
+    await expect(hud.locator('[data-arch-view-chip="layer"]')).toContainText('Layer Y=1');
+    await expect(hud.locator('[data-arch-view-chip="slice"]')).toContainText('Slice Z=0');
+    await expect(hud.locator('[data-arch-view-chip="material"]')).toContainText('Brick');
+    expect(await hud.evaluate((node) => getComputedStyle(node).position)).toBe('static');
+    expect(await viewport.evaluate((node) => {
+      const stageNode = node.querySelector('[data-arch-stage="true"]');
+      const hudNode = node.querySelector('[data-arch-view-hud="true"]');
+      const statsNode = node.querySelector('[data-arch-stats="true"]');
+      return !!stageNode && !!hudNode && !!statsNode
+        && stageNode.nextElementSibling === hudNode
+        && hudNode.nextElementSibling === statsNode;
+    })).toBe(true);
+
+    const [stageBox, hudBox, statsBox] = await Promise.all([
+      stage.boundingBox(), hud.boundingBox(), stats.boundingBox(),
+    ]);
+    expect(stageBox).not.toBeNull();
+    expect(hudBox).not.toBeNull();
+    expect(statsBox).not.toBeNull();
+    expect(stageBox!.y + stageBox!.height).toBeLessThanOrEqual(hudBox!.y + 1);
+    expect(hudBox!.y + hudBox!.height).toBeLessThanOrEqual(statsBox!.y + 1);
+
+    await hud.locator('[data-arch-reset-view="true"]').click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket())).toMatchObject({
+      viewLayer: -1,
+      showSlice: false,
+      sliceZ: -1,
+      sliceZSelected: false,
+      filterMaterial: '',
+      filterShape: '',
+      showHeatmap: false,
+      showReplay: false,
+      replayStep: -1,
+      blueprintView: false,
+    });
+    await expect(hud).toHaveCount(0);
+  });
+
+  test('keeps floating-panel close controls inside sticky headers', async ({ page }) => {
+    await mount3d(page, {
+      blocks: tower(),
+      showAI: true,
+      showAnalysis: true,
+    });
+
+    const ai = page.locator('.arch-studio-ai-panel');
+    const analysis = page.locator('.arch-studio-analysis-panel');
+    const aiHeader = ai.locator('.arch-studio-floating-header');
+    const analysisHeader = analysis.locator('.arch-studio-floating-header');
+    const closeAI = aiHeader.getByRole('button', { name: 'Close AI Architect' });
+    const closeAnalysis = analysisHeader.getByRole('button', { name: 'Close structural analysis' });
+
+    await expect(closeAI).toBeVisible();
+    await expect(closeAnalysis).toBeVisible();
+    expect(await aiHeader.evaluate((node) => getComputedStyle(node).position)).toBe('sticky');
+    expect(await analysisHeader.evaluate((node) => getComputedStyle(node).position)).toBe('sticky');
+
+    await closeAI.click();
+    await expect(ai).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().showAI)).toBe(false);
+
+    await closeAnalysis.click();
+    await expect(analysis).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().showAnalysis)).toBe(false);
+  });
+
+  test('orders the stats rail by immediate building decisions', async ({ page }) => {
+    await mount3d(page, {
+      blocks: tower(),
+      budgetEnabled: true,
+      budget: 250,
+    });
+
+    const labels = await page
+      .locator('[data-arch-stats="true"] .arch-studio-stat > div:first-child')
+      .allTextContents();
+    expect(labels).toHaveLength(8);
+    expect(labels[0]).toContain('Blocks');
+    expect(labels[1]).toContain('Stability');
+    expect(labels[2]).toContain('Cost');
+    expect(labels[3]).toContain('Size');
+    expect(labels[4]).toContain('Footprint');
+    expect(labels[5]).toContain('Volume');
+    expect(labels[6]).toContain('Surface');
+    expect(labels[7]).toContain('Challenges');
+  });
+
+  test('applies the compact layout hooks at the phone breakpoint', async ({ page }) => {
+    await page.setViewportSize({ width: 430, height: 720 });
+    await mount3d(page, {
+      blocks: tower(),
+      selectedBlockKey: '0,0,0',
+      viewLayer: 0,
+    });
+
+    const layout = await page.evaluate(() => {
+      const main = document.querySelector('.arch-studio-main')!;
+      const sidebar = document.querySelector('.arch-studio-sidebar')!;
+      const viewport = document.querySelector('.arch-studio-viewport')!;
+      const stage = document.querySelector('[data-arch-stage="true"]')!;
+      const viewSwitch = document.querySelector('.arch-studio-view-switch')!;
+      const selection = document.querySelector('[data-arch-selection-chip="true"]')!;
+      const hud = document.querySelector('[data-arch-view-hud="true"]')!;
+      const stats = document.querySelector('[data-arch-stats="true"]')!;
+      return {
+        mainDirection: getComputedStyle(main).flexDirection,
+        mainOverflowY: getComputedStyle(main).overflowY,
+        sidebarMaxHeight: getComputedStyle(sidebar).maxHeight,
+        stageHeight: stage.getBoundingClientRect().height,
+        viewSwitchRight: getComputedStyle(viewSwitch).right,
+        viewSwitchTransform: getComputedStyle(viewSwitch).transform,
+        selectionBottom: getComputedStyle(selection).bottom,
+        hudPosition: getComputedStyle(hud).position,
+        hudOverflowX: getComputedStyle(hud).overflowX,
+        statsOverflowX: getComputedStyle(stats).overflowX,
+        statsJustify: getComputedStyle(stats).justifyContent,
+        hudInViewport: hud.parentElement === viewport,
+        hudOutsideStage: !stage.contains(hud),
+      };
+    });
+
+    expect(layout).toMatchObject({
+      mainDirection: 'column',
+      mainOverflowY: 'auto',
+      sidebarMaxHeight: '210px',
+      viewSwitchRight: '8px',
+      viewSwitchTransform: 'none',
+      selectionBottom: '52px',
+      hudPosition: 'static',
+      hudOverflowX: 'auto',
+      statsOverflowX: 'auto',
+      statsJustify: 'flex-start',
+      hudInViewport: true,
+      hudOutsideStage: true,
+    });
+    expect(layout.stageHeight).toBeGreaterThanOrEqual(260);
   });
 
   test('occupies the main viewport, with no spinner left behind', async ({ page }) => {

@@ -210,11 +210,13 @@ describe('Pets restored-state guards', () => {
     expect(PETS).toContain('snapshot.careTradeoff = normalizeCareTradeoffState(snapshot.careTradeoff)');
   });
 
-  it('bounds Trainer, Toxic Foods, and Lifespan resume state before indexing question banks', () => {
+  it('bounds Trainer, Zoonoses, Toxic Foods, and Lifespan resume state before indexing question banks', () => {
     const source = between(PETS, 'function normalizeTrainerState(', 'function petsPersistentSnapshot(');
     const api = vm.runInNewContext(
       `(function () { ${source}; return {
         normalizeTrainerState,
+        zoonosisPathwayCases,
+        normalizeZoonosisPracticeState,
         normalizePetsMiniGameState,
         normalizeToxicFoodIndices,
         normalizeToxicFoodReviewState,
@@ -258,6 +260,88 @@ describe('Pets restored-state guards', () => {
       idx: 3, choices: [], prob: 0.5, trust: 0.5,
       log: Array.from({ length: 30 }, (_, index) => ({ rd: index + 1 })),
     }).log).toHaveLength(10);
+
+    const pathwayCases = api.zoonosisPathwayCases();
+    expect(pathwayCases).toHaveLength(4);
+    expect(pathwayCases.map((item) => item.correct)).toEqual([1, 2, 0, 3]);
+    expect(api.normalizeZoonosisPracticeState({
+      idx: 99,
+      answers: [],
+      done: true,
+    })).toBeNull();
+    const completedPathways = api.normalizeZoonosisPracticeState({
+      idx: 4,
+      answers: [1, 2, 0, 3],
+      score: 999,
+      done: true,
+      bestPct: 999,
+      rawScenario: 'PRIVATE RAW EXPOSURE',
+    });
+    expect(completedPathways).toEqual({
+      idx: 4,
+      answers: [1, 2, 0, 3],
+      score: 4,
+      done: true,
+      bestPct: 100,
+    });
+    expect(completedPathways).not.toHaveProperty('rawScenario');
+    expect(api.normalizeZoonosisPracticeState({
+      idx: 3,
+      answers: [1, 99, 0, 3],
+      score: 4,
+      done: true,
+      bestPct: -10,
+    })).toEqual({
+      idx: 1,
+      answers: [1],
+      score: 1,
+      done: false,
+      bestPct: 0,
+    });
+    const focusedPathways = api.normalizeZoonosisPracticeState({
+      mode: 'focused',
+      idx: 999,
+      answers: [3, 'PRIVATE ANSWER'],
+      score: 999,
+      done: false,
+      bestPct: 75,
+      retryQueue: [3, 3, '0', 99, -1],
+      retryTotal: 2,
+      rawScenario: 'PRIVATE RAW EXPOSURE',
+    });
+    expect(focusedPathways).toEqual({
+      mode: 'focused',
+      idx: 0,
+      answers: [3],
+      score: 0,
+      done: false,
+      bestPct: 75,
+      retryQueue: [3, 0],
+      retryTotal: 2,
+    });
+    expect(JSON.stringify(focusedPathways)).not.toContain('PRIVATE');
+    expect(api.normalizeZoonosisPracticeState({
+      mode: 'focused',
+      idx: 0,
+      answers: ['PRIVATE'],
+      done: true,
+      bestPct: 75,
+      retryQueue: [],
+      retryTotal: 1,
+    })).toEqual({
+      mode: 'focused',
+      idx: 0,
+      answers: [],
+      score: 1,
+      done: true,
+      bestPct: 75,
+      retryQueue: [],
+      retryTotal: 1,
+    });
+    expect(api.normalizeZoonosisPracticeState({
+      mode: 'focused', retryQueue: [], retryTotal: 0, done: false,
+    })).toBeNull();
+    expect(PETS).toMatch(/d\.quizState,\s*d\.zoonPractice,\s*d\.view/);
 
     const toxic = api.normalizePetsMiniGameState({
       tfsIdx: 999,
@@ -420,7 +504,9 @@ describe('Pets restored-state guards', () => {
     expect(PETS).toContain('var safeInitial = petsPersistentSnapshot(initial)');
     expect(PETS).toContain('var safeRestore = petsPersistentSnapshot(w)');
     expect(PETS).toContain('var quizState = normalizeKnowledgeQuizState(d.quizState)');
+    expect(PETS).toContain('var zoonPracticeState = normalizeZoonosisPracticeState(d.zoonPractice)');
     expect(PETS).toContain('snapshot.quizState = normalizeKnowledgeQuizState(snapshot.quizState)');
+    expect(PETS).toContain('snapshot.zoonPractice = normalizeZoonosisPracticeState(snapshot.zoonPractice)');
     expect(PETS).toContain('snapshot.blTransfer = normalizeBodyLanguageTransfer(snapshot.blTransfer)');
     // Starting a fresh attempt resets cumulative performance, while advancing
     // to the next item must preserve it. Keeping one start/advance function was

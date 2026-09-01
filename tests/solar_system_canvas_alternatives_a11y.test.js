@@ -84,7 +84,7 @@ describe('Solar System canvas alternatives', () => {
     expect(document.getElementById('orrery-canvas-help')?.textContent).toContain('Keyboard: arrows pan');
     expect(document.getElementById('orrery-model-scale-note')?.textContent).toContain('not one literal scale');
     expect(document.getElementById('orrery-model-scale-note')?.textContent).toContain('compressed and clamped for visibility');
-    expect(document.getElementById('orrery-stage-key')?.getAttribute('aria-label')).toBe('Orrery visual key');
+    expect(document.getElementById('orrery-stage-key')?.getAttribute('aria-label')).toBe('Scrollable Orrery visual key');
     expect(document.getElementById('orrery-stage-key')?.textContent).toContain('Velocity vector');
     expect(document.getElementById('orrery-stage-tip')?.textContent).toContain('Arrow = direction/relative speed');
     expect(document.getElementById('orrery-hover-summary')?.getAttribute('role')).toBe('status');

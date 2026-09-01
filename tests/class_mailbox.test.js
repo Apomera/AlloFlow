@@ -13,6 +13,7 @@ const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const liveAacSource = fs.readFileSync(path.join(ROOT, 'live_aac_source.jsx'), 'utf8');
 const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_center_source.jsx'), 'utf8');
+const shareSessionSurfacesSource = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const headerSource = fs.readFileSync(path.join(ROOT, 'view_header_source.jsx'), 'utf8');
 
@@ -706,21 +707,22 @@ describe('ANTI wiring pins', () => {
         expect(anti).toMatch(/Teach live/);
         expect(anti).toMatch(/Standard live session/);
         expect(anti).toMatch(/Class Mailbox QR session/);
-        expect(anti).toMatch(/Connect & self-test/);
+        expect(anti).toContain("const ClassMailboxSetupView = _alloCreateFirstWaveCdnView('ClassMailboxSetupView'");
+        expect(shareSessionSurfacesSource).toMatch(/Connect & self-test/);
         expect(anti).not.toMatch(/Push current resource to class/);
-        expect(anti).toMatch(/Host on Class Mailbox \(small QR, images OK\)/);
+        expect(shareSessionSurfacesSource).toMatch(/Host on Class Mailbox \(small QR, images OK\)/);
         expect(anti).toMatch(/aria-label=\{mbHandUp \? 'Lower hand' : 'Raise hand'\}/);
         // Hosted variant renders without QR suppression and with the Drive note.
         expect(anti).toMatch(/assignment-pack-hosted/);
-        expect(anti).toMatch(/AlloFlow Class Mailbox" Drive folder/);
+        expect(shareSessionSurfacesSource).toMatch(/AlloFlow Class Mailbox" Drive folder/);
         expect(anti).toMatch(/isMailboxSession=\{!!mbLive\}/);
         expect(anti).toMatch(/mailboxJoinUrl=\{mbLive\?\.joinUrl \|\| ''\}/);
         expect(anti).toMatch(/onRequestEndSession=\{requestEndLiveSession\}/);
-        expect(anti).toContain('Why might Google say “unverified app” or “unsafe”?');
-        expect(anti).toContain('A Google account alone does not make a workflow FERPA-compliant.');
-        expect(anti).toContain('What is stored, where, and for how long?');
-        expect(anti).toContain('How do student saving and submissions work in each mode?');
-        expect(anti).toContain('complete portfolio is not retained as a permanent Firebase record');
+        expect(shareSessionSurfacesSource).toContain('Why might Google say “unverified app” or “unsafe”?');
+        expect(shareSessionSurfacesSource).toContain('A Google account alone does not make a workflow FERPA-compliant.');
+        expect(shareSessionSurfacesSource).toContain('What is stored, where, and for how long?');
+        expect(shareSessionSurfacesSource).toContain('How do student saving and submissions work in each mode?');
+        expect(shareSessionSurfacesSource).toContain('complete portfolio is not retained as a permanent Firebase record');
         expect(anti).toContain("a: 'putsubmission'");
         expect(anti).toContain('setMbHostedAssignment({ url: entry.u');
         expect(anti).toContain('Mailbox submission upload failed; downloading a backup instead');
@@ -821,13 +823,13 @@ describe('ANTI wiring pins', () => {
 
     it('hardening + real-time wiring is present on both sides', () => {
         // Teacher: token UX, RTC answerer, dual-path push, staleness UI.
-        expect(anti).toMatch(/Admin token — save it like a password/);
-        expect(anti).toMatch(/Admin token \(only when reconnecting from a new device\)/);
+        expect(shareSessionSurfacesSource).toMatch(/Admin token — save it like a password/);
+        expect(shareSessionSurfacesSource).toMatch(/Admin token \(only when reconnecting from a new device\)/);
         expect(anti).toMatch(/answerRtcOffer/);
         expect(anti).toMatch(/ondatachannel/);
         expect(anti).toMatch(/instant, ' \+ Math\.max\(0, total - rtcCount\) \+ ' via mailbox/);
-        expect(anti).toMatch(/· away\?/);
-        expect(anti).toMatch(/real-time ⚡/);
+        expect(shareSessionSurfacesSource).toMatch(/· away\?/);
+        expect(shareSessionSurfacesSource).toMatch(/real-time ⚡/);
         // Student: heartbeat, visibility handling, RTC offerer with retry cap,
         // channel-first presence, shared dedup store.
         expect(anti).toMatch(/Date\.now\(\) - lastAnnounce > 60000/);
@@ -943,6 +945,101 @@ describe('student-pack serialization (full-fidelity)', () => {
         // Malformed/private inputs fail closed:
         expect(helper(null)).toBe(null);
         expect(helper({ type: 'word-sounds' })).toBe(null);
+    });
+
+    it('recursively strips legacy Memory Aid evidence from student packs and fails closed without the cloud helper', () => {
+        const win = {};
+        const syncSrc = fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8');
+        new Function('window', syncSrc)(win);
+        const helper = loadStudentPackSerializer(win);
+        const source = {
+            id: 'memory-pack-1',
+            type: 'memory-aid',
+            title: 'Cell division',
+            data: {
+                teacherDirections: 'Explain why your cue works.',
+                cards: [{
+                    id: 'pmat',
+                    target: 'Mitosis phases',
+                    finalMnemonic: 'Please Make Another Taco',
+                    practiceAttempts: [{ response: 'private student recall' }],
+                    revision: {
+                        retrievalAttempts: [{ response: 'older private recall' }],
+                        reason: 'The first letters match.',
+                    },
+                }],
+            },
+        };
+
+        const packed = helper(source);
+        expect(JSON.stringify(packed)).not.toContain('Attempts');
+        expect(packed.data.cards[0]).toMatchObject({
+            id: 'pmat',
+            target: 'Mitosis phases',
+            finalMnemonic: 'Please Make Another Taco',
+            revision: { reason: 'The first letters match.' },
+        });
+        expect(source.data.cards[0].practiceAttempts).toHaveLength(1);
+
+        const fallbackHelper = loadStudentPackSerializer({
+            sanitizeHistoryForCloud: items => items,
+            sanitizeMemoryAidResourceForBoundary: value => value,
+            stripUndefined: value => value,
+        });
+        expect(JSON.stringify(fallbackHelper(source))).not.toContain('Attempts');
+
+        const unrelated = {
+            id: 'research-1',
+            type: 'research-log',
+            data: { practiceAttempts: 4, nested: { retrievalAttempts: 'keep' } },
+        };
+        expect(fallbackHelper(unrelated)).toEqual(unrelated);
+    });
+
+    it('sanitizes Memory Aids nested in lesson packs while preserving unrelated sibling evidence fields', () => {
+        const fallbackHelper = loadStudentPackSerializer({
+            sanitizeHistoryForCloud: items => items,
+            sanitizeMemoryAidResourceForBoundary: value => value,
+            stripUndefined: value => value,
+        });
+        const source = {
+            id: 'lesson-pack-with-memory-aids',
+            type: 'lesson',
+            practiceAttempts: [{ phase: 'teacher practice metadata' }],
+            data: {
+                resources: [{
+                    id: 'nested-pack-memory-type',
+                    type: 'memory-aid',
+                    data: {
+                        cue: 'Please Excuse My Dear Aunt Sally',
+                        practiceAttempts: [{ response: 'private pack recall' }],
+                    },
+                }, {
+                    id: 'nested-pack-memory-artifact',
+                    artifactType: 'memory_aid',
+                    data: {
+                        cue: 'HOMES',
+                        nested: { retrievalAttempts: [{ response: 'private older pack recall' }] },
+                    },
+                }, {
+                    id: 'unrelated-pack-resource',
+                    type: 'research-log',
+                    practiceAttempts: 6,
+                    data: { retrievalAttempts: 'valid research terminology' },
+                }],
+            },
+        };
+
+        const packed = fallbackHelper(source);
+        expect(packed.practiceAttempts).toEqual([{ phase: 'teacher practice metadata' }]);
+        expect(packed.data.resources[0].data).toEqual({ cue: 'Please Excuse My Dear Aunt Sally' });
+        expect(packed.data.resources[1].data).toEqual({ cue: 'HOMES', nested: {} });
+        expect(packed.data.resources[2]).toMatchObject({
+            practiceAttempts: 6,
+            data: { retrievalAttempts: 'valid research terminology' },
+        });
+        expect(source.data.resources[0].data.practiceAttempts).toHaveLength(1);
+        expect(source.data.resources[1].data.nested.retrievalAttempts).toHaveLength(1);
     });
 
     it('preserves only safe, budgeted visual-quiz media in the existing chunked pack transport', () => {

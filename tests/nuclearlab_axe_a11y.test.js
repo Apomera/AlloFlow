@@ -219,9 +219,9 @@ describe('nuclearLab — checks axe cannot make for us', () => {
     expect(host.querySelectorAll('[data-nk-sec][tabindex="0"]').length).toBe(0);
   });
 
-  it('names every focus destination from its visible section heading', () => {
+  it('names every focus destination without adding redundant all-topic landmarks', () => {
     const surfaces = [
-      [{}, 'group'],
+      [{}, null],
       [{ nkPath: 'know' }, 'region'],
     ];
     for (const [state, role] of surfaces) {
@@ -279,6 +279,18 @@ describe('nuclearLab — checks axe cannot make for us', () => {
     expect(readings, 'semantic reactor readings are missing').toBeTruthy();
     expect(readings.tagName).toBe('DL');
     expect(readings.getAttribute('aria-label')).toBe('Live reactor readings');
+    const metricGroups = [...readings.children];
+    expect(metricGroups).toHaveLength(5);
+    for (const group of metricGroups) {
+      expect(group.tagName, 'each telemetry metric should use a div grouping inside the description list').toBe('DIV');
+      const termsAndDescriptions = [...group.children].map((node) => node.tagName);
+      expect(termsAndDescriptions[0], 'a telemetry group should begin with its term').toBe('DT');
+      expect(termsAndDescriptions.filter((tag) => tag === 'DD').length).toBeGreaterThanOrEqual(1);
+      expect(
+        termsAndDescriptions.every((tag) => tag === 'DT' || tag === 'DD'),
+        'telemetry groups may contain only dt/dd children',
+      ).toBe(true);
+    }
     for (const id of ['rx-live-power', 'rx-live-temperature', 'rx-live-reactivity', 'rx-live-xenon', 'rx-live-state']) {
       const output = readings.querySelector('#' + id);
       expect(output, id + ' is missing').toBeTruthy();
@@ -304,13 +316,19 @@ describe('nuclearLab — checks axe cannot make for us', () => {
     expect(Number(meter.getAttribute('max'))).toBeGreaterThan(0);
     expect(Number(meter.getAttribute('value'))).toBeGreaterThanOrEqual(0);
     expect((meter.getAttribute('aria-valuetext') || '').trim()).not.toBe('');
+
+    const statusSummary = host.querySelector('#rx-status-summary');
+    expect(statusSummary, 'on-demand reactor status summary is missing').toBeTruthy();
+    expect(statusSummary.hidden, 'status summary should stay hidden until requested').toBe(true);
+    expect(statusSummary.getAttribute('role')).toBeNull();
+    expect(statusSummary.getAttribute('aria-live')).toBeNull();
   });
 
   it('renders reactor details as a disclosure with content outside the button', () => {
     host.innerHTML = renderTool('nuclearLab', {
       _nuclearLab: { reactorPick: 'smr', reactorsSeen: ['smr'] },
     });
-    const button = host.querySelector('button[aria-label^="Hide details for Small modular (SMR)"]');
+    const button = host.querySelector('button[aria-controls="nk-reactor-smr-body"]');
     expect(button, 'open SMR disclosure button is missing').toBeTruthy();
     expect(button.getAttribute('aria-expanded')).toBe('true');
     expect(button.hasAttribute('aria-pressed')).toBe(false);
@@ -360,10 +378,10 @@ describe('nuclearLab — the index folds without stranding anyone', () => {
     // it through a click would need a live root; this pins the intent.
     const start = SRC.indexOf('function nkGoTo');
     expect(start, 'nkGoTo not found').toBeGreaterThan(-1);
-    // Slice to the announceToSR call that ends the function rather than to a
-    // fixed character count — the comment inside it pushed past 900 and the
-    // test failed on prose length rather than on behaviour.
-    const body = SRC.slice(start, SRC.indexOf("announceToSR('Jumped to", start));
+    const end = SRC.indexOf('function nkReviewTopic', start);
+    expect(end, 'nkGoTo end not found').toBeGreaterThan(start);
+    const body = SRC.slice(start, end);
+    expect(body).toMatch(/nkPendingTargetRef\.current = s/);
     expect(body).toMatch(/nkOpen: false/);
   });
 

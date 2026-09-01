@@ -39,11 +39,17 @@ function loadReducer(file) {
   edit.settle = window.__alloArchSettleBlocks;
   edit.unsupportedKeys = window.__alloArchUnsupportedKeys;
   edit.changeCamera = window.__alloArchChangeCamera;
+  edit.dominantNormalStep = window.__alloArchDominantNormalStep;
   edit.reflectRotation = window.__alloArchReflectRotation;
   edit.blockAction = window.__alloArchBlockAction;
   edit.mergeBlocks = window.__alloArchMergeBlocks;
+  edit.mirrorBlocks = window.__alloArchMirrorBlocks;
+  edit.duplicateBlocks = window.__alloArchDuplicateBlocks;
   edit.nearestLayer = window.__alloArchNearestLayer;
   edit.moveGridCursor = window.__alloArchMoveGridCursor;
+  edit.replacementViewState = window.__alloArchReplacementViewState;
+  edit.buildSignature = window.__alloArchBuildSignature;
+  edit.simulateEarthquake = window.__alloArchSimulateEarthquake;
   return edit;
 }
 
@@ -141,6 +147,15 @@ describe('Architecture Studio authoring', () => {
       expect(sanitized[0]).toMatchObject({ x: 1, y: 2, z: -4, shape: 'ramp', material: 'wood', color: '#abcdef', rotation: 90 });
       expect(sanitized[1]).toMatchObject({ x: 2, y: 0, z: 2, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 270 });
 
+      const strictCoordinates = edit.sanitize([
+        { x: null, y: 0, z: 0, shape: 'block', material: 'stone' },
+        { x: 1, y: '   ', z: 0, shape: 'block', material: 'stone' },
+        { x: 2, y: 0, z: false, shape: 'block', material: 'stone' },
+        { x: ' 3 ', y: ' 4 ', z: ' -5 ', shape: 'column', material: 'wood', color: '#92400e' },
+      ]);
+      expect(strictCoordinates).toHaveLength(1);
+      expect(strictCoordinates[0]).toMatchObject({ x: 3, y: 4, z: -5, shape: 'column', material: 'wood' });
+
       expect(edit.reflectRotation(0, 'x')).toBe(180);
       expect(edit.reflectRotation(90, 'x')).toBe(90);
       expect(edit.reflectRotation(90, 'z')).toBe(270);
@@ -159,6 +174,11 @@ describe('Architecture Studio authoring', () => {
       expect(edit.changeCamera({ rotX: -86, rotY: 0, scale: 2.95 }, 'up')).toMatchObject({ rotX: -88 });
       expect(edit.changeCamera({ rotX: 0, rotY: 0, scale: 2.95 }, 'zoomIn')).toMatchObject({ scale: 3 });
       expect(edit.changeCamera({}, 'reset')).toMatchObject({ rotX: -24, rotY: -38, scale: 1 });
+
+      expect(edit.dominantNormalStep).toBeTypeOf('function');
+      expect({ ...edit.dominantNormalStep({ x: 0, y: 0.707, z: 0.707 }) }).toEqual({ x: 0, y: 1, z: 0 });
+      expect({ ...edit.dominantNormalStep({ x: -0.9, y: 0.2, z: 0.3 }) }).toEqual({ x: -1, y: 0, z: 0 });
+      expect({ ...edit.dominantNormalStep({ x: 0, y: 0, z: -1 }) }).toEqual({ x: 0, y: 0, z: -1 });
 
       expect(edit.blockAction).toBeTypeOf('function');
       const selectable = [
@@ -194,9 +214,26 @@ describe('Architecture Studio authoring', () => {
       expect(capped.added).toBe(1);
       expect(capped.skipped).toBe(1);
 
+      expect(edit.mirrorBlocks).toBeTypeOf('function');
+      const mirroredBuild = edit.mirrorBlocks([
+        { x: 0, y: 0, z: 0, shape: 'ramp', material: 'stone', color: '#94a3b8', rotation: 0 },
+        { x: 2, y: 0, z: 1, shape: 'door', material: 'wood', color: '#92400e', rotation: 90 },
+      ], 'x');
+      expect(mirroredBuild).toMatchObject({ added: 2, skipped: 0 });
+      expect(mirroredBuild.blocks).toHaveLength(4);
+      expect(mirroredBuild.blocks.find((b) => b.x === 2 && b.z === 0)).toMatchObject({ shape: 'ramp', rotation: 180 });
+
+      expect(edit.duplicateBlocks).toBeTypeOf('function');
+      const duplicatedBuild = edit.duplicateBlocks([
+        { x: 2, y: 3, z: -4, shape: 'ramp', material: 'wood', color: '#abcdef', rotation: 90 },
+      ], 1, 0, 0);
+      expect(duplicatedBuild).toMatchObject({ added: 1, skipped: 0 });
+      expect(duplicatedBuild.blocks[1]).toMatchObject({ x: 3, y: 3, z: -4, shape: 'ramp', rotation: 90 });
+
       expect(edit.nearestLayer).toBeTypeOf('function');
       expect(edit.nearestLayer([{ y: 0 }, { y: 4 }], 3)).toBe(4);
       expect(edit.nearestLayer([{ y: 0 }, { y: 4 }], 2)).toBe(0);
+      expect(edit.nearestLayer([], 17)).toBe(0);
 
       expect(edit.moveGridCursor).toBeTypeOf('function');
       const cursorBounds = { minX: 0, maxX: 9, minZ: 0, maxZ: 9 };
@@ -207,6 +244,50 @@ describe('Architecture Studio authoring', () => {
       expect({ ...edit.moveGridCursor({ x: 4, z: 5 }, 'End', cursorBounds) }).toEqual({ x: 9, z: 5 });
       expect({ ...edit.moveGridCursor({ x: 4, z: 5 }, 'Home', cursorBounds, true) }).toEqual({ x: 0, z: 0 });
       expect({ ...edit.moveGridCursor({ x: 4, z: 5 }, 'End', cursorBounds, true) }).toEqual({ x: 9, z: 9 });
+
+      expect(edit.replacementViewState).toBeTypeOf('function');
+      expect({ ...edit.replacementViewState([{ y: 4 }, { y: 7 }], 6) }).toMatchObject({
+        viewLayer: -1,
+        showSlice: false,
+        sliceZSelected: false,
+        filterMaterial: '',
+        filterShape: '',
+        editLayer: 7,
+        gridCursorX: null,
+        gridCursorZ: null,
+        selectedBlockKey: '',
+        quakeResult: null,
+      });
+
+      expect(edit.buildSignature).toBeTypeOf('function');
+      const signatureBlock = { x: 2, y: 3, z: -4, shape: 'ramp', material: 'wood', color: '#abcdef', rotation: 90 };
+      const signature = edit.buildSignature([signatureBlock]);
+      expect(signature).toBe(edit.buildSignature([{ ...signatureBlock }]));
+      expect(signature).not.toBe(edit.buildSignature([{ ...signatureBlock, material: 'glass' }]));
+      expect(signature).not.toBe(edit.buildSignature([{ ...signatureBlock, rotation: 180 }]));
+
+      expect(edit.simulateEarthquake).toBeTypeOf('function');
+      const groundQuake = edit.simulateEarthquake([
+        { x: 0, y: 0, z: 0, shape: 'block', material: 'stone' },
+      ], 10, () => 0.5);
+      const elevatedQuake = edit.simulateEarthquake([
+        { x: 0, y: 5, z: 0, shape: 'block', material: 'stone' },
+      ], 10, () => 0.5);
+      expect(groundQuake).toMatchObject({ survived: 1, fallen: 0, pct: 100, intensity: 10 });
+      expect(elevatedQuake).toMatchObject({ survived: 0, fallen: 1, pct: 0, intensity: 10 });
+
+      const nearlyFull = [];
+      for (let y = 0; y < 32 && nearlyFull.length < 4095; y++) {
+        for (let x = -64; x <= 64 && nearlyFull.length < 4095; x++) {
+          nearlyFull.push({ x, y, z: -64, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 });
+        }
+      }
+      const cappedPlacement = edit(nearlyFull, {
+        mode: 'place', symmetry: true, place: { x: 2, y: 31, z: 64 },
+        shape: 'roof', material: 'wood', color: '#92400e', rotation: 90,
+      });
+      expect(cappedPlacement).toHaveLength(4096);
+      expect(edit(cappedPlacement, { mode: 'place', place: { x: 3, y: 31, z: 64 } })).toBe(cappedPlacement);
     });
   }
 
@@ -221,6 +302,11 @@ describe('Architecture Studio authoring', () => {
       expect(source).toContain('tabIndex: x === cursorX && z === cursorZ ? 0 : -1');
       expect(source).toContain("'aria-rowcount': rows");
       expect(source).toContain('openArchGridForKeyboard();');
+      expect(source).toContain('function getArchReplacementViewState(nextBlocks, preferredLayer)');
+      expect(source).toContain('getArchReplacementViewState(loadedBlocks, a.editLayer)');
+      expect(source).toContain('getArchReplacementViewState(newBlocks, a.editLayer)');
+      expect(source).toContain('getArchReplacementViewState(imported, a.editLayer)');
+      expect(source).toContain('getArchReplacementViewState(gen, a.editLayer)');
       expect(source).toContain("!mainUse3d && renderBuildGrid()");
       expect(source).toContain("'3D is unavailable, but the floor grid is fully editable.'");
       expect(source).toContain('function makeArchGeometry(shape)');
@@ -236,11 +322,22 @@ describe('Architecture Studio authoring', () => {
       expect(source).toContain("k === 'PageUp' || k === 'PageDown'");
       expect(source).toContain('function applyArchBlockAction(currentBlocks, action)');
       expect(source).toContain('function mergeArchBlocksWithinLimit(currentBlocks, candidateBlocks)');
+      expect(source).toContain('function mirrorArchBlocksWithinLimit(currentBlocks, axis)');
+      expect(source).toContain('function duplicateArchBlocksWithinLimit(currentBlocks, dx, dy, dz)');
       expect(source).toContain('var requireLiveBuild = function ()');
       expect(source).toContain('selectionOutlineVisible: !!selectionMesh');
       expect(source).toContain("'data-arch-inspector': 'true'");
       expect(source).toContain("'data-arch-selection-chip': 'true'");
       expect(source).toContain("selectedBlockKey: selectedAfterEdit");
+      expect(source).toContain('function getArchBuildSignature(currentBlocks)');
+      expect(source).toContain('aiAdviceBuildSignature === currentBuildSignature');
+      expect(source).toContain('storedQuakeResult.buildSignature === currentBuildSignature');
+      expect(source).toContain('var archHeatmapBlocks = showReplay ? archReplayFrame : blocks;');
+      expect(source).toContain('if (a.showReplay) return p;');
+      expect(source).toContain("showHeatmap ? '#' + ('000000' + archHexFor(b).toString(16)).slice(-6)");
+      expect(source).toContain('Viewport and heatmap show this historical step. Analysis, wind, badges, and totals describe the live build.');
+      expect(source).toContain('var pendingBadges = window.__archPendingBadgeIds');
+      expect(source).toContain('var latestEarned = Object.assign({}, a.earnedBadges || {})');
     }
   });
 
@@ -257,6 +354,150 @@ describe('Architecture Studio authoring', () => {
     }
   });
 
+  it('shows AI and earthquake results only for the build they analyzed', () => {
+    for (const file of files) {
+      const block = { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 };
+      const signature = loadReducer(file).buildSignature([block]);
+
+      resetStemLab();
+      loadTool(file, 'archStudio');
+      const staleHtml = renderTool('archStudio', { archStudio: {
+        blocks: [block], showAI: true, earnedBadges: { first_block: 1 },
+        aiAdvice: 'STALE ARCHITECT ADVICE', aiAdviceBuildSignature: 'old-build',
+        aiLoading: true, aiRequestBuildSignature: 'old-build',
+        quakeResult: { rating: 'STALE QUAKE RESULT', pct: 100, fallen: 0, intensity: 10, buildSignature: 'old-build' },
+      } });
+      expect(staleHtml).not.toContain('STALE ARCHITECT ADVICE');
+      expect(staleHtml).not.toContain('Analyzing your structure...');
+      expect(staleHtml).not.toContain('STALE QUAKE RESULT');
+
+      resetStemLab();
+      loadTool(file, 'archStudio');
+      const currentHtml = renderTool('archStudio', { archStudio: {
+        blocks: [block], showAI: true, earnedBadges: { first_block: 1 },
+        aiAdvice: 'CURRENT ARCHITECT ADVICE', aiAdviceBuildSignature: signature,
+        quakeResult: { rating: 'CURRENT QUAKE RESULT', pct: 100, fallen: 0, intensity: 10, buildSignature: signature },
+      } });
+      expect(currentHtml).toContain('CURRENT ARCHITECT ADVICE');
+      expect(currentHtml).toContain('CURRENT QUAKE RESULT');
+    }
+  });
+
+  it('shows a share code only while it describes the current build', () => {
+    for (const file of files) {
+      const block = { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 };
+      const signature = loadReducer(file).buildSignature([block]);
+
+      resetStemLab();
+      loadTool(file, 'archStudio');
+      const staleHtml = renderTool('archStudio', { archStudio: {
+        blocks: [block], showShare: true, earnedBadges: { first_block: 1 },
+        shareCode: 'STALE-SHARE-CODE', shareCodeBuildSignature: 'old-build',
+      } });
+      expect(staleHtml).not.toContain('STALE-SHARE-CODE');
+
+      resetStemLab();
+      loadTool(file, 'archStudio');
+      const currentHtml = renderTool('archStudio', { archStudio: {
+        blocks: [block], showShare: true, earnedBadges: { first_block: 1 },
+        shareCode: 'CURRENT-SHARE-CODE', shareCodeBuildSignature: signature,
+      } });
+      expect(currentHtml).toContain('CURRENT-SHARE-CODE');
+    }
+  });
+
+  it('ignores unknown persisted challenge and badge identifiers', () => {
+    window.localStorage.removeItem('alloflow_archstudio_builds');
+    for (const file of files) {
+      resetStemLab();
+      loadTool(file, 'archStudio');
+      const html = renderTool('archStudio', { archStudio: {
+        blocks: [], showBadges: true,
+        completedChallenges: {
+          legacy_a: 1, legacy_b: 1, legacy_c: 1, legacy_d: 1, legacy_e: 1,
+          legacy_f: 1, legacy_g: 1, legacy_h: 1, legacy_i: 1, legacy_j: 1,
+        },
+        earnedBadges: { retired_badge: 1, experimental_badge: 1 },
+      } });
+      expect(html).toContain('0/10');
+      expect(html).toContain('Badges (0/12)');
+      expect(html).not.toContain('Badges (2/12)');
+    }
+  });
+
+  it('repairs malformed persisted build and history containers before rendering', () => {
+    for (const file of files) {
+      resetStemLab();
+      loadTool(file, 'archStudio');
+      const malformedHtml = renderTool('archStudio', { archStudio: {
+        blocks: [null, { x: null, y: 0, z: 0 }, { x: ' 2 ', y: ' 1 ', z: ' -3 ', shape: 'column', material: 'wood' }],
+        undoStack: 'legacy-history',
+        redoStack: [null, { blocks: 'not-a-frame' }, [null]],
+        showReplay: true, replayStep: 999,
+        viewLayer: 'not-a-layer', showSlice: true, sliceZ: 999,
+        filterMaterial: 'lava', filterShape: 'sphere',
+      } });
+      expect(malformedHtml).not.toContain('data-arch-view-hud="true"');
+      expect(malformedHtml).not.toContain('Replay Step 1000');
+
+      resetStemLab();
+      loadTool(file, 'archStudio');
+      const clampedReplayHtml = renderTool('archStudio', { archStudio: {
+        editorView: 'grid', blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone' }],
+        undoStack: [[]], showReplay: true, replayStep: 999,
+      } });
+      expect(clampedReplayHtml).toContain('Replay Step 2/2');
+      expect(clampedReplayHtml).not.toContain('Replay Step 1000');
+    }
+  });
+
+  it('persists and reports an eligible badge once across rapid rerenders', async () => {
+    resetStemLab();
+    const cfg = loadTool('stem_lab/stem_tool_archstudio.js', 'archStudio');
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    const awards = [];
+    const toasts = [];
+    let latest = null;
+    let updateExternal = null;
+    delete window.__archPendingBadgeIds;
+
+    function BadgeHarness() {
+      const state = React.useState({ archStudio: {
+        blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }],
+        undoStack: [], redoStack: [], earnedBadges: {},
+      } });
+      const toolData = state[0];
+      const setToolData = state[1];
+      latest = toolData.archStudio;
+      updateExternal = setToolData;
+      return cfg.render({
+        React, toolData, setToolData,
+        update(bucket, key, value) { setToolData((prev) => Object.assign({}, prev, { [bucket]: Object.assign({}, prev[bucket] || {}, { [key]: value }) })); },
+        updateMulti(bucket, patch) { setToolData((prev) => Object.assign({}, prev, { [bucket]: Object.assign({}, prev[bucket] || {}, patch) })); },
+        setStemLabTool() {}, addToast(...args) { toasts.push(args); }, awardXP(...args) { awards.push(args); }, celebrate() {}, beep() {},
+        announceToSR() {}, getXP() { return 0; }, callGemini: null, gradeLevel: '5th Grade', toolSnapshots: [], props: {},
+        t(key, fallback) { return fallback || key; },
+        icons: new Proxy({}, { get() { return function Icon() { return React.createElement('span'); }; } }),
+        a11yClick(fn) { return { onClick: fn, role: 'button', tabIndex: 0 }; }, srOnly: {},
+      });
+    }
+
+    await React.act(async () => { root.render(React.createElement(BadgeHarness)); });
+    await React.act(async () => {
+      updateExternal((prev) => ({ archStudio: Object.assign({}, prev.archStudio, { gridCursorX: 0 }) }));
+      updateExternal((prev) => ({ archStudio: Object.assign({}, prev.archStudio, { gridCursorZ: 0 }) }));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    await React.act(async () => { await new Promise((resolve) => setTimeout(resolve, 10)); });
+    expect(latest.earnedBadges.first_block).toBeTruthy();
+    expect(awards.filter((args) => args[0] === 'archStudio_badge_first_block')).toHaveLength(1);
+    expect(toasts.filter((args) => String(args[0]).includes('Badge Earned'))).toHaveLength(1);
+    await React.act(async () => { root.unmount(); });
+    host.remove();
+  });
+
   it('copies a block with Pick and immediately repeats it on another floor', async () => {
     resetStemLab();
     const cfg = loadTool('stem_lab/stem_tool_archstudio.js', 'archStudio');
@@ -266,6 +507,13 @@ describe('Architecture Studio authoring', () => {
     let latest = null;
     let setToolDataExternal = null;
     const announcements = [];
+    let aiCalls = 0;
+    let aiProvider = () => Promise.resolve('{"tips":["Ready"],"funFact":"Stable foundations spread loads."}');
+    window.__archPendingBadgeIds = {
+      first_block: true, hundred_club: true, all_shapes: true, all_mats: true,
+      sky_high: true, rock_solid: true, perfect_sym: true, quake_proof: true,
+      five_saves: true, challenger: true, mega_build: true, minimalist: true,
+    };
 
     function Harness() {
       const state = React.useState({ archStudio: {
@@ -288,7 +536,7 @@ describe('Architecture Studio authoring', () => {
         setToolData,
         setStemLabTool() {}, addToast() {}, awardXP() {}, celebrate() {}, beep() {},
         announceToSR(message) { announcements.push(String(message)); },
-        getXP() { return 0; }, callGemini: null, gradeLevel: '5th Grade', toolSnapshots: [], props: {},
+        getXP() { return 0; }, callGemini(...args) { aiCalls++; return aiProvider(...args); }, gradeLevel: '5th Grade', toolSnapshots: [], props: {},
         t(key, fallback) { return fallback || key; },
         icons: new Proxy({}, { get() { return function Icon() { return React.createElement('span'); }; } }),
         a11yClick(fn) { return { onClick: fn, role: 'button', tabIndex: 0 }; }, srOnly: {},
@@ -297,6 +545,32 @@ describe('Architecture Studio authoring', () => {
     }
 
     await React.act(async () => { root.render(React.createElement(Harness)); });
+    aiProvider = () => { throw new Error('synchronous provider failure'); };
+    const aiToggle = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('AI Architect'));
+    await React.act(async () => {
+      aiToggle.click();
+      await new Promise((resolve) => setTimeout(resolve, 1));
+    });
+    expect(latest.aiLoading).toBe(false);
+    expect(latest.aiAdvice).toContain('Could not reach AI advisor');
+    expect(window.__archAiPendingReqId).toBe(0);
+
+    let resolveAiRequest;
+    aiCalls = 0;
+    aiProvider = () => new Promise((resolve) => { resolveAiRequest = resolve; });
+    const askAgain = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Ask Again'));
+    await React.act(async () => {
+      askAgain.click();
+      askAgain.click();
+    });
+    expect(aiCalls).toBe(1);
+    await React.act(async () => {
+      resolveAiRequest('{"tips":["Fresh guidance"],"funFact":"Strong bases help."}');
+      await new Promise((resolve) => setTimeout(resolve, 1));
+    });
+    expect(latest.aiLoading).toBe(false);
+    expect(latest.aiAdvice).toContain('Fresh guidance');
+    expect(window.__archAiPendingReqId).toBe(0);
     expect(host.querySelectorAll('[role="gridcell"][tabindex="0"]')).toHaveLength(1);
     const firstGridCell = host.querySelector('[data-arch-cell="0,0,0"]');
     await React.act(async () => {
@@ -322,6 +596,18 @@ describe('Architecture Studio authoring', () => {
     });
     expect(document.activeElement).toBe(host.querySelector('[data-arch-cell="4,0,4"]'));
     expect(host.querySelectorAll('[role="gridcell"][tabindex="0"]')).toHaveLength(1);
+
+    const replayRaceCell = host.querySelector('[data-arch-cell="3,0,0"]');
+    await React.act(async () => {
+      setToolDataExternal((prev) => ({ archStudio: Object.assign({}, prev.archStudio, { showReplay: true, replayStep: 0 }) }));
+      replayRaceCell.click();
+    });
+    expect(latest.showReplay).toBe(true);
+    expect(latest.blocks).toHaveLength(1);
+    expect(latest.undoStack).toEqual([]);
+    await React.act(async () => {
+      setToolDataExternal((prev) => ({ archStudio: Object.assign({}, prev.archStudio, { showReplay: false, replayStep: -1 }) }));
+    });
 
     await React.act(async () => { host.querySelector('[aria-label="Pick mode"]').click(); });
     await React.act(async () => { host.querySelector('[data-arch-cell="0,0,0"]').click(); });
@@ -391,6 +677,7 @@ describe('Architecture Studio authoring', () => {
     });
     expect(latest.blocks).toHaveLength(2);
     expect(latest.selectedBlockKey).toBe('');
+    expect(latest.editLayer).toBe(1);
     expect(host.querySelector('[data-arch-inspector="true"]')).toBeNull();
     expect(document.activeElement).toBe(host.querySelector('#arch-studio-region'));
 
@@ -403,6 +690,33 @@ describe('Architecture Studio authoring', () => {
       host.querySelector('#arch-studio-region').dispatchEvent(new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, bubbles: true, cancelable: true }));
     });
     expect(latest.blocks).toHaveLength(2);
+
+    const historyBlockA = { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 };
+    const historyBlockB = { x: 1, y: 0, z: 0, shape: 'column', material: 'wood', color: '#92400e', rotation: 0 };
+    await React.act(async () => {
+      setToolDataExternal({ archStudio: {
+        editorView: 'grid', editLayer: 0, viewLayer: -1, undoStack: [[], [historyBlockA]], redoStack: [],
+        blocks: [historyBlockA, historyBlockB],
+      } });
+    });
+    await React.act(async () => {
+      const region = host.querySelector('#arch-studio-region');
+      region.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }));
+      region.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }));
+      await new Promise((resolve) => setTimeout(resolve, 1));
+    });
+    expect(latest.blocks).toHaveLength(0);
+    expect(latest.undoStack).toHaveLength(0);
+    expect(latest.redoStack).toHaveLength(2);
+    await React.act(async () => {
+      const region = host.querySelector('#arch-studio-region');
+      region.dispatchEvent(new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, bubbles: true, cancelable: true }));
+      region.dispatchEvent(new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, bubbles: true, cancelable: true }));
+      await new Promise((resolve) => setTimeout(resolve, 1));
+    });
+    expect(latest.blocks).toHaveLength(2);
+    expect(latest.undoStack).toHaveLength(2);
+    expect(latest.redoStack).toHaveLength(0);
 
     await React.act(async () => {
       setToolDataExternal({ archStudio: {
@@ -457,14 +771,79 @@ describe('Architecture Studio authoring', () => {
     });
     expect(host.querySelector('[data-arch-cell="-64,0,0"]')).not.toBeNull();
     expect(host.querySelector('[data-arch-cell="64,0,0"]')).toBeNull();
-    await React.act(async () => {
-      host.querySelector('[aria-label="Reveal selected block"]').click();
-      await new Promise((resolve) => setTimeout(resolve, 90));
-    });
+    await React.act(async () => { host.querySelector('[aria-label="Reveal selected block"]').click(); });
+    await React.act(async () => { await new Promise((resolve) => setTimeout(resolve, 90)); });
     expect(latest).toMatchObject({ gridCursorX: 64, gridCursorZ: 0, editLayer: 0 });
     expect(host.querySelector('[data-arch-cell="64,0,0"]')).not.toBeNull();
     expect(document.activeElement).toBe(host.querySelector('[data-arch-cell="64,0,0"]'));
     expect(document.activeElement.tabIndex).toBe(0);
+
+    const mutationBlockA = { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 };
+    const mutationBlockB = { x: 1, y: 0, z: 0, shape: 'column', material: 'wood', color: '#92400e', rotation: 0 };
+    await React.act(async () => {
+      setToolDataExternal({ archStudio: {
+        editorView: 'grid', editLayer: 7, viewLayer: 7, filterMaterial: 'wood', showSlice: true, sliceZSelected: true,
+        blocks: [mutationBlockA], undoStack: [], redoStack: [],
+      } });
+    });
+    const staleClearButton = host.querySelector('[title="Clear the live build"]');
+    await React.act(async () => {
+      setToolDataExternal((prev) => ({ archStudio: Object.assign({}, prev.archStudio, { blocks: [mutationBlockA, mutationBlockB] }) }));
+      staleClearButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 1));
+    });
+    expect(latest.blocks).toEqual([]);
+    expect(latest.undoStack.at(-1)).toEqual([mutationBlockA, mutationBlockB]);
+    expect(latest).toMatchObject({ editLayer: 0, viewLayer: -1, filterMaterial: '', filterShape: '', showSlice: false, sliceZSelected: false });
+    await React.act(async () => {
+      host.querySelector('#arch-studio-region').dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }));
+    });
+    expect(latest.blocks).toEqual([mutationBlockA, mutationBlockB]);
+
+    await React.act(async () => {
+      setToolDataExternal({ archStudio: {
+        editorView: 'grid', editLayer: 7, viewLayer: 7, undoStack: [], redoStack: [],
+        blocks: [
+          { x: 0, y: 5, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+          { x: 0, y: 7, z: 0, shape: 'roof', material: 'wood', color: '#92400e', rotation: 0 },
+        ],
+      } });
+    });
+    await React.act(async () => { host.querySelector('[title="Apply gravity (drop floating blocks)"]').click(); });
+    expect(latest.blocks.map((b) => b.y)).toEqual([0, 1]);
+    expect(latest).toMatchObject({ editLayer: 1, viewLayer: 1 });
+
+    await React.act(async () => {
+      setToolDataExternal({ archStudio: {
+        editorView: 'grid', editLayer: 5, viewLayer: 5, showFilter: true, filterMaterial: 'wood', filterShape: '',
+        showSlice: true, sliceZSelected: true, undoStack: [], redoStack: [],
+        blocks: [
+          { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+          { x: 0, y: 5, z: 0, shape: 'roof', material: 'wood', color: '#92400e', rotation: 0 },
+        ],
+      } });
+    });
+    await React.act(async () => { host.querySelector('[title="Remove matching blocks"]').click(); });
+    expect(latest.blocks).toHaveLength(1);
+    expect(latest.blocks[0]).toMatchObject({ y: 0, material: 'stone' });
+    expect(latest).toMatchObject({ editLayer: 0, viewLayer: 0, filterMaterial: '', filterShape: '', showSlice: false, sliceZSelected: false });
+
+    await React.act(async () => {
+      setToolDataExternal({ archStudio: {
+        editorView: 'grid', editLayer: 0, viewLayer: 0, mode: 'pick', selectedBlockKey: '0,0,0',
+        showFilter: false, filterMaterial: 'stone', filterShape: 'block',
+        showSlice: true, sliceZ: 0, sliceZSelected: true, undoStack: [], redoStack: [],
+        blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }],
+      } });
+    });
+    await React.act(async () => {
+      host.querySelector('[aria-label="Delete selected block"]').click();
+      await new Promise((resolve) => setTimeout(resolve, 1));
+    });
+    expect(latest.blocks).toEqual([]);
+    expect(latest).toMatchObject({
+      editLayer: 0, viewLayer: -1, filterMaterial: '', filterShape: '', showSlice: false, sliceZSelected: false,
+    });
 
     await React.act(async () => { root.unmount(); });
     host.remove();

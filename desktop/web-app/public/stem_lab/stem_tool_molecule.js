@@ -401,7 +401,12 @@ window.StemLab = window.StemLab || {
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloT = function (k, fb) {
+        var v;
+        try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; }
+        var unresolved = v == null || String(v).trim() === '' || String(v).trim() === String(k).trim();
+        return unresolved ? (fb != null ? fb : k) : v;
+      };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -451,6 +456,14 @@ window.StemLab = window.StemLab || {
           const threeResourcesRef = useRef(null);
           const animationFrameIdRef = useRef(null);
           const vrRef = useRef(null);
+          const periodicScrollRef = useRef(null);
+          const [periodicMapViewport, setPeriodicMapViewport] = useState({
+            atStart: true,
+            atEnd: false,
+            scrollable: true,
+            firstGroup: 1,
+            lastGroup: 9
+          });
           // WebXR: the "Enter VR" button shows ONLY while a headset is present, and
           // reacts to connect/unplug live (devicechange) — no clutter without one.
           const _xrSup = useState(false); const xrSupported = _xrSup[0]; const setXrSupported = _xrSup[1];
@@ -527,6 +540,7 @@ window.StemLab = window.StemLab || {
           const completedChallenges = d.completedChallenges || [];
           const tutorialStep = d.tutorialStep || 0;
           const tutorialDismissed = d.tutorialDismissed || false;
+          const modeDeckOpen = typeof d.modeDeckOpen === 'boolean' ? d.modeDeckOpen : !tutorialDismissed;
           const reactionsBalanced = d.reactionsBalanced || 0;
           const currentReactionIdx = d.currentReactionIdx || 0;
           const reactionCoeffs = d.reactionCoeffs || null;
@@ -1054,6 +1068,18 @@ window.StemLab = window.StemLab || {
 
           // ── Periodic Table Data (118 elements) ──
 
+          const isUnresolvedLocalizedText = function(value) {
+            var textValue = typeof value === 'string' ? value.trim() : '';
+            return !textValue || textValue.indexOf('stem.') === 0;
+          };
+          const humanizeLocalizedKey = function(value) {
+            var token = String(value || '').split('.').pop().replace(/_/g, ' ').trim();
+            return token.replace(/\b[a-z]/g, function(character) { return character.toUpperCase(); });
+          };
+          const resolveLocalizedText = function(value, fallback) {
+            return isUnresolvedLocalizedText(value) ? fallback : String(value).trim();
+          };
+
           const ELEMENTS = [
 
             { n: 1, s: 'H', name: t('stem.periodic.hydrogen'), cat: 'nonmetal', c: '#60a5fa' }, { n: 2, s: 'He', name: t('stem.periodic.helium'), cat: 'noble', c: '#c084fc' },
@@ -1180,6 +1206,11 @@ window.StemLab = window.StemLab || {
 
           ];
 
+          ELEMENTS.forEach(function(el) {
+            var fallbackName = humanizeLocalizedKey(el.name) || ('Element ' + el.n);
+            el.name = resolveLocalizedText(el.name, fallbackName);
+          });
+
 
 
           // ── Element Details (descriptions, uses, compounds) ──
@@ -1260,6 +1291,46 @@ window.StemLab = window.StemLab || {
 
             W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
 
+          };
+
+          const ELEMENT_DETAIL_DESC_FALLBACKS = {
+            H: 'Hydrogen is the lightest element and fuels stars through nuclear fusion.',
+            He: 'Helium is an inert noble gas and the second-most abundant element in the universe.',
+            Li: 'Lithium is the lightest metal and is soft enough to cut with a knife.',
+            Be: 'Beryllium is a rare, toxic metal that is light, stiff, and transparent to X-rays.',
+            B: 'Boron is a metalloid that is essential for plant growth and useful in heat-resistant glass.',
+            C: 'Carbon forms the backbone of all known life and an enormous range of compounds.',
+            N: 'Nitrogen makes up about 78% of Earth\'s atmosphere.',
+            O: 'Oxygen supports respiration and is the most abundant element in Earth\'s crust by mass.',
+            F: 'Fluorine is the most reactive and electronegative element.',
+            Ne: 'Neon produces its iconic reddish-orange glow in electrical discharge tubes.',
+            Na: 'Sodium is a soft silvery metal that reacts vigorously with water.',
+            Mg: 'Magnesium is a lightweight metal that burns with a brilliant white light.',
+            Al: 'Aluminum is the most abundant metal in Earth\'s crust.',
+            Si: 'Silicon is a semiconductor that powers much of the digital world.',
+            P: 'Phosphorus is essential to DNA, energy transfer, and bones.',
+            S: 'Sulfur is a yellow nonmetal; hydrogen sulfide compounds produce the familiar rotten-egg odor.',
+            Cl: 'Chlorine is a greenish-yellow gas widely used to disinfect water.',
+            Ar: 'Argon is the third-most abundant gas in Earth\'s atmosphere.',
+            K: 'Potassium is an essential nutrient involved in nerve and muscle function.',
+            Ca: 'Calcium helps build bones and teeth and is the fifth-most abundant element in Earth\'s crust.',
+            Fe: 'Iron is the most widely used metal and a major component of Earth\'s core.',
+            Cu: 'Copper is a reddish metal used since antiquity and prized for its conductivity.',
+            Zn: 'Zinc is a bluish-white metal often used to protect steel from rust.',
+            Ag: 'Silver has the highest electrical conductivity of any element.',
+            Au: 'Gold is a dense, soft precious metal that resists corrosion.',
+            Ti: 'Titanium is as strong as many steels while being about 45% lighter.',
+            Cr: 'Chromium is a shiny metal that colors rubies red and improves corrosion resistance.',
+            Mn: 'Manganese is essential in steelmaking and important to living cells.',
+            Ni: 'Nickel is a corrosion-resistant metal used in coins, steel, and batteries.',
+            Br: 'Bromine is the only nonmetal that is liquid at room temperature.',
+            I: 'Iodine is an essential trace element needed to make thyroid hormones.',
+            Pt: 'Platinum is a rare precious metal and an effective catalyst.',
+            U: 'Uranium is a dense radioactive metal used as nuclear fuel.',
+            Hg: 'Mercury is the only metallic element that is liquid at standard room temperature.',
+            Pb: 'Lead is a dense, soft, toxic metal once used widely in pipes and paint.',
+            Sn: 'Tin is a soft silvery metal used since antiquity in bronze and protective coatings.',
+            W: 'Tungsten has the highest melting point of any pure metal.'
           };
 
           // Complete the table's detail-card contract for elements that do not
@@ -1354,13 +1425,12 @@ window.StemLab = window.StemLab || {
           });
 
           ELEMENTS.forEach(function (el) {
-            if (!ELEMENT_DETAILS[el.s]) {
-              ELEMENT_DETAILS[el.s] = {
-                desc: el.name + ' (' + el.s + ') is a ' + el.cat + ' element in the periodic table.',
-                uses: ['Chemistry and materials research'],
-                compounds: ['No common compound in the starter reference set']
-              };
-            }
+            var genericDescription = el.name + ' (' + el.s + ') is a ' + String(el.cat || 'chemical').replace(/-/g, ' ') + ' element in the periodic table.';
+            var record = ELEMENT_DETAILS[el.s] || {};
+            record.desc = resolveLocalizedText(record.desc, ELEMENT_DETAIL_DESC_FALLBACKS[el.s] || genericDescription);
+            record.uses = Array.isArray(record.uses) && record.uses.length ? record.uses : ['Chemistry and materials research'];
+            record.compounds = Array.isArray(record.compounds) && record.compounds.length ? record.compounds : ['No common compound in the starter reference set'];
+            ELEMENT_DETAILS[el.s] = record;
           });
 
           moleculePeriodicElements = ELEMENTS;
@@ -1461,45 +1531,45 @@ window.StemLab = window.StemLab || {
 
           const COMPOUNDS = [
 
-            { name: t('stem.chem_balance.water'), formula: t('stem.periodic.hu2082o'), recipe: { H: 2, O: 1 }, desc: t('stem.periodic.essential_for_life'), emoji: '\uD83D\uDCA7' },
+            { name: __alloT('stem.chem_balance.water', 'Water'), formula: __alloT('stem.periodic.hu2082o', 'H₂O'), recipe: { H: 2, O: 1 }, desc: __alloT('stem.periodic.essential_for_life', 'Essential for life'), emoji: '\uD83D\uDCA7' },
 
-            { name: t('stem.periodic.carbon_dioxide'), formula: t('stem.periodic.cou2082'), recipe: { C: 1, O: 2 }, desc: t('stem.periodic.greenhouse_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
+            { name: __alloT('stem.periodic.carbon_dioxide', 'Carbon Dioxide'), formula: __alloT('stem.periodic.cou2082', 'CO₂'), recipe: { C: 1, O: 2 }, desc: __alloT('stem.periodic.greenhouse_gas', 'Greenhouse gas'), emoji: '\uD83C\uDF2B\uFE0F' },
 
-            { name: t('stem.chem_balance.table_salt'), formula: t('stem.periodic.nacl'), recipe: { Na: 1, Cl: 1 }, desc: t('stem.periodic.sodium_chloride'), emoji: '\uD83E\uDDC2' },
+            { name: __alloT('stem.chem_balance.table_salt', 'Table Salt'), formula: __alloT('stem.periodic.nacl', 'NaCl'), recipe: { Na: 1, Cl: 1 }, desc: __alloT('stem.periodic.sodium_chloride', 'Sodium chloride'), emoji: '\uD83E\uDDC2' },
 
-            { name: t('stem.chem_balance.ammonia'), formula: t('stem.periodic.nhu2083'), recipe: { N: 1, H: 3 }, desc: t('stem.periodic.cleaning_agent'), emoji: '\uD83E\uDDEA' },
+            { name: __alloT('stem.chem_balance.ammonia', 'Ammonia'), formula: __alloT('stem.periodic.nhu2083', 'NH₃'), recipe: { N: 1, H: 3 }, desc: __alloT('stem.periodic.cleaning_agent', 'Cleaning agent and fertilizer feedstock'), emoji: '\uD83E\uDDEA' },
 
-            { name: t('stem.periodic.methane'), formula: t('stem.periodic.chu2084'), recipe: { C: 1, H: 4 }, desc: t('stem.periodic.natural_gas'), emoji: '\uD83D\uDD25' },
+            { name: __alloT('stem.periodic.methane', 'Methane'), formula: __alloT('stem.periodic.chu2084', 'CH₄'), recipe: { C: 1, H: 4 }, desc: __alloT('stem.periodic.natural_gas', 'Main component of natural gas'), emoji: '\uD83D\uDD25' },
 
-            { name: t('stem.periodic.hydrogen_peroxide'), formula: 'H\u2082O\u2082', recipe: { H: 2, O: 2 }, desc: t('stem.periodic.disinfectant'), emoji: '\uD83E\uDE79' },
+            { name: __alloT('stem.periodic.hydrogen_peroxide', 'Hydrogen Peroxide'), formula: 'H\u2082O\u2082', recipe: { H: 2, O: 2 }, desc: __alloT('stem.periodic.disinfectant', 'Disinfectant'), emoji: '\uD83E\uDE79' },
 
-            { name: t('stem.periodic.ethanol'), formula: 'C\u2082H\u2085OH', recipe: { C: 2, H: 6, O: 1 }, desc: t('stem.periodic.alcohol'), emoji: '\uD83C\uDF7A' },
+            { name: __alloT('stem.periodic.ethanol', 'Ethanol'), formula: 'C\u2082H\u2085OH', recipe: { C: 2, H: 6, O: 1 }, desc: __alloT('stem.periodic.alcohol', 'Alcohol used as a solvent and fuel'), emoji: '\uD83C\uDF7A' },
 
-            { name: t('stem.periodic.sulfuric_acid'), formula: 'H\u2082SO\u2084', recipe: { H: 2, S: 1, O: 4 }, desc: t('stem.periodic.battery_acid'), emoji: '\u26A0\uFE0F' },
+            { name: __alloT('stem.periodic.sulfuric_acid', 'Sulfuric Acid'), formula: 'H\u2082SO\u2084', recipe: { H: 2, S: 1, O: 4 }, desc: __alloT('stem.periodic.battery_acid', 'Battery acid and major industrial chemical'), emoji: '\u26A0\uFE0F' },
 
-            { name: t('stem.periodic.glucose'), formula: 'C\u2086H\u2081\u2082O\u2086', recipe: { C: 6, H: 12, O: 6 }, desc: t('stem.periodic.blood_sugar'), emoji: '\uD83C\uDF6C' },
+            { name: __alloT('stem.periodic.glucose', 'Glucose'), formula: 'C\u2086H\u2081\u2082O\u2086', recipe: { C: 6, H: 12, O: 6 }, desc: __alloT('stem.periodic.blood_sugar', 'Blood sugar and cellular fuel'), emoji: '\uD83C\uDF6C' },
 
-            { name: t('stem.periodic.baking_soda'), formula: 'NaHCO\u2083', recipe: { Na: 1, H: 1, C: 1, O: 3 }, desc: t('stem.periodic.sodium_bicarbonate'), emoji: '\uD83E\uDDC1' },
+            { name: __alloT('stem.periodic.baking_soda', 'Baking Soda'), formula: 'NaHCO\u2083', recipe: { Na: 1, H: 1, C: 1, O: 3 }, desc: __alloT('stem.periodic.sodium_bicarbonate', 'Sodium bicarbonate'), emoji: '\uD83E\uDDC1' },
 
-            { name: t('stem.chem_balance.calcium_carbonate'), formula: 'CaCO\u2083', recipe: { Ca: 1, C: 1, O: 3 }, desc: t('stem.periodic.chalk_marble'), emoji: '\uD83E\uDEA8' },
+            { name: __alloT('stem.chem_balance.calcium_carbonate', 'Calcium Carbonate'), formula: 'CaCO\u2083', recipe: { Ca: 1, C: 1, O: 3 }, desc: __alloT('stem.periodic.chalk_marble', 'Chalk and marble mineral'), emoji: '\uD83E\uDEA8' },
 
-            { name: t('stem.chem_balance.iron_oxide'), formula: 'Fe\u2082O\u2083', recipe: { Fe: 2, O: 3 }, desc: t('stem.periodic.rust'), emoji: '\uD83D\uDFE5' },
+            { name: __alloT('stem.chem_balance.iron_oxide', 'Iron Oxide'), formula: 'Fe\u2082O\u2083', recipe: { Fe: 2, O: 3 }, desc: __alloT('stem.periodic.rust', 'Rust'), emoji: '\uD83D\uDFE5' },
 
-            { name: t('stem.periodic.sodium_hydroxide'), formula: 'NaOH', recipe: { Na: 1, O: 1, H: 1 }, desc: t('stem.periodic.lye_caustic_soda'), emoji: '\uD83E\uDDEA' },
+            { name: __alloT('stem.periodic.sodium_hydroxide', 'Sodium Hydroxide'), formula: 'NaOH', recipe: { Na: 1, O: 1, H: 1 }, desc: __alloT('stem.periodic.lye_caustic_soda', 'Lye or caustic soda'), emoji: '\uD83E\uDDEA' },
 
-            { name: t('stem.periodic.hydrochloric_acid'), formula: 'HCl', recipe: { H: 1, Cl: 1 }, desc: t('stem.periodic.stomach_acid'), emoji: '\uD83E\uDE79' },
+            { name: __alloT('stem.periodic.hydrochloric_acid', 'Hydrochloric Acid'), formula: 'HCl', recipe: { H: 1, Cl: 1 }, desc: __alloT('stem.periodic.stomach_acid', 'Major acid in stomach fluid'), emoji: '\uD83E\uDE79' },
 
-            { name: t('stem.periodic.acetic_acid'), formula: 'CH\u2083COOH', recipe: { C: 2, H: 4, O: 2 }, desc: t('stem.periodic.vinegar'), emoji: '\uD83E\uDD4B' },
+            { name: __alloT('stem.periodic.acetic_acid', 'Acetic Acid'), formula: 'CH\u2083COOH', recipe: { C: 2, H: 4, O: 2 }, desc: __alloT('stem.periodic.vinegar', 'Acid in vinegar'), emoji: '\uD83E\uDD4B' },
 
-            { name: t('stem.periodic.nitrogen_dioxide'), formula: 'NO\u2082', recipe: { N: 1, O: 2 }, desc: t('stem.periodic.brown_smog_gas'), emoji: '\uD83C\uDF2B\uFE0F' },
+            { name: __alloT('stem.periodic.nitrogen_dioxide', 'Nitrogen Dioxide'), formula: 'NO\u2082', recipe: { N: 1, O: 2 }, desc: __alloT('stem.periodic.brown_smog_gas', 'Brown air-pollution gas'), emoji: '\uD83C\uDF2B\uFE0F' },
 
-            { name: t('stem.periodic.sulfur_dioxide'), formula: 'SO\u2082', recipe: { S: 1, O: 2 }, desc: t('stem.periodic.acid_rain_precursor'), emoji: '\uD83C\uDF27\uFE0F' },
+            { name: __alloT('stem.periodic.sulfur_dioxide', 'Sulfur Dioxide'), formula: 'SO\u2082', recipe: { S: 1, O: 2 }, desc: __alloT('stem.periodic.acid_rain_precursor', 'Acid-rain precursor'), emoji: '\uD83C\uDF27\uFE0F' },
 
-            { name: t('stem.periodic.ozone'), formula: 'O\u2083', recipe: { O: 3 }, desc: t('stem.periodic.uv_shield'), emoji: '\uD83D\uDEE1\uFE0F' },
+            { name: __alloT('stem.periodic.ozone', 'Ozone'), formula: 'O\u2083', recipe: { O: 3 }, desc: __alloT('stem.periodic.uv_shield', 'Ultraviolet shield in the stratosphere'), emoji: '\uD83D\uDEE1\uFE0F' },
 
-            { name: t('stem.periodic.laughing_gas'), formula: 'N\u2082O', recipe: { N: 2, O: 1 }, desc: t('stem.periodic.nitrous_oxide'), emoji: '\uD83D\uDE02' },
+            { name: __alloT('stem.periodic.laughing_gas', 'Nitrous Oxide'), formula: 'N\u2082O', recipe: { N: 2, O: 1 }, desc: __alloT('stem.periodic.nitrous_oxide', 'Laughing gas'), emoji: '\uD83D\uDE02' },
 
-            { name: t('stem.periodic.silicon_dioxide'), formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: t('stem.periodic.sand_glass'), emoji: '\uD83C\uDFD6\uFE0F' },
+            { name: __alloT('stem.periodic.silicon_dioxide', 'Silicon Dioxide'), formula: 'SiO\u2082', recipe: { Si: 1, O: 2 }, desc: __alloT('stem.periodic.sand_glass', 'Main component of sand and glass'), emoji: '\uD83C\uDFD6\uFE0F' },
 
           ].concat(PT_EXTRA_COMPOUNDS);
 
@@ -1529,6 +1599,9 @@ window.StemLab = window.StemLab || {
             return matchesSearch && matchesCategory && matchesPeriod && matchesBlock;
           });
           const filteredElementSymbols = new Set(filteredElements.map(function (el) { return el.s; }));
+          const selectedElementCatalogEntry = d.selectedElement
+            ? (ELEMENTS.find(function(el) { return el.s === d.selectedElement.s; }) || d.selectedElement)
+            : null;
           const selectedElementHiddenByFilter = !!(
             d.selectedElement && !filteredElementSymbols.has(d.selectedElement.s)
           );
@@ -1537,6 +1610,73 @@ window.StemLab = window.StemLab || {
             var nextState = Object.assign({}, changes);
             if (d.elQuizScope === 'filtered') nextState.elQuiz = null;
             updMulti(nextState);
+          };
+          const activeElementFilterChips = [];
+          if (elementSearchText) activeElementFilterChips.push({ key: 'search', label: 'Search: “' + elementSearchText + '”', changes: { elementSearch: '' } });
+          if (elementCategoryFilter !== 'all') {
+            var activeCategoryOption = elementFilterOptions.find(function(option) { return option[0] === elementCategoryFilter; });
+            activeElementFilterChips.push({ key: 'category', label: activeCategoryOption ? activeCategoryOption[1] : elementCategoryFilter, changes: { elementCategory: 'all' } });
+          }
+          if (elementPeriodFilter !== 'all') activeElementFilterChips.push({ key: 'period', label: 'Period ' + elementPeriodFilter, changes: { elementPeriod: 'all' } });
+          if (elementBlockFilter !== 'all') activeElementFilterChips.push({ key: 'block', label: elementBlockFilter + '-block', changes: { elementBlock: 'all' } });
+          const elementDetailsOpen = d.elementDetailsOpen === true;
+          const syncPeriodicMapViewport = function(scroller) {
+            if (!scroller) return;
+            var mapTrack = scroller.querySelector('[data-periodic-map-track="true"]');
+            var mapWidth = Math.max(1, mapTrack ? mapTrack.scrollWidth : scroller.scrollWidth);
+            var columnWidth = mapWidth / 18;
+            var maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+            var scrollLeft = Math.max(0, Math.min(maxScroll, scroller.scrollLeft || 0));
+            var nextViewport = {
+              atStart: scrollLeft <= 2,
+              atEnd: maxScroll <= 2 || scrollLeft >= maxScroll - 2,
+              scrollable: maxScroll > 2,
+              firstGroup: Math.max(1, Math.min(18, Math.floor(scrollLeft / columnWidth) + 1)),
+              lastGroup: Math.max(1, Math.min(18, Math.ceil((scrollLeft + scroller.clientWidth) / columnWidth)))
+            };
+            if (nextViewport.atStart) nextViewport.firstGroup = 1;
+            if (nextViewport.atEnd) nextViewport.lastGroup = 18;
+            setPeriodicMapViewport(function(previous) {
+              return previous.atStart === nextViewport.atStart && previous.atEnd === nextViewport.atEnd && previous.scrollable === nextViewport.scrollable && previous.firstGroup === nextViewport.firstGroup && previous.lastGroup === nextViewport.lastGroup
+                ? previous
+                : nextViewport;
+            });
+          };
+          const movePeriodicMapViewport = function(direction) {
+            var mapScroller = periodicScrollRef.current;
+            if (!mapScroller) return;
+            var step = Math.max(180, Math.min(360, Math.round(mapScroller.clientWidth * 0.82)));
+            var maxScroll = Math.max(0, mapScroller.scrollWidth - mapScroller.clientWidth);
+            mapScroller.scrollLeft = Math.max(0, Math.min(maxScroll, mapScroller.scrollLeft + direction * step));
+            syncPeriodicMapViewport(mapScroller);
+          };
+          useEffect(function() {
+            if (mode !== 'table') return undefined;
+            var mapScroller = periodicScrollRef.current;
+            if (!mapScroller) return undefined;
+            var updateViewport = function() { syncPeriodicMapViewport(mapScroller); };
+            updateViewport();
+            mapScroller.addEventListener('scroll', updateViewport, { passive: true });
+            if (typeof window !== 'undefined') window.addEventListener('resize', updateViewport);
+            return function() {
+              mapScroller.removeEventListener('scroll', updateViewport);
+              if (typeof window !== 'undefined') window.removeEventListener('resize', updateViewport);
+            };
+          }, [mode]);
+          const selectPeriodicElement = function(el, locateInMap) {
+            if (!el) return;
+            updMulti({ selectedElement: el, elementDetailsOpen: false, showAllElementCompounds: false });
+            if (!locateInMap || typeof window === 'undefined' || typeof document === 'undefined') return;
+            var scheduleLocate = typeof window.requestAnimationFrame === 'function' ? window.requestAnimationFrame.bind(window) : function(callback) { return setTimeout(callback, 0); };
+            scheduleLocate(function() {
+              var mapScroller = periodicScrollRef.current || document.querySelector('[data-molecule-periodic-scroll="true"]');
+              var mapTile = mapScroller && mapScroller.querySelector('[data-element-symbol="' + el.s + '"]');
+              if (!mapScroller || !mapTile) return;
+              var centeredLeft = mapTile.offsetLeft - Math.max(0, (mapScroller.clientWidth - mapTile.offsetWidth) / 2);
+              if (typeof mapScroller.scrollTo === 'function') mapScroller.scrollTo({ left: Math.max(0, centeredLeft), behavior: 'auto' });
+              else mapScroller.scrollLeft = Math.max(0, centeredLeft);
+              syncPeriodicMapViewport(mapScroller);
+            });
           };
 
           // ═══ Chemical Reactions Database (10 reactions) ═══
@@ -1842,6 +1982,24 @@ window.StemLab = window.StemLab || {
             halogen: 'Halogen', noble: 'Noble gas', lanthanide: 'Lanthanide', actinide: 'Actinide'
           };
 
+          if (typeof window !== 'undefined') {
+            window.__alloMoleculeElementCatalog = {
+              count: ELEMENTS.length,
+              entries: ELEMENTS.map(function(el) {
+                var detailRecord = ELEMENT_DETAILS[el.s];
+                return {
+                  atomicNumber: el.n,
+                  symbol: el.s,
+                  name: el.name,
+                  category: ELEMENT_CATEGORY_LABELS[el.cat] || el.cat,
+                  description: detailRecord.desc,
+                  uses: detailRecord.uses.slice(),
+                  compounds: detailRecord.compounds.slice()
+                };
+              })
+            };
+          }
+
           const getElementBySymbol = function(symbol) {
             return ELEMENTS.find(function(el) { return el.s === symbol; }) || null;
           };
@@ -2003,6 +2161,19 @@ window.StemLab = window.StemLab || {
           };
 
           const catColors = { nonmetal: 'bg-blue-100 text-blue-700 border-blue-200', noble: 'bg-purple-100 text-purple-700 border-purple-200', alkali: 'bg-red-100 text-red-700 border-red-200', alkaline: 'bg-yellow-100 text-yellow-700 border-yellow-200', transition: 'bg-orange-100 text-orange-700 border-orange-200', metal: 'bg-slate-200 text-slate-700 border-slate-300', metalloid: 'bg-emerald-100 text-emerald-700 border-emerald-200', halogen: 'bg-teal-100 text-teal-700 border-teal-200', lanthanide: 'bg-violet-100 text-violet-700 border-violet-200', actinide: 'bg-pink-100 text-pink-700 border-pink-200' };
+          const getReadableSwatchTextColor = function(color) {
+            var hex = String(color || '').trim().replace(/^#/, '');
+            if (hex.length === 3) hex = hex.split('').map(function(character) { return character + character; }).join('');
+            if (!/^[0-9a-f]{6}$/i.test(hex)) return '#000000';
+            var channels = [0, 2, 4].map(function(offset) {
+              var value = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+              return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+            });
+            var luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+            var whiteContrast = 1.05 / (luminance + 0.05);
+            var blackContrast = (luminance + 0.05) / 0.05;
+            return whiteContrast >= blackContrast ? '#ffffff' : '#000000';
+          };
 
           // ── Molecule Viewer presets ──
 
@@ -2191,59 +2362,150 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             ),
 
-            React.createElement("section", { "data-molecule-command": "true", "aria-label": "Molecule Lab command deck", className: "mb-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-3 shadow-sm" },
-              React.createElement("div", { className: "grid gap-3 lg:grid-cols-[minmax(230px,0.9fr)_minmax(0,1.7fr)]" },
-                React.createElement("div", { className: "rounded-xl border border-cyan-200 bg-white p-3" },
-                  React.createElement("div", { className: "text-[11px] font-black uppercase text-cyan-700", style: { letterSpacing: 0 } }, "Molecular workbench"),
-                  React.createElement("div", { className: "mt-1 text-xl font-black leading-tight text-slate-900" }, "Pick the chemistry lens first."),
-                  React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "The lab is easier when students choose a mode by task: inspect, combine, build, research, or balance."),
-                  React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
-                    [
-                      ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#047857', '#6ee7b7'],
-                      ['Research points', totalRP, '#d97706', '#fcd34d'],
-                      ['Formula', d.formula || '-', '#2563eb', '#93c5fd']
-                    ].map(function(stat) {
-                      return React.createElement("div", { key: stat[0], className: "rounded-lg border border-slate-200 bg-white p-2" },
-                        React.createElement("div", { className: "text-[10px] font-bold uppercase text-slate-500", style: { letterSpacing: 0 } }, stat[0]),
-                        React.createElement("div", { className: "mt-1 text-sm font-black", style: { color: isContrast ? '#ffff00' : (isDark ? stat[3] : stat[2]), wordBreak: 'break-word' } }, stat[1])
-                      );
-                    })
+            (function() {
+              var openRealStructures = function() {
+                if (typeof setLabToolData === 'function') setLabToolData(function(prev) {
+                  var cur = Object.assign({}, (prev && prev._moleculeShelf) || {});
+                  cur.returnTool = 'molecule';
+                  var next = Object.assign({}, prev);
+                  next._moleculeShelf = cur;
+                  return next;
+                });
+                if (typeof setStemLabTab === 'function') setStemLabTab('explore');
+                if (typeof setStemLabTool === 'function') {
+                  setStemLabTool('moleculeShelf');
+                  if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.');
+                } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info');
+              };
+              var routes = [
+                { id: 'viewer', icon: '\uD83D\uDD2C', title: 'View molecules', cardTitle: 'View', body: 'Inspect a 3D model and formula readout.', tone: '#0f766e', darkTone: '#5eead4' },
+                { id: 'realStructures', icon: '\uD83E\uDDEC', title: 'Explore real structures', cardTitle: 'Real Structures', body: 'Open the Mol* protein and DNA viewer.', tone: '#0e7490', darkTone: '#67e8f9', action: openRealStructures },
+                { id: 'creator', icon: '\u2697\uFE0F', title: 'Create compounds', cardTitle: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea', darkTone: '#d8b4fe' },
+                { id: 'build', icon: '\uD83E\uDDF1', title: 'Build structures', cardTitle: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#92400e', darkTone: '#fcd34d' },
+                { id: 'table', icon: '\uD83D\uDDC2\uFE0F', title: 'Research elements', cardTitle: 'Research', body: 'Use the periodic table as a stable reference.', tone: '#2563eb', darkTone: '#93c5fd' },
+                { id: 'reactions', icon: '\u2696\uFE0F', title: 'Explore reactions', cardTitle: 'React', body: 'Balance equations and inspect products.', tone: '#dc2626', darkTone: '#fda4af' }
+              ];
+              var selectedRoute = routes.find(function(route) { return route.id === mode; }) || routes[0];
+              var selectedTone = isContrast ? '#ffff00' : (isDark ? selectedRoute.darkTone : selectedRoute.tone);
+              var summaryStats = [
+                ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#047857', '#6ee7b7'],
+                ['Research points', totalRP, '#d97706', '#fcd34d'],
+                ['Formula', d.formula || '-', '#2563eb', '#93c5fd']
+              ];
+
+              return React.createElement("section", {
+                "data-molecule-command": "true",
+                "data-molecule-command-state": modeDeckOpen ? "expanded" : "compact",
+                "aria-label": "Molecule Lab command deck",
+                className: "mb-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-2.5 shadow-sm"
+              },
+                React.createElement("div", { className: "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between", "data-molecule-command-summary": "true" },
+                  React.createElement("div", { className: "flex min-w-0 items-start gap-2.5" },
+                    React.createElement("span", {
+                      className: "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border text-lg shadow-sm",
+                      style: { color: selectedTone, borderColor: selectedTone + '55', backgroundColor: selectedTone + '12' },
+                      "aria-hidden": "true"
+                    }, selectedRoute.icon),
+                    React.createElement("div", { className: "min-w-0" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase text-cyan-700", style: { letterSpacing: '0.06em' } }, __alloT('stem.molecule.molecular_workbench', 'Molecular workbench') + ' · ' + __alloT('stem.molecule.selected_lens', 'Selected lens')),
+                      React.createElement("h4", { className: "mt-0.5 text-sm font-black leading-tight text-slate-900", style: { color: selectedTone } }, selectedRoute.title),
+                      React.createElement("p", { className: "mt-0.5 text-[11px] leading-snug text-slate-600" }, selectedRoute.body)
+                    )
+                  ),
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 sm:justify-end" },
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: openRealStructures,
+                      className: "min-h-9 rounded-lg border border-cyan-300 bg-white px-2.5 py-1.5 text-[11px] font-black text-cyan-800 shadow-sm transition-colors hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600",
+                      "aria-label": "Open Molecule Shelf real structures viewer"
+                    }, "\uD83E\uDDEC " + __alloT('stem.molecule.real_structures', 'Real structures')),
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: function() { upd('modeDeckOpen', !modeDeckOpen); },
+                      className: "min-h-9 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-[11px] font-black text-white shadow-sm transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
+                      "aria-expanded": modeDeckOpen ? "true" : "false",
+                      "aria-controls": "molecule-mode-discovery",
+                      "data-molecule-mode-guide-toggle": "true"
+                    }, (modeDeckOpen ? "\u2212 " : "+ ") + (modeDeckOpen ? __alloT('stem.molecule.hide_mode_guide', 'Hide mode guide') : __alloT('stem.molecule.explore_all_modes', 'Explore all modes')))
                   )
                 ),
-                React.createElement("div", { className: "grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-6", "data-molecule-mode-grid": "true" },
-                  [
-                    { id: 'viewer', title: 'View', body: '3D model and formula readout.', tone: '#0f766e', darkTone: '#5eead4' },
-                    { id: 'realStructures', title: 'Real Structures', body: 'Open Mol* protein and DNA viewer.', tone: '#0e7490', darkTone: '#67e8f9', action: function() { if (typeof setLabToolData === 'function') setLabToolData(function(prev) { var cur = Object.assign({}, (prev && prev._moleculeShelf) || {}); cur.returnTool = 'molecule'; var next = Object.assign({}, prev); next._moleculeShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('moleculeShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.'); } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info'); } },
-                    { id: 'creator', title: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea', darkTone: '#d8b4fe' },
-                    { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#92400e', darkTone: '#fcd34d' },
-                    { id: 'table', title: 'Research', body: 'Use the periodic table as reference.', tone: '#2563eb', darkTone: '#93c5fd' },
-                    { id: 'reactions', title: 'React', body: 'Balance equations and products.', tone: '#dc2626', darkTone: '#fda4af' }
-                  ].map(function(route) {
-                    var active = mode === route.id;
-                    var launchesShelf = typeof route.action === 'function';
-                    var routeTone = isContrast ? '#ffff00' : (isDark ? route.darkTone : route.tone);
-                    return React.createElement("button", { key: route.id,
-                      onClick: function() { if (launchesShelf) { route.action(); return; } upd('moleculeMode', route.id); },
-                      className: "min-h-[104px] rounded-xl border bg-white p-3 text-left transition-all hover:shadow-md active:scale-[0.98]",
-                      style: { borderColor: active ? routeTone : '#cbd5e1', boxShadow: active ? '0 0 0 2px ' + routeTone + '33' : 'none' } },
-                      React.createElement("div", { className: "text-sm font-black", style: { color: routeTone } }, route.title),
-                      React.createElement("div", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, route.body),
-                      React.createElement("div", { className: "mt-2 text-[11px] font-black", style: { color: routeTone } }, launchesShelf ? "Launch" : (active ? "Open now" : "Open"))
+                React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 border-t border-slate-200 pt-2", "aria-label": "Molecule Lab progress summary" },
+                  summaryStats.map(function(stat) {
+                    return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 shadow-sm" },
+                      React.createElement("span", { className: "font-bold" }, stat[0]),
+                      React.createElement("strong", { style: { color: isContrast ? '#ffff00' : (isDark ? stat[3] : stat[2]), wordBreak: 'break-word' } }, stat[1])
                     );
                   })
+                ),
+                React.createElement("div", {
+                  id: "molecule-mode-discovery",
+                  hidden: !modeDeckOpen,
+                  className: modeDeckOpen ? "mt-3 border-t border-cyan-200 pt-3" : ""
+                },
+                  modeDeckOpen && React.createElement(React.Fragment, null,
+                    React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1.5" },
+                      React.createElement("div", null,
+                        React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-cyan-700" }, __alloT('stem.molecule.choose_a_chemistry_task', 'Choose a chemistry task')),
+                        React.createElement("p", { className: "mt-0.5 text-[11px] text-slate-600" }, __alloT('stem.molecule.mode_guide_hint', 'Inspect, combine, build, research, or balance without losing your current work.'))
+                      ),
+                      React.createElement("span", { className: "rounded-full border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800" }, routes.length + " pathways")
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-2 gap-2 lg:grid-cols-3 xl:grid-cols-6", "data-molecule-mode-grid": "true" },
+                      routes.map(function(route) {
+                        var active = mode === route.id;
+                        var launchesShelf = typeof route.action === 'function';
+                        var routeTone = isContrast ? '#ffff00' : (isDark ? route.darkTone : route.tone);
+                        return React.createElement("button", {
+                          key: route.id,
+                          type: "button",
+                          onClick: function() { if (launchesShelf) { route.action(); return; } upd('moleculeMode', route.id); },
+                          className: "min-h-[96px] rounded-xl border bg-white p-2.5 text-left shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+                          style: { borderColor: active ? routeTone : '#cbd5e1', boxShadow: active ? '0 0 0 2px ' + routeTone + '33' : '0 1px 2px rgba(15,23,42,0.06)' },
+                          "aria-pressed": launchesShelf ? undefined : (active ? "true" : "false"),
+                          "data-molecule-route": route.id
+                        },
+                          React.createElement("div", { className: "flex items-center gap-1.5" },
+                            React.createElement("span", { className: "text-base", "aria-hidden": "true" }, route.icon),
+                            React.createElement("span", { className: "text-xs font-black", style: { color: routeTone } }, route.cardTitle)
+                          ),
+                          React.createElement("div", { className: "mt-1 text-[10px] leading-snug text-slate-600" }, route.body),
+                          React.createElement("div", { className: "mt-1.5 text-[10px] font-black", style: { color: routeTone } }, launchesShelf ? __alloT('stem.molecule.launch', 'Launch') : (active ? __alloT('stem.molecule.selected', 'Selected') : __alloT('stem.molecule.open', 'Open')))
+                        );
+                      })
+                    )
+                  )
                 )
-              )
-            ),
+              );
+            })(),
 
             // Mode tabs
 
-            React.createElement("div", { className: "flex flex-wrap gap-1 mb-4 bg-slate-100 p-1 rounded-xl" },
+            React.createElement("nav", { className: "mb-3 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1", "aria-label": "Molecule Lab modes", "data-molecule-primary-tabs": "true" },
 
-              [['viewer', '\uD83D\uDD2C Viewer'], ['creator', '\u2697\uFE0F Compound Creator'], ['build', '\uD83E\uDDF1 Build'], ['table', '\uD83D\uDDC2\uFE0F Periodic Table'], ['reactions', '⚗️ Reactions']].map(([m, label]) =>
-
-                React.createElement("button", { "aria-label": "Switch to " + label + " mode", key: m, onClick: () => { upd('moleculeMode', m); if (typeof canvasNarrate === 'function') { canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + label + ' mode.', repeat: label + ' mode.', terse: label + '.' }, { debounce: 500 }); } }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 " + (mode === m ? 'bg-white text-slate-800 shadow-sm' : 'transition-colors text-slate-600 hover:bg-white/70 hover:text-slate-800 active:scale-[0.97]') }, label)
-
-              )
+              [
+                ['viewer', '\uD83D\uDD2C', 'Viewer', 'View'],
+                ['creator', '\u2697\uFE0F', 'Compound Creator', 'Create'],
+                ['build', '\uD83E\uDDF1', 'Build', 'Build'],
+                ['table', '\uD83D\uDDC2\uFE0F', 'Periodic Table', 'Table'],
+                ['reactions', '\u2697\uFE0F', 'Reactions', 'React']
+              ].map(function(tab) {
+                var m = tab[0], icon = tab[1], fullLabel = tab[2], shortLabel = tab[3];
+                return React.createElement("button", {
+                  "aria-label": "Switch to " + fullLabel + " mode",
+                  "aria-pressed": mode === m ? "true" : "false",
+                  "data-molecule-primary-tab": m,
+                  key: m,
+                  type: "button",
+                  onClick: function() {
+                    upd('moleculeMode', m);
+                    if (typeof canvasNarrate === 'function') canvasNarrate('molecule', 'mode_switch', { first: 'Switched to ' + fullLabel + ' mode.', repeat: fullLabel + ' mode.', terse: fullLabel + '.' }, { debounce: 500 });
+                  },
+                  className: "min-w-[62px] flex-1 rounded-lg px-2 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " + (mode === m ? 'bg-white text-slate-900 shadow-sm ring-1 ring-indigo-200' : 'text-slate-600 hover:bg-white/70 hover:text-slate-800')
+                },
+                  React.createElement("span", { className: "sm:hidden" }, icon + ' ' + shortLabel),
+                  React.createElement("span", { className: "hidden sm:inline" }, icon + ' ' + fullLabel)
+                );
+              })
 
             ),
 
@@ -2258,20 +2520,21 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               };
               var meta = MODE_META[mode] || MODE_META.viewer;
               return React.createElement('div', {
+                'data-molecule-topic-banner': mode,
                 style: {
-                  margin: '0 0 12px',
-                  padding: '12px 14px',
-                  borderRadius: 12,
+                  margin: '0 0 10px',
+                  padding: '9px 11px',
+                  borderRadius: 10,
                   background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
                   border: '1px solid ' + meta.accent + '55',
                   borderLeft: '4px solid ' + meta.accent,
-                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                  display: 'flex', alignItems: 'flex-start', gap: 9
                 }
               },
-                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
-                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  React.createElement('p', { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                React.createElement('div', { style: { fontSize: 21, lineHeight: 1, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 0 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 13.5, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '2px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 10.5, lineHeight: 1.4 } }, meta.hint)
                 )
               );
             })(),
@@ -2452,7 +2715,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     return React.createElement("div", { key: sym, className: "flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1 border" },
 
-                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#94a3b8' } }, sym),
+                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center font-bold text-sm", style: { backgroundColor: el?.c || '#94a3b8', color: getReadableSwatchTextColor(el?.c || '#94a3b8') } }, sym),
 
                       React.createElement("span", { className: "text-lg font-black text-slate-700 tracking-tight" }, "\u00D7" + count),
 
@@ -2958,9 +3221,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                     onClick: () => { upd('buildBondFrom', i); },
 
-                    className: "w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
+                    className: "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
 
-                    style: { backgroundColor: a.color },
+                    style: { backgroundColor: a.color, color: getReadableSwatchTextColor(a.color) },
 
                     title: 'Start bond from ' + a.el
 
@@ -3172,6 +3435,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             mode === 'table' && React.createElement("div", null,
 
+              React.createElement("style", null,
+                '[data-element-workspace="true"]{grid-template-columns:minmax(0,1fr)!important;align-items:start;}' +
+                '@media (min-width:1280px){[data-element-workspace="true"]{grid-template-columns:minmax(0,2fr) minmax(300px,1fr)!important;}' +
+                '[data-element-workspace="true"]>[data-selected-element-card="true"]{position:sticky;top:.75rem;max-height:min(760px,calc(100vh - 1.5rem));overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;}' +
+                '[data-periodic-map-viewport-controls="true"],[data-periodic-map-overflow-cue]{display:none!important;}}'
+              ),
+
               React.createElement("section", {
                 className: "mb-3 rounded-2xl border border-sky-200 bg-gradient-to-br from-white via-cyan-50 to-indigo-50 p-3 shadow-sm",
                 "data-element-explorer-controls": "true",
@@ -3248,18 +3518,90 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ),
                   elementFiltersActive && React.createElement("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700" }, "Layout preserved while filtering")
                 ),
+                activeElementFilterChips.length > 0 && React.createElement("div", {
+                  className: "mt-2 flex flex-wrap items-center gap-1.5",
+                  "aria-label": "Active element filters"
+                },
+                  React.createElement("span", { className: "mr-0.5 text-[10px] font-black uppercase tracking-wider text-slate-500" }, "Active"),
+                  activeElementFilterChips.map(function(chip) {
+                    return React.createElement("button", {
+                      key: chip.key,
+                      type: "button",
+                      onClick: () => updateElementFilters(chip.changes),
+                      className: "inline-flex min-h-8 items-center gap-1 rounded-full border border-indigo-300 bg-white px-2.5 py-1 text-[11px] font-bold text-indigo-800 shadow-sm hover:bg-indigo-50",
+                      "aria-label": "Remove filter: " + chip.label
+                    },
+                      React.createElement("span", null, chip.label),
+                      React.createElement("span", { "aria-hidden": "true", className: "text-sm leading-none text-indigo-500" }, "×")
+                    );
+                  })
+                ),
                 selectedElementHiddenByFilter && React.createElement("div", {
                   className: "mt-2 flex flex-wrap items-center gap-2 p-2 rounded-lg border border-indigo-200 bg-indigo-50 text-[11px] text-indigo-800",
                   role: "status",
                   "aria-live": "polite"
                 },
-                  React.createElement("span", null, "Selected element " + d.selectedElement.name + " is hidden by these filters."),
+                  React.createElement("span", null, "Selected element " + selectedElementCatalogEntry.name + " is hidden by these filters."),
                   React.createElement("button", {
                     type: "button",
                     onClick: () => updateElementFilters({ elementSearch: '', elementCategory: 'all', elementPeriod: 'all', elementBlock: 'all' }),
                     className: "px-2 py-1 rounded-md border border-indigo-300 bg-white text-indigo-800 font-bold hover:bg-indigo-100"
                   }, "Show selected")
                 )
+              ),
+
+              elementFiltersActive && filteredElements.length > 0 && React.createElement("section", {
+                className: "mb-3 rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm",
+                "data-matching-elements-tray": "true",
+                "aria-labelledby": "molecule-matching-elements-title"
+              },
+                React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-2" },
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-indigo-600" }, "Filtered collection"),
+                    React.createElement("h4", { id: "molecule-matching-elements-title", className: "text-sm font-black text-slate-900" }, "Matching elements")
+                  ),
+                  React.createElement("span", { className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700" }, filteredElements.length + " result" + (filteredElements.length === 1 ? "" : "s"))
+                ),
+                React.createElement("p", { className: "mb-2 text-[11px] leading-relaxed text-slate-600" }, "Choose a result to inspect it and center its periodic-table column. The map itself keeps every element in its true position."),
+                React.createElement("div", {
+                  className: "overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-2",
+                  role: "region",
+                  tabIndex: 0,
+                  "aria-label": "Matching element results"
+                },
+                  React.createElement("div", { className: "flex gap-2", style: { width: 'max-content', minWidth: '100%' } },
+                    filteredElements.map(function(el) {
+                      var isSelectedMatch = !!(d.selectedElement && d.selectedElement.s === el.s);
+                      return React.createElement("button", {
+                        key: 'match-' + el.s,
+                        type: "button",
+                        onClick: () => selectPeriodicElement(el, true),
+                        "aria-label": "Select " + el.name + " and center it in the periodic map",
+                        "aria-pressed": isSelectedMatch ? "true" : "false",
+                        "data-matching-element": el.s,
+                        className: "flex min-h-11 items-center gap-2 rounded-xl border bg-white px-2.5 py-2 text-left shadow-sm transition-colors hover:border-indigo-400 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (isSelectedMatch ? "border-indigo-500 ring-2 ring-indigo-200" : "border-slate-300"),
+                        style: { width: '132px' }
+                      },
+                        React.createElement("span", { className: "flex h-9 w-9 flex-shrink-0 flex-col items-center justify-center rounded-lg shadow-sm", style: { backgroundColor: el.c, color: getReadableSwatchTextColor(el.c) }, "aria-hidden": "true" },
+                          React.createElement("strong", { className: "text-sm leading-none" }, el.s),
+                          React.createElement("span", { className: "mt-0.5 text-[9px] leading-none" }, el.n)
+                        ),
+                        React.createElement("span", { className: "min-w-0" },
+                          React.createElement("strong", { className: "block truncate text-[11px] text-slate-900" }, el.name),
+                          React.createElement("span", { className: "block text-[9px] font-bold uppercase tracking-wide text-slate-500" }, "Period " + el.period)
+                        )
+                      );
+                    })
+                  )
+                )
+              ),
+
+              elementFiltersActive && filteredElements.length === 0 && React.createElement("div", {
+                className: "mb-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900",
+                role: "status"
+              },
+                React.createElement("p", { className: "font-black" }, "No matching elements"),
+                React.createElement("p", { className: "mt-1 leading-relaxed" }, "Try a broader search, remove one active filter, or clear the filters to restore all 118 elements.")
               ),
 
               React.createElement("section", {
@@ -3302,7 +3644,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     ];
                     return React.createElement("article", { className: "rounded-xl border border-slate-300 bg-white p-3 shadow-sm", "aria-label": heading + ": " + el.name },
                       React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                        React.createElement("div", { className: "w-12 h-12 rounded-lg text-white flex flex-col items-center justify-center shadow-sm", style: { backgroundColor: el.c } },
+                        React.createElement("div", { className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center shadow-sm", style: { backgroundColor: el.c, color: getReadableSwatchTextColor(el.c) } },
                           React.createElement("span", { className: "text-[10px] leading-none" }, el.n),
                           React.createElement("span", { className: "text-lg font-black leading-none" }, el.s)
                         ),
@@ -3377,15 +3719,166 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 })()
               ),
 
+              React.createElement("div", {
+                className: "mb-3 grid grid-cols-1 gap-3",
+                "data-element-workspace": "true"
+              },
+
+              // Keep the map first in document order so it remains the learner's
+              // visual and keyboard context on narrow screens.
+              React.createElement("section", {
+                className: "order-1 min-w-0 rounded-2xl border border-slate-300 bg-slate-50 p-3 shadow-sm",
+                "data-molecule-periodic-grid": "true",
+                "aria-labelledby": "molecule-periodic-map-title"
+              },
+                React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-2" },
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "text-[10px] font-black uppercase text-blue-600", style: { letterSpacing: '0.08em' } }, "Periodic map"),
+                    React.createElement("h4", { id: "molecule-periodic-map-title", className: "text-sm font-black text-slate-900" }, "118 elements in fixed positions")
+                  ),
+                  React.createElement("span", { className: "rounded-full border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-600" }, "18 groups • 7 periods")
+                ),
+                React.createElement("p", { id: "molecule-periodic-map-instructions", className: "mb-2 text-[11px] leading-relaxed text-slate-600" }, elementFiltersActive ? "Filtered results remain in their original coordinates. Blank spaces show where hidden elements belong." : "Group numbers run left to right. On narrow screens, scroll the map horizontally to explore every group."),
+
+                React.createElement("div", {
+                  className: "mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 xl:hidden",
+                  "data-periodic-map-viewport-controls": "true"
+                },
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("p", { className: "text-[9px] font-black uppercase tracking-wider text-blue-700" }, "Map viewport"),
+                    React.createElement("p", {
+                      id: "molecule-periodic-map-viewport-status",
+                      className: "text-[11px] font-bold text-slate-700",
+                      role: "status",
+                      "aria-live": "polite",
+                      "data-periodic-map-visible-groups": periodicMapViewport.firstGroup + "-" + periodicMapViewport.lastGroup,
+                      style: { fontVariantNumeric: 'tabular-nums' }
+                    }, "Groups " + periodicMapViewport.firstGroup + "–" + periodicMapViewport.lastGroup + " in view")
+                  ),
+                  React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": "Move through periodic table groups" },
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: function() { movePeriodicMapViewport(-1); },
+                      disabled: !periodicMapViewport.scrollable || periodicMapViewport.atStart,
+                      "aria-label": "Show earlier periodic table groups",
+                      "data-periodic-map-move": "earlier",
+                      className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-blue-300 bg-white px-2 text-sm font-black text-blue-800 shadow-sm transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    }, "←"),
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: function() { movePeriodicMapViewport(1); },
+                      disabled: !periodicMapViewport.scrollable || periodicMapViewport.atEnd,
+                      "aria-label": "Show later periodic table groups",
+                      "data-periodic-map-move": "later",
+                      className: "inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-blue-300 bg-white px-2 text-sm font-black text-blue-800 shadow-sm transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    }, "→")
+                  )
+                ),
+
+                React.createElement("div", { className: "relative", "data-periodic-map-viewport": "true" },
+                  React.createElement("div", {
+                    ref: periodicScrollRef,
+                    className: "overflow-x-auto rounded-xl border border-slate-200 bg-white p-2",
+                    tabIndex: 0,
+                    role: "region",
+                    "aria-label": "Scrollable periodic table map",
+                    "aria-describedby": "molecule-periodic-map-instructions molecule-periodic-map-viewport-status",
+                    "data-molecule-periodic-scroll": "true",
+                    onScroll: function(event) { syncPeriodicMapViewport(event.currentTarget); }
+                  },
+
+                React.createElement("div", { "data-periodic-map-track": "true", style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(32px, 1fr))', gap: '2px', minWidth: '640px' } },
+
+                  Array.from({ length: 18 }, function(_, groupIndex) {
+                    return React.createElement("span", { key: 'group-' + groupIndex, className: "pb-1 text-center text-[9px] font-black text-slate-600", "aria-hidden": "true", "data-periodic-group": String(groupIndex + 1) }, groupIndex + 1);
+                  }),
+
+                  PT_LAYOUT.flatMap((row, ri) => {
+
+                    if (!Array.isArray(row)) return [];
+
+                    if (row.length === 0) return [React.createElement("div", { key: 'gap-' + ri, style: { gridColumn: 'span 18', height: '4px' } })];
+
+                    return row.map((num, ci) => {
+
+                      if (num === 0) return React.createElement("div", { key: ri + '-' + ci });
+
+                      const el = ELEMENTS[num - 1];
+
+                      if (!el) return React.createElement("div", { key: ri + '-' + ci });
+
+                      // Preserve all 18 columns while filtering so the map never
+                      // reflows or shifts beneath the learner.
+                      if (!filteredElementSymbols.has(el.s)) return React.createElement("div", { key: el.s, "aria-hidden": "true" });
+
+                      const isSelected = !!(d.selectedElement && d.selectedElement.s === el.s);
+                      return React.createElement("button", {
+                        type: "button",
+                        "aria-label": "Select element: " + el.name + " (" + el.s + "), " + el.positionLabel + ", " + el.block + "-block",
+                        "aria-pressed": isSelected ? "true" : "false",
+                        "data-element-symbol": el.s,
+                        key: el.s,
+                        onClick: () => selectPeriodicElement(el, false),
+                        className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[11px] font-bold border transition-colors hover:border-slate-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 " + (catColors[el.cat] || 'bg-slate-50 border-slate-200') + (isSelected ? " ring-2 ring-indigo-600 ring-offset-1" : ""),
+                        title: el.name,
+                        style: { minWidth: '28px' }
+                      },
+
+                        React.createElement("span", { className: "font-black text-[11px] leading-none" }, el.s),
+
+                        React.createElement("span", { className: "leading-none" }, el.n)
+
+                      );
+
+                    });
+
+                  })
+
+                )
+
+                  ),
+                  periodicMapViewport.scrollable && !periodicMapViewport.atStart && React.createElement("span", {
+                    className: "pointer-events-none absolute inset-y-px left-px w-7 rounded-l-xl bg-gradient-to-r from-white via-white/80 to-transparent xl:hidden",
+                    "aria-hidden": "true",
+                    "data-periodic-map-overflow-cue": "left"
+                  }),
+                  periodicMapViewport.scrollable && !periodicMapViewport.atEnd && React.createElement("span", {
+                    className: "pointer-events-none absolute inset-y-px right-px w-7 rounded-r-xl bg-gradient-to-l from-white via-white/80 to-transparent xl:hidden",
+                    "aria-hidden": "true",
+                    "data-periodic-map-overflow-cue": "right"
+                  })
+                ),
+
+              React.createElement("div", { className: "mt-3 flex flex-wrap gap-1.5 justify-center border-t border-slate-200 pt-3", "aria-label": "Filter by element category" },
+
+                [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', 'Lanthanide'], ['actinide', 'Actinide']].map(([cat, label]) =>
+
+                  React.createElement("button", {
+                    type: "button",
+                    key: cat,
+                    onClick: () => updateElementFilters({ elementCategory: elementCategoryFilter === cat ? 'all' : cat }),
+                    "aria-pressed": elementCategoryFilter === cat ? "true" : "false",
+                    "aria-label": (elementCategoryFilter === cat ? "Remove category filter: " : "Filter by category: ") + label,
+                    className: "min-h-8 px-2 py-1 rounded text-[11px] font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (catColors[cat] || '') + (elementCategoryFilter === cat ? " ring-2 ring-indigo-500 ring-offset-1" : "")
+                  }, label)
+
+                )
+
+              )
+
+              ),
+
               d.selectedElement && (() => {
 
                 const detail = getElementDetail(d.selectedElement.s);
 
                 const relatedCompounds = getElementCompounds(d.selectedElement.s);
 
-                const selectedElementRecord = getElementBySymbol(d.selectedElement.s) || d.selectedElement;
+                const selectedElementRecord = selectedElementCatalogEntry || d.selectedElement;
 
                 const selectedMetrics = getElementMetrics(selectedElementRecord);
+
+                const visibleRelatedCompounds = d.showAllElementCompounds ? relatedCompounds : relatedCompounds.slice(0, 4);
 
                 const selectedFactRows = selectedMetrics ? [
                   ['Atomic mass', selectedMetrics.mass.toFixed(3) + ' g/mol'],
@@ -3398,17 +3891,23 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ['Pauling electronegativity', selectedMetrics.electronegativity === null ? 'Not listed' : selectedMetrics.electronegativity.toFixed(2)]
                 ] : [];
 
-                const selectedElementIndex = ELEMENTS.findIndex(function(el) { return el.s === d.selectedElement.s; });
+                const selectedElementMatchesFilters = filteredElementSymbols.has(d.selectedElement.s);
 
-                const previousElement = selectedElementIndex > 0 ? ELEMENTS[selectedElementIndex - 1] : null;
+                const browsingFilteredElements = d.elementBrowseScope === 'filtered' && elementFiltersActive && filteredElements.length > 0 && selectedElementMatchesFilters;
 
-                const nextElement = selectedElementIndex >= 0 && selectedElementIndex < ELEMENTS.length - 1 ? ELEMENTS[selectedElementIndex + 1] : null;
+                const selectedBrowsePool = browsingFilteredElements ? filteredElements : ELEMENTS;
 
-                return React.createElement("div", { role: "region", "aria-labelledby": "molecule-selected-element-title", "data-selected-element-card": "true", className: "mb-4 rounded-2xl border-2 overflow-hidden shadow-sm " + (catColors[d.selectedElement.cat] || 'bg-slate-50 border-slate-200') },
+                const selectedElementIndex = selectedBrowsePool.findIndex(function(el) { return el.s === d.selectedElement.s; });
+
+                const previousElement = selectedElementIndex > 0 ? selectedBrowsePool[selectedElementIndex - 1] : null;
+
+                const nextElement = selectedElementIndex >= 0 && selectedElementIndex < selectedBrowsePool.length - 1 ? selectedBrowsePool[selectedElementIndex + 1] : null;
+
+                return React.createElement("div", { role: "region", "aria-labelledby": "molecule-selected-element-title", "data-selected-element-card": "true", className: "order-2 min-w-0 rounded-2xl border-2 overflow-hidden shadow-sm " + (catColors[d.selectedElement.cat] || 'bg-slate-50 border-slate-200') },
 
                   React.createElement("div", { className: "p-4 flex items-start gap-3" },
 
-                    React.createElement("div", { className: "w-16 h-16 rounded-2xl flex flex-col items-center justify-center text-white font-bold shadow-md flex-shrink-0", style: { backgroundColor: d.selectedElement.c } },
+                    React.createElement("div", { className: "w-16 h-16 rounded-2xl flex flex-col items-center justify-center font-bold shadow-md flex-shrink-0", style: { backgroundColor: d.selectedElement.c, color: getReadableSwatchTextColor(d.selectedElement.c) } },
 
                       React.createElement("span", { className: "text-[11px] opacity-80" }, d.selectedElement.n),
 
@@ -3420,7 +3919,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("p", { className: "text-[10px] font-black uppercase text-slate-600", style: { letterSpacing: '0.08em' } }, "Selected element"),
 
-                      React.createElement("h4", { id: "molecule-selected-element-title", className: "text-xl font-black text-slate-900 tracking-tight" }, d.selectedElement.name),
+                      React.createElement("h4", { id: "molecule-selected-element-title", className: "text-xl font-black text-slate-900 tracking-tight" }, selectedElementRecord.name),
 
                       React.createElement("div", { className: "mt-1 flex flex-wrap gap-1.5" },
                         React.createElement("span", { className: "rounded-full border border-slate-300 bg-white/80 px-2 py-0.5 text-[10px] font-bold text-slate-700" }, "Atomic #" + d.selectedElement.n),
@@ -3431,13 +3930,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       detail && React.createElement("p", { className: "text-xs text-slate-700 mt-2 leading-relaxed italic" }, detail.desc),
 
                       detail && React.createElement("button", { "aria-label": __alloT('stem.molecule.speak_text', "Speak Text"),
-                        onClick: () => speakText(d.selectedElement.name + '. ' + detail.desc),
+                        onClick: () => speakText(selectedElementRecord.name + '. ' + detail.desc),
                         className: "transition-colors mt-2 px-2 py-1 rounded-md border border-slate-300 bg-white/80 text-[10px] font-bold text-slate-700 hover:bg-white inline-flex items-center active:scale-[0.97]"
                       }, "🔊 Hear summary"),
 
                     ),
 
-                    React.createElement("button", { type: "button", onClick: () => upd('selectedElement', null), className: "flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-slate-600 shadow-sm transition-colors hover:bg-white hover:text-slate-900 flex-shrink-0", "aria-label": __alloT('stem.molecule.close', "Close") }, "\u2715")
+                    React.createElement("button", { type: "button", onClick: () => updMulti({ selectedElement: null, elementDetailsOpen: false, showAllElementCompounds: false }), className: "flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 bg-white/80 text-slate-600 shadow-sm transition-colors hover:bg-white hover:text-slate-900 flex-shrink-0", "aria-label": __alloT('stem.molecule.close', "Close") }, "\u2715")
 
                   ),
 
@@ -3445,28 +3944,55 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     React.createElement("button", {
                       type: "button",
                       disabled: !previousElement,
-                      onClick: () => previousElement && upd('selectedElement', previousElement),
+                      onClick: () => previousElement && selectPeriodicElement(previousElement, false),
                       "aria-label": previousElement ? "Previous element: " + previousElement.name : "No previous element",
                       className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                     }, previousElement ? "← " + previousElement.s : "← Start"),
-                    React.createElement("span", { className: "text-[11px] font-bold text-slate-600", "aria-live": "polite" },
-                      (selectedElementIndex + 1) + " of " + ELEMENTS.length
+                    React.createElement("span", { className: "text-center text-[11px] font-bold text-slate-600", "aria-live": "polite" },
+                      React.createElement("span", { className: "block" }, (selectedElementIndex + 1) + " of " + selectedBrowsePool.length),
+                      elementFiltersActive && filteredElements.length > 0 && selectedElementMatchesFilters && React.createElement("button", {
+                        type: "button",
+                        onClick: () => upd('elementBrowseScope', browsingFilteredElements ? 'all' : 'filtered'),
+                        className: "mt-0.5 rounded-full border border-indigo-200 bg-white px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-indigo-700 hover:bg-indigo-50",
+                        "aria-label": browsingFilteredElements ? "Browse all 118 elements" : "Browse only the " + filteredElements.length + " matching elements"
+                      }, browsingFilteredElements ? "Matches" : "All elements")
                     ),
                     React.createElement("button", {
                       type: "button",
                       disabled: !nextElement,
-                      onClick: () => nextElement && upd('selectedElement', nextElement),
+                      onClick: () => nextElement && selectPeriodicElement(nextElement, false),
                       "aria-label": nextElement ? "Next element: " + nextElement.name : "No next element",
                       className: "px-2 py-1 rounded-md border border-slate-300 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
                     }, nextElement ? nextElement.s + " →" : "End →")
                   ),
+
+                  React.createElement("div", { className: "border-t border-slate-200/50 bg-white/80 p-3" },
+                    React.createElement("button", {
+                      type: "button",
+                      onClick: () => upd('elementDetailsOpen', !elementDetailsOpen),
+                      "aria-expanded": elementDetailsOpen ? "true" : "false",
+                      "aria-controls": "molecule-selected-element-details",
+                      className: "flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-3 py-2 text-left text-xs font-black text-slate-800 shadow-sm hover:border-indigo-400 hover:bg-indigo-50"
+                    },
+                      React.createElement("span", null,
+                        React.createElement("span", { className: "block" }, elementDetailsOpen ? "Hide deeper details" : "Explore complete facts"),
+                        React.createElement("span", { className: "mt-0.5 block text-[10px] font-medium text-slate-500" }, "Reference fields, uses, compounds, and the stable Bohr diagram")
+                      ),
+                      React.createElement("span", { "aria-hidden": "true", className: "text-lg text-indigo-600" }, elementDetailsOpen ? "−" : "+")
+                    )
+                  ),
+
+                  elementDetailsOpen && React.createElement("div", {
+                    id: "molecule-selected-element-details",
+                    "data-element-details-panel": "true"
+                  },
 
                   selectedMetrics && React.createElement("div", { className: "border-t border-slate-200/50 bg-white/90 px-3 py-3" },
                     React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-1" },
                       React.createElement("h5", { className: "text-[11px] font-black uppercase tracking-wider text-slate-700" }, "Complete element facts"),
                       React.createElement("span", { className: "text-[10px] font-medium text-slate-500" }, "8 reference fields")
                     ),
-                    React.createElement("dl", { className: "gap-2 text-[11px]", style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }, "aria-label": "Complete facts for " + d.selectedElement.name },
+                    React.createElement("dl", { className: "gap-2 text-[11px]", style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }, "aria-label": "Complete facts for " + selectedElementRecord.name },
                       selectedFactRows.map(function(row) {
                         return React.createElement("div", { key: row[0], className: "rounded-lg border border-slate-200 bg-white p-2 shadow-sm" },
                           React.createElement("dt", { className: "text-[9px] font-black uppercase text-slate-500", style: { letterSpacing: '0.05em' } }, row[0]),
@@ -3515,7 +4041,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors active:scale-[0.97]" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                        visibleRelatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")")),
+
+                        relatedCompounds.length > 4 && React.createElement("button", {
+                          type: "button",
+                          onClick: () => upd('showAllElementCompounds', !d.showAllElementCompounds),
+                          "aria-expanded": d.showAllElementCompounds ? "true" : "false",
+                          className: "rounded-full border border-emerald-300 bg-white px-2 py-0.5 text-[11px] font-black text-emerald-800 hover:bg-emerald-50"
+                        }, d.showAllElementCompounds ? "Show fewer" : "Show " + (relatedCompounds.length - 4) + " more")
 
                       )
 
@@ -3551,7 +4084,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                           role: "img",
 
-                          "aria-label": "Bohr model of " + (d.selectedElement.name || d.selectedElement.s || "the selected element") + ": nucleus with " + d.selectedElement.n + " protons and approximately " + Math.max(0, Math.round(d.selectedElement.mass || (d.selectedElement.n * 2.15)) - d.selectedElement.n) + " neutrons; " + d.selectedElement.n + " electrons arranged as " + getElectronConfig(d.selectedElement.n) + ".",
+                          "aria-label": "Bohr model of " + (selectedElementRecord.name || selectedElementRecord.s || "the selected element") + ": nucleus with " + selectedElementRecord.n + " protons and approximately " + Math.max(0, Math.round(selectedElementRecord.mass || (selectedElementRecord.n * 2.15)) - selectedElementRecord.n) + " neutrons; " + selectedElementRecord.n + " electrons arranged as " + getElectronConfig(selectedElementRecord.n) + ".",
 
                           className: "rounded-xl border border-slate-400 bg-slate-900 flex-shrink-0 shadow-md",
 
@@ -3957,82 +4490,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   )
 
+                  )
+
                 );
 
               })(),
-
-              // Table grid
-
-              React.createElement("section", {
-                className: "mb-3 rounded-2xl border border-slate-300 bg-slate-50 p-3 shadow-sm",
-                "data-molecule-periodic-grid": "true",
-                "aria-labelledby": "molecule-periodic-map-title"
-              },
-                React.createElement("div", { className: "mb-2 flex flex-wrap items-end justify-between gap-2" },
-                  React.createElement("div", null,
-                    React.createElement("p", { className: "text-[10px] font-black uppercase text-blue-600", style: { letterSpacing: '0.08em' } }, "Periodic map"),
-                    React.createElement("h4", { id: "molecule-periodic-map-title", className: "text-sm font-black text-slate-900" }, "118 elements in fixed positions")
-                  ),
-                  React.createElement("span", { className: "rounded-full border border-slate-300 bg-white px-2 py-1 text-[10px] font-bold text-slate-600" }, "18 groups • 7 periods")
-                ),
-                React.createElement("p", { className: "mb-2 text-[10px] leading-relaxed text-slate-500" }, elementFiltersActive ? "Filtered results remain in their original coordinates. Blank spaces show where hidden elements belong." : "Group numbers run left to right. On narrow screens, scroll the map horizontally to explore every group."),
-
-                React.createElement("div", { className: "overflow-x-auto rounded-xl border border-slate-200 bg-white p-2", tabIndex: 0, role: "region", "aria-label": "Scrollable periodic table map" },
-
-                React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(18, minmax(32px, 1fr))', gap: '2px', minWidth: '640px' } },
-
-                  Array.from({ length: 18 }, function(_, groupIndex) {
-                    return React.createElement("span", { key: 'group-' + groupIndex, className: "pb-1 text-center text-[9px] font-black text-slate-600", "aria-hidden": "true" }, groupIndex + 1);
-                  }),
-
-                  PT_LAYOUT.flatMap((row, ri) => {
-
-                    if (!Array.isArray(row)) return [];
-
-                    if (row.length === 0) return [React.createElement("div", { key: 'gap-' + ri, style: { gridColumn: 'span 18', height: '4px' } })];
-
-                    return row.map((num, ci) => {
-
-                      if (num === 0) return React.createElement("div", { key: ri + '-' + ci });
-
-                      const el = ELEMENTS[num - 1];
-
-                      if (!el) return React.createElement("div", { key: ri + '-' + ci });
-
-                      // Keep the 18-column geometry intact while filtering so
-                      // the table never reflows or shifts under the learner.
-                      if (!filteredElementSymbols.has(el.s)) return React.createElement("div", { key: el.s, "aria-hidden": "true" });
-
-                      const isSelected = !!(d.selectedElement && d.selectedElement.s === el.s);
-                      return React.createElement("button", { type: "button", "aria-label": "Select element: " + el.name + " (" + el.s + ")", "aria-pressed": isSelected ? "true" : "false", key: el.s, onClick: () => upd('selectedElement', el), className: "w-full aspect-square rounded flex flex-col items-center justify-center text-[11px] font-bold border transition-colors hover:border-slate-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 " + (catColors[el.cat] || 'bg-slate-50 border-slate-200') + (isSelected ? " ring-2 ring-indigo-600 ring-offset-1" : ""), title: el.name, style: { minWidth: '28px' } },
-
-                        React.createElement("span", { className: "font-black text-[11px] leading-none" }, el.s),
-
-                        React.createElement("span", { className: "leading-none" }, el.n)
-
-                      );
-
-                    });
-
-                  })
-
-                )
-
-              ),
-
-              filteredElements.length === 0 && React.createElement("p", { className: "mt-2 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800", role: "status" }, "No elements match those filters. Try a different search or select All categories."),
-
-              // Legend
-
-              React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3 justify-center border-t border-slate-200 pt-3", "aria-label": "Element category legend" },
-
-                [['alkali', 'Alkali'], ['alkaline', 'Alkaline'], ['transition', 'Transition'], ['metal', 'Post-trans.'], ['metalloid', 'Metalloid'], ['nonmetal', 'Nonmetal'], ['halogen', 'Halogen'], ['noble', 'Noble Gas'], ['lanthanide', t('stem.periodic.lanthanide')], ['actinide', t('stem.periodic.actinide')]].map(([cat, label]) =>
-
-                  React.createElement("span", { key: cat, className: "px-1.5 py-0.5 rounded text-[11px] font-bold border " + (catColors[cat] || '') }, label)
-
-                )
-
-              )
 
               ),
 
@@ -4567,6 +5029,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       // kinetics, thermodynamics basics, quantum numbers reference.
       var d2 = (labToolData && labToolData.molecule) || {};
       var expSection = d2.expSection || null;  // null = collapsed, else section id
+      var referenceLibraryOpen = d2.referenceLibraryOpen === true;
       function setExp(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.molecule) || {};
@@ -4673,15 +5136,35 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
       // ── Section render helpers ──
       function expHeader() {
-        return React.createElement('div', { className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200' },
-          React.createElement('div', null,
-            React.createElement('h3', { className: 'text-base font-black text-indigo-900' }, __alloT('stem.molecule.chemistry_reference_library', '🧪 Chemistry Reference Library')),
-            React.createElement('div', { className: 'text-[11px] text-indigo-700 mt-0.5' }, __alloT('stem.molecule.interactive_references_pick_a_topic_be', 'Interactive references — pick a topic below to explore.'))
+        return React.createElement('section', {
+          className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-3 p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-sm',
+          'data-reference-library-launcher': 'true',
+          'aria-labelledby': 'molecule-reference-library-title'
+        },
+          React.createElement('div', { className: 'min-w-0', style: { flex: '1 1 280px' } },
+            React.createElement('h3', { id: 'molecule-reference-library-title', className: 'text-base font-black text-indigo-900' }, __alloT('stem.molecule.chemistry_reference_library', '🧪 Chemistry Reference Library')),
+            React.createElement('div', { className: 'text-[11px] text-indigo-700 mt-0.5' }, referenceLibraryOpen
+              ? __alloT('stem.molecule.reference_browser_open_hint', 'Search the complete library or choose one chemistry domain.')
+              : __alloT('stem.molecule.reference_browser_closed_hint', 'Open the searchable catalog only when you need a reference.'))
           ),
-          expSection && React.createElement('button', {
-            onClick: function() { setExp({ expSection: null }); },
-            className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 active:scale-[0.97]'
-          }, __alloT('stem.molecule.close_section', '✕ Close section'))
+          React.createElement('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
+            React.createElement('span', { className: 'rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-black text-indigo-700' }, __alloT('stem.molecule.reference_topic_count', '53 topics')),
+            expSection && React.createElement('span', { className: 'rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-800', role: 'status' }, __alloT('stem.molecule.reference_topic_open', 'Topic open')),
+            React.createElement('button', {
+              type: 'button',
+              onClick: function() { setExp({ referenceLibraryOpen: !referenceLibraryOpen }); },
+              'aria-expanded': referenceLibraryOpen ? 'true' : 'false',
+              'aria-controls': 'molecule-reference-library-browser',
+              className: 'min-h-10 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-800 shadow-sm transition-colors hover:bg-indigo-100'
+            }, referenceLibraryOpen
+              ? __alloT('stem.molecule.hide_reference_topics', 'Hide topics')
+              : __alloT('stem.molecule.browse_reference_topics', 'Browse 53 topics')),
+            expSection && React.createElement('button', {
+              type: 'button',
+              onClick: function() { setExp({ expSection: null }); },
+              className: 'min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100'
+            }, __alloT('stem.molecule.close_section', '✕ Close section'))
+          )
         );
       }
 
@@ -4760,21 +5243,153 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 , { id: 'solventMystery', label: __alloT('stem.molecule.mystery_solvent', 'Mystery solvent'), icon: '🧪' }
           ] }
         ];
-        function renderBtn(s, accent) {
+        var referenceQuery = typeof d2.referenceLibraryQuery === 'string' ? d2.referenceLibraryQuery : '';
+        var normalizedReferenceQuery = referenceQuery.trim().toLowerCase();
+        var totalReferenceTopics = TAB_GROUPS.reduce(function(total, group) { return total + group.tabs.length; }, 0);
+        var sectionGroup = TAB_GROUPS.find(function(group) {
+          return group.tabs.some(function(tab) { return tab.id === expSection; });
+        });
+        var requestedGroupExists = TAB_GROUPS.some(function(group) { return group.id === d2.referenceLibraryGroup; });
+        var activeReferenceGroup = sectionGroup ? sectionGroup.id : (requestedGroupExists ? d2.referenceLibraryGroup : TAB_GROUPS[0].id);
+        var matchingReferenceGroups = TAB_GROUPS.map(function(group) {
+          var matchingTabs = normalizedReferenceQuery
+            ? group.tabs.filter(function(tab) {
+                return [tab.id, tab.label, group.label].join(' ').toLowerCase().includes(normalizedReferenceQuery);
+              })
+            : group.tabs;
+          return Object.assign({}, group, { tabs: matchingTabs });
+        }).filter(function(group) { return group.tabs.length > 0; });
+        var visibleReferenceGroups = normalizedReferenceQuery
+          ? matchingReferenceGroups
+          : matchingReferenceGroups.filter(function(group) { return group.id === activeReferenceGroup; });
+        var visibleReferenceTopicCount = visibleReferenceGroups.reduce(function(total, group) { return total + group.tabs.length; }, 0);
+        var referenceGroupColors = {
+          structure: '#4f46e5', reactions: '#e11d48', states: '#0284c7',
+          organic: '#059669', reference: '#475569', applications: '#d97706', lab: '#0891b2'
+        };
+        try {
+          window.__alloMoleculeReferenceCatalog = {
+            count: totalReferenceTopics,
+            groups: TAB_GROUPS.map(function(group) {
+              return { id: group.id, label: group.label, topicIds: group.tabs.map(function(tab) { return tab.id; }) };
+            }),
+            topicIds: TAB_GROUPS.flatMap(function(group) { return group.tabs.map(function(tab) { return tab.id; }); })
+          };
+        } catch (e) {}
+
+        function renderBtn(s, accent, groupId) {
           var active = expSection === s.id;
           return React.createElement('button', {
             key: s.id,
-            onClick: function() { setExp({ expSection: active ? null : s.id }); },
-            className: 'px-2 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg- active:scale-[0.97]' + accent + 'transition-colors -50 hover:border-' + accent + '-300')
+            type: 'button',
+            onClick: function() {
+              setExp({
+                expSection: active ? null : s.id,
+                referenceLibraryOpen: active,
+                referenceLibraryGroup: groupId
+              });
+            },
+            'aria-pressed': active ? 'true' : 'false',
+            'data-reference-topic': s.id,
+            className: 'min-h-9 rounded-lg border px-2.5 py-1.5 text-[11px] font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' +
+              (active ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50')
           }, s.icon + ' ' + s.label);
         }
-        return React.createElement('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
-          TAB_GROUPS.map(function(g) {
-            return React.createElement('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
-              React.createElement('span', { 'aria-hidden': 'true', className: 'text-[10px] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
-              g.tabs.map(function(s) { return renderBtn(s, g.color); })
-            );
-          })
+
+        return React.createElement('div', {
+          id: 'molecule-reference-library-browser',
+          className: 'mb-3 rounded-xl border border-indigo-200 bg-slate-50 p-3 shadow-sm',
+          'data-reference-library-browser': 'true',
+          'data-reference-library-count': String(totalReferenceTopics)
+        },
+          React.createElement('div', { className: 'flex flex-wrap items-end gap-2' },
+            React.createElement('label', { className: 'block min-w-0', style: { flex: '1 1 260px' }, htmlFor: 'molecule-reference-library-search' },
+              React.createElement('span', { className: 'mb-1 block text-[10px] font-black uppercase tracking-wider text-slate-600' }, __alloT('stem.molecule.search_reference_topics', 'Search reference topics')),
+              React.createElement('input', {
+                id: 'molecule-reference-library-search',
+                type: 'search',
+                value: referenceQuery,
+                onChange: function(event) { setExp({ referenceLibraryQuery: event.target.value, referenceLibraryOpen: true }); },
+                placeholder: __alloT('stem.molecule.reference_search_placeholder', 'Try “solubility”, “bonds”, or “safety”'),
+                className: 'w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+              })
+            ),
+            normalizedReferenceQuery && React.createElement('button', {
+              type: 'button',
+              onClick: function() { setExp({ referenceLibraryQuery: '' }); },
+              className: 'min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100'
+            }, __alloT('stem.molecule.clear_reference_search', 'Clear search'))
+          ),
+
+          !normalizedReferenceQuery && React.createElement('label', {
+            className: 'mt-3 block sm:hidden',
+            htmlFor: 'molecule-reference-library-domain'
+          },
+            React.createElement('span', { className: 'mb-1 block text-[10px] font-black uppercase tracking-wider text-slate-600' }, __alloT('stem.molecule.reference_domain', 'Reference domain')),
+            React.createElement('select', {
+              id: 'molecule-reference-library-domain',
+              value: activeReferenceGroup,
+              onChange: function(event) { setExp({ referenceLibraryGroup: event.target.value, referenceLibraryQuery: '' }); },
+              'data-reference-domain-select': 'true',
+              className: 'w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500'
+            },
+              TAB_GROUPS.map(function(group) {
+                return React.createElement('option', { key: group.id, value: group.id }, group.label + ' (' + group.tabs.length + ')');
+              })
+            )
+          ),
+
+          !normalizedReferenceQuery && React.createElement('div', {
+            className: 'mt-3 hidden gap-2 overflow-x-auto pb-1 sm:flex',
+            role: 'group',
+            'aria-label': __alloT('stem.molecule.reference_domains', 'Chemistry reference domains')
+          },
+            TAB_GROUPS.map(function(group) {
+              var selected = group.id === activeReferenceGroup;
+              return React.createElement('button', {
+                key: group.id,
+                type: 'button',
+                'aria-pressed': selected ? 'true' : 'false',
+                'data-reference-group': group.id,
+                onClick: function() { setExp({ referenceLibraryGroup: group.id, referenceLibraryQuery: '' }); },
+                className: 'flex min-h-10 flex-shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-black shadow-sm transition-colors ' +
+                  (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50')
+              },
+                React.createElement('span', { className: 'h-2.5 w-2.5 rounded-full', style: { backgroundColor: referenceGroupColors[group.id] }, 'aria-hidden': 'true' }),
+                group.label,
+                React.createElement('span', { className: selected ? 'text-indigo-100' : 'text-slate-500' }, String(group.tabs.length))
+              );
+            })
+          ),
+
+          React.createElement('div', { className: 'mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-2' },
+            React.createElement('p', { className: 'text-[11px] font-bold text-slate-600', role: 'status', 'aria-live': 'polite' },
+              normalizedReferenceQuery
+                ? visibleReferenceTopicCount + ' search result' + (visibleReferenceTopicCount === 1 ? '' : 's')
+                : visibleReferenceTopicCount + ' topics in ' + (visibleReferenceGroups[0] ? visibleReferenceGroups[0].label : '')
+            ),
+            React.createElement('span', { className: 'text-[10px] font-medium text-slate-500' }, totalReferenceTopics + ' total topics')
+          ),
+
+          visibleReferenceGroups.length === 0
+            ? React.createElement('div', { className: 'mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900', role: 'status' },
+                React.createElement('p', { className: 'font-black' }, __alloT('stem.molecule.no_reference_topics', 'No matching topics')),
+                React.createElement('p', { className: 'mt-1' }, __alloT('stem.molecule.no_reference_topics_hint', 'Try a broader chemistry term or clear the search.'))
+              )
+            : React.createElement('div', { className: 'mt-3 space-y-3' },
+                visibleReferenceGroups.map(function(g) {
+                  var headingId = 'molecule-reference-group-' + g.id;
+                  return React.createElement('section', { key: g.id, role: 'region', 'aria-labelledby': headingId, className: 'rounded-lg border border-slate-200 bg-white p-3' },
+                    React.createElement('div', { className: 'mb-2 flex items-center gap-2' },
+                      React.createElement('span', { className: 'h-3 w-3 rounded-full', style: { backgroundColor: referenceGroupColors[g.id] }, 'aria-hidden': 'true' }),
+                      React.createElement('h4', { id: headingId, className: 'text-[11px] font-black uppercase tracking-wider text-slate-700' }, g.label)
+                    ),
+                    React.createElement('div', { className: 'flex flex-wrap gap-2' },
+                      g.tabs.map(function(s) { return renderBtn(s, g.color, g.id); })
+                    )
+                  );
+                })
+              )
         );
       }
 
@@ -8764,7 +9379,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
       var __moleculeExpansions = React.createElement('div', { className: 'mt-4 max-w-4xl mx-auto' },
         expHeader(),
-        expTabBar(),
+        referenceLibraryOpen && expTabBar(),
         expSection && React.createElement('div', { className: 'mt-2' }, renderActiveSection())
       );
 

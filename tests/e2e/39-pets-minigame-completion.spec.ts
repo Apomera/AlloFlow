@@ -459,7 +459,7 @@ test.describe('Pets Lab mini-game learning records and completion policy', () =>
 
   test('manual completion is unavailable for activity modules but remains for a static species module', async ({ page }) => {
     const activityViews = [
-      'training', 'nutrition', 'bodyLang', 'careSim',
+      'training', 'nutrition', 'zoonoses', 'bodyLang', 'careSim',
       'quiz', 'aiPractice', 'lifespan', 'sensory',
     ];
 

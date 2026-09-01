@@ -3,10 +3,9 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { resetStemLab, loadTool, renderTool, React, ReactDOMClient } from './helpers/stem_widgets_smoke_harness.js';
+import { runIsolatedAxe } from './helpers/isolated_axe_harness.js';
 
 const require = createRequire(import.meta.url);
-const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
-const axe = require(resolve(MODULES_DIR, 'axe-core'));
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -177,10 +176,7 @@ describe('magnetism chapter-aware story hero', () => {
       coilTouched: true, directionSeen: true, xfmrGridUsed: true,
     }, async (host) => {
       const story = host.querySelector('[data-magnetism-story="true"]');
-      const results = await axe.run(story, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await runIsolatedAxe(story.outerHTML);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     });
   }, 15000);

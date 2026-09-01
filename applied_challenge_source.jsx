@@ -207,7 +207,7 @@ function defaultAppliedChallengePhasePrompts(family) {
   return {
     workingQuestion: 'Write the exact question or challenge you will answer. Make it specific enough to guide your work.',
     stakeholders: 'Who is affected? What systems, needs, criteria, and constraints matter?',
-    possibilities: 'Generate more than one ' + meta.possibilitiesLabel.toLowerCase() + ' before choosing a direction.',
+    possibilities: 'Generate multiple ' + meta.possibilitiesLabel.toLowerCase() + ' before choosing a direction.',
     evidence: 'Use lesson facts as anchors. Distinguish evidence you have from information you still need.',
     assumptions: 'Which claims are assumptions, estimates, hypotheses, or value judgments rather than established facts?',
     tradeoffs: 'What does each option improve, risk, cost, exclude, or leave unresolved?',
@@ -308,7 +308,8 @@ function normalizeAppliedChallengeValidationCycles(value, fallbackFamily) {
   const seenIds = new Set();
   return rows.slice(0, 6).map((item, index) => {
     const raw = item && typeof item === 'object' ? item : {};
-    const family = normalizeAppliedChallengeFamily(raw.family || fallbackFamily);
+    const family = Object.prototype.hasOwnProperty.call(APPLIED_CHALLENGE_FAMILIES, raw.family)
+      ? raw.family : normalizeAppliedChallengeFamily(fallbackFamily);
     const methods = APPLIED_CHALLENGE_VALIDATION_METHODS[family];
     const imported = raw.importedChallenge && typeof raw.importedChallenge === 'object' ? raw.importedChallenge : {};
     const plan = raw.plan && typeof raw.plan === 'object' ? raw.plan : {};
@@ -379,6 +380,9 @@ function normalizeAppliedChallengeData(value) {
   const scope = normalizeAppliedChallengeScope(raw.scope);
   const brief = normalizeAppliedChallengeBrief(raw.brief, family, agencyMode);
   const workspace = normalizeAppliedChallengeWorkspace(raw.workspace);
+  const evidenceLedger = normalizeAppliedChallengeEvidenceLedger(raw.evidenceLedger).map((row) => (
+    !brief.factVerified && row.status === 'verified' ? Object.assign({}, row, { status: 'needs-check' }) : row
+  ));
   if (!workspace.workingQuestion && agencyMode !== 'student-framed') workspace.workingQuestion = brief.drivingQuestion;
   return {
     schemaVersion: 5,
@@ -392,7 +396,7 @@ function normalizeAppliedChallengeData(value) {
     brief,
     supports: normalizeAppliedChallengeSupports(raw.supports, family),
     workspace,
-    evidenceLedger: normalizeAppliedChallengeEvidenceLedger(raw.evidenceLedger),
+    evidenceLedger,
     coachHint: _apsString(raw.coachHint, 1600),
     stressTest: normalizeAppliedChallengeStressTest(raw.stressTest),
     validationCycles: normalizeAppliedChallengeValidationCycles(raw.validationCycles, family),
@@ -613,7 +617,30 @@ function appliedChallengePromptContextSnapshot(value, options) {
   let validationCycles = [];
   if (opts.includeValidationCycles) {
     try {
-      validationCycles = JSON.parse(appliedChallengeValidationCyclesPromptSnapshot(data.validationCycles, data.family)).slice(-2);
+      validationCycles = JSON.parse(appliedChallengeValidationCyclesPromptSnapshot(data.validationCycles, data.family)).slice(-2).map((cycle) => ({
+        source: cycle.source,
+        aiAdviceDisposition: cycle.aiAdviceDisposition,
+        studentReasonForDisposition: _apsString(cycle.studentReasonForDisposition, 180),
+        plannedCheck: {
+          methodId: cycle.plannedCheck && cycle.plannedCheck.methodId,
+          question: _apsString(cycle.plannedCheck && cycle.plannedCheck.question, 240),
+          criterion: _apsString(cycle.plannedCheck && cycle.plannedCheck.criterion, 150),
+          expectedFinding: _apsString(cycle.plannedCheck && cycle.plannedCheck.expectedFinding, 180),
+          resultThatCouldChangeTheDraft: _apsString(cycle.plannedCheck && cycle.plannedCheck.resultThatCouldChangeTheDraft, 220),
+          evidenceMode: cycle.plannedCheck && cycle.plannedCheck.evidenceMode,
+        },
+        studentReportedObservation: {
+          evidence: _apsString(cycle.studentReportedObservation && cycle.studentReportedObservation.evidence, 320),
+          outcome: cycle.studentReportedObservation && cycle.studentReportedObservation.outcome,
+        },
+        studentDecision: {
+          action: cycle.studentDecision && cycle.studentDecision.action,
+          reasoning: _apsString(cycle.studentDecision && cycle.studentDecision.reasoning, 260),
+          revisionSummary: _apsString(cycle.studentDecision && cycle.studentDecision.revisionSummary, 190),
+          nextStep: _apsString(cycle.studentDecision && cycle.studentDecision.nextStep, 160),
+        },
+        cycleStage: cycle.cycleStage,
+      }));
     } catch (_) {}
   }
   return JSON.stringify({
@@ -644,7 +671,7 @@ function appliedChallengePromptContextSnapshot(value, options) {
       evidenceLedger: ledger,
       validationCycles,
     },
-    lessonSourceExcerpt: _apsString(opts.sourceExcerpt, 1800).trim() || undefined,
+    lessonSourceExcerpt: _apsString(opts.sourceExcerpt, 1400).trim() || undefined,
     targetLearner: _apsString(opts.gradeLevel, 100).trim() || undefined,
   }, null, 2);
 }
@@ -985,6 +1012,11 @@ function AppliedChallengeView(props) {
   }, [commitField, data.validationCycles, data.family, data.coachHint, data.feedback]);
 
   const startOwnValidationCycle = () => {
+    const ready = appliedChallengeStressTestReady(data);
+    if (!ready.ok) {
+      addToast(ready.reason.replace('stress-testing it', 'starting a check'), 'info');
+      return;
+    }
     if (data.validationCycles.length >= 6) {
       addToast('This challenge already has six saved checks. Remove one before adding another.', 'info');
       return;
@@ -1053,6 +1085,9 @@ function AppliedChallengeView(props) {
       patch
     ));
     const changesMeaning = Object.keys(patch || {}).some((key) => key !== 'factLocked');
+    if (changesMeaning && data.evidenceLedger.length) {
+      commitField('evidenceLedger', data.evidenceLedger.map((row) => row.status === 'verified' ? Object.assign({}, row, { status: 'needs-check' }) : row));
+    }
     if (changesMeaning && data.coachHint) commitField('coachHint', '');
     if (changesMeaning && data.feedback) commitField('feedback', null);
   }, [commitField, data.brief, data.family, data.agencyMode, data.coachHint, data.feedback]);

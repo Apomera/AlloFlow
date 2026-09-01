@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
@@ -14,6 +15,7 @@ const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 
 let React, ReactDOMClient, act, Modal;
 let container, root, closed;
+const modalSource = readFileSync(resolve(process.cwd(), 'view_misc_modals_source.jsx'), 'utf8');
 
 const render = async (props = {}) => {
   await act(async () => {
@@ -143,6 +145,13 @@ describe('guided modal a11y', () => {
     expect(byHelpKey('ai_backend_advanced_toggle').getAttribute('aria-expanded')).toBe('true');
     await click(byHelpKey('ai_backend_advanced_toggle'));
     expect(byHelpKey('ai_backend_advanced_toggle').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('keeps secondary Advanced guidance above AA contrast on tinted panels', () => {
+    expect(modalSource).toContain('text-[11px] text-emerald-800 mt-1');
+    expect(modalSource).toContain('text-[11px] text-amber-800 mt-1');
+    expect(modalSource).not.toContain('text-[11px] text-emerald-600 mt-1');
+    expect(modalSource).not.toContain('text-[11px] text-amber-600 mt-1');
   });
 
   it('Escape closes the modal from any view', async () => {

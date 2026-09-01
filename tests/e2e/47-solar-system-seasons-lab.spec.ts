@@ -91,5 +91,22 @@ test('keeps the seasons investigation usable without horizontal overflow at 340p
   await expect(lab).toHaveAttribute('data-season-phase', '75');
   await expect(lab.getByRole('button', { name: '45° S' })).toBeVisible();
 
+  const stage = lab.getByRole('region', { name: /Scrollable seasons geometry diagram/ });
+  await stage.focus();
+  await expect(stage).toBeFocused();
+  const diagram = await stage.evaluate((el) => {
+    const svg = el.querySelector('svg');
+    const label = [...el.querySelectorAll('text')].find((node) => node.textContent?.includes('AXIS DIRECTION STAYS FIXED'));
+    if (!svg || !label) throw new Error('Seasons geometry diagram did not render');
+    const svgRect = svg.getBoundingClientRect();
+    const labelRect = label.getBoundingClientRect();
+    el.scrollLeft = 120;
+    return { clientWidth: el.clientWidth, scrollWidth: el.scrollWidth, scrollLeft: el.scrollLeft, svgWidth: svgRect.width, labelHeight: labelRect.height };
+  });
+  expect(diagram.scrollWidth).toBeGreaterThan(diagram.clientWidth);
+  expect(diagram.svgWidth).toBeGreaterThanOrEqual(719);
+  expect(diagram.labelHeight).toBeGreaterThanOrEqual(9);
+  expect(diagram.scrollLeft).toBeGreaterThan(0);
+
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });

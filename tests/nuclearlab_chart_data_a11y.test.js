@@ -23,7 +23,7 @@ function show(state = {}) {
 
 function chartToggle() {
   return [...host.querySelectorAll('button')].find((node) =>
-    node.getAttribute('aria-label') === 'Display numerical data tables beneath charts');
+    (node.getAttribute('aria-label') || '').startsWith('Chart data.'));
 }
 
 describe('chart-data reading adaptation', () => {

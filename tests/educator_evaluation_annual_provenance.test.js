@@ -273,7 +273,7 @@ describe('Educator Evaluation controlled walkthrough draft discard', () => {
     expect(harness.invoke('bootstrap').workspace.walkthroughs.some((item) => item.id === 'walk-t1')).toBe(true);
   });
 
-  it('rejects deletion of a walkthrough draft that has a shared comment', () => {
+  it('rejects comments on unpublished walkthroughs and keeps an untouched draft discardable', () => {
     const harness = repositoryFixture();
     harness.setActiveEmail(EVALUATOR);
     let boot = harness.invoke('bootstrap');
@@ -284,7 +284,7 @@ describe('Educator Evaluation controlled walkthrough draft discard', () => {
       recordId: 'walk-t1-private',
       text: 'Shared review context.',
     });
-    expect(harness.invoke('saveWorkspace', {
+    const commentError = harness.invokeError('saveWorkspace', {
       expectedVersion: boot.revision,
       workspace: boot.workspace,
       mutation: {
@@ -294,11 +294,13 @@ describe('Educator Evaluation controlled walkthrough draft discard', () => {
         entityId: 'walk-t1-private',
         version: 1,
       },
-    }).ok).toBe(true);
+    });
+    expect(commentError.code).toBe('invalid_transition');
+    expect(harness.invoke('bootstrap').workspace.comments.some((item) => item.id === 'private-draft-comment')).toBe(false);
 
     boot = harness.invoke('bootstrap');
     boot.workspace.walkthroughs = boot.workspace.walkthroughs.filter((item) => item.id !== 'walk-t1-private');
-    const error = harness.invokeError('saveWorkspace', {
+    const discarded = harness.invoke('saveWorkspace', {
       expectedVersion: boot.revision,
       workspace: boot.workspace,
       mutation: {
@@ -309,9 +311,8 @@ describe('Educator Evaluation controlled walkthrough draft discard', () => {
         version: 1,
       },
     });
-    expect(error.code).toBe('immutable');
-    expect(String(error.message || error)).toMatch(/shared comments/i);
-    expect(harness.invoke('bootstrap').workspace.walkthroughs.some((item) => item.id === 'walk-t1-private')).toBe(true);
+    expect(discarded.ok).toBe(true);
+    expect(discarded.workspace.walkthroughs.some((item) => item.id === 'walk-t1-private')).toBe(false);
   });
 
   it('cannot use DRAFT_DISCARDED to delete another record type', () => {
