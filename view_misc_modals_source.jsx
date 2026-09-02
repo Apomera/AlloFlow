@@ -1917,7 +1917,7 @@ function AIBackendModalBody(props) {
             No quota numbers or plan pricing here on purpose — they rot into
             false claims; "your plan's daily quota" plus Google's own page. */}
         {!connected && guidedCard({ 'data-help-key': 'ai_backend_guided_card_canvas' },
-          () => { try { window.open('https://share.gemini.google/lSEhbVb9PiQL', '_blank', 'noopener'); } catch (e) {} },
+          () => { try { window.open('https://share.gemini.google/IUtuB8gDVOr8', '_blank', 'noopener'); } catch (e) {} },
           '🚀', t('ai_backend.guided_card_canvas_title') || 'Use AlloFlow inside Gemini Canvas',
           t('ai_backend.guided_card_canvas_badge') || 'No setup',
           t('ai_backend.guided_card_canvas_body') || 'The easiest way to get AI: open AlloFlow inside Google Gemini. Free with a Google account, using your Gemini plan’s daily quota (personal, Education, or paid plans all work). Nothing to install and no key to manage.',
