@@ -886,7 +886,7 @@ const useAlloMotionDisabled = (disableAnimations) => {
   return !!disableAnimations || !!prefersReducedMotion;
 };
 const useAlloCoarsePointer = () => {
-  const QUERY = "(hover: none), (pointer: coarse), (any-pointer: coarse)";
+  const QUERY = "(hover: none), (pointer: coarse)";
   const [coarse, setCoarse] = useState(() => {
     try {
       return !!(typeof window !== "undefined" && window.matchMedia && window.matchMedia(QUERY).matches);
@@ -894,6 +894,23 @@ const useAlloCoarsePointer = () => {
       return false;
     }
   });
+  const [touchActive, setTouchActive] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return void 0;
+    const onPointer = (e) => {
+      const type = e && e.pointerType;
+      if (!type) return;
+      const next = type === "touch";
+      setTouchActive((prev) => prev === next ? prev : next);
+    };
+    const opts = { passive: true, capture: true };
+    window.addEventListener("pointerdown", onPointer, opts);
+    window.addEventListener("pointerover", onPointer, opts);
+    return () => {
+      window.removeEventListener("pointerdown", onPointer, opts);
+      window.removeEventListener("pointerover", onPointer, opts);
+    };
+  }, []);
   useEffect(() => {
     let mq = null;
     try {
@@ -913,8 +930,9 @@ const useAlloCoarsePointer = () => {
       return () => mq.removeListener(apply);
     }
   }, []);
-  return coarse;
+  return coarse || touchActive;
 };
+const ALLOBOT_AMBIENT_GAZE_SCALE = 0.55;
 const STEM_DISCIPLINE_ACCESSORY = { math: "math-tools", engineering: "gear", creative: "artist", strategy: "game-pad", applied: "hard-hat", science: "microscope" };
 const STEM_DISCIPLINE_OVERRIDE = { cellularLab: "science", geoSandbox: "science", lumen: "science", dataPlot: "math", dataStudio: "math", alloBotSage: "engineering", worldBuilder: "creative", echoTrainer: "science" };
 function alloStemDiscipline(toolId) {
@@ -1871,21 +1889,26 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const [keyboardMoveStatus, setKeyboardMoveStatus] = useState("");
   const [isHovered, setIsHovered] = useState(false);
   const hoverGazeEngaged = isHovered && !coarsePointer && !motionDisabled;
+  const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
+  const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
   const resetHoverGaze = useCallback(() => setIsHovered(false), []);
+  const restGaze = useCallback(() => {
+    setIsHovered(false);
+    setEyePosition({ x: 0, y: 0 });
+    setVisorPosition({ x: 0, y: 0 });
+  }, []);
   useEffect(() => {
     if (typeof window === "undefined" || typeof document === "undefined") return void 0;
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") resetHoverGaze();
+      if (document.visibilityState === "hidden") restGaze();
     };
-    window.addEventListener("blur", resetHoverGaze);
+    window.addEventListener("blur", restGaze);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      window.removeEventListener("blur", resetHoverGaze);
+      window.removeEventListener("blur", restGaze);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [resetHoverGaze]);
-  const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
-  const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
+  }, [restGaze]);
   const containerRef = useRef(null);
   const [isDocumentHidden, setIsDocumentHidden] = useState(() => {
     try {
@@ -1970,16 +1993,13 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     };
   }, [_aimX, _aimY, isDocumentHidden]);
   useEffect(() => {
-    if (motionDisabled || !isHovered) {
+    if (motionDisabled || coarsePointer) {
       setEyePosition({ x: 0, y: 0 });
       setVisorPosition({ x: 0, y: 0 });
       return;
     }
-    if (coarsePointer) {
-      setEyePosition({ x: 0, y: 0 });
-      setVisorPosition({ x: 0, y: 0 });
-      return;
-    }
+    const ambientScale = isHovered ? 1 : ALLOBOT_AMBIENT_GAZE_SCALE;
+    const sensitivity = isHovered ? 140 : 320;
     const handleMouseMove = (e) => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
@@ -1989,8 +2009,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       const dy = e.clientY - centerY;
       const angle = Math.atan2(dy, dx);
       const distance = Math.hypot(dx, dy);
-      const sensitivity = 140;
-      const intensity = Math.min(1, distance / sensitivity);
+      const intensity = Math.min(1, distance / sensitivity) * ambientScale;
       const maxVisorRadius = 0.35;
       const visorOffset = intensity * maxVisorRadius;
       setVisorPosition({
@@ -3911,7 +3930,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const baseEyeDimensions = getEyeDimensions();
   const eyeRx = Math.min(9, baseEyeDimensions.rx + (voiceCueState === "listening" ? 0.45 : 0));
   const eyeRy = Math.min(7, baseEyeDimensions.ry + (voiceCueState === "listening" ? 0.35 : 0));
-  const eyeCoreVisual = theme === "contrast" ? { fill: "#FACC15", stroke: "#FFFFFF", opacity: 1 } : effectiveMood === "happy" ? { fill: "#A7F3D0", stroke: "#6EE7B7", opacity: 0.92 } : effectiveMood === "thinking" ? { fill: "#FDE68A", stroke: "#FCD34D", opacity: 0.92 } : effectiveMood === "sad" ? { fill: "#BAE6FD", stroke: "#93C5FD", opacity: 0.9 } : { fill: "#E0F2FE", stroke: "#A5B4FC", opacity: 0.94 };
+  const eyeCoreVisual = theme === "contrast" ? { fill: "#FACC15", stroke: "#FFFFFF", opacity: 1 } : effectiveMood === "happy" ? { fill: "#A7F3D0", stroke: "#34D399", opacity: 0.94 } : effectiveMood === "thinking" ? { fill: "#FDE68A", stroke: "#FBBF24", opacity: 0.94 } : effectiveMood === "sad" ? { fill: "#BAE6FD", stroke: "#60A5FA", opacity: 0.92 } : { fill: "#DBEAFE", stroke: "#818CF8", opacity: 0.96 };
   const eyeCoreRx = voiceCueState === "listening" ? 2.15 : 1.85;
   const eyeCoreRy = Math.min(2.25, Math.max(1.35, eyeRy * 0.34));
   const faceLensesCoverEyes = effectiveAccessory === "scholar-specs" || effectiveAccessory === "librarian-kit";
@@ -4231,21 +4250,19 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             border-color: var(--allobot-satellite-listening-border, #F87171);
             box-shadow: var(--allobot-satellite-listening-shadow, 0 0 0 3px rgba(239, 68, 68, 0.35));
         }
-        @media (hover: none), (pointer: coarse), (any-pointer: coarse) {
-            .allobot-satellite-control {
-                width: 36px;
-                height: 36px;
-                min-width: 36px;
-                min-height: 36px;
-                padding: 8px;
-                opacity: 1;
-                transform: scale(1);
-            }
-            .allobot-satellite--tl { top: -10px; left: -10px; }
-            .allobot-satellite--tr { top: -10px; right: -10px; }
-            .allobot-satellite--bl { bottom: -10px; left: -10px; }
-            .allobot-satellite--br { bottom: -10px; right: -10px; }
+        [data-allobot-control-visibility="persistent"] .allobot-satellite-control {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            min-height: 36px;
+            padding: 8px;
+            opacity: 1;
+            transform: scale(1);
         }
+        [data-allobot-control-visibility="persistent"] .allobot-satellite--tl { top: -10px; left: -10px; }
+        [data-allobot-control-visibility="persistent"] .allobot-satellite--tr { top: -10px; right: -10px; }
+        [data-allobot-control-visibility="persistent"] .allobot-satellite--bl { bottom: -10px; left: -10px; }
+        [data-allobot-control-visibility="persistent"] .allobot-satellite--br { bottom: -10px; right: -10px; }
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed \u2014 defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
@@ -4610,7 +4627,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       },
       onPointerLeave: resetHoverGaze,
       onPointerCancel: () => {
-        resetHoverGaze();
+        restGaze();
         resetDragInteraction();
       },
       onMouseDown: (e) => {
@@ -5645,8 +5662,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             opacity: eyeDetailsVisible ? 1 : 0,
             style: { transform: `translate(${resolvedGazeX}px, ${resolvedGazeY}px)`, transition: motionDisabled ? "none" : "transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)" }
           },
-          /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "left", cx: "38", cy: "48", rx: eyeCoreRx, ry: eyeCoreRy * blinkScale, fill: eyeCoreVisual.fill, stroke: eyeCoreVisual.stroke, strokeWidth: "0.55", opacity: eyeCoreVisual.opacity, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
-          /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "right", cx: "62", cy: "48", rx: eyeCoreRx, ry: eyeCoreRy * blinkScale, fill: eyeCoreVisual.fill, stroke: eyeCoreVisual.stroke, strokeWidth: "0.55", opacity: eyeCoreVisual.opacity, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
+          /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "left", cx: "38", cy: "48", rx: eyeCoreRx, ry: eyeCoreRy * blinkScale, fill: eyeCoreVisual.fill, stroke: eyeCoreVisual.stroke, strokeWidth: "0.7", opacity: eyeCoreVisual.opacity, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
+          /* @__PURE__ */ React.createElement("ellipse", { "data-allobot-eye-core": "right", cx: "62", cy: "48", rx: eyeCoreRx, ry: eyeCoreRy * blinkScale, fill: eyeCoreVisual.fill, stroke: eyeCoreVisual.stroke, strokeWidth: "0.7", opacity: eyeCoreVisual.opacity, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
           !faceLensesCoverEyes && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "left-primary", cx: "37.35", cy: "47.25", r: 0.72 * blinkScale, fill: "#FFFFFF", opacity: "0.98" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "right-primary", cx: "61.35", cy: "47.25", r: 0.72 * blinkScale, fill: "#FFFFFF", opacity: "0.98" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "left-secondary", cx: "38.75", cy: "49", r: 0.3 * blinkScale, fill: "#FFFFFF", opacity: "0.78" }), /* @__PURE__ */ React.createElement("circle", { "data-allobot-eye-sparkle": "right-secondary", cx: "62.75", cy: "49", r: 0.3 * blinkScale, fill: "#FFFFFF", opacity: "0.78" }))
         )), /* @__PURE__ */ React.createElement("g", { "data-allobot-face-cue": "soft-cheeks", opacity: cheekOpacity, pointerEvents: "none" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "28.5", cy: "56.5", rx: "2.8", ry: "1.25", fill: cheekColor }), /* @__PURE__ */ React.createElement("ellipse", { cx: "71.5", cy: "56.5", rx: "2.8", ry: "1.25", fill: cheekColor })), /* @__PURE__ */ React.createElement(
           "path",

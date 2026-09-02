@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-const COARSE_POINTER_QUERY = '(hover: none), (pointer: coarse), (any-pointer: coarse)';
+const COARSE_POINTER_QUERY = '(hover: none), (pointer: coarse)';
 
 let React;
 let createRoot;
@@ -303,16 +303,27 @@ describe('AlloBot runtime motion behavior', () => {
     expect(onHide).not.toHaveBeenCalled();
   });
 
-  it('tracks only during direct hover, clamps the glance, then removes and resets it on leave', async () => {
+  it('glances gently at the cursor from anywhere, turns fully on hover, and eases back on leave', async () => {
     const bot = await mountBot();
     const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
     const gaze = () => bot.container.querySelector('[data-allobot-soft-gaze]');
     surface.getBoundingClientRect = () => ({ left: 0, top: 0, right: 100, bottom: 100, width: 100, height: 100, x: 0, y: 0, toJSON() {} });
+    const parse = () => {
+      const [, x, y] = gaze().style.transform.match(/^translate\(([-+\de.]+)px, ([-+\de.]+)px\)$/) || [];
+      return { x: Number(x), y: Number(y) };
+    };
 
+    // Ambient: not hovered, the pointer far to the right → a partial (0.55×) glance.
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('resting');
-    expect(gaze().style.transform).toBe('translate(0px, 0px)');
+    await dispatch(window, new MouseEvent('mousemove', { clientX: 50, clientY: 50 }));
+    expect(parse().x).toBeCloseTo(0);
+    expect(parse().y).toBeCloseTo(0);
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
-    expect(gaze().style.transform).toBe('translate(0px, 0px)');
+    expect(parse().x).toBeCloseTo(1.35 * 0.55);
+    expect(Math.abs(parse().y)).toBeLessThan(1e-10);
+    // Ambient sensitivity is wider (320px), so a nearby pointer barely moves the eyes.
+    await dispatch(window, new MouseEvent('mousemove', { clientX: 130, clientY: 50 }));
+    expect(parse().x).toBeCloseTo(1.35 * 0.55 * (80 / 320));
 
     const addSpy = vi.spyOn(window, 'addEventListener');
     const removeSpy = vi.spyOn(window, 'removeEventListener');
@@ -324,17 +335,19 @@ describe('AlloBot runtime motion behavior', () => {
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
     expect(gaze().style.transform).toBe('translate(1.35px, 0px)');
     await dispatch(window, new MouseEvent('mousemove', { clientX: 50, clientY: 1000 }));
-    const [, gazeX, gazeY] = gaze().style.transform.match(/^translate\(([-+\de.]+)px, ([-+\de.]+)px\)$/) || [];
-    expect(Math.abs(Number(gazeX))).toBeLessThan(1e-10);
-    expect(Number(gazeY)).toBeCloseTo(1.15);
+    expect(Math.abs(parse().x)).toBeLessThan(1e-10);
+    expect(parse().y).toBeCloseTo(1.15);
 
+    // Leaving drops the hover boost but keeps the ambient glance alive.
     await dispatch(surface, pointerEvent('pointerout'));
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('resting');
-    expect(gaze().style.transform).toBe('translate(0px, 0px)');
     expect(removeSpy).toHaveBeenCalledWith('mousemove', gazeRegistration[1]);
+    await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
+    expect(parse().x).toBeCloseTo(1.35 * 0.55);
 
+    // Still ambient after leaving: a far-left pointer gives the mirrored partial glance.
     await dispatch(window, new MouseEvent('mousemove', { clientX: -1000, clientY: 50 }));
-    expect(gaze().style.transform).toBe('translate(0px, 0px)');
+    expect(parse().x).toBeCloseTo(-1.35 * 0.55);
   });
 
   it.each([
@@ -345,15 +358,27 @@ describe('AlloBot runtime motion behavior', () => {
     const bot = await mountBot();
     const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
     const gaze = () => bot.container.querySelector('[data-allobot-soft-gaze]');
-    const addSpy = vi.spyOn(window, 'addEventListener');
     surface.getBoundingClientRect = () => ({ left: 0, top: 0, right: 100, bottom: 100, width: 100, height: 100, x: 0, y: 0, toJSON() {} });
 
     await dispatch(surface, pointerEvent('pointerover', { pointerType }));
+    // A real touch pointer flips the orbit to persistent and stops the glance.
+    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('persistent');
+    const addSpy = vi.spyOn(window, 'addEventListener');
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
 
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('resting');
     expect(gaze().style.transform).toBe('translate(0px, 0px)');
     expect(addSpy.mock.calls.some(([type]) => type === 'mousemove')).toBe(false);
+  });
+
+  it('returns to reveal-on-hover controls once a mouse is used again after touch', async () => {
+    const bot = await mountBot();
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
+    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('reveal');
+    await dispatch(surface, pointerEvent('pointerdown', { pointerType: 'touch' }));
+    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('persistent');
+    await dispatch(surface, pointerEvent('pointerover', { pointerType: 'mouse' }));
+    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('reveal');
   });
 
   it('resets an active gaze on pointer cancellation and window blur', async () => {
@@ -406,16 +431,21 @@ describe('AlloBot runtime motion behavior', () => {
     }
   });
 
-  it('keeps a side-prop glance static until the user explicitly hovers', async () => {
+  it('blends a side-prop glance with the ambient cursor glance', async () => {
     const bot = await mountBot({ accessory: 'microscope' });
+    const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
     const gaze = () => bot.container.querySelector('[data-allobot-prop-gaze]');
+    surface.getBoundingClientRect = () => ({ left: 0, top: 0, right: 100, bottom: 100, width: 100, height: 100, x: 0, y: 0, toJSON() {} });
 
     expect(gaze().getAttribute('data-allobot-prop-gaze')).toBe('left');
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('prop');
     expect(gaze().style.transform).toBe('translate(-0.85px, 0.2px)');
 
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 1000 }));
-    expect(gaze().style.transform).toBe('translate(-0.85px, 0.2px)');
+    const [, x, y] = gaze().style.transform.match(/^translate\(([-+\de.]+)px, ([-+\de.]+)px\)$/) || [];
+    const ambient = 1.35 * 0.55 * Math.SQRT1_2;
+    expect(Number(x)).toBeCloseTo(-0.85 + ambient);
+    expect(Number(y)).toBeCloseTo(0.2 + ambient);
   });
 
   it.each([

@@ -1280,7 +1280,7 @@ function HeaderBar(props) {
                                                         <input
                                                             type="checkbox"
                                                             className="mt-0.5 accent-indigo-600"
-                                                            defaultChecked={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').browserTtsFallback === true; } catch { return false; } })()}
+                                                            defaultChecked={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').browserTtsFallback !== false; } catch { return true; } })()}
                                                             onChange={(e) => {
                                                                 try {
                                                                     const cur = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');

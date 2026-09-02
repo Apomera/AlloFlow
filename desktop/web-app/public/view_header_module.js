@@ -1047,9 +1047,9 @@ function HeaderBar(props) {
         className: "mt-0.5 accent-indigo-600",
         defaultChecked: (() => {
           try {
-            return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").browserTtsFallback === true;
+            return JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}").browserTtsFallback !== false;
           } catch {
-            return false;
+            return true;
           }
         })(),
         onChange: (e) => {

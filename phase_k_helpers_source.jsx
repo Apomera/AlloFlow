@@ -167,10 +167,13 @@ const _pkReadTtsConfig = () => {
         const config = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
         return {
             provider: String(config.ttsProvider || '').trim().toLowerCase(),
-            browserFallback: config.browserTtsFallback === true,
+            // Default ON (2026-09-02): a refused or failed sentence is read by the
+            // device voice unless the teacher has explicitly unticked the header
+            // checkbox, which stores `browserTtsFallback: false`.
+            browserFallback: config.browserTtsFallback !== false,
         };
     } catch (_) {
-        return { provider: '', browserFallback: false };
+        return { provider: '', browserFallback: true };
     }
 };
 

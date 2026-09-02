@@ -157,7 +157,13 @@ describe('AlloBot dismissal', () => {
 
 describe('AlloBot orbit controls on touch', () => {
   it('resolves the pointer type instead of relying on a hover variant alone', () => {
-    expect(source).toContain("const QUERY = '(hover: none), (pointer: coarse), (any-pointer: coarse)';");
+    expect(source).toContain("const QUERY = '(hover: none), (pointer: coarse)';");
+    // Hybrid laptops match any-pointer: coarse for the mouse user too; touch is
+    // detected from real pointer events instead so the orbit is not pinned open.
+    expect(source).not.toContain('(any-pointer: coarse)');
+    expect(source).toContain("const next = type === 'touch';");
+    expect(source).toContain('return coarse || touchActive;');
+    expect(source).toContain('[data-allobot-control-visibility="persistent"] .allobot-satellite-control {');
     expect(source).toContain('const coarsePointer = useAlloCoarsePointer();');
   });
 

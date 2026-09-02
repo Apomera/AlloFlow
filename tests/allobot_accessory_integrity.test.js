@@ -505,7 +505,8 @@ describe('AlloBot accessory integrity', () => {
       expect(source).toContain('cheekOpacity');
       expect(source).toContain('isHovered');
     }
-    expect(SRC).toContain("if (motionDisabled || !isHovered)");
+    expect(SRC).toContain("if (motionDisabled || coarsePointer)");
+    expect(SRC).toContain("const ALLOBOT_AMBIENT_GAZE_SCALE = 0.55;");
     expect(SRC).toContain('const maxFeatureRadius = 1.35;');
     expect(SRC).toContain('const maxVisorRadius = 0.35;');
     expect(SRC).toContain("fill={eyeCoreVisual.fill}");

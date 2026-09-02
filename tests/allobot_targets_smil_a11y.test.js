@@ -82,7 +82,7 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     }
     expect(source).toContain('width: 32px;');
     expect(source).toContain('min-height: 32px;');
-    expect(source).toContain('@media (hover: none), (pointer: coarse), (any-pointer: coarse)');
+    expect(source).toContain('[data-allobot-control-visibility="persistent"] .allobot-satellite-control {');
     expect(source).toContain('width: 36px;');
     expect(source).toContain('min-height: 36px;');
     expect(source).toContain('data-allobot-satellite-kind="hide"');
