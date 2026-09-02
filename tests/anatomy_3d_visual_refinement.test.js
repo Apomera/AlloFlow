@@ -374,7 +374,8 @@ describe('Anatomy model visual refinement', () => {
     expect(html).toContain('Patient R / L');
     expect(html).toContain('Diagram controls:');
     expect(source).toContain("cCtx.textAlign = 'left'");
-    expect(source).toContain("PATIENT VIEW', 12, 17)");
+    // Caption sits right of the R marker: centered it collided with head pins (nervous, endocrine).
+    expect(source).toContain("PATIENT VIEW', 52, 16)");
     expect(source).toContain('background:linear-gradient(135deg,#0f172a,#1e293b)');
   });
 

@@ -98,9 +98,21 @@
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/educator-evaluation-manual.html</loc>
-    <lastmod>2026-08-17</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://apomera.github.io/AlloFlow/school-rewards-manual.html</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://apomera.github.io/AlloFlow/school-rewards-quick-cards.html</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://apomera.github.io/AlloFlow/educator-evaluation.html</loc>

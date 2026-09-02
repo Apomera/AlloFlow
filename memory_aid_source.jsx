@@ -125,6 +125,66 @@ let _maPracticeWriteClock = 0;
 let _maLastPracticeSaveScope = '';
 const _maPracticeMutationQueues = new Map();
 
+// i18n. The host passes `t` (ui_strings.js "memory_aid" namespace, 62 language
+// packs). A missing key (undefined, '', or the key echoed back by a test
+// harness) falls back to the English default; {name} params are substituted in
+// both the pack string and the fallback. Prompts sent to the model stay
+// English on purpose: they are machine instructions, and the generation prompt
+// already asks for learner-facing content in the lesson language.
+function _maTranslate(t, key, fallback, params) {
+  const fullKey = 'memory_aid.' + key;
+  let text = '';
+  if (typeof t === 'function') {
+    try {
+      const value = t(fullKey, params);
+      if (typeof value === 'string' && value && value !== fullKey) text = value;
+    } catch (_) {}
+  }
+  if (!text) text = String(fallback == null ? '' : fallback);
+  if (params && typeof params === 'object') {
+    Object.keys(params).forEach(name => {
+      text = text.split('{' + name + '}').join(String(params[name] == null ? '' : params[name]));
+    });
+  }
+  return text;
+}
+const _maMakeTr = (t) => (key, fallback, params) => _maTranslate(t, key, fallback, params);
+const _MA_META_FIELD_KEYS = Object.freeze({ label: 'label', shortLabel: 'short', compactLabel: 'compact', description: 'desc' });
+function _maTrMeta(tr, prefix, id, field, table) {
+  const meta = (table && table[id]) || {};
+  return tr(prefix + '_' + String(id == null ? '' : id).replace(/-/g, '_') + '_' + (_MA_META_FIELD_KEYS[field] || field), meta[field] || '');
+}
+// Messages produced by pure helpers (readiness reasons, storage warnings, parser
+// fallbacks) are keyed by their English text so the helpers stay pure and the
+// view translates at display time.
+const MEMORY_AID_MESSAGE_KEYS = Object.freeze({
+  'At least one required fact is needed before recall practice.': 'msg_need_fact',
+  'Ask the teacher to lock the facts before recall practice.': 'msg_lock_facts_first',
+  'Ask the teacher to review and verify these facts before recall practice.': 'msg_verify_facts_first',
+  'Create a written or visual memory cue before recall practice.': 'msg_need_cue',
+  'Add a specific image description before using a visual-only cue for accessible recall practice.': 'msg_need_alt_for_visual_cue',
+  'Ready to practice with the teacher-verified facts hidden.': 'msg_ready_to_practice',
+  'Add a visual before reviewing its image description.': 'msg_add_visual_first',
+  'Add a specific description of visible details before teacher approval.': 'msg_add_specific_alt',
+  'Specific image description added. Review it against the visual before approval.': 'msg_alt_added',
+  'Add or personalize a memory aid first.': 'msg_add_aid_first',
+  'Explain how your aid connects to the facts before requesting feedback.': 'msg_explain_before_feedback',
+  'Private practice is using this tab because learner-profile storage is unavailable, and an older profile copy could not be removed. Do not rely on this change in another tab or device.': 'msg_storage_tab_degraded',
+  'Private practice is saved only in this tab because learner-profile storage is unavailable. It will not follow the profile to another tab or device.': 'msg_storage_tab_only',
+  'The visual includes a concrete cue to review.': 'msg_visual_check_fallback_strength',
+  'A structured fact-alignment result was not available.': 'msg_visual_check_fallback_concern',
+  'Compare every visible element with the required facts before relying on the cue.': 'msg_visual_check_fallback_change',
+  'You created a cue connected to the learning target.': 'msg_feedback_fallback_strength',
+  'Compare every part of the cue with the required facts.': 'msg_feedback_fallback_accuracy',
+  'Revise one part so the connection is easier to retrieve.': 'msg_feedback_fallback_next',
+  'Which part will help you remember first?': 'msg_feedback_fallback_question',
+});
+function _maTrMsg(tr, message) {
+  const text = String(message == null ? '' : message);
+  const key = MEMORY_AID_MESSAGE_KEYS[text];
+  return key ? tr(key, text) : text;
+}
+
 function normalizeMemoryAidImage(value) {
   const candidate = _maString(value, _MA_MAX_IMAGE_CHARS + 1).trim();
   if (!candidate || candidate.length > _MA_MAX_IMAGE_CHARS) return '';
@@ -324,25 +384,26 @@ function memoryAidAudioFilename(card) {
   return 'memory-aid-' + (slug || 'card');
 }
 
-function buildMemoryAidReadAloudText(card) {
+function buildMemoryAidReadAloudText(card, tr) {
+  const T = typeof tr === 'function' ? tr : (key, fallback) => fallback;
   const normalized = normalizeMemoryAidCard(card, 0, { authorshipMode: 'student-authored' });
   const sections = [
-    'Memory target. ' + (normalized.target || 'Untitled memory target.'),
+    T('speech_memory_target', 'Memory target. ') + (normalized.target || T('speech_untitled_target', 'Untitled memory target.')),
     normalized.essentialFacts.length
-      ? (normalized.factVerified ? 'Teacher-verified facts. ' : 'Facts awaiting teacher review. ') + normalized.essentialFacts.join(' ')
+      ? (normalized.factVerified ? T('speech_facts_verified', 'Teacher-verified facts. ') : T('speech_facts_pending', 'Facts awaiting teacher review. ')) + normalized.essentialFacts.join(' ')
       : '',
   ];
   if (normalized.mode === 'generated' && normalized.aiExample) {
-    sections.push('AI example. ' + normalized.aiExample);
+    sections.push(T('speech_ai_example', 'AI example. ') + normalized.aiExample);
   } else if (normalized.mode === 'scaffolded') {
-    if (normalized.scaffoldStarter) sections.push('Scaffold starter. ' + normalized.scaffoldStarter);
-    if (normalized.scaffoldSteps.length) sections.push('Build steps. ' + normalized.scaffoldSteps.join(' '));
+    if (normalized.scaffoldStarter) sections.push(T('speech_scaffold_starter', 'Scaffold starter. ') + normalized.scaffoldStarter);
+    if (normalized.scaffoldSteps.length) sections.push(T('speech_build_steps', 'Build steps. ') + normalized.scaffoldSteps.join(' '));
   } else if (normalized.coachPrompts.length) {
-    sections.push('Coach questions. ' + normalized.coachPrompts.join(' '));
+    sections.push(T('speech_coach_questions', 'Coach questions. ') + normalized.coachPrompts.join(' '));
   }
-  if (normalized.mapping) sections.push('How the cue connects. ' + normalized.mapping);
-  if (normalized.studentDraft) sections.push('Student memory aid. ' + normalized.studentDraft);
-  if (normalized.studentReasoning) sections.push('Student explanation. ' + normalized.studentReasoning);
+  if (normalized.mapping) sections.push(T('speech_mapping', 'How the cue connects. ') + normalized.mapping);
+  if (normalized.studentDraft) sections.push(T('speech_student_aid', 'Student memory aid. ') + normalized.studentDraft);
+  if (normalized.studentReasoning) sections.push(T('speech_student_explanation', 'Student explanation. ') + normalized.studentReasoning);
   return sections.filter(Boolean).join('\n\n');
 }
 
@@ -1225,16 +1286,17 @@ function memoryAidPracticeRevisionState(value, card) {
   };
 }
 
-function buildMemoryAidPracticeCueText(card) {
+function buildMemoryAidPracticeCueText(card, tr) {
+  const T = typeof tr === 'function' ? tr : (key, fallback) => fallback;
   const raw = card && typeof card === 'object' ? card : {};
   const target = _maString(raw.target || raw.concept, 1000).trim() || 'this memory target';
   const cue = memoryAidPracticeCue(raw);
   const image = normalizeMemoryAidImage(raw.visualImage || raw.imageUrl);
   const visualAlt = image ? _maString(raw.visualAlt, 800).trim() : '';
   return [
-    'Memory target. ' + target + '.',
-    cue ? 'Memory cue. ' + cue : '',
-    visualAlt ? 'Visual cue description. ' + visualAlt : '',
+    T('speech_memory_target', 'Memory target. ') + target + '.',
+    cue ? T('speech_memory_cue', 'Memory cue. ') + cue : '',
+    visualAlt ? T('speech_visual_description', 'Visual cue description. ') + visualAlt : '',
   ].filter(Boolean).join('\n\n');
 }
 
@@ -1570,6 +1632,23 @@ function parseMemoryAidFeedback(value) {
   }
 }
 
+// Export lanes (doc_pipeline HTML + printable worksheet, slides preview,
+// NotebookLM Markdown) must reach the SAME verdicts as the live view. They read
+// these through window.AlloModules.MemoryAid.exportRules at export time and fail
+// SAFE (facts unverified, visual lacks an accessible description) when this
+// module is not loaded, instead of re-deriving the rules by hand. The previous
+// hand copies had drifted: the export accepted this module's own alt-text
+// placeholder as "specific" and treated an unlocked card as verified.
+// tests/memory_aid_export_lockstep.test.js pins the agreement.
+const MEMORY_AID_EXPORT_RULES = Object.freeze({
+  version: 1,
+  isSpecificVisualAlt: (value) => _maVisualAltIsSpecific(value),
+  isCardVerified: (card) => normalizeMemoryAidCard(card, 0, { authorshipMode: 'student-authored' }).factVerified,
+  placeholderVisualAlt: (card) => buildMemoryAidVisualAlt(card),
+  normalizeImage: (value) => normalizeMemoryAidImage(value),
+  practiceCue: (card) => memoryAidPracticeCue(card),
+});
+
 function MemoryAidPanel(props) {
   const {
     expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
@@ -1581,6 +1660,8 @@ function MemoryAidPanel(props) {
     memoryAidCount, setMemoryAidCount,
     memoryAidCustomInstructions, setMemoryAidCustomInstructions,
   } = props;
+  const tr = _maMakeTr(props.t);
+  const trMeta = (prefix, id, field, table) => _maTrMeta(tr, prefix, id, field, table);
   if (!expandedTools || !expandedTools.includes('memory-aid')) return null;
   const selected = normalizeMemoryAidTypes(memoryAidTypes);
   const toggleType = (id) => {
@@ -1599,21 +1680,21 @@ function MemoryAidPanel(props) {
     <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
       <div className="m-3 space-y-4 rounded-2xl border border-teal-200 bg-teal-50/50 p-3">
         <div>
-          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">Aid selection</label>
-          <select aria-label="Memory aid selection" value={memoryAidSelectionMode || 'auto-mix'} onChange={(event) => setMemoryAidSelectionMode(event.target.value)} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
-            <option value="auto-mix">Auto Mix — match aids to the lesson</option>
-            <option value="manual">Choose aid types</option>
+          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">{tr('panel_aid_selection', 'Aid selection')}</label>
+          <select data-help-key="memory_aid_selection" aria-label={tr('panel_aid_selection_aria', 'Memory aid selection')} value={memoryAidSelectionMode || 'auto-mix'} onChange={(event) => setMemoryAidSelectionMode(event.target.value)} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+            <option value="auto-mix">{tr('panel_auto_mix_option', 'Auto Mix — match aids to the lesson')}</option>
+            <option value="manual">{tr('panel_choose_types_option', 'Choose aid types')}</option>
           </select>
         </div>
         {(memoryAidSelectionMode || 'auto-mix') === 'manual' && (
           <fieldset>
-            <legend className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">Include at least one</legend>
+            <legend className="mb-2 text-xs font-black uppercase tracking-wide text-slate-700">{tr('panel_include_at_least_one', 'Include at least one')}</legend>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(MEMORY_AID_TYPES).map(([id, meta]) => {
                 const active = selected.includes(id);
                 return (
                   <button key={id} type="button" aria-pressed={active} onClick={() => toggleType(id)} className={'min-h-11 rounded-xl border px-2 py-2 text-left text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 ' + (active ? 'border-teal-600 bg-teal-100 text-teal-950' : 'border-slate-300 bg-white text-slate-700 hover:border-teal-400')}>
-                    {meta.shortLabel}
+                    {trMeta('type', id, 'shortLabel', MEMORY_AID_TYPES)}
                   </button>
                 );
               })}
@@ -1621,40 +1702,40 @@ function MemoryAidPanel(props) {
           </fieldset>
         )}
         <div>
-          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">Authorship pathway</label>
-          <select aria-label="Memory aid authorship pathway" value={memoryAidAuthorshipMode || 'progressive'} onChange={(event) => setMemoryAidAuthorshipMode(event.target.value)} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
-            <option value="progressive">See one → Build one → Create one</option>
-            {Object.entries(MEMORY_AID_MODES).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">{tr('panel_authorship_pathway', 'Authorship pathway')}</label>
+          <select data-help-key="memory_aid_authorship" aria-label={tr('panel_authorship_pathway_aria', 'Memory aid authorship pathway')} value={memoryAidAuthorshipMode || 'progressive'} onChange={(event) => setMemoryAidAuthorshipMode(event.target.value)} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+            <option value="progressive">{tr('panel_progressive_option', 'See one → Build one → Create one')}</option>
+            {Object.entries(MEMORY_AID_MODES).map(([id]) => <option key={id} value={id}>{trMeta('mode', id, 'label', MEMORY_AID_MODES)}</option>)}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">Student reasoning</label>
-          <select aria-label="Student reasoning level" value={memoryAidReflectionLevel || 'quick'} onChange={(event) => updateReflectionLevel(event.target.value)} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
-            {Object.entries(MEMORY_AID_REFLECTION_LEVELS).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">{tr('panel_student_reasoning', 'Student reasoning')}</label>
+          <select data-help-key="memory_aid_reasoning" aria-label={tr('panel_student_reasoning_aria', 'Student reasoning level')} value={memoryAidReflectionLevel || 'quick'} onChange={(event) => updateReflectionLevel(event.target.value)} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+            {Object.entries(MEMORY_AID_REFLECTION_LEVELS).map(([id]) => <option key={id} value={id}>{trMeta('reflection', id, 'label', MEMORY_AID_REFLECTION_LEVELS)}</option>)}
           </select>
-          <p className="mt-1 text-[11px] leading-snug text-slate-600">The mnemonic-to-fact connection is always visible. This controls whether students add their own explanation.</p>
+          <p className="mt-1 text-[11px] leading-snug text-slate-600">{tr('panel_reasoning_help', 'The mnemonic-to-fact connection is always visible. This controls whether students add their own explanation.')}</p>
         </div>
         {(memoryAidReflectionLevel || 'quick') !== 'none' && (
           <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700">
             <input type="checkbox" checked={memoryAidReasoningRequired === true} onChange={(event) => setMemoryAidReasoningRequired(event.target.checked)} className="h-4 w-4 accent-teal-700" />
-            Require reasoning before AI feedback
+            {tr('panel_require_reasoning', 'Require reasoning before AI feedback')}
           </label>
         )}
         <div>
-          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">Number of memory targets</label>
-          <select aria-label="Number of memory targets" value={Number(memoryAidCount) || 3} onChange={(event) => setMemoryAidCount(Number(event.target.value))} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
-            <option value={3}>3 — Compact</option>
-            <option value={4}>4 — Standard</option>
-            <option value={5}>5 — Extended</option>
+          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">{tr('panel_target_count', 'Number of memory targets')}</label>
+          <select data-help-key="memory_aid_count" aria-label={tr('panel_target_count_aria', 'Number of memory targets')} value={Number(memoryAidCount) || 3} onChange={(event) => setMemoryAidCount(Number(event.target.value))} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+            <option value={3}>{tr('panel_count_3', '3 — Compact')}</option>
+            <option value={4}>{tr('panel_count_4', '4 — Standard')}</option>
+            <option value={5}>{tr('panel_count_5', '5 — Extended')}</option>
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">Teacher instructions <span className="font-medium normal-case text-slate-500">(optional)</span></label>
-          <textarea aria-label="Custom instructions for memory aids" value={memoryAidCustomInstructions || ''} onChange={(event) => setMemoryAidCustomInstructions(event.target.value)} maxLength={2000} rows={3} placeholder="Prioritize vocabulary, avoid rhymes, connect to a class example..." className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
+          <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-700">{tr('panel_teacher_instructions', 'Teacher instructions')} <span className="font-medium normal-case text-slate-500">{tr('optional_paren', '(optional)')}</span></label>
+          <textarea data-help-key="memory_aid_instructions" aria-label={tr('panel_custom_instructions_aria', 'Custom instructions for memory aids')} value={memoryAidCustomInstructions || ''} onChange={(event) => setMemoryAidCustomInstructions(event.target.value)} maxLength={2000} rows={3} placeholder={tr('panel_custom_instructions_placeholder', 'Prioritize vocabulary, avoid rhymes, connect to a class example...')} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
         </div>
       </div>
-      <button type="button" aria-label="Generate memory aid resource" onClick={() => handleGenerate('memory-aid')} disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing} className="group m-3 mt-0 flex min-h-12 w-[calc(100%_-_1.5rem)] items-center justify-between rounded-xl border border-teal-300 bg-white px-4 py-3 font-black text-teal-900 shadow-sm hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
-        <span>{isProcessing ? 'Building memory aids…' : 'Build Memory Aid Studio'}</span>
+      <button type="button" data-help-key="memory_aid_generate_button" aria-label={tr('panel_generate_aria', 'Generate memory aid resource')} onClick={() => handleGenerate('memory-aid')} disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing} className="group m-3 mt-0 flex min-h-12 w-[calc(100%_-_1.5rem)] items-center justify-between rounded-xl border border-teal-300 bg-white px-4 py-3 font-black text-teal-900 shadow-sm hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
+        <span>{isProcessing ? tr('panel_building', 'Building memory aids…') : tr('panel_build', 'Build Memory Aid Studio')}</span>
         <span aria-hidden="true">→</span>
       </button>
     </div>
@@ -1665,8 +1746,11 @@ function MemoryAidPracticePanel(props) {
   const {
     card, domIdBase, session, attempts, isProcessing, canSpeak, blockedByOtherPractice, saveEvidence, storageWarning,
     onStart, onChange, onReveal, onFactCheck, onRepeat, onClose, onSpeak,
-    onDeleteAttempt, onClearHistory, onSaveRevision,
+    onDeleteAttempt, onClearHistory, onSaveRevision, t,
   } = props;
+  const tr = _maMakeTr(t);
+  const trMeta = (prefix, id, field, table) => _maTrMeta(tr, prefix, id, field, table);
+  const trMsg = (message) => _maTrMsg(tr, message);
   const stage = session && ['recall', 'review'].includes(session.stage) ? session.stage : 'idle';
   const readiness = memoryAidPracticeReady(card);
   const cue = memoryAidPracticeCue(card);
@@ -1700,54 +1784,54 @@ function MemoryAidPracticePanel(props) {
       <section className="memory-aid-practice-panel rounded-2xl border-2 border-cyan-300 bg-cyan-50 p-4" aria-labelledby={practiceTitleId}>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-cyan-800">Recall practice</p>
-            <h3 ref={headingRef} tabIndex={-1} id={practiceTitleId} className="mt-1 text-lg font-black text-cyan-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">Use the cue before seeing the facts</h3>
+            <p className="text-[11px] font-black uppercase tracking-widest text-cyan-800">{tr('practice_kicker', 'Recall practice')}</p>
+            <h3 ref={headingRef} tabIndex={-1} id={practiceTitleId} className="mt-1 text-lg font-black text-cyan-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700">{tr('practice_title', 'Use the cue before seeing the facts')}</h3>
           </div>
-          <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-cyan-900">Facts hidden</span>
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-cyan-900">{tr('practice_facts_hidden_badge', 'Facts hidden')}</span>
         </div>
-        <p role="status" className="mt-2 text-sm leading-relaxed text-slate-700">The teacher-verified facts, mapping, feedback, and creation supports stay hidden until you record what you remember.</p>
+        <p role="status" className="mt-2 text-sm leading-relaxed text-slate-700">{tr('practice_hidden_note', 'The teacher-verified facts, mapping, feedback, and creation supports stay hidden until you record what you remember.')}</p>
         <div className="mt-4 rounded-2xl border border-cyan-200 bg-white p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-cyan-900">Your memory cue</p>
+          <p className="text-xs font-black uppercase tracking-wide text-cyan-900">{tr('practice_your_cue', 'Your memory cue')}</p>
           {cue && <p className="mt-2 whitespace-pre-wrap text-base font-bold leading-relaxed text-slate-900">{cue}</p>}
           {card.visualImage && <img src={card.visualImage} alt={card.visualAlt || buildMemoryAidVisualAlt(card)} className="mt-3 max-h-72 w-auto max-w-full rounded-xl border border-cyan-100 object-contain" />}
-          {canSpeak && <button type="button" onClick={onSpeak} disabled={isProcessing} className="mt-3 min-h-11 rounded-xl border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-black text-sky-900 hover:bg-sky-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">Listen to practice cue</button>}
+          {canSpeak && <button type="button" onClick={onSpeak} disabled={isProcessing} className="mt-3 min-h-11 rounded-xl border border-sky-300 bg-sky-50 px-3 py-2 text-sm font-black text-sky-900 hover:bg-sky-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{tr('practice_listen_cue', 'Listen to practice cue')}</button>}
         </div>
         <fieldset className="mt-4 rounded-xl border border-cyan-200 bg-white p-3">
-          <legend className="px-1 text-sm font-black text-slate-900">How will you retrieve what the cue means?</legend>
+          <legend className="px-1 text-sm font-black text-slate-900">{tr('practice_response_mode_legend', 'How will you retrieve what the cue means?')}</legend>
           <div className="mt-1 grid gap-2 sm:grid-cols-2">
             {Object.entries(MEMORY_AID_PRACTICE_RESPONSE_MODES).map(([id, meta]) => (
               <label key={id} className="flex min-h-11 items-center gap-2 rounded-xl border border-cyan-200 px-3 py-2 text-sm font-bold text-slate-800">
                 <input type="radio" name={panelDomIdBase + '-practice-response'} value={id} checked={responseMode === id} onChange={() => onChange({ responseMode: id, response: '', selfCheckConfirmed: false })} />
-                <span>{meta.label}</span>
+                <span>{trMeta('response_mode', id, 'label', MEMORY_AID_PRACTICE_RESPONSE_MODES)}</span>
               </label>
             ))}
           </div>
         </fieldset>
         {responseMode === 'written' ? (
-          <label className="mt-4 block text-sm font-black text-slate-900">What does the cue help you remember?
-            <textarea aria-label={'Recall response for ' + card.target} value={response} onChange={(event) => onChange({ response: event.target.value })} maxLength={6000} rows={5} placeholder="Write everything you can retrieve before revealing the facts…" className="mt-2 w-full rounded-xl border border-cyan-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600" />
+          <label className="mt-4 block text-sm font-black text-slate-900">{tr('practice_recall_question', 'What does the cue help you remember?')}
+            <textarea aria-label={tr('practice_recall_response_aria', 'Recall response for {target}', { target: card.target })} value={response} onChange={(event) => onChange({ response: event.target.value })} maxLength={6000} rows={5} placeholder={tr('practice_recall_placeholder', 'Write everything you can retrieve before revealing the facts…')} className="mt-2 w-full rounded-xl border border-cyan-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600" />
           </label>
         ) : (
           <label className="mt-4 flex items-start gap-3 rounded-xl border border-cyan-300 bg-white p-3 text-sm font-bold leading-relaxed text-slate-800">
             <input type="checkbox" className="mt-1" checked={session.selfCheckConfirmed === true} onChange={(event) => onChange({ selfCheckConfirmed: event.target.checked })} />
-            <span>I finished responding aloud, by drawing, pointing, acting, or thinking. No recording or transcript will be saved.</span>
+            <span>{tr('practice_self_check_confirm', 'I finished responding aloud, by drawing, pointing, acting, or thinking. No recording or transcript will be saved.')}</span>
           </label>
         )}
-        <label className="mt-3 block text-sm font-black text-slate-900">How confident do you feel before checking?
-          <select aria-label={'Recall confidence for ' + card.target} value={confidence} onChange={(event) => onChange({ confidence: event.target.value })} className="mt-2 min-h-11 w-full rounded-xl border border-cyan-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600">
-            {Object.entries(MEMORY_AID_PRACTICE_CONFIDENCE).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+        <label className="mt-3 block text-sm font-black text-slate-900">{tr('practice_confidence_question', 'How confident do you feel before checking?')}
+          <select aria-label={tr('practice_confidence_aria', 'Recall confidence for {target}', { target: card.target })} value={confidence} onChange={(event) => onChange({ confidence: event.target.value })} className="mt-2 min-h-11 w-full rounded-xl border border-cyan-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600">
+            {Object.entries(MEMORY_AID_PRACTICE_CONFIDENCE).map(([id]) => <option key={id} value={id}>{trMeta('confidence', id, 'label', MEMORY_AID_PRACTICE_CONFIDENCE)}</option>)}
           </select>
         </label>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={onReveal} disabled={!responseReady} aria-describedby={practiceHelpId} className="min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2">Reveal teacher-verified facts</button>
-          <button type="button" onClick={onClose} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">Exit practice</button>
+          <button type="button" onClick={onReveal} disabled={!responseReady} aria-describedby={practiceHelpId} className="min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2">{tr('practice_reveal', 'Reveal teacher-verified facts')}</button>
+          <button type="button" onClick={onClose} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">{tr('practice_exit', 'Exit practice')}</button>
         </div>
         <p id={practiceHelpId} className="mt-2 text-xs leading-relaxed text-slate-600">{responseReady
-          ? 'Your response is ready. Reveal the facts and check it yourself.'
+          ? tr('practice_help_ready', 'Your response is ready. Reveal the facts and check it yourself.')
           : responseMode === 'written'
-            ? 'Write a recall response before revealing the facts.'
-            : 'Finish your chosen response, then confirm it before revealing the facts.'}</p>
-        {storageWarning && <p role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">{storageWarning}</p>}
+            ? tr('practice_help_write', 'Write a recall response before revealing the facts.')
+            : tr('practice_help_confirm', 'Finish your chosen response, then confirm it before revealing the facts.')}</p>
+        {storageWarning && <p role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">{trMsg(storageWarning)}</p>}
       </section>
     );
   }
@@ -1755,25 +1839,25 @@ function MemoryAidPracticePanel(props) {
   if (stage === 'review' && session.attempt) {
     const attempt = session.attempt;
     const summary = memoryAidPracticeSummary(attempt, card);
-    const confidenceMeta = MEMORY_AID_PRACTICE_CONFIDENCE[attempt.confidence] || MEMORY_AID_PRACTICE_CONFIDENCE['not-sure'];
+    const confidenceLabel = trMeta('confidence', Object.prototype.hasOwnProperty.call(MEMORY_AID_PRACTICE_CONFIDENCE, attempt.confidence) ? attempt.confidence : 'not-sure', 'label', MEMORY_AID_PRACTICE_CONFIDENCE);
     const revisionStrategy = _maString(session.revisionStrategy, 1600);
     const calibration = summary.complete && attempt.confidence === 'confident' && summary.needsPractice
-      ? 'You felt confident and still found a gap. Strengthening the cue-to-fact link may make the next retrieval more dependable.'
+      ? tr('practice_calibration_overconfident', 'You felt confident and still found a gap. Strengthening the cue-to-fact link may make the next retrieval more dependable.')
       : summary.complete && attempt.confidence === 'not-sure' && summary.recalled === summary.total
-        ? 'Your self-check shows that you retrieved every fact even though you were not sure. Use that evidence when judging your confidence next time.'
+        ? tr('practice_calibration_underconfident', 'Your self-check shows that you retrieved every fact even though you were not sure. Use that evidence when judging your confidence next time.')
         : '';
     return (
       <section className="memory-aid-practice-panel rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4" aria-labelledby={practiceTitleId}>
-        <p className="text-[11px] font-black uppercase tracking-widest text-emerald-800">Recall review</p>
-        <h3 ref={headingRef} tabIndex={-1} id={practiceTitleId} className="mt-1 text-lg font-black text-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">Compare your recall with the accurate facts</h3>
+        <p className="text-[11px] font-black uppercase tracking-widest text-emerald-800">{tr('review_kicker', 'Recall review')}</p>
+        <h3 ref={headingRef} tabIndex={-1} id={practiceTitleId} className="mt-1 text-lg font-black text-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{tr('review_title', 'Compare your recall with the accurate facts')}</h3>
         <div className="mt-3 rounded-xl border border-emerald-200 bg-white p-3">
-          <p className="text-xs font-black uppercase tracking-wide text-emerald-900">What you recalled</p>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{attempt.response || 'You used a response mode with no written transcript saved.'}</p>
-          <p className="mt-2 text-xs font-bold text-slate-600">Confidence before checking: {confidenceMeta.label}</p>
+          <p className="text-xs font-black uppercase tracking-wide text-emerald-900">{tr('review_what_you_recalled', 'What you recalled')}</p>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{attempt.response || tr('review_no_transcript', 'You used a response mode with no written transcript saved.')}</p>
+          <p className="mt-2 text-xs font-bold text-slate-600">{tr('review_confidence_before', 'Confidence before checking: {confidence}', { confidence: confidenceLabel })}</p>
         </div>
         <section className="mt-4" aria-labelledby={practiceFactsId}>
-          <h4 id={practiceFactsId} className="text-sm font-black text-slate-900">Check each teacher-verified fact</h4>
-          <p className="mt-1 text-xs leading-relaxed text-slate-600">This is your self-check, not an AI score. Mark whether your response included the meaning of each fact.</p>
+          <h4 id={practiceFactsId} className="text-sm font-black text-slate-900">{tr('review_check_each_fact', 'Check each teacher-verified fact')}</h4>
+          <p className="mt-1 text-xs leading-relaxed text-slate-600">{tr('review_self_check_note', 'This is your self-check, not an AI score. Mark whether your response included the meaning of each fact.')}</p>
           <ol className="mt-3 space-y-3">
             {attempt.facts.map((fact, factIndex) => {
               const check = attempt.factChecks[factIndex] || 'unrated';
@@ -1783,12 +1867,12 @@ function MemoryAidPracticePanel(props) {
                     <legend className="text-sm font-bold leading-relaxed text-slate-900"><span className="mr-1 text-emerald-800">{factIndex + 1}.</span> {fact}</legend>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <label className={'flex min-h-10 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-black ' + (check === 'recalled' ? 'border-emerald-700 bg-emerald-100 text-emerald-950' : 'border-slate-300 bg-white text-slate-700 hover:bg-emerald-50')}>
-                      <input type="radio" name={panelDomIdBase + '-practice-fact-' + factIndex} value="recalled" checked={check === 'recalled'} onChange={() => onFactCheck(factIndex, 'recalled')} aria-label={'I recalled fact ' + (factIndex + 1) + ': ' + fact} />
-                      <span>I recalled this</span>
+                      <input type="radio" name={panelDomIdBase + '-practice-fact-' + factIndex} value="recalled" checked={check === 'recalled'} onChange={() => onFactCheck(factIndex, 'recalled')} aria-label={tr('review_recalled_fact_aria', 'I recalled fact {n}: {fact}', { n: factIndex + 1, fact })} />
+                      <span>{tr('review_recalled_this', 'I recalled this')}</span>
                     </label>
                     <label className={'flex min-h-10 items-center gap-2 rounded-xl border px-3 py-2 text-xs font-black ' + (check === 'practice' ? 'border-amber-700 bg-amber-100 text-amber-950' : 'border-slate-300 bg-white text-slate-700 hover:bg-amber-50')}>
-                      <input type="radio" name={panelDomIdBase + '-practice-fact-' + factIndex} value="practice" checked={check === 'practice'} onChange={() => onFactCheck(factIndex, 'practice')} aria-label={'Needs more practice for fact ' + (factIndex + 1) + ': ' + fact} />
-                      <span>Needs more practice</span>
+                      <input type="radio" name={panelDomIdBase + '-practice-fact-' + factIndex} value="practice" checked={check === 'practice'} onChange={() => onFactCheck(factIndex, 'practice')} aria-label={tr('review_needs_practice_aria', 'Needs more practice for fact {n}: {fact}', { n: factIndex + 1, fact })} />
+                      <span>{tr('review_needs_practice', 'Needs more practice')}</span>
                     </label>
                   </div>
                   </fieldset>
@@ -1799,26 +1883,26 @@ function MemoryAidPracticePanel(props) {
         </section>
         <p role="status" aria-live="polite" className="mt-4 rounded-xl border border-emerald-200 bg-white p-3 text-sm font-bold text-slate-800">
           {summary.complete
-            ? 'Self-check complete: ' + summary.recalled + ' of ' + summary.total + ' facts recalled; ' + summary.needsPractice + ' marked for more practice.'
-             : 'Check each fact to complete this attempt. ' + summary.unrated + ' remaining.'}
+            ? tr('review_summary_complete', 'Self-check complete: {recalled} of {total} facts recalled; {practice} marked for more practice.', { recalled: summary.recalled, total: summary.total, practice: summary.needsPractice })
+             : tr('review_summary_incomplete', 'Check each fact to complete this attempt. {remaining} remaining.', { remaining: summary.unrated })}
         </p>
-        {storageWarning && <p role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">{storageWarning}</p>}
-        {calibration && <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm leading-relaxed text-sky-950"><strong>Confidence reflection:</strong> {calibration}</p>}
+        {storageWarning && <p role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">{trMsg(storageWarning)}</p>}
+        {calibration && <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm leading-relaxed text-sky-950"><strong>{tr('review_confidence_reflection', 'Confidence reflection:')}</strong> {calibration}</p>}
         {saveEvidence && summary.complete && summary.needsPractice > 0 && (
           <section className="mt-4 rounded-xl border border-violet-300 bg-violet-50 p-3" aria-labelledby={revisionPlanId}>
-            <h4 id={revisionPlanId} className="text-sm font-black text-violet-950">Plan one cue revision</h4>
-            <p className="mt-1 text-xs leading-relaxed text-slate-700">The facts marked “Needs more practice” will be linked to this private revision goal.</p>
-            <label className="mt-3 block text-sm font-bold text-slate-900">What will you change, and why should it help?
-              <textarea aria-label={'Revision goal for ' + card.target} value={revisionStrategy} onChange={(event) => onChange({ revisionStrategy: event.target.value })} maxLength={1600} rows={3} placeholder="Example: I will make the container image more noticeable so it cues the liquid fact." className="mt-2 w-full rounded-xl border border-violet-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" />
+            <h4 id={revisionPlanId} className="text-sm font-black text-violet-950">{tr('review_plan_revision', 'Plan one cue revision')}</h4>
+            <p className="mt-1 text-xs leading-relaxed text-slate-700">{tr('review_plan_note', 'The facts marked “Needs more practice” will be linked to this private revision goal.')}</p>
+            <label className="mt-3 block text-sm font-bold text-slate-900">{tr('review_revision_question', 'What will you change, and why should it help?')}
+              <textarea aria-label={tr('review_revision_goal_aria', 'Revision goal for {target}', { target: card.target })} value={revisionStrategy} onChange={(event) => onChange({ revisionStrategy: event.target.value })} maxLength={1600} rows={3} placeholder={tr('review_revision_placeholder', 'Example: I will make the container image more noticeable so it cues the liquid fact.')} className="mt-2 w-full rounded-xl border border-violet-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" />
             </label>
-            <button type="button" onClick={() => onSaveRevision(revisionStrategy)} disabled={!revisionStrategy.trim()} className="mt-3 min-h-11 rounded-xl bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2">Save goal and revise cue</button>
+            <button type="button" onClick={() => onSaveRevision(revisionStrategy)} disabled={!revisionStrategy.trim()} className="mt-3 min-h-11 rounded-xl bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2">{tr('review_save_goal', 'Save goal and revise cue')}</button>
           </section>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={onRepeat} disabled={!summary.complete} className="min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2">Practice again</button>
-          <button type="button" onClick={onClose} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">{summary.needsPractice ? 'Return to revise the aid' : 'Return to card'}</button>
+          <button type="button" onClick={onRepeat} disabled={!summary.complete} className="min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2">{tr('review_practice_again', 'Practice again')}</button>
+          <button type="button" onClick={onClose} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">{summary.needsPractice ? tr('review_return_revise', 'Return to revise the aid') : tr('review_return_card', 'Return to card')}</button>
         </div>
-        {!summary.complete && <p className="mt-2 text-xs font-bold text-slate-600">Complete the fact self-check before starting another attempt. Exiting now discards this incomplete attempt.</p>}
+        {!summary.complete && <p className="mt-2 text-xs font-bold text-slate-600">{tr('review_incomplete_warning', 'Complete the fact self-check before starting another attempt. Exiting now discards this incomplete attempt.')}</p>}
       </section>
     );
   }
@@ -1826,8 +1910,8 @@ function MemoryAidPracticePanel(props) {
   if (blockedByOtherPractice) {
     return (
       <section className="memory-aid-no-print rounded-2xl border border-slate-200 bg-slate-50 p-4" aria-labelledby={practiceTitleId}>
-        <h3 id={practiceTitleId} className="text-sm font-black text-slate-800">Recall practice paused for this target</h3>
-        <p className="mt-1 text-xs font-bold leading-relaxed text-slate-600">Finish or exit the active target before opening this target’s cue, history, or revision evidence.</p>
+        <h3 id={practiceTitleId} className="text-sm font-black text-slate-800">{tr('practice_paused_title', 'Recall practice paused for this target')}</h3>
+        <p className="mt-1 text-xs font-bold leading-relaxed text-slate-600">{tr('practice_paused_note', 'Finish or exit the active target before opening this target’s cue, history, or revision evidence.')}</p>
       </section>
     );
   }
@@ -1838,41 +1922,41 @@ function MemoryAidPracticePanel(props) {
     <section className="memory-aid-no-print rounded-2xl border border-cyan-200 bg-cyan-50/70 p-4" aria-labelledby={practiceTitleId}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 id={practiceTitleId} className="text-sm font-black text-cyan-950">Try it from memory</h3>
-          <p className="mt-1 text-xs leading-relaxed text-slate-700">Use only the cue, record what you retrieve, then reveal and self-check the teacher-verified facts. AI does not grade this practice.</p>
+          <h3 id={practiceTitleId} className="text-sm font-black text-cyan-950">{tr('practice_idle_title', 'Try it from memory')}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-slate-700">{tr('practice_idle_note', 'Use only the cue, record what you retrieve, then reveal and self-check the teacher-verified facts. AI does not grade this practice.')}</p>
         </div>
-        <button id={practiceStartId} type="button" onClick={onStart} disabled={!idleReadiness.ok || isProcessing} aria-describedby={practiceHelpId} className="min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2">Start recall practice</button>
+        <button id={practiceStartId} type="button" onClick={onStart} disabled={!idleReadiness.ok || isProcessing} aria-describedby={practiceHelpId} className="min-h-11 rounded-xl bg-cyan-800 px-4 py-2 text-sm font-black text-white hover:bg-cyan-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-2">{tr('practice_start', 'Start recall practice')}</button>
       </div>
-      <p id={practiceHelpId} role="status" className="mt-2 text-xs font-bold leading-relaxed text-slate-600">{idleReadiness.reason}</p>
-      {saveEvidence && <p className="mt-2 text-xs leading-relaxed text-slate-600">Completed attempts stay private to the active learner profile in this browser, or to this tab when no profile is active. They are not added to the lesson resource or student worksheet.</p>}
-      {storageWarning && <p role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">{storageWarning}</p>}
+      <p id={practiceHelpId} role="status" className="mt-2 text-xs font-bold leading-relaxed text-slate-600">{trMsg(idleReadiness.reason)}</p>
+      {saveEvidence && <p className="mt-2 text-xs leading-relaxed text-slate-600">{tr('practice_privacy_note', 'Completed attempts stay private to the active learner profile in this browser, or to this tab when no profile is active. They are not added to the lesson resource or student worksheet.')}</p>}
+      {storageWarning && <p role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">{trMsg(storageWarning)}</p>}
       {revisionState && !revisionState.pending && (
-        <p role="status" className="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3 text-xs font-bold leading-relaxed text-violet-950">After changing the cue, you recalled {revisionState.recalledAfter} of {revisionState.targetCount} targeted facts on a completed attempt. Use the fact-by-fact evidence to decide whether to keep revising.</p>
+        <p role="status" className="mt-3 rounded-xl border border-violet-200 bg-violet-50 p-3 text-xs font-bold leading-relaxed text-violet-950">{tr('practice_revision_result', 'After changing the cue, you recalled {recalled} of {total} targeted facts on a completed attempt. Use the fact-by-fact evidence to decide whether to keep revising.', { recalled: revisionState.recalledAfter, total: revisionState.targetCount })}</p>
       )}
       {revisionState && revisionState.pending && revisionState.sameCueAttempts > 0 && (
-        <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold leading-relaxed text-amber-950">Your revision goal is still open. You completed {revisionState.sameCueAttempts} more {revisionState.sameCueAttempts === 1 ? 'attempt' : 'attempts'} with the same cue; revise the cue before comparing post-revision evidence.</p>
+        <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold leading-relaxed text-amber-950">{tr('practice_revision_open', 'Your revision goal is still open. You completed {count} more {attempts} with the same cue; revise the cue before comparing post-revision evidence.', { count: revisionState.sameCueAttempts, attempts: revisionState.sameCueAttempts === 1 ? tr('word_attempt', 'attempt') : tr('word_attempts', 'attempts') })}</p>
       )}
       {savedAttempts.length > 0 && (
         <details className="mt-3 rounded-xl border border-cyan-200 bg-white p-3">
-          <summary id={practiceHistoryId} className="cursor-pointer text-sm font-black text-cyan-950">Private practice attempts ({savedAttempts.length})</summary>
+          <summary id={practiceHistoryId} className="cursor-pointer text-sm font-black text-cyan-950">{tr('practice_history_summary', 'Private practice attempts ({count})', { count: savedAttempts.length })}</summary>
           <div className="mt-2 flex justify-end">
-            <button type="button" onClick={onClearHistory} className="min-h-10 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">Clear private history</button>
+            <button type="button" onClick={onClearHistory} className="min-h-10 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">{tr('practice_clear_history', 'Clear private history')}</button>
           </div>
           <ol className="mt-3 space-y-3">
             {savedAttempts.slice().reverse().map((attempt, attemptIndex) => {
               const summary = memoryAidPracticeSummary(attempt, card);
-              const confidenceMeta = MEMORY_AID_PRACTICE_CONFIDENCE[attempt.confidence] || MEMORY_AID_PRACTICE_CONFIDENCE['not-sure'];
+              const confidenceLabel = trMeta('confidence', Object.prototype.hasOwnProperty.call(MEMORY_AID_PRACTICE_CONFIDENCE, attempt.confidence) ? attempt.confidence : 'not-sure', 'label', MEMORY_AID_PRACTICE_CONFIDENCE);
               return (
                 <li key={attempt.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-black text-slate-900">Attempt {savedAttempts.length - attemptIndex}</p>
-                    <span className={'rounded-full px-2 py-1 font-bold ' + (summary.current ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-950')}>{summary.current ? 'Current cue version' : 'Earlier cue version'}</span>
+                    <p className="font-black text-slate-900">{tr('practice_attempt_n', 'Attempt {n}', { n: savedAttempts.length - attemptIndex })}</p>
+                    <span className={'rounded-full px-2 py-1 font-bold ' + (summary.current ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-950')}>{summary.current ? tr('practice_current_cue_version', 'Current cue version') : tr('practice_earlier_cue_version', 'Earlier cue version')}</span>
                   </div>
-                  <p className="mt-2"><strong>Self-check:</strong> {summary.recalled}/{summary.total} recalled · {summary.needsPractice} need practice · {summary.unrated} unchecked</p>
-                  <p className="mt-1"><strong>Confidence:</strong> {confidenceMeta.label}</p>
-                  <p className="mt-2 whitespace-pre-wrap leading-relaxed"><strong>Recall response:</strong> {attempt.response || 'No written response was saved.'}</p>
-                  {attempt.revisionPlan && <p className="mt-2 whitespace-pre-wrap leading-relaxed"><strong>Revision goal:</strong> {attempt.revisionPlan.strategy}</p>}
-                  <button type="button" onClick={() => onDeleteAttempt(attempt.id)} aria-label={'Delete private practice attempt ' + (savedAttempts.length - attemptIndex) + ' for ' + card.target} className="mt-2 min-h-10 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">Delete attempt</button>
+                  <p className="mt-2"><strong>{tr('practice_self_check_label', 'Self-check:')}</strong> {tr('practice_self_check_counts', '{recalled}/{total} recalled · {practice} need practice · {unrated} unchecked', { recalled: summary.recalled, total: summary.total, practice: summary.needsPractice, unrated: summary.unrated })}</p>
+                  <p className="mt-1"><strong>{tr('practice_confidence_label', 'Confidence:')}</strong> {confidenceLabel}</p>
+                  <p className="mt-2 whitespace-pre-wrap leading-relaxed"><strong>{tr('practice_recall_response_label', 'Recall response:')}</strong> {attempt.response || tr('practice_no_written_response', 'No written response was saved.')}</p>
+                  {attempt.revisionPlan && <p className="mt-2 whitespace-pre-wrap leading-relaxed"><strong>{tr('practice_revision_goal_label', 'Revision goal:')}</strong> {attempt.revisionPlan.strategy}</p>}
+                  <button type="button" onClick={() => onDeleteAttempt(attempt.id)} aria-label={tr('practice_delete_attempt_aria', 'Delete private practice attempt {n} for {target}', { n: savedAttempts.length - attemptIndex, target: card.target })} className="mt-2 min-h-10 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">{tr('practice_delete_attempt', 'Delete attempt')}</button>
                 </li>
               );
             })}
@@ -1890,8 +1974,11 @@ function MemoryAidView(props) {
     callGeminiImageEdit: callGeminiImageEditProp, callGeminiVision: callGeminiVisionProp,
     handleSpeak: handleSpeakProp, handleDownloadAudio: handleDownloadAudioProp,
     downloadingContentId, addToast: addToastProp, gradeLevel, universalImageStyle,
-    activeProfileId: activeProfileIdProp,
+    activeProfileId: activeProfileIdProp, onPrint: onPrintProp, t: tProp,
   } = props;
+  const tr = _maMakeTr(tProp);
+  const trMeta = (prefix, id, field, table) => _maTrMeta(tr, prefix, id, field, table);
+  const trMsg = (message) => _maTrMsg(tr, message);
   const [isEditing, setIsEditing] = React.useState(false);
   const [busyByCard, setBusyByCard] = React.useState({});
   const [imageEditor, setImageEditor] = React.useState(null);
@@ -2137,7 +2224,7 @@ function MemoryAidView(props) {
       }
       if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
     } catch (_) {}
-    addToast('Recall practice was reset because this memory target changed.', 'info');
+    addToast(tr('toast_practice_reset', 'Recall practice was reset because this memory target changed.'), 'info');
   }, [staleActivePractice, staleActivePracticeCardId, cardsPracticeIdentity, currentPracticeOwnerIdentity, practiceOwnerIdentity, handleSpeak]);
 
   React.useEffect(() => {
@@ -2215,11 +2302,11 @@ function MemoryAidView(props) {
     const scope = scopeOverride || memoryAidLastPracticeSaveScope();
     setPracticeStorageWarning(memoryAidPracticeStorageWarning(scope));
     if (scope === 'profile-session-fallback-degraded') {
-      addToast('Private practice is tab-only and an older profile copy may remain.', 'error');
+      addToast(tr('toast_storage_tab_degraded', 'Private practice is tab-only and an older profile copy may remain.'), 'error');
       return;
     }
     if (scope === 'profile-session-fallback') {
-      addToast('Private practice was saved only in this tab.', 'info');
+      addToast(tr('toast_storage_tab_only', 'Private practice was saved only in this tab.'), 'info');
       return;
     }
   };
@@ -2244,16 +2331,16 @@ function MemoryAidView(props) {
     }
     if (!practiceMutationCanCommit(ownerAtStart)) return false;
     if (!result.ok) {
-      const warning = 'This completed attempt is available only in the current view because private browser storage is unavailable. Keep this page open or try again.';
+      const warning = tr('warn_attempt_view_only', 'This completed attempt is available only in the current view because private browser storage is unavailable. Keep this page open or try again.');
       setPracticeStorageWarning(warning);
-      addToast('Private practice could not be saved in this browser.', 'error');
+      addToast(tr('toast_practice_not_saved', 'Private practice could not be saved in this browser.'), 'error');
       return false;
     }
     setPrivatePracticeState({ ownerIdentity: ownerAtStart, cards: result.cards });
     reportPracticeStorageScope(result.scope);
     if (!result.applied && result.reason === 'attempt-tombstoned') {
-      setPracticeStorageWarning('This attempt was removed in another tab and was not restored. Start a new recall attempt if you want to save new evidence.');
-      addToast('A removed private attempt was not restored.', 'info');
+      setPracticeStorageWarning(tr('warn_attempt_removed_elsewhere', 'This attempt was removed in another tab and was not restored. Start a new recall attempt if you want to save new evidence.'));
+      addToast(tr('toast_removed_attempt_not_restored', 'A removed private attempt was not restored.'), 'info');
       return false;
     }
     return true;
@@ -2274,8 +2361,8 @@ function MemoryAidView(props) {
     }
     if (!practiceMutationCanCommit(ownerAtStart)) return;
     if (!result.ok) {
-      setPracticeStorageWarning('The private attempt could not be deleted from browser storage. Nothing was hidden or reported as deleted.');
-      addToast('Private practice history could not be deleted.', 'error');
+      setPracticeStorageWarning(tr('warn_attempt_delete_failed', 'The private attempt could not be deleted from browser storage. Nothing was hidden or reported as deleted.'));
+      addToast(tr('toast_history_delete_failed', 'Private practice history could not be deleted.'), 'error');
       return;
     }
     reportPracticeStorageScope(result.scope);
@@ -2300,8 +2387,8 @@ function MemoryAidView(props) {
     }
     if (!practiceMutationCanCommit(ownerAtStart)) return;
     if (!result.ok) {
-      setPracticeStorageWarning('The private history could not be cleared from browser storage. Nothing was hidden or reported as cleared.');
-      addToast('Private practice history could not be cleared.', 'error');
+      setPracticeStorageWarning(tr('warn_history_clear_failed', 'The private history could not be cleared from browser storage. Nothing was hidden or reported as cleared.'));
+      addToast(tr('toast_history_clear_failed', 'Private practice history could not be cleared.'), 'error');
       return;
     }
     reportPracticeStorageScope(result.scope);
@@ -2311,12 +2398,12 @@ function MemoryAidView(props) {
 
   const startPractice = (card) => {
     if (activePracticeCardId && activePracticeCardId !== card.id) {
-      addToast('Finish or exit the active recall practice before starting another target.', 'info');
+      addToast(tr('toast_finish_active_practice', 'Finish or exit the active recall practice before starting another target.'), 'info');
       return;
     }
     const readiness = memoryAidPracticeReady(card);
     if (!readiness.ok) {
-      addToast(readiness.reason, 'info');
+      addToast(trMsg(readiness.reason), 'info');
       return;
     }
     try {
@@ -2347,11 +2434,11 @@ function MemoryAidView(props) {
     const session = visiblePracticeByCard[card.id];
     const attempt = createMemoryAidPracticeAttempt(card, session);
     if (!attempt) {
-      addToast('Finish your chosen response before revealing the facts.', 'info');
+      addToast(tr('toast_finish_response_first', 'Finish your chosen response before revealing the facts.'), 'info');
       return;
     }
     updatePracticeSession(card.id, { stage: 'review', attempt });
-    addToast('Facts revealed. Check each one against your own response.', 'success');
+    addToast(tr('toast_facts_revealed', 'Facts revealed. Check each one against your own response.'), 'success');
   };
 
   const checkPracticeFact = (card, factIndex, value) => {
@@ -2378,7 +2465,7 @@ function MemoryAidView(props) {
     const summary = memoryAidPracticeSummary(currentAttempt, card);
     const revisionStrategy = _maString(strategy, 1600).trim();
     if (!currentAttempt || !summary.complete || !summary.needsPractice || !revisionStrategy) {
-      addToast('Complete the self-check and describe one revision before saving a goal.', 'info');
+      addToast(tr('toast_complete_self_check_first', 'Complete the self-check and describe one revision before saving a goal.'), 'info');
       return;
     }
     const targetFactIndexes = currentAttempt.factChecks
@@ -2400,7 +2487,7 @@ function MemoryAidView(props) {
     const saved = await persistPracticeAttempt(card, attempt);
     if (!saved) return;
     closePractice(card.id, 'draft');
-    addToast('Private revision goal saved. Update the cue, then practice it again.', 'success');
+    addToast(tr('toast_revision_goal_saved', 'Private revision goal saved. Update the cue, then practice it again.'), 'success');
   };
 
   const repeatPractice = (card) => {
@@ -2429,13 +2516,13 @@ function MemoryAidView(props) {
     if (typeof handleSpeak !== 'function') return;
     try {
       await Promise.resolve(handleSpeak(
-        buildMemoryAidPracticeCueText(card),
+        buildMemoryAidPracticeCueText(card, tr),
         'memory-practice-' + card.id,
         0,
         true
       ));
     } catch (_) {
-      addToast('The practice cue could not be read aloud. Try again.', 'error');
+      addToast(tr('toast_cue_read_aloud_failed', 'The practice cue could not be read aloud. Try again.'), 'error');
     }
   };
 
@@ -2483,7 +2570,7 @@ function MemoryAidView(props) {
 
   const requestHint = async (card) => {
     if (typeof callGemini !== 'function') {
-      addToast('AI coaching is not available yet.', 'info');
+      addToast(tr('toast_coaching_unavailable', 'AI coaching is not available yet.'), 'info');
       return;
     }
     const token = beginAsyncOperation(card, 'hint');
@@ -2492,7 +2579,7 @@ function MemoryAidView(props) {
       if (!asyncOperationCanCommit(token)) return;
       updateCard(card.id, { coachHint: _maString(response, 1200).trim() });
     } catch (_) {
-      if (asyncOperationCanCommit(token)) addToast('The coach could not create a hint. Try again.', 'error');
+      if (asyncOperationCanCommit(token)) addToast(tr('toast_hint_failed', 'The coach could not create a hint. Try again.'), 'error');
     } finally {
       finishAsyncOperation(token);
     }
@@ -2501,11 +2588,11 @@ function MemoryAidView(props) {
   const requestFeedback = async (card) => {
     const ready = memoryAidFeedbackReady(card, data.reasoningRequired);
     if (!ready.ok) {
-      addToast(ready.reason, 'info');
+      addToast(trMsg(ready.reason), 'info');
       return;
     }
     if (typeof callGemini !== 'function') {
-      addToast('AI feedback is not available yet.', 'info');
+      addToast(tr('toast_feedback_unavailable', 'AI feedback is not available yet.'), 'info');
       return;
     }
     const token = beginAsyncOperation(card, 'feedback');
@@ -2514,9 +2601,9 @@ function MemoryAidView(props) {
       if (!asyncOperationCanCommit(token)) return;
       const feedback = Object.assign(parseMemoryAidFeedback(raw), { createdAt: new Date().toISOString() });
       updateCard(card.id, { feedback });
-      addToast('Feedback added. Revise when you are ready.', 'success');
+      addToast(tr('toast_feedback_added', 'Feedback added. Revise when you are ready.'), 'success');
     } catch (_) {
-      if (asyncOperationCanCommit(token)) addToast('Feedback could not be generated. Your draft is still saved.', 'error');
+      if (asyncOperationCanCommit(token)) addToast(tr('toast_feedback_failed', 'Feedback could not be generated. Your draft is still saved.'), 'error');
     } finally {
       finishAsyncOperation(token);
     }
@@ -2524,7 +2611,7 @@ function MemoryAidView(props) {
 
   const requestVisual = async (card) => {
     if (typeof callImagen !== 'function') {
-      addToast('Visual generation is not available with the current AI setup.', 'info');
+      addToast(tr('toast_visual_gen_unavailable', 'Visual generation is not available with the current AI setup.'), 'info');
       return;
     }
     const token = beginAsyncOperation(card, 'visual');
@@ -2541,9 +2628,9 @@ function MemoryAidView(props) {
         visualImage,
         visualSource: 'ai-generated',
       });
-      addToast('Visual cue added. Review its image description when you are ready.', 'success');
+      addToast(tr('toast_visual_added', 'Visual cue added. Review its image description when you are ready.'), 'success');
     } catch (_) {
-      if (asyncOperationCanCommit(token)) addToast('The visual cue could not be generated. Your work is still saved.', 'error');
+      if (asyncOperationCanCommit(token)) addToast(tr('toast_visual_gen_failed', 'The visual cue could not be generated. Your work is still saved.'), 'error');
     } finally {
       finishAsyncOperation(token);
     }
@@ -2553,15 +2640,15 @@ function MemoryAidView(props) {
     const direction = _maString(card.visualPrompt, 1200).trim();
     const rawBase64 = memoryAidImageBase64(card.visualImage);
     if (typeof callGeminiImageEdit !== 'function') {
-      addToast('Image refinement is not available with the current AI setup.', 'info');
+      addToast(tr('toast_refine_unavailable', 'Image refinement is not available with the current AI setup.'), 'info');
       return;
     }
     if (!rawBase64) {
-      addToast('Generate a visual cue before refining it.', 'info');
+      addToast(tr('toast_generate_before_refine', 'Generate a visual cue before refining it.'), 'info');
       return;
     }
     if (!direction) {
-      addToast('Describe the visual change you want first.', 'info');
+      addToast(tr('toast_describe_change_first', 'Describe the visual change you want first.'), 'info');
       return;
     }
     const token = beginAsyncOperation(card, 'visual-edit');
@@ -2576,9 +2663,9 @@ function MemoryAidView(props) {
       const visualImage = normalizeMemoryAidImage(result);
       if (!visualImage) throw new Error('Unsupported image result');
       updateCard(card.id, { visualImage, visualSource: 'ai-refined' });
-      addToast('Visual cue refined. Check that it still supports the accurate facts.', 'success');
+      addToast(tr('toast_visual_refined', 'Visual cue refined. Check that it still supports the accurate facts.'), 'success');
     } catch (_) {
-      if (asyncOperationCanCommit(token)) addToast('The visual cue could not be refined. The previous image is still saved.', 'error');
+      if (asyncOperationCanCommit(token)) addToast(tr('toast_refine_failed', 'The visual cue could not be refined. The previous image is still saved.'), 'error');
     } finally {
       finishAsyncOperation(token);
     }
@@ -2588,11 +2675,11 @@ function MemoryAidView(props) {
     const rawBase64 = memoryAidImageBase64(card.visualImage);
     const mimeType = memoryAidImageMime(card.visualImage);
     if (typeof callGeminiVision !== 'function') {
-      addToast('AI visual checking is not available with the current setup.', 'info');
+      addToast(tr('toast_visual_check_unavailable', 'AI visual checking is not available with the current setup.'), 'info');
       return;
     }
     if (!rawBase64 || !mimeType) {
-      addToast('Generate a visual cue before checking it.', 'info');
+      addToast(tr('toast_generate_before_check', 'Generate a visual cue before checking it.'), 'info');
       return;
     }
     const token = beginAsyncOperation(card, 'visual-check');
@@ -2602,10 +2689,10 @@ function MemoryAidView(props) {
       const visualCheck = Object.assign(parseMemoryAidVisualCheck(raw), { createdAt: new Date().toISOString() });
       updateCard(card.id, { visualCheck });
       addToast(visualCheck.suggestedAlt
-        ? 'Visual feedback and an optional image-description draft were added. Teacher review remains separate.'
-        : 'Advisory visual feedback added. Teacher review remains separate.', 'success');
+        ? tr('toast_visual_check_with_alt', 'Visual feedback and an optional image-description draft were added. Teacher review remains separate.')
+        : tr('toast_visual_check_added', 'Advisory visual feedback added. Teacher review remains separate.'), 'success');
     } catch (_) {
-      if (asyncOperationCanCommit(token)) addToast('The visual cue could not be checked. The image is still saved.', 'error');
+      if (asyncOperationCanCommit(token)) addToast(tr('toast_visual_check_failed', 'The visual cue could not be checked. The image is still saved.'), 'error');
     } finally {
       finishAsyncOperation(token);
     }
@@ -2614,13 +2701,13 @@ function MemoryAidView(props) {
   const openUploadedVisual = (card, result) => {
     const sourceDataUrl = result && result.dataUrl;
     if (!sourceDataUrl) {
-      addToast('That image could not be opened. Try a PNG, JPEG, or WebP file.', 'error');
+      addToast(tr('toast_image_open_failed', 'That image could not be opened. Try a PNG, JPEG, or WebP file.'), 'error');
       return;
     }
     setImageEditor({
       cardId: card.id,
       sourceDataUrl,
-      sourceName: _maString(result.name, 500) || 'Uploaded image',
+      sourceName: _maString(result.name, 500) || tr('label_uploaded_image', 'Uploaded image'),
       sourceKind: 'uploaded',
     });
   };
@@ -2630,13 +2717,13 @@ function MemoryAidView(props) {
       ? imageAssetTools.normalizeRasterDataUrl(card.visualImage)
       : '';
     if (!sourceDataUrl) {
-      addToast('This visual format cannot be cropped here. Upload a PNG, JPEG, or WebP image instead.', 'info');
+      addToast(tr('toast_cannot_crop_format', 'This visual format cannot be cropped here. Upload a PNG, JPEG, or WebP image instead.'), 'info');
       return;
     }
     setImageEditor({
       cardId: card.id,
       sourceDataUrl,
-      sourceName: 'Current visual cue',
+      sourceName: tr('label_current_visual_cue', 'Current visual cue'),
       sourceKind: 'existing',
     });
   };
@@ -2644,7 +2731,7 @@ function MemoryAidView(props) {
   const applyEditedVisual = (card, result) => {
     const visualImage = normalizeMemoryAidImage(result && result.dataUrl);
     if (!visualImage) {
-      addToast('The edited image could not be saved safely.', 'error');
+      addToast(tr('toast_edited_image_unsafe', 'The edited image could not be saved safely.'), 'error');
       return;
     }
     const editor = imageEditor && imageEditor.cardId === card.id ? imageEditor : null;
@@ -2657,8 +2744,8 @@ function MemoryAidView(props) {
     });
     setImageEditor(null);
     addToast(editor && editor.sourceKind === 'uploaded'
-      ? 'Uploaded visual added. Review its image description when you are ready.'
-      : 'Visual repositioned. Recheck it against the accurate facts.', 'success');
+      ? tr('toast_uploaded_visual_added', 'Uploaded visual added. Review its image description when you are ready.')
+      : tr('toast_visual_repositioned', 'Visual repositioned. Recheck it against the accurate facts.'), 'success');
   };
 
   const removeVisual = (card) => {
@@ -2670,7 +2757,7 @@ function MemoryAidView(props) {
     const suggestedAlt = _maString(card && card.visualCheck && card.visualCheck.suggestedAlt, 800).trim();
     if (!suggestedAlt) return;
     updateCard(card.id, { visualAlt: suggestedAlt });
-    addToast('Description draft applied. Review and edit it against the visible image before approval.', 'success');
+    addToast(tr('toast_alt_draft_applied', 'Description draft applied. Review and edit it against the visible image before approval.'), 'success');
   };
 
   const updateVisualReview = (card, patch) => {
@@ -2678,7 +2765,7 @@ function MemoryAidView(props) {
     if (requested.status === 'approved') {
       const readiness = memoryAidVisualAltReady(card);
       if (!readiness.ok) {
-        addToast(readiness.reason, 'info');
+        addToast(trMsg(readiness.reason), 'info');
         return;
       }
     }
@@ -2694,18 +2781,18 @@ function MemoryAidView(props) {
 
   const speakCard = async (card) => {
     if (typeof handleSpeak !== 'function') {
-      addToast('Read-aloud is not available right now.', 'info');
+      addToast(tr('toast_read_aloud_unavailable', 'Read-aloud is not available right now.'), 'info');
       return;
     }
     try {
       await Promise.resolve(handleSpeak(
-        buildMemoryAidReadAloudText(card),
+        buildMemoryAidReadAloudText(card, tr),
         'memory-aid-' + card.id,
         0,
         true
       ));
     } catch (_) {
-      addToast('This memory aid could not be read aloud. Try again.', 'error');
+      addToast(tr('toast_read_aloud_failed', 'This memory aid could not be read aloud. Try again.'), 'error');
     }
   };
 
@@ -2720,24 +2807,36 @@ function MemoryAidView(props) {
       return;
     }
     if (typeof handleDownloadAudio !== 'function') {
-      addToast('Audio download is not available right now.', 'info');
+      addToast(tr('toast_audio_unavailable', 'Audio download is not available right now.'), 'info');
       return;
     }
     try {
       await Promise.resolve(handleDownloadAudio(
-        buildMemoryAidReadAloudText(card),
+        buildMemoryAidReadAloudText(card, tr),
         memoryAidAudioFilename(card),
         contentId
       ));
     } catch (_) {
-      addToast('This memory aid audio could not be downloaded. Try again.', 'error');
+      addToast(tr('toast_audio_failed', 'This memory aid audio could not be downloaded. Try again.'), 'error');
     }
+  };
+
+  // Prefer the host's resource-sheet printer (the same pack renderer the export
+  // lanes use, opened in its own window). window.print() on the app shell has no
+  // print stylesheet and prints the sidebar and header around the resource.
+  const printResource = () => {
+    if (typeof onPrintProp === 'function') {
+      try {
+        if (onPrintProp(generatedContent) !== false) return;
+      } catch (_) {}
+    }
+    if (typeof window !== 'undefined' && typeof window.print === 'function') window.print();
   };
 
   const addCard = () => {
     const next = normalizeMemoryAidCard({
-      target: 'New memory target',
-      essentialFacts: ['Add the fact students must remember.'],
+      target: tr('new_target_title', 'New memory target'),
+      essentialFacts: [tr('new_target_fact', 'Add the fact students must remember.')],
       type: 'keyword-association',
       mode: 'student-authored',
       factLocked: false,
@@ -2747,7 +2846,7 @@ function MemoryAidView(props) {
   };
 
   const removeCard = (cardId) => {
-    if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm('Remove this memory target?')) return;
+    if (typeof window !== 'undefined' && typeof window.confirm === 'function' && !window.confirm(tr('confirm_remove_target', 'Remove this memory target?'))) return;
     commitField('cards', cards.filter(card => card.id !== cardId));
   };
 
@@ -2766,7 +2865,7 @@ function MemoryAidView(props) {
     });
   };
 
-  if (!resourceActive) return <div role="status" className="p-6 text-sm text-slate-600">Preparing Memory Aid Studio…</div>;
+  if (!resourceActive) return <div role="status" className="p-6 text-sm text-slate-600">{tr('preparing', 'Preparing Memory Aid Studio…')}</div>;
 
   return (
     <main className={'mx-auto w-full max-w-5xl p-4 sm:p-6' + (practiceIsolationActive ? ' memory-aid-practice-isolating' : '')} aria-labelledby={resourceTitleId}>
@@ -2774,54 +2873,52 @@ function MemoryAidView(props) {
       <header className="mb-5 rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 via-white to-cyan-50 p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="mb-1 text-xs font-black uppercase tracking-[0.18em] text-teal-800">Memory Aid Studio</p>
+            <p className="mb-1 text-xs font-black uppercase tracking-[0.18em] text-teal-800">{tr('studio_name', 'Memory Aid Studio')}</p>
             {isTeacherMode && isEditing && !practiceIsolationActive ? (
-              <input id={resourceTitleId} aria-label="Memory aid resource title" value={data.title} onChange={(event) => commitField('title', event.target.value)} className="w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-2xl font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
-            ) : <h1 id={resourceTitleId} tabIndex="-1" className="text-2xl font-black text-slate-900">{practiceIsolationActive ? 'Recall practice' : data.title}</h1>}
+              <input id={resourceTitleId} aria-label={tr('resource_title_aria', 'Memory aid resource title')} value={data.title} onChange={(event) => commitField('title', event.target.value)} className="w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-2xl font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
+            ) : <h1 id={resourceTitleId} tabIndex="-1" className="text-2xl font-black text-slate-900">{practiceIsolationActive ? tr('practice_kicker', 'Recall practice') : data.title}</h1>}
             {isTeacherMode && isEditing && !practiceIsolationActive ? (
-              <textarea aria-label="Memory aid student instructions" value={data.instructions} onChange={(event) => commitField('instructions', event.target.value)} rows={2} className="mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
-            ) : <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">{practiceIsolationActive ? 'Complete or exit the active recall attempt before returning to the full resource.' : data.instructions}</p>}
+              <textarea aria-label={tr('student_instructions_aria', 'Memory aid student instructions')} value={data.instructions} onChange={(event) => commitField('instructions', event.target.value)} rows={2} className="mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
+            ) : <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-700">{practiceIsolationActive ? tr('isolation_note', 'Complete or exit the active recall attempt before returning to the full resource.') : data.instructions}</p>}
           </div>
           <div className="memory-aid-no-print flex flex-wrap gap-2">
-            {isTeacherMode && <button type="button" aria-pressed={isEditing} onClick={() => setIsEditing(value => !value)} className="min-h-11 rounded-xl border border-teal-700 bg-white px-3 py-2 text-sm font-black text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{isEditing ? 'Done editing' : 'Edit resource'}</button>}
-            {!practiceIsolationActive && <button type="button" onClick={() => window.print()} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">Print</button>}
+            {isTeacherMode && <button type="button" aria-pressed={isEditing} onClick={() => setIsEditing(value => !value)} className="min-h-11 rounded-xl border border-teal-700 bg-white px-3 py-2 text-sm font-black text-teal-800 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{isEditing ? tr('done_editing', 'Done editing') : tr('edit_resource', 'Edit resource')}</button>}
+            {!practiceIsolationActive && <button type="button" onClick={printResource} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('print', 'Print')}</button>}
           </div>
         </div>
         {!practiceIsolationActive && <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
-          <span className="rounded-full bg-teal-100 px-3 py-1 text-teal-900">{data.selectionMode === 'auto-mix' ? 'Auto Mix' : 'Teacher-selected mix'}</span>
-          <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-900">{data.authorshipMode === 'progressive' ? 'See → Build → Create' : (MEMORY_AID_MODES[data.authorshipMode] || {}).label}</span>
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-950">{MEMORY_AID_REFLECTION_LEVELS[data.reflectionLevel].label}{data.reasoningRequired ? ' · required for feedback' : ''}</span>
+          <span className="rounded-full bg-teal-100 px-3 py-1 text-teal-900">{data.selectionMode === 'auto-mix' ? tr('badge_auto_mix', 'Auto Mix') : tr('badge_teacher_mix', 'Teacher-selected mix')}</span>
+          <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-900">{data.authorshipMode === 'progressive' ? tr('badge_progressive', 'See → Build → Create') : trMeta('mode', data.authorshipMode, 'label', MEMORY_AID_MODES)}</span>
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-950">{trMeta('reflection', data.reflectionLevel, 'label', MEMORY_AID_REFLECTION_LEVELS)}{data.reasoningRequired ? tr('badge_required_for_feedback', ' · required for feedback') : ''}</span>
         </div>}
         {isTeacherMode && isEditing && !practiceIsolationActive && (
           <fieldset className="memory-aid-no-print mt-4 rounded-2xl border border-amber-200 bg-white/80 p-4">
-            <legend className="px-1 text-sm font-black text-slate-900">Student explanation settings</legend>
-            <p className="mb-3 text-xs leading-relaxed text-slate-600">Explanations can deepen cue-to-fact thinking. Keep them optional by default, or require one before AI feedback when it serves the lesson goal.</p>
+            <legend className="px-1 text-sm font-black text-slate-900">{tr('settings_legend', 'Student explanation settings')}</legend>
+            <p className="mb-3 text-xs leading-relaxed text-slate-600">{tr('settings_help', 'Explanations can deepen cue-to-fact thinking. Keep them optional by default, or require one before AI feedback when it serves the lesson goal.')}</p>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="text-xs font-black text-slate-700">Reasoning level
-                <select aria-label="Student reasoning level in this resource" value={data.reflectionLevel} onChange={(event) => {
+              <label className="text-xs font-black text-slate-700">{tr('settings_reasoning_level', 'Reasoning level')}
+                <select aria-label={tr('settings_reasoning_level_aria', 'Student reasoning level in this resource')} value={data.reflectionLevel} onChange={(event) => {
                   const level = event.target.value;
                   commitField('reflectionLevel', level);
                   if (level === 'none') commitField('reasoningRequired', false);
                 }} className="mt-1 min-h-11 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">
-                  {Object.entries(MEMORY_AID_REFLECTION_LEVELS).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+                  {Object.entries(MEMORY_AID_REFLECTION_LEVELS).map(([id]) => <option key={id} value={id}>{trMeta('reflection', id, 'label', MEMORY_AID_REFLECTION_LEVELS)}</option>)}
                 </select>
               </label>
               <label className={'flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2 text-sm font-bold ' + (data.reflectionLevel === 'none' ? 'border-slate-200 bg-slate-100 text-slate-500' : 'border-amber-300 bg-amber-50 text-slate-800')}>
-                <input type="checkbox" aria-label="Require explanation before AI feedback in this resource" checked={data.reflectionLevel !== 'none' && data.reasoningRequired} disabled={data.reflectionLevel === 'none'} onChange={(event) => commitField('reasoningRequired', event.target.checked)} />
-                <span>Require an explanation before AI feedback</span>
+                <input type="checkbox" aria-label={tr('settings_require_aria', 'Require explanation before AI feedback in this resource')} checked={data.reflectionLevel !== 'none' && data.reasoningRequired} disabled={data.reflectionLevel === 'none'} onChange={(event) => commitField('reasoningRequired', event.target.checked)} />
+                <span>{tr('settings_require', 'Require an explanation before AI feedback')}</span>
               </label>
             </div>
           </fieldset>
         )}
       </header>
 
-      {practiceStorageWarning && <p role="alert" className="memory-aid-no-print mb-5 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-bold leading-relaxed text-red-900">{practiceStorageWarning}</p>}
+      {practiceStorageWarning && <p role="alert" className="memory-aid-no-print mb-5 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-bold leading-relaxed text-red-900">{trMsg(practiceStorageWarning)}</p>}
 
       <div className="space-y-5">
         {cards.map((card, index) => {
           if (practiceIsolationActive && card.id !== activePracticeCardId) return null;
-          const typeMeta = MEMORY_AID_TYPES[card.type] || MEMORY_AID_TYPES['keyword-association'];
-          const modeMeta = MEMORY_AID_MODES[card.mode] || MEMORY_AID_MODES['student-authored'];
           const busy = busyByCard[card.id];
           const candidatePracticeSession = visiblePracticeByCard[card.id] || null;
           const practiceSession = candidatePracticeSession
@@ -2835,13 +2932,13 @@ function MemoryAidView(props) {
           const practiceAttempts = isTeacherMode ? [] : (privatePracticeByCard[card.id] || []);
           const domIdBase = cardDomIdBase(card.id);
           const revisionState = memoryAidPracticeRevisionState(practiceAttempts, card);
-          const draftLabel = card.mode === 'generated' ? 'Make your own or remix the example' : card.mode === 'scaffolded' ? 'Finish and personalize the scaffold' : 'Create your memory aid';
+          const draftLabel = card.mode === 'generated' ? tr('draft_label_generated', 'Make your own or remix the example') : card.mode === 'scaffolded' ? tr('draft_label_scaffolded', 'Finish and personalize the scaffold') : tr('draft_label_student', 'Create your memory aid');
           const feedbackReady = memoryAidFeedbackReady(card, data.reasoningRequired);
           const feedbackHelpId = domIdBase + '-feedback-help';
           const aiFeedbackAvailable = typeof callGemini === 'function';
           const visualBusy = busy === 'visual' || busy === 'visual-edit' || busy === 'visual-check';
-          const visualReviewMeta = MEMORY_AID_VISUAL_REVIEW_STATUSES[card.visualReview.status] || MEMORY_AID_VISUAL_REVIEW_STATUSES.unreviewed;
-          const visualSourceMeta = MEMORY_AID_VISUAL_SOURCES[card.visualSource] || MEMORY_AID_VISUAL_SOURCES.legacy;
+          const visualReviewLabel = trMeta('visual_review', Object.prototype.hasOwnProperty.call(MEMORY_AID_VISUAL_REVIEW_STATUSES, card.visualReview.status) ? card.visualReview.status : 'unreviewed', 'label', MEMORY_AID_VISUAL_REVIEW_STATUSES);
+          const visualSourceLabel = trMeta('visual_source', Object.prototype.hasOwnProperty.call(MEMORY_AID_VISUAL_SOURCES, card.visualSource) ? card.visualSource : 'legacy', 'label', MEMORY_AID_VISUAL_SOURCES);
           const editingVisual = imageEditor && imageEditor.cardId === card.id ? imageEditor : null;
           const visualAltReadiness = memoryAidVisualAltReady(card);
           const visualAltHelpId = domIdBase + '-visual-alt-help';
@@ -2857,46 +2954,46 @@ function MemoryAidView(props) {
           const audioDownloading = downloadingContentId === audioContentId;
           const anotherAudioDownloadActive = !!downloadingContentId && !audioDownloading;
           const feedbackGuidance = !aiFeedbackAvailable
-            ? 'AI feedback is unavailable right now. Your work is still saved.'
+            ? tr('feedback_unavailable_note', 'AI feedback is unavailable right now. Your work is still saved.')
             : !feedbackReady.ok
-              ? feedbackReady.reason
+              ? trMsg(feedbackReady.reason)
               : data.reasoningRequired
-                ? 'Ready for feedback. Your memory aid and explanation will be checked against the resource’s required facts.'
+                ? tr('feedback_ready_required', 'Ready for feedback. Your memory aid and explanation will be checked against the resource’s required facts.')
                 : card.studentReasoning.trim()
-                  ? 'Ready for feedback. Your optional explanation will be included.'
-                  : 'Ready for feedback. An explanation is optional, and you can add one if it helps show your connection.';
+                  ? tr('feedback_ready_with_explanation', 'Ready for feedback. Your optional explanation will be included.')
+                  : tr('feedback_ready_optional', 'Ready for feedback. An explanation is optional, and you can add one if it helps show your connection.');
           return (
             <article key={card.id} className="memory-aid-card overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby={domIdBase + '-title'}>
               <div className="border-b border-slate-200 bg-slate-50 p-4 sm:p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Memory target {index + 1}</p>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">{tr('card_target_n', 'Memory target {n}', { n: index + 1 })}</p>
                     {isTeacherMode && isEditing ? (
-                      <input id={domIdBase + '-title'} aria-label={'Memory target ' + (index + 1)} value={card.target} onChange={(event) => updateCard(card.id, { target: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
-                    ) : <h2 id={domIdBase + '-title'} className="mt-1 text-lg font-black text-slate-900">{card.target || 'Memory target'}</h2>}
+                      <input id={domIdBase + '-title'} aria-label={tr('card_target_n', 'Memory target {n}', { n: index + 1 })} value={card.target} onChange={(event) => updateCard(card.id, { target: event.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-lg font-black text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
+                    ) : <h2 id={domIdBase + '-title'} className="mt-1 text-lg font-black text-slate-900">{card.target || tr('memory_target', 'Memory target')}</h2>}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
-                    <span className="rounded-full bg-teal-100 px-3 py-1 text-teal-900">{typeMeta.shortLabel}</span>
-                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-900">{modeMeta.compactLabel}</span>
-                    {!practiceIsolationActive && handleSpeak && <button type="button" onClick={() => speakCard(card)} disabled={isProcessing} aria-label={'Listen to memory aid for ' + (card.target || 'this target')} className="memory-aid-no-print min-h-10 rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-900 hover:bg-sky-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">Listen to this card</button>}
-                    {!practiceIsolationActive && handleDownloadAudio && <button type="button" onClick={() => downloadCardAudio(card)} disabled={isProcessing || anotherAudioDownloadActive} aria-busy={audioDownloading} aria-label={(audioDownloading ? 'Stop audio download for ' : 'Download audio for ') + (card.target || 'this memory aid')} className="memory-aid-no-print min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-900 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{audioDownloading ? 'Stop audio download' : 'Download card audio'}</button>}
+                    <span className="rounded-full bg-teal-100 px-3 py-1 text-teal-900">{trMeta('type', card.type, 'shortLabel', MEMORY_AID_TYPES)}</span>
+                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-900">{trMeta('mode', card.mode, 'compactLabel', MEMORY_AID_MODES)}</span>
+                    {!practiceIsolationActive && handleSpeak && <button type="button" onClick={() => speakCard(card)} disabled={isProcessing} aria-label={tr('card_listen_aria', 'Listen to memory aid for {target}', { target: card.target || tr('this_target', 'this target') })} className="memory-aid-no-print min-h-10 rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-900 hover:bg-sky-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600">{tr('card_listen', 'Listen to this card')}</button>}
+                    {!practiceIsolationActive && handleDownloadAudio && <button type="button" onClick={() => downloadCardAudio(card)} disabled={isProcessing || anotherAudioDownloadActive} aria-busy={audioDownloading} aria-label={tr(audioDownloading ? 'card_stop_audio_aria' : 'card_download_audio_aria', audioDownloading ? 'Stop audio download for {target}' : 'Download audio for {target}', { target: card.target || tr('this_memory_aid', 'this memory aid') })} className="memory-aid-no-print min-h-10 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-900 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{audioDownloading ? tr('card_stop_audio', 'Stop audio download') : tr('card_download_audio', 'Download card audio')}</button>}
                   </div>
                 </div>
                 {isTeacherMode && isEditing && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <label className="text-xs font-black text-slate-700">Aid type
+                    <label className="text-xs font-black text-slate-700">{tr('card_aid_type', 'Aid type')}
                       <select value={card.type} onChange={(event) => updateCard(card.id, { type: event.target.value, feedback: null })} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
-                        {Object.entries(MEMORY_AID_TYPES).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+                        {Object.entries(MEMORY_AID_TYPES).map(([id]) => <option key={id} value={id}>{trMeta('type', id, 'label', MEMORY_AID_TYPES)}</option>)}
                       </select>
                     </label>
-                    <label className="text-xs font-black text-slate-700">Authorship mode
+                    <label className="text-xs font-black text-slate-700">{tr('card_authorship_mode', 'Authorship mode')}
                       <select value={card.mode} onChange={(event) => updateCard(card.id, { mode: event.target.value, feedback: null })} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
-                        {Object.entries(MEMORY_AID_MODES).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+                        {Object.entries(MEMORY_AID_MODES).map(([id]) => <option key={id} value={id}>{trMeta('mode', id, 'label', MEMORY_AID_MODES)}</option>)}
                       </select>
                     </label>
-                    <div className="flex flex-wrap items-end gap-2 sm:col-span-2" aria-label={'Reorder ' + (card.target || 'memory target')}>
-                      <button type="button" onClick={() => moveCard(card.id, 'up')} disabled={index === 0} aria-label={'Move ' + (card.target || 'memory target') + ' up'} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">Move up</button>
-                      <button type="button" onClick={() => moveCard(card.id, 'down')} disabled={index === cards.length - 1} aria-label={'Move ' + (card.target || 'memory target') + ' down'} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">Move down</button>
+                    <div className="flex flex-wrap items-end gap-2 sm:col-span-2" aria-label={tr('card_reorder_aria', 'Reorder {target}', { target: card.target || tr('memory_target_lower', 'memory target') })}>
+                      <button type="button" onClick={() => moveCard(card.id, 'up')} disabled={index === 0} aria-label={tr('card_move_up_aria', 'Move {target} up', { target: card.target || tr('memory_target_lower', 'memory target') })} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('card_move_up', 'Move up')}</button>
+                      <button type="button" onClick={() => moveCard(card.id, 'down')} disabled={index === cards.length - 1} aria-label={tr('card_move_down_aria', 'Move {target} down', { target: card.target || tr('memory_target_lower', 'memory target') })} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('card_move_down', 'Move down')}</button>
                     </div>
                   </div>
                 )}
@@ -2904,6 +3001,7 @@ function MemoryAidView(props) {
 
               <div className="space-y-4 p-4 sm:p-5">
                 <MemoryAidPracticePanel
+                  t={tProp}
                   card={card}
                   domIdBase={domIdBase}
                   session={practiceSession}
@@ -2924,95 +3022,95 @@ function MemoryAidView(props) {
                   onSaveRevision={(strategy) => savePracticeRevision(card, strategy)}
                 />
                 <div hidden={practiceIsolationActive} className="memory-aid-practice-content space-y-4">
-                <section className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4" aria-label={card.factVerified ? 'Teacher-verified facts' : 'Facts awaiting teacher review'}>
+                <section className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4" aria-label={card.factVerified ? tr('facts_verified', 'Teacher-verified facts') : tr('facts_pending', 'Facts awaiting teacher review')}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-sm font-black text-amber-950">What must stay accurate</h3>
-                    <span className="rounded-full bg-white px-2 py-1 text-[11px] font-bold text-amber-900">{!card.factLocked ? 'Teacher editing facts' : card.factVerified ? 'Teacher-verified facts' : 'Needs teacher review'}</span>
+                    <h3 className="text-sm font-black text-amber-950">{tr('facts_heading', 'What must stay accurate')}</h3>
+                    <span className="rounded-full bg-white px-2 py-1 text-[11px] font-bold text-amber-900">{!card.factLocked ? tr('facts_editing', 'Teacher editing facts') : card.factVerified ? tr('facts_verified', 'Teacher-verified facts') : tr('facts_needs_review', 'Needs teacher review')}</span>
                   </div>
                   {isTeacherMode && isEditing && !card.factLocked ? (
-                    <textarea aria-label={'Required facts for ' + card.target} value={card.essentialFacts.join('\n')} onChange={(event) => updateCard(card.id, { essentialFacts: event.target.value.split(/\r?\n/).map(item => item.trim()).filter(Boolean), feedback: null })} rows={Math.max(3, card.essentialFacts.length)} className="mt-2 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" />
+                    <textarea aria-label={tr('facts_required_aria', 'Required facts for {target}', { target: card.target })} value={card.essentialFacts.join('\n')} onChange={(event) => updateCard(card.id, { essentialFacts: event.target.value.split(/\r?\n/).map(item => item.trim()).filter(Boolean), feedback: null })} rows={Math.max(3, card.essentialFacts.length)} className="mt-2 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" />
                   ) : <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{card.essentialFacts.map((fact, factIndex) => <li key={factIndex}>{fact}</li>)}</ul>}
                   {isTeacherMode && isEditing && (
                     <div className="memory-aid-no-print mt-3">
-                      <p id={domIdBase + '-fact-review-help'} className="mb-2 text-xs font-medium leading-relaxed text-amber-900">{card.factLocked ? (card.factVerified ? 'These facts are locked and marked teacher verified. Changing the target or facts removes verification.' : 'These facts are locked against accidental edits but still need teacher review.') : 'Fact editing is enabled. Any target or fact change removes verification; relock and verify after checking the lesson.'}</p>
+                      <p id={domIdBase + '-fact-review-help'} className="mb-2 text-xs font-medium leading-relaxed text-amber-900">{card.factLocked ? (card.factVerified ? tr('facts_help_locked_verified', 'These facts are locked and marked teacher verified. Changing the target or facts removes verification.') : tr('facts_help_locked_unverified', 'These facts are locked against accidental edits but still need teacher review.')) : tr('facts_help_unlocked', 'Fact editing is enabled. Any target or fact change removes verification; relock and verify after checking the lesson.')}</p>
                       <div className="flex flex-wrap gap-2">
-                        <button type="button" aria-pressed={!card.factLocked} onClick={() => updateCard(card.id, { factLocked: !card.factLocked })} className="min-h-11 rounded-xl border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{card.factLocked ? 'Unlock facts to edit' : 'Lock facts'}</button>
-                        <button type="button" aria-pressed={card.factVerified} aria-describedby={domIdBase + '-fact-review-help'} disabled={!card.factLocked || card.essentialFacts.length === 0} onClick={() => updateCard(card.id, { factVerified: !card.factVerified })} className="min-h-11 rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-950 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">{card.factVerified ? 'Mark facts for re-review' : 'Mark facts teacher verified'}</button>
+                        <button type="button" aria-pressed={!card.factLocked} onClick={() => updateCard(card.id, { factLocked: !card.factLocked })} className="min-h-11 rounded-xl border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{card.factLocked ? tr('facts_unlock', 'Unlock facts to edit') : tr('facts_lock', 'Lock facts')}</button>
+                        <button type="button" aria-pressed={card.factVerified} aria-describedby={domIdBase + '-fact-review-help'} disabled={!card.factLocked || card.essentialFacts.length === 0} onClick={() => updateCard(card.id, { factVerified: !card.factVerified })} className="min-h-11 rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-950 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">{card.factVerified ? tr('facts_mark_rereview', 'Mark facts for re-review') : tr('facts_mark_verified', 'Mark facts teacher verified')}</button>
                       </div>
                     </div>
                   )}
-                  {!card.factVerified && <p role="status" className="mt-3 rounded-xl border border-amber-300 bg-white p-3 text-xs font-bold leading-relaxed text-amber-950">These generated or imported facts are awaiting teacher review. Recall practice stays unavailable until a teacher verifies them.</p>}
+                  {!card.factVerified && <p role="status" className="mt-3 rounded-xl border border-amber-300 bg-white p-3 text-xs font-bold leading-relaxed text-amber-950">{tr('facts_pending_note', 'These generated or imported facts are awaiting teacher review. Recall practice stays unavailable until a teacher verifies them.')}</p>}
                 </section>
 
                 {card.mode === 'generated' && (
                   <section className="rounded-2xl border border-teal-200 bg-teal-50 p-4">
-                    <h3 className="text-sm font-black text-teal-950">AI example</h3>
-                    {isTeacherMode && isEditing ? <textarea aria-label={'AI example for ' + card.target} value={card.aiExample} onChange={(event) => updateCard(card.id, { aiExample: event.target.value })} rows={3} className="mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" /> : <p className="mt-2 whitespace-pre-wrap text-base font-bold leading-relaxed text-slate-900">{card.aiExample}</p>}
+                    <h3 className="text-sm font-black text-teal-950">{tr('ai_example_heading', 'AI example')}</h3>
+                    {isTeacherMode && isEditing ? <textarea aria-label={tr('ai_example_aria', 'AI example for {target}', { target: card.target })} value={card.aiExample} onChange={(event) => updateCard(card.id, { aiExample: event.target.value })} rows={3} className="mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" /> : <p className="mt-2 whitespace-pre-wrap text-base font-bold leading-relaxed text-slate-900">{card.aiExample}</p>}
                   </section>
                 )}
 
                 {card.mode === 'scaffolded' && (
                   <section className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
-                    <h3 className="text-sm font-black text-indigo-950">Build it with support</h3>
-                    {isTeacherMode && isEditing ? <textarea aria-label={'Scaffold starter for ' + card.target} value={card.scaffoldStarter} onChange={(event) => updateCard(card.id, { scaffoldStarter: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" /> : <p className="mt-2 whitespace-pre-wrap text-sm font-bold text-slate-900">{card.scaffoldStarter}</p>}
+                    <h3 className="text-sm font-black text-indigo-950">{tr('scaffold_heading', 'Build it with support')}</h3>
+                    {isTeacherMode && isEditing ? <textarea aria-label={tr('scaffold_starter_aria', 'Scaffold starter for {target}', { target: card.target })} value={card.scaffoldStarter} onChange={(event) => updateCard(card.id, { scaffoldStarter: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" /> : <p className="mt-2 whitespace-pre-wrap text-sm font-bold text-slate-900">{card.scaffoldStarter}</p>}
                     {isTeacherMode && isEditing ? (
-                      <textarea aria-label={'Scaffold steps for ' + card.target} value={card.scaffoldSteps.join('\n')} onChange={(event) => updateCard(card.id, { scaffoldSteps: event.target.value.split(/\r?\n/).map(item => item.trim()).filter(Boolean) })} rows={Math.max(3, card.scaffoldSteps.length)} placeholder="One scaffold step per line" className="mt-3 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" />
+                      <textarea aria-label={tr('scaffold_steps_aria', 'Scaffold steps for {target}', { target: card.target })} value={card.scaffoldSteps.join('\n')} onChange={(event) => updateCard(card.id, { scaffoldSteps: event.target.value.split(/\r?\n/).map(item => item.trim()).filter(Boolean) })} rows={Math.max(3, card.scaffoldSteps.length)} placeholder={tr('scaffold_steps_placeholder', 'One scaffold step per line')} className="mt-3 w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" />
                     ) : <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-slate-800">{card.scaffoldSteps.map((step, stepIndex) => <li key={stepIndex}>{step}</li>)}</ol>}
                   </section>
                 )}
 
                 {card.mode === 'student-authored' && (
                   <section className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-                    <h3 className="text-sm font-black text-violet-950">Coach questions</h3>
+                    <h3 className="text-sm font-black text-violet-950">{tr('coach_heading', 'Coach questions')}</h3>
                     {isTeacherMode && isEditing ? (
-                      <textarea aria-label={'Coach prompts for ' + card.target} value={card.coachPrompts.join('\n')} onChange={(event) => updateCard(card.id, { coachPrompts: event.target.value.split(/\r?\n/).map(item => item.trim()).filter(Boolean) })} rows={Math.max(3, card.coachPrompts.length)} placeholder="One coaching question per line" className="mt-2 w-full rounded-xl border border-violet-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" />
+                      <textarea aria-label={tr('coach_prompts_aria', 'Coach prompts for {target}', { target: card.target })} value={card.coachPrompts.join('\n')} onChange={(event) => updateCard(card.id, { coachPrompts: event.target.value.split(/\r?\n/).map(item => item.trim()).filter(Boolean) })} rows={Math.max(3, card.coachPrompts.length)} placeholder={tr('coach_prompts_placeholder', 'One coaching question per line')} className="mt-2 w-full rounded-xl border border-violet-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" />
                     ) : <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800">{card.coachPrompts.map((prompt, promptIndex) => <li key={promptIndex}>{prompt}</li>)}</ul>}
-                    <button type="button" onClick={() => requestHint(card)} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className="memory-aid-no-print mt-3 min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-sm font-black text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{busy === 'hint' ? 'Thinking of a hint…' : 'Ask for one hint'}</button>
-                    {card.coachHint && <p role="status" className="mt-3 rounded-xl border border-violet-200 bg-white p-3 text-sm text-violet-950"><strong>Coach hint:</strong> {card.coachHint}</p>}
+                    <button type="button" onClick={() => requestHint(card)} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className="memory-aid-no-print mt-3 min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-sm font-black text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{busy === 'hint' ? tr('coach_hint_busy', 'Thinking of a hint…') : tr('coach_hint_ask', 'Ask for one hint')}</button>
+                    {card.coachHint && <p role="status" className="mt-3 rounded-xl border border-violet-200 bg-white p-3 text-sm text-violet-950"><strong>{tr('coach_hint_label', 'Coach hint:')}</strong> {card.coachHint}</p>}
                   </section>
                 )}
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <h3 className="text-sm font-black text-slate-900">How the cue connects</h3>
-                  {isTeacherMode && isEditing ? <textarea aria-label={'Mnemonic-to-fact mapping for ' + card.target} value={card.mapping} onChange={(event) => updateCard(card.id, { mapping: event.target.value })} rows={3} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" /> : <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{card.mapping}</p>}
+                  <h3 className="text-sm font-black text-slate-900">{tr('mapping_heading', 'How the cue connects')}</h3>
+                  {isTeacherMode && isEditing ? <textarea aria-label={tr('mapping_aria', 'Mnemonic-to-fact mapping for {target}', { target: card.target })} value={card.mapping} onChange={(event) => updateCard(card.id, { mapping: event.target.value })} rows={3} className="mt-2 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" /> : <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{card.mapping}</p>}
                 </section>
 
                 <section className={(card.visualImage ? '' : 'memory-aid-no-print ') + 'rounded-2xl border border-fuchsia-200 bg-fuchsia-50/50 p-4'} aria-labelledby={domIdBase + '-visual-title'} aria-busy={visualBusy}>
                   <div>
-                    <h3 id={domIdBase + '-visual-title'} className="text-sm font-black text-fuchsia-950">Visual cue <span className="font-medium text-fuchsia-800">(optional)</span></h3>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-700">A visual can support retrieval, but the required facts and your explanation remain the source of meaning.</p>
+                    <h3 id={domIdBase + '-visual-title'} className="text-sm font-black text-fuchsia-950">{tr('visual_heading', 'Visual cue')} <span className="font-medium text-fuchsia-800">{tr('optional_paren', '(optional)')}</span></h3>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-700">{tr('visual_note', 'A visual can support retrieval, but the required facts and your explanation remain the source of meaning.')}</p>
                   </div>
                   {!card.visualImage && card.visualSyncOmission && (
-                    <p role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm font-bold leading-relaxed text-amber-950">Uploaded visual unavailable in this cloud copy. This cloud copy omitted the uploaded visual to fit artwork storage limits. Sync did not delete the original from the device where it was added. Add, upload, or regenerate a visual here to replace it.</p>
+                    <p role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm font-bold leading-relaxed text-amber-950">{tr('visual_sync_omitted', 'Uploaded visual unavailable in this cloud copy. This cloud copy omitted the uploaded visual to fit artwork storage limits. Sync did not delete the original from the device where it was added. Add, upload, or regenerate a visual here to replace it.')}</p>
                   )}
                   {card.visualImage && (
                     <figure className="mt-3 overflow-hidden rounded-2xl border border-fuchsia-200 bg-white p-2">
                       <img src={card.visualImage} alt={card.visualAlt || buildMemoryAidVisualAlt(card)} loading="lazy" className="mx-auto max-h-[26rem] w-auto max-w-full rounded-xl object-contain" />
-                      <figcaption className="mt-2 text-center text-[11px] font-bold text-slate-600">Source: {visualSourceMeta.label}</figcaption>
+                      <figcaption className="mt-2 text-center text-[11px] font-bold text-slate-600">{tr('visual_source_line', 'Source: {source}', { source: visualSourceLabel })}</figcaption>
                     </figure>
                   )}
                   {card.visualImage && (
                     <div className={'mt-3 rounded-xl border px-3 py-2 text-xs ' + visualReviewClass}>
-                      <p className="font-black">{visualReviewMeta.label}</p>
-                      {card.visualReview.note && <p className="mt-1 whitespace-pre-wrap leading-relaxed"><strong>{card.visualReview.status === 'unreviewed' ? 'Teacher note retained for revision:' : 'Teacher note:'}</strong> {card.visualReview.note}</p>}
+                      <p className="font-black">{visualReviewLabel}</p>
+                      {card.visualReview.note && <p className="mt-1 whitespace-pre-wrap leading-relaxed"><strong>{card.visualReview.status === 'unreviewed' ? tr('visual_teacher_note_retained', 'Teacher note retained for revision:') : tr('visual_teacher_note', 'Teacher note:')}</strong> {card.visualReview.note}</p>}
                     </div>
                   )}
                   {card.visualImage && card.visualCheck && (
                     <section aria-live="polite" className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-slate-800">
-                      <h4 className="font-black text-cyan-950">AI visual check <span className="font-medium">(advisory)</span></h4>
-                      <p className="mt-1 text-xs text-cyan-900">This feedback does not replace teacher approval.</p>
+                      <h4 className="font-black text-cyan-950">{tr('visual_check_heading', 'AI visual check')} <span className="font-medium">{tr('advisory_paren', '(advisory)')}</span></h4>
+                      <p className="mt-1 text-xs text-cyan-900">{tr('visual_check_disclaimer', 'This feedback does not replace teacher approval.')}</p>
                       <dl className="mt-2 space-y-2">
-                        <div><dt className="font-black">Alignment</dt><dd>{card.visualCheck.alignment === 'supports' ? 'Supports the intended cue' : card.visualCheck.alignment === 'mixed' ? 'Mixed or partial support' : 'Unclear from the image'}</dd></div>
-                        <div><dt className="font-black">Visible strength</dt><dd>{card.visualCheck.strength}</dd></div>
-                        <div><dt className="font-black">Possible concern</dt><dd>{card.visualCheck.concern}</dd></div>
-                        <div><dt className="font-black">Suggested change</dt><dd>{card.visualCheck.suggestedChange}</dd></div>
+                        <div><dt className="font-black">{tr('visual_check_alignment', 'Alignment')}</dt><dd>{card.visualCheck.alignment === 'supports' ? tr('visual_alignment_supports', 'Supports the intended cue') : card.visualCheck.alignment === 'mixed' ? tr('visual_alignment_mixed', 'Mixed or partial support') : tr('visual_alignment_unclear', 'Unclear from the image')}</dd></div>
+                        <div><dt className="font-black">{tr('visual_check_strength', 'Visible strength')}</dt><dd>{trMsg(card.visualCheck.strength)}</dd></div>
+                        <div><dt className="font-black">{tr('visual_check_concern', 'Possible concern')}</dt><dd>{trMsg(card.visualCheck.concern)}</dd></div>
+                        <div><dt className="font-black">{tr('visual_check_change', 'Suggested change')}</dt><dd>{trMsg(card.visualCheck.suggestedChange)}</dd></div>
                       </dl>
                       {card.visualCheck.suggestedAlt && (
                         <div className="mt-3 rounded-xl border border-cyan-300 bg-white p-3">
-                          <p className="font-black text-cyan-950">Suggested image description</p>
+                          <p className="font-black text-cyan-950">{tr('visual_suggested_alt', 'Suggested image description')}</p>
                           <p className="mt-1 leading-relaxed text-slate-800">{card.visualCheck.suggestedAlt}</p>
-                          <p className="mt-2 text-xs leading-relaxed text-slate-600">AI draft: compare it with the visible image, then edit any uncertain or unnecessary detail.</p>
-                          <button type="button" onClick={() => useSuggestedVisualAlt(card)} className="mt-2 min-h-11 rounded-xl border border-cyan-400 bg-cyan-50 px-3 py-2 text-sm font-black text-cyan-950 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600">Use this description</button>
+                          <p className="mt-2 text-xs leading-relaxed text-slate-600">{tr('visual_suggested_alt_note', 'AI draft: compare it with the visible image, then edit any uncertain or unnecessary detail.')}</p>
+                          <button type="button" onClick={() => useSuggestedVisualAlt(card)} className="mt-2 min-h-11 rounded-xl border border-cyan-400 bg-cyan-50 px-3 py-2 text-sm font-black text-cyan-950 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600">{tr('visual_use_description', 'Use this description')}</button>
                         </div>
                       )}
                     </section>
@@ -3021,20 +3119,20 @@ function MemoryAidView(props) {
                     {ImageAssetPickerComponent ? (
                       <ImageAssetPickerComponent
                         id={domIdBase + '-visual-upload'}
-                        label={card.visualImage ? 'Replace with an image from this device' : 'Upload an image from this device'}
+                        label={card.visualImage ? tr('visual_replace_upload', 'Replace with an image from this device') : tr('visual_upload', 'Upload an image from this device')}
                         disabled={!!busy || isProcessing}
                         readFile={imageAssetTools && imageAssetTools.readImageAssetFile}
                         maxFileBytes={imageAssetTools && imageAssetTools.IMAGE_ASSET_MAX_FILE_BYTES}
                         onLoaded={(result) => openUploadedVisual(card, result)}
                       />
                     ) : (
-                      <p role="status" className="text-xs leading-relaxed text-slate-600">Device image upload is unavailable right now. AI-generated and text-only memory aids remain available.</p>
+                      <p role="status" className="text-xs leading-relaxed text-slate-600">{tr('visual_upload_unavailable', 'Device image upload is unavailable right now. AI-generated and text-only memory aids remain available.')}</p>
                     )}
                     {editingVisual && ImageAssetEditorComponent && (
                       <ImageAssetEditorComponent
                         sourceDataUrl={editingVisual.sourceDataUrl}
                         sourceName={editingVisual.sourceName}
-                        previewAlt={'Preview of visual cue for ' + (card.target || 'this memory target')}
+                        previewAlt={tr('visual_preview_alt', 'Preview of visual cue for {target}', { target: card.target || tr('this_memory_target', 'this memory target') })}
                         renderImageAsset={imageAssetTools && imageAssetTools.renderImageAsset}
                         maxDimension={1280}
                         maxOutputChars={imageAssetTools && imageAssetTools.IMAGE_ASSET_MAX_OUTPUT_CHARS}
@@ -3042,35 +3140,35 @@ function MemoryAidView(props) {
                         onCancel={() => setImageEditor(null)}
                       />
                     )}
-                    <label className="block text-xs font-black text-slate-700">Visual direction
-                      <textarea aria-label={'Visual direction for ' + card.target} value={card.visualPrompt} onChange={(event) => updateCard(card.id, { visualPrompt: event.target.value })} maxLength={1200} rows={2} placeholder="Example: Show a statue beside water taking the shape of a clear container." className="mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" />
+                    <label className="block text-xs font-black text-slate-700">{tr('visual_direction', 'Visual direction')}
+                      <textarea aria-label={tr('visual_direction_aria', 'Visual direction for {target}', { target: card.target })} value={card.visualPrompt} onChange={(event) => updateCard(card.id, { visualPrompt: event.target.value })} maxLength={1200} rows={2} placeholder={tr('visual_direction_placeholder', 'Example: Show a statue beside water taking the shape of a clear container.')} className="mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" />
                     </label>
                     {card.visualImage && (
-                      <label className="block text-xs font-black text-slate-700">Image description
-                        <textarea aria-label={'Image description for ' + card.target} aria-describedby={visualAltHelpId} value={card.visualAlt || buildMemoryAidVisualAlt(card)} onChange={(event) => updateCard(card.id, { visualAlt: event.target.value })} maxLength={800} rows={2} className="mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" />
-                        <span id={visualAltHelpId} className={'mt-1 block font-bold leading-relaxed ' + (visualAltReadiness.ok ? 'text-emerald-700' : 'text-amber-800')}>{visualAltReadiness.reason}</span>
+                      <label className="block text-xs font-black text-slate-700">{tr('visual_alt_label', 'Image description')}
+                        <textarea aria-label={tr('visual_alt_aria', 'Image description for {target}', { target: card.target })} aria-describedby={visualAltHelpId} value={card.visualAlt} placeholder={buildMemoryAidVisualAlt(card)} onChange={(event) => updateCard(card.id, { visualAlt: event.target.value })} maxLength={800} rows={2} className="mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600" />
+                        <span id={visualAltHelpId} className={'mt-1 block font-bold leading-relaxed ' + (visualAltReadiness.ok ? 'text-emerald-700' : 'text-amber-800')}>{trMsg(visualAltReadiness.reason)}</span>
                       </label>
                     )}
                     <div className="flex flex-wrap gap-2">
-                      <button type="button" onClick={() => requestVisual(card)} disabled={!!busy || isProcessing || !callImagen} aria-busy={busy === 'visual'} className="min-h-11 rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white hover:bg-fuchsia-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2">{busy === 'visual' ? 'Creating visual cue…' : card.visualImage ? 'Regenerate visual cue' : 'Generate visual cue'}</button>
-                      {card.visualImage && <button type="button" onClick={() => refineVisual(card)} disabled={!!busy || isProcessing || !callGeminiImageEdit || !card.visualPrompt.trim()} aria-busy={busy === 'visual-edit'} className="min-h-11 rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-sm font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600">{busy === 'visual-edit' ? 'Refining visual cue…' : 'Refine with direction'}</button>}
-                      {visualEditable && <button type="button" onClick={() => openCurrentVisual(card)} disabled={!!busy || isProcessing} aria-expanded={!!editingVisual} className="min-h-11 rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-sm font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600">Crop or reposition</button>}
-                      {card.visualImage && <button type="button" onClick={() => requestVisualCheck(card)} disabled={!!busy || isProcessing || !callGeminiVision} aria-busy={busy === 'visual-check'} className="min-h-11 rounded-xl border border-cyan-400 bg-white px-3 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600">{busy === 'visual-check' ? 'Checking visual cue…' : card.visualCheck ? 'Recheck facts + description' : 'Check facts + draft description'}</button>}
-                      {card.visualImage && <button type="button" onClick={() => removeVisual(card)} disabled={!!busy || isProcessing} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">Remove visual</button>}
+                      <button type="button" onClick={() => requestVisual(card)} disabled={!!busy || isProcessing || !callImagen} aria-busy={busy === 'visual'} className="min-h-11 rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white hover:bg-fuchsia-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2">{busy === 'visual' ? tr('visual_generating', 'Creating visual cue…') : card.visualImage ? tr('visual_regenerate', 'Regenerate visual cue') : tr('visual_generate', 'Generate visual cue')}</button>
+                      {card.visualImage && <button type="button" onClick={() => refineVisual(card)} disabled={!!busy || isProcessing || !callGeminiImageEdit || !card.visualPrompt.trim()} aria-busy={busy === 'visual-edit'} className="min-h-11 rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-sm font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600">{busy === 'visual-edit' ? tr('visual_refining', 'Refining visual cue…') : tr('visual_refine', 'Refine with direction')}</button>}
+                      {visualEditable && <button type="button" onClick={() => openCurrentVisual(card)} disabled={!!busy || isProcessing} aria-expanded={!!editingVisual} className="min-h-11 rounded-xl border border-fuchsia-400 bg-white px-3 py-2 text-sm font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600">{tr('visual_crop', 'Crop or reposition')}</button>}
+                      {card.visualImage && <button type="button" onClick={() => requestVisualCheck(card)} disabled={!!busy || isProcessing || !callGeminiVision} aria-busy={busy === 'visual-check'} className="min-h-11 rounded-xl border border-cyan-400 bg-white px-3 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600">{busy === 'visual-check' ? tr('visual_checking', 'Checking visual cue…') : card.visualCheck ? tr('visual_recheck', 'Recheck facts + description') : tr('visual_check', 'Check facts + draft description')}</button>}
+                      {card.visualImage && <button type="button" onClick={() => removeVisual(card)} disabled={!!busy || isProcessing} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">{tr('visual_remove', 'Remove visual')}</button>}
                     </div>
-                    {!callImagen && !card.visualImage && <p role="status" className="text-xs leading-relaxed text-slate-600">AI visual generation is unavailable with the current setup. You can upload an image or keep the memory aid text-only.</p>}
-                    {card.visualImage && !callGeminiImageEdit && <p role="status" className="text-xs leading-relaxed text-slate-600">AI image refinement is unavailable, but you can crop, replace, keep, or remove this visual.</p>}
-                    {card.visualImage && !callGeminiVision && <p role="status" className="text-xs leading-relaxed text-slate-600">AI visual checking and description drafting are unavailable. A learner or teacher can still write the description and review the cue directly.</p>}
+                    {!callImagen && !card.visualImage && <p role="status" className="text-xs leading-relaxed text-slate-600">{tr('visual_gen_unavailable_note', 'AI visual generation is unavailable with the current setup. You can upload an image or keep the memory aid text-only.')}</p>}
+                    {card.visualImage && !callGeminiImageEdit && <p role="status" className="text-xs leading-relaxed text-slate-600">{tr('visual_refine_unavailable_note', 'AI image refinement is unavailable, but you can crop, replace, keep, or remove this visual.')}</p>}
+                    {card.visualImage && !callGeminiVision && <p role="status" className="text-xs leading-relaxed text-slate-600">{tr('visual_check_unavailable_note', 'AI visual checking and description drafting are unavailable. A learner or teacher can still write the description and review the cue directly.')}</p>}
                     {isTeacherMode && card.visualImage && (
                       <fieldset className="rounded-xl border border-slate-300 bg-white p-3">
-                        <legend className="px-1 text-xs font-black text-slate-800">Teacher visual review</legend>
-                        <label className="block text-xs font-bold text-slate-700">Review note <span className="font-medium">(optional)</span>
-                          <textarea aria-label={'Teacher visual review note for ' + card.target} value={card.visualReview.note} onChange={(event) => updateVisualReview(card, { note: event.target.value })} maxLength={1000} rows={2} placeholder="Name what works or what should change." className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
+                        <legend className="px-1 text-xs font-black text-slate-800">{tr('visual_review_legend', 'Teacher visual review')}</legend>
+                        <label className="block text-xs font-bold text-slate-700">{tr('visual_review_note', 'Review note')} <span className="font-medium">{tr('optional_paren', '(optional)')}</span>
+                          <textarea aria-label={tr('visual_review_note_aria', 'Teacher visual review note for {target}', { target: card.target })} value={card.visualReview.note} onChange={(event) => updateVisualReview(card, { note: event.target.value })} maxLength={1000} rows={2} placeholder={tr('visual_review_note_placeholder', 'Name what works or what should change.')} className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
                         </label>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <button type="button" aria-pressed={card.visualReview.status === 'approved'} aria-describedby={visualAltHelpId} onClick={() => updateVisualReview(card, { status: 'approved' })} disabled={!visualAltReadiness.ok} className="min-h-11 rounded-xl border border-emerald-400 bg-emerald-50 px-3 py-2 text-sm font-black text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">Approve visual</button>
-                          <button type="button" aria-pressed={card.visualReview.status === 'needs-revision'} onClick={() => updateVisualReview(card, { status: 'needs-revision' })} className="min-h-11 rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">Request visual revision</button>
-                          {card.visualReview.status !== 'unreviewed' && <button type="button" onClick={() => updateVisualReview(card, { status: 'unreviewed' })} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">Clear review status</button>}
+                          <button type="button" aria-pressed={card.visualReview.status === 'approved'} aria-describedby={visualAltHelpId} onClick={() => updateVisualReview(card, { status: 'approved' })} disabled={!visualAltReadiness.ok} className="min-h-11 rounded-xl border border-emerald-400 bg-emerald-50 px-3 py-2 text-sm font-black text-emerald-900 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">{tr('visual_approve', 'Approve visual')}</button>
+                          <button type="button" aria-pressed={card.visualReview.status === 'needs-revision'} onClick={() => updateVisualReview(card, { status: 'needs-revision' })} className="min-h-11 rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600">{tr('visual_request_revision', 'Request visual revision')}</button>
+                          {card.visualReview.status !== 'unreviewed' && <button type="button" onClick={() => updateVisualReview(card, { status: 'unreviewed' })} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">{tr('visual_clear_review', 'Clear review status')}</button>}
                         </div>
                       </fieldset>
                     )}
@@ -3079,42 +3177,42 @@ function MemoryAidView(props) {
 
                 <section className="rounded-2xl border-2 border-teal-200 bg-white p-4">
                   <h3 className="text-sm font-black text-teal-950">{draftLabel}</h3>
-                  {isTeacherMode && isEditing ? <textarea aria-label={'Student creation prompt for ' + card.target} value={card.studentPrompt} onChange={(event) => updateCard(card.id, { studentPrompt: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" /> : <p className="mt-1 text-xs leading-relaxed text-slate-600">{card.studentPrompt}</p>}
+                  {isTeacherMode && isEditing ? <textarea aria-label={tr('draft_prompt_aria', 'Student creation prompt for {target}', { target: card.target })} value={card.studentPrompt} onChange={(event) => updateCard(card.id, { studentPrompt: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" /> : <p className="mt-1 text-xs leading-relaxed text-slate-600">{card.studentPrompt}</p>}
                   {revisionState && revisionState.pending && (
                     <div className="mt-3 rounded-xl border border-violet-300 bg-violet-50 p-3 text-sm text-violet-950">
-                      <p className="font-black">Your private revision goal</p>
+                      <p className="font-black">{tr('revision_goal_heading', 'Your private revision goal')}</p>
                       <p className="mt-1 whitespace-pre-wrap leading-relaxed">{revisionState.strategy}</p>
-                      {revisionState.targetFacts.length > 0 && <p className="mt-2 text-xs font-bold">Targeting: {revisionState.targetFacts.join(' · ')}</p>}
+                      {revisionState.targetFacts.length > 0 && <p className="mt-2 text-xs font-bold">{tr('revision_targeting', 'Targeting: {facts}', { facts: revisionState.targetFacts.join(' · ') })}</p>}
                     </div>
                   )}
-                  <textarea id={domIdBase + '-draft'} aria-label={draftLabel + ' for ' + card.target} value={card.studentDraft} onChange={(event) => updateCard(card.id, { studentDraft: event.target.value, feedback: null })} rows={4} placeholder="Write, remix, or build your memory aid here…" className="mt-3 w-full rounded-xl border border-teal-300 bg-teal-50/30 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
+                  <textarea id={domIdBase + '-draft'} aria-label={tr('draft_aria', '{label} for {target}', { label: draftLabel, target: card.target })} value={card.studentDraft} onChange={(event) => updateCard(card.id, { studentDraft: event.target.value, feedback: null })} rows={4} placeholder={tr('draft_placeholder', 'Write, remix, or build your memory aid here…')} className="mt-3 w-full rounded-xl border border-teal-300 bg-teal-50/30 px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600" />
                 </section>
 
                 {data.reflectionLevel !== 'none' && (
                   <section className="rounded-2xl border border-sky-200 bg-sky-50/60 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="text-sm font-black text-sky-950">{data.reflectionLevel === 'full' ? 'Explain and revise' : 'Quick connection'}</h3>
-                      <span className="text-[11px] font-bold text-sky-800">{data.reasoningRequired ? 'Required before feedback' : 'Optional'}</span>
+                      <h3 className="text-sm font-black text-sky-950">{trMeta('reflection', data.reflectionLevel === 'full' ? 'full' : 'quick', 'label', MEMORY_AID_REFLECTION_LEVELS)}</h3>
+                      <span className="text-[11px] font-bold text-sky-800">{data.reasoningRequired ? tr('required_before_feedback', 'Required before feedback') : tr('optional', 'Optional')}</span>
                     </div>
-                    {isTeacherMode && isEditing ? <textarea aria-label={'Reasoning prompt for ' + card.target} value={card.reasoningPrompt} onChange={(event) => updateCard(card.id, { reasoningPrompt: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" /> : <p className="mt-1 text-xs leading-relaxed text-slate-700">{card.reasoningPrompt}</p>}
-                    <textarea aria-label={'Reasoning for ' + card.target} value={card.studentReasoning} onChange={(event) => updateCard(card.id, { studentReasoning: event.target.value, feedback: null })} rows={data.reflectionLevel === 'full' ? 4 : 2} placeholder={data.reflectionLevel === 'full' ? 'Explain how each important part leads back to the accurate facts…' : 'This helps me remember because…'} className="mt-3 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" />
+                    {isTeacherMode && isEditing ? <textarea aria-label={tr('reasoning_prompt_aria', 'Reasoning prompt for {target}', { target: card.target })} value={card.reasoningPrompt} onChange={(event) => updateCard(card.id, { reasoningPrompt: event.target.value })} rows={2} className="mt-2 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" /> : <p className="mt-1 text-xs leading-relaxed text-slate-700">{card.reasoningPrompt}</p>}
+                    <textarea aria-label={tr('reasoning_aria', 'Reasoning for {target}', { target: card.target })} value={card.studentReasoning} onChange={(event) => updateCard(card.id, { studentReasoning: event.target.value, feedback: null })} rows={data.reflectionLevel === 'full' ? 4 : 2} placeholder={data.reflectionLevel === 'full' ? tr('reasoning_placeholder_full', 'Explain how each important part leads back to the accurate facts…') : tr('reasoning_placeholder_quick', 'This helps me remember because…')} className="mt-3 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" />
                   </section>
                 )}
 
                 <div className="memory-aid-no-print flex flex-wrap items-center gap-2">
-                  <button type="button" onClick={() => requestFeedback(card)} disabled={!!busy || isProcessing || !aiFeedbackAvailable} aria-busy={busy === 'feedback'} aria-describedby={feedbackHelpId} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">{busy === 'feedback' ? 'Reviewing your thinking…' : 'Get strengths-first AI feedback'}</button>
-                  {isTeacherMode && isEditing && <button type="button" onClick={() => removeCard(card.id)} className="min-h-11 rounded-xl border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">Remove target</button>}
+                  <button type="button" onClick={() => requestFeedback(card)} disabled={!!busy || isProcessing || !aiFeedbackAvailable} aria-busy={busy === 'feedback'} aria-describedby={feedbackHelpId} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-black text-white hover:bg-teal-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">{busy === 'feedback' ? tr('feedback_busy', 'Reviewing your thinking…') : tr('feedback_request', 'Get strengths-first AI feedback')}</button>
+                  {isTeacherMode && isEditing && <button type="button" onClick={() => removeCard(card.id)} className="min-h-11 rounded-xl border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">{tr('card_remove', 'Remove target')}</button>}
                 </div>
                 <p id={feedbackHelpId} role="status" aria-live="polite" className="memory-aid-no-print -mt-2 text-xs leading-relaxed text-slate-600">{feedbackGuidance}</p>
 
                 {card.feedback && (
-                  <section aria-label="AI feedback" role="status" aria-live="polite" className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                    <h3 className="text-sm font-black text-emerald-950">Feedback for your next revision</h3>
+                  <section aria-label={tr('feedback_region_aria', 'AI feedback')} role="status" aria-live="polite" className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                    <h3 className="text-sm font-black text-emerald-950">{tr('feedback_heading', 'Feedback for your next revision')}</h3>
                     <dl className="mt-3 space-y-3 text-sm">
-                      <div><dt className="font-black text-emerald-900">A strength</dt><dd className="mt-1 text-slate-800">{card.feedback.strength}</dd></div>
-                      <div><dt className="font-black text-emerald-900">Accuracy check</dt><dd className="mt-1 text-slate-800">{card.feedback.accuracyCheck}</dd></div>
-                      <div><dt className="font-black text-emerald-900">One next step</dt><dd className="mt-1 text-slate-800">{card.feedback.nextStep}</dd></div>
-                      {card.feedback.question && <div><dt className="font-black text-emerald-900">Think about</dt><dd className="mt-1 text-slate-800">{card.feedback.question}</dd></div>}
+                      <div><dt className="font-black text-emerald-900">{tr('feedback_strength', 'A strength')}</dt><dd className="mt-1 text-slate-800">{trMsg(card.feedback.strength)}</dd></div>
+                      <div><dt className="font-black text-emerald-900">{tr('feedback_accuracy', 'Accuracy check')}</dt><dd className="mt-1 text-slate-800">{trMsg(card.feedback.accuracyCheck)}</dd></div>
+                      <div><dt className="font-black text-emerald-900">{tr('feedback_next_step', 'One next step')}</dt><dd className="mt-1 text-slate-800">{trMsg(card.feedback.nextStep)}</dd></div>
+                      {card.feedback.question && <div><dt className="font-black text-emerald-900">{tr('feedback_think_about', 'Think about')}</dt><dd className="mt-1 text-slate-800">{trMsg(card.feedback.question)}</dd></div>}
                     </dl>
                   </section>
                 )}
@@ -3125,8 +3223,8 @@ function MemoryAidView(props) {
         })}
       </div>
 
-      {cards.length === 0 && <p role="status" className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">No memory targets yet.</p>}
-      {isTeacherMode && isEditing && cards.length < 8 && <button type="button" onClick={addCard} className="memory-aid-no-print mt-5 min-h-12 w-full rounded-2xl border-2 border-dashed border-teal-400 bg-teal-50 px-4 py-3 text-sm font-black text-teal-900 hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">Add a memory target</button>}
+      {cards.length === 0 && <p role="status" className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">{tr('no_targets', 'No memory targets yet.')}</p>}
+      {isTeacherMode && isEditing && cards.length < 8 && <button type="button" onClick={addCard} className="memory-aid-no-print mt-5 min-h-12 w-full rounded-2xl border-2 border-dashed border-teal-400 bg-teal-50 px-4 py-3 text-sm font-black text-teal-900 hover:bg-teal-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">{tr('add_target', 'Add a memory target')}</button>}
     </main>
   );
 }

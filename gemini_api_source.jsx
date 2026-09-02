@@ -102,6 +102,17 @@ const createGeminiAPI = (deps) => {
         canFallback: !Number.isFinite(usableMs) || usableMs >= 5000,
       };
     };
+    const _telemetryDeadlineTs = (telemetry) => {
+      try {
+        if (!telemetry) return 0;
+        if (typeof telemetry.getDeadlineTs === 'function') return Number(telemetry.getDeadlineTs()) || 0;
+        return Number(telemetry.deadlineTs) || 0;
+      } catch (_) { return 0; }
+    };
+    const _emitResponseMeta = (telemetry, meta) => {
+      if (!telemetry || typeof telemetry.onResponseMeta !== 'function') return;
+      try { telemetry.onResponseMeta(meta); } catch (_) {}
+    };
     const _providerDeadlineError = () => {
       const error = new Error('Timed out: outer provider deadline has no room for another transport attempt.');
       error.code = 'ALLO_PROVIDER_DEADLINE';
@@ -656,15 +667,34 @@ const createGeminiAPI = (deps) => {
         // classifier routes it to 'transient' and the retry layers handle it.
         const _rawBody = await response.text();
         if (!_rawBody || !_rawBody.trim()) {
+          _emitResponseMeta(_innerTelemetry, { model: _modelUsed, bodyBytes: 0, finishReason: null, empty: true });
           throw new Error('Empty response body from Gemini (transient; the retry layer handles this)');
         }
         let data;
         try { data = JSON.parse(_rawBody); }
-        catch (e) { throw new Error('Truncated/invalid JSON response body from Gemini (transient; the retry layer handles this): ' + (e && e.message)); }
+        catch (e) {
+          _emitResponseMeta(_innerTelemetry, { model: _modelUsed, bodyBytes: _rawBody.length, finishReason: null, malformed: true });
+          throw new Error('Truncated/invalid JSON response body from Gemini (transient; the retry layer handles this): ' + (e && e.message));
+        }
         // Record requested→served for the Model Diagnostics UI. data.modelVersion
         // is Google's report of what model fulfilled this request — it can
         // differ from _modelUsed if the API silently routed an alias.
         _recordModelServed(_modelUsed, data.modelVersion);
+        // Response metadata for the pipeline ledger (2026-09-02): finish reason, block reason,
+        // token counts and byte size. Numbers and enums only — never the text.
+        {
+          const _cand0 = Array.isArray(data.candidates) ? data.candidates[0] : null;
+          const _usage = data.usageMetadata && typeof data.usageMetadata === 'object' ? data.usageMetadata : {};
+          _emitResponseMeta(_innerTelemetry, {
+            model: _modelUsed,
+            bodyBytes: _rawBody.length,
+            finishReason: (_cand0 && _cand0.finishReason) || null,
+            blockReason: (data.promptFeedback && data.promptFeedback.blockReason) || null,
+            candidateCount: Array.isArray(data.candidates) ? data.candidates.length : 0,
+            promptTokens: Number.isFinite(Number(_usage.promptTokenCount)) ? Number(_usage.promptTokenCount) : null,
+            outputTokens: Number.isFinite(Number(_usage.candidatesTokenCount)) ? Number(_usage.candidatesTokenCount) : null,
+          });
+        }
         if (data.promptFeedback?.blockReason) {
             warnLog("Gemini Prompt Blocked:", { blockReason: data.promptFeedback && data.promptFeedback.blockReason || null, safetyRatingCount: Array.isArray(data.promptFeedback && data.promptFeedback.safetyRatings) ? data.promptFeedback.safetyRatings.length : 0 });
             throw new Error(`Content Blocked: ${data.promptFeedback.blockReason}`);
@@ -804,6 +834,7 @@ const createGeminiAPI = (deps) => {
         // "regenerate your key" banner on the user's very first action —
         // defeating the debounce it exists to provide.
         const _streakBefore = _authFailStreak;
+        const _rungStartedAt = Date.now();
         try {
           return await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, signal, useCodeExecution, telemetry);
         } catch (err) {
@@ -818,15 +849,34 @@ const createGeminiAPI = (deps) => {
           if (attempt === CANVAS_AUTH_RETRIES) throw err;
           // Respect an abort that landed while we were waiting to retry.
           if (signal && signal.aborted) throw err;
+          // Nullish, not `||` — a configured 0 (tests) is a valid wait and
+          // `0 || 3000` would silently restore the full production backoff.
+          const _cfg = CANVAS_AUTH_BACKOFF_MS[attempt];
+          const wait = (typeof _cfg === 'number' && _cfg >= 0) ? _cfg : 3000;
+          // Deadline-aware rung (2026-09-02). The Canvas proxy HOLDS a throttled request for about
+          // a minute before answering 401, so three rungs cannot fit inside the pipeline's 180s
+          // outer wall: the 08-14 log never once showed rung 3/3, and the call that the wall killed
+          // was filed as a TIMEOUT, starving the auth breaker. When the caller supplies a deadline
+          // and the next rung (backoff + the last rung's observed duration) cannot finish before it,
+          // fail NOW with the auth error intact so the breaker sees what actually happened.
+          const _rungMs = Math.max(0, Date.now() - _rungStartedAt);
+          const _deadlineTs = _telemetryDeadlineTs(telemetry);
+          if (_deadlineTs > 0) {
+            const _remainingMs = _deadlineTs - Date.now();
+            const _neededMs = wait + Math.max(_rungMs, 1000) + 1000;
+            if (_remainingMs < _neededMs) {
+              if (telemetry && typeof telemetry.onAuthLadderCut === 'function') {
+                try { telemetry.onAuthLadderCut({ attempt: attempt + 1, rungMs: _rungMs, remainingMs: Math.max(0, _remainingMs), neededMs: _neededMs }); } catch (_) {}
+              }
+              console.warn(`[callGemini] Canvas auth throttle (HTTP 401) — ${Math.round(Math.max(0, _remainingMs) / 1000)}s left before the deadline, last rung took ${Math.round(_rungMs / 1000)}s; failing as auth now instead of retrying into the wall.`);
+              throw err;
+            }
+          }
           // Roll the streak back: this call has not failed yet, it is retrying.
           // If the retry succeeds, _noteApiSuccess() clears the streak anyway;
           // if every attempt fails, the final one's increment stands, so the
           // net effect per user-level call is unchanged from before the retry.
           _authFailStreak = _streakBefore;
-          // Nullish, not `||` — a configured 0 (tests) is a valid wait and
-          // `0 || 3000` would silently restore the full production backoff.
-          const _cfg = CANVAS_AUTH_BACKOFF_MS[attempt];
-          const wait = (typeof _cfg === 'number' && _cfg >= 0) ? _cfg : 3000;
           console.warn(`[callGemini] Canvas auth throttle (HTTP 401) — retrying in ${wait}ms (attempt ${attempt + 2}/${CANVAS_AUTH_RETRIES + 1}).`);
           await _sleep(wait);
         }
@@ -965,7 +1015,21 @@ const createGeminiAPI = (deps) => {
         try {
           data = JSON.parse(rawText);
           _recordModelServed(modelUsed, data && data.modelVersion);
+          {
+            const _vCand0 = data && Array.isArray(data.candidates) ? data.candidates[0] : null;
+            const _vUsage = data && data.usageMetadata && typeof data.usageMetadata === 'object' ? data.usageMetadata : {};
+            _emitResponseMeta(_innerTelemetry, {
+              model: modelUsed,
+              bodyBytes: rawText.length,
+              finishReason: (_vCand0 && _vCand0.finishReason) || null,
+              blockReason: (data && data.promptFeedback && data.promptFeedback.blockReason) || null,
+              candidateCount: data && Array.isArray(data.candidates) ? data.candidates.length : 0,
+              promptTokens: Number.isFinite(Number(_vUsage.promptTokenCount)) ? Number(_vUsage.promptTokenCount) : null,
+              outputTokens: Number.isFinite(Number(_vUsage.candidatesTokenCount)) ? Number(_vUsage.candidatesTokenCount) : null,
+            });
+          }
         } catch (parseErr) {
+          _emitResponseMeta(_innerTelemetry, { model: modelUsed, bodyBytes: rawText.length, finishReason: null, malformed: true });
           warnLog("[Vision] Response JSON truncated — attempting partial extraction", _diagnosticErrorSummary(parseErr));
           const partialMatch = rawText.match(/"text"\s*:\s*"([\s\S]*?)(?:"|$)/);
           if (partialMatch) {

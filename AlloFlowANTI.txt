@@ -3562,6 +3562,11 @@ const normalizeAlloEvaluationPortalUrl = (value) => {
         return '';
     }
 };
+const ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY = 'allo_school_rewards_portal_url_v1';
+// Same URL shape and rules as the evaluation portal. The Project Settings view
+// (view_project_settings_source.jsx) saves this key itself; the Leadership Hub
+// card and the settings button both open through handleOpenSchoolRewards.
+const readAlloSchoolRewardsPortalUrl = () => normalizeAlloEvaluationPortalUrl(safeGetItem(ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY, ''));
 const _applyTextSurgery = (prevHtml, effectiveText) => {
     const _m = window.AlloModules && window.AlloModules.PureHelpers;
     if (_m && typeof _m._applyTextSurgery === 'function') return _m._applyTextSurgery(prevHtml, effectiveText);
@@ -9252,6 +9257,109 @@ const buildAlloHavenRecognitionAudit = (roster, limit = 8) => {
   return events.sort((a, b) => b.at - a.at).slice(0, boundedLimit);
 };
 
+// School Rewards recognition worksheet (2026-09-02): the live session's
+// recognition tokens summarised per codename so a teacher can award them in
+// the school portal. Codenames only; the session never holds a real identity.
+// Device-local recognition log (2026-09-02): the live session's tokens are
+// folded into a small log keyed by session code so the worksheet covers the
+// last sessions, not only the one on screen. Codenames only; pruned to 40
+// sessions and 90 days.
+const ALLO_SCHOOL_REWARDS_RECOGNITION_LOG_KEY = 'allo_school_rewards_recognition_log_v1';
+const readSchoolRewardsRecognitionLog = () => {
+  try {
+    const parsed = JSON.parse(safeGetItem(ALLO_SCHOOL_REWARDS_RECOGNITION_LOG_KEY, 'null') || 'null');
+    return parsed && typeof parsed === 'object' && parsed.sessions && typeof parsed.sessions === 'object' ? parsed : { sessions: {} };
+  } catch (_) { return { sessions: {} }; }
+};
+const recordSchoolRewardsRecognition = (roster, sessionCode) => {
+  if (!roster || typeof roster !== 'object' || !sessionCode) return false;
+  const log = readSchoolRewardsRecognitionLog();
+  const key = String(sessionCode);
+  const session = log.sessions[key] || { rows: {}, updatedAt: 0 };
+  let changed = false;
+  Object.keys(roster).forEach(uid => {
+    const entry = roster[uid] && typeof roster[uid] === 'object' ? roster[uid] : {};
+    (Array.isArray(entry.havenRewards) ? entry.havenRewards : []).forEach(rawReward => {
+      const reward = normalizeAlloHavenClassroomReward(rawReward);
+      if (!reward) return;
+      const codename = String(entry.name || 'Student').slice(0, 80);
+      const row = session.rows[codename] || (session.rows[codename] = { ids: [], reasons: {}, lastAt: 0 });
+      if (row.ids.indexOf(reward.id) !== -1) return;
+      row.ids.push(reward.id);
+      const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === reward.reasonId);
+      const label = reason ? reason.label : 'Positive progress';
+      row.reasons[label] = (row.reasons[label] || 0) + 1;
+      if (Number(reward.at) > row.lastAt) row.lastAt = Number(reward.at);
+      changed = true;
+    });
+  });
+  if (!changed) return false;
+  session.updatedAt = Date.now();
+  log.sessions[key] = session;
+  const cutoff = Date.now() - 90 * 86400000;
+  Object.keys(log.sessions).forEach(code => { if (Number(log.sessions[code].updatedAt) < cutoff) delete log.sessions[code]; });
+  Object.keys(log.sessions).sort((a, b) => Number(log.sessions[b].updatedAt) - Number(log.sessions[a].updatedAt)).slice(40).forEach(code => { delete log.sessions[code]; });
+  try { safeSetItem(ALLO_SCHOOL_REWARDS_RECOGNITION_LOG_KEY, JSON.stringify(log)); } catch (_) {}
+  return true;
+};
+const buildSchoolRewardsRecognitionWorksheet = (roster, sessionCode, log) => {
+  const safeRoster = roster && typeof roster === 'object' ? roster : {};
+  const rows = [];
+  Object.keys(safeRoster).forEach(uid => {
+    const rawEntry = safeRoster[uid];
+    const entry = rawEntry && typeof rawEntry === 'object' ? rawEntry : {};
+    const seen = new Set();
+    const reasons = Object.create(null);
+    let total = 0;
+    let lastAt = 0;
+    (Array.isArray(entry.havenRewards) ? entry.havenRewards : []).forEach(rawReward => {
+      const reward = normalizeAlloHavenClassroomReward(rawReward);
+      if (!reward || seen.has(reward.id)) return;
+      seen.add(reward.id);
+      const reason = ALLOHAVEN_CLASSROOM_REWARD_REASONS.find(item => item.id === reward.reasonId);
+      const label = reason ? reason.label : 'Positive progress';
+      reasons[label] = (reasons[label] || 0) + 1;
+      total += 1;
+      if (Number(reward.at) > lastAt) lastAt = Number(reward.at);
+    });
+    if (!total) return;
+    rows.push({
+      codename: String(entry.name || 'Student').slice(0, 80),
+      total,
+      reasons: Object.keys(reasons).sort().map(label => ({ label, count: reasons[label] })),
+      lastAt
+    });
+  });
+  // Fold in the device log so past sessions count too; the live session is
+  // already in `rows`, so its logged copy is skipped.
+  const byCodename = Object.create(null);
+  rows.forEach(row => { byCodename[row.codename] = Object.assign(row, { sessions: 1 }); });
+  const safeLog = log && typeof log === 'object' && log.sessions ? log.sessions : {};
+  let sessionCount = sessionCode ? 1 : 0;
+  Object.keys(safeLog).forEach(code => {
+    if (sessionCode && code === String(sessionCode)) return;
+    const session = safeLog[code];
+    if (!session || typeof session.rows !== 'object') return;
+    sessionCount += 1;
+    Object.keys(session.rows).forEach(codename => {
+      const logged = session.rows[codename];
+      const count = Array.isArray(logged.ids) ? logged.ids.length : 0;
+      if (!count) return;
+      const row = byCodename[codename] || (byCodename[codename] = { codename, total: 0, reasons: [], lastAt: 0, sessions: 0 });
+      row.sessions += 1;
+      row.total += count;
+      Object.keys(logged.reasons || {}).forEach(label => {
+        const existing = row.reasons.find(item => item.label === label);
+        if (existing) existing.count += logged.reasons[label]; else row.reasons.push({ label, count: logged.reasons[label] });
+      });
+      if (Number(logged.lastAt) > row.lastAt) row.lastAt = Number(logged.lastAt);
+    });
+  });
+  const merged = Object.keys(byCodename).map(codename => byCodename[codename]);
+  merged.forEach(row => row.reasons.sort((a, b) => a.label.localeCompare(b.label)));
+  merged.sort((a, b) => b.total - a.total || a.codename.localeCompare(b.codename));
+  return { sessionCode: String(sessionCode || ''), generatedAt: Date.now(), sessionCount, rows: merged };
+};
 const queueAlloHavenClassroomRewards = (incoming) => {
   const normalized = (Array.isArray(incoming) ? incoming : [incoming])
     .map(normalizeAlloHavenClassroomReward)
@@ -11472,14 +11580,26 @@ const AlloFlowContent = () => {
   // loader dispatches alloflow:module-registry-changed on every transition;
   // the interval is a safety net for missed events. Rendered only after the
   // splash so it never competes with the progress bar.
-  const [moduleLoadInfo, setModuleLoadInfo] = useState({ pending: [], failed: [] });
+  const [moduleLoadInfo, setModuleLoadInfo] = useState({ pending: [], failed: [], queued: [] });
   useEffect(() => {
     let timer = null;
+    let hideTimer = null;
     const refresh = () => {
       try {
         if (typeof window.__alloModuleSnapshot === 'function') {
           const snapshot = window.__alloModuleSnapshot();
-          setModuleLoadInfo(snapshot);
+          // The pump loads one background script at a time with a short idle
+          // gap between them, so pending drops to 0 for a few hundred ms after
+          // every module. Publish busy states immediately, but hold the last
+          // busy state briefly before clearing so the pill stays up through
+          // the gaps instead of strobing once per module.
+          const busy = snapshot.pending.length > 0 || snapshot.failed.length > 0;
+          if (busy) {
+            if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+            setModuleLoadInfo(snapshot);
+          } else if (!hideTimer) {
+            hideTimer = setTimeout(() => { hideTimer = null; setModuleLoadInfo(snapshot); }, 1200);
+          }
           // One automatic retry pass post-boot before asking the user to tap.
           if (snapshot.failed.length > 0 && !moduleAutoRetryRef.current) {
             moduleAutoRetryRef.current = true;
@@ -11499,6 +11619,7 @@ const AlloFlowContent = () => {
     return () => {
       window.removeEventListener('alloflow:module-registry-changed', onChange);
       if (timer) clearInterval(timer);
+      if (hideTimer) clearTimeout(hideTimer);
     };
   }, []);
   // The initial audit only needs the pipeline and live Gemini bridge. Keep
@@ -12957,12 +13078,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloModuleSnapshot = function() {
       var pending = [];
       var failed = [];
+      var queued = [];
       Object.keys(__alloModuleRegistry).forEach(function(name) {
         var status = __alloModuleRegistry[name].status;
         if (status === 'pending') pending.push(name);
         else if (status === 'failed') failed.push(name);
       });
-      return { pending: pending, failed: failed };
+      // Modules parked in the deferred pump have no registry entry yet. The
+      // pill counts them so "N left" is the real remainder, not just the one
+      // script the pump allows in flight at a time.
+      try { queued = Object.keys(__alloDeferredModuleNames); } catch (_) {}
+      return { pending: pending, failed: failed, queued: queued };
     };
     window.__alloModuleReady = function(names) {
       return (names || []).every(function(name) {
@@ -13297,6 +13423,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
     window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=c92ce2b50'); }; })();
+    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=sr090201'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
     window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=c92ce2b50'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
@@ -15840,6 +15967,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     } catch (_) {}
   }, []);
   const [isEducatorEvaluationOpen, setIsEducatorEvaluationOpen] = useState(false);
+  const [isSchoolRewardsOpen, setIsSchoolRewardsOpen] = useState(false);
+  const [schoolRewardsPortalUrl, setSchoolRewardsPortalUrl] = useState(() => readAlloSchoolRewardsPortalUrl());
   const [evaluationPortalUrl, setEvaluationPortalUrl] = useState(() => normalizeAlloEvaluationPortalUrl(safeGetItem(ALLO_EVALUATION_PORTAL_URL_KEY, '')));
   const [isDiagnosisEligibilityOpen, setIsDiagnosisEligibilityOpen] = useState(false);
   const [diagnosisEligibilityFocusSection, setDiagnosisEligibilityFocusSection] = useState(null);
@@ -20002,6 +20131,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
     setIsEducatorEvaluationOpen(true);
   }, [evaluationPortalUrl, addToast]);
+  // Leadership Hub -> School Rewards & Store (2026-09-02). Until now this was
+  // the only hub tool with no in-app surface: the card was a bare launcher and
+  // the connect form lived in Project Settings. It now opens its own panel
+  // every time (launcher + deployment check when connected, the setup
+  // checklist otherwise), matching Educator Evaluation and the Class Mailbox,
+  // whose setup lives inside the tool. Project Settings keeps a secondary
+  // launcher and URL field, as it does for the evaluation portal.
+  const [recognitionLogVersion, setRecognitionLogVersion] = useState(0);
+  useEffect(() => { if (recordSchoolRewardsRecognition(sessionData && sessionData.roster, activeSessionCode)) setRecognitionLogVersion((value) => value + 1); }, [sessionData, activeSessionCode]);
+  const schoolRewardsRecognition = React.useMemo(() => buildSchoolRewardsRecognitionWorksheet(sessionData && sessionData.roster, activeSessionCode, readSchoolRewardsRecognitionLog()), [sessionData, activeSessionCode, recognitionLogVersion]);
+  const handleOpenSchoolRewards = React.useCallback(() => {
+    setIsAdminHubOpen(false);
+    setIsProjectSettingsOpen(false);
+    if (typeof window.__alloLazySchoolRewards === 'function') { try { window.__alloLazySchoolRewards(); } catch (_) {} }
+    setIsSchoolRewardsOpen(true);
+  }, []);
+  const handleOpenSchoolRewardsPortal = React.useCallback(() => {
+    const portalUrl = normalizeAlloEvaluationPortalUrl(schoolRewardsPortalUrl);
+    if (!portalUrl) { addToast('Connect School Rewards first: paste the deployment URL in the panel.', 'info'); return false; }
+    try {
+      const portalWindow = window.open(portalUrl, '_blank', 'noopener,noreferrer');
+      if (!portalWindow) {
+        if (!_isDesktopBundledApp) addToast('School Rewards was blocked. Allow pop-ups for AlloFlow and try again.', 'error');
+        return false;
+      }
+      portalWindow.opener = null;
+      return true;
+    } catch (_) {
+      addToast('School Rewards could not open. Check your pop-up settings and try again.', 'error');
+      return false;
+    }
+  }, [schoolRewardsPortalUrl, addToast]);
+  const handleSaveSchoolRewardsPortalUrl = React.useCallback((value) => {
+    const raw = String(value || '').trim();
+    if (!raw) {
+      safeRemoveItem(ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY);
+      setSchoolRewardsPortalUrl('');
+      addToast('School Rewards launcher removed from this device.', 'success');
+      return { ok: true, url: '', connected: false };
+    }
+    const normalized = normalizeAlloEvaluationPortalUrl(raw);
+    if (!normalized) {
+      const error = 'Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.';
+      addToast(error, 'error');
+      return { ok: false, error };
+    }
+    safeSetItem(ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY, normalized);
+    setSchoolRewardsPortalUrl(normalized);
+    addToast('School Rewards launcher saved on this device.', 'success');
+    return { ok: true, url: normalized, connected: true };
+  }, [addToast]);
   const openMathCreate = React.useCallback(() => {
     try { if (typeof window.__alloLazyMathCreate === 'function') window.__alloLazyMathCreate(); } catch (_) {}
     setShowMathCreate(true);
@@ -28153,6 +28333,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Directly serves the ELL population. Read by the pipeline via window.__docPipelineState.pdfOcrLanguage.
   const [pdfOcrLanguage, setPdfOcrLanguage] = useState(() => { try { return localStorage.getItem('alloflow_pdf_ocr_lang') || ''; } catch { return ''; } });
   React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_ocr_lang', pdfOcrLanguage || ''); } catch {} }, [pdfOcrLanguage]);
+  // Storm budget (2026-09-02): minutes of deliberate rate-limit waiting one remediation run may spend
+  // before the AI passes pause at the last verified version (0 = keep waiting, the pre-09-02 behaviour).
+  // Read by the pipeline via window.__docPipelineState.pdfStormBudgetMinutes.
+  const [pdfStormBudgetMinutes, setPdfStormBudgetMinutes] = useState(() => { try { const v = localStorage.getItem('alloflow_pdf_storm_budget_min'); return (v == null || v === '') ? 18 : Math.max(0, Number(v) || 0); } catch { return 18; } });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_pdf_storm_budget_min', String(Number(pdfStormBudgetMinutes) || 0)); } catch {} }, [pdfStormBudgetMinutes]);
   // Run history (2026-06-10): one summary row per completed remediation.
   // Canvas has NO cross-session storage (maintainer-verified), so this rides
   // INSIDE the .alloflow.json project file — saved with every project,
@@ -28740,6 +28925,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // editable updates on generatedContent.data.
   const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
   const [anchorChartType, setAnchorChartType] = useState('auto');
+  // Applied Challenge Studio panel choices live here (not in the panel) so they
+  // survive collapsing the panel and reach guided mode, Full Pack, and voice.
+  const [appliedChallengeSelectionMode, setAppliedChallengeSelectionMode] = useState('auto');
+  const [appliedChallengeFamily, setAppliedChallengeFamily] = useState('decide');
+  const [appliedChallengeAgencyMode, setAppliedChallengeAgencyMode] = useState('progressive');
+  const [appliedChallengeScope, setAppliedChallengeScope] = useState('standard');
+  const [appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions] = useState('');
   const [memoryAidSelectionMode, setMemoryAidSelectionMode] = useState('auto-mix');
   const [memoryAidTypes, setMemoryAidTypes] = useState(['acronym-acrostic', 'chunking', 'story-chain']);
   const [memoryAidAuthorshipMode, setMemoryAidAuthorshipMode] = useState('progressive');
@@ -31515,6 +31707,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       quizMcqCount,
       noteTakingTemplateType,
       anchorChartType,
+      appliedChallengeSelectionMode,
+      appliedChallengeFamily,
+      appliedChallengeAgencyMode,
+      appliedChallengeScope,
+      appliedChallengeCustomInstructions,
       memoryAidSelectionMode,
       memoryAidTypes,
       memoryAidAuthorshipMode,
@@ -35301,7 +35498,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
     pdfDocumentEpoch: pdfDocumentEpochLive,
     pdfAutoSaveProject,
-    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore, pdfOcrLanguage,
+    pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount, pdfTargetScore, pdfOcrLanguage, pdfStormBudgetMinutes,
     pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
     pdfBatchQueue, pdfBatchSummary, pdfExperimentMode, pdfExperimentRuns,
     customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef,
@@ -36065,6 +36262,39 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   const parseMarkdownToHTML = _docPipeline ? _docPipeline.parseMarkdownToHTML : (t) => t || '';
   const generateResourceHTML = _docPipeline ? _docPipeline.generateResourceHTML : () => '';
   const generateFullPackHTML = _docPipeline ? _docPipeline.generateFullPackHTML : () => '';
+  // Print ONE resource through the same pack renderer the export lanes use, in
+  // its own window, instead of window.print() on the app shell (which has no
+  // print stylesheet and prints the sidebar and header around the resource).
+  // Studio views receive this as `onPrint`. worksheet=true yields the student
+  // sheet (Memory Aid: cue-first, answer-free); teacherKey adds the appendix.
+  // Returns false when it could not render so the caller can fall back.
+  const handlePrintResourceSheet = (item, options = {}) => {
+      const resource = item && typeof item === 'object' && item.type ? item : generatedContent;
+      if (!resource || !resource.type || typeof generateFullPackHTML !== 'function') return false;
+      let html = '';
+      try {
+          html = generateFullPackHTML([resource], sourceTopic || resource.title || '', options.worksheet !== false, {}, {
+              ...(exportConfig || {}),
+              includeTeacherKey: options.teacherKey === true,
+              annotations: [],
+          });
+      } catch (err) {
+          warnLog('[Print] resource sheet render failed:', err);
+          return false;
+      }
+      if (!html) return false;
+      const win = window.open('', '_blank');
+      if (!win) {
+          addToast(t('toasts.pop_up_blocked_allow_pop') || 'Allow pop-ups to open the printable sheet.', 'error');
+          return true;
+      }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      try { win.focus(); } catch (_) {}
+      setTimeout(() => { try { win.print(); } catch (_) {} }, 600);
+      return true;
+  };
   const prepareReadAloudArtifactAudio = async (options = {}) => {
       const moduleValue = window.AlloModules && window.AlloModules.ReadAloudArtifactAudio;
       if (!moduleValue || typeof moduleValue.create !== 'function') {
@@ -40025,7 +40255,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   };
   const getSlidesPreviewHTML = () => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
-    if (_m && typeof _m.getSlidesPreviewHTML === 'function') return _m.getSlidesPreviewHTML({ sourceTopic, gradeLevel, getExportableHistory });
+    if (_m && typeof _m.getSlidesPreviewHTML === 'function') return _m.getSlidesPreviewHTML({ sourceTopic, gradeLevel, getExportableHistory, t });
     return '';
   };
     const _exportPreviewErrorRef = React.useRef(null);
@@ -43266,6 +43496,7 @@ ${_alloActivityContext(activity)}
       handleStudentInput,
       inputText,
       isEditingScaffolds,
+      isTeacherMode,
       isGeneratingReflectionPrompt,
       isGradingReflection,
       isPersonaChatOpen,
@@ -45117,6 +45348,7 @@ ${_alloActivityContext(activity)}
       translationMode, translationTargetChoices, resolveTranslationPolicy,
       useEmojis, universalImageStyle, imageGenerationStyle, imageAspectRatio, outlineType, visualStyle,
       visualCustomStyle, visualLayoutMode, quizMode, noteTakingTemplateType, anchorChartType,
+      appliedChallengeSelectionMode, appliedChallengeFamily, appliedChallengeAgencyMode, appliedChallengeScope, appliedChallengeCustomInstructions,
       memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, mcqVisualMode,
       isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode,
       adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode,
@@ -46018,6 +46250,11 @@ ${_alloActivityContext(activity)}
         outlineCustomInstructions,
         noteTakingTemplateType,
         anchorChartType,
+        appliedChallengeSelectionMode,
+        appliedChallengeFamily,
+        appliedChallengeAgencyMode,
+        appliedChallengeScope,
+        appliedChallengeCustomInstructions,
         memoryAidSelectionMode,
         memoryAidTypes,
         memoryAidAuthorshipMode,
@@ -49997,7 +50234,11 @@ ${_alloActivityContext(activity)}
           {moduleLoadInfo.pending.length > 0 && (
             <span className="flex items-center gap-1.5">
               <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-slate-400 border-t-transparent animate-spin" aria-hidden="true"></span>
-              {t('mailbox.loading_tools') || 'Loading tools…'} {moduleLoadInfo.pending.length} left
+              {t('mailbox.loading_tools') || 'Loading tools…'}
+              {/* The count ticks down every few hundred ms; keep it out of the
+                  live region's accessible text so screen readers hear
+                  "Loading tools" once rather than every decrement. */}
+              <span aria-hidden="true">{moduleLoadInfo.pending.length + (moduleLoadInfo.queued || []).length} left</span>
             </span>
           )}
           {moduleLoadInfo.failed.length > 0 && (
@@ -50889,7 +51130,12 @@ ${_alloActivityContext(activity)}
                   {expandedTools.includes('applied-challenge') ? <ChevronUp size={16} className='text-slate-600'/> : <ChevronDown size={16} className='text-slate-600'/>}
                 </button>
                 {expandedTools.includes('applied-challenge') && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
-                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t
+                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t,
+                  appliedChallengeSelectionMode, setAppliedChallengeSelectionMode,
+                  appliedChallengeFamily, setAppliedChallengeFamily,
+                  appliedChallengeAgencyMode, setAppliedChallengeAgencyMode,
+                  appliedChallengeScope, setAppliedChallengeScope,
+                  appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
@@ -52525,12 +52771,13 @@ ${_alloActivityContext(activity)}
                     generatedContent, isTeacherMode, isProcessing,
                     handleNoteUpdate, callGemini, callImagen, callGeminiImageEdit, callGeminiVision,
                     handleSpeak, handleDownloadAudio, downloadingContentId,
-                    addToast, gradeLevel, universalImageStyle,
+                    addToast, gradeLevel, universalImageStyle, t,
                     activeProfileId: selectedProfileId,
+                    onPrint: (item) => handlePrintResourceSheet(item, { worksheet: true, teacherKey: isTeacherMode }),
                 })}
                 {activeView === 'applied-challenge' && window.AlloModules && window.AlloModules.AppliedChallengeView && React.createElement(window.AlloModules.AppliedChallengeView, {
                     generatedContent, isTeacherMode, isProcessing,
-                    handleNoteUpdate, callGemini, addToast, gradeLevel,
+                    handleNoteUpdate, callGemini, addToast, gradeLevel, t,
                 })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,
@@ -53989,6 +54236,36 @@ ${_alloActivityContext(activity)}
             rosterKey={rosterKey}
             t={t}
             addToast={addToast}
+            onOpenInStudio={(submission) => {
+              // Rebuild a student's exported Applied Challenge workspace as a new
+              // history item next to the original, then open it in the studio.
+              const studio = window.AlloModules && window.AlloModules.AppliedChallenge;
+              const resourceId = submission && submission.resourceId;
+              const base = Array.isArray(history) ? history.find((h) => h && h.id === resourceId && h.type === 'applied-challenge') : null;
+              if (!studio || typeof studio.fromSubmission !== 'function' || !base) {
+                addToast(t('applied_challenge.import.missing_source') || 'The original challenge for this submission is not in this project, so it cannot be opened in the studio.', 'error');
+                return;
+              }
+              const imported = studio.fromSubmission(base.data, submission.responses, resourceId);
+              if (!imported.matched) {
+                addToast(t('applied_challenge.import.nothing_typed') || 'This submission has no typed workspace text to import.', 'info');
+                return;
+              }
+              const nickname = String(submission.nickname || '').trim().slice(0, 80);
+              const newItem = {
+                ...base,
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                title: (base.title || 'Applied Challenge Studio') + (nickname ? ' - ' + nickname : ''),
+                data: imported.data,
+                meta: (base.meta || '') + ' - submission',
+                timestamp: new Date(),
+              };
+              setHistory((prev) => [...prev, newItem]);
+              setGeneratedContent(newItem);
+              setActiveView('applied-challenge');
+              setIsSubmissionInboxOpen(false);
+              addToast((t('applied_challenge.import.opened') || 'Opened {n} typed fields in Applied Challenge Studio.').replace('{n}', String(imported.matched)), 'success');
+            }}
             onOpenAlloSheet={(artifact) => {
               const bridge = window.AlloSheetHostBridge;
               if (!bridge || typeof bridge.open !== 'function') {
@@ -54041,6 +54318,7 @@ ${_alloActivityContext(activity)}
           onClose: () => setIsAdminHubOpen(false),
           t,
           addToast,
+          onOpenSchoolRewards: handleOpenSchoolRewards,
           openTool: (toolId) => {
             setIsAdminHubOpen(false);
             if (toolId === 'evaluation') { handleOpenPrincipalEvaluationFromSettings(); }
@@ -54125,6 +54403,18 @@ ${_alloActivityContext(activity)}
           onClose: () => { setIsWalkthroughCopilotOpen(false); _alloHubToolClosed(); },
           t,
           addToast,
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="SchoolRewards.SchoolRewardsPanel" isOpen={isSchoolRewardsOpen} onClose={() => { setIsSchoolRewardsOpen(false); _alloHubToolClosed(); }} icon={'\uD83C\uDF9F\uFE0F'} displayName="School Rewards & Store" t={t}>
+        {(SchoolRewardsPanel) => React.createElement(SchoolRewardsPanel, {
+          isOpen: true,
+          onClose: () => { setIsSchoolRewardsOpen(false); _alloHubToolClosed(); },
+          t,
+          addToast,
+          portalUrl: schoolRewardsPortalUrl,
+          onSavePortalUrl: handleSaveSchoolRewardsPortalUrl,
+          onOpenPortal: handleOpenSchoolRewardsPortal,
+          recognition: schoolRewardsRecognition,
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="UdlWalkthrough.UdlWalkthroughPanel" isOpen={isUdlWalkthroughOpen} onClose={() => { setIsUdlWalkthroughOpen(false); _alloHubToolClosed(); }} icon="🚪" displayName="UDL Walkthrough" t={t}>
@@ -54378,7 +54668,7 @@ ${_alloActivityContext(activity)}
           setPdfAutoFixPasses, setPdfAutoSaveProject, setPdfBatchMode, setPdfBatchQueue, setPdfBatchSummary,
           setPdfFixLoading, setPdfFixMode, setPdfFixResult, setPdfFixStep, setPdfMultiSession,
           setPdfPageRange, setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
-          setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64, setPendingPdfFile,
+          setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, setPendingPdfBase64, setPendingPdfFile,
           setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
           pdfRunHistory, setPdfRunHistory,
           openRemediationBuilder: () => {
@@ -54490,6 +54780,10 @@ ${_alloActivityContext(activity)}
           isParentMode, isIndependentMode,
           handleSetIsProjectSettingsOpenToFalse,
           onOpenPrincipalEvaluation: handleOpenPrincipalEvaluationFromSettings,
+          onOpenSchoolRewards: handleOpenSchoolRewards,
+          rewardsPortalUrl: schoolRewardsPortalUrl,
+          isRewardsPortalConnected: !!schoolRewardsPortalUrl,
+          onSaveRewardsPortalUrl: handleSaveSchoolRewardsPortalUrl,
           evaluationPortalUrl,
           isEvaluationPortalConnected: !!evaluationPortalUrl,
           onSaveEvaluationPortalUrl: handleSaveEvaluationPortalUrl
@@ -55142,7 +55436,7 @@ ${_alloActivityContext(activity)}
                   setShowStemLab, setStemLabTab, setStemLabTool
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
+        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {

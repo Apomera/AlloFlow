@@ -23,7 +23,12 @@ const path = require('path');
 const ROOT = process.cwd();
 const OUT = process.argv[2] || '.';
 const SCENARIO = (process.argv.find((a) => a.startsWith('--scenario=')) || '--scenario=tropicalOcean').split('=')[1];
-const BUDGET_MS = Number((process.argv.find((a) => a.startsWith('--budget=')) || '--budget=90000').split('=')[1]);
+// The budget is in SIMULATED seconds read off `dataset.parcelElapsed`, not wall
+// time. Under swiftshader requestAnimationFrame timestamps advance ~10 ms per
+// frame at ~8 fps, so the sim runs at roughly a tenth of wall speed and a
+// wall-clock budget failed a perfectly healthy flight.
+const BUDGET_SIM_S = Number((process.argv.find((a) => a.startsWith('--budget=')) || '--budget=240').split('=')[1]);
+const WALL_CAP_MS = Number((process.argv.find((a) => a.startsWith('--wall=')) || '--wall=900000').split('=')[1]);
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const TW = path.join(ROOT, 'dev-tools', '.cache', 'sweep-tailwind.css');
@@ -94,6 +99,11 @@ window.__mount = function (state, dark) {
 
   await pg.evaluate(({ s }) => window.__mount(s, false), { s: { wcMode: 'pilot', pilot: { scenario: SCENARIO } } });
   await pg.waitForTimeout(1200);
+  // The launch card gates the sim: until it is dismissed React pins
+  // `input.paused = true` on every render, so a harness that only pokes the
+  // input object sits at "liquid" forever and reports a false failure.
+  const launch = await pg.$('.wc-pilot-launch-btn');
+  if (launch) { await launch.click(); await pg.waitForTimeout(600); }
 
   const live = await pg.evaluate(() => {
     const c = document.querySelector('canvas.wc-pilot-canvas');
@@ -107,7 +117,8 @@ window.__mount = function (state, dark) {
   const seen = new Set();
   const started = Date.now();
   let lastForm = '';
-  while (Date.now() - started < BUDGET_MS && seen.size < WANTED.length) {
+  let simT = 0;
+  while (Date.now() - started < WALL_CAP_MS && simT < BUDGET_SIM_S && seen.size < WANTED.length) {
     // The autopilot: climb while vapour, hold a gentle lift once condensed so
     // coalescence has time to work, and drift downwind toward the land so the
     // landing is on a real surface rather than back into the open sea.
@@ -118,9 +129,14 @@ window.__mount = function (state, dark) {
       if (!i) return f;
       i.up = (f === 'vapor' || f === 'droplet' || f === 'ice') ? 1 : 0;
       i.down = 0;
+      // Coalescence needs MOVEMENT through the droplet field now that the
+      // field no longer rides with the parcel; sweep forward and weave.
       i.fwd = (f === 'droplet' || f === 'cloud') ? 1 : 0;
+      i.right = (f === 'droplet' || f === 'cloud') && (Math.floor((Number(c.dataset.parcelElapsed) || 0) / 3) % 2 === 0) ? 1 : 0;
+      i.left = (f === 'droplet' || f === 'cloud') && !i.right ? 1 : 0;
       return f;
     });
+    simT = await pg.evaluate(() => Number(document.querySelector('canvas.wc-pilot-canvas').dataset.parcelElapsed) || 0);
     if (form && form !== lastForm) {
       lastForm = form;
       if (WANTED.includes(form) && !seen.has(form)) {
@@ -130,7 +146,7 @@ window.__mount = function (state, dark) {
         const file = path.join(OUT, `flight-${String(seen.size).padStart(2, '0')}-${form}.png`);
         if (el) await el.screenshot({ path: file });
         const alt = await pg.evaluate(() => document.querySelector('canvas.wc-pilot-canvas').dataset.parcelAltitudeM);
-        console.log(`  reached ${form.padEnd(8)} @ ${String(alt).padStart(5)} m  after ${((Date.now() - started) / 1000).toFixed(1)}s -> ${path.basename(file)}`);
+        console.log(`  reached ${form.padEnd(8)} @ ${String(alt).padStart(5)} m  after ${simT.toFixed(1)}s sim / ${((Date.now() - started) / 1000).toFixed(0)}s wall -> ${path.basename(file)}`);
       }
     }
     await pg.waitForTimeout(180);
@@ -139,7 +155,7 @@ window.__mount = function (state, dark) {
   const missed = WANTED.filter((f) => !seen.has(f));
   if (errors.length) console.error('PAGE ERRORS: ' + errors.join(' | '));
   if (missed.length) {
-    console.error(`FAIL: never reached ${missed.join(', ')} within ${BUDGET_MS / 1000}s on ${SCENARIO}`);
+    console.error(`FAIL: never reached ${missed.join(', ')} within ${BUDGET_SIM_S}s of sim time (${simT.toFixed(0)}s simulated, ${((Date.now() - started) / 1000).toFixed(0)}s wall) on ${SCENARIO}`);
     await b.close();
     process.exit(1);
   }

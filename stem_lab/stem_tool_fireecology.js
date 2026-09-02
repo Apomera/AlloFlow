@@ -3804,6 +3804,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               );
             }),
 
+            // The six concept cards above describe infiltration, hydrophobic soil, debris
+            // flows and sediment in words. One pair of hillslopes shows them: where the rain
+            // GOES is the whole difference between the two columns of the table below.
+            (function () {
+              var W = 760, H = 250, e = h;
+              function slope(x0, burned) {
+                var k = [];
+                var sky = burned ? '#3b2a24' : '#1e3a5f';
+                k.push(e('rect', { key: 'sky', x: x0, y: 0, width: 370, height: H, fill: sky, rx: 8 }));
+                // hill
+                k.push(e('path', { key: 'hill', d: 'M' + x0 + ' 235 L' + x0 + ' 120 Q' + (x0 + 120) + ' 70 ' + (x0 + 250) + ' 150 L' + (x0 + 300) + ' 185 L' + (x0 + 370) + ' 190 L' + (x0 + 370) + ' 235 Z', fill: burned ? '#57534e' : '#365314' }));
+                // stream at the toe
+                k.push(e('ellipse', { key: 'stream', cx: x0 + 330, cy: 205, rx: 34, ry: 12, fill: burned ? '#92400e' : '#38bdf8', opacity: 0.9 }));
+                k.push(e('text', { key: 'streamL', x: x0 + 362, y: 232, fontSize: 10.5, fill: burned ? '#fdba74' : '#bae6fd', textAnchor: 'end', fontWeight: 700 }, burned ? 'stream choked with ash and mud' : 'clear stream, steady flow'));
+                // trees along the hill
+                [70, 125, 180, 235].forEach(function (dx, i) {
+                  var tx = x0 + dx, ty = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 8;
+                  if (burned) {
+                    k.push(e('line', { key: 't' + i, x1: tx, y1: ty + 10, x2: tx, y2: ty - 36, stroke: '#1c1917', strokeWidth: 4 }));
+                    k.push(e('line', { key: 'tb' + i, x1: tx, y1: ty - 22, x2: tx + 10, y2: ty - 30, stroke: '#1c1917', strokeWidth: 3 }));
+                  } else {
+                    k.push(e('line', { key: 't' + i, x1: tx, y1: ty + 10, x2: tx, y2: ty - 24, stroke: '#78350f', strokeWidth: 4 }));
+                    k.push(e('circle', { key: 'tc' + i, cx: tx, cy: ty - 34, r: 15, fill: '#166534' }));
+                    // roots holding the soil
+                    k.push(e('path', { key: 'tr' + i, d: 'M' + tx + ' ' + (ty + 10) + ' l-8 12 m8 -12 l0 16 m0 -16 l8 12', stroke: '#a16207', strokeWidth: 1.5, fill: 'none' }));
+                  }
+                });
+                // rain
+                for (var r = 0; r < 9; r++) k.push(e('line', { key: 'rain' + r, x1: x0 + 20 + r * 38, y1: 32 + (r % 3) * 5, x2: x0 + 14 + r * 38, y2: 46 + (r % 3) * 5, stroke: '#7dd3fc', strokeWidth: 2, strokeLinecap: 'round' }));
+                if (burned) {
+                  // hydrophobic layer + surface runoff arrows down the slope
+                  k.push(e('path', { key: 'hydro', d: 'M' + x0 + ' 128 Q' + (x0 + 120) + ' 78 ' + (x0 + 250) + ' 158 L' + (x0 + 300) + ' 193', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '5 3' }));
+                  k.push(e('text', { key: 'hydroL', x: x0 + 14, y: 176, fontSize: 10.5, fill: '#fde68a', fontWeight: 700 }, 'water-repellent (hydrophobic) layer'));
+                  [60, 130, 200, 260].forEach(function (dx, i) {
+                    var ax = x0 + dx, ay = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 4;
+                    k.push(e('path', { key: 'run' + i, d: 'M' + ax + ' ' + ay + ' l 26 ' + (dx > 130 ? 16 : 4) + ' m -8 -6 l 8 6 l -9 3', stroke: '#f87171', strokeWidth: 2.5, fill: 'none' }));
+                  });
+                  k.push(e('text', { key: 'runL', x: x0 + 14, y: 210, fontSize: 11.5, fill: '#fca5a5', fontWeight: 800 }, 'rain RUNS OFF \u2192 flash flood, debris flow'));
+                } else {
+                  // infiltration arrows into the soil
+                  [60, 130, 200].forEach(function (dx, i) {
+                    var ax = x0 + dx + 20, ay = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 14;
+                    k.push(e('path', { key: 'inf' + i, d: 'M' + ax + ' ' + ay + ' l 0 26 m -6 -8 l 6 8 l 6 -8', stroke: '#7dd3fc', strokeWidth: 2.5, fill: 'none' }));
+                  });
+                  k.push(e('text', { key: 'infL', x: x0 + 14, y: 210, fontSize: 11.5, fill: '#bae6fd', fontWeight: 800 }, 'rain SOAKS IN \u2192 litter, roots, open soil'));
+                }
+                k.push(e('text', { key: 'title', x: x0 + 12, y: 22, fontSize: 13, fill: burned ? '#fca5a5' : '#86efac', fontWeight: 900 }, burned ? 'After a high-severity wildfire' : 'After a cultural burn'));
+                return k;
+              }
+              return e('div', { style: { marginTop: 16, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' }, 'data-fe-watershed-diagram': 'true' },
+                e('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
+                  'aria-label': 'Two hillslopes in the same rainstorm. After a cultural burn the trees and roots stand, litter and open soil let the rain soak in, and the stream at the bottom runs clear. After a high-severity wildfire the trees are dead snags, a water-repellent layer sits under the surface, the rain runs off down the slope, and the stream is choked with ash and mud.' },
+                  slope(0, false).concat([e('rect', { key: 'gap', x: 370, y: 0, width: 20, height: H, fill: '#0f172a' })], slope(390, true))));
+            })(),
+
             // Comparison table
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16, border: '1px solid var(--allo-stem-border, #334155)' } },
               h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.watershed_impact_cultural_burn_vs_wild', '\uD83D\uDCCA Watershed Impact: Cultural Burn vs. Wildfire')),
@@ -4139,10 +4194,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               skyGrad.addColorStop(0.5, '#dc2626');
               skyGrad.addColorStop(1, '#451a03');
             } else {
-              var haze = Math.min(fuel / 100, 0.5);
-              skyGrad.addColorStop(0, 'rgba(30,58,138,' + (1 - haze) + ')');
-              skyGrad.addColorStop(0.4, 'rgba(56,189,248,' + (0.3 + haze * 0.3) + ')');
-              skyGrad.addColorStop(1, 'rgba(34,197,94,' + (0.2 + bio / 200) + ')');
+              skyGrad.addColorStop(0, '#3b82c4');
+              skyGrad.addColorStop(0.55, '#8ec5ea');
+              skyGrad.addColorStop(1, '#d9ecf7');
             }
             cx.fillStyle = skyGrad;
             cx.fillRect(0, 0, w, ht);
@@ -4161,13 +4215,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               cx.fillStyle = 'rgba(139,69,19,' + Math.min(fuel / 80, 0.7) + ')';
               cx.fillRect(0, groundY - litterH * 0.5, w, litterH);
               // Dead branches
-              for (var fi = 0; fi < Math.floor(fuel / 8); fi++) {
-                var fx = (fi * 37 + 13) % w;
-                cx.strokeStyle = 'rgba(120,80,30,' + (fuel / 100) + ')';
-                cx.lineWidth = 1 + Math.random();
+              for (var fi = 0; fi < Math.floor(fuel / 4); fi++) {
+                var fx = (fi * 37 + 13) % w, fh = ((fi * 7919) % 100) / 100;
+                cx.strokeStyle = 'rgba(120,80,30,' + Math.min(1, 0.4 + fuel / 100) + ')';
+                cx.lineWidth = 1.2 + fh * 1.6;
                 cx.beginPath();
                 cx.moveTo(fx, groundY - 2);
-                cx.lineTo(fx + 8 + Math.random() * 12, groundY - 4 - Math.random() * litterH);
+                cx.lineTo(fx + 8 + fh * 12, groundY - 4 - fh * litterH);
                 cx.stroke();
               }
             }
@@ -4212,6 +4266,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               cx.restore();
             }
 
+            // Understory band — drawn BEFORE the trees so trunks stand in it.
+            var shrubH = 2 + (understory / 100) * 44;               // 20% → ~11 px, 74% → ~35 px
+            var dry = Math.max(0, Math.min(1, (fuel - 15) / 40));   // 15 t/acre green … 55+ t/acre tinder
+            var shrubR = Math.round(52 + dry * 90), shrubG = Math.round(160 - dry * 60), shrubB = Math.round(70 - dry * 30);
+            var frontXNow = (isBurnEvent && burnProgress > 0.08) ? w * Math.min(1, Math.max(0, (burnProgress - 0.08) / 0.74)) : -1;
+            if (understory > 4) {
+              for (var ux = -6; ux < w + 6; ux += 13) {
+                var uh = shrubH * (0.7 + ((ux * 131) % 60) / 100);
+                var burnt = isBurnEvent && burnKind !== 'suppression' && burnProgress > 0.08 && ux < w * Math.min(1, burnProgress / 0.70) * (burnKind === 'culturalBurn' ? 0.62 : (burnKind === 'prescribedBurn' ? 0.82 : 1));
+                var refuge = burnKind === 'culturalBurn' && [0.2, 0.47, 0.74].some(function (f) { return Math.abs(ux - w * f) < 16; });
+                if (burnt && !refuge) {
+                  cx.fillStyle = 'rgba(41,37,36,0.9)';
+                  cx.beginPath(); cx.ellipse(ux, groundY - 1, 7, 3, 0, 0, Math.PI * 2); cx.fill();
+                  continue;
+                }
+                cx.fillStyle = 'rgba(' + shrubR + ',' + shrubG + ',' + shrubB + ',0.9)';
+                cx.beginPath();
+                cx.moveTo(ux - 7, groundY + 1);
+                cx.quadraticCurveTo(ux - 8, groundY - uh * 0.6, ux - 2, groundY - uh);
+                cx.quadraticCurveTo(ux + 2, groundY - uh * 1.05, ux + 5, groundY - uh * 0.7);
+                cx.quadraticCurveTo(ux + 9, groundY - uh * 0.3, ux + 8, groundY + 1);
+                cx.closePath(); cx.fill();
+              }
+            }
+
             // Trees (number based on canopy)
             var treeCount = Math.floor(canopy / 7) + 2;
             for (var ti = 0; ti < treeCount; ti++) {
@@ -4237,18 +4316,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               cx.arc(tx - 2, crownY + 2, crownR * 0.6, 0, Math.PI * 2);
               cx.fill();
 
-              // Understory (bushes at base)
-              if (understory > 15) {
-                var bushes = Math.floor(understory / 20);
-                for (var bi = 0; bi < bushes; bi++) {
-                  var bx = tx + (bi - bushes / 2) * 8;
-                  var bR = 4 + (understory / 100) * 8;
-                  cx.fillStyle = burning ? 'rgba(239,68,68,0.5)' : 'rgba(34,197,94,' + Math.min(understory / 100, 0.6) + ')';
-                  cx.beginPath();
-                  cx.arc(bx, groundY - 2, bR, 0, Math.PI * 2);
-                  cx.fill();
-                }
-              }
+            }
+
+            // The teaching caption the picture needs: what the shrub height MEANS.
+            if (!burning) {
+              var ladder = understory >= 50 && shrubH > 26;
+              var open = understory <= 25;
+              var msg = ladder ? '\u26A0 Ladder fuels: shrubs reach toward the crowns \u2014 a surface fire can climb'
+                : open ? '\u2713 Open understory: a surface fire stays low and patchy'
+                : 'Understory thickening: fuel is building between the ground and the crowns';
+              cx.font = 'bold 11px sans-serif';
+              var mw = cx.measureText(msg).width;
+              var mx = w - mw - 18, my = groundY + 18;
+              cx.fillStyle = 'rgba(0,0,0,0.62)';
+              cx.fillRect(mx - 8, my - 12, mw + 16, 18);
+              cx.fillStyle = ladder ? '#fdba74' : open ? '#86efac' : '#fde68a';
+              cx.fillText(msg, mx, my + 1);
             }
 
             // Fire effect overlay — enhanced with layered flames, heat shimmer, sparks
@@ -4345,16 +4428,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               cx.fillRect(sunX - 20, sunY - 20, 40, 40);
             }
 
-            // Fireflies at dusk (when not burning and bio > 50)
+            // Pollinators over the shrubs (daylight; the old fireflies belonged to a dusk sky)
             if (!burning && bio > 50) {
               for (var ffi = 0; ffi < Math.floor(bio / 15); ffi++) {
                 var ffx = (ffi * 97 + Math.sin(tick * 0.03 + ffi * 2.1) * 30) % w;
                 var ffy = groundY - 20 - Math.abs(Math.sin(tick * 0.02 + ffi * 1.3)) * 50;
                 var ffAlpha = 0.3 + Math.sin(tick * 0.1 + ffi * 0.7) * 0.3;
                 if (ffAlpha > 0) {
-                  cx.fillStyle = 'rgba(250,240,100,' + ffAlpha + ')';
+                  cx.fillStyle = 'rgba(255,255,255,' + ffAlpha + ')';
                   cx.beginPath();
-                  cx.arc(ffx, ffy, 1.5, 0, Math.PI * 2);
+                  cx.arc(ffx, ffy, 1.6, 0, Math.PI * 2);
                   cx.fill();
                 }
               }
@@ -4393,16 +4476,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 (burning ? (severeBurn ? 'Wildfire — crown-fire example' :
                   (burnKind === 'culturalBurn' ? 'Cultural burn — patchy surface-fire example' : 'Prescribed burn — broader surface-fire example')) :
                   (burnProgress >= 1 ? 'Ten-year model outcome' : 'Before treatment')));
-            cx.fillStyle = 'rgba(0,0,0,0.62)';
-            cx.fillRect(4, 4, 184, 70);
-            cx.font = '10px sans-serif';
+            cx.font = 'bold 12px sans-serif';
+            var phaseW = cx.measureText('Phase: ' + phaseLabel).width;
+            cx.fillStyle = 'rgba(0,0,0,0.66)';
+            cx.fillRect(4, 4, Math.max(196, phaseW + 16), 84);
             cx.fillStyle = '#e2e8f0';
-            cx.fillText('Fuel: ' + Math.round(fuel) + ' t/acre', 10, 16);
-            cx.fillText('Canopy: ' + Math.round(canopy) + '%', 10, 28);
-            cx.fillText('Biodiversity: ' + Math.round(bio) + '/100', 10, 40);
-            cx.fillText('Understory: ' + Math.round(understory) + '%', 10, 52);
+            cx.fillText('Fuel: ' + Math.round(fuel) + ' t/acre', 10, 19);
+            cx.fillText('Canopy: ' + Math.round(canopy) + '%', 10, 34);
+            cx.fillText('Biodiversity: ' + Math.round(bio) + '/100', 10, 49);
+            cx.fillText('Understory: ' + Math.round(understory) + '%', 10, 64);
             cx.fillStyle = '#fdba74';
-            cx.fillText('Phase: ' + phaseLabel, 10, 66);
+            cx.fillText('Phase: ' + phaseLabel, 10, 80);
 
             cx.restore();
 
@@ -6070,7 +6154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             gs.bestDecadeScore = Math.max(gs.bestDecadeScore || 0, points);
 
             var newScore = gameScore + points;
-            gs.decade = (gs.decade || []).concat([{ year: gs.year, fuel: gs.fuelLoad, biodiversity: gs.biodiversity, canopy: gs.canopyCover, water: gs.waterYield, village: gs.villageHealth }]);
+            gs.decade = (gs.decade || []).concat([{ year: gs.year, fuel: gs.fuelLoad, biodiversity: gs.biodiversity, canopy: gs.canopyCover, water: gs.waterYield, village: gs.villageHealth, action: action }]);
             gs.eventLog = (gs.eventLog || []).concat([{ year: gs.year, event: log }]);
 
             // Decision event check
@@ -6360,14 +6444,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 13 } }, t('stem.fireecology.choose_your_action', '\uD83C\uDFAE Choose Your Action:')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 6, marginBottom: 14 } },
               [
-                { action: 'culturalBurn', label: t('stem.fireecology.cultural_burn_3', '\uD83D\uDD25 Cultural Burn'), desc: 'Best: fuel + biodiversity' + (gs.tribalPartner ? ' (ENHANCED)' : ''), color: '#16a34a' },
-                { action: 'prescribe', label: t('stem.fireecology.prescribed_burn_2', '\uD83D\uDCCB Prescribed Burn'), desc: t('stem.fireecology.good_fuel_reduction', 'Good fuel reduction'), color: tint('#f59e0b') },
-                { action: 'thin', label: t('stem.fireecology.mech_thin', '\uD83E\uDE93 Mech. Thin'), desc: t('stem.fireecology.remove_heavy_fuel', 'Remove heavy fuel'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
-                { action: 'plantSeeds', label: t('stem.fireecology.plant_natives', '\uD83C\uDF31 Plant Natives'), desc: t('stem.fireecology.biodiversity_soil', 'Biodiversity + soil'), color: '#4ade80' },
-                { action: 'beavers', label: t('stem.fireecology.beaver_dams_2', '\uD83E\uDDAB Beaver Dams'), desc: t('stem.fireecology.water_fire_breaks', 'Water + fire breaks'), color: '#0ea5e9' },
-                { action: 'firebreak', label: t('stem.fireecology.firebreaks', '\uD83D\uDEE1\uFE0F Firebreaks'), desc: t('stem.fireecology.protect_village', 'Protect village'), color: '#a855f7' },
-                { action: 'educate', label: t('stem.fireecology.educate', '\uD83C\uDFEB Educate'), desc: t('stem.fireecology.village_support', 'Village support +'), color: '#f472b6' },
-                { action: 'nothing', label: t('stem.fireecology.do_nothing', '\u23F8\uFE0F Do Nothing'), desc: t('stem.fireecology.fuel_accumulates', 'Fuel accumulates...'), color: '#ef4444' }
+                { action: 'culturalBurn', label: t('stem.fireecology.cultural_burn_3', '\uD83D\uDD25 Cultural Burn'), desc: 'Patchy, low-intensity fire' + (gs.tribalPartner ? ' (with tribal partners)' : ''), color: '#16a34a' },
+                { action: 'prescribe', label: t('stem.fireecology.prescribed_burn_2', '\uD83D\uDCCB Prescribed Burn'), desc: t('stem.fireecology.good_fuel_reduction', 'Broad planned burn'), color: tint('#f59e0b') },
+                { action: 'thin', label: t('stem.fireecology.mech_thin', '\uD83E\uDE93 Mech. Thin'), desc: t('stem.fireecology.remove_heavy_fuel', 'Machines cut and haul fuel'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
+                { action: 'plantSeeds', label: t('stem.fireecology.plant_natives', '\uD83C\uDF31 Plant Natives'), desc: t('stem.fireecology.biodiversity_soil', 'Sow native seed'), color: '#4ade80' },
+                { action: 'beavers', label: t('stem.fireecology.beaver_dams_2', '\uD83E\uDDAB Beaver Dams'), desc: t('stem.fireecology.water_fire_breaks', 'Wetlands along the stream'), color: '#0ea5e9' },
+                { action: 'firebreak', label: t('stem.fireecology.firebreaks', '\uD83D\uDEE1\uFE0F Firebreaks'), desc: t('stem.fireecology.protect_village', 'Clear a strip near the village'), color: '#a855f7' },
+                { action: 'educate', label: t('stem.fireecology.educate', '\uD83C\uDFEB Educate'), desc: t('stem.fireecology.village_support', 'Community fire workshops'), color: '#f472b6' },
+                { action: 'nothing', label: t('stem.fireecology.do_nothing', '\u23F8\uFE0F Do Nothing'), desc: t('stem.fireecology.fuel_accumulates', 'Let the decade pass'), color: '#ef4444' }
               ].map(function(opt) {
                 return h('button', { key: opt.action, onClick: function() { gameAdvance(opt.action); },
                   style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '2px solid ' + opt.color + '33', borderRadius: 10, padding: 10, cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
@@ -6385,22 +6469,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               })
             ) : null,
 
-            // History graph
-            gs.decade && gs.decade.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 10 } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, t('stem.fireecology.timeline', '\uD83D\uDCCA Timeline')),
-              h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 2, height: 70 } },
-                gs.decade.map(function(snap, si) {
-                  return h('div', { key: si, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 } },
-                    h('div', { title: 'Bio: ' + snap.biodiversity, style: { width: '100%', height: Math.max(2, snap.biodiversity * 0.6), background: '#3b82f6', borderRadius: '2px 2px 0 0' } }),
-                    h('div', { title: 'Fuel: ' + snap.fuel, style: { width: '100%', height: Math.max(2, snap.fuel * 0.6), background: snap.fuel > 50 ? '#ef4444' : '#f59e0b', borderRadius: '0 0 2px 2px' } }),
-                    h('div', { style: { fontSize: 7, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 1 } }, snap.year)
-                  );
-                })
-              ),
-              h('div', { style: { display: 'flex', gap: 10, marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                h('span', null, t('stem.fireecology.biodiversity_2', '\u25A0 Biodiversity')), h('span', { style: { color: tint('#f59e0b') } }, t('stem.fireecology.fuel_load_2', '\u25A0 Fuel Load'))
-              )
-            ) : null,
+            // History graph — biodiversity and fuel over the decades on one axis, with the
+            // fuel danger band the score keys to (fuel < 25 earns points; > 50 is the red
+            // bar colour the old chart used), and the action under each decade.
+            gs.decade && gs.decade.length > 0 ? (function () {
+              var W = 760, H = 190, padL = 40, padR = 16, padT = 16, padB = 46;
+              var n = gs.decade.length, gw = W - padL - padR, gh = H - padT - padB;
+              var xOf = function (i) { return padL + (n === 1 ? gw / 2 : gw * i / (n - 1)); };
+              var yOf = function (v) { return padT + gh - gh * Math.max(0, Math.min(100, v)) / 100; };
+              var line = function (key) { return gs.decade.map(function (snap, i) { return (i ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(snap[key]).toFixed(1); }).join(' '); };
+              var ACT = { culturalBurn: '🔥', prescribe: '📋', thin: '🪓', plantSeeds: '🌱', beavers: '🦫', firebreak: '🛡️', educate: '🏫', nothing: '⏸️' };
+              var kids = [];
+              kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: 'var(--allo-stem-canvas, #0f172a)' }));
+              kids.push(h('rect', { key: 'danger', x: padL, y: yOf(100), width: gw, height: yOf(50) - yOf(100), fill: 'rgba(239,68,68,0.10)' }));
+              kids.push(h('rect', { key: 'caution', x: padL, y: yOf(50), width: gw, height: yOf(25) - yOf(50), fill: 'rgba(245,158,11,0.08)' }));
+              kids.push(h('line', { key: 'd50', x1: padL, y1: yOf(50), x2: padL + gw, y2: yOf(50), stroke: '#ef4444', strokeDasharray: '4 4', strokeWidth: 1 }));
+              kids.push(h('text', { key: 'd50L', x: padL + gw - 4, y: yOf(50) - 4, fontSize: 9.5, fill: '#fca5a5', textAnchor: 'end' }, 'fuel above 50: megafire territory'));
+              kids.push(h('line', { key: 'd25', x1: padL, y1: yOf(25), x2: padL + gw, y2: yOf(25), stroke: '#f59e0b', strokeDasharray: '4 4', strokeWidth: 1 }));
+              kids.push(h('text', { key: 'd25L', x: padL + gw - 4, y: yOf(25) - 4, fontSize: 9.5, fill: '#fde68a', textAnchor: 'end' }, 'fuel under 25 scores'));
+              [0, 50, 100].forEach(function (v) {
+                kids.push(h('line', { key: 'g' + v, x1: padL, y1: yOf(v), x2: padL + gw, y2: yOf(v), stroke: 'rgba(148,163,184,0.18)' }));
+                kids.push(h('text', { key: 'gl' + v, x: padL - 6, y: yOf(v) + 3.5, fontSize: 9.5, fill: '#94a3b8', textAnchor: 'end' }, String(v)));
+              });
+              kids.push(h('path', { key: 'bio', d: line('biodiversity'), fill: 'none', stroke: '#3b82f6', strokeWidth: 2.5, strokeLinejoin: 'round' }));
+              kids.push(h('path', { key: 'fuel', d: line('fuel'), fill: 'none', stroke: '#f59e0b', strokeWidth: 2.5, strokeLinejoin: 'round' }));
+              gs.decade.forEach(function (snap, i) {
+                kids.push(h('circle', { key: 'bp' + i, cx: xOf(i), cy: yOf(snap.biodiversity), r: 3.5, fill: '#3b82f6' }));
+                kids.push(h('circle', { key: 'fp' + i, cx: xOf(i), cy: yOf(snap.fuel), r: 3.5, fill: snap.fuel > 50 ? '#ef4444' : '#f59e0b' }));
+                kids.push(h('text', { key: 'yr' + i, x: xOf(i), y: padT + gh + 14, fontSize: 9.5, fill: '#94a3b8', textAnchor: 'middle' }, 'yr ' + snap.year));
+                if (snap.action && ACT[snap.action]) kids.push(h('text', { key: 'ac' + i, x: xOf(i), y: padT + gh + 30, fontSize: 12, textAnchor: 'middle' }, ACT[snap.action]));
+              });
+              var last = gs.decade[n - 1];
+              kids.push(h('text', { key: 'bioL', x: padL + 4, y: yOf(gs.decade[0].biodiversity) - 8, fontSize: 10, fill: '#93c5fd', fontWeight: 700 }, 'biodiversity'));
+              kids.push(h('text', { key: 'fuelL', x: padL + 4, y: yOf(gs.decade[0].fuel) + 14, fontSize: 10, fill: '#fcd34d', fontWeight: 700 }, 'fuel load'));
+              return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 10 }, 'data-fe-game-chart': String(n) },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, t('stem.fireecology.timeline', '📊 Timeline')),
+                h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Biodiversity and fuel load by decade. Latest: year ' + last.year + ', biodiversity ' + Math.round(last.biodiversity) + ' of 100, fuel ' + Math.round(last.fuel) + ' tons per acre.' }, kids),
+                h('div', { style: { display: 'flex', gap: 10, marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  h('span', { style: { color: '#93c5fd' } }, t('stem.fireecology.biodiversity_2', '■ Biodiversity')), h('span', { style: { color: tint('#f59e0b') } }, t('stem.fireecology.fuel_load_2', '■ Fuel Load')),
+                  h('span', null, '— the icon under each decade is the action you chose')
+                )
+              );
+            })() : null,
 
             // Event log
             gs.eventLog && gs.eventLog.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12 } },
@@ -6569,6 +6679,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { className: 'text-base font-black', style: { color: tintLight(sm.color) } }, sm.label),
                 h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
               ),
+              // The classroom index (fuel × drought ÷ interval) as a PICTURE, drawn from the
+              // SAME formula and thresholds the status box uses, so the two can never disagree:
+              // a meter with the 1.2 and 2.5 lines, the marker at the current value, and the
+              // three inputs shown as what they do to it. The hypothesis prompt asks how drought
+              // magnifies fuel risk; the meter moves with both sliders in front of the student.
+              (function () {
+                var W = 760, H = 150, mx = 40, mw = 680, my = 52, mh = 22, top = 4;
+                var clampR = Math.min(top, Math.max(0, risk));
+                var xOf = function (v) { return mx + mw * v / top; };
+                var kids = [];
+                kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: '#0f172a', rx: 8 }));
+                kids.push(h('text', { key: 'ttl', x: mx, y: 22, fontSize: 12, fill: '#e2e8f0', fontWeight: 800 }, 'Classroom risk index = fuel × drought ÷ return interval'));
+                kids.push(h('text', { key: 'eq', x: mx, y: 40, fontSize: 12, fill: '#fdba74', fontWeight: 700 }, iq.fuel + ' × ' + iq.drought + ' ÷ ' + iq.interval + ' = ' + risk.toFixed(2)));
+                kids.push(h('rect', { key: 'z1', x: xOf(0), y: my, width: xOf(1.2) - xOf(0), height: mh, fill: 'rgba(5,150,105,0.35)' }));
+                kids.push(h('rect', { key: 'z2', x: xOf(1.2), y: my, width: xOf(2.5) - xOf(1.2), height: mh, fill: 'rgba(217,119,6,0.35)' }));
+                kids.push(h('rect', { key: 'z3', x: xOf(2.5), y: my, width: xOf(top) - xOf(2.5), height: mh, fill: 'rgba(220,38,38,0.35)' }));
+                kids.push(h('rect', { key: 'frame', x: mx, y: my, width: mw, height: mh, fill: 'none', stroke: '#475569' }));
+                [[0, '0'], [1.2, '1.2'], [2.5, '2.5'], [4, '4+']].forEach(function (tk) {
+                  kids.push(h('line', { key: 'tk' + tk[1], x1: xOf(tk[0]), y1: my + mh, x2: xOf(tk[0]), y2: my + mh + 5, stroke: '#94a3b8' }));
+                  kids.push(h('text', { key: 'tl' + tk[1], x: xOf(tk[0]), y: my + mh + 17, fontSize: 10, fill: '#94a3b8', textAnchor: 'middle' }, tk[1]));
+                });
+                kids.push(h('text', { key: 'zl1', x: (xOf(0) + xOf(1.2)) / 2, y: my + 15, fontSize: 10.5, fill: '#bbf7d0', textAnchor: 'middle', fontWeight: 700 }, 'lower concern'));
+                kids.push(h('text', { key: 'zl2', x: (xOf(1.2) + xOf(2.5)) / 2, y: my + 15, fontSize: 10.5, fill: '#fde68a', textAnchor: 'middle', fontWeight: 700 }, 'dangerous buildup'));
+                kids.push(h('text', { key: 'zl3', x: (xOf(2.5) + xOf(top)) / 2, y: my + 15, fontSize: 10.5, fill: '#fecaca', textAnchor: 'middle', fontWeight: 700 }, 'megafire risk'));
+                kids.push(h('polygon', { key: 'mk', points: (xOf(clampR) - 7) + ',' + (my - 4) + ' ' + (xOf(clampR) + 7) + ',' + (my - 4) + ' ' + xOf(clampR) + ',' + (my + 4), fill: sm.color, stroke: '#fff', strokeWidth: 1 }));
+                kids.push(h('line', { key: 'mkl', x1: xOf(clampR), y1: my, x2: xOf(clampR), y2: my + mh, stroke: '#fff', strokeWidth: 2 }));
+                var rowY = my + mh + 40;
+                var inputs = [
+                  ['Fuel ' + iq.fuel + ' t/ac/yr', '↑ fuel → ↑ index', '#fbbf24'],
+                  ['Drought ' + iq.drought, '↑ drought → ↑ index (it multiplies the fuel)', '#f87171'],
+                  ['Return interval ' + iq.interval + ' yr', iq.interval < 5 ? '< 5 yr → very-short-interval flag' : '↑ interval → ↓ index in this classroom model', '#7dd3fc']
+                ];
+                inputs.forEach(function (row, i) {
+                  var x = mx + i * (mw / 3);
+                  kids.push(h('rect', { key: 'in' + i, x: x, y: rowY - 14, width: mw / 3 - 8, height: 34, rx: 6, fill: 'rgba(255,255,255,0.05)', stroke: row[2], strokeOpacity: 0.6 }));
+                  kids.push(h('text', { key: 'inA' + i, x: x + 8, y: rowY, fontSize: 11, fill: row[2], fontWeight: 800 }, row[0]));
+                  kids.push(h('text', { key: 'inB' + i, x: x + 8, y: rowY + 14, fontSize: 10, fill: '#cbd5e1' }, row[1]));
+                });
+                return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-fe-regime-diagram': state, 'data-fe-regime-index': risk.toFixed(2),
+                  'aria-label': 'Classroom risk index: fuel ' + iq.fuel + ' times drought ' + iq.drought + ' divided by return interval ' + iq.interval + ' equals ' + risk.toFixed(2) + '. Below 1.2 is lower concern, 1.2 to 2.5 is dangerous buildup, above 2.5 is megafire risk; an interval under five years raises the very-short-interval flag.',
+                  className: 'rounded-lg border border-orange-200', style: { background: '#0f172a' } }, kids);
+              })(),
               h('div', { className: 'grid grid-cols-3 gap-3' },
                 [{ k: 'fuel', l: 'Fuel (t/ac/yr)', mn: 0, mx: 15, st: 0.5 },
                  { k: 'interval', l: 'Fire return (yr)', mn: 1, mx: 100, st: 1 },

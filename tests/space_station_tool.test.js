@@ -143,7 +143,9 @@ describe('space station tool', () => {
       expect(source).toContain('[aria-selected="true"]');
       expect(source).toContain('overflow:visible;border:1px solid rgba(125,211,252,.24)');
       expect(source).toContain('.iss-location-strip{flex-wrap:wrap;overflow-x:visible}');
-      expect(source).toContain('.iss-status-strip{grid-template-columns:1fr}');
+      // Phones keep TWO columns for the four short status readouts (a single
+      // column made the header 4 rows tall on a 390px screen).
+      expect(source).toContain('@media (max-width:420px){.iss-status-strip{grid-template-columns:1fr 1fr}');
       expect(source).toContain('iss-quiz-answer-state');
       expect(source).toContain("role: 'application'");
       expect(source).toContain("'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation'");

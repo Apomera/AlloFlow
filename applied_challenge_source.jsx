@@ -373,6 +373,48 @@ function normalizeAppliedChallengeFeedback(value) {
   };
 }
 
+const APPLIED_CHALLENGE_SELF_CHECK_RATINGS = Object.freeze({
+  pending: 'Not rated yet',
+  met: 'Met, and I can point to where',
+  partly: 'Partly met',
+  'not-yet': 'Not yet',
+});
+
+// Student self-check of the deliverable against the brief's success criteria
+// and constraints. Keyed by kind + index so a rating survives wording edits
+// to the criterion; orphan keys are dropped when a criterion is removed.
+function appliedChallengeSelfCheckItems(brief) {
+  const b = brief && typeof brief === 'object' ? brief : {};
+  const criteria = Array.isArray(b.criteria) ? b.criteria : [];
+  const constraints = Array.isArray(b.constraints) ? b.constraints : [];
+  return criteria.map((text, index) => ({ key: 'criterion-' + index, kind: 'criterion', index, text }))
+    .concat(constraints.map((text, index) => ({ key: 'constraint-' + index, kind: 'constraint', index, text })));
+}
+
+function normalizeAppliedChallengeCriteriaCheck(value, brief) {
+  const raw = value && typeof value === 'object' ? value : {};
+  return appliedChallengeSelfCheckItems(brief).reduce((result, item) => {
+    const entry = raw[item.key] && typeof raw[item.key] === 'object' ? raw[item.key] : {};
+    const rating = Object.prototype.hasOwnProperty.call(APPLIED_CHALLENGE_SELF_CHECK_RATINGS, entry.rating) ? entry.rating : 'pending';
+    const note = _apsString(entry.note, 1200);
+    if (rating !== 'pending' || note.trim()) result[item.key] = { rating, note };
+    return result;
+  }, {});
+}
+
+function normalizeAppliedChallengeTeacherComment(value) {
+  const raw = value && typeof value === 'object' ? value : { text: value };
+  const text = _apsString(raw.text, 4000);
+  return text.trim() ? { text, updatedAt: _apsString(raw.updatedAt, 80).trim() } : null;
+}
+
+function appliedChallengeSelfCheckProgress(value) {
+  const data = normalizeAppliedChallengeData(value);
+  const items = appliedChallengeSelfCheckItems(data.brief);
+  const rated = items.filter((item) => data.criteriaCheck[item.key] && data.criteriaCheck[item.key].rating !== 'pending').length;
+  return { rated, total: items.length };
+}
+
 function normalizeAppliedChallengeData(value) {
   const raw = value && typeof value === 'object' ? value : {};
   const family = normalizeAppliedChallengeFamily(raw.family || (raw.brief && raw.brief.family));
@@ -385,7 +427,7 @@ function normalizeAppliedChallengeData(value) {
   ));
   if (!workspace.workingQuestion && agencyMode !== 'student-framed') workspace.workingQuestion = brief.drivingQuestion;
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     title: _apsString(raw.title, 300) || 'Applied Challenge Studio',
     instructions: _apsString(raw.instructions, 3000) || 'Use lesson ideas to frame, investigate, build, test, revise, and explain a response of your own.',
     selectionMode: raw.selectionMode === 'manual' ? 'manual' : 'auto',
@@ -401,6 +443,8 @@ function normalizeAppliedChallengeData(value) {
     stressTest: normalizeAppliedChallengeStressTest(raw.stressTest),
     validationCycles: normalizeAppliedChallengeValidationCycles(raw.validationCycles, family),
     feedback: normalizeAppliedChallengeFeedback(raw.feedback),
+    criteriaCheck: normalizeAppliedChallengeCriteriaCheck(raw.criteriaCheck, brief),
+    teacherComment: normalizeAppliedChallengeTeacherComment(raw.teacherComment),
     sourceExcerpt: _apsString(raw.sourceExcerpt, 5000),
     lessonRef: raw.lessonRef && typeof raw.lessonRef === 'object' ? raw.lessonRef : {},
   };
@@ -409,16 +453,16 @@ function normalizeAppliedChallengeData(value) {
 function appliedChallengeFeedbackReady(value) {
   const data = normalizeAppliedChallengeData(value);
   const question = data.workspace.workingQuestion || data.brief.drivingQuestion;
-  if (!question.trim()) return { ok: false, reason: 'Frame a working question before requesting feedback.' };
-  if (!data.workspace.response.trim()) return { ok: false, reason: 'Add a draft response or deliverable before requesting feedback.' };
+  if (!question.trim()) return { ok: false, reason: 'Frame a working question before requesting feedback.', reasonKey: 'feedback_needs_question' };
+  if (!data.workspace.response.trim()) return { ok: false, reason: 'Add a draft response or deliverable before requesting feedback.', reasonKey: 'feedback_needs_draft' };
   return { ok: true, reason: '' };
 }
 
 function appliedChallengeStressTestReady(value) {
   const data = normalizeAppliedChallengeData(value);
   const question = data.workspace.workingQuestion || data.brief.drivingQuestion;
-  if (!question.trim()) return { ok: false, reason: 'Frame a working question before stress-testing the draft.' };
-  if (!data.workspace.response.trim()) return { ok: false, reason: 'Add a draft response or deliverable before stress-testing it.' };
+  if (!question.trim()) return { ok: false, reason: 'Frame a working question before stress-testing the draft.', reasonKey: 'stress_needs_question' };
+  if (!data.workspace.response.trim()) return { ok: false, reason: 'Add a draft response or deliverable before stress-testing it.', reasonKey: 'stress_needs_draft' };
   return { ok: true, reason: '' };
 }
 
@@ -464,6 +508,7 @@ function appliedChallengeCoachingFingerprint(value) {
     workspace: data.workspace,
     evidenceLedger: data.evidenceLedger,
     validationCycles: data.validationCycles,
+    criteriaCheck: data.criteriaCheck,
   });
 }
 
@@ -490,6 +535,7 @@ function appliedChallengeDraftFingerprint(value) {
       response: data.workspace.response,
     },
     evidenceLedger: data.evidenceLedger,
+    criteriaCheck: data.criteriaCheck,
   }));
 }
 
@@ -507,6 +553,7 @@ function appliedChallengeRequestFingerprint(value, purpose, options) {
     workspace: data.workspace,
     evidenceLedger: data.evidenceLedger,
     validationCycles: data.validationCycles,
+    criteriaCheck: data.criteriaCheck,
     phaseId,
     phasePrompt: phaseId ? data.supports.phasePrompts[phaseId] : '',
     sourceExcerpt: purpose === 'feedback' ? _apsString(opts.sourceExcerpt || data.sourceExcerpt, 4000) : '',
@@ -670,6 +717,15 @@ function appliedChallengePromptContextSnapshot(value, options) {
       workspace,
       evidenceLedger: ledger,
       validationCycles,
+      selfCheck: appliedChallengeSelfCheckItems(data.brief)
+        .filter((item) => data.criteriaCheck[item.key])
+        .slice(0, 10)
+        .map((item) => ({
+          kind: item.kind,
+          text: _apsString(item.text, 200),
+          studentRating: data.criteriaCheck[item.key].rating,
+          studentNote: _apsString(data.criteriaCheck[item.key].note, 240),
+        })),
     },
     lessonSourceExcerpt: _apsString(opts.sourceExcerpt, 1400).trim() || undefined,
     targetLearner: _apsString(opts.gradeLevel, 100).trim() || undefined,
@@ -734,6 +790,7 @@ function buildAppliedChallengeFeedbackPrompt(value, options) {
       sourceExcerpt,
       gradeLevel,
     }),
+    Object.keys(data.criteriaCheck).length ? 'selfCheck holds the student\'s own ratings of the deliverable against each criterion or constraint. Compare the deliverable to those ratings and, if one is over-rated or a criterion was skipped, make that the next step. Never scold; treat an honest "not yet" as a strength.' : '',
     'Never invent a validation outcome or imply a planned check happened. Evaluate whether the student decision follows the student-reported observation, and never penalize the student for adapting or rejecting AI advice.',
     data.evidenceLedger.some((row) => (row.claim.trim() || row.evidence.trim() || row.tradeoff.trim()) && row.status === 'needs-check') ? 'At least one populated ledger row still needs checking. Return status needs-check and identify the most important verification step.' : '',
     'Return ONLY JSON with: strength, lessonConnectionCheck, evidenceOrConstraintCheck, nextStep, question, and status (grounded, developing, or needs-check). Give one actionable revision without writing the answer.',
@@ -858,25 +915,237 @@ function appliedChallengeVisiblePhases(scope) {
   return APPLIED_CHALLENGE_WORKSPACE_PHASES.slice();
 }
 
-function appliedChallengePhaseLabel(phaseValue, family) {
+function appliedChallengePhaseLabel(phaseValue, family, t) {
   const phase = phaseValue && typeof phaseValue === 'object'
     ? phaseValue
     : APPLIED_CHALLENGE_WORKSPACE_PHASES.find((item) => item.id === phaseValue);
   if (!phase) return '';
-  const meta = APPLIED_CHALLENGE_FAMILIES[normalizeAppliedChallengeFamily(family)];
-  if (phase.id === 'possibilities') return '3. ' + meta.possibilitiesLabel;
-  if (phase.id === 'response') return '7. ' + meta.responseLabel;
-  if (phase.id === 'testReflection') return '8. ' + meta.testLabel;
-  return phase.label;
+  const familyId = normalizeAppliedChallengeFamily(family);
+  if (phase.id === 'possibilities') return '3. ' + appliedChallengeFamilyText(familyId, 'possibilitiesLabel', t);
+  if (phase.id === 'response') return '7. ' + appliedChallengeFamilyText(familyId, 'responseLabel', t);
+  if (phase.id === 'testReflection') return '8. ' + appliedChallengeFamilyText(familyId, 'testLabel', t);
+  return _apsT(t, 'applied_challenge.phase.' + phase.id, phase.label);
 }
 
+// i18n lookup. The host t() returns undefined for a missing key; test hosts
+// return the key itself. Both count as a miss so the English fallback shows.
+function _apsT(t, key, fallback) {
+  if (typeof t !== 'function') return fallback;
+  let value;
+  try { value = t(key); } catch (_) { value = undefined; }
+  return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+}
+
+function _apsFill(template, params) {
+  return Object.keys(params || {}).reduce((text, key) => text.split('{' + key + '}').join(String(params[key])), String(template == null ? '' : template));
+}
+
+function appliedChallengeFamilyText(family, field, t) {
+  const id = normalizeAppliedChallengeFamily(family);
+  const meta = APPLIED_CHALLENGE_FAMILIES[id];
+  return _apsT(t, 'applied_challenge.family.' + id + '.' + field, meta[field]);
+}
+
+function appliedChallengeAgencyText(agencyMode, field, t) {
+  const id = normalizeAppliedChallengeAgencyMode(agencyMode);
+  const meta = APPLIED_CHALLENGE_AGENCY_MODES[id];
+  const keyField = field === 'compactLabel' ? 'compact' : field;
+  return _apsT(t, 'applied_challenge.agency.' + id + '.' + keyField, meta[field]);
+}
+
+function appliedChallengeScopeText(scope, field, t) {
+  const id = normalizeAppliedChallengeScope(scope);
+  return _apsT(t, 'applied_challenge.scope.' + id + '.' + field, APPLIED_CHALLENGE_SCOPES[id][field]);
+}
+
+function appliedChallengeLookupLabel(table, prefix, id, t) {
+  const entry = Object.prototype.hasOwnProperty.call(table, id) ? table[id] : null;
+  if (entry == null) return String(id || '');
+  const fallback = typeof entry === 'string' ? entry : entry.label;
+  return _apsT(t, 'applied_challenge.' + prefix + '.' + id + (typeof entry === 'string' ? '' : '.label'), fallback);
+}
+
+function appliedChallengeFeedbackStatusLabel(status, t) {
+  if (status === 'grounded') return _apsT(t, 'applied_challenge.feedback_status.grounded', 'Grounded in verified facts');
+  if (status === 'needs-check') return _apsT(t, 'applied_challenge.feedback_status.needs_check', 'Fact check needed');
+  return _apsT(t, 'applied_challenge.feedback_status.developing', 'Developing');
+}
+
+// One view model for every export lane (HTML, worksheet, print, voice). The
+// doc pipeline renders THIS instead of re-deriving phase labels, prompts,
+// visible phases, and status labels, so the export cannot drift from the app.
+function appliedChallengeExportModel(value, options) {
+  const opts = options && typeof options === 'object' ? options : {};
+  const t = opts.t;
+  const data = normalizeAppliedChallengeData(value);
+  const phases = appliedChallengeVisiblePhases(data.scope).map((phase) => ({
+    id: phase.id,
+    label: appliedChallengePhaseLabel(phase, data.family, t),
+    prompt: data.supports.phasePrompts[phase.id],
+    text: data.workspace[phase.id],
+    long: phase.id === 'response' || phase.id === 'revision',
+  }));
+  const evidenceLedger = data.evidenceLedger
+    .filter((row) => row.claim.trim() || row.evidence.trim() || row.tradeoff.trim())
+    .map((row) => Object.assign({}, row, {
+      statusLabel: appliedChallengeLookupLabel(APPLIED_CHALLENGE_EVIDENCE_STATUSES, 'evidence_status', row.status, t),
+    }));
+  const validationCycles = data.validationCycles.map((cycle) => {
+    const methods = APPLIED_CHALLENGE_VALIDATION_METHODS[cycle.family];
+    const method = methods.find((item) => item.id === cycle.plan.methodId) || methods[0];
+    const progress = appliedChallengeValidationCycleProgress(cycle, data.family);
+    return Object.assign({}, cycle, {
+      sourceLabel: appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_SOURCES, 'validation_source', cycle.source, t),
+      dispositionLabel: cycle.source === 'ai' ? appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_DISPOSITIONS, 'validation_disposition', cycle.disposition, t) : '',
+      plan: Object.assign({}, cycle.plan, {
+        methodLabel: _apsT(t, 'applied_challenge.validation_method.' + method.id, method.label),
+        evidenceModeLabel: appliedChallengeLookupLabel(APPLIED_CHALLENGE_EVIDENCE_MODES, 'evidence_mode', cycle.plan.evidenceMode, t),
+      }),
+      observation: Object.assign({}, cycle.observation, {
+        outcomeLabel: appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_OUTCOMES, 'validation_outcome', cycle.observation.outcome, t),
+      }),
+      decision: Object.assign({}, cycle.decision, {
+        actionLabel: appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_DECISIONS, 'validation_decision', cycle.decision.action, t),
+      }),
+      complete: progress.complete,
+      stage: progress.stage,
+    });
+  });
+  return {
+    title: data.title,
+    instructions: data.instructions,
+    selectionMode: data.selectionMode,
+    fitReason: data.fitReason,
+    family: data.family,
+    familyLabel: appliedChallengeFamilyText(data.family, 'label', t),
+    familyExample: appliedChallengeFamilyText(data.family, 'example', t),
+    agencyMode: data.agencyMode,
+    agencyLabel: appliedChallengeAgencyText(data.agencyMode, 'compactLabel', t),
+    agencyDescription: appliedChallengeAgencyText(data.agencyMode, 'description', t),
+    scope: data.scope,
+    scopeLabel: appliedChallengeScopeText(data.scope, 'label', t),
+    brief: Object.assign({}, data.brief, {
+      factHeading: data.brief.factVerified
+        ? _apsT(t, 'applied_challenge.brief.facts_verified', 'Teacher-verified lesson facts')
+        : _apsT(t, 'applied_challenge.brief.facts_pending', 'Lesson facts awaiting teacher review'),
+    }),
+    supports: {
+      parallelExample: data.supports.parallelExample,
+      frameStarter: data.supports.frameStarter,
+      frameChoices: data.supports.frameChoices,
+      coachPrompts: data.supports.coachPrompts,
+    },
+    phases,
+    evidenceLedger,
+    stressTest: data.stressTest,
+    validationCycles,
+    selfCheck: appliedChallengeSelfCheckItems(data.brief).map((item) => {
+      const entry = data.criteriaCheck[item.key] || { rating: 'pending', note: '' };
+      return {
+        key: item.key,
+        kind: item.kind,
+        kindLabel: item.kind === 'criterion' ? _apsT(t, 'applied_challenge.self_check.kind_criterion', 'Criterion') : _apsT(t, 'applied_challenge.self_check.kind_constraint', 'Constraint'),
+        text: item.text,
+        rating: entry.rating,
+        ratingLabel: appliedChallengeLookupLabel(APPLIED_CHALLENGE_SELF_CHECK_RATINGS, 'self_check_rating', entry.rating, t),
+        note: entry.note,
+      };
+    }),
+    teacherComment: data.teacherComment,
+    feedback: data.feedback ? Object.assign({}, data.feedback, {
+      statusLabel: appliedChallengeFeedbackStatusLabel(data.feedback.status, t),
+    }) : null,
+  };
+}
+
+// Exported HTML saves student typing under "<resourceId>:applied:<field>"
+// (see doc_pipeline's applied-challenge lane). These two helpers let the
+// Submission Inbox open such a submission as a real studio workspace.
+function appliedChallengeSubmissionResourceId(responses) {
+  const map = responses && typeof responses === 'object' && !Array.isArray(responses) ? responses : {};
+  const key = Object.keys(map).find((item) => item.indexOf(':applied:') > 0);
+  return key ? key.slice(0, key.indexOf(':applied:')) : '';
+}
+
+function appliedChallengeFromSubmission(baseData, responses, resourceId) {
+  const data = normalizeAppliedChallengeData(baseData);
+  const map = responses && typeof responses === 'object' && !Array.isArray(responses) ? responses : {};
+  const prefix = String(resourceId || appliedChallengeSubmissionResourceId(map)) + ':applied:';
+  const text = (value) => _apsString(typeof value === 'string' ? value : (value == null ? '' : String(value)), 12000);
+  let matched = 0;
+  const workspace = Object.assign({}, data.workspace);
+  const criteriaCheck = Object.assign({}, data.criteriaCheck);
+  const ledgerRows = {};
+  Object.keys(map).forEach((key) => {
+    if (key.indexOf(prefix) !== 0) return;
+    const field = key.slice(prefix.length);
+    const value = text(map[key]);
+    if (!value.trim()) return;
+    if (APPLIED_CHALLENGE_WORKSPACE_PHASES.some((phase) => phase.id === field)) {
+      workspace[field] = _apsString(value, field === 'response' || field === 'revision' ? 12000 : 8000);
+      matched += 1;
+      return;
+    }
+    if (field.indexOf('selfcheck-') === 0) {
+      const checkKey = field.slice('selfcheck-'.length);
+      criteriaCheck[checkKey] = Object.assign({ rating: 'pending', note: '' }, criteriaCheck[checkKey] || {}, { note: _apsString(value, 1200) });
+      matched += 1;
+      return;
+    }
+    const ledger = /^ledger-(\d+)-(claim|evidence|tradeoff)$/.exec(field);
+    if (ledger) {
+      const row = ledgerRows[ledger[1]] || (ledgerRows[ledger[1]] = { id: 'submitted-' + ledger[1], claim: '', evidence: '', status: 'needs-check', tradeoff: '' });
+      row[ledger[2]] = value;
+      matched += 1;
+    }
+  });
+  const evidenceLedger = data.evidenceLedger.concat(Object.keys(ledgerRows).sort().map((index) => ledgerRows[index]));
+  // Coaching artifacts belonged to the exporting draft, not to this student's work.
+  return {
+    matched,
+    data: normalizeAppliedChallengeData(Object.assign({}, data, {
+      workspace,
+      criteriaCheck,
+      evidenceLedger,
+      coachHint: '',
+      feedback: null,
+      stressTest: null,
+    })),
+  };
+}
+
+// Screen: a normal textarea. Print: the textarea is hidden and this mirror
+// shows the full text, because a printed textarea clips to its visible rows.
+function AcTextarea(props) {
+  return <>
+    {React.createElement('textarea', props)}
+    <div className='applied-challenge-print-text' aria-hidden='true'>{props.value || ''}</div>
+  </>;
+}
+
+
 function AppliedChallengePanel(props) {
-  const { expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing } = props;
-  const [selectionMode, setSelectionMode] = React.useState('auto');
-  const [family, setFamily] = React.useState('decide');
-  const [agencyMode, setAgencyMode] = React.useState('progressive');
-  const [scope, setScope] = React.useState('standard');
-  const [customInstructions, setCustomInstructions] = React.useState('');
+  const { expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t } = props;
+  const tx = (key, fallback) => _apsT(t, key, fallback);
+  // Host-owned state wins (AlloFlowANTI lifts these so the teacher's choices
+  // survive collapsing the panel and reach guided mode, Full Pack, and voice
+  // commands). Local state is only the fallback for hosts that pass nothing.
+  const [localSelectionMode, setLocalSelectionMode] = React.useState('auto');
+  const [localFamily, setLocalFamily] = React.useState('decide');
+  const [localAgencyMode, setLocalAgencyMode] = React.useState('progressive');
+  const [localScope, setLocalScope] = React.useState('standard');
+  const [localCustomInstructions, setLocalCustomInstructions] = React.useState('');
+  const controlled = (value, setter, localValue, localSetter) => (typeof setter === 'function' ? [value, setter] : [localValue, localSetter]);
+  const [selectionModeRaw, setSelectionMode] = controlled(props.appliedChallengeSelectionMode, props.setAppliedChallengeSelectionMode, localSelectionMode, setLocalSelectionMode);
+  const [familyRaw, setFamily] = controlled(props.appliedChallengeFamily, props.setAppliedChallengeFamily, localFamily, setLocalFamily);
+  const [agencyModeRaw, setAgencyMode] = controlled(props.appliedChallengeAgencyMode, props.setAppliedChallengeAgencyMode, localAgencyMode, setLocalAgencyMode);
+  const [scopeRaw, setScope] = controlled(props.appliedChallengeScope, props.setAppliedChallengeScope, localScope, setLocalScope);
+  const [customInstructionsRaw, setCustomInstructions] = controlled(props.appliedChallengeCustomInstructions, props.setAppliedChallengeCustomInstructions, localCustomInstructions, setLocalCustomInstructions);
+  const selectionMode = selectionModeRaw === 'manual' ? 'manual' : 'auto';
+  const family = normalizeAppliedChallengeFamily(familyRaw);
+  const agencyMode = normalizeAppliedChallengeAgencyMode(agencyModeRaw);
+  const scope = normalizeAppliedChallengeScope(scopeRaw);
+  const customInstructions = _apsString(customInstructionsRaw, 2000);
   if (!expandedTools || !expandedTools.includes('applied-challenge')) return null;
   const generate = () => handleGenerate('applied-challenge', null, false, null, {
     appliedChallengeSelectionMode: selectionMode,
@@ -885,41 +1154,44 @@ function AppliedChallengePanel(props) {
     appliedChallengeScope: scope,
     customInstructions,
   });
+  const labelClass = 'block text-xs font-black uppercase tracking-wide text-slate-700';
+  const selectClass = 'mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900';
+  const helpClass = 'mt-1 block text-[11px] font-medium normal-case leading-snug text-slate-600';
   return (
     <div>
       <div className='m-3 space-y-4 rounded-2xl border border-orange-200 bg-orange-50/50 p-3'>
-        <label className='block text-xs font-black uppercase tracking-wide text-slate-700'>Challenge match
-          <select aria-label='Applied challenge selection mode' value={selectionMode} onChange={(event) => setSelectionMode(event.target.value)} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900'>
-            <option value='auto'>Auto Match - choose the strongest application</option>
-            <option value='manual'>Choose a challenge family</option>
+        <label className={labelClass}>{tx('applied_challenge.panel.match', 'Challenge match')}
+          <select aria-label={tx('applied_challenge.panel.match_aria', 'Applied challenge selection mode')} value={selectionMode} onChange={(event) => setSelectionMode(event.target.value)} className={selectClass}>
+            <option value='auto'>{tx('applied_challenge.panel.match_auto', 'Auto Match - choose the strongest application')}</option>
+            <option value='manual'>{tx('applied_challenge.panel.match_manual', 'Choose a challenge family')}</option>
           </select>
         </label>
-        {selectionMode === 'manual' && <label className='block text-xs font-black uppercase tracking-wide text-slate-700'>Challenge family
-          <select aria-label='Applied challenge family' value={family} onChange={(event) => setFamily(event.target.value)} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900'>
-            {Object.entries(APPLIED_CHALLENGE_FAMILIES).map(([id, meta]) => <option key={id} value={id}>{meta.label} - {meta.example}</option>)}
+        {selectionMode === 'manual' && <label className={labelClass}>{tx('applied_challenge.panel.family', 'Challenge family')}
+          <select aria-label={tx('applied_challenge.panel.family_aria', 'Applied challenge family')} value={family} onChange={(event) => setFamily(event.target.value)} className={selectClass}>
+            {Object.keys(APPLIED_CHALLENGE_FAMILIES).map((id) => <option key={id} value={id}>{appliedChallengeFamilyText(id, 'label', t)} - {appliedChallengeFamilyText(id, 'example', t)}</option>)}
           </select>
-          <span className='mt-1 block text-[11px] font-medium normal-case leading-snug text-slate-600'>{APPLIED_CHALLENGE_FAMILIES[family].description}</span>
+          <span className={helpClass}>{appliedChallengeFamilyText(family, 'description', t)}</span>
         </label>}
-        <label className='block text-xs font-black uppercase tracking-wide text-slate-700'>AI role
-          <select aria-label='Applied challenge AI role' value={agencyMode} onChange={(event) => setAgencyMode(event.target.value)} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900'>
-            {Object.entries(APPLIED_CHALLENGE_AGENCY_MODES).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+        <label className={labelClass}>{tx('applied_challenge.panel.ai_role', 'AI role')}
+          <select aria-label={tx('applied_challenge.panel.ai_role_aria', 'Applied challenge AI role')} value={agencyMode} onChange={(event) => setAgencyMode(event.target.value)} className={selectClass}>
+            {Object.keys(APPLIED_CHALLENGE_AGENCY_MODES).map((id) => <option key={id} value={id}>{appliedChallengeAgencyText(id, 'label', t)}</option>)}
           </select>
-          <span className='mt-1 block text-[11px] font-medium normal-case leading-snug text-slate-600'>{APPLIED_CHALLENGE_AGENCY_MODES[agencyMode].description}</span>
-          <span className='mt-1 block text-[11px] font-medium normal-case leading-snug text-slate-600'>The student always owns the response. Coaching never fills student fields.</span>
+          <span className={helpClass}>{appliedChallengeAgencyText(agencyMode, 'description', t)}</span>
+          <span className={helpClass}>{tx('applied_challenge.panel.ownership_note', 'The student always owns the response. Coaching never fills student fields.')}</span>
         </label>
-        <label className='block text-xs font-black uppercase tracking-wide text-slate-700'>Challenge depth
-          <select aria-label='Applied challenge depth' value={scope} onChange={(event) => setScope(event.target.value)} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900'>
-            {Object.entries(APPLIED_CHALLENGE_SCOPES).map(([id, meta]) => <option key={id} value={id}>{meta.label}</option>)}
+        <label className={labelClass}>{tx('applied_challenge.panel.depth', 'Challenge depth')}
+          <select aria-label={tx('applied_challenge.panel.depth_aria', 'Applied challenge depth')} value={scope} onChange={(event) => setScope(event.target.value)} className={selectClass}>
+            {Object.keys(APPLIED_CHALLENGE_SCOPES).map((id) => <option key={id} value={id}>{appliedChallengeScopeText(id, 'label', t)}</option>)}
           </select>
-          <span className='mt-1 block text-[11px] font-medium normal-case leading-snug text-slate-600'>{APPLIED_CHALLENGE_SCOPES[scope].description}</span>
+          <span className={helpClass}>{appliedChallengeScopeText(scope, 'description', t)}</span>
         </label>
-        <label className='block text-xs font-black uppercase tracking-wide text-slate-700'>Teacher instructions <span className='font-medium normal-case text-slate-500'>(optional)</span>
-          <textarea aria-label='Custom instructions for applied challenge' value={customInstructions} onChange={(event) => setCustomInstructions(event.target.value)} maxLength={2000} rows={3} placeholder='Use a local issue, require two alternatives...' className='mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900' />
+        <label className={labelClass}>{tx('applied_challenge.panel.instructions', 'Teacher instructions')} <span className='font-medium normal-case text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+          <textarea aria-label={tx('applied_challenge.panel.instructions_aria', 'Custom instructions for applied challenge')} value={customInstructions} onChange={(event) => setCustomInstructions(event.target.value)} maxLength={2000} rows={3} placeholder={tx('applied_challenge.panel.instructions_placeholder', 'Use a local issue, require two alternatives...')} className='mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900' />
         </label>
       </div>
       <div className='px-3 pb-3'>
         <button type='button' onClick={generate} disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing} className='min-h-12 w-full rounded-xl border border-orange-300 bg-white px-4 py-3 font-black text-orange-900 hover:bg-orange-50 disabled:opacity-50'>
-          {isProcessing ? 'Building applied challenge...' : 'Build Applied Challenge Studio'}
+          {isProcessing ? tx('applied_challenge.panel.building', 'Building applied challenge...') : tx('applied_challenge.panel.build', 'Build Applied Challenge Studio')}
         </button>
       </div>
     </div>
@@ -927,7 +1199,8 @@ function AppliedChallengePanel(props) {
 }
 
 function AppliedChallengeView(props) {
-  const { generatedContent, isTeacherMode, isProcessing, handleNoteUpdate, callGemini: callGeminiProp, addToast: addToastProp, gradeLevel } = props;
+  const { generatedContent, isTeacherMode, isProcessing, handleNoteUpdate, callGemini: callGeminiProp, addToast: addToastProp, gradeLevel, t } = props;
+  const tx = (key, fallback) => _apsT(t, key, fallback);
   const [isEditing, setIsEditing] = React.useState(false);
   const [busy, setBusy] = React.useState('');
   const [hintPhase, setHintPhase] = React.useState('workingQuestion');
@@ -935,8 +1208,9 @@ function AppliedChallengeView(props) {
   const resourceActive = !!(generatedContent && generatedContent.type === 'applied-challenge');
   const resourceId = resourceActive ? _apsString(generatedContent.id, 160) : '';
   const data = normalizeAppliedChallengeData(resourceActive ? generatedContent.data : {});
-  const familyMeta = APPLIED_CHALLENGE_FAMILIES[data.family];
-  const agencyMeta = APPLIED_CHALLENGE_AGENCY_MODES[data.agencyMode];
+  const familyLabel = appliedChallengeFamilyText(data.family, 'label', t);
+  const familyExample = appliedChallengeFamilyText(data.family, 'example', t);
+  const familyStressFocus = appliedChallengeFamilyText(data.family, 'stressTestFocus', t);
   const visiblePhases = appliedChallengeVisiblePhases(data.scope);
   const workspaceProgress = appliedChallengeWorkspaceProgress(data);
   const evidenceLedgerProgress = appliedChallengeEvidenceLedgerProgress(data.evidenceLedger);
@@ -946,6 +1220,14 @@ function AppliedChallengeView(props) {
   const synthesisPhases = visiblePhases.filter((phase) => synthesisPhaseIds.includes(phase.id));
   const currentDraftFingerprint = appliedChallengeDraftFingerprint(data);
   const stressTestOutdated = !!(data.stressTest && data.stressTest.draftFingerprint && data.stressTest.draftFingerprint !== currentDraftFingerprint);
+  const selfCheckItems = appliedChallengeSelfCheckItems(data.brief);
+  const selfCheckProgress = appliedChallengeSelfCheckProgress(data);
+  // Compact scope keeps the optional organizers out of the way until the
+  // student opens them or already has content there (UDL: reduce load).
+  const compactScope = data.scope === 'compact';
+  const [ledgerExpanded, setLedgerExpanded] = React.useState(!compactScope || data.evidenceLedger.length > 0);
+  const [checksExpanded, setChecksExpanded] = React.useState(!compactScope || data.validationCycles.length > 0);
+  const readyReason = (ready) => (ready && ready.reasonKey ? tx('applied_challenge.ready.' + ready.reasonKey, ready.reason) : (ready && ready.reason) || '');
   const latestDataRef = React.useRef(data);
   const latestHintPhaseRef = React.useRef(hintPhase);
   const latestResourceIdRef = React.useRef(resourceId);
@@ -984,6 +1266,7 @@ function AppliedChallengeView(props) {
   }, [commitField, data.evidenceLedger, data.coachHint, data.feedback]);
 
   const addEvidenceLedgerRow = () => {
+    setLedgerExpanded(true);
     updateEvidenceLedger((rows) => rows.length >= 12 ? rows : rows.concat({
       id: 'ledger-' + Date.now().toString(36) + '-' + String(++ledgerIdCounterRef.current),
       claim: '',
@@ -1014,11 +1297,12 @@ function AppliedChallengeView(props) {
   const startOwnValidationCycle = () => {
     const ready = appliedChallengeStressTestReady(data);
     if (!ready.ok) {
-      addToast(ready.reason.replace('stress-testing it', 'starting a check'), 'info');
+      addToast(tx('applied_challenge.toast.check_needs_draft', 'Frame a working question and add a draft response before starting a check.'), 'info');
       return;
     }
+    setChecksExpanded(true);
     if (data.validationCycles.length >= 6) {
-      addToast('This challenge already has six saved checks. Remove one before adding another.', 'info');
+      addToast(tx('applied_challenge.toast.six_checks', 'This challenge already has six saved checks. Remove one before adding another.'), 'info');
       return;
     }
     const id = 'validation-' + Date.now().toString(36) + '-' + String(++validationIdCounterRef.current);
@@ -1034,8 +1318,9 @@ function AppliedChallengeView(props) {
 
   const startValidationCycleFromStressTest = () => {
     if (!data.stressTest) return;
+    setChecksExpanded(true);
     if (data.validationCycles.length >= 6) {
-      addToast('This challenge already has six saved checks. Remove one before adding another.', 'info');
+      addToast(tx('applied_challenge.toast.six_checks', 'This challenge already has six saved checks. Remove one before adding another.'), 'info');
       return;
     }
     const id = 'validation-' + Date.now().toString(36) + '-' + String(++validationIdCounterRef.current);
@@ -1078,6 +1363,20 @@ function AppliedChallengeView(props) {
     if (openValidationCycleId === id) setOpenValidationCycleId('');
   };
 
+  const updateCriteriaCheck = (key, patch) => {
+    commitField('criteriaCheck', (current) => {
+      const next = Object.assign({}, normalizeAppliedChallengeCriteriaCheck(current || data.criteriaCheck, data.brief));
+      next[key] = Object.assign({ rating: 'pending', note: '' }, next[key] || {}, patch);
+      return normalizeAppliedChallengeCriteriaCheck(next, data.brief);
+    });
+    if (data.coachHint) commitField('coachHint', '');
+    if (data.feedback) commitField('feedback', null);
+  };
+
+  const updateTeacherComment = (text) => {
+    commitField('teacherComment', _apsString(text, 4000).trim() ? { text: _apsString(text, 4000), updatedAt: new Date().toISOString() } : null);
+  };
+
   const updateBrief = React.useCallback((patch) => {
     commitField('brief', (current) => Object.assign(
       {},
@@ -1103,7 +1402,7 @@ function AppliedChallengeView(props) {
 
   const requestHint = async () => {
     if (typeof callGemini !== 'function') {
-      addToast('AI coaching is not available yet.', 'info');
+      addToast(tx('applied_challenge.toast.no_ai_coaching', 'AI coaching is not available yet.'), 'info');
       return;
     }
     const requestedPhase = hintPhase;
@@ -1120,17 +1419,17 @@ function AppliedChallengeView(props) {
         phaseId: requestedPhase,
       });
       if (requestToken !== requestTokenRef.current || requestedPhase !== latestHintPhaseRef.current || requestFingerprint !== latestFingerprint) {
-        addToast('Your work changed while the hint was being prepared. Ask again for an up-to-date hint.', 'info');
+        addToast(tx('applied_challenge.toast.hint_stale', 'Your work changed while the hint was being prepared. Ask again for an up-to-date hint.'), 'info');
         return;
       }
       const hint = parseAppliedChallengeHint(response);
       if (!hint) {
-        addToast('The coach returned no usable hint. Try again when you are ready.', 'info');
+        addToast(tx('applied_challenge.toast.hint_empty', 'The coach returned no usable hint. Try again when you are ready.'), 'info');
         return;
       }
       commitField('coachHint', hint);
     } catch (_) {
-      addToast('The coach could not create a hint. Your work is still saved.', 'error');
+      addToast(tx('applied_challenge.toast.hint_failed', 'The coach could not create a hint. Your work is still saved.'), 'error');
     } finally {
       if (requestToken === requestTokenRef.current) setBusy('');
     }
@@ -1139,11 +1438,11 @@ function AppliedChallengeView(props) {
   const requestStressTest = async () => {
     const ready = appliedChallengeStressTestReady(data);
     if (!ready.ok) {
-      addToast(ready.reason, 'info');
+      addToast(readyReason(ready), 'info');
       return;
     }
     if (typeof callGemini !== 'function') {
-      addToast('AI stress testing is not available yet.', 'info');
+      addToast(tx('applied_challenge.toast.no_ai_stress', 'AI stress testing is not available yet.'), 'info');
       return;
     }
     const requestToken = ++requestTokenRef.current;
@@ -1155,12 +1454,12 @@ function AppliedChallengeView(props) {
         resourceId: latestResourceIdRef.current,
       });
       if (requestToken !== requestTokenRef.current || requestFingerprint !== latestFingerprint) {
-        addToast('Your draft changed while the stress test was being prepared. Ask again for a current challenge.', 'info');
+        addToast(tx('applied_challenge.toast.stress_stale', 'Your draft changed while the stress test was being prepared. Ask again for a current challenge.'), 'info');
         return;
       }
       const stressTest = parseAppliedChallengeStressTest(raw);
       if (!stressTest) {
-        addToast('The coach returned no usable stress test. Try again when your draft is ready.', 'info');
+        addToast(tx('applied_challenge.toast.stress_empty', 'The coach returned no usable stress test. Try again when your draft is ready.'), 'info');
         return;
       }
       commitField('stressTest', Object.assign({}, stressTest, {
@@ -1168,9 +1467,9 @@ function AppliedChallengeView(props) {
         contextFingerprint: appliedChallengeHashText(requestFingerprint),
         createdAt: new Date().toISOString(),
       }));
-      addToast('One pressure test was added without changing your draft.', 'success');
+      addToast(tx('applied_challenge.toast.stress_added', 'One pressure test was added without changing your draft.'), 'success');
     } catch (_) {
-      addToast('The stress test could not be generated. Your work is still saved.', 'error');
+      addToast(tx('applied_challenge.toast.stress_failed', 'The stress test could not be generated. Your work is still saved.'), 'error');
     } finally {
       if (requestToken === requestTokenRef.current) setBusy('');
     }
@@ -1179,11 +1478,11 @@ function AppliedChallengeView(props) {
   const requestFeedback = async () => {
     const ready = appliedChallengeFeedbackReady(data);
     if (!ready.ok) {
-      addToast(ready.reason, 'info');
+      addToast(readyReason(ready), 'info');
       return;
     }
     if (typeof callGemini !== 'function') {
-      addToast('AI feedback is not available yet.', 'info');
+      addToast(tx('applied_challenge.toast.no_ai_feedback', 'AI feedback is not available yet.'), 'info');
       return;
     }
     const feedbackSourceExcerpt = data.sourceExcerpt;
@@ -1206,7 +1505,7 @@ function AppliedChallengeView(props) {
         gradeLevel: latestGradeLevelRef.current,
       });
       if (requestToken !== requestTokenRef.current || requestFingerprint !== latestFingerprint) {
-        addToast('Your work changed while feedback was being prepared. Request feedback again for the current draft.', 'info');
+        addToast(tx('applied_challenge.toast.feedback_stale', 'Your work changed while feedback was being prepared. Request feedback again for the current draft.'), 'info');
         return;
       }
       const feedback = Object.assign(finalizeAppliedChallengeFeedback(raw, data), {
@@ -1215,25 +1514,67 @@ function AppliedChallengeView(props) {
         createdAt: new Date().toISOString(),
       });
       commitField('feedback', feedback);
-      addToast('Feedback added without changing your work.', 'success');
+      addToast(tx('applied_challenge.toast.feedback_added', 'Feedback added without changing your work.'), 'success');
     } catch (_) {
-      addToast('Feedback could not be generated. Your work is still saved.', 'error');
+      addToast(tx('applied_challenge.toast.feedback_failed', 'Feedback could not be generated. Your work is still saved.'), 'error');
     } finally {
       if (requestToken === requestTokenRef.current) setBusy('');
     }
   };
 
   const renderWorkspacePhase = (phase) => {
-    const label = appliedChallengePhaseLabel(phase, data.family);
+    const label = appliedChallengePhaseLabel(phase, data.family, t);
     const headingId = 'applied-workspace-heading-' + phase.id;
+    const limit = phase.id === 'response' || phase.id === 'revision' ? 12000 : 8000;
+    const used = data.workspace[phase.id].length;
+    const nearLimit = used >= limit * 0.85;
     return <article key={phase.id} className='applied-challenge-section rounded-2xl border border-slate-200 bg-slate-50/60 p-4' aria-labelledby={headingId}>
       <h3 id={headingId} className='text-sm font-black text-slate-900'>{label}</h3>
       {isTeacherMode && isEditing
-        ? <textarea aria-label={'Teacher prompt for ' + label} value={data.supports.phasePrompts[phase.id]} onChange={(event) => updateSupports({ phasePrompts: Object.assign({}, data.supports.phasePrompts, { [phase.id]: event.target.value }) })} rows={2} className='mt-2 w-full rounded-xl border border-orange-300 bg-orange-50 px-3 py-2 text-xs text-slate-800' />
+        ? <AcTextarea aria-label={_apsFill(tx('applied_challenge.workspace.teacher_prompt_aria', 'Teacher prompt for {label}'), { label })} value={data.supports.phasePrompts[phase.id]} onChange={(event) => updateSupports({ phasePrompts: Object.assign({}, data.supports.phasePrompts, { [phase.id]: event.target.value }) })} rows={2} className='mt-2 w-full rounded-xl border border-orange-300 bg-orange-50 px-3 py-2 text-xs text-slate-800' />
         : <p className='mt-1 text-xs leading-relaxed text-slate-600'>{data.supports.phasePrompts[phase.id]}</p>}
-      <textarea id={'applied-workspace-' + phase.id} aria-labelledby={headingId} value={data.workspace[phase.id]} onChange={(event) => updateWorkspace(phase.id, event.target.value)} rows={phase.id === 'response' || phase.id === 'revision' ? 7 : 4} placeholder='Write your thinking here...' className='mt-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600' />
+      <AcTextarea id={'applied-workspace-' + phase.id} aria-labelledby={headingId} value={data.workspace[phase.id]} onChange={(event) => updateWorkspace(phase.id, event.target.value)} onFocus={() => setHintPhase(phase.id)} maxLength={limit} rows={phase.id === 'response' || phase.id === 'revision' ? 7 : 4} placeholder={tx('applied_challenge.workspace.placeholder', 'Write your thinking here...')} className='mt-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600' />
+      {nearLimit && <p role='status' className='mt-1 text-[11px] font-bold text-amber-800'>{_apsFill(tx('applied_challenge.workspace.near_limit', '{remaining} characters left in this section.'), { remaining: Math.max(0, limit - used) })}</p>}
     </article>;
   };
+
+  const renderSelfCheck = () => {
+    if (!selfCheckItems.length) return null;
+    return <section className='applied-challenge-section mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4' aria-labelledby='challenge-self-check-heading'>
+      <div className='flex flex-wrap items-start justify-between gap-3'>
+        <div>
+          <h3 id='challenge-self-check-heading' className='text-base font-black text-emerald-950'>{tx('applied_challenge.self_check.heading', 'Check your deliverable against the brief')}</h3>
+          <p className='mt-1 max-w-3xl text-xs leading-relaxed text-slate-600'>{tx('applied_challenge.self_check.note', 'Rate your own draft against each success criterion and constraint. Point to where it is met, or name what is still missing. Honest "not yet" ratings make feedback more useful.')}</p>
+          <p role='status' aria-live='polite' className='mt-2 text-xs font-bold text-emerald-950'>{_apsFill(tx('applied_challenge.self_check.progress', '{rated} of {total} rated'), selfCheckProgress)}</p>
+        </div>
+      </div>
+      <div className='mt-4 space-y-3'>
+        {selfCheckItems.map((item, index) => {
+          const entry = data.criteriaCheck[item.key] || { rating: 'pending', note: '' };
+          const kindLabel = item.kind === 'criterion' ? tx('applied_challenge.self_check.kind_criterion', 'Criterion') : tx('applied_challenge.self_check.kind_constraint', 'Constraint');
+          const rowLabel = kindLabel + ' ' + (item.index + 1);
+          return <fieldset key={item.key} className='rounded-2xl border border-emerald-200 bg-white p-4'>
+            <legend className='px-1 text-sm font-black text-emerald-950'>{rowLabel}</legend>
+            <p className='text-sm font-bold text-slate-900'>{item.text}</p>
+            <div className='mt-2 grid gap-3 md:grid-cols-2'>
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.self_check.rating', 'My rating')}
+                <select aria-label={_apsFill(tx('applied_challenge.aria.self_check_rating', '{row} rating'), { row: rowLabel })} value={entry.rating} onChange={(event) => updateCriteriaCheck(item.key, { rating: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+                  {Object.keys(APPLIED_CHALLENGE_SELF_CHECK_RATINGS).map((id) => <option key={id} value={id}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_SELF_CHECK_RATINGS, 'self_check_rating', id, t)}</option>)}
+                </select>
+              </label>
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.self_check.where', 'Where it shows, or what is missing')}
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.self_check_note', '{row} evidence note'), { row: rowLabel })} value={entry.note} onChange={(event) => updateCriteriaCheck(item.key, { note: event.target.value })} rows={2} maxLength={1200} placeholder={tx('applied_challenge.self_check.where_placeholder', 'Quote or point to the part of your draft that shows this.')} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              </label>
+            </div>
+          </fieldset>;
+        })}
+      </div>
+    </section>;
+  };
+
+  const renderOrganizerToggle = (expanded, setExpanded, controlsId) => compactScope
+    ? <button type='button' aria-expanded={expanded} aria-controls={controlsId} onClick={() => setExpanded(!expanded)} className='applied-challenge-no-print min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700'>{expanded ? tx('applied_challenge.common.hide', 'Hide') : tx('applied_challenge.common.show', 'Show')}</button>
+    : null;
 
   const renderValidationCycle = (cycle, index) => {
     const cycleNumber = index + 1;
@@ -1245,222 +1586,240 @@ function AppliedChallengeView(props) {
       if (!event.currentTarget.open && openValidationCycleId === cycle.id) setOpenValidationCycleId('');
     }} className='applied-validation-cycle rounded-2xl border border-blue-200 bg-white'>
       <summary className='cursor-pointer rounded-2xl px-4 py-3 text-sm font-black text-blue-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600'>
-        Check {cycleNumber}: {APPLIED_CHALLENGE_VALIDATION_SOURCES[cycle.source]} · {progress.complete ? 'Complete' : progress.stage === 'review' ? 'Review the challenge' : progress.stage === 'plan' ? 'Plan' : progress.stage === 'observe' ? 'Observe' : 'Decide'} · {progress.completedSteps}/{progress.totalSteps}
+        {_apsFill(tx('applied_challenge.cycle.heading', 'Check {n}'), { n: cycleNumber })}: {appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_SOURCES, 'validation_source', cycle.source, t)} · {progress.complete ? tx('applied_challenge.cycle.stage_complete', 'Complete') : progress.stage === 'review' ? tx('applied_challenge.cycle.stage_review', 'Review the challenge') : progress.stage === 'plan' ? tx('applied_challenge.cycle.stage_plan', 'Plan') : progress.stage === 'observe' ? tx('applied_challenge.cycle.stage_observe', 'Observe') : tx('applied_challenge.cycle.stage_decide', 'Decide')} · {progress.completedSteps}/{progress.totalSteps}
       </summary>
       <div className='border-t border-blue-100 p-4'>
-        {testedEarlierDraft && <p className='mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-950'>This check began from an earlier draft. That is expected when evidence leads to revision.</p>}
-        {cycle.source !== 'ai' && <label className='block text-xs font-black text-slate-700'>Where this check came from
-          <select aria-label={'Check ' + cycleNumber + ' source'} value={cycle.source} onChange={(event) => updateValidationCycle(cycle.id, { source: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
-            {Object.entries(APPLIED_CHALLENGE_VALIDATION_SOURCES).filter(([id]) => id !== 'ai').map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+        {testedEarlierDraft && <p className='mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-950'>{tx('applied_challenge.cycle.earlier_draft', 'This check began from an earlier draft. That is expected when evidence leads to revision.')}</p>}
+        {cycle.source !== 'ai' && <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.source', 'Where this check came from')}
+          <select aria-label={_apsFill(tx('applied_challenge.aria.cycle_source', 'Check {n} source'), { n: cycleNumber })} value={cycle.source} onChange={(event) => updateValidationCycle(cycle.id, { source: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+            {Object.keys(APPLIED_CHALLENGE_VALIDATION_SOURCES).filter((id) => id !== 'ai').map((id) => <option key={id} value={id}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_SOURCES, 'validation_source', id, t)}</option>)}
           </select>
         </label>}
         {cycle.source === 'ai' && <section aria-labelledby={'validation-ai-review-' + cycle.id} className='rounded-2xl border border-fuchsia-200 bg-fuchsia-50 p-4'>
-          <h4 id={'validation-ai-review-' + cycle.id} className='text-sm font-black text-fuchsia-950'>First, decide how to use the AI pressure point</h4>
-          {cycle.importedChallenge.challenge && <p className='mt-2 whitespace-pre-wrap text-sm text-slate-800'><strong>Challenge:</strong> {cycle.importedChallenge.challenge}</p>}
+          <h4 id={'validation-ai-review-' + cycle.id} className='text-sm font-black text-fuchsia-950'>{tx('applied_challenge.cycle.ai_review', 'First, decide how to use the AI pressure point')}</h4>
+          {cycle.importedChallenge.challenge && <p className='mt-2 whitespace-pre-wrap text-sm text-slate-800'><strong>{tx('applied_challenge.cycle.challenge_label', 'Challenge:')}</strong> {cycle.importedChallenge.challenge}</p>}
           <div className='mt-3 grid gap-3 md:grid-cols-2'>
-            <label className='block text-xs font-black text-slate-700'>Your choice
-              <select aria-label={'Check ' + cycleNumber + ' AI challenge choice'} value={cycle.disposition} onChange={(event) => updateValidationCycle(cycle.id, { disposition: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
-                {Object.entries(APPLIED_CHALLENGE_VALIDATION_DISPOSITIONS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.your_choice', 'Your choice')}
+              <select aria-label={_apsFill(tx('applied_challenge.aria.cycle_choice', 'Check {n} AI challenge choice'), { n: cycleNumber })} value={cycle.disposition} onChange={(event) => updateValidationCycle(cycle.id, { disposition: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+                {Object.keys(APPLIED_CHALLENGE_VALIDATION_DISPOSITIONS).map((id) => <option key={id} value={id}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_DISPOSITIONS, 'validation_disposition', id, t)}</option>)}
               </select>
             </label>
-            <label className='block text-xs font-black text-slate-700'>Why?
-              <textarea aria-label={'Check ' + cycleNumber + ' reason for AI challenge choice'} value={cycle.dispositionReason} onChange={(event) => updateValidationCycle(cycle.id, { dispositionReason: event.target.value })} rows={2} placeholder='Explain why you will use, adapt, or decline this advice.' className='mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm text-slate-900' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.why', 'Why?')}
+              <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_choice_reason', 'Check {n} reason for AI challenge choice'), { n: cycleNumber })} value={cycle.dispositionReason} onChange={(event) => updateValidationCycle(cycle.id, { dispositionReason: event.target.value })} rows={2} placeholder={tx('applied_challenge.cycle.why_placeholder', 'Explain why you will use, adapt, or decline this advice.')} className='mt-1 w-full rounded-xl border border-fuchsia-300 bg-white px-3 py-2 text-sm text-slate-900' />
             </label>
           </div>
-          {cycle.disposition === 'decline' && <p className='mt-3 text-xs font-bold text-fuchsia-950'>Declining is a valid decision. Explain your reason above; no test plan is required for this cycle.</p>}
+          {cycle.disposition === 'decline' && <p className='mt-3 text-xs font-bold text-fuchsia-950'>{tx('applied_challenge.cycle.decline_note', 'Declining is a valid decision. Explain your reason above; no test plan is required for this cycle.')}</p>}
         </section>}
         {stagesAvailable && <div className='mt-4 grid gap-4'>
           <fieldset className='rounded-2xl border border-sky-200 bg-sky-50/60 p-4'>
-            <legend className='px-1 text-sm font-black text-sky-950'>1. Plan the check</legend>
+            <legend className='px-1 text-sm font-black text-sky-950'>{tx('applied_challenge.cycle.plan_legend', '1. Plan the check')}</legend>
             <div className='grid gap-3 md:grid-cols-2'>
-              <label className='block text-xs font-black text-slate-700'>Check method
-                <select aria-label={'Check ' + cycleNumber + ' method'} value={cycle.plan.methodId} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { methodId: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
-                  {APPLIED_CHALLENGE_VALIDATION_METHODS[cycle.family].map((method) => <option key={method.id} value={method.id}>{method.label}</option>)}
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.method', 'Check method')}
+                <select aria-label={_apsFill(tx('applied_challenge.aria.cycle_method', 'Check {n} method'), { n: cycleNumber })} value={cycle.plan.methodId} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { methodId: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+                  {APPLIED_CHALLENGE_VALIDATION_METHODS[cycle.family].map((method) => <option key={method.id} value={method.id}>{_apsT(t, 'applied_challenge.validation_method.' + method.id, method.label)}</option>)}
                 </select>
               </label>
-              <label className='block text-xs font-black text-slate-700'>Evidence form
-                <select aria-label={'Check ' + cycleNumber + ' evidence form'} value={cycle.plan.evidenceMode} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { evidenceMode: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
-                  {Object.entries(APPLIED_CHALLENGE_EVIDENCE_MODES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.evidence_form', 'Evidence form')}
+                <select aria-label={_apsFill(tx('applied_challenge.aria.cycle_evidence_form', 'Check {n} evidence form'), { n: cycleNumber })} value={cycle.plan.evidenceMode} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { evidenceMode: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+                  {Object.keys(APPLIED_CHALLENGE_EVIDENCE_MODES).map((id) => <option key={id} value={id}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_EVIDENCE_MODES, 'evidence_mode', id, t)}</option>)}
                 </select>
               </label>
-              <label className='block text-xs font-black text-slate-700 md:col-span-2'>What exactly will you check?
-                <textarea aria-label={'Check ' + cycleNumber + ' test question'} value={cycle.plan.testQuestion} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { testQuestion: event.target.value })} rows={2} placeholder='Write a question that the check could actually inform.' className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700 md:col-span-2'>{tx('applied_challenge.cycle.test_question', 'What exactly will you check?')}
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_test_question', 'Check {n} test question'), { n: cycleNumber })} value={cycle.plan.testQuestion} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { testQuestion: event.target.value })} rows={2} placeholder={tx('applied_challenge.cycle.test_question_placeholder', 'Write a question that the check could actually inform.')} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>Criterion or constraint <span className='font-medium text-slate-500'>(optional)</span>
-                <textarea aria-label={'Check ' + cycleNumber + ' criterion or constraint'} value={cycle.plan.criterion} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { criterion: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.criterion', 'Criterion or constraint')} <span className='font-medium text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_criterion', 'Check {n} criterion or constraint'), { n: cycleNumber })} value={cycle.plan.criterion} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { criterion: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>What do you expect? <span className='font-medium text-slate-500'>(a prediction, not a result)</span>
-                <textarea aria-label={'Check ' + cycleNumber + ' expected finding'} value={cycle.plan.expectedFinding} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { expectedFinding: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.expected', 'What do you expect?')} <span className='font-medium text-slate-500'>({tx('applied_challenge.cycle.expected_note', 'a prediction, not a result')})</span>
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_expected', 'Check {n} expected finding'), { n: cycleNumber })} value={cycle.plan.expectedFinding} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { expectedFinding: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700 md:col-span-2'>What result could change your mind or draft?
-                <textarea aria-label={'Check ' + cycleNumber + ' change threshold'} value={cycle.plan.changeThreshold} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { changeThreshold: event.target.value })} rows={2} placeholder='Name the evidence that would lead you to keep, revise, or replace the current direction.' className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700 md:col-span-2'>{tx('applied_challenge.cycle.threshold', 'What result could change your mind or draft?')}
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_threshold', 'Check {n} change threshold'), { n: cycleNumber })} value={cycle.plan.changeThreshold} onChange={(event) => updateValidationCyclePart(cycle.id, 'plan', { changeThreshold: event.target.value })} rows={2} placeholder={tx('applied_challenge.cycle.threshold_placeholder', 'Name the evidence that would lead you to keep, revise, or replace the current direction.')} className='mt-1 w-full rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
             </div>
           </fieldset>
           <fieldset className='rounded-2xl border border-amber-200 bg-amber-50/60 p-4'>
-            <legend className='px-1 text-sm font-black text-amber-950'>2. Observe or gather evidence</legend>
-            <p className='mb-3 text-xs text-slate-600'>Report only what you actually observed or encountered. Summarize feedback without naming participants or including private details.</p>
+            <legend className='px-1 text-sm font-black text-amber-950'>{tx('applied_challenge.cycle.observe_legend', '2. Observe or gather evidence')}</legend>
+            <p className='mb-3 text-xs text-slate-600'>{tx('applied_challenge.cycle.observe_note', 'Report only what you actually observed or encountered. Summarize feedback without naming participants or including private details.')}</p>
             <div className='grid gap-3 md:grid-cols-2'>
-              <label className='block text-xs font-black text-slate-700'>Outcome
-                <select aria-label={'Check ' + cycleNumber + ' outcome'} value={cycle.observation.outcome} onChange={(event) => updateValidationCyclePart(cycle.id, 'observation', { outcome: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
-                  {Object.entries(APPLIED_CHALLENGE_VALIDATION_OUTCOMES).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.outcome', 'Outcome')}
+                <select aria-label={_apsFill(tx('applied_challenge.aria.cycle_outcome', 'Check {n} outcome'), { n: cycleNumber })} value={cycle.observation.outcome} onChange={(event) => updateValidationCyclePart(cycle.id, 'observation', { outcome: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+                  {Object.keys(APPLIED_CHALLENGE_VALIDATION_OUTCOMES).map((id) => <option key={id} value={id}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_OUTCOMES, 'validation_outcome', id, t)}</option>)}
                 </select>
               </label>
-              <label className='block text-xs font-black text-slate-700 md:col-span-2'>What evidence or observation did you actually encounter?
-                <textarea aria-label={'Check ' + cycleNumber + ' observed evidence'} value={cycle.observation.evidence} onChange={(event) => updateValidationCyclePart(cycle.id, 'observation', { evidence: event.target.value })} rows={4} className='mt-1 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700 md:col-span-2'>{tx('applied_challenge.cycle.observed', 'What evidence or observation did you actually encounter?')}
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_observed', 'Check {n} observed evidence'), { n: cycleNumber })} value={cycle.observation.evidence} onChange={(event) => updateValidationCyclePart(cycle.id, 'observation', { evidence: event.target.value })} rows={4} className='mt-1 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
             </div>
           </fieldset>
           <fieldset className='rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4'>
-            <legend className='px-1 text-sm font-black text-emerald-950'>3. Decide and revise</legend>
+            <legend className='px-1 text-sm font-black text-emerald-950'>{tx('applied_challenge.cycle.decide_legend', '3. Decide and revise')}</legend>
             <div className='grid gap-3 md:grid-cols-2'>
-              <label className='block text-xs font-black text-slate-700'>Decision
-                <select aria-label={'Check ' + cycleNumber + ' decision'} value={cycle.decision.action} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { action: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
-                  {Object.entries(APPLIED_CHALLENGE_VALIDATION_DECISIONS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.decision', 'Decision')}
+                <select aria-label={_apsFill(tx('applied_challenge.aria.cycle_decision', 'Check {n} decision'), { n: cycleNumber })} value={cycle.decision.action} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { action: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+                  {Object.keys(APPLIED_CHALLENGE_VALIDATION_DECISIONS).map((id) => <option key={id} value={id}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_VALIDATION_DECISIONS, 'validation_decision', id, t)}</option>)}
                 </select>
               </label>
-              <label className='block text-xs font-black text-slate-700 md:col-span-2'>Why does the evidence support that decision?
-                <textarea aria-label={'Check ' + cycleNumber + ' decision reasoning'} value={cycle.decision.reasoning} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { reasoning: event.target.value })} rows={3} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700 md:col-span-2'>{tx('applied_challenge.cycle.reasoning', 'Why does the evidence support that decision?')}
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_reasoning', 'Check {n} decision reasoning'), { n: cycleNumber })} value={cycle.decision.reasoning} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { reasoning: event.target.value })} rows={3} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>What changed in your response? <span className='font-medium text-slate-500'>(optional)</span>
-                <textarea aria-label={'Check ' + cycleNumber + ' revision summary'} value={cycle.decision.revisionSummary} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { revisionSummary: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.revision_summary', 'What changed in your response?')} <span className='font-medium text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_revision_summary', 'Check {n} revision summary'), { n: cycleNumber })} value={cycle.decision.revisionSummary} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { revisionSummary: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
-              <label className='block text-xs font-black text-slate-700'>Next check or action <span className='font-medium text-slate-500'>(optional)</span>
-                <textarea aria-label={'Check ' + cycleNumber + ' next step'} value={cycle.decision.nextStep} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { nextStep: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
+              <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.cycle.next_step', 'Next check or action')} <span className='font-medium text-slate-500'>({tx('applied_challenge.common.optional', 'optional')})</span>
+                <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.cycle_next_step', 'Check {n} next step'), { n: cycleNumber })} value={cycle.decision.nextStep} onChange={(event) => updateValidationCyclePart(cycle.id, 'decision', { nextStep: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm text-slate-900' />
               </label>
             </div>
           </fieldset>
         </div>}
-        <button type='button' onClick={() => removeValidationCycle(cycle.id)} className='applied-challenge-no-print mt-4 min-h-11 rounded-xl border border-rose-300 bg-white px-3 py-2 text-xs font-black text-rose-800'>Remove check {cycleNumber}</button>
+        <button type='button' onClick={() => removeValidationCycle(cycle.id)} className='applied-challenge-no-print mt-4 min-h-11 rounded-xl border border-rose-300 bg-white px-3 py-2 text-xs font-black text-rose-800'>{_apsFill(tx('applied_challenge.cycle.remove', 'Remove check {n}'), { n: cycleNumber })}</button>
       </div>
     </details>;
   };
 
-  if (!resourceActive) return <div role='status' className='p-6 text-sm text-slate-600'>Preparing Applied Challenge Studio...</div>;
+  if (!resourceActive) return <div role='status' className='p-6 text-sm text-slate-600'>{tx('applied_challenge.preparing', 'Preparing Applied Challenge Studio...')}</div>;
 
   return (
-    <main className='mx-auto w-full max-w-6xl p-4 sm:p-6' aria-labelledby='applied-challenge-title'>
-      <style>{'@media print { .applied-challenge-no-print { display:none !important; } .applied-challenge-section { break-inside:avoid; box-shadow:none !important; } .applied-validation-cycle:not([open]) > :not(summary) { display:block !important; } }'}</style>
+    <main id='applied-challenge-print-root' className='applied-challenge-root mx-auto w-full max-w-6xl p-4 sm:p-6' aria-labelledby='applied-challenge-title'>
+      <style>{[
+        // Screen: the print mirror stays out of the way.
+        '.applied-challenge-print-text { display:none; }',
+        // Print: only the studio prints (the app shell has no print stylesheet of
+        // its own, so without this the sidebar and header print too). Textareas
+        // clip to their visible rows on paper, so each one hides and its mirror
+        // shows the full text instead.
+        '@media print {',
+        '  body * { visibility:hidden; }',
+        '  #applied-challenge-print-root, #applied-challenge-print-root * { visibility:visible; }',
+        '  #applied-challenge-print-root { position:absolute; left:0; top:0; width:100%; max-width:none; padding:0; }',
+        '  .applied-challenge-no-print { display:none !important; }',
+        '  .applied-challenge-root textarea { display:none !important; }',
+        '  .applied-challenge-print-text { display:block; white-space:pre-wrap; min-height:2.5rem; margin-top:0.5rem; padding:0.5rem; border:1px solid #cbd5e1; border-radius:0.5rem; font-size:0.9rem; line-height:1.5; }',
+        '  .applied-challenge-section { break-inside:avoid; box-shadow:none !important; }',
+        '  .applied-validation-cycle:not([open]) > :not(summary) { display:block !important; }',
+        '  #applied-ledger-body[hidden], #applied-checks-body[hidden] { display:block !important; }',
+        '}',
+      ].join('\n')}</style>
       <header className='mb-5 rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-5 shadow-sm'>
         <div className='flex flex-wrap items-start justify-between gap-3'>
           <div className='min-w-0 flex-1'>
-            <p className='mb-1 text-xs font-black uppercase tracking-[0.18em] text-orange-800'>Applied Challenge Studio</p>
+            <p className='mb-1 text-xs font-black uppercase tracking-[0.18em] text-orange-800'>{tx('applied_challenge.studio_title', 'Applied Challenge Studio')}</p>
             {isTeacherMode && isEditing
-              ? <input aria-label='Applied challenge title' value={data.title} onChange={(event) => commitField('title', event.target.value)} className='w-full rounded-xl border border-orange-300 bg-white px-3 py-2 text-2xl font-black text-slate-900' />
+              ? <input aria-label={tx('applied_challenge.header.title_aria', 'Applied challenge title')} value={data.title} onChange={(event) => commitField('title', event.target.value)} className='w-full rounded-xl border border-orange-300 bg-white px-3 py-2 text-2xl font-black text-slate-900' />
               : <h1 id='applied-challenge-title' className='text-2xl font-black text-slate-900'>{data.title}</h1>}
             {isTeacherMode && isEditing
-              ? <textarea aria-label='Applied challenge student instructions' value={data.instructions} onChange={(event) => commitField('instructions', event.target.value)} rows={2} className='mt-2 w-full rounded-xl border border-orange-300 bg-white px-3 py-2 text-sm text-slate-800' />
+              ? <AcTextarea aria-label={tx('applied_challenge.header.instructions_aria', 'Applied challenge student instructions')} value={data.instructions} onChange={(event) => commitField('instructions', event.target.value)} rows={2} className='mt-2 w-full rounded-xl border border-orange-300 bg-white px-3 py-2 text-sm text-slate-800' />
               : <p className='mt-2 max-w-4xl text-sm leading-relaxed text-slate-700'>{data.instructions}</p>}
           </div>
           <div className='applied-challenge-no-print flex flex-wrap gap-2'>
-            {isTeacherMode && <button type='button' aria-pressed={isEditing} onClick={() => setIsEditing((value) => !value)} className='min-h-11 rounded-xl border border-orange-700 bg-white px-3 py-2 text-sm font-black text-orange-900'>{isEditing ? 'Done editing' : 'Edit challenge'}</button>}
-            <button type='button' onClick={() => { if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); }} className='min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700'>Print</button>
+            {isTeacherMode && <button type='button' aria-pressed={isEditing} onClick={() => setIsEditing((value) => !value)} className='min-h-11 rounded-xl border border-orange-700 bg-white px-3 py-2 text-sm font-black text-orange-900'>{isEditing ? tx('applied_challenge.header.done_editing', 'Done editing') : tx('applied_challenge.header.edit', 'Edit challenge')}</button>}
+            <button type='button' onClick={() => { if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); }} className='min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700'>{tx('applied_challenge.header.print', 'Print')}</button>
           </div>
         </div>
         <div className='mt-4 flex flex-wrap gap-2 text-xs font-bold'>
-          <span className='rounded-full bg-orange-100 px-3 py-1 text-orange-950'>{familyMeta.label}: {familyMeta.example}</span>
-          <span className='rounded-full bg-indigo-100 px-3 py-1 text-indigo-950'>{agencyMeta.compactLabel}</span>
-          <span className='rounded-full bg-emerald-100 px-3 py-1 text-emerald-950'>{APPLIED_CHALLENGE_SCOPES[data.scope].label}</span>
-          <span className='rounded-full bg-slate-100 px-3 py-1 text-slate-700'>{data.selectionMode === 'auto' ? 'Auto Match' : 'Teacher selected'}</span>
+          <span className='rounded-full bg-orange-100 px-3 py-1 text-orange-950'>{familyLabel}: {familyExample}</span>
+          <span className='rounded-full bg-indigo-100 px-3 py-1 text-indigo-950'>{appliedChallengeAgencyText(data.agencyMode, 'compactLabel', t)}</span>
+          <span className='rounded-full bg-emerald-100 px-3 py-1 text-emerald-950'>{appliedChallengeScopeText(data.scope, 'label', t)}</span>
+          <span className='rounded-full bg-slate-100 px-3 py-1 text-slate-700'>{data.selectionMode === 'auto' ? tx('applied_challenge.header.auto_match', 'Auto Match') : tx('applied_challenge.header.teacher_selected', 'Teacher selected')}</span>
         </div>
-        {data.selectionMode === 'auto' && data.fitReason && <p className='mt-3 rounded-xl border border-orange-200 bg-white/80 p-3 text-sm text-slate-700'><strong className='text-orange-900'>Why this match:</strong> {data.fitReason}</p>}
+        {data.selectionMode === 'auto' && data.fitReason && <p className='mt-3 rounded-xl border border-orange-200 bg-white/80 p-3 text-sm text-slate-700'><strong className='text-orange-900'>{tx('applied_challenge.header.why_match', 'Why this match:')}</strong> {data.fitReason}</p>}
       </header>
       <section className='applied-challenge-section mb-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm' aria-labelledby='challenge-brief-heading'>
         <div className='flex flex-wrap items-center justify-between gap-2'>
-          <h2 id='challenge-brief-heading' className='text-xl font-black text-slate-900'>Challenge brief</h2>
-          <span className='rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950'>{data.brief.factVerified ? 'Teacher-verified lesson facts' : 'Lesson facts need teacher review'}</span>
+          <h2 id='challenge-brief-heading' className='text-xl font-black text-slate-900'>{tx('applied_challenge.brief.heading', 'Challenge brief')}</h2>
+          <span className='rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-950'>{data.brief.factVerified ? tx('applied_challenge.brief.facts_verified', 'Teacher-verified lesson facts') : tx('applied_challenge.brief.facts_need_review', 'Lesson facts need teacher review')}</span>
         </div>
         {isTeacherMode && isEditing ? (
           <div className='mt-4 grid gap-4 sm:grid-cols-2'>
-            <label className='block text-xs font-black text-slate-700 sm:col-span-2'>Context
-              <textarea aria-label='Challenge context' value={data.brief.context} onChange={(event) => updateBrief({ context: event.target.value })} rows={3} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700 sm:col-span-2'>{tx('applied_challenge.brief.context', 'Context')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.context', 'Challenge context')} value={data.brief.context} onChange={(event) => updateBrief({ context: event.target.value })} rows={3} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700'>Student role
-              <input aria-label='Student role' value={data.brief.role} onChange={(event) => updateBrief({ role: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.role', 'Student role')}
+              <input aria-label={tx('applied_challenge.aria.role', 'Student role')} value={data.brief.role} onChange={(event) => updateBrief({ role: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700'>Audience
-              <input aria-label='Challenge audience' value={data.brief.audience} onChange={(event) => updateBrief({ audience: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.audience', 'Audience')}
+              <input aria-label={tx('applied_challenge.aria.audience', 'Challenge audience')} value={data.brief.audience} onChange={(event) => updateBrief({ audience: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
             </label>
-            {data.agencyMode !== 'student-framed' && <label className='block text-xs font-black text-slate-700 sm:col-span-2'>Driving question
-              <textarea aria-label='Driving question' value={data.brief.drivingQuestion} onChange={(event) => updateBrief({ drivingQuestion: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
+            {data.agencyMode !== 'student-framed' && <label className='block text-xs font-black text-slate-700 sm:col-span-2'>{tx('applied_challenge.brief.driving_question', 'Driving question')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.driving_question', 'Driving question')} value={data.brief.drivingQuestion} onChange={(event) => updateBrief({ drivingQuestion: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
             </label>}
-            <label className='block text-xs font-black text-slate-700 sm:col-span-2'>Lesson-grounded direction
-              <textarea aria-label='Lesson-grounded challenge direction' value={data.brief.seedDirection} onChange={(event) => updateBrief({ seedDirection: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700 sm:col-span-2'>{tx('applied_challenge.brief.seed_direction', 'Lesson-grounded direction')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.seed_direction', 'Lesson-grounded challenge direction')} value={data.brief.seedDirection} onChange={(event) => updateBrief({ seedDirection: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700'>Teacher-checked lesson facts
-              <textarea aria-label='Teacher-checked lesson facts' aria-describedby='applied-facts-lock-help' readOnly={data.brief.factLocked} value={data.brief.lockedLessonFacts.join('\n')} onChange={(event) => updateBrief({ lockedLessonFacts: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean), factVerified: false })} rows={4} className={'mt-1 w-full rounded-xl border border-amber-300 px-3 py-2 text-sm font-medium ' + (data.brief.factLocked ? 'cursor-not-allowed bg-amber-50 text-slate-600' : 'bg-white text-slate-900')} />
-              <span id='applied-facts-lock-help' className='mt-1 block text-[11px] font-medium leading-relaxed text-amber-900'>{data.brief.factLocked ? (data.brief.factVerified ? 'These facts are locked and marked teacher verified. Unlocking and changing them removes verification.' : 'These AI-extracted facts are locked against accidental edits but still need teacher review.') : 'Fact editing is enabled. Any change removes verification; relock and verify after checking the lesson.'}</span>
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.facts', 'Teacher-checked lesson facts')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.facts', 'Teacher-checked lesson facts')} aria-describedby='applied-facts-lock-help' readOnly={data.brief.factLocked} value={data.brief.lockedLessonFacts.join('\n')} onChange={(event) => updateBrief({ lockedLessonFacts: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean), factVerified: false })} rows={4} className={'mt-1 w-full rounded-xl border border-amber-300 px-3 py-2 text-sm font-medium ' + (data.brief.factLocked ? 'cursor-not-allowed bg-amber-50 text-slate-600' : 'bg-white text-slate-900')} />
+              <span id='applied-facts-lock-help' className='mt-1 block text-[11px] font-medium leading-relaxed text-amber-900'>{data.brief.factLocked ? (data.brief.factVerified ? tx('applied_challenge.brief.lock_help_verified', 'These facts are locked and marked teacher verified. Unlocking and changing them removes verification.') : tx('applied_challenge.brief.lock_help_locked', 'These AI-extracted facts are locked against accidental edits but still need teacher review.')) : tx('applied_challenge.brief.lock_help_open', 'Fact editing is enabled. Any change removes verification; relock and verify after checking the lesson.')}</span>
             </label>
-            <label className='block text-xs font-black text-slate-700'>Open questions or unknowns
-              <textarea aria-label='Open questions or unknowns' value={data.brief.openQuestions.join('\n')} onChange={(event) => updateBrief({ openQuestions: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={4} className='mt-1 w-full rounded-xl border border-sky-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.open_questions', 'Open questions or unknowns')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.open_questions', 'Open questions or unknowns')} value={data.brief.openQuestions.join('\n')} onChange={(event) => updateBrief({ openQuestions: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={4} className='mt-1 w-full rounded-xl border border-sky-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700'>Stakeholders
-              <textarea aria-label='Challenge stakeholders' value={data.brief.stakeholders.join('\n')} onChange={(event) => updateBrief({ stakeholders: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={3} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.stakeholders', 'Stakeholders')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.stakeholders', 'Challenge stakeholders')} value={data.brief.stakeholders.join('\n')} onChange={(event) => updateBrief({ stakeholders: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={3} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700'>Success criteria
-              <textarea aria-label='Challenge success criteria' value={data.brief.criteria.join('\n')} onChange={(event) => updateBrief({ criteria: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={4} className='mt-1 w-full rounded-xl border border-emerald-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.criteria', 'Success criteria')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.criteria', 'Challenge success criteria')} value={data.brief.criteria.join('\n')} onChange={(event) => updateBrief({ criteria: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={4} className='mt-1 w-full rounded-xl border border-emerald-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700'>Constraints
-              <textarea aria-label='Challenge constraints' value={data.brief.constraints.join('\n')} onChange={(event) => updateBrief({ constraints: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={4} className='mt-1 w-full rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.constraints', 'Constraints')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.constraints', 'Challenge constraints')} value={data.brief.constraints.join('\n')} onChange={(event) => updateBrief({ constraints: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={4} className='mt-1 w-full rounded-xl border border-rose-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700'>Deliverable
-              <textarea aria-label='Challenge deliverable' value={data.brief.deliverable} onChange={(event) => updateBrief({ deliverable: event.target.value })} rows={4} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.brief.deliverable', 'Deliverable')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.deliverable', 'Challenge deliverable')} value={data.brief.deliverable} onChange={(event) => updateBrief({ deliverable: event.target.value })} rows={4} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium' />
             </label>
-            <label className='block text-xs font-black text-slate-700 sm:col-span-2'>Evidence boundary
-              <textarea aria-label='Evidence boundary' value={data.brief.evidenceBoundary} onChange={(event) => updateBrief({ evidenceBoundary: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-blue-300 px-3 py-2 text-sm font-medium' />
+            <label className='block text-xs font-black text-slate-700 sm:col-span-2'>{tx('applied_challenge.brief.evidence_boundary', 'Evidence boundary')}
+              <AcTextarea aria-label={tx('applied_challenge.aria.evidence_boundary', 'Evidence boundary')} value={data.brief.evidenceBoundary} onChange={(event) => updateBrief({ evidenceBoundary: event.target.value })} rows={2} className='mt-1 w-full rounded-xl border border-blue-300 px-3 py-2 text-sm font-medium' />
             </label>
             <div className='applied-challenge-no-print flex flex-wrap gap-2 sm:col-span-2'>
-              <button type='button' aria-pressed={!data.brief.factLocked} onClick={() => updateBrief({ factLocked: !data.brief.factLocked })} className='min-h-11 rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950'>{data.brief.factLocked ? 'Unlock facts to edit' : 'Lock lesson facts'}</button>
-              <button type='button' aria-pressed={data.brief.factVerified} disabled={!data.brief.factLocked || data.brief.lockedLessonFacts.length === 0} onClick={() => updateBrief({ factVerified: !data.brief.factVerified })} className='min-h-11 rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm font-black text-emerald-950 disabled:cursor-not-allowed disabled:opacity-50'>{data.brief.factVerified ? 'Mark facts for re-review' : 'Mark facts teacher verified'}</button>
+              <button type='button' aria-pressed={!data.brief.factLocked} onClick={() => updateBrief({ factLocked: !data.brief.factLocked })} className='min-h-11 rounded-xl border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950'>{data.brief.factLocked ? tx('applied_challenge.brief.unlock', 'Unlock facts to edit') : tx('applied_challenge.brief.lock', 'Lock lesson facts')}</button>
+              <button type='button' aria-pressed={data.brief.factVerified} disabled={!data.brief.factLocked || data.brief.lockedLessonFacts.length === 0} onClick={() => updateBrief({ factVerified: !data.brief.factVerified })} className='min-h-11 rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm font-black text-emerald-950 disabled:cursor-not-allowed disabled:opacity-50'>{data.brief.factVerified ? tx('applied_challenge.brief.unverify', 'Mark facts for re-review') : tx('applied_challenge.brief.verify', 'Mark facts teacher verified')}</button>
             </div>
           </div>
         ) : (
           <div className='mt-4 space-y-4'>
             {data.brief.context && <p className='whitespace-pre-wrap text-sm leading-relaxed text-slate-700'>{data.brief.context}</p>}
             <dl className='grid gap-3 text-sm sm:grid-cols-2'>
-              {data.brief.role && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-500'>Your role</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.role}</dd></div>}
-              {data.brief.audience && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-500'>Audience</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.audience}</dd></div>}
+              {data.brief.role && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-500'>{tx('applied_challenge.brief.your_role', 'Your role')}</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.role}</dd></div>}
+              {data.brief.audience && <div className='rounded-2xl bg-slate-50 p-3'><dt className='text-xs font-black uppercase tracking-wide text-slate-500'>{tx('applied_challenge.brief.audience', 'Audience')}</dt><dd className='mt-1 font-bold text-slate-900'>{data.brief.audience}</dd></div>}
             </dl>
-            {data.brief.drivingQuestion && <div className='rounded-2xl border-2 border-orange-200 bg-orange-50 p-4'><h3 className='text-xs font-black uppercase tracking-wide text-orange-800'>Driving question</h3><p className='mt-2 text-lg font-black leading-relaxed text-slate-900'>{data.brief.drivingQuestion}</p></div>}
-            {data.brief.seedDirection && <div className='rounded-2xl border border-violet-200 bg-violet-50 p-4'><h3 className='text-sm font-black text-violet-950'>Lesson-grounded direction</h3><p className='mt-1 text-sm leading-relaxed text-slate-800'>{data.brief.seedDirection}</p></div>}
+            {data.brief.drivingQuestion && <div className='rounded-2xl border-2 border-orange-200 bg-orange-50 p-4'><h3 className='text-xs font-black uppercase tracking-wide text-orange-800'>{tx('applied_challenge.brief.driving_question', 'Driving question')}</h3><p className='mt-2 text-lg font-black leading-relaxed text-slate-900'>{data.brief.drivingQuestion}</p></div>}
+            {data.brief.seedDirection && <div className='rounded-2xl border border-violet-200 bg-violet-50 p-4'><h3 className='text-sm font-black text-violet-950'>{tx('applied_challenge.brief.seed_direction', 'Lesson-grounded direction')}</h3><p className='mt-1 text-sm leading-relaxed text-slate-800'>{data.brief.seedDirection}</p></div>}
             <div className='grid gap-4 lg:grid-cols-2'>
-              <div className='rounded-2xl border border-amber-200 bg-amber-50 p-4'><h3 className='text-sm font-black text-amber-950'>{data.brief.factVerified ? 'Teacher-verified lesson facts' : 'Lesson facts awaiting teacher review'}</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.lockedLessonFacts.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
-              <div className='rounded-2xl border border-sky-200 bg-sky-50 p-4'><h3 className='text-sm font-black text-sky-950'>What remains open</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.openQuestions.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
-              <div className='rounded-2xl border border-emerald-200 bg-emerald-50 p-4'><h3 className='text-sm font-black text-emerald-950'>Success criteria</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.criteria.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
-              <div className='rounded-2xl border border-rose-200 bg-rose-50 p-4'><h3 className='text-sm font-black text-rose-950'>Constraints</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.constraints.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
+              <div className='rounded-2xl border border-amber-200 bg-amber-50 p-4'><h3 className='text-sm font-black text-amber-950'>{data.brief.factVerified ? tx('applied_challenge.brief.facts_verified', 'Teacher-verified lesson facts') : tx('applied_challenge.brief.facts_pending', 'Lesson facts awaiting teacher review')}</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.lockedLessonFacts.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
+              <div className='rounded-2xl border border-sky-200 bg-sky-50 p-4'><h3 className='text-sm font-black text-sky-950'>{tx('applied_challenge.brief.open', 'What remains open')}</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.openQuestions.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
+              <div className='rounded-2xl border border-emerald-200 bg-emerald-50 p-4'><h3 className='text-sm font-black text-emerald-950'>{tx('applied_challenge.brief.criteria', 'Success criteria')}</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.criteria.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
+              <div className='rounded-2xl border border-rose-200 bg-rose-50 p-4'><h3 className='text-sm font-black text-rose-950'>{tx('applied_challenge.brief.constraints', 'Constraints')}</h3><ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800'>{data.brief.constraints.map((item, index) => <li key={index}>{item}</li>)}</ul></div>
             </div>
-            {data.brief.deliverable && <p className='rounded-2xl border border-slate-200 p-4 text-sm text-slate-800'><strong>Deliverable:</strong> {data.brief.deliverable}</p>}
-            <p className='rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950'><strong>Evidence boundary:</strong> {data.brief.evidenceBoundary}</p>
+            {data.brief.deliverable && <p className='rounded-2xl border border-slate-200 p-4 text-sm text-slate-800'><strong>{tx('applied_challenge.brief.deliverable_label', 'Deliverable:')}</strong> {data.brief.deliverable}</p>}
+            <p className='rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950'><strong>{tx('applied_challenge.brief.evidence_boundary_label', 'Evidence boundary:')}</strong> {data.brief.evidenceBoundary}</p>
           </div>
         )}
       </section>
       <section className='applied-challenge-section mb-5 rounded-3xl border border-indigo-200 bg-indigo-50/50 p-5 shadow-sm' aria-labelledby='challenge-support-heading'>
-        <h2 id='challenge-support-heading' className='text-xl font-black text-indigo-950'>Support that fades</h2>
-        <p className='mt-1 text-sm text-slate-700'>{agencyMeta.description}</p>
+        <h2 id='challenge-support-heading' className='text-xl font-black text-indigo-950'>{tx('applied_challenge.supports.heading', 'Support that fades')}</h2>
+        <p className='mt-1 text-sm text-slate-700'>{appliedChallengeAgencyText(data.agencyMode, 'description', t)}</p>
         <div className='mt-4 grid gap-4 lg:grid-cols-3'>
           {(data.agencyMode === 'progressive' || data.agencyMode === 'ai-framed') && <article className='rounded-2xl border border-teal-200 bg-white p-4'>
-            <h3 className='text-sm font-black text-teal-950'>See a parallel reasoning move</h3>
-            <p className='mt-1 text-[11px] text-slate-500'>Different context - not an answer to this challenge.</p>
+            <h3 className='text-sm font-black text-teal-950'>{tx('applied_challenge.supports.example', 'See a parallel reasoning move')}</h3>
+            <p className='mt-1 text-[11px] text-slate-500'>{tx('applied_challenge.supports.example_note', 'Different context - not an answer to this challenge.')}</p>
             {isTeacherMode && isEditing ? <div className='mt-2 space-y-2'>
-              <textarea aria-label='Parallel example context' value={data.supports.parallelExample.context} onChange={(event) => updateSupports({ parallelExample: Object.assign({}, data.supports.parallelExample, { context: event.target.value }) })} rows={2} className='w-full rounded-xl border border-teal-300 px-3 py-2 text-sm' />
-              <textarea aria-label='Parallel example reasoning move' value={data.supports.parallelExample.move} onChange={(event) => updateSupports({ parallelExample: Object.assign({}, data.supports.parallelExample, { move: event.target.value }) })} rows={4} className='w-full rounded-xl border border-teal-300 px-3 py-2 text-sm' />
+              <AcTextarea aria-label={tx('applied_challenge.aria.example_context', 'Parallel example context')} value={data.supports.parallelExample.context} onChange={(event) => updateSupports({ parallelExample: Object.assign({}, data.supports.parallelExample, { context: event.target.value }) })} rows={2} className='w-full rounded-xl border border-teal-300 px-3 py-2 text-sm' />
+              <AcTextarea aria-label={tx('applied_challenge.aria.example_move', 'Parallel example reasoning move')} value={data.supports.parallelExample.move} onChange={(event) => updateSupports({ parallelExample: Object.assign({}, data.supports.parallelExample, { move: event.target.value }) })} rows={4} className='w-full rounded-xl border border-teal-300 px-3 py-2 text-sm' />
             </div> : <>
               <p className='mt-3 text-sm font-bold text-slate-900'>{data.supports.parallelExample.context}</p>
               <p className='mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700'>{data.supports.parallelExample.move}</p>
-              {data.supports.parallelExample.whyItHelps && <p className='mt-2 text-xs text-teal-900'><strong>Notice:</strong> {data.supports.parallelExample.whyItHelps}</p>}
+              {data.supports.parallelExample.whyItHelps && <p className='mt-2 text-xs text-teal-900'><strong>{tx('applied_challenge.supports.notice', 'Notice:')}</strong> {data.supports.parallelExample.whyItHelps}</p>}
             </>}
           </article>}
           {(data.agencyMode === 'progressive' || data.agencyMode === 'co-framed') && <article className='rounded-2xl border border-indigo-200 bg-white p-4'>
-            <h3 className='text-sm font-black text-indigo-950'>Build the frame</h3>
+            <h3 className='text-sm font-black text-indigo-950'>{tx('applied_challenge.supports.frame', 'Build the frame')}</h3>
             {isTeacherMode && isEditing
-              ? <textarea aria-label='Challenge frame starter' value={data.supports.frameStarter} onChange={(event) => updateSupports({ frameStarter: event.target.value })} rows={4} className='mt-2 w-full rounded-xl border border-indigo-300 px-3 py-2 text-sm' />
+              ? <AcTextarea aria-label={tx('applied_challenge.aria.frame_starter', 'Challenge frame starter')} value={data.supports.frameStarter} onChange={(event) => updateSupports({ frameStarter: event.target.value })} rows={4} className='mt-2 w-full rounded-xl border border-indigo-300 px-3 py-2 text-sm' />
               : <p className='mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700'>{data.supports.frameStarter}</p>}
             {data.supports.frameChoices.length > 0 && <ul className='mt-3 list-disc space-y-1 pl-5 text-sm text-slate-700'>{data.supports.frameChoices.map((choice, index) => <li key={index}>{choice}</li>)}</ul>}
           </article>}
           {(data.agencyMode === 'progressive' || data.agencyMode === 'co-framed' || data.agencyMode === 'student-framed') && <article className='rounded-2xl border border-violet-200 bg-white p-4'>
-            <h3 className='text-sm font-black text-violet-950'>Own the next move</h3>
+            <h3 className='text-sm font-black text-violet-950'>{tx('applied_challenge.supports.coach', 'Own the next move')}</h3>
             {isTeacherMode && isEditing
-              ? <textarea aria-label='Applied challenge coach prompts' value={data.supports.coachPrompts.join('\n')} onChange={(event) => updateSupports({ coachPrompts: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={5} className='mt-2 w-full rounded-xl border border-violet-300 px-3 py-2 text-sm' />
+              ? <AcTextarea aria-label={tx('applied_challenge.aria.coach_prompts', 'Applied challenge coach prompts')} value={data.supports.coachPrompts.join('\n')} onChange={(event) => updateSupports({ coachPrompts: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) })} rows={5} className='mt-2 w-full rounded-xl border border-violet-300 px-3 py-2 text-sm' />
               : <ul className='mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700'>{data.supports.coachPrompts.map((prompt, index) => <li key={index}>{prompt}</li>)}</ul>}
           </article>}
         </div>
@@ -1468,133 +1827,153 @@ function AppliedChallengeView(props) {
       <section className='rounded-3xl border border-orange-200 bg-white p-5 shadow-sm' aria-labelledby='challenge-workspace-heading'>
         <div className='flex flex-wrap items-start justify-between gap-3'>
           <div>
-            <h2 id='challenge-workspace-heading' className='text-xl font-black text-slate-900'>Your problem-solving workspace</h2>
-            <p className='mt-1 text-sm text-slate-600'>Your writing stays separate from AI examples, hints, and feedback.</p>
+            <h2 id='challenge-workspace-heading' className='text-xl font-black text-slate-900'>{tx('applied_challenge.workspace.heading', 'Your problem-solving workspace')}</h2>
+            <p className='mt-1 text-sm text-slate-600'>{tx('applied_challenge.workspace.note', 'Your writing stays separate from AI examples, hints, and feedback.')}</p>
             <div className='mt-3 max-w-md' role='status' aria-live='polite'>
               <div className='flex items-center justify-between gap-3 text-xs font-bold text-slate-600'>
-                <span>{workspaceProgress.started} of {workspaceProgress.total} sections started</span>
+                <span>{_apsFill(tx('applied_challenge.workspace.progress', '{started} of {total} sections started'), { started: workspaceProgress.started, total: workspaceProgress.total })}</span>
                 <span>{workspaceProgress.percentage}%</span>
               </div>
-              <progress aria-label='Applied challenge workspace sections started' max={workspaceProgress.total} value={workspaceProgress.started} className='mt-1 h-2 w-full accent-orange-700' />
+              <progress aria-label={tx('applied_challenge.workspace.progress_aria', 'Applied challenge workspace sections started')} max={workspaceProgress.total} value={workspaceProgress.started} className='mt-1 h-2 w-full accent-orange-700' />
             </div>
           </div>
           <div className='applied-challenge-no-print flex flex-wrap items-end gap-2'>
-            <label className='text-xs font-black text-slate-700'>Hint for phase
+            <label className='text-xs font-black text-slate-700'>{tx('applied_challenge.workspace.hint_phase', 'Hint for phase')}
               <select value={hintPhase} onChange={(event) => setHintPhase(event.target.value)} className='mt-1 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium'>
-                {visiblePhases.map((phase) => <option key={phase.id} value={phase.id}>{appliedChallengePhaseLabel(phase, data.family)}</option>)}
+                {visiblePhases.map((phase) => <option key={phase.id} value={phase.id}>{appliedChallengePhaseLabel(phase, data.family, t)}</option>)}
               </select>
             </label>
-            <button type='button' onClick={requestHint} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className='min-h-11 rounded-xl border border-violet-400 bg-violet-50 px-3 py-2 text-sm font-black text-violet-950 disabled:opacity-50'>{busy === 'hint' ? 'Thinking of one hint...' : 'Ask for one hint'}</button>
+            <button type='button' onClick={requestHint} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className='min-h-11 rounded-xl border border-violet-400 bg-violet-50 px-3 py-2 text-sm font-black text-violet-950 disabled:opacity-50'>{busy === 'hint' ? tx('applied_challenge.workspace.hint_busy', 'Thinking of one hint...') : tx('applied_challenge.workspace.hint', 'Ask for one hint')}</button>
           </div>
         </div>
-        {data.coachHint && <p role='status' className='mt-4 rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-950'><strong>Coach hint:</strong> {data.coachHint}</p>}
+        {data.coachHint && <p role='status' className='mt-4 rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-950'><strong>{tx('applied_challenge.workspace.coach_hint', 'Coach hint:')}</strong> {data.coachHint}</p>}
         <section className='applied-challenge-section mt-5 rounded-2xl border border-cyan-200 bg-cyan-50/60 p-4' aria-labelledby='evidence-ledger-heading'>
           <div className='flex flex-wrap items-start justify-between gap-3'>
             <div>
-              <h3 id='evidence-ledger-heading' className='text-base font-black text-cyan-950'>Evidence &amp; decision ledger</h3>
-              <p className='mt-1 max-w-3xl text-xs leading-relaxed text-slate-600'>Optional organizer: connect each important claim or option to support, label its certainty honestly, and keep a tradeoff or uncertainty visible.</p>
-              {evidenceLedgerProgress.total > 0 && <p role='status' aria-live='polite' className='mt-2 text-xs font-bold text-cyan-950'>{evidenceLedgerProgress.complete} of {evidenceLedgerProgress.total} rows have both a claim and support · {evidenceLedgerProgress.verified} verified · {evidenceLedgerProgress.needsCheck} need checking · {evidenceLedgerProgress.assumptions} {evidenceLedgerProgress.assumptions === 1 ? 'assumption' : 'assumptions'}</p>}
-              {!data.brief.factVerified && <p className='mt-2 text-xs font-bold text-amber-800'>Lesson facts are awaiting teacher review, so ledger evidence cannot yet make the overall response “grounded.”</p>}
+              <h3 id='evidence-ledger-heading' className='text-base font-black text-cyan-950'>{tx('applied_challenge.ledger.heading', 'Evidence & decision ledger')}</h3>
+              <p className='mt-1 max-w-3xl text-xs leading-relaxed text-slate-600'>{tx('applied_challenge.ledger.note', 'Optional organizer: connect each important claim or option to support, label its certainty honestly, and keep a tradeoff or uncertainty visible.')}</p>
+              {evidenceLedgerProgress.total > 0 && <p role='status' aria-live='polite' className='mt-2 text-xs font-bold text-cyan-950'>{_apsFill(tx('applied_challenge.ledger.progress', '{complete} of {total} rows have both a claim and support · {verified} verified · {needsCheck} need checking · {assumptions} assumptions'), evidenceLedgerProgress)}</p>}
+              {!data.brief.factVerified && <p className='mt-2 text-xs font-bold text-amber-800'>{tx('applied_challenge.ledger.facts_pending', 'Lesson facts are awaiting teacher review, so ledger evidence cannot yet make the overall response "grounded."')}</p>}
             </div>
-            <button type='button' onClick={addEvidenceLedgerRow} disabled={data.evidenceLedger.length >= 12} className='applied-challenge-no-print min-h-11 rounded-xl border border-cyan-600 bg-white px-3 py-2 text-sm font-black text-cyan-950 disabled:opacity-50'>Add evidence row</button>
+            <div className='flex flex-wrap gap-2'>
+              {renderOrganizerToggle(ledgerExpanded, setLedgerExpanded, 'applied-ledger-body')}
+              <button type='button' onClick={addEvidenceLedgerRow} disabled={data.evidenceLedger.length >= 12} className='applied-challenge-no-print min-h-11 rounded-xl border border-cyan-600 bg-white px-3 py-2 text-sm font-black text-cyan-950 disabled:opacity-50'>{tx('applied_challenge.ledger.add_row', 'Add evidence row')}</button>
+            </div>
           </div>
+          <div id='applied-ledger-body' hidden={!ledgerExpanded}>
           {data.evidenceLedger.length === 0 ? (
-            <p className='mt-4 rounded-xl border border-dashed border-cyan-300 bg-white/70 p-4 text-sm text-slate-600'>No ledger rows yet. Add one when a claim, option, or assumption becomes important to your decision.</p>
+            <p className='mt-4 rounded-xl border border-dashed border-cyan-300 bg-white/70 p-4 text-sm text-slate-600'>{tx('applied_challenge.ledger.empty', 'No ledger rows yet. Add one when a claim, option, or assumption becomes important to your decision.')}</p>
           ) : (
             <div className='mt-4 space-y-4'>
               {data.evidenceLedger.map((row, index) => {
                 const rowNumber = index + 1;
-                const statusMeta = APPLIED_CHALLENGE_EVIDENCE_STATUSES[row.status];
+                const statusDescription = _apsT(t, 'applied_challenge.evidence_status.' + row.status + '.description', APPLIED_CHALLENGE_EVIDENCE_STATUSES[row.status].description);
                 return <fieldset key={row.id} className='rounded-2xl border border-cyan-200 bg-white p-4'>
-                  <legend className='px-1 text-sm font-black text-cyan-950'>Evidence row {rowNumber}</legend>
+                  <legend className='px-1 text-sm font-black text-cyan-950'>{_apsFill(tx('applied_challenge.ledger.row', 'Evidence row {n}'), { n: rowNumber })}</legend>
                   <div className='grid gap-3 lg:grid-cols-2'>
-                    <label className='block text-xs font-black text-slate-700'>Claim, option, or position
-                      <textarea aria-label={'Evidence row ' + rowNumber + ' claim, option, or position'} value={row.claim} onChange={(event) => updateEvidenceLedgerRow(row.id, { claim: event.target.value })} rows={2} placeholder='What are you considering or claiming?' className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900' />
+                    <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.ledger.claim', 'Claim, option, or position')}
+                      <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.ledger_claim', 'Evidence row {n} claim, option, or position'), { n: rowNumber })} value={row.claim} onChange={(event) => updateEvidenceLedgerRow(row.id, { claim: event.target.value })} rows={2} placeholder={tx('applied_challenge.ledger.claim_placeholder', 'What are you considering or claiming?')} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900' />
                     </label>
-                    <label className='block text-xs font-black text-slate-700'>Evidence or lesson connection
-                      <textarea aria-label={'Evidence row ' + rowNumber + ' evidence or lesson connection'} value={row.evidence} onChange={(event) => updateEvidenceLedgerRow(row.id, { evidence: event.target.value })} rows={2} placeholder='What supports it, or what would you need to verify?' className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900' />
+                    <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.ledger.evidence', 'Evidence or lesson connection')}
+                      <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.ledger_evidence', 'Evidence row {n} evidence or lesson connection'), { n: rowNumber })} value={row.evidence} onChange={(event) => updateEvidenceLedgerRow(row.id, { evidence: event.target.value })} rows={2} placeholder={tx('applied_challenge.ledger.evidence_placeholder', 'What supports it, or what would you need to verify?')} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900' />
                     </label>
-                    <label className='block text-xs font-black text-slate-700'>Evidence status
-                      <select aria-label={'Evidence row ' + rowNumber + ' status'} value={row.status} onChange={(event) => updateEvidenceLedgerRow(row.id, { status: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
-                        {Object.entries(APPLIED_CHALLENGE_EVIDENCE_STATUSES).map(([id, meta]) => <option key={id} value={id} disabled={id === 'verified' && !data.brief.factVerified}>{meta.label}</option>)}
+                    <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.ledger.status', 'Evidence status')}
+                      <select aria-label={_apsFill(tx('applied_challenge.aria.ledger_status', 'Evidence row {n} status'), { n: rowNumber })} value={row.status} onChange={(event) => updateEvidenceLedgerRow(row.id, { status: event.target.value })} className='mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900'>
+                        {Object.keys(APPLIED_CHALLENGE_EVIDENCE_STATUSES).map((id) => <option key={id} value={id} disabled={id === 'verified' && !data.brief.factVerified}>{appliedChallengeLookupLabel(APPLIED_CHALLENGE_EVIDENCE_STATUSES, 'evidence_status', id, t)}</option>)}
                       </select>
-                      <span className='mt-1 block font-medium leading-relaxed text-slate-500'>{statusMeta.description}</span>
+                      <span className='mt-1 block font-medium leading-relaxed text-slate-500'>{statusDescription}</span>
                     </label>
-                    <label className='block text-xs font-black text-slate-700'>Tradeoff, constraint, or uncertainty
-                      <textarea aria-label={'Evidence row ' + rowNumber + ' tradeoff, constraint, or uncertainty'} value={row.tradeoff} onChange={(event) => updateEvidenceLedgerRow(row.id, { tradeoff: event.target.value })} rows={2} placeholder='What might this miss, cost, risk, or leave unresolved?' className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900' />
+                    <label className='block text-xs font-black text-slate-700'>{tx('applied_challenge.ledger.tradeoff', 'Tradeoff, constraint, or uncertainty')}
+                      <AcTextarea aria-label={_apsFill(tx('applied_challenge.aria.ledger_tradeoff', 'Evidence row {n} tradeoff, constraint, or uncertainty'), { n: rowNumber })} value={row.tradeoff} onChange={(event) => updateEvidenceLedgerRow(row.id, { tradeoff: event.target.value })} rows={2} placeholder={tx('applied_challenge.ledger.tradeoff_placeholder', 'What might this miss, cost, risk, or leave unresolved?')} className='mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900' />
                     </label>
                   </div>
-                  <button type='button' onClick={() => removeEvidenceLedgerRow(row.id)} className='applied-challenge-no-print mt-3 min-h-11 rounded-xl border border-rose-300 bg-white px-3 py-2 text-xs font-black text-rose-800'>Remove evidence row {rowNumber}</button>
+                  <button type='button' onClick={() => removeEvidenceLedgerRow(row.id)} className='applied-challenge-no-print mt-3 min-h-11 rounded-xl border border-rose-300 bg-white px-3 py-2 text-xs font-black text-rose-800'>{_apsFill(tx('applied_challenge.ledger.remove_row', 'Remove evidence row {n}'), { n: rowNumber })}</button>
                 </fieldset>;
               })}
             </div>
           )}
+          </div>
         </section>
         <div className='mt-5 space-y-4'>
           {draftPhases.map(renderWorkspacePhase)}
         </div>
+        {renderSelfCheck()}
         <section className='applied-challenge-section mt-5 rounded-2xl border border-fuchsia-200 bg-fuchsia-50/60 p-4' aria-labelledby='challenge-stress-test-heading'>
           <div className='flex flex-wrap items-start justify-between gap-3'>
             <div>
-              <h3 id='challenge-stress-test-heading' className='text-base font-black text-fuchsia-950'>Pressure-test the draft</h3>
-              <p className='mt-1 max-w-3xl text-xs leading-relaxed text-slate-600'>Ask for one targeted challenge focused on {familyMeta.stressTestFocus}. The AI identifies a pressure point but does not write the revision.</p>
+              <h3 id='challenge-stress-test-heading' className='text-base font-black text-fuchsia-950'>{tx('applied_challenge.stress.heading', 'Pressure-test the draft')}</h3>
+              <p className='mt-1 max-w-3xl text-xs leading-relaxed text-slate-600'>{_apsFill(tx('applied_challenge.stress.note', 'Ask for one targeted challenge focused on {focus}. The AI identifies a pressure point but does not write the revision.'), { focus: familyStressFocus })}</p>
             </div>
-            <button type='button' onClick={requestStressTest} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className='applied-challenge-no-print min-h-11 rounded-xl border border-fuchsia-500 bg-white px-3 py-2 text-sm font-black text-fuchsia-950 disabled:opacity-50'>{busy === 'stress-test' ? 'Testing one pressure point...' : data.stressTest ? 'Refresh stress test' : 'Stress-test my draft'}</button>
+            <button type='button' onClick={requestStressTest} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className='applied-challenge-no-print min-h-11 rounded-xl border border-fuchsia-500 bg-white px-3 py-2 text-sm font-black text-fuchsia-950 disabled:opacity-50'>{busy === 'stress-test' ? tx('applied_challenge.stress.busy', 'Testing one pressure point...') : data.stressTest ? tx('applied_challenge.stress.refresh', 'Refresh stress test') : tx('applied_challenge.stress.request', 'Stress-test my draft')}</button>
           </div>
           {data.stressTest ? (
             <div className='mt-4 rounded-2xl border border-fuchsia-200 bg-white p-4'>
               <div className='flex flex-wrap items-center justify-between gap-2'>
-                <h4 className='text-sm font-black text-fuchsia-950'>One challenge to investigate</h4>
-                <span className={'rounded-full px-3 py-1 text-xs font-black ' + (stressTestOutdated ? 'bg-amber-100 text-amber-950' : 'bg-fuchsia-100 text-fuchsia-950')}>{!data.stressTest.draftFingerprint ? 'Saved pressure test' : stressTestOutdated ? 'Created for an earlier draft' : 'Current draft'}</span>
+                <h4 className='text-sm font-black text-fuchsia-950'>{tx('applied_challenge.stress.one_challenge', 'One challenge to investigate')}</h4>
+                <span className={'rounded-full px-3 py-1 text-xs font-black ' + (stressTestOutdated ? 'bg-amber-100 text-amber-950' : 'bg-fuchsia-100 text-fuchsia-950')}>{!data.stressTest.draftFingerprint ? tx('applied_challenge.stress.saved', 'Saved pressure test') : stressTestOutdated ? tx('applied_challenge.stress.outdated', 'Created for an earlier draft') : tx('applied_challenge.stress.current', 'Current draft')}</span>
               </div>
-              {stressTestOutdated && <p role='status' className='mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-950'>Your draft changed after this test was created. Save it in a check if you want to preserve how you responded before refreshing it.</p>}
+              {stressTestOutdated && <p role='status' className='mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-950'>{tx('applied_challenge.stress.outdated_note', 'Your draft changed after this test was created. Save it in a check if you want to preserve how you responded before refreshing it.')}</p>}
               <dl className='mt-3 grid gap-3 text-sm md:grid-cols-2'>
-                <div className='md:col-span-2'><dt className='font-black text-fuchsia-900'>Pressure point</dt><dd className='mt-1 whitespace-pre-wrap text-slate-800'>{data.stressTest.challenge}</dd></div>
-                {data.stressTest.whyItMatters && <div><dt className='font-black text-fuchsia-900'>Why it matters</dt><dd className='mt-1 whitespace-pre-wrap text-slate-800'>{data.stressTest.whyItMatters}</dd></div>}
-                {data.stressTest.question && <div><dt className='font-black text-fuchsia-900'>Question for your revision</dt><dd className='mt-1 whitespace-pre-wrap text-slate-800'>{data.stressTest.question}</dd></div>}
+                <div className='md:col-span-2'><dt className='font-black text-fuchsia-900'>{tx('applied_challenge.stress.point', 'Pressure point')}</dt><dd className='mt-1 whitespace-pre-wrap text-slate-800'>{data.stressTest.challenge}</dd></div>
+                {data.stressTest.whyItMatters && <div><dt className='font-black text-fuchsia-900'>{tx('applied_challenge.stress.why', 'Why it matters')}</dt><dd className='mt-1 whitespace-pre-wrap text-slate-800'>{data.stressTest.whyItMatters}</dd></div>}
+                {data.stressTest.question && <div><dt className='font-black text-fuchsia-900'>{tx('applied_challenge.stress.question', 'Question for your revision')}</dt><dd className='mt-1 whitespace-pre-wrap text-slate-800'>{data.stressTest.question}</dd></div>}
               </dl>
               <div className='applied-challenge-no-print mt-3 flex flex-wrap items-center gap-3'>
-                <button type='button' onClick={startValidationCycleFromStressTest} disabled={data.validationCycles.length >= 6} className='min-h-11 rounded-xl border border-fuchsia-400 bg-fuchsia-50 px-3 py-2 text-xs font-black text-fuchsia-950 disabled:opacity-50'>Use this pressure point in a check</button>
-                <span className='text-xs text-slate-500'>You can use, adapt, or decline it—and explain why.</span>
+                <button type='button' onClick={startValidationCycleFromStressTest} disabled={data.validationCycles.length >= 6} className='min-h-11 rounded-xl border border-fuchsia-400 bg-fuchsia-50 px-3 py-2 text-xs font-black text-fuchsia-950 disabled:opacity-50'>{tx('applied_challenge.stress.use_in_check', 'Use this pressure point in a check')}</button>
+                <span className='text-xs text-slate-500'>{tx('applied_challenge.stress.use_note', 'You can use, adapt, or decline it, and explain why.')}</span>
               </div>
             </div>
-          ) : <p className='mt-4 rounded-xl border border-dashed border-fuchsia-300 bg-white/70 p-4 text-sm text-slate-600'>Add a working question and draft response, then request one challenge when you are ready to test your reasoning.</p>}
+          ) : <p className='mt-4 rounded-xl border border-dashed border-fuchsia-300 bg-white/70 p-4 text-sm text-slate-600'>{tx('applied_challenge.stress.empty', 'Add a working question and draft response, then request one challenge when you are ready to test your reasoning.')}</p>}
         </section>
         <section className='applied-challenge-section mt-5 rounded-2xl border border-blue-200 bg-blue-50/50 p-4' aria-labelledby='challenge-validation-heading'>
           <div className='flex flex-wrap items-start justify-between gap-3'>
             <div>
-              <h3 id='challenge-validation-heading' className='text-base font-black text-blue-950'>Test, observe, decide</h3>
-              <p className='mt-1 max-w-3xl text-xs leading-relaxed text-slate-600'>Keep an optional trail of checks. Plan what could change your mind, report only what actually happened, then make a student-owned decision.</p>
-              {validationCyclesProgress.total > 0 && <p role='status' aria-live='polite' className='mt-2 text-xs font-bold text-blue-950'>{validationCyclesProgress.complete} of {validationCyclesProgress.total} checks complete</p>}
+              <h3 id='challenge-validation-heading' className='text-base font-black text-blue-950'>{tx('applied_challenge.validation.heading', 'Test, observe, decide')}</h3>
+              <p className='mt-1 max-w-3xl text-xs leading-relaxed text-slate-600'>{tx('applied_challenge.validation.note', 'Keep an optional trail of checks. Plan what could change your mind, report only what actually happened, then make a student-owned decision.')}</p>
+              {validationCyclesProgress.total > 0 && <p role='status' aria-live='polite' className='mt-2 text-xs font-bold text-blue-950'>{_apsFill(tx('applied_challenge.validation.progress', '{complete} of {total} checks complete'), validationCyclesProgress)}</p>}
             </div>
-            <button type='button' onClick={startOwnValidationCycle} disabled={data.validationCycles.length >= 6} className='applied-challenge-no-print min-h-11 rounded-xl border border-blue-600 bg-white px-3 py-2 text-sm font-black text-blue-950 disabled:opacity-50'>Start my own check</button>
+            <div className='flex flex-wrap gap-2'>
+              {renderOrganizerToggle(checksExpanded, setChecksExpanded, 'applied-checks-body')}
+              <button type='button' onClick={startOwnValidationCycle} disabled={data.validationCycles.length >= 6} className='applied-challenge-no-print min-h-11 rounded-xl border border-blue-600 bg-white px-3 py-2 text-sm font-black text-blue-950 disabled:opacity-50'>{tx('applied_challenge.validation.start', 'Start my own check')}</button>
+            </div>
           </div>
+          <div id='applied-checks-body' hidden={!checksExpanded}>
           {data.validationCycles.length === 0
-            ? <p className='mt-4 rounded-xl border border-dashed border-blue-300 bg-white/70 p-4 text-sm text-slate-600'>No checks saved yet. You can test the draft without AI, or bring the current pressure point into a check.</p>
+            ? <p className='mt-4 rounded-xl border border-dashed border-blue-300 bg-white/70 p-4 text-sm text-slate-600'>{tx('applied_challenge.validation.empty', 'No checks saved yet. You can test the draft without AI, or bring the current pressure point into a check.')}</p>
             : <div className='mt-4 space-y-3'>{data.validationCycles.map(renderValidationCycle)}</div>}
-          <p className='mt-3 text-xs text-slate-500'>Plans, predictions, observations, and decisions stay visibly separate. Refreshing AI support never removes a saved check.</p>
+          <p className='mt-3 text-xs text-slate-500'>{tx('applied_challenge.validation.footer', 'Plans, predictions, observations, and decisions stay visibly separate. Refreshing AI support never removes a saved check.')}</p>
+          </div>
         </section>
         {synthesisPhases.length > 0 && <section className='mt-5' aria-labelledby='challenge-synthesis-heading'>
-          <h3 id='challenge-synthesis-heading' className='text-base font-black text-slate-900'>Synthesize what you learned</h3>
-          <p className='mt-1 text-xs text-slate-600'>Use the checks above to explain testing, revision, and transfer in your own words.</p>
+          <h3 id='challenge-synthesis-heading' className='text-base font-black text-slate-900'>{tx('applied_challenge.synthesis.heading', 'Synthesize what you learned')}</h3>
+          <p className='mt-1 text-xs text-slate-600'>{tx('applied_challenge.synthesis.note', 'Use the checks above to explain testing, revision, and transfer in your own words.')}</p>
           <div className='mt-4 space-y-4'>{synthesisPhases.map(renderWorkspacePhase)}</div>
         </section>}
         <div className='applied-challenge-no-print mt-5 flex flex-wrap items-center gap-3'>
-          <button type='button' onClick={requestFeedback} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className='min-h-11 rounded-xl bg-orange-700 px-4 py-2 text-sm font-black text-white disabled:opacity-50'>{busy === 'feedback' ? 'Reviewing your reasoning...' : 'Get strengths-first AI feedback'}</button>
-          <span className='text-xs text-slate-500'>Feedback is saved separately and never rewrites the workspace.</span>
+          <button type='button' onClick={requestFeedback} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className='min-h-11 rounded-xl bg-orange-700 px-4 py-2 text-sm font-black text-white disabled:opacity-50'>{busy === 'feedback' ? tx('applied_challenge.feedback.busy', 'Reviewing your reasoning...') : tx('applied_challenge.feedback.request', 'Get strengths-first AI feedback')}</button>
+          <span className='text-xs text-slate-500'>{tx('applied_challenge.feedback.note', 'Feedback is saved separately and never rewrites the workspace.')}</span>
         </div>
-        {data.feedback && <section aria-label='AI feedback' className='mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4'>
+        {data.feedback && <section aria-label={tx('applied_challenge.feedback.aria', 'AI feedback')} className='mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4'>
           <div className='flex flex-wrap items-center justify-between gap-2'>
-            <h3 className='text-sm font-black text-emerald-950'>Feedback for your next revision</h3>
-            <span className='rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-950'>{data.feedback.status === 'grounded' ? 'Grounded in verified facts' : data.feedback.status === 'needs-check' ? 'Fact check needed' : 'Developing'}</span>
+            <h3 className='text-sm font-black text-emerald-950'>{tx('applied_challenge.feedback.heading', 'Feedback for your next revision')}</h3>
+            <span className='rounded-full bg-white px-3 py-1 text-xs font-black text-emerald-950'>{appliedChallengeFeedbackStatusLabel(data.feedback.status, t)}</span>
           </div>
           <dl className='mt-3 grid gap-3 text-sm md:grid-cols-2'>
-            <div><dt className='font-black text-emerald-900'>A strength</dt><dd className='mt-1 text-slate-800'>{data.feedback.strength}</dd></div>
-            <div><dt className='font-black text-emerald-900'>Lesson connection</dt><dd className='mt-1 text-slate-800'>{data.feedback.lessonConnectionCheck}</dd></div>
-            <div><dt className='font-black text-emerald-900'>Evidence, assumptions, or constraints</dt><dd className='mt-1 text-slate-800'>{data.feedback.evidenceOrConstraintCheck}</dd></div>
-            <div><dt className='font-black text-emerald-900'>One next step</dt><dd className='mt-1 text-slate-800'>{data.feedback.nextStep}</dd></div>
-            {data.feedback.question && <div className='md:col-span-2'><dt className='font-black text-emerald-900'>Think about</dt><dd className='mt-1 text-slate-800'>{data.feedback.question}</dd></div>}
+            <div><dt className='font-black text-emerald-900'>{tx('applied_challenge.feedback.strength', 'A strength')}</dt><dd className='mt-1 text-slate-800'>{data.feedback.strength}</dd></div>
+            <div><dt className='font-black text-emerald-900'>{tx('applied_challenge.feedback.lesson', 'Lesson connection')}</dt><dd className='mt-1 text-slate-800'>{data.feedback.lessonConnectionCheck}</dd></div>
+            <div><dt className='font-black text-emerald-900'>{tx('applied_challenge.feedback.evidence', 'Evidence, assumptions, or constraints')}</dt><dd className='mt-1 text-slate-800'>{data.feedback.evidenceOrConstraintCheck}</dd></div>
+            <div><dt className='font-black text-emerald-900'>{tx('applied_challenge.feedback.next_step', 'One next step')}</dt><dd className='mt-1 text-slate-800'>{data.feedback.nextStep}</dd></div>
+            {data.feedback.question && <div className='md:col-span-2'><dt className='font-black text-emerald-900'>{tx('applied_challenge.feedback.question', 'Think about')}</dt><dd className='mt-1 text-slate-800'>{data.feedback.question}</dd></div>}
           </dl>
+        </section>}
+        {(isTeacherMode || data.teacherComment) && <section aria-labelledby='challenge-teacher-comment-heading' className='mt-5 rounded-2xl border border-orange-200 bg-orange-50/60 p-4'>
+          <h3 id='challenge-teacher-comment-heading' className='text-sm font-black text-orange-950'>{tx('applied_challenge.teacher_comment.heading', 'Teacher comment')}</h3>
+          {isTeacherMode
+            ? <>
+              <p className='mt-1 text-xs text-slate-600'>{tx('applied_challenge.teacher_comment.note', 'Saved with the challenge and shown to the student. It never replaces the student\'s work.')}</p>
+              <AcTextarea aria-label={tx('applied_challenge.teacher_comment.aria', 'Teacher comment for the student')} value={data.teacherComment ? data.teacherComment.text : ''} onChange={(event) => updateTeacherComment(event.target.value)} rows={3} maxLength={4000} placeholder={tx('applied_challenge.teacher_comment.placeholder', 'What is working, and one thing to try next...')} className='mt-2 w-full rounded-xl border border-orange-300 bg-white px-3 py-2 text-sm text-slate-900' />
+            </>
+            : <p className='mt-2 whitespace-pre-wrap text-sm text-slate-800'>{data.teacherComment.text}</p>}
         </section>}
       </section>
     </main>

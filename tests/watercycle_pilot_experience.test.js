@@ -75,7 +75,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(guideBlock.match(/aria-live/g) || []).toHaveLength(1);
     expect(guideBlock).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
     expect(source).not.toContain("className: 'wc-pilot-objective'");
-    expect(source).toContain('Follow the Next goal instruction below the scene.');
+    expect(source).toContain('Follow the Next goal panel at the top right of the scene.');
     expect(source).toContain('Watch Next goal, the phase badge, and the meters explain every transformation.');
     expect(source).not.toContain('Do this next');
   });
@@ -310,7 +310,7 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain("'rain>soil': {");
     expect(source).toContain("t('stem.watercycle.pilot_why_you_changed', 'Why you changed')");
     expect(source).toContain("className: 'wc-pilot-transition-evidence'");
-    expect(source).toContain("setPilot({ snapshot: null, lastChange: null });");
+    expect(source).toContain("setPilot({ snapshot: null, lastChange: null, lastCycle: null });");
   });
 
   it('continues landfall through visible, playable watershed pathways', () => {
@@ -356,7 +356,9 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
     expect(source).toContain('var pilotStagesSeen = Object.assign({}, pilotStored.stagesSeen || {}, snap.stagesSeen || {});');
     expect(source).toContain('stagesSeen: cumulativePilotStages');
     expect(source).toContain('var totalPilotLoops = pilotStored.loopsCompleted || 0;');
-    expect(source).toContain('loopsCompleted: (cur.loopsCompleted || 0) + loopDelta');
+    expect(source).toContain('var cycleNumber = (cur.loopsCompleted || 0) + loopDelta;');
+    expect(source).toContain('loopsCompleted: cycleNumber,');
+    expect(source).toContain("lastCycle: {");
     expect(source).toContain("var landingRouteByForm = { liquid: 'water', runoff: 'runoff', soil: 'infiltration', plant: 'plant' };");
     expect(source).toContain("note: sim.note || ''");
     expect(source).toContain('var isLiveTransition = WCPK.isLiveTransition(prevSnap, next);');
@@ -700,8 +702,10 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water experience layer (%s)', (filePath
   });
 
   it('keeps keyboard, touch, focus-loss, and assistive-control input from lying or sticking', () => {
-    expect(source).toContain("['w', 'a', 's', 'd', 'f', 'b', 'arrowup'");
-    expect(source).toContain('(keyState.f || input.fwd ? 1 : 0) - (keyState.b || input.back ? 1 : 0)');
+    expect(source).toContain("['w', 'a', 's', 'd', 'f', 'b', 'e', 'q', 'arrowup'");
+    expect(source).toContain("surge = (keyState.w || keyState.arrowup || keyState.f || input.fwd ? 1 : 0)");
+    expect(source).toContain("thrust = (keyState[' '] || keyState.e || input.up ? 1 : 0)");
+    expect(source).toContain("- (keyState.s || keyState.arrowdown || keyState.b || input.back ? 1 : 0)");
     expect(source).toContain('function clearPilotKeyboardState()');
     expect(source).toContain('function clearPilotInputs()');
     expect(source).toContain('activePointers = {};');
@@ -1017,7 +1021,7 @@ describe.each([
     expect(uiSource).toContain('"pilot_now": "Now"');
     expect(uiSource).toContain('"pilot_next_goal": "Next goal"');
     expect(uiSource).toContain('"pilot_do_this_next": "Next goal"');
-    expect(uiSource).toContain('Follow the Next goal instruction below the scene.');
+    expect(uiSource).toContain('Follow the Next goal panel at the top right of the scene.');
     expect(uiSource).toContain('Watch Next goal, the phase badge, and the meters explain every transformation.');
     expect(uiSource).toContain('"sect_fly_one_parcel_through_every_form": "Pilot one parcel through changing states and pathways"');
     expect(uiSource).not.toContain('"mode_flagship":');

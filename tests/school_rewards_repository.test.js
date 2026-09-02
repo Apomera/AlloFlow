@@ -32,6 +32,7 @@ function harness() {
   const mail = [];
   const mailObservations = [];
   const triggers = [];
+  const rangeReads = {};
   const uuid = prefix => `${prefix}-${String(nextId++).padStart(12, '0')}`;
   class Range {
     constructor(sheet, row, col, rowCount = 1, colCount = 1) { Object.assign(this, { sheet, row, col, rowCount, colCount }); }
@@ -46,7 +47,7 @@ function harness() {
     constructor(name) { this.name = name; this.data = []; this.maxColumns = 26; }
     setName(name) { this.name = name; return this; }
     getLastRow() { for (let i = this.data.length - 1; i >= 0; i -= 1) if ((this.data[i] || []).some(value => value !== '' && value != null)) return i + 1; return 0; }
-    getRange(row, col, rowCount = 1, colCount = 1) { if (col + colCount - 1 > this.maxColumns) throw new Error('Range exceeds grid limits'); return new Range(this, row, col, rowCount, colCount); }
+    getRange(row, col, rowCount = 1, colCount = 1) { if (col + colCount - 1 > this.maxColumns) throw new Error('Range exceeds grid limits'); rangeReads[this.name] = (rangeReads[this.name] || 0) + 1; return new Range(this, row, col, rowCount, colCount); }
     getMaxColumns() { return this.maxColumns; }
     insertColumnsAfter(after, count) { if (after !== this.maxColumns || count < 1) throw new Error('Invalid column expansion'); this.maxColumns += count; return this; }
     appendRow(row) { if (row.length > this.maxColumns) throw new Error('Row exceeds grid limits'); this.data[this.getLastRow()] = [...row]; return this; }
@@ -222,6 +223,8 @@ function harness() {
       const row = config.data.findIndex(values => values[0] === 'schemaVersion');
       if (row >= 0) config.data[row][1] = '5';
     },
+    rangeReads: name => rangeReads[name] || 0,
+    resetRangeReads: () => { Object.keys(rangeReads).forEach(name => { delete rangeReads[name]; }); },
     configValue: key => {
       const book = books.get(properties.get('SR_SPREADSHEET_ID'));
       const row = book.getSheetByName('Config').data.find(values => values[0] === key);
@@ -2176,5 +2179,206 @@ describe('School Rewards Apps Script repository', () => {
     expect(() => cursor.call('continueSchoolRewardsMailRuns')).toThrow(/run signature/i);
     expect(cursor.mail).toHaveLength(0);
     expect(queued.status).toBe('PAUSED_QUOTA');
+  });
+});
+
+// 2026-09-02: per-request sheet reads, group awards, and the status page.
+describe('bootstrap cost at roster scale', () => {
+  it('reads the PointHolds sheet once per bootstrap no matter how many students are enrolled', () => {
+    const h = harness();
+    setup(h);
+    const students = Array.from({ length: 40 }, (_, index) => ({ firstName: `Student${index}`, lastInitial: 'S', grade: '4', homeroom: '4B', email: `student${index}@${DOMAIN}` }));
+    h.call('adminBulkUpsertRewardsStudents', students);
+    h.resetRangeReads();
+    const bootstrap = h.call('getSchoolRewardsBootstrap');
+    expect(bootstrap.students.length).toBe(41);
+    // One read for the roster loop plus, at most, one for the actor's own row.
+    expect(h.rangeReads('PointHolds')).toBeLessThanOrEqual(2);
+    h.resetRangeReads();
+    h.setActive(STUDENT);
+    h.call('getSchoolRewardsBootstrap');
+    expect(h.rangeReads('PointHolds')).toBeLessThanOrEqual(2);
+    h.setActive(ADMIN);
+    h.resetRangeReads();
+    h.call('getSchoolRewardsDistrictSummary', {});
+    expect(h.rangeReads('PointHolds')).toBeLessThanOrEqual(2);
+  });
+});
+
+describe('group awards', () => {
+  it('records one journaled award per student and is idempotent under an exact retry', () => {
+    const h = harness();
+    setup(h);
+    h.call('adminBulkUpsertRewardsStudents', [
+      { firstName: 'Blake', lastInitial: 'T', grade: '5', homeroom: '5A', email: `blake@${DOMAIN}` },
+      { firstName: 'Casey', lastInitial: 'U', grade: '5', homeroom: '5A', email: `casey@${DOMAIN}` },
+    ]);
+    const category = seededCategory(h);
+    const ids = h.call('getSchoolRewardsBootstrap').students.map(student => student.id);
+    h.setActive(STAFF);
+    const request = { studentIds: ids.concat([ids[0]]), amount: 3, categoryId: category.id, reason: 'Cleaned up the lab together', idempotencyKey: 'group_award_test_0001' };
+    const first = h.call('awardSchoolRewardsPointsBatch', request);
+    expect(first.ok).toBe(true);
+    expect(first.recorded).toBe(3);
+    expect(first.failed).toBe(0);
+    const again = h.call('awardSchoolRewardsPointsBatch', request);
+    expect(again.recorded).toBe(3);
+    h.setActive(ADMIN);
+    const after = h.call('getSchoolRewardsBootstrap');
+    for (const student of after.students) expect(student.balance).toBe(3);
+    const ledger = h.rows('Ledger').slice(1).filter(row => row[2] === 'EARN');
+    expect(ledger.length).toBe(3);
+    expect(h.rows('Audit').some(row => row[1] === 'GROUP_AWARD')).toBe(true);
+  });
+
+  it('reports the students it could not record without dropping the rest, and bounds the group', () => {
+    const h = harness();
+    const avery = setup(h);
+    const category = seededCategory(h);
+    h.setActive(STAFF);
+    const out = h.call('awardSchoolRewardsPointsBatch', { studentIds: [avery.id, 'student_does_not_exist'], amount: 2, categoryId: category.id, reason: 'Helped a classmate', idempotencyKey: 'group_award_test_0002' });
+    expect(out.ok).toBe(false);
+    expect(out.recorded).toBe(1);
+    expect(out.failed).toBe(1);
+    expect(out.results.find(result => !result.ok).studentId).toBe('student_does_not_exist');
+    expect(() => h.call('awardSchoolRewardsPointsBatch', { studentIds: Array.from({ length: 61 }, (_, i) => `student_${String(i).padStart(8, '0')}`), amount: 1, categoryId: category.id, reason: 'x', idempotencyKey: 'group_award_test_0003' })).toThrow(/60 students or fewer/);
+    expect(() => h.call('awardSchoolRewardsPointsBatch', { studentIds: [avery.id], amount: 1, categoryId: category.id, reason: '', idempotencyKey: 'group_award_test_0004' })).toThrow(/Describe what/);
+    h.setActive(CASHIER);
+    expect(() => h.call('awardSchoolRewardsPointsBatch', { studentIds: [avery.id], amount: 1, categoryId: category.id, reason: 'x', idempotencyKey: 'group_award_test_0005' })).toThrow(/role cannot/);
+  });
+});
+
+describe('deployment status page', () => {
+  it('renders a plain-language pass for a signed-in member and escapes the config it prints', () => {
+    const h = harness();
+    h.call('setupSchoolRewardsRepository', { allowedDomain: DOMAIN, schoolName: 'Pilot <School> & "Co"', students: [] });
+    const page = h.call('doGet', { parameter: { api: 'status' } }).content;
+    expect(page).toContain('Deployment check passed');
+    expect(page).toContain('Pilot &lt;School&gt; &amp; &quot;Co&quot;');
+    expect(page).not.toContain('Pilot <School>');
+    expect(page).toContain('<td>admin</td>');
+    expect(page).toContain('alloflow-school-rewards');
+    expect(page).toContain('prefers-color-scheme:dark');
+  });
+
+  it('fails plainly for an account that is not on the roster, and keeps the JSON health endpoint', () => {
+    const h = harness();
+    setup(h);
+    h.setActive('stranger@elsewhere.example');
+    const page = h.call('doGet', { parameter: { api: 'status' } }).content;
+    expect(page).toContain('Deployment check failed');
+    expect(page).not.toContain('Deployment check passed');
+    const health = JSON.parse(h.call('doGet', { parameter: { api: 'health' } }).content);
+    expect(health.ok).toBe(false);
+  });
+});
+
+describe('staff undo (2026-09-02)', () => {
+  function awardAs(h, email, key) {
+    const category = seededCategory(h);
+    const student = h.call('getSchoolRewardsBootstrap').students[0];
+    h.setActive(email);
+    const out = h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 4, categoryId: category.id, reason: 'Helped set up the lab', idempotencyKey: key });
+    return { student, entryId: out.entry.id };
+  }
+
+  it('lets the awarding staff member reverse their own award right away, as an audited reversal', () => {
+    const h = harness();
+    setup(h);
+    const { student, entryId } = awardAs(h, STAFF, 'undo_test_award_0001');
+    const undone = h.call('reverseSchoolRewardsEntry', { entryId, reason: 'Undone right after recording', idempotencyKey: 'undo_test_reverse_001' });
+    expect(undone.ok).toBe(true);
+    const again = h.call('reverseSchoolRewardsEntry', { entryId, reason: 'Undone right after recording', idempotencyKey: 'undo_test_reverse_001' });
+    expect(again.ok).toBe(true);
+    h.setActive(ADMIN);
+    const after = h.call('getSchoolRewardsBootstrap').students.find(item => item.id === student.id);
+    expect(after.balance).toBe(0);
+    expect(h.rows('Ledger').slice(1).filter(row => row[2] === 'REVERSAL').length).toBe(1);
+    expect(() => h.call('reverseSchoolRewardsEntry', { entryId, reason: 'x', idempotencyKey: 'undo_test_reverse_002' })).toThrow(/already been reversed/);
+  });
+
+  it('refuses another staff member, and refuses after the fifteen-minute window, while admins still can', () => {
+    const h = harness();
+    setup(h);
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsMember', { email: `other@${DOMAIN}`, displayName: 'Other Teacher', role: 'staff', active: true });
+    const { entryId } = awardAs(h, STAFF, 'undo_test_award_0002');
+    h.setActive(`other@${DOMAIN}`);
+    expect(() => h.call('reverseSchoolRewardsEntry', { entryId, reason: 'x', idempotencyKey: 'undo_test_reverse_003' })).toThrow(/only their own awards/);
+    // An award recorded twenty minutes ago is past the window for staff.
+    h.setNow(new Date(Date.now() - 20 * 60 * 1000).toISOString());
+    const old = awardAs(h, STAFF, 'undo_test_award_0003');
+    h.setNow(new Date().toISOString());
+    h.setActive(STAFF);
+    expect(() => h.call('reverseSchoolRewardsEntry', { entryId: old.entryId, reason: 'x', idempotencyKey: 'undo_test_reverse_004' })).toThrow(/undo window has passed/);
+    h.setActive(ADMIN);
+    expect(h.call('reverseSchoolRewardsEntry', { entryId: old.entryId, reason: 'Administrative correction', idempotencyKey: 'undo_test_reverse_005' }).ok).toBe(true);
+    h.setActive(CASHIER);
+    expect(() => h.call('reverseSchoolRewardsEntry', { entryId, reason: 'x', idempotencyKey: 'undo_test_reverse_006' })).toThrow(/role cannot/);
+  });
+});
+
+describe('school settings (2026-09-02)', () => {
+  it('defaults the Print Lab tab on, lets an administrator hide it, and reports the flag to every role', () => {
+    const h = harness();
+    setup(h);
+    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(true);
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(true);
+    h.setActive(ADMIN);
+    expect(h.call('adminUpdateRewardsSettings', { printLabEnabled: false })).toEqual({ ok: true, printLabEnabled: false });
+    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(false);
+    h.setActive(STAFF);
+    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(false);
+    expect(() => h.call('adminUpdateRewardsSettings', { printLabEnabled: true })).toThrow(/role cannot/);
+    h.setActive(ADMIN);
+    h.call('adminUpdateRewardsSettings', { printLabEnabled: true });
+    expect(h.call('getSchoolRewardsBootstrap').config.printLabEnabled).toBe(true);
+    expect(h.rows('Audit').filter(row => row[1] === 'SETTINGS_UPDATED').length).toBe(2);
+  });
+});
+
+
+describe('statement language (2026-09-02)', () => {
+  it('lets a student save a language, reports it on sign-in, and sends their balance statement in it', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 12, categoryId: category.id, reason: 'Helped a classmate', idempotencyKey: 'award_lang_01' });
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').students[0].language).toBe('en');
+    expect(h.call('setSchoolRewardsLanguage', { language: 'es' })).toEqual({ ok: true, studentId: student.id, language: 'es' });
+    expect(h.call('getSchoolRewardsBootstrap').students[0].language).toBe('es');
+    expect(() => h.call('setSchoolRewardsLanguage', { language: 'fr' })).toThrow(/supported language/);
+    h.setActive(ADMIN);
+    h.call('adminUpsertRewardsWindow', { name: 'Trimestre 1', status: 'PREVIEW' });
+    const result = h.call('sendSchoolRewardsBalanceStatements', { periodKey: '2026-t1-lang', limit: 100 });
+    expect(result.sent).toBe(1);
+    expect(h.mail[0].subject).toContain('actualizaci');
+    expect(h.mail[0].body).toContain('Saldo del registro: 12 puntos.');
+    expect(h.mail[0].body).toContain('La vista previa de premios');
+    expect(h.mail[0].htmlBody).toContain('Tu actualizaci');
+    expect(h.mail[0].htmlBody).not.toContain('This message is informational');
+    expect(h.mail[0].htmlBody).toContain('El registro en vivo en la caja');
+    // Preferences sheet appeared on demand; a second save updates the same row.
+    h.setActive(STUDENT);
+    h.call('setSchoolRewardsLanguage', { language: 'en' });
+    expect(h.rows('Preferences').slice(1)).toHaveLength(1);
+    expect(h.rows('Preferences')[1][1]).toBe('en');
+    expect(h.rows('Audit').filter(row => row[1] === 'LANGUAGE_SET').length).toBe(2);
+  });
+
+  it('admins can set a language for a student; staff and cashiers cannot; statements without a saved language stay English', () => {
+    const h = harness(); const student = setup(h); const category = seededCategory(h);
+    h.setActive(STAFF); h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 3, categoryId: category.id, reason: 'On time', idempotencyKey: 'award_lang_02' });
+    expect(() => h.call('setSchoolRewardsLanguage', { studentId: student.id, language: 'es' })).toThrow(/role cannot/);
+    h.setActive(CASHIER);
+    expect(() => h.call('setSchoolRewardsLanguage', { studentId: student.id, language: 'es' })).toThrow(/role cannot/);
+    h.setActive(ADMIN);
+    expect(h.call('sendSchoolRewardsBalanceStatements', { periodKey: '2026-t1-lang-en', limit: 100 }).sent).toBe(1);
+    expect(h.mail[0].subject).toContain('rewards update');
+    expect(h.mail[0].body).toContain('Ledger balance: 3 points.');
+    expect(h.call('setSchoolRewardsLanguage', { studentId: student.id, language: 'ES' }).language).toBe('es');
+    expect(() => h.call('setSchoolRewardsLanguage', { studentId: 'missing', language: 'es' })).toThrow();
+    h.setActive(STUDENT);
+    expect(h.call('getSchoolRewardsBootstrap').students[0].language).toBe('es');
   });
 });

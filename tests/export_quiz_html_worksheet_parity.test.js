@@ -1,6 +1,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { JSDOM, VirtualConsole } from 'jsdom';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+
+const require = createRequire(import.meta.url);
 
 let pipeline;
 
@@ -25,6 +29,11 @@ const quizItem = {
 };
 
 beforeAll(() => {
+  // The Memory Aid export branch reads verification, alt-text, and cue rules
+  // from window.AlloModules.MemoryAid.exportRules (one derivation shared with
+  // the live view) and fails safe without it, so load the module as the app does.
+  global.React = window.React = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+  loadAlloModule('memory_aid_module.js');
   loadAlloModule('doc_pipeline_module.js');
   const stub = async () => '{}';
   pipeline = window.AlloModules.createDocPipeline({

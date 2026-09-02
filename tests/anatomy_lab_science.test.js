@@ -173,11 +173,31 @@ describe('Anatomy Lab quiz balance and tracking', () => {
   it('alternates True/False claims across successive True/False rounds', () => {
     const firstRound = renderAnatomy({ system: 'skeletal', complexity: 3, quizMode: true, quizIdx: 1 });
     const secondRound = renderAnatomy({ system: 'skeletal', complexity: 3, quizMode: true, quizIdx: 5 });
-    expect(firstRound).toContain('belongs to the Skeletal system.');
-    expect(secondRound).not.toContain('belongs to the Skeletal system.');
+    // True/False now pairs the named structure with a function statement (its own, or another
+    // visible structure's) instead of claiming membership in the system already highlighted.
+    expect(firstRound).toContain('True or False:');
+    expect(secondRound).toContain('True or False:');
+    expect(firstRound).not.toContain('belongs to the');
+    expect(secondRound).not.toContain('belongs to the');
 
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('Math.floor(quizRoundIdx / quizTypeCount) % 2');
+    expect(source).toContain('tfClaimStructure = _tfWrong[quizRoundIdx % _tfWrong.length]');
+  });
+
+  it('masks the structure name inside quiz stems and clips them on a sentence boundary', () => {
+    const heart = renderAnatomy({ system: 'circulatory', complexity: 3, quizMode: true, quizIdx: 3, _structureConfidence: {} });
+    // Harness profile is '5th Grade': young learners get the friendly prompt and the learner text.
+    expect(heart).toContain('Which structure is this?');
+    // Clinical Challenge stems no longer contain the answer word.
+    expect(heart).not.toMatch(/affected\?<\/p><p[^>]*>[^<]*heart attack/i);
+
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function maskStructureName(text, structure)');
+    expect(source).toContain('function clipAtSentence(text, maxLength)');
+    expect(source).toContain("quizStemText(quizQ, 'fn', 160)");
+    expect(source).not.toContain("quizQ.fn.substring(0, 120)");
+    expect(source).toContain('updMulti(Object.assign(quizPatch, confidenceEvidencePatch(quizQ.id, correct)));');
     expect(source).not.toContain("tfTrue = ((d.quizIdx || 0) % 2) === 0");
   });
 
@@ -205,15 +225,32 @@ describe('Anatomy Lab saved-state recovery', () => {
   });
 
   it('wraps negative flashcard positions without rendering an invalid card', () => {
-    expect(() => renderAnatomy({ _activeTab: 'flashcards', _flashcardIdx: -1 })).not.toThrow();
-    const html = renderAnatomy({ _activeTab: 'flashcards', _flashcardIdx: -1 });
+    expect(() => renderAnatomy({ _activeTab: 'flashcards', complexity: 3, _flashcardIdx: -1 })).not.toThrow();
+    const html = renderAnatomy({ _activeTab: 'flashcards', complexity: 3, _flashcardIdx: -1 });
     expect(html).toContain('Anatomy Flashcards');
     expect(html).toContain('role="group" aria-label="Flashcard 23 of 23: Scaphoid Bone"');
   });
 
+  it('puts Need-practice cards first and freezes the deck order once a card is rated', () => {
+    const reviewFirst = renderAnatomy({ _activeTab: 'flashcards', complexity: 3, _flashcardIdx: 0, _structureConfidence: { scaphoid_bone: 'practice', skull: 'mastered' } });
+    expect(reviewFirst).toContain('role="group" aria-label="Flashcard 1 of 23: Scaphoid Bone"');
+    expect(reviewFirst).toContain('1 card(s) marked Need practice are at the front of this deck.');
+
+    const frozen = renderAnatomy({
+      _activeTab: 'flashcards', complexity: 3, _flashcardIdx: 0,
+      _structureConfidence: { scaphoid_bone: 'practice' },
+      _flashcardDeck: ['skull', 'scaphoid_bone'].concat(['mandible', 'vertebral_column', 'ribs', 'sternum', 'clavicle', 'scapula', 'humerus', 'radius', 'ulna', 'pelvis', 'femur', 'patella', 'tibia', 'fibula', 'sacrum_coccyx', 'hyoid', 'atlas_axis', 'carpals', 'metatarsals', 'metacarpals', 'calcaneus'])
+    });
+    // A stored deck that does not cover the current pool exactly is rebuilt from confidence.
+    expect(frozen).toContain('aria-label="Flashcard 1 of 23: ');
+
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("confidenceControls(flashcardPool[flashcardIdx % flashcardPool.length].id, flashcardPool[flashcardIdx % flashcardPool.length].name, { _flashcardDeck: flashcardDeckIds })");
+  });
+
   it('resets quiz attempts atomically and clears ended Spotter rounds', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain("updMulti({ quizMode: !quizMode, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 })");
+    expect(source).toContain("updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 })");
     expect(source).toContain("_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0");
   });
 
@@ -269,7 +306,9 @@ describe('Anatomy Lab navigation recovery', () => {
     const html = renderAnatomy({ _activeTab: 'missing-mode', system: 'missing-system', view: 'sideways', complexity: -4 });
     expect(html).toContain('Skeletal system');
     expect(html).toContain('Anterior \u00b7 2D atlas');
-    expect(html).toContain('19 structures');
+    // The harness profile is '5th Grade', so an invalid level falls back to the K-5 structure set.
+    expect(html).toContain('5 structures');
+    expect(html).not.toContain('19 structures');
     expect(html).toContain('aria-label="Explore" role="tab" aria-controls="anatomy-mode-panel" aria-selected="true"');
     expect(html).toContain('id="anatomy-mode-panel"');
   });
@@ -292,9 +331,10 @@ describe('Anatomy Lab navigation recovery', () => {
   it('uses one navigation helper and atomic guided-tour transitions', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain("activateAnatomyTab('connections')");
-    expect(source).toContain('var tourPatch = { _activeTab: tab, _tourActive: true, _tourStepIdx: nextTourIndex };');
+    expect(source).toContain('var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex };');
     expect(source).toContain('updMulti(structureFocusPatch(tabTourStep.structureId, tourPatch));');
-    expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore' })");
+    // Completion also clears the end-of-tour recap state.
+    expect(source).toContain("updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null })");
     expect(source).not.toContain("upd('_activeTab', 'tour'); if (!tourActive)");
   });
 });
@@ -334,7 +374,7 @@ describe('Anatomy Lab assessment-state resilience', () => {
   it('consolidates each Spotter answer into one state update', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('var spotterUpdate = { _spotterFeedback: opt.id, _spotterElapsed: elapsed, _spotterTotal: spotterTotal + 1 };');
-    expect(source).toContain('updMulti(spotterUpdate);');
+    expect(source).toContain('updMulti(Object.assign(spotterUpdate, confidenceEvidencePatch(spotterTarget, isRightAnswer)));');
     expect(source).not.toContain("upd('_spotterElapsed', elapsed)");
   });
 
@@ -484,7 +524,7 @@ describe('Anatomy Lab layer and quiz-state resilience', () => {
     const inactive = renderAnatomy({ quizMode: 'true', quizScore: 'bad', quizFeedback: { chosen: 'skull', correct: true } });
     expect(inactive).not.toContain('Anatomy Quiz');
 
-    const active = renderAnatomy({ quizMode: true, quizScore: 'bad', quizFeedback: { chosen: 'forged', correct: true } });
+    const active = renderAnatomy({ complexity: 3, quizMode: true, quizScore: 'bad', quizFeedback: { chosen: 'forged', correct: true } });
     expect(active).toContain('Score 0 - Question 1/19');
     expect(active).not.toContain('aria-label="Next Question"');
   });
@@ -532,7 +572,7 @@ describe('Anatomy Lab guided diagram synchronization', () => {
 
   it('normalizes malformed search, selection, disclosures, and Spotter booleans', () => {
     const explore = renderAnatomy({
-      search: { forged: true }, selectedStructure: { forged: true },
+      complexity: 3, search: { forged: true }, selectedStructure: { forged: true },
       _showMnemonics: 'true', _showClinical: 'true'
     });
     expect(explore).not.toContain('[object Object]');
@@ -805,7 +845,8 @@ describe('Anatomy Lab visual hierarchy and canvas legibility', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('@media (max-width:720px)');
     expect(source).toContain('.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))}');
-    expect(source).toContain('.anatomy-tab-strip{grid-template-columns:1fr 1fr}');
+    // Three columns on phones: eleven modes in two columns stacked six rows tall.
+    expect(source).toContain('.anatomy-tab-strip{grid-template-columns:repeat(3,minmax(0,1fr))}');
     expect(source).not.toContain('overflow-x:auto;flex-wrap:nowrap');
   });
 
@@ -1808,7 +1849,7 @@ describe('Anatomy Systems in Motion', () => {
     expect(source).toContain('[data-reading-mode=true]');
     expect(standard).toContain('data-reading-mode=');
     expect(standard).toContain('Enable comfortable reading mode');
-    expect(comfort).toContain('Comfort text on');
+    expect(comfort).toContain('Larger text on');
     expect(comfort).toContain('Disable comfortable reading mode');
   });
 

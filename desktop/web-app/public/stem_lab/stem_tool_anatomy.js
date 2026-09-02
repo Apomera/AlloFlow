@@ -61,48 +61,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-mission{position:relative;overflow:hidden;border-radius:12px;border:1px solid rgba(15,23,42,.10);background:linear-gradient(135deg,#fff 0%,#f8fafc 58%,var(--anatomy-soft) 160%);box-shadow:0 8px 22px rgba(15,23,42,.06);}',
       '.anatomy-mission:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--anatomy-accent),#0f766e,#f59e0b);}',
       '.anatomy-mission-inner{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(330px,1fr);gap:16px;padding:14px 16px 13px;}',
-      '.anatomy-kicker{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#64748b;}',
+      '.anatomy-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#64748b;}',
       '.anatomy-mission-title{font-size:19px;line-height:1.12;font-weight:950;color:#0f172a;margin:2px 0 5px;}',
       '.anatomy-mission-text{font-size:12px;line-height:1.55;color:#475569;max-width:760px;}',
       '.anatomy-mission-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}',
-      '.anatomy-mission-actions button{border-radius:8px;}.anatomy-study-dashboard{align-self:start;border:1px solid rgba(124,58,237,.18);border-radius:10px;background:rgba(255,255,255,.76);overflow:hidden}.anatomy-study-dashboard-summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:7px 10px;color:#4c1d95;font-size:10px;font-weight:950;cursor:pointer;list-style:none;user-select:none}.anatomy-study-dashboard-summary::-webkit-details-marker{display:none}.anatomy-study-dashboard-summary:after{content:"+";margin-left:auto;color:#7c3aed;font-size:15px}.anatomy-study-dashboard[open]>.anatomy-study-dashboard-summary:after{content:"-"}.anatomy-study-dashboard-summary>span:last-of-type{margin-left:auto;color:#64748b;font-size:9px;font-weight:850;text-align:right}.anatomy-study-dashboard-content{display:grid;gap:8px;padding:8px 10px 10px;border-top:1px solid rgba(124,58,237,.12)}',
+      // Phones stack the workspace. Reading-first modes (quiz, cards, tutor, connections, homeostasis) put their panel above the figure so the question is not a full screen below the diagram; diagram-first modes (explore, spotter, tour, pathways) keep the figure on top.
+      '@media (max-width:900px){.anatomy-tool-shell[data-anatomy-tab="quiz"] .anatomy-side-column,.anatomy-tool-shell[data-anatomy-tab="flashcards"] .anatomy-side-column,.anatomy-tool-shell[data-anatomy-tab="aiTutor"] .anatomy-side-column,.anatomy-tool-shell[data-anatomy-tab="connections"] .anatomy-side-column,.anatomy-tool-shell[data-anatomy-tab="homeoHunt"] .anatomy-side-column{order:-1}}',
+      '.anatomy-structure-viewed{flex:none;width:8px;height:8px;border-radius:999px;border:1.5px solid #94a3b8;background:transparent;}.anatomy-structure-viewed[data-viewed="true"]{border-color:var(--anatomy-accent);background:var(--anatomy-accent);}',
+      '.anatomy-structure-status{flex:none;font-size:11px;font-weight:800;padding:1px 7px;border-radius:999px;border:1px solid;white-space:nowrap;}.anatomy-structure-status[data-status="practice"]{color:#9f1239;border-color:#fda4af;background:#fff1f2;}.anatomy-structure-status[data-status="learning"]{color:#92400e;border-color:#fcd34d;background:#fffbeb;}.anatomy-structure-status[data-status="mastered"]{color:#065f46;border-color:#6ee7b7;background:#ecfdf5;}',
+      '.anatomy-quiz-key{flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;border:1px solid currentColor;font-size:11px;font-weight:900;opacity:.8;}',
+      '.anatomy-footer-panel>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;}.anatomy-footer-panel>summary::-webkit-details-marker{display:none}.anatomy-footer-panel>summary:after{content:"+";font-size:14px;color:#64748b;}.anatomy-footer-panel[open]>summary{margin-bottom:8px}.anatomy-footer-panel[open]>summary:after{content:"\\2212"}',
+      '.anatomy-start-here{border-radius:12px;border:1px solid #a7f3d0;background:linear-gradient(135deg,#ecfdf5 0%,#f8fafc 70%);padding:10px 12px;}.anatomy-start-here-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}.anatomy-start-here-head h3{margin:0;font-size:14px;font-weight:900;color:#064e3b;}.anatomy-start-here-dismiss{min-width:28px;min-height:28px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#475569;font-weight:900;}.anatomy-start-here-steps{margin:6px 0 8px;padding-left:18px;display:grid;gap:3px;font-size:12px;line-height:1.45;color:#334155;}.anatomy-start-here-steps strong{color:#065f46;}.anatomy-start-here-actions{display:flex;flex-wrap:wrap;gap:6px;}',
+      '.anatomy-own-words textarea{resize:vertical;min-height:44px;}',
+      '.anatomy-study-sheet{border-radius:12px;border:1px solid #cbd5e1;background:#fff;padding:14px 16px;box-shadow:0 8px 22px rgba(15,23,42,.06);}.anatomy-study-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}.anatomy-study-sheet-head h3{margin:1px 0 2px;font-size:18px;font-weight:950;color:#0f172a;}.anatomy-study-sheet-head p{margin:0;font-size:12px;color:#475569;}.anatomy-study-sheet-actions{display:flex;gap:6px;flex-wrap:wrap;}',
+      '.anatomy-study-sheet-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin:12px 0;}.anatomy-study-sheet-stats>div{border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;background:#f8fafc;}.anatomy-study-sheet-stats strong{display:block;font-size:16px;font-weight:950;color:#0f172a;}.anatomy-study-sheet-stats span{font-size:11px;font-weight:800;text-transform:uppercase;color:#475569;}.anatomy-study-sheet-next{margin:0 0 10px;font-size:12px;color:#334155;}',
+      '.anatomy-study-sheet-system{margin-top:10px;padding-top:8px;border-top:1px solid #e2e8f0;}.anatomy-study-sheet-system h4{margin:0 0 6px;font-size:13px;font-weight:900;color:#0f172a;}.anatomy-study-sheet-system ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;}.anatomy-study-sheet-system li{display:grid;grid-template-columns:auto auto;justify-content:start;align-items:center;column-gap:8px;font-size:12px;color:#0f172a;}.anatomy-study-sheet-name{font-weight:800;}.anatomy-study-sheet-system li>.anatomy-structure-status,.anatomy-study-sheet-viewed{justify-self:start;}.anatomy-study-sheet-viewed{font-size:11px;color:#64748b;}.anatomy-study-sheet-fn,.anatomy-study-sheet-note{grid-column:1/-1;margin:0;font-size:11px;line-height:1.45;color:#334155;}.anatomy-study-sheet-note{color:#4c1d95;font-style:italic;}.anatomy-study-sheet-empty{font-size:12px;color:#475569;}',
+      '@media print{.anatomy-tool-shell>*:not(.anatomy-study-sheet){display:none!important}.anatomy-study-sheet{box-shadow:none;border:0;padding:0;}.anatomy-study-sheet-actions{display:none!important}.anatomy-study-sheet-system{break-inside:avoid;}}',
+      '.anatomy-deeper-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:6px 8px;border-radius:8px;border:1px dashed rgba(79,70,229,.35);background:rgba(238,242,255,.6);}.anatomy-deeper-row .anatomy-kicker{margin-right:2px;color:#475569;}.anatomy-deeper-row button{border-radius:8px;min-height:36px;}',
+      '.anatomy-mission-actions button{border-radius:8px;}.anatomy-study-dashboard{align-self:start;border:1px solid rgba(124,58,237,.18);border-radius:10px;background:rgba(255,255,255,.76);overflow:hidden}.anatomy-study-dashboard-summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:7px 10px;color:#4c1d95;font-size:11px;font-weight:950;cursor:pointer;list-style:none;user-select:none}.anatomy-study-dashboard-summary::-webkit-details-marker{display:none}.anatomy-study-dashboard-summary:after{content:"+";margin-left:auto;color:#7c3aed;font-size:15px}.anatomy-study-dashboard[open]>.anatomy-study-dashboard-summary:after{content:"-"}.anatomy-study-dashboard-summary>span:last-of-type{margin-left:auto;color:#64748b;font-size:11px;font-weight:850;text-align:right}.anatomy-study-dashboard-content{display:grid;gap:8px;padding:8px 10px 10px;border-top:1px solid rgba(124,58,237,.12)}',
       '.anatomy-lens{border-radius:12px;border:1px solid rgba(79,70,229,.18);background:linear-gradient(135deg,#eef2ff 0%,#f8fafc 52%,#ecfeff 100%);padding:12px;box-shadow:0 8px 20px rgba(30,41,59,.05);}',
       '.anatomy-lens-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:9px;}',
       '.anatomy-lens-header h3{margin:1px 0 2px;font-size:16px;line-height:1.2;font-weight:950;color:#1e1b4b;}',
       '.anatomy-lens-header p{margin:0;font-size:11px;line-height:1.45;color:#475569;}',
-      '.anatomy-lens-progress{flex:none;border-radius:999px;border:1px solid #c7d2fe;background:rgba(255,255,255,.82);padding:4px 8px;font-size:10px;font-weight:900;color:#4338ca;}',
+      '.anatomy-lens-progress{flex:none;border-radius:999px;border:1px solid #c7d2fe;background:rgba(255,255,255,.82);padding:4px 8px;font-size:11px;font-weight:900;color:#4338ca;}',
       '.anatomy-lens-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}',
       '.anatomy-lens-card{position:relative;min-height:104px;overflow:hidden;border:1px solid rgba(100,116,139,.22);border-radius:10px;background:rgba(255,255,255,.86);padding:10px;text-align:left;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}',
       '.anatomy-lens-card:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--lens-accent,#4f46e5);}',
       '.anatomy-lens-card:hover{transform:translateY(-1px);border-color:var(--lens-accent,#4f46e5);box-shadow:0 7px 16px rgba(30,41,59,.10);}',
       '.anatomy-lens-card[data-viewed="true"]{background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(236,253,245,.9));}',
-      '.anatomy-lens-card strong,.anatomy-lens-card span{display:block;}.anatomy-lens-card strong{margin:2px 0 4px;font-size:13px;color:#0f172a;}.anatomy-lens-card .anatomy-lens-kicker{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b;}.anatomy-lens-card .anatomy-lens-desc{font-size:11px;line-height:1.45;color:#475569;}.anatomy-lens-card .anatomy-lens-action{margin-top:7px;font-size:11px;font-weight:900;color:#4338ca;}',
+      '.anatomy-lens-card strong,.anatomy-lens-card span{display:block;}.anatomy-lens-card strong{margin:2px 0 4px;font-size:13px;color:#0f172a;}.anatomy-lens-card .anatomy-lens-kicker{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b;}.anatomy-lens-card .anatomy-lens-desc{font-size:11px;line-height:1.45;color:#475569;}.anatomy-lens-card .anatomy-lens-action{margin-top:7px;font-size:11px;font-weight:900;color:#4338ca;}',
       '.anatomy-motion{--motion-accent:#0e7490;--motion-soft:#ecfeff;--motion-alert:#9f1239;--motion-alert-soft:#fff1f2;overflow:hidden;border-radius:12px;border:1px solid var(--motion-accent);background:linear-gradient(135deg,var(--motion-soft) 0%,#f8fafc 54%,#fff 100%);box-shadow:0 8px 20px rgba(30,41,59,.06);}',
       '.anatomy-motion-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.18);}.anatomy-motion-header h3{margin:1px 0 3px;font-size:17px;line-height:1.2;font-weight:950;color:var(--motion-accent);}.anatomy-motion-header p{margin:0;font-size:11px;line-height:1.45;color:#475569;}',
-      '.anatomy-motion-progress{flex:none;border-radius:999px;border:1px solid var(--motion-accent);background:rgba(255,255,255,.88);padding:4px 8px;font-size:10px;font-weight:900;color:var(--motion-accent);}',
+      '.anatomy-motion-progress{flex:none;border-radius:999px;border:1px solid var(--motion-accent);background:rgba(255,255,255,.88);padding:4px 8px;font-size:11px;font-weight:900;color:var(--motion-accent);}',
       '.anatomy-motion-route{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:center;gap:5px;padding:12px 14px 8px;}',
       '.anatomy-motion-node{min-height:76px;border:1px solid rgba(100,116,139,.28);border-radius:10px;background:rgba(255,255,255,.88);padding:7px 6px;text-align:center;color:#334155;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease;}.anatomy-motion-node:hover{transform:translateY(-1px);border-color:var(--motion-accent);}.anatomy-motion-node[aria-pressed="true"]{border-color:var(--motion-accent);box-shadow:0 0 0 2px rgba(15,23,42,.10);background:var(--motion-soft);color:var(--motion-accent);}.anatomy-motion-node[data-complete="true"]:after{content:" ✓";color:#047857;font-weight:950;}',
-      '.anatomy-motion-node span{display:block;font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#64748b;}.anatomy-motion-node strong{display:block;margin-top:3px;font-size:11px;line-height:1.25;}.anatomy-motion-node .anatomy-motion-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;margin:0 auto 4px;padding:0 6px;border-radius:999px;background:var(--motion-soft);color:var(--motion-accent);font-size:10px;letter-spacing:0;text-transform:none;}.anatomy-motion-arrow{text-align:center;color:#94a3b8;font-size:18px;font-weight:950;transition:color .18s ease,transform .18s ease;}.anatomy-motion-arrow[data-complete="true"]{color:var(--motion-accent);transform:translateX(2px);}',
+      '.anatomy-motion-node span{display:block;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#64748b;}.anatomy-motion-node strong{display:block;margin-top:3px;font-size:11px;line-height:1.25;}.anatomy-motion-node .anatomy-motion-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;margin:0 auto 4px;padding:0 6px;border-radius:999px;background:var(--motion-soft);color:var(--motion-accent);font-size:11px;letter-spacing:0;text-transform:none;}.anatomy-motion-arrow{text-align:center;color:#94a3b8;font-size:18px;font-weight:950;transition:color .18s ease,transform .18s ease;}.anatomy-motion-arrow[data-complete="true"]{color:var(--motion-accent);transform:translateX(2px);}',
       '.anatomy-motion-body{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);gap:12px;padding:8px 14px 14px;}.anatomy-motion-current{border-left:4px solid var(--motion-accent);padding:8px 10px;background:rgba(255,255,255,.74);}.anatomy-motion-current>strong,.anatomy-motion-current>span{display:block;}.anatomy-motion-current>strong{font-size:13px;color:#0f172a;}.anatomy-motion-current>span{margin-top:4px;font-size:11px;line-height:1.5;color:#475569;}',
-      '.anatomy-motion-cascade{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin-top:9px;}.anatomy-motion-cascade-stage{min-width:0;padding:7px 8px;border-top:3px solid var(--motion-accent);background:var(--motion-soft);}.anatomy-motion-cascade-stage strong{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--motion-accent);}.anatomy-motion-cascade-stage span{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#334155;}.anatomy-motion-cascade-arrow{align-self:center;text-align:center;color:var(--motion-accent);font-weight:950;}',
-      '.anatomy-motion-deep{margin-top:8px;padding:8px 9px;border-left:3px solid var(--motion-accent);background:var(--motion-soft);font-size:10px;line-height:1.5;color:#334155;}.anatomy-motion-deep strong{display:block;margin-bottom:2px;color:var(--motion-accent);}',
-      '.anatomy-motion-whatif{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 14px 0;padding:8px 10px;border:1px dashed rgba(159,18,57,.42);background:rgba(255,255,255,.7);}.anatomy-motion-whatif strong,.anatomy-motion-whatif span{display:block;}.anatomy-motion-whatif strong{font-size:11px;color:#881337;}.anatomy-motion-whatif span{margin-top:2px;font-size:10px;line-height:1.35;color:#64748b;}.anatomy-motion-whatif button{flex:none;min-height:34px;border-radius:8px;}',
+      '.anatomy-motion-cascade{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin-top:9px;}.anatomy-motion-cascade-stage{min-width:0;padding:7px 8px;border-top:3px solid var(--motion-accent);background:var(--motion-soft);}.anatomy-motion-cascade-stage strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--motion-accent);}.anatomy-motion-cascade-stage span{display:block;margin-top:3px;font-size:11px;line-height:1.4;color:#334155;}.anatomy-motion-cascade-arrow{align-self:center;text-align:center;color:var(--motion-accent);font-weight:950;}',
+      '.anatomy-motion-deep{margin-top:8px;padding:8px 9px;border-left:3px solid var(--motion-accent);background:var(--motion-soft);font-size:11px;line-height:1.5;color:#334155;}.anatomy-motion-deep strong{display:block;margin-bottom:2px;color:var(--motion-accent);}',
+      '.anatomy-motion-whatif{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 14px 0;padding:8px 10px;border:1px dashed rgba(159,18,57,.42);background:rgba(255,255,255,.7);}.anatomy-motion-whatif strong,.anatomy-motion-whatif span{display:block;}.anatomy-motion-whatif strong{font-size:11px;color:#881337;}.anatomy-motion-whatif span{margin-top:2px;font-size:11px;line-height:1.35;color:#64748b;}.anatomy-motion-whatif button{flex:none;min-height:34px;border-radius:8px;}',
       '.anatomy-motion-node[data-disruption-point="true"]{border-style:dashed;border-color:var(--motion-alert);}.anatomy-motion.is-perturbed .anatomy-motion-node[data-disruption-point="true"]{background:var(--motion-alert-soft);box-shadow:0 0 0 2px rgba(159,18,57,.15);}.anatomy-motion-node[data-disruption-point="true"] .anatomy-motion-symbol{background:var(--motion-alert-soft);color:var(--motion-alert);}',
-      '.anatomy-motion-impact{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin:8px 14px 0;padding:9px;border-left:4px solid var(--motion-alert);background:var(--motion-alert-soft);}.anatomy-motion-impact-stage{min-width:0;padding:5px 6px;}.anatomy-motion-impact-stage strong{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--motion-alert);}.anatomy-motion-impact-stage span{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#334155;}.anatomy-motion-impact-arrow{align-self:center;text-align:center;color:var(--motion-alert);font-weight:950;}',
-      '.anatomy-intervention{margin:9px 14px 0;padding:10px;border:1px solid #c4b5fd;border-left:4px solid #7c3aed;background:linear-gradient(145deg,#f5f3ff,#fff);}.anatomy-intervention-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.anatomy-intervention-header h4{margin:1px 0 3px;font-size:13px;color:#5b21b6;}.anatomy-intervention-header p{margin:0;font-size:10px;line-height:1.4;color:#475569;}.anatomy-intervention-progress{flex:none;padding:3px 6px;border:1px solid #c4b5fd;border-radius:999px;background:#fff;font-size:9px;font-weight:850;color:#6d28d9;white-space:nowrap;}',
-      '.anatomy-intervention-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px;}.anatomy-intervention-options button{min-height:48px;padding:7px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:10px;font-weight:800;line-height:1.35;text-align:left;}.anatomy-intervention-options button:hover{border-color:#8b5cf6;background:#faf5ff;}.anatomy-intervention-options button[data-selected="true"][data-correct="true"]{border-color:#059669;background:#ecfdf5;color:#065f46;}.anatomy-intervention-options button[data-selected="true"][data-correct="false"]{border-color:#e11d48;background:#fff1f2;color:#9f1239;}',
-      '.anatomy-intervention-chain{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin-top:8px;}.anatomy-intervention-stage{min-width:0;padding:7px 8px;border-top:3px solid #7c3aed;background:#f5f3ff;}.anatomy-intervention-stage span{display:block;font-size:8px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6d28d9;}.anatomy-intervention-stage strong{display:block;margin-top:3px;font-size:10px;line-height:1.35;color:#334155;}.anatomy-intervention-arrow{align-self:center;text-align:center;color:#7c3aed;font-weight:950;}',
-      '.anatomy-intervention-feedback{margin-top:8px;padding:8px 9px;border-left:3px solid #059669;background:#ecfdf5;color:#065f46;font-size:10px;line-height:1.45;}.anatomy-intervention-feedback[data-correct="false"]{border-left-color:#e11d48;background:#fff1f2;color:#881337;}.anatomy-intervention-feedback strong{display:block;margin-bottom:2px;}.anatomy-intervention-feedback button{margin-top:6px;min-height:32px;padding:4px 7px;border:1px solid #fda4af;border-radius:7px;background:#fff;color:#9f1239;font-size:9px;font-weight:850;}.anatomy-intervention-boundary{margin:7px 0 0;font-size:9px;line-height:1.35;color:#64748b;}',
+      '.anatomy-motion-impact{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin:8px 14px 0;padding:9px;border-left:4px solid var(--motion-alert);background:var(--motion-alert-soft);}.anatomy-motion-impact-stage{min-width:0;padding:5px 6px;}.anatomy-motion-impact-stage strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--motion-alert);}.anatomy-motion-impact-stage span{display:block;margin-top:3px;font-size:11px;line-height:1.4;color:#334155;}.anatomy-motion-impact-arrow{align-self:center;text-align:center;color:var(--motion-alert);font-weight:950;}',
+      '.anatomy-intervention{margin:9px 14px 0;padding:10px;border:1px solid #c4b5fd;border-left:4px solid #7c3aed;background:linear-gradient(145deg,#f5f3ff,#fff);}.anatomy-intervention-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.anatomy-intervention-header h4{margin:1px 0 3px;font-size:13px;color:#5b21b6;}.anatomy-intervention-header p{margin:0;font-size:11px;line-height:1.4;color:#475569;}.anatomy-intervention-progress{flex:none;padding:3px 6px;border:1px solid #c4b5fd;border-radius:999px;background:#fff;font-size:11px;font-weight:850;color:#6d28d9;white-space:nowrap;}',
+      '.anatomy-intervention-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px;}.anatomy-intervention-options button{min-height:48px;padding:7px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:11px;font-weight:800;line-height:1.35;text-align:left;}.anatomy-intervention-options button:hover{border-color:#8b5cf6;background:#faf5ff;}.anatomy-intervention-options button[data-selected="true"][data-correct="true"]{border-color:#059669;background:#ecfdf5;color:#065f46;}.anatomy-intervention-options button[data-selected="true"][data-correct="false"]{border-color:#e11d48;background:#fff1f2;color:#9f1239;}',
+      '.anatomy-intervention-chain{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin-top:8px;}.anatomy-intervention-stage{min-width:0;padding:7px 8px;border-top:3px solid #7c3aed;background:#f5f3ff;}.anatomy-intervention-stage span{display:block;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6d28d9;}.anatomy-intervention-stage strong{display:block;margin-top:3px;font-size:11px;line-height:1.35;color:#334155;}.anatomy-intervention-arrow{align-self:center;text-align:center;color:#7c3aed;font-weight:950;}',
+      '.anatomy-intervention-feedback{margin-top:8px;padding:8px 9px;border-left:3px solid #059669;background:#ecfdf5;color:#065f46;font-size:11px;line-height:1.45;}.anatomy-intervention-feedback[data-correct="false"]{border-left-color:#e11d48;background:#fff1f2;color:#881337;}.anatomy-intervention-feedback strong{display:block;margin-bottom:2px;}.anatomy-intervention-feedback button{margin-top:6px;min-height:32px;padding:4px 7px;border:1px solid #fda4af;border-radius:7px;background:#fff;color:#9f1239;font-size:11px;font-weight:850;}.anatomy-intervention-boundary{margin:7px 0 0;font-size:11px;line-height:1.35;color:#64748b;}',
       '@media (max-width:720px){.anatomy-intervention-options{grid-template-columns:1fr}.anatomy-intervention-chain{grid-template-columns:1fr}.anatomy-intervention-arrow{display:none}}',
       '@media (max-width:560px){.anatomy-intervention-header{display:block}.anatomy-intervention-progress{display:inline-block;margin-top:6px}.anatomy-intervention-options button{min-height:44px}.anatomy-intervention-feedback button{width:100%;min-height:40px}}',
-      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-stage strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-feedback,.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-boundary{font-size:13px;line-height:1.62;}',      '.anatomy-synthesis{margin:12px 14px 14px;border-top:2px solid var(--motion-accent);padding-top:10px;}.anatomy-synthesis-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.anatomy-synthesis-header h4{margin:1px 0 3px;font-size:14px;color:var(--motion-accent);}.anatomy-synthesis-header p{margin:0;font-size:10px;line-height:1.45;color:#475569;}.anatomy-synthesis-chain{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:center;gap:5px;margin-top:9px;}.anatomy-synthesis-step{min-height:70px;padding:7px 6px;border:1px solid var(--motion-accent);background:var(--motion-soft);color:#334155;text-align:left;border-radius:8px;}.anatomy-synthesis-step:hover{filter:brightness(.97);}.anatomy-synthesis-step span,.anatomy-synthesis-step strong{display:block;}.anatomy-synthesis-step span{font-size:9px;font-weight:900;color:var(--motion-accent);text-transform:uppercase;letter-spacing:.04em;}.anatomy-synthesis-step strong{margin-top:3px;font-size:10px;line-height:1.3;}.anatomy-synthesis-arrow{text-align:center;color:var(--motion-accent);font-weight:950;}.anatomy-synthesis-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px;}.anatomy-synthesis-compare section{padding:8px 9px;border-left:3px solid var(--motion-accent);background:rgba(255,255,255,.78);}.anatomy-synthesis-compare section[data-kind="disrupted"]{border-left-color:var(--motion-alert);background:var(--motion-alert-soft);}.anatomy-synthesis-compare strong{display:block;font-size:10px;color:var(--motion-accent);}.anatomy-synthesis-compare section[data-kind="disrupted"] strong{color:var(--motion-alert);}.anatomy-synthesis-compare span{display:block;margin-top:4px;font-size:10px;line-height:1.45;color:#334155;}.anatomy-synthesis-takeaway{margin-top:8px;padding:8px 9px;background:var(--motion-soft);font-size:10px;line-height:1.45;color:#334155;}.anatomy-synthesis-takeaway strong{color:var(--motion-accent);}.anatomy-synthesis-footer{display:flex;justify-content:flex-end;margin-top:8px;}',
-      '.anatomy-motion-check{padding:8px 10px;border:1px solid rgba(100,116,139,.22);border-radius:10px;background:rgba(255,255,255,.8);}.anatomy-motion-check p{margin:0 0 7px;font-size:11px;font-weight:900;color:#334155;}.anatomy-motion-options{display:grid;gap:5px;}.anatomy-motion-options button{min-height:34px;border-radius:8px;text-align:left;}.anatomy-motion-feedback{display:block;margin-top:7px;font-size:10px;line-height:1.4;font-weight:800;color:#475569;}.anatomy-motion-feedback[data-correct="true"]{color:#047857;}.anatomy-motion-footer{display:flex;justify-content:flex-end;gap:7px;margin-top:8px;}',      '.anatomy-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-stage strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-feedback,.anatomy-tool-shell[data-reading-mode=true] .anatomy-intervention-boundary{font-size:13px;line-height:1.62;}',      '.anatomy-synthesis{margin:12px 14px 14px;border-top:2px solid var(--motion-accent);padding-top:10px;}.anatomy-synthesis-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.anatomy-synthesis-header h4{margin:1px 0 3px;font-size:14px;color:var(--motion-accent);}.anatomy-synthesis-header p{margin:0;font-size:11px;line-height:1.45;color:#475569;}.anatomy-synthesis-chain{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:center;gap:5px;margin-top:9px;}.anatomy-synthesis-step{min-height:70px;padding:7px 6px;border:1px solid var(--motion-accent);background:var(--motion-soft);color:#334155;text-align:left;border-radius:8px;}.anatomy-synthesis-step:hover{filter:brightness(.97);}.anatomy-synthesis-step span,.anatomy-synthesis-step strong{display:block;}.anatomy-synthesis-step span{font-size:11px;font-weight:900;color:var(--motion-accent);text-transform:uppercase;letter-spacing:.04em;}.anatomy-synthesis-step strong{margin-top:3px;font-size:11px;line-height:1.3;}.anatomy-synthesis-arrow{text-align:center;color:var(--motion-accent);font-weight:950;}.anatomy-synthesis-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px;}.anatomy-synthesis-compare section{padding:8px 9px;border-left:3px solid var(--motion-accent);background:rgba(255,255,255,.78);}.anatomy-synthesis-compare section[data-kind="disrupted"]{border-left-color:var(--motion-alert);background:var(--motion-alert-soft);}.anatomy-synthesis-compare strong{display:block;font-size:11px;color:var(--motion-accent);}.anatomy-synthesis-compare section[data-kind="disrupted"] strong{color:var(--motion-alert);}.anatomy-synthesis-compare span{display:block;margin-top:4px;font-size:11px;line-height:1.45;color:#334155;}.anatomy-synthesis-takeaway{margin-top:8px;padding:8px 9px;background:var(--motion-soft);font-size:11px;line-height:1.45;color:#334155;}.anatomy-synthesis-takeaway strong{color:var(--motion-accent);}.anatomy-synthesis-footer{display:flex;justify-content:flex-end;margin-top:8px;}',
+      '.anatomy-motion-check{padding:8px 10px;border:1px solid rgba(100,116,139,.22);border-radius:10px;background:rgba(255,255,255,.8);}.anatomy-motion-check p{margin:0 0 7px;font-size:11px;font-weight:900;color:#334155;}.anatomy-motion-options{display:grid;gap:5px;}.anatomy-motion-options button{min-height:34px;border-radius:8px;text-align:left;}.anatomy-motion-feedback{display:block;margin-top:7px;font-size:11px;line-height:1.4;font-weight:800;color:#475569;}.anatomy-motion-feedback[data-correct="true"]{color:#047857;}.anatomy-motion-footer{display:flex;justify-content:flex-end;gap:7px;margin-top:8px;}',      '.anatomy-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}',
       '.anatomy-metric{border-radius:8px;border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.72);padding:7px 8px;}',
       '.anatomy-metric strong{display:block;font-size:16px;line-height:1;font-weight:950;color:#0f172a;}',
-      '.anatomy-metric span{display:block;margin-top:4px;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;}',
+      '.anatomy-metric span{display:block;margin-top:4px;font-size:11px;font-weight:800;text-transform:uppercase;color:#64748b;}',
       '.anatomy-coach{margin-top:7px;border-radius:8px;border:1px solid rgba(124,58,237,.18);background:rgba(245,243,255,.72);padding:8px 9px;}',
       '.anatomy-coach strong{display:block;font-size:12px;color:#4c1d95;}',
-      '.anatomy-coach p{margin:3px 0 8px;font-size:10px;line-height:1.45;color:#475569;}',
+      '.anatomy-coach p{margin:3px 0 8px;font-size:11px;line-height:1.45;color:#475569;}',
       '.anatomy-confidence{border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;padding:9px;}',
       '.anatomy-confidence-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}',
       '.anatomy-confidence-actions button{min-height:34px;border-radius:8px;}',
@@ -129,7 +142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       // the dark theme puts tools on while passing elsewhere — a contrast bug
       // that appears and disappears with the theme. An explicit muted colour
       // gives the same visual hierarchy and the same ratio everywhere.
-      '.anatomy-system-count{font-size:9px;font-weight:900;color:#475569;white-space:nowrap;}.anatomy-system-button[aria-pressed="true"] .anatomy-system-count{color:inherit;text-shadow:none;}',
+      '.anatomy-system-count{font-size:11px;font-weight:900;color:#475569;white-space:nowrap;}.anatomy-system-button[aria-pressed="true"] .anatomy-system-count{color:inherit;text-shadow:none;}',
       '.anatomy-system-meter{position:absolute;left:7px;right:7px;bottom:4px;height:2px;border-radius:999px;background:rgba(100,116,139,.18);overflow:hidden;}',
       '.anatomy-system-meter>span{display:block;height:100%;border-radius:inherit;background:var(--system-accent);transition:width .25s ease;}',
       '.anatomy-system-button[aria-pressed="true"] .anatomy-system-meter{background:rgba(255,255,255,.28);}',
@@ -140,73 +153,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-body-shell{position:sticky;top:58px;border-radius:14px;border:1px solid #cbd5e1;border-top:4px solid var(--anatomy-accent);background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);padding:10px 12px 12px;box-shadow:0 16px 36px rgba(15,23,42,.11);}',
       '.anatomy-body-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}',
       '.anatomy-body-header strong{font-size:12px;font-weight:950;color:#0f172a;}',
-      '.anatomy-body-title span{display:block;margin-top:2px;font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;}',
+      '.anatomy-body-title span{display:block;margin-top:2px;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.06em;}',
       '.anatomy-body-badges{display:flex;align-items:flex-end;gap:4px;flex-direction:column;}',
-      '.anatomy-body-badges span{font-size:10px;font-weight:850;color:var(--anatomy-accent);background:var(--anatomy-soft);border-radius:999px;padding:3px 7px;white-space:nowrap;}',
+      '.anatomy-body-badges span{font-size:11px;font-weight:850;color:var(--anatomy-accent);background:var(--anatomy-soft);border-radius:999px;padding:3px 7px;white-space:nowrap;}',
       '.anatomy-orientation-key{color:#334155!important;background:#e2e8f0!important;}',
-      '.anatomy-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:6px;width:min(360px,100%);margin:0 auto 7px;}',
-      '.anatomy-canvas-toolbar>span{font-size:10px;font-weight:850;color:#475569;white-space:nowrap;}',
-      '.anatomy-canvas-toolbar-group{display:flex;align-items:center;gap:3px;flex-wrap:wrap;justify-content:flex-end;}',
+      '.anatomy-canvas-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;width:min(360px,100%);margin:0 auto 7px;}',
+      '.anatomy-canvas-toolbar>span{flex:1 1 100%;font-size:11px;font-weight:850;color:#475569;white-space:normal;line-height:1.3;}',
+      '.anatomy-canvas-toolbar-group{display:flex;align-items:center;gap:3px;flex-wrap:wrap;justify-content:flex-start;}',
+      '.anatomy-canvas-toolbar-group>span[role="status"]{min-width:44px;}',
       '.anatomy-canvas-toolbar button{min-width:32px;min-height:32px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;font-size:11px;font-weight:900;}',
       '.anatomy-canvas-toolbar button:disabled{opacity:.42;cursor:not-allowed;}',
       '.anatomy-canvas-frame{position:relative;width:min(360px,100%);aspect-ratio:360/520;margin:0 auto;overflow:hidden;border-radius:10px;}',
       '.anatomy-3d-canvas{display:block;width:100%!important;height:100%!important;border-radius:10px;background:radial-gradient(circle at 50% 28%,#172554 0%,#07111f 62%,#020617 100%);touch-action:none;cursor:grab;}',
       '.anatomy-3d-canvas:active{cursor:grabbing;}',
-      '.anatomy-3d-status{max-width:360px;margin:6px auto 0;padding:7px 9px;border-radius:8px;border:1px solid #c7d2fe;background:#eef2ff;color:#312e81;font-size:10px;line-height:1.45;}',
+      '.anatomy-3d-status{max-width:360px;margin:6px auto 0;padding:7px 9px;border-radius:8px;border:1px solid #c7d2fe;background:#eef2ff;color:#312e81;font-size:11px;line-height:1.45;}',
       '.anatomy-view-toggle{display:inline-flex;align-items:center;gap:3px;padding:2px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;}',
-      '.anatomy-view-toggle button{min-height:28px;padding:4px 7px;border-radius:6px;font-size:10px;font-weight:900;color:#475569;}',
+      '.anatomy-view-toggle button{min-height:28px;padding:4px 7px;border-radius:6px;font-size:11px;font-weight:900;color:#475569;}',
       '.anatomy-view-toggle button[aria-pressed="true"]{border-color:var(--anatomy-accent);background:#0f172a;color:#fff;}',
       '.anatomy-scale-journey{max-width:100%;margin:8px auto 0;padding:10px;border:1px solid #c7d2fe;border-radius:10px;background:linear-gradient(135deg,#eef2ff,#f5f3ff 64%,#ecfeff);}',
-      '.anatomy-scale-journey-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}.anatomy-scale-journey-head strong{font-size:11px;color:#312e81;}.anatomy-scale-journey-head span{font-size:9px;font-weight:850;color:#6366f1;white-space:nowrap;}',
-      '.anatomy-scale-track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:7px;}.anatomy-scale-step{min-width:0;min-height:62px;padding:7px;border:1px solid #c7d2fe;border-radius:8px;background:#fff;color:#1e1b4b;text-align:left;}.anatomy-scale-step span,.anatomy-scale-step strong{display:block;}.anatomy-scale-step span{font-size:8px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6366f1;}.anatomy-scale-step strong{margin-top:4px;font-size:10px;line-height:1.25;overflow-wrap:anywhere;}',
+      '.anatomy-scale-journey-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}.anatomy-scale-journey-head strong{font-size:11px;color:#312e81;}.anatomy-scale-journey-head span{font-size:11px;font-weight:850;color:#6366f1;white-space:nowrap;}',
+      '.anatomy-scale-track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:7px;}.anatomy-scale-step{min-width:0;min-height:62px;padding:7px;border:1px solid #c7d2fe;border-radius:8px;background:#fff;color:#1e1b4b;text-align:left;}.anatomy-scale-step span,.anatomy-scale-step strong{display:block;}.anatomy-scale-step span{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6366f1;}.anatomy-scale-step strong{margin-top:4px;font-size:11px;line-height:1.25;overflow-wrap:anywhere;}',
       '.anatomy-scale-step[data-scale-stage="body"]{border-color:#94a3b8;background:#f8fafc;}.anatomy-scale-step[data-scale-stage="structure"]{border-color:#8b5cf6;background:#f5f3ff;}.anatomy-scale-step[data-scale-stage="tissue"]{border-color:#0ea5e9;background:#f0f9ff;}.anatomy-scale-step[data-scale-stage="cell"]{border-color:#14b8a6;background:#f0fdfa;}',
       'button.anatomy-scale-step{cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease;}button.anatomy-scale-step:hover{transform:translateY(-1px);border-color:#4338ca;background:#fff;}button.anatomy-scale-step:active{transform:scale(.985);}',
-      '.anatomy-scale-status{margin:7px 0 0;font-size:9px;line-height:1.4;color:#475569;}.anatomy-scale-journey-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px;padding-top:7px;border-top:1px solid #c7d2fe;}.anatomy-scale-journey-buttons button{min-height:34px;border:1px solid #c7d2fe;border-radius:7px;background:#fff;color:#3730a3;font-size:9px;font-weight:900;padding:5px;}',
+      '.anatomy-scale-status{margin:7px 0 0;font-size:11px;line-height:1.4;color:#475569;}.anatomy-scale-journey-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px;padding-top:7px;border-top:1px solid #c7d2fe;}.anatomy-scale-journey-buttons button{min-height:34px;border:1px solid #c7d2fe;border-radius:7px;background:#fff;color:#3730a3;font-size:11px;font-weight:900;padding:5px;}',
       '@media (max-width:560px){.anatomy-scale-track{grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-scale-step{min-height:68px}.anatomy-scale-journey-buttons{grid-template-columns:1fr}.anatomy-scale-journey-buttons button{min-height:40px}.anatomy-scale-journey-head{display:block}.anatomy-scale-journey-head span{display:block;margin-top:2px;white-space:normal}}',
       '@media (prefers-reduced-motion:reduce){button.anatomy-scale-step{transition:none}button.anatomy-scale-step:hover{transform:none}}',
-      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-scale-step span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-scale-status{font-size:11px;line-height:1.5;}.anatomy-tool-shell[data-reading-mode=true] .anatomy-scale-step strong{font-size:13px;line-height:1.4;}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-scale-step span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-scale-status{font-size:13px;line-height:1.5;}.anatomy-tool-shell[data-reading-mode=true] .anatomy-scale-step strong{font-size:13px;line-height:1.4;}',
       '.anatomy-canvas{display:block;margin:0;width:100%!important;height:auto!important;border-radius:10px!important;touch-action:manipulation;transform-origin:center center;transition:transform .18s ease;}',
       '.anatomy-canvas.is-zoomed{touch-action:none;cursor:grab;}',
       '.anatomy-minimap{position:absolute;right:8px;bottom:8px;width:54px;height:78px;border:1px solid rgba(15,23,42,.3);border-radius:8px;background:rgba(255,255,255,.9);box-shadow:0 4px 12px rgba(15,23,42,.16);pointer-events:none;z-index:2;}',
       '.anatomy-minimap-body{position:absolute;left:18px;top:7px;width:18px;height:64px;border-radius:45% 45% 38% 38%;background:var(--anatomy-soft);border:1px solid var(--anatomy-accent);opacity:.7;}',
       '.anatomy-minimap-viewport{position:absolute;border:2px solid var(--anatomy-accent);border-radius:4px;background:rgba(255,255,255,.24);box-sizing:border-box;}',
       '.anatomy-minimap-selected{position:absolute;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:999px;background:var(--anatomy-accent);box-shadow:0 0 0 2px #fff;}',
-      '.anatomy-minimap-label{position:absolute;left:0;right:0;top:1px;text-align:center;font-size:7px;font-weight:900;color:#475569;letter-spacing:.04em;}',
-      '.anatomy-canvas-help{margin:7px auto 0;max-width:360px;padding:4px 2px 0;font-size:10px;line-height:1.45;color:#64748b;}',
-      '.anatomy-marker-legend{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;max-width:360px;margin:7px auto 0;font-size:9px;font-weight:800;color:#475569;}',
+      '.anatomy-minimap-label{position:absolute;left:0;right:0;top:1px;text-align:center;font-size:11px;font-weight:900;color:#475569;letter-spacing:.04em;}',
+      '.anatomy-canvas-help{margin:7px auto 0;max-width:360px;padding:4px 2px 0;font-size:11px;line-height:1.45;color:#64748b;}',
+      '.anatomy-marker-legend{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;max-width:360px;margin:7px auto 0;font-size:11px;font-weight:800;color:#475569;}',
       '.anatomy-marker-legend-title{font-weight:950;color:#334155;}',
       '.anatomy-marker-legend-item{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}',
-      '.anatomy-marker-legend-symbol{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;background:var(--anatomy-accent);color:#fff;font-size:10px;font-weight:950;line-height:1;}',
+      '.anatomy-marker-legend-symbol{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:999px;background:var(--anatomy-accent);color:#fff;font-size:11px;font-weight:950;line-height:1;}',
       '.anatomy-marker-legend-symbol[data-status="unrated"]{background:#64748b;}',
       '.anatomy-side-panel{min-width:0;}',
+      '.anatomy-side-column{min-width:0;display:flex;flex-direction:column;gap:12px;}.anatomy-side-column>.anatomy-fact-card,.anatomy-side-column>.anatomy-mnemonics-card{margin-bottom:0!important;}',
       '.anatomy-structure-panel{border-radius:8px;border:1px solid rgba(15,23,42,.12);background:#fff;padding:12px;box-shadow:0 10px 22px rgba(15,23,42,.06);}',
       '.anatomy-structure-list{max-height:520px;overflow-y:auto;padding-right:4px;}',
       '.anatomy-structure-list button{border-radius:8px;}',
       '.anatomy-atlas{border-radius:12px;border:1px solid #fecdd3;background:linear-gradient(145deg,#fff 0%,#fff7f7 100%);padding:12px;}',
       '.anatomy-atlas-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}',
       '.anatomy-atlas-header h5{font-size:13px;font-weight:950;color:#881337;margin:0;}',
-      '.anatomy-atlas-header p{font-size:10px;line-height:1.45;color:#64748b;margin:2px 0 0;max-width:500px;}',
+      '.anatomy-atlas-header p{font-size:11px;line-height:1.45;color:#64748b;margin:2px 0 0;max-width:500px;}',
       '.anatomy-atlas-stage{border-radius:10px;border:1px solid #e2e8f0;background:#fff;overflow:hidden;}',
       '.anatomy-atlas-stage svg{display:block;width:100%;height:auto;min-height:250px;}',
       '.anatomy-atlas-stage svg text{paint-order:stroke;stroke:rgba(255,255,255,.94);stroke-width:2.25px;stroke-linejoin:round;}',
-      '.anatomy-atlas-visual-key{display:flex;align-items:center;justify-content:center;gap:6px 12px;flex-wrap:wrap;margin:7px 2px 0;color:#475569;font-size:10px;font-weight:800;}',
+      '.anatomy-atlas-visual-key{display:flex;align-items:center;justify-content:center;gap:6px 12px;flex-wrap:wrap;margin:7px 2px 0;color:#475569;font-size:11px;font-weight:800;}',
       '.anatomy-atlas-visual-key-label{font-weight:950;color:#334155;}',
       '.anatomy-atlas-key-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}',
-      '.anatomy-atlas-key-swatch{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border-radius:999px;color:#fff;font-size:9px;font-weight:950;line-height:1;box-shadow:inset 0 0 0 1px rgba(15,23,42,.14);}',
-      '.anatomy-atlas-focus{display:flex;align-items:center;justify-content:center;gap:5px 8px;flex-wrap:wrap;margin:6px 2px 0;color:#475569;font-size:10px;}',
+      '.anatomy-atlas-key-swatch{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border-radius:999px;color:#fff;font-size:11px;font-weight:950;line-height:1;box-shadow:inset 0 0 0 1px rgba(15,23,42,.14);}',
+      '.anatomy-atlas-focus{display:flex;align-items:center;justify-content:center;gap:5px 8px;flex-wrap:wrap;margin:6px 2px 0;color:#475569;font-size:11px;}',
       '.anatomy-atlas-focus-label{font-weight:950;color:#334155;}',
       '.anatomy-atlas-focus-item{display:inline-flex;align-items:center;gap:5px;font-weight:800;white-space:nowrap;}',
       '.anatomy-atlas-focus-item:before{content:"";width:5px;height:5px;border-radius:999px;background:#64748b;}',
       '.anatomy-clinical-panel{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(0,1.3fr);gap:5px 12px;margin-top:8px;padding:8px 10px;border-left:4px solid #7c3aed;background:#f5f3ff;color:#4c1d95;}',
       '.anatomy-clinical-panel strong{font-size:11px;}',
-      '.anatomy-clinical-panel span{font-size:10px;line-height:1.4;}',
-      '.anatomy-clinical-panel-note{grid-column:1/-1;color:#64748b;font-size:9px!important;}',
+      '.anatomy-clinical-panel span{font-size:11px;line-height:1.4;}',
+      '.anatomy-clinical-panel-note{grid-column:1/-1;color:#64748b;font-size:11px!important;}',
       '.anatomy-clinical-overlay{filter:drop-shadow(0 2px 3px rgba(76,29,149,.2));}',
       '.anatomy-atlas-route{fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.18;transition:opacity .2s ease,stroke-width .2s ease;}',
       '.anatomy-atlas-route.is-active{opacity:1;stroke-width:9;stroke-dasharray:12 9;animation:anatomy-atlas-flow 1.15s linear infinite;}',
       '.anatomy-atlas.is-paused .anatomy-atlas-route.is-active{animation-play-state:paused;}',
       '.anatomy-atlas-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px;}',
-      '.anatomy-atlas-steps button{min-height:44px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;padding:6px;text-align:left;font-size:10px;font-weight:850;line-height:1.25;}',
+      '.anatomy-atlas-steps button{min-height:44px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;padding:6px;text-align:left;font-size:11px;font-weight:850;line-height:1.25;}',
       '.anatomy-atlas-steps button[aria-pressed="true"]{border-color:#be123c;background:#fff1f2;color:#881337;box-shadow:inset 0 0 0 1px #be123c;}',
       '.anatomy-atlas-step-detail{display:flex;align-items:flex-start;gap:8px;margin-top:8px;border-left:4px solid #be123c;background:#fff1f2;padding:8px 10px;color:#4c0519;}',
       '.anatomy-atlas-step-detail strong{font-size:11px;white-space:nowrap;}',
@@ -240,7 +255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-atlas[data-anatomy-atlas="epidermis"] .anatomy-atlas-header h5{color:#9d174d;}',
       '.anatomy-atlas[data-anatomy-atlas="epidermis"] .anatomy-atlas-steps button[aria-pressed="true"]{border-color:#db2777;background:#fdf2f8;color:#9d174d;box-shadow:inset 0 0 0 1px #db2777;}',
       '.anatomy-atlas[data-anatomy-atlas="epidermis"] .anatomy-atlas-step-detail{border-left-color:#db2777;background:#fdf2f8;color:#831843;}',
-      '.anatomy-scale-path{display:flex;align-items:center;gap:6px;margin:0 12px 8px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.72);border:1px solid rgba(100,116,139,.18);font-size:10px;font-weight:900;color:#334155;}',
+      '.anatomy-scale-path{display:flex;align-items:center;gap:6px;margin:0 12px 8px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.72);border:1px solid rgba(100,116,139,.18);font-size:11px;font-weight:900;color:#334155;}',
       '.anatomy-scale-path span:not(.anatomy-scale-arrow){flex:1;text-align:center;white-space:nowrap;}',
       '.anatomy-scale-arrow{flex:none;color:#64748b;font-size:12px;}',
       '.anatomy-diagram-emphasis{transition:opacity .18s ease,filter .18s ease;}',
@@ -248,7 +263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-diagram-emphasis.is-active{opacity:1;filter:drop-shadow(0 2px 3px rgba(15,23,42,.18));}',
       '.anatomy-mechanism-layer.is-muted{opacity:.1;}',
       '.anatomy-mechanism-layer.is-active{opacity:1;filter:drop-shadow(0 2px 4px rgba(15,23,42,.2));}',
-      '.anatomy-atlas-step-position{flex:none;border-radius:999px;background:rgba(255,255,255,.82);border:1px solid rgba(100,116,139,.25);padding:2px 6px;font-size:10px!important;font-weight:900;white-space:nowrap;}',
+      '.anatomy-atlas-step-position{flex:none;border-radius:999px;background:rgba(255,255,255,.82);border:1px solid rgba(100,116,139,.25);padding:2px 6px;font-size:11px!important;font-weight:900;white-space:nowrap;}',
       '.anatomy-scale-continuation{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid rgba(100,116,139,.18);}',
       '.anatomy-scale-continuation p{margin:0;flex:1;min-width:190px;font-size:11px;line-height:1.4;color:#475569;}',
       '.anatomy-scale-continuation strong{color:#334155;}',
@@ -258,61 +273,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '@media (max-width:720px){.anatomy-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-motion-body{grid-template-columns:1fr}.anatomy-motion-route{grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr;padding-left:10px;padding-right:10px}.anatomy-motion-cascade{grid-template-columns:1fr 14px 1fr 14px 1fr}}',
       '@media (max-width:720px){.anatomy-system-rail{grid-template-columns:repeat(3,minmax(0,1fr))}.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))}.anatomy-tab-strip>button{width:100%;padding-left:8px;padding-right:8px}.anatomy-tab-strip>span{grid-column:1/-1;margin-left:0!important;text-align:right}}',
       '@media (forced-colors:active){.anatomy-canvas,.anatomy-minimap,.anatomy-canvas-toolbar button,.anatomy-marker-legend-symbol{forced-color-adjust:auto;border:1px solid CanvasText!important}.anatomy-minimap-viewport{border-color:Highlight!important}.anatomy-minimap-selected{background:Highlight!important;box-shadow:0 0 0 2px Canvas!important}}',
-      '@media (max-width:560px){.anatomy-mission-inner{padding:12px}.anatomy-mission-title{font-size:18px}.anatomy-metric-grid{grid-template-columns:1fr 1fr}.anatomy-mode-card p{display:none}.anatomy-system-rail{grid-template-columns:1fr 1fr}.anatomy-tab-strip{grid-template-columns:1fr 1fr}.anatomy-body-header{align-items:flex-start}.anatomy-body-badges{align-items:flex-end}.anatomy-canvas-toolbar{align-items:stretch;flex-direction:column}.anatomy-canvas-toolbar>span{white-space:normal;max-width:none}.anatomy-canvas-toolbar-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:5px}.anatomy-canvas-toolbar button{width:100%;min-width:0;min-height:44px}.anatomy-minimap{right:6px;bottom:6px}.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:44px}}',
+      '@media (max-width:560px){.anatomy-mission-inner{padding:12px}.anatomy-mission-title{font-size:18px}.anatomy-metric-grid{grid-template-columns:1fr 1fr}.anatomy-mode-card p{display:none}.anatomy-system-rail{grid-template-columns:1fr 1fr}.anatomy-tab-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.anatomy-tab-strip>button{padding-left:4px;padding-right:4px;font-size:11px}.anatomy-body-header{align-items:flex-start}.anatomy-body-badges{align-items:flex-end}.anatomy-canvas-toolbar{align-items:stretch;flex-direction:column}.anatomy-canvas-toolbar>span{white-space:normal;max-width:none}.anatomy-canvas-toolbar-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:5px}.anatomy-canvas-toolbar button{width:100%;min-width:0;min-height:44px}.anatomy-minimap{right:6px;bottom:6px}.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:44px}}',
       '@media (max-width:560px){.anatomy-lens-header,.anatomy-motion-header{display:block}.anatomy-lens-progress,.anatomy-motion-progress{display:inline-block;margin-top:7px}.anatomy-lens-grid{grid-template-columns:1fr}.anatomy-lens-card{min-height:96px}.anatomy-motion-route{grid-template-columns:1fr 1fr}.anatomy-motion-arrow{display:none}.anatomy-motion-node{min-height:68px}.anatomy-motion-cascade,.anatomy-motion-impact,.anatomy-synthesis-compare{grid-template-columns:1fr}.anatomy-motion-cascade-arrow,.anatomy-motion-impact-arrow{display:none}.anatomy-synthesis-chain{grid-template-columns:1fr 1fr}.anatomy-synthesis-arrow{display:none}.anatomy-motion-whatif{align-items:stretch;flex-direction:column}.anatomy-motion-whatif button{width:100%}.anatomy-motion-footer{justify-content:stretch}.anatomy-motion-footer button{flex:1}}',
       '@media (prefers-reduced-motion:reduce){.anatomy-atlas-route.is-active{animation:none}.anatomy-atlas-route,.anatomy-diagram-emphasis{transition:none}}',
       '@media (max-width:560px){.anatomy-atlas-steps{grid-template-columns:1fr 1fr}.anatomy-atlas-stage svg{min-height:210px}.anatomy-atlas-step-detail{display:block}.anatomy-atlas-step-detail strong{display:block;margin:4px 0 3px}.anatomy-scale-path{margin-left:0;margin-right:0;gap:3px;padding-left:5px;padding-right:5px}.anatomy-scale-path span:not(.anatomy-scale-arrow){white-space:normal}.anatomy-atlas-visual-key,.anatomy-atlas-focus{justify-content:flex-start;gap:5px 10px}.anatomy-label-secondary{display:none}.anatomy-mechanism-layer.is-active .anatomy-label-secondary{display:inline}.anatomy-clinical-panel{grid-template-columns:1fr}}',
       '.anatomy-tool-shell[data-reading-mode=true] .anatomy-mission-text,.anatomy-tool-shell[data-reading-mode=true] .anatomy-lens-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-lens-card .anatomy-lens-desc,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-current>span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-cascade-stage span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-deep,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-feedback,.anatomy-tool-shell[data-reading-mode=true] .anatomy-synthesis-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-synthesis-compare span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-synthesis-takeaway,.anatomy-tool-shell[data-reading-mode=true] .anatomy-canvas-help,.anatomy-tool-shell[data-reading-mode=true] .anatomy-3d-status,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-step-detail span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-panel span{font-size:13px;line-height:1.62;}',
-      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-kicker,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-node span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-cascade-stage strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-impact-stage strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-synthesis-step span{font-size:11px;}',
-      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-node strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-synthesis-step strong{font-size:12px;line-height:1.4;}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-kicker,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-node span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-cascade-stage strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-impact-stage strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-synthesis-step span{font-size:13px;}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-motion-node strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-synthesis-step strong{font-size:13px;line-height:1.4;}',
       '.anatomy-compare-tray{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:8px 10px;border-left:4px solid #7c3aed;background:#f5f3ff;color:#4c1d95;}',
       '.anatomy-compare-tray strong{display:block;font-size:12px;line-height:1.3;}',
-      '.anatomy-compare-tray p{margin:2px 0 0;font-size:10px;line-height:1.4;color:#5b21b6;}',
+      '.anatomy-compare-tray p{margin:2px 0 0;font-size:11px;line-height:1.4;color:#5b21b6;}',
       '@media (max-width:560px){.anatomy-compare-tray{align-items:stretch;flex-direction:column}.anatomy-compare-tray>div:last-child{display:flex}.anatomy-compare-tray>div:last-child button{flex:1;min-height:40px;}}',
       '.anatomy-mastery-map{margin:0 0 12px;padding:12px 14px;border:1px solid #c7d2fe;border-radius:12px;background:linear-gradient(145deg,#eef2ff 0%,#fff 62%,#ecfeff 145%);}',
-      '.anatomy-mastery-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}.anatomy-mastery-header h3{margin:1px 0 3px;font-size:15px;color:#312e81;}.anatomy-mastery-header p{margin:0;font-size:10px;line-height:1.45;color:#475569;}',
-      '.anatomy-mastery-totals{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}.anatomy-mastery-totals span{padding:4px 7px;border:1px solid #c7d2fe;border-radius:999px;background:#fff;font-size:10px;font-weight:850;color:#4338ca;white-space:nowrap;}',
-      '.anatomy-mastery-focus{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding:8px 9px;border-left:4px solid #7c3aed;background:#f5f3ff;}.anatomy-mastery-focus span{display:block;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6d28d9;}.anatomy-mastery-focus strong{display:block;margin-top:2px;font-size:11px;color:#4c1d95;}.anatomy-mastery-focus button{flex:none;min-height:34px;padding:5px 8px;border:1px solid #8b5cf6;border-radius:7px;background:#7c3aed;color:#fff;font-size:10px;font-weight:850;}',
+      '.anatomy-mastery-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}.anatomy-mastery-header h3{margin:1px 0 3px;font-size:15px;color:#312e81;}.anatomy-mastery-header p{margin:0;font-size:11px;line-height:1.45;color:#475569;}',
+      '.anatomy-mastery-totals{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}.anatomy-mastery-totals span{padding:4px 7px;border:1px solid #c7d2fe;border-radius:999px;background:#fff;font-size:11px;font-weight:850;color:#4338ca;white-space:nowrap;}',
+      '.anatomy-mastery-focus{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding:8px 9px;border-left:4px solid #7c3aed;background:#f5f3ff;}.anatomy-mastery-focus span{display:block;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6d28d9;}.anatomy-mastery-focus strong{display:block;margin-top:2px;font-size:11px;color:#4c1d95;}.anatomy-mastery-focus button{flex:none;min-height:34px;padding:5px 8px;border:1px solid #8b5cf6;border-radius:7px;background:#7c3aed;color:#fff;font-size:11px;font-weight:850;}',
       '.anatomy-mastery-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:9px;}.anatomy-mastery-system{min-width:0;min-height:68px;padding:7px 8px;border:1px solid #cbd5e1;border-left:4px solid #94a3b8;border-radius:8px;background:#fff;color:#0f172a;text-align:left;transition:transform .16s ease,border-color .16s ease,background .16s ease;}.anatomy-mastery-system:hover{transform:translateY(-1px);background:#f8fafc;border-color:#6366f1;}.anatomy-mastery-system[data-active="true"]{box-shadow:0 0 0 2px #c7d2fe;}',
       '.anatomy-mastery-system[data-mastery-status="review"]{border-left-color:#e11d48;}.anatomy-mastery-system[data-mastery-status="learning"]{border-left-color:#d97706;}.anatomy-mastery-system[data-mastery-status="mastered"]{border-left-color:#059669;}.anatomy-mastery-system[data-mastery-status="unseen"]{border-left-color:#94a3b8;}',
-      '.anatomy-mastery-name{display:block;font-size:11px;font-weight:900;line-height:1.25;}.anatomy-mastery-counts{display:block;margin-top:4px;font-size:9px;line-height:1.3;color:#475569;}.anatomy-mastery-bar{display:flex;height:5px;margin-top:6px;overflow:hidden;border-radius:999px;background:#e2e8f0;}.anatomy-mastery-bar span{display:block;height:100%;}.anatomy-mastery-bar-mastered{background:#059669;}.anatomy-mastery-bar-review{background:#e11d48;}',
-      '.anatomy-mastery-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;font-size:9px;font-weight:800;color:#64748b;}.anatomy-mastery-legend span{white-space:nowrap;}',
+      '.anatomy-mastery-name{display:block;font-size:11px;font-weight:900;line-height:1.25;}.anatomy-mastery-counts{display:block;margin-top:4px;font-size:11px;line-height:1.3;color:#475569;}.anatomy-mastery-bar{display:flex;height:5px;margin-top:6px;overflow:hidden;border-radius:999px;background:#e2e8f0;}.anatomy-mastery-bar span{display:block;height:100%;}.anatomy-mastery-bar-mastered{background:#059669;}.anatomy-mastery-bar-review{background:#e11d48;}',
+      '.anatomy-mastery-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px;font-size:11px;font-weight:800;color:#64748b;}.anatomy-mastery-legend span{white-space:nowrap;}',
       '@media (max-width:720px){.anatomy-mastery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-mastery-header{display:block}.anatomy-mastery-totals{justify-content:flex-start;margin-top:7px}}',
       '@media (max-width:560px){.anatomy-mastery-map{padding:10px}.anatomy-mastery-focus{align-items:stretch;flex-direction:column}.anatomy-mastery-focus button{width:100%;min-height:40px}.anatomy-mastery-system{min-height:74px}}',
       '@media (prefers-reduced-motion:reduce){.anatomy-mastery-system{transition:none}.anatomy-mastery-system:hover{transform:none}}',
       '.anatomy-tool-shell[data-reading-mode=true] .anatomy-mastery-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-mastery-counts,.anatomy-tool-shell[data-reading-mode=true] .anatomy-mastery-legend{font-size:13px;line-height:1.62;}',
       '.anatomy-relation-map{margin-top:10px;padding:10px;border:1px solid #bae6fd;border-radius:10px;background:linear-gradient(145deg,#f0f9ff,#fff);}',
       '.anatomy-relation-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}',
-      '.anatomy-relation-header strong{display:block;font-size:12px;color:#0c4a6e;}.anatomy-relation-header p{margin:2px 0 0;font-size:10px;line-height:1.4;color:#475569;}',
-      '.anatomy-relation-header button{flex:none;min-height:32px;padding:4px 7px;border:1px solid #7dd3fc;border-radius:7px;background:#fff;color:#0369a1;font-size:10px;font-weight:850;}',
+      '.anatomy-relation-header strong{display:block;font-size:12px;color:#0c4a6e;}.anatomy-relation-header p{margin:2px 0 0;font-size:11px;line-height:1.4;color:#475569;}',
+      '.anatomy-relation-header button{flex:none;min-height:32px;padding:4px 7px;border:1px solid #7dd3fc;border-radius:7px;background:#fff;color:#0369a1;font-size:11px;font-weight:850;}',
       '.anatomy-relation-core,.anatomy-relation-branch{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);align-items:center;gap:4px;}',
       '.anatomy-relation-node{min-width:0;min-height:48px;padding:7px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;text-align:left;color:#0f172a;}',
-      '.anatomy-relation-node span{display:block;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#64748b;}.anatomy-relation-node strong{display:block;margin-top:2px;font-size:11px;line-height:1.3;}',
+      '.anatomy-relation-node span{display:block;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#64748b;}.anatomy-relation-node strong{display:block;margin-top:2px;font-size:11px;line-height:1.3;}',
       '.anatomy-relation-node[data-kind="structure"]{border-color:#8b5cf6;background:#f5f3ff;}.anatomy-relation-node[data-kind="system"]{border-color:#38bdf8;background:#f0f9ff;}',
       '.anatomy-relation-arrow{text-align:center;color:#0284c7;font-size:14px;font-weight:950;}',
       '.anatomy-relation-branches{display:grid;gap:6px;margin-top:7px;padding-top:7px;border-top:1px solid #bae6fd;}',
       '.anatomy-relation-branch button{cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease;}.anatomy-relation-branch button:hover{border-color:#0284c7;background:#e0f2fe;}.anatomy-relation-branch button:active{transform:scale(.985);}',
       '.anatomy-relation-node[data-kind="process"]{border-color:#7dd3fc;}.anatomy-relation-node[data-kind="partner"]{border-color:#a5b4fc;background:#eef2ff;}',
-      '.anatomy-relation-caption{margin:7px 0 0;font-size:9px;line-height:1.4;color:#64748b;}',
+      '.anatomy-relation-caption{margin:7px 0 0;font-size:11px;line-height:1.4;color:#64748b;}',
       '.anatomy-tool-shell[data-reading-mode=true] .anatomy-relation-header p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-relation-caption{font-size:13px;line-height:1.62;}',
       '@media (max-width:560px){.anatomy-relation-header{display:block}.anatomy-relation-header button{width:100%;min-height:40px;margin-top:7px}.anatomy-relation-core,.anatomy-relation-branch{grid-template-columns:1fr}.anatomy-relation-arrow{transform:rotate(90deg)}.anatomy-relation-node{min-height:44px}}',
       '.anatomy-review-queue{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px;padding-top:7px;border-top:1px solid rgba(124,58,237,.16);}',
-      '.anatomy-review-queue-label{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6d28d9;}',
-      '.anatomy-review-queue button{min-height:30px;padding:4px 7px;border:1px solid #c4b5fd;border-radius:7px;background:#fff;color:#5b21b6;font-size:10px;font-weight:850;text-align:left;}',
+      '.anatomy-review-queue-label{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#6d28d9;}',
+      '.anatomy-review-queue button{min-height:30px;padding:4px 7px;border:1px solid #c4b5fd;border-radius:7px;background:#fff;color:#5b21b6;font-size:11px;font-weight:850;text-align:left;}',
       '.anatomy-review-queue button:hover{background:#f5f3ff;border-color:#8b5cf6;}',
-      '.anatomy-review-queue-more{font-size:10px;font-weight:800;color:#7c3aed;}',
+      '.anatomy-review-queue-more{font-size:11px;font-weight:800;color:#7c3aed;}',
       '.anatomy-tool-shell{width:min(72rem,100%);min-width:0;max-width:100%;box-sizing:border-box;padding:2px 4px 18px;}',
       '.anatomy-topbar{min-height:44px;padding:5px 7px!important;border:1px solid rgba(148,163,184,.22);border-radius:14px;background:rgba(255,255,255,.82);box-shadow:0 10px 28px rgba(15,23,42,.06);backdrop-filter:blur(14px);}',
       '.anatomy-workspace{grid-template-columns:minmax(350px,430px) minmax(0,1fr);gap:20px;}',
       '.anatomy-body-shell{overflow:hidden;border:1px solid rgba(148,163,184,.38)!important;border-radius:22px;background:linear-gradient(155deg,rgba(255,255,255,.98),rgba(248,250,252,.96) 58%,var(--anatomy-soft) 175%);padding:14px 14px 16px;box-shadow:0 24px 58px rgba(15,23,42,.13),0 2px 8px rgba(15,23,42,.06);}',
       '.anatomy-body-shell:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--anatomy-accent),#6366f1 48%,#06b6d4);}',
-      '.anatomy-body-header{margin-bottom:11px;padding-top:2px;}.anatomy-body-header strong{font-size:14px;letter-spacing:-.01em;}.anatomy-body-title span{font-size:9px;letter-spacing:.09em;}',
+      '.anatomy-body-header{margin-bottom:11px;padding-top:2px;}.anatomy-body-header strong{font-size:14px;letter-spacing:-.01em;}.anatomy-body-title span{font-size:11px;letter-spacing:.09em;}',
       '.anatomy-body-badges{min-width:0;align-items:flex-end;}.anatomy-body-badges>span{border:1px solid rgba(148,163,184,.24);background:rgba(255,255,255,.82);}',
       '.anatomy-view-toggle{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;min-width:248px;gap:3px;padding:3px;border-color:rgba(148,163,184,.5);border-radius:11px;background:#e9eef5;box-shadow:inset 0 1px 2px rgba(15,23,42,.08);}',
       '.anatomy-view-toggle[data-has-clinical-atlas="true"]{grid-template-columns:repeat(4,minmax(0,1fr));}',
-      '.anatomy-view-toggle button{min-width:44px;min-height:44px;padding:5px 7px;border:1px solid transparent;border-radius:8px;font-size:9px;line-height:1.15;letter-spacing:.01em;transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;}',
+      '.anatomy-view-toggle button{min-width:44px;min-height:44px;padding:5px 7px;border:1px solid transparent;border-radius:8px;font-size:11px;line-height:1.15;letter-spacing:.01em;transition:background .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease;}',
       '.anatomy-view-toggle button:hover{background:rgba(255,255,255,.72);color:#0f172a;}.anatomy-view-toggle button[aria-pressed="true"]{border-color:var(--anatomy-accent);background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;box-shadow:0 0 0 1px var(--anatomy-accent),0 4px 12px rgba(15,23,42,.18);}',
-      '.anatomy-view-model-controls{display:grid;gap:6px;width:100%}.anatomy-view-control-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:7px;align-items:center}.anatomy-view-control-label{color:#64748b;font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.anatomy-view-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher[data-has-clinical-atlas="true"]{grid-template-columns:repeat(3,minmax(0,1fr))}',
+      '.anatomy-view-model-controls{display:grid;gap:6px;width:100%}.anatomy-view-control-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:7px;align-items:center}.anatomy-view-control-label{color:#64748b;font-size:11px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.anatomy-view-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher{grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}.anatomy-model-switcher[data-has-clinical-atlas="true"]{grid-template-columns:repeat(3,minmax(0,1fr))}',
       '.anatomy-canvas-toolbar{width:min(400px,100%);margin-bottom:8px;padding:5px 6px;border:1px solid rgba(148,163,184,.32);border-radius:11px;background:rgba(248,250,252,.9);}',
       '.anatomy-canvas-toolbar button{border-color:rgba(148,163,184,.55);border-radius:8px;box-shadow:0 1px 2px rgba(15,23,42,.04);}.anatomy-canvas-toolbar button:hover:not(:disabled){border-color:var(--anatomy-accent);background:var(--anatomy-soft);color:#0f172a;}',
       '.anatomy-3d-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:wrap}.anatomy-3d-procedure-button{min-height:44px;padding-inline:10px}.anatomy-structure-detail{border-left-width:4px!important;background:linear-gradient(145deg,#fff,#f8fafc)!important}.anatomy-structure-detail-header{gap:10px}.anatomy-structure-detail-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.anatomy-structure-detail-actions button{min-height:34px}',
@@ -320,7 +335,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '@media (max-width:720px), (hover:none) and (pointer:coarse){.anatomy-3d-toolbar-actions{width:100%;align-items:stretch;flex-direction:column}.anatomy-3d-mobile-controls{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:5px}.anatomy-3d-mobile-controls .anatomy-3d-nudge{display:block}.anatomy-3d-mobile-controls .anatomy-3d-procedure-button{grid-column:span 2}.anatomy-3d-toolbar-actions>.anatomy-3d-procedure-button{width:100%}.anatomy-3d-canvas{touch-action:pan-y}}',
       '.anatomy-canvas-frame{width:min(400px,100%);border:1px solid rgba(148,163,184,.42);border-radius:18px;background:#08111f;box-shadow:0 18px 42px rgba(15,23,42,.18),inset 0 1px 0 rgba(255,255,255,.12);}',
       '.anatomy-canvas-frame:after{content:"";position:absolute;inset:0;z-index:4;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 -38px 52px rgba(2,6,23,.08);pointer-events:none;}',
-      '.anatomy-canvas-mode-chip{position:absolute;top:9px;left:9px;z-index:5;display:inline-flex;align-items:center;min-height:23px;padding:3px 8px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(7,17,31,.76);color:#e2e8f0;font-size:8px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;box-shadow:0 4px 14px rgba(2,6,23,.22);backdrop-filter:blur(8px);pointer-events:none;}',
+      '.anatomy-canvas-mode-chip{position:absolute;top:9px;left:9px;z-index:5;display:inline-flex;align-items:center;min-height:23px;padding:3px 8px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(7,17,31,.76);color:#e2e8f0;font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;box-shadow:0 4px 14px rgba(2,6,23,.22);backdrop-filter:blur(8px);pointer-events:none;}',
       '.anatomy-canvas-mode-chip[data-mode="2d"]{border-color:rgba(148,163,184,.4);background:rgba(255,255,255,.88);color:#334155;}',
       '.anatomy-3d-canvas{border-radius:18px;background:radial-gradient(circle at 50% 25%,#1e3a5f 0%,#0a1728 54%,#040914 100%);}',
       '.anatomy-3d-canvas[data-anatomy-3d-style="realistic"]{background:radial-gradient(circle at 50% 24%,#26384b 0%,#101b2a 56%,#070d16 100%);}',
@@ -334,40 +349,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-structure-panel{border-color:rgba(148,163,184,.32);border-radius:16px;background:rgba(255,255,255,.93);box-shadow:0 18px 42px rgba(15,23,42,.08);}',
       '.anatomy-tab-strip,.anatomy-system-rail,.anatomy-layer-bar,.anatomy-controls-bar{border-color:rgba(148,163,184,.32);border-radius:14px;background:rgba(248,250,252,.82);box-shadow:0 8px 20px rgba(15,23,42,.04);backdrop-filter:blur(10px);}',
       '.anatomy-display-panel,.anatomy-appearance-panel,.anatomy-model-source{border:1px solid rgba(148,163,184,.34);border-radius:13px;background:rgba(248,250,252,.78);box-shadow:0 7px 18px rgba(15,23,42,.04);overflow:hidden;}',
-      '.anatomy-display-summary,.anatomy-appearance-summary,.anatomy-model-source-summary{display:flex;align-items:center;gap:8px;min-height:39px;padding:8px 10px;color:#334155;font-size:10px;font-weight:900;letter-spacing:.02em;cursor:pointer;list-style:none;user-select:none;}',
+      '.anatomy-display-summary,.anatomy-appearance-summary,.anatomy-model-source-summary{display:flex;align-items:center;gap:8px;min-height:39px;padding:8px 10px;color:#334155;font-size:11px;font-weight:900;letter-spacing:.02em;cursor:pointer;list-style:none;user-select:none;}',
       '.anatomy-display-summary::-webkit-details-marker,.anatomy-appearance-summary::-webkit-details-marker,.anatomy-model-source-summary::-webkit-details-marker{display:none}.anatomy-display-summary:after,.anatomy-appearance-summary:after,.anatomy-model-source-summary:after{content:"+";margin-left:auto;color:#64748b;font-size:15px;line-height:1}.anatomy-display-panel[open]>.anatomy-display-summary:after,.anatomy-appearance-panel[open]>.anatomy-appearance-summary:after,.anatomy-model-source[open]>.anatomy-model-source-summary:after{content:"-"}',
-      '.anatomy-display-summary strong,.anatomy-appearance-summary strong{margin-left:auto;padding:2px 7px;border-radius:999px;background:#fff;color:#475569;font-size:9px}.anatomy-display-summary strong+span,.anatomy-appearance-summary strong+span{margin-left:0}',
-      '.anatomy-visual-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:0 9px 9px}.anatomy-visual-presets button{min-height:34px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#475569;font-size:10px;font-weight:900}.anatomy-visual-presets button:hover{border-color:var(--anatomy-accent);background:var(--anatomy-soft);color:#0f172a}.anatomy-visual-presets button[aria-pressed="true"]{border-color:#0f172a;background:#0f172a;color:#fff;box-shadow:0 3px 10px rgba(15,23,42,.16)}',
+      '.anatomy-display-summary strong,.anatomy-appearance-summary strong{margin-left:auto;padding:2px 7px;border-radius:999px;background:#fff;color:#475569;font-size:11px}.anatomy-display-summary strong+span,.anatomy-appearance-summary strong+span{margin-left:0}',
+      '.anatomy-visual-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:0 9px 9px}.anatomy-visual-presets button{min-height:34px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#475569;font-size:11px;font-weight:900}.anatomy-visual-presets button:hover{border-color:var(--anatomy-accent);background:var(--anatomy-soft);color:#0f172a}.anatomy-visual-presets button[aria-pressed="true"]{border-color:#0f172a;background:#0f172a;color:#fff;box-shadow:0 3px 10px rgba(15,23,42,.16)}',
       '.anatomy-layer-options{margin:0;border:0;border-top:1px solid rgba(148,163,184,.24);border-radius:0;background:transparent;box-shadow:none}.anatomy-appearance-content,.anatomy-model-source-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:0 9px 9px}.anatomy-appearance-content+.anatomy-appearance-content{padding-top:0}',
       '.anatomy-controls-bar{align-items:center}.anatomy-controls-bar>.anatomy-appearance-panel{flex:0 0 auto;box-shadow:none;background:#fff}.anatomy-controls-bar>.anatomy-appearance-panel summary{min-height:34px;padding:5px 9px}.anatomy-controls-bar>.anatomy-appearance-panel[open]{flex:1 1 100%}',
       '.anatomy-body-header{display:block}.anatomy-body-badges{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;margin-top:8px;gap:6px;align-items:center}.anatomy-body-badges>.anatomy-view-model-controls{grid-column:1/-1;grid-row:1}.anatomy-body-badges>span{grid-column:1;grid-row:2;justify-self:start}.anatomy-body-badges>.anatomy-orientation-key{grid-column:2;grid-row:2}.anatomy-body-badges>.anatomy-model-source{grid-column:1/-1;grid-row:3;width:100%}',
-      '.anatomy-model-source-row label,.anatomy-model-source-row button{min-height:32px}.anatomy-model-source-note{flex:1 1 170px;color:#64748b;font-size:9px;line-height:1.35}',
-      '.anatomy-atlas-provenance{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 9px;width:100%;padding:0 9px 7px;color:#475569;font-size:9px;line-height:1.4}.anatomy-atlas-provenance dt{font-weight:900;color:#334155}.anatomy-atlas-provenance dd{min-width:0;margin:0;overflow-wrap:anywhere}.anatomy-atlas-provenance a{font-weight:850;color:#0369a1;text-decoration:underline;text-underline-offset:2px}.anatomy-atlas-scope-note{margin:0 9px 9px;padding:7px 8px;border-left:3px solid #0d9488;background:#ecfdf5;color:#065f46;font-size:9px;line-height:1.45}',
-      '.anatomy-global-search{position:relative;flex:1 1 220px;min-width:180px;z-index:12}.anatomy-global-search-results{position:absolute;top:calc(100% + 5px);left:0;right:0;display:grid;gap:3px;max-height:260px;padding:5px;overflow-y:auto;border:1px solid #94a3b8;border-radius:11px;background:rgba(255,255,255,.98);box-shadow:0 16px 34px rgba(15,23,42,.2)}.anatomy-global-search-results button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:7px 9px;border-radius:8px;color:#0f172a;text-align:left}.anatomy-global-search-results button:hover,.anatomy-global-search-results button[aria-selected="true"]{background:var(--anatomy-soft);outline:1px solid var(--anatomy-accent)}.anatomy-global-search-results strong{font-size:11px}.anatomy-global-search-results span{font-size:9px;font-weight:800;color:#64748b;text-align:right}',
-      '.anatomy-clinical-structures{max-width:400px;margin:9px auto 0;padding:10px;border:1px solid rgba(13,148,136,.34);border-radius:13px;background:linear-gradient(145deg,#f0fdfa,#f8fafc);box-shadow:0 8px 20px rgba(15,118,110,.08)}.anatomy-clinical-structures-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.anatomy-clinical-structures-head strong{font-size:12px;color:#134e4a}.anatomy-clinical-structures-head span{font-size:9px;font-weight:850;color:#0f766e}.anatomy-clinical-concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.anatomy-clinical-concept{min-height:48px;padding:6px 7px;border:1px solid #99f6e4;border-radius:9px;background:#fff;color:#134e4a;text-align:left}.anatomy-clinical-concept strong,.anatomy-clinical-concept span{display:block}.anatomy-clinical-concept strong{font-size:10px}.anatomy-clinical-concept span{margin-top:2px;font:800 8px/1.25 ui-monospace,SFMono-Regular,monospace;color:#64748b}.anatomy-clinical-concept[data-selected="true"]{border-color:#0f766e;background:#ccfbf1;box-shadow:0 0 0 2px rgba(13,148,136,.16)}.anatomy-clinical-selection{margin-top:7px;padding:7px 8px;border-left:3px solid #eab308;background:#fffbeb;color:#713f12;font-size:10px;line-height:1.4}.anatomy-clinical-locator{display:grid;grid-template-columns:52px minmax(0,1fr);gap:9px;align-items:center;margin-top:8px;padding:8px;border-radius:10px;background:#fff;border:1px solid #cbd5e1}.anatomy-clinical-locator svg{width:48px;height:68px}.anatomy-clinical-locator p{margin:0 0 5px;font-size:9px;line-height:1.4;color:#475569}.anatomy-clinical-locator button{min-height:36px;padding:5px 8px;border-radius:8px;background:#0f766e;color:#fff;font-size:10px;font-weight:900}',
-      '.anatomy-clinical-ftu{margin:10px 0 0;padding:10px;border:1px solid #a7f3d0;border-radius:12px;background:linear-gradient(145deg,#f0fdf4,#ecfeff);box-shadow:0 8px 20px rgba(5,150,105,.08)}.anatomy-clinical-ftu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}.anatomy-clinical-ftu-head h6{margin:0;color:#065f46;font-size:12px;font-weight:950}.anatomy-clinical-ftu-head p{margin:2px 0 0;color:#475569;font-size:9px;line-height:1.4}.anatomy-clinical-ftu-badge{padding:3px 7px;border-radius:999px;background:#d1fae5;color:#065f46;font-size:8px;font-weight:900;white-space:nowrap}.anatomy-clinical-ftu-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(170px,.8fr);gap:10px;margin-top:8px}.anatomy-clinical-ftu figure{margin:0;min-width:0}.anatomy-clinical-ftu-image{display:block;width:100%;height:auto;aspect-ratio:4031/3037;object-fit:contain;border:1px solid #cbd5e1;border-radius:10px;background:#fff}.anatomy-clinical-ftu figcaption{margin-top:5px;color:#475569;font-size:8px;line-height:1.4}.anatomy-clinical-ftu figcaption a{color:#0369a1;font-weight:850;text-decoration:underline}.anatomy-clinical-ftu-cells{display:grid;grid-template-columns:1fr 1fr;gap:4px;align-content:start}.anatomy-clinical-ftu-cell{min-height:44px;padding:5px 6px;border:1px solid #a7f3d0;border-radius:8px;background:#fff;color:#134e4a;text-align:left}.anatomy-clinical-ftu-cell strong,.anatomy-clinical-ftu-cell span{display:block}.anatomy-clinical-ftu-cell strong{font-size:9px;line-height:1.25}.anatomy-clinical-ftu-cell span{margin-top:2px;color:#64748b;font:800 7px/1.25 ui-monospace,SFMono-Regular,monospace}.anatomy-clinical-ftu-cell[data-selected=true]{border-color:#047857;background:#d1fae5;box-shadow:0 0 0 2px rgba(5,150,105,.14)}.anatomy-clinical-ftu-selection{grid-column:1/-1;margin-top:3px;padding:7px 8px;border-left:3px solid #0d9488;background:#fff;color:#134e4a;font-size:9px;line-height:1.45}.anatomy-clinical-ftu-selection strong,.anatomy-clinical-ftu-selection span{display:block}.anatomy-clinical-ftu-selection span{margin-top:2px;color:#475569}.anatomy-clinical-ftu-note{grid-column:1/-1;margin:0;color:#475569;font-size:8px;line-height:1.4}',
+      '.anatomy-model-source-row label,.anatomy-model-source-row button{min-height:32px}.anatomy-model-source-note{flex:1 1 170px;color:#64748b;font-size:11px;line-height:1.35}',
+      '.anatomy-atlas-provenance{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 9px;width:100%;padding:0 9px 7px;color:#475569;font-size:11px;line-height:1.4}.anatomy-atlas-provenance dt{font-weight:900;color:#334155}.anatomy-atlas-provenance dd{min-width:0;margin:0;overflow-wrap:anywhere}.anatomy-atlas-provenance a{font-weight:850;color:#0369a1;text-decoration:underline;text-underline-offset:2px}.anatomy-atlas-scope-note{margin:0 9px 9px;padding:7px 8px;border-left:3px solid #0d9488;background:#ecfdf5;color:#065f46;font-size:11px;line-height:1.45}',
+      '.anatomy-global-search{position:relative;flex:1 1 220px;min-width:180px;z-index:12}.anatomy-global-search-results{position:absolute;top:calc(100% + 5px);left:0;right:0;display:grid;gap:3px;max-height:260px;padding:5px;overflow-y:auto;border:1px solid #94a3b8;border-radius:11px;background:rgba(255,255,255,.98);box-shadow:0 16px 34px rgba(15,23,42,.2)}.anatomy-global-search-results button{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:42px;padding:7px 9px;border-radius:8px;color:#0f172a;text-align:left}.anatomy-global-search-results button:hover,.anatomy-global-search-results button[aria-selected="true"]{background:var(--anatomy-soft);outline:1px solid var(--anatomy-accent)}.anatomy-global-search-results strong{font-size:11px}.anatomy-global-search-results span{font-size:11px;font-weight:800;color:#64748b;text-align:right}',
+      '.anatomy-clinical-structures{max-width:400px;margin:9px auto 0;padding:10px;border:1px solid rgba(13,148,136,.34);border-radius:13px;background:linear-gradient(145deg,#f0fdfa,#f8fafc);box-shadow:0 8px 20px rgba(15,118,110,.08)}.anatomy-clinical-structures-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.anatomy-clinical-structures-head strong{font-size:12px;color:#134e4a}.anatomy-clinical-structures-head span{font-size:11px;font-weight:850;color:#0f766e}.anatomy-clinical-concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}.anatomy-clinical-concept{min-height:48px;padding:6px 7px;border:1px solid #99f6e4;border-radius:9px;background:#fff;color:#134e4a;text-align:left}.anatomy-clinical-concept strong,.anatomy-clinical-concept span{display:block}.anatomy-clinical-concept strong{font-size:11px}.anatomy-clinical-concept span{margin-top:2px;font:800 8px/1.25 ui-monospace,SFMono-Regular,monospace;color:#64748b}.anatomy-clinical-concept[data-selected="true"]{border-color:#0f766e;background:#ccfbf1;box-shadow:0 0 0 2px rgba(13,148,136,.16)}.anatomy-clinical-selection{margin-top:7px;padding:7px 8px;border-left:3px solid #eab308;background:#fffbeb;color:#713f12;font-size:11px;line-height:1.4}.anatomy-clinical-locator{display:grid;grid-template-columns:52px minmax(0,1fr);gap:9px;align-items:center;margin-top:8px;padding:8px;border-radius:10px;background:#fff;border:1px solid #cbd5e1}.anatomy-clinical-locator svg{width:48px;height:68px}.anatomy-clinical-locator p{margin:0 0 5px;font-size:11px;line-height:1.4;color:#475569}.anatomy-clinical-locator button{min-height:36px;padding:5px 8px;border-radius:8px;background:#0f766e;color:#fff;font-size:11px;font-weight:900}',
+      '.anatomy-clinical-ftu{margin:10px 0 0;padding:10px;border:1px solid #a7f3d0;border-radius:12px;background:linear-gradient(145deg,#f0fdf4,#ecfeff);box-shadow:0 8px 20px rgba(5,150,105,.08)}.anatomy-clinical-ftu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}.anatomy-clinical-ftu-head h6{margin:0;color:#065f46;font-size:12px;font-weight:950}.anatomy-clinical-ftu-head p{margin:2px 0 0;color:#475569;font-size:11px;line-height:1.4}.anatomy-clinical-ftu-badge{padding:3px 7px;border-radius:999px;background:#d1fae5;color:#065f46;font-size:11px;font-weight:900;white-space:nowrap}.anatomy-clinical-ftu-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(170px,.8fr);gap:10px;margin-top:8px}.anatomy-clinical-ftu figure{margin:0;min-width:0}.anatomy-clinical-ftu-image{display:block;width:100%;height:auto;aspect-ratio:4031/3037;object-fit:contain;border:1px solid #cbd5e1;border-radius:10px;background:#fff}.anatomy-clinical-ftu figcaption{margin-top:5px;color:#475569;font-size:11px;line-height:1.4}.anatomy-clinical-ftu figcaption a{color:#0369a1;font-weight:850;text-decoration:underline}.anatomy-clinical-ftu-cells{display:grid;grid-template-columns:1fr 1fr;gap:4px;align-content:start}.anatomy-clinical-ftu-cell{min-height:44px;padding:5px 6px;border:1px solid #a7f3d0;border-radius:8px;background:#fff;color:#134e4a;text-align:left}.anatomy-clinical-ftu-cell strong,.anatomy-clinical-ftu-cell span{display:block}.anatomy-clinical-ftu-cell strong{font-size:11px;line-height:1.25}.anatomy-clinical-ftu-cell span{margin-top:2px;color:#64748b;font:800 7px/1.25 ui-monospace,SFMono-Regular,monospace}.anatomy-clinical-ftu-cell[data-selected=true]{border-color:#047857;background:#d1fae5;box-shadow:0 0 0 2px rgba(5,150,105,.14)}.anatomy-clinical-ftu-selection{grid-column:1/-1;margin-top:3px;padding:7px 8px;border-left:3px solid #0d9488;background:#fff;color:#134e4a;font-size:11px;line-height:1.45}.anatomy-clinical-ftu-selection strong,.anatomy-clinical-ftu-selection span{display:block}.anatomy-clinical-ftu-selection span{margin-top:2px;color:#475569}.anatomy-clinical-ftu-note{grid-column:1/-1;margin:0;color:#475569;font-size:11px;line-height:1.4}',
       '@media (max-width:560px){.anatomy-clinical-concept-grid{grid-template-columns:1fr}.anatomy-clinical-ftu-layout{grid-template-columns:1fr}.anatomy-clinical-ftu-cells{grid-template-columns:1fr}.anatomy-clinical-ftu-cell{min-height:44px}}',
       '.anatomy-skin-tone-controls{padding-top:2px}.anatomy-skin-tone-controls>span:first-child{color:#64748b!important}',
       '@media (max-width:560px){.anatomy-visual-presets button{min-height:44px}.anatomy-display-summary,.anatomy-appearance-summary,.anatomy-model-source-summary{min-height:44px}.anatomy-layer-options button{min-height:42px}}',
       '@media (max-width:900px){.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{max-width:560px;margin-inline:auto;width:100%;}}',
       '@media (max-width:560px){.anatomy-tool-shell{padding-inline:0}.anatomy-topbar{border-radius:11px}.anatomy-body-shell{padding:12px 10px 14px;border-radius:16px}.anatomy-body-header{display:block}.anatomy-body-badges{align-items:stretch;margin-top:8px}.anatomy-view-control-row{grid-template-columns:40px minmax(0,1fr);gap:5px}.anatomy-view-toggle{min-width:0}.anatomy-view-toggle button{min-height:44px;padding:5px 3px}.anatomy-canvas-frame{border-radius:14px}.anatomy-canvas-toolbar{padding:6px}.anatomy-canvas-mode-chip{top:7px;left:7px}}',
       '@media (max-width:720px){.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));overflow-x:visible;scroll-snap-type:none;padding-bottom:8px}.anatomy-tab-strip>button{width:100%!important;min-width:0;scroll-snap-align:none}.anatomy-tab-strip>span{grid-column:1/-1;margin-left:0!important;text-align:right}}',
-      '@media (max-width:560px){.anatomy-tab-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+      '@media (max-width:560px){.anatomy-tab-strip{grid-template-columns:repeat(3,minmax(0,1fr))}}',
       '@media (max-width:560px){.anatomy-mission-actions,.anatomy-challenge-strip{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:thin}.anatomy-mission-actions button,.anatomy-challenge-strip>*{flex:0 0 auto;scroll-snap-align:start}.anatomy-mission-actions button{min-height:44px}.anatomy-metric-grid{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px;scroll-snap-type:x proximity;scrollbar-width:thin}.anatomy-metric{flex:0 0 128px;scroll-snap-align:start}.anatomy-system-rail{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;padding-bottom:4px}.anatomy-system-rail>button{flex:0 0 136px;scroll-snap-align:start}.anatomy-mission-text{overflow-wrap:anywhere}.anatomy-clinical-search{grid-template-columns:1fr}.anatomy-clinical-search input{min-height:44px;font-size:16px}.anatomy-clinical-search button{min-height:44px}.anatomy-clinical-search>span{grid-column:1}.anatomy-clinical-visual-key{font-size:11px}}',
       '@media (min-width:901px) and (max-height:900px){.anatomy-body-shell{position:relative;top:auto}}',
-      '.anatomy-body-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.anatomy-model-focus-toggle{min-height:32px;padding:5px 9px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:9px;font-weight:900;white-space:nowrap;box-shadow:0 2px 7px rgba(15,23,42,.06);transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}.anatomy-model-focus-toggle:hover{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6}.anatomy-model-focus-toggle[aria-pressed="true"]{border-color:#7c3aed;background:#6d28d9;color:#fff;box-shadow:0 5px 14px rgba(109,40,217,.22)}',
-      '.anatomy-clinical-pack-switcher{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid rgba(13,148,136,.32);border-radius:11px;background:linear-gradient(135deg,#f0fdfa,#ecfeff);box-shadow:0 4px 12px rgba(13,148,136,.07)}.anatomy-clinical-pack-switcher label{display:flex;align-items:center;gap:7px;min-width:0;color:#115e59;font-size:9px;font-weight:950;letter-spacing:.02em}.anatomy-clinical-pack-switcher select{min-width:0;max-width:210px;min-height:32px;padding:4px 26px 4px 8px;border:1px solid #5eead4;border-radius:8px;background:#fff;color:#134e4a;font-size:10px;font-weight:850}.anatomy-clinical-pack-switcher>span{color:#0f766e;font-size:8px;font-weight:850;white-space:nowrap}.anatomy-body-badges>.anatomy-clinical-pack-switcher{grid-column:1/-1;grid-row:3}.anatomy-body-badges>.anatomy-clinical-pack-switcher+.anatomy-model-source{grid-row:4}',
-      '.anatomy-canvas-guide,.anatomy-learning-tools{width:min(400px,100%);margin:8px auto 0;border:1px solid rgba(148,163,184,.34);border-radius:11px;background:rgba(248,250,252,.84);overflow:hidden}.anatomy-canvas-guide-summary,.anatomy-learning-tools-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:7px 9px;color:#334155;font-size:10px;font-weight:900;cursor:pointer;list-style:none;user-select:none}.anatomy-canvas-guide-summary::-webkit-details-marker,.anatomy-learning-tools-summary::-webkit-details-marker{display:none}.anatomy-canvas-guide-summary:after,.anatomy-learning-tools-summary:after{content:"+";color:#64748b;font-size:15px;line-height:1}.anatomy-canvas-guide[open]>.anatomy-canvas-guide-summary:after,.anatomy-learning-tools[open]>.anatomy-learning-tools-summary:after{content:"-"}.anatomy-canvas-guide-summary>span:last-of-type,.anatomy-learning-tools-summary>span:last-of-type{margin-left:auto;padding:2px 7px;border-radius:999px;background:#fff;color:#64748b;font-size:8px}.anatomy-canvas-help-content{margin:0;padding:0 9px 9px;border-top:1px solid rgba(148,163,184,.22);background:transparent}.anatomy-learning-tools-content{padding:0 9px 9px;border-top:1px solid rgba(148,163,184,.22)}.anatomy-learning-tools .anatomy-scale-journey{margin-top:9px}.anatomy-learning-tools .anatomy-marker-legend{max-width:none}',
-      '.anatomy-clinical-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:center;margin-top:8px}.anatomy-clinical-search input{min-width:0;min-height:40px;padding:7px 9px;border:1px solid #99f6e4;border-radius:9px;background:#fff;color:#134e4a;font-size:11px;font-weight:750}.anatomy-clinical-search button{min-height:40px;padding:5px 9px;border:1px solid #5eead4;border-radius:8px;background:#fff;color:#0f766e;font-size:10px;font-weight:900}.anatomy-clinical-search>span{grid-column:1/-1;color:#64748b;font-size:10px;font-weight:800}.anatomy-clinical-concept-grid{max-height:246px;overflow:auto;overscroll-behavior:contain;padding:2px 3px 3px 2px;scrollbar-gutter:stable}.anatomy-clinical-concept-grid:focus-visible{outline:3px solid #0f766e;outline-offset:2px}.anatomy-clinical-concept-empty{margin-top:6px;padding:7px 8px;border:1px dashed #94a3b8;border-radius:8px;background:#fff;color:#475569;font-size:10px}.anatomy-clinical-concept:focus-visible{position:relative;z-index:1}.anatomy-clinical-visual-key{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;margin-top:7px;padding:7px 8px;border:1px solid #fde68a;border-radius:9px;background:#fffbeb;color:#713f12;font-size:10px}.anatomy-clinical-visual-key-title{font-size:10px;font-weight:950}.anatomy-clinical-visual-key span{display:inline-flex;align-items:center;gap:4px}.anatomy-clinical-visual-key i{display:inline-block;width:11px;height:11px;border-radius:999px;border:1px solid rgba(15,23,42,.28)}.anatomy-clinical-visual-key i[data-key="selected"]{background:#facc15;box-shadow:0 0 0 2px rgba(250,204,21,.22)}.anatomy-clinical-visual-key i[data-key="context"]{background:repeating-linear-gradient(135deg,#cbd5e1 0 2px,#f8fafc 2px 4px)}.anatomy-clinical-visual-key i[data-key="whole"]{background:linear-gradient(135deg,#0d9488,#6366f1)}.anatomy-clinical-visual-key-note{flex:1 1 100%;color:#92400e}',
+      '.anatomy-body-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.anatomy-model-focus-toggle{min-height:32px;padding:5px 9px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#334155;font-size:11px;font-weight:900;white-space:nowrap;box-shadow:0 2px 7px rgba(15,23,42,.06);transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}.anatomy-model-focus-toggle:hover{border-color:#7c3aed;background:#f5f3ff;color:#5b21b6}.anatomy-model-focus-toggle[aria-pressed="true"]{border-color:#7c3aed;background:#6d28d9;color:#fff;box-shadow:0 5px 14px rgba(109,40,217,.22)}',
+      '.anatomy-clinical-pack-switcher{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px;border:1px solid rgba(13,148,136,.32);border-radius:11px;background:linear-gradient(135deg,#f0fdfa,#ecfeff);box-shadow:0 4px 12px rgba(13,148,136,.07)}.anatomy-clinical-pack-switcher label{display:flex;align-items:center;gap:7px;min-width:0;color:#115e59;font-size:11px;font-weight:950;letter-spacing:.02em}.anatomy-clinical-pack-switcher select{min-width:0;max-width:210px;min-height:32px;padding:4px 26px 4px 8px;border:1px solid #5eead4;border-radius:8px;background:#fff;color:#134e4a;font-size:11px;font-weight:850}.anatomy-clinical-pack-switcher>span{color:#0f766e;font-size:11px;font-weight:850;white-space:nowrap}.anatomy-body-badges>.anatomy-clinical-pack-switcher{grid-column:1/-1;grid-row:3}.anatomy-body-badges>.anatomy-clinical-pack-switcher+.anatomy-model-source{grid-row:4}',
+      '.anatomy-canvas-guide,.anatomy-learning-tools{width:min(400px,100%);margin:8px auto 0;border:1px solid rgba(148,163,184,.34);border-radius:11px;background:rgba(248,250,252,.84);overflow:hidden}.anatomy-canvas-guide-summary,.anatomy-learning-tools-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:7px 9px;color:#334155;font-size:11px;font-weight:900;cursor:pointer;list-style:none;user-select:none}.anatomy-canvas-guide-summary::-webkit-details-marker,.anatomy-learning-tools-summary::-webkit-details-marker{display:none}.anatomy-canvas-guide-summary:after,.anatomy-learning-tools-summary:after{content:"+";color:#64748b;font-size:15px;line-height:1}.anatomy-canvas-guide[open]>.anatomy-canvas-guide-summary:after,.anatomy-learning-tools[open]>.anatomy-learning-tools-summary:after{content:"-"}.anatomy-canvas-guide-summary>span:last-of-type,.anatomy-learning-tools-summary>span:last-of-type{margin-left:auto;padding:2px 7px;border-radius:999px;background:#fff;color:#64748b;font-size:11px}.anatomy-canvas-help-content{margin:0;padding:0 9px 9px;border-top:1px solid rgba(148,163,184,.22);background:transparent}.anatomy-learning-tools-content{padding:0 9px 9px;border-top:1px solid rgba(148,163,184,.22)}.anatomy-learning-tools .anatomy-scale-journey{margin-top:9px}.anatomy-learning-tools .anatomy-marker-legend{max-width:none}',
+      '.anatomy-clinical-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:center;margin-top:8px}.anatomy-clinical-search input{min-width:0;min-height:40px;padding:7px 9px;border:1px solid #99f6e4;border-radius:9px;background:#fff;color:#134e4a;font-size:11px;font-weight:750}.anatomy-clinical-search button{min-height:40px;padding:5px 9px;border:1px solid #5eead4;border-radius:8px;background:#fff;color:#0f766e;font-size:11px;font-weight:900}.anatomy-clinical-search>span{grid-column:1/-1;color:#64748b;font-size:11px;font-weight:800}.anatomy-clinical-concept-grid{max-height:246px;overflow:auto;overscroll-behavior:contain;padding:2px 3px 3px 2px;scrollbar-gutter:stable}.anatomy-clinical-concept-grid:focus-visible{outline:3px solid #0f766e;outline-offset:2px}.anatomy-clinical-concept-empty{margin-top:6px;padding:7px 8px;border:1px dashed #94a3b8;border-radius:8px;background:#fff;color:#475569;font-size:11px}.anatomy-clinical-concept:focus-visible{position:relative;z-index:1}.anatomy-clinical-visual-key{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;margin-top:7px;padding:7px 8px;border:1px solid #fde68a;border-radius:9px;background:#fffbeb;color:#713f12;font-size:11px}.anatomy-clinical-visual-key-title{font-size:11px;font-weight:950}.anatomy-clinical-visual-key span{display:inline-flex;align-items:center;gap:4px}.anatomy-clinical-visual-key i{display:inline-block;width:11px;height:11px;border-radius:999px;border:1px solid rgba(15,23,42,.28)}.anatomy-clinical-visual-key i[data-key="selected"]{background:#facc15;box-shadow:0 0 0 2px rgba(250,204,21,.22)}.anatomy-clinical-visual-key i[data-key="context"]{background:repeating-linear-gradient(135deg,#cbd5e1 0 2px,#f8fafc 2px 4px)}.anatomy-clinical-visual-key i[data-key="whole"]{background:linear-gradient(135deg,#0d9488,#6366f1)}.anatomy-clinical-visual-key-note{flex:1 1 100%;color:#92400e}',
       '@media (max-width:560px), (any-pointer:coarse){.anatomy-clinical-search input,.anatomy-clinical-search button{min-height:44px}.anatomy-clinical-search input{font-size:16px}}',
-      '.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-mission,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-tab-strip,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-system-rail,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-fact-card,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-mnemonics-card,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-progress-row,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-display-panel,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-controls-bar,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-compare-tray,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-side-panel{display:none!important}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-workspace{grid-template-columns:minmax(0,1fr)!important}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-shell{position:relative;top:auto;width:100%;max-width:760px;margin-inline:auto;padding:18px 20px 20px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-frame,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-toolbar,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-guide,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-3d-status,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-clinical-structures,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-learning-tools{width:min(520px,100%);max-width:520px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-header{max-width:620px;margin-inline:auto;margin-bottom:12px}',
+      '.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-mission,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-tab-strip,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-system-rail,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-fact-card,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-mnemonics-card,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-progress-row,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-display-panel,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-controls-bar,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-compare-tray,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-side-panel,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-side-column{display:none!important}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-workspace{grid-template-columns:minmax(0,1fr)!important}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-shell{position:relative;top:auto;width:100%;max-width:760px;margin-inline:auto;padding:18px 20px 20px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-frame,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-toolbar,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-canvas-guide,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-3d-status,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-clinical-structures,.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-learning-tools{width:min(520px,100%);max-width:520px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-header{max-width:620px;margin-inline:auto;margin-bottom:12px}',
       '.anatomy-tool-shell button:focus-visible,.anatomy-tool-shell input:focus-visible,.anatomy-tool-shell select:focus-visible,.anatomy-tool-shell textarea:focus-visible,.anatomy-tool-shell summary:focus-visible,.anatomy-tool-shell a:focus-visible,.anatomy-tool-shell canvas:focus-visible{outline:3px solid #7c3aed;outline-offset:2px}',
       '.anatomy-topbar-title{min-width:0;flex:1}.anatomy-topbar-title h3,.anatomy-topbar-title p{overflow:hidden;text-overflow:ellipsis}.anatomy-topbar-action,.anatomy-topbar-back{flex:0 0 auto}',
-      '@media (max-width:560px){.anatomy-topbar{display:grid!important;grid-template-columns:44px minmax(0,1fr) 1fr 1fr;align-items:center;gap:6px;padding:7px!important}.anatomy-topbar-back{grid-column:1;grid-row:1;min-width:44px;min-height:44px}.anatomy-topbar-title{grid-column:2/-1;grid-row:1}.anatomy-topbar-title h3{font-size:16px;white-space:nowrap}.anatomy-topbar-title p{font-size:10px;white-space:nowrap}.anatomy-topbar-action{min-height:44px;margin-left:0!important}.anatomy-topbar-action:nth-of-type(2){grid-column:1/3;grid-row:2}.anatomy-topbar-snapshot{grid-column:3/5;grid-row:2}.anatomy-model-focus-toggle{min-height:44px}.anatomy-clinical-pack-switcher{align-items:stretch;flex-direction:column}.anatomy-clinical-pack-switcher label{justify-content:space-between}.anatomy-clinical-pack-switcher select{max-width:none;min-height:44px;flex:1}.anatomy-clinical-pack-switcher>span{white-space:normal}.anatomy-canvas-guide-summary,.anatomy-learning-tools-summary{min-height:44px}.anatomy-clinical-concept-grid{max-height:300px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-shell{padding:12px 10px 14px}}',
-      '.anatomy-model-source-note,.anatomy-atlas-provenance,.anatomy-atlas-scope-note,.anatomy-clinical-pack-switcher label,.anatomy-clinical-pack-switcher>span,.anatomy-clinical-structures-head span,.anatomy-clinical-selection,.anatomy-clinical-locator p,.anatomy-clinical-ftu-head p,.anatomy-clinical-ftu-badge,.anatomy-clinical-ftu figcaption,.anatomy-clinical-ftu-selection,.anatomy-clinical-ftu-note{font-size:10px}.anatomy-clinical-concept strong,.anatomy-clinical-ftu-cell strong{font-size:11px}.anatomy-clinical-concept span,.anatomy-clinical-ftu-cell span{font-size:9px}',
+      '@media (max-width:560px){.anatomy-topbar{display:grid!important;grid-template-columns:44px minmax(0,1fr) 1fr 1fr;align-items:center;gap:6px;padding:7px!important}.anatomy-topbar-back{grid-column:1;grid-row:1;min-width:44px;min-height:44px}.anatomy-topbar-title{grid-column:2/-1;grid-row:1}.anatomy-topbar-title h3{font-size:16px;white-space:nowrap}.anatomy-topbar-title p{font-size:11px;white-space:nowrap}.anatomy-topbar-action{min-height:44px;margin-left:0!important}.anatomy-topbar-action:nth-of-type(2){grid-column:1/3;grid-row:2}.anatomy-topbar-snapshot{grid-column:3/5;grid-row:2}.anatomy-model-focus-toggle{min-height:44px}.anatomy-clinical-pack-switcher{align-items:stretch;flex-direction:column}.anatomy-clinical-pack-switcher label{justify-content:space-between}.anatomy-clinical-pack-switcher select{max-width:none;min-height:44px;flex:1}.anatomy-clinical-pack-switcher>span{white-space:normal}.anatomy-canvas-guide-summary,.anatomy-learning-tools-summary{min-height:44px}.anatomy-clinical-concept-grid{max-height:300px}.anatomy-tool-shell[data-anatomy-model-focus="true"] .anatomy-body-shell{padding:12px 10px 14px}}',
+      '.anatomy-model-source-note,.anatomy-atlas-provenance,.anatomy-atlas-scope-note,.anatomy-clinical-pack-switcher label,.anatomy-clinical-pack-switcher>span,.anatomy-clinical-structures-head span,.anatomy-clinical-selection,.anatomy-clinical-locator p,.anatomy-clinical-ftu-head p,.anatomy-clinical-ftu-badge,.anatomy-clinical-ftu figcaption,.anatomy-clinical-ftu-selection,.anatomy-clinical-ftu-note{font-size:11px}.anatomy-clinical-concept strong,.anatomy-clinical-ftu-cell strong{font-size:11px}.anatomy-clinical-concept span,.anatomy-clinical-ftu-cell span{font-size:11px}',
       '@media (max-width:560px), (any-pointer:coarse){.anatomy-view-toggle button,.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-clinical-pack-switcher select,.anatomy-controls-bar button,.anatomy-controls-bar summary,.anatomy-clinical-concept,.anatomy-clinical-locator button,.anatomy-model-source button,.anatomy-model-source label,.anatomy-model-source select{min-height:44px}}',
-      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-model-source-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher label,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher>span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-structures-head span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-locator p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:13px;line-height:1.55}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong{font-size:13px;line-height:1.4}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span{font-size:11px;line-height:1.4}',
-      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:12px;line-height:1.55}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-model-source-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher label,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher>span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-structures-head span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-locator p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:13px;line-height:1.55}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong{font-size:13px;line-height:1.4}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span{font-size:13px;line-height:1.4}',
+      '.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:13px;line-height:1.55}',
       '.theme-dark .anatomy-tool-shell{color:#e2e8f0}.theme-dark .anatomy-tool-shell .anatomy-topbar{background:rgba(15,23,42,.96);border-color:#64748b}.theme-dark .anatomy-tool-shell .anatomy-tab-strip,.theme-dark .anatomy-tool-shell .anatomy-system-rail,.theme-dark .anatomy-tool-shell .anatomy-layer-bar,.theme-dark .anatomy-tool-shell .anatomy-controls-bar{background:rgba(15,23,42,.94);border-color:#64748b}.theme-dark .anatomy-tool-shell .anatomy-system-count{color:#94a3b8}.theme-dark .anatomy-tool-shell .anatomy-progress-row{background:#1e293b;border-color:#64748b}.theme-dark .anatomy-tool-shell .anatomy-progress-row [role="progressbar"]{background:#64748b!important}.theme-dark .anatomy-tool-shell .anatomy-structure-panel{background:#1e293b;border-color:#64748b}.theme-dark .anatomy-tool-shell button.bg-green-50{background:#14532d!important;color:#dcfce7!important;border-color:#22c55e!important}',
       '.theme-dark .anatomy-tool-shell .anatomy-system-button[aria-pressed="true"] .anatomy-system-count{color:inherit}.theme-dark .anatomy-tool-shell .anatomy-progress-row>span:last-child{color:#fcd34d!important}',
       '@media (forced-colors:active){.anatomy-body-shell,.anatomy-canvas-frame,.anatomy-view-toggle,.anatomy-canvas-mode-chip,.anatomy-model-focus-toggle,.anatomy-clinical-pack-switcher,.anatomy-canvas-guide,.anatomy-learning-tools{forced-color-adjust:auto;border:1px solid CanvasText}.anatomy-view-toggle button[aria-pressed="true"],.anatomy-model-focus-toggle[aria-pressed="true"]{background:Highlight;color:HighlightText}}',
@@ -1106,6 +1121,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
   }
 
   function drawAnatomyImagingSlice(cx, W, H, state) {
+    // Synthetic teaching phantom. Schematic on purpose (never a scan), but laid out with real
+    // radiological conventions: axial slices are viewed from the feet (anterior at the top,
+    // patient right on the image left), coronal from the front, sagittal from the patient's left.
+    // Every primitive here is limited to beginPath/ellipse/arc/moveTo/lineTo/fill/stroke/fillRect
+    // so the stub-context unit test and the canvas both run it; texture and noise are guarded.
     state = state || {};
     var modality = state.modality === 'MRI' ? 'MRI' : 'CT';
     var region = ['head', 'chest', 'abdomen'].indexOf(state.region) >= 0 ? state.region : 'chest';
@@ -1115,61 +1135,545 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
     var windowWidth = Math.max(50, Math.min(2500, Number(state.windowWidth) || (modality === 'CT' ? 400 : 900)));
     var rawWindowLevel = Number(state.windowLevel);
     var windowLevel = Math.max(-1000, Math.min(1200, Number.isFinite(rawWindowLevel) ? rawWindowLevel : (modality === 'CT' ? 40 : 450)));
+    var sequence = state.sequence === 'T2' ? 'T2' : 'T1';
     var showLabels = state.showLabels !== false;
     var showCrosshair = state.showCrosshair !== false;
     var annotations = Array.isArray(state.annotations) ? state.annotations.slice(-12) : [];
     var focusTerms = Array.isArray(state.focusTerms) ? state.focusTerms.filter(function(term) { return typeof term === 'string' && term.length; }).slice(0, 4).map(function(term) { return term.toLowerCase(); }) : [];
-    function gray(value) { var g = Math.round(Math.max(0, Math.min(1, (value - (windowLevel - windowWidth / 2)) / windowWidth)) * 255); return 'rgb(' + g + ',' + g + ',' + g + ')'; }
-    function ellipse(x, y, rx, ry, value, label, stroke) { cx.beginPath(); cx.ellipse(x, y, Math.max(1, rx), Math.max(1, ry), 0, 0, Math.PI * 2); cx.fillStyle = gray(value); cx.fill(); if (stroke) { cx.strokeStyle = stroke; cx.lineWidth = 1.5; cx.stroke(); } if (showLabels && label) labels.push({ x: x, y: y, text: label }); }
-    function rect(x, y, w, h, value, label) { cx.fillStyle = gray(value); cx.fillRect(x, y, w, h); if (showLabels && label) labels.push({ x: x + w / 2, y: y + h / 2, text: label }); }
-    function line(x1, y1, x2, y2, color, width) { cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.strokeStyle = color; cx.lineWidth = width || 1; cx.stroke(); }
-    var labels = [], focusLabelCount = 0;
+    var labels = [], regions = [], focusLabelCount = 0;
+    var TAU = Math.PI * 2;
+    var spotReveal = state.spotReveal && typeof state.spotReveal === 'object' ? state.spotReveal : null;
+
+    // Tissue values. CT is in Hounsfield units so the window/level maths is real; MRI uses an
+    // arbitrary signal scale with the T1/T2 inversions students are taught (fat bright on T1,
+    // CSF bright on T2, cortical bone dark on both).
     var signal = modality === 'CT'
-      ? { air: -950, lung: -760, fat: -90, soft: 45, blood: 65, liver: 70, fluid: 10, bone: 900, white: 1200 }
-      : { air: 30, lung: 70, fat: 720, soft: 470, blood: 330, liver: 520, fluid: state.sequence === 'T2' ? 850 : 180, bone: 55, white: 760 };
+      ? { air: -950, lung: -780, fat: -95, muscle: 45, soft: 45, grey: 38, white: 30, csf: 8, fluid: 10, blood: 48, vessel: 60, liver: 62, spleen: 50, kidney: 36, bowel: 30, cartilage: 120, bone: 700, cortical: 1300, marrow: 180, table: 300 }
+      : sequence === 'T2'
+        ? { air: 25, lung: 60, fat: 640, muscle: 300, soft: 340, grey: 480, white: 380, csf: 860, fluid: 860, blood: 200, vessel: 120, liver: 320, spleen: 420, kidney: 500, bowel: 420, cartilage: 500, bone: 60, cortical: 40, marrow: 560, table: 30 }
+        : { air: 25, lung: 60, fat: 730, muscle: 400, soft: 420, grey: 470, white: 620, csf: 170, fluid: 170, blood: 330, vessel: 260, liver: 520, spleen: 420, kidney: 470, bowel: 400, cartilage: 380, bone: 60, cortical: 40, marrow: 700, table: 30 };
+
+    function gray(value) { var g = Math.round(Math.max(0, Math.min(1, (value - (windowLevel - windowWidth / 2)) / windowWidth)) * 255); return 'rgb(' + g + ',' + g + ',' + g + ')'; }
+    // Every labelled structure is also reported as a hit region (centre + radii) so the
+    // "find it on the scan" challenge can score a click without re-deriving the geometry.
+    function addLabel(x, y, text, rx, ry) {
+      if (!text) return;
+      regions.push({ text: text, x: x, y: y, rx: rx || 26, ry: ry || 18 });
+      if (showLabels) labels.push({ x: x, y: y, text: text });
+    }
+    function ellipse(x, y, rx, ry, value, label, rot) {
+      cx.beginPath(); cx.ellipse(x, y, Math.max(1, rx), Math.max(1, ry), rot || 0, 0, TAU); cx.fillStyle = gray(value); cx.fill();
+      addLabel(x, y, label, rx, ry);
+    }
+    // Organic blob: an ellipse whose radius wobbles with a few low harmonics so organs stop
+    // reading as geometry. Built from moveTo/lineTo only.
+    function blob(x, y, rx, ry, value, label, seed, amount, rot) {
+      var n = 48, s = seed || 1, amp = amount == null ? 0.06 : amount, r = rot || 0, c = Math.cos(r), sn = Math.sin(r);
+      cx.beginPath();
+      for (var i = 0; i <= n; i++) {
+        var a = (i / n) * TAU;
+        var w = 1 + amp * (Math.sin(a * 3 + s) * 0.6 + Math.sin(a * 5 + s * 1.7) * 0.3 + Math.sin(a * 2 + s * 0.4) * 0.5);
+        var px = Math.cos(a) * rx * w, py = Math.sin(a) * ry * w;
+        var qx = x + px * c - py * sn, qy = y + px * sn + py * c;
+        if (i === 0) cx.moveTo(qx, qy); else cx.lineTo(qx, qy);
+      }
+      cx.fillStyle = gray(value); cx.fill();
+      addLabel(x, y, label, rx, ry);
+    }
+    function poly(points, value, label, lx, ly) {
+      cx.beginPath();
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (var i = 0; i < points.length; i++) {
+        if (i === 0) cx.moveTo(points[i][0], points[i][1]); else cx.lineTo(points[i][0], points[i][1]);
+        minX = Math.min(minX, points[i][0]); maxX = Math.max(maxX, points[i][0]); minY = Math.min(minY, points[i][1]); maxY = Math.max(maxY, points[i][1]);
+      }
+      cx.fillStyle = gray(value); cx.fill();
+      if (label) addLabel(lx == null ? points[0][0] : lx, ly == null ? points[0][1] : ly, label, (maxX - minX) / 2, (maxY - minY) / 2);
+    }
+    function rect(x, y, w, h, value, label) { cx.fillStyle = gray(value); cx.fillRect(x, y, w, h); addLabel(x + w / 2, y + h / 2, label, w / 2, h / 2); }
+    function line(x1, y1, x2, y2, color, width) { cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.strokeStyle = color; cx.lineWidth = width || 1; cx.stroke(); }
+    function vline(x1, y1, x2, y2, value, width) { line(x1, y1, x2, y2, gray(value), width); }
+    // Radial texture lines (sulci, folia, haustra) drawn as short spokes around an ellipse.
+    function spokes(x, y, rx, ry, count, depth, value, width, a0, a1, jitterSeed) {
+      var start = a0 == null ? 0 : a0, end = a1 == null ? TAU : a1;
+      for (var i = 0; i < count; i++) {
+        var a = start + (end - start) * (i + 0.5) / count + Math.sin(i * 7.3 + (jitterSeed || 0)) * 0.05;
+        var ox = x + Math.cos(a) * rx, oy = y + Math.sin(a) * ry;
+        var ix = x + Math.cos(a) * (rx - depth), iy = y + Math.sin(a) * (ry - depth * (ry / rx));
+        vline(ox, oy, ix, iy, value, width || 2);
+      }
+    }
+    // A branching vessel tree from a hilum, kept inside an elliptical boundary without clip().
+    function vesselTree(hx, hy, bx, by, brx, bry, baseAngle, value, generations, seed) {
+      function inside(px, py) { var dx = (px - bx) / brx, dy = (py - by) / bry; return dx * dx + dy * dy < 0.92; }
+      function grow(x, y, angle, len, width, gen) {
+        var ex = x + Math.cos(angle) * len, ey = y + Math.sin(angle) * len;
+        var steps = 6, lx = x, ly = y;
+        for (var i = 1; i <= steps; i++) {
+          var tx = x + (ex - x) * i / steps, ty = y + (ey - y) * i / steps;
+          if (!inside(tx, ty)) break;
+          vline(lx, ly, tx, ty, value, width); lx = tx; ly = ty;
+        }
+        if (gen >= generations || width < 1.2) return;
+        var spread = 0.55 + Math.sin(seed + gen * 2.1 + angle) * 0.15;
+        grow(lx, ly, angle - spread, len * 0.68, width * 0.68, gen + 1);
+        grow(lx, ly, angle + spread * 0.8, len * 0.72, width * 0.68, gen + 1);
+      }
+      grow(hx, hy, baseAngle - 0.55, Math.max(brx, bry) * 0.5, 4, 0);
+      grow(hx, hy, baseAngle, Math.max(brx, bry) * 0.58, 4.5, 0);
+      grow(hx, hy, baseAngle + 0.6, Math.max(brx, bry) * 0.5, 4, 0);
+    }
+    // Stacked vertebral bodies with discs, canal and spinous processes, along a vertical axis.
+    function spineColumn(x, top, bottom, bodyW, canalSide, label) {
+      var bodyH = 24, gap = 5, y = top, first = true;
+      while (y + bodyH <= bottom) {
+        rect(x - bodyW / 2, y, bodyW, bodyH, signal.bone, first ? label : null);
+        rect(x - bodyW / 2 + 3, y + 3, bodyW - 6, bodyH - 6, signal.marrow, null);
+        if (canalSide) {
+          rect(x + canalSide * (bodyW / 2), y, 7, bodyH, signal.csf, null);
+          rect(x + canalSide * (bodyW / 2 + 7), y + 4, 10, bodyH - 8, signal.bone, null);
+        }
+        y += bodyH + gap; first = false;
+        if (y + bodyH > bottom) break;
+        rect(x - bodyW / 2 + 1, y - gap, bodyW - 2, gap, signal.cartilage, null);
+      }
+    }
+
     cx.save(); cx.clearRect(0, 0, W, H); cx.fillStyle = '#020617'; cx.fillRect(0, 0, W, H);
     var scanX = 44, scanY = 28, scanW = W - 88, scanH = H - 72;
     cx.fillStyle = '#000'; cx.fillRect(scanX, scanY, scanW, scanH);
     var midX = W / 2, midY = scanY + scanH / 2, phase = slice / 100;
+
+    // CT table: a shallow curved pad under the patient in axial CT (a strong "this is CT" cue).
+    if (modality === 'CT' && plane === 'axial') {
+      cx.beginPath(); cx.ellipse(midX, scanY + scanH + 120, scanW * 0.42, 150, 0, Math.PI * 1.08, Math.PI * 1.92); cx.strokeStyle = gray(signal.table); cx.lineWidth = 3; cx.stroke();
+    }
+
     if (region === 'head') {
       if (plane === 'axial') {
-        var headRx = scanW * (0.27 + Math.sin(phase * Math.PI) * 0.08), headRy = scanH * (0.31 + Math.sin(phase * Math.PI) * 0.07);
-        ellipse(midX, midY, headRx + 9, headRy + 9, signal.bone, 'Skull'); ellipse(midX, midY, headRx, headRy, signal.soft, 'Brain');
-        ellipse(midX - headRx * 0.34, midY - 4, headRx * 0.28, headRy * 0.72, signal.white, 'Right hemisphere'); ellipse(midX + headRx * 0.34, midY - 4, headRx * 0.28, headRy * 0.72, signal.white, 'Left hemisphere');
-        ellipse(midX - 18, midY, 8, 4 + phase * 4, signal.fluid, 'Ventricle'); ellipse(midX + 18, midY, 8, 4 + phase * 4, signal.fluid, null);
-        if (phase < 0.36) { ellipse(midX - 48, midY + 58, 16, 11, signal.fluid, 'Orbit'); ellipse(midX + 48, midY + 58, 16, 11, signal.fluid, null); }
+        // phase 0 = vertex, 1 = skull base
+        var hRx = scanW * (0.16 + 0.15 * Math.sin(Math.PI * Math.min(1, phase * 0.9 + 0.08))), hRy = hRx * 1.24;
+        var base = phase > 0.7;
+        ellipse(midX, midY, hRx + 18, hRy + 18, signal.fat, null);                      // scalp
+        ellipse(midX, midY, hRx + 11, hRy + 11, signal.cortical, null);                 // outer table
+        ellipse(midX, midY, hRx + 7, hRy + 7, signal.bone, null);                       // diploe
+        ellipse(midX, midY, hRx + 4, hRy + 4, signal.cortical, null);                   // inner table
+        ellipse(midX, midY, hRx, hRy, signal.csf, null);                                // subarachnoid CSF
+        blob(midX, midY, hRx - 4, hRy - 4, signal.grey, null, 3, 0.02);
+        addLabel(midX - hRx * 0.62, midY - hRy * 0.86, 'Skull');                        // ring labels sit on the ring, clear of the A/S markers
+        addLabel(midX + hRx * 0.5, midY - hRy * 0.72, 'Brain (cortex)');
+        if (!base) {
+          blob(midX - hRx * 0.42, midY + 2, hRx * 0.36, hRy * 0.72, signal.white, 'Right hemisphere', 5, 0.08);
+          blob(midX + hRx * 0.42, midY + 2, hRx * 0.36, hRy * 0.72, signal.white, 'Left hemisphere', 8, 0.08);
+          spokes(midX, midY, hRx - 3, hRy - 3, 22, 16 + (1 - phase) * 6, signal.csf, 2.2, 0, TAU, 2);   // sulci
+          vline(midX, midY - hRy + 4, midX, midY + hRy - 4, signal.csf, 2);                             // interhemispheric fissure / falx
+          if (phase > 0.28 && phase < 0.72) {
+            var vScale = Math.sin((phase - 0.28) / 0.44 * Math.PI);
+            ellipse(midX - 20, midY - 6, 9 * vScale + 2, 30 * vScale + 4, signal.csf, 'Lateral ventricles', 0.28);
+            ellipse(midX + 20, midY - 6, 9 * vScale + 2, 30 * vScale + 4, signal.csf, null, -0.28);
+            if (phase > 0.45) { ellipse(midX, midY + 8, 3, 12, signal.csf, null); }
+            blob(midX - 34, midY + 6, 11, 18, signal.grey + 4, null, 11, 0.1);    // basal ganglia / thalamus
+            blob(midX + 34, midY + 6, 11, 18, signal.grey + 4, null, 12, 0.1);
+          }
+        } else {
+          // Skull base: orbits anteriorly (top of image), petrous ridges and cerebellum posteriorly.
+          blob(midX, midY + hRy * 0.28, hRx * 0.62, hRy * 0.42, signal.grey, 'Cerebellum', 14, 0.05);
+          spokes(midX, midY + hRy * 0.28, hRx * 0.6, hRy * 0.4, 16, 12, signal.csf, 1.5, 0.15, Math.PI - 0.15, 9);
+          ellipse(midX, midY - hRy * 0.1, 12, 9, signal.grey, 'Brainstem');
+          ellipse(midX - hRx * 0.55, midY - hRy * 0.62, 21, 17, signal.fluid, 'Orbits');
+          ellipse(midX + hRx * 0.55, midY - hRy * 0.62, 21, 17, signal.fluid, null);
+          ellipse(midX - hRx * 0.55, midY - hRy * 0.7, 6, 4, signal.soft, null);
+          ellipse(midX + hRx * 0.55, midY - hRy * 0.7, 6, 4, signal.soft, null);
+          for (var ec = 0; ec < 4; ec++) rect(midX - 10 + (ec % 2) * 10, midY - hRy * 0.72 + Math.floor(ec / 2) * 10, 8, 8, signal.air, ec === 0 ? 'Ethmoid air cells' : null);
+          ellipse(midX - hRx * 0.5, midY + hRy * 0.12, 30, 12, signal.cortical, 'Petrous bone', 0.5);
+          ellipse(midX + hRx * 0.5, midY + hRy * 0.12, 30, 12, signal.cortical, null, -0.5);
+          ellipse(midX - hRx * 0.78, midY + hRy * 0.3, 10, 12, signal.air, null);
+          ellipse(midX + hRx * 0.78, midY + hRy * 0.3, 10, 12, signal.air, null);
+        }
       } else if (plane === 'coronal') {
-        ellipse(midX, midY, scanW * 0.27, scanH * 0.40, signal.bone, 'Skull'); ellipse(midX, midY - 2, scanW * 0.245, scanH * 0.37, signal.soft, 'Brain');
-        ellipse(midX - 64, midY - 22, 47, 112, signal.white, 'Right hemisphere'); ellipse(midX + 64, midY - 22, 47, 112, signal.white, 'Left hemisphere');
-        ellipse(midX - 13, midY - 10, 7, 23, signal.fluid, 'Lateral ventricles'); ellipse(midX + 13, midY - 10, 7, 23, signal.fluid, null);
+        // phase 0 = anterior (face), 1 = posterior (occiput)
+        var cRx = scanW * 0.25, cRy = scanH * 0.4;
+        ellipse(midX, midY, cRx + 16, cRy + 16, signal.fat, null);
+        ellipse(midX, midY, cRx + 10, cRy + 10, signal.cortical, null);
+        ellipse(midX, midY, cRx + 6, cRy + 6, signal.bone, null);
+        ellipse(midX, midY, cRx + 3, cRy + 3, signal.cortical, null);
+        ellipse(midX, midY - 6, cRx, cRy - 6, signal.csf, null);
+        blob(midX, midY - 8, cRx - 4, cRy - 14, signal.grey, null, 4, 0.02);
+        addLabel(midX - cRx * 0.62, midY - cRy * 0.86, 'Skull');
+        addLabel(midX + cRx * 0.5, midY - cRy * 0.78, 'Brain (cortex)');
+        blob(midX - cRx * 0.45, midY - 24, cRx * 0.38, cRy * 0.55, signal.white, 'Right hemisphere', 6, 0.07);
+        blob(midX + cRx * 0.45, midY - 24, cRx * 0.38, cRy * 0.55, signal.white, 'Left hemisphere', 9, 0.07);
+        spokes(midX, midY - 8, cRx - 4, cRy - 14, 18, 16, signal.csf, 2.2, Math.PI * 1.1, Math.PI * 1.9, 4);
+        vline(midX, midY - cRy + 6, midX, midY + 10, signal.csf, 2);
+        if (phase > 0.3 && phase < 0.75) {
+          ellipse(midX - 15, midY - 18, 7, 20, signal.csf, 'Lateral ventricles');
+          ellipse(midX + 15, midY - 18, 7, 20, signal.csf, null);
+          ellipse(midX, midY + 6, 3, 12, signal.csf, null);
+        }
+        // Temporal lobes bulge inferolaterally; below them the skull base and, posteriorly, the cerebellum.
+        blob(midX - cRx * 0.62, midY + cRy * 0.35, cRx * 0.3, cRy * 0.2, signal.grey, null, 15, 0.08);
+        blob(midX + cRx * 0.62, midY + cRy * 0.35, cRx * 0.3, cRy * 0.2, signal.grey, null, 16, 0.08);
+        rect(midX - cRx, midY + cRy * 0.58, cRx * 2, 8, signal.cortical, null);
+        if (phase > 0.6) {
+          blob(midX, midY + cRy * 0.78, cRx * 0.55, cRy * 0.18, signal.grey, 'Cerebellum', 17, 0.05);
+          spokes(midX, midY + cRy * 0.78, cRx * 0.55, cRy * 0.18, 14, 9, signal.csf, 1.5, 0, Math.PI, 5);
+          ellipse(midX, midY + cRy * 0.66, 10, 12, signal.grey, 'Brainstem');
+        } else if (phase < 0.32) {
+          ellipse(midX - cRx * 0.45, midY + cRy * 0.72, 22, 18, signal.fluid, 'Orbits');
+          ellipse(midX + cRx * 0.45, midY + cRy * 0.72, 22, 18, signal.fluid, null);
+          rect(midX - 12, midY + cRy * 0.66, 24, 30, signal.air, 'Nasal cavity');
+        } else {
+          ellipse(midX, midY + cRy * 0.7, 12, 14, signal.grey, 'Brainstem');
+          ellipse(midX - cRx * 0.55, midY + cRy * 0.8, 26, 10, signal.cortical, null, 0.3);
+          ellipse(midX + cRx * 0.55, midY + cRy * 0.8, 26, 10, signal.cortical, null, -0.3);
+        }
       } else {
-        ellipse(midX + 10, midY - 12, scanW * 0.25, scanH * 0.36, signal.bone, 'Skull'); ellipse(midX + 4, midY - 20, scanW * 0.22, scanH * 0.32, signal.soft, 'Brain');
-        ellipse(midX - 56, midY + 75, 38, 31, signal.white, 'Cerebellum'); ellipse(midX + 6, midY + 5, 10, 28, signal.fluid, 'Ventricle');
+        // Sagittal, anterior on the left: cerebrum, corpus callosum, cerebellum posterior-inferior,
+        // brainstem into the cervical canal, face anterior-inferior.
+        var sRx = scanW * 0.27, sRy = scanH * 0.36, sx = midX + 6, sy = midY - 30;
+        // neck and face soft tissue first, so the skull, sinuses and jaw sit inside a body outline
+        rect(sx - 30, sy + sRy - 10, 84, scanY + scanH - (sy + sRy - 10), signal.muscle, null);
+        blob(sx - sRx * 0.7, sy + sRy * 0.72, sRx * 0.52, sRy * 0.62, signal.muscle, null, 25, 0.05);
+        blob(sx, sy, sRx + 16, sRy + 16, signal.fat, null, 2, 0.02);
+        ellipse(sx, sy, sRx + 10, sRy + 10, signal.cortical, null);
+        ellipse(sx, sy, sRx + 6, sRy + 6, signal.bone, null);
+        ellipse(sx, sy, sRx + 3, sRy + 3, signal.cortical, null);
+        ellipse(sx, sy, sRx, sRy, signal.csf, null);
+        blob(sx, sy - 6, sRx - 4, sRy - 10, signal.grey, null, 7, 0.025);
+        addLabel(sx + sRx * 0.62, sy - sRy * 0.86, 'Skull');
+        addLabel(sx - sRx * 0.45, sy - sRy * 0.6, 'Brain (cortex)');
+        blob(sx + 6, sy - 14, sRx * 0.72, sRy * 0.52, signal.white, 'Cerebral hemisphere', 8, 0.06);
+        spokes(sx, sy - 6, sRx - 4, sRy - 10, 20, 15, signal.csf, 2.2, Math.PI * 0.95, Math.PI * 2.05, 6);
+        // corpus callosum arch drawn as a thick polyline of white matter
+        var ccPts = [];
+        for (var ci = 0; ci <= 12; ci++) { var ca = Math.PI + (ci / 12) * Math.PI; ccPts.push([sx + 4 + Math.cos(ca) * sRx * 0.42, sy - 4 + Math.sin(ca) * sRy * 0.3]); }
+        for (var cj = 0; cj < ccPts.length - 1; cj++) vline(ccPts[cj][0], ccPts[cj][1], ccPts[cj + 1][0], ccPts[cj + 1][1], signal.white, 9);
+        addLabel(sx + 4, sy - sRy * 0.36, 'Corpus callosum');
+        ellipse(sx + 4, sy + 2, sRx * 0.34, sRy * 0.12, signal.csf, 'Lateral ventricle');
+        ellipse(sx + 12, sy + 16, 6, 12, signal.csf, null);
+        // posterior fossa
+        blob(sx + sRx * 0.5, sy + sRy * 0.62, sRx * 0.36, sRy * 0.3, signal.grey, 'Cerebellum', 12, 0.05);
+        spokes(sx + sRx * 0.5, sy + sRy * 0.62, sRx * 0.36, sRy * 0.3, 14, 11, signal.csf, 1.5, 0, TAU, 11);
+        rect(sx + 24, sy + sRy * 0.36, 8, 40, signal.csf, null);                         // 4th ventricle / aqueduct
+        blob(sx + 2, sy + sRy * 0.58, 16, sRy * 0.36, signal.grey, 'Brainstem', 13, 0.04);
+        // cervical spine below the skull base, inside the neck outline
+        spineColumn(sx + 14, sy + sRy + 8, scanY + scanH - 6, 20, 1, 'Cervical spine');
+        rect(sx + 4, sy + sRy + 6, 9, 22, signal.csf, 'Spinal cord');
+        // face
+        rect(sx - sRx - 6, sy + sRy * 0.22, 18, 20, signal.air, 'Frontal sinus');
+        blob(sx - sRx * 0.86, sy + sRy * 0.78, 24, 26, signal.air, 'Nasal cavity', 21, 0.05);
+        ellipse(sx - sRx * 0.6, sy + sRy * 0.45, 20, 16, signal.fluid, 'Orbit');
+        rect(sx - sRx * 0.95, sy + sRy + 4, 54, 14, signal.cortical, 'Maxilla');
+        rect(sx - sRx * 0.86, sy + sRy + 34, 44, 12, signal.cortical, 'Mandible');
       }
     } else if (region === 'chest') {
       if (plane === 'axial') {
-        ellipse(midX, midY, scanW * 0.39, scanH * 0.34, signal.soft, 'Chest wall'); ellipse(midX, midY, scanW * 0.35, scanH * 0.30, signal.fat, null);
-        ellipse(midX - 91, midY - 8, 73, 116 - phase * 22, signal.lung, 'Right lung'); ellipse(midX + 91, midY - 8, 68, 116 - phase * 22, signal.lung, 'Left lung');
-        ellipse(midX + 20, midY + 34, 48, 58, signal.blood, 'Heart'); ellipse(midX, midY + 112, 17, 17, signal.bone, 'Vertebra'); ellipse(midX, midY + 97, 5, 5, signal.fluid, 'Spinal canal');
-        ellipse(midX - 26, midY - 25, 8, 8, signal.air, 'Trachea');
+        // phase 0 = lung apices / thoracic inlet, 1 = lung bases / liver dome
+        var tRx = scanW * 0.40, tRy = scanH * 0.34;
+        var lungRy = tRy * (0.66 + 0.16 * Math.sin(phase * Math.PI));
+        blob(midX, midY, tRx, tRy, signal.muscle, null, 1, 0.015);
+        addLabel(midX - tRx * 0.84, midY + tRy * 0.2, 'Chest wall');
+        blob(midX, midY, tRx - 10, tRy - 9, signal.fat, null, 1, 0.015);
+        blob(midX, midY, tRx - 20, tRy - 18, signal.muscle, null, 1, 0.015);
+        blob(midX, midY, tRx - 27, tRy - 24, signal.fat, null, 1, 0.01);                // mediastinal / extrapleural fat
+        // ribs around the inner wall, alternating with costal cartilage anteriorly
+        for (var side = -1; side <= 1; side += 2) for (var rb = 0; rb < 7; rb++) {
+          var ra = -0.35 - rb * 0.37, rxx = midX + side * (tRx - 22) * Math.cos(ra) * 0.98, ryy = midY + (tRy - 20) * Math.sin(ra) * 1.02;
+          ellipse(rxx, ryy, 8, 4.5, rb < 2 ? signal.cartilage : signal.cortical, (side === -1 && rb === 3) ? 'Ribs' : null, side * (-ra - Math.PI / 2));
+        }
+        // scapulae at upper levels, sternum through the middle levels
+        if (phase < 0.5) {
+          ellipse(midX - tRx * 0.62, midY + tRy * 0.52, 44, 7, signal.cortical, 'Scapula', -0.55);
+          ellipse(midX + tRx * 0.62, midY + tRy * 0.52, 44, 7, signal.cortical, null, 0.55);
+        }
+        if (phase > 0.2 && phase < 0.85) rect(midX - 14, midY - tRy + 14, 28, 9, signal.cortical, 'Sternum');
+        // vertebra, canal, paraspinal muscles
+        var vy = midY + tRy * 0.7;
+        blob(midX - 36, vy + 6, 22, 16, signal.muscle, null, 22, 0.05);
+        blob(midX + 36, vy + 6, 22, 16, signal.muscle, null, 23, 0.05);
+        ellipse(midX, vy, 20, 16, signal.cortical, 'Vertebra');
+        ellipse(midX, vy, 15, 11, signal.marrow, null);
+        ellipse(midX, vy + 21, 6, 6, signal.csf, 'Spinal canal');
+        rect(midX - 3, vy + 26, 6, 12, signal.cortical, null);
+        ellipse(midX - 22, vy + 18, 12, 4, signal.cortical, null, 0.4);
+        ellipse(midX + 22, vy + 18, 12, 4, signal.cortical, null, -0.4);
+        // lungs (patient right on image left), with vessel trees from each hilum
+        var rlX = midX - tRx * 0.5, llX = midX + tRx * 0.5, lY = midY - 4;
+        blob(rlX, lY, tRx * 0.42, lungRy, signal.lung, 'Right lung', 31, 0.03);
+        blob(llX, lY, tRx * 0.4, lungRy, signal.lung, 'Left lung', 32, 0.03);
+        vesselTree(midX - tRx * 0.16, midY + 8, rlX, lY, tRx * 0.42, lungRy, Math.PI, signal.vessel, 3, 1);
+        vesselTree(midX + tRx * 0.16, midY + 8, llX, lY, tRx * 0.4, lungRy, 0, signal.vessel, 3, 2);
+        // mediastinum
+        blob(midX + 4, midY + 14, tRx * 0.2, tRy * 0.42, signal.fat, null, 33, 0.04);
+        ellipse(midX + 18, vy - 30, 12, 11, signal.blood, 'Descending aorta');          // left anterolateral to the spine at every level
+        ellipse(midX - 2, vy - 22, 8, 6, signal.muscle, 'Esophagus'); ellipse(midX - 2, vy - 22, 2, 1.5, signal.air, null);
+        if (phase < 0.42) {
+          ellipse(midX - 4, midY - tRy * 0.22, 12, 11, signal.muscle, null);
+          ellipse(midX - 4, midY - tRy * 0.22, 9, 8, signal.air, 'Trachea');
+          ellipse(midX - 34, midY - tRy * 0.16, 9, 8, signal.blood, 'SVC');
+          ellipse(midX + 16, midY - tRy * 0.1, phase < 0.25 ? 30 : 15, phase < 0.25 ? 11 : 14, signal.blood, phase < 0.25 ? 'Aortic arch' : 'Ascending aorta', 0.3);
+          if (phase < 0.2) { ellipse(midX - 22, midY - tRy * 0.5, 8, 7, signal.blood, null); ellipse(midX + 8, midY - tRy * 0.52, 8, 7, signal.blood, null); ellipse(midX + 36, midY - tRy * 0.45, 8, 7, signal.blood, null); }
+        } else if (phase < 0.52) {
+          ellipse(midX - 22, midY - tRy * 0.1, 8, 6, signal.air, 'Main bronchi', -0.5);
+          ellipse(midX + 14, midY - tRy * 0.1, 8, 6, signal.air, null, 0.5);
+          ellipse(midX + 12, midY - tRy * 0.3, 17, 13, signal.blood, 'Pulmonary trunk', 0.2);
+          ellipse(midX - 32, midY - tRy * 0.2, 9, 8, signal.blood, 'SVC');
+        }
+        if (phase >= 0.42) {
+          // heart grows through the lower half; long axis points to the patient's left and anterior
+          var hs = Math.min(1, (phase - 0.42) / 0.3);
+          blob(midX + 26, midY + 10, 40 + 18 * hs, 34 + 16 * hs, signal.muscle, null, 41, 0.03, -0.5);
+          blob(midX + 26, midY + 10, 36 + 16 * hs, 30 + 14 * hs, signal.blood, 'Heart', 41, 0.03, -0.5);
+          vline(midX + 6, midY - 14, midX + 46, midY + 36, signal.muscle, 4);          // interventricular septum
+          vline(midX - 4, midY + 16, midX + 60, midY - 4, signal.muscle, 3);           // AV plane
+        }
+        if (phase > 0.8) {
+          var ds = (phase - 0.8) / 0.2;
+          blob(rlX + 6, lY + lungRy * 0.15, tRx * 0.36 * ds + 8, lungRy * 0.7 * ds + 6, signal.liver, 'Liver dome', 51, 0.04);
+          blob(llX + tRx * 0.12, lY + lungRy * 0.35, tRx * 0.18 * ds + 4, lungRy * 0.35 * ds + 4, signal.spleen, 'Spleen', 52, 0.05);
+        }
       } else if (plane === 'coronal') {
-        ellipse(midX, midY, scanW * 0.34, scanH * 0.46, signal.soft, 'Torso'); ellipse(midX - 83, midY - 25, 67, 145, signal.lung, 'Right lung'); ellipse(midX + 83, midY - 25, 67, 145, signal.lung, 'Left lung');
-        ellipse(midX + 20, midY + 55, 54, 70, signal.blood, 'Heart'); rect(midX - 8, midY - 154, 16, 310, signal.bone, 'Spine'); line(midX - 156, midY + 130, midX + 156, midY + 130, gray(signal.soft), 5); labels.push({ x: midX, y: midY + 124, text: 'Diaphragm' });
+        // phase 0 = anterior, 1 = posterior. Lungs with domed diaphragms, liver and stomach below.
+        var kRx = scanW * 0.36, kRy = scanH * 0.47;
+        blob(midX, midY, kRx, kRy, signal.muscle, null, 3, 0.02);
+        addLabel(midX - kRx + 14, midY + kRy * 0.1, 'Chest wall');
+        blob(midX, midY, kRx - 9, kRy - 8, signal.fat, null, 3, 0.02);
+        blob(midX, midY, kRx - 17, kRy - 15, signal.muscle, null, 3, 0.015);
+        var innerRx = kRx - 22, innerRy = kRy - 20;
+        blob(midX, midY, innerRx, innerRy, signal.fat, null, 3, 0.01);
+        // lungs: tall organic shapes; the diaphragm dome is higher on the right (image left)
+        function lungCoronal(cxL, topY, bottomY, halfW, domeH, label, seed) {
+          var pts = [];
+          for (var i = 0; i <= 26; i++) { var a = Math.PI + (i / 26) * Math.PI; pts.push([cxL + Math.cos(a) * halfW, topY + (bottomY - domeH - topY) * 0.5 + Math.sin(a) * (bottomY - domeH - topY) * 0.5 * 0.98]); }
+          for (var j = 0; j <= 20; j++) { var b = (j / 20) * Math.PI; pts.push([cxL + halfW - (j / 20) * halfW * 2, bottomY - Math.sin(b) * domeH]); }
+          poly(pts, signal.lung, label, cxL, topY + (bottomY - topY) * 0.42);
+          for (var k = 0; k < pts.length - 1; k++) { /* outline softened by fill only */ }
+          return { cx: cxL, cy: topY + (bottomY - topY) * 0.45, rx: halfW, ry: (bottomY - topY) * 0.5 };
+        }
+        var lungTop = midY - innerRy + 10, rBottom = midY + innerRy * 0.42, lBottom = midY + innerRy * 0.55;
+        var rl = lungCoronal(midX - innerRx * 0.5, lungTop, rBottom, innerRx * 0.42, 30, 'Right lung', 1);
+        var ll = lungCoronal(midX + innerRx * 0.52, lungTop, lBottom, innerRx * 0.4, 24, 'Left lung', 2);
+        vesselTree(midX - innerRx * 0.2, midY - 10, rl.cx, rl.cy, rl.rx, rl.ry, Math.PI, signal.vessel, 3, 3);
+        vesselTree(midX + innerRx * 0.2, midY - 10, ll.cx, ll.cy, ll.rx, ll.ry, 0, signal.vessel, 3, 4);
+        // subdiaphragmatic organs
+        blob(midX - innerRx * 0.45, rBottom + 44, innerRx * 0.46, 52, signal.liver, 'Liver', 61, 0.05);
+        blob(midX + innerRx * 0.5, lBottom + 40, innerRx * 0.3, 36, signal.fluid, 'Stomach', 62, 0.08);
+        ellipse(midX + innerRx * 0.5, lBottom + 22, innerRx * 0.2, 12, signal.air, null);
+        blob(midX + innerRx * 0.86, lBottom + 30, innerRx * 0.12, 30, signal.spleen, 'Spleen', 63, 0.06);
+        addLabel(midX - innerRx * 0.5, rBottom - 12, 'Diaphragm');
+        // ribs as oblique arcs through both lungs
+        // ribs: slender oblique arcs, confined to the lung fields so they read as a cage, not bars
+        for (var rside = -1; rside <= 1; rside += 2) for (var rr = 0; rr < 7; rr++) {
+          var y0 = lungTop + 10 + rr * 26, x0 = midX + rside * innerRx * 0.16, x1 = midX + rside * innerRx * 0.9, y1 = y0 + 22;
+          cx.beginPath(); cx.moveTo(x0, y0); cx.lineTo(x0 + (x1 - x0) * 0.35, y0 + (y1 - y0) * 0.15); cx.lineTo(x0 + (x1 - x0) * 0.7, y0 + (y1 - y0) * 0.5); cx.lineTo(x1, y1);
+          cx.strokeStyle = gray(signal.bone); cx.lineWidth = 2.5; cx.stroke();
+        }
+        if (phase < 0.45) { ellipse(midX - innerRx * 0.55, lungTop - 2, innerRx * 0.4, 6, signal.cortical, 'Clavicle', -0.12); ellipse(midX + innerRx * 0.55, lungTop - 2, innerRx * 0.4, 6, signal.cortical, null, 0.12); }
+        // central airway and vessels through the anterior-mid levels
+        if (phase > 0.3 && phase < 0.8) {
+          rect(midX - 8, lungTop - 6, 16, 54, signal.air, 'Trachea');
+          vline(midX, lungTop + 48, midX - innerRx * 0.3, lungTop + 78, signal.air, 10);
+          vline(midX, lungTop + 48, midX + innerRx * 0.32, lungTop + 84, signal.air, 10);
+          addLabel(midX + innerRx * 0.18, lungTop + 68, 'Main bronchi');
+          ellipse(midX + 22, lungTop + 40, 34, 16, signal.blood, 'Aortic arch', -0.2);
+          vline(midX + 34, lungTop + 48, midX + 30, midY + innerRy - 10, signal.blood, 14);
+        }
+        if (phase > 0.25 && phase < 0.72) {
+          blob(midX + innerRx * 0.18, midY + innerRy * 0.24, innerRx * 0.3, innerRy * 0.3, signal.muscle, null, 71, 0.03, 0.55);
+          blob(midX + innerRx * 0.18, midY + innerRy * 0.24, innerRx * 0.26, innerRy * 0.26, signal.blood, 'Heart', 71, 0.03, 0.55);
+          vline(midX + innerRx * 0.02, midY + innerRy * 0.04, midX + innerRx * 0.34, midY + innerRy * 0.46, signal.muscle, 4);
+        }
+        if (phase > 0.55) spineColumn(midX, lungTop - 4, midY + innerRy - 2, 30, 0, 'Spine');
       } else {
-        ellipse(midX, midY, scanW * 0.25, scanH * 0.46, signal.soft, 'Torso'); ellipse(midX - 12, midY - 26, 96, 145, signal.lung, 'Lung'); ellipse(midX + 32, midY + 57, 43, 59, signal.blood, 'Heart'); rect(midX + 104, midY - 155, 16, 315, signal.bone, 'Spine');
+        // Sagittal through the left hemithorax: sternum anterior (left), spine posterior INSIDE the outline.
+        var gRx = scanW * 0.27, gRy = scanH * 0.47;
+        blob(midX, midY, gRx, gRy, signal.muscle, null, 5, 0.02);
+        addLabel(midX - gRx * 0.55, midY - gRy * 0.82, 'Chest wall');
+        blob(midX, midY, gRx - 9, gRy - 8, signal.fat, null, 5, 0.02);
+        blob(midX, midY, gRx - 17, gRy - 15, signal.muscle, null, 5, 0.015);
+        var gInRx = gRx - 22, gInRy = gRy - 20;
+        blob(midX, midY, gInRx, gInRy, signal.fat, null, 5, 0.01);
+        var lungSag = { cx: midX + gInRx * 0.18, cy: midY - gInRy * 0.28, rx: gInRx * 0.72, ry: gInRy * 0.6 };
+        blob(lungSag.cx, lungSag.cy, lungSag.rx, lungSag.ry, signal.lung, 'Lung', 81, 0.04);
+        vesselTree(midX + gInRx * 0.05, midY - gInRy * 0.15, lungSag.cx, lungSag.cy, lungSag.rx, lungSag.ry, -0.4, signal.vessel, 3, 5);
+        // diaphragm dome with liver (anterior) and stomach beneath
+        var domeY = midY + gInRy * 0.36;
+        blob(midX - gInRx * 0.2, domeY + 40, gInRx * 0.6, 44, signal.liver, 'Liver', 82, 0.05);
+        blob(midX + gInRx * 0.45, domeY + 46, gInRx * 0.28, 30, signal.fluid, 'Stomach', 83, 0.08);
+        ellipse(midX + gInRx * 0.45, domeY + 32, gInRx * 0.2, 9, signal.air, null);
+        addLabel(midX, domeY - 6, 'Diaphragm');
+        // heart anterior-inferior, tilted forward
+        blob(midX - gInRx * 0.32, midY + gInRy * 0.12, gInRx * 0.36, gInRy * 0.3, signal.muscle, null, 84, 0.03, 0.35);
+        blob(midX - gInRx * 0.32, midY + gInRy * 0.12, gInRx * 0.31, gInRy * 0.25, signal.blood, 'Heart', 84, 0.03, 0.35);
+        vline(midX - gInRx * 0.55, midY - gInRy * 0.02, midX - gInRx * 0.06, midY + gInRy * 0.3, signal.muscle, 4);
+        // sternum (anterior, segmented) and spine (posterior, stacked bodies with canal behind)
+        for (var ss = 0; ss < 5; ss++) rect(midX - gInRx - 4, midY - gInRy * 0.62 + ss * 30, 12, 24, signal.cortical, ss === 1 ? 'Sternum' : null);
+        spineColumn(midX + gInRx * 0.7, midY - gInRy + 6, midY + gInRy - 6, 24, 1, 'Spine');
+        if (phase > 0.4 && phase < 0.6) rect(midX - 10, midY - gInRy + 4, 16, gInRy * 0.5, signal.air, 'Trachea');
+        vline(midX + gInRx * 0.5, midY - gInRy * 0.55, midX + gInRx * 0.5, midY + gInRy + 4, signal.blood, 13);
+        addLabel(midX + gInRx * 0.5, midY + gInRy * 0.6, 'Descending aorta');
       }
     } else {
       if (plane === 'axial') {
-        ellipse(midX, midY, scanW * 0.39, scanH * 0.34, signal.soft, 'Abdominal wall'); ellipse(midX, midY, scanW * 0.35, scanH * 0.30, signal.fat, null);
-        ellipse(midX - 83, midY - 48, 94, 63, signal.liver, 'Liver'); ellipse(midX - 95, midY + 54, 34, 47, signal.soft, 'Right kidney'); ellipse(midX + 95, midY + 54, 34, 47, signal.soft, 'Left kidney'); ellipse(midX, midY + 102, 18, 18, signal.bone, 'Vertebra');
-        for (var bi = 0; bi < 6; bi++) ellipse(midX - 58 + (bi % 3) * 58, midY + (bi < 3 ? 3 : 42), 18, 12, signal.air, bi === 0 ? 'Bowel gas' : null);
+        // phase 0 = upper abdomen (liver, spleen, stomach), 1 = pelvis (bladder, iliac wings)
+        var aRx = scanW * 0.40, aRy = scanH * 0.33;
+        blob(midX, midY, aRx, aRy, signal.muscle, null, 6, 0.015);
+        addLabel(midX - aRx * 0.84, midY + aRy * 0.2, 'Abdominal wall');
+        blob(midX, midY, aRx - 8, aRy - 7, signal.fat, null, 6, 0.015);
+        blob(midX, midY, aRx - 22, aRy - 19, signal.muscle, null, 6, 0.015);
+        blob(midX, midY, aRx - 28, aRy - 24, signal.fat, null, 6, 0.01);
+        // muscles: rectus pair anteriorly, obliques laterally, paraspinal posteriorly, psoas beside the spine
+        blob(midX - 26, midY - aRy + 30, 24, 8, signal.muscle, null, 91, 0.04);
+        blob(midX + 26, midY - aRy + 30, 24, 8, signal.muscle, null, 92, 0.04);
+        var avy = midY + aRy * 0.7;
+        blob(midX - 38, avy + 8, 24, 18, signal.muscle, null, 93, 0.05);
+        blob(midX + 38, avy + 8, 24, 18, signal.muscle, null, 94, 0.05);
+        if (phase > 0.3) { blob(midX - 34, avy - 14, 16, 18, signal.muscle, 'Psoas', 95, 0.05); blob(midX + 34, avy - 14, 16, 18, signal.muscle, null, 96, 0.05); }
+        // spine
+        ellipse(midX, avy, 22, 17, signal.cortical, 'Vertebra'); ellipse(midX, avy, 16, 12, signal.marrow, null);
+        ellipse(midX, avy + 22, 6, 6, signal.csf, 'Spinal canal'); rect(midX - 3, avy + 27, 6, 12, signal.cortical, null);
+        ellipse(midX - 24, avy + 18, 13, 4, signal.cortical, null, 0.4); ellipse(midX + 24, avy + 18, 13, 4, signal.cortical, null, -0.4);
+        // great vessels: aorta left-anterior of the spine, IVC to its right (image left)
+        ellipse(midX + 16, avy - 32, 11, 11, signal.blood, 'Aorta');
+        ellipse(midX - 24, avy - 30, 15, 9, signal.blood - 8, 'IVC');
+        if (phase < 0.6) {
+          var ls = 1 - Math.max(0, (phase - 0.25) / 0.35);
+          blob(midX - aRx * 0.42, midY - aRy * 0.12, aRx * 0.36 * (0.55 + 0.45 * ls), aRy * 0.62 * (0.6 + 0.4 * ls), signal.liver, 'Liver', 101, 0.05);
+          vesselTree(midX - aRx * 0.24, midY - aRy * 0.05, midX - aRx * 0.42, midY - aRy * 0.12, aRx * 0.34, aRy * 0.58, Math.PI + 0.2, signal.vessel, 2, 6);
+          if (phase > 0.25 && phase < 0.5) ellipse(midX - aRx * 0.3, midY + aRy * 0.05, 12, 16, signal.fluid, 'Gallbladder', 0.4);
+        }
+        if (phase < 0.45) {
+          blob(midX + aRx * 0.62, midY + aRy * 0.3, aRx * 0.14, aRy * 0.36, signal.spleen, 'Spleen', 102, 0.05, 0.3);
+          blob(midX + aRx * 0.36, midY - aRy * 0.36, aRx * 0.26, aRy * 0.3, signal.muscle, null, 103, 0.06);
+          blob(midX + aRx * 0.36, midY - aRy * 0.36, aRx * 0.22, aRy * 0.25, signal.fluid, 'Stomach', 103, 0.06);
+          rect(midX + aRx * 0.14, midY - aRy * 0.6, aRx * 0.44, aRy * 0.2, signal.air, null);   // air-fluid level (patient supine: air anterior)
+        }
+        if (phase > 0.3 && phase < 0.55) blob(midX + 6, midY + aRy * 0.08, aRx * 0.32, 14, signal.soft, 'Pancreas', 104, 0.08, -0.15);
+        if (phase > 0.3 && phase < 0.78) {
+          var kv = Math.sin((phase - 0.3) / 0.48 * Math.PI);
+          blob(midX - aRx * 0.6, avy - 16, 22 * kv + 6, 34 * kv + 8, signal.kidney, 'Right kidney', 105, 0.05, 0.35);
+          blob(midX + aRx * 0.6, avy - 16, 22 * kv + 6, 34 * kv + 8, signal.kidney, 'Left kidney', 106, 0.05, -0.35);
+          ellipse(midX - aRx * 0.52, avy - 16, 6 * kv + 2, 10 * kv + 3, signal.fluid, null);
+          ellipse(midX + aRx * 0.52, avy - 16, 6 * kv + 2, 10 * kv + 3, signal.fluid, null);
+        }
+        if (phase > 0.35) {
+          // bowel loops; colon frame laterally with gas
+          var loops = [[0.1, -0.35], [0.45, -0.2], [0.2, 0.15], [-0.15, 0.1], [0.5, 0.2], [-0.05, -0.5]];
+          for (var bl = 0; bl < loops.length; bl++) {
+            var bx = midX + aRx * loops[bl][0], by = midY + aRy * loops[bl][1];
+            blob(bx, by, 22, 14, signal.muscle, bl === 0 ? 'Bowel' : null, 110 + bl, 0.08, bl * 0.7);
+            blob(bx, by, 16, 9, bl % 2 ? signal.air : signal.fluid, null, 110 + bl, 0.08, bl * 0.7);
+          }
+          blob(midX - aRx * 0.72, midY + aRy * 0.05, 18, 40, signal.muscle, null, 121, 0.1);
+          blob(midX - aRx * 0.72, midY + aRy * 0.05, 12, 34, signal.air, null, 121, 0.14);
+          blob(midX + aRx * 0.74, midY + aRy * 0.05, 18, 40, signal.muscle, null, 122, 0.1);
+          blob(midX + aRx * 0.74, midY + aRy * 0.05, 12, 34, signal.air, null, 122, 0.14);
+        }
+        if (phase > 0.78) {
+          ellipse(midX - aRx * 0.66, avy - 10, 12, 52, signal.cortical, 'Iliac wing', 0.35);
+          ellipse(midX + aRx * 0.66, avy - 10, 12, 52, signal.cortical, null, -0.35);
+        }
+        if (phase > 0.85) blob(midX, midY - aRy * 0.3, aRx * 0.3, aRy * 0.28, signal.fluid, 'Bladder', 131, 0.04);
       } else if (plane === 'coronal') {
-        ellipse(midX, midY, scanW * 0.34, scanH * 0.46, signal.soft, 'Torso'); ellipse(midX - 84, midY - 76, 93, 58, signal.liver, 'Liver'); ellipse(midX - 85, midY + 36, 32, 54, signal.soft, 'Right kidney'); ellipse(midX + 85, midY + 36, 32, 54, signal.soft, 'Left kidney'); rect(midX - 8, midY - 155, 16, 310, signal.bone, 'Spine'); ellipse(midX, midY + 120, 52, 36, signal.fluid, 'Bladder');
+        var bRx = scanW * 0.35, bRy = scanH * 0.47;
+        blob(midX, midY, bRx, bRy, signal.muscle, null, 7, 0.02);
+        addLabel(midX - bRx + 14, midY + bRy * 0.1, 'Abdominal wall');
+        blob(midX, midY, bRx - 9, bRy - 8, signal.fat, null, 7, 0.02);
+        blob(midX, midY, bRx - 17, bRy - 15, signal.muscle, null, 7, 0.015);
+        var bInRx = bRx - 22, bInRy = bRy - 20;
+        blob(midX, midY, bInRx, bInRy, signal.fat, null, 7, 0.01);
+        // diaphragm domes at the top with lung bases above them
+        blob(midX - bInRx * 0.5, midY - bInRy + 4, bInRx * 0.4, 26, signal.lung, null, 141, 0.03);
+        blob(midX + bInRx * 0.5, midY - bInRy + 10, bInRx * 0.38, 26, signal.lung, null, 142, 0.03);
+        blob(midX - bInRx * 0.45, midY - bInRy * 0.52, bInRx * 0.5, bInRy * 0.36, signal.liver, 'Liver', 143, 0.05);
+        vesselTree(midX - bInRx * 0.25, midY - bInRy * 0.45, midX - bInRx * 0.45, midY - bInRy * 0.52, bInRx * 0.48, bInRy * 0.34, Math.PI + 0.3, signal.vessel, 2, 7);
+        blob(midX + bInRx * 0.72, midY - bInRy * 0.5, bInRx * 0.16, bInRy * 0.26, signal.spleen, 'Spleen', 144, 0.05);
+        blob(midX + bInRx * 0.32, midY - bInRy * 0.42, bInRx * 0.26, bInRy * 0.24, signal.muscle, null, 145, 0.06);
+        blob(midX + bInRx * 0.32, midY - bInRy * 0.42, bInRx * 0.22, bInRy * 0.2, signal.fluid, 'Stomach', 145, 0.06);
+        ellipse(midX + bInRx * 0.32, midY - bInRy * 0.56, bInRx * 0.16, 10, signal.air, null);
+        if (phase > 0.45) {
+          spineColumn(midX, midY - bInRy + 4, midY + bInRy * 0.55, 32, 0, 'Spine');
+          blob(midX - 32, midY + bInRy * 0.1, 16, bInRy * 0.42, signal.muscle, 'Psoas', 146, 0.03, 0.12);
+          blob(midX + 32, midY + bInRy * 0.1, 16, bInRy * 0.42, signal.muscle, null, 147, 0.03, -0.12);
+          blob(midX - bInRx * 0.58, midY - bInRy * 0.02, 26, 48, signal.kidney, 'Right kidney', 148, 0.05, 0.15);
+          blob(midX + bInRx * 0.58, midY - bInRy * 0.06, 26, 48, signal.kidney, 'Left kidney', 149, 0.05, -0.15);
+          ellipse(midX - bInRx * 0.52, midY - bInRy * 0.02, 7, 16, signal.fluid, null); ellipse(midX + bInRx * 0.52, midY - bInRy * 0.06, 7, 16, signal.fluid, null);
+          vline(midX - bInRx * 0.5, midY + bInRy * 0.16, midX - bInRx * 0.28, midY + bInRy * 0.8, signal.fluid, 3);
+          vline(midX + bInRx * 0.5, midY + bInRy * 0.12, midX + bInRx * 0.28, midY + bInRy * 0.8, signal.fluid, 3);
+          vline(midX + 10, midY - bInRy * 0.6, midX + 10, midY + bInRy * 0.5, signal.blood, 10);
+          addLabel(midX + 12, midY + bInRy * 0.3, 'Aorta');
+        } else {
+          var cl = [[-0.3, 0.1], [0.05, 0.05], [0.4, 0.12], [-0.2, 0.4], [0.2, 0.42], [0.05, 0.25]];
+          for (var cb = 0; cb < cl.length; cb++) { var cbx = midX + bInRx * cl[cb][0], cby = midY + bInRy * cl[cb][1]; blob(cbx, cby, 30, 18, signal.muscle, cb === 0 ? 'Bowel' : null, 150 + cb, 0.08, cb * 0.6); blob(cbx, cby, 22, 12, cb % 2 ? signal.air : signal.fluid, null, 150 + cb, 0.08, cb * 0.6); }
+          blob(midX - bInRx * 0.78, midY + bInRy * 0.1, 16, bInRy * 0.42, signal.muscle, null, 161, 0.08); blob(midX - bInRx * 0.78, midY + bInRy * 0.1, 10, bInRy * 0.36, signal.air, null, 161, 0.14);
+          blob(midX + bInRx * 0.78, midY + bInRy * 0.1, 16, bInRy * 0.42, signal.muscle, null, 162, 0.08); blob(midX + bInRx * 0.78, midY + bInRy * 0.1, 10, bInRy * 0.36, signal.air, null, 162, 0.14);
+        }
+        ellipse(midX - bInRx * 0.62, midY + bInRy * 0.66, 34, 12, signal.cortical, 'Iliac wing', 0.6);
+        ellipse(midX + bInRx * 0.62, midY + bInRy * 0.66, 34, 12, signal.cortical, null, -0.6);
+        blob(midX, midY + bInRy * 0.8, bInRx * 0.28, bInRy * 0.14, signal.fluid, 'Bladder', 171, 0.04);
       } else {
-        ellipse(midX, midY, scanW * 0.25, scanH * 0.46, signal.soft, 'Torso'); ellipse(midX - 35, midY - 70, 83, 62, signal.liver, 'Liver'); ellipse(midX + 14, midY + 25, 30, 53, signal.soft, 'Kidney'); rect(midX + 104, midY - 155, 16, 315, signal.bone, 'Spine'); ellipse(midX - 15, midY + 125, 42, 28, signal.fluid, 'Bladder');
+        // Sagittal: spine and sacrum posterior inside the outline, liver and bowel anterior.
+        var dRx = scanW * 0.27, dRy = scanH * 0.47;
+        blob(midX, midY, dRx, dRy, signal.muscle, null, 8, 0.02);
+        addLabel(midX - dRx * 0.55, midY + dRy * 0.82, 'Abdominal wall');
+        blob(midX, midY, dRx - 9, dRy - 8, signal.fat, null, 8, 0.02);
+        blob(midX, midY, dRx - 17, dRy - 15, signal.muscle, null, 8, 0.015);
+        var dInRx = dRx - 22, dInRy = dRy - 20;
+        blob(midX, midY, dInRx, dInRy, signal.fat, null, 8, 0.01);
+        blob(midX - dInRx * 0.1, midY - dInRy + 4, dInRx * 0.76, 24, signal.lung, null, 181, 0.03);
+        blob(midX - dInRx * 0.12, midY - dInRy * 0.55, dInRx * 0.78, dInRy * 0.34, signal.liver, 'Liver', 182, 0.05);
+        vesselTree(midX + dInRx * 0.2, midY - dInRy * 0.5, midX - dInRx * 0.12, midY - dInRy * 0.55, dInRx * 0.76, dInRy * 0.32, Math.PI, signal.vessel, 2, 8);
+        addLabel(midX - dInRx * 0.1, midY - dInRy * 0.9, 'Diaphragm');
+        if (phase > 0.55 && phase < 0.85) {
+          blob(midX + dInRx * 0.28, midY - dInRy * 0.02, 22, 44, signal.kidney, 'Kidney', 183, 0.05, 0.1);
+          ellipse(midX + dInRx * 0.2, midY - dInRy * 0.02, 6, 14, signal.fluid, null);
+        } else {
+          blob(midX - dInRx * 0.05, midY - dInRy * 0.14, dInRx * 0.3, dInRy * 0.14, signal.muscle, null, 184, 0.06);
+          blob(midX - dInRx * 0.05, midY - dInRy * 0.14, dInRx * 0.26, dInRy * 0.1, signal.fluid, 'Stomach', 184, 0.06);
+          vline(midX + dInRx * 0.34, midY - dInRy * 0.45, midX + dInRx * 0.36, midY + dInRy * 0.45, signal.blood, 11);
+          addLabel(midX + dInRx * 0.36, midY + dInRy * 0.1, 'Aorta');
+        }
+        var sl = [[-0.5, 0.15], [-0.15, 0.22], [-0.45, 0.45], [-0.1, 0.5], [-0.3, 0.72]];
+        for (var sb = 0; sb < sl.length; sb++) { var sbx = midX + dInRx * sl[sb][0], sby = midY + dInRy * sl[sb][1]; blob(sbx, sby, 26, 16, signal.muscle, sb === 0 ? 'Bowel' : null, 190 + sb, 0.08, sb * 0.5); blob(sbx, sby, 19, 10, sb % 2 ? signal.air : signal.fluid, null, 190 + sb, 0.08, sb * 0.5); }
+        spineColumn(midX + dInRx * 0.68, midY - dInRy + 6, midY + dInRy * 0.45, 24, 1, 'Spine');
+        // sacrum curving posteriorly into the pelvis, staying inside the outline
+        var sac = [[midX + dInRx * 0.56, midY + dInRy * 0.45], [midX + dInRx * 0.82, midY + dInRy * 0.45], [midX + dInRx * 0.9, midY + dInRy * 0.72], [midX + dInRx * 0.74, midY + dInRy * 0.92], [midX + dInRx * 0.6, midY + dInRy * 0.78]];
+        poly(sac, signal.cortical, 'Sacrum', midX + dInRx * 0.8, midY + dInRy * 0.66);
+        blob(midX - dInRx * 0.28, midY + dInRy * 0.72, dInRx * 0.3, dInRy * 0.16, signal.fluid, 'Bladder', 201, 0.04);
+        rect(midX - dInRx - 6, midY - dInRy * 0.3, 10, dInRy * 1.2, signal.muscle, null);
       }
     }
+
+    // Quantum noise, so windowing behaves like a real study (narrow windows get grainy) and
+    // flat fills stop looking like a cartoon. Guarded: the stub context has no image data.
+    if (cx.getImageData && cx.putImageData && state.noise !== false) {
+      try {
+        var img = cx.getImageData(scanX, scanY, scanW, scanH), px = img.data;
+        var amp = Math.min(60, 255 * (modality === 'CT' ? 9 : 55) / windowWidth);
+        for (var pi = 0; pi < px.length; pi += 4) {
+          if (px[pi] < 3 && px[pi + 1] < 3) continue;
+          var nz = (Math.random() + Math.random() - 1) * amp;
+          var v = px[pi] + nz; v = v < 0 ? 0 : v > 255 ? 255 : v;
+          px[pi] = px[pi + 1] = px[pi + 2] = v;
+        }
+        cx.putImageData(img, scanX, scanY);
+      } catch (e) { /* tainted or unsupported context: keep the flat render */ }
+    }
+
     if (showCrosshair) { cx.setLineDash([5, 5]); line(midX, scanY, midX, scanY + scanH, 'rgba(34,211,238,.55)'); line(scanX, midY, scanX + scanW, midY, 'rgba(34,211,238,.55)'); cx.setLineDash([]); }
+    // Spot-challenge reveal: the target outlined (green hit, amber miss) plus the learner's click.
+    if (spotReveal && Number.isFinite(Number(spotReveal.x))) {
+      var revealColor = spotReveal.hit ? '#4ade80' : '#fbbf24';
+      cx.setLineDash([6, 4]);
+      cx.beginPath(); cx.ellipse(Number(spotReveal.x), Number(spotReveal.y), Math.max(10, Number(spotReveal.rx) || 20) + 6, Math.max(10, Number(spotReveal.ry) || 16) + 6, 0, 0, TAU);
+      cx.strokeStyle = revealColor; cx.lineWidth = 3; cx.stroke(); cx.setLineDash([]);
+      if (Number.isFinite(Number(spotReveal.clickX))) {
+        var ccx = scanX + Number(spotReveal.clickX) * scanW, ccy = scanY + Number(spotReveal.clickY) * scanH;
+        cx.strokeStyle = spotReveal.hit ? '#4ade80' : '#f87171'; cx.lineWidth = 2.5;
+        cx.beginPath(); cx.moveTo(ccx - 8, ccy - 8); cx.lineTo(ccx + 8, ccy + 8); cx.moveTo(ccx + 8, ccy - 8); cx.lineTo(ccx - 8, ccy + 8); cx.stroke();
+      }
+      if (spotReveal.label && !showLabels) labels.push({ x: Number(spotReveal.x), y: Number(spotReveal.y) - Math.max(10, Number(spotReveal.ry) || 16) - 16, text: String(spotReveal.label) });
+    }
     // Keyboard placement cursor. A sighted keyboard user needs to SEE where Enter will
     // land; the announcement alone serves a screen reader and nobody else. Drawn only
     // when a cursor has actually been moved, so the mouse path looks unchanged.
@@ -1185,29 +1689,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       cx.moveTo(kx, ky + 4); cx.lineTo(kx, ky + 14);
       cx.stroke();
     }
+    // Labels: measure, then nudge any box that would overlap an earlier one so dense regions
+    // (mediastinum, brain midline) stay readable.
     cx.font = 'bold 11px Inter, system-ui, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle';
+    var placed = [];
+    labels.sort(function(a, b) { return a.y - b.y || a.x - b.x; });
     labels.forEach(function(label) {
       var normalizedLabel = String(label.text || '').toLowerCase();
       var isFocused = focusTerms.some(function(term) { return normalizedLabel.indexOf(term) >= 0; });
-      var tw = cx.measureText(label.text).width + (isFocused ? 18 : 10);
+      var tw = cx.measureText(label.text).width + (isFocused ? 18 : 10), th = isFocused ? 22 : 18;
+      var lx = Math.max(scanX + tw / 2 + 2, Math.min(scanX + scanW - tw / 2 - 2, label.x)), ly = label.y;
+      for (var guard = 0; guard < 6; guard++) {
+        var bumped = false;
+        for (var p = 0; p < placed.length; p++) {
+          var o = placed[p];
+          if (Math.abs(o.x - lx) < (o.w + tw) / 2 + 4 && Math.abs(o.y - ly) < (o.h + th) / 2 + 2) { ly = o.y + (o.h + th) / 2 + 3; bumped = true; }
+        }
+        if (!bumped) break;
+      }
+      placed.push({ x: lx, y: ly, w: tw, h: th });
       if (isFocused) {
         focusLabelCount += 1;
         cx.fillStyle = '#facc15';
-        cx.fillRect(label.x - tw / 2, label.y - 11, tw, 22);
+        cx.fillRect(lx - tw / 2, ly - 11, tw, 22);
         cx.fillStyle = '#111827';
       } else {
         cx.fillStyle = 'rgba(2,6,23,.78)';
-        cx.fillRect(label.x - tw / 2, label.y - 9, tw, 18);
+        cx.fillRect(lx - tw / 2, ly - 9, tw, 18);
         cx.fillStyle = '#e0f2fe';
       }
-      cx.fillText(label.text, label.x, label.y);
+      cx.fillText(label.text, lx, ly);
     });
-    annotations.forEach(function(note, index) { var ax = scanX + Math.max(0, Math.min(1, Number(note.x) || 0)) * scanW, ay = scanY + Math.max(0, Math.min(1, Number(note.y) || 0)) * scanH; cx.fillStyle = '#facc15'; cx.beginPath(); cx.arc(ax, ay, 7, 0, Math.PI * 2); cx.fill(); cx.fillStyle = '#111827'; cx.font = 'bold 9px sans-serif'; cx.fillText(String(index + 1), ax, ay + 0.5); if (note.x2 != null && note.y2 != null) { var bx = scanX + note.x2 * scanW, by = scanY + note.y2 * scanH; line(ax, ay, bx, by, '#facc15', 2); cx.beginPath(); cx.arc(bx, by, 4, 0, Math.PI * 2); cx.fillStyle = '#facc15'; cx.fill(); } });
+    annotations.forEach(function(note, index) { var ax = scanX + Math.max(0, Math.min(1, Number(note.x) || 0)) * scanW, ay = scanY + Math.max(0, Math.min(1, Number(note.y) || 0)) * scanH; cx.fillStyle = '#facc15'; cx.beginPath(); cx.arc(ax, ay, 7, 0, Math.PI * 2); cx.fill(); cx.fillStyle = '#111827'; cx.font = 'bold 9px sans-serif'; cx.fillText(String(index + 1), ax, ay + 0.5); if (note.x2 != null && note.y2 != null) { var bx2 = scanX + Math.max(0, Math.min(1, Number(note.x2) || 0)) * scanW, by2 = scanY + Math.max(0, Math.min(1, Number(note.y2) || 0)) * scanH; line(ax, ay, bx2, by2, '#facc15', 2); cx.fillStyle = '#facc15'; cx.beginPath(); cx.arc(bx2, by2, 4, 0, Math.PI * 2); cx.fill(); } });
     cx.font = 'bold 12px Inter, system-ui, sans-serif'; cx.textAlign = 'left'; cx.fillStyle = '#f8fafc'; cx.fillText(modality + ' · ' + region.toUpperCase() + ' · ' + plane.toUpperCase() + ' · slice ' + Math.round(slice), scanX, 15);
-    cx.textAlign = 'right'; cx.fillStyle = '#94a3b8'; cx.fillText(modality === 'CT' ? ('W ' + Math.round(windowWidth) + ' / L ' + Math.round(windowLevel)) : ((state.sequence || 'T1') + ' display window'), scanX + scanW, 15);
-    cx.textAlign = 'center'; cx.fillStyle = '#f8fafc'; cx.fillText(plane === 'sagittal' ? 'A' : 'R', scanX + 12, midY); cx.fillText(plane === 'sagittal' ? 'P' : 'L', scanX + scanW - 12, midY); cx.fillText('S', midX, scanY + 12); cx.fillText('I', midX, scanY + scanH - 12);
+    cx.textAlign = 'right'; cx.fillStyle = '#94a3b8'; cx.fillText(modality === 'CT' ? ('W ' + Math.round(windowWidth) + ' / L ' + Math.round(windowLevel)) : (sequence + ' display window'), scanX + scanW, 15);
+    // Orientation markers follow the plane: axial = A/P top-bottom and R/L, coronal = S/I and R/L,
+    // sagittal = S/I and A/P. (Axial slices were previously labelled S/I, which is wrong.)
+    var markers = plane === 'axial' ? { top: 'A', bottom: 'P', left: 'R', right: 'L' } : plane === 'coronal' ? { top: 'S', bottom: 'I', left: 'R', right: 'L' } : { top: 'S', bottom: 'I', left: 'A', right: 'P' };
+    cx.textAlign = 'center'; cx.fillStyle = '#f8fafc'; cx.fillText(markers.left, scanX + 12, midY); cx.fillText(markers.right, scanX + scanW - 12, midY); cx.fillText(markers.top, midX, scanY + 12); cx.fillText(markers.bottom, midX, scanY + scanH - 12);
     line(scanX + 16, scanY + scanH - 18, scanX + 86, scanY + scanH - 18, '#fff', 3); cx.textAlign = 'left'; cx.fillText('50 mm', scanX + 92, scanY + scanH - 18); cx.restore();
-    return { modality: modality, region: region, plane: plane, slice: slice, windowWidth: windowWidth, windowLevel: windowLevel, labelCount: labels.length, focusLabelCount: focusLabelCount, annotationCount: annotations.length };
+    return { modality: modality, region: region, plane: plane, slice: slice, windowWidth: windowWidth, windowLevel: windowLevel, labelCount: labels.length, focusLabelCount: focusLabelCount, annotationCount: annotations.length, regions: regions };
+  }
+  // Geometry-only run of the phantom painter: returns the labelled hit regions for a slice
+  // without touching a canvas. Used by the Imaging Lab spot challenge to pick and score targets.
+  var ANATOMY_NULL_CANVAS_CONTEXT = (function() {
+    var noop = function() {};
+    return { beginPath: noop, ellipse: noop, arc: noop, fill: noop, stroke: noop, fillRect: noop, moveTo: noop, lineTo: noop, save: noop, restore: noop, clearRect: noop, fillText: noop, setLineDash: noop, measureText: function(text) { return { width: String(text || '').length * 6 }; } };
+  })();
+  function getAnatomyImagingRegions(state) {
+    try {
+      var result = drawAnatomyImagingSlice(ANATOMY_NULL_CANVAS_CONTEXT, 640, 480, Object.assign({}, state || {}, { noise: false, showLabels: true, spotReveal: null, annotations: [] }));
+      var seen = {};
+      return (result.regions || []).filter(function(item) { if (seen[item.text]) return false; seen[item.text] = true; return true; });
+    } catch (e) { return []; }
   }
   function getBodyScopeSpatialProfile(region, plane, slice) {
     region = ['head', 'chest', 'abdomen'].indexOf(region) >= 0 ? region : 'chest';
@@ -2152,17 +2686,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ── Grade band ──
         var gradeBand = getGradeBand(ctx);
         var gradeIntro = getGradeIntro(gradeBand);
+        // Grade-aware defaults. An unknown grade (teacher preview, no profile) keeps the full
+        // advanced experience; a known K-5 profile starts on the K-5 structure set and does not
+        // see the two clinician-level workspaces (Imaging Lab, Procedure Studio) in the mode strip.
+        var gradeNumber = parseInt(ctx.gradeLevel, 10);
+        var gradeKnown = !isNaN(gradeNumber);
+        var youngLearner = gradeKnown && gradeNumber <= 5;
+        var defaultComplexity = !gradeKnown ? 3 : gradeNumber <= 5 ? 1 : gradeNumber <= 8 ? 2 : 3;
+        var expertModesAvailable = !youngLearner;
 
         // ── Active tab ──
-        var anatomyTabOrder = ['explore', 'imaging', 'procedure', 'tour', 'connections', 'aiTutor', 'spotter', 'pathways', 'flashcards', 'homeoHunt'];
-        var activeTab = anatomyTabOrder.indexOf(d._activeTab) !== -1 ? d._activeTab : 'explore';
+        // Quiz is a first-class mode. Legacy saves used a `quizMode` flag on top of Explore;
+        // honor that flag only when no stored tab exists so restored sessions land in the quiz.
+        var anatomyTabOrder = ['explore', 'quiz', 'tour', 'connections', 'aiTutor', 'spotter', 'pathways', 'flashcards', 'homeoHunt', 'imaging', 'procedure'];
+        var ANATOMY_TAB_HINTS = {
+          explore: t('stem.anatomy.hint_explore', 'Open any structure on the body and read its card'),
+          quiz: t('stem.anatomy.hint_quiz', 'Four rotating question types on the structures in view'),
+          tour: t('stem.anatomy.hint_tour', 'Five narrated stops through this system, then a recap'),
+          connections: t('stem.anatomy.hint_connections', 'How this system works with the others'),
+          aiTutor: t('stem.anatomy.hint_ai', 'Ask a question about what is on screen'),
+          spotter: t('stem.anatomy.hint_spotter', 'Name the structure marked on the figure, against the clock'),
+          pathways: t('stem.anatomy.hint_pathways', 'Follow blood, air, food, or a nerve signal step by step'),
+          flashcards: t('stem.anatomy.hint_cards', 'Recall cards; what you mark for review comes first'),
+          homeoHunt: t('stem.anatomy.hint_homeo', 'Move temperature, pH, and glucose and see what stays in range'),
+          imaging: t('stem.anatomy.hint_imaging', 'Read synthetic CT and MRI slices and find structures on them'),
+          procedure: t('stem.anatomy.hint_procedure', 'Plan from a scan and practise instrument control on a tissue model')
+        };
+        var storedAnatomyTab = d._activeTab;
+        var activeTab = anatomyTabOrder.indexOf(storedAnatomyTab) !== -1 ? storedAnatomyTab : (d.quizMode === true ? 'quiz' : 'explore');
+        var navigableAnatomyTabs = anatomyTabOrder.filter(function(tab) { return expertModesAvailable || (tab !== 'imaging' && tab !== 'procedure'); });
         var focusedAnatomyWorkspace = activeTab === 'imaging' || activeTab === 'procedure';
         var anatomyModelFocus = d._anatomyModelFocus === true && !focusedAnatomyWorkspace;
         function activateAnatomyTab(tab) {
+          if (tab === 'quiz') {
+            updMulti({ _activeTab: 'quiz', quizMode: true });
+            if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.quiz_mode_opened', 'Quiz opened. Questions use the structures in the current diagram.'));
+            return;
+          }
           if (tab === 'tour') {
             var nextTourIndex = tourActive ? tourStepIdx : 0;
             var tabTourStep = tourSteps && tourSteps[nextTourIndex];
-            var tourPatch = { _activeTab: tab, _tourActive: true, _tourStepIdx: nextTourIndex };
+            var tourPatch = { _activeTab: tab, quizMode: false, _tourActive: true, _tourStepIdx: nextTourIndex };
             if (tabTourStep) {
               updMulti(structureFocusPatch(tabTourStep.structureId, tourPatch));
               announceStructure(tabTourStep.structureId);
@@ -2181,15 +2745,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             announceStructure(tabFlashcard.id);
             return;
           }
-          upd('_activeTab', tab);
+          updMulti({ _activeTab: tab, quizMode: false });
         }
         function handleAnatomyTabKey(event) {
           if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) === -1) return;
           event.preventDefault();
-          var current = Math.max(0, anatomyTabOrder.indexOf(activeTab));
-          var next = event.key === 'Home' ? 0 : event.key === 'End' ? anatomyTabOrder.length - 1 :
-            (current + (event.key === 'ArrowRight' ? 1 : -1) + anatomyTabOrder.length) % anatomyTabOrder.length;
-          activateAnatomyTab(anatomyTabOrder[next]);
+          var current = Math.max(0, navigableAnatomyTabs.indexOf(activeTab));
+          var next = event.key === 'Home' ? 0 : event.key === 'End' ? navigableAnatomyTabs.length - 1 :
+            (current + (event.key === 'ArrowRight' ? 1 : -1) + navigableAnatomyTabs.length) % navigableAnatomyTabs.length;
+          activateAnatomyTab(navigableAnatomyTabs[next]);
           var tabButtons = event.currentTarget.querySelectorAll('[role="tab"]');
           if (tabButtons[next]) setTimeout(function() { tabButtons[next].focus(); }, 0);
         }
@@ -2764,6 +3328,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           heart: { k2: 'Your heart is a pump that pushes blood all around your body!', g35: 'The heart has 4 rooms (chambers) and beats about 100,000 times every day to move blood through your body.' },
           brain: { k2: 'Your brain is the boss of your whole body! It helps you think, feel, and move.', g35: 'The brain has billions of tiny cells called neurons that send messages to control everything you do.' },
           lungs: { k2: 'Your lungs help you breathe! Air goes in and out like balloons.', g35: 'Your two lungs take oxygen from the air you breathe in and get rid of carbon dioxide when you breathe out.' },
+          // K-5 coverage for every structure in the elementary set (2026-09-02). Without these,
+          // a grade-1 learner read "Ilium, ischium, pubis fused at acetabulum" for the pelvis.
+          humerus: { k2: 'Your humerus is the big bone in your upper arm. It helps you lift and throw!', g35: 'The humerus is the long bone of the upper arm. It connects your shoulder to your elbow and anchors the muscles that bend and straighten your arm.' },
+          vertebral: { k2: 'Your spine is a stack of small bones that lets you bend and keeps you standing tall!', g35: 'The vertebral column is 33 small bones stacked in a gentle S-shape. It holds you upright, lets you bend and twist, and protects the spinal cord inside it.' },
+          pelvis: { k2: 'Your pelvis is a bowl of bones at your hips that holds you up when you sit and stand!', g35: 'The pelvis is a ring of bones at the hips. It carries your body weight from your spine down to your legs and protects the organs inside it.' },
+          quads: { k2: 'Your quads are the big muscles on the front of your thigh. They help you kick and jump!', g35: 'The quadriceps are four muscles on the front of the thigh. They straighten your knee for kicking, jumping, and climbing stairs.' },
+          deltoid: { k2: 'Your deltoid is the round muscle on top of your shoulder. It lifts your arm up!', g35: 'The deltoid is the rounded shoulder muscle. It raises your arm out to the side and helps you reach overhead.' },
+          hamstrings: { k2: 'Your hamstrings are on the back of your thigh. They bend your knee when you run!', g35: 'The hamstrings are three muscles on the back of the thigh. They bend the knee and help swing your leg back when you run.' },
+          gastrocnemius: { k2: 'Your calf muscle helps you stand on tiptoe and push off when you jump!', g35: 'The gastrocnemius is the big calf muscle. It points your foot down so you can push off the ground when walking, running, and jumping.' },
+          carotid: { k2: 'The carotid arteries are tubes in your neck that carry blood up to your brain!', g35: 'The carotid arteries run up each side of your neck and carry oxygen-rich blood to your brain and face. You can feel your pulse there.' },
+          sciatic: { k2: 'The sciatic nerve is a long wire that sends messages from your back down your leg!', g35: 'The sciatic nerve is the longest nerve in the body. It runs from the lower back down each leg and carries the signals that move your leg and let you feel it.' },
+          diaphragm: { k2: 'Your diaphragm is a muscle under your lungs that helps you breathe in and out!', g35: 'The diaphragm is a dome-shaped muscle under the lungs. When it tightens and moves down, air rushes into your lungs; when it relaxes, air flows out.' },
+          spleen: { k2: 'Your spleen cleans your blood and helps you fight germs!', g35: 'The spleen sits under your left ribs. It filters your blood, recycles old red blood cells, and stores cells that fight infection.' },
+          thymus: { k2: 'Your thymus trains special cells that fight germs. It is busiest when you are little!', g35: 'The thymus is a small gland behind the breastbone. It trains T cells, a type of white blood cell, to recognize germs. It is largest in childhood.' },
+          dermis: { k2: 'The dermis is the thick middle layer of your skin. It is where you feel touch!', g35: 'The dermis is the strong middle layer of skin under the surface. It holds the nerves for touch, blood vessels, sweat glands, and the roots of your hair.' },
+          trachea: { k2: 'Your windpipe is a tube with rings that carries air from your throat to your lungs!', g35: 'The trachea, or windpipe, is a tube held open by rings of cartilage. It carries air from your throat down to the lungs.' },
+          alveoli: { k2: 'Alveoli are tiny air balloons in your lungs where oxygen goes into your blood!', g35: 'Alveoli are millions of tiny air sacs in the lungs. Oxygen passes through their thin walls into your blood, and carbon dioxide passes out.' },
+          pituitary: { k2: 'The pituitary is a tiny gland under your brain that tells your body how to grow!', g35: 'The pituitary gland is a pea-sized gland under the brain. It sends out hormones that control growth and tell other glands what to do.' },
+          uterus: { k2: 'The uterus is the part of the body where a baby can grow before it is born.', g35: 'The uterus is a strong, stretchy organ in the lower belly. A baby grows there before birth, and it stretches to make room as the baby gets bigger.' },
+          testes_repro: { k2: 'The testes are two small organs that help a grown-up body make new life.', g35: 'The testes are two small oval organs. After puberty they make sperm cells and a hormone called testosterone.' },
+          mammary: { k2: 'Mammary glands can make milk to feed a baby.', g35: 'Mammary glands are in the chest. After a baby is born they can make milk, which has everything a newborn needs to grow.' },
+          cerebral_cortex: { k2: 'The cortex is the wrinkly outside of your brain where you think, talk, and remember!', g35: 'The cerebral cortex is the wrinkled outer layer of the brain. Its four lobes handle thinking, speech, memory, sight, and touch.' },
+          cerebellum: { k2: 'The cerebellum is the little brain at the back that helps you balance and move smoothly!', g35: 'The cerebellum sits at the back of the brain. It fine-tunes your movements and balance so you can ride a bike or catch a ball.' },
+          brainstem: { k2: 'The brainstem connects your brain to your spine and keeps you breathing, even while you sleep!', g35: 'The brainstem joins the brain to the spinal cord. It controls breathing, heartbeat, and swallowing without you having to think about it.' },
           femur: { k2: 'The femur is your thigh bone. It is the biggest bone in your body!', g35: 'The femur (thigh bone) is the longest and strongest bone. It helps you walk, run, and jump.' },
           stomach: { k2: 'Your stomach is like a mixer that squishes food into mush!', g35: 'The stomach uses acid and muscles to break food into a paste. Food stays there for 2-4 hours.' },
           ribs: { k2: 'Your ribs are like a cage that protects your heart and lungs!', g35: 'You have 12 pairs of ribs that form a protective cage around your chest organs. They move when you breathe.' },
@@ -3239,7 +3827,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var searchTerm = searchValue.trim().toLowerCase();
         var lastSearchFind = typeof d._lastSearchFind === 'string' ? d._lastSearchFind : null;
         var rawComplexity = Number(d.complexity);
-        var complexity = [1, 2, 3].indexOf(rawComplexity) !== -1 ? rawComplexity : 3;
+        var complexity = [1, 2, 3].indexOf(rawComplexity) !== -1 ? rawComplexity : defaultComplexity;
+        // Region labels (HEAD, THORAX, …) are the main orientation scaffold for young learners,
+        // so they default on for a known K-5 profile and stay a one-click toggle for everyone.
+        var showRegionLabels = typeof d._showRegionLabels === 'boolean' ? d._showRegionLabels : youngLearner;
 
         // ── Layer Transparency System ──
         // `accent` is a paint colour — it fills the layer chip and tints the
@@ -3316,6 +3907,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var ELEMENTARY_IDS = ['skull', 'ribs', 'femur', 'humerus', 'vertebral', 'pelvis', 'biceps', 'quads', 'heart', 'brain', 'lungs', 'stomach', 'kidneys', 'spinal_cord', 'deltoid', 'hamstrings', 'gastrocnemius', 'aorta', 'carotid', 'sciatic', 'liver', 'diaphragm', 'spleen', 'thymus', 'epidermis', 'dermis', 'trachea', 'alveoli', 'pituitary', 'uterus', 'testes_repro', 'mammary', 'cerebral_cortex', 'cerebellum', 'brainstem'];
         var MIDDLE_IDS = ELEMENTARY_IDS.concat(['mandible', 'clavicle', 'sternum', 'scapula', 'radius', 'ulna', 'tibia', 'fibula', 'patella', 'tarsals', 'carpals', 'sacrum', 'pectoralis', 'triceps', 'rectus_ab', 'obliques', 'trapezius', 'lats', 'glutes', 'tibialis', 'soleus', 'sartorius', 'sup_vena', 'inf_vena', 'pulm_art', 'jugular', 'coronary', 'femoral_a', 'brachial', 'portal', 'vagus', 'brachial_plexus', 'median', 'ulnar_n', 'femoral_n', 'cranial_n', 'sympathetic', 'sm_intestine', 'lg_intestine', 'pancreas', 'gallbladder', 'bladder', 'thyroid', 'adrenals', 'cervical_ln', 'axillary_ln', 'inguinal_ln', 'thoracic_duct', 'bone_marrow', 'hyoid', 'atlas_axis', 'metatarsals', 'metacarpals', 'scaphoid_bone', 'rotator_cuff', 'iliopsoas', 'intercostals', 'pelvic_floor', 'diaphragm_m', 'circle_willis', 'saphenous', 'lymph_circ', 'hypodermis', 'hair_follicle', 'sweat_glands', 'sebaceous', 'nails', 'melanocytes', 'nasal_cavity', 'pharynx', 'larynx', 'bronchi', 'pleura', 'resp_muscles', 'pineal', 'parathyroid', 'islets', 'ovaries_endo', 'testes_endo', 'hypothal_endo', 'adrenal_endo', 'epididymis', 'prostate', 'ovaries_repro', 'fallopian', 'placenta', 'hippocampus', 'amygdala', 'thalamus', 'hypothalamus', 'corpus_callosum', 'basal_ganglia']);
 
+        // The text a learner should read for a structure: the authored K-2 / 3-5 description when
+        // the profile is a known young learner and one exists, otherwise the full function text.
+        // Cards, quiz clues, Spotter feedback and the detail card all go through this.
+        var youngBandKey = gradeBand === 'k2' ? 'k2' : 'g35';
+        function hasLearnerText(structure) {
+          return !!(youngLearner && structure && SIMPLE_DESC[structure.id] && SIMPLE_DESC[structure.id][youngBandKey]);
+        }
+        function learnerText(structure) {
+          if (!structure) return '';
+          return hasLearnerText(structure) ? SIMPLE_DESC[structure.id][youngBandKey] : (structure.fn || '');
+        }
         function passesComplexity(st) {
           if (complexity >= 3) return true;
           if (complexity === 1) return ELEMENTARY_IDS.indexOf(st.id) !== -1;
@@ -3471,6 +4073,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           else if (context.structure.v === 'p') patch.view = 'posterior';
           if (patch.system !== sysKey || (patch.view && patch.view !== view)) {
             patch.quizMode = false; patch.quizIdx = 0; patch.quizScore = 0; patch.quizFeedback = null; patch._quizAttempts = 0;
+            // Leaving the quiz for a structure in another diagram means the learner wants to read it.
+            if (activeTab === 'quiz' && !('_activeTab' in patch)) patch._activeTab = 'explore';
           }
           return comparisonTrackingPatch(structureId, patch, context.systemId);
         }
@@ -3512,6 +4116,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             resultPatch._lastSearchFind = searchTerm;
             resultPatch._searchFinds = searchFinds + 1;
           }
+          // A search hit is a request to read the structure, so leave the quiz panel.
+          if (activeTab === 'quiz' && !('_activeTab' in resultPatch)) { resultPatch._activeTab = 'explore'; resultPatch.quizMode = false; }
           updMulti(resultPatch);
           if (typeof announceToSR === 'function') announceToSR('Opening ' + result.label + ' in ' + result.systemName + '.');
           playSound('structureClick');
@@ -3799,7 +4405,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   className: 'min-w-[112px] px-3 py-1.5 rounded-lg text-[11px] font-bold border text-left hover:brightness-95 active:scale-[0.97]'
                 },
                   h('span', { className: 'block' }, scenarioItem.selectorLabel),
-                  h('span', { className: 'block mt-0.5 text-[9px] font-semibold' }, scenarioSolvedCount + '/' + scenarioItem.steps.length + ' solved')
+                  h('span', { className: 'block mt-0.5 text-[11px] font-semibold' }, scenarioSolvedCount + '/' + scenarioItem.steps.length + ' solved')
                 );
               })
             ),
@@ -3884,7 +4490,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   !selectedAnswerCorrect ? h('button', {
                     type: 'button',
                     onClick: function() { upd('_systemsMotionDeepDive', true); },
-                    className: 'mt-1.5 px-2 py-1 rounded-md text-[10px] font-bold border border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50 active:scale-[0.97]'
+                    className: 'mt-1.5 px-2 py-1 rounded-md text-[11px] font-bold border border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50 active:scale-[0.97]'
                   }, 'Show mechanism') : null
                 ) : null,
                 h('div', { className: 'anatomy-motion-footer' },
@@ -3918,6 +4524,198 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var tourStepIdx = Number.isFinite(rawTourStepIdx) ? Math.max(0, Math.min(Math.floor(rawTourStepIdx), Math.max(0, tourSteps.length - 1))) : 0;
         var tourActive = d._tourActive === true;
         var tourCompleted = d._tourCompleted === true;
+        // ── Tour recap: retrieval practice on the structures the tour just showed ──
+        // One question per tour step (max 4): the step narration with the structure name masked,
+        // answered from the tour's own structures. Misses go to the review queue like quiz misses.
+        var rawTourRecap = d._tourRecap && typeof d._tourRecap === 'object' && !Array.isArray(d._tourRecap) ? d._tourRecap : {};
+        var tourRecapActive = tourActive && rawTourRecap.active === true && tourSteps.length >= 2;
+        var tourRecapAnswers = rawTourRecap.answers && typeof rawTourRecap.answers === 'object' && !Array.isArray(rawTourRecap.answers) ? rawTourRecap.answers : {};
+        // Built lazily: the quiz masking helpers (and their stopword list) are assigned further
+        // down in this render pass, so the questions are only derived when the panel renders.
+        // Generic recap builder, shared by the Guided Tour and Pathways: items are
+        // { structureId, text }; every item becomes one clue with the structure name masked and
+        // the other items as distractors. Built lazily (see the tour note above).
+        function buildRecapQuestions(items, seedPrefix, maxQuestions) {
+          var picked = items.length <= maxQuestions ? items : items.filter(function(item, index) {
+            return index === 0 || index === items.length - 1 || Math.round(index * (maxQuestions - 1) / (items.length - 1)) !== Math.round((index - 1) * (maxQuestions - 1) / (items.length - 1));
+          }).slice(0, maxQuestions);
+          return picked.map(function(item, questionIndex) {
+            var itemContext = findStructureContext(item.structureId, sysKey);
+            if (!itemContext) return null;
+            var distractors = stableQuizShuffle(items.filter(function(other) { return other.structureId !== item.structureId; }), seedPrefix + '|' + questionIndex).slice(0, 3);
+            var options = stableQuizShuffle(distractors.concat([item]), seedPrefix + '|' + questionIndex + '|options').map(function(optionItem) {
+              var optionContext = findStructureContext(optionItem.structureId, sysKey);
+              return { id: optionItem.structureId, name: optionContext ? optionContext.structure.name : (optionItem.title || optionItem.structureId) };
+            });
+            var seen = {};
+            options = options.filter(function(option) { if (seen[option.id]) return false; seen[option.id] = true; return true; });
+            return { index: questionIndex, structureId: item.structureId, structure: itemContext.structure, stem: clipAtSentence(maskStructureName(item.text, itemContext.structure), 170), options: options };
+          }).filter(Boolean);
+        }
+        function recapSummary(questions, answers) {
+          var answered = questions.filter(function(question) { return typeof answers[question.index] === 'string'; }).length;
+          var correct = questions.filter(function(question) { return answers[question.index] === question.structureId; }).length;
+          return { questions: questions, answered: answered, correct: correct, done: questions.length > 0 && answered >= questions.length };
+        }
+        var tourRecapQuestionsMemo = null;
+        function getTourRecapQuestions() {
+          if (!tourRecapQuestionsMemo) tourRecapQuestionsMemo = buildRecapQuestions(tourSteps.map(function(step) { return { structureId: step.structureId, text: step.narration, title: step.title }; }), 'tour|' + sysKey, 4);
+          return tourRecapQuestionsMemo;
+        }
+        function tourRecapSummary() { return recapSummary(getTourRecapQuestions(), tourRecapAnswers); }
+        function answerTourRecap(question, optionId) {
+          if (typeof tourRecapAnswers[question.index] === 'string') return;
+          var nextAnswers = Object.assign({}, tourRecapAnswers);
+          nextAnswers[question.index] = optionId;
+          var correct = optionId === question.structureId;
+          playSound(correct ? 'quizCorrect' : 'quizWrong');
+          updMulti(Object.assign({ _tourRecap: { active: true, answers: nextAnswers } }, confidenceEvidencePatch(question.structureId, correct)));
+          if (typeof announceToSR === 'function') announceToSR((correct ? t('stem.anatomy.recap_correct', 'Correct: ') : t('stem.anatomy.recap_incorrect', 'Not quite. It was ')) + question.structure.name + '.');
+        }
+        function completeGuidedTour() {
+          updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore', _tourRecap: null });
+          playSound('badge');
+          if (typeof announceToSR === 'function') announceToSR('Guided anatomy tour complete. Returning to Explore.');
+          if (addToast) addToast('🏆 Guided tour complete!');
+        }
+        // Shared recap panel. `cfg`: { key, questions, answers, accent ('emerald'|'rose'), title,
+        // intro, onAnswer(question, optionId), onBack, backLabel, onComplete, completeLabel, skipLabel, completeAria }
+        function renderRecapPanel(cfg) {
+          var recap = recapSummary(cfg.questions, cfg.answers);
+          var accent = cfg.accent || 'emerald';
+          return h('div', { className: 'space-y-3', 'data-anatomy-recap': cfg.key, 'data-anatomy-recap-state': recap.done ? 'done' : 'open' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('h5', { className: 'font-bold text-' + accent + '-900 text-sm' }, cfg.title),
+              h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-' + accent + '-100 text-' + accent + '-800', role: 'status' }, recap.answered + ' / ' + recap.questions.length)
+            ),
+            h('p', { className: 'text-[11px] text-slate-600' }, cfg.intro),
+            recap.questions.map(function(question) {
+              var chosen = typeof cfg.answers[question.index] === 'string' ? cfg.answers[question.index] : null;
+              return h('div', { key: question.index, className: 'rounded-lg border border-' + accent + '-200 bg-white p-3', 'data-anatomy-recap-question': question.structureId },
+                h('p', { className: 'text-[11px] font-bold text-' + accent + '-700 uppercase' }, t('stem.anatomy.recap_clue', 'Clue ') + (question.index + 1)),
+                h('p', { className: 'text-xs text-slate-700 italic leading-relaxed mt-1 mb-2' }, question.stem),
+                h('div', { className: 'grid grid-cols-1 gap-1.5' }, question.options.map(function(option) {
+                  var isCorrect = option.id === question.structureId, wasChosen = chosen === option.id;
+                  return h('button', { key: option.id, type: 'button', disabled: chosen !== null, 'aria-pressed': wasChosen,
+                    onClick: function() { cfg.onAnswer(question, option.id); },
+                    className: 'w-full text-left px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all ' +
+                      (chosen !== null && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : chosen !== null && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-700 hover:bg-' + accent + '-50 active:scale-[0.97]')
+                  }, (chosen !== null && isCorrect ? '✅ ' : chosen !== null && wasChosen ? '❌ ' : '') + option.name);
+                }))
+              );
+            }),
+            recap.done ? h('div', { className: 'rounded-lg bg-' + accent + '-50 border border-' + accent + '-200 p-3 text-xs text-' + accent + '-900', role: 'status', 'aria-live': 'polite' },
+              h('strong', null, recap.correct + ' / ' + recap.questions.length + t('stem.anatomy.recap_score_suffix', ' recalled.')),
+              ' ' + (recap.correct === recap.questions.length ? t('stem.anatomy.recap_all', 'Every structure stuck. Try the Spotter next to place them on the figure.') : t('stem.anatomy.recap_some', 'The misses are in your review queue; open Cards to see them first.'))
+            ) : null,
+            h('div', { className: 'flex gap-2 justify-between flex-wrap' },
+              h('button', { type: 'button', onClick: cfg.onBack,
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-' + accent + '-100 text-' + accent + '-800 hover:bg-' + accent + '-200 active:scale-[0.97]'
+              }, cfg.backLabel),
+              h('button', { type: 'button', 'aria-label': cfg.completeAria, onClick: cfg.onComplete,
+                className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-[0.97] ' + (recap.done ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-white text-amber-800 border border-amber-400 hover:bg-amber-50')
+              }, recap.done ? cfg.completeLabel : cfg.skipLabel)
+            )
+          );
+        }
+        // ── Study sheet: what this learner should take away from the screen ──
+        // Built from ratings, notes, misses and progress across every system; printable via the
+        // print stylesheet (everything else in the tool is hidden) or copied as plain text.
+        var showStudySheet = d._showStudySheet === true;
+        function buildStudySheetData() {
+          var systemsOut = [];
+          ANATOMY_SYSTEM_IDS.forEach(function(systemId) {
+            var system = SYSTEMS[systemId];
+            if (!system) return;
+            var rows = system.structures.map(function(structure) {
+              return { structure: structure, level: structureConfidence[structure.id] || null, note: structureNotes[structure.id] || '', viewed: !!structuresViewed[structure.id] };
+            }).filter(function(row) { return row.level || row.note || row.viewed; });
+            if (rows.length) systemsOut.push({ system: system, rows: rows });
+          });
+          var counts = { practice: 0, learning: 0, mastered: 0, notes: Object.keys(structureNotes).length, viewed: structuresViewedCount };
+          Object.keys(structureConfidence).forEach(function(id) { if (counts.hasOwnProperty(structureConfidence[id])) counts[structureConfidence[id]] += 1; });
+          return { systems: systemsOut, counts: counts };
+        }
+        function studySheetAsText() {
+          var data = buildStudySheetData();
+          var levelLabel = { practice: 'NEED PRACTICE', learning: 'Learning', mastered: 'Got it' };
+          var lines = ['Human Anatomy Explorer - study sheet', new Date().toLocaleDateString(), ''];
+          lines.push('Viewed ' + data.counts.viewed + ' structures | Need practice ' + data.counts.practice + ' | Learning ' + data.counts.learning + ' | Got it ' + data.counts.mastered + ' | Quiz correct ' + totalCorrect + ' | Spotter ' + spotterScore);
+          lines.push('Next step: ' + recommendedNextStep.title + ' - ' + recommendedNextStep.detail, '');
+          data.systems.forEach(function(entry) {
+            lines.push('== ' + entry.system.name + ' ==');
+            entry.rows.forEach(function(row) {
+              lines.push('- ' + row.structure.name + (row.level ? ' [' + levelLabel[row.level] + ']' : ''));
+              if (row.level === 'practice' || row.note) lines.push('    ' + learnerText(row.structure));
+              if (row.note) lines.push('    In my words: ' + row.note);
+            });
+            lines.push('');
+          });
+          if (!data.systems.length) lines.push('Nothing recorded yet. Open structures, rate them, and write notes to fill this sheet.');
+          return lines.join('\n');
+        }
+        function copyStudySheet() {
+          var text = studySheetAsText();
+          var done = function() { if (typeof addToast === 'function') addToast(t('stem.anatomy.study_sheet_copied', '📋 Study sheet copied as text.')); if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.study_sheet_copied_sr', 'Study sheet copied to the clipboard.')); };
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function() { fallbackCopy(text); done(); }); return; }
+          } catch (e) { /* fall through */ }
+          fallbackCopy(text); done();
+          function fallbackCopy(value) {
+            try { var area = document.createElement('textarea'); area.value = value; area.setAttribute('readonly', ''); area.style.position = 'fixed'; area.style.opacity = '0'; document.body.appendChild(area); area.select(); document.execCommand('copy'); document.body.removeChild(area); } catch (e2) { /* clipboard unavailable */ }
+          }
+        }
+        function printStudySheet() {
+          try { window.print(); } catch (e) { if (typeof addToast === 'function') addToast(t('stem.anatomy.study_sheet_print_blocked', 'Printing is not available here. Use Copy as text instead.')); }
+        }
+        function renderStudySheet() {
+          var data = buildStudySheetData();
+          var levelLabel = { practice: t('stem.anatomy.need_practice', 'Need practice'), learning: t('stem.anatomy.learning', 'Learning'), mastered: t('stem.anatomy.got_it', 'Got it') };
+          return h('section', { id: 'anatomy-study-sheet', className: 'anatomy-study-sheet mb-3', 'aria-labelledby': 'anatomy-study-sheet-title', 'data-anatomy-study-sheet': 'true' },
+            h('div', { className: 'anatomy-study-sheet-head' },
+              h('div', null,
+                h('span', { className: 'anatomy-kicker' }, t('stem.anatomy.study_sheet_kicker', 'Take it with you')),
+                h('h3', { id: 'anatomy-study-sheet-title' }, t('stem.anatomy.study_sheet_title', '📄 My anatomy study sheet')),
+                h('p', null, new Date().toLocaleDateString() + ' · ' + t('stem.anatomy.study_sheet_sub', 'Built from what you viewed, rated, missed, and wrote in your own words.'))
+              ),
+              h('div', { className: 'anatomy-study-sheet-actions' },
+                h('button', { type: 'button', onClick: printStudySheet, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.97]' }, t('stem.anatomy.study_sheet_print', '🖨 Print / save as PDF')),
+                h('button', { type: 'button', onClick: copyStudySheet, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-800 border border-slate-300 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.study_sheet_copy', '📋 Copy as text')),
+                h('button', { type: 'button', 'aria-label': t('stem.anatomy.study_sheet_close', 'Close study sheet'), onClick: function() { upd('_showStudySheet', false); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.close', 'Close'))
+              )
+            ),
+            h('div', { className: 'anatomy-study-sheet-stats', role: 'list' },
+              [[data.counts.viewed, t('stem.anatomy.structures_viewed', 'Structures viewed')], [data.counts.practice, t('stem.anatomy.need_practice', 'Need practice')], [data.counts.learning, t('stem.anatomy.learning', 'Learning')], [data.counts.mastered, t('stem.anatomy.got_it', 'Got it')], [totalCorrect, t('stem.anatomy.quiz_correct', 'Quiz correct')], [spotterScore, t('stem.anatomy.spotter_ids', 'Spotter IDs')], [data.counts.notes, t('stem.anatomy.notes_written', 'Notes written')]].map(function(pair) {
+                return h('div', { key: pair[1], role: 'listitem' }, h('strong', null, String(pair[0])), h('span', null, pair[1]));
+              })
+            ),
+            h('p', { className: 'anatomy-study-sheet-next' }, h('strong', null, t('stem.anatomy.study_sheet_next', 'Next step: ')), recommendedNextStep.title + ' — ' + recommendedNextStep.detail),
+            data.systems.length ? data.systems.map(function(entry) {
+              return h('div', { key: entry.system.id || entry.system.name, className: 'anatomy-study-sheet-system' },
+                h('h4', null, entry.system.icon + ' ' + entry.system.name),
+                h('ul', null, entry.rows.map(function(row) {
+                  return h('li', { key: row.structure.id, 'data-level': row.level || 'viewed' },
+                    h('span', { className: 'anatomy-study-sheet-name' }, row.structure.name),
+                    row.level ? h('span', { className: 'anatomy-structure-status', 'data-status': row.level }, levelLabel[row.level]) : h('span', { className: 'anatomy-study-sheet-viewed' }, t('stem.anatomy.viewed', 'viewed')),
+                    (row.level === 'practice' || row.note) ? h('p', { className: 'anatomy-study-sheet-fn' }, learnerText(row.structure)) : null,
+                    row.note ? h('p', { className: 'anatomy-study-sheet-note' }, h('strong', null, t('stem.anatomy.in_my_words', 'In my words: ')), row.note) : null
+                  );
+                }))
+              );
+            }) : h('p', { className: 'anatomy-study-sheet-empty' }, t('stem.anatomy.study_sheet_empty', 'Nothing recorded yet. Open structures, rate them, and write notes to fill this sheet.'))
+          );
+        }
+        function renderTourRecap() {
+          return renderRecapPanel({
+            key: 'tour', questions: getTourRecapQuestions(), answers: tourRecapAnswers, accent: 'emerald',
+            title: t('stem.anatomy.tour_recap_title', '✓ Check what you saw'),
+            intro: t('stem.anatomy.tour_recap_intro', 'Each clue is a tour step with the structure name hidden. Misses are added to your review queue.'),
+            onAnswer: answerTourRecap,
+            onBack: function() { updMulti({ _tourRecap: null }); }, backLabel: t('stem.anatomy.recap_back', '← Back to the tour'),
+            onComplete: completeGuidedTour, completeAria: t('stem.anatomy.complete_tour', 'Complete Tour!'),
+            completeLabel: t('stem.anatomy.complete_tour_2', '🏆 Complete Tour!'), skipLabel: t('stem.anatomy.recap_skip', 'Skip recap and complete')
+          });
+        }
         var currentTourStep = tourActive && tourSteps.length > 0 ? tourSteps[tourStepIdx] : null;
         var tourStepContext = currentTourStep ? findStructureContext(currentTourStep.structureId, sysKey) : null;
         var tourStepViewMatches = !tourStepContext || tourStepContext.structure.v === 'b' || (tourStepContext.structure.v === 'a' ? view === 'anterior' : view === 'posterior');
@@ -3956,6 +4754,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         // ── Connections state ──
         var connectionIds = CONNECTIONS.map(function(connection) { return connection.id; });
         var connectionsViewed = safeFlagMap(d._connectionsViewed, connectionIds);
+        // Connect check: one retrieval question per connection ("which system is the partner?").
+        // The system-icon pill in the card header stays hidden until the check is answered so it
+        // cannot give the answer away.
+        var connectionChecks = safeEnumMap(d._connectionChecks, connectionIds, ANATOMY_SYSTEM_IDS);
+        var connectionChecksAnswered = Object.keys(connectionChecks).length;
+        function connectionCheckOptions(connection) {
+          var partner = connection.systems[1], anchor = connection.systems[0];
+          var distractors = stableQuizShuffle(ANATOMY_SYSTEM_IDS.filter(function(id) { return id !== partner && id !== anchor && SYSTEMS[id]; }), 'connect|' + connection.id).slice(0, 3);
+          return stableQuizShuffle(distractors.concat([partner]), 'connect|' + connection.id + '|options');
+        }
+        // Until the check is answered, the partner system's name (and its common aliases) is
+        // blanked in the card text so the question is recall, not reading comprehension.
+        var CONNECTION_SYSTEM_ALIASES = { organs: ['digestive', 'organ systems', 'organ system', 'organs'], skeletal: ['skeletal', 'skeleton', 'bones'], muscular: ['muscular', 'muscles', 'muscle'], circulatory: ['circulatory', 'cardiovascular'], nervous: ['nervous', 'nerves'], lymphatic: ['lymphatic', 'immune'], integumentary: ['integumentary', 'skin'], respiratory: ['respiratory', 'lungs'], endocrine: ['endocrine', 'hormonal'], reproductive: ['reproductive'] };
+        function connectionCardText(connection, text) {
+          if (connectionChecks[connection.id] || !text) return text || '';
+          var aliases = CONNECTION_SYSTEM_ALIASES[connection.systems[1]] || [String(SYSTEMS[connection.systems[1]] ? SYSTEMS[connection.systems[1]].name : '').toLowerCase()];
+          var masked = String(text);
+          aliases.forEach(function(alias) { if (alias) masked = masked.replace(new RegExp('\\b' + escapeQuizRegex(alias) + '\\b', 'gi'), '____'); });
+          return masked;
+        }
+        function answerConnectionCheck(connection, systemId) {
+          if (connectionChecks[connection.id]) return;
+          var next = Object.assign({}, connectionChecks);
+          next[connection.id] = systemId;
+          var correct = systemId === connection.systems[1];
+          playSound(correct ? 'quizCorrect' : 'quizWrong');
+          upd('_connectionChecks', next);
+          if (typeof announceToSR === 'function') announceToSR((correct ? t('stem.anatomy.recap_correct', 'Correct: ') : t('stem.anatomy.recap_incorrect', 'Not quite. It was ')) + SYSTEMS[connection.systems[1]].name + '.');
+        }
         var expandedConnectionId = typeof d._expandedConn === 'string' && connectionIds.indexOf(d._expandedConn) !== -1 ? d._expandedConn : null;
         var selectedSystemConnections = sel ? CONNECTIONS.filter(function(connection) {
           return connection.systems.indexOf(sysKey) !== -1;
@@ -4040,6 +4867,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (typeof announceToSR === 'function') announceToSR((isStart ? 'Spotter test started. ' : 'Next structure. ') + spotterRegionCue(target) + ' Choose which structure is marked from the buttons below.');
           return true;
         };
+        // One answer path for pointer and keyboard (option buttons and the 1-4 shortcuts).
+        function answerSpotterOption(opt) {
+          if (!opt || spotterFeedback !== null) return;
+          var elapsed = Math.max(0, (Date.now() - spotterStartTime) / 1000);
+          var isRightAnswer = opt.id === spotterTarget;
+          var spotterUpdate = { _spotterFeedback: opt.id, _spotterElapsed: elapsed, _spotterTotal: spotterTotal + 1 };
+          if (isRightAnswer) {
+            spotterUpdate._spotterScore = spotterScore + 1;
+            if (elapsed < spotterBestTime) spotterUpdate._spotterBestTime = elapsed;
+          }
+          updMulti(Object.assign(spotterUpdate, confidenceEvidencePatch(spotterTarget, isRightAnswer)));
+          playSound(isRightAnswer ? 'spotterCorrect' : 'spotterWrong');
+          setTimeout(checkAnatomyChallenges, 50);
+        }
         // Centralized SR announcement for organ selection (the #allo-live-anatomy region was dead).
         // Grade-aware: mirrors the panel (simplified desc for k2/g35, full fn otherwise).
         function announceStructure(id) {
@@ -4099,6 +4940,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var pathwayStepIdx = activePathway && Number.isFinite(rawPathwayStepIdx)
           ? Math.max(0, Math.min(Math.floor(rawPathwayStepIdx), Math.max(0, activePathway.steps.length - 1)))
           : 0;
+        // ── Pathway recap: same retrieval check as the tour, built from the traced steps ──
+        var rawPathwayRecap = d._pathwayRecap && typeof d._pathwayRecap === 'object' && !Array.isArray(d._pathwayRecap) ? d._pathwayRecap : {};
+        var pathwayRecapActive = !!activePathway && rawPathwayRecap.active === true && rawPathwayRecap.pathwayId === activePathwayId && activePathway.steps.length >= 2;
+        var pathwayRecapAnswers = rawPathwayRecap.answers && typeof rawPathwayRecap.answers === 'object' && !Array.isArray(rawPathwayRecap.answers) ? rawPathwayRecap.answers : {};
+        var pathwayRecapQuestionsMemo = null;
+        function getPathwayRecapQuestions() {
+          if (!activePathway) return [];
+          if (!pathwayRecapQuestionsMemo) pathwayRecapQuestionsMemo = buildRecapQuestions(activePathway.steps.map(function(step) { return { structureId: step.structure, text: step.detail, title: step.label }; }), 'pathway|' + activePathway.id, 4);
+          return pathwayRecapQuestionsMemo;
+        }
+        function answerPathwayRecap(question, optionId) {
+          if (!activePathway || typeof pathwayRecapAnswers[question.index] === 'string') return;
+          var nextAnswers = Object.assign({}, pathwayRecapAnswers);
+          nextAnswers[question.index] = optionId;
+          var correct = optionId === question.structureId;
+          playSound(correct ? 'quizCorrect' : 'quizWrong');
+          updMulti(Object.assign({ _pathwayRecap: { active: true, pathwayId: activePathway.id, answers: nextAnswers } }, confidenceEvidencePatch(question.structureId, correct)));
+          if (typeof announceToSR === 'function') announceToSR((correct ? t('stem.anatomy.recap_correct', 'Correct: ') : t('stem.anatomy.recap_incorrect', 'Not quite. It was ')) + question.structure.name + '.');
+        }
+        function completeActivePathway(pw) {
+          var newPC = Object.assign({}, pathwaysCompleted);
+          newPC[pw.id] = true;
+          updMulti({ _pathwaysCompleted: newPC, _activePathway: null, _pathwayStep: 0, _pathwayRecap: null });
+          playSound('badge');
+          if (addToast) addToast('🛤 Pathway complete: ' + pw.title + '!');
+          if (typeof announceToSR === 'function') announceToSR('Pathway complete: ' + pw.title + '.');
+          setTimeout(checkAnatomyChallenges, 50);
+        }
+        function renderPathwayRecap(pw) {
+          return renderRecapPanel({
+            key: 'pathway', questions: getPathwayRecapQuestions(), answers: pathwayRecapAnswers, accent: 'rose',
+            title: t('stem.anatomy.pathway_recap_title', '✓ Check what you traced'),
+            intro: t('stem.anatomy.pathway_recap_intro', 'Each clue is a step of this pathway with the structure name hidden. Misses are added to your review queue.'),
+            onAnswer: answerPathwayRecap,
+            onBack: function() { updMulti({ _pathwayRecap: null }); }, backLabel: t('stem.anatomy.pathway_recap_back', '← Back to the steps'),
+            onComplete: function() { completeActivePathway(pw); }, completeAria: t('stem.anatomy.complete_pathway', 'Complete Pathway!'),
+            completeLabel: t('stem.anatomy.complete_pathway_2', '🏆 Complete Pathway!'), skipLabel: t('stem.anatomy.pathway_recap_skip', 'Skip recap and complete')
+          });
+        }
         var pathwayIds = PATHWAYS.map(function(pathway) { return pathway.id; });
         var pathwaysCompleted = safeFlagMap(d._pathwaysCompleted, pathwayIds);
 
@@ -4170,26 +5050,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         // ── Enhanced Quiz logic ──
         var quizPool = viewFiltered.filter(function(s) { return s.fn; });
-        var quizMode = d.quizMode === true;
+        // Confidence-first, like the card deck: structures marked Need practice are asked first,
+        // then unrated, Learning, and Got it. Stable within a rank so the round order stays fixed.
+        // Reads the raw saved map: this block runs before `structureConfidence` is normalised.
+        var quizConfidenceRaw = d._structureConfidence && typeof d._structureConfidence === 'object' && !Array.isArray(d._structureConfidence) ? d._structureConfidence : {};
+        var QUIZ_CONFIDENCE_RANK = { practice: 0, learning: 2, mastered: 3 };
+        quizPool = quizPool.map(function(structure, index) {
+          var level = quizConfidenceRaw[structure.id];
+          return { structure: structure, index: index, rank: QUIZ_CONFIDENCE_RANK.hasOwnProperty(level) ? QUIZ_CONFIDENCE_RANK[level] : 1 };
+        }).sort(function(a, b) { return a.rank - b.rank || a.index - b.index; }).map(function(entry) { return entry.structure; });
+        var quizMode = activeTab === 'quiz';
         var rawQuizRoundIdx = Number(d.quizIdx);
         var quizRoundIdx = Number.isFinite(rawQuizRoundIdx) && rawQuizRoundIdx >= 0 ? Math.floor(rawQuizRoundIdx) : 0;
         var quizTypeCount = 4;
         var quizQ = quizMode && quizPool.length > 0 ? quizPool[quizRoundIdx % quizPool.length] : null;
         var quizType = quizMode ? (quizRoundIdx % quizTypeCount) : 0;
-        // True/False (type 1): the statement used to ALWAYS claim the current system → answer was always
-        // "True" and trivially gameable. Alternate True/False deterministically by quizIdx; when it should
-        // be False, claim a system that does NOT actually contain this structure (handles multi-system
-        // organs like the pancreas/lungs that legitimately belong to more than one bucket).
-        var tfTrue = true, tfClaimSys = sys;
+        // ── Quiz stem hygiene ──
+        // Function and clinical text name the structure they describe (Heart → "MI (heart attack)",
+        // Hippocampus → "hippocampal atrophy"). A scan of the bank found the name or its stem inside
+        // 40/128 function strings and 84/128 clinical strings, so stems were answerable by word
+        // matching. Mask the name, every significant word of it, and each word's 5-letter stem.
+        var QUIZ_MASK_STOPWORDS = ['and', 'the', 'of', 'bone', 'bones', 'gland', 'glands', 'muscle', 'muscles', 'nerve', 'nerves',
+          'artery', 'arteries', 'vein', 'veins', 'node', 'nodes', 'duct', 'ducts', 'tube', 'tubes', 'system', 'cord', 'tract',
+          'joint', 'layer', 'cell', 'cells', 'region', 'body', 'left', 'right', 'upper', 'lower', 'major', 'minor', 'zones', 'axis'];
+        function escapeQuizRegex(text) { return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+        function maskStructureName(text, structure) {
+          if (!text || !structure || !structure.name) return text || '';
+          var blank = '▁▁▁';
+          var masked = String(text);
+          var plainName = structure.name.replace(/\s*\([^)]*\)/g, '').trim();
+          var nameForms = [structure.name, plainName].filter(Boolean);
+          nameForms.forEach(function(form) {
+            masked = masked.replace(new RegExp(escapeQuizRegex(form), 'gi'), blank);
+          });
+          plainName.toLowerCase().split(/[\s/&,-]+/).forEach(function(word) {
+            var cleanWord = word.replace(/[^a-z]/g, '');
+            if (cleanWord.length < 4 || QUIZ_MASK_STOPWORDS.indexOf(cleanWord) !== -1) return;
+            var stem = cleanWord.replace(/s$/, '').slice(0, 5);
+            masked = masked.replace(new RegExp('\\b[A-Za-z-]*' + escapeQuizRegex(stem) + '[A-Za-z-]*\\b', 'gi'), blank);
+          });
+          return masked.replace(/(▁▁▁)(\s*\1)+/g, '$1');
+        }
+        // Truncate on a sentence boundary instead of mid-word so stems read as complete thoughts.
+        function clipAtSentence(text, maxLength) {
+          var source = String(text || '');
+          if (source.length <= maxLength) return source;
+          var window = source.slice(0, maxLength);
+          var sentenceEnd = Math.max(window.lastIndexOf('. '), window.lastIndexOf('; '), window.lastIndexOf('! '));
+          if (sentenceEnd >= Math.min(60, maxLength / 2)) return window.slice(0, sentenceEnd + 1);
+          var wordEnd = window.lastIndexOf(' ');
+          return (wordEnd > 0 ? window.slice(0, wordEnd) : window) + '…';
+        }
+        function quizStemText(structure, field, maxLength) {
+          var source = field === 'fn' ? learnerText(structure) : (structure && structure[field]);
+          return clipAtSentence(maskStructureName(source, structure), maxLength);
+        }
+        // True/False (type 1): the statement used to claim system membership while the current
+        // system button was highlighted on screen, so it tested nothing. It now pairs the structure
+        // with a function statement — its own (True) or another visible structure's (False) — with
+        // the structure names masked. Alternate True/False deterministically by the T/F round number
+        // (T/F appears once every four questions, so parity of quizIdx alone would always be odd).
+        var tfTrue = true, tfClaimStructure = quizQ;
         if (quizType === 1 && quizQ) {
-          // True/False appears once every four questions, so parity of quizIdx alone is
-          // always odd. Alternate by the True/False round number instead.
           tfTrue = (Math.floor(quizRoundIdx / quizTypeCount) % 2) === 0;
           if (!tfTrue) {
-            var _tfWrong = Object.keys(SYSTEMS).filter(function(k) {
-              return k !== sysKey && !SYSTEMS[k].structures.some(function(s) { return s.id === quizQ.id; });
-            });
-            if (_tfWrong.length) tfClaimSys = SYSTEMS[_tfWrong[quizRoundIdx % _tfWrong.length]];
+            var _tfWrong = quizPool.filter(function(s) { return s.id !== quizQ.id; });
+            if (_tfWrong.length) tfClaimStructure = _tfWrong[quizRoundIdx % _tfWrong.length];
             else tfTrue = true;
           }
         }
@@ -4236,6 +5162,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ? { chosen: savedQuizFeedback.chosen, correct: savedQuizFeedback.chosen === quizCorrectId }
           : null;
         var quizAnswerLabel = quizQ ? (quizType === 1 ? (tfTrue ? t('stem.anatomy.true', 'True') : t('stem.anatomy.false', 'False')) : (quizType === 2 ? sys.name : quizQ.name)) : '';
+        // One answer path for pointer and keyboard (option buttons and the 1-4 shortcuts).
+        function answerQuizOption(opt) {
+          if (!quizQ || !opt || quizFeedback) return;
+          var correct = opt.id === quizCorrectId;
+          var quizPatch = {
+            quizFeedback: { chosen: opt.id, correct: correct },
+            _quizAttempts: quizAttempts + 1,
+            _streak: correct ? streak + 1 : 0
+          };
+          if (correct) {
+            quizPatch.quizScore = quizScore + 1;
+            quizPatch._totalCorrect = totalCorrect + 1;
+            playSound('quizCorrect');
+          } else playSound('quizWrong');
+          updMulti(Object.assign(quizPatch, confidenceEvidencePatch(quizQ.id, correct)));
+        }
 
         // ── Hover state ──
         var hoverStructure = typeof d._hoverStructure === 'string' ? d._hoverStructure : null;
@@ -4295,6 +5237,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var structuresViewed = safeFlagMap(d._structuresViewed, knownStructureIds);
         var CONFIDENCE_LEVELS = ['practice', 'learning', 'mastered'];
         var structureConfidence = safeEnumMap(d._structureConfidence, knownStructureIds, CONFIDENCE_LEVELS);
+        // ── Flashcard deck order ──
+        // The deck is confidence-first: "Need practice" cards, then unrated, then "Learning", then
+        // "Got it". A rating made mid-session would reshuffle the deck under the learner, so the
+        // order is frozen into `_flashcardDeck` the moment a card is rated and reused while it still
+        // covers exactly the current pool (same system and level). Any mismatch rebuilds it.
+        // "In your own words": a short learner-written note per structure (generation effect).
+        // Shown on the detail card and on the flashcard answer face.
+        var structureNotes = (function() {
+          var raw = d._structureNotes && typeof d._structureNotes === 'object' && !Array.isArray(d._structureNotes) ? d._structureNotes : {};
+          var result = {};
+          Object.keys(raw).forEach(function(id) { if (knownStructureIds.indexOf(id) !== -1 && typeof raw[id] === 'string' && raw[id].trim()) result[id] = raw[id].slice(0, 280); });
+          return result;
+        })();
+        function setStructureNote(structureId, text) {
+          if (knownStructureIds.indexOf(structureId) === -1) return;
+          var next = Object.assign({}, structureNotes);
+          var clean = typeof text === 'string' ? text.slice(0, 280) : '';
+          if (clean.trim()) next[structureId] = clean; else delete next[structureId];
+          upd('_structureNotes', next);
+        }
+        var CONFIDENCE_DECK_RANK = { practice: 0, learning: 2, mastered: 3 };
+        function confidenceDeckRank(structure) {
+          var level = structureConfidence[structure.id];
+          return level ? CONFIDENCE_DECK_RANK[level] : 1;
+        }
+        var flashcardBasePool = flashcardPool;
+        var flashcardBaseIds = flashcardBasePool.map(function(structure) { return structure.id; });
+        var storedFlashcardDeck = Array.isArray(d._flashcardDeck) ? d._flashcardDeck.filter(function(id) { return typeof id === 'string'; }) : null;
+        var storedDeckMatchesPool = !!storedFlashcardDeck && storedFlashcardDeck.length === flashcardBaseIds.length &&
+          storedFlashcardDeck.every(function(id, index) { return flashcardBaseIds.indexOf(id) !== -1 && storedFlashcardDeck.indexOf(id) === index; });
+        if (storedDeckMatchesPool) {
+          flashcardPool = storedFlashcardDeck.map(function(id) { return flashcardBasePool[flashcardBaseIds.indexOf(id)]; });
+        } else {
+          flashcardPool = flashcardBasePool.map(function(structure, index) { return { structure: structure, index: index, rank: confidenceDeckRank(structure) }; })
+            .sort(function(a, b) { return a.rank - b.rank || a.index - b.index; })
+            .map(function(entry) { return entry.structure; });
+        }
+        var flashcardDeckIds = flashcardPool.map(function(structure) { return structure.id; });
+        var flashcardReviewFirstCount = flashcardPool.filter(function(structure) { return structureConfidence[structure.id] === 'practice'; }).length;
         var studyFilter = ['all', 'unseen', 'review', 'mastered'].indexOf(d._studyFilter) !== -1 ? d._studyFilter : 'all';
         var studyFiltered = filtered.filter(function(structure) {
           if (studyFilter === 'unseen') return !structuresViewed[structure.id];
@@ -4338,11 +5319,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           : masteryPrioritySystem && masteryPrioritySystem.unseen > 0
             ? masteryPrioritySystem.unseen + ' structure' + (masteryPrioritySystem.unseen === 1 ? '' : 's') + ' still unexplored'
             : 'Use mixed recall to maintain whole-body mastery';
-        function setStructureConfidence(structureId, level) {
+        // Quiz and Spotter answers are evidence about a structure. A miss marks it "Need practice"
+        // so it enters the review queue and the front of the card deck; a hit lifts an unrated or
+        // practice structure to "Learning". "Got it" stays a deliberate self-rating.
+        function confidenceEvidencePatch(structureId, correct) {
+          if (knownStructureIds.indexOf(structureId) === -1) return {};
+          var current = structureConfidence[structureId] || null;
+          var nextLevel = correct ? ((current === null || current === 'practice') ? 'learning' : current) : 'practice';
+          if (nextLevel === current) return {};
+          var nextConfidence = Object.assign({}, structureConfidence);
+          nextConfidence[structureId] = nextLevel;
+          return { _structureConfidence: nextConfidence };
+        }
+        function setStructureConfidence(structureId, level, extraPatch) {
           if (knownStructureIds.indexOf(structureId) === -1 || CONFIDENCE_LEVELS.indexOf(level) === -1) return;
           var nextConfidence = Object.assign({}, structureConfidence);
           nextConfidence[structureId] = level;
-          upd('_structureConfidence', nextConfidence);
+          updMulti(Object.assign({}, extraPatch || {}, { _structureConfidence: nextConfidence }));
           if (typeof announceToSR === 'function') {
             var confidenceStructure = findStructureContext(structureId, sysKey);
             var confidenceLabel = level === 'practice' ? 'needs practice' : level === 'learning' ? 'is still being learned' : 'is marked got it';
@@ -4545,10 +5538,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               cCtx.beginPath();
               cCtx.ellipse(W * 0.5, H * 0.956, 76, 12, 0, 0, Math.PI * 2);
               cCtx.fill();
-              cCtx.font = '900 7px Inter, system-ui, sans-serif';
+              // Centered: the R/L orientation markers own the top corners, and the caption used
+              // to render underneath the R marker as "R TERIOR \u00b7 PATIENT VIEW".
+              cCtx.font = '900 8px Inter, system-ui, sans-serif';
               cCtx.textAlign = 'left';
               cCtx.fillStyle = '#64748b';
-              cCtx.fillText(view === 'anterior' ? 'ANTERIOR \u00b7 PATIENT VIEW' : 'POSTERIOR \u00b7 PATIENT VIEW', 12, 17);
+              cCtx.fillText(view === 'anterior' ? 'ANTERIOR \u00b7 PATIENT VIEW' : 'POSTERIOR \u00b7 PATIENT VIEW', 52, 16);
               cCtx.restore();
             }
 
@@ -6633,10 +7628,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             cCtx.restore();
 
             // ── BODY REGION LABELS (subtle background labels) ──
-            if (d._showRegionLabels === true) {
-              cCtx.save(); cCtx.globalAlpha = 0.18;
-              cCtx.font = 'bold 7px Inter, system-ui, sans-serif'; cCtx.textAlign = 'left'; cCtx.fillStyle = '#94a3b8';
-              cCtx.fillText('HEAD', W * 0.03, H * 0.04);
+            if (showRegionLabels) {
+              // Legible on purpose: this is the K-5 orientation scaffold and defaults on for
+              // young learners, so it cannot be a 7px ghost at 18% opacity.
+              cCtx.save(); cCtx.globalAlpha = 0.62;
+              cCtx.font = 'bold 9px Inter, system-ui, sans-serif'; cCtx.textAlign = 'left'; cCtx.fillStyle = '#475569';
+              cCtx.fillText('HEAD', W * 0.03, H * 0.085); // below the R orientation marker
               cCtx.fillText('THORAX', W * 0.03, H * 0.19);
               cCtx.fillText('ABDOMEN', W * 0.03, H * 0.33);
               cCtx.fillText('PELVIS', W * 0.03, H * 0.43);
@@ -7218,6 +8215,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.globalAlpha = 0.4;
                 cCtx.beginPath(); cCtx.arc(spx, spy2, 8, 0, Math.PI * 2);
                 cCtx.fillStyle = '#06b6d4'; cCtx.fill();
+
+                // In-canvas prompt so the reticle explains itself without the side-panel hint.
+                // Flips above the reticle near the bottom edge; result state swaps to the verdict.
+                if (spotterFeedback === null) {
+                  var spLabel = t('stem.anatomy.spotter_canvas_prompt', 'Name this');
+                  cCtx.shadowBlur = 0;
+                  cCtx.globalAlpha = 1;
+                  cCtx.font = '900 9px Inter, system-ui, sans-serif';
+                  cCtx.textAlign = 'center';
+                  var spLabelW = cCtx.measureText(spLabel).width + 14;
+                  var spLabelY = spy2 > H - 60 ? spy2 - 44 : spy2 + 34;
+                  var spLabelX = Math.max(spLabelW / 2 + 4, Math.min(W - spLabelW / 2 - 4, spx));
+                  cCtx.fillStyle = 'rgba(8,47,73,0.92)';
+                  cCtx.beginPath();
+                  if (cCtx.roundRect) cCtx.roundRect(spLabelX - spLabelW / 2, spLabelY - 9, spLabelW, 18, 9); else cCtx.rect(spLabelX - spLabelW / 2, spLabelY - 9, spLabelW, 18);
+                  cCtx.fill();
+                  cCtx.fillStyle = '#a5f3fc';
+                  cCtx.fillText(spLabel, spLabelX, spLabelY + 3);
+                  cCtx.shadowBlur = 5;
+                }
                 
                 // Center dot (bright cyan with dark shadow)
                 cCtx.globalAlpha = 1.0;
@@ -7665,7 +8682,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var requestToken = 'anatomy-ai-' + Date.now() + '-' + Math.random().toString(36).slice(2);
           window.__alloAnatomyAiPending = requestToken;
           updMulti({ _aiMessages: newMsgs, _aiLoading: true, _aiInput: '', _aiQuestions: newAiQ });
-          var prompt = 'You are a friendly anatomy tutor. The student is studying the ' + sys.name + ' system' + (sel ? ' and is looking at the ' + sel.name : '') + '. Grade level: ' + (gradeLevel || 'unknown') + '. Answer concisely (2-3 sentences). Question: ' + cleanQuestion;
+          var gradeGuidance = gradeBand === 'k2'
+            ? 'The student is in kindergarten to grade 2: use short everyday words, one idea per sentence, no clinical detail, and a friendly tone.'
+            : gradeBand === 'g35'
+              ? 'The student is in grades 3 to 5: use plain language, one simple analogy, name the structure and what it does, and keep clinical detail to how to stay healthy.'
+              : gradeBand === 'g68'
+                ? 'The student is in middle school: use correct anatomical terms with a one-line definition each and connect structure to function.'
+                : 'The student is in high school or beyond: use precise anatomical and clinical terminology and mention one clinical correlation when relevant.';
+          var prompt = 'You are a friendly anatomy tutor. The student is studying the ' + sys.name + ' system' + (sel ? ' and is looking at the ' + sel.name : '') + '. Grade level: ' + (gradeLevel || 'unknown') + '. ' + gradeGuidance + ' Answer concisely (2-3 sentences). Question: ' + cleanQuestion;
           var unavailableMessage = t('stem.anatomy.ai_tutor_is_not_available_in_this_envi', 'AI tutor is not available in this environment.');
           var errorMessage = t('stem.anatomy.sorry_i_could_not_connect_to_the_ai_tu', 'Sorry, I could not connect to the AI tutor right now.');
           if (callGemini) {
@@ -9383,7 +10407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function renderStructureRelationshipMap() {
           if (!sel || selectedSystemConnections.length === 0) return null;
           var relationshipTitleId = 'anatomy-relationship-map-' + sel.id;
-          return h('section', {
+          return h('div', {
             className: 'anatomy-relation-map', role: 'figure',
             'aria-labelledby': relationshipTitleId, 'aria-describedby': relationshipTitleId + '-caption',
             'data-anatomy-relationship-map': sel.id
@@ -9430,7 +10454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           );
         }
 
-        function confidenceControls(structureId, label) {
+        function confidenceControls(structureId, label, extraPatch) {
           var currentConfidence = structureConfidence[structureId] || null;
           var confidenceOptions = [
             { id: 'practice', label: 'Need practice', icon: '!', active: 'bg-rose-700 text-white border-rose-700' },
@@ -9440,13 +10464,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           return h('div', { className: 'anatomy-confidence', role: 'group', 'aria-label': 'Learning confidence for ' + label },
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('p', { className: 'text-[11px] font-bold text-slate-700' }, 'How well do you know this?'),
-              h('span', { className: 'text-[10px] text-slate-500' }, currentConfidence ? 'Saved to your study plan' : 'Choose after reviewing')
+              h('span', { className: 'text-[11px] text-slate-500' }, currentConfidence ? 'Saved to your study plan' : 'Choose after reviewing')
             ),
             h('div', { className: 'anatomy-confidence-actions' }, confidenceOptions.map(function(option) {
               var isActive = currentConfidence === option.id;
               return h('button', {
                 key: option.id, type: 'button', 'aria-pressed': isActive,
-                onClick: function() { setStructureConfidence(structureId, option.id); },
+                onClick: function() { setStructureConfidence(structureId, option.id, extraPatch); },
                 className: 'px-2.5 py-1 text-[11px] font-bold border transition-all active:scale-[0.97] ' +
                   (isActive ? option.active : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')
               }, option.icon + ' ' + option.label);
@@ -9518,7 +10542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             return;
           }
           if (recommendedNextStep.id === 'quiz') {
-            updMulti({ _activeTab: 'explore', quizMode: true, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 });
+            updMulti({ _activeTab: 'quiz', quizMode: true, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 });
             return;
           }
           activateAnatomyTab('spotter');
@@ -10502,6 +11526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           'data-reading-mode': readingMode ? 'true' : 'false',
           'data-anatomy-model-focus': anatomyModelFocus ? 'true' : 'false',
           'data-anatomy-active-mode': bodyView3d ? body3dStyle : '2d',
+          'data-anatomy-tab': activeTab,
           style: { '--anatomy-accent': sys.accent, '--anatomy-soft': sys.color }
         },
 
@@ -10519,10 +11544,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               onClick: toggleReadingMode,
               title: readingMode ? 'Use standard text size' : 'Increase text size and line spacing',
               className: 'anatomy-topbar-action px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-[0.97] ' + (readingMode ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100')
-            }, readingMode ? 'Comfort text on' : 'Comfort text'),
+            }, readingMode ? t('stem.anatomy.larger_text_on', 'Larger text on') : t('stem.anatomy.larger_text', 'Larger text')),
+            h('button', {
+              type: 'button', 'aria-expanded': showStudySheet, 'aria-controls': 'anatomy-study-sheet',
+              onClick: function() { upd('_showStudySheet', !showStudySheet); if (!showStudySheet && typeof announceToSR === 'function') announceToSR(t('stem.anatomy.study_sheet_opened', 'Study sheet opened. Print it or copy it as text.')); },
+              title: t('stem.anatomy.study_sheet_tip', 'A printable summary of what you rated, missed, and wrote'),
+              className: 'anatomy-topbar-action ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-[0.97] ' + (showStudySheet ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-800 border-slate-300 hover:bg-slate-100')
+            }, t('stem.anatomy.study_sheet_button', '📄 Study sheet')),
             h('button', { 'aria-label': t('stem.anatomy.snapshot', 'Snapshot'),
               onClick: takeSnapshot,
-              className: 'anatomy-topbar-action anatomy-topbar-snapshot ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all active:scale-[0.97]',
+              className: 'anatomy-topbar-action anatomy-topbar-snapshot px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all active:scale-[0.97]',
               title: t('stem.anatomy.save_snapshot', 'Save snapshot')
             }, t('stem.anatomy.snapshot_2', '\uD83D\uDCF8 Snapshot'))
           ),
@@ -10537,44 +11568,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('div', null,
                 h('div', { className: 'anatomy-kicker' }, t('stem.anatomy.body_systems_lab', 'Body systems lab')),
                 h('h2', { id: 'anatomy-mission-title', className: 'anatomy-mission-title' }, sys.icon + ' ' + sys.name + ' ' + t('stem.anatomy.system', 'system')),
-                h('p', { className: 'anatomy-mission-text' }, missionPrompt),
-                h('div', { className: 'anatomy-mission-actions' },
-                  h('button', {
-                    onClick: function() { activateAnatomyTab('explore'); },
-                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (activeTab === 'explore' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 active:scale-[0.97]')
-                  }, t('stem.anatomy.explore', 'Explore')),
-                  h('button', {
-                    onClick: function() { activateAnatomyTab('tour'); },
-                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50 active:scale-[0.97]')
-                  }, t('stem.anatomy.guided_tour', 'Guided tour')),
-                  h('button', {
-                    onClick: function() { activateAnatomyTab('spotter'); },
-                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-700 border-amber-300 hover:bg-amber-50 active:scale-[0.97]')
-                  }, t('stem.anatomy.spotter', 'Spotter')),
-                  h('button', {
-                    type: 'button', 'aria-expanded': showAnatomyLens, 'aria-controls': 'anatomy-lens-panel',
-                    onClick: function() { upd('_showAnatomyLens', !showAnatomyLens); },
-                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (showAnatomyLens ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50 active:scale-[0.97]')
-                  }, 'Anatomy Lens'),
-                  h('button', {
-                    type: 'button', 'aria-expanded': showSystemsMotion, 'aria-controls': 'anatomy-systems-motion',
-                    onClick: function() {
-                      if (showSystemsMotion) upd('_showSystemsMotion', false);
-                      else openSystemsMotionStep(systemsMotionStep, 'Opening ' + systemsMotionScenario.title + '.');
-                    },
-                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (showSystemsMotion ? 'bg-cyan-800 text-white border-cyan-800' : 'bg-white text-cyan-800 border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]')
-                  }, 'Systems in Motion'),
-                  h('button', {
-                    type: 'button', 'aria-expanded': showMasteryMap, 'aria-controls': 'anatomy-mastery-map',
-                    onClick: function() { upd('_showMasteryMap', !showMasteryMap); },
-                    className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (showMasteryMap ? 'bg-violet-800 text-white border-violet-800' : 'bg-white text-violet-800 border-violet-300 hover:bg-violet-50 active:scale-[0.97]')
-                  }, showMasteryMap ? 'Hide mastery map' : 'Mastery map')
-                )
+                h('p', { className: 'anatomy-mission-text' }, missionPrompt)
               ),
               h('details', { className: 'anatomy-study-dashboard', 'data-anatomy-study-dashboard': 'true', open: readingMode ? true : undefined },
                 h('summary', { className: 'anatomy-study-dashboard-summary', 'data-anatomy-study-dashboard-summary': 'true' },
                   h('span', null, 'Study dashboard'),
-                  h('span', null, structuresViewedCount + ' viewed · ' + currentSystemReviewCount + ' to review · ' + researchPoints + ' RP')
+                  h('span', null, structuresViewedCount + ' viewed · ' + currentSystemReviewCount + ' to review · ' + researchPoints + ' RP · ' + badgesEarnedCount + '/' + BADGE_DEFS.length + ' badges')
                 ),
                 h('div', { className: 'anatomy-study-dashboard-content', 'data-anatomy-study-dashboard-content': 'true' },
                 h('div', { className: 'anatomy-metric-grid' },
@@ -10587,8 +11586,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('span', null, t('stem.anatomy.systems_explored', 'Systems explored'))
                   ),
                   h('div', { className: 'anatomy-metric' },
-                    h('strong', null, String(activeLayerCount)),
-                    h('span', null, t('stem.anatomy.layers_on', 'Layers on'))
+                    h('strong', null, String(totalCorrect)),
+                    h('span', null, t('stem.anatomy.quiz_correct', 'Quiz correct'))
                   ),
                   h('div', { className: 'anatomy-metric' },
                     h('strong', null, badgesEarnedCount + '/' + BADGE_DEFS.length),
@@ -10647,6 +11646,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             )
           ),
 
+          // Tab bar: the single mode navigation. Order is learn → practice → deeper; the two
+          // clinician-level workspaces sit last and are hidden for a known K-5 profile.
+          h('div', { className: 'anatomy-tab-strip flex gap-1 mb-3', role: 'tablist', 'aria-label': t('stem.anatomy.learning_modes', 'Anatomy learning modes'), 'aria-orientation': 'horizontal', onKeyDown: handleAnatomyTabKey, 'data-anatomy-tab-strip': 'true', ref: function(tabStrip) { if (!tabStrip || tabStrip._anatomyActiveTab === activeTab) return; tabStrip._anatomyActiveTab = activeTab; setTimeout(function() { if (!tabStrip.isConnected) return; var activeModeTab = tabStrip.querySelector('#anatomy-mode-tab-' + activeTab); if (activeModeTab && typeof activeModeTab.scrollIntoView === 'function') activeModeTab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); }, 0); } },
+            h('button', { id: 'anatomy-mode-tab-explore', title: ANATOMY_TAB_HINTS.explore, 'aria-label': t('stem.anatomy.explore', 'Explore'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('explore'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white border border-slate-800' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.explore_2', '\uD83E\uDEC0 Explore')),
+            h('button', { id: 'anatomy-mode-tab-quiz', title: ANATOMY_TAB_HINTS.quiz, 'aria-label': t('stem.anatomy.quiz', 'Quiz'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'quiz', tabIndex: activeTab === 'quiz' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('quiz'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'quiz' ? 'bg-green-700 text-white border border-green-700' : 'bg-white text-slate-600 hover:bg-green-50 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.quiz_2', '\uD83E\uDDEA Quiz')),
+            h('button', { id: 'anatomy-mode-tab-tour', title: ANATOMY_TAB_HINTS.tour, 'aria-label': t('stem.anatomy.tour', 'Tour'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('tour'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white border border-emerald-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.tour_2', '\uD83E\uDDED Tour')),
+            h('button', { id: 'anatomy-mode-tab-connections', title: ANATOMY_TAB_HINTS.connections, 'aria-label': t('stem.anatomy.connect', 'Connect'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('connections'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-700 text-white border border-sky-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.connect_2', '\uD83D\uDD17 Connect')),
+            h('button', { id: 'anatomy-mode-tab-aiTutor', title: ANATOMY_TAB_HINTS.aiTutor, 'aria-label': t('stem.anatomy.ai_tutor', 'AI Tutor'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('aiTutor'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-700 text-white border border-violet-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.ai_tutor_2', '\uD83E\uDD16 AI Tutor')),
+            h('button', { id: 'anatomy-mode-tab-spotter', title: ANATOMY_TAB_HINTS.spotter, 'aria-label': t('stem.anatomy.spotter', 'Spotter'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('spotter'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white border border-amber-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.spotter_2', '\uD83C\uDFAF Spotter')),
+            h('button', { id: 'anatomy-mode-tab-pathways', title: ANATOMY_TAB_HINTS.pathways, 'aria-label': t('stem.anatomy.pathways', 'Pathways'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('pathways'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-700 text-white border border-rose-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.pathways_2', '\uD83D\uDEE4 Pathways')),
+            h('button', { id: 'anatomy-mode-tab-flashcards', title: ANATOMY_TAB_HINTS.flashcards, 'aria-label': t('stem.anatomy.cards', 'Cards'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('flashcards'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white border border-teal-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.cards_2', '\uD83C\uDCCF Cards')),
+            h('button', { id: 'anatomy-mode-tab-homeoHunt', title: ANATOMY_TAB_HINTS.homeoHunt, 'aria-label': t('stem.anatomy.homeostasis_discovery', 'Homeostasis discovery'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'homeoHunt', tabIndex: activeTab === 'homeoHunt' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('homeoHunt'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white border border-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.homeostasis', '\uD83C\uDFE0 Homeostasis')),
+            expertModesAvailable && h('button', { id: 'anatomy-mode-tab-imaging', title: ANATOMY_TAB_HINTS.imaging, 'aria-label': t('stem.anatomy.imaging_lab', 'Imaging Lab'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'imaging', tabIndex: activeTab === 'imaging' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('imaging'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'imaging' ? 'bg-cyan-800 text-white border border-cyan-800' : 'bg-white text-slate-600 hover:bg-cyan-50 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.imaging_tab', '\uD83E\uDE7B Imaging')),
+            expertModesAvailable && h('button', { id: 'anatomy-mode-tab-procedure', title: ANATOMY_TAB_HINTS.procedure, 'aria-label': t('stem.anatomy.procedure_studio', 'Procedure Studio'),
+              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'procedure', tabIndex: activeTab === 'procedure' ? 0 : -1,
+              onClick: function() { activateAnatomyTab('procedure'); },
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'procedure' ? 'bg-rose-800 text-white border border-rose-800' : 'bg-white text-slate-600 hover:bg-rose-50 border border-slate-300 active:scale-[0.97]')
+            }, t('stem.anatomy.procedure_tab', '\uD83E\uDE7A Procedure'))
+          ),
+
+          // Go-deeper row: the three whole-body panels open on demand below the mode strip so the
+          // strip never jumps, and the mission card no longer duplicates mode navigation.
+          !focusedAnatomyWorkspace && h('div', { className: 'anatomy-deeper-row mb-3', role: 'group', 'aria-label': t('stem.anatomy.go_deeper', 'Go deeper'), 'data-anatomy-deeper-row': 'true' },
+            h('span', { className: 'anatomy-kicker' }, t('stem.anatomy.go_deeper', 'Go deeper')),
+            h('button', {
+              type: 'button', 'aria-expanded': showAnatomyLens, 'aria-controls': 'anatomy-lens-panel',
+              onClick: function() { upd('_showAnatomyLens', !showAnatomyLens); },
+              className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (showAnatomyLens ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50 active:scale-[0.97]')
+            }, t('stem.anatomy.anatomy_lens', '\uD83D\uDD2C Anatomy Lens')),
+            h('button', {
+              type: 'button', 'aria-expanded': showSystemsMotion, 'aria-controls': 'anatomy-systems-motion',
+              onClick: function() {
+                if (showSystemsMotion) upd('_showSystemsMotion', false);
+                else openSystemsMotionStep(systemsMotionStep, 'Opening ' + systemsMotionScenario.title + '.');
+              },
+              className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (showSystemsMotion ? 'bg-cyan-800 text-white border-cyan-800' : 'bg-white text-cyan-800 border-cyan-300 hover:bg-cyan-50 active:scale-[0.97]')
+            }, t('stem.anatomy.systems_in_motion', '\uD83D\uDD01 Systems in Motion')),
+            h('button', {
+              type: 'button', 'aria-expanded': showMasteryMap, 'aria-controls': 'anatomy-mastery-map',
+              onClick: function() { upd('_showMasteryMap', !showMasteryMap); },
+              className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (showMasteryMap ? 'bg-violet-800 text-white border-violet-800' : 'bg-white text-violet-800 border-violet-300 hover:bg-violet-50 active:scale-[0.97]')
+            }, showMasteryMap ? t('stem.anatomy.hide_mastery_map', '\uD83D\uDDFA Hide mastery map') : t('stem.anatomy.mastery_map', '\uD83D\uDDFA Mastery map'))
+          ),
+          // First visit: three concrete moves instead of a wall of options. Disappears as soon as
+          // the learner has viewed a structure, finished a tour, answered a quiz, or dismissed it.
+          !focusedAnatomyWorkspace && activeTab === 'explore' && structuresViewedCount === 0 && !tourCompleted && quizAttempts === 0 && d._startHereDismissed !== true ? h('section', {
+            className: 'anatomy-start-here mb-3', 'aria-labelledby': 'anatomy-start-here-title', 'data-anatomy-start-here': 'true'
+          },
+            h('div', { className: 'anatomy-start-here-head' },
+              h('h3', { id: 'anatomy-start-here-title' }, t('stem.anatomy.start_here_title', '👋 New here? Three moves to start')),
+              h('button', { type: 'button', 'aria-label': t('stem.anatomy.start_here_dismiss', 'Dismiss the start-here tips'), onClick: function() { upd('_startHereDismissed', true); }, className: 'anatomy-start-here-dismiss' }, '✕')
+            ),
+            h('ol', { className: 'anatomy-start-here-steps' },
+              h('li', null, h('strong', null, t('stem.anatomy.start_here_1', 'Tap a pin')), t('stem.anatomy.start_here_1_body', ' on the body or a name in the list to open its card.')),
+              h('li', null, h('strong', null, t('stem.anatomy.start_here_2', 'Rate it')), t('stem.anatomy.start_here_2_body', ' with Need practice, Learning, or Got it so your review queue builds itself.')),
+              h('li', null, h('strong', null, t('stem.anatomy.start_here_3', 'Test yourself')), t('stem.anatomy.start_here_3_body', ' in Quiz or Spotter; misses come back first in Cards.'))
+            ),
+            h('div', { className: 'anatomy-start-here-actions' },
+              h('button', { type: 'button', onClick: function() { activateAnatomyTab('tour'); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 active:scale-[0.97]' }, t('stem.anatomy.start_here_tour', '🧭 Take the 5-step tour')),
+              h('button', { type: 'button', onClick: function() { upd('_startHereDismissed', true); }, className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.start_here_explore', 'Just explore'))
+            )
+          ) : null,
+          showStudySheet ? renderStudySheet() : null,
           showMasteryMap ? renderWholeBodyMasteryMap() : null,
 
           renderSystemsInMotion(),
@@ -10691,59 +11793,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             )
           ) : null,
 
-          // Tab bar (10 tabs)
-          h('div', { className: 'anatomy-tab-strip flex gap-1 mb-3', role: 'tablist', 'aria-label': t('stem.anatomy.learning_modes', 'Anatomy learning modes'), 'aria-orientation': 'horizontal', onKeyDown: handleAnatomyTabKey, 'data-anatomy-tab-strip': 'true', ref: function(tabStrip) { if (!tabStrip || tabStrip._anatomyActiveTab === activeTab) return; tabStrip._anatomyActiveTab = activeTab; setTimeout(function() { if (!tabStrip.isConnected) return; var activeModeTab = tabStrip.querySelector('#anatomy-mode-tab-' + activeTab); if (activeModeTab && typeof activeModeTab.scrollIntoView === 'function') activeModeTab.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); }, 0); } },
-            h('button', { id: 'anatomy-mode-tab-explore', 'aria-label': t('stem.anatomy.explore', 'Explore'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'explore', tabIndex: activeTab === 'explore' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('explore'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'explore' ? 'bg-slate-800 text-white border border-slate-800' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.explore_2', '\uD83E\uDEC0 Explore')),
-            h('button', { id: 'anatomy-mode-tab-imaging', 'aria-label': 'Imaging Lab',
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'imaging', tabIndex: activeTab === 'imaging' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('imaging'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'imaging' ? 'bg-cyan-800 text-white border border-cyan-800' : 'bg-white text-slate-600 hover:bg-cyan-50 border border-slate-300 active:scale-[0.97]')
-            }, '🩻 Imaging'),
-            h('button', { id: 'anatomy-mode-tab-procedure', 'aria-label': 'Procedure Studio',
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'procedure', tabIndex: activeTab === 'procedure' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('procedure'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'procedure' ? 'bg-rose-800 text-white border border-rose-800' : 'bg-white text-slate-600 hover:bg-rose-50 border border-slate-300 active:scale-[0.97]')
-            }, '\uD83E\uDE7A Procedure'),            h('button', { id: 'anatomy-mode-tab-tour', 'aria-label': t('stem.anatomy.tour', 'Tour'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('tour'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white border border-emerald-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.tour_2', '\uD83E\uDDED Tour')),
-            h('button', { id: 'anatomy-mode-tab-connections', 'aria-label': t('stem.anatomy.connect', 'Connect'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('connections'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-700 text-white border border-sky-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.connect_2', '\uD83D\uDD17 Connect')),
-            h('button', { id: 'anatomy-mode-tab-aiTutor', 'aria-label': t('stem.anatomy.ai_tutor', 'AI Tutor'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('aiTutor'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-700 text-white border border-violet-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.ai_tutor_2', '\uD83E\uDD16 AI Tutor')),
-            h('button', { id: 'anatomy-mode-tab-spotter', 'aria-label': t('stem.anatomy.spotter', 'Spotter'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('spotter'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white border border-amber-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.spotter_2', '\uD83C\uDFAF Spotter')),
-            h('button', { id: 'anatomy-mode-tab-pathways', 'aria-label': t('stem.anatomy.pathways', 'Pathways'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('pathways'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-700 text-white border border-rose-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.pathways_2', '\uD83D\uDEE4 Pathways')),
-            h('button', { id: 'anatomy-mode-tab-flashcards', 'aria-label': t('stem.anatomy.cards', 'Cards'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('flashcards'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white border border-teal-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.cards_2', '\uD83C\uDCCF Cards')),
-            h('button', { id: 'anatomy-mode-tab-homeoHunt', 'aria-label': t('stem.anatomy.homeostasis_discovery', 'Homeostasis discovery'),
-              role: 'tab', 'aria-controls': 'anatomy-mode-panel', 'aria-selected': activeTab === 'homeoHunt', tabIndex: activeTab === 'homeoHunt' ? 0 : -1,
-              onClick: function() { activateAnatomyTab('homeoHunt'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'homeoHunt' ? 'bg-indigo-700 text-white border border-indigo-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-300 active:scale-[0.97]')
-            }, t('stem.anatomy.homeostasis', '\uD83C\uDFE0 Homeostasis')),
-          h('span', { className: 'ml-auto text-[11px] font-bold text-amber-800 self-center' }, '\uD83C\uDFC5 ' + badgesEarnedCount + '/' + BADGE_DEFS.length + ' badges')
-          ),
 
           // Challenges Progress Card
           showLegacyChallengeCard && h('div', {
@@ -10788,7 +11837,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               aiTutor:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDD16', title: t('stem.anatomy.ai_tutor_3', 'AI tutor'),                    hint: t('stem.anatomy.ask_a_question_about_the_active_organ_', 'Ask a question about the active organ or system. The tutor knows what is on screen and tailors answers to your grade band.') },
               spotter:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83C\uDFAF', title: t('stem.anatomy.structure_spotter', 'Structure spotter'),           hint: t('stem.anatomy.click_the_named_structure_on_the_diagr', 'Click the named structure on the diagram. Builds the click-the-thing reflex that AP and medical exams rely on.') },
               pathways:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\uD83D\uDEE4\uFE0F', title: t('stem.anatomy.trace_the_pathway', 'Trace the pathway'),          hint: t('stem.anatomy.follow_blood_air_food_or_signals_throu', 'Follow blood, air, food, or signals through the body in sequence. Pathways are how isolated facts become a system you can reason about.') },
-              flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: t('stem.anatomy.spaced_repetition_cards', 'Spaced-repetition cards'),     hint: t('stem.anatomy.quick_recall_cards_with_spaced_repetit', 'Quick-recall cards with spaced repetition. Six-second review now beats five-minute re-read tomorrow \u2014 that is the testing effect.') },
+              quiz:        { accent: '#15803d', soft: 'rgba(21,128,61,0.10)',  icon: '\uD83E\uDDEA', title: t('stem.anatomy.quiz_the_diagram', 'Quiz the diagram'),            hint: t('stem.anatomy.quiz_hint', 'Four question types rotate: function, true or false, system, and clinical clue. Structure names are hidden in the clue, so read for meaning. A miss sends that structure to your review queue.') },
+              flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: t('stem.anatomy.recall_cards', 'Recall cards'),     hint: t('stem.anatomy.recall_cards_hint', 'Say the function before you reveal it, then rate your confidence. Cards you mark Need practice come back first; a quick self-test now beats a re-read tomorrow.') },
               homeoHunt:   { accent: '#4338ca', soft: 'rgba(67,56,202,0.10)', icon: '🏠', title: t('stem.anatomy.homeostasis_hunt', 'Homeostasis Hunt'),         hint: t('stem.anatomy.compare_homeostasis_reference_ranges', 'Adjust the sliders to compare three adult teaching reference ranges and examine the limits of a simplified homeostasis model.') }
             };
             var meta = TAB_META[activeTab] || TAB_META.explore;
@@ -10835,65 +11885,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               );
             })
-          ),
-
-          // ── Fun fact banner (Always visible) ──
-          !focusedAnatomyWorkspace && currentFact ? h('div', { className: 'anatomy-fact-card mb-3 px-3 py-2 rounded-lg border border-amber-200 flex items-start gap-2', style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
-            h('span', { className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
-            h('div', { className: 'flex-1' },
-              h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.anatomy.did_you_know', 'Did you know?')),
-              h('p', { className: 'text-xs text-amber-900 leading-relaxed' }, currentFact)
-            ),
-            h('button', { 'aria-label': t('stem.anatomy.next', 'Next'),
-              onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
-              className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all flex-shrink-0 active:scale-[0.97]', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: 'var(--allo-stem-button-text, #0f172a)', border: '1px solid var(--allo-stem-button-border, #cbd5e1)' }
-            }, t('stem.anatomy.next_2', 'Next \u2192'))
-          ) : null,
-
-          // ── Mnemonics section (Always visible) ──
-          !focusedAnatomyWorkspace && MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'anatomy-mnemonics-card mb-3' },
-            h('button', { onClick: function() { upd('_showMnemonics', !showMnemonics); },
-              'aria-expanded': showMnemonics, 'aria-controls': 'anatomy-mnemonics-panel',
-              className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg border border-purple-600 transition-all active:scale-[0.97]', style: { background: 'var(--allo-stem-panel, #f8fafc)' }
-            },
-              h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
-              h('span', { className: 'text-[11px] text-purple-500' }, showMnemonics ? '\u25B2' : '\u25BC')
-            ),
-            showMnemonics ? h('div', { id: 'anatomy-mnemonics-panel', className: 'mt-1 space-y-1.5' },
-              MNEMONICS[sysKey].map(function(mn) {
-                var isRevealed = mnemonicsViewed[mn.id];
-                return h('div', { 
-                  key: mn.id,
-                  className: 'rounded-lg p-2.5 border transition-all ' + (isRevealed ? 'border-purple-300 bg-purple-50' : 'border-slate-200 bg-white')
-                },
-                  h('p', { className: 'text-[11px] font-bold text-purple-800 mb-0.5' }, mn.title),
-                  h('p', { className: 'text-xs font-black text-purple-600 mb-1 italic' }, '"' + mn.phrase + '"'),
-                  isRevealed ? h('div', null,
-                    h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, mn.meaning),
-                    ttsBtn(mn.phrase + '. ' + mn.meaning)
-                  ) : h('button', { 'aria-label': t('stem.anatomy.reveal_meaning', 'Reveal meaning'),
-                    onClick: function() {
-                      var newMV = Object.assign({}, mnemonicsViewed);
-                      newMV[mn.id] = true;
-                      upd('_mnemonicsViewed', newMV);
-                      playSound('mnemonicReveal');
-                      setTimeout(checkAnatomyChallenges, 50);
-                    },
-                    className: 'text-[11px] font-bold text-purple-600 hover:text-purple-800 transition-all'
-                  }, t('stem.anatomy.reveal_meaning_2', 'Reveal meaning \u2192'))
-                );
-              })
-            ) : null
-          ) : null,
-
-          // ── Progress tracker (Always visible) ──
-          !focusedAnatomyWorkspace && h('div', { className: 'anatomy-progress-row mb-3 flex items-center gap-2' },
-            h('span', { className: 'text-[11px] font-bold text-slate-600' }, sys.icon + ' ' + exploredInSystem + '/' + viewFiltered.length + ' explored'),
-            h('div', { className: 'flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden', role: 'progressbar',
-              'aria-label': sys.name + ' exploration progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progressPct },
-              h('div', { className: 'h-full rounded-full transition-all', style: { width: progressPct + '%', background: sys.accent } })
-            ),
-            h('span', { className: 'text-[11px] font-bold', style: { color: sys.accent } }, progressPct + '%')
           ),
 
           // ── Layer toggle bar (Always visible) ──
@@ -10992,10 +11983,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               onClick: function() { updMulti({ search: '', selectedStructure: null }); },
               className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-500 hover:bg-slate-100 active:scale-[0.97]'
             }, '\u2715 Clear') : null,
-            h('button', { onClick: function() { updMulti({ quizMode: !quizMode, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 }); },
-              'aria-pressed': quizMode,
-              className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (quizMode ? 'bg-green-700 text-white' : 'transition-colors bg-green-50 text-green-700 border border-green-600 hover:bg-green-100 active:scale-[0.97]')
-            }, quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
+            !bodyView3d && h('div', { className: 'anatomy-appearance-content', 'data-anatomy-2d-controls': 'true' },
+              h('button', { 'aria-label': t('stem.anatomy.regions', 'Regions'), 'aria-pressed': showRegionLabels,
+                onClick: function() { upd('_showRegionLabels', !showRegionLabels); },
+                title: t('stem.anatomy.toggle_body_region_labels', 'Toggle body region labels'),
+                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (showRegionLabels ? 'bg-slate-700 text-white border-slate-700' : 'transition-colors bg-white text-slate-600 border-slate-300 hover:bg-slate-50 active:scale-[0.97]')
+              }, t('stem.anatomy.regions_2', '\uD83C\uDFF7 Regions'))
+            ),
             h('div', { className: 'flex rounded-lg border border-slate-400 overflow-hidden', role: 'group', 'aria-label': 'Learning level' },
               [{ v: 1, label: 'K\u20135', tip: t('stem.anatomy.elementary', 'Elementary') }, { v: 2, label: '6\u20138', tip: t('stem.anatomy.middle', 'Middle') }, { v: 3, label: '9\u201312+', tip: t('stem.anatomy.advanced', 'Advanced') }].map(function(lv) {
                 return h('button', { key: lv.v, title: lv.tip + ' level', 'aria-pressed': complexity === lv.v,
@@ -11008,13 +12002,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('summary', { className: 'anatomy-appearance-summary' },
                 h('span', null, bodyView3d ? 'Surface appearance' : 'Appearance & labels'),
                 h('strong', null, skinTone.label)
-              ),
-              !bodyView3d && h('div', { className: 'anatomy-appearance-content', 'data-anatomy-2d-controls': 'true' },
-                h('button', { 'aria-label': t('stem.anatomy.regions', 'Regions'), 'aria-pressed': d._showRegionLabels === true,
-              onClick: function() { upd('_showRegionLabels', d._showRegionLabels !== true); },
-              title: t('stem.anatomy.toggle_body_region_labels', 'Toggle body region labels'),
-              className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' + (d._showRegionLabels === true ? 'bg-slate-700 text-white border-slate-700' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-slate-50 active:scale-[0.97]')
-                }, t('stem.anatomy.regions_2', '\uD83C\uDFF7 Regions'))
               ),
             // Skin tone selector (representation & inclusion)
               h('div', { className: 'anatomy-appearance-content anatomy-skin-tone-controls flex items-center gap-1', 'data-anatomy-skin-tone-controls': 'true', title: t('stem.anatomy.skin_tone_representation', 'Skin tone (representation)') },
@@ -11058,13 +12045,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 type: 'button',
                 onClick: focusComparisonTarget,
                 'aria-label': 'Open comparison target ' + compareSel.name,
-                className: 'px-2 py-1 rounded-md text-[10px] font-bold border border-violet-300 bg-white text-violet-800 hover:bg-violet-50 active:scale-[0.97]'
+                className: 'px-2 py-1 rounded-md text-[11px] font-bold border border-violet-300 bg-white text-violet-800 hover:bg-violet-50 active:scale-[0.97]'
               }, 'Open target'),
               h('button', {
                 type: 'button',
                 onClick: function() { upd('_compareStructure', null); },
                 'aria-label': 'Clear comparison target ' + compareSel.name,
-                className: 'px-2 py-1 rounded-md text-[10px] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-[0.97]'
+                className: 'px-2 py-1 rounded-md text-[11px] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-[0.97]'
               }, 'Clear')
             )
           ),
@@ -11144,7 +12131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('span', { className: 'anatomy-model-source-note' }, window.__alloAnatomyModelName || 'Built-in surface')
                     ),
                     h('div', { className: 'anatomy-model-source-row' },
-                      h('label', { className: 'rounded-lg border border-indigo-200 bg-white px-2 py-1 text-[10px] font-black text-indigo-800 cursor-pointer', title: 'Import a local uncompressed GLB that you are licensed to use. The file is not uploaded.' },
+                      h('label', { className: 'rounded-lg border border-indigo-200 bg-white px-2 py-1 text-[11px] font-black text-indigo-800 cursor-pointer', title: 'Import a local uncompressed GLB that you are licensed to use. The file is not uploaded.' },
                     window.__alloAnatomyModelName ? 'Replace GLB' : 'Import local GLB',
                     h('input', { type: 'file', accept: '.glb,model/gltf-binary', className: 'sr-only', 'aria-label': 'Import a licensed local anatomy GLB model', onChange: function(event) {
                       var file = event.target.files && event.target.files[0]; if (!file) return;
@@ -11155,7 +12142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       if (typeof announceToSR === 'function') announceToSR('Loading local anatomy model ' + file.name + '.');
                     } })
                       ),
-                      window.__alloAnatomyModelName && h('button', { type: 'button', className: 'rounded-lg border border-slate-300 bg-white px-2 py-1 text-[10px] font-black text-slate-700', onClick: function() {
+                      window.__alloAnatomyModelName && h('button', { type: 'button', className: 'rounded-lg border border-slate-300 bg-white px-2 py-1 text-[11px] font-black text-slate-700', onClick: function() {
                     try { if (window.__alloAnatomyModelUrl) URL.revokeObjectURL(window.__alloAnatomyModelUrl); } catch (e) {}
                     window.__alloAnatomyModelUrl = null; window.__alloAnatomyModelName = null; upd('_bodyModelRevision', Date.now());
                       } }, 'Use procedural model'),
@@ -11205,7 +12192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('span', { 'data-anatomy-canvas-toolbar-label': 'true' }, bodyView3d ? (body3dStyle === 'clinical' ? 'Clinical Atlas' : body3dStyle === 'realistic' ? 'Surface' : 'Blueprint') + ' · Camera controls · drag/wheel where supported' : (view === 'anterior' ? '2D diagram · Patient right is on your left' : '2D diagram · Patient left/right align with you')),
                 !bodyView3d && h('div', { className: 'anatomy-canvas-toolbar-group', role: 'group', 'aria-label': '2D diagram controls', 'data-anatomy-canvas-controls': '2d' },
                   h('button', { type: 'button', 'data-anatomy-canvas-control': 'zoom-out', 'aria-label': 'Zoom out of anatomy diagram', 'aria-keyshortcuts': '-', disabled: canvasZoomIndex === 0, onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.max(0, canvasZoomIndex - 1)], canvasPanX, canvasPanY); } }, '−'),
-                  h('span', { className: 'text-[10px] font-bold text-slate-600 min-w-[38px] text-center', role: 'status', 'aria-live': 'polite', 'aria-label': canvasViewStatus }, Math.round(canvasZoom * 100) + '%'),
+                  h('span', { className: 'text-[11px] font-bold text-slate-600 min-w-[38px] text-center', role: 'status', 'aria-live': 'polite', 'aria-label': canvasViewStatus }, Math.round(canvasZoom * 100) + '%'),
                   h('button', { type: 'button', 'data-anatomy-canvas-control': 'zoom-in', 'aria-label': 'Zoom in on anatomy diagram', 'aria-keyshortcuts': '+', disabled: canvasZoomIndex === CANVAS_ZOOM_LEVELS.length - 1, onClick: function() { setCanvasView(CANVAS_ZOOM_LEVELS[Math.min(CANVAS_ZOOM_LEVELS.length - 1, canvasZoomIndex + 1)], canvasPanX, canvasPanY); } }, '+'),
                   h('button', { type: 'button', 'data-anatomy-canvas-control': 'pan-left', 'aria-label': 'Pan anatomy diagram left', disabled: canvasZoom === 1, onClick: function() { setCanvasView(canvasZoom, canvasPanX + 18, canvasPanY); } }, '←'),
                   h('button', { type: 'button', 'data-anatomy-canvas-control': 'pan-up', 'aria-label': 'Pan anatomy diagram up', disabled: canvasZoom === 1, onClick: function() { setCanvasView(canvasZoom, canvasPanX, canvasPanY + 18); } }, '↑'),
@@ -11224,7 +12211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('button', { type: 'button', className: 'anatomy-3d-nudge', 'data-anatomy-canvas-control': 'zoom-out', 'aria-label': 'Zoom out', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._anatomy3dKeyControl) cv._anatomy3dKeyControl('-'); } }, '−'),
                     h('button', { type: 'button', 'data-anatomy-canvas-control': 'reset', 'aria-label': 'Reset 3D camera', onClick: function() { var cv = anatomy3dActiveCanvas; if (cv && cv._resetAnatomy3d) cv._resetAnatomy3d(); }, 'aria-keyshortcuts': 'R 0 Home' }, 'Reset camera')
                   ),
-                  body3dStyle !== 'clinical' && h('button', { type: 'button', className: 'anatomy-3d-procedure-button', 'data-anatomy-3d-procedure-launch': 'true', onClick: function() { var launchScenario = getAnatomyProcedureScenario({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive' }); updMulti({ _activeTab: 'procedure', procedure: normalizeAnatomyProcedureState({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive', planSlice: launchScenario.planSlice, feedback: 'Scenario created from the ' + sys.name + ' 3D overview. Review the scan and configure the case.' }) }); if (typeof announceToSR === 'function') announceToSR('Opening a matching synthetic procedure scenario from the 3D body overview.'); } }, 'Open matching procedure')
+                  body3dStyle !== 'clinical' && expertModesAvailable && h('button', { type: 'button', className: 'anatomy-3d-procedure-button', 'data-anatomy-3d-procedure-launch': 'true', onClick: function() { var launchScenario = getAnatomyProcedureScenario({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive' }); updMulti({ _activeTab: 'procedure', procedure: normalizeAnatomyProcedureState({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive', planSlice: launchScenario.planSlice, feedback: 'Scenario created from the ' + sys.name + ' 3D overview. Review the scan and configure the case.' }) }); if (typeof announceToSR === 'function') announceToSR('Opening a matching synthetic procedure scenario from the 3D body overview.'); } }, 'Open matching procedure')
                 )
               ),
               h('div', { className: 'anatomy-canvas-frame', 'data-anatomy-canvas-frame': 'true', 'data-anatomy-view': bodyView3d ? '3d' : '2d' },
@@ -11427,87 +12414,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 })
               ),
               // Blood-flow color legend — the circulatory canvas color-codes vessels but never said what the colors mean
-              sysKey === 'circulatory' && !(bodyView3d && body3dStyle === 'clinical') && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', 'data-anatomy-circulatory-flow-legend': 'true', style: { maxWidth: 360 } },
+              sysKey === 'circulatory' && !(bodyView3d && body3dStyle === 'clinical') && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', 'data-anatomy-circulatory-flow-legend': 'true', style: { maxWidth: 360 } },
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#ef4444' } }), t('stem.anatomy.oxygenated_arteries', 'Oxygenated (arteries)')),
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#3b82f6' } }), t('stem.anatomy.deoxygenated_veins', 'Deoxygenated (veins)')),
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#fbbf24' } }), t('stem.anatomy.coronary', 'Coronary')),
-                h('span', { className: 'w-full text-[9px] italic text-slate-500' }, t('stem.anatomy.exception_the_pulmonary_artery_carries', 'Exception: the pulmonary artery carries deoxygenated blood (blue), the pulmonary veins carry oxygenated blood (red).'))
+                h('span', { className: 'w-full text-[11px] italic text-slate-500' }, t('stem.anatomy.exception_the_pulmonary_artery_carries', 'Exception: the pulmonary artery carries deoxygenated blood (blue), the pulmonary veins carry oxygenated blood (red).'))
               )
                 )
               )
             ),
 
-            // Tab-specific Right Panel
+            // Tab-specific Right Panel, followed by the per-system study aids (fun fact, mnemonics)
+            h('div', { className: 'anatomy-side-column', 'data-anatomy-side-column': 'true' },
             h('div', { id: 'anatomy-mode-panel', className: 'anatomy-side-panel', role: 'tabpanel', 'aria-labelledby': 'anatomy-mode-tab-' + activeTab, 'data-anatomy-panel': activeTab },
-              activeTab === 'explore' ? (
-                quizMode ? (
+              activeTab === 'quiz' ? (
                   // Quiz panel (enhanced with 4 types)
-                  quizQ ? h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-4 space-y-3' },
-                    h('div', { className: 'flex items-center justify-between mb-2' },
+                  quizQ ? h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-4 space-y-3', 'data-anatomy-quiz-panel': 'true', tabIndex: -1,
+                    onKeyDown: function(e) {
+                      var keyNumber = parseInt(e.key, 10);
+                      if (!(keyNumber >= 1 && keyNumber <= quizOptions.length) || quizFeedback) return;
+                      if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+                      e.preventDefault();
+                      answerQuizOption(quizOptions[keyNumber - 1]);
+                    }
+                  },
+                    h('div', { className: 'flex items-center justify-between mb-2 gap-2 flex-wrap' },
                       h('h4', { className: 'font-bold text-green-800 text-sm' }, t('stem.anatomy.anatomy_quiz', '\uD83E\uDDEA Anatomy Quiz')),
                       h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' },
                         '\u2B50 Score ' + quizScore + ' - Question ' + ((quizRoundIdx % quizPool.length) + 1) + '/' + quizPool.length)
                     ),
+                    h('div', { className: 'flex items-center gap-1.5 flex-wrap' },
+                      h('button', { type: 'button', 'aria-label': t('stem.anatomy.restart_quiz', 'Restart quiz'),
+                        onClick: function() { updMulti({ quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 }); },
+                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-green-800 border border-green-600 hover:bg-green-50 active:scale-[0.97]'
+                      }, t('stem.anatomy.restart_quiz_2', '\u21BA Restart')),
+                      h('button', { type: 'button', 'aria-label': t('stem.anatomy.end_quiz_and_explore', 'End quiz and return to Explore'),
+                        onClick: function() { activateAnatomyTab('explore'); },
+                        className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 active:scale-[0.97]'
+                      }, t('stem.anatomy.end_quiz', 'End quiz')),
+                      h('span', { className: 'text-[11px] text-slate-600' }, t('stem.anatomy.quiz_misses_go_to_review', 'Misses are added to your review queue.') + ' ' + t('stem.anatomy.quiz_key_hint', 'Keys 1–4 answer.'))
+                    ),
                     h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 mb-1' },
                       quizType === 0 ? 'Function \u2192 Structure' :
                       quizType === 1 ? 'True or False' :
-                      quizType === 2 ? 'System ID' : 'Clinical Challenge'
+                      quizType === 2 ? 'System ID' : (youngLearner ? t('stem.anatomy.quiz_type_describe', 'Describe it') : 'Clinical Challenge')
                     ),
                     h('p', { className: 'text-[11px] text-slate-600' }, 'Questions match the ' + view + ' diagram.'),
                     // Question text varies by type
                     quizType === 0 ? h('div', null,
                       h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.which_structure_has_this_function', 'Which structure has this function?')),
-                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, quizQ.fn.substring(0, 120) + (quizQ.fn.length > 120 ? '...' : ''))
+                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, quizStemText(quizQ, 'fn', 160))
                     ) : quizType === 1 ? h('div', null,
                       h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.true_or_false', 'True or False:')),
-                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, 'The ' + quizQ.name + ' belongs to the ' + tfClaimSys.name + ' system.')
+                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, t('stem.anatomy.tf_claim_prefix', 'The ') + quizQ.name + ': ' + quizStemText(tfClaimStructure, 'fn', 140))
                     ) : quizType === 2 ? h('div', null,
                       h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.which_body_system_contains_this_struct', 'Which body system contains this structure?')),
                       h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed font-bold' }, quizQ.name)
                     ) : h('div', null,
-                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, t('stem.anatomy.which_structure_is_affected', 'Which structure is affected?')),
-                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, quizQ.clinical ? quizQ.clinical.substring(0, 120) + '...' : quizQ.fn.substring(0, 120) + '...')
+                      h('p', { className: 'text-sm text-slate-800 font-bold leading-relaxed' }, youngLearner ? t('stem.anatomy.which_structure_is_this', 'Which structure is this?') : t('stem.anatomy.which_structure_is_affected', 'Which structure is affected?')),
+                      h('p', { className: 'text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed italic' }, (quizQ.clinical && !youngLearner) ? quizStemText(quizQ, 'clinical', 160) : quizStemText(quizQ, 'fn', 160))
                     ),
                     h('div', { className: 'grid grid-cols-1 gap-1.5' },
-                      quizOptions.map(function(opt) {
+                      quizOptions.map(function(opt, optIndex) {
                         var fb = quizFeedback;
                         var isCorrect = opt.id === quizCorrectId;
                         var wasChosen = fb && fb.chosen === opt.id;
                         var showResult = fb !== null && fb !== undefined;
                         return h('button', { key: opt.id,
                           disabled: showResult,
-                          onClick: function() {
-                            var correct = opt.id === quizCorrectId;
-                            var quizPatch = {
-                              quizFeedback: { chosen: opt.id, correct: correct },
-                              _quizAttempts: quizAttempts + 1,
-                              _streak: correct ? streak + 1 : 0
-                            };
-                            if (correct) {
-                              quizPatch.quizScore = quizScore + 1;
-                              quizPatch._totalCorrect = totalCorrect + 1;
-                              playSound('quizCorrect');
-                            } else playSound('quizWrong');
-                            updMulti(quizPatch);
-                          },
-                          className: 'w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
+                          'aria-keyshortcuts': String(optIndex + 1),
+                          onClick: function() { answerQuizOption(opt); },
+                          className: 'w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 flex items-center gap-2 ' +
                             (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
                               showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
                                 'transition-colors border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-[0.97]')
-                        }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
+                        },
+                          h('span', { className: 'anatomy-quiz-key', 'aria-hidden': 'true' }, showResult && isCorrect ? '\u2713' : showResult && wasChosen ? '\u2717' : String(optIndex + 1)),
+                          h('span', null, opt.name)
+                        );
                       })
                     ),
                     quizFeedback && h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-lg p-3 text-xs leading-relaxed space-y-1.5 ' + (quizFeedback.correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200') },
                       h('p', { className: 'font-black ' + (quizFeedback.correct ? 'text-green-800' : 'text-amber-800') }, (quizFeedback.correct ? '\u2705 Correct! ' : '\u274C The answer was: ') + quizAnswerLabel),
-                      h('p', { className: 'text-slate-700' }, h('span', { className: 'font-bold text-slate-600' }, 'Function: '), quizQ.fn.substring(0, 150)),
-                      quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { className: 'font-bold text-rose-500' }, t('stem.anatomy.clinical', '\u26A0 Clinical: ')), quizQ.clinical.substring(0, 120))
+                      h('p', { className: 'text-slate-700' }, h('span', { className: 'font-bold text-slate-600' }, t('stem.anatomy.function_label', 'Function: ')), clipAtSentence(quizQ.fn, 200)),
+                      quizQ.clinical && h('p', { className: 'text-slate-600 italic' }, h('span', { className: 'font-bold text-rose-700' }, t('stem.anatomy.clinical', '\u26A0 Clinical: ')), quizQ.clinical.substring(0, 120))
                     ),
                     quizFeedback && h('button', { 'aria-label': t('stem.anatomy.next_question', 'Next Question'),
                       onClick: function() { updMulti({ quizIdx: quizRoundIdx + 1, quizFeedback: null }); },
                       className: 'w-full py-2 mt-2 rounded-lg text-xs font-bold bg-green-700 text-white hover:bg-green-700 transition-all active:scale-[0.97]'
-                    }, t('stem.anatomy.next_question_2', 'Next Question \u2192'))
+                    }, t('stem.anatomy.next_question_2', 'Next Question \u2192')),
+                    // A miss is a teachable moment: one click opens the structure's full card on the diagram.
+                    quizFeedback && !quizFeedback.correct && quizType !== 2 && h('button', {
+                      type: 'button', 'data-anatomy-quiz-study': quizQ.id,
+                      'aria-label': t('stem.anatomy.study_in_explore_prefix', 'Study ') + quizQ.name + t('stem.anatomy.study_in_explore_suffix', ' on the diagram'),
+                      onClick: function() { updMulti(structureFocusPatch(quizQ.id, { _activeTab: 'explore', quizMode: false })); announceStructure(quizQ.id); focusAnatomyStructureDetail(); },
+                      className: 'w-full py-2 rounded-lg text-xs font-bold bg-white text-green-800 border border-green-600 hover:bg-green-50 transition-all active:scale-[0.97]'
+                    }, t('stem.anatomy.study_in_explore_prefix', 'Study ') + quizQ.name + t('stem.anatomy.study_in_explore_suffix', ' on the diagram'))
                   ) : h('p', { className: 'text-sm text-slate-600 italic' }, t('stem.anatomy.no_quiz_questions_available', 'No quiz questions available.'))
-                ) : (
+              ) : activeTab === 'explore' ? (
                   sel ? (
                     // Detail panel — warm-anatomy gradient + system-color
                     // glow so each body system feels distinct without
@@ -11554,20 +12558,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         )
                       ),
                       h('div', { className: 'space-y-2.5' },
-                        h('div', null,
-                          h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.function_2', 'Function'), ttsBtn(sel.fn)),
-                          h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.fn)
-                        ),
-                        sel.origin && h('div', { className: 'grid grid-cols-2 gap-2' },
-                          h('div', null,
-                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.origin', 'Origin')),
-                            h('p', { className: 'text-xs text-slate-600' }, sel.origin)
-                          ),
-                          h('div', null,
-                            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.insertion', 'Insertion')),
-                            h('p', { className: 'text-xs text-slate-600' }, sel.insertion)
-                          )
-                        ),
+                        // Young learners with an authored description already read it in the blue box above;
+                        // the full function text and origin/insertion fold away under "More detail".
+                        (function() {
+                          var adultBlocks = [
+                            h('div', { key: 'fn' },
+                              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.function_2', 'Function'), ttsBtn(sel.fn)),
+                              h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.fn)
+                            ),
+                            sel.origin ? h('div', { key: 'oi', className: 'grid grid-cols-2 gap-2' },
+                              h('div', null,
+                                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.origin', 'Origin')),
+                                h('p', { className: 'text-xs text-slate-600' }, sel.origin)
+                              ),
+                              h('div', null,
+                                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.insertion', 'Insertion')),
+                                h('p', { className: 'text-xs text-slate-600' }, sel.insertion)
+                              )
+                            ) : null
+                          ];
+                          if (!hasLearnerText(sel)) return h(React.Fragment, null, adultBlocks);
+                          return h('details', { className: 'anatomy-more-detail', 'data-anatomy-more-detail': 'true' },
+                            h('summary', { className: 'text-[11px] font-bold text-slate-600 cursor-pointer' }, t('stem.anatomy.more_detail_grown_up', 'More detail (grown-up words)')),
+                            h('div', { className: 'mt-2 space-y-2.5' }, adultBlocks)
+                          );
+                        })(),
                         // Clinical content is grade-gated: hidden for K-2; grades 3-5 see a softened
                         // "Staying Healthy" note (sel.clinicalKid) when authored, else nothing; grades
                         // 6-8 / 9-12 (and unknown/teacher band) see the full clinical text.
@@ -11577,7 +12592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-emerald-50 rounded-lg p-2' }, sel.clinicalKid)
                           ) : null) :
                           h('div', null,
-                            h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, t('stem.anatomy.clinical_significance', '\u26A0 Clinical Significance'), ttsBtn(sel.clinical)),
+                            h('p', { className: 'text-[11px] font-bold text-rose-700 uppercase mb-0.5' }, t('stem.anatomy.clinical_significance', '\u26A0 Clinical Significance'), ttsBtn(sel.clinical)),
                             h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2' }, sel.clinical)
                           )),
                         sel.detail && h('div', null,
@@ -11587,6 +12602,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         renderStructureRelationshipMap(),
                         regionalAtlasOpen ? renderRegionalAtlas() : null,
                         confidenceControls(sel.id, sel.name),
+                        h('div', { className: 'anatomy-own-words rounded-lg border border-violet-200 bg-violet-50/50 p-2.5', 'data-anatomy-own-words': sel.id },
+                          h('label', { htmlFor: 'anatomy-own-words-' + sel.id, className: 'block text-[11px] font-bold text-violet-900' }, t('stem.anatomy.own_words_label', '✍ In your own words')),
+                          h('p', { className: 'text-[11px] text-slate-600 mb-1' }, t('stem.anatomy.own_words_hint', 'Explain what the ') + sel.name + t('stem.anatomy.own_words_hint_2', ' does as if to a friend. Your note shows up again on its flashcard.')),
+                          h('textarea', { id: 'anatomy-own-words-' + sel.id, rows: 2, maxLength: 280, value: structureNotes[sel.id] || '',
+                            placeholder: t('stem.anatomy.own_words_placeholder', 'It is the part that…'),
+                            onChange: function(e) { setStructureNote(sel.id, e.target.value); },
+                            className: 'w-full rounded-md border border-violet-200 bg-white px-2 py-1 text-xs text-slate-800 leading-relaxed focus:ring-2 focus:ring-violet-300 outline-none'
+                          }),
+                          h('div', { className: 'flex items-center justify-between text-[11px] text-slate-500' },
+                            h('span', null, (structureNotes[sel.id] || '').length + ' / 280'),
+                            structureNotes[sel.id] ? h('span', { role: 'status' }, t('stem.anatomy.own_words_saved', 'Saved to your study plan')) : null
+                          )
+                        ),
                         // Brain Waves Section
                         sel.brainWaves && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
                           h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase mb-2' }, t('stem.anatomy.brain_wave_types_eeg', '\u26A1 Brain Wave Types (EEG)')),
@@ -11688,7 +12716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('h4', { id: 'anatomy-structure-list-title', tabIndex: -1, className: 'text-sm font-black text-slate-900' }, t('stem.anatomy.structures_in_view', 'Structures in view')),
                           h('p', { className: 'text-[11px] text-slate-600 leading-relaxed', role: 'status', 'aria-live': 'polite' }, sys.name + ' - ' + view + ' - ' + studyFiltered.length + ' matching')
                         ),
-                        h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600' }, exploredInSystem + '/' + viewFiltered.length)
+                        h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600' }, exploredInSystem + '/' + viewFiltered.length + t('stem.anatomy.explored_suffix', ' explored'))
                       ),
                       h('div', { className: 'anatomy-study-filters', role: 'group', 'aria-label': 'Filter structures by study status' },
                         [{ id: 'all', label: 'All' }, { id: 'unseen', label: 'Unseen' }, { id: 'review', label: 'Review' }, { id: 'mastered', label: 'Got it' }].map(function(filterOption) {
@@ -11722,8 +12750,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                             style: selectedStructureId === st.id ? { borderColor: sys.accent, background: sys.color } : {}
                           },
                             h('div', { className: 'flex items-center justify-between gap-2' },
-                              h('span', { className: 'font-bold text-slate-800' }, st.name),
-                              structureConfidence[st.id] ? h('span', { className: 'text-[10px] font-bold text-slate-500' }, structureConfidence[st.id] === 'practice' ? 'Need practice' : structureConfidence[st.id] === 'learning' ? 'Learning' : 'Got it') : null
+                              h('span', { className: 'font-bold text-slate-800 flex items-center gap-1.5 min-w-0' },
+                                // Viewed marker: scanning the list should show at a glance which structures were opened.
+                                h('span', { className: 'anatomy-structure-viewed', 'data-viewed': structuresViewed[st.id] ? 'true' : 'false', 'aria-hidden': 'true' }),
+                                h('span', { className: 'truncate' }, st.name),
+                                structuresViewed[st.id] ? h('span', { className: 'sr-only' }, t('stem.anatomy.viewed_sr', ' (viewed)')) : null
+                              ),
+                              structureConfidence[st.id] ? h('span', { className: 'anatomy-structure-status', 'data-status': structureConfidence[st.id] }, structureConfidence[st.id] === 'practice' ? t('stem.anatomy.need_practice', 'Need practice') : structureConfidence[st.id] === 'learning' ? t('stem.anatomy.learning', 'Learning') : t('stem.anatomy.got_it', 'Got it')) : null
                             ),
                             h('div', { className: 'text-[11px] text-slate-600 mt-0.5 line-clamp-1' }, st.fn.substring(0, 80) + (st.fn.length > 80 ? '...' : ''))
                           );
@@ -11731,7 +12764,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       )
                     )
                   )
-                )
               ) : activeTab === 'aiTutor' ? (
                 // AI Tutor Panel
                 h('div', { className: 'bg-white rounded-xl border-2 border-violet-200 p-4 space-y-3' },
@@ -11795,7 +12827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('div', { className: 'h-full rounded-full bg-emerald-500 transition-all', style: { width: (((tourStepIdx + 1) / tourSteps.length) * 100) + '%' } })
                       )
                     ),
-                    currentTourStep ? h('div', { className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                    tourRecapActive ? renderTourRecap() : currentTourStep ? h('div', { className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
                       h('h5', { className: 'font-bold text-emerald-900 text-sm mb-2' }, currentTourStep.title),
                       h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
                         h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-emerald-200 text-slate-600' }, 'Diagram: ' + sys.name + ' - ' + (view === 'anterior' ? 'Anterior' : 'Posterior')),
@@ -11807,7 +12839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, currentTourStep.narration),
                       ttsBtn(currentTourStep.narration)
                     ) : null,
-                    h('div', { className: 'flex gap-2 justify-between' },
+                    tourRecapActive ? null : h('div', { className: 'flex gap-2 justify-between' },
                       h('button', { 'aria-label': t('stem.anatomy.previous', 'Previous'),
                         onClick: function() {
                           var prev = tourStepIdx - 1;
@@ -11822,13 +12854,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           updMulti(structureFocusPatch(tourSteps[next].structureId, { _tourStepIdx: next })); announceStructure(tourSteps[next].structureId); playSound('guidedStep');
                         },
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-all active:scale-[0.97]'
-                      }, t('stem.anatomy.next_4', 'Next \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_tour', 'Complete Tour!'),
-                        onClick: function() {
-                          updMulti({ _tourCompleted: true, _tourActive: false, _activeTab: 'explore' });
-                          playSound('badge');
-                          if (typeof announceToSR === 'function') announceToSR('Guided anatomy tour complete. Returning to Explore.');
-                          if (addToast) addToast('\uD83C\uDFC6 Guided tour complete!');
-                        },
+                      }, t('stem.anatomy.next_4', 'Next \u2192')) : getTourRecapQuestions().length >= 2 ? h('button', { 'aria-label': t('stem.anatomy.tour_recap_open', 'Check what you saw'), 'data-anatomy-tour-recap-open': 'true',
+                        onClick: function() { updMulti({ _tourRecap: { active: true, answers: {} } }); playSound('guidedStep'); if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.tour_recap_announce', 'Tour recap: answer a short clue for each structure you just saw.')); },
+                        className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-800 text-white hover:bg-emerald-900 transition-all active:scale-[0.97]'
+                      }, t('stem.anatomy.tour_recap_open_2', '\u2713 Check what you saw \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_tour', 'Complete Tour!'),
+                        onClick: completeGuidedTour,
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.complete_tour_2', '\uD83C\uDFC6 Complete Tour!'))
                     )
@@ -11836,7 +12866,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               ) : activeTab === 'spotter' ? (
                 // Spotter Panel
-                h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3' },
+                h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3', 'data-anatomy-spotter-panel': 'true', tabIndex: -1,
+                  onKeyDown: function(e) {
+                    var keyNumber = parseInt(e.key, 10);
+                    if (!spotterActive || !spotterRoundReady || spotterFeedback !== null) return;
+                    if (!(keyNumber >= 1 && keyNumber <= spotterOptions.length)) return;
+                    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+                    e.preventDefault();
+                    answerSpotterOption(spotterOptions[keyNumber - 1]);
+                  }
+                },
                   h('div', { className: 'flex items-center justify-between mb-2' },
                     h('h4', { className: 'font-bold text-amber-800 text-sm' }, t('stem.anatomy.anatomy_spotter_test', '\uD83C\uDFAF Anatomy Spotter Test')),
                     h('div', { className: 'flex gap-2' },
@@ -11869,29 +12908,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       )
                     ) : null,
                     h('div', { className: 'grid grid-cols-2 gap-2' },
-                      (spotterRoundReady ? spotterOptions : []).map(function(opt) {
+                      (spotterRoundReady ? spotterOptions : []).map(function(opt, optIndex) {
                         var isCorrect = opt.id === spotterTarget;
                         var showResult = spotterFeedback !== null;
                         var wasChosen = showResult && spotterFeedback === opt.id;
                         return h('button', { key: opt.id,
                           disabled: showResult,
-                          onClick: function() {
-                            var elapsed = Math.max(0, (Date.now() - spotterStartTime) / 1000);
-                            var isRightAnswer = opt.id === spotterTarget;
-                            var spotterUpdate = { _spotterFeedback: opt.id, _spotterElapsed: elapsed, _spotterTotal: spotterTotal + 1 };
-                            if (isRightAnswer) {
-                              spotterUpdate._spotterScore = spotterScore + 1;
-                              if (elapsed < spotterBestTime) spotterUpdate._spotterBestTime = elapsed;
-                            }
-                            updMulti(spotterUpdate);
-                            playSound(isRightAnswer ? 'spotterCorrect' : 'spotterWrong');
-                            setTimeout(checkAnatomyChallenges, 50);
-                          },
-                          className: 'px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-2 text-left ' +
+                          'aria-keyshortcuts': String(optIndex + 1),
+                          onClick: function() { answerSpotterOption(opt); },
+                          className: 'px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-2 text-left flex items-center gap-2 ' +
                             (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
                               showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
                                 'transition-colors border-slate-200 hover:border-amber-600 text-slate-700 hover:bg-amber-50 active:scale-[0.97]')
-                        }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
+                        },
+                          h('span', { className: 'anatomy-quiz-key', 'aria-hidden': 'true' }, showResult && isCorrect ? '\u2713' : showResult && wasChosen ? '\u2717' : String(optIndex + 1)),
+                          h('span', null, opt.name)
+                        );
                       })
                     ),
                     spotterFeedback && (function() {
@@ -11910,8 +12942,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           ),
                           h('p', { className: 'text-slate-600 mt-1' },
                             isRight
-                              ? targetStruct.name + ' functions to: ' + targetStruct.fn
-                              : 'You chose ' + selectedStruct.name + ', which functions to: ' + selectedStruct.fn + '. ' + targetStruct.name + ' functions to: ' + targetStruct.fn
+                              ? targetStruct.name + ' functions to: ' + learnerText(targetStruct)
+                              : 'You chose ' + selectedStruct.name + ', which functions to: ' + learnerText(selectedStruct) + '. ' + targetStruct.name + ' functions to: ' + learnerText(targetStruct)
                           )
                         ),
 
@@ -11931,13 +12963,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                                     setTimeout(checkAnatomyChallenges, 50);
                                   }
                                 },
-                                className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-800 text-[10px] font-bold transition-all active:scale-[0.97]'
+                                className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-800 text-[11px] font-bold transition-all active:scale-[0.97]'
                               }, t('stem.anatomy.study_term_5_rp', 'Study Term (+5 RP)'))
                             ),
                             lookedUp && h('div', { className: 'text-xs text-slate-600 mt-1' }, ANAT_VOCAB[vocabTerm])
                           );
                         })(),
 
+                        !isRight && targetStruct.id ? h('button', {
+                          type: 'button', 'data-anatomy-spotter-study': targetStruct.id,
+                          'aria-label': t('stem.anatomy.study_in_explore_prefix', 'Study ') + targetStruct.name + t('stem.anatomy.study_in_explore_suffix', ' on the diagram'),
+                          onClick: function() { updMulti(structureFocusPatch(targetStruct.id, { _activeTab: 'explore', quizMode: false })); announceStructure(targetStruct.id); focusAnatomyStructureDetail(); },
+                          className: 'w-full py-2 rounded-lg text-xs font-bold bg-white text-amber-800 border border-amber-600 hover:bg-amber-50 transition-all active:scale-[0.97]'
+                        }, t('stem.anatomy.study_in_explore_prefix', 'Study ') + targetStruct.name + t('stem.anatomy.study_in_explore_suffix', ' on the diagram')) : null,
                         h('button', { 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
                           onClick: function() { pickSpotterRound(false); },
                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]'
@@ -11996,7 +13034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('div', { className: 'h-full rounded-full transition-all', style: { width: (((pathwayStepIdx + 1) / pw.steps.length) * 100) + '%', background: pw.color } })
                         )
                       ),
-                      step ? h('div', { className: 'rounded-xl p-4 border-2', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { borderColor: pw.color + '40', background: pw.color + '08' } },
+                      pathwayRecapActive ? renderPathwayRecap(pw) : step ? h('div', { className: 'rounded-xl p-4 border-2', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { borderColor: pw.color + '40', background: pw.color + '08' } },
                         h('h5', { className: 'font-bold text-sm mb-2', style: { color: pw.color } }, (pathwayStepIdx + 1) + '. ' + step.label),
                         h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
                           h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600' }, 'Diagram: ' + sys.name + ' - ' + (view === 'anterior' ? 'Anterior' : 'Posterior')),
@@ -12008,7 +13046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, step.detail),
                         ttsBtn(step.detail)
                       ) : null,
-                      h('div', { className: 'flex gap-2 justify-between' },
+                      pathwayRecapActive ? null : h('div', { className: 'flex gap-2 justify-between' },
                         h('button', { 'aria-label': t('stem.anatomy.previous_3', 'Previous'),
                           onClick: function() {
                             if (pathwayStepIdx > 0) {
@@ -12026,16 +13064,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold text-white hover:opacity-90 transition-all',
                           style: { background: pw.color }
-                        }, t('stem.anatomy.next_6', 'Next \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_pathway', 'Complete Pathway!'),
-                          onClick: function() {
-                            var newPC = Object.assign({}, pathwaysCompleted);
-                            newPC[pw.id] = true;
-                            updMulti({ _pathwaysCompleted: newPC, _activePathway: null, _pathwayStep: 0 });
-                            playSound('badge');
-                            if (addToast) addToast('\uD83D\uDEE4 Pathway complete: ' + pw.title + '!');
-                            if (typeof announceToSR === 'function') announceToSR('Pathway complete: ' + pw.title + '.');
-                            setTimeout(checkAnatomyChallenges, 50);
-                          },
+                        }, t('stem.anatomy.next_6', 'Next \u2192')) : getPathwayRecapQuestions().length >= 2 ? h('button', { 'aria-label': t('stem.anatomy.pathway_recap_open', 'Check what you traced'), 'data-anatomy-pathway-recap-open': 'true',
+                          onClick: function() { updMulti({ _pathwayRecap: { active: true, pathwayId: pw.id, answers: {} } }); playSound('pathwayStep'); if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.pathway_recap_announce', 'Pathway recap: answer a short clue for each step you traced.')); },
+                          className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-rose-800 text-white hover:bg-rose-900 transition-all active:scale-[0.97]'
+                        }, t('stem.anatomy.pathway_recap_open_2', '\u2713 Check what you traced \u2192')) : h('button', { 'aria-label': t('stem.anatomy.complete_pathway', 'Complete Pathway!'),
+                          onClick: function() { completeActivePathway(pw); },
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all active:scale-[0.97]'
                         }, t('stem.anatomy.complete_pathway_2', '\uD83C\uDFC6 Complete Pathway!'))
                       )
@@ -12047,7 +13080,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
                   h('div', { className: 'flex items-center justify-between mb-2' },
                     h('h4', { className: 'font-bold text-sky-800 text-sm' }, t('stem.anatomy.how_body_systems_connect', '\uD83D\uDD17 How Body Systems Connect')),
-                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored')
+                    h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700' }, Object.keys(connectionsViewed).length + '/' + CONNECTIONS.length + ' explored · ' + connectionChecksAnswered + t('stem.anatomy.connect_checked_suffix', ' checked'))
                   ),
                   h('div', { className: 'space-y-2 max-h-[500px] overflow-y-auto' },
                     CONNECTIONS.map(function(conn) {
@@ -12077,21 +13110,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('span', { className: 'flex items-center gap-2' },
                             h('span', { className: 'text-base', 'aria-hidden': 'true' }, conn.icon),
                             h('span', { className: 'text-xs font-black text-sky-800' }, conn.title),
-                            h('span', { className: 'ml-auto text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600', 'aria-hidden': 'true' },
+                            connectionChecks[conn.id] ? h('span', { className: 'ml-auto text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600', 'aria-hidden': 'true' },
                               SYSTEMS[conn.systems[0]].icon + ' + ' + SYSTEMS[conn.systems[1]].icon
-                            ),
+                            ) : h('span', { className: 'ml-auto' }),
                             isViewed ? h('span', { className: 'text-[11px] text-emerald-600 font-bold', 'aria-label': 'Explored' }, '\u2713') : null,
                             h('span', { className: 'text-sky-600 text-xs', 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
                           )
                         ),
-                        h('p', { className: 'px-3 pb-3 text-[11px] text-slate-600 leading-relaxed' }, conn.desc),
+                        h('p', { className: 'px-3 pb-3 text-[11px] text-slate-600 leading-relaxed' }, connectionCardText(conn, conn.desc)),
                         isExpanded ? h('div', {
                           id: detailsId,
                           role: 'region',
                           'aria-label': conn.title + ' details',
                           className: 'mx-3 mb-3 pt-3 border-t border-sky-200 space-y-2'
                         },
-                          h('p', { className: 'text-[11px] text-sky-700 italic leading-relaxed' }, '\uD83D\uDCA1 Example: ' + conn.example),
+                          h('p', { className: 'text-[11px] text-sky-700 italic leading-relaxed' }, '\uD83D\uDCA1 Example: ' + connectionCardText(conn, conn.example)),
+                          (function() {
+                            var chosenSystem = connectionChecks[conn.id] || null;
+                            var partnerSystem = SYSTEMS[conn.systems[1]], anchorSystem = SYSTEMS[conn.systems[0]];
+                            if (!partnerSystem || !anchorSystem) return null;
+                            return h('div', { className: 'rounded-lg border border-sky-200 bg-sky-50/60 p-2.5', 'data-anatomy-connection-check': conn.id, 'data-answered': chosenSystem ? 'true' : 'false' },
+                              h('p', { className: 'text-xs font-bold text-sky-900' }, t('stem.anatomy.connect_check_prefix', 'In ') + conn.title + t('stem.anatomy.connect_check_mid', ', which system partners with the ') + anchorSystem.name + t('stem.anatomy.connect_check_suffix', ' system?')),
+                              h('div', { className: 'mt-1.5 grid grid-cols-2 gap-1.5' }, connectionCheckOptions(conn).map(function(systemId) {
+                                var option = SYSTEMS[systemId], isCorrect = systemId === conn.systems[1], wasChosen = chosenSystem === systemId;
+                                return h('button', { key: systemId, type: 'button', disabled: !!chosenSystem, 'aria-pressed': wasChosen,
+                                  onClick: function() { answerConnectionCheck(conn, systemId); },
+                                  className: 'text-left px-2 py-1 rounded-lg text-[11px] font-bold border-2 transition-all ' +
+                                    (chosenSystem && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : chosenSystem && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-sky-100 active:scale-[0.97]')
+                                }, (chosenSystem && isCorrect ? '\u2705 ' : chosenSystem && wasChosen ? '\u274C ' : '') + option.icon + ' ' + option.name);
+                              })),
+                              chosenSystem ? h('p', { className: 'mt-1.5 text-[11px] text-slate-700', role: 'status', 'aria-live': 'polite' },
+                                chosenSystem === conn.systems[1] ? t('stem.anatomy.connect_check_right', 'Right. Open both diagrams below to see where they meet.') : t('stem.anatomy.connect_check_wrong_prefix', 'It is the ') + partnerSystem.name + t('stem.anatomy.connect_check_wrong_suffix', ' system. Re-read the example, then open both diagrams below.')) : null
+                            );
+                          })(),
                           h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Connected system diagrams' },
                             conn.systems.map(function(connectionSystemId) {
                               var connectionSystem = SYSTEMS[connectionSystemId];
@@ -12117,7 +13168,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     h('h4', { className: 'font-bold text-teal-800 text-sm' }, t('stem.anatomy.anatomy_flashcards', '\uD83C\uDCCF Anatomy Flashcards')),
                     h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700', 'aria-label': 'Flashcard progress' }, flashcardPool.length > 0 ? (flashcardIdx + 1) + '/' + flashcardPool.length : '0/0')
                   ),
-                  h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Recall the function, then use Reveal function to check your answer. Study ' + sys.name + ' structures.'),
+                  h('p', { className: 'text-xs text-slate-600 mb-2' }, t('stem.anatomy.flashcard_intro', 'Say the function out loud, reveal it to check, then rate how well you know it. This deck covers the ') + sys.name + t('stem.anatomy.flashcard_intro_2', ' system: cards marked Need practice come first, then unrated cards, then Learning, then Got it.')),
+                  flashcardReviewFirstCount > 0 ? h('p', { className: 'text-[11px] font-bold text-rose-700 mb-2', role: 'status' }, flashcardReviewFirstCount + t('stem.anatomy.flashcard_review_first', ' card(s) marked Need practice are at the front of this deck.')) : null,
                   flashcardPool.length > 0 ? h('div', { className: 'space-y-3' },
                     h('div', { role: 'group', 'aria-label': 'Flashcard ' + (flashcardIdx + 1) + ' of ' + flashcardPool.length + ': ' + flashcardPool[flashcardIdx].name,
                       className: 'w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left ' +
@@ -12130,16 +13182,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('p', { className: 'text-xs text-indigo-500 italic' }, '\uD83D\uDD0A ' + PRONUNCIATION[flashcardPool[flashcardIdx % flashcardPool.length].id]) : null,
                           h('p', { className: 'text-[11px] text-slate-600 mt-4' }, 'Answer hidden')
                         ) : h('div', null,
-                          h('p', { className: 'text-[11px] font-bold text-teal-600 uppercase mb-2' }, 'FUNCTION'),
-                          h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, flashcardPool[flashcardIdx % flashcardPool.length].fn),
-                          flashcardPool[flashcardIdx % flashcardPool.length].clinical ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
-                            h('p', { className: 'text-[11px] font-bold text-rose-500 uppercase mb-0.5' }, t('stem.anatomy.clinical_2', '\u26A0 Clinical')),
+                          h('p', { className: 'text-[11px] font-bold text-teal-800 uppercase mb-2' }, 'FUNCTION'),
+                          h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, learnerText(flashcardPool[flashcardIdx % flashcardPool.length])),
+                          structureNotes[flashcardPool[flashcardIdx % flashcardPool.length].id] ? h('div', { className: 'mt-2 pt-2 border-t border-violet-200', 'data-anatomy-flashcard-note': 'true' },
+                            h('p', { className: 'text-[11px] font-bold text-violet-800 uppercase mb-0.5' }, t('stem.anatomy.own_words_card', '✍ Your own words')),
+                            h('p', { className: 'text-xs text-slate-700 italic leading-relaxed' }, structureNotes[flashcardPool[flashcardIdx % flashcardPool.length].id])
+                          ) : null,
+                          flashcardPool[flashcardIdx % flashcardPool.length].clinical && gradeBand !== 'k2' ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
+                            h('p', { className: 'text-[11px] font-bold text-rose-700 uppercase mb-0.5' }, t('stem.anatomy.clinical_2', '\u26A0 Clinical')),
                             h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
                           ) : null
                         )
                       ),
                       h('div', { className: 'mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2 flex-wrap' },
-                        flashcardFlipped ? ttsBtn(flashcardPool[flashcardIdx % flashcardPool.length].fn) : h('span', { className: 'text-[11px] text-slate-500' }, 'Say the function before revealing it.'),
+                        flashcardFlipped ? ttsBtn(learnerText(flashcardPool[flashcardIdx % flashcardPool.length])) : h('span', { className: 'text-[11px] text-slate-500' }, 'Say the function before revealing it.'),
                         h('button', {
                           'aria-expanded': flashcardFlipped,
                           'aria-controls': 'anatomy-flashcard-content',
@@ -12148,7 +13204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         }, flashcardFlipped ? 'Show structure name' : 'Reveal function')
                       )
                     ),
-                    flashcardFlipped ? confidenceControls(flashcardPool[flashcardIdx % flashcardPool.length].id, flashcardPool[flashcardIdx % flashcardPool.length].name) : null,
+                    flashcardFlipped ? confidenceControls(flashcardPool[flashcardIdx % flashcardPool.length].id, flashcardPool[flashcardIdx % flashcardPool.length].name, { _flashcardDeck: flashcardDeckIds }) : null,
                     h('div', { className: 'flex gap-2 justify-between', role: 'toolbar', 'aria-label': 'Flashcard navigation' },
                       h('button', { 'aria-label': t('stem.anatomy.previous_5', 'Previous'),
                         onClick: function() { var pi = flashcardIdx > 0 ? flashcardIdx - 1 : flashcardPool.length - 1; updMulti(structureFocusPatch(flashcardPool[pi].id, { _flashcardIdx: pi, _flashcardFlipped: false })); announceStructure(flashcardPool[pi].id); playSound('guidedStep'); },
@@ -12178,13 +13234,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var resolvedProcedureDifficulty = procedureCase.adaptive;
                 var procedureSteps = ['Scan plan', 'Safety prep', 'Access tissue', 'Control field', 'Collect specimen', 'Microscopy', 'Debrief'];
                 var procedureTools = [
-                  { id: 'scalpel', label: 'Scalpel', use: 'Trace a continuous path through responsive layers' },
-                  { id: 'retractor', label: 'Retractor', use: 'Engage both incision edges or the tips may slip' },
-                  { id: 'suction', label: 'Suction', use: 'Place the tip inside the local fluid pool' },
-                  { id: 'cautery', label: 'Cautery', use: 'Apply localized energy at the visible source' },
-                  { id: 'forceps', label: 'Forceps', use: 'Align both tips and control grasp pressure' }
+                  { id: 'scalpel', label: t('stem.anatomy.scalpel', 'Scalpel'), use: t('stem.anatomy.trace_a_continuous_path_through_respon', 'Trace a continuous path through responsive layers') },
+                  { id: 'retractor', label: t('stem.anatomy.retractor', 'Retractor'), use: t('stem.anatomy.engage_both_incision_edges_or_the_tips', 'Engage both incision edges or the tips may slip') },
+                  { id: 'suction', label: t('stem.anatomy.suction', 'Suction'), use: t('stem.anatomy.place_the_tip_inside_the_local_fluid_p', 'Place the tip inside the local fluid pool') },
+                  { id: 'cautery', label: t('stem.anatomy.cautery', 'Cautery'), use: t('stem.anatomy.apply_localized_energy_at_the_visible', 'Apply localized energy at the visible source') },
+                  { id: 'forceps', label: t('stem.anatomy.forceps', 'Forceps'), use: t('stem.anatomy.align_both_tips_and_control_grasp_pres', 'Align both tips and control grasp pressure') }
                 ];
-                var procedureAssistTools = [{ id: 'none', label: 'No assist', use: 'Single-instrument control' }, { id: 'retractor', label: 'Retractor assist', use: 'Maintains exposure during another gesture' }, { id: 'suction', label: 'Suction assist', use: 'Clears fluid during another gesture' }];
+                var procedureAssistTools = [{ id: 'none', label: t('stem.anatomy.no_assist', 'No assist'), use: t('stem.anatomy.single_instrument_control', 'Single-instrument control') }, { id: 'retractor', label: t('stem.anatomy.retractor_assist', 'Retractor assist'), use: t('stem.anatomy.maintains_exposure_during_another_gest', 'Maintains exposure during another gesture') }, { id: 'suction', label: t('stem.anatomy.suction_assist', 'Suction assist'), use: t('stem.anatomy.clears_fluid_during_another_gesture', 'Clears fluid during another gesture') }];
                 function setProcedure(patch) { upd('procedure', Object.assign({}, procedure, patch)); }
                 function emitProcedureSensoryCue(tool, nextState) {
                   if (!procedure.sensoryCues) return;
@@ -12210,20 +13266,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 function lockProcedurePlan() {
                   var distance = Math.abs(procedure.planSlice - procedureCase.planSlice);
                   var feedback = distance <= 6 ? procedureCase.label + ' slice locked. The synthetic target is well centered for the planned approach.' : 'Plan locked, but the target is near the edge of this slice. You can continue and review the planning score later.';
-                  setProcedure({ planLocked: true, stage: 1, feedback: feedback, actionLog: procedure.actionLog.concat([{ id: 'plan-' + Date.now(), label: 'Locked synthetic CT plan at slice ' + Math.round(procedure.planSlice), tool: 'imaging', depth: 0, at: Date.now() }]).slice(-14) });
+                  setProcedure({ planLocked: true, stage: 1, feedback: feedback, actionLog: procedure.actionLog.concat([{ id: 'plan-' + Date.now(), label: t('stem.anatomy.locked_synthetic_ct_plan_at_slice', 'Locked synthetic CT plan at slice ') + Math.round(procedure.planSlice), tool: 'imaging', depth: 0, at: Date.now() }]).slice(-14) });
                   if (typeof announceToSR === 'function') announceToSR(feedback);
                 }
                 function beginProcedureAccess() {
                   if (!procedure.timeoutConfirmed || !procedure.sterilePrep || !procedure.eyeProtection) {
-                    setProcedure({ feedback: 'Complete all three preparation checks before beginning the simulation.' });
+                    setProcedure({ feedback: t('stem.anatomy.complete_all_three_preparation_checks', 'Complete all three preparation checks before beginning the simulation.') });
                     if (typeof announceToSR === 'function') announceToSR('Complete all preparation checks first.');
                     return;
                   }
-                  setProcedure({ stage: 2, tool: 'scalpel', feedback: 'Preparation complete. Use moderate pressure and a controlled angle to advance through the layered model.' });
+                  setProcedure({ stage: 2, tool: 'scalpel', feedback: t('stem.anatomy.preparation_complete_use_moderate_pres', 'Preparation complete. Use moderate pressure and a controlled angle to advance through the layered model.') });
                 }
                 function completeProcedureStroke(points, inputType) {
                   var next = applyAnatomyProcedureStroke(procedure, { id: String(Date.now()), tool: procedure.tool, input: inputType || 'mouse', points: points, endedAt: Date.now() });
-                  if (next.practiceMode === 'challenge' && next.complication === 'none' && !next.specimenCollected) next = Object.assign({}, next, { showCoachHint: false, feedback: 'Gesture recorded. Use the objective board and quantitative metrics to choose the next action.' });
+                  if (next.practiceMode === 'challenge' && next.complication === 'none' && !next.specimenCollected) next = Object.assign({}, next, { showCoachHint: false, feedback: t('stem.anatomy.gesture_recorded_use_the_objective_boa', 'Gesture recorded. Use the objective board and quantitative metrics to choose the next action.') });
                   upd('procedure', next);
                   emitProcedureSensoryCue(procedure.tool, next);
                   if (typeof announceToSR === 'function') announceToSR(next.feedback);
@@ -12291,11 +13347,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 function handleProcedureCanvasKey(event) {
                   if (!canApplyTool) return;
                   if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); applyProcedureInstrument(); }
-                  else if (event.key === 'ArrowUp') { event.preventDefault(); setProcedure({ pressure: Math.min(10, procedure.pressure + 1), feedback: 'Pressure increased to ' + Math.min(10, procedure.pressure + 1) + '.' }); }
-                  else if (event.key === 'ArrowDown') { event.preventDefault(); setProcedure({ pressure: Math.max(1, procedure.pressure - 1), feedback: 'Pressure decreased to ' + Math.max(1, procedure.pressure - 1) + '.' }); }
-                  else if (event.key === '[') { event.preventDefault(); setProcedure({ showLoupe: true, viewZoom: Math.max(1, Math.round((procedure.viewZoom - 0.5) * 2) / 2), feedback: 'Working-view magnification decreased.' }); }
-                  else if (event.key === ']') { event.preventDefault(); setProcedure({ showLoupe: true, viewZoom: Math.min(3, Math.round((procedure.viewZoom + 0.5) * 2) / 2), feedback: 'Working-view magnification increased.' }); }
-                  else if (event.key === 'f' || event.key === 'F') { event.preventDefault(); setProcedure({ showLoupe: true, focusLock: !procedure.focusLock, feedback: procedure.focusLock ? 'Working view unlocked from the selected landmark.' : 'Working view locked to the selected landmark.' }); }
+                  else if (event.key === 'ArrowUp') { event.preventDefault(); setProcedure({ pressure: Math.min(10, procedure.pressure + 1), feedback: t('stem.anatomy.pressure_increased_to', 'Pressure increased to ') + Math.min(10, procedure.pressure + 1) + '.' }); }
+                  else if (event.key === 'ArrowDown') { event.preventDefault(); setProcedure({ pressure: Math.max(1, procedure.pressure - 1), feedback: t('stem.anatomy.pressure_decreased_to', 'Pressure decreased to ') + Math.max(1, procedure.pressure - 1) + '.' }); }
+                  else if (event.key === '[') { event.preventDefault(); setProcedure({ showLoupe: true, viewZoom: Math.max(1, Math.round((procedure.viewZoom - 0.5) * 2) / 2), feedback: t('stem.anatomy.working_view_magnification_decreased', 'Working-view magnification decreased.') }); }
+                  else if (event.key === ']') { event.preventDefault(); setProcedure({ showLoupe: true, viewZoom: Math.min(3, Math.round((procedure.viewZoom + 0.5) * 2) / 2), feedback: t('stem.anatomy.working_view_magnification_increased', 'Working-view magnification increased.') }); }
+                  else if (event.key === 'f' || event.key === 'F') { event.preventDefault(); setProcedure({ showLoupe: true, focusLock: !procedure.focusLock, feedback: procedure.focusLock ? t('stem.anatomy.working_view_unlocked_from_the_selecte', 'Working view unlocked from the selected landmark.') : t('stem.anatomy.working_view_locked_to_the_selected_la', 'Working view locked to the selected landmark.') }); }
                 }
                 function undoProcedureGesture() {
                   upd('procedure', undoAnatomyProcedureStroke(procedure));
@@ -12306,7 +13362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   setLabToolData(function(prev) {
                     var next = Object.assign({}, prev || {});
                     var anatomyState = Object.assign({}, next.anatomy || {});
-                    anatomyState.procedure = Object.assign({}, normalizeAnatomyProcedureState(anatomyState.procedure), procedure, { stage: 5, microscopyStarted: true, specimenId: specimen.id, feedback: 'Specimen transferred to the Microdissection Studio.' });
+                    anatomyState.procedure = Object.assign({}, normalizeAnatomyProcedureState(anatomyState.procedure), procedure, { stage: 5, microscopyStarted: true, specimenId: specimen.id, feedback: t('stem.anatomy.specimen_transferred_to_the_microdisse', 'Specimen transferred to the Microdissection Studio.') });
                     next.anatomy = anatomyState;
                     next.cell = Object.assign({}, next.cell || {}, { mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive', microCellType: 'animal', microStage: 0, microTool: 'objective', microStain: 'none', microTarget: null, procedureSpecimen: specimen, _scaleJourneySource: 'anatomy-procedure' });
                     return next;
@@ -12319,7 +13375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   var shouldArchive = procedure.planLocked || procedure.actions > 0 || procedure.specimenCollected;
                   var archived = shouldArchive ? procedure.attempts.concat([{ id: 'attempt-' + Date.now(), score: procedureScore.total, caseId: procedure.caseId, scenarioSeed: procedure.scenarioSeed, approach: procedure.approach, mode: procedure.practiceMode, integrity: Math.round(procedure.sampleIntegrity), hazards: procedure.hazardEvents, actions: procedure.actions }]).slice(-5) : procedure.attempts;
                   upd('procedure', normalizeAnatomyProcedureState({ caseId: procedure.caseId, scenarioSeed: procedure.scenarioSeed, approach: procedure.approach, scenarioDifficulty: procedure.scenarioDifficulty, instructorMode: procedure.instructorMode, planSlice: procedureCase.planSlice, practiceMode: procedure.practiceMode, showHazards: procedure.practiceMode !== 'challenge', attempts: archived }));
-                  if (typeof announceToSR === 'function') announceToSR(shouldArchive ? 'Attempt archived and scenario reset.' : 'Procedure scenario reset.');
+                  if (typeof announceToSR === 'function') announceToSR(shouldArchive ? t('stem.anatomy.attempt_archived_and_scenario_reset', 'Attempt archived and scenario reset.') : t('stem.anatomy.procedure_scenario_reset', 'Procedure scenario reset.'));
                 }
                 var procedureScore = evaluateAnatomyProcedure(procedure);
                 var procedureObjectives = getAnatomyProcedureObjectives(procedure);
@@ -12331,11 +13387,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var lastProcedureMetrics = lastProcedureStroke && lastProcedureStroke.metrics ? lastProcedureStroke.metrics : null;
                 var procedureTissue = getAnatomyTissueResponse(procedure.incisionDepth);
                 var complicationMeta = {
-                  vessel_bleed: { label: 'Synthetic vessel-source event', guidance: 'In this model, a moderate-pressure cautery gesture over the vessel marker can resolve the source. Checkpoint restore is always available.' },
-                  nerve_contact: { label: 'Synthetic nerve contact', guidance: 'This event is not reversible in the model. Restore the previous checkpoint and choose a path farther from the nerve marker.' },
-                  tissue_tear: { label: 'Synthetic tissue tear', guidance: 'Restore the previous checkpoint, lower pressure, and use a shorter retraction gesture.' },
-                  thermal_spread: { label: 'Synthetic thermal spread', guidance: 'Restore the previous checkpoint, lower pressure, and shorten the cautery gesture.' },
-                  specimen_crush: { label: 'Synthetic specimen compression', guidance: 'Restore the previous checkpoint and repeat collection with lighter force.' }
+                  vessel_bleed: { label: t('stem.anatomy.synthetic_vessel_source_event', 'Synthetic vessel-source event'), guidance: t('stem.anatomy.in_this_model_a_moderate_pressure_caut', 'In this model, a moderate-pressure cautery gesture over the vessel marker can resolve the source. Checkpoint restore is always available.') },
+                  nerve_contact: { label: t('stem.anatomy.synthetic_nerve_contact', 'Synthetic nerve contact'), guidance: t('stem.anatomy.this_event_is_not_reversible_in_the_mo', 'This event is not reversible in the model. Restore the previous checkpoint and choose a path farther from the nerve marker.') },
+                  tissue_tear: { label: t('stem.anatomy.synthetic_tissue_tear', 'Synthetic tissue tear'), guidance: t('stem.anatomy.restore_the_previous_checkpoint_lower', 'Restore the previous checkpoint, lower pressure, and use a shorter retraction gesture.') },
+                  thermal_spread: { label: t('stem.anatomy.synthetic_thermal_spread', 'Synthetic thermal spread'), guidance: t('stem.anatomy.restore_the_previous_checkpoint_lower_2', 'Restore the previous checkpoint, lower pressure, and shorten the cautery gesture.') },
+                  specimen_crush: { label: t('stem.anatomy.synthetic_specimen_compression', 'Synthetic specimen compression'), guidance: t('stem.anatomy.restore_the_previous_checkpoint_and_re', 'Restore the previous checkpoint and repeat collection with lighter force.') }
                 }[procedure.complication] || null;
                 function paintAnatomyProcedureFrame(canvas, context, timestamp) {
                   var reduceProcedureMotion = procedure.reducedVisuals;
@@ -12346,113 +13402,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 anatomyProcedureController.push(paintAnatomyProcedureFrame);
                 return h('section', { className: 'rounded-2xl border-2 border-rose-200 bg-white p-4 shadow-sm', 'data-anatomy-procedure-workspace': 'true', 'aria-labelledby': 'anatomy-procedure-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
-                    h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-rose-800' }, 'Integrated evidence journey'), h('h4', { id: 'anatomy-procedure-title', className: 'text-xl font-black text-slate-900' }, 'Scan-to-cell Procedure Studio'), h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, 'Use a synthetic scan to plan an approach, manage a layered tissue model, preserve a specimen, and complete the investigation at cell scale.')),
-                    h('span', { className: 'rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-black text-amber-900' }, 'Educational simulation')
+                    h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-rose-800' }, t('stem.anatomy.integrated_evidence_journey', 'Integrated evidence journey')), h('h4', { id: 'anatomy-procedure-title', className: 'text-xl font-black text-slate-900' }, t('stem.anatomy.scan_to_cell_procedure_studio', 'Scan-to-cell Procedure Studio')), h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, t('stem.anatomy.use_a_synthetic_scan_to_plan_an_approa', 'Use a synthetic scan to plan an approach, manage a layered tissue model, preserve a specimen, and complete the investigation at cell scale.'))),
+                    h('span', { className: 'rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-black text-amber-900' }, t('stem.anatomy.educational_simulation', 'Educational simulation'))
                   ),
-                  h('div', { className: 'mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950', role: 'note' }, h('strong', null, 'Synthetic practice only: '), 'This simplified interaction does not teach or authorize a real procedure. It omits critical anatomy, team roles, sterile technique, consent, monitoring, and complication management. Never use it for patient care.'),
+                  h('div', { className: 'mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950', role: 'note' }, h('strong', null, t('stem.anatomy.synthetic_practice_only', 'Synthetic practice only: ')), 'This simplified interaction does not teach or authorize a real procedure. It omits critical anatomy, team roles, sterile technique, consent, monitoring, and complication management. Never use it for patient care.'),
                   h('div', { className: 'mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3', 'data-procedure-practice-mode': procedure.practiceMode },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
-                      h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-800' }, 'Practice format'), h('p', { className: 'text-xs text-violet-950' }, procedure.practiceMode === 'guided' ? 'Guides, anatomy markers, and automatic coaching remain available.' : 'Anatomy markers start hidden and coaching is learner-requested. Safety events remain explicit.')),
-                      h('div', { className: 'grid grid-cols-2 gap-1', role: 'group', 'aria-label': 'Procedure practice format' }, [['guided', 'Guided'], ['challenge', 'Challenge']].map(function(item) { var selected = procedure.practiceMode === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ practiceMode: item[0], showHazards: item[0] === 'guided', showCoachHint: false, feedback: item[0] === 'guided' ? 'Guided practice enabled.' : 'Challenge mode enabled. Anatomy guides are hidden until requested.' }); }, className: 'rounded-lg border px-3 py-2 text-xs font-black ' + (selected ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-900') }, item[1]); }))
+                      h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-violet-800' }, t('stem.anatomy.practice_format', 'Practice format')), h('p', { className: 'text-xs text-violet-950' }, procedure.practiceMode === 'guided' ? t('stem.anatomy.guides_anatomy_markers_and_automatic_c', 'Guides, anatomy markers, and automatic coaching remain available.') : t('stem.anatomy.anatomy_markers_start_hidden_and_coach', 'Anatomy markers start hidden and coaching is learner-requested. Safety events remain explicit.'))),
+                      h('div', { className: 'grid grid-cols-2 gap-1', role: 'group', 'aria-label': t('stem.anatomy.procedure_practice_format', 'Procedure practice format') }, [['guided', t('stem.anatomy.guided', 'Guided')], ['challenge', t('stem.anatomy.challenge', 'Challenge')]].map(function(item) { var selected = procedure.practiceMode === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ practiceMode: item[0], showHazards: item[0] === 'guided', showCoachHint: false, feedback: item[0] === 'guided' ? t('stem.anatomy.guided_practice_enabled', 'Guided practice enabled.') : t('stem.anatomy.challenge_mode_enabled_anatomy_guides', 'Challenge mode enabled. Anatomy guides are hidden until requested.') }); }, className: 'rounded-lg border px-3 py-2 text-xs font-black ' + (selected ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-900') }, item[1]); }))
                     )
                   ),
-                  h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-4 xl:grid-cols-7', 'aria-label': 'Integrated procedure progress' }, procedureSteps.map(function(label, index) { var done = procedure.stage > index, active = procedure.stage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-[11px] font-bold', style: { borderColor: done || active ? '#be123c' : '#cbd5e1', background: done ? '#ffe4e6' : active ? '#fff1f2' : '#fff', color: done || active ? '#9f1239' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '\u2713 ' : (index + 1) + '. ') + label); })),
+                  h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-4 xl:grid-cols-7', 'aria-label': t('stem.anatomy.integrated_procedure_progress', 'Integrated procedure progress') }, procedureSteps.map(function(label, index) { var done = procedure.stage > index, active = procedure.stage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-[11px] font-bold', style: { borderColor: done || active ? '#be123c' : '#cbd5e1', background: done ? '#ffe4e6' : active ? '#fff1f2' : '#fff', color: done || active ? '#9f1239' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '\u2713 ' : (index + 1) + '. ') + label); })),
                   procedure.stage === 0 ? h('div', { className: 'mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.7fr)]' },
-                    h('div', null, h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950' }, h('canvas', { width: 640, height: 480, role: 'img', 'data-procedure-planning-scan': 'true', 'aria-label': 'Synthetic axial ' + procedureCase.region + ' CT planning slice ' + Math.round(procedure.planSlice) + ' for the ' + procedureCase.label + ', centered near slice ' + procedureCase.planSlice + '.', style: { display: 'block', width: '100%', height: 'auto' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, { modality: 'CT', region: procedureCase.region, plane: 'axial', slice: procedure.planSlice, windowWidth: 400, windowLevel: 40, showLabels: true, showCrosshair: true, annotations: [{ type: 'pin', x: procedureCase.targetX, y: procedureCase.targetY, note: procedureCase.pathology.label }] }); } })), h('label', { className: 'mt-2 block text-xs font-black text-slate-700', htmlFor: 'procedure-plan-slice' }, 'Planning slice ' + Math.round(procedure.planSlice) + ' / 100'), h('input', { id: 'procedure-plan-slice', type: 'range', min: 0, max: 100, step: 1, value: procedure.planSlice, onChange: function(event) { setProcedure({ planSlice: Number(event.target.value) }); }, className: 'mt-1 w-full accent-rose-700' })),
-                    h('aside', { className: 'rounded-xl border border-rose-200 bg-rose-50/60 p-4' }, h('div', { className: 'mb-3', 'data-procedure-case-selector': 'true' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700' }, 'Synthetic case variation'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2' }, procedureCases.map(function(item) { var itemScenario = getAnatomyProcedureScenario({ caseId: item.id, scenarioSeed: procedure.scenarioSeed, approach: procedure.approach, scenarioDifficulty: procedure.scenarioDifficulty, attempts: procedure.attempts }); var selected = item.id === procedure.caseId; return h('button', { key: item.id, type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ caseId: item.id, planSlice: itemScenario.planSlice, feedback: item.pathology.label + ' selected for deterministic case ' + procedure.scenarioSeed + '. Review its shifted target and branching protected structures.' }); }, className: 'rounded-lg border px-2 py-2 text-left text-xs ' + (selected ? 'border-rose-700 bg-rose-800 text-white' : 'border-rose-200 bg-white text-rose-950') }, h('strong', null, item.label), h('span', { className: 'block text-[10px] opacity-80' }, item.difficulty + ' · ' + item.pathology.id + ' · slice ' + itemScenario.planSlice)); }))),
+                    h('div', null, h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950' }, h('canvas', { width: 640, height: 480, role: 'img', 'data-procedure-planning-scan': 'true', 'aria-label': t('stem.anatomy.synthetic_axial', 'Synthetic axial ') + procedureCase.region + ' CT planning slice ' + Math.round(procedure.planSlice) + ' for the ' + procedureCase.label + ', centered near slice ' + procedureCase.planSlice + '.', style: { display: 'block', width: '100%', height: 'auto' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, { modality: 'CT', region: procedureCase.region, plane: 'axial', slice: procedure.planSlice, windowWidth: 400, windowLevel: 40, showLabels: true, showCrosshair: true, annotations: [{ type: 'pin', x: procedureCase.targetX, y: procedureCase.targetY, note: procedureCase.pathology.label }] }); } })), h('label', { className: 'mt-2 block text-xs font-black text-slate-700', htmlFor: 'procedure-plan-slice' }, 'Planning slice ' + Math.round(procedure.planSlice) + ' / 100'), h('input', { id: 'procedure-plan-slice', type: 'range', min: 0, max: 100, step: 1, value: procedure.planSlice, onChange: function(event) { setProcedure({ planSlice: Number(event.target.value) }); }, className: 'mt-1 w-full accent-rose-700' })),
+                    h('aside', { className: 'rounded-xl border border-rose-200 bg-rose-50/60 p-4' }, h('div', { className: 'mb-3', 'data-procedure-case-selector': 'true' }, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-rose-700' }, t('stem.anatomy.synthetic_case_variation', 'Synthetic case variation')), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2' }, procedureCases.map(function(item) { var itemScenario = getAnatomyProcedureScenario({ caseId: item.id, scenarioSeed: procedure.scenarioSeed, approach: procedure.approach, scenarioDifficulty: procedure.scenarioDifficulty, attempts: procedure.attempts }); var selected = item.id === procedure.caseId; return h('button', { key: item.id, type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ caseId: item.id, planSlice: itemScenario.planSlice, feedback: item.pathology.label + ' selected for deterministic case ' + procedure.scenarioSeed + '. Review its shifted target and branching protected structures.' }); }, className: 'rounded-lg border px-2 py-2 text-left text-xs ' + (selected ? 'border-rose-700 bg-rose-800 text-white' : 'border-rose-200 bg-white text-rose-950') }, h('strong', null, item.label), h('span', { className: 'block text-[11px] opacity-80' }, item.difficulty + ' · ' + item.pathology.id + ' · slice ' + itemScenario.planSlice)); }))),
                       h('div', { className: 'mt-3 rounded-xl border border-indigo-200 bg-white p-3', 'data-procedure-scenario-builder': 'true' },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-indigo-800' }, 'Instructor scenario builder'), h('div', { className: 'text-[10px] text-indigo-950' }, 'Assignment ' + procedure.caseId.toUpperCase() + '-' + procedure.scenarioSeed + '-' + procedure.approach.toUpperCase())), h('button', { type: 'button', 'aria-pressed': procedure.instructorMode, onClick: function() { setProcedure({ instructorMode: !procedure.instructorMode, feedback: procedure.instructorMode ? 'Instructor configuration collapsed.' : 'Instructor configuration expanded.' }); }, className: 'rounded-lg border border-indigo-300 px-2 py-1 text-[10px] font-black text-indigo-900' }, procedure.instructorMode ? 'Hide setup' : 'Configure')),
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-indigo-800' }, t('stem.anatomy.instructor_scenario_builder', 'Instructor scenario builder')), h('div', { className: 'text-[11px] text-indigo-950' }, 'Assignment ' + procedure.caseId.toUpperCase() + '-' + procedure.scenarioSeed + '-' + procedure.approach.toUpperCase())), h('button', { type: 'button', 'aria-pressed': procedure.instructorMode, onClick: function() { setProcedure({ instructorMode: !procedure.instructorMode, feedback: procedure.instructorMode ? t('stem.anatomy.instructor_configuration_collapsed', 'Instructor configuration collapsed.') : t('stem.anatomy.instructor_configuration_expanded', 'Instructor configuration expanded.') }); }, className: 'rounded-lg border border-indigo-300 px-2 py-1 text-[11px] font-black text-indigo-900' }, procedure.instructorMode ? t('stem.anatomy.hide_setup', 'Hide setup') : t('stem.anatomy.configure', 'Configure'))),
                         procedure.instructorMode ? h('div', { className: 'mt-3 space-y-3' },
-                          h('div', { className: 'grid grid-cols-[1fr_auto] gap-2' }, h('label', { className: 'text-[10px] font-bold text-slate-700', htmlFor: 'procedure-scenario-seed' }, 'Deterministic seed', h('input', { id: 'procedure-scenario-seed', type: 'number', min: 1, max: 9999, value: procedure.scenarioSeed, onChange: function(event) { var nextSeed = Math.max(1, Math.min(9999, Math.round(Number(event.target.value) || 100))); var seededScenario = getAnatomyProcedureScenario(Object.assign({}, procedure, { scenarioSeed: nextSeed })); setProcedure({ scenarioSeed: nextSeed, planSlice: seededScenario.planSlice, feedback: 'Deterministic scenario ' + nextSeed + ' generated.' }); }, className: 'mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-xs' })), h('button', { type: 'button', onClick: function() { var nextSeed = procedure.scenarioSeed % 9999 + 1; var seededScenario = getAnatomyProcedureScenario(Object.assign({}, procedure, { scenarioSeed: nextSeed })); setProcedure({ scenarioSeed: nextSeed, planSlice: seededScenario.planSlice, feedback: 'New deterministic variation ' + nextSeed + ' generated.' }); }, className: 'self-end rounded-lg bg-indigo-700 px-2 py-1.5 text-[10px] font-black text-white' }, 'Regenerate')),
-                          h('div', null, h('div', { className: 'text-[10px] font-black uppercase text-slate-600' }, 'Approach tradeoff'), h('div', { className: 'mt-1 grid grid-cols-3 gap-1', role: 'group', 'aria-label': 'Procedure approach' }, procedureApproaches.map(function(item) { var selected = procedure.approach === item.id; return h('button', { key: item.id, type: 'button', 'aria-pressed': selected, title: item.tradeoff, onClick: function() { setProcedure({ approach: item.id, angle: item.recommendedAngle, feedback: item.label + ': ' + item.tradeoff }); }, className: 'rounded-lg border px-1 py-1 text-[9px] font-bold ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 text-indigo-950') }, item.label); })), h('p', { className: 'mt-1 text-[9px] text-slate-500' }, procedureCase.approach.tradeoff)),
-                          h('div', null, h('div', { className: 'text-[10px] font-black uppercase text-slate-600' }, 'Challenge calibration'), h('div', { className: 'mt-1 grid grid-cols-4 gap-1', role: 'group', 'aria-label': 'Scenario difficulty' }, [['adaptive', 'Adaptive'], ['supported', 'Supported'], ['standard', 'Standard'], ['expert', 'Expert']].map(function(item) { var selected = procedure.scenarioDifficulty === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ scenarioDifficulty: item[0], feedback: item[1] + ' scenario calibration selected.' }); }, className: 'rounded-lg border px-1 py-1 text-[9px] font-bold ' + (selected ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 text-violet-950') }, item[1]); })), h('p', { className: 'mt-1 text-[9px] text-slate-500' }, 'Resolved level: ' + resolvedProcedureDifficulty.label + ' · ' + resolvedProcedureDifficulty.coach)),
-                          h('dl', { className: 'grid grid-cols-2 gap-1 text-[9px]' }, [['Pathology', procedureCase.pathology.label], ['Region', procedureCase.region], ['Firmness', Math.round(procedureCase.tissueProfile.firmness * 100) + '%'], ['Vascularity', Math.round(procedureCase.tissueProfile.vascularity * 100) + '%'], ['Friability', Math.round(procedureCase.tissueProfile.friability * 100) + '%'], ['Adhesion', Math.round(procedureCase.tissueProfile.adhesion * 100) + '%']].map(function(item) { return h('div', { key: item[0], className: 'rounded bg-indigo-50 p-1.5' }, h('dt', { className: 'text-slate-500' }, item[0]), h('dd', { className: 'font-black text-slate-900' }, item[1])); }))
-                        ) : h('p', { className: 'mt-2 text-[10px] text-slate-600' }, procedureCase.pathology.label + ' · ' + procedureCase.region + ' · ' + resolvedProcedureDifficulty.label + ' calibration')
+                          h('div', { className: 'grid grid-cols-[1fr_auto] gap-2' }, h('label', { className: 'text-[11px] font-bold text-slate-700', htmlFor: 'procedure-scenario-seed' }, t('stem.anatomy.deterministic_seed', 'Deterministic seed'), h('input', { id: 'procedure-scenario-seed', type: 'number', min: 1, max: 9999, value: procedure.scenarioSeed, onChange: function(event) { var nextSeed = Math.max(1, Math.min(9999, Math.round(Number(event.target.value) || 100))); var seededScenario = getAnatomyProcedureScenario(Object.assign({}, procedure, { scenarioSeed: nextSeed })); setProcedure({ scenarioSeed: nextSeed, planSlice: seededScenario.planSlice, feedback: t('stem.anatomy.deterministic_scenario', 'Deterministic scenario ') + nextSeed + ' generated.' }); }, className: 'mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-xs' })), h('button', { type: 'button', onClick: function() { var nextSeed = procedure.scenarioSeed % 9999 + 1; var seededScenario = getAnatomyProcedureScenario(Object.assign({}, procedure, { scenarioSeed: nextSeed })); setProcedure({ scenarioSeed: nextSeed, planSlice: seededScenario.planSlice, feedback: t('stem.anatomy.new_deterministic_variation', 'New deterministic variation ') + nextSeed + ' generated.' }); }, className: 'self-end rounded-lg bg-indigo-700 px-2 py-1.5 text-[11px] font-black text-white' }, t('stem.anatomy.regenerate', 'Regenerate'))),
+                          h('div', null, h('div', { className: 'text-[11px] font-black uppercase text-slate-600' }, t('stem.anatomy.approach_tradeoff', 'Approach tradeoff')), h('div', { className: 'mt-1 grid grid-cols-3 gap-1', role: 'group', 'aria-label': t('stem.anatomy.procedure_approach', 'Procedure approach') }, procedureApproaches.map(function(item) { var selected = procedure.approach === item.id; return h('button', { key: item.id, type: 'button', 'aria-pressed': selected, title: item.tradeoff, onClick: function() { setProcedure({ approach: item.id, angle: item.recommendedAngle, feedback: item.label + ': ' + item.tradeoff }); }, className: 'rounded-lg border px-1 py-1 text-[11px] font-bold ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 text-indigo-950') }, item.label); })), h('p', { className: 'mt-1 text-[11px] text-slate-500' }, procedureCase.approach.tradeoff)),
+                          h('div', null, h('div', { className: 'text-[11px] font-black uppercase text-slate-600' }, t('stem.anatomy.challenge_calibration', 'Challenge calibration')), h('div', { className: 'mt-1 grid grid-cols-4 gap-1', role: 'group', 'aria-label': t('stem.anatomy.scenario_difficulty', 'Scenario difficulty') }, [['adaptive', t('stem.anatomy.adaptive', 'Adaptive')], ['supported', t('stem.anatomy.supported', 'Supported')], ['standard', t('stem.anatomy.standard', 'Standard')], ['expert', t('stem.anatomy.expert', 'Expert')]].map(function(item) { var selected = procedure.scenarioDifficulty === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ scenarioDifficulty: item[0], feedback: item[1] + ' scenario calibration selected.' }); }, className: 'rounded-lg border px-1 py-1 text-[11px] font-bold ' + (selected ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 text-violet-950') }, item[1]); })), h('p', { className: 'mt-1 text-[11px] text-slate-500' }, 'Resolved level: ' + resolvedProcedureDifficulty.label + ' · ' + resolvedProcedureDifficulty.coach)),
+                          h('dl', { className: 'grid grid-cols-2 gap-1 text-[11px]' }, [['Pathology', procedureCase.pathology.label], ['Region', procedureCase.region], ['Firmness', Math.round(procedureCase.tissueProfile.firmness * 100) + '%'], ['Vascularity', Math.round(procedureCase.tissueProfile.vascularity * 100) + '%'], ['Friability', Math.round(procedureCase.tissueProfile.friability * 100) + '%'], ['Adhesion', Math.round(procedureCase.tissueProfile.adhesion * 100) + '%']].map(function(item) { return h('div', { key: item[0], className: 'rounded bg-indigo-50 p-1.5' }, h('dt', { className: 'text-slate-500' }, item[0]), h('dd', { className: 'font-black text-slate-900' }, item[1])); }))
+                        ) : h('p', { className: 'mt-2 text-[11px] text-slate-600' }, procedureCase.pathology.label + ' · ' + procedureCase.region + ' · ' + resolvedProcedureDifficulty.label + ' calibration')
                       ),
-                      h('h5', { className: 'text-sm font-black text-rose-950' }, 'Case: ' + procedureCase.label), h('p', { className: 'mt-2 text-xs leading-relaxed text-rose-900' }, 'Find the teaching target centered near slice ' + procedureCase.planSlice + '. Choose a slice that shows it clearly, then lock the plan.'), h('ul', { className: 'mt-3 space-y-1 text-xs text-slate-700' }, h('li', null, '\u2022 Confirm ' + procedureCase.region + ' / axial orientation'), h('li', null, '\u2022 Center the target rather than its edge'), h('li', null, '\u2022 Preserve your selected slice as evidence')), h('button', { type: 'button', onClick: lockProcedurePlan, className: 'mt-4 w-full rounded-xl bg-rose-800 px-4 py-3 text-sm font-black text-white hover:bg-rose-900' }, 'Lock scan plan'))
+                      h('h5', { className: 'text-sm font-black text-rose-950' }, 'Case: ' + procedureCase.label), h('p', { className: 'mt-2 text-xs leading-relaxed text-rose-900' }, 'Find the teaching target centered near slice ' + procedureCase.planSlice + '. Choose a slice that shows it clearly, then lock the plan.'), h('ul', { className: 'mt-3 space-y-1 text-xs text-slate-700' }, h('li', null, '\u2022 Confirm ' + procedureCase.region + ' / axial orientation'), h('li', null, '\u2022 Center the target rather than its edge'), h('li', null, '\u2022 Preserve your selected slice as evidence')), h('button', { type: 'button', onClick: lockProcedurePlan, className: 'mt-4 w-full rounded-xl bg-rose-800 px-4 py-3 text-sm font-black text-white hover:bg-rose-900' }, t('stem.anatomy.lock_scan_plan', 'Lock scan plan')))
                   ) : h('div', { className: 'mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]' },
                     h('div', null,
-                      h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-4 mb-3' }, [['Depth', Math.round(procedure.incisionDepth) + '%'], ['Exposure', Math.round(procedure.exposure) + '%'], ['Bleeding', Math.round(procedure.bleeding) + '%'], ['Integrity', Math.round(procedure.sampleIntegrity) + '%']].map(function(metric) { return h('div', { key: metric[0], className: 'rounded-lg border border-slate-200 bg-slate-50 p-2 text-center' }, h('div', { className: 'text-[10px] font-bold uppercase text-slate-500' }, metric[0]), h('div', { className: 'text-lg font-black text-slate-900' }, metric[1])); })),
+                      h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-4 mb-3' }, [['Depth', Math.round(procedure.incisionDepth) + '%'], ['Exposure', Math.round(procedure.exposure) + '%'], ['Bleeding', Math.round(procedure.bleeding) + '%'], ['Integrity', Math.round(procedure.sampleIntegrity) + '%']].map(function(metric) { return h('div', { key: metric[0], className: 'rounded-lg border border-slate-200 bg-slate-50 p-2 text-center' }, h('div', { className: 'text-[11px] font-bold uppercase text-slate-500' }, metric[0]), h('div', { className: 'text-lg font-black text-slate-900' }, metric[1])); })),
                       h('div', { className: 'mb-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3', 'data-procedure-tissue-response': 'true' },
                         h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                          h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-800' }, 'Live tissue response'), h('div', { className: 'text-sm font-black text-slate-900' }, procedureTissue.label + ' · ' + procedureTissue.response)),
-                          h('button', { type: 'button', 'aria-pressed': procedure.showHazards, onClick: function() { setProcedure({ showHazards: !procedure.showHazards, feedback: procedure.showHazards ? 'Anatomy guide markers hidden; event detection remains active.' : 'Anatomy guide markers visible.' }); }, className: 'rounded-lg border border-cyan-300 bg-white px-2 py-1 text-[11px] font-bold text-cyan-900' }, procedure.showHazards ? 'Hide anatomy guides' : 'Show anatomy guides')
+                          h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-800' }, t('stem.anatomy.live_tissue_response', 'Live tissue response')), h('div', { className: 'text-sm font-black text-slate-900' }, procedureTissue.label + ' · ' + procedureTissue.response)),
+                          h('button', { type: 'button', 'aria-pressed': procedure.showHazards, onClick: function() { setProcedure({ showHazards: !procedure.showHazards, feedback: procedure.showHazards ? t('stem.anatomy.anatomy_guide_markers_hidden_event_det', 'Anatomy guide markers hidden; event detection remains active.') : t('stem.anatomy.anatomy_guide_markers_visible', 'Anatomy guide markers visible.') }); }, className: 'rounded-lg border border-cyan-300 bg-white px-2 py-1 text-[11px] font-bold text-cyan-900' }, procedure.showHazards ? t('stem.anatomy.hide_anatomy_guides', 'Hide anatomy guides') : t('stem.anatomy.show_anatomy_guides', 'Show anatomy guides'))
                         ),
-                        h('dl', { className: 'mt-2 grid grid-cols-2 gap-2 text-center text-[10px] sm:grid-cols-4' }, [['Resistance', procedureTissue.resistance + '%'], ['Visibility', procedureVisibility.score + '% · ' + procedureVisibility.label], ['Incision continuity', Math.round(procedure.incisionContinuity) + '%'], ['Last contact', procedure.lastContact.replace('_', ' ')], ['Elastic tension', Math.round(procedure.elasticTension) + '%'], ['Compression', Math.round(procedure.compressionLevel) + '%'], ['Vessel integrity', Math.round(procedure.vesselIntegrity) + '%'], ['Nerve integrity', Math.round(procedure.nerveIntegrity) + '%']].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'text-slate-500' }, item[0]), h('dd', { className: 'font-black text-slate-900' }, item[1])); }))
+                        h('dl', { className: 'mt-2 grid grid-cols-2 gap-2 text-center text-[11px] sm:grid-cols-4' }, [['Resistance', procedureTissue.resistance + '%'], ['Visibility', procedureVisibility.score + '% · ' + procedureVisibility.label], ['Incision continuity', Math.round(procedure.incisionContinuity) + '%'], ['Last contact', procedure.lastContact.replace('_', ' ')], ['Elastic tension', Math.round(procedure.elasticTension) + '%'], ['Compression', Math.round(procedure.compressionLevel) + '%'], ['Vessel integrity', Math.round(procedure.vesselIntegrity) + '%'], ['Nerve integrity', Math.round(procedure.nerveIntegrity) + '%']].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'text-slate-500' }, item[0]), h('dd', { className: 'font-black text-slate-900' }, item[1])); }))
                       ),
                       h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950' }, h('canvas', { width: 760, height: 440, role: 'img', tabIndex: 0, 'aria-describedby': 'procedure-gesture-help', 'aria-keyshortcuts': 'Enter Space ArrowUp ArrowDown [ ] F', 'data-anatomy-procedure-canvas': 'true', 'data-procedure-visual-fidelity': 'enhanced', 'aria-label': procedureCase.label + ' synthetic layered tissue model. Incision depth ' + Math.round(procedure.incisionDepth) + ' percent, exposure ' + Math.round(procedure.exposure) + ' percent, visibility ' + procedureVisibility.score + ' percent. Active tool: ' + procedure.tool + (procedure.assistTool !== 'none' ? ', assisted by ' + procedure.assistTool : '') + '. Magnification ' + procedure.viewZoom + ' times, focus ' + procedure.viewFocus + (procedure.focusLock ? ' locked.' : ' following the instrument.'), onPointerDown: beginProcedureGesture, onPointerMove: moveProcedureGesture, onPointerUp: endProcedureGesture, onPointerCancel: cancelProcedureGesture, onLostPointerCapture: cancelProcedureGesture, onKeyDown: handleProcedureCanvasKey, onContextMenu: function(event) { event.preventDefault(); }, style: { display: 'block', width: '100%', height: 'auto', touchAction: 'none', cursor: canApplyTool ? 'crosshair' : 'default' }, ref: stableAnatomyProcedureRef })),
-                      h('div', { id: 'procedure-gesture-help', className: 'mt-2 rounded-lg border border-cyan-200 bg-cyan-50 p-2 text-[11px] leading-relaxed text-cyan-950' }, h('strong', null, 'Direct control: '), 'Drag on the tissue field with a mouse, pen, or touch. Pen pressure is used when available. Keyboard: press Enter or Space to use the selected tool; use Up and Down arrows for pressure, brackets for magnification, and F to lock or unlock focus.'),
+                      h('div', { id: 'procedure-gesture-help', className: 'mt-2 rounded-lg border border-cyan-200 bg-cyan-50 p-2 text-[11px] leading-relaxed text-cyan-950' }, h('strong', null, t('stem.anatomy.direct_control', 'Direct control: ')), 'Drag on the tissue field with a mouse, pen, or touch. Pen pressure is used when available. Keyboard: press Enter or Space to use the selected tool; use Up and Down arrows for pressure, brackets for magnification, and F to lock or unlock focus.'),
                       h('div', { className: 'mt-2 rounded-xl border border-indigo-200 bg-indigo-50/70 p-2', 'data-procedure-optics': 'true' },
-                        h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-indigo-800' }, 'Working view'), h('div', { className: 'text-[11px] text-indigo-950' }, procedureVisibility.label + ' visibility · ' + procedureVisibility.score + '%')), h('button', { type: 'button', 'aria-pressed': procedure.showLoupe, onClick: function() { setProcedure({ showLoupe: !procedure.showLoupe, feedback: procedure.showLoupe ? 'Magnified working view hidden.' : 'Magnified working view enabled with adjustable focus and magnification.' }); }, className: 'rounded-lg border border-indigo-300 bg-white px-2 py-1 text-[11px] font-bold text-indigo-900' }, procedure.showLoupe ? 'Hide ' + procedure.viewZoom + '× view' : 'Show magnified view')),
-                        h('div', { className: 'mt-2 grid grid-cols-3 gap-1', role: 'group', 'aria-label': 'Field illumination' }, [['soft', 'Soft'], ['standard', 'Standard'], ['focused', 'Focused']].map(function(item) { var selected = procedure.illumination === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ illumination: item[0], feedback: item[1] + ' educational field lighting selected.' }); }, className: 'rounded-lg border px-2 py-1 text-[10px] font-bold ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-900') }, item[1]); })),
-                        h('div', { className: 'mt-2 flex flex-wrap items-center gap-1', role: 'group', 'aria-label': 'Working view magnification' },
-                          h('button', { type: 'button', disabled: procedure.viewZoom <= 1, onClick: function() { setProcedure({ showLoupe: true, viewZoom: Math.max(1, Math.round((procedure.viewZoom - 0.5) * 2) / 2), feedback: 'Working-view magnification decreased.' }); }, className: 'rounded-lg border border-indigo-200 bg-white px-2 py-1 text-[10px] font-black text-indigo-900 disabled:opacity-40', 'aria-label': 'Decrease working-view magnification' }, '−'),
-                          h('span', { className: 'min-w-12 text-center text-[10px] font-black text-indigo-950', role: 'status' }, procedure.viewZoom + '×'),
-                          h('button', { type: 'button', disabled: procedure.viewZoom >= 3, onClick: function() { setProcedure({ showLoupe: true, viewZoom: Math.min(3, Math.round((procedure.viewZoom + 0.5) * 2) / 2), feedback: 'Working-view magnification increased.' }); }, className: 'rounded-lg border border-indigo-200 bg-white px-2 py-1 text-[10px] font-black text-indigo-900 disabled:opacity-40', 'aria-label': 'Increase working-view magnification' }, '+'),
-                          h('button', { type: 'button', 'aria-pressed': procedure.focusLock, onClick: function() { setProcedure({ showLoupe: true, focusLock: !procedure.focusLock, feedback: procedure.focusLock ? 'Working view unlocked.' : 'Working view locked to ' + procedure.viewFocus + '.' }); }, className: 'ml-auto rounded-lg border px-2 py-1 text-[10px] font-black ' + (procedure.focusLock ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-900') }, procedure.focusLock ? 'Unlock focus' : 'Lock focus')
+                        h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-indigo-800' }, t('stem.anatomy.working_view', 'Working view')), h('div', { className: 'text-[11px] text-indigo-950' }, procedureVisibility.label + ' visibility · ' + procedureVisibility.score + '%')), h('button', { type: 'button', 'aria-pressed': procedure.showLoupe, onClick: function() { setProcedure({ showLoupe: !procedure.showLoupe, feedback: procedure.showLoupe ? t('stem.anatomy.magnified_working_view_hidden', 'Magnified working view hidden.') : t('stem.anatomy.magnified_working_view_enabled_with_ad', 'Magnified working view enabled with adjustable focus and magnification.') }); }, className: 'rounded-lg border border-indigo-300 bg-white px-2 py-1 text-[11px] font-bold text-indigo-900' }, procedure.showLoupe ? 'Hide ' + procedure.viewZoom + '× view' : 'Show magnified view')),
+                        h('div', { className: 'mt-2 grid grid-cols-3 gap-1', role: 'group', 'aria-label': t('stem.anatomy.field_illumination', 'Field illumination') }, [['soft', t('stem.anatomy.soft', 'Soft')], ['standard', t('stem.anatomy.standard', 'Standard')], ['focused', t('stem.anatomy.focused', 'Focused')]].map(function(item) { var selected = procedure.illumination === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ illumination: item[0], feedback: item[1] + ' educational field lighting selected.' }); }, className: 'rounded-lg border px-2 py-1 text-[11px] font-bold ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-900') }, item[1]); })),
+                        h('div', { className: 'mt-2 flex flex-wrap items-center gap-1', role: 'group', 'aria-label': t('stem.anatomy.working_view_magnification', 'Working view magnification') },
+                          h('button', { type: 'button', disabled: procedure.viewZoom <= 1, onClick: function() { setProcedure({ showLoupe: true, viewZoom: Math.max(1, Math.round((procedure.viewZoom - 0.5) * 2) / 2), feedback: t('stem.anatomy.working_view_magnification_decreased', 'Working-view magnification decreased.') }); }, className: 'rounded-lg border border-indigo-200 bg-white px-2 py-1 text-[11px] font-black text-indigo-900 disabled:opacity-40', 'aria-label': t('stem.anatomy.decrease_working_view_magnification', 'Decrease working-view magnification') }, '−'),
+                          h('span', { className: 'min-w-12 text-center text-[11px] font-black text-indigo-950', role: 'status' }, procedure.viewZoom + '×'),
+                          h('button', { type: 'button', disabled: procedure.viewZoom >= 3, onClick: function() { setProcedure({ showLoupe: true, viewZoom: Math.min(3, Math.round((procedure.viewZoom + 0.5) * 2) / 2), feedback: t('stem.anatomy.working_view_magnification_increased', 'Working-view magnification increased.') }); }, className: 'rounded-lg border border-indigo-200 bg-white px-2 py-1 text-[11px] font-black text-indigo-900 disabled:opacity-40', 'aria-label': t('stem.anatomy.increase_working_view_magnification', 'Increase working-view magnification') }, '+'),
+                          h('button', { type: 'button', 'aria-pressed': procedure.focusLock, onClick: function() { setProcedure({ showLoupe: true, focusLock: !procedure.focusLock, feedback: procedure.focusLock ? t('stem.anatomy.working_view_unlocked', 'Working view unlocked.') : t('stem.anatomy.working_view_locked_to', 'Working view locked to ') + procedure.viewFocus + '.' }); }, className: 'ml-auto rounded-lg border px-2 py-1 text-[11px] font-black ' + (procedure.focusLock ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-900') }, procedure.focusLock ? t('stem.anatomy.unlock_focus', 'Unlock focus') : t('stem.anatomy.lock_focus', 'Lock focus'))
                         ),
-                        h('div', { className: 'mt-2 grid grid-cols-4 gap-1', role: 'group', 'aria-label': 'Working view focus target' }, [['instrument', 'Tool'], ['target', 'Target'], ['vessel', 'Vessel'], ['nerve', 'Nerve']].map(function(item) { var selected = procedure.viewFocus === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ showLoupe: true, viewFocus: item[0], focusLock: item[0] !== 'instrument', feedback: 'Working view focused on ' + item[1].toLowerCase() + '.' }); }, className: 'rounded-lg border px-1 py-1 text-[9px] font-bold ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-900') }, item[1]); }))
+                        h('div', { className: 'mt-2 grid grid-cols-4 gap-1', role: 'group', 'aria-label': t('stem.anatomy.working_view_focus_target', 'Working view focus target') }, [['instrument', t('stem.anatomy.tool', 'Tool')], ['target', t('stem.anatomy.target', 'Target')], ['vessel', t('stem.anatomy.vessel', 'Vessel')], ['nerve', t('stem.anatomy.nerve', 'Nerve')]].map(function(item) { var selected = procedure.viewFocus === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ showLoupe: true, viewFocus: item[0], focusLock: item[0] !== 'instrument', feedback: t('stem.anatomy.working_view_focused_on', 'Working view focused on ') + item[1].toLowerCase() + '.' }); }, className: 'rounded-lg border px-1 py-1 text-[11px] font-bold ' + (selected ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-900') }, item[1]); }))
                       ),
                       h('div', { className: 'mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3', 'data-procedure-instrument-tray': 'true' },
-                        h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-600' }, 'Active hand'),
-                        h('div', { className: 'mt-2 flex flex-wrap gap-2', role: 'group', 'aria-label': 'Active procedure instrument' }, procedureTools.map(function(item) { var selected = procedure.tool === item.id; return h('button', { key: item.id, type: 'button', disabled: !canApplyTool, 'aria-pressed': selected, onClick: function() { setProcedure({ tool: item.id, assistTool: procedure.assistTool === item.id ? 'none' : procedure.assistTool, toolChanges: procedure.toolChanges + (selected ? 0 : 1), showCoachHint: false, feedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold disabled:cursor-not-allowed disabled:opacity-50 ' + (selected ? 'border-rose-800 bg-rose-800 text-white' : 'border-rose-200 bg-white text-slate-700 hover:bg-rose-50') }, item.label, h('span', { className: 'block text-[10px] font-normal opacity-80' }, item.use)); })),
-                        h('div', { className: 'mt-3 text-[10px] font-black uppercase tracking-wide text-cyan-800' }, 'Assisting hand'),
-                        h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-3', role: 'group', 'aria-label': 'Assisting procedure instrument' }, procedureAssistTools.map(function(item) { var selected = procedure.assistTool === item.id, unavailable = item.id === procedure.tool; return h('button', { key: item.id, type: 'button', disabled: !canApplyTool || unavailable, 'aria-pressed': selected, onClick: function() { setProcedure({ assistTool: item.id, toolChanges: procedure.toolChanges + (selected ? 0 : 1), showCoachHint: false, feedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-2 py-2 text-left text-[11px] font-bold disabled:opacity-40 ' + (selected ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-cyan-200 bg-white text-cyan-950') }, item.label, h('span', { className: 'block text-[9px] font-normal opacity-80' }, item.use)); }))
+                        h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-600' }, t('stem.anatomy.active_hand', 'Active hand')),
+                        h('div', { className: 'mt-2 flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.anatomy.active_procedure_instrument', 'Active procedure instrument') }, procedureTools.map(function(item) { var selected = procedure.tool === item.id; return h('button', { key: item.id, type: 'button', disabled: !canApplyTool, 'aria-pressed': selected, onClick: function() { setProcedure({ tool: item.id, assistTool: procedure.assistTool === item.id ? 'none' : procedure.assistTool, toolChanges: procedure.toolChanges + (selected ? 0 : 1), showCoachHint: false, feedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold disabled:cursor-not-allowed disabled:opacity-50 ' + (selected ? 'border-rose-800 bg-rose-800 text-white' : 'border-rose-200 bg-white text-slate-700 hover:bg-rose-50') }, item.label, h('span', { className: 'block text-[11px] font-normal opacity-80' }, item.use)); })),
+                        h('div', { className: 'mt-3 text-[11px] font-black uppercase tracking-wide text-cyan-800' }, t('stem.anatomy.assisting_hand', 'Assisting hand')),
+                        h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-3', role: 'group', 'aria-label': t('stem.anatomy.assisting_procedure_instrument', 'Assisting procedure instrument') }, procedureAssistTools.map(function(item) { var selected = procedure.assistTool === item.id, unavailable = item.id === procedure.tool; return h('button', { key: item.id, type: 'button', disabled: !canApplyTool || unavailable, 'aria-pressed': selected, onClick: function() { setProcedure({ assistTool: item.id, toolChanges: procedure.toolChanges + (selected ? 0 : 1), showCoachHint: false, feedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-2 py-2 text-left text-[11px] font-bold disabled:opacity-40 ' + (selected ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-cyan-200 bg-white text-cyan-950') }, item.label, h('span', { className: 'block text-[11px] font-normal opacity-80' }, item.use)); }))
                       ),
                       h('div', { className: 'mt-3 grid gap-3 sm:grid-cols-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'procedure-pressure' }, 'Pressure ' + Math.round(procedure.pressure) + ' / 10', h('input', { id: 'procedure-pressure', type: 'range', min: 1, max: 10, step: 1, value: procedure.pressure, disabled: !canApplyTool, onChange: function(event) { setProcedure({ pressure: Number(event.target.value) }); }, className: 'mt-1 w-full accent-rose-700' })), h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'procedure-angle' }, 'Blade approach angle ' + Math.round(procedure.angle) + '\u00B0', h('input', { id: 'procedure-angle', type: 'range', min: 15, max: 90, step: 1, value: procedure.angle, disabled: !canApplyTool, onChange: function(event) { setProcedure({ angle: Number(event.target.value) }); }, className: 'mt-1 w-full accent-rose-700' })))
                     ),
                     h('aside', { className: 'space-y-3' },
-                      procedure.stage === 1 ? h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-3' }, h('h5', { className: 'text-sm font-black text-indigo-950' }, 'Preparation checkpoint'), [['timeoutConfirmed', 'Confirm synthetic case and target'], ['sterilePrep', 'Complete simulated field preparation'], ['eyeProtection', 'Confirm protective equipment']].map(function(item) { return h('label', { key: item[0], className: 'mt-2 flex items-start gap-2 text-xs text-indigo-950' }, h('input', { type: 'checkbox', checked: procedure[item[0]], onChange: function(event) { var patch = {}; patch[item[0]] = event.target.checked; setProcedure(patch); }, className: 'mt-0.5 accent-indigo-700' }), item[1]); }), h('button', { type: 'button', disabled: !prepared, onClick: beginProcedureAccess, className: 'mt-3 w-full rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:bg-slate-400' }, 'Begin layered simulation')) : null,
+                      procedure.stage === 1 ? h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-3' }, h('h5', { className: 'text-sm font-black text-indigo-950' }, t('stem.anatomy.preparation_checkpoint', 'Preparation checkpoint')), [['timeoutConfirmed', 'Confirm synthetic case and target'], ['sterilePrep', 'Complete simulated field preparation'], ['eyeProtection', 'Confirm protective equipment']].map(function(item) { return h('label', { key: item[0], className: 'mt-2 flex items-start gap-2 text-xs text-indigo-950' }, h('input', { type: 'checkbox', checked: procedure[item[0]], onChange: function(event) { var patch = {}; patch[item[0]] = event.target.checked; setProcedure(patch); }, className: 'mt-0.5 accent-indigo-700' }), item[1]); }), h('button', { type: 'button', disabled: !prepared, onClick: beginProcedureAccess, className: 'mt-3 w-full rounded-lg bg-indigo-700 px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:bg-slate-400' }, t('stem.anatomy.begin_layered_simulation', 'Begin layered simulation'))) : null,
                       procedure.stage >= 2 && procedure.stage <= 4 ? h('button', { type: 'button', onClick: applyProcedureInstrument, className: 'w-full rounded-xl bg-rose-800 px-4 py-3 text-sm font-black text-white hover:bg-rose-900', 'data-procedure-apply-tool': procedure.tool }, 'Use ' + procedureTools.filter(function(item) { return item.id === procedure.tool; })[0].label + ' without drawing') : null,
-                      procedure.stage === 5 ? h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('h5', { className: 'text-sm font-black text-violet-950' }, procedure.microscopyComplete ? 'Cell evidence received' : 'Specimen handoff'), h('p', { className: 'mt-1 text-xs leading-relaxed text-violet-900' }, procedure.microscopyComplete ? 'The Microdissection Studio recorded cell-scale evidence. Continue to the debrief.' : 'The preserved specimen is ready for objective calibration, sectioning, staining, target isolation, and evidence recording.'), procedure.microscopyComplete ? h('button', { type: 'button', onClick: function() { setProcedure({ stage: 6, feedback: 'Evidence chain complete. Review the performance breakdown.' }); }, className: 'mt-3 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white' }, 'Open debrief') : h('button', { type: 'button', onClick: startProcedureMicroscopy, className: 'mt-3 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white' }, procedure.microscopyStarted ? 'Resume Cell Microdissection' : 'Continue to Cell Microdissection \u2192')) : null,
-                      procedure.stage === 6 ? h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50/60 p-3', 'data-procedure-debrief': 'true' }, h('div', { className: 'flex items-end justify-between gap-2' }, h('div', null, h('h5', { className: 'text-sm font-black text-emerald-950' }, 'Performance debrief'), h('p', { className: 'text-xs text-emerald-900' }, procedureScore.label + ' · ' + procedureCase.label + ' (' + procedureCase.difficulty + ')')), h('strong', { className: 'text-3xl text-emerald-900' }, procedureScore.total + '/100')), h('dl', { className: 'mt-3 grid grid-cols-2 gap-2 text-xs' }, [['Planning', procedureScore.planning + '/20'], ['Preparation', procedureScore.preparation + '/15'], ['Safety', procedureScore.safety + '/25'], ['Specimen', procedureScore.specimen + '/15'], ['Efficiency', procedureScore.efficiency + '/15'], ['Microscopy', procedureScore.microscopy + '/10']].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'text-slate-500' }, item[0]), h('dd', { className: 'font-black text-slate-900' }, item[1])); }))) : null,
+                      procedure.stage === 5 ? h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('h5', { className: 'text-sm font-black text-violet-950' }, procedure.microscopyComplete ? t('stem.anatomy.cell_evidence_received', 'Cell evidence received') : t('stem.anatomy.specimen_handoff', 'Specimen handoff')), h('p', { className: 'mt-1 text-xs leading-relaxed text-violet-900' }, procedure.microscopyComplete ? t('stem.anatomy.the_microdissection_studio_recorded_ce', 'The Microdissection Studio recorded cell-scale evidence. Continue to the debrief.') : t('stem.anatomy.the_preserved_specimen_is_ready_for_ob', 'The preserved specimen is ready for objective calibration, sectioning, staining, target isolation, and evidence recording.')), procedure.microscopyComplete ? h('button', { type: 'button', onClick: function() { setProcedure({ stage: 6, feedback: t('stem.anatomy.evidence_chain_complete_review_the_per', 'Evidence chain complete. Review the performance breakdown.') }); }, className: 'mt-3 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white' }, t('stem.anatomy.open_debrief', 'Open debrief')) : h('button', { type: 'button', onClick: startProcedureMicroscopy, className: 'mt-3 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white' }, procedure.microscopyStarted ? t('stem.anatomy.resume_cell_microdissection', 'Resume Cell Microdissection') : t('stem.anatomy.continue_to_cell_microdissection', 'Continue to Cell Microdissection \u2192'))) : null,
+                      procedure.stage === 6 ? h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50/60 p-3', 'data-procedure-debrief': 'true' }, h('div', { className: 'flex items-end justify-between gap-2' }, h('div', null, h('h5', { className: 'text-sm font-black text-emerald-950' }, t('stem.anatomy.performance_debrief', 'Performance debrief')), h('p', { className: 'text-xs text-emerald-900' }, procedureScore.label + ' · ' + procedureCase.label + ' (' + procedureCase.difficulty + ')')), h('strong', { className: 'text-3xl text-emerald-900' }, procedureScore.total + '/100')), h('dl', { className: 'mt-3 grid grid-cols-2 gap-2 text-xs' }, [['Planning', procedureScore.planning + '/20'], ['Preparation', procedureScore.preparation + '/15'], ['Safety', procedureScore.safety + '/25'], ['Specimen', procedureScore.specimen + '/15'], ['Efficiency', procedureScore.efficiency + '/15'], ['Microscopy', procedureScore.microscopy + '/10']].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg bg-white p-2' }, h('dt', { className: 'text-slate-500' }, item[0]), h('dd', { className: 'font-black text-slate-900' }, item[1])); }))) : null,
                       procedure.stage === 6 ? h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/70 p-3', 'data-procedure-approach-comparison': 'true' },
-                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-indigo-900' }, 'Approach comparison'),
-                        h('p', { className: 'mt-1 text-[10px] leading-relaxed text-indigo-950' }, 'Compare the selected route with alternate modeled tradeoffs for this exact pathology and seed. These estimates support reflection and are not clinical guidance.'),
-                        h('div', { className: 'mt-2 grid gap-1.5' }, procedureApproaches.map(function(item) { var selected = item.id === procedure.approach; var exposureDelta = Math.round((item.exposureModifier - procedureCase.approach.exposureModifier) * 100); var damageDelta = Math.round((item.damageModifier / Math.max(0.01, procedureCase.approach.damageModifier) - 1) * 100); return h('div', { key: item.id, className: 'rounded-lg border p-2 text-[10px] ' + (selected ? 'border-indigo-600 bg-indigo-700 text-white' : 'border-indigo-100 bg-white text-slate-700') }, h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', null, item.label), selected ? h('span', { className: 'rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] font-black uppercase' }, 'Selected') : null), h('span', { className: 'mt-1 block opacity-90' }, 'Entry ' + Math.round(item.entryX * 100) + '% · ' + item.recommendedAngle + '° · exposure ' + (exposureDelta >= 0 ? '+' : '') + exposureDelta + '% · tissue impact ' + (damageDelta >= 0 ? '+' : '') + damageDelta + '%'), h('span', { className: 'mt-0.5 block opacity-75' }, item.tradeoff)); }))
+                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-indigo-900' }, t('stem.anatomy.approach_comparison', 'Approach comparison')),
+                        h('p', { className: 'mt-1 text-[11px] leading-relaxed text-indigo-950' }, t('stem.anatomy.compare_the_selected_route_with_altern', 'Compare the selected route with alternate modeled tradeoffs for this exact pathology and seed. These estimates support reflection and are not clinical guidance.')),
+                        h('div', { className: 'mt-2 grid gap-1.5' }, procedureApproaches.map(function(item) { var selected = item.id === procedure.approach; var exposureDelta = Math.round((item.exposureModifier - procedureCase.approach.exposureModifier) * 100); var damageDelta = Math.round((item.damageModifier / Math.max(0.01, procedureCase.approach.damageModifier) - 1) * 100); return h('div', { key: item.id, className: 'rounded-lg border p-2 text-[11px] ' + (selected ? 'border-indigo-600 bg-indigo-700 text-white' : 'border-indigo-100 bg-white text-slate-700') }, h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', null, item.label), selected ? h('span', { className: 'rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] font-black uppercase' }, t('stem.anatomy.selected', 'Selected')) : null), h('span', { className: 'mt-1 block opacity-90' }, 'Entry ' + Math.round(item.entryX * 100) + '% · ' + item.recommendedAngle + '° · exposure ' + (exposureDelta >= 0 ? '+' : '') + exposureDelta + '% · tissue impact ' + (damageDelta >= 0 ? '+' : '') + damageDelta + '%'), h('span', { className: 'mt-0.5 block opacity-75' }, item.tradeoff)); }))
                       ) : null,
                       procedure.stage === 6 && procedure.strokes.length ? h('div', { className: 'rounded-xl border border-cyan-200 bg-cyan-50/70 p-3', 'data-procedure-contact-timeline': 'true' },
-                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-cyan-900' }, 'Contact-aware procedure timeline'),
-                        h('p', { className: 'mt-1 text-[10px] text-cyan-950' }, 'Replay each gesture with its local contact, control score, and resulting tissue response.'),
-                        h('ol', { className: 'mt-2 space-y-1.5' }, procedure.strokes.map(function(stroke, index) { var metric = stroke.metrics || {}; var contact = (metric.contact || 'none').replace('_', ' '); var response = metric.elasticReturn > 0 ? ' · recoil ' + metric.elasticReturn + '%' : stroke.tool === 'cautery' ? ' · thermal ' + Math.round(procedure.thermalLoad) + '%' : stroke.tool === 'forceps' ? ' · grasp ' + Math.round(metric.graspAlignment || 0) + '%' : ''; return h('li', { key: stroke.id || index, className: 'grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-lg bg-white p-2 text-[10px]' }, h('span', { className: 'flex h-5 w-5 items-center justify-center rounded-full bg-cyan-800 font-black text-white' }, index + 1), h('span', null, h('strong', { className: 'capitalize text-slate-900' }, stroke.tool), h('span', { className: 'block text-slate-500' }, contact + response)), h('strong', { className: 'text-cyan-900' }, Math.round(metric.quality || 0) + '%')); }))
+                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-cyan-900' }, t('stem.anatomy.contact_aware_procedure_timeline', 'Contact-aware procedure timeline')),
+                        h('p', { className: 'mt-1 text-[11px] text-cyan-950' }, t('stem.anatomy.replay_each_gesture_with_its_local_con', 'Replay each gesture with its local contact, control score, and resulting tissue response.')),
+                        h('ol', { className: 'mt-2 space-y-1.5' }, procedure.strokes.map(function(stroke, index) { var metric = stroke.metrics || {}; var contact = (metric.contact || 'none').replace('_', ' '); var response = metric.elasticReturn > 0 ? ' · recoil ' + metric.elasticReturn + '%' : stroke.tool === 'cautery' ? ' · thermal ' + Math.round(procedure.thermalLoad) + '%' : stroke.tool === 'forceps' ? ' · grasp ' + Math.round(metric.graspAlignment || 0) + '%' : ''; return h('li', { key: stroke.id || index, className: 'grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-lg bg-white p-2 text-[11px]' }, h('span', { className: 'flex h-5 w-5 items-center justify-center rounded-full bg-cyan-800 font-black text-white' }, index + 1), h('span', null, h('strong', { className: 'capitalize text-slate-900' }, stroke.tool), h('span', { className: 'block text-slate-500' }, contact + response)), h('strong', { className: 'text-cyan-900' }, Math.round(metric.quality || 0) + '%')); }))
                       ) : null,
                       h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50/70 p-3', 'data-procedure-objectives': 'true' },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('h5', { className: 'text-xs font-black uppercase tracking-wide text-emerald-900' }, 'Live objective board'), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[10px] font-black text-emerald-800', role: 'status' }, completedProcedureObjectives + '/' + procedureObjectives.length)),
-                        h('ol', { className: 'mt-2 space-y-1.5' }, procedureObjectives.map(function(item) { return h('li', { key: item.id, className: 'flex items-start gap-2 rounded-lg bg-white/80 p-2 text-[10px]' }, h('span', { className: 'font-black ' + (item.complete ? 'text-emerald-700' : 'text-slate-400'), 'aria-hidden': 'true' }, item.complete ? '✓' : '○'), h('span', null, h('strong', { className: item.complete ? 'text-emerald-950' : 'text-slate-700' }, item.label), h('span', { className: 'block text-slate-500' }, item.status))); }))
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('h5', { className: 'text-xs font-black uppercase tracking-wide text-emerald-900' }, t('stem.anatomy.live_objective_board', 'Live objective board')), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[11px] font-black text-emerald-800', role: 'status' }, completedProcedureObjectives + '/' + procedureObjectives.length)),
+                        h('ol', { className: 'mt-2 space-y-1.5' }, procedureObjectives.map(function(item) { return h('li', { key: item.id, className: 'flex items-start gap-2 rounded-lg bg-white/80 p-2 text-[11px]' }, h('span', { className: 'font-black ' + (item.complete ? 'text-emerald-700' : 'text-slate-400'), 'aria-hidden': 'true' }, item.complete ? '✓' : '○'), h('span', null, h('strong', { className: item.complete ? 'text-emerald-950' : 'text-slate-700' }, item.label), h('span', { className: 'block text-slate-500' }, item.status))); }))
                       ),
                       complicationMeta ? h('div', { role: 'alert', 'aria-live': 'assertive', className: 'rounded-xl border-2 border-rose-400 bg-rose-50 p-3', 'data-procedure-complication': procedure.complication },
-                        h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700' }, 'Model event · severity ' + Math.round(procedure.complicationSeverity) + '%'), h('h5', { className: 'text-sm font-black text-rose-950' }, complicationMeta.label)), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[9px] font-black text-rose-800' }, 'SYNTHETIC')),
+                        h('div', { className: 'flex items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-rose-700' }, 'Model event · severity ' + Math.round(procedure.complicationSeverity) + '%'), h('h5', { className: 'text-sm font-black text-rose-950' }, complicationMeta.label)), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[11px] font-black text-rose-800' }, t('stem.anatomy.synthetic', 'SYNTHETIC'))),
                         h('p', { className: 'mt-2 text-xs leading-relaxed text-rose-900' }, complicationMeta.guidance),
-                        h('button', { type: 'button', disabled: !procedure.strokes.length || procedure.microscopyStarted, onClick: undoProcedureGesture, className: 'mt-3 w-full rounded-lg bg-rose-800 px-3 py-2 text-xs font-black text-white disabled:opacity-50' }, 'Restore previous checkpoint')
+                        h('button', { type: 'button', disabled: !procedure.strokes.length || procedure.microscopyStarted, onClick: undoProcedureGesture, className: 'mt-3 w-full rounded-lg bg-rose-800 px-3 py-2 text-xs font-black text-white disabled:opacity-50' }, t('stem.anatomy.restore_previous_checkpoint', 'Restore previous checkpoint'))
                       ) : null,
-                      procedure.complicationLog.length ? h('div', { className: 'rounded-xl border border-amber-200 bg-amber-50 p-3', 'data-procedure-event-history': 'true' }, h('h5', { className: 'text-[10px] font-black uppercase tracking-wide text-amber-900' }, 'Model event history'), h('ol', { className: 'mt-2 max-h-24 space-y-1 overflow-y-auto text-[10px] text-amber-950' }, procedure.complicationLog.slice().reverse().map(function(item) { return h('li', { key: item.id, className: 'rounded bg-white/80 px-2 py-1' }, (item.resolved ? 'Resolved · ' : 'Detected · ') + item.label); }))) : null,
+                      procedure.complicationLog.length ? h('div', { className: 'rounded-xl border border-amber-200 bg-amber-50 p-3', 'data-procedure-event-history': 'true' }, h('h5', { className: 'text-[11px] font-black uppercase tracking-wide text-amber-900' }, t('stem.anatomy.model_event_history', 'Model event history')), h('ol', { className: 'mt-2 max-h-24 space-y-1 overflow-y-auto text-[11px] text-amber-950' }, procedure.complicationLog.slice().reverse().map(function(item) { return h('li', { key: item.id, className: 'rounded bg-white/80 px-2 py-1' }, (item.resolved ? t('stem.anatomy.resolved', 'Resolved · ') : t('stem.anatomy.detected', 'Detected · ')) + item.label); }))) : null,
                       h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-700' }, procedure.feedback),
                       h('div', { className: 'rounded-xl border border-slate-200 bg-white p-3', 'data-procedure-replay': 'true' },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('h5', { className: 'text-xs font-black uppercase tracking-wide text-slate-700' }, 'Gesture replay and coaching'), h('span', { className: 'text-[10px] text-slate-500' }, procedure.strokes.length + ' gestures · ' + procedure.actions + ' actions')),
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('h5', { className: 'text-xs font-black uppercase tracking-wide text-slate-700' }, t('stem.anatomy.gesture_replay_and_coaching', 'Gesture replay and coaching')), h('span', { className: 'text-[11px] text-slate-500' }, procedure.strokes.length + ' gestures · ' + procedure.actions + ' actions')),
                         h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5' },
-                          h('button', { type: 'button', disabled: !procedure.strokes.length, 'aria-pressed': procedure.showReplay, onClick: function() { setProcedure({ showReplay: !procedure.showReplay, feedback: procedure.showReplay ? 'Replay overlay hidden.' : 'Replay overlay shows the planned centerline and highlights low-control paths.' }); }, className: 'rounded-lg border border-cyan-200 bg-cyan-50 px-2 py-1.5 text-[11px] font-bold text-cyan-900 disabled:opacity-50' }, procedure.showReplay ? 'Hide path heatmap' : 'Show path heatmap'),
-                          h('button', { type: 'button', disabled: !procedure.strokes.length || procedure.microscopyStarted, onClick: undoProcedureGesture, className: 'rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-700 disabled:opacity-50' }, 'Undo last gesture'),
-                          h('button', { type: 'button', 'aria-pressed': procedure.reducedVisuals, onClick: function() { setProcedure({ reducedVisuals: !procedure.reducedVisuals, feedback: procedure.reducedVisuals ? 'Full simulated fluid markers restored.' : 'Reduced visual intensity enabled; quantitative feedback remains unchanged.' }); }, className: 'rounded-lg border border-violet-200 bg-violet-50 px-2 py-1.5 text-[11px] font-bold text-violet-900' }, procedure.reducedVisuals ? 'Use standard visual intensity' : 'Reduce visual intensity'),
-                          h('button', { type: 'button', 'aria-pressed': procedure.sensoryCues, onClick: function() { setProcedure({ sensoryCues: !procedure.sensoryCues, feedback: procedure.sensoryCues ? 'Optional sound and supported-device vibration disabled.' : 'Optional sound and supported-device vibration enabled.' }); }, className: 'rounded-lg border border-teal-200 bg-teal-50 px-2 py-1.5 text-[11px] font-bold text-teal-900', 'data-procedure-sensory-cues': 'true' }, procedure.sensoryCues ? 'Disable sensory cues' : 'Enable sensory cues')
+                          h('button', { type: 'button', disabled: !procedure.strokes.length, 'aria-pressed': procedure.showReplay, onClick: function() { setProcedure({ showReplay: !procedure.showReplay, feedback: procedure.showReplay ? t('stem.anatomy.replay_overlay_hidden', 'Replay overlay hidden.') : t('stem.anatomy.replay_overlay_shows_the_planned_cente', 'Replay overlay shows the planned centerline and highlights low-control paths.') }); }, className: 'rounded-lg border border-cyan-200 bg-cyan-50 px-2 py-1.5 text-[11px] font-bold text-cyan-900 disabled:opacity-50' }, procedure.showReplay ? t('stem.anatomy.hide_path_heatmap', 'Hide path heatmap') : t('stem.anatomy.show_path_heatmap', 'Show path heatmap')),
+                          h('button', { type: 'button', disabled: !procedure.strokes.length || procedure.microscopyStarted, onClick: undoProcedureGesture, className: 'rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[11px] font-bold text-slate-700 disabled:opacity-50' }, t('stem.anatomy.undo_last_gesture', 'Undo last gesture')),
+                          h('button', { type: 'button', 'aria-pressed': procedure.reducedVisuals, onClick: function() { setProcedure({ reducedVisuals: !procedure.reducedVisuals, feedback: procedure.reducedVisuals ? t('stem.anatomy.full_simulated_fluid_markers_restored', 'Full simulated fluid markers restored.') : t('stem.anatomy.reduced_visual_intensity_enabled_quant', 'Reduced visual intensity enabled; quantitative feedback remains unchanged.') }); }, className: 'rounded-lg border border-violet-200 bg-violet-50 px-2 py-1.5 text-[11px] font-bold text-violet-900' }, procedure.reducedVisuals ? t('stem.anatomy.use_standard_visual_intensity', 'Use standard visual intensity') : t('stem.anatomy.reduce_visual_intensity', 'Reduce visual intensity')),
+                          h('button', { type: 'button', 'aria-pressed': procedure.sensoryCues, onClick: function() { setProcedure({ sensoryCues: !procedure.sensoryCues, feedback: procedure.sensoryCues ? t('stem.anatomy.optional_sound_and_supported_device_vi', 'Optional sound and supported-device vibration disabled.') : t('stem.anatomy.optional_sound_and_supported_device_vi_2', 'Optional sound and supported-device vibration enabled.') }); }, className: 'rounded-lg border border-teal-200 bg-teal-50 px-2 py-1.5 text-[11px] font-bold text-teal-900', 'data-procedure-sensory-cues': 'true' }, procedure.sensoryCues ? t('stem.anatomy.disable_sensory_cues', 'Disable sensory cues') : t('stem.anatomy.enable_sensory_cues', 'Enable sensory cues'))
                         ),
                         lastProcedureMetrics ? h('div', { className: 'mt-3', 'data-procedure-stroke-metrics': 'true' },
-                          h('div', { className: 'grid grid-cols-2 gap-1.5' }, [['Precision', lastProcedureMetrics.precision + '%'], ['Steadiness', lastProcedureMetrics.steadiness + '%'], ['Pressure', Math.round(lastProcedureMetrics.meanPressure * 100) + '%'], ['Control', lastProcedureMetrics.control + '%'], ['Contact', (lastProcedureMetrics.contact || 'none').replace('_', ' ')], ['Contact accuracy', Math.round(lastProcedureMetrics.contactAccuracy || 0) + '%'], ['Path angle', lastProcedureMetrics.pathAngle + '\u00B0'], ['Relative speed', lastProcedureMetrics.speed]].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg bg-slate-50 p-2' }, h('div', { className: 'text-[9px] font-bold uppercase text-slate-500' }, item[0]), h('div', { className: 'text-sm font-black text-slate-900' }, item[1])); })),
-                          (procedure.practiceMode === 'guided' || procedure.showCoachHint) ? h('div', { className: 'mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[10px] leading-relaxed text-amber-950', 'data-procedure-coach': 'visible' }, h('strong', null, 'Adaptive coach: '), lastProcedureMetrics.recommendation) : h('button', { type: 'button', onClick: function() { setProcedure({ showCoachHint: true, hintUses: procedure.hintUses + 1, feedback: 'One coaching hint revealed for this gesture.' }); }, className: 'mt-2 w-full rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-black text-amber-950', 'data-procedure-reveal-hint': 'true' }, 'Reveal one coaching hint'),
-                          procedure.showReplay ? h('p', { className: 'mt-2 text-[10px] text-slate-600' }, 'Cyan dashed = planned route · tool color = recorded path · rose = control below 60%.') : null
-                        ) : h('p', { className: 'mt-2 text-[10px] text-slate-500' }, 'Draw on the tissue field or use the keyboard alternative to generate precision, steadiness, pressure, and control feedback.'),
+                          h('div', { className: 'grid grid-cols-2 gap-1.5' }, [['Precision', lastProcedureMetrics.precision + '%'], ['Steadiness', lastProcedureMetrics.steadiness + '%'], ['Pressure', Math.round(lastProcedureMetrics.meanPressure * 100) + '%'], ['Control', lastProcedureMetrics.control + '%'], ['Contact', (lastProcedureMetrics.contact || 'none').replace('_', ' ')], ['Contact accuracy', Math.round(lastProcedureMetrics.contactAccuracy || 0) + '%'], ['Path angle', lastProcedureMetrics.pathAngle + '\u00B0'], ['Relative speed', lastProcedureMetrics.speed]].map(function(item) { return h('div', { key: item[0], className: 'rounded-lg bg-slate-50 p-2' }, h('div', { className: 'text-[11px] font-bold uppercase text-slate-500' }, item[0]), h('div', { className: 'text-sm font-black text-slate-900' }, item[1])); })),
+                          (procedure.practiceMode === 'guided' || procedure.showCoachHint) ? h('div', { className: 'mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] leading-relaxed text-amber-950', 'data-procedure-coach': 'visible' }, h('strong', null, t('stem.anatomy.adaptive_coach', 'Adaptive coach: ')), lastProcedureMetrics.recommendation) : h('button', { type: 'button', onClick: function() { setProcedure({ showCoachHint: true, hintUses: procedure.hintUses + 1, feedback: t('stem.anatomy.one_coaching_hint_revealed_for_this_ge', 'One coaching hint revealed for this gesture.') }); }, className: 'mt-2 w-full rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] font-black text-amber-950', 'data-procedure-reveal-hint': 'true' }, t('stem.anatomy.reveal_one_coaching_hint', 'Reveal one coaching hint')),
+                          procedure.showReplay ? h('p', { className: 'mt-2 text-[11px] text-slate-600' }, t('stem.anatomy.cyan_dashed_planned_route_tool_color_r', 'Cyan dashed = planned route · tool color = recorded path · rose = control below 60%.')) : null
+                        ) : h('p', { className: 'mt-2 text-[11px] text-slate-500' }, t('stem.anatomy.draw_on_the_tissue_field_or_use_the_ke', 'Draw on the tissue field or use the keyboard alternative to generate precision, steadiness, pressure, and control feedback.')),
                         procedure.attempts.length ? h('div', { className: 'mt-3 rounded-lg border border-indigo-200 bg-indigo-50 p-2', 'data-procedure-attempt-history': 'true' },
-                          h('div', { className: 'flex items-center justify-between gap-2 text-[10px]' }, h('strong', { className: 'text-indigo-950' }, 'Previous attempts'), bestProcedureAttempt ? h('span', { className: 'font-black text-indigo-800' }, 'Best ' + bestProcedureAttempt.score + '/100') : null),
-                          h('ol', { className: 'mt-2 grid gap-1' }, procedure.attempts.slice().reverse().map(function(item, index) { var delta = procedureScore.total - item.score; return h('li', { key: item.id || index, className: 'flex items-center justify-between rounded bg-white px-2 py-1 text-[9px] text-slate-700' }, h('span', null, getAnatomyProcedureCase(item.caseId).label + ' · seed ' + item.scenarioSeed + ' · ' + item.approach + ' · ' + item.mode), h('strong', null, item.score + ' · current ' + (delta >= 0 ? '+' : '') + delta)); }))
+                          h('div', { className: 'flex items-center justify-between gap-2 text-[11px]' }, h('strong', { className: 'text-indigo-950' }, t('stem.anatomy.previous_attempts', 'Previous attempts')), bestProcedureAttempt ? h('span', { className: 'font-black text-indigo-800' }, 'Best ' + bestProcedureAttempt.score + '/100') : null),
+                          h('ol', { className: 'mt-2 grid gap-1' }, procedure.attempts.slice().reverse().map(function(item, index) { var delta = procedureScore.total - item.score; return h('li', { key: item.id || index, className: 'flex items-center justify-between rounded bg-white px-2 py-1 text-[11px] text-slate-700' }, h('span', null, getAnatomyProcedureCase(item.caseId).label + ' · seed ' + item.scenarioSeed + ' · ' + item.approach + ' · ' + item.mode), h('strong', null, item.score + ' · current ' + (delta >= 0 ? '+' : '') + delta)); }))
                         ) : null,
-                        procedure.actionLog.length ? h('ol', { className: 'mt-2 max-h-32 space-y-1 overflow-y-auto text-[10px] text-slate-700' }, procedure.actionLog.slice().reverse().map(function(item) { return h('li', { key: item.id, className: 'rounded bg-slate-50 px-2 py-1' }, item.label + ' \u00B7 depth ' + item.depth + '%'); })) : null
+                        procedure.actionLog.length ? h('ol', { className: 'mt-2 max-h-32 space-y-1 overflow-y-auto text-[11px] text-slate-700' }, procedure.actionLog.slice().reverse().map(function(item) { return h('li', { key: item.id, className: 'rounded bg-slate-50 px-2 py-1' }, item.label + ' \u00B7 depth ' + item.depth + '%'); })) : null
                       ),
-                      h('button', { type: 'button', onClick: resetProcedure, className: 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50', 'data-procedure-reset-attempt': 'true' }, (procedure.planLocked || procedure.actions > 0 || procedure.specimenCollected) ? 'Archive attempt and reset' : 'Reset scenario')
+                      h('button', { type: 'button', onClick: resetProcedure, className: 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50', 'data-procedure-reset-attempt': 'true' }, (procedure.planLocked || procedure.actions > 0 || procedure.specimenCollected) ? t('stem.anatomy.archive_attempt_and_reset', 'Archive attempt and reset') : t('stem.anatomy.reset_scenario', 'Reset scenario'))
                     )
                   )
                 );
               })() : activeTab === 'imaging' ? (function() {
                 var savedImaging = d.imaging && typeof d.imaging === 'object' && !Array.isArray(d.imaging) ? d.imaging : {};
-                var modality = savedImaging.modality === 'MRI' ? 'MRI' : 'CT';
+                var modality = savedImaging.modality === 'MRI' ? t('stem.anatomy.mri', 'MRI') : t('stem.anatomy.ct', 'CT');
                 var region = ['head', 'chest', 'abdomen'].indexOf(savedImaging.region) >= 0 ? savedImaging.region : 'chest';
                 var plane = ['axial', 'coronal', 'sagittal'].indexOf(savedImaging.plane) >= 0 ? savedImaging.plane : 'axial';
                 var restoredSlice = Number(savedImaging.slice);
@@ -12472,6 +13528,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   chest: ['Lungs', 'Heart', 'Trachea', 'Vertebra', 'Spinal canal', 'Diaphragm'],
                   abdomen: ['Liver', 'Kidneys', 'Bowel', 'Vertebra', 'Bladder']
                 }[region];
+                // ── Spot challenge: "click the <structure> on this slice" ──
+                // Targets come from the painter's own hit regions for the CURRENT modality, region,
+                // plane and slice, so the answer always exists on screen. Labels hide during a round.
+                var imagingRegions = getAnatomyImagingRegions({ modality: modality, region: region, plane: plane, slice: sliceValue, sequence: sequence });
+                var SPOT_EXCLUDED = ['Chest wall', 'Abdominal wall', 'Diaphragm', 'Ribs', 'Skull'];
+                var spotCandidates = imagingRegions.filter(function(item) { return SPOT_EXCLUDED.indexOf(item.text) === -1; });
+                var rawSpot = savedImaging.spot && typeof savedImaging.spot === 'object' && !Array.isArray(savedImaging.spot) ? savedImaging.spot : {};
+                var spotTargetRegion = typeof rawSpot.target === 'string' ? imagingRegions.find(function(item) { return item.text === rawSpot.target; }) || null : null;
+                var spot = {
+                  active: rawSpot.active === true && !!spotTargetRegion,
+                  target: spotTargetRegion ? spotTargetRegion.text : null,
+                  result: rawSpot.result === 'hit' || rawSpot.result === 'miss' ? rawSpot.result : null,
+                  clickX: Number.isFinite(Number(rawSpot.clickX)) ? Number(rawSpot.clickX) : null,
+                  clickY: Number.isFinite(Number(rawSpot.clickY)) ? Number(rawSpot.clickY) : null,
+                  score: Math.max(0, Math.floor(Number(rawSpot.score) || 0)),
+                  total: Math.max(0, Math.floor(Number(rawSpot.total) || 0)),
+                  labelsWere: rawSpot.labelsWere !== false
+                };
+                var spotRoundOpen = spot.active && spot.result === null;
+                function pickSpotTarget(previous) {
+                  var pool = spotCandidates.filter(function(item) { return item.text !== previous; });
+                  if (!pool.length) pool = spotCandidates;
+                  return pool.length ? pool[Math.floor(Math.random() * pool.length)].text : null;
+                }
+                function startSpotRound(isStart) {
+                  var nextTarget = pickSpotTarget(spot.target);
+                  if (!nextTarget) { if (typeof addToast === 'function') addToast(t('stem.anatomy.spot_no_targets', 'This slice has no labelled targets to find. Scroll to another slice.')); return; }
+                  setImaging({
+                    spot: { active: true, target: nextTarget, result: null, clickX: null, clickY: null, score: spot.score, total: spot.total, labelsWere: isStart ? showLabels : spot.labelsWere },
+                    rulerStart: null
+                  });
+                  if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.spot_announce_prefix', 'Find the ') + nextTarget + t('stem.anatomy.spot_announce_suffix', ' on the scan. Labels are hidden. Use the arrow keys or pointer, then Enter or click to answer.'));
+                }
+                function endSpotChallenge() {
+                  setImaging({ spot: { active: false, target: null, result: null, clickX: null, clickY: null, score: spot.score, total: spot.total, labelsWere: true }, showLabels: spot.labelsWere });
+                }
+                function answerSpot(x, y) {
+                  if (!spotRoundOpen || !spotTargetRegion) return false;
+                  var px = 44 + x * 552, py = 28 + y * 408;
+                  var dx = (px - spotTargetRegion.x) / (Math.max(10, spotTargetRegion.rx) + 16), dy = (py - spotTargetRegion.y) / (Math.max(10, spotTargetRegion.ry) + 16);
+                  var hit = dx * dx + dy * dy <= 1;
+                  setImaging({ spot: Object.assign({}, spot, { result: hit ? 'hit' : 'miss', clickX: x, clickY: y, score: spot.score + (hit ? 1 : 0), total: spot.total + 1 }) });
+                  playSound(hit ? 'spotterCorrect' : 'spotterWrong');
+                  if (typeof announceToSR === 'function') announceToSR(hit ? t('stem.anatomy.spot_hit', 'Hit. That is the ') + spot.target + '.' : t('stem.anatomy.spot_miss_prefix', 'Not there. The ') + spot.target + t('stem.anatomy.spot_miss_suffix', ' is now outlined on the scan.'));
+                  return true;
+                }
+                var spotReveal = spot.active && spot.result && spotTargetRegion
+                  ? { x: spotTargetRegion.x, y: spotTargetRegion.y, rx: spotTargetRegion.rx, ry: spotTargetRegion.ry, label: spot.target, hit: spot.result === 'hit', clickX: spot.clickX, clickY: spot.clickY }
+                  : null;
                 var bodyScopeProfile = getBodyScopeSpatialProfile(region, plane, sliceValue);
                 var rawBodyScopeAnswers = savedImaging.bodyScopeAnswers && typeof savedImaging.bodyScopeAnswers === 'object' && !Array.isArray(savedImaging.bodyScopeAnswers) ? savedImaging.bodyScopeAnswers : {};
                 var bodyScopeAnswers = Object.assign({}, rawBodyScopeAnswers);
@@ -12505,7 +13610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   nextAnswers[bodyScopeProfile.challenge.id] = option.id;
                   setImaging({ bodyScopeAnswers: nextAnswers });
                   playSound(option.correct ? 'quizCorrect' : 'quizWrong');
-                  if (typeof announceToSR === 'function') announceToSR((option.correct ? 'Spatial relationship matched. ' : 'Recheck the relationship. ') + bodyScopeProfile.challenge.answerWhy);
+                  if (typeof announceToSR === 'function') announceToSR((option.correct ? t('stem.anatomy.spatial_relationship_matched', 'Spatial relationship matched. ') : t('stem.anatomy.recheck_the_relationship', 'Recheck the relationship. ')) + bodyScopeProfile.challenge.answerWhy);
                 }
                 function renderBodyScopeNavigator() {
                   var regionBands = { head: [18, 60], chest: [58, 116], abdomen: [112, 169] };
@@ -12524,9 +13629,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   },
                     h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-violet-200 px-4 py-3' },
                       h('div', null,
-                        h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-violet-800' }, 'Spatial anatomy navigator'),
-                        h('h5', { id: 'anatomy-bodyscope-title', className: 'text-lg font-black text-slate-950' }, 'BodyScope'),
-                        h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, 'Connect the selected teaching slice to its body plane, orientation, depth, and neighboring structures.')
+                        h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-violet-800' }, t('stem.anatomy.spatial_anatomy_navigator', 'Spatial anatomy navigator')),
+                        h('h5', { id: 'anatomy-bodyscope-title', className: 'text-lg font-black text-slate-950' }, t('stem.anatomy.bodyscope', 'BodyScope')),
+                        h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, t('stem.anatomy.connect_the_selected_teaching_slice_to', 'Connect the selected teaching slice to its body plane, orientation, depth, and neighboring structures.'))
                       ),
                       h('span', { className: 'rounded-full border border-violet-300 bg-white px-3 py-1 text-xs font-black text-violet-900', role: 'status' }, planeName + ' · ' + bodyScopeProfile.positionLabel)
                     ),
@@ -12550,15 +13655,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('path', { d: 'M263 43 Q280 39 290 49 Q302 71 296 101 L286 126 L289 171 L276 171 L271 127 L258 171 L245 171 L253 122 Q244 94 250 62 Z', fill: '#94a3b8', stroke: '#e2e8f0', strokeWidth: 2 }),
                           plane === 'axial' ? h('g', { 'data-bodyscope-plane-mark': 'axial' },
                             h('rect', { x: 34, y: axialY - 3, width: 286, height: 6, rx: 3, fill: '#22d3ee' }),
-                            h('text', { x: 326, y: axialY + 4, fill: '#cffafe', fontSize: 10, fontWeight: 700 }, 'AXIAL')
+                            h('text', { x: 326, y: axialY + 4, fill: '#cffafe', fontSize: 10, fontWeight: 700 }, t('stem.anatomy.axial', 'AXIAL'))
                           ) : plane === 'sagittal' ? h('g', { 'data-bodyscope-plane-mark': 'sagittal' },
                             h('rect', { x: sagittalX - 3, y: 9, width: 6, height: 167, rx: 3, fill: '#a78bfa' }),
-                            h('text', { x: sagittalX, y: 187, fill: '#ede9fe', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'SAGITTAL')
+                            h('text', { x: sagittalX, y: 187, fill: '#ede9fe', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.anatomy.sagittal', 'SAGITTAL'))
                           ) : h('g', { 'data-bodyscope-plane-mark': 'coronal' },
                             h('rect', { x: coronalX - 3, y: 9, width: 6, height: 167, rx: 3, fill: '#34d399' }),
-                            h('text', { x: coronalX, y: 187, fill: '#d1fae5', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'CORONAL')
+                            h('text', { x: coronalX, y: 187, fill: '#d1fae5', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.anatomy.coronal', 'CORONAL'))
                           ),
-                          h('text', { x: 90, y: 190, fill: '#e2e8f0', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'FRONT'),
+                          h('text', { x: 90, y: 190, fill: '#e2e8f0', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.anatomy.front', 'FRONT')),
                           h('text', { x: 270, y: 190, fill: '#e2e8f0', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'SIDE'),
                           h('text', { x: 12, y: 17, fill: '#bae6fd', fontSize: 10, fontWeight: 700 }, 'S'),
                           h('text', { x: 12, y: 174, fill: '#bae6fd', fontSize: 10, fontWeight: 700 }, 'I'),
@@ -12571,10 +13676,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, bodyScopeProfile.planeDefinition),
                           h('p', { className: 'mt-2 rounded-lg bg-violet-50 px-2 py-1.5 text-xs font-bold leading-relaxed text-violet-950' }, bodyScopeProfile.orientation)
                         ),
-                        h('dl', { className: 'mt-3 grid gap-2 sm:grid-cols-3', 'aria-label': 'Key spatial relationships' },
+                        h('dl', { className: 'mt-3 grid gap-2 sm:grid-cols-3', 'aria-label': t('stem.anatomy.key_spatial_relationships', 'Key spatial relationships') },
                           bodyScopeProfile.relations.map(function(relation) {
                             return h('div', { key: relation.term, className: 'rounded-xl border border-cyan-200 bg-cyan-50/70 p-2.5' },
-                              h('dt', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-900' }, relation.term),
+                              h('dt', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-900' }, relation.term),
                               h('dd', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, relation.detail)
                             );
                           })
@@ -12584,10 +13689,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           'data-bodyscope-depth-focus': bodyScopeDepth.id
                         },
                           h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                            h('strong', { className: 'text-xs font-black uppercase tracking-wide text-amber-950' }, 'Depth focus'),
+                            h('strong', { className: 'text-xs font-black uppercase tracking-wide text-amber-950' }, t('stem.anatomy.depth_focus', 'Depth focus')),
                             h('span', { className: 'text-[11px] font-black text-amber-900', role: 'status' }, bodyScopeDepth.targetLabel)
                           ),
-                          h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Choose anatomy depth focus' },
+                          h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': t('stem.anatomy.choose_anatomy_depth_focus', 'Choose anatomy depth focus') },
                             bodyScopeProfile.depthLayers.map(function(layer) {
                               var isActive = bodyScopeDepth.id === layer.id;
                               return h('button', {
@@ -12603,12 +13708,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('div', {
                             className: 'mt-3',
                             role: 'img',
-                            'aria-label': 'Depth sequence from superficial to deep: ' + bodyScopeDepth.path.join(', then ') + '. Focus: ' + bodyScopeDepth.targetLabel + '.',
+                            'aria-label': t('stem.anatomy.depth_sequence_from_superficial_to_dee', 'Depth sequence from superficial to deep: ') + bodyScopeDepth.path.join(', then ') + '. Focus: ' + bodyScopeDepth.targetLabel + '.',
                             'data-bodyscope-depth-ladder': bodyScopeDepth.id
                           },
-                            h('div', { className: 'mb-1 flex items-center justify-between text-[10px] font-black uppercase tracking-wide text-amber-900', 'aria-hidden': 'true' },
-                              h('span', null, 'Superficial'),
-                              h('span', null, 'Deeper')
+                            h('div', { className: 'mb-1 flex items-center justify-between text-[11px] font-black uppercase tracking-wide text-amber-900', 'aria-hidden': 'true' },
+                              h('span', null, t('stem.anatomy.superficial', 'Superficial')),
+                              h('span', null, t('stem.anatomy.deeper', 'Deeper'))
                             ),
                             h('div', { className: 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1' },
                               bodyScopeDepth.path.map(function(nodeLabel, nodeIndex) {
@@ -12629,19 +13734,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                               })
                             )
                           ),
-                          h('p', { className: 'mt-2 text-[10px] font-bold text-amber-900' }, 'Highlighted labels on the teaching slice: ' + bodyScopeDepth.targetLabel + '.')
+                          h('p', { className: 'mt-2 text-[11px] font-bold text-amber-900' }, 'Highlighted labels on the teaching slice: ' + bodyScopeDepth.targetLabel + '.')
                         )
                       )
                     ),
                     h('div', { className: 'border-t border-violet-200 bg-white/80 p-4', 'data-bodyscope-challenge': bodyScopeProfile.challenge.id },
                       h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                         h('div', null,
-                          h('span', { className: 'text-[10px] font-black uppercase tracking-wider text-violet-800' }, 'Spatial check'),
+                          h('span', { className: 'text-[11px] font-black uppercase tracking-wider text-violet-800' }, t('stem.anatomy.spatial_check', 'Spatial check')),
                           h('p', { className: 'text-sm font-black text-slate-950' }, bodyScopeProfile.challenge.prompt)
                         ),
                         h('span', { className: 'text-[11px] font-bold text-slate-500' }, bodyScopeProfile.regionLabel)
                       ),
-                      h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Choose the spatial relationship answer' },
+                      h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3', role: 'group', 'aria-label': t('stem.anatomy.choose_the_spatial_relationship_answer', 'Choose the spatial relationship answer') },
                         bodyScopeProfile.challenge.options.map(function(option) {
                           var isSelected = !!bodyScopeSelectedOption && bodyScopeSelectedOption.id === option.id;
                           return h('button', {
@@ -12658,7 +13763,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         role: 'status', 'aria-live': 'polite',
                         'data-bodyscope-result': bodyScopeSelectedOption.correct ? 'correct' : 'reconsider'
                       },
-                        h('strong', null, bodyScopeSelectedOption.correct ? 'Spatial relationship matched. ' : 'Recheck the relationship. '),
+                        h('strong', null, bodyScopeSelectedOption.correct ? t('stem.anatomy.spatial_relationship_matched', 'Spatial relationship matched. ') : t('stem.anatomy.recheck_the_relationship', 'Recheck the relationship. ')),
                         bodyScopeProfile.challenge.answerWhy
                       ) : null
                     )
@@ -12670,6 +13775,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 // nothing on Enter. Placing pins and rulers on a scan is the whole
                 // activity here, and it was impossible without a mouse.
                 function placeImagingAt(x, y) {
+                  // During a spot round the click is an answer, never an annotation.
+                  if (answerSpot(x, y)) return;
                   if (imagingTool === 'ruler' && savedImaging.rulerStart && typeof savedImaging.rulerStart === 'object') {
                     var start = savedImaging.rulerStart;
                     var dx = (x - start.x) * 552, dy = (y - start.y) * 408;
@@ -12730,75 +13837,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }
                 }
 
-                var drawingState = { kbX: kbX, kbY: kbY, modality: modality, region: region, plane: plane, slice: sliceValue, sequence: sequence, windowWidth: windowWidth, windowLevel: windowLevel, showLabels: showLabels, showCrosshair: showCrosshair, focusTerms: bodyScopeDepth.targets, annotations: visibleImagingAnnotations };
+                var drawingState = { kbX: kbX, kbY: kbY, modality: modality, region: region, plane: plane, slice: sliceValue, sequence: sequence, windowWidth: windowWidth, windowLevel: windowLevel, showLabels: showLabels && !spotRoundOpen, showCrosshair: showCrosshair, focusTerms: spotRoundOpen ? [] : bodyScopeDepth.targets, annotations: visibleImagingAnnotations, spotReveal: spotReveal };
                 return h('section', { className: 'rounded-2xl border-2 border-cyan-200 bg-white p-4 shadow-sm', 'data-anatomy-imaging-workspace': 'true', 'aria-labelledby': 'anatomy-imaging-title' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
                     h('div', null,
-                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-800' }, 'Medical imaging literacy'),
-                      h('h4', { id: 'anatomy-imaging-title', className: 'text-xl font-black text-slate-900' }, 'CT / MRI Imaging Lab'),
-                      h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, 'Explore a synthetic teaching phantom across anatomical planes. Practice display controls, orientation, observation, and measurement without using or uploading patient data.')),
-                    h('span', { className: 'rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-black text-amber-900' }, 'Educational · non-diagnostic')
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-cyan-800' }, t('stem.anatomy.medical_imaging_literacy', 'Medical imaging literacy')),
+                      h('h4', { id: 'anatomy-imaging-title', className: 'text-xl font-black text-slate-900' }, t('stem.anatomy.ct_mri_imaging_lab', 'CT / MRI Imaging Lab')),
+                      h('p', { className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-600' }, t('stem.anatomy.explore_a_synthetic_teaching_phantom_a', 'Explore a synthetic teaching phantom across anatomical planes. Practice display controls, orientation, observation, and measurement without using or uploading patient data.'))),
+                    h('span', { className: 'rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-black text-amber-900' }, t('stem.anatomy.educational_non_diagnostic', 'Educational · non-diagnostic'))
                   ),
-                  h('div', { className: 'mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950', role: 'note' }, h('strong', null, 'Teaching model only: '), 'These are generated diagrams, not scans and not a clinical interpretation tool. Tissue appearance is simplified. Never use this workspace to diagnose, triage, or make treatment decisions.'),
+                  h('div', { className: 'mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950', role: 'note' }, h('strong', null, t('stem.anatomy.teaching_model_only', 'Teaching model only: ')), 'These are generated diagrams, not scans and not a clinical interpretation tool. Tissue appearance is simplified. Never use this workspace to diagnose, triage, or make treatment decisions.'),
                   h('div', { className: 'mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.8fr)]' },
                     h('div', null,
                       h('div', { className: 'flex flex-wrap gap-2 mb-2' },
-                        h('div', { className: 'inline-flex rounded-lg border border-cyan-200 bg-cyan-50 p-1', role: 'group', 'aria-label': 'Imaging modality' }, ['CT', 'MRI'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': modality === item, onClick: function() { chooseModality(item); }, className: 'rounded-md px-3 py-1.5 text-xs font-black ' + (modality === item ? 'bg-cyan-800 text-white' : 'text-cyan-900 hover:bg-white') }, item); })),
-                        h('div', { className: 'inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1', role: 'group', 'aria-label': 'Body region' }, [['head', 'Head'], ['chest', 'Chest'], ['abdomen', 'Abdomen']].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': region === item[0], onClick: function() { setImaging({ region: item[0], slice: 50, rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (region === item[0] ? 'bg-slate-800 text-white' : 'text-slate-700 hover:bg-white') }, item[1]); })),
-                        h('div', { className: 'inline-flex rounded-lg border border-indigo-200 bg-indigo-50 p-1', role: 'group', 'aria-label': 'Anatomical plane' }, [['axial', 'Axial'], ['coronal', 'Coronal'], ['sagittal', 'Sagittal']].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': plane === item[0], onClick: function() { setImaging({ plane: item[0], rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (plane === item[0] ? 'bg-indigo-700 text-white' : 'text-indigo-800 hover:bg-white') }, item[1]); }))
+                        h('div', { className: 'inline-flex rounded-lg border border-cyan-200 bg-cyan-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.imaging_modality', 'Imaging modality') }, ['CT', 'MRI'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': modality === item, onClick: function() { chooseModality(item); }, className: 'rounded-md px-3 py-1.5 text-xs font-black ' + (modality === item ? 'bg-cyan-800 text-white' : 'text-cyan-900 hover:bg-white') }, item); })),
+                        h('div', { className: 'inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.body_region', 'Body region') }, [['head', t('stem.anatomy.head', 'Head')], ['chest', t('stem.anatomy.chest', 'Chest')], ['abdomen', t('stem.anatomy.abdomen', 'Abdomen')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': region === item[0], onClick: function() { setImaging({ region: item[0], slice: 50, rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (region === item[0] ? 'bg-slate-800 text-white' : 'text-slate-700 hover:bg-white') }, item[1]); })),
+                        h('div', { className: 'inline-flex rounded-lg border border-indigo-200 bg-indigo-50 p-1', role: 'group', 'aria-label': t('stem.anatomy.anatomical_plane', 'Anatomical plane') }, [['axial', t('stem.anatomy.axial_2', 'Axial')], ['coronal', t('stem.anatomy.coronal_2', 'Coronal')], ['sagittal', t('stem.anatomy.sagittal_2', 'Sagittal')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': plane === item[0], onClick: function() { setImaging({ plane: item[0], rulerStart: null }); }, className: 'rounded-md px-2.5 py-1.5 text-xs font-bold ' + (plane === item[0] ? 'bg-indigo-700 text-white' : 'text-indigo-800 hover:bg-white') }, item[1]); }))
                       ),
                       h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950 shadow-xl' },
                         h('canvas', { width: 640, height: 480, role: 'application', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.' + ' Arrow keys move a placement cursor, Enter places the current tool, Escape cancels a ruler.', onClick: handleImagingClick, onKeyDown: handleImagingKey, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
                       ),
                       h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
                         h('label', { htmlFor: 'anatomy-imaging-slice', className: 'text-xs font-black text-slate-700' }, 'Slice ' + Math.round(sliceValue) + ' / 100'),
-                        h('input', { id: 'anatomy-imaging-slice', type: 'range', min: 0, max: 100, step: 1, value: sliceValue, onChange: function(event) { setImaging({ slice: Number(event.target.value), rulerStart: null }); }, className: 'min-w-[220px] flex-1 accent-cyan-700', 'aria-label': 'Imaging slice position' }),
-                        h('button', { type: 'button', onClick: function() { setImaging({ showCrosshair: !showCrosshair }); }, 'aria-pressed': showCrosshair, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showCrosshair ? 'Hide crosshair' : 'Show crosshair'),
-                        h('button', { type: 'button', onClick: function() { setImaging({ showLabels: !showLabels }); }, 'aria-pressed': showLabels, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showLabels ? 'Hide labels' : 'Show labels')
+                        h('input', { id: 'anatomy-imaging-slice', type: 'range', min: 0, max: 100, step: 1, value: sliceValue, onChange: function(event) { setImaging({ slice: Number(event.target.value), rulerStart: null }); }, className: 'min-w-[220px] flex-1 accent-cyan-700', 'aria-label': t('stem.anatomy.imaging_slice_position', 'Imaging slice position') }),
+                        h('button', { type: 'button', onClick: function() { setImaging({ showCrosshair: !showCrosshair }); }, 'aria-pressed': showCrosshair, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showCrosshair ? t('stem.anatomy.hide_crosshair', 'Hide crosshair') : t('stem.anatomy.show_crosshair', 'Show crosshair')),
+                        h('button', { type: 'button', onClick: function() { setImaging({ showLabels: !showLabels }); }, 'aria-pressed': showLabels, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showLabels ? t('stem.anatomy.hide_labels', 'Hide labels') : t('stem.anatomy.show_labels', 'Show labels'))
                       ),
-                      h('div', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2 text-[11px] leading-relaxed text-slate-700' }, h('strong', null, 'Orientation: '), 'R/L refer to the patient. S/I mean superior/inferior; sagittal views use A/P for anterior/posterior. The 50 mm scale assumes a simplified 0.8 mm display spacing.')
+                      h('div', { className: 'mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2 text-[11px] leading-relaxed text-slate-700' }, h('strong', null, t('stem.anatomy.orientation', 'Orientation: ')), 'R/L refer to the patient. S/I mean superior/inferior; sagittal views use A/P for anterior/posterior. The 50 mm scale assumes a simplified 0.8 mm display spacing.')
                     ),
                     h('aside', { className: 'space-y-3' },
                       h('div', { className: 'rounded-xl border border-cyan-200 bg-cyan-50/60 p-3' },
-                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-cyan-900' }, modality === 'CT' ? 'CT window / level' : 'MRI display contrast'),
-                        modality === 'MRI' ? h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': 'MRI sequence' }, ['T1', 'T2'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': sequence === item, onClick: function() { setImaging({ sequence: item }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-bold ' + (sequence === item ? 'border-cyan-800 bg-cyan-800 text-white' : 'border-cyan-200 bg-white text-cyan-900') }, item); })) : h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': 'CT window presets' }, [['soft', 'Soft tissue'], ['lung', 'Lung'], ['bone', 'Bone'], ['brain', 'Brain']].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { applyWindowPreset(item[0]); }, className: 'rounded-lg border border-cyan-200 bg-white px-2 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-100' }, item[1]); })),
+                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-cyan-900' }, modality === 'CT' ? t('stem.anatomy.ct_window_level', 'CT window / level') : t('stem.anatomy.mri_display_contrast', 'MRI display contrast')),
+                        modality === 'MRI' ? h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': t('stem.anatomy.mri_sequence', 'MRI sequence') }, ['T1', 'T2'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': sequence === item, onClick: function() { setImaging({ sequence: item }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-bold ' + (sequence === item ? 'border-cyan-800 bg-cyan-800 text-white' : 'border-cyan-200 bg-white text-cyan-900') }, item); })) : h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': t('stem.anatomy.ct_window_presets', 'CT window presets') }, [['soft', t('stem.anatomy.soft_tissue', 'Soft tissue')], ['lung', t('stem.anatomy.lung', 'Lung')], ['bone', t('stem.anatomy.bone', 'Bone')], ['brain', t('stem.anatomy.brain', 'Brain')]].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { applyWindowPreset(item[0]); }, className: 'rounded-lg border border-cyan-200 bg-white px-2 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-100' }, item[1]); })),
                         h('label', { className: 'mt-3 block text-[11px] font-bold text-slate-700', htmlFor: 'imaging-window-width' }, 'Window width ' + Math.round(windowWidth)),
                         h('input', { id: 'imaging-window-width', type: 'range', min: 50, max: 2500, step: 10, value: windowWidth, onChange: function(event) { setImaging({ windowWidth: Number(event.target.value) }); }, className: 'w-full accent-cyan-700' }),
                         h('label', { className: 'mt-2 block text-[11px] font-bold text-slate-700', htmlFor: 'imaging-window-level' }, 'Window level ' + Math.round(windowLevel)),
                         h('input', { id: 'imaging-window-level', type: 'range', min: -1000, max: 1200, step: 10, value: windowLevel, onChange: function(event) { setImaging({ windowLevel: Number(event.target.value) }); }, className: 'w-full accent-cyan-700' }),
-                        h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-600' }, modality === 'CT' ? 'Width controls the displayed HU range; level sets its midpoint. Narrow windows increase contrast for a smaller tissue range.' : 'MRI signal intensity is sequence- and scanner-dependent; this display window is not a calibrated Hounsfield scale.')
+                        h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, modality === 'CT' ? t('stem.anatomy.width_controls_the_displayed_hu_range', 'Width controls the displayed HU range; level sets its midpoint. Narrow windows increase contrast for a smaller tissue range.') : t('stem.anatomy.mri_signal_intensity_is_sequence_and_s', 'MRI signal intensity is sequence- and scanner-dependent; this display window is not a calibrated Hounsfield scale.'))
                       ),
                       h('div', { className: 'rounded-xl border border-amber-200 bg-amber-50/60 p-3' },
-                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-amber-900' }, 'Observe and measure'),
-                        h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': 'Imaging annotation tool' }, [['pin', 'Pin'], ['ruler', 'Ruler']].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': imagingTool === item[0], onClick: function() { setImaging({ tool: item[0], rulerStart: null }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-black ' + (imagingTool === item[0] ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-200 bg-white text-amber-900') }, item[1]); })),
-                        h('label', { htmlFor: 'imaging-note', className: 'mt-2 block text-[11px] font-bold text-slate-700' }, 'Observation note'),
-                        h('input', { id: 'imaging-note', type: 'text', maxLength: 120, value: imagingNote, onChange: function(event) { setImaging({ note: event.target.value }); }, placeholder: imagingTool === 'ruler' ? 'What are you measuring?' : 'What do you notice?', className: 'mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs' }),
-                        savedImaging.rulerStart ? h('div', { role: 'status', className: 'mt-2 rounded-lg bg-white p-2 text-xs font-bold text-amber-900' }, 'Ruler start placed—select the end point.') : null,
-                        h('p', { className: 'mt-2 text-[10px] text-slate-600' }, 'Pins and rulers are stored only in this activity state. Measurements use the phantom scale and are not clinical measurements.')
+                        h('h5', { className: 'text-xs font-black uppercase tracking-wide text-amber-900' }, t('stem.anatomy.observe_and_measure', 'Observe and measure')),
+                        h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': t('stem.anatomy.imaging_annotation_tool', 'Imaging annotation tool') }, [['pin', t('stem.anatomy.pin', 'Pin')], ['ruler', t('stem.anatomy.ruler', 'Ruler')]].map(function(item) { return h('button', { key: item[0], type: 'button', 'aria-pressed': imagingTool === item[0], onClick: function() { setImaging({ tool: item[0], rulerStart: null }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-black ' + (imagingTool === item[0] ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-200 bg-white text-amber-900') }, item[1]); })),
+                        h('label', { htmlFor: 'imaging-note', className: 'mt-2 block text-[11px] font-bold text-slate-700' }, t('stem.anatomy.observation_note', 'Observation note')),
+                        h('input', { id: 'imaging-note', type: 'text', maxLength: 120, value: imagingNote, onChange: function(event) { setImaging({ note: event.target.value }); }, placeholder: imagingTool === 'ruler' ? t('stem.anatomy.what_are_you_measuring', 'What are you measuring?') : t('stem.anatomy.what_do_you_notice', 'What do you notice?'), className: 'mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs' }),
+                        savedImaging.rulerStart ? h('div', { role: 'status', className: 'mt-2 rounded-lg bg-white p-2 text-xs font-bold text-amber-900' }, t('stem.anatomy.ruler_start_placed_select_the_end_poin', 'Ruler start placed—select the end point.')) : null,
+                        h('p', { className: 'mt-2 text-[11px] text-slate-600' }, t('stem.anatomy.pins_and_rulers_are_stored_only_in_thi', 'Pins and rulers are stored only in this activity state. Measurements use the phantom scale and are not clinical measurements.'))
                       ),
                       h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50/60 p-3' },
-                        h('div', { className: 'flex items-center justify-between gap-2' }, h('h5', { className: 'text-xs font-black uppercase tracking-wide text-emerald-900' }, 'Observation log'), allImagingAnnotations.length ? h('button', { type: 'button', onClick: function() { setImaging({ annotations: [], rulerStart: null }); }, className: 'text-[10px] font-bold text-emerald-800 underline' }, 'Clear all') : null),
-                        allImagingAnnotations.length ? h('ol', { className: 'mt-2 max-h-40 space-y-1 overflow-y-auto text-[10px] text-emerald-950' }, allImagingAnnotations.slice().reverse().map(function(item) { return h('li', { key: item.id, className: 'rounded-lg border border-emerald-200 bg-white p-2' }, h('strong', null, item.type === 'ruler' ? (item.distanceMm + ' mm') : item.note), ' · ', item.modality, ' ', item.region, ' ', item.plane, ' · slice ', Math.round(item.slice), item.type === 'ruler' ? h('span', { className: 'block text-slate-600' }, item.note) : null); })) : h('p', { className: 'mt-2 text-[10px] text-emerald-900' }, 'Choose Pin or Ruler, then select the image to create an observation.')
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('h5', { className: 'text-xs font-black uppercase tracking-wide text-emerald-900' }, t('stem.anatomy.observation_log', 'Observation log')), allImagingAnnotations.length ? h('button', { type: 'button', onClick: function() { setImaging({ annotations: [], rulerStart: null }); }, className: 'text-[11px] font-bold text-emerald-800 underline' }, t('stem.anatomy.clear_all', 'Clear all')) : null),
+                        allImagingAnnotations.length ? h('ol', { className: 'mt-2 max-h-40 space-y-1 overflow-y-auto text-[11px] text-emerald-950' }, allImagingAnnotations.slice().reverse().map(function(item) { return h('li', { key: item.id, className: 'rounded-lg border border-emerald-200 bg-white p-2' }, h('strong', null, item.type === 'ruler' ? (item.distanceMm + ' mm') : item.note), ' · ', item.modality, ' ', item.region, ' ', item.plane, ' · slice ', Math.round(item.slice), item.type === 'ruler' ? h('span', { className: 'block text-slate-600' }, item.note) : null); })) : h('p', { className: 'mt-2 text-[11px] text-emerald-900' }, t('stem.anatomy.choose_pin_or_ruler_then_select_the_im', 'Choose Pin or Ruler, then select the image to create an observation.'))
                       )
                     )
                   ),
                   renderBodyScopeNavigator(),
                   h('div', { className: 'mt-4 grid gap-3 lg:grid-cols-2' },
                     h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-3' },
-                      h('h5', { className: 'text-sm font-black text-indigo-950' }, 'What should I identify?'),
+                      h('div', { className: 'mb-3 rounded-lg border border-cyan-300 bg-white p-3', 'data-anatomy-spot-challenge': spot.active ? (spot.result || 'open') : 'idle', role: 'group', 'aria-label': t('stem.anatomy.spot_challenge', 'Spot it on the scan') },
+                        h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                          h('h5', { className: 'text-sm font-black text-cyan-950' }, t('stem.anatomy.spot_challenge_title', '🎯 Spot it on the scan')),
+                          spot.total > 0 ? h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-900' }, spot.score + ' / ' + spot.total) : null
+                        ),
+                        !spot.active ? h('div', null,
+                          h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, t('stem.anatomy.spot_intro', 'Labels hide, you get a structure name, and you click where it is on the current slice. Change modality, region, plane or slice first to set the difficulty.')),
+                          h('button', { type: 'button', onClick: function() { startSpotRound(true); }, disabled: !spotCandidates.length,
+                            className: 'mt-2 rounded-lg bg-cyan-800 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-900 disabled:opacity-50 active:scale-[0.97]'
+                          }, t('stem.anatomy.spot_start', 'Start spot challenge'))
+                        ) : spotRoundOpen ? h('div', null,
+                          h('p', { className: 'mt-1 text-sm font-black text-cyan-900', role: 'status', 'aria-live': 'polite' }, t('stem.anatomy.spot_prompt_prefix', 'Click the ') + spot.target + t('stem.anatomy.spot_prompt_suffix', ' on the scan.')),
+                          h('p', { className: 'text-[11px] text-slate-600' }, t('stem.anatomy.spot_prompt_hint', 'Keyboard: arrow keys move the cursor, Enter answers.')),
+                          h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                            h('button', { type: 'button', onClick: function() { startSpotRound(false); }, className: 'rounded-lg border border-cyan-300 bg-white px-3 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-50 active:scale-[0.97]' }, t('stem.anatomy.spot_skip', 'Skip this one')),
+                            h('button', { type: 'button', onClick: endSpotChallenge, className: 'rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.spot_end', 'End challenge'))
+                          )
+                        ) : h('div', null,
+                          h('p', { className: 'mt-1 text-sm font-black ' + (spot.result === 'hit' ? 'text-emerald-800' : 'text-amber-800'), role: 'status', 'aria-live': 'polite' },
+                            spot.result === 'hit' ? t('stem.anatomy.spot_hit_title', '✓ Hit! That is the ') + spot.target + '.' : t('stem.anatomy.spot_miss_title', 'Not there. The ') + spot.target + t('stem.anatomy.spot_miss_body', ' is outlined in amber; your click is the red cross.')),
+                          h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                            h('button', { type: 'button', onClick: function() { startSpotRound(false); }, className: 'rounded-lg bg-cyan-800 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-900 active:scale-[0.97]' }, t('stem.anatomy.spot_next', 'Next structure →')),
+                            h('button', { type: 'button', onClick: endSpotChallenge, className: 'rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-[0.97]' }, t('stem.anatomy.spot_end', 'End challenge'))
+                          )
+                        )
+                      ),
+                      h('h5', { className: 'text-sm font-black text-indigo-950' }, t('stem.anatomy.what_should_i_identify', 'What should I identify?')),
                       h('ul', { className: 'mt-2 grid grid-cols-2 gap-1 text-xs text-indigo-900' }, regionStructures.map(function(item) { return h('li', { key: item, className: 'rounded-md bg-white px-2 py-1' }, '• ' + item); })),
-                      h('button', { type: 'button', onClick: function() { openAnatomyScaleDestination('cell', 'cell', { mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive' }, 'Cell Microdissection'); }, className: 'mt-3 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, 'Continue to cell-scale imaging →')
+                      h('button', { type: 'button', onClick: function() { openAnatomyScaleDestination('cell', 'cell', { mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive' }, t('stem.anatomy.cell_microdissection', 'Cell Microdissection')); }, className: 'mt-3 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100' }, t('stem.anatomy.continue_to_cell_scale_imaging', 'Continue to cell-scale imaging →'))
                     ),
                     h('div', { className: 'rounded-xl border border-slate-300 bg-slate-50 p-3', 'data-anatomy-open-source-bridge': 'true' },
-                      h('h5', { className: 'text-sm font-black text-slate-900' }, 'Open-source imaging and anatomy bridge'),
-                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-600' }, 'Use these external projects when a course needs real DICOM data or licensed mesh assets. External viewers open separately; do not upload protected health information unless your institution has approved the workflow.'),
+                      h('h5', { className: 'text-sm font-black text-slate-900' }, t('stem.anatomy.open_source_imaging_and_anatomy_bridge', 'Open-source imaging and anatomy bridge')),
+                      h('p', { className: 'mt-1 text-[11px] leading-relaxed text-slate-600' }, t('stem.anatomy.use_these_external_projects_when_a_cou', 'Use these external projects when a course needs real DICOM data or licensed mesh assets. External viewers open separately; do not upload protected health information unless your institution has approved the workflow.')),
                       h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
-                        h('a', { href: 'https://viewer.ohif.org/', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, 'OHIF Viewer ↗'),
-                        h('a', { href: 'https://www.cornerstonejs.org/live-examples/local', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, 'Cornerstone local DICOM ↗'),
-                        h('a', { href: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, 'BodyParts3D source ↗'),
-                        h('a', { href: 'https://github.com/Z-Anatomy/Models-of-human-anatomy', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, 'Z-Anatomy source ↗')
+                        h('a', { href: 'https://viewer.ohif.org/', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, t('stem.anatomy.ohif_viewer', 'OHIF Viewer ↗')),
+                        h('a', { href: 'https://www.cornerstonejs.org/live-examples/local', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, t('stem.anatomy.cornerstone_local_dicom', 'Cornerstone local DICOM ↗')),
+                        h('a', { href: 'https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, t('stem.anatomy.bodyparts3d_source', 'BodyParts3D source ↗')),
+                        h('a', { href: 'https://github.com/Z-Anatomy/Models-of-human-anatomy', target: '_blank', rel: 'noopener noreferrer', className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100' }, t('stem.anatomy.z_anatomy_source', 'Z-Anatomy source ↗'))
                       ),
-                      h('p', { className: 'mt-2 text-[10px] leading-relaxed text-slate-500' }, 'OHIF and Cornerstone are MIT-licensed software. The current BodyParts3D archive license is CC BY 4.0. The headline Z-Anatomy license is CC BY-SA 4.0, but bundled upstream components can carry mixed and NonCommercial licenses, so every selected mesh needs an asset-level audit. No meshes from either collection are bundled here; attribution, file size, and structure-level provenance can be handled deliberately.')
+                      h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-500' }, t('stem.anatomy.ohif_and_cornerstone_are_mit_licensed', 'OHIF and Cornerstone are MIT-licensed software. The current BodyParts3D archive license is CC BY 4.0. The headline Z-Anatomy license is CC BY-SA 4.0, but bundled upstream components can carry mixed and NonCommercial licenses, so every selected mesh needs an asset-level audit. No meshes from either collection are bundled here; attribution, file size, and structure-level provenance can be handled deliberately.'))
                     )
                   )
                 );
@@ -12863,9 +13996,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'flex gap-2 items-center flex-wrap' },
                     h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.anatomy.log', '📋 Log')),
                     h('button', { onClick: function() { setIQ({ tempC: 37, pH: 7.4, glucose: 90, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.anatomy.reset_3', '↺ Reset')),
-                    iq.log.length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, iq.log.length + ' logged')
+                    iq.log.length > 0 && h('span', { className: 'text-[11px] text-slate-500 italic' }, iq.log.length + ' logged')
                   ),
-                  iq.log.length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700', 'aria-label': 'Logged homeostasis observations' },
+                  iq.log.length > 0 && h('table', { className: 'text-[11px] w-full border-collapse text-slate-700', 'aria-label': 'Logged homeostasis observations' },
                     h('thead', null, h('tr', { className: 'bg-slate-100' }, ['temp °C', 'pH', 'gluc', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
                       return h('tr', { key: 'lr' + idx },
@@ -12889,9 +14022,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       t('stem.anatomy.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                     iq.understood && h('textarea', { 'aria-label': t('stem.anatomy.explanation_input', 'Homeostasis explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.anatomy.explain_homeostasis_model_limit', 'Explain why a reference-range flag alone cannot diagnose a person.'),
                       className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-                  h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.anatomy.homeostasis_model_limit', 'Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.'))
+                  h('div', { className: 'text-[11px] italic text-slate-500' }, t('stem.anatomy.homeostasis_model_limit', 'Teaching model only, not a clinical score or diagnosis. Real interpretation depends on age, context, symptoms, measurement method, trends, and rate of change.'))
                 );
               })() : null
+            ),
+          // ── Fun fact banner (Always visible) ──
+          !focusedAnatomyWorkspace && currentFact ? h('div', { className: 'anatomy-fact-card mb-3 px-3 py-2 rounded-lg border border-amber-200 flex items-start gap-2', style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
+            h('span', { className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
+            h('div', { className: 'flex-1' },
+              h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.anatomy.did_you_know', 'Did you know?')),
+              h('p', { className: 'text-xs text-amber-900 leading-relaxed' }, currentFact)
+            ),
+            h('button', { 'aria-label': t('stem.anatomy.next', 'Next'),
+              onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
+              className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all flex-shrink-0 active:scale-[0.97]', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: 'var(--allo-stem-button-text, #0f172a)', border: '1px solid var(--allo-stem-button-border, #cbd5e1)' }
+            }, t('stem.anatomy.next_2', 'Next \u2192'))
+          ) : null,
+
+          // ── Mnemonics section (Always visible) ──
+          !focusedAnatomyWorkspace && MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'anatomy-mnemonics-card mb-3' },
+            h('button', { onClick: function() { upd('_showMnemonics', !showMnemonics); },
+              'aria-expanded': showMnemonics, 'aria-controls': 'anatomy-mnemonics-panel',
+              className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg border border-purple-600 transition-all active:scale-[0.97]', style: { background: 'var(--allo-stem-panel, #f8fafc)' }
+            },
+              h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
+              h('span', { className: 'text-[11px] text-purple-500' }, showMnemonics ? '\u25B2' : '\u25BC')
+            ),
+            showMnemonics ? h('div', { id: 'anatomy-mnemonics-panel', className: 'mt-1 space-y-1.5' },
+              MNEMONICS[sysKey].map(function(mn) {
+                var isRevealed = mnemonicsViewed[mn.id];
+                return h('div', { 
+                  key: mn.id,
+                  className: 'rounded-lg p-2.5 border transition-all ' + (isRevealed ? 'border-purple-300 bg-purple-50' : 'border-slate-200 bg-white')
+                },
+                  h('p', { className: 'text-[11px] font-bold text-purple-800 mb-0.5' }, mn.title),
+                  h('p', { className: 'text-xs font-black text-purple-600 mb-1 italic' }, '"' + mn.phrase + '"'),
+                  isRevealed ? h('div', null,
+                    h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, mn.meaning),
+                    ttsBtn(mn.phrase + '. ' + mn.meaning)
+                  ) : h('button', { 'aria-label': t('stem.anatomy.reveal_meaning', 'Reveal meaning'),
+                    onClick: function() {
+                      var newMV = Object.assign({}, mnemonicsViewed);
+                      newMV[mn.id] = true;
+                      upd('_mnemonicsViewed', newMV);
+                      playSound('mnemonicReveal');
+                      setTimeout(checkAnatomyChallenges, 50);
+                    },
+                    className: 'text-[11px] font-bold text-purple-600 hover:text-purple-800 transition-all'
+                  }, t('stem.anatomy.reveal_meaning_2', 'Reveal meaning \u2192'))
+                );
+              })
+            ) : null
+          ) : null,
+
             )
           ),
 
@@ -12944,8 +14127,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ) : null,
 
           // ── Badge section ──
-          !focusedAnatomyWorkspace && h('div', { className: 'anatomy-badge-panel mt-4 bg-slate-50 rounded-xl border border-slate-400 p-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
+          !focusedAnatomyWorkspace && h('details', { className: 'anatomy-badge-panel anatomy-footer-panel mt-4 bg-slate-50 rounded-xl border border-slate-400 p-3' },
+            h('summary', { className: 'anatomy-footer-summary text-[11px] font-bold text-slate-600 uppercase tracking-wider' }, '\uD83C\uDFC5 Badges (' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ')'),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               BADGE_DEFS.map(function(bd) {
                 var earned = badges[bd.id];
@@ -12960,8 +14143,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // ── Stats Dashboard ──
-          !focusedAnatomyWorkspace && h('div', { className: 'anatomy-stats-panel mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3' },
-            h('p', { className: 'text-[11px] font-bold text-indigo-700 uppercase tracking-wider mb-2' }, t('stem.anatomy.exploration_stats', '\uD83D\uDCCA Exploration Stats')),
+          !focusedAnatomyWorkspace && h('details', { className: 'anatomy-stats-panel anatomy-footer-panel mt-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3' },
+            h('summary', { className: 'anatomy-footer-summary text-[11px] font-bold text-indigo-700 uppercase tracking-wider' }, t('stem.anatomy.exploration_stats', '\uD83D\uDCCA Exploration Stats')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2' },
               // Structures Viewed
               h('div', { className: 'bg-white rounded-lg p-2 text-center border border-indigo-100' },

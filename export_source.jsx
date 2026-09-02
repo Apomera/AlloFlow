@@ -54,6 +54,10 @@ const createExport = (deps) => {
             case 'dbq': return '📜 Document Analysis (DBQ)';
             case 'storyforge-config': return '📖 StoryForge Assignment';
             case 'storyforge-submission': return '📖 Story Submission';
+            case 'note-taking': return t('help_mode.tool_note_taking') || 'Note-Taking Templates';
+            case 'anchor-chart': return t('help_mode.tool_anchor_chart') || 'Anchor Chart';
+            case 'memory-aid': return t('help_mode.tool_memory_aid') || 'Memory Aid Studio';
+            case 'applied-challenge': return t('help_mode.tool_applied_challenge') || 'Applied Challenge Studio';
             default: return t('common.resource') || 'Resource';
         }
     };
@@ -1636,6 +1640,36 @@ const createExport = (deps) => {
                 const parts = Array.isArray(value) ? value.map((v) => resourceText(v, seen)) : Object.keys(value).filter((k) => !/^(id|color|imageUrl|url)$/i.test(k)).map((k) => resourceText(value[k], seen));
                 return parts.filter(Boolean).join('\n');
             };
+            // Every history item either gets slides or is NAMED in the closing
+            // toast. Before 2026-09-02 anything outside the handled types was
+            // dropped silently while the toast still said "PowerPoint downloaded!".
+            const skipped = [];
+            const SKIPPED_TYPES = new Set(['persona', 'adventure', 'gemini-bridge', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'stem-assessment', 'fluency-record']);
+            const _exportHandlers = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ExportHandlers) || null;
+            const _summarizeResource = _exportHandlers && typeof _exportHandlers.summarizeResourceText === 'function' ? _exportHandlers.summarizeResourceText : null;
+            const _memoryAidRules = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules) || null;
+            const _nsT = (key, fallback) => { const v = t(key); return typeof v === 'string' && v && v !== key ? v : fallback; };
+            const clip = (value, max) => String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, max || 2000);
+            const listOf = (value, max) => (Array.isArray(value) ? value : []).map((v) => clip(typeof v === 'string' ? v : (v && (v.text || v.label || v.content)) || '', 600)).filter(Boolean).slice(0, max || 10);
+            const addTextSlides = (slideTitle, text) => {
+                const chunks = chunkText(text || slideTitle, 760);
+                chunks.forEach((chunk, index) => {
+                    const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                    addSlideTitle(slide, slideTitle + (index ? ' (Cont.)' : ''));
+                    addA11yNotes(slide, slideTitle, chunk);
+                    slide.addText(chunk, { x: 0.6, y: 1.0, w: 8.8, h: 3.9, fontSize: 17, color: darkText, valign: 'top', breakLine: true, margin: 0.08, fit: 'shrink' });
+                });
+            };
+            const addRichSlide = (slideTitle, runs, notes) => {
+                const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                addSlideTitle(slide, slideTitle);
+                addA11yNotes(slide, slideTitle, notes || '');
+                slide.addText(runs, { x: 0.5, y: 1.0, w: 9, h: 4.1, valign: 'top', fit: 'shrink', margin: 0.04 });
+                return slide;
+            };
+            const heading = (text, color) => ({ text, options: { fontSize: 13, bold: true, color: color || themeColor, breakLine: true, bullet: false, paraSpaceBefore: 6 } });
+            const body = (text, size) => ({ text, options: { fontSize: size || 14, color: darkText, breakLine: true, bullet: false } });
+            const bullet = (text) => ({ text, options: { fontSize: 13, color: darkText, breakLine: true, bullet: { code: '2022', color: "94A3B8" }, indentLevel: 1 } });
             history.forEach(item => {
                 const type = item.type;
                 const itemTitle = item.title || getDefaultTitle(type);
@@ -1928,11 +1962,109 @@ const createExport = (deps) => {
                         addA11yNotes(slide, itemTitle, chunk);
                         slide.addText(chunk, { x: 0.6, y: 1.0, w: 8.8, h: 3.9, fontSize: 17, color: darkText, valign: 'top', breakLine: true, margin: 0.08, fit: 'shrink' });
                     });
+                } else if (type === 'memory-aid' && item.data && typeof item.data === 'object') {
+                    // Memory Aid Studio: one slide per target, cue first, facts labelled
+                    // by the module's shared review rule (fail-safe: unverified when the
+                    // module is absent). Never the source excerpt, practice evidence,
+                    // feedback, or images.
+                    const cards = Array.isArray(item.data.cards) ? item.data.cards.slice(0, 8) : [];
+                    const instructions = clip(item.data.instructions, 600);
+                    if (instructions) addTextSlides(itemTitle, instructions);
+                    if (!cards.length && !instructions) { skipped.push(itemTitle); return; }
+                    cards.forEach((card, ci) => {
+                        const c = card && typeof card === 'object' ? card : {};
+                        const facts = listOf(c.essentialFacts || c.facts, 10);
+                        const verified = !!(_memoryAidRules && typeof _memoryAidRules.isCardVerified === 'function' && _memoryAidRules.isCardVerified(c));
+                        const cue = _memoryAidRules && typeof _memoryAidRules.practiceCue === 'function' ? clip(_memoryAidRules.practiceCue(c), 700) : clip(c.studentDraft || c.aiExample || c.scaffoldStarter, 700);
+                        const target = clip(c.target, 300) || _nsT('memory_aid.memory_target', 'Memory target');
+                        const factsLabel = verified ? _nsT('memory_aid.facts_verified', 'Teacher-verified facts') : _nsT('memory_aid.facts_pending', 'Facts awaiting teacher review');
+                        const runs = [{ text: target, options: { fontSize: 20, bold: true, color: darkText, breakLine: true, bullet: false } }];
+                        if (cue) runs.push({ text: cue, options: { fontSize: 15, bold: true, color: "0F766E", breakLine: true, bullet: false, paraSpaceBefore: 4 } });
+                        runs.push(heading(factsLabel, verified ? "166534" : "92400E"));
+                        facts.forEach((fact) => runs.push(bullet(fact)));
+                        if (c.mapping) runs.push({ text: clip(c.mapping, 500), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
+                        addRichSlide(itemTitle + ' \u00B7 ' + (ci + 1) + '/' + cards.length, runs, target + '. ' + factsLabel + ': ' + facts.join('; '));
+                    });
+                } else if (type === 'anchor-chart' && item.data && Array.isArray(item.data.sections)) {
+                    // Anchor chart: one slide per section; icons are skipped.
+                    const sections = item.data.sections.slice(0, 12);
+                    if (!sections.length) { skipped.push(itemTitle); return; }
+                    sections.forEach((section, si) => {
+                        const s = section && typeof section === 'object' ? section : {};
+                        const label = clip(s.label, 200) || ('Section ' + (si + 1));
+                        const bullets = listOf(s.bullets, 8);
+                        const runs = [{ text: label, options: { fontSize: 20, bold: true, color: darkText, breakLine: true, bullet: false } }];
+                        bullets.forEach((b) => runs.push({ text: b, options: { fontSize: 15, color: darkText, breakLine: true, bullet: { code: '2022', color: themeColor } } }));
+                        addRichSlide(itemTitle + ' \u00B7 ' + (si + 1) + '/' + sections.length, runs, label + ': ' + bullets.join('; '));
+                    });
+                } else if (type === 'note-taking' && item.data && typeof item.data === 'object' && (Array.isArray(item.data.cues) || Array.isArray(item.data.notes))) {
+                    // Cornell-style notes: cue | notes table, then the summary.
+                    const cues = Array.isArray(item.data.cues) ? item.data.cues : [];
+                    const notes = Array.isArray(item.data.notes) ? item.data.notes : [];
+                    const rowCount = Math.max(cues.length, notes.length);
+                    const rows = [];
+                    for (let r = 0; r < rowCount; r += 1) rows.push([clip(cues[r] && (cues[r].text || cues[r]), 300), clip(notes[r] && (notes[r].text || notes[r]), 600)]);
+                    const filled = rows.filter((row) => row[0] || row[1]);
+                    const summary = clip(item.data.summary, 1200);
+                    if (!filled.length && !summary) { skipped.push(itemTitle); return; }
+                    const header = [
+                        { text: _nsT('export.ppt_cue_col', 'Cue'), options: { bold: true, fill: "F1F5F9", color: darkText } },
+                        { text: _nsT('export.ppt_notes_col', 'Notes'), options: { bold: true, fill: "F1F5F9", color: darkText } },
+                    ];
+                    for (let start = 0; start < Math.max(1, filled.length); start += 6) {
+                        const page = filled.slice(start, start + 6);
+                        const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });
+                        addSlideTitle(slide, itemTitle + (start ? ' (Cont.)' : ''));
+                        addA11yNotes(slide, itemTitle, page.map((row) => row[0] + ': ' + row[1]).join(' | '));
+                        if (page.length) slide.addTable([header].concat(page), { x: 0.5, y: 1.0, w: 9, colW: [3, 6], border: { pt: 0.75, color: "CBD5E1" }, fill: { color: "FFFFFF" }, fontSize: 11, color: darkText, autoPage: false, margin: 0.04, valign: 'top' });
+                    }
+                    if (summary) addTextSlides(itemTitle + ' \u00B7 ' + _nsT('export.ppt_summary', 'Summary'), summary);
+                } else if (type === 'applied-challenge' && item.data && typeof item.data === 'object') {
+                    // Applied Challenge: the brief and the facts to keep accurate. Never
+                    // the source excerpt, lesson snippet, student workspace, or feedback.
+                    const brief = item.data.brief && typeof item.data.brief === 'object' ? item.data.brief : {};
+                    const context = clip(brief.context, 900);
+                    const question = clip(brief.drivingQuestion || brief.question, 500);
+                    const role = clip(brief.role, 200);
+                    const audience = clip(brief.audience, 200);
+                    const facts = listOf(brief.lockedLessonFacts, 10);
+                    const openQuestions = listOf(brief.openQuestions, 6);
+                    if (!context && !question && !facts.length) { skipped.push(itemTitle); return; }
+                    const runs = [];
+                    if (question) runs.push({ text: question, options: { fontSize: 18, bold: true, color: darkText, breakLine: true, bullet: false } });
+                    if (context) { runs.push(heading(_nsT('export.ppt_context', 'Context'))); runs.push(body(context)); }
+                    if (role || audience) runs.push(body((role ? _nsT('export.ppt_role', 'Role') + ': ' + role : '') + (role && audience ? '   ' : '') + (audience ? _nsT('export.ppt_audience', 'Audience') + ': ' + audience : ''), 12));
+                    addRichSlide(itemTitle, runs, question + ' ' + context);
+                    if (facts.length || openQuestions.length) {
+                        const factRuns = [];
+                        if (facts.length) { factRuns.push(heading(_nsT('export.ppt_locked_facts', 'Lesson facts to keep accurate'))); facts.forEach((f) => factRuns.push(bullet(f))); }
+                        if (openQuestions.length) { factRuns.push(heading(_nsT('export.ppt_open_questions', 'Open questions'))); openQuestions.forEach((q) => factRuns.push(bullet(q))); }
+                        addRichSlide(itemTitle + ' (Cont.)', factRuns, facts.concat(openQuestions).join('; '));
+                    }
+                } else if (SKIPPED_TYPES.has(type)) {
+                    // Live or media-bound resources have no slide form; name them.
+                    skipped.push(itemTitle);
+                } else {
+                    // Any other resource: the shared deny-listed summarizer (no source
+                    // excerpts, learner evidence, or media), never raw JSON. Without it,
+                    // the item is named in the toast rather than dropped silently.
+                    const lines = typeof item.data === 'string'
+                        ? [item.data]
+                        : (_summarizeResource ? _summarizeResource(item, { maxChars: 4000 }) : []);
+                    const text = lines.join('\n').trim();
+                    if (!text) { skipped.push(itemTitle); return; }
+                    addTextSlides(itemTitle, text);
                 }
             });
             const safeTopic = sourceTopic ? sourceTopic.replace(/[^a-z0-9]/gi, '_').substring(0, 20) : 'Lesson';
             await pptx.writeFile({ fileName: `${t('export.filenames.slides_prefix')}-${safeTopic}.pptx` });
             addToast(t('export_status.ppt_success'), "success");
+            if (skipped.length) {
+                const titles = skipped.slice(0, 6).join(', ') + (skipped.length > 6 ? ', \u2026' : '');
+                let message = t('export_status.ppt_skipped', { count: skipped.length, titles });
+                if (typeof message !== 'string' || !message || message === 'export_status.ppt_skipped') message = '{count} resource(s) have no slide format and were left out of the deck: {titles}. Use the HTML export for them.';
+                addToast(message.replace('{count}', String(skipped.length)).replace('{titles}', titles), "info");
+            }
             return true;
         } catch (e) {
             warnLog("PPTX Export Error", e);

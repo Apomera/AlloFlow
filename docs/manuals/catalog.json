@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-08-22",
+  "updated": "2026-09-02",
   "publicHub": "manuals.html",
   "statusDefinitions": {
     "available": "Publicly linked and maintained",
@@ -55,7 +55,17 @@
       "audiences": ["educators", "specialists", "leaders"],
       "canonicalSource": "educator-evaluation-manual.html",
       "status": "available",
-      "lastVerified": "2026-08-20"
+      "lastVerified": "2026-09-02"
+    },
+    {
+      "id": "school-rewards-manual",
+      "title": "School Rewards & Store Manual",
+      "href": "school-rewards-manual.html",
+      "format": "illustrated HTML manual",
+      "audiences": ["educators", "families", "leaders"],
+      "canonicalSource": "school-rewards-manual.html",
+      "status": "available",
+      "lastVerified": "2026-09-02"
     },
     {
       "id": "dynamic-assessment-guide",

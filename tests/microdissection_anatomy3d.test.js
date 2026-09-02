@@ -1034,7 +1034,10 @@ describe('Deterministic pathology scenarios and instructor case builder', () => 
     expect(planning).toContain('Hypervascular synthetic lesion');
     expect(planning).toContain('Vascularity');
 
-    const overview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 3, _bodyView3d: true } });
+    const youngOverview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 3, _bodyView3d: true } });
+    // Harness profile is '5th Grade': the Procedure Studio handoff is hidden for a known K-5 profile.
+    expect(youngOverview3d).not.toContain('data-anatomy-3d-procedure-launch="true"');
+    const overview3d = renderTool('anatomy', { anatomy: { _activeTab: 'explore', system: 'circulatory', complexity: 3, _bodyView3d: true } }, { gradeLevel: '9' });
     expect(overview3d).toContain('data-anatomy-3d-procedure-launch="true"');
     expect(overview3d).toContain('Open matching procedure');
 

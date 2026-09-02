@@ -7227,7 +7227,7 @@ var d = labToolData.plateTectonics || {};
 
             { id: 'eurasian',   name: __alloT('stem.platetectonics.eurasian_2', 'Eurasian'),      type: 'continental',  x: 0.63, w: 0.17, color: '#6b8e23', thick: 50 },
 
-            { id: 'indian',     name: __alloT('stem.platetectonics.indian', 'Indian'),        type: 'oceanic',      x: 0.80, w: 0.08, color: '#cd853f', thick: 30 },
+            { id: 'indian',     name: __alloT('stem.platetectonics.indian', 'Indian'),        type: 'continental',  x: 0.80, w: 0.08, color: '#cd853f', thick: 50 },   // continental: India into Eurasia is THE continent-continent collision (Himalaya), not a subduction
 
             { id: 'namerican',  name: __alloT('stem.platetectonics.n_american', 'N. American'),   type: 'continental',  x: 0.88, w: 0.12, color: '#556b2f', thick: 50 }
 
@@ -7751,9 +7751,12 @@ var d = labToolData.plateTectonics || {};
 
 
 
-            var cW = canvasEl.width = canvasEl.offsetWidth * 2;
+            // Logical (CSS-px) coordinate space; the backing store is 2x for crispness and
+            // the draw loop applies the matching transform. Previously the store was 2x
+            // with NO transform, so every label was drawn at half its stated size.
+            var cW = canvasEl.offsetWidth; canvasEl.width = cW * 2;
 
-            var cH = canvasEl.height = canvasEl.offsetHeight * 2;
+            var cH = canvasEl.offsetHeight; canvasEl.height = cH * 2;
 
             var ctx = canvasEl.getContext('2d');
 
@@ -8257,6 +8260,7 @@ var d = labToolData.plateTectonics || {};
               var amb = ptReducedMotion() ? 210 : tick;
               var ambSpin = ptReducedMotion() ? 0 : 1;
 
+              ctx.setTransform(2, 0, 0, 2, 0, 0);
               ctx.clearRect(0, 0, cW, cH);
 
               // ── Depth frame ──────────────────────────────────────────────────
@@ -8563,7 +8567,19 @@ var d = labToolData.plateTectonics || {};
                 // convergence no matter how deep it is, and treating a large
                 // negative gap as "no boundary" is what let the most extreme
                 // collision the model allows produce no caption at all.
-                if (gap > cW * 0.034) return null;
+                // ★ Three bands, not one cut-off. The old rule was "wider than
+                // 3.4% of the canvas is no boundary" — but the RESTING gap the
+                // layout opens is 4.5%, so pulling two plates apart from rest
+                // made the gap WIDER and could never, on any route, produce a
+                // divergent boundary. The Goal text says "pull plates apart";
+                // under mantle drift the seams over "hot rock rises" open too.
+                // Neither ever drew a ridge. Now:
+                //   gap ≤ 3.4%           → live seam (closed then re-opened)
+                //   3.4% < gap < 1.15×rest → the untouched resting gap: nothing
+                //   1.15×rest ≤ gap ≤ 16% → visibly opened from rest: divergent
+                //   gap > 16%            → too far apart to be one boundary
+                var restGap = cW * PT_GAP;
+                if (gap > cW * 0.034 && (gap < restGap * 1.15 || gap > cW * 0.16)) return null;
                 if (gap < -cW * (PT_MAX_OVERLAP + 0.006)) return null;
                 var mid = (a.x + a.w + b.x) / 2;
                 if (gap > cW * 0.004) {
@@ -8809,7 +8825,7 @@ var d = labToolData.plateTectonics || {};
                 var pThick = pBase - pTop;
                 var isCont = pl.type === 'continental';
 
-                var baseColor = isDark ? (isCont ? '#57534e' : '#1e3a5f') : pl.color;
+                var baseColor = pl.color;   // same identity colour in both themes; labels sit on chips
                 var pGrad = ctx.createLinearGradient(pl.x, pTop, pl.x, pBase);
                 pGrad.addColorStop(0, baseColor);
                 pGrad.addColorStop(0.35, baseColor);
@@ -8971,10 +8987,22 @@ var d = labToolData.plateTectonics || {};
                   ctx.font = 'bold ' + (cW > 900 ? '15' : '12') + 'px system-ui';
                   ctx.textAlign = 'center';
                   var lw = ctx.measureText(lpl.name).width;
+                  // Deep collisions (drift piles plates up at the edges) put two
+                  // name chips on the same spot; drop a chip a row when it would
+                  // land on one already drawn this frame, and keep it on-canvas.
+                  var lblRects = canvasEl._plateLabelTick === tick ? canvasEl._plateLabelRects : (canvasEl._plateLabelRects = []);
+                  canvasEl._plateLabelTick = tick;
+                  var lcx = Math.max(lw / 2 + 8, Math.min(cW - lw / 2 - 8, lpl.x + lpl.w / 2));
+                  var lrect = { x: lcx - lw / 2 - 6, y: lblY - 13, w: lw + 12, h: 20 };
+                  for (var lr = 0; lr < lblRects.length; lr++) {
+                    var o = lblRects[lr];
+                    if (lrect.x < o.x + o.w && lrect.x + lrect.w > o.x && lrect.y < o.y + o.h && lrect.y + lrect.h > o.y) { lrect.y += 22; lblY += 22; lr = -1; }
+                  }
+                  lblRects.push(lrect);
                   ctx.fillStyle = 'rgba(2,6,23,0.86)';
-                  ctx.fillRect(lpl.x + lpl.w / 2 - lw / 2 - 6, lblY - 13, lw + 12, 20);
+                  ctx.fillRect(lrect.x, lrect.y, lrect.w, lrect.h);
                   ctx.fillStyle = lpl.type === 'continental' ? '#fde68a' : '#bae6fd';
-                  ctx.fillText(lpl.name, lpl.x + lpl.w / 2, lblY + 2);
+                  ctx.fillText(lpl.name, lcx, lblY + 2);
                 }
               }
 
@@ -9036,11 +9064,16 @@ var d = labToolData.plateTectonics || {};
                       ctx.font = 'bold 12px system-ui';
                       ctx.textAlign = 'center';
                       var arcW = ctx.measureText('volcanic arc').width;
-                      var arcLY = seaY - cH * 0.082;
+                      // Beside the cone at mid-height, not above it: above it is the
+                      // caption band, and the label was hidden behind the caption chip.
+                      var arcLY = seaY - cH * 0.020;
+                      var arcLX = Math.min(cW - arcW - 8, C._arcX + cH * 0.042 * 0.75 + 6);
+                      ctx.textAlign = 'left';
                       ctx.fillStyle = 'rgba(2,6,23,0.8)';
-                      ctx.fillRect(C._arcX - arcW / 2 - 5, arcLY - 12, arcW + 10, 17);
+                      ctx.fillRect(arcLX - 5, arcLY - 12, arcW + 10, 17);
                       ctx.fillStyle = '#fdba74';
-                      ctx.fillText('volcanic arc', C._arcX, arcLY);
+                      ctx.fillText('volcanic arc', arcLX, arcLY);
+                      ctx.textAlign = 'center';
                     }
                   }
                 } else if (C.kind === 'divergent') {
@@ -9106,8 +9139,13 @@ var d = labToolData.plateTectonics || {};
                   ctx.font = 'bold 14px system-ui';
                   ctx.textAlign = 'center';
                   var cwid = ctx.measureText(C.label).width;
-                  var chx = Math.max(cwid / 2 + 12, Math.min(cW - cwid / 2 - 12, C.mid));
-                  var chy = seaY - cH * 0.105;
+                  // Hang the chip off the trench on the side AWAY from the volcanic
+                  // arc (which stands back from the trench on the over-riding plate),
+                  // so the cone and its eruption glow never rise through the words.
+                  var arcSide = (C._arcX != null) ? (C._arcX >= C.mid ? 1 : -1) : 0;
+                  var chxWant = arcSide === 0 ? C.mid : C.mid - arcSide * (cwid / 2 + 6);
+                  var chx = Math.max(cwid / 2 + 12, Math.min(cW - cwid / 2 - 12, chxWant));
+                  var chy = seaY - cH * 0.088;   // band below the legend/hint row, above the arc
                   ctx.fillStyle = 'rgba(2,6,23,0.88)';
                   ctx.fillRect(chx - cwid / 2 - 9, chy - 15, cwid + 18, 23);
                   ctx.strokeStyle = capColor;
@@ -9119,7 +9157,7 @@ var d = labToolData.plateTectonics || {};
                   ctx.lineWidth = 1.5;
                   ctx.setLineDash([4, 4]);
                   ctx.beginPath();
-                  ctx.moveTo(chx, chy + 8);
+                  ctx.moveTo(arcSide === 0 ? chx : chx + arcSide * (cwid / 2 + 4), chy + 2);
                   ctx.lineTo(C.mid, seaY - cH * 0.012);
                   ctx.stroke();
                   ctx.setLineDash([]);
@@ -9158,7 +9196,7 @@ var d = labToolData.plateTectonics || {};
               ctx.textAlign = 'left';
               ctx.fillStyle = '#fdba74';
               ctx.font = 'bold 11px system-ui';
-              ctx.fillText('70 km', 6, GEO.dY(70) + 13);
+              ctx.fillText('70 km', 6, GEO.dY(70) - 4);   // above its own line, clear of the 100 km tick label below and the plates to the right
               ctx.restore();
 
               // Names for the compressed strip, plus the notes the frame needs in
@@ -9181,14 +9219,19 @@ var d = labToolData.plateTectonics || {};
                 // on a chip. Sitting at seaY + 16 put the legend inside the ocean
                 // and on top of the first plate, which is the one place on this
                 // canvas that must stay readable.
-                ctx.font = 'bold 12px system-ui';
+                // One line, not two: the sky band above the plates is ~90 px and has
+                // to hold this legend, the drag hint and the boundary caption. A
+                // 38 px legend box put the caption chip straight through it.
+                ctx.font = 'bold 11.5px system-ui';
                 var legY = cH * 0.030;
+                var legA = '▬ continental — thick, buoyant, stands high', legB = '▬ oceanic — thin, dense, sinks first';
+                var legAW = ctx.measureText(legA).width, legBW = ctx.measureText(legB).width;
                 ctx.fillStyle = 'rgba(2,6,23,0.8)';
-                ctx.fillRect(8, legY - 13, 300, 38);
+                ctx.fillRect(8, legY - 12, legAW + legBW + 34, 20);
                 ctx.fillStyle = '#fde68a';
-                ctx.fillText('▬ continental — thick, buoyant, stands high', 16, legY);
+                ctx.fillText(legA, 16, legY + 2);
                 ctx.fillStyle = '#bae6fd';
-                ctx.fillText('▬ oceanic — thin, dense, sinks first', 16, legY + 17);
+                ctx.fillText(legB, 16 + legAW + 18, legY + 2);
               }
 
 
@@ -9243,10 +9286,11 @@ var d = labToolData.plateTectonics || {};
                 // Sit in the clear strip between that caption and the water, and
                 // drop the explanatory line rather than overlap when the canvas
                 // is too short for both.
-                var lqCapBot = GEO.seaY - cH * 0.105 + 11;
+                // Underground, under the boundary, in the clear strip between the
+                // coupling arrows and the cells: the sky band is full, and a quake
+                // is a rupture at depth, not a thing that happens in the air.
                 var lqH = 32;
-                var lqTop = Math.max(lqCapBot + 3, GEO.seaY - 6 - lqH);
-                if (lqTop + lqH > GEO.seaY - 4) { lqH = 21; lqWhy = ''; lqTop = Math.max(lqCapBot + 2, GEO.seaY - 4 - lqH); }
+                var lqTop = GEO.dY(lq.kind === 'collision' ? 215 : 165);   // a collision's crustal root label owns the strip above 200 km
                 var lqX = Math.max(lqW / 2 + 4, Math.min(cW - lqW / 2 - 4, lq.x));
                 ctx.fillStyle = isDark ? 'rgba(2,6,23,0.92)' : 'rgba(255,255,255,0.96)';
                 ctx.strokeStyle = isDark ? '#22d3ee' : '#b45309';
@@ -9256,8 +9300,6 @@ var d = labToolData.plateTectonics || {};
                 ctx.fill(); ctx.stroke();
                 // A short leader to the epicentre, so the number is attached to
                 // the rings rather than floating over the scene.
-                ctx.beginPath();
-                ctx.moveTo(lqX, lqTop + lqH); ctx.lineTo(lqX, GEO.seaY - 2); ctx.stroke();
                 ctx.fillStyle = isDark ? '#22d3ee' : '#b45309';
                 ctx.fillText(lqTxt, lqX, lqTop + 16);
                 if (lqWhy) {
@@ -9512,14 +9554,15 @@ var d = labToolData.plateTectonics || {};
                 ctx.font = 'bold 14px system-ui';
                 ctx.textAlign = 'center';
                 var hw = ctx.measureText(hintTxt).width;
-                var hy = seaY - cH * 0.155;
+                var hy = cH * 0.030;
+                var hx = cW - hw / 2 - 20;                      // right-aligned: the legend owns the left of this band
                 ctx.fillStyle = 'rgba(2,6,23,' + (0.85 * hAlpha) + ')';
-                ctx.fillRect(cW / 2 - hw / 2 - 12, hy - 16, hw + 24, 26);
+                ctx.fillRect(hx - hw / 2 - 12, hy - 12, hw + 24, 22);
                 ctx.strokeStyle = 'rgba(250,204,21,' + (0.9 * hAlpha) + ')';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(cW / 2 - hw / 2 - 12, hy - 16, hw + 24, 26);
+                ctx.strokeRect(hx - hw / 2 - 12, hy - 12, hw + 24, 22);
                 ctx.fillStyle = 'rgba(254,240,138,' + hAlpha + ')';
-                ctx.fillText(hintTxt, cW / 2, hy + 2);
+                ctx.fillText(hintTxt, hx, hy + 4);
 
               }
 
@@ -9590,9 +9633,11 @@ var d = labToolData.plateTectonics || {};
 
             canvasEl._seisInit = true;
 
-            var sW = canvasEl.width = canvasEl.offsetWidth * 2;
+            // Logical CSS-px space with a 2x backing store (see the sim canvas): the
+            // arrival labels and the S-P bracket were drawn at half size before.
+            var sW = canvasEl.offsetWidth; canvasEl.width = sW * 2;
 
-            var sH = canvasEl.height = canvasEl.offsetHeight * 2;
+            var sH = canvasEl.offsetHeight; canvasEl.height = sH * 2;
 
             var sCtx = canvasEl.getContext('2d');
 
@@ -9617,6 +9662,13 @@ var d = labToolData.plateTectonics || {};
 
               if (!ptOnScreen(canvasEl)) { canvasEl._seisAnim = requestAnimationFrame(drawSeis); return; }
 
+              // Re-fit to the laid-out size every frame: init ran before the panel had
+              // its final width (offsetWidth 380 of an eventual ~1030), which stretched
+              // the whole record 2.7x sideways and blurred it. Cheap, and it also
+              // covers a rotate or a resized window.
+              var ow = canvasEl.offsetWidth, oh = canvasEl.offsetHeight;
+              if (ow > 0 && oh > 0 && (ow !== sW || oh !== sH)) { sW = ow; sH = oh; canvasEl.width = sW * 2; canvasEl.height = sH * 2; }
+              sCtx.setTransform(2, 0, 0, 2, 0, 0);
               sCtx.fillStyle = isDark ? '#090d16' : '#fefce8';
               sCtx.fillRect(0, 0, sW, sH);
 
@@ -11220,7 +11272,7 @@ var d = labToolData.plateTectonics || {};
             // globe captioned "drag the timeline slider", with the activity you
             // asked for below the fold behind it.
             (simTab === 'timeline' || simTab === 'sim') &&
-            React.createElement("div", { className: "rounded-2xl border-2 border-red-200 overflow-hidden mt-4", style: { background: 'linear-gradient(135deg, #0c0a2a, #1e1b4b)' } },
+            React.createElement("div", { className: "rounded-2xl border-2 border-red-200 overflow-hidden mt-4", 'data-pt-globe-panel': 'true', style: { background: 'linear-gradient(135deg, #0c0a2a, #1e1b4b)' } },
 
               React.createElement("div", { className: "p-4" },
 
@@ -11234,9 +11286,10 @@ var d = labToolData.plateTectonics || {};
 
                 ),
 
-                React.createElement('div', { 'data-tl-playing': String(timelapsePlaying), 'data-tl-speed': String(timelapseSpeed), style: { display: 'none' } }),
+                React.createElement('div', { 'data-tl-playing': String(timelapsePlaying), 'data-tl-speed': String(timelapseSpeed), 'data-tl-era': String(timelineEra), style: { display: 'none' } }),
 
-                React.createElement("canvas", { tabIndex: 0,
+                React.createElement('div', { className: 'pt-globe-row flex flex-col md:flex-row gap-4 items-stretch' },
+                  React.createElement('div', { className: 'shrink-0' }, React.createElement("canvas", { tabIndex: 0,
 
                   id: "geology-earth-canvas",
 
@@ -11248,9 +11301,26 @@ var d = labToolData.plateTectonics || {};
 
                   style: { background: '#050520' }
 
-                }),
+                }),),
+                  (function () {
+                    var eraNow = ERAS[timelineEra] || ERAS[0];
+                    var canPrev = timelineEra > 0, canNext = timelineEra < ERAS_COUNT - 1;
+                    return React.createElement('div', { className: 'flex-1 min-w-0 flex flex-col gap-2 text-indigo-100', 'data-pt-globe-era': String(timelineEra) },
+                      React.createElement('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                        React.createElement('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, eraNow.icon),
+                        React.createElement('span', { className: 'text-lg font-black text-white' }, eraNow.name),
+                        React.createElement('span', { className: 'text-[12px] font-bold text-amber-200' }, eraNow.mya)),
+                      React.createElement('p', { className: 'text-[12.5px] font-semibold text-indigo-100 leading-snug' }, eraNow.keyEvent),
+                      React.createElement('p', { className: 'text-[11.5px] text-indigo-200 leading-snug', style: { display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' } }, eraNow.desc),
+                      React.createElement('div', { className: 'mt-auto flex items-center gap-2 flex-wrap', role: 'group', 'aria-label': 'Step through geological eras' },
+                        React.createElement('button', { type: 'button', disabled: !canPrev, 'data-pt-era-step': 'prev', onClick: function () { if (canPrev) upd({ timelineEra: timelineEra - 1 }); },
+                          className: 'min-h-10 px-3 rounded-lg border border-indigo-400/60 bg-indigo-900/70 text-[12px] font-bold text-white disabled:opacity-40' }, '\u25C0 Earlier era'),
+                        React.createElement('span', { className: 'text-[11px] font-bold text-indigo-200', 'aria-live': 'polite' }, (timelineEra + 1) + ' / ' + ERAS_COUNT),
+                        React.createElement('button', { type: 'button', disabled: !canNext, 'data-pt-era-step': 'next', onClick: function () { if (canNext) upd({ timelineEra: timelineEra + 1 }); },
+                          className: 'min-h-10 px-3 rounded-lg border border-indigo-400/60 bg-indigo-900/70 text-[12px] font-bold text-white disabled:opacity-40' }, 'Later era \u25B6')));
+                  })()),
 
-                React.createElement("p", { className: "text-[11px] text-indigo-300/60 mt-2 italic text-center" }, __alloT('stem.platetectonics.drag_the_timeline_slider_to_see_how_ea', "\u{1F4A1} Drag the timeline slider to see how Earth's continents have shifted over billions of years"))
+                React.createElement("p", { className: "text-[11px] text-indigo-300/60 mt-2 italic text-center" }, simTab === 'sim' ? '\u{1F4A1} Step through the eras with the arrows; the Timeline tab has the full slider and time-lapse.' : __alloT('stem.platetectonics.drag_the_timeline_slider_to_see_how_ea', "\u{1F4A1} Drag the timeline slider to see how Earth's continents have shifted over billions of years"))
 
               )
 
@@ -11598,6 +11668,11 @@ var d = labToolData.plateTectonics || {};
                   var eraIdx = 0;
                   var slider = canvas.parentElement ? canvas.parentElement.parentElement.parentElement.querySelector('input[type="range"]') : null;
                   if (slider) eraIdx = parseInt(slider.value) || 0;
+                  else {
+                    var eraDataEl = canvas.parentElement ? canvas.closest('[data-pt-globe-panel]') : null;
+                    eraDataEl = eraDataEl ? eraDataEl.querySelector('[data-tl-era]') : null;
+                    if (eraDataEl) eraIdx = parseInt(eraDataEl.getAttribute('data-tl-era')) || 0;
+                  }
 
                   // Time-lapse auto-advance
                   var tlPlayBtn = canvas.parentElement ? canvas.parentElement.parentElement.parentElement.querySelector('[data-timelapse]') : null;
@@ -16253,6 +16328,56 @@ var d = labToolData.plateTectonics || {};
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-blue-200 bg-blue-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-blue-800 mb-2' }, __alloT('stem.platetectonics.cascadia_subduction_zone_deep_dive', "Cascadia Subduction Zone Deep Dive")),
                 React.createElement('p', { className: 'text-xs text-blue-700 mb-3' }, __alloT('stem.platetectonics.the_cascadia_subduction_zone_is_the_ma', "The Cascadia Subduction Zone is the major megathrust along the Pacific Northwest coast. It produces M9 earthquakes every ~500 years; the most recent was January 26, 1700.")),
+                // The text below names a trench, a locked megathrust, slow-slip tremor, a
+                // 4 cm/yr rate and the Cascades — none of which had a picture. One section
+                // west→east so every card's noun points at something.
+                (function () {
+                  var e = React.createElement, dk = !!isDark;
+                  var W = 760, H = 250;
+                  var ink = dk ? '#f1f5f9' : '#0f172a', muted = dk ? '#cbd5e1' : '#334155';
+                  var kids = [];
+                  kids.push(e('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: dk ? '#0b1220' : '#eff6ff' }));
+                  // ocean + coast
+                  kids.push(e('rect', { key: 'sea', x: 0, y: 70, width: 300, height: 28, fill: dk ? '#1e3a8a' : '#93c5fd', opacity: 0.85 }));
+                  kids.push(e('text', { key: 'seaL', x: 20, y: 64, fontSize: 11, fill: muted, fontWeight: 700 }, 'Pacific Ocean'));
+                  // mantle
+                  kids.push(e('rect', { key: 'mantle', x: 0, y: 98, width: W, height: H - 98, fill: dk ? '#3b1d12' : '#c2410c', opacity: dk ? 1 : 0.35 }));
+                  // North American plate (continent), thick and buoyant
+                  kids.push(e('polygon', { key: 'na', points: '300,70 760,58 760,150 300,98', fill: dk ? '#57534e' : '#a16207', opacity: 0.95 }));
+                  // Juan de Fuca plate: thin, sliding down-east at a shallow angle
+                  kids.push(e('polygon', { key: 'jdfTop', points: '0,98 300,98 700,235 680,250 300,124 0,124', fill: dk ? '#1e3a8a' : '#1e40af', stroke: dk ? '#93c5fd' : '#1e3a8a', strokeWidth: 1 }));
+                  var halo = { paintOrder: 'stroke', stroke: dk ? '#0b1220' : '#ffffff', strokeWidth: 3, strokeLinejoin: 'round' };
+                  kids.push(e('text', { key: 'jdfL', x: 40, y: 116, fontSize: 11, fill: '#fff', fontWeight: 800 }, 'Juan de Fuca plate  →  ~4 cm/yr (thin, dense)'));
+                  kids.push(e('text', { key: 'naL', x: 470, y: 92, fontSize: 11, fill: dk ? '#fef3c7' : '#fff', fontWeight: 800 }, 'North American plate'));
+                  // trench
+                  kids.push(e('polygon', { key: 'trench', points: '286,98 300,104 314,98', fill: dk ? '#0b1220' : '#1e3a8a' }));
+                  kids.push(e('text', { key: 'trenchL', x: 300, y: 48, fontSize: 10.5, fill: ink, textAnchor: 'middle', fontWeight: 700 }, 'trench (offshore)'));
+                  kids.push(e('line', { key: 'trenchT', x1: 300, y1: 52, x2: 300, y2: 94, stroke: ink, strokeWidth: 1, strokeDasharray: '2 2' }));
+                  // locked megathrust: the shallow part of the plate contact, offshore to the coast
+                  kids.push(e('line', { key: 'locked', x1: 305, y1: 100, x2: 430, y2: 143, stroke: '#ef4444', strokeWidth: 6, strokeLinecap: 'round' }));
+                  kids.push(e('text', { key: 'lockedL', x: 250, y: 196, fontSize: 11, fill: dk ? '#fca5a5' : '#b91c1c', fontWeight: 800, style: halo }, 'LOCKED zone — stuck ~500 yr, then M9'));
+                  // slow slip / tremor: deeper, under the coast ranges
+                  kids.push(e('line', { key: 'ets', x1: 440, y1: 147, x2: 540, y2: 181, stroke: '#f59e0b', strokeWidth: 6, strokeLinecap: 'round', strokeDasharray: '8 6' }));
+                  kids.push(e('text', { key: 'etsL', x: 430, y: 212, fontSize: 11, fill: dk ? '#fcd34d' : '#92400e', fontWeight: 800, style: halo }, 'slow-slip & tremor — creeps every ~14 months'));
+                  // melt + arc
+                  kids.push(e('path', { key: 'melt', d: 'M600 205 C 605 185, 615 175, 625 160 C 635 140, 640 120, 645 70', fill: 'none', stroke: '#f97316', strokeWidth: 4, strokeDasharray: '4 4' }));
+                  kids.push(e('polygon', { key: 'volc', points: '620,70 645,30 670,70', fill: dk ? '#a8a29e' : '#57534e' }));
+                  kids.push(e('circle', { key: 'crater', cx: 645, cy: 30, r: 3, fill: '#f97316' }));
+                  kids.push(e('text', { key: 'arcL', x: 645, y: 22, fontSize: 10.5, fill: ink, textAnchor: 'middle', fontWeight: 700 }, 'Cascade volcanoes (Rainier, St Helens)'));
+                  kids.push(e('text', { key: 'meltL', x: 540, y: 176, fontSize: 10.5, fill: dk ? '#fdba74' : '#9a3412', fontWeight: 700, style: halo }, 'water off the slab drives melting'));
+                  // cities
+                  kids.push(e('text', { key: 'coast', x: 395, y: 50, fontSize: 10, fill: muted, textAnchor: 'middle' }, 'coast'));
+                  kids.push(e('line', { key: 'coastT', x1: 395, y1: 54, x2: 395, y2: 70, stroke: muted, strokeWidth: 1 }));
+                  kids.push(e('text', { key: 'cities', x: 520, y: 50, fontSize: 10, fill: muted, textAnchor: 'middle' }, 'Seattle · Portland'));
+                  kids.push(e('line', { key: 'cityT', x1: 520, y1: 54, x2: 520, y2: 68, stroke: muted, strokeWidth: 1 }));
+                  // scale + orientation
+                  kids.push(e('text', { key: 'wl', x: 8, y: 244, fontSize: 10, fill: muted, fontWeight: 700 }, 'WEST'));
+                  kids.push(e('text', { key: 'el', x: W - 8, y: 244, fontSize: 10, fill: muted, fontWeight: 700, textAnchor: 'end' }, 'EAST'));
+                  kids.push(e('text', { key: 'note', x: W / 2, y: 244, fontSize: 10, fill: muted, textAnchor: 'middle' }, 'schematic — depths and slope exaggerated'));
+                  return e('div', { className: 'mb-3 rounded-xl overflow-hidden border ' + (dk ? 'border-blue-900' : 'border-blue-200'), 'data-pt-cascadia-section': 'true' },
+                    e('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
+                      'aria-label': 'Cross-section of the Cascadia subduction zone from west to east: the Juan de Fuca plate slides under North America at about 4 centimetres a year. The shallow part of the contact, from the offshore trench to the coast, is locked and releases as a magnitude 9 earthquake every roughly 500 years. Deeper, under the coast ranges, the contact creeps in slow-slip and tremor episodes. Where the plate reaches about 100 kilometres, water drives melting that feeds the Cascade volcanoes.' }, kids));
+                })(),
                 React.createElement('div', { className: 'space-y-2' },
                   React.createElement('div', { className: 'p-3 rounded-lg bg-white border border-blue-200' },
                     React.createElement('div', { className: 'font-bold text-blue-800 text-sm mb-1' }, __alloT('stem.platetectonics.cascadia_the_boundary', "Cascadia: the boundary")),
@@ -26250,6 +26375,74 @@ var d = labToolData.plateTectonics || {};
                   h('div', { className: 'text-base font-black', style: { color: fMeta.color } }, fMeta.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, fMeta.desc)
                 ),
+                // The picture the sliders were missing: a fault block pair for the chosen
+                // boundary, driving-stress arrows that grow with the stress slider, a lock
+                // that grows with friction, and a meter that shows net stress against the
+                // failure threshold — so the hypothesis the student is asked to write
+                // ("when does friction make a fault stable?") is something they can SEE.
+                (function () {
+                  var dk = !!isDark;
+                  var W = 760, H = 170, gy = 112;
+                  var rock = dk ? '#57534e' : '#a8a29e', rockEdge = dk ? '#292524' : '#78716c';
+                  var ink = dk ? '#f1f5f9' : '#1e293b', muted = dk ? '#cbd5e1' : '#475569';
+                  var failed = failure !== 'stable';
+                  var arrowLen = 18 + iq.force * 0.9;               // 18..108 px
+                  var lockSize = 8 + iq.friction * 0.16;             // 8..24 px
+                  var meterMax = 100, netClamped = Math.max(0, Math.min(meterMax, netStress));
+                  var meterX = 330, meterW = 400, meterY = 26;
+                  var kids = [];
+                  // ground / sky
+                  kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: H, fill: dk ? '#0f172a' : '#f8fafc' }));
+                  kids.push(h('line', { key: 'ground', x1: 0, y1: gy, x2: 270, y2: gy, stroke: rockEdge, strokeWidth: 1 }));
+                  if (iq.btype === 'transform') {
+                    // map view: two blocks side by side, slip is along the fault trace
+                    var shift = failed ? 14 : 0;
+                    kids.push(h('rect', { key: 'bl', x: 30, y: 44 - shift, width: 100, height: 100, fill: rock, stroke: rockEdge }));
+                    kids.push(h('rect', { key: 'br', x: 132, y: 44 + shift, width: 100, height: 100, fill: rock, stroke: rockEdge }));
+                    kids.push(h('line', { key: 'trace', x1: 131, y1: 30, x2: 131, y2: 158, stroke: fMeta.color, strokeWidth: 3 }));
+                    // a road across the fault, offset when it slips
+                    kids.push(h('line', { key: 'rd1', x1: 30, y1: 94 - shift, x2: 131, y2: 94 - shift, stroke: dk ? '#fde68a' : '#92400e', strokeWidth: 3 }));
+                    kids.push(h('line', { key: 'rd2', x1: 131, y1: 94 + shift, x2: 232, y2: 94 + shift, stroke: dk ? '#fde68a' : '#92400e', strokeWidth: 3 }));
+                    kids.push(h('path', { key: 'a1', d: 'M80 ' + (150 + 0) + ' v-' + Math.min(arrowLen, 60) + ' m-6 8 l6 -8 l6 8', fill: 'none', stroke: fMeta.color, strokeWidth: 3 }));
+                    kids.push(h('path', { key: 'a2', d: 'M182 ' + (38) + ' v' + Math.min(arrowLen, 60) + ' m-6 -8 l6 8 l6 -8', fill: 'none', stroke: fMeta.color, strokeWidth: 3 }));
+                    kids.push(h('text', { key: 'vl', x: 131, y: 22, fontSize: 10, fill: muted, textAnchor: 'middle', fontWeight: 700 }, 'map view — looking down'));
+                  } else {
+                    var conv = iq.btype === 'convergent';
+                    // section: a dipping fault; hanging wall (right) rides UP on a thrust, DOWN on a normal fault
+                    var hw = failed ? (conv ? -14 : 14) : 0;
+                    kids.push(h('polygon', { key: 'fw', points: '20,' + gy + ' 150,' + gy + ' 110,150 20,150', fill: rock, stroke: rockEdge }));
+                    kids.push(h('polygon', { key: 'hw', points: '150,' + (gy + hw) + ' 250,' + (gy + hw) + ' 250,150 110,150', fill: dk ? '#6b6560' : '#bcb5ad', stroke: rockEdge }));
+                    kids.push(h('line', { key: 'fault', x1: 110, y1: 150, x2: 150, y2: gy + hw, stroke: fMeta.color, strokeWidth: 3 }));
+                    // a marker bed so the offset is visible
+                    kids.push(h('line', { key: 'bed1', x1: 20, y1: gy + 20, x2: 128, y2: gy + 20, stroke: dk ? '#fde68a' : '#92400e', strokeWidth: 2.5 }));
+                    kids.push(h('line', { key: 'bed2', x1: 136, y1: gy + 20 + hw, x2: 250, y2: gy + 20 + hw, stroke: dk ? '#fde68a' : '#92400e', strokeWidth: 2.5 }));
+                    // driving stress: arrows pointing in (compression) or out (tension)
+                    var ax = conv ? [[20, 70, 20 + arrowLen, 70], [250, 70, 250 - arrowLen, 70]] : [[70, 70, 70 - Math.min(arrowLen, 50), 70], [200, 70, 200 + Math.min(arrowLen, 50), 70]];
+                    ax.forEach(function (a, k) {
+                      var dir = a[2] > a[0] ? 1 : -1;
+                      kids.push(h('path', { key: 'ar' + k, d: 'M' + a[0] + ' ' + a[1] + ' L' + a[2] + ' ' + a[3] + ' m' + (-8 * dir) + ' -6 l' + (8 * dir) + ' 6 l' + (-8 * dir) + ' 6', fill: 'none', stroke: fMeta.color, strokeWidth: 3 }));
+                    });
+                    kids.push(h('text', { key: 'vl', x: 135, y: 22, fontSize: 10, fill: muted, textAnchor: 'middle', fontWeight: 700 }, conv ? 'section — squeezed' : 'section — stretched'));
+                  }
+                  // friction lock on the fault
+                  var lx = iq.btype === 'transform' ? 131 : 130, ly = iq.btype === 'transform' ? 130 : gy + 26;
+                  kids.push(h('rect', { key: 'lock', x: lx - lockSize / 2, y: ly - lockSize / 2, width: lockSize, height: lockSize, rx: 3, fill: failed ? (dk ? '#7f1d1d' : '#fecaca') : (dk ? '#14532d' : '#bbf7d0'), stroke: failed ? '#dc2626' : '#16a34a', strokeWidth: 2 }));
+                  kids.push(h('text', { key: 'lockT', x: lx, y: ly + 4, fontSize: Math.max(8, lockSize * 0.6), textAnchor: 'middle', fill: ink }, failed ? '✕' : '🔒'));
+                  kids.push(h('text', { key: 'lockL', x: lx, y: 164, fontSize: 10, fill: muted, textAnchor: 'middle' }, 'friction ' + iq.friction + '%'));
+                  // meter: net stress vs failure threshold
+                  kids.push(h('text', { key: 'mT', x: meterX, y: meterY - 8, fontSize: 11, fill: ink, fontWeight: 800 }, 'Net stress vs failure line'));
+                  kids.push(h('rect', { key: 'mBg', x: meterX, y: meterY, width: meterW, height: 16, rx: 4, fill: dk ? '#1e293b' : '#e2e8f0', stroke: dk ? '#475569' : '#94a3b8' }));
+                  kids.push(h('rect', { key: 'mFill', x: meterX, y: meterY, width: meterW * netClamped / meterMax, height: 16, rx: 4, fill: failed ? '#dc2626' : '#16a34a' }));
+                  var thX = meterX + meterW * Math.min(meterMax, threshold) / meterMax;
+                  kids.push(h('line', { key: 'th', x1: thX, y1: meterY - 5, x2: thX, y2: meterY + 21, stroke: dk ? '#fbbf24' : '#b45309', strokeWidth: 2, strokeDasharray: '3 2' }));
+                  kids.push(h('text', { key: 'thL', x: thX, y: meterY + 34, fontSize: 10, fill: dk ? '#fbbf24' : '#b45309', textAnchor: 'middle', fontWeight: 700 }, 'fails past ' + threshold));
+                  kids.push(h('text', { key: 'eq', x: meterX, y: meterY + 56, fontSize: 10.5, fill: muted }, 'net = stress ' + iq.force + ' − 0.6 × friction ' + iq.friction + ' = ' + Math.round(netStress)));
+                  kids.push(h('text', { key: 'why', x: meterX, y: meterY + 74, fontSize: 10.5, fill: muted }, iq.btype === 'convergent' ? 'Thrusts need the most stress to break.' : iq.btype === 'transform' ? 'Sideways (transform) faults break at a middle stress.' : 'Normal faults break at the least stress.'));
+                  kids.push(h('text', { key: 'st', x: meterX, y: meterY + 98, fontSize: 12, fill: fMeta.color, fontWeight: 900 }, failed ? 'SLIPPING — the fault gave way' : 'LOCKED — friction is winning'));
+                  return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-pt-stress-diagram': failure, 'data-pt-stress-net': String(Math.round(netStress)),
+                    'aria-label': 'Fault diagram for a ' + iq.btype + ' boundary. Net stress ' + Math.round(netStress) + ' against a failure line of ' + threshold + ': the fault is ' + (failed ? 'slipping' : 'locked') + '.',
+                    className: 'rounded-lg border ' + (dk ? 'border-slate-700' : 'border-slate-300'), style: { background: dk ? '#0f172a' : '#f8fafc', maxHeight: 220 } }, kids);
+                })(),
                 h('div', { className: 'flex gap-2 flex-wrap' },
                   ['convergent', 'divergent', 'transform'].map(function(bt) {
                     var active = iq.btype === bt;
@@ -26517,8 +26710,13 @@ var d = labToolData.plateTectonics || {};
                           // cell and sat next to the heading above it.
                           var puffMax = Math.max(8, (gy - vH) - stageTop - 6);
                           var puff = (t * 26) % puffMax;
-                          c2.fillStyle = 'rgba(168,162,158,' + (1 - puff / puffMax) * 0.85 + ')';
-                          c2.beginPath(); c2.arc(vX, gy - vH - 4 - puff, 4 * u, 0, Math.PI * 2); c2.fill();
+                          // Three puffs in a trail, not one dot: any single frozen frame
+                          // (reduced motion, a screenshot) reads as smoke leaving the vent.
+                          for (var pk = 0; pk < 3; pk++) {
+                            var pOff = puff - pk * 9 * u; if (pOff < 0) continue;
+                            c2.fillStyle = 'rgba(168,162,158,' + Math.max(0, (1 - pOff / puffMax)) * (0.85 - pk * 0.2) + ')';
+                            c2.beginPath(); c2.arc(vX + (pk % 2 ? 2 * u : -1 * u), gy - vH - 4 - pOff, (3 + pk) * u, 0, Math.PI * 2); c2.fill();
+                          }
                           // Clamped into the stage. A fixed 16 px above the ground
                           // line lands in the heading band once the cell is short,
                           // which is what a stacked layout on a phone gives you.

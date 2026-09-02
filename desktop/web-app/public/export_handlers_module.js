@@ -2682,11 +2682,62 @@
     return null;
   };
 
+  // ── summarizeResourceText ────────────────────────────────────────
+  // Text-only fallback for object-shaped resources in lanes that have no
+  // dedicated renderer (slides preview, NotebookLM Markdown). Walks the data
+  // with a DENY list instead of dumping JSON: never lesson source excerpts or
+  // snippets, learner practice evidence, AI feedback, ids/timestamps, or media
+  // (data: URLs, base64, image/audio keys). Returns bounded plain-text lines.
+  const _RESOURCE_TEXT_DENY = /^(id|resourceId|schemaVersion|type|mode|status|family|kind|key|layout|chartType|templateType|language|gradeLevel|level|createdAt|updatedAt|generatedAt|reviewedAt|apiKey|token|secret|password|sourceExcerpt|sourceText|sourceTextSnippet|excerpt|lessonRef|practiceAttempts|retrievalAttempts|feedback|coachHint|visualCheck|visualReview|visualSyncOmission|basisKey|cueKey|factKeys|translations|omittedAssets|omittedAssetManifest)$/i;
+  const _RESOURCE_MEDIA_KEY = /(image|icon|audio|video|thumbnail|avatar|base64|dataurl|blob|portrait|recording|url|src|svg|glb)/i;
+  const _RESOURCE_PLAIN_KEY = /^(text|content|body|value|summary|description|label|title|question|prompt|answer|term|def|definition|main|event|item|items|bullets|steps|cues|notes|name|heading|target|essentialFacts|facts)$/i;
+  const summarizeResourceText = (item, options) => {
+    const max = (options && options.maxChars) || 1200;
+    const lines = [];
+    let used = 0;
+    const seen = typeof WeakSet === 'function' ? new WeakSet() : null;
+    const label = (k) => String(k).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').replace(/^./, (c) => c.toUpperCase());
+    const push = (s) => {
+      if (used >= max) return;
+      const clean = String(s).replace(/\s+/g, ' ').trim();
+      if (!clean) return;
+      const slice = clean.slice(0, Math.max(0, max - used));
+      lines.push(slice);
+      used += slice.length;
+    };
+    const looksLikeMedia = (v) => /^(data:|blob:)/i.test(v) || (v.length > 160 && !/\s/.test(v));
+    const visit = (value, key, depth) => {
+      if (used >= max || depth > 5 || value == null) return;
+      if (typeof value === 'string') {
+        if (_RESOURCE_MEDIA_KEY.test(key) || looksLikeMedia(value) || value.trim().length < 2) return;
+        push(key && !_RESOURCE_PLAIN_KEY.test(key) && !/^\d*$/.test(key) ? label(key) + ': ' + value : value);
+        return;
+      }
+      if (Array.isArray(value)) { value.slice(0, 40).forEach((v) => visit(v, key, depth + 1)); return; }
+      if (typeof value === 'object') {
+        if (seen) { if (seen.has(value)) return; seen.add(value); }
+        Object.keys(value).forEach((k) => {
+          if (_RESOURCE_TEXT_DENY.test(k) || _RESOURCE_MEDIA_KEY.test(k)) return;
+          visit(value[k], k, depth + 1);
+        });
+      }
+    };
+    const data = item && item.data;
+    if (typeof data === 'string') { push(data); return lines; }
+    visit(data, '', 0);
+    return lines;
+  };
+
   // ── getSlidesPreviewHTML ─────────────────────────────────────────
   // Builds a deck of 16:9 slide HTML cards from the current export
   // history (simplified text, glossary, quiz, outline, etc.). Pure.
   const getSlidesPreviewHTML = (deps) => {
-    const { sourceTopic, gradeLevel, getExportableHistory } = deps || {};
+    const { sourceTopic, gradeLevel, getExportableHistory, t } = deps || {};
+    const _maT = function(key, fallback) {
+      const fullKey = 'memory_aid.' + key;
+      try { const v = typeof t === 'function' ? t(fullKey) : ''; if (typeof v === 'string' && v && v !== fullKey) return v; } catch (_) {}
+      return fallback;
+    };
     const slides = [];
     const themeColor = '#4f46e5';
     slides.push('<div class="slide"><div style="background:' + themeColor + ';color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;border-radius:8px"><h1 style="font-size:28px;margin:0;text-align:center;padding:0 20px">' + (sourceTopic || 'Untitled Presentation') + '</h1><p style="font-size:14px;opacity:0.8;margin-top:8px">' + gradeLevel + ' · ' + new Date().toLocaleDateString() + '</p></div></div>');
@@ -2733,8 +2784,48 @@
           count++;
         });
         if (slideContent) slides.push('<div class="slide"><div class="slide-title">' + title + '</div><div class="slide-body">' + slideContent + '</div></div>');
+      } else if (item.type === 'memory-aid' && item.data && typeof item.data === 'object') {
+        // Memory Aid Studio: never fall through to the raw-JSON catch-all. The
+        // resource object carries the private lesson source excerpt, the lesson
+        // snippet, base64 visuals and (on legacy copies) learner practice
+        // evidence, none of which belongs on a slide. One slide per memory
+        // target: cue first, then the facts labelled by teacher-review status
+        // through the module's shared rule (fail-safe: unverified if absent).
+        const esc = function(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+        const rules = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules) || null;
+        const cards = Array.isArray(item.data.cards) ? item.data.cards.slice(0, 8) : [];
+        const instructions = String(item.data.instructions || '').slice(0, 600);
+        if (instructions) slides.push('<div class="slide"><div class="slide-title">' + esc(title) + '</div><div class="slide-body"><p>' + esc(instructions) + '</p></div></div>');
+        cards.forEach(function(card, ci) {
+          const c = card && typeof card === 'object' ? card : {};
+          const facts = (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).map(function(f) { return String(f == null ? '' : f).slice(0, 600).trim(); }).filter(Boolean);
+          const verified = !!(rules && typeof rules.isCardVerified === 'function' && rules.isCardVerified(c));
+          const cue = rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000);
+          slides.push('<div class="slide"><div class="slide-title">' + esc(title) + ' &middot; ' + (ci + 1) + '/' + cards.length + '</div><div class="slide-body">'
+            + '<p style="font-size:16px;font-weight:700">' + esc(c.target || _maT('memory_target', 'Memory target')) + '</p>'
+            + (cue ? '<p style="font-size:15px;font-weight:600;color:#0f766e;white-space:pre-wrap">' + esc(cue.slice(0, 700)) + '</p>' : '')
+            + '<p style="margin-top:8px;font-weight:700">' + (verified ? _maT('facts_verified', 'Teacher-verified facts') : _maT('facts_pending', 'Facts awaiting teacher review')) + '</p>'
+            + (facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '')
+            + (c.mapping ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + esc(String(c.mapping).slice(0, 500)) + '</em></p>' : '')
+            + '</div></div>');
+        });
+      } else if (item.type === 'anchor-chart' && item.data && Array.isArray(item.data.sections)) {
+        // Anchor chart: one slide per section (label + bullets); icons are skipped.
+        const esc = function(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+        const sections = item.data.sections.slice(0, 12);
+        sections.forEach(function(section, si) {
+          const s = section && typeof section === 'object' ? section : {};
+          const bullets = (Array.isArray(s.bullets) ? s.bullets : []).map(function(b) { return typeof b === 'string' ? b : (b && b.text) || ''; }).filter(Boolean).slice(0, 8);
+          slides.push('<div class="slide"><div class="slide-title">' + esc(title) + ' &middot; ' + (si + 1) + '/' + sections.length + '</div><div class="slide-body">'
+            + '<p style="font-size:16px;font-weight:700">' + esc(s.label || ('Section ' + (si + 1))) + '</p>'
+            + (bullets.length ? '<ul style="margin:6px 0 0 18px">' + bullets.map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul>' : '')
+            + '</div></div>');
+        });
       } else {
-        const text = typeof item.data === 'string' ? item.data.substring(0, 1200) : JSON.stringify(item.data).substring(0, 1200);
+        // Object-shaped resources without a dedicated slide renderer go through
+        // the deny-listed summarizer, never raw JSON (which leaked source
+        // excerpts, learner evidence and base64 media onto slides).
+        const text = typeof item.data === 'string' ? item.data.substring(0, 1200) : summarizeResourceText(item, { maxChars: 1200 }).join('\n');
         const clean = text.replace(/\*\*/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').replace(/<[^>]*>/g, '');
         slides.push('<div class="slide"><div class="slide-title">' + title + '</div><div class="slide-body"><p>' + clean.replace(/\n/g, '</p><p>') + '</p></div></div>');
       }
@@ -2917,6 +3008,7 @@
     getChatThemeStyles,
     runGlossaryHealthCheck,
     getSlidesPreviewHTML,
+    summarizeResourceText,
     separateStudentTeacherHtml: _alloSeparateStudentTeacherHtml,
     sanitizeAssessmentStudentHtml: _alloSanitizeAssessmentStudentHtml,
     shouldSeparateStudentTeacher: _alloShouldSeparateStudentTeacher,

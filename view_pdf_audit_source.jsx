@@ -3738,7 +3738,7 @@ function PdfAuditView(props) {
     setPdfBatchQueue, setPdfBatchSummary, setPdfFixLoading, setPdfFixMode,
     setPdfFixResult, setPdfFixStep, setPdfMultiSession, setPdfPageRange,
     setPdfPolishPasses, setPdfPreviewA11yInspect, setPdfPreviewFontSize, setPdfPreviewOpen,
-    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, setPendingPdfBase64,
+    setPdfPreviewTheme, setPdfTargetScore, setPdfWebMode, pdfOcrLanguage, setPdfOcrLanguage, pdfStormBudgetMinutes, setPdfStormBudgetMinutes, setPendingPdfBase64,
     setPendingPdfFile, setShowCloseConfirm, showCloseConfirm, startNewPdfAudit, capturePdfDocumentIntakeEpoch, isPdfDocumentIntakeCurrent, startPipelineTour,
     pdfRunHistory, setPdfRunHistory, openRemediationBuilder, _remediationMode
   } = props;
@@ -8956,6 +8956,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </select>
                       <div className="text-[10px] text-slate-500 mt-0.5">{t('pdf_audit.settings.ocr_lang_hint') || 'Only affects scanned/image PDFs. Set the language so OCR reads non-English text accurately (helps ELL documents). Auto-detect works for most.'}</div>
                     </div>
+                    {/* Storm budget (2026-09-02): minutes of deliberate rate-limit waiting one run may spend
+                        before the AI passes pause at the last verified version. 0 = keep waiting (old behaviour). */}
+                    <div>
+                      <div className="flex justify-between text-[11px] mb-0.5">
+                        <span className="font-bold text-slate-600">{t('pdf_audit.settings.storm_budget') || 'Rate-limit waiting budget'}</span>
+                        <span className="text-slate-600">{Number(pdfStormBudgetMinutes) > 0 ? (Number(pdfStormBudgetMinutes) + ' ' + (t('pdf_audit.settings.storm_budget_minutes') || 'min')) : (t('pdf_audit.settings.storm_budget_unbounded') || 'Keep waiting')}</span>
+                      </div>
+                      <select data-help-key="pdf_audit_view_storm_budget" value={String(Number(pdfStormBudgetMinutes) || 0)} onChange={(e) => setPdfStormBudgetMinutes(Math.max(0, Number(e.target.value) || 0))} aria-label={t('pdf_audit.settings.storm_budget_aria') || 'Minutes of rate-limit waiting before the AI passes pause'} className="w-full text-[12px] border border-slate-300 rounded-lg px-2 py-1.5 bg-white text-slate-700">
+                        {[10, 18, 30, 45].map((m) => <option key={m} value={String(m)}>{m + ' ' + (t('pdf_audit.settings.storm_budget_minutes_long') || 'minutes') + (m === 18 ? ' (' + (t('pdf_audit.settings.storm_budget_default') || 'default') + ')' : '')}</option>)}
+                        <option value="0">{t('pdf_audit.settings.storm_budget_unbounded_long') || 'Keep waiting (no budget)'}</option>
+                      </select>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{t('pdf_audit.settings.storm_budget_hint') || 'When Canvas rate-limits the AI, the run waits instead of failing. Once this much waiting adds up, the AI passes pause at the last verified version and you can resume later. Deterministic fixes and the audit are always kept.'}</div>
+                    </div>
                     <label className="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer bg-indigo-50 rounded-lg p-2 border border-indigo-200">
                       <input data-help-key="pdf_audit_view_auto_continue_toggle" type="checkbox" checked={pdfAutoContinue} onChange={(e) => setPdfAutoContinue(e.target.checked)} className="mt-0.5 rounded" aria-label={t('pdf_audit.settings.auto_continue_aria') || 'Auto-continue remediation until target score'} />
                       <span>🔁 <b>Auto-continue</b> until score ≥ <b>{pdfTargetScore}</b> — runs up to 3 extra rounds of fixes automatically, stopping early when no more progress is possible.</span>
@@ -12633,12 +12646,19 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="flex flex-wrap items-center gap-3">
                             <div className="min-w-0 flex-1">
                               <h3 id="pdf-remediation-paused-heading" className="text-sm font-black">⏳ AI remediation paused safely</h3>
-                              <p className="mt-1 text-xs">Canvas temporarily rate-limited the AI service. Your last verified version was preserved; no same-storm retry wave was launched.</p>
+                              <p className="mt-1 text-xs">{pdfFixResult._finalAuditIncompleteReason === 'remediation-paused-storm-budget'
+                                ? (t('pdf_audit.storm_budget_paused_body') || 'This run reached its rate-limit waiting budget (Pipeline Settings). Deterministic fixes and the audit were kept and your last verified version was preserved; resuming continues with a fresh budget.')
+                                : 'Canvas temporarily rate-limited the AI service. Your last verified version was preserved; no same-storm retry wave was launched.'}</p>
                             </div>
                             <button
                               type="button"
                               disabled={pdfFixLoading || pdfAutoContinueRunning}
                               onClick={async () => {
+                                // An explicit Resume is a new decision by the teacher: give it a fresh storm budget.
+                                try {
+                                  const _pipeR = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.DocPipelineModule) || null;
+                                  if (_pipeR && typeof _pipeR.resetGeminiStormBudget === 'function') _pipeR.resetGeminiStormBudget();
+                                } catch (_) {}
                                 try { await runAutoFixLoop(3); }
                                 catch (error) { addToast('Could not resume AI remediation: ' + ((error && error.message) || error), 'error'); }
                               }}

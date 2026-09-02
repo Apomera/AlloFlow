@@ -29,6 +29,7 @@ const ADMIN_HUB_STORAGE_MANIFEST = [
   { prefix: 'allo_meetdocs_', tool: 'Meeting Documentation' },          // meetings, templates, draft
   { prefix: 'allo_famann_', tool: 'Family Announcements' },             // saved, config, draft
   { prefix: 'allo_educator_evaluation_', tool: 'Educator Evaluation' }, // local workspace, onboarding
+  { prefix: 'allo_school_rewards_', tool: 'School Rewards & Store' },   // launcher URL, setup checklist
 ];
 // ONE structure feeds both the security check and the restore breakdown: a
 // parallel label map would be free to drift from the prefixes that actually
@@ -262,7 +263,7 @@ function AdminHubDriveBackup({ tt, addToast }) {
 }
 
 function AdminHubPanel(props) {
-  const { onClose, t, openTool = (() => {}), addToast = (() => {}) } = props;
+  const { onClose, t, openTool = (() => {}), addToast = (() => {}), onOpenSchoolRewards } = props;
   const tt = React.useCallback((key, fallback) => {
     if (typeof t === 'function') {
       try { const v = t(key); if (v) return v; } catch (_) {}
@@ -271,6 +272,12 @@ function AdminHubPanel(props) {
   }, [t]);
   const openHubTool = React.useCallback((toolId) => {
     if (toolId !== 'rewards') { openTool(toolId); return; }
+    // 2026-09-01: the host owns School Rewards routing when it passes this
+    // prop (connected: the Google-hosted portal; not yet connected: Project
+    // Settings scrolled to the connect form). Before, an unconnected card
+    // only toasted and stayed put, which read as a card that does nothing.
+    // The inline path below remains for hosts without the prop.
+    if (typeof onOpenSchoolRewards === 'function') { onClose(); onOpenSchoolRewards(); return; }
     let portalUrl = '';
     try {
       const candidate = new URL(String(window.localStorage.getItem('allo_school_rewards_portal_url_v1') || '').trim());
@@ -286,7 +293,7 @@ function AdminHubPanel(props) {
       popup.opener = null;
       onClose();
     } catch (_) { addToast(tt('adminhub.rewards_open_failed', 'School Rewards could not open.'), 'error'); }
-  }, [addToast, onClose, openTool, tt]);
+  }, [addToast, onClose, onOpenSchoolRewards, openTool, tt]);
   const dialogRef = React.useRef(null);
 
   React.useEffect(() => {

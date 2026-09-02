@@ -127,9 +127,11 @@ describe('Anatomy mobile topbar', () => {
     expect(back?.getAttribute('aria-label')).toMatch(/Back to tools/i);
     expect(title?.querySelector('h3')?.textContent).toMatch(/Human Anatomy Explorer/i);
     expect(title?.querySelector('p')?.textContent.trim().length).toBeGreaterThan(0);
-    expect(actions).toHaveLength(2);
+    // Comfort text, Study sheet, Snapshot — the study sheet toggle joined the topbar 2026-09-02.
+    expect(actions).toHaveLength(3);
     expect(actions[0].getAttribute('aria-label')).toMatch(/comfortable reading mode/i);
-    expect(snapshot).toBe(actions[1]);
+    expect(actions[1].getAttribute('aria-controls')).toBe('anatomy-study-sheet');
+    expect(snapshot).toBe(actions[2]);
     expect(snapshot?.getAttribute('aria-label')).toMatch(/Snapshot/i);
   });
 

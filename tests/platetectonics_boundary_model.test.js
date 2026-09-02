@@ -125,8 +125,21 @@ describe('Plate Tectonics cross-section — boundary classification', () => {
     // A hard collision used to push the gap past the detection window, so the
     // most violent convergence the model allows produced NO caption at all.
     const b = body();
-    expect(b).toMatch(/if \(gap > cW \* 0\.034\) return null;/);
+    // The opening side has cut-offs; the overlap side has only the rigid-body limit.
+    expect(b).toMatch(/gap > cW \* 0\.034 &&/);
     expect(b).toMatch(/PT_MAX_OVERLAP/);
+  });
+
+  it('classifies a gap opened from rest as divergent, not as no boundary', () => {
+    // The resting gap (PT_GAP) is WIDER than the 3.4% live-seam window, so a
+    // single cut-off meant "pull two plates apart" could never make a ridge on
+    // any route, and the seams that mantle drift opens over "hot rock rises"
+    // never drew one either. Opened visibly past rest (1.15x) must classify;
+    // only the untouched resting band and a gap too wide to be one boundary are null.
+    const b = body();
+    expect(b).toMatch(/restGap \* 1\.15/);
+    expect(b).toMatch(/gap > cW \* 0\.16/);
+    expect(b).not.toMatch(/if \(gap > cW \* 0\.034\) return null;/);
   });
 
   it('starts with the plates apart, so nothing is a boundary until it is made', () => {
@@ -405,15 +418,17 @@ describe('Plate Tectonics — deployed copies', () => {
       expect(block).toMatch(/maxQuakeMag: Math\.max\(liveD\.maxQuakeMag \|\| 0, qMag\)/);
     });
 
-    it('draws the magnitude clear of the boundary caption band', () => {
+    it('draws the magnitude underground, out of the crowded sky band', () => {
       const text = src();
-      const at = text.indexOf('var lqCapBot');
-      expect(at, 'magnitude readout placement not found').toBeGreaterThan(-1);
-      const block = text.slice(at, at + 600);
-      // Placed against the caption band, and degrades to one line rather than
-      // overlapping it on a short canvas.
-      expect(block).toMatch(/lqCapBot/);
-      expect(block).toMatch(/lqWhy = ''/);
+      const at = text.indexOf("var lqTxt = 'M '");
+      expect(at, 'magnitude readout not found').toBeGreaterThan(-1);
+      const block = text.slice(at, at + 1400);
+      // The sky above the plates holds the legend, the drag hint and the
+      // boundary caption; the readout used to be squeezed in there too and
+      // ended up on top of the volcano. A quake is a rupture at depth, so the
+      // chip now sits at a real depth under the boundary.
+      expect(block).toMatch(/var lqTop = GEO\.dY\(/);   // a real depth, whatever the per-kind choice
+      expect(block).not.toMatch(/lqCapBot/);
     });
   });
 

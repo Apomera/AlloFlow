@@ -1680,9 +1680,12 @@ async function runAutoFixLoop(maxRounds, deps) {
           cur = pdfFixResultRef.current;
           if (_calmState && _calmState.calm === false && cur && _canPublish()) {
             _pausedForThrottle = true;
-            cur = { ...cur, _remediationThrottlePaused: true, _finalAuditThrottleDeferred: true, _finalAuditRetryAvailable: true, _finalAuditIncompleteReason: 'remediation-paused-transient-throttle' };
+            const _budgetPause = !!(_calmState && _calmState.budgetExhausted);
+            cur = { ...cur, _remediationThrottlePaused: true, _finalAuditThrottleDeferred: true, _finalAuditRetryAvailable: true, _finalAuditIncompleteReason: _budgetPause ? 'remediation-paused-storm-budget' : 'remediation-paused-transient-throttle' };
             setPdfFixResult(cur);
-            warnLog('[AutoContinue] Provider throttle did not clear inside the bounded wait; preserving the checkpoint for a later resume.');
+            warnLog(_budgetPause
+              ? '[AutoContinue] Rate-limit waiting budget reached; preserving the checkpoint. Resume AI remediation continues with a fresh budget.'
+              : '[AutoContinue] Provider throttle did not clear inside the bounded wait; preserving the checkpoint for a later resume.');
           }
           break;
         }
@@ -1869,6 +1872,8 @@ async function runAutoFixLoop(maxRounds, deps) {
       const _humanReviewRequired = !!(cur && (!_canonicalComplete || _expertOrFidelityReview));
       if (pdfAutoContinueAbortRef.current || (_abortCtrl.signal && _abortCtrl.signal.aborted)) {
         _toastIfOwned(t('toasts.auto_continue_stopped'), 'info');
+      } else if (cur && cur._finalAuditIncompleteReason === 'remediation-paused-storm-budget') {
+        _toastIfOwned(t('pdf_audit.storm_budget_paused_toast') || 'AI remediation paused: this run reached its rate-limit waiting budget. Your last verified version is preserved; choose Resume AI remediation to continue with a fresh budget, or raise the budget in Pipeline Settings.', 'warning');
       } else if (_pausedForThrottle || (cur && cur._remediationThrottlePaused)) {
         _toastIfOwned('AI remediation paused safely because the provider is temporarily rate-limiting requests. Your last verified version is preserved; choose Resume AI remediation after the service recovers.', 'warning');
       } else if (cur && (cur.afterScore || 0) >= pdfTargetScore && _canonicalComplete && !_expertOrFidelityReview) {

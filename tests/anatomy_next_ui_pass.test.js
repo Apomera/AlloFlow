@@ -36,11 +36,11 @@ const HEART_CLINICAL_STATE = {
   _clinicalAtlasConceptId: SELECTED_HEART_CONCEPT_ID,
 };
 
-function renderAnatomy(filePath, state = {}) {
+function renderAnatomy(filePath, state = {}, overrides) {
   loadTool(filePath, 'anatomy');
   return renderTool('anatomy', {
     anatomy: { ...BASE_STATE, ...state },
-  });
+  }, overrides);
 }
 
 function parseMarkup(html) {
@@ -113,8 +113,16 @@ describe('Anatomy desktop learning-mode strip', () => {
     expect(strip.className.split(/\s+/)).not.toContain('flex-wrap');
     expect(strip.getAttribute('role')).toBe('tablist');
     expect(strip.getAttribute('aria-orientation')).toBe('horizontal');
-    expect(tabs).toHaveLength(10);
+    // Harness profile is '5th Grade': Quiz joins the strip, the two clinician-level workspaces
+    // (Imaging Lab, Procedure Studio) are hidden for a known K-5 profile.
+    expect(tabs).toHaveLength(9);
+    expect(tabs.map((tab) => tab.id)).toContain('anatomy-mode-tab-quiz');
+    expect(tabs.map((tab) => tab.id)).not.toContain('anatomy-mode-tab-imaging');
     expect(tabs.filter((tab) => tab.getAttribute('aria-selected') === 'true')).toHaveLength(1);
+    const olderRoot = parseMarkup(renderAnatomy(filePath, {}, { gradeLevel: '9' }));
+    const olderTabs = [...olderRoot.querySelector('[data-anatomy-tab-strip="true"]').querySelectorAll(':scope > [role="tab"]')];
+    expect(olderTabs).toHaveLength(11);
+    expect(olderTabs[olderTabs.length - 1].id).toBe('anatomy-mode-tab-procedure');
     const panel = root.querySelector('[data-anatomy-panel]');
     const activeTab = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
     expect(tabs.every((tab) => /^anatomy-mode-tab-/.test(tab.id))).toBe(true);

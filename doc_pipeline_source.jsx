@@ -459,7 +459,7 @@ var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   'note-taking': { label: 'Note Taking', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'student-work-snapshot', notes: 'Exports the current note snapshot and feedback state.' },
   'anchor-chart': { label: 'Anchor Chart', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'poster-snapshot', notes: 'Exports as a poster-style reference chart.' },
   'memory-aid': { label: 'Memory Aid Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'memory-aid-workshop', notes: 'Standard HTML exports the full saved reference. Printable student worksheets are cue-first and answer-free; an optional teacher appendix carries the checked facts. Saved recall attempts are never exported.' },
-  'applied-challenge': { label: 'Applied Challenge Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'applied-challenge-workshop', notes: 'Exports the challenge brief, lesson-fact review status, supports, persistent student workspace, revision, transfer reflection, and saved feedback without the private source excerpt.' },
+  'applied-challenge': { label: 'Applied Challenge Studio', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'local-only', fallback: 'applied-challenge-workshop', notes: 'Exports the challenge brief, lesson-fact review status, fading supports with phase prompts, the evidence ledger, saved checks, stress test, and feedback without the private source excerpt. The student workspace is typeable in downloaded HTML and saves locally unless submitted separately; the paper worksheet prints ruled lines.' },
   math: { label: 'STEAM Lab', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-launch-summary', notes: 'Main export can include the generated math/STEM summary; full simulations need a dedicated adapter.' },
   'lesson-plan': { label: 'Lesson Plan', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'teacher-plan', notes: 'Exports as a teacher-facing plan.' },
   'gemini-bridge': { label: 'Generated Interactive Artifact', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'code-snapshot', notes: 'Exports the generated artifact/code text. Running apps need packaged assets and sandboxing.' },
@@ -2532,6 +2532,99 @@ function readingOrderSequenceRatio(textA, textB) {
 // Resolves as soon as the tab is visible, immediately if it already is, and always by maxWaitMs so
 // a teacher who leaves the tab in the background for the whole run still finishes. Never rejects:
 // the caller's existing timeout/fallback ladder stays in charge of real failures.
+// ── Hidden-tab-safe timers (2026-09-02) ───────────────────────────────────────────────────────
+// Chrome's intensive wake-up throttling clamps a page's timers to about one wake per minute once
+// the tab has been hidden for five minutes. The Gemini gate's cooldown, stagger, rate-window and
+// queue-pulse timers, wait-not-stop's sleeps and the inline retry backoff are all timers, so a
+// minimised Canvas tab stretched a 12s cooldown toward a minute and every wait in a storm with it
+// (the 08-14 field log measured the hidden share; @61214d6a8 disclosed it). fetch() itself is not
+// throttled, which is why runs still finished — slowly. A dedicated Worker's timers are not subject
+// to the page's throttling and its postMessage wakes the page promptly, so long waits and waits
+// scheduled while hidden run in a Worker and fire their callback on the main thread.
+//
+// Safety: the Worker is used only after it answers a ping (a CSP that blocks blob workers, an old
+// host, or jsdom all leave the state 'broken' and fall back to setTimeout), only for waits >= 30s or
+// waits scheduled while the tab is hidden (short visible-tab waits stay byte-identical to
+// setTimeout, which also keeps fake-timer tests honest), and a Worker error re-homes every pending
+// wait on the main thread for its remaining time. No document content ever reaches the Worker:
+// messages carry an id and a millisecond count only.
+var _alloTimerWorker = null;
+var _alloTimerWorkerState = 'idle'; // idle | starting | ready | broken
+var _alloTimerSeq = 0;
+var _alloTimerPending = Object.create(null);
+var _ALLO_WORKER_TIMER_MIN_MS = 30000;
+function _alloTabHiddenNow() {
+  try { return typeof document !== 'undefined' && document.visibilityState === 'hidden'; } catch (_) { return false; }
+}
+function _alloRehomePendingTimers() {
+  var ids = Object.keys(_alloTimerPending);
+  for (var i = 0; i < ids.length; i++) {
+    var rec = _alloTimerPending[ids[i]];
+    delete _alloTimerPending[ids[i]];
+    if (!rec || typeof rec.fn !== 'function') continue;
+    try { setTimeout(rec.fn, Math.max(0, rec.dueAt - Date.now())); } catch (_) {}
+  }
+}
+function _alloStartTimerWorker() {
+  if (_alloTimerWorkerState !== 'idle') return;
+  _alloTimerWorkerState = 'starting';
+  try {
+    if (typeof Worker === 'undefined' || typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+      _alloTimerWorkerState = 'broken';
+      return;
+    }
+    var src = 'var t={};onmessage=function(e){var d=e.data||{};'
+      + 'if(d.op==="set"){t[d.id]=setTimeout(function(){delete t[d.id];postMessage({id:d.id});},d.ms);}'
+      + 'else if(d.op==="clear"){if(t[d.id]){clearTimeout(t[d.id]);delete t[d.id];}}'
+      + 'else if(d.op==="ping"){postMessage({pong:1});}};';
+    var url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
+    var w = new Worker(url);
+    try { URL.revokeObjectURL(url); } catch (_) {}
+    w.onmessage = function (e) {
+      var d = e && e.data;
+      if (!d) return;
+      if (d.pong) { if (_alloTimerWorkerState === 'starting') _alloTimerWorkerState = 'ready'; return; }
+      var rec = _alloTimerPending[d.id];
+      if (!rec) return;
+      delete _alloTimerPending[d.id];
+      try { rec.fn(); } catch (_) {}
+    };
+    w.onerror = function () { _alloTimerWorkerState = 'broken'; _alloRehomePendingTimers(); };
+    _alloTimerWorker = w;
+    w.postMessage({ op: 'ping' });
+    setTimeout(function () { if (_alloTimerWorkerState === 'starting') _alloTimerWorkerState = 'broken'; }, 2000);
+  } catch (_) {
+    _alloTimerWorkerState = 'broken';
+  }
+}
+function _alloHiddenSafeTimeout(fn, ms) {
+  if (typeof fn !== 'function') return null;
+  var delay = Math.max(0, Number(ms) || 0);
+  if (_alloTimerWorkerState === 'idle') _alloStartTimerWorker();
+  if (_alloTimerWorkerState === 'ready' && _alloTimerWorker && (delay >= _ALLO_WORKER_TIMER_MIN_MS || _alloTabHiddenNow())) {
+    var id = ++_alloTimerSeq;
+    _alloTimerPending[id] = { fn: fn, dueAt: Date.now() + delay };
+    try {
+      _alloTimerWorker.postMessage({ op: 'set', id: id, ms: delay });
+      return { _alloWorkerTimer: id };
+    } catch (_) {
+      delete _alloTimerPending[id];
+      _alloTimerWorkerState = 'broken';
+    }
+  }
+  return setTimeout(fn, delay);
+}
+function _alloHiddenSafeClear(handle) {
+  if (handle == null) return;
+  if (typeof handle === 'object' && handle._alloWorkerTimer) {
+    var id = handle._alloWorkerTimer;
+    delete _alloTimerPending[id];
+    try { if (_alloTimerWorker) _alloTimerWorker.postMessage({ op: 'clear', id: id }); } catch (_) {}
+    return;
+  }
+  try { clearTimeout(handle); } catch (_) {}
+}
+
 function _alloWaitForVisibleTab(maxWaitMs, label) {
   try {
     if (typeof document === 'undefined' || document.visibilityState === undefined) return Promise.resolve('no-visibility-api');
@@ -2545,7 +2638,7 @@ function _alloWaitForVisibleTab(maxWaitMs, label) {
         if (done) return;
         done = true;
         try { document.removeEventListener('visibilitychange', onVis); } catch (_) {}
-        if (timer) { try { clearTimeout(timer); } catch (_) {} }
+        if (timer) _alloHiddenSafeClear(timer);
         try {
           var waited = (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - t0);
           if (waited > 250) warnLog('[Tab] ' + (label || 'canvas work') + ': waited ' + Math.round(waited / 1000) + 's for the tab to come back (' + why + ') — a hidden tab suspends canvas rendering.');
@@ -2556,7 +2649,7 @@ function _alloWaitForVisibleTab(maxWaitMs, label) {
       try { document.addEventListener('visibilitychange', onVis); } catch (_) {}
       // The timer is itself clamped in a hidden tab, so this bound is a floor, not a ceiling. That
       // is acceptable: it only ever delays work that could not have succeeded anyway.
-      var timer = setTimeout(function () { finish('still-hidden'); }, bound);
+      var timer = _alloHiddenSafeTimeout(function () { finish('still-hidden'); }, bound);
     });
   } catch (_) { return Promise.resolve('error'); }
 }
@@ -6741,6 +6834,9 @@ var createDocPipeline = function(deps) {
         summary: _diagnosticSafeClone(forcedSummary, '', 0),
         trace: trace,
         cooldownMsTotal: _throttleCooldownMsTotal,
+        retryAfterApplied: (typeof _throttleRetryAfterApplied === 'number') ? _throttleRetryAfterApplied : 0,
+        lastRetryAfterMs: (typeof _geminiLastRetryAfterMs === 'number') ? _geminiLastRetryAfterMs : 0,
+        stormBudgetMs: (typeof _geminiStormBudgetMs === 'function') ? _geminiStormBudgetMs() : null,
       },
       warnings: warnings,
       calls: _diagnosticSafeClone((_pipelineStats.callLedger || []).slice(-2000), '', 0) || [],
@@ -6943,6 +7039,50 @@ var createDocPipeline = function(deps) {
   var _throttleTrace = [];          // structured records for the end-of-run rollup
   var _throttleRunStartedAt = 0;
   var _throttleCooldownMsTotal = 0; // wall-clock deliberately spent backing off
+  // Retry-After (2026-09-02). The inner fetch ladder has parsed the header since 2026-08-15 and the
+  // ledger printed it, but nothing fed it into the gate: a server that said "wait 45s" still got
+  // the streak-derived 12s. When present it is the single most authoritative number the limiter
+  // sends, so it now extends the cooldown (never shortens it; capped so a bogus header cannot park
+  // a run). Counted for the rollup so the next field log can say how often the service told us.
+  var _GEMINI_RETRY_AFTER_CAP_MS = 300000;
+  var _throttleRetryAfterApplied = 0;
+  var _geminiLastRetryAfterMs = 0;
+  var _geminiRetryAfterUntil = 0;   // the cooldown deadline a Retry-After set (so wait-not-stop can tell it from a streak-derived one)
+  // Storm budget (2026-09-02, maintainer decision). Wait-not-stop had no run-level ceiling: the 08-14
+  // field run spent 2h36m to deliver a handful of deterministic fixes. Once a run's DELIBERATE
+  // rate-limit waiting (the cooldowns the gate itself imposed) adds up to this budget, the AI passes
+  // pause at the last verified version through the existing throttle-pause path (banner + Resume)
+  // instead of waiting longer. Deterministic fixes and the audit are kept; Resume resets the budget.
+  // Read fresh from the host on every check: window.__docPipelineState.pdfStormBudgetMinutes
+  // (0 = keep waiting, the pre-09-02 behaviour; absent = 18 minutes).
+  var _GEMINI_STORM_BUDGET_DEFAULT_MS = 18 * 60 * 1000;
+  var _stormBudgetAnnounced = false;
+  var _geminiStormBudgetMs = function () {
+    var minutes = null;
+    try {
+      var st = (typeof window !== 'undefined' && window.__docPipelineState) || null;
+      if (st && st.pdfStormBudgetMinutes != null && st.pdfStormBudgetMinutes !== '') minutes = Number(st.pdfStormBudgetMinutes);
+    } catch (_) { minutes = null; }
+    if (minutes == null || !Number.isFinite(minutes)) return _GEMINI_STORM_BUDGET_DEFAULT_MS;
+    if (minutes <= 0) return 0;
+    return Math.round(Math.min(240, minutes) * 60000);
+  };
+  var _geminiStormBudget = function () {
+    var budgetMs = _geminiStormBudgetMs();
+    var spentMs = Math.max(0, Number(_throttleCooldownMsTotal) || 0);
+    return {
+      budgetMs: budgetMs,
+      spentMs: spentMs,
+      remainingMs: budgetMs > 0 ? Math.max(0, budgetMs - spentMs) : Infinity,
+      exhausted: budgetMs > 0 && spentMs >= budgetMs,
+    };
+  };
+  var _resetGeminiStormBudget = function () {
+    _throttleCooldownMsTotal = 0;
+    _stormBudgetAnnounced = false;
+    try { _pipeThrottleEvent('storm_budget_reset', { budgetMs: _geminiStormBudgetMs() }, null); } catch (_) {}
+    return _geminiStormBudget();
+  };
   var _throttlePendingProbe = null; // set when a cooldown ends, resolved by the next outcome
   var _THROTTLE_TRACE_MAX = 400;
   // ── Hidden-tab accounting (2026-08-13) ──────────────────────────────────────
@@ -7105,6 +7245,7 @@ var createDocPipeline = function(deps) {
         tripsAtInFlightAvg: avgInFlight,
         tripsAtInFlightMax: maxInFlight,
         cooldownMsTotal: _throttleCooldownMsTotal,
+        retryAfterApplied: (typeof _throttleRetryAfterApplied === 'number') ? _throttleRetryAfterApplied : 0,
         cooldownRecoveredFirstTry: cooldownOk,
         cooldownStillFailing: cooldownFail,
         cooldownLengthsUsed: cooldownsByMs,
@@ -7215,6 +7356,16 @@ var createDocPipeline = function(deps) {
   // behind other calls (especially foreign/batch owners at the cap-1 throttle setting), otherwise
   // an eight-minute host watchdog can invalidate a healthy call before its transport ever starts.
   var _GEMINI_QUEUE_PULSE_MS = 30000;
+  // Timer indirection: the hidden-tab-safe shim (_alloHiddenSafeTimeout) lives at module scope.
+  // It is looked up at CALL time so harnesses that slice this gate block and inject their own
+  // setTimeout keep driving the gate exactly as before; in the app the shim is always present.
+  var _gateTimeout = function (fn, ms) {
+    return (typeof _alloHiddenSafeTimeout === 'function') ? _alloHiddenSafeTimeout(fn, ms) : setTimeout(fn, ms);
+  };
+  var _gateClearTimer = function (handle) {
+    if (typeof _alloHiddenSafeClear === 'function') { _alloHiddenSafeClear(handle); return; }
+    try { clearTimeout(handle); } catch (_) {}
+  };
   // Queue pump: start as many waiters as the CURRENT (possibly reduced) cap allows, and never
   // during a cooldown. Replaces the old hand-off-on-release model, which couldn't shrink the cap.
   // #3 (ChatGPT review 2026-07-10): queue entries carry the run's abort signal, captured at ENQUEUE
@@ -7246,7 +7397,7 @@ var createDocPipeline = function(deps) {
     try {
       if (typeof _pulsePipelineWatchdog === 'function') _pulsePipelineWatchdog(waiter.owner || null);
     } catch (_) {}
-    waiter.pulseTimer = setTimeout(function () {
+    waiter.pulseTimer = _gateTimeout(function () {
       waiter.pulseTimer = null;
       _pulseQueuedGeminiWaiter(waiter);
     }, _GEMINI_QUEUE_PULSE_MS);
@@ -7256,7 +7407,7 @@ var createDocPipeline = function(deps) {
     var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
     if (_geminiCooldownUntil > now) {
       if (!_geminiCooldownTimer) {
-        _geminiCooldownTimer = setTimeout(function() { _geminiCooldownTimer = null; _geminiPump(); }, (_geminiCooldownUntil - now) + 15);
+        _geminiCooldownTimer = _gateTimeout(function() { _geminiCooldownTimer = null; _geminiPump(); }, (_geminiCooldownUntil - now) + 15);
       }
       return;
     }
@@ -7267,7 +7418,7 @@ var createDocPipeline = function(deps) {
       _geminiRecentStarts = _geminiRecentStarts.filter(function (at) { return at > now - _geminiRateWindowMs; });
       if (_geminiRecentStarts.length >= _geminiRateMaxStarts) {
         var _rateWaitMs = Math.max(1, (_geminiRecentStarts[0] + _geminiRateWindowMs) - now);
-        if (!_geminiRateTimer) _geminiRateTimer = setTimeout(function () { _geminiRateTimer = null; _geminiPump(); }, _rateWaitMs + 15);
+        if (!_geminiRateTimer) _geminiRateTimer = _gateTimeout(function () { _geminiRateTimer = null; _geminiPump(); }, _rateWaitMs + 15);
         return;
       }
     }
@@ -7285,7 +7436,7 @@ var createDocPipeline = function(deps) {
       if (_geminiStaggerMs > 0 && _geminiLastStartAt > 0) {
         var _sinceLast = now - _geminiLastStartAt;
         if (_sinceLast < _geminiStaggerMs) {
-          if (!_geminiStaggerTimer) _geminiStaggerTimer = setTimeout(function () { _geminiStaggerTimer = null; _geminiPump(); }, (_geminiStaggerMs - _sinceLast) + 5);
+          if (!_geminiStaggerTimer) _geminiStaggerTimer = _gateTimeout(function () { _geminiStaggerTimer = null; _geminiPump(); }, (_geminiStaggerMs - _sinceLast) + 5);
           break;
         }
       }
@@ -7295,13 +7446,13 @@ var createDocPipeline = function(deps) {
       (_geminiWaiters.shift()).resolve();
       if (_geminiRateWindowMs > 0 && _geminiRecentStarts.length >= _geminiRateMaxStarts && _geminiWaiters.length) {
         var _nextRateSlotMs = Math.max(1, (_geminiRecentStarts[0] + _geminiRateWindowMs) - now);
-        if (!_geminiRateTimer) _geminiRateTimer = setTimeout(function () { _geminiRateTimer = null; _geminiPump(); }, _nextRateSlotMs + 15);
+        if (!_geminiRateTimer) _geminiRateTimer = _gateTimeout(function () { _geminiRateTimer = null; _geminiPump(); }, _nextRateSlotMs + 15);
         break;
       }
       // If another call could start now (spare slot + queue), still hold it for the next gap rather than
       // firing back-to-back — schedule the next pump one staggerMs out.
       if (_geminiStaggerMs > 0 && _geminiInFlight < _geminiCap && _geminiWaiters.length) {
-        if (!_geminiStaggerTimer) _geminiStaggerTimer = setTimeout(function () { _geminiStaggerTimer = null; _geminiPump(); }, _geminiStaggerMs);
+        if (!_geminiStaggerTimer) _geminiStaggerTimer = _gateTimeout(function () { _geminiStaggerTimer = null; _geminiPump(); }, _geminiStaggerMs);
         break;
       }
     }
@@ -7320,7 +7471,7 @@ var createDocPipeline = function(deps) {
       var settle = function (fn, value) {
         if (waiter.settled) return;
         waiter.settled = true;
-        if (waiter.pulseTimer) { clearTimeout(waiter.pulseTimer); waiter.pulseTimer = null; }
+        if (waiter.pulseTimer) { _gateClearTimer(waiter.pulseTimer); waiter.pulseTimer = null; }
         try {
           if (waiter.signal && waiter.abortHandler && typeof waiter.signal.removeEventListener === 'function') {
             waiter.signal.removeEventListener('abort', waiter.abortHandler);
@@ -7365,6 +7516,29 @@ var createDocPipeline = function(deps) {
       return _result;
     });
   };
+  var _geminiRetryAfterMsFromError = function (err) {
+    var sec = null;
+    if (err && err.retryAfterSec != null && Number.isFinite(Number(err.retryAfterSec))) sec = Number(err.retryAfterSec);
+    if (sec == null && err && err.classification && err.classification.retryAfterSec != null) sec = Number(err.classification.retryAfterSec);
+    if (sec == null) return 0;
+    return Math.max(0, Math.min(_GEMINI_RETRY_AFTER_CAP_MS, Math.round(sec * 1000)));
+  };
+  var _geminiApplyRetryAfter = function (err, owner) {
+    var ms = _geminiRetryAfterMsFromError(err);
+    if (!(ms > 0)) return 0;
+    var now = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+    var until = now + ms;
+    if (until <= _geminiCooldownUntil) return 0; // an active, longer brake already covers it
+    var extraMs = until - Math.max(now, _geminiCooldownUntil);
+    _geminiCooldownUntil = until;
+    _geminiRetryAfterUntil = until;
+    _geminiLastRetryAfterMs = ms;
+    _throttleRetryAfterApplied++;
+    _throttleCooldownMsTotal += extraMs;
+    _pipeThrottleEvent('retry_after', { retryAfterMs: ms, cooldownMs: extraMs, httpStatus: (err && err.httpStatus != null) ? Number(err.httpStatus) || 0 : 0 }, owner);
+    warnLog('[GeminiGate] Service sent Retry-After ' + Math.round(ms / 1000) + 's — honouring it before the next call starts.');
+    return ms;
+  };
   var _geminiNoteAuthFail = function(stats, owner) {
     _geminiOkStreak = 0;
     _geminiAuthStreak++;
@@ -7377,7 +7551,7 @@ var createDocPipeline = function(deps) {
       var _capBefore = _geminiCap;
       _geminiCap = _GEMINI_STORM_MIN;
       _geminiLastStormTripAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); // L7 (2026-07-26): a REDUCED CAP alone is not a throttle claim — only a recent trip is
-      _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
+      _geminiCooldownUntil = Math.max(_geminiCooldownUntil, ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd);
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
       _throttleCooldownMsTotal += _cd;
@@ -7408,7 +7582,7 @@ var createDocPipeline = function(deps) {
       var _capBefore = _geminiCap;
       _geminiCap = _GEMINI_STORM_MIN;
       _geminiLastStormTripAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0); // L7 (2026-07-26): a REDUCED CAP alone is not a throttle claim — only a recent trip is
-      _geminiCooldownUntil = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd;
+      _geminiCooldownUntil = Math.max(_geminiCooldownUntil, ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) + _cd);
       var _stats = stats || _pipelineStats;
       _stats.authThrottles = (_stats.authThrottles || 0) + 1;
       _throttleCooldownMsTotal += _cd;
@@ -7526,6 +7700,10 @@ var createDocPipeline = function(deps) {
     _throttleHiddenMs = 0;
     _throttleHiddenDecisions = 0;
     _throttleCooldownMsTotal = 0;
+    _throttleRetryAfterApplied = 0;
+    _geminiLastRetryAfterMs = 0;
+    _geminiRetryAfterUntil = 0;
+    _stormBudgetAnnounced = false;
     _throttleHiddenSince = _throttleTabHidden() ? _throttleRunStartedAt : 0;
     _geminiCap = _GEMINI_MAX_CONCURRENT;
     _geminiAuthStreak = 0;
@@ -7544,17 +7722,17 @@ var createDocPipeline = function(deps) {
     _geminiRepeatFailures = Object.create(null);
     _geminiLastResponseBytes = { text: 0, vision: 0 };
     _geminiOffRouteOkStreak = 0;
-    if (_geminiCooldownTimer) { try { clearTimeout(_geminiCooldownTimer); } catch (_) {} _geminiCooldownTimer = null; }
+    if (_geminiCooldownTimer) { _gateClearTimer(_geminiCooldownTimer); _geminiCooldownTimer = null; }
     // Pacing is per-run too — clear any heavy-doc stagger from the previous document; the current run re-applies
     // it via _applyGeminiPacing once it knows whether THIS doc is heavy/scanned.
     _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
     _geminiStaggerMs = 0;
     _geminiLastStartAt = 0;
-    if (_geminiStaggerTimer) { try { clearTimeout(_geminiStaggerTimer); } catch (_) {} _geminiStaggerTimer = null; }
+    if (_geminiStaggerTimer) { _gateClearTimer(_geminiStaggerTimer); _geminiStaggerTimer = null; }
     _geminiRateWindowMs = 0;
     _geminiRateMaxStarts = 0;
     _geminiRecentStarts = [];
-    if (_geminiRateTimer) { try { clearTimeout(_geminiRateTimer); } catch (_) {} _geminiRateTimer = null; }
+    if (_geminiRateTimer) { _gateClearTimer(_geminiRateTimer); _geminiRateTimer = null; }
     if (_usesLocalTextBackend()) {
       _geminiEffectiveMax = 1;
       _geminiCap = 1;
@@ -7582,7 +7760,7 @@ var createDocPipeline = function(deps) {
       _geminiRateWindowMs = 0;
       _geminiRateMaxStarts = 0;
       _geminiRecentStarts = [];
-      if (_geminiRateTimer) { try { clearTimeout(_geminiRateTimer); } catch (_) {} _geminiRateTimer = null; }
+      if (_geminiRateTimer) { _gateClearTimer(_geminiRateTimer); _geminiRateTimer = null; }
       if (heavy) warnLog('[GeminiGate] Pacing skipped: host transport profile (' + _htpPacing.kind + ') declares no provider quota to protect.');
       try { _geminiPump(); } catch (_) {}
       return;
@@ -7602,7 +7780,7 @@ var createDocPipeline = function(deps) {
       _geminiRateWindowMs = 0;
       _geminiRateMaxStarts = 0;
       _geminiRecentStarts = [];
-      if (_geminiRateTimer) { try { clearTimeout(_geminiRateTimer); } catch (_) {} _geminiRateTimer = null; }
+      if (_geminiRateTimer) { _gateClearTimer(_geminiRateTimer); _geminiRateTimer = null; }
     }
     // M4 (deep dive 2026-07-09): the LOCAL text backend is pinned SERIAL at run reset (two concurrent
     // long-context calls create exactly the queue pressure — timeouts/OOM — that gets misread as a
@@ -7634,6 +7812,7 @@ var createDocPipeline = function(deps) {
       cooldownRemainingMs: cooldownRemainingMs,
       authStreak: _geminiAuthStreak,
       transientStreak: _geminiTransientStreak,
+      lastRetryAfterMs: _geminiLastRetryAfterMs,
       capped: _geminiCap < _geminiEffectiveMax,
       storming: cooldownRemainingMs > 0
         || (!_staleWave && (_geminiAuthStreak >= _GEMINI_STORM_TRIP || _geminiTransientStreak >= _GEMINI_TRANSIENT_TRIP)),
@@ -7711,11 +7890,14 @@ var createDocPipeline = function(deps) {
       + _targetOutputChars + ' characters of the repeated token "probe".\n\n--- FILLER (ignore) ---\n'
       + _geminiProbeFiller.slice(0, _targetChars);
   };
+  var _geminiMinimalProbePrompt = function () {
+    return 'Connectivity check for a rate-limited account. Reply with the single word OK.';
+  };
   var _geminiProbe = function (opts) {
     var o = opts || {};
     if (typeof _rawCallGemini !== 'function') return Promise.resolve(false);
     var _sig = o.signal || ((typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null);
-    var _prompt = _geminiProbePrompt(o.promptChars, o.responseChars);
+    var _prompt = o.minimal ? _geminiMinimalProbePrompt() : _geminiProbePrompt(o.promptChars, o.responseChars);
     var _timeoutMs = Math.max(1, Math.min(180000, Number(o.timeoutMs) || 180000));
     // L6 (audit 2026-07-26): probe traffic goes straight to _rawCallGemini, so it bypassed
     // callGemini's accounting entirely — its calls, its payload and its latency appeared in no run
@@ -7820,16 +8002,39 @@ var createDocPipeline = function(deps) {
         var finish = function () {
           if (done) return;
           done = true;
-          if (timer) clearTimeout(timer);
+          if (timer) { if (typeof _alloHiddenSafeClear === 'function') _alloHiddenSafeClear(timer); else clearTimeout(timer); }
           try { if (o.signal && typeof o.signal.removeEventListener === 'function') o.signal.removeEventListener('abort', finish); } catch (_) {}
           resolveSleep();
         };
         if (o.signal && o.signal.aborted) { finish(); return; }
-        timer = setTimeout(finish, Math.max(0, Number(ms) || 0));
+        timer = (typeof _alloHiddenSafeTimeout === 'function')
+          ? _alloHiddenSafeTimeout(finish, Math.max(0, Number(ms) || 0))
+          : setTimeout(finish, Math.max(0, Number(ms) || 0));
         try { if (o.signal && typeof o.signal.addEventListener === 'function') o.signal.addEventListener('abort', finish, { once: true }); } catch (_) {}
       });
     };
     var t0 = _now();
+    // Retry-After-aware bound (2026-09-02): a server-directed wait can be longer than this call's
+    // bound (up to the 300s cap). Proceeding "anyway" at the bound would fire into a wall the server
+    // explicitly described, so the bound stretches to cover an active Retry-After brake, once.
+    var _retryAfterExtensionMs = function () {
+      var base = t0 + maxWaitMs;
+      if (!(_geminiRetryAfterUntil > base) || _geminiCooldownUntil !== _geminiRetryAfterUntil) return 0;
+      return Math.min(_GEMINI_RETRY_AFTER_CAP_MS, (_geminiRetryAfterUntil - base) + 1000);
+    };
+    var _waitDeadline = function () { return t0 + maxWaitMs + _retryAfterExtensionMs(); };
+    // Storm budget: when the run has spent its waiting allowance, stop waiting and report it so the
+    // caller pauses at the last verified version (the same path a bounded wait already takes).
+    var _budgetStop = function () {
+      var b = _geminiStormBudget();
+      if (!b.exhausted) return null;
+      if (!_stormBudgetAnnounced) {
+        _stormBudgetAnnounced = true;
+        _pipeThrottleEvent('storm_budget_exhausted', { budgetMs: b.budgetMs, spentMs: b.spentMs }, o.owner || null);
+        _pipeLog('Throttle', 'Rate-limit waiting budget reached (' + Math.round(b.spentMs / 60000) + ' of ' + Math.round(b.budgetMs / 60000) + ' min). Pausing the AI passes at the last verified version instead of waiting longer; Resume AI remediation continues with a fresh budget.', null, o.owner || null);
+      }
+      return { calm: false, waitedMs: _now() - t0, budgetExhausted: true, reason: 'storm-budget' };
+    };
     var probed = false;
     var _probeOkStreak = 0;
     var _probeFailStreak = 0;
@@ -7845,14 +8050,16 @@ var createDocPipeline = function(deps) {
     var inf0 = _geminiThrottleInfo();
     if (_aborted()) return { calm: false, waitedMs: 0, aborted: true };
     if (!inf0.storming) { var _c0 = { calm: true, waitedMs: 0 }; return _c0; }
+    var _b0 = _budgetStop(); if (_b0) return _b0;
     warnLog('[GeminiGate] wait-not-stop: storm active (cooldown ' + Math.round(inf0.cooldownRemainingMs / 1000) + 's, auth streak ' + inf0.authStreak + ', transient streak ' + inf0.transientStreak + ') — waiting for calm instead of firing into it (bounded at ' + Math.round(maxWaitMs / 1000) + 's; nothing is skipped)');
-    while (_now() - t0 < maxWaitMs) {
+    while (_now() < _waitDeadline()) {
       if (_aborted()) { var _cAb = { calm: false, waitedMs: _now() - t0, aborted: true }; warnLog('[GeminiGate] wait-not-stop: caller aborted after ' + Math.round(_cAb.waitedMs / 1000) + 's — exiting the wait immediately'); return _cAb; }
+      var _bL = _budgetStop(); if (_bL) return _bL;
       _pulsePipelineWatchdog(o.owner || null); // waiting IS pipeline activity — keep the idle watchdog fed
       var inf = _geminiThrottleInfo();
       if (inf.cooldownRemainingMs > 0) {
         _tick(false);
-        await _sleep(Math.min(inf.cooldownRemainingMs + 250, 1000, Math.max(0, maxWaitMs - (_now() - t0))));
+        await _sleep(Math.min(inf.cooldownRemainingMs + 250, 1000, Math.max(0, _waitDeadline() - _now())));
         continue;
       }
       if (!inf.storming) {
@@ -7882,9 +8089,14 @@ var createDocPipeline = function(deps) {
       probed = true;
       var _probeOk = false;
       try {
+        // An auth wall (401 streak, no empty-body streak) is account-level: it clears with time, not
+        // with payload shape, and the proxy holds every request ~60s. A 24KB representative probe
+        // learns nothing a 40-byte one would not there; volume-shaped storms keep the big probe.
+        var _authWall = _geminiAuthStreak >= _GEMINI_STORM_TRIP && _geminiTransientStreak < _GEMINI_TRANSIENT_TRIP;
         _probeOk = await _geminiProbe({
           signal: o.signal || null,
           owner: o.owner || null,
+          minimal: _authWall,
           promptChars: _geminiLastFailureProfile && _geminiLastFailureProfile.promptChars,
           responseChars: _geminiLastFailureProfile && _geminiLastFailureProfile.responseChars,
           timeoutMs: Math.min(180000, Math.max(1, maxWaitMs - (_now() - t0))),
@@ -7924,7 +8136,7 @@ var createDocPipeline = function(deps) {
       }
     }
     var _cTO = { calm: false, waitedMs: _now() - t0, timedOut: true };
-    warnLog('[GeminiGate] wait-not-stop: still stormy after the ' + Math.round(maxWaitMs / 1000) + 's bound — proceeding anyway (the run continues slower rather than stopping)');
+    warnLog('[GeminiGate] wait-not-stop: still stormy after the ' + Math.round((_waitDeadline() - t0) / 1000) + 's bound — proceeding anyway (the run continues slower rather than stopping)');
     return _cTO;
   };
   // Pulse the dead-man watchdog (reset its 8-min idle timer): a RETRY / throttle cooldown IS pipeline
@@ -8088,6 +8300,12 @@ var createDocPipeline = function(deps) {
         bits.push('http ' + err.httpStatus);
         if (err.retryAfterSec != null) bits.push('retry-after ' + err.retryAfterSec + 's');
       }
+      if (ledger) {
+        if (ledger.finishReason && ledger.finishReason !== 'STOP') bits.push('finish ' + ledger.finishReason);
+        if (ledger.blockReason) bits.push('blocked ' + ledger.blockReason);
+        if (ledger.bodyBytes != null) bits.push('body ' + ledger.bodyBytes + 'B');
+        if (ledger.malformedBody) bits.push('malformed-json');
+      }
       return bits.length ? ' [' + bits.join('; ') + ']' : '';
     } catch (_) { return ''; }
   };
@@ -8180,6 +8398,9 @@ var createDocPipeline = function(deps) {
           var _burst = _perm && _isBurstQuotaErr(err);
           if (_burst) { _perm = false; _canvasAuth = true; }
           if (_perm) return; // real auth/quota/config: permanent, and never fed the breaker
+          // Server-directed backoff outranks the streak heuristics; apply it before any repeat-offender
+          // suppression, since a suppressed signature's 429 still describes the whole account's window.
+          _geminiApplyRetryAfter(err, owner);
           if (_canvasAuth) {
             if (_logicalAuthFailureNoted) return;
             _logicalAuthFailureNoted = true;
@@ -8311,7 +8532,7 @@ var createDocPipeline = function(deps) {
           warnLog('[Retry] ' + (label || 'API call') + ' ' + _throttleKind + ' — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
           _callStats.retries++; _callStats.transportRetries = (_callStats.transportRetries || 0) + 1; // #15: count the ATTEMPT, here where it happens
           _pulsePipelineWatchdog(owner); // a retry is activity — keep the dead-man watchdog from clearing a throttled-but-alive run (fix A)
-          return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
+          return new Promise(function(r) { (typeof _alloHiddenSafeTimeout === 'function') ? _alloHiddenSafeTimeout(r, _backoff) : setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
         }
         // Count EVERY failed transport immediately, including the first attempt. Previously a
         // 3-call wave could launch three retries before the breaker saw even one failure.
@@ -8439,6 +8660,23 @@ var createDocPipeline = function(deps) {
       onInnerRetry: function () {
         var ledger = _requestProfile.ledger;
         if (ledger) ledger.innerRetries = (ledger.innerRetries || 0) + 1;
+      },
+      // Response metadata (2026-09-02): the 08-14 field log could not tell an empty body from a short
+      // one, nor a content filter that stalls from a generation that ran out of tokens, because the
+      // ledger recorded bytes only after the call settled and never the model's own finish reason.
+      // Numbers and enums only; never response text.
+      onResponseMeta: function (info) {
+        var ledger = _requestProfile.ledger;
+        if (!ledger || !info) return;
+        try {
+          if (info.finishReason != null) ledger.finishReason = String(info.finishReason).slice(0, 40);
+          if (info.blockReason != null) ledger.blockReason = String(info.blockReason).slice(0, 40);
+          if (info.bodyBytes != null) ledger.bodyBytes = Math.max(0, Number(info.bodyBytes) || 0);
+          if (info.promptTokens != null) ledger.promptTokens = Math.max(0, Number(info.promptTokens) || 0);
+          if (info.outputTokens != null) ledger.outputTokens = Math.max(0, Number(info.outputTokens) || 0);
+          if (info.candidateCount != null) ledger.candidateCount = Math.max(0, Number(info.candidateCount) || 0);
+          if (info.malformed) ledger.malformedBody = 1;
+        } catch (_) {}
       },
       onInnerError: function (info) {
         var ledger = _requestProfile.ledger;
@@ -8613,6 +8851,23 @@ var createDocPipeline = function(deps) {
       onInnerRetry: function () {
         var ledger = _requestProfile.ledger;
         if (ledger) ledger.innerRetries = (ledger.innerRetries || 0) + 1;
+      },
+      // Response metadata (2026-09-02): the 08-14 field log could not tell an empty body from a short
+      // one, nor a content filter that stalls from a generation that ran out of tokens, because the
+      // ledger recorded bytes only after the call settled and never the model's own finish reason.
+      // Numbers and enums only; never response text.
+      onResponseMeta: function (info) {
+        var ledger = _requestProfile.ledger;
+        if (!ledger || !info) return;
+        try {
+          if (info.finishReason != null) ledger.finishReason = String(info.finishReason).slice(0, 40);
+          if (info.blockReason != null) ledger.blockReason = String(info.blockReason).slice(0, 40);
+          if (info.bodyBytes != null) ledger.bodyBytes = Math.max(0, Number(info.bodyBytes) || 0);
+          if (info.promptTokens != null) ledger.promptTokens = Math.max(0, Number(info.promptTokens) || 0);
+          if (info.outputTokens != null) ledger.outputTokens = Math.max(0, Number(info.outputTokens) || 0);
+          if (info.candidateCount != null) ledger.candidateCount = Math.max(0, Number(info.candidateCount) || 0);
+          if (info.malformed) ledger.malformedBody = 1;
+        } catch (_) {}
       },
       onInnerError: function (info) {
         var ledger = _requestProfile.ledger;
@@ -24135,6 +24390,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       let bestEaReviewFindings = equalAccessResults ? _alloEqualAccessReviewCount(equalAccessResults) : null;
       let _lastFullCoverageAiScore = _initialAiUsable ? bestAiScore : null;
       let _throttlePaused = false;
+      let _stormBudgetPaused = false;
       // Adopt a human edit as the new baseline. The critical part is resetting the KEEP-BEST
       // lineage: bestHtml is some earlier pass's output, which by definition does not contain the
       // person's change, so promoting it at the end of the run would silently revert a deliberate
@@ -24247,6 +24503,15 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // state ships whatever the completed passes earned instead of the wall discarding everything.
           if (loopCtx.perFileDeadlineTs && Date.now() > loopCtx.perFileDeadlineTs - 90000) {
             warnLog('[Auto-fix] Per-file time budget nearly exhausted (batch wall) — ending the fix loop after ' + fixPass + ' pass(es) to finish and ship the best result inside the wall.');
+            break;
+          }
+          // Storm budget (2026-09-02): the run has spent its rate-limit waiting allowance. Pause at the
+          // verified checkpoint through the existing throttle-pause path (banner + Resume) rather than
+          // grinding on; Resume resets the budget and continues from here.
+          if (fixPass > 0 && _geminiStormBudget().exhausted) {
+            _throttlePaused = true;
+            _stormBudgetPaused = true;
+            warnLog('[Auto-fix] Rate-limit waiting budget reached after ' + fixPass + ' pass(es) — pausing the AI passes at the verified checkpoint.');
             break;
           }
           // M8 (deep dive 2026-07-09): a superseded run (watchdog fired / teacher started a new doc)
@@ -24721,7 +24986,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         axeResults = bestAxeAudit;
         equalAccessResults = bestEqualAccessAudit;
       }
-    return { accessibleHtml, verification, axeResults, equalAccessResults, autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures, lastFullCoverageAiScore: _lastFullCoverageAiScore, throttlePaused: _throttlePaused, humanEditsAdopted: _humanEditsAdopted };
+    return { stormBudgetPaused: _stormBudgetPaused, accessibleHtml, verification, axeResults, equalAccessResults, autoFixPasses, bestAiScore, bestAxeViolations, bestEaFailures, lastFullCoverageAiScore: _lastFullCoverageAiScore, throttlePaused: _throttlePaused, humanEditsAdopted: _humanEditsAdopted };
   };
 
   // ── S2 phase extraction (deep dive 2026-07-02, wave 3): Step 1b image extraction ──
@@ -28947,7 +29212,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       if (_remediationThrottlePaused) {
         _finalAuditThrottled = true;
         _finalAuditThrottleDeferred = true;
-        _finalAuditIncompleteReason = 'remediation-paused-transient-throttle';
+        _finalAuditIncompleteReason = (_loopOut && _loopOut.stormBudgetPaused) ? 'remediation-paused-storm-budget' : 'remediation-paused-transient-throttle';
         warnLog('[PDF Fix] Final AI audit deferred because remediation paused on a temporary provider throttle; deterministic evidence remains available and AI verification can resume later.');
       } else try {
         // Full chunked audit for accurate final scoring
@@ -40692,18 +40957,39 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           };
           const listHtml = (items) => (Array.isArray(items) ? items : []).filter(Boolean)
               .map(value => '<li style="margin-bottom:4px;">' + escapeHtml(value) + '</li>').join('');
-          const typeLabels = {
-              'acronym-acrostic': 'Acronym or acrostic', 'rhyme-rhythm': 'Rhyme or rhythm',
-              chunking: 'Chunking', 'story-chain': 'Story chain',
-              'keyword-association': 'Keyword association', 'visual-association': 'Visual association',
-              'analogy-pattern': 'Analogy or pattern', 'sequence-cue': 'Sequence cue'
+          // Labels come from the shared "memory_aid" namespace (same keys as the
+          // live view); a missing pack entry falls back to English.
+          const _maT = (key, fallback, params) => {
+              const fullKey = 'memory_aid.' + key;
+              let text = '';
+              try {
+                  const value = typeof t === 'function' ? t(fullKey, params) : '';
+                  if (typeof value === 'string' && value && value !== fullKey) text = value;
+              } catch (_) {}
+              if (!text) text = String(fallback == null ? '' : fallback);
+              if (params && typeof params === 'object') Object.keys(params).forEach(name => { text = text.split('{' + name + '}').join(String(params[name] == null ? '' : params[name])); });
+              return text;
           };
-          const modeLabels = { generated: 'AI example', scaffolded: 'Build with support', 'student-authored': 'Student-authored' };
+          const typeLabels = {
+              'acronym-acrostic': _maT('type_acronym_acrostic_label', 'Acronym or acrostic'),
+              'rhyme-rhythm': _maT('type_rhyme_rhythm_label', 'Rhyme or rhythm'),
+              chunking: _maT('type_chunking_label', 'Chunking'),
+              'story-chain': _maT('type_story_chain_label', 'Story chain'),
+              'keyword-association': _maT('type_keyword_association_label', 'Keyword association'),
+              'visual-association': _maT('type_visual_association_label', 'Visual association'),
+              'analogy-pattern': _maT('type_analogy_pattern_label', 'Analogy or pattern'),
+              'sequence-cue': _maT('type_sequence_cue_label', 'Sequence cue'),
+          };
+          const modeLabels = {
+              generated: _maT('mode_generated_compact', 'AI example'),
+              scaffolded: _maT('mode_scaffolded_compact', 'Scaffolded'),
+              'student-authored': _maT('mode_student_authored_compact', 'Student-authored'),
+          };
           const visualSourceLabels = {
-              'ai-generated': 'AI-generated visual',
-              'ai-refined': 'AI-refined visual',
-              uploaded: 'Uploaded visual',
-              legacy: 'Imported or earlier visual'
+              'ai-generated': _maT('visual_source_ai_generated_label', 'AI-generated visual'),
+              'ai-refined': _maT('visual_source_ai_refined_label', 'AI-refined visual'),
+              uploaded: _maT('visual_source_uploaded_label', 'Uploaded visual'),
+              legacy: _maT('visual_source_legacy_label', 'Imported or earlier visual'),
           };
           // The live Memory Aid retrieval loop hides checked facts and creation
           // supports until the learner has committed a recall response. Preserve
@@ -40714,25 +41000,39 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // those records contain learner responses, checks, and timestamps and
           // are private live-session evidence rather than worksheet content.
           const recallWorksheet = isWorksheet && !isTeacher;
-          const specificVisualAlt = (value) => {
-              const description = String(value == null ? '' : value).trim().slice(0, 800);
-              return !!description && !/^visual memory cue for\s/i.test(description);
-          };
+          // ONE derivation: the Memory Aid module owns the fact-verification,
+          // alt-text specificity, image, and cue rules (exportRules). Read them
+          // at export time. If the module is not loaded, fail SAFE: treat facts
+          // as unverified and visuals as lacking an accessible description,
+          // rather than re-deriving the rules here (the hand copies drifted).
+          const _maRules = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid
+              && window.AlloModules.MemoryAid.exportRules) || null;
+          if (!_maRules && typeof warnLog === 'function') warnLog('[Export] Memory Aid module rules unavailable; exporting with fail-safe (unverified) verdicts.');
+          const normalizeImage = _maRules && typeof _maRules.normalizeImage === 'function' ? _maRules.normalizeImage : safeDataImage;
+          const cardVerified = (card) => !!(_maRules && typeof _maRules.isCardVerified === 'function' && _maRules.isCardVerified(card));
+          const specificVisualAlt = (value) => !!(_maRules && typeof _maRules.isSpecificVisualAlt === 'function' && _maRules.isSpecificVisualAlt(value));
+          const placeholderAlt = (card) => (_maRules && typeof _maRules.placeholderVisualAlt === 'function'
+              ? _maRules.placeholderVisualAlt(card)
+              : 'Unreviewed visual cue for ' + (String((card && card.target) || '').replace(/\s+/g, ' ').trim().slice(0, 300) || 'this memory target') + '. A specific description of visible details is still needed.');
+          const practiceCue = (card) => (_maRules && typeof _maRules.practiceCue === 'function'
+              ? _maRules.practiceCue(card)
+              : String((card && (card.studentDraft || card.aiExample || card.example || card.scaffoldStarter)) || '').trim().slice(0, 6000));
+          const responseKeyBase = String(item.id == null ? 'memory-aid' : item.id).replace(/[^A-Za-z0-9_:-]/g, '-').slice(0, 120);
           const cardsHtml = cards.map((card, index) => {
               const c = card && typeof card === 'object' ? card : {};
-              const factsVerified = c.factVerified === true;
-              const visualImage = safeDataImage(c.visualImage || c.imageUrl);
-              const visualAlt = String(c.visualAlt || ('Visual memory cue for ' + (c.target || 'this memory target'))).trim().slice(0, 800);
+              const factsVerified = cardVerified(c);
+              const visualImage = normalizeImage(c.visualImage || c.imageUrl);
+              const visualAlt = String(c.visualAlt == null ? '' : c.visualAlt).trim().slice(0, 800) || placeholderAlt(c);
               const visualSource = visualImage && Object.prototype.hasOwnProperty.call(visualSourceLabels, c.visualSource)
                   ? c.visualSource
                   : 'legacy';
               const visualReview = c.visualReview && typeof c.visualReview === 'object' ? c.visualReview : {};
               const visualReviewStatus = ['approved', 'needs-revision'].includes(visualReview.status) ? visualReview.status : 'unreviewed';
-              const visualReviewLabel = visualReviewStatus === 'approved'
+              const visualReviewLabel = _maT('visual_review_' + visualReviewStatus.replace(/-/g, '_') + '_label', visualReviewStatus === 'approved'
                   ? 'Teacher approved'
                   : visualReviewStatus === 'needs-revision'
                     ? 'Teacher requested revision'
-                    : 'Not yet teacher-reviewed';
+                    : 'Not yet teacher-reviewed');
               const visualReviewColors = visualReviewStatus === 'approved'
                   ? 'border-color:#6ee7b7;background:#ecfdf5;color:#065f46;'
                   : visualReviewStatus === 'needs-revision'
@@ -40740,34 +41040,34 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     : 'border-color:#cbd5e1;background:#f8fafc;color:#334155;';
               const visualReviewHtml = visualImage
                   ? '<div style="margin-top:8px;padding:8px 10px;border:1px solid;border-radius:6px;' + visualReviewColors + '"><strong>' + visualReviewLabel + '</strong>'
-                    + (visualReview.note ? '<div style="margin-top:4px;white-space:pre-wrap;"><strong>' + (visualReviewStatus === 'unreviewed' ? 'Teacher note retained for revision:' : 'Teacher note:') + '</strong> ' + escapeHtml(String(visualReview.note).slice(0, 1000)) + '</div>' : '') + '</div>'
+                    + (visualReview.note ? '<div style="margin-top:4px;white-space:pre-wrap;"><strong>' + (visualReviewStatus === 'unreviewed' ? _maT('visual_teacher_note_retained', 'Teacher note retained for revision:') : _maT('visual_teacher_note', 'Teacher note:')) + '</strong> ' + escapeHtml(String(visualReview.note).slice(0, 1000)) + '</div>' : '') + '</div>'
                   : '';
               const visualCheck = c.visualCheck && typeof c.visualCheck === 'object' ? c.visualCheck : null;
               const visualCheckAlignment = visualCheck && ['supports', 'mixed', 'unclear'].includes(visualCheck.alignment)
                   ? visualCheck.alignment
                   : 'unclear';
               const visualCheckLabel = visualCheckAlignment === 'supports'
-                  ? 'Supports the intended cue'
+                  ? _maT('visual_alignment_supports', 'Supports the intended cue')
                   : visualCheckAlignment === 'mixed'
-                    ? 'Mixed or partial support'
-                    : 'Unclear from the image';
+                    ? _maT('visual_alignment_mixed', 'Mixed or partial support')
+                    : _maT('visual_alignment_unclear', 'Unclear from the image');
               const visualCheckHtml = visualImage && visualCheck
-                  ? '<section style="margin-top:8px;padding:10px;border:1px solid #a5f3fc;border-radius:6px;background:#ecfeff;color:#164e63;break-inside:avoid;"><h4 style="margin:0 0 4px;">AI visual check <span style="font-weight:normal;">(advisory)</span></h4>'
-                    + '<p style="margin:4px 0;"><strong>Alignment:</strong> ' + visualCheckLabel + '</p>'
-                    + '<p style="margin:4px 0;"><strong>Visible strength:</strong> ' + escapeHtml(String(visualCheck.strength || '').slice(0, 1000)) + '</p>'
-                    + '<p style="margin:4px 0;"><strong>Possible concern:</strong> ' + escapeHtml(String(visualCheck.concern || '').slice(0, 1000)) + '</p>'
-                    + '<p style="margin:4px 0;"><strong>Suggested change:</strong> ' + escapeHtml(String(visualCheck.suggestedChange || '').slice(0, 1000)) + '</p>'
-                    + '<p style="margin:6px 0 0;font-size:0.8em;">This feedback does not replace teacher approval.</p></section>'
+                  ? '<section style="margin-top:8px;padding:10px;border:1px solid #a5f3fc;border-radius:6px;background:#ecfeff;color:#164e63;break-inside:avoid;"><h4 style="margin:0 0 4px;">' + _maT('visual_check_heading', 'AI visual check') + ' <span style="font-weight:normal;">' + _maT('advisory_paren', '(advisory)') + '</span></h4>'
+                    + '<p style="margin:4px 0;"><strong>' + _maT('export_alignment_label', 'Alignment:') + '</strong> ' + visualCheckLabel + '</p>'
+                    + '<p style="margin:4px 0;"><strong>' + _maT('export_visible_strength_label', 'Visible strength:') + '</strong> ' + escapeHtml(String(visualCheck.strength || '').slice(0, 1000)) + '</p>'
+                    + '<p style="margin:4px 0;"><strong>' + _maT('export_possible_concern_label', 'Possible concern:') + '</strong> ' + escapeHtml(String(visualCheck.concern || '').slice(0, 1000)) + '</p>'
+                    + '<p style="margin:4px 0;"><strong>' + _maT('export_suggested_change_label', 'Suggested change:') + '</strong> ' + escapeHtml(String(visualCheck.suggestedChange || '').slice(0, 1000)) + '</p>'
+                    + '<p style="margin:6px 0 0;font-size:0.8em;">' + _maT('visual_check_disclaimer', 'This feedback does not replace teacher approval.') + '</p></section>'
                   : '';
               const visualHtml = visualImage
                   ? '<figure style="margin:12px 0 0;padding:10px;border:1px solid #f0abfc;border-radius:8px;background:#fdf4ff;break-inside:avoid;">'
-                    + '<h4 style="margin:0 0 8px;color:#701a75;">Optional visual cue</h4>'
+                    + '<h4 style="margin:0 0 8px;color:#701a75;">' + _maT('export_optional_visual_cue', 'Optional visual cue') + '</h4>'
                     + '<img src="' + escapeHtml(visualImage) + '" alt="' + escapeHtml(visualAlt) + '" style="display:block;max-width:100%;max-height:360px;width:auto;height:auto;margin:0 auto;border-radius:6px;object-fit:contain;" />'
-                    + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>Source:</strong> ' + visualSourceLabels[visualSource] + '<br><strong>Image description:</strong> ' + escapeHtml(visualAlt) + '</figcaption></figure>'
+                    + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>' + _maT('export_source_label', 'Source:') + '</strong> ' + visualSourceLabels[visualSource] + '<br><strong>' + _maT('export_image_description_label', 'Image description:') + '</strong> ' + escapeHtml(visualAlt) + '</figcaption></figure>'
                     + visualReviewHtml + visualCheckHtml
                   : '';
               if (recallWorksheet) {
-                  const cue = String(c.studentDraft || c.aiExample || c.example || c.scaffoldStarter || '').trim().slice(0, 6000);
+                  const cue = practiceCue(c);
                   const idBase = ('memory-aid-recall-' + String(item.id || 'resource') + '-' + index)
                       .replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 140);
                   const titleId = idBase + '-title';
@@ -40778,160 +41078,374 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const recallVisualHtml = hasAccessibleVisual
                       ? '<figure style="margin:10px 0 0;padding:10px;border:1px solid #a5f3fc;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
                         + '<img src="' + escapeHtml(visualImage) + '" alt="' + escapeHtml(String(c.visualAlt).trim().slice(0, 800)) + '" style="display:block;max-width:100%;max-height:300px;width:auto;height:auto;margin:0 auto;border-radius:6px;object-fit:contain;" />'
-                        + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>Source:</strong> ' + visualSourceLabels[visualSource] + '<br><strong>Image description:</strong> ' + escapeHtml(String(c.visualAlt).trim().slice(0, 800)) + '</figcaption></figure>'
+                        + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>' + _maT('export_source_label', 'Source:') + '</strong> ' + visualSourceLabels[visualSource] + '<br><strong>' + _maT('export_image_description_label', 'Image description:') + '</strong> ' + escapeHtml(String(c.visualAlt).trim().slice(0, 800)) + '</figcaption></figure>'
                       : visualImage
-                        ? '<p role="note" style="margin:10px 0 0;padding:9px;border:1px solid #fcd34d;border-radius:6px;background:#fffbeb;color:#78350f;font-size:0.88em;"><strong>Visual cue omitted:</strong> A specific image description is needed before this visual can be used in accessible recall practice.</p>'
+                        ? '<p role="note" style="margin:10px 0 0;padding:9px;border:1px solid #fcd34d;border-radius:6px;background:#fffbeb;color:#78350f;font-size:0.88em;"><strong>' + _maT('export_visual_omitted_label', 'Visual cue omitted:') + '</strong> ' + _maT('export_visual_omitted_note', 'A specific image description is needed before this visual can be used in accessible recall practice.') + '</p>'
                         : '';
                   const cueBody = cue
                       ? '<div style="margin-top:7px;white-space:pre-wrap;font-size:1.08em;font-weight:700;line-height:1.55;color:#0f172a;">' + escapeHtml(cue) + '</div>'
                       : hasAccessibleVisual
-                        ? '<p style="margin:7px 0 0;color:#475569;">Use the visual cue and its description.</p>'
-                        : '<p role="note" style="margin:7px 0 0;color:#78350f;font-weight:700;">No accessible recall cue is available yet. Ask your teacher to add one before practicing.</p>';
+                        ? '<p style="margin:7px 0 0;color:#475569;">' + _maT('export_use_visual_cue', 'Use the visual cue and its description.') + '</p>'
+                        : '<p role="note" style="margin:7px 0 0;color:#78350f;font-weight:700;">' + _maT('export_no_accessible_cue', 'No accessible recall cue is available yet. Ask your teacher to add one before practicing.') + '</p>';
                   if (!factsVerified) {
                       return '<article class="memory-aid-authoring-sheet memory-aid-review-pending" style="margin:0 0 18px;padding:16px;border:1px solid #fbbf24;border-radius:10px;background:#fffbeb;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
-                          + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">Authoring only · facts awaiting teacher review</p>'
-                          + '<h3 id="' + titleId + '" style="margin:0;color:#78350f;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
-                          + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;"><strong>Recall practice is unavailable:</strong> These facts have not been marked teacher verified. You may create or revise the cue, but this sheet intentionally omits recall, confidence, and self-check fields until review is complete.</p>'
+                          + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">' + _maT('export_authoring_only_kicker', 'Authoring only · facts awaiting teacher review') + '</p>'
+                          + '<h3 id="' + titleId + '" style="margin:0;color:#78350f;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
+                          + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;"><strong>' + _maT('export_recall_unavailable_label', 'Recall practice is unavailable:') + '</strong> ' + _maT('export_recall_unavailable_note', 'These facts have not been marked teacher verified. You may create or revise the cue, but this sheet intentionally omits recall, confidence, and self-check fields until review is complete.') + '</p>'
                           + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #fcd34d;border-radius:8px;background:#fff;">'
-                          + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">Current cue draft</h4>' + cueBody + recallVisualHtml + '</section>'
+                          + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">' + _maT('export_current_cue_draft', 'Current cue draft') + '</h4>' + cueBody + recallVisualHtml + '</section>'
                           + '<section role="group" aria-labelledby="' + authoringId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
-                          + '<h4 id="' + authoringId + '" style="margin:0;color:#0f172a;">Create or revise your memory cue</h4>'
-                          + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">' + escapeHtml(c.studentPrompt || 'Create or personalize a cue. Your teacher will verify the facts before you use it for recall practice.') + '</p>'
-                          + ruledLines(6, 'Memory cue draft') + '</section></article>';
+                          + '<h4 id="' + authoringId + '" style="margin:0;color:#0f172a;">' + _maT('export_create_or_revise_cue', 'Create or revise your memory cue') + '</h4>'
+                          + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">' + escapeHtml(c.studentPrompt || _maT('export_authoring_prompt_default', 'Create or personalize a cue. Your teacher will verify the facts before you use it for recall practice.')) + '</p>'
+                          + ruledLines(6, _maT('export_memory_cue_draft_lines', 'Memory cue draft')) + '</section></article>';
                   }
                   return '<article class="memory-aid-recall-sheet" style="margin:0 0 18px;padding:16px;border:1px solid #67e8f9;border-radius:10px;background:#f0fdff;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
-                      + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#0e7490;">Recall practice · facts hidden</p>'
-                      + '<h3 id="' + titleId + '" style="margin:0;color:#164e63;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
-                      + '<p style="margin:8px 0 0;color:#334155;">Use only the cue, record what you remember, then ask your teacher for the checked facts. AI does not grade this practice.</p>'
+                      + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#0e7490;">' + _maT('export_recall_kicker', 'Recall practice · facts hidden') + '</p>'
+                      + '<h3 id="' + titleId + '" style="margin:0;color:#164e63;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
+                      + '<p style="margin:8px 0 0;color:#334155;">' + _maT('export_recall_directions', 'Use only the cue, record what you remember, then ask your teacher for the checked facts. AI does not grade this practice.') + '</p>'
                       + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #a5f3fc;border-radius:8px;background:#ecfeff;">'
-                      + '<h4 id="' + cueId + '" style="margin:0;color:#155e75;">Your memory cue</h4>' + cueBody + recallVisualHtml + '</section>'
+                      + '<h4 id="' + cueId + '" style="margin:0;color:#155e75;">' + _maT('practice_your_cue', 'Your memory cue') + '</h4>' + cueBody + recallVisualHtml + '</section>'
                       + '<section role="group" aria-labelledby="' + responseId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
-                      + '<h4 id="' + responseId + '" style="margin:0;color:#0f172a;">What does the cue help you remember?</h4>'
-                      + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">Write everything you can retrieve before seeing the checked facts.</p>'
-                      + ruledLines(6, 'Recall response') + '</section>'
+                      + '<h4 id="' + responseId + '" style="margin:0;color:#0f172a;">' + _maT('practice_recall_question', 'What does the cue help you remember?') + '</h4>'
+                      + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">' + _maT('export_recall_write_note', 'Write everything you can retrieve before seeing the checked facts.') + '</p>'
+                      + ruledLines(6, _maT('export_recall_response_lines', 'Recall response')) + '</section>'
                       + '<fieldset class="alloflow-response-group" style="margin-top:12px;padding:12px;border:1px solid #a5b4fc;border-radius:8px;background:#eef2ff;">'
-                      + '<legend style="padding:0 5px;font-weight:800;color:#3730a3;">How confident do you feel before checking?</legend>'
-                      + '<label class="alloflow-choice-label">' + fillableCircle() + 'Not sure yet</label>'
-                      + '<label class="alloflow-choice-label">' + fillableCircle() + 'Somewhat confident</label>'
-                      + '<label class="alloflow-choice-label">' + fillableCircle() + 'Confident</label>'
+                      + '<legend style="padding:0 5px;font-weight:800;color:#3730a3;">' + _maT('practice_confidence_question', 'How confident do you feel before checking?') + '</legend>'
+                      + '<label class="alloflow-choice-label">' + fillableCircle() + _maT('confidence_not_sure_label', 'Not sure yet') + '</label>'
+                      + '<label class="alloflow-choice-label">' + fillableCircle() + _maT('confidence_somewhat_label', 'Somewhat confident') + '</label>'
+                      + '<label class="alloflow-choice-label">' + fillableCircle() + _maT('confidence_confident_label', 'Confident') + '</label>'
                       + '</fieldset></article>';
               }
               const facts = listHtml(c.essentialFacts || c.facts);
-              const factsHeading = factsVerified ? 'Teacher-verified facts' : 'Facts awaiting teacher review';
+              const factsHeading = factsVerified ? _maT('facts_verified', 'Teacher-verified facts') : _maT('facts_pending', 'Facts awaiting teacher review');
               const factsReviewNote = factsVerified
                   ? ''
-                  : '<p role="note" style="margin:8px 0 0;padding:8px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#78350f;font-weight:700;">Do not use this card for recall practice until a teacher verifies the facts.</p>';
+                  : '<p role="note" style="margin:8px 0 0;padding:8px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#78350f;font-weight:700;">' + _maT('export_do_not_practice_note', 'Do not use this card for recall practice until a teacher verifies the facts.') + '</p>';
               const scaffoldSteps = listHtml(c.scaffoldSteps);
               const coachPrompts = listHtml(c.coachPrompts);
               const modeBlock = c.mode === 'generated' && c.aiExample
-                  ? '<section style="margin-top:12px;padding:12px;border:1px solid #99f6e4;border-radius:8px;background:#f0fdfa;"><h4 style="margin:0 0 6px;color:#115e59;">AI example</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.aiExample) + '</div></section>'
+                  ? '<section style="margin-top:12px;padding:12px;border:1px solid #99f6e4;border-radius:8px;background:#f0fdfa;"><h4 style="margin:0 0 6px;color:#115e59;">' + _maT('ai_example_heading', 'AI example') + '</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.aiExample) + '</div></section>'
                   : c.mode === 'scaffolded'
-                    ? '<section style="margin-top:12px;padding:12px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;"><h4 style="margin:0 0 6px;color:#3730a3;">Build it with support</h4>'
+                    ? '<section style="margin-top:12px;padding:12px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;"><h4 style="margin:0 0 6px;color:#3730a3;">' + _maT('scaffold_heading', 'Build it with support') + '</h4>'
                       + (c.scaffoldStarter ? '<div style="white-space:pre-wrap;font-weight:600;">' + escapeHtml(c.scaffoldStarter) + '</div>' : '')
                       + (scaffoldSteps ? '<ol style="margin:8px 0 0;padding-left:22px;">' + scaffoldSteps + '</ol>' : '') + '</section>'
-                    : '<section style="margin-top:12px;padding:12px;border:1px solid #ddd6fe;border-radius:8px;background:#f5f3ff;"><h4 style="margin:0 0 6px;color:#5b21b6;">Coach questions</h4>'
-                      + (coachPrompts ? '<ul style="margin:0;padding-left:22px;">' + coachPrompts + '</ul>' : '<div>Choose a cue and connect every part to an accurate fact.</div>') + '</section>';
+                    : '<section style="margin-top:12px;padding:12px;border:1px solid #ddd6fe;border-radius:8px;background:#f5f3ff;"><h4 style="margin:0 0 6px;color:#5b21b6;">' + _maT('coach_heading', 'Coach questions') + '</h4>'
+                      + (coachPrompts ? '<ul style="margin:0;padding-left:22px;">' + coachPrompts + '</ul>' : '<div>' + _maT('export_coach_default', 'Choose a cue and connect every part to an accurate fact.') + '</div>') + '</section>';
               const draft = String(c.studentDraft || '').trim();
               const reasoning = String(c.studentReasoning || '').trim();
+              // Downloaded interactive HTML (not the paper worksheet, not the
+              // teacher appendix) gets real fields that autosave like the quiz
+              // and sentence-frame lanes; the saved app draft seeds them.
+              const studentFields = !isWorksheet && !isTeacher;
               const reflectionVisible = d.reflectionLevel !== 'none';
               const feedback = c.feedback && typeof c.feedback === 'object' ? c.feedback : null;
-              const feedbackHtml = feedback ? '<section style="margin-top:12px;padding:12px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;break-inside:avoid;"><h4 style="margin:0 0 8px;color:#065f46;">Feedback for the next revision</h4>'
-                  + '<p style="margin:4px 0;"><strong>A strength:</strong> ' + escapeHtml(feedback.strength) + '</p>'
-                  + '<p style="margin:4px 0;"><strong>Accuracy check:</strong> ' + escapeHtml(feedback.accuracyCheck) + '</p>'
-                  + '<p style="margin:4px 0;"><strong>One next step:</strong> ' + escapeHtml(feedback.nextStep) + '</p>'
-                  + (feedback.question ? '<p style="margin:4px 0;"><strong>Think about:</strong> ' + escapeHtml(feedback.question) + '</p>' : '') + '</section>' : '';
+              const feedbackHtml = feedback ? '<section style="margin-top:12px;padding:12px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;break-inside:avoid;"><h4 style="margin:0 0 8px;color:#065f46;">' + _maT('export_feedback_heading', 'Feedback for the next revision') + '</h4>'
+                  + '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_strength_label', 'A strength:') + '</strong> ' + escapeHtml(feedback.strength) + '</p>'
+                  + '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_accuracy_label', 'Accuracy check:') + '</strong> ' + escapeHtml(feedback.accuracyCheck) + '</p>'
+                  + '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_next_label', 'One next step:') + '</strong> ' + escapeHtml(feedback.nextStep) + '</p>'
+                  + (feedback.question ? '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_think_label', 'Think about:') + '</strong> ' + escapeHtml(feedback.question) + '</p>' : '') + '</section>' : '';
               return '<article style="margin:0 0 18px;padding:16px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
                   + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'
-                  + '<h3 style="margin:0;color:#0f172a;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
-                  + '<div style="font-size:0.78em;color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || 'Memory aid') + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || 'Student-authored') + '</div></div>'
+                  + '<h3 style="margin:0;color:#0f172a;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
+                  + '<div style="font-size:0.78em;color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || _maT('export_memory_aid_fallback', 'Memory aid')) + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || _maT('mode_student_authored_compact', 'Student-authored')) + '</div></div>'
                   + '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">' + factsHeading + '</h4>'
-                  + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>No facts were supplied.</div>') + factsReviewNote + '</section>'
+                  + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>' + _maT('export_no_facts', 'No facts were supplied.') + '</div>') + factsReviewNote + '</section>'
                   + modeBlock
-                  + (c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">How the cue connects</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
+                  + (c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">' + _maT('mapping_heading', 'How the cue connects') + '</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
                   + visualHtml
-                  + '<section style="margin-top:12px;padding:12px;border:2px solid #99f6e4;border-radius:8px;"><h4 style="margin:0 0 5px;color:#115e59;">Create, remix, or personalize your memory aid</h4>'
+                  + '<section style="margin-top:12px;padding:12px;border:2px solid #99f6e4;border-radius:8px;"><h4 style="margin:0 0 5px;color:#115e59;">' + _maT('export_create_remix_heading', 'Create, remix, or personalize your memory aid') + '</h4>'
                   + (c.studentPrompt ? '<p style="margin:0 0 8px;color:#475569;">' + escapeHtml(c.studentPrompt) + '</p>' : '')
-                  + '<div style="min-height:64px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;white-space:pre-wrap;">' + (draft ? escapeHtml(draft) : '&nbsp;') + '</div></section>'
-                  + (reflectionVisible ? '<section style="margin-top:12px;padding:12px;border:1px solid #bae6fd;border-radius:8px;background:#f0f9ff;"><h4 style="margin:0 0 5px;color:#075985;">' + (d.reflectionLevel === 'full' ? 'Explain and revise' : 'Quick connection') + (d.reasoningRequired ? ' (required before feedback)' : ' (optional)') + '</h4>'
+                  + (studentFields
+                      ? '<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="' + escapeHtml(responseKeyBase + ':card' + index + ':draft') + '" aria-label="' + escapeHtml(_maT('export_draft_field_aria', 'Memory aid for {target}', { target: c.target || _maT('this_memory_target', 'this memory target') })) + '" placeholder="' + escapeHtml(_maT('export_draft_field_placeholder', 'Write, remix, or build your memory aid here')) + '" style="min-height:96px;">' + escapeHtml(draft) + '</textarea>'
+                      : '<div style="min-height:64px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;white-space:pre-wrap;">' + (draft ? escapeHtml(draft) : '&nbsp;') + '</div>') + '</section>'
+                  + (reflectionVisible ? '<section style="margin-top:12px;padding:12px;border:1px solid #bae6fd;border-radius:8px;background:#f0f9ff;"><h4 style="margin:0 0 5px;color:#075985;">' + (d.reflectionLevel === 'full' ? _maT('reflection_full_label', 'Explain and revise') : _maT('reflection_quick_label', 'Quick connection')) + (d.reasoningRequired ? _maT('export_required_before_feedback_paren', ' (required before feedback)') : _maT('export_optional_paren', ' (optional)')) + '</h4>'
                     + (c.reasoningPrompt ? '<p style="margin:0 0 8px;color:#334155;">' + escapeHtml(c.reasoningPrompt) + '</p>' : '')
-                    + '<div style="min-height:48px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;white-space:pre-wrap;">' + (reasoning ? escapeHtml(reasoning) : '&nbsp;') + '</div></section>' : '')
+                    + (studentFields
+                        ? '<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="' + escapeHtml(responseKeyBase + ':card' + index + ':reasoning') + '" aria-label="' + escapeHtml(_maT('export_reasoning_field_aria', 'Explanation for {target}', { target: c.target || _maT('this_memory_target', 'this memory target') })) + '" placeholder="' + escapeHtml(_maT('export_reasoning_field_placeholder', 'Explain how your memory aid connects to the facts')) + '" style="min-height:72px;">' + escapeHtml(reasoning) + '</textarea>'
+                        : '<div style="min-height:48px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;white-space:pre-wrap;">' + (reasoning ? escapeHtml(reasoning) : '&nbsp;') + '</div>') + '</section>' : '')
                   + feedbackHtml + '</article>';
           }).join('');
           return `
-              <div class="section memory-aid-export" id="${item.id}" style="background:#f8fffe;border:1px solid #99f6e4;border-radius:10px;padding:8px 14px 14px;">
-                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #0f766e;color:#134e4a;">&#129504; ${title} <span style="font-size:0.65em;font-weight:normal;color:#475569;margin-left:8px;">(Memory Aid Studio)</span></h2>
+              <div class="section memory-aid-export" id="${escapeHtml(String(item.id == null ? '' : item.id))}" style="background:#f8fffe;border:1px solid #99f6e4;border-radius:10px;padding:8px 14px 14px;">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #0f766e;color:#134e4a;">&#129504; ${escapeHtml(title)} <span style="font-size:0.65em;font-weight:normal;color:#475569;margin-left:8px;">(${_maT('studio_name', 'Memory Aid Studio')})</span></h2>
                   ${d.instructions ? '<p style="margin:0 0 14px;color:#334155;">' + escapeHtml(d.instructions) + '</p>' : ''}
-                  ${cardsHtml || '<p>No memory targets yet.</p>'}
+                  ${cardsHtml || '<p>' + _maT('no_targets', 'No memory targets yet.') + '</p>'}
               </div>
           `;
       } else if (item.type === 'applied-challenge') {
+          // Applied Challenge Studio. The module's exportModel() is the single
+          // source for visible phases, family-aware labels, phase prompts, and
+          // status labels, so this lane cannot drift from the in-app studio.
+          // The fallback below only runs when the module is not loaded (a
+          // headless export); it keeps every field but uses generic labels.
           const d = item.data || {};
-          const brief = d.brief && typeof d.brief === 'object' ? d.brief : {};
-          const supports = d.supports && typeof d.supports === 'object' ? d.supports : {};
-          const workspace = d.workspace && typeof d.workspace === 'object' ? d.workspace : {};
-          const escapeHtml = (value) => String(value == null ? '' : value)
-              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;');
-          const listHtml = (values) => (Array.isArray(values) ? values : []).filter(Boolean)
-              .map((value) => '<li style=\'margin-bottom:4px;\'>' + escapeHtml(value) + '</li>').join('');
-          const familyLabels = { investigate: 'Investigate', design: 'Design', decide: 'Decide', propose: 'Propose', explore: 'Explore' };
-          const factList = listHtml(brief.lockedLessonFacts);
-          const factHeading = brief.factVerified === true ? 'Teacher-verified lesson facts' : 'Lesson facts awaiting teacher review';
-          const unknownList = listHtml(brief.openQuestions);
-          const criteriaList = listHtml(brief.criteria);
-          const constraintList = listHtml(brief.constraints);
-          const fieldLabels = {
-              workingQuestion: 'Frame the challenge', stakeholders: 'People, systems, and constraints',
-              possibilities: 'Possibilities', evidence: 'Evidence and lesson connections',
-              assumptions: 'Assumptions and uncertainties', tradeoffs: 'Tradeoffs and alternatives',
-              response: 'Draft deliverable', testReflection: 'Test or challenge the draft',
-              revision: 'Revision', transferReflection: 'Transfer reflection'
+          const tx = (key, fallback) => {
+              let value;
+              try { value = t(key); } catch (_) { value = undefined; }
+              return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
           };
-          const workspaceHtml = Object.keys(fieldLabels).map((key) => {
-              const value = String(workspace[key] || '').trim();
-              return '<section style=\'margin-top:10px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;break-inside:avoid;\'>'
-                  + '<h4 style=\'margin:0 0 6px;color:#9a3412;\'>' + escapeHtml(fieldLabels[key]) + '</h4>'
-                  + '<div style=\'min-height:48px;white-space:pre-wrap;color:#1e293b;\'>' + (value ? escapeHtml(value) : '&nbsp;') + '</div></section>';
-          }).join('');
-          const example = supports.parallelExample && typeof supports.parallelExample === 'object' ? supports.parallelExample : {};
-          const supportHtml = (example.context || example.move || supports.frameStarter)
-              ? '<section style=\'margin-top:12px;padding:12px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;\'><h3 style=\'margin:0 0 6px;color:#3730a3;\'>Support that fades</h3>'
-                + (example.context ? '<p><strong>Parallel context:</strong> ' + escapeHtml(example.context) + '</p>' : '')
-                + (example.move ? '<p style=\'white-space:pre-wrap;\'>' + escapeHtml(example.move) + '</p>' : '')
-                + (supports.frameStarter ? '<p><strong>Frame starter:</strong> ' + escapeHtml(supports.frameStarter) + '</p>' : '') + '</section>'
-              : '';
-          const feedback = d.feedback && typeof d.feedback === 'object' ? d.feedback : null;
-          const feedbackStatusLabel = feedback && feedback.status === 'grounded'
-              ? 'Grounded in verified facts'
-              : feedback && feedback.status === 'needs-check' ? 'Fact check needed' : 'Developing';
-          const feedbackHtml = feedback ? '<section style=\'margin-top:12px;padding:12px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;\'><h3 style=\'margin:0 0 6px;color:#065f46;\'>Feedback for the next revision</h3>'
-              + '<p><strong>Review status:</strong> ' + escapeHtml(feedbackStatusLabel) + '</p>'
-              + '<p><strong>A strength:</strong> ' + escapeHtml(feedback.strength) + '</p>'
-              + '<p><strong>Lesson connection:</strong> ' + escapeHtml(feedback.lessonConnectionCheck) + '</p>'
-              + '<p><strong>Evidence, assumptions, or constraints:</strong> ' + escapeHtml(feedback.evidenceOrConstraintCheck) + '</p>'
-              + '<p><strong>One next step:</strong> ' + escapeHtml(feedback.nextStep) + '</p></section>' : '';
-          return `
-              <div class='section applied-challenge-export' id='${escapeHtml(item.id)}' style='background:#fffaf5;border:1px solid #fed7aa;border-radius:10px;padding:8px 14px 14px;'>
-                  <h2 class='resource-header' role='heading' aria-level='2' style='border-left:4px solid #c2410c;color:#7c2d12;'>&#127919; ${title} <span style='font-size:0.65em;font-weight:normal;color:#475569;margin-left:8px;'>(Applied Challenge Studio - ${escapeHtml(familyLabels[d.family] || d.family || 'Challenge')})</span></h2>
-                  ${d.instructions ? '<p style=\'color:#334155;\'>' + escapeHtml(d.instructions) + '</p>' : ''}
-                  ${d.fitReason ? '<p style=\'padding:8px;background:#ffedd5;border-radius:6px;\'><strong>Why this challenge fits:</strong> ' + escapeHtml(d.fitReason) + '</p>' : ''}
-                  <section style='padding:12px;border:1px solid #fed7aa;border-radius:8px;background:#fff7ed;'>
-                    <h3 style='margin:0 0 8px;color:#9a3412;'>Challenge brief</h3>
-                    ${brief.context ? '<p>' + escapeHtml(brief.context) + '</p>' : ''}
-                    ${brief.drivingQuestion ? '<p><strong>Driving question:</strong> ' + escapeHtml(brief.drivingQuestion) + '</p>' : ''}
-                    ${brief.seedDirection ? '<p><strong>Lesson-grounded direction:</strong> ' + escapeHtml(brief.seedDirection) + '</p>' : ''}
-                    ${factList ? '<h4>' + factHeading + '</h4><ul>' + factList + '</ul>' : ''}
-                    ${unknownList ? '<h4>Open questions</h4><ul>' + unknownList + '</ul>' : ''}
-                    ${criteriaList ? '<h4>Success criteria</h4><ul>' + criteriaList + '</ul>' : ''}
-                    ${constraintList ? '<h4>Constraints</h4><ul>' + constraintList + '</ul>' : ''}
-                    ${brief.deliverable ? '<p><strong>Deliverable:</strong> ' + escapeHtml(brief.deliverable) + '</p>' : ''}
-                    ${brief.evidenceBoundary ? '<p><strong>Evidence boundary:</strong> ' + escapeHtml(brief.evidenceBoundary) + '</p>' : ''}
-                  </section>
-                  ${supportHtml}
-                  <h3 style='margin:16px 0 6px;color:#7c2d12;'>Student problem-solving workspace</h3>
-                  ${workspaceHtml}
-                  ${feedbackHtml}
-              </div>
-          `;
+          const _acModule = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AppliedChallenge) || null;
+          const _acFallbackModel = (raw) => {
+              const str = (value, max) => String(value == null ? '' : value).slice(0, max || 5000);
+              const list = (value) => (Array.isArray(value) ? value : []).map((v) => str(v, 1000).trim()).filter(Boolean);
+              const brief = raw.brief && typeof raw.brief === 'object' ? raw.brief : {};
+              const supports = raw.supports && typeof raw.supports === 'object' ? raw.supports : {};
+              const workspace = raw.workspace && typeof raw.workspace === 'object' ? raw.workspace : {};
+              const phasePrompts = supports.phasePrompts && typeof supports.phasePrompts === 'object' ? supports.phasePrompts : {};
+              const example = supports.parallelExample && typeof supports.parallelExample === 'object' ? supports.parallelExample : {};
+              const allPhases = [
+                  ['workingQuestion', '1. Frame the challenge', true], ['stakeholders', '2. Map people, systems, and constraints', false],
+                  ['possibilities', '3. Generate possibilities', true], ['evidence', '4. Connect evidence and lesson ideas', true],
+                  ['assumptions', '5. Name assumptions and uncertainties', false], ['tradeoffs', '6. Weigh tradeoffs and alternatives', true],
+                  ['response', '7. Build the deliverable', true], ['testReflection', '8. Test or challenge the draft', false],
+                  ['revision', '9. Revise after testing', false], ['transferReflection', '10. Explain the transfer', true],
+              ];
+              const families = { investigate: 'Investigate', design: 'Design', decide: 'Decide', propose: 'Propose', explore: 'Explore' };
+              const family = families[raw.family] ? raw.family : 'decide';
+              const feedback = raw.feedback && typeof raw.feedback === 'object' ? raw.feedback : null;
+              const feedbackStatus = feedback && feedback.status === 'grounded' ? 'Grounded in verified facts'
+                  : feedback && feedback.status === 'needs-check' ? 'Fact check needed' : 'Developing';
+              const stress = raw.stressTest && typeof raw.stressTest === 'object' && str(raw.stressTest.challenge, 2000).trim() ? raw.stressTest : null;
+              return {
+                  title: str(raw.title, 300) || 'Applied Challenge Studio',
+                  instructions: str(raw.instructions, 3000),
+                  selectionMode: raw.selectionMode === 'manual' ? 'manual' : 'auto',
+                  fitReason: str(raw.fitReason, 1600),
+                  family, familyLabel: families[family], familyExample: '',
+                  agencyMode: str(raw.agencyMode, 40), agencyLabel: '', agencyDescription: '',
+                  scope: raw.scope, scopeLabel: '',
+                  brief: {
+                      context: str(brief.context, 4000), role: str(brief.role, 500), audience: str(brief.audience, 500),
+                      drivingQuestion: str(brief.drivingQuestion || brief.question, 2000), seedDirection: str(brief.seedDirection, 2000),
+                      lockedLessonFacts: list(brief.lockedLessonFacts), openQuestions: list(brief.openQuestions), stakeholders: list(brief.stakeholders),
+                      criteria: list(brief.criteria), constraints: list(brief.constraints), deliverable: str(brief.deliverable, 1200),
+                      evidenceBoundary: str(brief.evidenceBoundary, 2000), factVerified: brief.factVerified === true,
+                      factHeading: brief.factVerified === true ? 'Teacher-verified lesson facts' : 'Lesson facts awaiting teacher review',
+                  },
+                  supports: {
+                      parallelExample: { context: str(example.context, 1800), move: str(example.move, 2500), whyItHelps: str(example.whyItHelps, 1800) },
+                      frameStarter: str(supports.frameStarter, 2200), frameChoices: list(supports.frameChoices), coachPrompts: list(supports.coachPrompts),
+                  },
+                  phases: allPhases.filter((p) => raw.scope !== 'compact' || p[2]).map((p) => ({
+                      id: p[0], label: p[1], prompt: str(phasePrompts[p[0]], 1200), text: str(workspace[p[0]], 12000), long: p[0] === 'response' || p[0] === 'revision',
+                  })),
+                  evidenceLedger: (Array.isArray(raw.evidenceLedger) ? raw.evidenceLedger : []).filter((r) => r && typeof r === 'object').map((r, i) => ({
+                      id: str(r.id, 80) || ('ledger-' + (i + 1)), claim: str(r.claim, 1800), evidence: str(r.evidence, 2200), tradeoff: str(r.tradeoff, 1800),
+                      status: str(r.status, 40), statusLabel: ({ verified: 'Verified lesson evidence', 'needs-check': 'Needs checking', assumption: 'Assumption or estimate' })[r.status] || 'Needs checking',
+                  })).filter((r) => r.claim.trim() || r.evidence.trim() || r.tradeoff.trim()),
+                  stressTest: stress ? { challenge: str(stress.challenge, 1800), whyItMatters: str(stress.whyItMatters, 1600), question: str(stress.question, 1200) } : null,
+                  validationCycles: (Array.isArray(raw.validationCycles) ? raw.validationCycles : []).filter((c) => c && typeof c === 'object').map((c, i) => {
+                      const plan = c.plan || {}, obs = c.observation || {}, dec = c.decision || {}, imp = c.importedChallenge || {};
+                      return {
+                          id: str(c.id, 80) || ('validation-' + (i + 1)), source: str(c.source, 40), sourceLabel: str(c.source, 40) || 'self',
+                          disposition: str(c.disposition, 40), dispositionLabel: c.source === 'ai' ? str(c.disposition, 40) : '', dispositionReason: str(c.dispositionReason, 1600),
+                          importedChallenge: { challenge: str(imp.challenge, 1600), whyItMatters: str(imp.whyItMatters, 1200), question: str(imp.question, 1000) },
+                          plan: { methodLabel: str(plan.methodId, 80), evidenceModeLabel: str(plan.evidenceMode, 80), testQuestion: str(plan.testQuestion, 2000), criterion: str(plan.criterion, 1400), expectedFinding: str(plan.expectedFinding, 1600), changeThreshold: str(plan.changeThreshold, 1800) },
+                          observation: { outcomeLabel: str(obs.outcome, 80), evidence: str(obs.evidence, 4000) },
+                          decision: { actionLabel: str(dec.action, 80), reasoning: str(dec.reasoning, 3000), revisionSummary: str(dec.revisionSummary, 2200), nextStep: str(dec.nextStep, 1800) },
+                          complete: false,
+                      };
+                  }),
+                  selfCheck: [].concat(list(brief.criteria).map((text, i) => ({ key: 'criterion-' + i, kind: 'criterion', text })), list(brief.constraints).map((text, i) => ({ key: 'constraint-' + i, kind: 'constraint', text }))).map((item) => {
+                      const entry = raw.criteriaCheck && raw.criteriaCheck[item.key] && typeof raw.criteriaCheck[item.key] === 'object' ? raw.criteriaCheck[item.key] : {};
+                      const ratingLabels = { pending: 'Not rated yet', met: 'Met, and I can point to where', partly: 'Partly met', 'not-yet': 'Not yet' };
+                      return Object.assign(item, { kindLabel: item.kind === 'criterion' ? 'Criterion' : 'Constraint', rating: ratingLabels[entry.rating] ? entry.rating : 'pending', ratingLabel: ratingLabels[entry.rating] || ratingLabels.pending, note: str(entry.note, 1200) });
+                  }),
+                  teacherComment: raw.teacherComment && typeof raw.teacherComment === 'object' && str(raw.teacherComment.text, 4000).trim() ? { text: str(raw.teacherComment.text, 4000) } : null,
+                  feedback: feedback ? {
+                      strength: str(feedback.strength, 1200), lessonConnectionCheck: str(feedback.lessonConnectionCheck, 1200), evidenceOrConstraintCheck: str(feedback.evidenceOrConstraintCheck, 1200),
+                      nextStep: str(feedback.nextStep, 1200), question: str(feedback.question, 1200), status: str(feedback.status, 40), statusLabel: feedbackStatus,
+                  } : null,
+              };
+          };
+          const m = _acModule && typeof _acModule.exportModel === 'function' ? _acModule.exportModel(d, { t: tx }) : _acFallbackModel(d);
+          const esc = _escTxt;
+          const itemId = String(item.id || 'applied-challenge');
+          const listHtml = (values) => (Array.isArray(values) ? values : []).filter(Boolean).map((v) => '<li>' + esc(v) + '</li>').join('');
+          const listBlock = (heading, values, extraClass) => {
+              const items = listHtml(values);
+              return items ? '<div class="ace-panel ' + (extraClass || '') + '"><h4 class="ace-h4">' + esc(heading) + '</h4><ul class="ace-list">' + items + '</ul></div>' : '';
+          };
+          const para = (label, value) => value ? '<p class="ace-p"><strong>' + esc(label) + '</strong> ' + esc(value) + '</p>' : '';
+          const pre = (value) => '<div class="ace-text">' + esc(value) + '</div>';
+          const L = {
+              studio: tx('applied_challenge.studio_title', 'Applied Challenge Studio'),
+              whyFit: tx('applied_challenge.export.why_fit', 'Why this challenge fits:'),
+              brief: tx('applied_challenge.brief.heading', 'Challenge brief'),
+              role: tx('applied_challenge.brief.your_role', 'Your role') + ':',
+              audience: tx('applied_challenge.brief.audience', 'Audience') + ':',
+              drivingQuestion: tx('applied_challenge.brief.driving_question', 'Driving question') + ':',
+              seedDirection: tx('applied_challenge.brief.seed_direction', 'Lesson-grounded direction') + ':',
+              openQuestions: tx('applied_challenge.brief.open', 'What remains open'),
+              stakeholders: tx('applied_challenge.brief.stakeholders', 'Stakeholders'),
+              criteria: tx('applied_challenge.brief.criteria', 'Success criteria'),
+              constraints: tx('applied_challenge.brief.constraints', 'Constraints'),
+              deliverable: tx('applied_challenge.brief.deliverable_label', 'Deliverable:'),
+              evidenceBoundary: tx('applied_challenge.brief.evidence_boundary_label', 'Evidence boundary:'),
+              supports: tx('applied_challenge.supports.heading', 'Support that fades'),
+              example: tx('applied_challenge.supports.example', 'See a parallel reasoning move'),
+              exampleNote: tx('applied_challenge.supports.example_note', 'Different context - not an answer to this challenge.'),
+              notice: tx('applied_challenge.supports.notice', 'Notice:'),
+              frame: tx('applied_challenge.supports.frame', 'Build the frame'),
+              coach: tx('applied_challenge.supports.coach', 'Own the next move'),
+              workspace: tx('applied_challenge.export.workspace', 'Student problem-solving workspace'),
+              workspaceNote: tx('applied_challenge.workspace.note', 'Your writing stays separate from AI examples, hints, and feedback.'),
+              ledger: tx('applied_challenge.ledger.heading', 'Evidence & decision ledger'),
+              ledgerNote: tx('applied_challenge.ledger.note', 'Optional organizer: connect each important claim or option to support, label its certainty honestly, and keep a tradeoff or uncertainty visible.'),
+              claim: tx('applied_challenge.ledger.claim', 'Claim, option, or position'),
+              evidence: tx('applied_challenge.ledger.evidence', 'Evidence or lesson connection'),
+              status: tx('applied_challenge.ledger.status', 'Evidence status'),
+              tradeoff: tx('applied_challenge.ledger.tradeoff', 'Tradeoff, constraint, or uncertainty'),
+              row: tx('applied_challenge.ledger.row', 'Evidence row {n}'),
+              stress: tx('applied_challenge.stress.heading', 'Pressure-test the draft'),
+              stressPoint: tx('applied_challenge.stress.point', 'Pressure point') + ':',
+              stressWhy: tx('applied_challenge.stress.why', 'Why it matters') + ':',
+              stressQuestion: tx('applied_challenge.stress.question', 'Question for your revision') + ':',
+              validation: tx('applied_challenge.validation.heading', 'Test, observe, decide'),
+              cycle: tx('applied_challenge.cycle.heading', 'Check {n}'),
+              cycleComplete: tx('applied_challenge.cycle.stage_complete', 'Complete'),
+              cycleOpen: tx('applied_challenge.export.cycle_in_progress', 'In progress'),
+              aiChallenge: tx('applied_challenge.cycle.challenge_label', 'Challenge:'),
+              yourChoice: tx('applied_challenge.cycle.your_choice', 'Your choice') + ':',
+              why: tx('applied_challenge.cycle.why', 'Why?'),
+              plan: tx('applied_challenge.cycle.plan_legend', '1. Plan the check'),
+              method: tx('applied_challenge.cycle.method', 'Check method') + ':',
+              evidenceForm: tx('applied_challenge.cycle.evidence_form', 'Evidence form') + ':',
+              testQuestion: tx('applied_challenge.cycle.test_question', 'What exactly will you check?'),
+              criterion: tx('applied_challenge.cycle.criterion', 'Criterion or constraint') + ':',
+              expected: tx('applied_challenge.cycle.expected', 'What do you expect?'),
+              threshold: tx('applied_challenge.cycle.threshold', 'What result could change your mind or draft?'),
+              observe: tx('applied_challenge.cycle.observe_legend', '2. Observe or gather evidence'),
+              outcome: tx('applied_challenge.cycle.outcome', 'Outcome') + ':',
+              observed: tx('applied_challenge.cycle.observed', 'What evidence or observation did you actually encounter?'),
+              decide: tx('applied_challenge.cycle.decide_legend', '3. Decide and revise'),
+              decision: tx('applied_challenge.cycle.decision', 'Decision') + ':',
+              reasoning: tx('applied_challenge.cycle.reasoning', 'Why does the evidence support that decision?'),
+              revisionSummary: tx('applied_challenge.cycle.revision_summary', 'What changed in your response?'),
+              nextCheck: tx('applied_challenge.cycle.next_step', 'Next check or action'),
+              selfCheck: tx('applied_challenge.self_check.heading', 'Check your deliverable against the brief'),
+              selfCheckNote: tx('applied_challenge.self_check.note', 'Rate your own draft against each success criterion and constraint. Point to where it is met, or name what is still missing. Honest "not yet" ratings make feedback more useful.'),
+              selfRating: tx('applied_challenge.self_check.rating', 'My rating'),
+              selfWhere: tx('applied_challenge.self_check.where', 'Where it shows, or what is missing'),
+              teacherComment: tx('applied_challenge.teacher_comment.heading', 'Teacher comment'),
+              feedback: tx('applied_challenge.feedback.heading', 'Feedback for your next revision'),
+              reviewStatus: tx('applied_challenge.export.review_status', 'Review status:'),
+              strength: tx('applied_challenge.feedback.strength', 'A strength') + ':',
+              lesson: tx('applied_challenge.feedback.lesson', 'Lesson connection') + ':',
+              feedbackEvidence: tx('applied_challenge.feedback.evidence', 'Evidence, assumptions, or constraints') + ':',
+              nextStep: tx('applied_challenge.feedback.next_step', 'One next step') + ':',
+              thinkAbout: tx('applied_challenge.feedback.question', 'Think about') + ':',
+              autoMatch: tx('applied_challenge.header.auto_match', 'Auto Match'),
+              teacherSelected: tx('applied_challenge.header.teacher_selected', 'Teacher selected'),
+          };
+          const fill = (template, n) => String(template).split('{n}').join(String(n));
+          // Student response field. Interactive HTML: a persisted textarea on the
+          // same response contract as quizzes and sentence frames (localStorage
+          // autosave + submission manifest). Paper: the snapshot text if any,
+          // otherwise ruled lines. Empty exported text lets the viewer's own
+          // saved response restore; a snapshot wins over it on purpose.
+          const responseField = (key, label, text, longField) => {
+              const value = String(text || '');
+              if (isWorksheet) return value.trim() ? pre(value) : ruledLines(longField ? 8 : 4);
+              return '<textarea class="interactive-textarea alloflow-response-input ace-field" rows="' + (longField ? 8 : 4) + '" data-allo-response-key="' + esc(itemId + ':applied:' + key) + '" data-allo-response-type="free-response" data-allo-question="' + esc(label) + '" aria-label="' + esc(label) + '">' + esc(value) + '</textarea>';
+          };
+          const chips = [m.familyLabel && (m.familyLabel + (m.familyExample ? ': ' + m.familyExample : '')), m.agencyLabel, m.scopeLabel, m.selectionMode === 'auto' ? L.autoMatch : L.teacherSelected]
+              .filter(Boolean).map((chip) => '<span class="ace-chip">' + esc(chip) + '</span>').join(' ');
+          const briefHtml = '<section class="ace-panel ace-brief" aria-labelledby="' + esc(itemId) + '-brief"><h3 class="ace-h3" id="' + esc(itemId) + '-brief">' + esc(L.brief) + '</h3>'
+              + (m.brief.context ? '<p class="ace-p ace-prewrap">' + esc(m.brief.context) + '</p>' : '')
+              + para(L.role, m.brief.role) + para(L.audience, m.brief.audience)
+              + (m.brief.drivingQuestion ? '<p class="ace-p ace-question"><strong>' + esc(L.drivingQuestion) + '</strong> ' + esc(m.brief.drivingQuestion) + '</p>' : '')
+              + para(L.seedDirection, m.brief.seedDirection)
+              + '<div class="ace-grid">'
+              + listBlock(m.brief.factHeading, m.brief.lockedLessonFacts, 'ace-facts')
+              + listBlock(L.openQuestions, m.brief.openQuestions, 'ace-open')
+              + listBlock(L.stakeholders, m.brief.stakeholders, '')
+              + listBlock(L.criteria, m.brief.criteria, 'ace-criteria')
+              + listBlock(L.constraints, m.brief.constraints, 'ace-constraints')
+              + '</div>'
+              + para(L.deliverable, m.brief.deliverable)
+              + (m.brief.evidenceBoundary ? '<p class="ace-p ace-boundary"><strong>' + esc(L.evidenceBoundary) + '</strong> ' + esc(m.brief.evidenceBoundary) + '</p>' : '')
+              + '</section>';
+          const ex = m.supports.parallelExample || {};
+          const supportCards = [
+              (ex.context || ex.move) ? '<div class="ace-card"><h4 class="ace-h4">' + esc(L.example) + '</h4><p class="ace-muted">' + esc(L.exampleNote) + '</p>' + (ex.context ? '<p class="ace-p"><strong>' + esc(ex.context) + '</strong></p>' : '') + (ex.move ? '<p class="ace-p ace-prewrap">' + esc(ex.move) + '</p>' : '') + (ex.whyItHelps ? '<p class="ace-p"><strong>' + esc(L.notice) + '</strong> ' + esc(ex.whyItHelps) + '</p>' : '') + '</div>' : '',
+              (m.supports.frameStarter || (m.supports.frameChoices || []).length) ? '<div class="ace-card"><h4 class="ace-h4">' + esc(L.frame) + '</h4>' + (m.supports.frameStarter ? '<p class="ace-p ace-prewrap">' + esc(m.supports.frameStarter) + '</p>' : '') + (listHtml(m.supports.frameChoices) ? '<ul class="ace-list">' + listHtml(m.supports.frameChoices) + '</ul>' : '') + '</div>' : '',
+              (m.supports.coachPrompts || []).length ? '<div class="ace-card"><h4 class="ace-h4">' + esc(L.coach) + '</h4><ul class="ace-list">' + listHtml(m.supports.coachPrompts) + '</ul></div>' : '',
+          ].filter(Boolean).join('');
+          const supportHtml = supportCards ? '<section class="ace-panel ace-supports"><h3 class="ace-h3">' + esc(L.supports) + '</h3>' + (m.agencyDescription ? '<p class="ace-muted">' + esc(m.agencyDescription) + '</p>' : '') + '<div class="ace-grid">' + supportCards + '</div></section>' : '';
+          const workspaceHtml = (m.phases || []).map((phase) => '<section class="ace-phase"><h4 class="ace-h4">' + esc(phase.label) + '</h4>'
+              + (phase.prompt ? '<p class="ace-muted">' + esc(phase.prompt) + '</p>' : '')
+              + responseField(phase.id, phase.label, phase.text, phase.long) + '</section>').join('');
+          const ledgerRows = m.evidenceLedger || [];
+          const ledgerRowHtml = (row, index) => '<div class="ace-ledger-row"><h5 class="ace-h5">' + esc(fill(L.row, index + 1)) + '</h5>'
+              + '<dl class="ace-dl">'
+              + '<dt>' + esc(L.claim) + '</dt><dd>' + (row ? esc(row.claim) : responseField('ledger-' + (index + 1) + '-claim', L.claim + ' ' + (index + 1), '', false)) + '</dd>'
+              + '<dt>' + esc(L.evidence) + '</dt><dd>' + (row ? esc(row.evidence) : responseField('ledger-' + (index + 1) + '-evidence', L.evidence + ' ' + (index + 1), '', false)) + '</dd>'
+              + (row ? '<dt>' + esc(L.status) + '</dt><dd><span class="ace-chip">' + esc(row.statusLabel) + '</span></dd>' : '')
+              + '<dt>' + esc(L.tradeoff) + '</dt><dd>' + (row ? esc(row.tradeoff) : responseField('ledger-' + (index + 1) + '-tradeoff', L.tradeoff + ' ' + (index + 1), '', false)) + '</dd>'
+              + '</dl></div>';
+          const ledgerHtml = '<section class="ace-panel ace-ledger"><h3 class="ace-h3">' + esc(L.ledger) + '</h3><p class="ace-muted">' + esc(L.ledgerNote) + '</p>'
+              + (ledgerRows.length ? ledgerRows.map(ledgerRowHtml).join('') : [null, null].map(ledgerRowHtml).join('')) + '</section>';
+          const selfRows = m.selfCheck || [];
+          const selfCheckHtml = selfRows.length ? '<section class="ace-panel ace-feedback"><h3 class="ace-h3">' + esc(L.selfCheck) + '</h3><p class="ace-muted">' + esc(L.selfCheckNote) + '</p>'
+              + selfRows.map((row, index) => {
+                  const rowLabel = row.kindLabel + ' ' + (index + 1);
+                  const rated = row.rating && row.rating !== 'pending';
+                  return '<div class="ace-ledger-row"><h5 class="ace-h5">' + esc(rowLabel) + '</h5><p class="ace-p"><strong>' + esc(row.text) + '</strong></p><dl class="ace-dl">'
+                      + '<dt>' + esc(L.selfRating) + '</dt><dd>' + (rated ? '<span class="ace-chip">' + esc(row.ratingLabel) + '</span>' : (isWorksheet ? esc(row.ratingLabel) : '<span class="ace-chip">' + esc(row.ratingLabel) + '</span>')) + '</dd>'
+                      + '<dt>' + esc(L.selfWhere) + '</dt><dd>' + (row.note && row.note.trim() ? esc(row.note) : responseField('selfcheck-' + row.key, L.selfWhere + ' (' + rowLabel + ')', '', false)) + '</dd>'
+                      + '</dl></div>';
+              }).join('') + '</section>' : '';
+          const teacherCommentHtml = m.teacherComment && m.teacherComment.text ? '<section class="ace-panel ace-brief"><h3 class="ace-h3">' + esc(L.teacherComment) + '</h3><p class="ace-p ace-prewrap">' + esc(m.teacherComment.text) + '</p></section>' : '';
+          const st = m.stressTest;
+          const stressHtml = st ? '<section class="ace-panel ace-stress"><h3 class="ace-h3">' + esc(L.stress) + '</h3>'
+              + para(L.stressPoint, st.challenge) + para(L.stressWhy, st.whyItMatters) + para(L.stressQuestion, st.question) + '</section>' : '';
+          const cyclesHtml = (m.validationCycles || []).length ? '<section class="ace-panel ace-cycles"><h3 class="ace-h3">' + esc(L.validation) + '</h3>'
+              + m.validationCycles.map((cycle, index) => '<div class="ace-cycle"><h4 class="ace-h4">' + esc(fill(L.cycle, index + 1)) + ': ' + esc(cycle.sourceLabel) + ' <span class="ace-chip">' + esc(cycle.complete ? L.cycleComplete : L.cycleOpen) + '</span></h4>'
+                  + (cycle.source === 'ai' ? '<div class="ace-subpanel">' + para(L.aiChallenge, cycle.importedChallenge && cycle.importedChallenge.challenge) + para(L.yourChoice, cycle.dispositionLabel) + para(L.why, cycle.dispositionReason) + '</div>' : '')
+                  + '<div class="ace-subpanel"><h5 class="ace-h5">' + esc(L.plan) + '</h5>' + para(L.method, cycle.plan.methodLabel) + para(L.evidenceForm, cycle.plan.evidenceModeLabel) + para(L.testQuestion, cycle.plan.testQuestion) + para(L.criterion, cycle.plan.criterion) + para(L.expected, cycle.plan.expectedFinding) + para(L.threshold, cycle.plan.changeThreshold) + '</div>'
+                  + '<div class="ace-subpanel"><h5 class="ace-h5">' + esc(L.observe) + '</h5>' + para(L.outcome, cycle.observation.outcomeLabel) + para(L.observed, cycle.observation.evidence) + '</div>'
+                  + '<div class="ace-subpanel"><h5 class="ace-h5">' + esc(L.decide) + '</h5>' + para(L.decision, cycle.decision.actionLabel) + para(L.reasoning, cycle.decision.reasoning) + para(L.revisionSummary, cycle.decision.revisionSummary) + para(L.nextCheck, cycle.decision.nextStep) + '</div>'
+                  + '</div>').join('') + '</section>' : '';
+          const fb = m.feedback;
+          const feedbackHtml = fb ? '<section class="ace-panel ace-feedback"><h3 class="ace-h3">' + esc(L.feedback) + '</h3>'
+              + para(L.reviewStatus, fb.statusLabel) + para(L.strength, fb.strength) + para(L.lesson, fb.lessonConnectionCheck)
+              + para(L.feedbackEvidence, fb.evidenceOrConstraintCheck) + para(L.nextStep, fb.nextStep) + para(L.thinkAbout, fb.question) + '</section>' : '';
+          // Theme-safe styling: no inline ink colours. The document's dark, sepia
+          // and high-contrast rules recolour .section with !important, so any
+          // inline colour here would either vanish or fight them; classes keyed
+          // off html[data-alloflow-theme] follow the same contract instead.
+          const aceStyle = '<style>'
+              + '.applied-challenge-export{--ace-ink:#1e293b;--ace-muted:#475569;--ace-accent:#9a3412;--ace-border:#fed7aa;--ace-panel:#fff7ed;--ace-card:#ffffff;--ace-line:#cbd5e1;--ace-chip:#ffedd5;--ace-chip-ink:#7c2d12;--ace-facts:#fffbeb;--ace-open:#f0f9ff;--ace-criteria:#ecfdf5;--ace-constraints:#fff1f2;--ace-supports:#eef2ff;--ace-ledger:#ecfeff;--ace-stress:#fdf4ff;--ace-cycles:#eff6ff;--ace-feedback:#ecfdf5;color:var(--ace-ink);}'
+              + '.applied-challenge-export .ace-chip{display:inline-block;padding:2px 10px;border-radius:999px;background:var(--ace-chip);color:var(--ace-chip-ink);font-size:0.8em;font-weight:700;margin:2px 4px 2px 0;}'
+              + '.applied-challenge-export .ace-panel{margin-top:12px;padding:12px 14px;border:1px solid var(--ace-border);border-radius:10px;background:var(--ace-panel);break-inside:avoid;}'
+              + '.applied-challenge-export .ace-card,.applied-challenge-export .ace-ledger-row,.applied-challenge-export .ace-cycle,.applied-challenge-export .ace-subpanel{margin-top:10px;padding:10px 12px;border:1px solid var(--ace-line);border-radius:8px;background:var(--ace-card);break-inside:avoid;}'
+              + '.applied-challenge-export .ace-phase{margin-top:10px;padding:12px;border:1px solid var(--ace-line);border-radius:8px;background:var(--ace-card);break-inside:avoid;}'
+              + '.applied-challenge-export .ace-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:8px;}'
+              + '.applied-challenge-export .ace-grid .ace-panel{margin-top:0;}'
+              + '.applied-challenge-export .ace-facts{background:var(--ace-facts);} .applied-challenge-export .ace-open{background:var(--ace-open);} .applied-challenge-export .ace-criteria{background:var(--ace-criteria);} .applied-challenge-export .ace-constraints{background:var(--ace-constraints);}'
+              + '.applied-challenge-export .ace-supports{background:var(--ace-supports);} .applied-challenge-export .ace-ledger{background:var(--ace-ledger);} .applied-challenge-export .ace-stress{background:var(--ace-stress);} .applied-challenge-export .ace-cycles{background:var(--ace-cycles);} .applied-challenge-export .ace-feedback{background:var(--ace-feedback);}'
+              + '.applied-challenge-export .ace-h3{margin:0 0 6px;font-size:1.1em;color:var(--ace-accent);} .applied-challenge-export .ace-h4{margin:0 0 6px;font-size:1em;color:var(--ace-accent);} .applied-challenge-export .ace-h5{margin:0 0 4px;font-size:0.9em;color:var(--ace-accent);}'
+              + '.applied-challenge-export .ace-p{margin:4px 0;color:var(--ace-ink);} .applied-challenge-export .ace-muted{margin:2px 0 6px;font-size:0.9em;color:var(--ace-muted);} .applied-challenge-export .ace-prewrap{white-space:pre-wrap;}'
+              + '.applied-challenge-export .ace-question{font-size:1.1em;font-weight:700;} .applied-challenge-export .ace-boundary{padding:8px;border-radius:6px;background:var(--ace-open);}'
+              + '.applied-challenge-export .ace-list{margin:4px 0 0;padding-left:20px;color:var(--ace-ink);} .applied-challenge-export .ace-list li{margin-bottom:4px;}'
+              + '.applied-challenge-export .ace-text{min-height:48px;white-space:pre-wrap;padding:8px;border:1px solid var(--ace-line);border-radius:6px;background:var(--ace-card);color:var(--ace-ink);}'
+              + '.applied-challenge-export .ace-field{width:100%;box-sizing:border-box;margin-top:6px;}'
+              + '.applied-challenge-export .ace-dl{margin:0;} .applied-challenge-export .ace-dl dt{font-weight:700;font-size:0.85em;color:var(--ace-muted);margin-top:6px;} .applied-challenge-export .ace-dl dd{margin:2px 0 0;color:var(--ace-ink);white-space:pre-wrap;}'
+              + 'html[data-alloflow-theme="dark"] .applied-challenge-export{--ace-ink:#f1f5f9;--ace-muted:#cbd5e1;--ace-accent:#fdba74;--ace-border:#475569;--ace-panel:#0f172a;--ace-card:#1e293b;--ace-line:#475569;--ace-chip:#7c2d12;--ace-chip-ink:#ffedd5;--ace-facts:#1c1917;--ace-open:#0c1a2e;--ace-criteria:#052e16;--ace-constraints:#2a0a10;--ace-supports:#1e1b4b;--ace-ledger:#083344;--ace-stress:#3b0764;--ace-cycles:#172554;--ace-feedback:#052e16;}'
+              + 'html[data-alloflow-theme="sepia"] .applied-challenge-export{--ace-ink:#5b4636;--ace-muted:#6b5a48;--ace-accent:#8a4014;--ace-border:#d4c5a0;--ace-panel:#f5ecd9;--ace-card:#fdf6e3;--ace-line:#d4c5a0;--ace-chip:#ede0c4;--ace-chip-ink:#4a3a2a;--ace-facts:#f5ecd9;--ace-open:#f5ecd9;--ace-criteria:#f5ecd9;--ace-constraints:#f5ecd9;--ace-supports:#f5ecd9;--ace-ledger:#f5ecd9;--ace-stress:#f5ecd9;--ace-cycles:#f5ecd9;--ace-feedback:#f5ecd9;}'
+              + 'html[data-alloflow-theme="hc"] .applied-challenge-export{--ace-ink:#000000;--ace-muted:#000000;--ace-accent:#000000;--ace-border:#000000;--ace-panel:#ffffff;--ace-card:#ffffff;--ace-line:#000000;--ace-chip:#000000;--ace-chip-ink:#ffffff;--ace-facts:#ffffff;--ace-open:#ffffff;--ace-criteria:#ffffff;--ace-constraints:#ffffff;--ace-supports:#ffffff;--ace-ledger:#ffffff;--ace-stress:#ffffff;--ace-cycles:#ffffff;--ace-feedback:#ffffff;}'
+              + 'html[data-alloflow-theme="hc"] .applied-challenge-export .ace-panel,html[data-alloflow-theme="hc"] .applied-challenge-export .ace-card,html[data-alloflow-theme="hc"] .applied-challenge-export .ace-phase{border-width:2px;}'
+              + '</style>';
+          return '\n              <div class="section applied-challenge-export" id="' + esc(itemId) + '">' + aceStyle
+              + '<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #c2410c;">&#127919; ' + title + ' <span style="font-size:0.65em;font-weight:normal;margin-left:8px;">(' + esc(L.studio) + ')</span></h2>'
+              + '<div class="ace-chips">' + chips + '</div>'
+              + (m.instructions ? '<p class="ace-p">' + esc(m.instructions) + '</p>' : '')
+              + (m.fitReason ? '<p class="ace-p ace-boundary"><strong>' + esc(L.whyFit) + '</strong> ' + esc(m.fitReason) + '</p>' : '')
+              + briefHtml + supportHtml
+              + '<h3 class="ace-h3" style="margin-top:16px;">' + esc(L.workspace) + '</h3><p class="ace-muted">' + esc(L.workspaceNote) + '</p>'
+              + workspaceHtml + selfCheckHtml + ledgerHtml + stressHtml + cyclesHtml + feedbackHtml + teacherCommentHtml
+              + '</div>\n          ';
       } else if (item.type === 'anchor-chart') {
           // EL-style anchor chart. Type-aware layout (Tier 1) + hand-drawn poster
           // aesthetic (Tier 2): per-section marker colours, opt-in marker web
@@ -46251,6 +46765,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     geminiThrottleInfo: _geminiThrottleInfo,
     resetGeminiBreaker: _resetGeminiBreaker, // deep dive 2026-07-27: so a test can prove a storm signal is not inherited across runs
     waitForGeminiCalm: waitForGeminiCalm,
+    geminiStormBudget: _geminiStormBudget,
+    resetGeminiStormBudget: _resetGeminiStormBudget,
     clampPaletteContrast: clampPaletteContrast,
     buildPaletteCss: buildPaletteCss,
     applyPaletteToHtml: applyPaletteToHtml,

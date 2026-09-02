@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>School Rewards &amp; Store: User Manual | AlloFlow</title>
+<meta name="description" content="How to set up and run AlloFlow's School Rewards &amp; Store: the school-owned points ledger, awarding, the trimester store, the student and family view, the classroom bridges, administration, privacy, and accessibility.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://apomera.github.io/AlloFlow/school-rewards-manual.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="AlloFlow">
+<meta property="og:title" content="School Rewards &amp; Store: User Manual">
+<meta property="og:description" content="Set up and run a school-owned recognition points ledger and trimester store with AlloFlow.">
+<meta property="og:url" content="https://apomera.github.io/AlloFlow/school-rewards-manual.html">
+<meta property="og:image" content="https://apomera.github.io/AlloFlow/school-rewards-manual-assets/03-award-tiles.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:alt" content="The Award points tab of the School Rewards portal with student tiles.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://apomera.github.io/AlloFlow/school-rewards-manual.html">
+<meta name="twitter:title" content="School Rewards &amp; Store: User Manual">
+<meta name="twitter:description" content="Set up and run a school-owned recognition points ledger and trimester store with AlloFlow.">
+<meta name="twitter:image" content="https://apomera.github.io/AlloFlow/school-rewards-manual-assets/03-award-tiles.jpg">
+<meta name="twitter:image:alt" content="The Award points tab of the School Rewards portal with student tiles.">
+<style>
+:root{
+  /* Text-size multiplier for the Reading tools bar. Every prose font-size below
+     is calc(<px> * var(--fs)) so the slider scales text without scaling images
+     or the controls themselves; the manual's sizes are absolute px, so setting
+     body{font-size} alone would have moved paragraphs and left every heading. */
+  --fs:1;
+  --ink:#0f172a;--body:#1e293b;--soft:#526079;--line:#e2e8f0;--panel:#ffffff;
+  --accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eff6ff;--accent-bd:#bfdbfe;
+  --warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;
+  --ok-bg:#f0fdf4;--ok-bd:#86efac;--ok-ink:#14532d;
+  --code-bg:#f1f5f9;--th:#f1f5f9;--bg:#f8fafc;--shadow:0 1px 3px rgba(15,23,42,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e8eefc;--body:#d3ddf0;--soft:#9aa9c4;--line:#28354e;--panel:#141d30;
+    --accent:#8ab4ff;--accent-ink:#bcd4ff;--accent-soft:#152340;--accent-bd:#2c4470;
+    --warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;
+    --ok-bg:#10261a;--ok-bd:#1f6b3d;--ok-ink:#a7e8bf;
+    --code-bg:#1b2740;--th:#1b2740;--bg:#0b1220;--shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
+.wrap{max-width:860px;margin:0 auto;padding:32px 22px 80px;}
+.banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 20px;font-size:calc(14px * var(--fs));color:var(--accent-ink);}
+h1{font-size:calc(30px * var(--fs));font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
+h2{font-size:calc(22px * var(--fs));font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);}
+h3{font-size:calc(16px * var(--fs));font-weight:800;margin:24px 0 6px;color:var(--ink);}
+p{margin:0 0 14px;}
+ul,ol{margin:0 0 16px;padding-left:22px;}
+li{margin:0 0 7px;}
+strong{font-weight:700;color:var(--ink);}
+a{color:var(--accent);}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px;}
+code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
+pre{overflow:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:calc(12.5px * var(--fs));line-height:1.5;}
+pre code{border:0;padding:0;background:transparent;}
+table{border-collapse:collapse;width:100%;margin:0;font-size:calc(14.5px * var(--fs));background:var(--panel);}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+th{background:var(--th);font-weight:700;color:var(--ink);}
+caption{text-align:left;padding:0 0 8px;font-weight:700;color:var(--ink);}
+.tablewrap{overflow-x:auto;margin:0 0 18px;}
+.tablewrap:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px;}
+blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
+blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
+.good{margin:18px 0;padding:12px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-left:4px solid #22c55e;border-radius:10px;color:var(--ok-ink);font-size:calc(14.5px * var(--fs));}
+.suite{margin:0 0 18px;font-size:calc(14px * var(--fs));color:var(--soft);}
+.manual-home{margin:0 0 18px;font-weight:800;}
+.start{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 18px 14px;margin:0 0 22px;box-shadow:var(--shadow);}
+.start p{margin:10px 0 0;font-size:calc(14.5px * var(--fs));}
+.start .start-heading{font-size:calc(17px * var(--fs));margin:10px 0 4px;padding:0;border:0;}
+.start .start-heading::before{display:none;}
+figure{margin:22px 0 26px;}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);background:var(--panel);}
+figcaption{margin-top:8px;font-size:calc(13.5px * var(--fs));color:var(--soft);}
+nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 24px;box-shadow:var(--shadow);}
+nav.toc strong{display:block;margin-bottom:4px;}
+nav.toc ol{margin:6px 0 0;}
+nav.toc li{margin:0 0 4px;}
+dl{margin:0 0 16px;}
+dt{font-weight:800;color:var(--ink);margin:14px 0 2px;}
+dd{margin:0 0 8px;}
+.doc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px 30px;margin:18px 0 8px;box-shadow:var(--shadow);font-size:calc(14.5px * var(--fs));}
+.doc .doc-title{font-size:calc(19px * var(--fs));font-weight:800;color:var(--ink);margin:0 0 4px;}
+.doc h4{font-size:calc(15px * var(--fs));font-weight:800;color:var(--ink);margin:22px 0 6px;}
+.doc p{margin:0 0 10px;}
+.doc .meta{color:var(--soft);font-size:calc(13px * var(--fs));}
+.doc .cut{color:var(--soft);font-style:italic;font-size:calc(13px * var(--fs));}
+.doc table{font-size:calc(13.5px * var(--fs));margin:8px 0 4px;}
+.doc ul{margin:0 0 10px;}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:calc(12.5px * var(--fs));}
+@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:calc(25px * var(--fs));}.doc{padding:18px 16px;}}
+/* ── Reading polish (2026-08-17) ───────────────────────────────────── */
+.docmeta{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:0 0 22px;font-size:calc(13px * var(--fs));color:var(--soft);}
+.docmeta span{display:inline-flex;align-items:center;gap:6px;}
+.docmeta .dot{width:4px;height:4px;border-radius:50%;background:var(--line);}
+/* Section headings get an accent rule so a 20-page manual has visible rhythm
+   when you scroll it, without renumbering any heading text. */
+h2{position:relative;padding-left:14px;}
+h2::before{content:"";position:absolute;left:0;top:16px;bottom:2px;width:4px;border-radius:3px;background:var(--accent);opacity:.85;}
+/* The 17-item contents list is a tall single column on a laptop; two columns
+   put the whole manual in view at once. */
+@media (min-width:720px){ nav.toc ol{columns:2;column-gap:34px;} nav.toc li{break-inside:avoid;} }
+nav.toc a{text-decoration:none;border-bottom:1px solid transparent;}
+nav.toc a:hover{border-bottom-color:var(--accent);}
+/* ── Read aloud (device voice; see the note in the script) ─────────── */
+/* A quiet 22px icon, not a pill: at one per heading the labelled version read
+   as 17 buttons competing with the headings. The accessible name lives in
+   aria-label, so dropping the visible word costs nothing to a screen reader.
+   Deliberately not hidden-until-hover, which would be mouse-only. */
+.listen{margin:2px 0 8px;display:inline-flex;align-items:center;
+  justify-content:center;min-width:28px;min-height:28px;padding:2px;flex:none;
+  font:400 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:normal;
+  color:var(--soft);background:var(--panel);border:1px solid var(--line);
+  border-radius:50%;cursor:pointer;transition:background .15s,border-color .15s;}
+.listen:hover{background:var(--accent-soft);border-color:var(--accent-bd);}
+.listen:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.listen[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);}
+.reading{background:var(--accent-soft);box-shadow:0 0 0 4px var(--accent-soft);border-radius:4px;}
+/* ── Reading tools ─────────────────────────────────────────────────────
+   The same controls AlloFlow injects into its HTML exports (view_pdf_audit
+   _wrapAsReaderApp), restyled to this document's tokens and sharing its
+   localStorage key 'allo-reader-prefs', so a teacher who set their preferences
+   on an exported handout finds them already applied here. The export bar's
+   own read-aloud is deliberately NOT ported: this manual already has
+   per-section listening, and two engines calling synth.cancel() on each other
+   would strand a section button showing Stop. Injected by script, so the
+   controls never appear as dead UI when scripting is off. */
+.rtools{position:sticky;top:0;z-index:50;background:var(--panel);
+  border-bottom:1px solid var(--line);line-height:1.3;letter-spacing:normal;}
+.rtools-in{max-width:860px;margin:0 auto;padding:7px 22px;display:flex;
+  flex-wrap:wrap;gap:8px 14px;align-items:center;}
+.rtools-toggle{font:700 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--accent-ink);
+  background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:999px;
+  padding:6px 12px;cursor:pointer;}
+.rtools-toggle:hover{border-color:var(--accent);}
+.rtools-panel{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
+  font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--soft);}
+.rtools-panel[hidden]{display:none;}
+.rtools-panel label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.rtools select,.rtools input[type=range],.rtools-panel button{font:inherit;}
+.rtools select{color:var(--body);background:var(--bg);border:1px solid var(--line);
+  border-radius:7px;padding:3px 5px;}
+.rtools input[type=range]{width:86px;accent-color:var(--accent);padding:0;}
+.rtools-panel button{color:var(--body);background:var(--bg);border:1px solid var(--line);
+  border-radius:7px;padding:5px 9px;cursor:pointer;}
+.rtools-panel button[aria-pressed="true"]{background:var(--accent-soft);
+  border-color:var(--accent);color:var(--accent-ink);}
+.rtools :focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+#rtools-ruler{position:fixed;left:0;width:100%;height:2.4em;
+  background:rgba(250,204,21,.16);border-top:2px solid rgba(250,204,21,.65);
+  border-bottom:2px solid rgba(250,204,21,.65);pointer-events:none;z-index:49;display:none;}
+html[data-allo-ruler="1"] #rtools-ruler{display:block;}
+/* Reading themes retint this document's OWN tokens rather than forcing
+   body{background;color} like the export does, which would leave every card,
+   table, callout and code span stranded on the new background. `html:root[…]`
+   is (0,2,1), which outranks the (0,2,0) dark-mode block above; plain
+   `[data-allo-theme]` would lose to it whenever the OS is in dark mode. */
+html:root[data-allo-theme="warm"]{--bg:#fdf3dd;--panel:#fffcf3;--ink:#432c10;--body:#573a1c;--soft:#7a5a34;--line:#e6d3ae;--th:#f7ecd5;--code-bg:#f7ecd5;--accent:#9a3412;--accent-ink:#7c2d12;--accent-soft:#fbeadb;--accent-bd:#e4c3a6;--shadow:0 1px 3px rgba(87,58,28,.13);}
+html:root[data-allo-theme="sepia"]{--bg:#f4ecd8;--panel:#fdf8ec;--ink:#3f2d18;--body:#5c4033;--soft:#7b5f45;--line:#ddcdb0;--th:#f0e6d0;--code-bg:#f0e6d0;--accent:#8a4b1e;--accent-ink:#6f3c18;--accent-soft:#f7edda;--accent-bd:#dcc3a2;--shadow:0 1px 3px rgba(92,64,51,.13);}
+html:root[data-allo-theme="dark"]{--bg:#12121f;--panel:#1e1e33;--ink:#f1f5fb;--body:#d8e0ee;--soft:#a3b0c8;--line:#343a55;--th:#242440;--code-bg:#242440;--accent:#8ab4ff;--accent-ink:#c4d9ff;--accent-soft:#1c2947;--accent-bd:#33507f;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;--ok-bg:#10261a;--ok-bd:#1f6b3d;--ok-ink:#a7e8bf;--shadow:0 1px 3px rgba(0,0,0,.45);}
+html:root[data-allo-theme="highContrast"]{--bg:#000;--panel:#000;--ink:#ff0;--body:#ff0;--soft:#ff0;--line:#ff0;--th:#000;--code-bg:#000;--accent:#ff0;--accent-ink:#ff0;--accent-soft:#000;--accent-bd:#ff0;--warn-bg:#000;--warn-bd:#ff0;--warn-ink:#ff0;--ok-bg:#000;--ok-bd:#ff0;--ok-ink:#ff0;--shadow:none;}
+html:root[data-allo-theme="blue"]{--bg:#d9e9f6;--panel:#f0f7fd;--ink:#0d1f2e;--body:#1b2631;--soft:#41566a;--line:#b2cfe5;--th:#e2eff9;--code-bg:#e2eff9;--accent:#0b4f7a;--accent-ink:#083b5c;--accent-soft:#e4f0fa;--accent-bd:#a8c9e2;--shadow:0 1px 3px rgba(27,38,49,.13);}
+html:root[data-allo-theme="green"]{--bg:#e6f4e7;--panel:#f4fbf5;--ink:#0f3016;--body:#1b5e20;--soft:#3d6b42;--line:#c0dfc3;--th:#ecf7ed;--code-bg:#ecf7ed;--accent:#1b5e20;--accent-ink:#12441a;--accent-soft:#e9f6ea;--accent-bd:#b5d8b8;--shadow:0 1px 3px rgba(27,94,32,.13);}
+html:root[data-allo-theme="rose"]{--bg:#fbe2ea;--panel:#fef3f7;--ink:#4f0a29;--body:#7c0d47;--soft:#8d4064;--line:#f0c0d2;--th:#fbe8ef;--code-bg:#fbe8ef;--accent:#9d1148;--accent-ink:#7c0d38;--accent-soft:#fceaf1;--accent-bd:#eebccd;--shadow:0 1px 3px rgba(124,13,71,.13);}
+html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f;--body:#26324a;--soft:#57637d;--line:#e2ddc8;--th:#f3f0e2;--code-bg:#f3f0e2;--accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eef3fe;--accent-bd:#c6d3f2;--shadow:0 1px 3px rgba(38,50,74,.11);}
+@media print{
+  /* A chosen reading theme must not reach paper: dark or high-contrast would
+     print light text on white. Same (0,2,1) specificity as the theme rules but
+     later in source, so it wins for any theme value. The text-size choice is
+     deliberately NOT reset, because setting a large size and then printing is
+     how you get a large-print copy. */
+  html:root[data-allo-theme]{--bg:#fff;--panel:#fff;--ink:#000;--body:#000;--soft:#333;
+    --line:#999;--th:#eee;--code-bg:#f2f2f2;--accent:#000;--accent-ink:#000;
+    --accent-soft:#fff;--accent-bd:#999;--warn-bg:#fff;--warn-bd:#999;--warn-ink:#000;
+    --ok-bg:#fff;--ok-bd:#999;--ok-ink:#000;--shadow:none;}
+  body{background:#fff;color:#000;}
+  nav.toc{box-shadow:none;break-after:page;page-break-after:always;}
+  .listen{display:none;}
+  .rtools,#rtools-ruler{display:none !important;}
+  h2{padding-left:0;}
+  h2::before{display:none;}
+  .reading{background:none;box-shadow:none;}
+  .wrap{max-width:none;padding:0;}
+  table,blockquote,.good,.doc{break-inside:avoid;page-break-inside:avoid;}
+  figure{break-inside:auto;page-break-inside:auto;}
+  figure img{max-height:8.6in;width:auto;max-width:100%;margin:0 auto;object-fit:contain;}
+  figure.phone-shot img{max-height:7.8in;}
+  h2{break-after:avoid;page-break-after:avoid;}
+  a{color:#000;text-decoration:underline;}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:.8em;overflow-wrap:anywhere;}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+<p class="manual-home"><a href="https://apomera.github.io/AlloFlow/manuals.html">← All manuals and guides</a></p>
+<div class="banner">🎟️ <strong>Recognition first.</strong> School Rewards &amp; Store is a school-owned points economy: staff recognise students with a written reason, students see their growth, and a store opens for a fixed window each trimester. The ledger lives in your school's Google Workspace; AlloFlow keeps nothing about students.</div>
+<article>
+<h1>School Rewards &amp; Store: User Manual</h1>
+<p class="suite">Part of the Leadership Hub and the Educator Tools. For how this tool sits beside the rest of the suite, see <a href="https://alloflow-cdn.pages.dev/guide/for-school-leaders.html">For school leaders</a> in the AlloFlow teacher guide.</p>
+
+<p class="docmeta">
+<span>13 sections</span><span class="dot" aria-hidden="true"></span>
+<span>about 25 minutes end to end</span><span class="dot" aria-hidden="true"></span>
+<span>reviewed September 2, 2026</span><span class="dot" aria-hidden="true"></span>
+<span>prints to about 12 pages</span>
+</p>
+
+<div class="start">
+<h2 class="start-heading">Where to start</h2>
+<p><strong>Principals and administrators:</strong> sections 2 and 3 are the setup; sections 5, 9, and 10 run and protect a trimester.</p>
+<p><strong>Teachers and cashiers:</strong> section 4 is awarding; section 5 is the register.</p>
+<p><strong>Students and families:</strong> section 6 is written for you.</p>
+</div>
+
+<nav class="toc" aria-label="Contents">
+<strong>Contents</strong>
+<ol>
+<li><a href="#what">What it is and who it is for</a></li>
+<li><a href="#quickstart">Quick start for a principal</a></li>
+<li><a href="#setup">Setup, step by step</a></li>
+<li><a href="#awarding">Awarding points</a></li>
+<li><a href="#store">The store: windows, checkout, and receipts</a></li>
+<li><a href="#students">For students and families</a></li>
+<li><a href="#classroom">Connecting to the classroom: worksheet and roster bridge</a></li>
+<li><a href="#printlab">The 3D Print Lab</a></li>
+<li><a href="#admin">Administration</a></li>
+<li><a href="#privacy">Privacy, records, and boundaries</a></li>
+<li><a href="#access">Themes, phones, languages, and accessibility</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#glossary">Glossary</a></li>
+</ol>
+</nav>
+
+<h2 id="what">1. What It Is and Who It Is For</h2>
+<p>School Rewards &amp; Store is a school-owned points economy for positive recognition. Staff award points with a written reason, students see their balance and growth, and a store opens for a fixed window each trimester. The ledger lives in a protected Google Sheet that a managed school account owns, the portal runs as a Google Apps Script web app restricted to your Google Workspace domain, and AlloFlow holds nothing but the launcher address and a setup checklist on the device that connects. It is a pilot design for one school, not a district platform, and it stays separate from AlloHaven experience points inside AlloFlow.</p>
+<div class="tablewrap">
+<table>
+<caption>Roles and what each can do</caption>
+<tr><th scope="col">Role</th><th scope="col">Rewards</th><th scope="col">Store</th><th scope="col">Where they work</th></tr>
+<tr><th scope="row">Student</th><td>Own balance, growth levels, the reasons staff wrote, a prize goal.</td><td>Sees the catalog and whether a prize is within balance; does not check out.</td><td>The portal, or just the balance emails.</td></tr>
+<tr><th scope="row">Staff</th><td>Award points to one student or a group; undo their own award within fifteen minutes.</td><td>None.</td><td>The portal Award tab.</td></tr>
+<tr><th scope="row">Cashier</th><td>None.</td><td>Complete checkout at the register against the live balance and inventory.</td><td>The portal Store tab.</td></tr>
+<tr><th scope="row">Administrator</th><td>Everything above plus corrections, categories, roster, staff access, guardian connections, settings, integrity and reconciliation.</td><td>Catalog, inventory, shopping windows, refunds.</td><td>The portal Admin tab; setup inside AlloFlow.</td></tr>
+</table>
+</div>
+<p>Roles come from the roster and the staff list on the server side. Signing in with a school Google account decides what you can see; nothing in the link itself grants access.</p>
+<h2 id="quickstart">2. Quick Start for a Principal</h2>
+<p>Inside AlloFlow, open <strong>Educator Tools &rarr; School Rewards &amp; Store</strong>, or <strong>Leadership Hub &rarr; School Rewards &amp; Store</strong>. The panel that opens is both the setup and the launcher. The first time, it shows a ten-step checklist; once a deployment is connected, it opens on the launcher with the checklist folded below.</p>
+<figure>
+<img src="school-rewards-manual-assets/01-setup-checklist.jpg" width="1100" height="1150" loading="lazy" alt="The School Rewards and Store panel before a portal is connected. A red student-data boundary note, a Launch card reading Not connected yet, a progress bar, a Next step banner, and the first numbered steps of the setup checklist with Copy Code.gs and Copy Portal.html controls.">
+<figcaption>First open: the setup checklist. Each copy control fetches the reviewed file, checks its signature, and marks the step done.</figcaption>
+</figure>
+<h3>Practice first</h3>
+<p>Before any Google setup, and before a staff meeting, open the <strong>practice portal</strong> from the panel's Launch card (<em>Practice with fictional data</em>) or directly at alloflow-cdn.pages.dev/school-rewards-practice. It is the real portal running on a fictional ledger in your browser: awards, group awards, undo, checkout, receipts, refunds, and the student view all work, and nothing reaches a real ledger. A bar at the top switches the <strong>role</strong> (staff, cashier, administrator, student), picks a <strong>scenario</strong> (a small school in preview, a shopping day with the store open, a large school), and offers <strong>Reset data</strong> to start clean. The data persists in that browser between visits, so a mistake made in a staff meeting can be undone or reset without consequence.</p>
+<figure>
+<img src="school-rewards-manual-assets/09-practice-portal.jpg" width="1180" height="900" loading="lazy" alt="The practice portal with its dark purple practice bar across the top showing Role Staff, Scenario Small school, Customize, Start the tour, Reset data, and Manual buttons; below it the real Award points tab with student tiles outlined in amber and a Practice tour box reading 1 of 4, Choose the student.">
+<figcaption>The practice portal: the real portal, a fictional ledger, a role and scenario bar, and a tour that highlights the control each step is about.</figcaption>
+</figure>
+<p><strong>Customize</strong> opens a panel to set the school name, number of students, store status, starting points, the recognition categories, and the prizes, and to edit the <strong>tour steps</strong> as a short list where each step names a role, a tab, a target, a title, and one sentence. <em>Apply and reload</em> rebuilds the fictional ledger from those settings; <em>Export settings</em> and <em>Import settings</em> move the whole practice set, tour included, between schools as one file. The tour runs the steps for the current role, so a staff meeting can run the staff tour while cashiers run theirs at the register.</p>
+<ol>
+<li><strong>Confirm district review and the managed account</strong> that will own the ledger.</li>
+<li><strong>Create the private Apps Script project</strong> and paste the four files from the copy controls.</li>
+<li><strong>Run the one-time setup</strong> using the function the panel generates from your school name, domain, year, and growth thresholds.</li>
+<li><strong>Deploy as a web app</strong> restricted to your Workspace domain and paste the deployment URL into step 9.</li>
+<li><strong>Open the deployment check</strong>, then share the staff link from the Launch card.</li>
+</ol>
+<p>Section 3 walks through each step. Most of the time goes into the district conversation in step 1, not the clicks.</p>
+<h2 id="setup">3. Setup, Step by Step</h2>
+<p>The checklist is resumable: it is saved on the device, and steps you tick stay ticked. Copy steps complete themselves when a copy succeeds.</p>
+<ol>
+<li><strong>Confirm district review and the managed account.</strong> The school or district reviews <code>Code.gs</code>, <code>Portal.html</code>, <code>Index.html</code>, and <code>appsscript.json</code>, plus Apps Script use, Sheet storage, mail sending, and retention. Sign in to the managed Google Education account that will own the ledger, the mail trigger, and the private print-model folder. A durable role account is safer than a personal one.</li>
+<li><strong>Create the private project.</strong> Open <a href="https://script.new/">script.new</a>, confirm the account again, and name the project <code>AlloFlow School Rewards</code>. In Project Settings turn on <em>Show appsscript.json manifest file in editor</em>.</li>
+<li><strong>Replace Code.gs.</strong> Select all starter code, paste, save.</li>
+<li><strong>Add the Portal page.</strong> Choose <strong>+ &rarr; HTML</strong>, name it exactly <code>Portal</code>, paste.</li>
+<li><strong>Add the Index page</strong> the same way, named exactly <code>Index</code>. It only wraps the Portal page.</li>
+<li><strong>Replace appsscript.json.</strong> The manifest restricts the web app to your domain, runs it as the deploying account, and declares the Sheets, Drive, mail, and trigger scopes.</li>
+<li><strong>Run the one-time setup.</strong> Fill in the school name, allowed domain, academic year, and growth thresholds; leave the default recognition categories on unless the school has its own. Copy the generated <code>runInitialSchoolRewardsSetup</code> function, paste it at the end of Code.gs, choose it in the function menu, and click Run. Approve the scopes once. The account that runs it becomes the first administrator, and the allowed domain must match its email domain. Staff, cashiers, and students are added later inside the portal.</li>
+<li><strong>Deploy.</strong> Deploy &rarr; New deployment &rarr; Web app. Execute as <strong>Me</strong>; who has access: <strong>users in your Google Workspace domain</strong>, never Anyone. Copy the URL ending in <code>/exec</code>. Any later source change needs a new deployment version.</li>
+<li><strong>Paste the deployment URL and connect.</strong> Only an HTTPS <code>script.google.com</code> address ending in <code>/macros/s/&hellip;/exec</code> is accepted. It is saved on this device.</li>
+<li><strong>Verify.</strong> Open the deployment check; the page should say <em>Deployment check passed</em> with the school, domain, script version, and your role. Then open the portal once as each intended role and confirm each sees only its own surface.</li>
+</ol>
+<figure>
+<img src="school-rewards-manual-assets/02-connected-launch.jpg" width="1100" height="1150" loading="lazy" alt="The panel after connecting: a Connected badge, the saved deployment URL, buttons to open the portal, open the deployment check, and disconnect, and a Share with staff box with a QR code, the staff link, and a Copy staff link button.">
+<figcaption>Connected: the Launch card, and the staff link that colleagues use with their own Google sign-in.</figcaption>
+</figure>
+<p><strong>Sharing with staff.</strong> The staff link is the same portal address. It carries no secret, so posting it in a staff channel or on a poster is fine: sign-in and the roster decide what each person can do. The QR code is the same link.</p>
+<p><strong>If the clipboard is blocked</strong> in your window, the copy control shows the verified source pre-selected in a box; press Ctrl+C (Cmd+C on a Mac) and paste it into the editor. Copying from the box marks the step done.</p>
+<h2 id="awarding">4. Awarding Points</h2>
+<p class="suite">Training day: the <a href="school-rewards-quick-cards.html">printable quick cards</a> hold this section and the next on one page each, for staff and for cashiers.</p>
+<p>Staff award from the portal <strong>Award points</strong> tab. Students appear as tiles with their name, grade and homeroom, a short reference code, and available points. Tap a tile to select the student; the confirmation panel repeats who you chose. Pick a recognition category, enter the points, and write what the student did. The explanation is required and is the sentence the student will read, so write it to them.</p>
+<figure>
+<img src="school-rewards-manual-assets/03-award-tiles.jpg" width="1180" height="1180" loading="lazy" alt="The Award points tab. Search and grade and homeroom filters above a grid of student tiles; Blake T. is selected with a purple outline; below are the confirmation panel, the group award checkbox, points, category with its help text, the explanation field, and a Record award button. A Current balances list sits on the right.">
+<figcaption>Awarding to one student. The tile grid replaces a dropdown so the intended student is visible before the award is recorded.</figcaption>
+</figure>
+<ul>
+<li><strong>Group award.</strong> Tick <em>Award the same recognition to several students</em>, then tap tiles or use <em>Select all shown</em> after filtering by grade or homeroom. Up to sixty students receive the same category, points, and explanation. Each student is recorded as their own award, so a lost connection and an exact retry never double-award, and any student that could not be recorded is listed while the rest stay recorded.</li>
+<li><strong>Undo.</strong> After a single award the notice offers <strong>Undo</strong>. The staff member who recorded an award can reverse it for fifteen minutes; the reversal is an ordinary audited entry. After that, an administrator corrects it.</li>
+<li><strong>Categories.</strong> The default HOWL categories, or the school's own, each carry a description that appears under the category menu. Inactive categories keep their history but cannot receive new awards.</li>
+<li><strong>Growth levels</strong> are computed from lifetime net awards in each category. Store purchases never lower them.</li>
+</ul>
+<figure>
+<img src="school-rewards-manual-assets/04-group-award-dark.jpg" width="1180" height="1180" loading="lazy" alt="The Award points tab in the dark theme with group mode on: the tiles act as checkboxes, a counter reads three students selected, and Select all shown and Clear buttons sit above the grid.">
+<figcaption>A group award in the portal's dark theme. The counter shows how many students the one explanation will reach.</figcaption>
+</figure>
+<h2 id="store">5. The Store: Windows, Checkout, and Receipts</h2>
+<p>Shopping happens inside a <strong>trimester window</strong> that an administrator moves through <em>Draft</em>, <em>Preview</em>, <em>Open</em>, <em>Closed</em>, and <em>Archived</em>. In Preview, students see prizes and what they can afford; in Open, cashiers can check out. Configured start and end times fail closed outside the window.</p>
+<ul>
+<li><strong>Checkout</strong> is done by a cashier at the register. The cashier chooses and verifies the student, builds the cart, and the portal refreshes the live balance, window, and inventory before the final confirmation. If availability changed, the cart is kept and the affected prize is highlighted for review.</li>
+<li><strong>Receipts</strong> are itemized, shown on screen, and emailed to the student's managed address. If email fails, the on-screen receipt can be printed and an administrator resolves delivery later; the purchase itself is complete.</li>
+<li><strong>Refunds</strong> are administrator-only and restore points and finite inventory for the whole order.</li>
+<li><strong>Inventory</strong> is an append-only movement history: creating a prize, adjusting stock, sales, and refunds each leave a record, and a stale stock version is refused rather than overwritten.</li>
+</ul>
+<p>The repository README carries a shopping-day runbook with the go/no-go review, the day-of routine, and what to do when a request times out. Follow it as written: the standing rule is never to resubmit an ambiguous request with a new key.</p>
+<h2 id="students">6. For Students and Families</h2>
+<p>Students do not need the portal to take part: balance emails arrive on the schedule the school sets. A rostered student who opens the portal with their school account sees only their own balance, growth, recent recognition, and the prize catalog.</p>
+<figure>
+<img src="school-rewards-manual-assets/05-student-overview.jpg" width="1180" height="900" loading="lazy" alt="A student's overview: an available balance of 42 points, growth points earned, store status Preview with the opening date, a Prize preview with two prizes and Save for this buttons, a Saving for line reading Robotics kit hour 80 points with 38 more points to go, and a My growth card with a Helpful level bar.">
+<figcaption>What a student sees. The prize goal line updates as points arrive; the goal itself stays in that browser and is never sent to the ledger.</figcaption>
+</figure>
+<ul>
+<li><strong>Latest recognition</strong> shows the five most recent awards with the category and the sentence staff wrote. The full history is under Progress &amp; activity.</li>
+<li><strong>Save for this</strong> marks one prize as a goal and shows the points still needed.</li>
+<li><strong>Language.</strong> A menu in the header switches the student surfaces between English and Spanish; the choice is remembered on that device and defaults to the device language. When a signed-in student chooses a language, the repository saves it too, so balance emails to that student arrive in the same language and a new device picks it up on sign-in. Section 11 says what is and is not translated.</li>
+<li><strong>Families.</strong> Where a school has set up reviewed guardian connections, guardians receive bounded digests of positive progress. Digests omit staff notes and transaction-level reasons on purpose; the detailed view belongs to the signed-in student.</li>
+</ul>
+<h2 id="classroom">7. Connecting to the Classroom: Worksheet and Roster Bridge</h2>
+<p>AlloFlow and School Rewards use opposite identity models on purpose. Classroom sessions in AlloFlow run on codenames and hold no student names or emails; the rewards ledger is keyed by each student's managed Google identity. Two bridges respect that boundary.</p>
+<figure>
+<img src="school-rewards-manual-assets/08-recognition-worksheet.jpg" width="1100" height="1150" loading="lazy" alt="The lower part of the connected panel: the Share with staff box, the folded setup checklist, a Classroom roster bridge card listing Period 2 and Period 5 with learner counts and a Download roster template CSV button, and a Recognition worksheet table listing Blue Falcon with three tokens for Collaboration and Ready to learn, and Quiet Otter with one token for Self-regulation, with download and copy buttons.">
+<figcaption>The two classroom bridges. Both work with codenames only; the administrator adds real identities from the student information system.</figcaption>
+</figure>
+<ul>
+<li><strong>Recognition worksheet.</strong> During a live class session, recognition given in AlloHaven is summarised here by codename with the reasons and counts. A teacher awards it in the portal by picking the student, or with a group award when the reason is the same. Nothing is sent to the ledger automatically. The worksheet keeps recent sessions on this device (codenames only, the last forty sessions or ninety days), so a teacher who awards weekly sees a Sessions column and totals across those sessions rather than only the class on screen.</li>
+<li><strong>Classroom roster bridge.</strong> Exports the teacher's roster groups as a CSV template: the group becomes the homeroom and the codename a cross-reference column, while first name, last initial, grade, and managed email are left blank for an administrator to complete from the SIS before importing in the portal's Admin tab. The importer ignores the two extra columns. Nothing leaves the device in this step.</li>
+</ul>
+<h2 id="printlab">8. The 3D Print Lab</h2>
+<p>The Print Lab lets a student submit a small 3D design from AlloFlow's STEAM Lab, have staff review and quote it in points, and reserve those points until the print is fulfilled. It is a large surface with its own safety and review workflow, and most pilots will not use it at first. An administrator can hide the tab under <strong>School settings</strong> until the school has a reviewed printer workflow; existing print records stay in the ledger, and hiding the tab is a display setting rather than an access control. The full workflow, formats, and safety boundaries are documented in the package README and the Print Lab design note.</p>
+<h2 id="admin">9. Administration</h2>
+<figure>
+<img src="school-rewards-manual-assets/07-admin-sections.jpg" width="1180" height="1000" loading="lazy" alt="The Admin setup tab: a row of section chips such as School settings, Student roster, Staff access, Prize catalog, and Trimester reconciliation, then cards for School settings with the Print Lab checkbox and Student roster with the add-student form, each with a Collapse button.">
+<figcaption>The Admin tab. The section index jumps to a card, and each card collapses so a tablet is not one long column of forms.</figcaption>
+</figure>
+<ul>
+<li><strong>Student roster.</strong> Add, edit, deactivate, or reactivate students; import a CSV with <code>firstName</code> and <code>email</code> plus optional last initial, grade, and homeroom, validated as a whole before anything is written; or preview and apply a provider-neutral SIS snapshot.</li>
+<li><strong>Staff access.</strong> Staff, cashier, and administrator roles by managed email; the last active administrator cannot be removed.</li>
+<li><strong>Prize catalog, inventory, categories, windows.</strong> Catalog edits never change stock; stock changes are separate reviewed adjustments with a reason.</li>
+<li><strong>Balance emails and guardian digests</strong> run as bounded, resumable mail runs with a signed outbox; an uncertain delivery is never retried automatically.</li>
+<li><strong>Operations integrity, reconciliation, and the audit chain.</strong> Read-only integrity issues, recovery for a valid pending operation only, aggregate reconciliation after each window, and <code>verifySchoolRewardsAuditChain()</code> from the editor.</li>
+<li><strong>School settings</strong> currently holds the Print Lab visibility switch.</li>
+</ul>
+<h2 id="privacy">10. Privacy, Records, and Boundaries</h2>
+<ul>
+<li><strong>Where data lives.</strong> Names, managed emails, balances, roles, and reasons live in the school-owned Sheet and Drive folder. AlloFlow stores the launcher URL and the setup checklist on the connecting device, and nothing about students.</li>
+<li><strong>Who can see what</strong> is decided server-side from the roster and staff list after Google sign-in. Students see only themselves. Staff never see receipts.</li>
+<li><strong>What not to write.</strong> Reasons are student-facing. Do not put disability, discipline, behaviour narratives, protected-category labels, or other sensitive information in a reason or a prize description.</li>
+<li><strong>Corrections are entries, not edits.</strong> The ledger is append-only; an undo or correction is a new reversal entry, and every mutation is journaled and audited with a tamper-evident hash chain.</li>
+<li><strong>The classroom bridges never move identity.</strong> Codenames cross; names and emails do not.</li>
+<li><strong>Records policy.</strong> Retention, export, and deletion follow the district's schedule. This package is technical infrastructure; it is not a FERPA or local-policy determination, and this manual is not legal advice.</li>
+</ul>
+<h2 id="access">11. Themes, Phones, Languages, and Accessibility</h2>
+<ul>
+<li><strong>Themes.</strong> Inside AlloFlow the panel follows the app's theme, including the high-contrast theme. The portal follows the device: a dark colour scheme and a request for more contrast are both honoured, and reduced motion turns off transitions.</li>
+<li><strong>Phones.</strong> Below 760 pixels the portal's tab strip becomes a fixed bar at the bottom of the screen, cards stack, and award tiles remain full-width targets.</li>
+<li><strong>Languages.</strong> The student and family surfaces are available in Spanish from the header menu; untranslated text stays English rather than breaking. Staff and administrator surfaces and guardian digests are English. Balance emails follow the language each student chose in the portal, and an administrator can set it for a student who has not signed in. The Spanish pack was drafted for review by a bilingual staff member before a family-facing pilot.</li>
+<li><strong>Keyboard and screen readers.</strong> Tabs and panels use a tab and tabpanel relationship, tiles are radio or checkbox controls with visible focus, notices are live regions, and the panel inside AlloFlow holds focus and returns it when closed. Contrast pairs in every theme are checked against the WCAG AA ratio in the test suite. Automated checks are one layer; test with the devices and assistive technology your staff actually use.</li>
+</ul>
+<figure class="phone-shot">
+<img src="school-rewards-manual-assets/06-student-spanish-phone.jpg" width="780" height="1600" loading="lazy" alt="The student overview on a phone in Spanish: the Español menu beside the ESTUDIANTE badge, stacked cards for Mi saldo disponible para gastar, Puntos de crecimiento ganados, and Estado de la tienda, and the tab strip pinned to the bottom reading Resumen, Tienda, and Laboratorio de impresión 3D.">
+<figcaption>A student's phone view in Spanish, with the tab bar pinned to the bottom of the screen.</figcaption>
+</figure>
+<h2 id="troubleshooting">12. Troubleshooting</h2>
+<ul>
+<li><strong>The card only shows the setup checklist:</strong> no deployment URL is saved on this device. Paste it in step 9, or ask the administrator for the staff link.</li>
+<li><strong>Deployment check failed:</strong> you are not signed in to a managed account in the allowed domain, the one-time setup has not run, or the deployment is an older version. The page names the reason.</li>
+<li><strong>The portal was blocked:</strong> allow pop-ups for AlloFlow and try again, or open the staff link directly.</li>
+<li><strong>Copy Code.gs shows “Clipboard is blocked in this window”:</strong> use the pre-selected source box and Ctrl+C, or the view source link.</li>
+<li><strong>Unexpected source received; nothing copied:</strong> the fetched file did not match its expected signature. Use the view source link and compare with the repository.</li>
+<li><strong>An award went to the wrong student:</strong> choose Undo in the notice within fifteen minutes; otherwise an administrator records a correction from Progress &amp; activity.</li>
+<li><strong>A group award reported failures:</strong> the students named were not recorded; the rest were. Fix the cause and award only the missing students.</li>
+<li><strong>A checkout timed out or the result is ambiguous:</strong> do not submit again with a new request. Keep the screen, note the time and cart, and follow the runbook; the portal keeps a stable retry key for an exact retry.</li>
+<li><strong>Practice shows “not available in practice mode”:</strong> bulk mail, guardian digests, the Print Lab, and integrity recovery need a real deployment; everything a staff member or cashier does on a normal day works in practice.</li>
+<li><strong>A student sees English in the portal after choosing Spanish:</strong> the choice is per browser; some staff-facing strings are English by design.</li>
+</ul>
+<h2 id="glossary">13. Glossary</h2>
+<dl>
+<dt>Ledger</dt><dd>The append-only list of point entries: awards, reversals, spends, and refunds.</dd>
+<dt>Available balance</dt><dd>Ledger balance minus points reserved for an active print request.</dd>
+<dt>Growth level</dt><dd>A per-category level computed from lifetime net awards; purchases never lower it.</dd>
+<dt>Shopping window</dt><dd>The trimester record whose state decides whether prizes are previewed, sold, or closed.</dd>
+<dt>Group award</dt><dd>One explanation recorded as separate awards for up to sixty students.</dd>
+<dt>Undo window</dt><dd>The fifteen minutes in which the awarding staff member can reverse their own award.</dd>
+<dt>Deployment check</dt><dd>The portal page at the deployment URL with <code>?api=status</code> that confirms the service, version, school, domain, and your role.</dd>
+<dt>Codename</dt><dd>The classroom-session identity AlloFlow uses instead of a student's name.</dd>
+<dt>Roster bridge</dt><dd>The CSV template that carries groups and codenames, never names or emails, from AlloFlow to the portal importer.</dd>
+<dt>Practice portal</dt><dd>The real portal page served with a fictional ledger in your browser, with a role and scenario bar and an editable tour; nothing reaches a real ledger.</dd>
+<dt>Idempotency key</dt><dd>A stable request key that lets an interrupted operation be retried exactly once without duplicating it.</dd>
+</dl>
+</article>
+
+
+<script>
+/* Read aloud, per section (2026-08-17).
+ *
+ * WHY THE DEVICE VOICE AND NOT KOKORO. AlloFlow ships Kokoro for high-quality
+ * on-device speech inside the app, but Kokoro is an ~88MB ONNX model plus a
+ * transformers runtime, cached in OPFS and driven by a worker. Pulling that
+ * into a standalone manual would mean an 88MB download before the first word,
+ * on a page whose entire job is to be readable immediately — and it would
+ * inherit the poisoned-cache failure mode a truncated model download causes.
+ * The shipped HTML handouts already answer this the same way: they read with
+ * window.speechSynthesis, which is instant, needs no download, and is present
+ * on the Chromebooks and laptops staff actually use. Same choice here.
+ *
+ * Progressive enhancement on purpose: if speechSynthesis is missing, no button
+ * is ever inserted and the manual is exactly the document it was.
+ */
+(function () {
+  // Feature-test the OBJECTS, not the property name: 'speechSynthesis' in
+  // window is true even where the getter yields undefined, which would have
+  // rendered 17 dead buttons.
+  if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') return;
+  var synth = window.speechSynthesis;
+  var current = null; // { btn, blocks, idx }
+
+  function blocksFor(h2) {
+    var out = [], n = h2.nextElementSibling;
+    while (n && n.tagName !== 'H2') {
+      if (/^(P|LI|DT|DD|H3|H4|CAPTION|TD|TH|BLOCKQUOTE|FIGCAPTION)$/.test(n.tagName)) out.push(n);
+      else out.push.apply(out, n.querySelectorAll('p, li, dt, dd, h3, h4, caption, th, td, figcaption'));
+      n = n.nextElementSibling;
+    }
+    return out.filter(function (el) { return (el.textContent || '').trim().length > 1; });
+  }
+
+  function stop() {
+    if (!current) return;
+    try { synth.cancel(); } catch (e) {}
+    current.blocks.forEach(function (b) { b.classList.remove('reading'); });
+    current.btn.textContent = '🔊';
+    current.btn.setAttribute('aria-pressed', 'false');
+    current.btn.setAttribute('aria-label', 'Read section aloud: ' + current.sectionLabel);
+    current.btn.title = 'Read section aloud: ' + current.sectionLabel;
+    current = null;
+  }
+
+  function speakFrom(state) {
+    if (!current || current !== state) return;
+    if (state.idx >= state.blocks.length) { stop(); return; }
+    var el = state.blocks[state.idx];
+    state.blocks.forEach(function (b) { b.classList.remove('reading'); });
+    el.classList.add('reading');
+    // One utterance per block: long single utterances get truncated by some
+    // engines, and per-block is what makes the highlight follow along.
+    var u = new SpeechSynthesisUtterance((el.textContent || '').trim());
+    u.rate = 1;
+    u.onend = function () { state.idx += 1; speakFrom(state); };
+    u.onerror = function () { stop(); };
+    try { synth.speak(u); } catch (e) { stop(); }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('article > h2[id]'), function (h2) {
+    var blocks = blocksFor(h2);
+    if (!blocks.length) return;
+    var sectionLabel = (h2.textContent || '').trim();
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'listen';
+    btn.textContent = '🔊';
+    btn.title = 'Read section aloud: ' + sectionLabel;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.setAttribute('aria-label', 'Read section aloud: ' + sectionLabel);
+    btn.addEventListener('click', function () {
+      var wasThis = current && current.btn === btn;
+      stop();
+      if (wasThis) return;            // second click on the same button = stop
+      current = { btn: btn, blocks: blocks, idx: 0, sectionLabel: sectionLabel };
+      btn.textContent = '⏹';
+      btn.setAttribute('aria-pressed', 'true');
+      btn.title = 'Stop reading';
+      btn.setAttribute('aria-label', 'Stop reading section: ' + sectionLabel);
+      speakFrom(current);
+    });
+    h2.insertAdjacentElement('afterend', btn);
+  });
+
+  window.addEventListener('beforeunload', function () { try { synth.cancel(); } catch (e) {} });
+  // Leaving the page open in a background tab and returning should not resume
+  // half-read; browsers vary, so stop cleanly when the page is hidden.
+  document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
+}());
+</script>
+
+<script>
+/* Reading tools — font, text size, line and letter spacing, reading theme and
+   a reading ruler. Ported from the reader bar AlloFlow injects into its HTML
+   exports (view_pdf_audit_source.jsx :: _wrapAsReaderApp) and sharing its
+   localStorage key, so preferences set on an exported handout are already
+   applied here. Built in script rather than shipped in the markup: with
+   scripting off the controls would otherwise render as dead UI. */
+(function () {
+  var d = document, root = d.documentElement, LS = 'allo-reader-prefs';
+  var prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) { prefs = {}; }
+  function save() { try { localStorage.setItem(LS, JSON.stringify(prefs)); } catch (e) {} }
+
+  var FONTS = [
+    ['', 'Original'],
+    ['ui-sans-serif, system-ui, sans-serif', 'Sans-serif'],
+    ["Georgia, 'Times New Roman', serif", 'Serif'],
+    ["'OpenDyslexic','Comic Sans MS','Trebuchet MS',sans-serif", 'Dyslexia-friendly'],
+    ["ui-monospace, Menlo, Consolas, monospace", 'Monospace']
+  ];
+  // 'easyread' rather than the export's 'dyslexia': here it is a calm palette,
+  // while the dyslexia-friendly FACE is a separate choice in the Font menu.
+  var THEMES = [
+    ['default', 'Default'], ['warm', 'Warm'], ['sepia', 'Sepia'], ['dark', 'Dark'],
+    ['highContrast', 'High contrast'], ['blue', 'Blue'], ['green', 'Green'],
+    ['rose', 'Rose'], ['easyread', 'Easy read']
+  ];
+
+  function el(tag, attrs, kids) {
+    var n = d.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === 'text') n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]);
+    });
+    (kids || []).forEach(function (c) { n.appendChild(c); });
+    return n;
+  }
+  function select(id, label, pairs) {
+    var s = el('select', { id: id, 'aria-label': label });
+    pairs.forEach(function (p) {
+      var o = el('option', { value: p[0], text: p[1] });
+      s.appendChild(o);
+    });
+    return el('label', { text: '' }, [d.createTextNode(label + ' '), s]);
+  }
+  function range(id, label, min, max, step) {
+    var r = el('input', { type: 'range', id: id, min: min, max: max, step: step, 'aria-label': label });
+    return el('label', {}, [d.createTextNode(label + ' '), r]);
+  }
+  function $(id) { return d.getElementById(id); }
+
+  var panel = el('div', { class: 'rtools-panel', id: 'rtools-panel', hidden: '' }, [
+    select('rt-font', 'Font', FONTS),
+    range('rt-size', 'Size', '0.85', '1.6', '0.05'),
+    range('rt-line', 'Line', '1.2', '2.4', '0.1'),
+    range('rt-letter', 'Letter', '0', '0.14', '0.01'),
+    select('rt-theme', 'Theme', THEMES),
+    el('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', 'aria-keyshortcuts': 'ArrowUp ArrowDown', text: 'Reading ruler' }),
+    el('button', { type: 'button', id: 'rt-reset', text: 'Reset' })
+  ]);
+  var toggle = el('button', {
+    type: 'button', id: 'rt-toggle', class: 'rtools-toggle',
+    'aria-expanded': 'false', 'aria-controls': 'rtools-panel', text: '⚙️ Reading tools'
+  });
+  var bar = el('div', { class: 'rtools', id: 'rtools', lang: 'en', role: 'region', 'aria-label': 'Reading tools' },
+    [el('div', { class: 'rtools-in' }, [toggle, panel])]);
+  d.body.insertBefore(bar, d.body.firstChild);
+  d.body.appendChild(el('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
+  Array.prototype.forEach.call(d.querySelectorAll('.tablewrap'), function (wrap, index) {
+    var caption = wrap.querySelector('caption');
+    wrap.tabIndex = 0;
+    wrap.setAttribute('role', 'region');
+    wrap.setAttribute('aria-label', (caption && caption.textContent ? caption.textContent.trim() : 'Scrollable table ' + (index + 1)) + '. Scroll horizontally if needed.');
+  });
+
+  function apply() {
+    var b = d.body;
+    b.style.fontFamily = prefs.font || '';
+    b.style.lineHeight = prefs.line ? String(prefs.line) : '';
+    b.style.letterSpacing = prefs.letter ? prefs.letter + 'em' : '';
+    // Text size drives the --fs multiplier, not body{font-size}: every prose
+    // size in this document is absolute px, so font-size alone would scale
+    // paragraphs and leave all seventeen headings untouched.
+    root.style.setProperty('--fs', prefs.size ? String(prefs.size) : '1');
+    if (prefs.theme && prefs.theme !== 'default') root.setAttribute('data-allo-theme', prefs.theme);
+    else root.removeAttribute('data-allo-theme');
+    if (prefs.ruler) root.setAttribute('data-allo-ruler', '1');
+    else root.removeAttribute('data-allo-ruler');
+    $('rt-font').value = prefs.font || '';
+    $('rt-size').value = prefs.size || 1;
+    $('rt-line').value = prefs.line || 1.65;
+    $('rt-letter').value = prefs.letter || 0;
+    $('rt-theme').value = prefs.theme || 'default';
+    $('rt-ruler').setAttribute('aria-pressed', prefs.ruler ? 'true' : 'false');
+  }
+  function on(id, ev, fn) { var n = $(id); if (n) n.addEventListener(ev, fn); }
+  on('rt-font', 'change', function (e) { prefs.font = e.target.value; save(); apply(); });
+  on('rt-size', 'input', function (e) { prefs.size = parseFloat(e.target.value); save(); apply(); });
+  on('rt-line', 'input', function (e) { prefs.line = parseFloat(e.target.value); save(); apply(); });
+  on('rt-letter', 'input', function (e) { prefs.letter = parseFloat(e.target.value); save(); apply(); });
+  on('rt-theme', 'change', function (e) { prefs.theme = e.target.value; save(); apply(); });
+  on('rt-ruler', 'click', function () { prefs.ruler = !prefs.ruler; save(); apply(); if (prefs.ruler) moveRuler(rulerTop); });
+  on('rt-reset', 'click', function () { prefs = {}; save(); apply(); });
+  on('rt-toggle', 'click', function () {
+    var open = panel.hasAttribute('hidden');
+    if (open) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  var ruler = $('rtools-ruler');
+  var rulerTop = Math.max(0, Math.round(window.innerHeight / 2));
+  function moveRuler(top) {
+    if (!ruler) return;
+    rulerTop = Math.max(0, Math.min(window.innerHeight - ruler.offsetHeight, top));
+    ruler.style.top = rulerTop + 'px';
+  }
+  d.addEventListener('mousemove', function (e) {
+    if (ruler && root.getAttribute('data-allo-ruler') === '1') {
+      moveRuler(e.clientY - ruler.offsetHeight / 2);
+    }
+  });
+  d.addEventListener('focusin', function (e) {
+    if (!ruler || root.getAttribute('data-allo-ruler') !== '1' || !e.target.getBoundingClientRect) return;
+    var rect = e.target.getBoundingClientRect();
+    moveRuler(rect.top + rect.height / 2 - ruler.offsetHeight / 2);
+  });
+  on('rt-ruler', 'keydown', function (e) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    if (!prefs.ruler) { prefs.ruler = true; save(); apply(); }
+    moveRuler(rulerTop + (e.key === 'ArrowDown' ? 20 : -20));
+  });
+  window.addEventListener('beforeprint', function () {
+    Array.prototype.forEach.call(d.images, function (img) { img.loading = 'eager'; });
+  });
+  apply();
+}());
+</script>
+
+<footer>
+<p>AlloFlow School Rewards &amp; Store. User manual, September 2026. Screenshots use fictional data; nothing in them represents a real student or school. This manual describes how the tool works; retention, records, and family-communication decisions belong to your district.</p>
+</footer>
+</main>
+</body>
+</html>

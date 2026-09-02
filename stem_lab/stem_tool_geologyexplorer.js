@@ -4583,6 +4583,48 @@
       }
       return false;
     }
+    // ── Heat vignette: the viewport edges glow warmer the closer you dig to molten rock.
+    // Pure DOM overlay (no extra draw calls); opacity is a static function of distance so
+    // reduced-motion users get the same cue without any pulse.
+    var heatVignette = null, heatVignetteAt = 0, heatVignetteLevel = -1;
+    function fpHazardProximity(wx, eyeY, wz) {                 // 0 = no molten voxel within 3 blocks … 1 = adjacent
+      var c = fpWorldToVoxel(wx, eyeY - FP_EYE_HEIGHT * 0.55, wz), best = 99;
+      for (var dx = -3; dx <= 3; dx++) for (var dy = -3; dy <= 3; dy++) for (var dz = -3; dz <= 3; dz++) {
+        var voxel = voxelByKey[(c.x + dx) + ',' + (c.y + dy) + ',' + (c.z + dz)];
+        if (!voxel || !visible(voxel) || fpMaterialPhysics(voxel.key).kind !== 'hazard') continue;
+        var d = Math.sqrt(dx * dx + dy * dy + dz * dz); if (d < best) best = d;
+      }
+      return best > 3.5 ? 0 : fpClampN(1 - (best - 1) / 2.5, 0, 1);
+    }
+    function fpUpdateHeatVignette(now) {
+      if (!fp.active || fp.mode !== 'mine') { if (heatVignette) heatVignette.style.opacity = '0'; return; }
+      if (now - heatVignetteAt < 120) return; heatVignetteAt = now;
+      if (!heatVignette) {
+        heatVignette = document.createElement('div');
+        heatVignette.setAttribute('data-geology-heat-vignette', 'true'); heatVignette.setAttribute('aria-hidden', 'true');
+        heatVignette.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:5;opacity:0;transition:opacity .35s ease;background:radial-gradient(ellipse at center, rgba(251,146,60,0) 45%, rgba(249,115,22,.55) 78%, rgba(220,38,38,.85) 100%);mix-blend-mode:screen;';
+        try { if (getComputedStyle(container).position === 'static') container.style.position = 'relative'; } catch (e) {}
+        container.appendChild(heatVignette);
+      }
+      var level = Math.round(fpHazardProximity(fp.pos.x, fp.pos.y, fp.pos.z) * 20) / 20;
+      if (level === heatVignetteLevel) return; heatVignetteLevel = level;
+      heatVignette.style.opacity = String(level * 0.9);
+      heatVignette.setAttribute('data-heat-level', String(level));
+    }
+    // ── Layer milestones: first footfall on each rock layer earns a flash + haptic, so
+    // descending reads as a sequence of discoveries rather than an undifferentiated hole.
+    function fpCheckLayerMilestone(now) {
+      if (!fp.onGround || fp.mode !== 'mine' || !fp.layersReached) return;
+      var here = null; try { here = fpProbe(fp.pos.x, fp.pos.y - FP_EYE_HEIGHT - VOXEL * 0.5, fp.pos.z); } catch (e) { return; }
+      if (!here || !here.key || here.key === 'void') return;
+      if (fp.layersReached[here.key]) return;
+      fp.layersReached[here.key] = true;
+      if (now - (fp.enteredAt || 0) < 1500) return;                      // the layer you spawn on is not a discovery
+      var n = Object.keys(fp.layersReached).length;
+      if (opts.onLayerMilestone) { try { opts.onLayerMilestone(here, n); } catch (e) {} }
+      else if (opts.onFlash) opts.onFlash('New layer reached: ' + (here.layerName || here.key) + ' · ' + here.depthKm + ' km · ' + temperatureValue(here.tempC) + (n > 1 ? ' · ' + n + ' layers walked' : ''));
+      if (window._alloHaptic) { try { window._alloHaptic('achieve'); } catch (e) {} }
+    }
     function fpMarkBlocked() {
       var now = (window.performance && performance.now) ? performance.now() : Date.now();
       fp.blockedUntil = now + 650; fp.statusKey = '__refresh';
@@ -4591,13 +4633,21 @@
       if (!fp.active) return;
       var now = (window.performance && performance.now) ? performance.now() : Date.now();
       var state = 'grounded', text = fp.mode === 'fly' ? 'Free flight' : (fp.onGround ? 'Grounded' : 'Falling');
+      var here = null;
+      if (fp.mode === 'mine' && fp.onGround) {
+        // Make the geotherm FELT: the badge reads the depth + temperature of the block underfoot,
+        // so digging down visibly heats up long before the magma warning fires.
+        try { here = fpProbe(fp.pos.x, fp.pos.y - FP_EYE_HEIGHT - VOXEL * 0.5, fp.pos.z); } catch (e) { here = null; }
+        if (here) text += ' · ' + here.depthKm + ' km · ' + temperatureValue(here.tempC);
+      }
       if (fp.mining) {
         var pct = fp.mining.duration ? Math.round(fp.mining.elapsed / fp.mining.duration * 100) : 100;
         state = 'mining'; text = (fp.mining.tool === 'drill' ? 'Drilling ' : 'Mining ') + fp.mining.profile.label.toLowerCase() + ' rock · ' + Math.min(100, pct) + '%';
-      } else if (fp.hazardNearby) { state = 'hazard'; text = 'Heat warning · molten rock nearby'; }
+      } else if (fp.hazardNearby) { state = 'hazard'; text = 'Heat warning · molten rock within one block' + (here ? ' · ' + temperatureValue(here.tempC) + ' here' : ''); }
       else if (fp.drillOverheated) { state = 'overheated'; text = 'Drill overheated · cooling down'; }
       else if (fp.medium === 'fluid') { state = 'swimming'; text = 'Swimming · Space rises'; }
       else if (now < fp.blockedUntil) { state = 'blocked'; text = 'Blocked · dig or jump to clear a path'; }
+      fpUpdateHeatVignette(now); fpCheckLayerMilestone(now);
       var key = state + ':' + text; if (fp.statusKey === key) return; fp.statusKey = key;
       var root = container.parentNode, node = null;
       try { node = root && root.querySelector ? root.querySelector('[data-geology-player-status]') : null; } catch (e) {}
@@ -4676,8 +4726,15 @@
     function fpHazardRespawn() {
       var now = (window.performance && performance.now) ? performance.now() : Date.now();
       var canWarn = !fp.lastHazardAt || now - fp.lastHazardAt > 900;
-      fp.lastHazardAt = now; fpRespawn(); fpSetMedium('air');
-      if (canWarn && opts.onFlash) opts.onFlash('That material is molten. You returned to the last safe dig-in point.');
+      // Loop guard: if the saved foothold keeps dropping us straight back into the hazard
+      // (e.g. the block under it was dug out), stop bouncing and go home to the seed pose.
+      fp.hazardLoopCount = (now - fp.lastHazardAt < 2500) ? (fp.hazardLoopCount || 0) + 1 : 0;
+      var goHome = fp.hazardLoopCount >= 2;
+      if (goHome) { fp.safePose = null; fp.hazardLoopCount = 0; }
+      fp.lastHazardAt = now; fpRespawn(goHome); fpSetMedium('air');
+      if (canWarn && opts.onFlash) opts.onFlash(goHome
+        ? 'Your last foothold was dug away, so the explorer returned you to the dig-in point. Magma is molten rock above ~1000 °C: no pick or drill can bite it.'
+        : 'That is magma: molten rock above ~1000 °C, so no pick or drill can bite it. You returned to your last safe foothold. Tip: the baked rim around the chamber (contact metamorphism) shows how far its heat reached.');
       if (window._alloHaptic) { try { window._alloHaptic('error'); } catch (e) {} }
     }
     function fpWalkStep(dt, fwd) {
@@ -4714,6 +4771,13 @@
       } else {
         var floorEyeY = fpGroundEyeY(fp.pos.x, fp.pos.z, fp.pos.y - FP_EYE_HEIGHT);
         if (fp.velocity.y <= 0 && floorEyeY != null && nextEyeY <= floorEyeY) {
+          // Hard landing → brief camera dip + haptic, so a drop down a shaft has weight
+          // (skipped under reduced motion; the dip decays in applyFP).
+          if (!fp.onGround && fp.velocity.y < -FP_JUMP_SPEED * 0.85) {
+            var impact = fpClampN((-fp.velocity.y - FP_JUMP_SPEED * 0.85) / (FP_JUMP_SPEED * 1.6), 0, 1);
+            if (!fp.reduced) fp.landDip = VOXEL * (0.04 + impact * 0.1);
+            if (impact > 0.35 && window._alloHaptic) { try { window._alloHaptic('bump'); } catch (e) {} }
+          }
           fp.pos.y = floorEyeY; fp.velocity.y = 0; fp.onGround = true;
         } else {
           fp.pos.y = nextEyeY; fp.onGround = false;
@@ -4721,8 +4785,15 @@
       }
       var after = fpMediumAt(fp.pos.x, fp.pos.y, fp.pos.z);
       if (after.kind === 'hazard') { fpHazardRespawn(); return; }
-      fpSetMedium(after.kind); fp.hazardNearby = fpHazardNearby(fp.pos.x, fp.pos.y, fp.pos.z);
+      fpSetMedium(after.kind);
+      var wasNearHazard = fp.hazardNearby; fp.hazardNearby = fpHazardNearby(fp.pos.x, fp.pos.y, fp.pos.z);
       var safeNow = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (fp.hazardNearby && !wasNearHazard && safeNow - (fp.lastHeatWarnAt || 0) > 8000) {
+        // Teach the approach, not just the fall: one flash per descent, throttled so it never nags.
+        fp.lastHeatWarnAt = safeNow;
+        if (opts.onFlash) opts.onFlash('Heat rising: magma is within one block. Rock this close to the chamber gets baked into marble or hornfels. Dig around it, not into it.');
+        if (window._alloHaptic) { try { window._alloHaptic('bump'); } catch (e) {} }
+      }
       if (fp.onGround && fp.medium === 'air' && !fp.hazardNearby && safeNow - fp.lastSafeAt > 650) {
         fp.lastSafeAt = safeNow; fp.safePose = { pos: { x: fp.pos.x, y: fp.pos.y, z: fp.pos.z }, yaw: fp.yaw, pitch: fp.pitch };
       }
@@ -4731,8 +4802,22 @@
         if (opts.onFlash) opts.onFlash('You slipped out of the model, so the explorer returned you to the last safe foothold.');
       }
     }
+    function fpSafePoseStillSafe(pose) {
+      // A saved foothold is only usable if solid ground still exists under it and nothing
+      // molten sits within a voxel of where we'd stand — otherwise respawning there just
+      // drops the player back into the hazard and the respawn repeats forever.
+      if (!pose || fp.mode !== 'mine') return pose ? pose : null;
+      var floorEyeY = fpGroundEyeY(pose.pos.x, pose.pos.z, pose.pos.y - FP_EYE_HEIGHT + VOXEL * 0.25);
+      if (floorEyeY == null) return null;
+      if (fpBodyBlocked(pose.pos.x, floorEyeY, pose.pos.z)) return null;
+      if (fpMediumAt(pose.pos.x, floorEyeY, pose.pos.z).kind === 'hazard') return null;
+      if (fpHazardNearby(pose.pos.x, floorEyeY, pose.pos.z)) return null;
+      return { pos: { x: pose.pos.x, y: floorEyeY, z: pose.pos.z }, yaw: pose.yaw, pitch: pose.pitch };
+    }
     function fpRespawn(home) {
-      var seed = (!home && fp.safePose) ? fp.safePose : fpSeedPose(SCENE.id);
+      var safe = home ? null : fpSafePoseStillSafe(fp.safePose);
+      if (!home && fp.safePose && !safe) fp.safePose = null;   // stale foothold: forget it so we don't retry it
+      var seed = safe || fpSeedPose(SCENE.id);
       fp.pos = { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }; fp.yaw = seed.yaw; fp.pitch = seed.pitch;
       fp.velocity = { x: 0, y: 0, z: 0 }; fp.onGround = false; fp.jumpLatch = false; fp.mining = null; fpSetMiningProgress(0, false);
       return { mode: fp.mode, sceneId: SCENE.id };
@@ -4807,6 +4892,11 @@
       surveyVoxelKey = vkey(nearest); surveyUntil = now + 5200;
       surveyBox.position.set(nearestWorld[0], nearestWorld[1], nearestWorld[2]); surveyBox.scale.setScalar(1); surveyBox.visible = true;
       var deltaX = nearestWorld[0] - fp.pos.x, deltaY = nearestWorld[1] - fp.pos.y, deltaZ = nearestWorld[2] - fp.pos.z;
+      // Swing the view toward the specimen (short ease; instant under reduced motion). The tween
+      // yields the moment the player looks elsewhere, so it guides without hijacking.
+      var aimYaw = Math.atan2(-deltaX, -deltaZ), aimPitch = fpClampPitch(Math.atan2(deltaY, Math.sqrt(deltaX * deltaX + deltaZ * deltaZ) || 1e-6));
+      var dYaw = aimYaw - fp.yaw; dYaw = Math.atan2(Math.sin(dYaw), Math.cos(dYaw));
+      fp.aim = { fromYaw: fp.yaw, fromPitch: fp.pitch, dYaw: dYaw, dPitch: aimPitch - fp.pitch, t: 0, dur: fp.reduced ? 0 : 0.55, lastYaw: fp.yaw, lastPitch: fp.pitch };
       var direction = Math.abs(deltaX) > Math.abs(deltaZ) ? (deltaX >= 0 ? 'east' : 'west') : (deltaZ >= 0 ? 'south' : 'north');
       var vertical = Math.abs(deltaY) < VOXEL * 1.25 ? 'near your level' : (deltaY > 0 ? 'above you' : 'below you');
       var material = SCENE.palette[key] || ROCKS[key] || { name: key };
@@ -5858,6 +5948,7 @@ function updateCoreRig3d(dt3d) {
     function enterFP(o) {
       if (fp.active) return;                                  // idempotent — no double-binding
       fp.active = true; fp.reduced = !!(o && o.reduced);
+      fp.layersReached = {}; fp.enteredAt = (window.performance && performance.now) ? performance.now() : Date.now(); heatVignetteLevel = -1;
       undoPreviewRequested = false; updateUndoPreview();
       fp.savedPos = camera.position.clone();
       fp.savedTgt = controls ? controls.target.clone() : TARGET.clone();
@@ -5882,6 +5973,7 @@ function updateCoreRig3d(dt3d) {
         packCoreRig3d();
       }
       fp.active = false; fp.intro = null; fp.drillHeld = false; fpCancelMining();
+      if (heatVignette) { heatVignette.style.opacity = '0'; heatVignetteLevel = -1; }
       cnv.removeEventListener('pointermove', fpLookMove); fpPrev = null;
       fp.input = { fwd: 0, strafe: 0, vert: 0, jump: false, sprint: false }; fp.turn = { yaw: 0, pitch: 0 };
       fp.velocity = { x: 0, y: 0, z: 0 }; fp.target = null; fpUpdateTargetLabel(null); hoverBox.visible = false; surveyBox.visible = false; surveyVoxelKey = null;
@@ -5901,12 +5993,23 @@ function updateCoreRig3d(dt3d) {
         return;                                               // ignore movement until the dive finishes
       }
       if (fp.turn.yaw || fp.turn.pitch) { fp.yaw += fp.turn.yaw * 1.7 * dt; fp.pitch = fpClampPitch(fp.pitch + fp.turn.pitch * 1.7 * dt); }   // keyboard look (drag-look writes fp.yaw/pitch directly)
+      if (fp.aim) {                                           // survey aim tween — abandoned as soon as the player looks on their own
+        var aim = fp.aim;
+        if (fp.turn.yaw || fp.turn.pitch || Math.abs(fp.yaw - aim.lastYaw) > 1e-6 || Math.abs(fp.pitch - aim.lastPitch) > 1e-6) fp.aim = null;
+        else {
+          aim.t = aim.dur > 0 ? Math.min(1, aim.t + dt / aim.dur) : 1; var ae = easeInOutCubic(aim.t);
+          fp.yaw = aim.fromYaw + aim.dYaw * ae; fp.pitch = fpClampPitch(aim.fromPitch + aim.dPitch * ae);
+          aim.lastYaw = fp.yaw; aim.lastPitch = fp.pitch;
+          if (aim.t >= 1) fp.aim = null;
+        }
+      }
       var fwd = fpForward(fp.yaw, fp.pitch);
       var spd = fp.speed * (fp.input.sprint ? 2 : 1);
       if (fp.mode === 'mine') fpWalkStep(dt, fwd);
       else fp.pos = fpStep(fp.pos, fwd, fp.input, dt, spd, fpBounds());
       var moving = !!(fp.input.fwd || fp.input.strafe || (fp.mode === 'fly' && fp.input.vert));
       var bob = fpBob(t, moving && (fp.mode === 'fly' || fp.onGround), fp.reduced, fp.mode === 'mine' ? 0.035 : 0.05);
+      if (fp.landDip) { bob -= fp.landDip; fp.landDip *= Math.exp(-11 * dt); if (fp.landDip < 0.002) fp.landDip = 0; }
       camera.position.set(fp.pos.x, fp.pos.y + bob, fp.pos.z);
       camera.lookAt(fp.pos.x + fwd.x, fp.pos.y + fwd.y, fp.pos.z + fwd.z);
       fpTargetVoxel();
@@ -6297,6 +6400,7 @@ function updateCoreRig3d(dt3d) {
         total: Math.max(0, Math.floor(Number(initialFieldRuns.total) || 0)),
         discoveredByScene: (initialFieldRuns.discoveredByScene && typeof initialFieldRuns.discoveredByScene === 'object') ? initialFieldRuns.discoveredByScene : {},
         byScene: (initialFieldRuns.byScene && typeof initialFieldRuns.byScene === 'object') ? initialFieldRuns.byScene : {},
+        layersByScene: (initialFieldRuns.layersByScene && typeof initialFieldRuns.layersByScene === 'object') ? initialFieldRuns.layersByScene : {},
         coreLogsByScene: (initialFieldRuns.coreLogsByScene && typeof initialFieldRuns.coreLogsByScene === 'object') ? initialFieldRuns.coreLogsByScene : {},
         coreResearchByScene: (initialFieldRuns.coreResearchByScene && typeof initialFieldRuns.coreResearchByScene === 'object') ? initialFieldRuns.coreResearchByScene : {},
         coreCertification: Object.assign({}, (initialFieldRuns.coreCertification && typeof initialFieldRuns.coreCertification === 'object') ? initialFieldRuns.coreCertification : {}, { version: 1, programs: normalizeCoreRigPrograms(initialFieldRuns.coreCertification) })
@@ -6529,6 +6633,26 @@ function updateCoreRig3d(dt3d) {
         }
         return true;
       }
+      var LAYER_MILESTONE_XP = 15;
+      function awardLayerMilestone(sceneId, here, walkedThisDive) {
+        // First footfall on a layer pays a small, once-per-layer field XP so descending feeds the
+        // rank bar; later dives still get the depth/temperature read-out, just no repeat pay-out.
+        if (!here || !here.key) return false;
+        var book = fieldBookRef.current || {}, layers = (book.layersByScene && typeof book.layersByScene === 'object') ? book.layersByScene : {};
+        var seen = Array.isArray(layers[sceneId]) ? layers[sceneId].slice() : [];
+        var fresh = seen.indexOf(here.key) < 0;
+        var where = (here.layerName || here.key) + ' · ' + here.depthKm + ' km · ' + temperatureValue(here.tempC);
+        if (!fresh) { addToast('Layer reached: ' + where + (walkedThisDive > 1 ? ' · ' + walkedThisDive + ' layers this dive' : ''), 'info'); return false; }
+        seen.push(here.key);
+        var nextLayers = Object.assign({}, layers); nextLayers[sceneId] = seen;
+        var oldXp = Math.max(0, Math.floor(Number(book.xp) || 0)), newXp = oldXp + LAYER_MILESTONE_XP;
+        var oldRank = fieldRankForXp(oldXp), newRank = fieldRankForXp(newXp);
+        saveFieldBook(Object.assign({ xp: 0, total: 0, byScene: {} }, book, { xp: newXp, layersByScene: nextLayers }));
+        var rankUp = oldRank.label !== newRank.label ? ' Rank up: ' + newRank.label + '!' : '';
+        addToast('New layer reached: ' + where + ' · +' + LAYER_MILESTONE_XP + ' XP.' + rankUp, 'success');
+        announce('New layer reached: ' + (here.layerName || here.key) + '. ' + temperatureSpeech(here.tempC) + '. You earned ' + LAYER_MILESTONE_XP + ' field XP.' + rankUp);
+        return true;
+      }
       function surveyFieldTarget(sceneId) {
         var book = fieldBookRef.current || {}, entry = book.byScene && book.byScene[sceneId];
         if (!entry || !entry.active) { announce('Start a Field Run before using the specimen survey.'); return null; }
@@ -6544,7 +6668,7 @@ function updateCoreRig3d(dt3d) {
           return result;
         }
         var reading = result.name + ' is about ' + result.distanceBlocks + ' block' + (result.distanceBlocks === 1 ? '' : 's') + ' ' + result.direction + ', ' + result.vertical + '.';
-        addToast('Survey pulse: ' + reading, 'info'); announce('Survey pulse. ' + reading);
+        addToast('Survey pulse: ' + reading + ' Turning you to face it.', 'info'); announce('Survey pulse. ' + reading + ' Your view now faces it.');
         return result;
       }
       function coreRigAction(action, value) {
@@ -6990,6 +7114,7 @@ function updateCoreRig3d(dt3d) {
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
             onFlash: function (m) { addToast(m, 'info'); },
+            onLayerMilestone: function (here, n) { awardLayerMilestone(SCENE.id, here, n); },
             onExcavateChange: function (count, state) {
               state = state || { history: [], redo: [] };
               if (!count) undoPreviewIntentRef.current = { hover: false, focus: false };
@@ -8034,6 +8159,18 @@ function updateCoreRig3d(dt3d) {
             h('line', { x1: 0, y1: 1.55 * bh, x2: W, y2: 1.55 * bh, stroke: '#1d4ed8', strokeWidth: 1.5, strokeDasharray: '5 2' }),
             h('text', { x: W - 5, y: 1.55 * bh - 3, fontSize: 10, fill: '#1d4ed8', textAnchor: 'end', style: { fontWeight: 700 } }, '💧')
           ) : null,
+          // you-are-here: while exploring in first person, a marker tracks the layer underfoot so the
+          // 3D view and the accessible column tell one story (row from the HUD probe's voxel band)
+          (fpOn && fpHud && fpHud.key) ? (function () {
+            var row = bands.indexOf(fpHud.key === 'intrusion' ? 'basement' : fpHud.key); if (row < 0) return null;
+            var vy = typeof fpHud.voxelY === 'number' ? fpHud.voxelY : null;
+            var cy = row * bh + bh * 0.5, mx = fpHud.key === 'intrusion' ? W / 2 : W - 12;
+            return h('g', { key: 'you', 'data-geology-you-are-here': fpHud.key, 'data-voxel-y': vy == null ? '' : String(vy) },
+              h('line', { x1: 0, y1: cy, x2: W, y2: cy, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '3 3', opacity: 0.9 }),
+              h('circle', { cx: mx, cy: cy, r: 6, fill: '#fbbf24', stroke: '#78350f', strokeWidth: 1.5 }),
+              h('text', { x: mx, y: cy + 3.5, fontSize: 10, textAnchor: 'middle', fill: '#78350f', style: { fontWeight: 800 } }, '⛏')
+            );
+          })() : null,
           h('polygon', { points: (W / 2) + ',' + (bands.length * bh) + ' ' + (W / 2 - 14) + ',' + (2 * bh) + ' ' + (W / 2 + 14) + ',' + (2 * bh), fill: hex(ROCKS.intrusion.color), opacity: crossFocus && focusKey !== 'intrusion' ? 0.2 : 0.92, stroke: crossFocus && focusKey === 'intrusion' ? '#fbbf24' : 'rgba(255,255,255,0.4)', strokeWidth: crossFocus && focusKey === 'intrusion' ? 2 : 1, 'data-geology-focus-state': !crossFocus ? 'context' : (focusKey === 'intrusion' ? 'match' : 'muted') })
         );
       }

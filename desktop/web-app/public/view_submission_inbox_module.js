@@ -963,7 +963,7 @@ function siTrapAlloSheetReviewFocus(event, container) {
     first.focus();
   }
 }
-function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSheet }) {
+function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSheet, onOpenInStudio }) {
   if (!isOpen) return null;
   var _llCtx = React.useContext(LANG_CTX);
   var uiLang = _llCtx && _llCtx.currentUiLanguage || typeof window !== "undefined" && window.__alloTextLanguage || "English";
@@ -3578,6 +3578,23 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                           { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
                           "Decrypted responses (" + siResponseEntryModels(row.payload).length + ")"
                         ),
+                        /* Applied Challenge Studio export: the response keys carry
+                           "<resourceId>:applied:<field>", so the host can rebuild a
+                           real studio workspace from this student's typing. */
+                        (function() {
+                          var studio = window.AlloModules && window.AlloModules.AppliedChallenge;
+                          var resp = row.payload && row.payload.responses && typeof row.payload.responses === "object" ? row.payload.responses : null;
+                          var resourceId = studio && resp && typeof studio.submissionResourceId === "function" ? studio.submissionResourceId(resp) : "";
+                          if (!resourceId || typeof onOpenInStudio !== "function") return null;
+                          return /* @__PURE__ */ React.createElement("button", {
+                            type: "button",
+                            onClick: function() {
+                              onOpenInStudio({ resourceId, responses: resp, nickname: row.payload.nickname || row.payload.studentName || "" });
+                            },
+                            title: tr("Rebuild this student's typed workspace inside Applied Challenge Studio so you can coach, comment, and export it"),
+                            style: { marginBottom: 10, padding: "6px 12px", background: "#c2410c", color: "white", border: "1px solid #9a3412", borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
+                          }, tr("Open in Applied Challenge Studio"));
+                        })(),
                         /* Work Story (process provenance). Renders only when the
                            student chose to include it; absence is never surfaced
                            as a fact — no "declined" state exists here. */

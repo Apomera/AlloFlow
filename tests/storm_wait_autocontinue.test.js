@@ -149,7 +149,10 @@ describe('pipeline behavior — source pins', () => {
     expect(dp).toContain('var _geminiProbe = function (opts) {');                              // representative probe
     expect(dp).toContain('return _rawCallGemini(_prompt, false, false, null, null, _sig)');                                    // bypasses breaker mutation
     expect(dp).toContain('promptChars: _geminiLastFailureProfile && _geminiLastFailureProfile.promptChars');
-    expect(dp).toContain('await _sleep(Math.min(inf.cooldownRemainingMs + 250, 1000, Math.max(0, maxWaitMs - (_now() - t0))));'); // bounded, abort-responsive cooldown polling
+    // Bounded, abort-responsive cooldown polling. The bound is _waitDeadline() since 2026-09-02: it
+    // equals t0 + maxWaitMs unless an ACTIVE server Retry-After brake reaches past it (capped).
+    expect(dp).toContain('await _sleep(Math.min(inf.cooldownRemainingMs + 250, 1000, Math.max(0, _waitDeadline() - _now())));');
+    expect(dp).toContain('var _waitDeadline = function () { return t0 + maxWaitMs + _retryAfterExtensionMs(); };');
     expect(dp).toContain("o.signal.addEventListener('abort', finish, { once: true })");
     expect(dp).toContain('while (!_aborted() && _now() < _confirmUntil)');
     expect(dp).toContain('{ calm: false, waitedMs: _now() - t0, timedOut: true }');          // bounded → proceeds anyway

@@ -1005,6 +1005,49 @@ function aeSaveOnboardingChoice(choice) {
   try { localStorage.setItem(AE_ONBOARDING_KEY, choice === 'sample' ? 'sample' : 'blank'); } catch (_) {}
 }
 
+// Practice menu + saved scenarios (2026-09-02). The tour, the rehearsal, and
+// Simulation Studio existed but lived on three different screens; the header
+// menu gathers them, adds named scenarios (device-saved, exportable so a
+// district can hand every principal the same training data), and lets a real
+// workspace step into fictional practice and back without losing anything:
+// the real workspace is set aside under its own key and restored on return.
+const AE_SCENARIOS_KEY = 'allo_educator_evaluation_scenarios_v1';
+const AE_REAL_STASH_KEY = 'allo_educator_evaluation_real_stash_v1';
+const AE_SCENARIO_PARAM_KEYS = ['staffCount', 'buildingCount', 'finalizedCount', 'overdueCount', 'walkthroughsPerTeacher', 'thinEvidenceDomain', 'frameworkProfile'];
+const AE_SCENARIO_PRESETS = [
+  { id: 'preset_small', name: 'Small-school tour', params: { staffCount: 8, buildingCount: 1, finalizedCount: 2, overdueCount: 1, walkthroughsPerTeacher: 1, thinEvidenceDomain: 'none' } },
+  { id: 'preset_midyear', name: 'Busy midyear', params: { staffCount: 24, buildingCount: 3, finalizedCount: 6, overdueCount: 4, walkthroughsPerTeacher: 2, thinEvidenceDomain: 'none' } },
+  { id: 'preset_gap', name: 'Evidence-gap review', params: { staffCount: 18, buildingCount: 2, finalizedCount: 2, overdueCount: 3, walkthroughsPerTeacher: 2, thinEvidenceDomain: 'd3' } },
+];
+function aeSanitizeScenario(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const name = String(raw.name || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 60);
+  if (!name) return null;
+  const params = {};
+  AE_SCENARIO_PARAM_KEYS.forEach((key) => { if (raw.params && raw.params[key] !== undefined && raw.params[key] !== null) params[key] = String(raw.params[key]).slice(0, 40); });
+  if (!Object.keys(params).length) return null;
+  const id = /^[a-z0-9_-]{4,60}$/i.test(String(raw.id || '')) ? String(raw.id) : 'scenario_' + Math.random().toString(36).slice(2, 10);
+  return { id, name, params, savedAt: typeof raw.savedAt === 'string' ? raw.savedAt.slice(0, 40) : aeNow() };
+}
+function aeReadScenarios() {
+  try {
+    const list = JSON.parse(localStorage.getItem(AE_SCENARIOS_KEY) || '[]');
+    return Array.isArray(list) ? list.map(aeSanitizeScenario).filter(Boolean).slice(0, 40) : [];
+  } catch (_) { return []; }
+}
+function aeWriteScenarios(list) {
+  try { localStorage.setItem(AE_SCENARIOS_KEY, JSON.stringify(list.slice(0, 40))); return true; } catch (_) { return false; }
+}
+function aeMergeScenarios(current, incoming) {
+  const byName = new Map(current.map((item) => [item.name.toLowerCase(), item]));
+  incoming.forEach((item) => { byName.set(item.name.toLowerCase(), Object.assign({}, item, { id: (byName.get(item.name.toLowerCase()) || item).id })); });
+  return Array.from(byName.values()).slice(0, 40);
+}
+function aeScenarioWorkspace(params, baseWorkspace) {
+  const merged = Object.assign({}, aeSimulationDefaults(baseWorkspace), params || {});
+  return aeBuildSimulatedWorkspace(aeNormalizeSimulationParams(merged).params);
+}
+
 function aeClone(value) { return JSON.parse(JSON.stringify(value)); }
 
 function aeSameValue(left, right) { return JSON.stringify(left) === JSON.stringify(right); }
@@ -1999,10 +2042,121 @@ const AE_STYLES = `
 .ae-onboarding-overlay{position:fixed;inset:0;z-index:290;background:rgba(7,18,38,.72);display:flex;align-items:center;justify-content:center;padding:16px}.ae-onboarding-card{width:min(720px,100%);max-height:92vh;overflow:auto;background:#fff;border:1px solid #cbd5e1;border-radius:22px;box-shadow:0 30px 90px rgba(7,18,38,.42);padding:24px}.ae-onboarding-kicker{color:#1d4ed8;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.ae-onboarding-card h2{margin:5px 0 7px;color:#172033;font-size:24px;line-height:1.2}.ae-onboarding-card>p{margin:0;color:#5b667a;font-size:13px;line-height:1.55}.ae-onboarding-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}.ae-onboarding-option{border:2px solid #d8deea;border-radius:16px;background:#fff;color:#172033;text-align:left;padding:16px;min-height:150px;cursor:pointer;display:flex;flex-direction:column;gap:8px}.ae-onboarding-option:hover{border-color:#2563eb;background:#f8fbff}.ae-onboarding-option strong{font-size:16px;color:#173e70}.ae-onboarding-option span{font-size:12px;line-height:1.5;color:#5b667a}.ae-onboarding-note{margin-top:16px;background:#fff8e8;border:1px solid #f2cc72;color:#624409;border-radius:12px;padding:11px 12px;font-size:11px;line-height:1.5}@media(max-width:640px){.ae-onboarding-card{padding:18px}.ae-onboarding-options{grid-template-columns:1fr}.ae-onboarding-card h2{font-size:21px}}
 @media(max-width:1000px){.ae-span-4,.ae-span-5,.ae-span-6,.ae-span-7,.ae-span-8{grid-column:span 12}.ae-rating-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ae-workspace{height:97vh}.ae-main{padding:14px}.ae-stepper{grid-template-columns:repeat(10,minmax(72px,1fr));overflow-x:auto;padding-bottom:8px}.ae-step{font-size:9px;min-width:72px}.ae-step:before{width:16px;height:16px}.ae-step:after{top:8px}.ae-donut-wrap{justify-content:center}.ae-top{align-items:flex-start}.ae-brand p{display:none}}
 @media(max-width:640px){.ae-overlay{padding:0}.ae-workspace{height:100vh;height:100dvh;border-radius:0}.ae-top{padding:11px 12px}.ae-brand h1{font-size:15px}.ae-mark{width:36px;height:36px}.ae-local-banner{padding:8px 12px;display:block}.ae-local-banner strong{margin-right:6px}.ae-save-state{display:inline-block;margin:6px 0 0}.ae-local-banner .ae-btn{margin-top:6px}.ae-operation-notice{padding:8px 12px}.ae-tour{display:block;padding:10px 12px}.ae-tour .ae-actions{margin-top:8px}.ae-tabs{padding:0 5px}.ae-tab{padding:10px 9px;font-size:12px}.ae-main{padding:10px}.ae-heading{display:block}.ae-heading .ae-actions{margin-top:10px}.ae-form-grid,.ae-rating-grid{grid-template-columns:1fr}.ae-review-facts{grid-template-columns:1fr;gap:2px}.ae-review-facts dd{margin-bottom:6px}.ae-donut-wrap{display:block}.ae-donut{margin:12px auto}.ae-legend{margin-top:12px}.ae-toolbar .ae-input,.ae-toolbar .ae-select{width:100%}.ae-top-actions{gap:4px}.ae-role button{padding:6px 7px;font-size:11px}.ae-top{align-items:flex-start}.ae-brand{min-width:0;flex:1 1 auto}.ae-top-actions{flex:0 0 auto;flex-wrap:nowrap;align-items:center}.ae-brand p{display:none}.ae-footer{padding:8px 12px}}
-.ae-onboarding-card{width:min(940px,100%)}.ae-onboarding-options{grid-template-columns:repeat(3,minmax(0,1fr))}.ae-onboarding-progress{display:flex;align-items:center;gap:8px;color:#1d4ed8;font-size:11px;font-weight:850}.ae-onboarding-progress:after{content:"";height:4px;flex:1;border-radius:999px;background:linear-gradient(90deg,#2563eb 50%,#dbe5f1 50%)}.ae-onboarding-badge{order:-1;align-self:flex-start;border-radius:999px;background:#dbeafe;color:#1e3a8a;padding:3px 8px;font-size:10px!important;font-weight:850}.ae-setup-path{border-top:5px solid #64748b;transition:border-color .15s,box-shadow .15s}.ae-setup-path-primary{border-top-color:#2563eb}.ae-setup-path-selected{box-shadow:0 0 0 3px #bfdbfe;border-color:#60a5fa}.ae-setup-path ul{padding-left:17px;margin:9px 0;font-size:11px;color:var(--ae-muted)}.ae-setup-progress{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden}.ae-setup-progress>span{display:block;height:100%;background:#2563eb;transition:width .2s}.ae-setup-task{display:grid;grid-template-columns:28px 1fr;gap:9px;padding:11px 0;border-top:1px solid #e4e9f1}.ae-setup-task:first-child{border-top:0}.ae-setup-task input{width:22px;height:22px;margin:1px 0}.ae-setup-task-complete strong{text-decoration:line-through;color:#64748b}.ae-setup-next{background:#eff6ff;border:1px solid #93c5fd;border-radius:11px;padding:11px 12px}.ae-copy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ae-sim-diff{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ae-sim-diff .ae-stat{background:#f8fafc;border-radius:8px}.ae-scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ae-scenario{min-height:86px;text-align:left}.ae-scenario small{display:block;font-weight:500;color:#526078;margin-top:4px}@media(max-width:760px){.ae-onboarding-options,.ae-copy-grid,.ae-sim-diff,.ae-scenario-grid{grid-template-columns:1fr}}
+.ae-onboarding-card{width:min(940px,100%)}.ae-onboarding-options{grid-template-columns:repeat(3,minmax(0,1fr))}.ae-onboarding-progress{display:flex;align-items:center;gap:8px;color:#1d4ed8;font-size:11px;font-weight:850}.ae-onboarding-progress:after{content:"";height:4px;flex:1;border-radius:999px;background:linear-gradient(90deg,#2563eb 50%,#dbe5f1 50%)}.ae-onboarding-badge{order:-1;align-self:flex-start;border-radius:999px;background:#dbeafe;color:#1e3a8a;padding:3px 8px;font-size:10px!important;font-weight:850}.ae-onboarding-option-primary{border-color:#2563eb;box-shadow:0 0 0 3px #bfdbfe}.ae-onboarding-badge-primary{background:#1d4ed8;color:#fff}.ae-setup-path{border-top:5px solid #64748b;transition:border-color .15s,box-shadow .15s}.ae-setup-path-primary{border-top-color:#2563eb}.ae-setup-path-selected{box-shadow:0 0 0 3px #bfdbfe;border-color:#60a5fa}.ae-setup-path ul{padding-left:17px;margin:9px 0;font-size:11px;color:var(--ae-muted)}.ae-setup-progress{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden}.ae-setup-progress>span{display:block;height:100%;background:#2563eb;transition:width .2s}.ae-setup-task{display:grid;grid-template-columns:28px 1fr;gap:9px;padding:11px 0;border-top:1px solid #e4e9f1}.ae-setup-task:first-child{border-top:0}.ae-setup-task input{width:22px;height:22px;margin:1px 0}.ae-setup-task-complete strong{text-decoration:line-through;color:#64748b}.ae-setup-next{background:#eff6ff;border:1px solid #93c5fd;border-radius:11px;padding:11px 12px}.ae-copy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ae-sim-diff{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ae-sim-diff .ae-stat{background:#f8fafc;border-radius:8px}.ae-scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ae-scenario{min-height:86px;text-align:left}.ae-scenario small{display:block;font-weight:500;color:#526078;margin-top:4px}@media(max-width:760px){.ae-onboarding-options,.ae-copy-grid,.ae-sim-diff,.ae-scenario-grid{grid-template-columns:1fr}}
 .ae-release-review{width:min(700px,100%)}.ae-release-review:focus{outline:3px solid #fbbf24;outline-offset:3px}.ae-release-review .ae-review-facts{padding:12px;border:1px solid #dbe3ee;border-radius:12px;background:#f8fafc}.ae-release-confirm{display:flex;align-items:flex-start;gap:10px;margin:14px 0;padding:12px;border:1px solid #93c5fd;border-radius:12px;background:#eff6ff;color:#173e70;font-size:12px;line-height:1.5}.ae-release-confirm input{width:22px;height:22px;flex:0 0 auto;margin:0}.ae-release-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:16px}
 .ae-stepper:focus-visible{outline:3px solid #fbbf24;outline-offset:4px;border-radius:8px}
 @media(max-width:640px){.ae-top{align-items:flex-start;flex-wrap:wrap}.ae-brand{min-width:0;flex:1 1 210px}.ae-top-actions{flex:1 1 100%;min-width:0;flex-wrap:wrap;align-items:center;justify-content:flex-start}.ae-role{max-width:100%;flex-wrap:wrap}.ae-role button{flex:1 1 auto}.ae-close{margin-left:auto}}
+.ae-practice{position:relative}.ae-practice-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:6;min-width:290px;max-width:min(92vw,360px);background:var(--ae-white);border:1px solid var(--ae-line);border-radius:12px;box-shadow:0 12px 30px rgba(7,18,38,.28);padding:6px;display:grid;gap:2px;color:var(--ae-ink);text-align:left}.ae-practice-menu [role=menuitem]{display:block;width:100%;text-align:left;border:0;background:transparent;color:inherit;padding:9px 10px;border-radius:9px;font:inherit;font-weight:750;font-size:13px;min-height:44px;cursor:pointer}.ae-practice-menu [role=menuitem]:hover,.ae-practice-menu [role=menuitem]:focus-visible{background:var(--ae-bg);outline:2px solid var(--ae-blue);outline-offset:-2px}.ae-practice-menu small{display:block;font-weight:500;color:var(--ae-muted);font-size:11px;line-height:1.35}.ae-practice-group{padding:8px 10px 2px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--ae-muted)}.ae-practice-return{color:var(--ae-blue)}.ae-scenario-list{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px}.ae-scenario-list li{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.theme-contrast .ae-shell .ae-practice-menu,[data-ae-theme=contrast] .ae-shell .ae-practice-menu{background:#000;border:2px solid #fff;box-shadow:none}.theme-contrast .ae-shell .ae-practice-menu [role=menuitem]:hover,.theme-contrast .ae-shell .ae-practice-menu [role=menuitem]:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-practice-menu [role=menuitem]:hover,[data-ae-theme=contrast] .ae-shell .ae-practice-menu [role=menuitem]:focus-visible{background:#1a1a1a;outline-color:#fbbf24}
+@media(max-width:640px){.ae-practice-menu{position:fixed;left:8px;right:8px;top:auto;bottom:8px;max-width:none;max-height:70vh;overflow:auto}}
+/* Phone-first walkthrough form (2026-09-02): principals record visits standing in
+   classrooms. Single column, 16px inputs (no iOS zoom), 24px checkboxes on 44px
+   rows, quick-length presets, and a sticky save bar within thumb reach. */
+.ae-walk-quick .ae-btn{min-width:64px}
+@media(max-width:640px){.ae-walk-form .ae-form-grid{grid-template-columns:1fr}.ae-walk-form .ae-input,.ae-walk-form .ae-select,.ae-walk-form .ae-textarea{min-height:48px;font-size:16px}.ae-walk-form .ae-textarea{min-height:150px}.ae-walk-form .ae-walk-quick{flex-wrap:nowrap}.ae-walk-form .ae-walk-quick .ae-btn{flex:1 1 0;min-width:0;min-height:48px}.ae-walk-form .ae-domain summary{min-height:44px;display:flex;align-items:center}.ae-walk-form .ae-domain-component{padding:10px 0;font-size:14px;align-items:center;min-height:44px}.ae-walk-form .ae-domain-component input{width:24px;height:24px;flex:0 0 auto;margin:0}.ae-walk-form .ae-check{padding:10px 0;min-height:44px;align-items:center}.ae-walk-form .ae-check input{width:24px;height:24px;flex:0 0 auto}.ae-walk-form .ae-walk-actions{position:sticky;bottom:0;background:var(--ae-white);padding:10px 12px;margin:12px -16px -16px;border-top:1px solid var(--ae-line);z-index:2;gap:8px}.ae-walk-form .ae-walk-actions .ae-btn{flex:1 1 auto;min-height:48px}.ae-workspace{min-width:0;max-width:100vw}.ae-main,.ae-page,.ae-heading,.ae-top,.ae-brand,.ae-top-actions,.ae-record-head,.ae-card{min-width:0;max-width:100%}.ae-heading,.ae-top-actions,.ae-record-head{flex-wrap:wrap}.ae-heading>*{min-width:0}}
+.ae-heat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-top:6px}.ae-heat-cell{border:1px solid var(--ae-line);border-radius:10px;padding:8px;font-size:11px;display:grid;gap:2px}.ae-heat-cell strong{font-size:13px}.ae-heat-0{border-style:dashed;color:var(--ae-muted)}.ae-heat-1{background:#eff6ff;border-color:#bfdbfe;color:#1e3a5f}.ae-heat-2{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a}.ae-heat-3{background:#bfdbfe;border-color:#60a5fa;color:#172554}
+.theme-dark .ae-shell .ae-heat-1,[data-ae-theme=dark] .ae-shell .ae-heat-1{background:#14233d;border-color:#365a99;color:#cfe0ff}.theme-dark .ae-shell .ae-heat-2,[data-ae-theme=dark] .ae-shell .ae-heat-2{background:#1b3a6b;border-color:#4d7fd6;color:#e6f0ff}.theme-dark .ae-shell .ae-heat-3,[data-ae-theme=dark] .ae-shell .ae-heat-3{background:#2f6fe4;border-color:#2f6fe4;color:#fff}
+.theme-contrast .ae-shell .ae-heat-cell,[data-ae-theme=contrast] .ae-shell .ae-heat-cell{background:#000;color:#fff;border-color:#fff}.theme-contrast .ae-shell .ae-heat-1,.theme-contrast .ae-shell .ae-heat-2,[data-ae-theme=contrast] .ae-shell .ae-heat-1,[data-ae-theme=contrast] .ae-shell .ae-heat-2{border-color:#fbbf24}.theme-contrast .ae-shell .ae-heat-3,[data-ae-theme=contrast] .ae-shell .ae-heat-3{background:#fbbf24;border-color:#fbbf24;color:#000}
+.ae-local-banner{flex-wrap:wrap;row-gap:6px}.ae-inline-notice{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:2px 4px 2px 9px;max-width:100%;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a5f;font-size:12px}.ae-inline-notice.ae-operation-success{background:#ecfdf5;border-color:#86efac;color:#14532d}.ae-inline-notice.ae-operation-error{background:#fff1f2;border-color:#fda4af;color:#881337}.ae-local-banner .ae-inline-notice .ae-btn,.ae-local-banner .ae-banner-toggle{min-height:44px;padding:2px 9px;font-size:11px}.ae-banner-toggle{margin-left:4px}.ae-inline-notice{padding:0 2px 0 10px}
+.theme-dark .ae-shell .ae-inline-notice,[data-ae-theme=dark] .ae-shell .ae-inline-notice{background:#14233d;border-color:#365a99;color:#cfe0ff}.theme-dark .ae-shell .ae-inline-notice.ae-operation-success,[data-ae-theme=dark] .ae-shell .ae-inline-notice.ae-operation-success{background:#052e1c;border-color:#22a06b;color:#a8ecc0}.theme-dark .ae-shell .ae-inline-notice.ae-operation-error,[data-ae-theme=dark] .ae-shell .ae-inline-notice.ae-operation-error{background:#3d1520;border-color:#a03a4d;color:#ffb3c0}
+.theme-contrast .ae-shell .ae-inline-notice,[data-ae-theme=contrast] .ae-shell .ae-inline-notice{background:#000;border:2px solid #fbbf24;color:#fff}
+.theme-dark .ae-shell .ae-onboarding-option-primary,[data-ae-theme=dark] .ae-shell .ae-onboarding-option-primary{border-color:#8ab4ff;box-shadow:0 0 0 3px #365a99}.theme-dark .ae-shell .ae-onboarding-badge-primary,[data-ae-theme=dark] .ae-shell .ae-onboarding-badge-primary{background:#2f6fe4;border-color:#2f6fe4;color:#fff}
+.theme-contrast .ae-shell .ae-onboarding-option-primary,[data-ae-theme=contrast] .ae-shell .ae-onboarding-option-primary{border-color:#fbbf24;box-shadow:0 0 0 3px #fbbf24}.theme-contrast .ae-shell .ae-onboarding-badge-primary,[data-ae-theme=contrast] .ae-shell .ae-onboarding-badge-primary{background:#fbbf24;border-color:#fbbf24;color:#000}
+/* Theme support (2026-09-02). The app sets theme-dark / theme-contrast on a wrapper above
+   every module; the standalone page mirrors the OS preference into data-ae-theme on <html>.
+   Colours are pinned >= 4.5:1 in tests/educator_evaluation_theme.test.js. */
+.theme-dark .ae-shell,[data-ae-theme=dark] .ae-shell{--ae-ink:#e6ebf5;--ae-muted:#aab6c8;--ae-line:#34405a;--ae-bg:#0f172a;--ae-white:#162032;--ae-blue:#8ab4ff;--ae-navy:#e6ebf5;color:var(--ae-ink)}
+.theme-dark .ae-shell .ae-workspace,[data-ae-theme=dark] .ae-shell .ae-workspace{box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.theme-dark .ae-shell .ae-top,[data-ae-theme=dark] .ae-shell .ae-top{background:linear-gradient(120deg,#0b1730,#12305a)}
+.theme-dark .ae-shell .ae-mark,[data-ae-theme=dark] .ae-shell .ae-mark{background:#e6ebf5;color:#12305a}
+.theme-dark .ae-shell .ae-local-banner,[data-ae-theme=dark] .ae-shell .ae-local-banner{background:#3a2c08;border-bottom-color:#8a6a1a;color:#ffe9b8}
+.theme-dark .ae-shell .ae-sample,[data-ae-theme=dark] .ae-shell .ae-sample{background:#082f36;border-bottom-color:#22a3b8;color:#a5f3fc}
+.theme-dark .ae-shell .ae-remote-banner,[data-ae-theme=dark] .ae-shell .ae-remote-banner{background:#052e1c;border-bottom-color:#22a06b;color:#a8ecc0}
+.theme-dark .ae-shell .ae-remote-banner.ae-sync-error,.theme-dark .ae-shell .ae-local-banner.ae-sync-error,.theme-dark .ae-shell .ae-operation-error,[data-ae-theme=dark] .ae-shell .ae-remote-banner.ae-sync-error,[data-ae-theme=dark] .ae-shell .ae-local-banner.ae-sync-error,[data-ae-theme=dark] .ae-shell .ae-operation-error{background:#3d1520;border-bottom-color:#a03a4d;color:#ffb3c0}
+.theme-dark .ae-shell .ae-preview-banner,.theme-dark .ae-shell .ae-tour,[data-ae-theme=dark] .ae-shell .ae-preview-banner,[data-ae-theme=dark] .ae-shell .ae-tour{background:#1e1b4b;border-bottom-color:#6d64c8;color:#d6d3ff}
+.theme-dark .ae-shell .ae-tabs,[data-ae-theme=dark] .ae-shell .ae-tabs{background:#111a2b}
+.theme-dark .ae-shell .ae-tab,[data-ae-theme=dark] .ae-shell .ae-tab{color:#b9c4d8}
+.theme-dark .ae-shell .ae-tab[aria-selected=true],[data-ae-theme=dark] .ae-shell .ae-tab[aria-selected=true]{color:#e6ebf5;border-bottom-color:#8ab4ff;background:#162032}
+.theme-dark .ae-shell .ae-card,.theme-dark .ae-shell .ae-record,.theme-dark .ae-shell .ae-table,.theme-dark .ae-shell .ae-footer,.theme-dark .ae-shell .ae-onboarding-card,.theme-dark .ae-shell .ae-onboarding-option,.theme-dark .ae-shell .ae-donut:after,[data-ae-theme=dark] .ae-shell .ae-card,[data-ae-theme=dark] .ae-shell .ae-record,[data-ae-theme=dark] .ae-shell .ae-table,[data-ae-theme=dark] .ae-shell .ae-footer,[data-ae-theme=dark] .ae-shell .ae-onboarding-card,[data-ae-theme=dark] .ae-shell .ae-onboarding-option,[data-ae-theme=dark] .ae-shell .ae-donut:after{background:var(--ae-white)}
+.theme-dark .ae-shell .ae-card,[data-ae-theme=dark] .ae-shell .ae-card{box-shadow:none}
+.theme-dark .ae-shell .ae-note,.theme-dark .ae-shell .ae-operation-notice,.theme-dark .ae-shell .ae-setup-next,.theme-dark .ae-shell .ae-release-confirm,.theme-dark .ae-shell .ae-interpretation,[data-ae-theme=dark] .ae-shell .ae-note,[data-ae-theme=dark] .ae-shell .ae-operation-notice,[data-ae-theme=dark] .ae-shell .ae-setup-next,[data-ae-theme=dark] .ae-shell .ae-release-confirm,[data-ae-theme=dark] .ae-shell .ae-interpretation{background:#14233d;border-color:#365a99;color:#cfe0ff}
+.theme-dark .ae-shell .ae-warn,.theme-dark .ae-shell .ae-onboarding-note,[data-ae-theme=dark] .ae-shell .ae-warn,[data-ae-theme=dark] .ae-shell .ae-onboarding-note{background:#3a2c08;border-color:#8a6a1a;color:#ffe9b8}
+.theme-dark .ae-shell .ae-danger,[data-ae-theme=dark] .ae-shell .ae-danger{background:#3d1520;border-color:#a03a4d;color:#ffb3c0}
+.theme-dark .ae-shell .ae-ok,.theme-dark .ae-shell .ae-operation-success,[data-ae-theme=dark] .ae-shell .ae-ok,[data-ae-theme=dark] .ae-shell .ae-operation-success{background:#052e1c;border-color:#22a06b;color:#a8ecc0}
+.theme-dark .ae-shell .ae-btn,[data-ae-theme=dark] .ae-shell .ae-btn{background:#1b2740;border-color:#4a5a78;color:#e6ebf5}
+.theme-dark .ae-shell .ae-btn:hover,[data-ae-theme=dark] .ae-shell .ae-btn:hover{background:#243352}
+.theme-dark .ae-shell .ae-btn-primary,[data-ae-theme=dark] .ae-shell .ae-btn-primary{background:#2f6fe4;border-color:#2f6fe4;color:#fff}
+.theme-dark .ae-shell .ae-btn-primary:hover,[data-ae-theme=dark] .ae-shell .ae-btn-primary:hover{background:#4d86ee}
+.theme-dark .ae-shell .ae-btn-danger,[data-ae-theme=dark] .ae-shell .ae-btn-danger{background:#c81e4a;border-color:#c81e4a;color:#fff}
+.theme-dark .ae-shell .ae-btn-quiet,[data-ae-theme=dark] .ae-shell .ae-btn-quiet{background:transparent;border-color:transparent}
+.theme-dark .ae-shell .ae-link,.theme-dark .ae-shell .ae-row-btn,.theme-dark .ae-shell .ae-footer a,.theme-dark .ae-shell .ae-onboarding-kicker,.theme-dark .ae-shell .ae-onboarding-progress,[data-ae-theme=dark] .ae-shell .ae-link,[data-ae-theme=dark] .ae-shell .ae-row-btn,[data-ae-theme=dark] .ae-shell .ae-footer a,[data-ae-theme=dark] .ae-shell .ae-onboarding-kicker,[data-ae-theme=dark] .ae-shell .ae-onboarding-progress{color:#8ab4ff}
+.theme-dark .ae-shell .ae-field>span,.theme-dark .ae-shell .ae-legend-label,[data-ae-theme=dark] .ae-shell .ae-field>span,[data-ae-theme=dark] .ae-shell .ae-legend-label{color:#c7d0e0}
+.theme-dark .ae-shell .ae-input,.theme-dark .ae-shell .ae-select,.theme-dark .ae-shell .ae-textarea,[data-ae-theme=dark] .ae-shell .ae-input,[data-ae-theme=dark] .ae-shell .ae-select,[data-ae-theme=dark] .ae-shell .ae-textarea{background:#0f172a;border-color:#4a5a78;color:#e6ebf5}
+.theme-dark .ae-shell .ae-help,.theme-dark .ae-shell .ae-step,.theme-dark .ae-shell .ae-scenario small,.theme-dark .ae-shell .ae-footer,[data-ae-theme=dark] .ae-shell .ae-help,[data-ae-theme=dark] .ae-shell .ae-step,[data-ae-theme=dark] .ae-shell .ae-scenario small,[data-ae-theme=dark] .ae-shell .ae-footer{color:#aab6c8}
+.theme-dark .ae-shell .ae-chip,[data-ae-theme=dark] .ae-shell .ae-chip{background:#1b2740;border-color:#4a5a78;color:#e6ebf5}
+.theme-dark .ae-shell .ae-chip-good,[data-ae-theme=dark] .ae-shell .ae-chip-good{background:#052e1c;border-color:#22a06b;color:#a8ecc0}
+.theme-dark .ae-shell .ae-chip-bad,[data-ae-theme=dark] .ae-shell .ae-chip-bad{background:#3d1520;border-color:#a03a4d;color:#ffb3c0}
+.theme-dark .ae-shell .ae-chip-amber,[data-ae-theme=dark] .ae-shell .ae-chip-amber{background:#3a2c08;border-color:#8a6a1a;color:#ffd98a}
+.theme-dark .ae-shell .ae-chip-blue,.theme-dark .ae-shell .ae-onboarding-badge,[data-ae-theme=dark] .ae-shell .ae-chip-blue,[data-ae-theme=dark] .ae-shell .ae-onboarding-badge{background:#14233d;border-color:#365a99;color:#cfe0ff}
+.theme-dark .ae-shell .ae-chip-purple,.theme-dark .ae-shell .ae-comment-teacher,[data-ae-theme=dark] .ae-shell .ae-chip-purple,[data-ae-theme=dark] .ae-shell .ae-comment-teacher{background:#2a1f4d;border-color:#6d5ab8;color:#dcd2ff}
+.theme-dark .ae-shell .ae-chip-neutral,[data-ae-theme=dark] .ae-shell .ae-chip-neutral{background:#1b2740;color:#c7d0e0}
+.theme-dark .ae-shell .ae-donut:after,[data-ae-theme=dark] .ae-shell .ae-donut:after{box-shadow:inset 0 0 0 1px #34405a}
+.theme-dark .ae-shell .ae-table th,[data-ae-theme=dark] .ae-shell .ae-table th{background:#111a2b;color:#c7d0e0}
+.theme-dark .ae-shell .ae-table th,.theme-dark .ae-shell .ae-table td,[data-ae-theme=dark] .ae-shell .ae-table th,[data-ae-theme=dark] .ae-shell .ae-table td{border-bottom-color:#2a3650}
+.theme-dark .ae-shell .ae-table tbody tr:hover,.theme-dark .ae-shell .ae-domain summary,.theme-dark .ae-shell .ae-evidence,.theme-dark .ae-shell .ae-comment,.theme-dark .ae-shell .ae-sim-diff .ae-stat,.theme-dark .ae-shell .ae-release-review .ae-review-facts,[data-ae-theme=dark] .ae-shell .ae-table tbody tr:hover,[data-ae-theme=dark] .ae-shell .ae-domain summary,[data-ae-theme=dark] .ae-shell .ae-evidence,[data-ae-theme=dark] .ae-shell .ae-comment,[data-ae-theme=dark] .ae-shell .ae-sim-diff .ae-stat,[data-ae-theme=dark] .ae-shell .ae-release-review .ae-review-facts{background:#111a2b}
+.theme-dark .ae-shell .ae-evidence,[data-ae-theme=dark] .ae-shell .ae-evidence{border-left-color:#7c8aa5}
+.theme-dark .ae-shell .ae-score,.theme-dark .ae-shell .ae-onboarding-option strong,.theme-dark .ae-shell .ae-onboarding-card h2,[data-ae-theme=dark] .ae-shell .ae-score,[data-ae-theme=dark] .ae-shell .ae-onboarding-option strong,[data-ae-theme=dark] .ae-shell .ae-onboarding-card h2{color:#e6ebf5}
+.theme-dark .ae-shell .ae-onboarding-card>p,.theme-dark .ae-shell .ae-onboarding-option span,[data-ae-theme=dark] .ae-shell .ae-onboarding-card>p,[data-ae-theme=dark] .ae-shell .ae-onboarding-option span{color:#aab6c8}
+.theme-dark .ae-shell .ae-onboarding-option,[data-ae-theme=dark] .ae-shell .ae-onboarding-option{border-color:#34405a}
+.theme-dark .ae-shell .ae-onboarding-option:hover,[data-ae-theme=dark] .ae-shell .ae-onboarding-option:hover{border-color:#8ab4ff;background:#1b2740}
+.theme-dark .ae-shell .ae-step:before,[data-ae-theme=dark] .ae-shell .ae-step:before{background:#2a3650;border-color:#162032;box-shadow:0 0 0 1px #4a5a78}
+.theme-dark .ae-shell .ae-step:after,[data-ae-theme=dark] .ae-shell .ae-step:after{background:#34405a}
+.theme-dark .ae-shell .ae-step-done,[data-ae-theme=dark] .ae-shell .ae-step-done{color:#a8ecc0}
+.theme-dark .ae-shell .ae-step-current:before,[data-ae-theme=dark] .ae-shell .ae-step-current:before{box-shadow:0 0 0 3px #365a99}
+.theme-dark .ae-shell .ae-event:before,[data-ae-theme=dark] .ae-shell .ae-event:before{border-color:#162032}
+.theme-dark .ae-shell .ae-setup-progress,[data-ae-theme=dark] .ae-shell .ae-setup-progress{background:#2a3650}
+.theme-dark .ae-shell .ae-setup-task-complete strong,[data-ae-theme=dark] .ae-shell .ae-setup-task-complete strong{color:#aab6c8}
+.theme-dark .ae-shell .ae-setup-path-selected,[data-ae-theme=dark] .ae-shell .ae-setup-path-selected{box-shadow:0 0 0 3px #365a99;border-color:#8ab4ff}
+.theme-contrast .ae-shell,[data-ae-theme=contrast] .ae-shell{--ae-ink:#fff;--ae-muted:#e5e5e5;--ae-line:#fff;--ae-bg:#000;--ae-white:#000;--ae-blue:#fbbf24;--ae-navy:#fff;color:#fff}
+.theme-contrast .ae-shell .ae-workspace,[data-ae-theme=contrast] .ae-shell .ae-workspace{box-shadow:none;border:2px solid #fff}
+.theme-contrast .ae-shell .ae-top,[data-ae-theme=contrast] .ae-shell .ae-top{background:#000;border-bottom:2px solid #fff;color:#fff}
+.theme-contrast .ae-shell .ae-mark,[data-ae-theme=contrast] .ae-shell .ae-mark{background:#fbbf24;color:#000}
+.theme-contrast .ae-shell .ae-brand p,[data-ae-theme=contrast] .ae-shell .ae-brand p{color:#fff}
+.theme-contrast .ae-shell .ae-role,[data-ae-theme=contrast] .ae-shell .ae-role{background:#000;border-color:#fff}
+.theme-contrast .ae-shell .ae-role button,[data-ae-theme=contrast] .ae-shell .ae-role button{color:#fff}
+.theme-contrast .ae-shell .ae-role button[aria-pressed=true],[data-ae-theme=contrast] .ae-shell .ae-role button[aria-pressed=true]{background:#fbbf24;color:#000}
+.theme-contrast .ae-shell .ae-close,[data-ae-theme=contrast] .ae-shell .ae-close{background:#000;color:#fff;border:2px solid #fff}
+.theme-contrast .ae-shell .ae-local-banner,.theme-contrast .ae-shell .ae-sample,.theme-contrast .ae-shell .ae-remote-banner,.theme-contrast .ae-shell .ae-preview-banner,.theme-contrast .ae-shell .ae-tour,.theme-contrast .ae-shell .ae-operation-notice,.theme-contrast .ae-shell .ae-operation-success,.theme-contrast .ae-shell .ae-operation-error,.theme-contrast .ae-shell .ae-local-banner.ae-sync-error,.theme-contrast .ae-shell .ae-remote-banner.ae-sync-error,[data-ae-theme=contrast] .ae-shell .ae-local-banner,[data-ae-theme=contrast] .ae-shell .ae-sample,[data-ae-theme=contrast] .ae-shell .ae-remote-banner,[data-ae-theme=contrast] .ae-shell .ae-preview-banner,[data-ae-theme=contrast] .ae-shell .ae-tour,[data-ae-theme=contrast] .ae-shell .ae-operation-notice,[data-ae-theme=contrast] .ae-shell .ae-operation-success,[data-ae-theme=contrast] .ae-shell .ae-operation-error,[data-ae-theme=contrast] .ae-shell .ae-local-banner.ae-sync-error,[data-ae-theme=contrast] .ae-shell .ae-remote-banner.ae-sync-error{background:#000;border-bottom:2px solid #fbbf24;color:#fff}
+.theme-contrast .ae-shell .ae-tabs,[data-ae-theme=contrast] .ae-shell .ae-tabs{background:#000;border-bottom-color:#fff}
+.theme-contrast .ae-shell .ae-tab,[data-ae-theme=contrast] .ae-shell .ae-tab{color:#fff}
+.theme-contrast .ae-shell .ae-tab[aria-selected=true],[data-ae-theme=contrast] .ae-shell .ae-tab[aria-selected=true]{color:#fbbf24;border-bottom-color:#fbbf24;background:#000}
+.theme-contrast .ae-shell .ae-card,.theme-contrast .ae-shell .ae-record,.theme-contrast .ae-shell .ae-table,.theme-contrast .ae-shell .ae-footer,.theme-contrast .ae-shell .ae-onboarding-card,.theme-contrast .ae-shell .ae-onboarding-option,.theme-contrast .ae-shell .ae-donut:after,.theme-contrast .ae-shell .ae-table th,.theme-contrast .ae-shell .ae-table tbody tr:hover,.theme-contrast .ae-shell .ae-domain summary,.theme-contrast .ae-shell .ae-evidence,.theme-contrast .ae-shell .ae-comment,.theme-contrast .ae-shell .ae-comment-teacher,.theme-contrast .ae-shell .ae-sim-diff .ae-stat,.theme-contrast .ae-shell .ae-release-review .ae-review-facts,.theme-contrast .ae-shell .ae-input,.theme-contrast .ae-shell .ae-select,.theme-contrast .ae-shell .ae-textarea,.theme-contrast .ae-shell .ae-btn,.theme-contrast .ae-shell .ae-chip,[data-ae-theme=contrast] .ae-shell .ae-card,[data-ae-theme=contrast] .ae-shell .ae-record,[data-ae-theme=contrast] .ae-shell .ae-table,[data-ae-theme=contrast] .ae-shell .ae-footer,[data-ae-theme=contrast] .ae-shell .ae-onboarding-card,[data-ae-theme=contrast] .ae-shell .ae-onboarding-option,[data-ae-theme=contrast] .ae-shell .ae-donut:after,[data-ae-theme=contrast] .ae-shell .ae-table th,[data-ae-theme=contrast] .ae-shell .ae-table tbody tr:hover,[data-ae-theme=contrast] .ae-shell .ae-domain summary,[data-ae-theme=contrast] .ae-shell .ae-evidence,[data-ae-theme=contrast] .ae-shell .ae-comment,[data-ae-theme=contrast] .ae-shell .ae-comment-teacher,[data-ae-theme=contrast] .ae-shell .ae-sim-diff .ae-stat,[data-ae-theme=contrast] .ae-shell .ae-release-review .ae-review-facts,[data-ae-theme=contrast] .ae-shell .ae-input,[data-ae-theme=contrast] .ae-shell .ae-select,[data-ae-theme=contrast] .ae-shell .ae-textarea,[data-ae-theme=contrast] .ae-shell .ae-btn,[data-ae-theme=contrast] .ae-shell .ae-chip{background:#000;color:#fff;border-color:#fff}
+.theme-contrast .ae-shell .ae-card,[data-ae-theme=contrast] .ae-shell .ae-card{box-shadow:none;border-width:2px}
+.theme-contrast .ae-shell .ae-note,.theme-contrast .ae-shell .ae-warn,.theme-contrast .ae-shell .ae-danger,.theme-contrast .ae-shell .ae-ok,.theme-contrast .ae-shell .ae-setup-next,.theme-contrast .ae-shell .ae-release-confirm,.theme-contrast .ae-shell .ae-interpretation,.theme-contrast .ae-shell .ae-onboarding-note,[data-ae-theme=contrast] .ae-shell .ae-note,[data-ae-theme=contrast] .ae-shell .ae-warn,[data-ae-theme=contrast] .ae-shell .ae-danger,[data-ae-theme=contrast] .ae-shell .ae-ok,[data-ae-theme=contrast] .ae-shell .ae-setup-next,[data-ae-theme=contrast] .ae-shell .ae-release-confirm,[data-ae-theme=contrast] .ae-shell .ae-interpretation,[data-ae-theme=contrast] .ae-shell .ae-onboarding-note{background:#000;border:2px solid #fbbf24;color:#fff}
+.theme-contrast .ae-shell .ae-btn,[data-ae-theme=contrast] .ae-shell .ae-btn{border:2px solid #fff}
+.theme-contrast .ae-shell .ae-btn:hover,.theme-contrast .ae-shell .ae-onboarding-option:hover,[data-ae-theme=contrast] .ae-shell .ae-btn:hover,[data-ae-theme=contrast] .ae-shell .ae-onboarding-option:hover{background:#1a1a1a}
+.theme-contrast .ae-shell .ae-btn-primary,[data-ae-theme=contrast] .ae-shell .ae-btn-primary{background:#fbbf24;border-color:#fbbf24;color:#000}
+.theme-contrast .ae-shell .ae-btn-primary:hover,[data-ae-theme=contrast] .ae-shell .ae-btn-primary:hover{background:#fcd34d}
+.theme-contrast .ae-shell .ae-btn-danger,[data-ae-theme=contrast] .ae-shell .ae-btn-danger{background:#fff;border-color:#fff;color:#000}
+.theme-contrast .ae-shell .ae-link,.theme-contrast .ae-shell .ae-row-btn,.theme-contrast .ae-shell .ae-footer a,.theme-contrast .ae-shell .ae-onboarding-kicker,.theme-contrast .ae-shell .ae-onboarding-progress,.theme-contrast .ae-shell .ae-score,.theme-contrast .ae-shell .ae-step-done,[data-ae-theme=contrast] .ae-shell .ae-link,[data-ae-theme=contrast] .ae-shell .ae-row-btn,[data-ae-theme=contrast] .ae-shell .ae-footer a,[data-ae-theme=contrast] .ae-shell .ae-onboarding-kicker,[data-ae-theme=contrast] .ae-shell .ae-onboarding-progress,[data-ae-theme=contrast] .ae-shell .ae-score,[data-ae-theme=contrast] .ae-shell .ae-step-done{color:#fbbf24}
+.theme-contrast .ae-shell .ae-field>span,.theme-contrast .ae-shell .ae-legend-label,.theme-contrast .ae-shell .ae-help,.theme-contrast .ae-shell .ae-step,.theme-contrast .ae-shell .ae-table th,.theme-contrast .ae-shell .ae-onboarding-card>p,.theme-contrast .ae-shell .ae-onboarding-option span,.theme-contrast .ae-shell .ae-scenario small,.theme-contrast .ae-shell .ae-footer,.theme-contrast .ae-shell .ae-setup-task-complete strong,.theme-contrast .ae-shell .ae-onboarding-card h2,.theme-contrast .ae-shell .ae-onboarding-option strong,[data-ae-theme=contrast] .ae-shell .ae-field>span,[data-ae-theme=contrast] .ae-shell .ae-legend-label,[data-ae-theme=contrast] .ae-shell .ae-help,[data-ae-theme=contrast] .ae-shell .ae-step,[data-ae-theme=contrast] .ae-shell .ae-table th,[data-ae-theme=contrast] .ae-shell .ae-onboarding-card>p,[data-ae-theme=contrast] .ae-shell .ae-onboarding-option span,[data-ae-theme=contrast] .ae-shell .ae-scenario small,[data-ae-theme=contrast] .ae-shell .ae-footer,[data-ae-theme=contrast] .ae-shell .ae-setup-task-complete strong,[data-ae-theme=contrast] .ae-shell .ae-onboarding-card h2,[data-ae-theme=contrast] .ae-shell .ae-onboarding-option strong{color:#fff}
+.theme-contrast .ae-shell .ae-chip-good,.theme-contrast .ae-shell .ae-chip-bad,.theme-contrast .ae-shell .ae-chip-amber,.theme-contrast .ae-shell .ae-chip-blue,.theme-contrast .ae-shell .ae-chip-purple,.theme-contrast .ae-shell .ae-chip-neutral,.theme-contrast .ae-shell .ae-onboarding-badge,[data-ae-theme=contrast] .ae-shell .ae-chip-good,[data-ae-theme=contrast] .ae-shell .ae-chip-bad,[data-ae-theme=contrast] .ae-shell .ae-chip-amber,[data-ae-theme=contrast] .ae-shell .ae-chip-blue,[data-ae-theme=contrast] .ae-shell .ae-chip-purple,[data-ae-theme=contrast] .ae-shell .ae-chip-neutral,[data-ae-theme=contrast] .ae-shell .ae-onboarding-badge{background:#000;border-color:#fbbf24;color:#fff}
+.theme-contrast .ae-shell .ae-donut:after,[data-ae-theme=contrast] .ae-shell .ae-donut:after{box-shadow:inset 0 0 0 2px #fff}
+.theme-contrast .ae-shell .ae-table th,.theme-contrast .ae-shell .ae-table td,[data-ae-theme=contrast] .ae-shell .ae-table th,[data-ae-theme=contrast] .ae-shell .ae-table td{border-bottom-color:#fff}
+.theme-contrast .ae-shell .ae-evidence,[data-ae-theme=contrast] .ae-shell .ae-evidence{border-left-color:#fbbf24}
+.theme-contrast .ae-shell .ae-onboarding-option,[data-ae-theme=contrast] .ae-shell .ae-onboarding-option{border-color:#fff}
+.theme-contrast .ae-shell .ae-step:before,[data-ae-theme=contrast] .ae-shell .ae-step:before{background:#000;border-color:#000;box-shadow:0 0 0 2px #fff}
+.theme-contrast .ae-shell .ae-step:after,[data-ae-theme=contrast] .ae-shell .ae-step:after{background:#fff}
+.theme-contrast .ae-shell .ae-step-done:before,[data-ae-theme=contrast] .ae-shell .ae-step-done:before{background:#fbbf24;box-shadow:0 0 0 2px #fbbf24}
+.theme-contrast .ae-shell .ae-step-done:after,[data-ae-theme=contrast] .ae-shell .ae-step-done:after{background:#fbbf24}
+.theme-contrast .ae-shell .ae-step-current:before,[data-ae-theme=contrast] .ae-shell .ae-step-current:before{background:#fff;box-shadow:0 0 0 3px #fbbf24}
+.theme-contrast .ae-shell .ae-event:before,[data-ae-theme=contrast] .ae-shell .ae-event:before{background:#fbbf24;border-color:#000;box-shadow:0 0 0 1px #fbbf24}
+.theme-contrast .ae-shell .ae-setup-progress,[data-ae-theme=contrast] .ae-shell .ae-setup-progress{background:#333}
+.theme-contrast .ae-shell .ae-setup-progress>span,[data-ae-theme=contrast] .ae-shell .ae-setup-progress>span{background:#fbbf24}
+.theme-contrast .ae-shell .ae-setup-path-selected,[data-ae-theme=contrast] .ae-shell .ae-setup-path-selected{box-shadow:0 0 0 3px #fbbf24;border-color:#fbbf24}
+.theme-contrast .ae-shell .ae-onboarding-progress:after,[data-ae-theme=contrast] .ae-shell .ae-onboarding-progress:after{background:linear-gradient(90deg,#fbbf24 50%,#333 50%)}
+.theme-contrast .ae-shell .ae-btn:focus-visible,.theme-contrast .ae-shell .ae-tab:focus-visible,.theme-contrast .ae-shell .ae-input:focus-visible,.theme-contrast .ae-shell .ae-select:focus-visible,.theme-contrast .ae-shell .ae-textarea:focus-visible,.theme-contrast .ae-shell .ae-row-btn:focus-visible,.theme-contrast .ae-shell .ae-link:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-btn:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-tab:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-input:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-select:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-textarea:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-row-btn:focus-visible,[data-ae-theme=contrast] .ae-shell .ae-link:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
+@media(forced-colors:active){.ae-shell .ae-btn,.ae-shell .ae-tab,.ae-shell .ae-chip,.ae-shell .ae-card{border:1px solid ButtonText}.ae-shell .ae-tab[aria-selected=true]{border-bottom:3px solid Highlight}}
 @media(prefers-reduced-motion:reduce){.ae-shell *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 `;
 
@@ -2030,14 +2184,14 @@ function AeLocalOnboarding({ onChoose }) {
       <h2 id="ae-onboarding-title">{t("educator_evaluation.choose_how_to_start_educator_evaluation_1ttmet2", "Choose how to start Educator Evaluation")}</h2>
       <p id="ae-onboarding-description">{t("educator_evaluation.choose_the_outcome_you_need_today_no_choice_shares_a_recor_30xck6", "Choose the outcome you need today. No choice shares a record automatically, and you can change the record path later from Setup.")}</p>
       <div className="ae-onboarding-options" role="group" aria-label={t("educator_evaluation.choose_evaluation_workspace_starting_point_1g4r803", "Choose evaluation workspace starting point")}>
-        <button type="button" ref={firstRef} className="ae-onboarding-option" onClick={() => onChoose('sample')}>
+        <button type="button" className="ae-onboarding-option" onClick={() => onChoose('sample')}>
           <strong>{t("educator_evaluation.start_a_guided_sample_tour_vc70j4", "Start a guided sample tour")}</strong>
-          <span className="ae-onboarding-badge">{t("educator_evaluation.recommended_for_a_first_visit_1hk3zdt", "Recommended for a first visit")}</span>
+          <span className="ae-onboarding-badge">{t("educator_evaluation.try_it_first_with_fictional_data_20260902", "Try it first with fictional data")}</span>
           <span>{t("educator_evaluation.open_a_fictional_roster_and_then_shape_it_with_simulation__1sfyadv", "Open a fictional roster and then shape it with Simulation Studio. No real personnel data is used.")}</span>
         </button>
-        <button type="button" className="ae-onboarding-option" onClick={() => onChoose('blank')}>
+        <button type="button" ref={firstRef} className="ae-onboarding-option ae-onboarding-option-primary" onClick={() => onChoose('blank')}>
           <strong>{t("educator_evaluation.start_real_work_locally_u0hnhi", "Start real work locally")}</strong>
-          <span className="ae-onboarding-badge">{t("educator_evaluation.private_no_sharing_nppjss", "Private · no sharing")}</span>
+          <span className="ae-onboarding-badge ae-onboarding-badge-primary">{t("educator_evaluation.recommended_start_in_two_minutes_20260902", "Recommended · start in two minutes")}</span>
           <span>{t("educator_evaluation.begin_empty_add_your_educators_and_keep_records_on_this_de_7zkiud", "Begin empty, add your educators, and keep records on this device until your district approves a sharing path.")}</span>
         </button>
         <button type="button" className="ae-onboarding-option" onClick={() => onChoose('setup')}>
@@ -2210,12 +2364,39 @@ const AE_GUIDED_TOUR_STEPS = [
   { tab: 'about', title: t("educator_evaluation.shape_the_simulation_and_choose_a_record_path_ohoqi5", 'Shape the simulation and choose a record path'), text: t("educator_evaluation.use_simulation_studio_with_natural_language_or_manual_cont_lwzk3y", 'Use Simulation Studio with natural language or manual controls, then compare private, principal-managed Drive, and district-portal paths.') },
 ];
 
+// Editable tour script (2026-09-02). The built-in tour stays the default; a
+// district can replace the steps with its own wording or add a policy step.
+// Each step is a tab id, a title, and one sentence. Stored on the device and
+// carried inside scenario exports so every principal can receive the same
+// script. Invalid scripts fall back to the built-in tour rather than break it.
+const AE_TOUR_KEY = 'allo_educator_evaluation_tour_v1';
+const AE_TOUR_TABS = ['overview', 'trends', 'staff', 'walkthroughs', 'formal', 'spm', 'audit', 'about'];
+function aeSanitizeTourSteps(raw) {
+  if (!Array.isArray(raw) || !raw.length || raw.length > 30) return null;
+  const steps = raw.map((step) => {
+    if (!step || typeof step !== 'object') return null;
+    const tab = String(step.tab || '').trim();
+    const title = String(step.title || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 120);
+    const text = String(step.text || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 400);
+    return AE_TOUR_TABS.includes(tab) && title && text ? { tab, title, text } : null;
+  });
+  return steps.every(Boolean) ? steps : null;
+}
+function aeReadTourOverride() {
+  try { return aeSanitizeTourSteps(JSON.parse(localStorage.getItem(AE_TOUR_KEY) || 'null')); } catch (_) { return null; }
+}
+function aeTourSteps() { return aeReadTourOverride() || AE_GUIDED_TOUR_STEPS; }
+function aeWriteTourOverride(steps) {
+  try { if (steps) localStorage.setItem(AE_TOUR_KEY, JSON.stringify(steps)); else localStorage.removeItem(AE_TOUR_KEY); return true; } catch (_) { return false; }
+}
+
 function AeGuidedTour({ step, onMove, onFinish }) {
-  const current = AE_GUIDED_TOUR_STEPS[step];
+  const steps = aeTourSteps();
+  const current = steps[step];
   if (!current) return null;
   return <section className="ae-tour" aria-labelledby="ae-tour-title" aria-live="polite">
-    <div><div className="ae-onboarding-kicker">{t("educator_evaluation.guided_sample_2xc9yg", "Guided sample ·")} {step + 1} of {AE_GUIDED_TOUR_STEPS.length}</div><strong id="ae-tour-title">{current.title}</strong><p>{current.text}</p></div>
-    <div className="ae-actions"><button type="button" className="ae-btn" disabled={step === 0} onClick={() => onMove(step - 1)}>{t("educator_evaluation.back_1hzmxtu", "Back")}</button>{step < AE_GUIDED_TOUR_STEPS.length - 1 ? <button type="button" className="ae-btn ae-btn-primary" onClick={() => onMove(step + 1)}>{t("educator_evaluation.next_1padbm0", "Next")}</button> : <button type="button" className="ae-btn ae-btn-primary" onClick={onFinish}>{t("educator_evaluation.finish_tour_1n84gmw", "Finish tour")}</button>}<button type="button" className="ae-btn ae-btn-quiet" onClick={onFinish}>{t("educator_evaluation.exit_tour_1ds4e2l", "Exit tour")}</button></div>
+    <div><div className="ae-onboarding-kicker">{t("educator_evaluation.guided_sample_2xc9yg", "Guided sample ·")} {step + 1} of {steps.length}</div><strong id="ae-tour-title">{current.title}</strong><p>{current.text}</p></div>
+    <div className="ae-actions"><button type="button" className="ae-btn" disabled={step === 0} onClick={() => onMove(step - 1)}>{t("educator_evaluation.back_1hzmxtu", "Back")}</button>{step < steps.length - 1 ? <button type="button" className="ae-btn ae-btn-primary" onClick={() => onMove(step + 1)}>{t("educator_evaluation.next_1padbm0", "Next")}</button> : <button type="button" className="ae-btn ae-btn-primary" onClick={onFinish}>{t("educator_evaluation.finish_tour_1n84gmw", "Finish tour")}</button>}<button type="button" className="ae-btn ae-btn-quiet" onClick={onFinish}>{t("educator_evaluation.exit_tour_1ds4e2l", "Exit tour")}</button></div>
   </section>;
 }
 
@@ -2484,7 +2665,7 @@ function AeSampleEvaluationRehearsal({ workspace, setSelectedTeacherId, setRole,
       if (transition && typeof transition.scrollIntoView === 'function') transition.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 0);
   };
-  return <section className="ae-card ae-span-12" aria-labelledby="ae-rehearsal-title">
+  return <section className="ae-card ae-span-12" id="ae-sample-rehearsal" tabIndex={-1} aria-labelledby="ae-rehearsal-title">
     <div className="ae-record-head"><div><h3 id="ae-rehearsal-title">{t("educator_evaluation.practice_one_complete_fictional_evaluation_10air0c", "Practice one complete fictional evaluation")}</h3><p className="ae-sub">{t("educator_evaluation.a_guided_evaluator_to_educator_rehearsal_using_1fwp3d2", "A guided evaluator-to-educator rehearsal using")} {teacher.name} ({teacher.code}{t("educator_evaluation.every_entry_stays_inside_simulated_data_3xuggt", "). Every entry stays inside simulated data.")}</p></div><span className={'ae-chip ' + (annualComplete ? 'ae-chip-good' : 'ae-chip-purple')}>{annualComplete ? t("educator_evaluation.rehearsal_complete_1t1iga3", 'Rehearsal complete') : (observation ? t("educator_evaluation.formal_step_miutz0", 'Formal step ') + (step + 1) + t("educator_evaluation.of_10_1af6cv5", ' of 10') : t("educator_evaluation.ready_to_begin_e1hn80", 'Ready to begin'))}</span></div>
     <div className="ae-grid" style={{ marginTop: 12 }}><div className="ae-span-4 ae-stat"><strong>{formalComplete} / 10</strong><span>{t("educator_evaluation.formal_steps_complete_1ay1f38", "formal steps complete")}</span></div><div className="ae-span-4 ae-stat"><strong>{annualComplete ? t("educator_evaluation.recorded_1bfaoyl", 'Recorded') : t("educator_evaluation.not_recorded_wm31ze", 'Not recorded')}</strong><span>{t("educator_evaluation.fictional_final_release_ny2qrn", "fictional final release")}</span></div><div className="ae-span-4 ae-stat"><strong>{annualComplete ? t("educator_evaluation.done_13cn9g1", 'Done') : (targetRole === 'teacher' ? t("educator_evaluation.fictional_educator_2qs1sj", 'Fictional educator') : t("educator_evaluation.evaluator_125q2ii", 'Evaluator'))}</strong><span>{t("educator_evaluation.next_owner_14eb4jz", "next owner")}</span></div></div>
     <div className={'ae-note ' + (annualComplete ? 'ae-ok' : 'ae-info')} style={{ marginTop: 12 }}><strong>{annualComplete ? t("educator_evaluation.full_rehearsal_completed_1uj394s", 'Full rehearsal completed.') : (guidance ? guidance.title : t("educator_evaluation.begin_with_an_evaluator_assignment_5f3dox", 'Begin with an evaluator assignment.'))}</strong><br/>{annualComplete ? t("educator_evaluation.the_observation_acknowledgement_annual_inputs_and_final_re_rvlfu2", 'The observation, acknowledgement, annual inputs, and final release are locked in this fictional cycle. Review the audit timeline to see the complete chain.') : (guidance ? guidance.text : t("educator_evaluation.assign_a_formal_observation_then_follow_the_role_prompts_t_1tgjlbm", 'Assign a formal observation, then follow the role prompts through educator prework, conferences, evidence, reflection, ratings, acknowledgement, finalization, and annual release.'))}</div>
@@ -2492,7 +2673,7 @@ function AeSampleEvaluationRehearsal({ workspace, setSelectedTeacherId, setRole,
   </section>;
 }
 
-function AeRealWorkLaunch({ workspace, setTab }) {
+function AeRealWorkLaunch({ workspace, setTab, onAddEducator }) {
   const pathReady = ['local', 'principal_share'].includes(workspace.config.setupPath);
   const detailsReady = [workspace.config.organization, workspace.config.building, workspace.config.academicYear, workspace.config.evaluatorName, workspace.config.evaluatorInitials]
     .every((value) => String(value || '').trim());
@@ -2506,6 +2687,7 @@ function AeRealWorkLaunch({ workspace, setTab }) {
   if (completed === steps.length || workspace.config.setupPath === 'district_portal') return null;
   const next = steps.find((step) => !step.ready);
   const openNext = () => {
+    if (next.id === 'roster' && typeof onAddEducator === 'function') { onAddEducator(); return; }
     setTab(next.id === 'roster' ? 'staff' : 'about');
     if (next.id === 'path') setTimeout(() => {
       const setup = document.getElementById('ae-record-path-setup');
@@ -2517,11 +2699,11 @@ function AeRealWorkLaunch({ workspace, setTab }) {
     <div className="ae-setup-progress" role="progressbar" aria-label={t("educator_evaluation.first_real_cycle_readiness_20260822", "First real cycle readiness")} aria-valuemin="0" aria-valuemax={steps.length} aria-valuenow={completed} style={{ marginTop: 12 }}><span style={{ width: Math.round(completed / steps.length * 100) + '%' }}/></div>
     <div className="ae-grid" style={{ marginTop: 12 }}>{steps.map((step, index) => <div className="ae-span-4 ae-stat" key={step.id} style={{ borderLeftColor: step.ready ? '#16815d' : (step.id === next.id ? '#2563eb' : '#94a3b8') }}><strong>{step.ready ? t("educator_evaluation.ready_status_20260822", 'Ready') : (index + 1) + '. ' + t("educator_evaluation.to_do_20260822", 'To do')}</strong><span>{step.label}<br/>{step.detail}</span></div>)}</div>
     <div className="ae-setup-next" style={{ marginTop: 12 }}><strong>{t("educator_evaluation.next_step_ej8e9s", "Next step:")}</strong> {next.label}</div>
-    <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" onClick={openNext}>{next.id === 'roster' ? t("educator_evaluation.open_staff_and_add_an_educator_20260822", 'Open Staff and add an educator') : (next.id === 'details' ? t("educator_evaluation.review_workspace_details_20260822", 'Review workspace details') : t("educator_evaluation.choose_record_path_20260822", 'Choose record path'))}</button><span className="ae-help">{t("educator_evaluation.readiness_not_district_approval_20260822", "This checklist confirms workspace readiness, not district authorization. Follow the approved personnel-record process for the path you choose.")}</span></div>
+    <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" onClick={openNext}>{next.id === 'roster' ? t("educator_evaluation.open_staff_and_add_an_educator_20260822", 'Open Staff and add an educator') : (next.id === 'details' ? t("educator_evaluation.review_workspace_details_20260822", 'Review workspace details') : t("educator_evaluation.choose_record_path_20260822", 'Choose record path'))}</button>{!rosterReady && next.id !== 'roster' && typeof onAddEducator === 'function' && <button type="button" className="ae-btn" onClick={onAddEducator}>{t("educator_evaluation.add_my_first_educator_20260902", "Add my first educator")}</button>}<span className="ae-help">{t("educator_evaluation.readiness_not_district_approval_20260822", "This checklist confirms workspace readiness, not district authorization. Follow the approved personnel-record process for the path you choose.")}</span></div>
   </section>;
 }
 
-function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, setRole, updateTeacher, setTab, aiReflectionEnabled, askForReflection, reflection, readOnlyPreview = false, isRemote = false, requestActionReview }) {
+function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, setRole, updateTeacher, setTab, aiReflectionEnabled, askForReflection, reflection, readOnlyPreview = false, isRemote = false, requestActionReview, requestStaffAdd }) {
   const evidenceFindings = React.useMemo(() => (selectedTeacher ? aeEvidenceSufficiency(workspace, selectedTeacher.id, { domains: AE_DOMAINS, componentsByDomain: AE_ACTIVE_FW.components || null, expectedPieces: AE_ACTIVE_FW.evidenceTarget || 0 }) : []), [workspace, selectedTeacher]);
   const isEvaluator = role === 'evaluator';
   const visibleTeachers = isEvaluator ? workspace.teachers : (selectedTeacher ? [selectedTeacher] : []);
@@ -2558,7 +2740,7 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, se
     </div>
     <div className="ae-grid">
       {workspace.config.sampleMode && <AeSampleEvaluationRehearsal workspace={workspace} setSelectedTeacherId={setSelectedTeacherId} setRole={setRole} setTab={setTab}/>}
-      {!isRemote && isEvaluator && !workspace.educatorPacketMode && !workspace.config.sampleMode && <AeRealWorkLaunch workspace={workspace} setTab={setTab}/>}
+      {!isRemote && isEvaluator && !workspace.educatorPacketMode && !workspace.config.sampleMode && <AeRealWorkLaunch workspace={workspace} setTab={setTab} onAddEducator={requestStaffAdd}/>}
       {!isEvaluator && selectedTeacher && (() => { const action = aeTeacherNextAction(workspace, selectedTeacher); const educatorLabel = action.teacherLabel || (action.owner === 'evaluator' ? 'No action required from you right now' : action.label); return <section className="ae-card ae-span-12" aria-labelledby="ae-educator-next-title"><div className="ae-record-head"><div><div className="ae-onboarding-kicker">Your next step</div><h3 id="ae-educator-next-title">{educatorLabel}</h3><p className="ae-sub">{action.detail}</p></div><span className={'ae-chip ' + (action.owner === 'teacher' ? 'ae-chip-purple' : action.owner === 'complete' ? 'ae-chip-good' : 'ae-chip-neutral')}>{action.owner === 'teacher' ? 'Your turn' : action.owner === 'complete' ? 'Complete' : 'Evaluator’s turn'}</span></div>{['teacher', 'complete'].includes(action.owner) && <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" disabled={readOnlyPreview && action.owner === 'teacher'} onClick={() => openNextAction(selectedTeacher, action)}>{readOnlyPreview && action.owner === 'teacher' ? 'Preview only' : educatorLabel}</button></div>}</section>; })()}
       {isEvaluator && (workload.overdue > 0 || workload.soon > 0 || workload.month > 0) && <section className="ae-card ae-span-12" aria-labelledby="ae-workload-title"><h3 id="ae-workload-title">{t("educator_evaluation.coming_due_ry9pkk", "Coming due")}</h3><p className="ae-sub">{t("educator_evaluation.open_cycles_by_due_date_a_band_is_triage_for_your_calendar_15zfrim", "Open cycles by due date. A band is triage for your calendar, not a judgment about anyone.")}</p><div className="ae-grid" style={{ marginTop: 10 }}>
         <div className="ae-span-4 ae-stat" style={{ borderLeftColor: workload.overdue ? '#b91c1c' : undefined }}><strong>{workload.overdue}</strong><span>{t("educator_evaluation.past_due_date_1pu1i2t", "past due date")}</span></div>
@@ -2688,11 +2870,19 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
     return { teacher, count: visits.length, last, daysSince };
   }).sort((a, b) => (a.last || '').localeCompare(b.last || '') || a.teacher.name.localeCompare(b.teacher.name)) : [];
   const buildingTagCounts = {};
+  const buildingTagEducators = {};
   if (isEvaluator) {
     workspace.walkthroughs.filter((item) => activeTrendIds.has(item.teacherId) && item.publishedAt && inRange(item.publishedAt))
       .concat(workspace.observations.filter((item) => activeTrendIds.has(item.teacherId) && item.evidencePublishedAt && inRange(item.evidencePublishedAt)))
-      .forEach((record) => (record.componentTags || []).forEach((code) => { buildingTagCounts[code] = (buildingTagCounts[code] || 0) + 1; }));
+      .forEach((record) => (record.componentTags || []).forEach((code) => { buildingTagCounts[code] = (buildingTagCounts[code] || 0) + 1; (buildingTagEducators[code] = buildingTagEducators[code] || new Set()).add(record.teacherId); }));
   }
+  // Component heatmap (2026-09-02): counts of published records and distinct
+  // educators per framework component across the building. Documentation
+  // coverage only; ratings are never aggregated here.
+  const componentHeat = isEvaluator ? AE_DOMAINS.map((domain) => {
+    const comps = (AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id]) || domain.components;
+    return { domain, cells: comps.map(([code, label]) => ({ code, label, count: buildingTagCounts[code] || 0, educators: buildingTagEducators[code] ? buildingTagEducators[code].size : 0 })) };
+  }) : [];
   const domainCoverage = isEvaluator ? AE_DOMAINS.map((domain) => {
     const comps = (AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id]) || domain.components;
     const total = comps.reduce((sum, comp) => sum + (buildingTagCounts[comp[0]] || 0), 0);
@@ -2714,6 +2904,9 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
       </section>
       <section className="ae-card ae-span-5" aria-labelledby="ae-domain-coverage-title"><h3 id="ae-domain-coverage-title">{t("educator_evaluation.documented_evidence_by_domain_20260823", "Documented evidence by domain")}</h3><p className="ae-sub">{t("educator_evaluation.domain_coverage_framing_20260823", "Evidence-tag counts on published records across the active roster. A domain nobody documents is a professional-development planning signal, never a rating.")}</p>
         {domainCoverage.map((entry) => <div className="ae-stat" key={entry.domain.id} style={{ marginTop: 10, borderLeftColor: entry.domain.color }}><strong>{entry.total}</strong><span>{entry.domain.code}. {aeRubricDisplayLabel(entry.domain.label)}{entry.missing.length ? t("educator_evaluation.no_evidence_tagged_yet_20260823", ' · no evidence tagged yet: ') + entry.missing.join(', ') : t("educator_evaluation.every_component_tagged_20260823", ' · every component has tagged evidence')}</span></div>)}
+      </section>
+      <section className="ae-card ae-span-12" aria-labelledby="ae-component-heat-title"><h3 id="ae-component-heat-title">{t("educator_evaluation.documented_evidence_by_component_20260902", "Documented evidence by component")}</h3><p className="ae-sub">{t("educator_evaluation.component_heat_help_20260902", "Published records that tag each component, and how many educators they cover, across the active roster and date range. Counts only: this shows where evidence has and has not been documented, never a rating.")}</p>
+        {componentHeat.map((row) => <div key={row.domain.id} style={{ marginTop: 10 }}><div className="ae-legend-label">{row.domain.code}. {aeRubricDisplayLabel(row.domain.label)}</div><div className="ae-heat-row" role="list">{row.cells.map((cell) => <div key={cell.code} role="listitem" className={'ae-heat-cell ' + (cell.count >= 3 ? 'ae-heat-3' : (cell.count === 2 ? 'ae-heat-2' : (cell.count === 1 ? 'ae-heat-1' : 'ae-heat-0')))} title={cell.label} data-help-key="ae_component_heat_cell"><strong>{cell.code}</strong><span>{cell.count ? cell.count + (cell.count === 1 ? t("educator_evaluation.record_singular_20260902", ' record') : t("educator_evaluation.records_plural_20260902", ' records')) + ' · ' + cell.educators + (cell.educators === 1 ? t("educator_evaluation.educator_singular_20260902", ' educator') : t("educator_evaluation.educators_plural_20260902", ' educators')) : t("educator_evaluation.not_yet_documented_20260902", 'Not yet documented')}</span></div>)}</div></div>)}
       </section>
     </div>}
     {!selectedTeacher ? <div className="ae-card ae-empty">{t("educator_evaluation.choose_an_educator_to_view_trends_1imi3bc", "Choose an educator to view trends.")}</div> : <div className="ae-grid">
@@ -2742,10 +2935,12 @@ function aeParseRosterPaste(text) {
   });
 }
 
-function AeStaff({ workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, addTeacher, addTeachersBulk, isRemote = false, canAddStaff = true }) {
+function AeStaff({ workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, addTeacher, addTeachersBulk, isRemote = false, canAddStaff = true, addRequest = 0 }) {
   const [search, setSearch] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState('all');
   const [adding, setAdding] = React.useState(false);
+  // The Overview launch card asks for the add form directly (first-run path).
+  React.useEffect(() => { if (addRequest && canAddStaff) setAdding(true); }, [addRequest]);
   const [pasting, setPasting] = React.useState(false);
   const [pasteText, setPasteText] = React.useState('');
   const [draft, setDraft] = React.useState({ name: '', code: '', assignment: '', building: workspace.config.building || '', dueDate: '' });
@@ -2897,19 +3092,20 @@ function AeWalkthroughForm({ teachers, selectedTeacherId, createWalkthrough, edi
       onConfirm: () => persist(true),
     });
   };
-  return <section className="ae-card" style={{ marginBottom: 16 }}><h3>{editingRecord ? 'Edit private walkthrough draft' : t("educator_evaluation.new_walkthrough_evidence_1q2lsy4", "New walkthrough evidence")}</h3><p className="ae-sub">{t("educator_evaluation.keep_witnessed_evidence_separate_from_interpretation_or_fe_a6e0j0", "Keep witnessed evidence separate from interpretation or feedback.")}</p><div className="ae-form-grid" style={{ marginTop: 12 }}>
+  return <section className="ae-card ae-walk-form" style={{ marginBottom: 16 }}><h3>{editingRecord ? 'Edit private walkthrough draft' : t("educator_evaluation.new_walkthrough_evidence_1q2lsy4", "New walkthrough evidence")}</h3><p className="ae-sub">{t("educator_evaluation.keep_witnessed_evidence_separate_from_interpretation_or_fe_a6e0j0", "Keep witnessed evidence separate from interpretation or feedback.")}</p><div className="ae-form-grid" style={{ marginTop: 12 }}>
       <label className="ae-field"><span>{t("educator_evaluation.educator_8c1rq4", "Educator")}</span><select className="ae-select" value={draft.teacherId} onChange={(event) => setDraft(Object.assign({}, draft, { teacherId: event.target.value }))}><option value="">{t("educator_evaluation.choose_w4fyow", "Choose")}</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select>{canAddStaff && typeof addTeacher === 'function' && !quickAdd && <button type="button" className="ae-btn ae-btn-quiet" style={{ marginTop: 6, alignSelf: 'flex-start' }} onClick={() => setQuickAdd(true)}>{t("educator_evaluation.new_educator_quick_add_20260823", "+ New educator")}</button>}</label>
       {quickAdd && canAddStaff && typeof addTeacher === 'function' && <div className="ae-field ae-field-wide"><span>{t("educator_evaluation.quick_add_educator_20260823", "Quick-add educator")}</span><div className="ae-actions" style={{ alignItems: 'flex-end', marginTop: 6 }}><label className="ae-field" style={{ margin: 0 }}><span>{t("educator_evaluation.name_4el6o6", "Name")}</span><input className="ae-input" value={quickName} onChange={(event) => setQuickName(event.target.value)}/></label><label className="ae-field" style={{ margin: 0 }}><span>{t("educator_evaluation.unique_staff_code_1e9a9q5", "Unique staff code")}</span><input className="ae-input" value={quickCode} onChange={(event) => setQuickCode(event.target.value)}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={!quickName.trim() || !quickCode.trim()} onClick={saveQuickAdd}>{t("educator_evaluation.add_and_select_20260823", "Add and select")}</button><button type="button" className="ae-btn" onClick={() => { setQuickAdd(false); setQuickName(''); setQuickCode(''); }}>{t("educator_evaluation.cancel_ew9em3", "Cancel")}</button></div><span className="ae-help">{t("educator_evaluation.quick_add_finish_in_staff_20260823", "Adds the educator to Staff with default settings selected; finish the assignment details there later.")}</span></div>}
       <label className="ae-field"><span>{t("educator_evaluation.date_ggjuyh", "Date")}</span><input className="ae-input" type="date" value={draft.date} onChange={(event) => setDraft(Object.assign({}, draft, { date: event.target.value }))}/></label>
       <label className="ae-field"><span>{t("educator_evaluation.announced_3rxthr", "Announced?")}</span><select className="ae-select" value={draft.announced} onChange={(event) => setDraft(Object.assign({}, draft, { announced: event.target.value }))}><option value="unannounced">{t("educator_evaluation.unannounced_16wgx7b", "Unannounced")}</option><option value="announced">{t("educator_evaluation.announced_1wakucq", "Announced")}</option></select></label>
-      <label className="ae-field"><span>{t("educator_evaluation.duration_minutes_1ionhwt", "Duration (minutes)")}</span><input className="ae-input" type="number" min="1" max="180" value={draft.durationMin} onChange={(event) => setDraft(Object.assign({}, draft, { durationMin: event.target.value }))}/></label>
+      <label className="ae-field"><span>{t("educator_evaluation.duration_minutes_1ionhwt", "Duration (minutes)")}</span><input className="ae-input" type="number" inputMode="numeric" min="1" max="180" value={draft.durationMin} onChange={(event) => setDraft(Object.assign({}, draft, { durationMin: event.target.value }))}/></label>
+      <div className="ae-field"><span>{t("educator_evaluation.quick_length_20260902", "Quick length")}</span><div className="ae-actions ae-walk-quick" role="group" aria-label={t("educator_evaluation.quick_length_20260902", "Quick length")}>{[5, 8, 10, 15].map((minutes) => <button type="button" key={minutes} className={'ae-btn ' + (String(draft.durationMin) === String(minutes) ? 'ae-btn-primary' : '')} aria-pressed={String(draft.durationMin) === String(minutes)} onClick={() => setDraft(Object.assign({}, draft, { durationMin: String(minutes) }))}>{minutes} min</button>)}</div></div>
       <label className="ae-field"><span>{t("educator_evaluation.lesson_phase_u303j2", "Lesson phase")}</span><select className="ae-select" value={draft.lessonPhase} onChange={(event) => setDraft(Object.assign({}, draft, { lessonPhase: event.target.value }))}><option value="opening">{t("educator_evaluation.opening_dfet3", "Opening")}</option><option value="middle">{t("educator_evaluation.middle_of_lesson_dw8wmv", "Middle of lesson")}</option><option value="guided_practice">{t("educator_evaluation.guided_practice_1ktqe32", "Guided practice")}</option><option value="independent_practice">{t("educator_evaluation.independent_practice_xnmxd2", "Independent practice")}</option><option value="closure">{t("educator_evaluation.closure_13sol0i", "Closure")}</option></select></label>
       <label className="ae-field"><span>{t("educator_evaluation.course_subject_1qvf7p9", "Course / subject")}</span><input className="ae-input" value={draft.subject} onChange={(event) => setDraft(Object.assign({}, draft, { subject: event.target.value }))}/></label>
     </div><label className="ae-field"><span>{t("educator_evaluation.directly_witnessed_evidence_3xyvim", "Directly witnessed evidence")}</span><textarea className="ae-textarea" value={draft.evidence} onChange={(event) => setDraft(Object.assign({}, draft, { evidence: event.target.value }))} placeholder={t("educator_evaluation.at_10_14_the_teacher_asked_six_students_the_posted_objecti_1ae0aom", "At 10:14, the teacher asked… Six students… The posted objective read…")}/><span className="ae-help">{t("educator_evaluation.record_observable_words_actions_artifacts_and_student_resp_u6okpa", "Record observable words, actions, artifacts, and student responses. Avoid student names.")}</span><span className="ae-help">{t("educator_evaluation.evidence_that_stems_from_a_parent_student_or_other_complai_eq7k2h", "Evidence that stems from a parent, student, or other complaint generally must be put in writing and promptly disclosed to the educator (e.g., PEA Article 16.B), note the complaint origin here.")}</span></label>
     <label className="ae-field"><span>{t("educator_evaluation.interpretation_feedback_separate_gnko5f", "Interpretation / feedback (separate)")}</span><textarea className="ae-textarea" value={draft.interpretation} onChange={(event) => setDraft(Object.assign({}, draft, { interpretation: event.target.value }))} placeholder={t("educator_evaluation.possible_strength_question_or_area_for_discussion_o2yuye", "Possible strength, question, or area for discussion…")}/></label>
     <AeComponentChecks selected={draft.componentTags} onChange={(componentTags) => setDraft(Object.assign({}, draft, { componentTags }))}/>
     <label className="ae-check"><input type="checkbox" checked={draft.privacyChecked} onChange={(event) => setDraft(Object.assign({}, draft, { privacyChecked: event.target.checked }))}/><span>{t("educator_evaluation.i_reviewed_these_notes_and_removed_student_identifying_inf_19fa1eo", "I reviewed these notes and removed student-identifying information.")}</span></label>
-    <div className="ae-actions"><button type="button" className="ae-btn" disabled={!draft.teacherId || !draft.evidence.trim()} onClick={() => submit(false)}>{editingRecord ? 'Save draft changes' : t("educator_evaluation.save_private_draft_19fsvdc", "Save private draft")}</button>{!editingRecord && <button type="button" className="ae-btn ae-btn-primary" disabled={!draft.teacherId || !draft.evidence.trim() || !draft.privacyChecked} onClick={() => submit(true)}>{t("educator_evaluation.publish_to_teacher_3pztvz", "Review & publish to teacher")}</button>}</div>
+    <div className="ae-actions ae-walk-actions"><button type="button" className="ae-btn" disabled={!draft.teacherId || !draft.evidence.trim()} onClick={() => submit(false)}>{editingRecord ? 'Save draft changes' : t("educator_evaluation.save_private_draft_19fsvdc", "Save private draft")}</button>{!editingRecord && <button type="button" className="ae-btn ae-btn-primary" disabled={!draft.teacherId || !draft.evidence.trim() || !draft.privacyChecked} onClick={() => submit(true)}>{t("educator_evaluation.publish_to_teacher_3pztvz", "Review & publish to teacher")}</button>}</div>
     </section>;
 }
 
@@ -3143,7 +3339,7 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
         </div>}
         {importUndo && <div className="ae-note ae-ok" role="status" style={{ marginTop: 12 }}><strong>{t("educator_evaluation.import_applied_jzna1p", "Import applied.")}</strong> {t("educator_evaluation.the_prior_workspace_remains_available_until_your_next_edit_1u7f8g1", "The prior workspace remains available until your next edit.")}<div className="ae-actions" style={{ marginTop: 8 }}><button type="button" className="ae-btn" onClick={undoImport}>{t("educator_evaluation.undo_import_s0uszg", "Undo import")}</button></div></div>}
         <div className="ae-note ae-warn" style={{ marginTop: 16 }}>{t("educator_evaluation.this_export_assists_front_end_supervision_work_102lr5k", "This export assists front-end supervision work.")} {AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.peers_or_your_lea_authorized_system_4t6ndj", 'PEERS or your LEA-authorized system') : t("educator_evaluation.your_district_authorized_pepg_record_system_1eecbc2", 'Your district-authorized PEPG record system')} {t("educator_evaluation.remains_the_official_summative_rating_record_for_this_mvp_1mw87t5", "remains the official summative rating record for this MVP.")}</div>
-        {workspace.config.sampleMode && <div id="ae-sample-to-real-transition" style={{ marginTop: 18 }}><h4>{t("educator_evaluation.move_from_fictional_practice_to_real_work_20260822", "Move from fictional practice to real work")}</h4><p className="ae-sub">{t("educator_evaluation.simulated_records_never_become_personnel_records_20260822", "Simulated records are never converted into personnel records. This reviewed transition downloads a rehearsal backup, then opens a separate clean workspace.")}</p>{!clearStep ? <button type="button" className="ae-btn" onClick={() => { setClearAcknowledged(false); setClearStep(true); }}>{t("educator_evaluation.review_clean_workspace_transition_20260822", "Review clean-workspace transition")}</button> : <div className="ae-note ae-danger" role="region" aria-labelledby="ae-clean-transition-title"><strong id="ae-clean-transition-title">{t("educator_evaluation.review_before_leaving_fictional_practice_20260822", "Review before leaving fictional practice")}</strong><dl className="ae-review-facts"><dt>{t("educator_evaluation.fictional_educators_20260822", "Fictional educators")}</dt><dd>{workspace.teachers.length}</dd><dt>{t("educator_evaluation.fictional_workflow_records_20260822", "Fictional workflow records")}</dt><dd>{workspace.walkthroughs.length + workspace.observations.length + workspace.spms.length}</dd><dt>{t("educator_evaluation.current_planning_path_20260822", "Current planning path")}</dt><dd>{workspace.config.setupPath || t("educator_evaluation.not_selected_20260822", 'Not selected')}</dd><dt>{t("educator_evaluation.backup_20260822", "Backup")}</dt><dd>{t("educator_evaluation.downloaded_automatically_before_reset_20260822", "Downloaded automatically before the reset")}</dd></dl><label className="ae-check"><input type="checkbox" checked={clearAcknowledged} onChange={(event) => setClearAcknowledged(event.target.checked)}/><span>{t("educator_evaluation.understand_clean_workspace_starts_empty_20260822", "I understand the clean workspace starts empty and no fictional educator, evidence, rating, or audit event will be copied into it.")}</span></label><div className="ae-actions" style={{ marginTop: 8 }}><button className="ae-btn" type="button" onClick={() => { setClearAcknowledged(false); setClearStep(false); }}>{t("educator_evaluation.cancel_ew9em3", "Cancel")}</button><button className="ae-btn ae-btn-danger" disabled={!clearAcknowledged} type="button" onClick={() => { setClearAcknowledged(false); setClearStep(false); archiveAndResetSample(); }}>{t("educator_evaluation.download_rehearsal_backup_and_start_clean_20260822", "Download rehearsal backup and start clean")}</button></div></div>}</div>}
+        {workspace.config.sampleMode && <div id="ae-sample-to-real-transition" tabIndex={-1} style={{ marginTop: 18 }}><h4>{t("educator_evaluation.move_from_fictional_practice_to_real_work_20260822", "Move from fictional practice to real work")}</h4><p className="ae-sub">{t("educator_evaluation.simulated_records_never_become_personnel_records_20260822", "Simulated records are never converted into personnel records. This reviewed transition downloads a rehearsal backup, then opens a separate clean workspace.")}</p>{!clearStep ? <button type="button" className="ae-btn" onClick={() => { setClearAcknowledged(false); setClearStep(true); }}>{t("educator_evaluation.review_clean_workspace_transition_20260822", "Review clean-workspace transition")}</button> : <div className="ae-note ae-danger" role="region" aria-labelledby="ae-clean-transition-title"><strong id="ae-clean-transition-title">{t("educator_evaluation.review_before_leaving_fictional_practice_20260822", "Review before leaving fictional practice")}</strong><dl className="ae-review-facts"><dt>{t("educator_evaluation.fictional_educators_20260822", "Fictional educators")}</dt><dd>{workspace.teachers.length}</dd><dt>{t("educator_evaluation.fictional_workflow_records_20260822", "Fictional workflow records")}</dt><dd>{workspace.walkthroughs.length + workspace.observations.length + workspace.spms.length}</dd><dt>{t("educator_evaluation.current_planning_path_20260822", "Current planning path")}</dt><dd>{workspace.config.setupPath || t("educator_evaluation.not_selected_20260822", 'Not selected')}</dd><dt>{t("educator_evaluation.backup_20260822", "Backup")}</dt><dd>{t("educator_evaluation.downloaded_automatically_before_reset_20260822", "Downloaded automatically before the reset")}</dd></dl><label className="ae-check"><input type="checkbox" checked={clearAcknowledged} onChange={(event) => setClearAcknowledged(event.target.checked)}/><span>{t("educator_evaluation.understand_clean_workspace_starts_empty_20260822", "I understand the clean workspace starts empty and no fictional educator, evidence, rating, or audit event will be copied into it.")}</span></label><div className="ae-actions" style={{ marginTop: 8 }}><button className="ae-btn" type="button" onClick={() => { setClearAcknowledged(false); setClearStep(false); }}>{t("educator_evaluation.cancel_ew9em3", "Cancel")}</button><button className="ae-btn ae-btn-danger" disabled={!clearAcknowledged} type="button" onClick={() => { setClearAcknowledged(false); setClearStep(false); archiveAndResetSample(); }}>{t("educator_evaluation.download_rehearsal_backup_and_start_clean_20260822", "Download rehearsal backup and start clean")}</button></div></div>}</div>}
       </section> : <section className="ae-card ae-span-12"><h3>{t("educator_evaluation.my_copy_1q7nxow", "My copy")}</h3><p className="ae-sub">{t("educator_evaluation.download_only_the_selected_educator_s_workflow_summary_zowbz5", "Download only the selected educator’s workflow summary.")}</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>{t("educator_evaluation.download_my_summary_html_1oovbd6", "Download my summary HTML")}</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportResponsePacket}>{t("educator_evaluation.export_my_response_to_send_back_s03f22", "Export my response to send back")}</button><p className="ae-sub">{t("educator_evaluation.your_statement_reflections_and_acknowledgements_only_ratin_12a7d5k", "Your statement, reflections and acknowledgements only. Ratings and evidence are not included, and cannot be changed by this file.")}</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportGrowthSnapshot}>{t("educator_evaluation.download_my_growth_snapshot_krjq20", "Download my growth snapshot")}</button><div className="ae-note" style={{ marginTop: 12 }}>{t("educator_evaluation.teacher_view_cannot_export_or_import_the_full_workspace_or_1tt5ymx", "Teacher view cannot export or import the full workspace or view organization-wide audit events.")}</div></section>}
     </div>
   </div>;
@@ -3154,16 +3350,42 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
 // Remote mode encodes the district portal URL, sign-in still decides access.
 // On-device mode encodes the public workspace page: each scan opens the
 // scanner's OWN private workspace; nothing of yours is shared.
+// Clipboard writes are HARD-BLOCKED by permissions policy inside the Gemini
+// Canvas iframe (the app shell's window.alloCopyText documents the probe), so
+// navigator.clipboard.writeText rejects there even on a real click. The shell
+// helper falls back to execCommand('copy'), which still works in that frame.
+// Route through it when the shell is present; the standalone and portal pages
+// (no shell) get the same two-step fallback inline. Resolves true on success.
+async function aeCopyToClipboard(text) {
+  if (typeof window !== 'undefined' && typeof window.alloCopyText === 'function') {
+    try { return !!(await window.alloCopyText(text)); } catch (_) { return false; }
+  }
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { await navigator.clipboard.writeText(text); return true; }
+  } catch (_) {}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch (_) { return false; }
+}
+
 function AeCopyShareSource({ name, label, onCopied }) {
   const [state, setState] = React.useState('idle');
+  const [manualSource, setManualSource] = React.useState('');
+  const sourceRef = React.useRef('');
+  const manualRef = React.useRef(null);
   const signatures = {
     'Code.gs': ['function verifyShareHelper', 'function shareEvaluationPacket', 'ALLOFLOW_EVALUATION_PACKET'],
     'Index.html': ['id="reviewPanel"', 'google.script.run', 'reviewedRequest = clone(req)', 'parsePacketSource'],
     'appsscript.json': ['"oauthScopes"', 'www.googleapis.com/auth/drive', '"Drive"'],
   };
-  const copy = async () => {
-    setState('loading');
-    const path = t("educator_evaluation.apps_script_educator_evaluation_share_j4xz8j", 'apps_script/educator_evaluation_share/') + name;
+  const fetchSource = React.useCallback(async () => {
+    if (sourceRef.current) return sourceRef.current;
+    const path = 'apps_script/educator_evaluation_share/' + name;
     const urls = ['/' + path, 'https://alloflow-cdn.pages.dev/' + path];
     let source = '';
     for (const url of urls) {
@@ -3173,15 +3395,43 @@ function AeCopyShareSource({ name, label, onCopied }) {
       } catch (error) {}
     }
     const expected = signatures[name] || [];
-    if (!source || !expected.every((token) => source.includes(token))) { setState('invalid'); return; }
-    try {
-      await navigator.clipboard.writeText(source);
-      setState('copied');
-      if (typeof onCopied === 'function') onCopied();
-      window.setTimeout(() => setState('idle'), 2400);
-    } catch (error) { setState('error'); }
+    if (!source || !expected.every((token) => source.includes(token))) return '';
+    sourceRef.current = source;
+    return source;
+  }, [name]);
+  // Prefetch so the click copies inside its own user gesture: execCommand
+  // ('copy'), the only path that works in the Canvas frame, is refused once
+  // the click's transient activation has expired behind a slow fetch.
+  React.useEffect(() => { fetchSource().catch(() => ''); }, [fetchSource]);
+  const finishCopied = () => {
+    setManualSource('');
+    setState('copied');
+    if (typeof onCopied === 'function') onCopied();
+    window.setTimeout(() => setState('idle'), 2400);
   };
-  return <div><button type="button" className="ae-btn" onClick={copy} disabled={state === 'loading'}>{state === 'loading' ? t("educator_evaluation.loading_source_10dacoa", 'Loading source…') : (state === 'copied' ? t("educator_evaluation.copied_13bzcw5", 'Copied ') + name : t("educator_evaluation.copy_s6g5lw", 'Copy ') + label)}</button><div className="ae-help">{name} · <a className="ae-link" href={'https://alloflow-cdn.pages.dev/apps_script/educator_evaluation_share/' + name} target="_blank" rel="noopener noreferrer">{t("educator_evaluation.view_source_1wouual", "view source")}</a>{state === 'error' ? <span className="ae-chip ae-chip-bad" style={{ marginLeft: 6 }}>{t("educator_evaluation.copy_failed_open_source_1w01hdn", "Copy failed; open source")}</span> : null}{state === 'invalid' ? <span className="ae-chip ae-chip-bad" style={{ marginLeft: 6 }}>{t("educator_evaluation.unexpected_source_received_nothing_copied_1y3oi0u", "Unexpected source received; nothing copied")}</span> : null}</div></div>;
+  const copy = async () => {
+    setState('loading');
+    setManualSource('');
+    const source = await fetchSource();
+    if (!source) { setState('invalid'); return; }
+    if (await aeCopyToClipboard(source)) { finishCopied(); return; }
+    // Both clipboard paths refused (a locked-down frame or browser). Put the
+    // verified source in front of the principal, pre-selected, so the step
+    // still completes with a manual Ctrl+C instead of a dead-end badge.
+    setManualSource(source);
+    setState('manual');
+  };
+  const selectManual = () => { try { manualRef.current.focus(); manualRef.current.select(); } catch (_) {} };
+  React.useEffect(() => { if (state === 'manual') selectManual(); }, [state]);
+  const manualId = 'ae-share-manual-' + name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  return <div><button type="button" className="ae-btn" onClick={copy} disabled={state === 'loading'}>{state === 'loading' ? t("educator_evaluation.loading_source_10dacoa", 'Loading source…') : (state === 'copied' ? t("educator_evaluation.copied_13bzcw5", 'Copied ') + name : t("educator_evaluation.copy_s6g5lw", 'Copy ') + label)}</button><div className="ae-help">{name} · <a className="ae-link" href={'https://alloflow-cdn.pages.dev/apps_script/educator_evaluation_share/' + name} target="_blank" rel="noopener noreferrer">{t("educator_evaluation.view_source_1wouual", "view source")}</a>{state === 'invalid' ? <span className="ae-chip ae-chip-bad" style={{ marginLeft: 6 }}>{t("educator_evaluation.unexpected_source_received_nothing_copied_1y3oi0u", "Unexpected source received; nothing copied")}</span> : null}</div>
+    {state === 'manual' ? <div className="ae-note ae-warn" role="status" style={{ marginTop: 8 }}>
+      <p style={{ margin: '0 0 6px' }}><strong>{t("educator_evaluation.clipboard_is_blocked_in_this_window_20260901", "Clipboard is blocked in this window.")}</strong> {t("educator_evaluation.the_source_is_selected_below_press_ctrl_c_20260901", "The source is selected below: press Ctrl+C (Cmd+C on Mac) to copy it, then paste it into the project. Copying from the box marks this step done.")}</p>
+      <label className="ae-field" htmlFor={manualId}><span>{name} {t("educator_evaluation.source_20260901", "source")}</span></label>
+      <textarea id={manualId} ref={manualRef} className="ae-textarea" readOnly rows={8} value={manualSource} spellCheck={false} onFocus={(event) => event.target.select()} onCopy={finishCopied} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', fontSize: 12 }} />
+      <div className="ae-actions" style={{ marginTop: 6 }}><button type="button" className="ae-btn" onClick={selectManual}>{t("educator_evaluation.select_all_20260901", "Select all")}</button><button type="button" className="ae-btn ae-btn-primary" onClick={finishCopied}>{t("educator_evaluation.i_pasted_it_mark_this_step_done_20260901", "I pasted it; mark this step done")}</button></div>
+    </div> : null}
+  </div>;
 }
 
 function AePrincipalShareSetup({ workspace, updateConfig }) {
@@ -3272,6 +3522,51 @@ function AeSimulationStudio({ workspace, onApply }) {
   const [message, setMessage] = React.useState('');
   const [preview, setPreview] = React.useState(null);
   const [undo, setUndo] = React.useState(null);
+  const [saved, setSaved] = React.useState(() => aeReadScenarios());
+  const [scenarioName, setScenarioName] = React.useState('');
+  const importRef = React.useRef(null);
+  const [tourText, setTourText] = React.useState(() => JSON.stringify(aeTourSteps(), null, 2));
+  const [tourCustom, setTourCustom] = React.useState(() => !!aeReadTourOverride());
+  const saveTour = () => {
+    let parsed = null;
+    try { parsed = JSON.parse(tourText); } catch (_) { setMessage(t("educator_evaluation.tour_invalid_json_20260902", 'The tour script is not valid JSON.')); return; }
+    const steps = aeSanitizeTourSteps(parsed);
+    if (!steps) { setMessage(t("educator_evaluation.tour_invalid_steps_20260902", 'Each step needs a tab (overview, trends, staff, walkthroughs, formal, spm, audit, or about), a title, and a text, with 1 to 30 steps.')); return; }
+    if (!aeWriteTourOverride(steps)) { setMessage(t("educator_evaluation.tour_save_failed_20260902", 'The tour script could not be saved in this browser.')); return; }
+    setTourCustom(true); setTourText(JSON.stringify(steps, null, 2));
+    setMessage(t("educator_evaluation.tour_saved_20260902", 'Tour script saved on this device. Replay the tour from Practice to see it.'));
+  };
+  const resetTour = () => { aeWriteTourOverride(null); setTourCustom(false); setTourText(JSON.stringify(AE_GUIDED_TOUR_STEPS, null, 2)); setMessage(t("educator_evaluation.tour_reset_20260902", 'Built-in tour restored.')); };
+  const saveScenario = () => {
+    const scenario = aeSanitizeScenario({ name: scenarioName, params: aeNormalizeSimulationParams(params).params });
+    if (!scenario) return;
+    const next = aeMergeScenarios(saved, [scenario]);
+    if (!aeWriteScenarios(next)) { setMessage(t("educator_evaluation.scenario_save_failed_20260902", 'The scenario could not be saved in this browser.')); return; }
+    setSaved(next); setScenarioName('');
+    setMessage(t("educator_evaluation.scenario_saved_20260902", 'Scenario saved on this device. It now appears under Practice in the header.'));
+  };
+  const removeScenario = (id) => { const next = saved.filter((item) => item.id !== id); aeWriteScenarios(next); setSaved(next); };
+  const exportScenarios = () => { aeDownload('alloflow-evaluation-scenarios-' + aeToday() + '.json', 'application/json', JSON.stringify({ kind: 'alloflow-evaluation-scenarios', version: 1, exportedAt: aeNow(), scenarios: saved, tour: aeReadTourOverride() || undefined }, null, 2)); };
+  const importScenarios = (event) => {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || ''));
+        const list = (Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.scenarios) ? parsed.scenarios : [])).map(aeSanitizeScenario).filter(Boolean);
+        const tourSteps = parsed && !Array.isArray(parsed) ? aeSanitizeTourSteps(parsed.tour) : null;
+        if (tourSteps && aeWriteTourOverride(tourSteps)) { setTourCustom(true); setTourText(JSON.stringify(tourSteps, null, 2)); }
+        if (!list.length && tourSteps) { setMessage(t("educator_evaluation.tour_imported_20260902", 'Tour script imported.')); return; }
+        if (!list.length) { setMessage(t("educator_evaluation.scenario_import_empty_20260902", 'That file holds no scenarios in the expected shape.')); return; }
+        const next = aeMergeScenarios(saved, list);
+        aeWriteScenarios(next); setSaved(next);
+        setMessage(list.length + t("educator_evaluation.scenarios_imported_20260902", ' scenario(s) imported; same-name scenarios were replaced.'));
+      } catch (_) { setMessage(t("educator_evaluation.scenario_import_failed_20260902", 'That file could not be read as scenarios.')); }
+    };
+    reader.readAsText(file);
+  };
   const set = (key, value) => { setParams((current) => Object.assign({}, current, { [key]: value })); setPreview(null); };
   const loadScenario = (label, values) => {
     setParams(Object.assign({}, params, values));
@@ -3293,11 +3588,29 @@ function AeSimulationStudio({ workspace, onApply }) {
   const overdueLimit = Math.max(0, staffLimit - Math.max(0, Number.parseInt(params.finalizedCount, 10) || 0));
   const validation = aeNormalizeSimulationParams(params);
   if (!workspace.config.sampleMode) return null;
-  return <section className="ae-card ae-span-12"><div className="ae-record-head"><div><h3>{t("educator_evaluation.simulation_studio_1dltzgw", "Simulation Studio")}</h3><p className="ae-sub">{t("educator_evaluation.change_fictional_data_with_plain_language_manual_parameter_1kiciun", "Change fictional data with plain language, manual parameters, or both. Parsing runs locally; no prompt or record is sent to an AI service.")}</p></div><span className="ae-chip ae-chip-purple">{t("educator_evaluation.simulation_only_1oe9pdw", "Simulation only")}</span></div>
+  return <section className="ae-card ae-span-12" id="ae-simulation-studio" tabIndex={-1}><div className="ae-record-head"><div><h3>{t("educator_evaluation.simulation_studio_1dltzgw", "Simulation Studio")}</h3><p className="ae-sub">{t("educator_evaluation.change_fictional_data_with_plain_language_manual_parameter_1kiciun", "Change fictional data with plain language, manual parameters, or both. Parsing runs locally; no prompt or record is sent to an AI service.")}</p></div><span className="ae-chip ae-chip-purple">{t("educator_evaluation.simulation_only_1oe9pdw", "Simulation only")}</span></div>
     <h4>{t("educator_evaluation.start_with_a_scenario_10uftlc", "Start with a scenario")}</h4><div className="ae-scenario-grid">
       <button type="button" className="ae-btn ae-scenario" onClick={() => loadScenario('Small-school tour', { staffCount: 8, buildingCount: 1, finalizedCount: 2, overdueCount: 1, walkthroughsPerTeacher: 1, thinEvidenceDomain: 'none' })}>{t("educator_evaluation.small_school_tour_15t5cyr", "Small-school tour")}<small>{t("educator_evaluation.8_educators_1_building_balanced_evidence_rnrjg1", "8 educators · 1 building · balanced evidence")}</small></button>
       <button type="button" className="ae-btn ae-scenario" onClick={() => loadScenario('Busy midyear', { staffCount: 24, buildingCount: 3, finalizedCount: 6, overdueCount: 4, walkthroughsPerTeacher: 2, thinEvidenceDomain: 'none' })}>{t("educator_evaluation.busy_midyear_eup7t3", "Busy midyear")}<small>{t("educator_evaluation.24_educators_3_buildings_mixed_progress_lcva5", "24 educators · 3 buildings · mixed progress")}</small></button>
       <button type="button" className="ae-btn ae-scenario" onClick={() => loadScenario('Evidence-gap review', { staffCount: 18, buildingCount: 2, finalizedCount: 2, overdueCount: 3, walkthroughsPerTeacher: 2, thinEvidenceDomain: 'd3' })}>{t("educator_evaluation.evidence_gap_review_um0ihr", "Evidence-gap review")}<small>{t("educator_evaluation.thin_domain_3_evidence_for_coaching_practice_1szj0e4", "Thin Domain 3 evidence for coaching practice")}</small></button>
+    </div>
+    <div className="ae-saved-scenarios" style={{ marginTop: 12 }} data-help-key="ae_saved_scenarios">
+      <h4>{t("educator_evaluation.saved_scenarios_20260902", "Saved scenarios")}</h4>
+      {saved.length ? <ul className="ae-scenario-list">{saved.map((item) => <li key={item.id}><button type="button" className="ae-btn" onClick={() => loadScenario(item.name, item.params)}>{item.name}</button><button type="button" className="ae-btn ae-btn-quiet" aria-label={t("educator_evaluation.delete_scenario_20260902", 'Delete scenario ') + item.name} onClick={() => removeScenario(item.id)}>{t("educator_evaluation.delete_20260902", "Delete")}</button></li>)}</ul> : <p className="ae-sub">{t("educator_evaluation.no_saved_scenarios_20260902", "None yet. Shape the controls, then save them under a name; saved scenarios also appear under Practice in the header.")}</p>}
+      <div className="ae-actions" style={{ marginTop: 8, alignItems: 'flex-end' }}>
+        <label className="ae-field" style={{ margin: 0, flex: '1 1 200px' }}><span>{t("educator_evaluation.scenario_name_20260902", "Scenario name")}</span><input className="ae-input" value={scenarioName} maxLength={60} onChange={(event) => setScenarioName(event.target.value)} placeholder={t("educator_evaluation.scenario_name_placeholder_20260902", "Example: Fall coaching cohort")}/></label>
+        <button type="button" className="ae-btn" onClick={saveScenario} disabled={!scenarioName.trim()}>{t("educator_evaluation.save_current_controls_20260902", "Save current controls")}</button>
+        <button type="button" className="ae-btn" onClick={exportScenarios} disabled={!saved.length}>{t("educator_evaluation.export_scenarios_20260902", "Export")}</button>
+        <button type="button" className="ae-btn" onClick={() => { if (importRef.current) importRef.current.click(); }}>{t("educator_evaluation.import_scenarios_20260902", "Import")}</button>
+        <input ref={importRef} type="file" accept="application/json,.json" hidden aria-hidden="true" tabIndex={-1} onChange={importScenarios}/>
+      </div>
+      <p className="ae-help">{t("educator_evaluation.saved_scenarios_help_20260902", "Saved on this device. Export a file to hand a standard training scenario to other evaluators; import merges by name.")}</p>
+    </div>
+    <div className="ae-tour-script" id="ae-tour-script" tabIndex={-1} style={{ marginTop: 14 }} data-help-key="ae_tour_script">
+      <h4>{t("educator_evaluation.tour_script_20260902", "Tour script")} {tourCustom ? <span className="ae-chip ae-chip-blue">{t("educator_evaluation.custom_20260902", "Custom")}</span> : <span className="ae-chip ae-chip-neutral">{t("educator_evaluation.built_in_20260902", "Built-in")}</span>}</h4>
+      <p className="ae-sub">{t("educator_evaluation.tour_script_help_20260902", "The guided tour is a list of steps: a tab, a title, and one sentence. Edit the wording, add a step about your district's policy, or trim it. Saved on this device and included in scenario exports.")}</p>
+      <label className="ae-field"><span>{t("educator_evaluation.tour_steps_json_20260902", "Steps (JSON)")}</span><textarea className="ae-textarea" style={{ minHeight: 160, fontFamily: 'ui-monospace, Consolas, monospace', fontSize: 12 }} value={tourText} onChange={(event) => setTourText(event.target.value)} spellCheck={false}/></label>
+      <div className="ae-actions"><button type="button" className="ae-btn ae-btn-primary" onClick={saveTour}>{t("educator_evaluation.save_tour_script_20260902", "Save tour script")}</button><button type="button" className="ae-btn" onClick={resetTour} disabled={!tourCustom}>{t("educator_evaluation.restore_built_in_tour_20260902", "Restore built-in tour")}</button></div>
     </div>
     <label className="ae-field" style={{ marginTop: 12 }}><span>{t("educator_evaluation.describe_the_scenario_168gepn", "Describe the scenario")}</span><textarea className="ae-textarea" value={request} onChange={(event) => setRequest(event.target.value)} placeholder={t("educator_evaluation.example_18_educators_3_buildings_4_overdue_2_finalized_2_w_1dqnuhl", "Example: 18 educators, 3 buildings, 4 overdue, 2 finalized, 2 walkthroughs per educator, thin evidence in Domain 3.")}/></label>
     <button type="button" className="ae-btn" onClick={interpret}>{t("educator_evaluation.interpret_request_locally_bbspgb", "Interpret request locally")}</button>
@@ -3359,7 +3672,7 @@ function AeShareQr({ isRemote, standalone, portalUrl }) {
       {svg ? <figure style={{ margin: 0 }} aria-label={t("educator_evaluation.qr_code_linking_to_167a0uw", 'QR code linking to ') + payload}><div style={{ width: 176, height: 176, background: '#fff', padding: 6, border: '1px solid #ccd5e2', borderRadius: 10 }} dangerouslySetInnerHTML={{ __html: svg }} /></figure> : <div className="ae-note ae-warn" style={{ maxWidth: 260 }}>{t("educator_evaluation.the_qr_image_could_not_be_rendered_the_selectable_link_rem_1cbaohv", "The QR image could not be rendered. The selectable link remains available.")}</div>}
       <div style={{ minWidth: 220, flex: 1 }}>
         <label className="ae-field"><span>{t("educator_evaluation.share_link_kzs3eg", "Share link")}</span><input className="ae-input" readOnly value={payload} onFocus={(event) => event.target.select()} /></label>
-        <button type="button" className="ae-btn" onClick={async () => { try { if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') throw new Error('Clipboard unavailable'); await navigator.clipboard.writeText(payload); setCopyError(''); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch (err) { setCopied(false); setCopyError('Copy failed. Select the link above and copy it manually.'); } }}>{copied ? t("educator_evaluation.link_copied_foo2qb", 'Link copied') : t("educator_evaluation.copy_link_9zccf0", 'Copy link')}</button>
+        <button type="button" className="ae-btn" onClick={async () => { try { if (!(await aeCopyToClipboard(payload))) throw new Error('Clipboard unavailable'); setCopyError(''); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch (err) { setCopied(false); setCopyError('Copy failed. Select the link above and copy it manually.'); } }}>{copied ? t("educator_evaluation.link_copied_foo2qb", 'Link copied') : t("educator_evaluation.copy_link_9zccf0", 'Copy link')}</button>
         {copyError && <p className="ae-help" role="alert">{copyError}</p>}
       </div>
     </div>
@@ -4261,6 +4574,9 @@ function EducatorEvaluationPanel(props) {
   const [role, setRole] = React.useState(() => workspace.educatorPacketMode ? 'teacher' : 'evaluator');
   const [tab, setTab] = React.useState('overview');
   const [tourStep, setTourStep] = React.useState(null);
+  const [staffAddRequest, setStaffAddRequest] = React.useState(0);
+  const requestStaffAdd = React.useCallback(() => { setTab('staff'); setStaffAddRequest((count) => count + 1); }, []);
+  const [bannerExpanded, setBannerExpanded] = React.useState(false);
   const [selectedTeacherId, setSelectedTeacherId] = React.useState(() => (workspace.teachers[0] && workspace.teachers[0].id) || '');
   const [liveMessage, setLiveMessage] = React.useState({ text: '', id: 0 });
   const [operationNotice, setOperationNotice] = React.useState({ text: '', type: 'info', id: 0 });
@@ -4415,9 +4731,10 @@ function EducatorEvaluationPanel(props) {
     }
   }, [workspace.teachers.length, workspace.educatorPacketMode, selectedTeacherId, role, isRemote, remoteState.currentUser]);
   React.useEffect(() => {
-    if (!Number.isInteger(tourStep) || !AE_GUIDED_TOUR_STEPS[tourStep]) return;
+    const steps = aeTourSteps();
+    if (!Number.isInteger(tourStep) || !steps[tourStep]) return;
     setRole('evaluator');
-    setTab(AE_GUIDED_TOUR_STEPS[tourStep].tab);
+    setTab(steps[tourStep].tab);
     requestAnimationFrame(() => { const panel = document.getElementById('ae-panel'); if (panel) panel.focus(); });
   }, [tourStep]);
   const loadRemoteWorkspace = React.useCallback(async () => {
@@ -5282,6 +5599,58 @@ function EducatorEvaluationPanel(props) {
     notify(t("educator_evaluation.simulated_scenario_applied_j6apsk", 'Simulated scenario applied'), 'success');
   };
 
+  // Practice menu (2026-09-02): tour, rehearsal, Simulation Studio, scenarios,
+  // and a safe round trip between a real workspace and fictional practice.
+  const [practiceOpen, setPracticeOpen] = React.useState(false);
+  const [realStashPresent, setRealStashPresent] = React.useState(() => { try { return !!localStorage.getItem(AE_REAL_STASH_KEY); } catch (_) { return false; } });
+  const practiceRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!practiceOpen) return undefined;
+    const onDown = (event) => { if (practiceRef.current && !practiceRef.current.contains(event.target)) setPracticeOpen(false); };
+    const onKey = (event) => { if (event.key === 'Escape') { event.stopPropagation(); setPracticeOpen(false); } };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey, true);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey, true); };
+  }, [practiceOpen]);
+  const focusPracticeTarget = (id) => { window.setTimeout(() => { const el = document.getElementById(id); if (!el) return; try { el.scrollIntoView({ block: 'start' }); } catch (_) {} try { el.focus({ preventScroll: true }); } catch (_) {} }, 0); };
+  const enterPracticeWorkspace = () => {
+    if (workspace.config.sampleMode) return true;
+    try { localStorage.setItem(AE_REAL_STASH_KEY, JSON.stringify({ kind: 'alloflow-evaluation-real-stash', stashedAt: aeNow(), workspace: workspaceRef.current })); }
+    catch (_) { notify(t("educator_evaluation.practice_stash_failed_20260902", 'The real workspace could not be set aside in this browser, so practice was not started.'), 'error'); return false; }
+    setRealStashPresent(true);
+    chooseLocalStart('sample');
+    notify(t("educator_evaluation.practice_opened_20260902", 'Fictional practice workspace opened. Your real workspace is set aside on this device; choose Practice, then Return to real work, when you are done.'), 'success');
+    return true;
+  };
+  const returnToRealWork = () => {
+    let stash = null;
+    try { stash = JSON.parse(localStorage.getItem(AE_REAL_STASH_KEY) || 'null'); } catch (_) { stash = null; }
+    const real = stash && stash.workspace ? aeNormalizeWorkspace(stash.workspace) : null;
+    if (!real) { notify(t("educator_evaluation.no_real_stash_20260902", 'No real workspace is set aside on this device.'), 'error'); setRealStashPresent(false); return; }
+    const saved = aeStore(real);
+    setLocalSaveState(saved.ok ? { status: 'saved', error: '', savedAt: saved.savedAt } : { status: 'error', error: saved.error, detail: saved.detail || '', savedAt: '' });
+    workspaceRef.current = real;
+    setWorkspace(real);
+    setSelectedTeacherId((real.teachers[0] && real.teachers[0].id) || '');
+    setRole('evaluator');
+    setTab('overview');
+    setTourStep(null);
+    aeSaveOnboardingChoice('blank');
+    try { localStorage.removeItem(AE_REAL_STASH_KEY); } catch (_) {}
+    setRealStashPresent(false);
+    setPracticeOpen(false);
+    announce(t("educator_evaluation.real_workspace_restored_20260902", 'Real workspace restored'));
+    notify(t("educator_evaluation.real_workspace_restored_notice_20260902", 'Real workspace restored; the fictional practice data was discarded.'), 'success');
+  };
+  const loadPracticeScenario = (scenario) => {
+    setPracticeOpen(false);
+    if (!workspace.config.sampleMode && !enterPracticeWorkspace()) return;
+    const base = workspace.config.sampleMode ? workspaceRef.current : aeSampleWorkspace();
+    applySimulationWorkspace(aeScenarioWorkspace(scenario.params, base));
+    setTab('overview');
+  };
+  const practiceScenarios = practiceOpen ? AE_SCENARIO_PRESETS.concat(aeReadScenarios()) : [];
+
   const chooseLocalStart = (mode) => {
     const next = mode === 'sample' ? aeSampleWorkspace() : aeBlankWorkspace();
     aeSaveOnboardingChoice(mode);
@@ -5872,7 +6241,26 @@ function EducatorEvaluationPanel(props) {
   const body = <div ref={dialogRef} tabIndex={-1} className="ae-workspace" role={standalone ? undefined : 'dialog'} aria-modal={standalone ? undefined : 'true'} aria-labelledby="ae-title">
     <header className="ae-top">
       <div className="ae-brand"><div className="ae-mark" aria-hidden="true">A✓</div><div><h1 id="ae-title">{t("educator_evaluation.educator_growth_and_evaluation_1rtfqhx", "Educator Growth & Evaluation")}</h1><p>{workspace.config.organization} · {workspace.config.academicYear}</p></div></div>
-      <div className="ae-top-actions">{!isRemote && !workspace.educatorPacketMode && <div className="ae-role" aria-label={workspace.config.sampleMode ? t("educator_evaluation.switch_between_evaluator_and_fictional_educator_rehearsal__mc8xtz", 'Switch between evaluator and fictional educator rehearsal roles') : t("educator_evaluation.view_this_workspace_as_evaluator_or_preview_the_educator_e_llqinz", 'View this workspace as evaluator or preview the educator experience')}><button type="button" aria-pressed={role === 'evaluator'} onClick={() => setRole('evaluator')}>{t("educator_evaluation.evaluator_125q2ii", "Evaluator")}</button><button type="button" aria-pressed={role === 'teacher'} onClick={() => setRole('teacher')}>{workspace.config.sampleMode ? t("educator_evaluation.fictional_educator_2qs1sj", 'Fictional educator') : t("educator_evaluation.educator_preview_jftn00", 'Educator preview')}</button></div>}{!isRemote && workspace.config.sampleMode && <button type="button" className="ae-btn" onClick={() => setTourStep(0)}>{t("educator_evaluation.replay_tour_19pruns", "Replay tour")}</button>}<a className="ae-btn" data-help-key="ae_manual_link" /* Extensionless, matching the Setup-tab link and the district Portal. That
+      <div className="ae-top-actions">{!isRemote && !workspace.educatorPacketMode && <div className="ae-role" aria-label={workspace.config.sampleMode ? t("educator_evaluation.switch_between_evaluator_and_fictional_educator_rehearsal__mc8xtz", 'Switch between evaluator and fictional educator rehearsal roles') : t("educator_evaluation.view_this_workspace_as_evaluator_or_preview_the_educator_e_llqinz", 'View this workspace as evaluator or preview the educator experience')}><button type="button" aria-pressed={role === 'evaluator'} onClick={() => setRole('evaluator')}>{t("educator_evaluation.evaluator_125q2ii", "Evaluator")}</button><button type="button" aria-pressed={role === 'teacher'} onClick={() => setRole('teacher')}>{workspace.config.sampleMode ? t("educator_evaluation.fictional_educator_2qs1sj", 'Fictional educator') : t("educator_evaluation.educator_preview_jftn00", 'Educator preview')}</button></div>}{!isRemote && !workspace.educatorPacketMode && <div className="ae-practice" ref={practiceRef}>
+        <button type="button" className="ae-btn" aria-haspopup="menu" aria-expanded={practiceOpen} aria-controls="ae-practice-menu" data-help-key="ae_practice_menu" onClick={() => setPracticeOpen((value) => !value)}>{t("educator_evaluation.practice_20260902", "Practice")} <span aria-hidden="true">▾</span></button>
+        {practiceOpen && <div id="ae-practice-menu" className="ae-practice-menu" role="menu" aria-label={t("educator_evaluation.practice_20260902", "Practice")}>
+          {workspace.config.sampleMode ? <>
+            <button type="button" role="menuitem" onClick={() => { setTab('overview'); setTourStep(0); setPracticeOpen(false); }}>{t("educator_evaluation.replay_tour_19pruns", "Replay tour")}<small>{aeTourSteps().length + t("educator_evaluation.guided_steps_across_tabs_20260902", " guided steps across the tabs.")}</small></button>
+            <button type="button" role="menuitem" onClick={() => { setTab('overview'); setPracticeOpen(false); focusPracticeTarget('ae-sample-rehearsal'); }}>{t("educator_evaluation.continue_rehearsal_20260902", "Continue the rehearsal")}<small>{t("educator_evaluation.continue_rehearsal_help_20260902", "One complete fictional evaluation cycle.")}</small></button>
+            <button type="button" role="menuitem" onClick={() => { setTab('about'); setPracticeOpen(false); focusPracticeTarget('ae-simulation-studio'); }}>{t("educator_evaluation.open_simulation_studio_20260902", "Open Simulation Studio")}<small>{t("educator_evaluation.open_simulation_studio_help_20260902", "Shape the fictional roster, or save a scenario.")}</small></button>
+            <button type="button" role="menuitem" onClick={() => { setTab('about'); setPracticeOpen(false); focusPracticeTarget('ae-tour-script'); }}>{t("educator_evaluation.edit_the_tour_20260902", "Edit the tour")}<small>{t("educator_evaluation.edit_the_tour_help_20260902", "Change the steps and wording your staff will see.")}</small></button>
+            <div className="ae-practice-group" role="presentation">{t("educator_evaluation.load_a_scenario_20260902", "Load a scenario")}</div>
+            {practiceScenarios.map((scenario) => <button type="button" role="menuitem" key={scenario.id} onClick={() => loadPracticeScenario(scenario)}>{scenario.name}</button>)}
+            {realStashPresent
+              ? <button type="button" role="menuitem" className="ae-practice-return" onClick={returnToRealWork}>{t("educator_evaluation.return_to_real_work_20260902", "Return to real work")}<small>{t("educator_evaluation.return_to_real_work_help_20260902", "Restores the workspace set aside on this device and discards the practice data.")}</small></button>
+              : <button type="button" role="menuitem" onClick={() => { setTab('audit'); setPracticeOpen(false); focusPracticeTarget('ae-sample-to-real-transition'); }}>{t("educator_evaluation.move_to_real_work_20260902", "Move to real work")}<small>{t("educator_evaluation.move_to_real_work_help_20260902", "Downloads a rehearsal backup, then opens a clean workspace.")}</small></button>}
+          </> : <>
+            <button type="button" role="menuitem" onClick={() => { setPracticeOpen(false); enterPracticeWorkspace(); }}>{t("educator_evaluation.practice_in_fictional_20260902", "Practice in a fictional workspace")}<small>{t("educator_evaluation.practice_in_fictional_help_20260902", "Your real records are set aside on this device and restored when you return.")}</small></button>
+            <div className="ae-practice-group" role="presentation">{t("educator_evaluation.start_practice_from_scenario_20260902", "Start practice from a scenario")}</div>
+            {practiceScenarios.map((scenario) => <button type="button" role="menuitem" key={scenario.id} onClick={() => loadPracticeScenario(scenario)}>{scenario.name}</button>)}
+          </>}
+        </div>}
+      </div>}<a className="ae-btn" data-help-key="ae_manual_link" /* Extensionless, matching the Setup-tab link and the district Portal. That
    link is real but lives inside a tab; this one is reachable from every tab,
    which is the point of putting it in the header (2026-08-17). */
 href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank" rel="noopener noreferrer" aria-label={t("educator_evaluation.user_manual_opens_in_a_new_tab_1t3w65", "User manual (opens in a new tab)")} title={t("educator_evaluation.how_to_run_a_full_evaluation_cycle_set_up_the_district_por_162ju8s", "How to run a full evaluation cycle, set up the district portal, and read the released summary")}>{t("educator_evaluation.manual_1wu7r43", "Manual")}</a>{!standalone && <button type="button" className="ae-close" onClick={requestClose} aria-label={t("educator_evaluation.close_educator_growth_and_evaluation_1d9f8pc", "Close Educator Growth and Evaluation")}>×</button>}</div>
@@ -5889,7 +6277,9 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
       {role !== 'teacher' && selectedTeacher && selectedTeacher.releasedDoc && selectedTeacher.releasedDoc.openedAt && <span className="ae-chip ae-chip-good" title={t("educator_evaluation.records_that_the_educator_clicked_the_portal_link_it_canno_1t6ii2b", "Records that the educator clicked the portal link. It cannot claim the document was read.")}>{t("educator_evaluation.summary_link_opened_6cxhka", "Summary link opened")} {aeDateTime(selectedTeacher.releasedDoc.openedAt)}</span>}
     </div> : <div className={'ae-local-banner ' + (workspace.config.sampleMode ? 'ae-sample' : '') + (localSaveState.status === 'error' ? ' ae-sync-error' : '')} role={localSaveState.status === 'error' ? 'alert' : 'status'} aria-live="polite">
       <strong>{workspace.educatorPacketMode ? t("educator_evaluation.educator_response_packet_odq1at", 'Educator response packet') : (workspace.config.sampleMode ? t("educator_evaluation.simulated_data_v1gch7", 'Simulated data') : t("educator_evaluation.private_on_device_workspace_y0l9xr", 'Private on-device workspace'))}</strong>{' '}
-      <span>{workspace.educatorPacketMode ? t("educator_evaluation.educator_only_mode_review_the_released_records_and_add_onl_g02r36", 'Educator-only mode: review the released records and add only your own response.') : t("educator_evaluation.records_are_stored_on_this_device_information_leaves_it_on_11sawpc", 'Records are stored on this device. Information leaves it only when you deliberately export or share, or enable optional AI reflection.')}</span>
+      <span id="ae-banner-details" hidden={!bannerExpanded}>{workspace.educatorPacketMode ? t("educator_evaluation.educator_only_mode_review_the_released_records_and_add_onl_g02r36", 'Educator-only mode: review the released records and add only your own response.') : t("educator_evaluation.records_are_stored_on_this_device_information_leaves_it_on_11sawpc", 'Records are stored on this device. Information leaves it only when you deliberately export or share, or enable optional AI reflection.')}</span>
+      <button type="button" className="ae-btn ae-btn-quiet ae-banner-toggle" aria-expanded={bannerExpanded} aria-controls="ae-banner-details" onClick={() => setBannerExpanded((value) => !value)}>{bannerExpanded ? t("educator_evaluation.less_20260902", 'Less') : t("educator_evaluation.details_20260902", 'Details')}</button>
+      {operationNotice.text && <span className={'ae-inline-notice ' + (operationNotice.type === 'error' ? 'ae-operation-error' : (operationNotice.type === 'success' ? 'ae-operation-success' : ''))} role={operationNotice.type === 'error' ? 'alert' : 'status'}><span>{operationNotice.text}</span><button type="button" className="ae-btn ae-btn-quiet" onClick={() => setOperationNotice({ text: '', type: 'info', id: operationNotice.id })}>{t("educator_evaluation.dismiss_an1pf7", "Dismiss")}</button></span>}
       <span className={'ae-save-state ' + (localSaveState.status === 'error' ? 'ae-save-error' : '')}>{localSaveState.status === 'saving' ? t("educator_evaluation.saving_w7dncv", 'Saving…') : (localSaveState.status === 'saved' ? t("educator_evaluation.saved_on_this_device_2qjtzv", 'Saved on this device ') + aeDateTime(localSaveState.savedAt) : (localSaveState.status === 'error' ? t("educator_evaluation.changes_are_not_saved_19h3hqe", 'Changes are not saved') : t("educator_evaluation.not_saved_yet_11ac54b", 'Not saved yet')))}</span>
       {localSaveState.status === 'error' && <><button type="button" className="ae-btn" onClick={retryLocalSave}>{t("educator_evaluation.retry_save_xrvkye", "Retry save")}</button><button type="button" className="ae-btn" onClick={() => { const recovery = Object.assign({}, workspaceRef.current, { kind: AE_EXPORT_KIND, exportedAt: aeNow(), recoveryReason: 'Emergency backup after local save failure' }); aeDownload('alloflow-emergency-backup-' + aeToday() + '.json', 'application/json', JSON.stringify(recovery, null, 2)); notify(t("educator_evaluation.emergency_workspace_backup_downloaded_wladsy", 'Emergency workspace backup downloaded.'), 'success'); }}>{t("educator_evaluation.download_emergency_backup_y2j38i", "Download emergency backup")}</button></>}
     </div>}
@@ -5905,7 +6295,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
     {localFictionalRehearsal && <div className="ae-local-banner ae-preview-banner" role="status"><strong>{t("educator_evaluation.interactive_fictional_educator_rehearsal_1iva19g", "Interactive fictional educator rehearsal")}</strong><span>{t("educator_evaluation.changes_are_enabled_only_for_this_simulated_workspace_foll_1m97z5", "Changes are enabled only for this simulated workspace. Follow the rehearsal coach, then switch back to Evaluator for evaluator-owned steps.")}</span></div>}
     {localTeacherPreview && <div className="ae-local-banner ae-preview-banner" role="status"><strong>{t("educator_evaluation.read_only_educator_preview_1opb5fz", "Read-only educator preview")}</strong><span>{t("educator_evaluation.use_this_perspective_to_inspect_what_an_educator_can_see_c_1qneij3", "Use this perspective to inspect what an educator can see. Changes are blocked because local role switching is not authentication.")}</span></div>}
     {isRemote && remoteConflict && <AeRemoteConflictReview conflict={remoteConflict} onUseDistrict={useDistrictConflictVersion} onReplay={replayRemoteConflict}/>}
-    {operationNotice.text && <div className={'ae-operation-notice ' + (operationNotice.type === 'error' ? 'ae-operation-error' : (operationNotice.type === 'success' ? 'ae-operation-success' : ''))} role={operationNotice.type === 'error' ? 'alert' : 'status'} aria-live="polite"><span>{operationNotice.text}</span><button type="button" className="ae-btn ae-btn-quiet" onClick={() => setOperationNotice({ text: '', type: 'info', id: operationNotice.id })}>{t("educator_evaluation.dismiss_an1pf7", "Dismiss")}</button></div>}
+    {isRemote && operationNotice.text && <div className={'ae-operation-notice ' + (operationNotice.type === 'error' ? 'ae-operation-error' : (operationNotice.type === 'success' ? 'ae-operation-success' : ''))} role={operationNotice.type === 'error' ? 'alert' : 'status'} aria-live="polite"><span>{operationNotice.text}</span><button type="button" className="ae-btn ae-btn-quiet" onClick={() => setOperationNotice({ text: '', type: 'info', id: operationNotice.id })}>{t("educator_evaluation.dismiss_an1pf7", "Dismiss")}</button></div>}
     {Number.isInteger(tourStep) && <AeGuidedTour
       step={tourStep}
       onMove={setTourStep}
@@ -5914,9 +6304,9 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
     <nav className="ae-tabs" role="tablist" aria-label={t("educator_evaluation.evaluation_workspace_sections_bfw4o2", "Evaluation workspace sections")}>{tabs.map(([id, label], index) => <button type="button" role="tab" key={id} id={'ae-tab-' + id} aria-selected={tab === id} aria-controls="ae-panel" tabIndex={tab === id ? 0 : -1} className="ae-tab" onClick={() => setTab(id)} onKeyDown={(event) => tabKey(event, index)}>{label}</button>)}</nav>
     <main className="ae-main" onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
       <div id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={remotePanelUnavailable ? 'true' : undefined} inert={remotePanelUnavailable ? '' : undefined}>
-      {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={visibleReflection} updateTeacher={updateTeacher} setTab={setTab} readOnlyPreview={localTeacherPreview} isRemote={isRemote} requestActionReview={requestActionReview}/>}
+      {tab === 'overview' && <AeOverview requestStaffAdd={requestStaffAdd} workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={visibleReflection} updateTeacher={updateTeacher} setTab={setTab} readOnlyPreview={localTeacherPreview} isRemote={isRemote} requestActionReview={requestActionReview}/>}
       {tab === 'trends' && <AeTrends workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} isRemote={isRemote} repository={repository}/>}
-      {tab === 'staff' && <AeStaff workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} addTeacher={addTeacher} addTeachersBulk={addTeachersBulk} isRemote={isRemote} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')}/>}
+      {tab === 'staff' && <AeStaff addRequest={staffAddRequest} workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} addTeacher={addTeacher} addTeachersBulk={addTeachersBulk} isRemote={isRemote} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')}/>}
       {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} updateWalkthroughDraft={updateWalkthroughDraft} discardWalkthroughDraft={discardWalkthroughDraft} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} addTeacher={addTeacher} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')} isRemote={isRemote} readOnlyPreview={localTeacherPreview} requestActionReview={requestActionReview}/>}
       {tab === 'formal' && <AeFormalObservations workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} setTab={setTab} createObservation={createObservation} updateObservation={updateObservation} updateTeacher={updateTeacher} addComment={addComment} readOnlyPreview={localTeacherPreview} fictionalRehearsal={!isRemote && !!workspace.config.sampleMode} requestActionReview={requestActionReview}/>}
       {tab === 'spm' && <AeSpm workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createSpm={createSpm} updateSpm={updateSpm} updateTeacher={updateTeacher} addComment={addComment} readOnlyPreview={localTeacherPreview} requestActionReview={requestActionReview}/>}

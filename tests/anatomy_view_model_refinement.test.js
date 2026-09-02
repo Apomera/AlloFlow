@@ -32,11 +32,11 @@ const HEART_CLINICAL_STATE = {
   _clinicalAtlasPackId: HEART_PACK_ID,
 };
 
-function renderAnatomy(filePath, state = {}) {
+function renderAnatomy(filePath, state = {}, overrides) {
   loadTool(filePath, 'anatomy');
   return renderTool('anatomy', {
     anatomy: { ...BASE_STATE, ...state },
-  });
+  }, overrides);
 }
 
 function parseMarkup(html) {
@@ -249,16 +249,23 @@ describe('Anatomy model-aware canvas toolbar', () => {
     const blueprint = parseMarkup(renderAnatomy(filePath, {
       _bodyView3d: true,
       _body3dStyle: 'blueprint',
-    }));
+    }, { gradeLevel: '9' }));
     resetStemLab();
     const surface = parseMarkup(renderAnatomy(filePath, {
       _bodyView3d: true,
       _body3dStyle: 'realistic',
+    }, { gradeLevel: '9' }));
+    resetStemLab();
+    const youngBlueprint = parseMarkup(renderAnatomy(filePath, {
+      _bodyView3d: true,
+      _body3dStyle: 'blueprint',
     }));
     resetStemLab();
-    const clinical = parseMarkup(renderAnatomy(filePath, HEART_CLINICAL_STATE));
+    const clinical = parseMarkup(renderAnatomy(filePath, HEART_CLINICAL_STATE, { gradeLevel: '9' }));
     const clinicalCanvas = clinical.querySelector('[data-anatomy-3d-canvas="true"]');
 
+    // The Procedure Studio handoff is a clinician-level workspace: hidden for a known K-5 profile.
+    expect(youngBlueprint.querySelector('[data-anatomy-3d-procedure-launch="true"]')).toBeNull();
     expect(blueprint.querySelector('[data-anatomy-3d-procedure-launch="true"]')).not.toBeNull();
     expect(surface.querySelector('[data-anatomy-3d-procedure-launch="true"]')).not.toBeNull();
     expect(clinical.querySelector('[data-anatomy-3d-procedure-launch="true"]')).toBeNull();

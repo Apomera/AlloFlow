@@ -8757,11 +8757,44 @@ ${pageCss}
                 its.filter((x) => x && x.categoryId === c.id).forEach((x) => out.push("- " + esc(x.content)));
                 out.push("");
               });
+            } else if (ty === "memory-aid" && d && Array.isArray(d.cards)) {
+              const maRules = typeof window !== "undefined" && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules || null;
+              const maT = (key, fallback) => {
+                const fullKey = "memory_aid." + key;
+                try {
+                  const v = typeof t === "function" ? t(fullKey) : "";
+                  if (typeof v === "string" && v && v !== fullKey) return v;
+                } catch (_) {
+                }
+                return fallback;
+              };
+              if (d.instructions) out.push(esc(d.instructions), "");
+              d.cards.slice(0, 8).forEach((c, ci) => {
+                if (!c || typeof c !== "object") return;
+                out.push("### " + (ci + 1) + ". " + esc(c.target || maT("memory_target", "Memory target")), "");
+                const cue = maRules && typeof maRules.practiceCue === "function" ? maRules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || "").trim();
+                if (cue) out.push("**" + maT("export_memory_cue_label", "Memory cue:") + "** " + esc(cue), "");
+                const verified = !!(maRules && typeof maRules.isCardVerified === "function" && maRules.isCardVerified(c));
+                out.push("**" + (verified ? maT("facts_verified", "Teacher-verified facts") : maT("facts_pending", "Facts awaiting teacher review")) + ":**");
+                (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach((f) => {
+                  if (f) out.push("- " + esc(f));
+                });
+                if (c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
+                out.push("");
+              });
             } else if (ty === "image" && d && d.prompt) {
               out.push("_Image: " + esc(d.prompt) + "_", "");
             } else {
               const tx = d && (d.text || d.content || d.summary) || "";
               if (tx) out.push(esc(tx).trim(), "");
+              else if (d && typeof d === "object") {
+                const eh = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ExportHandlers || null;
+                const lines = eh && typeof eh.summarizeResourceText === "function" ? eh.summarizeResourceText(it, { maxChars: 4e3 }) : [];
+                if (lines.length) {
+                  lines.forEach((line) => out.push("- " + esc(line)));
+                  out.push("");
+                } else out.push("_This resource has no text export yet. Use the HTML export for the full resource._", "");
+              }
             }
           });
         } else if (doc) {

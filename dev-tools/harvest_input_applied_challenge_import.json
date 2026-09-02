@@ -1,0 +1,5 @@
+{
+  "applied_challenge.import.missing_source": "The original challenge for this submission is not in this project, so it cannot be opened in the studio.",
+  "applied_challenge.import.nothing_typed": "This submission has no typed workspace text to import.",
+  "applied_challenge.import.opened": "Opened {n} typed fields in Applied Challenge Studio."
+}

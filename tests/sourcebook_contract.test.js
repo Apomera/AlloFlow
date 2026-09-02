@@ -224,6 +224,14 @@ function aicPayload(count) {
   };
 }
 
+
+// The i18n codemod wraps render-scope labels as __alloT('stem.sourcebook.<key>', 'English');
+// the English fallback renders identically, so source locks accept either form.
+function expectAriaLabelSource(source, label) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  expect(source).toMatch(new RegExp("'aria-label': (?:__alloT\\('stem\\.sourcebook\\.[a-z0-9_]+', )?'" + escaped + "'"));
+}
+
 describe('Sourcebook initial feature contract', () => {
   it('registers as a standalone creative tool with no collage framing', () => {
     const window = loadSourcebook();
@@ -4725,8 +4733,10 @@ describe('Sourcebook initial feature contract', () => {
   });
 
   it('supports two-axis crop preparation and attribution copying in the UI', () => {
-    expect(pluginSource).toContain("'aria-label': 'Horizontal crop focus'");
-    expect(pluginSource).toContain("'aria-label': 'Vertical crop focus'");
+    // The i18n codemod wraps these labels as __alloT('stem.sourcebook.<key>', 'English');
+    // the English fallback still renders, so accept either form.
+    expectAriaLabelSource(pluginSource, 'Horizontal crop focus');
+    expectAriaLabelSource(pluginSource, 'Vertical crop focus');
     expect(pluginSource).toContain("'Copy credit'");
     expect(pluginSource).toContain("'Open in Page Designer'");
     expect(pluginSource).toContain("'Accessibility for reuse'");
@@ -4838,12 +4848,12 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Save recommendations ('");
     expect(pluginSource).toContain("'Clear palette'");
     expect(pluginSource).toContain("'Undo palette change'");
-    expect(pluginSource).toContain("'aria-label': 'Prepare every palette asset'");
+    expectAriaLabelSource(pluginSource, 'Prepare every palette asset');
     expect(pluginSource).toContain("'Fit all'");
     expect(pluginSource).toContain("'Crop all'");
     expect(pluginSource).toContain("'Tile all'");
     expect(pluginSource).toContain("'Reset all'");
-    expect(pluginSource).toContain("'aria-label': 'Manage Sourcebook palette selection'");
+    expectAriaLabelSource(pluginSource, 'Manage Sourcebook palette selection');
     expect(pluginSource).toContain("'Filter this palette'");
     expect(pluginSource).toContain("'Clear palette filter'");
     expect(pluginSource).toContain("'Select shown ('");
@@ -4856,11 +4866,11 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Preparing ' + palettePackageProgress");
     expect(pluginSource).toContain('mapWithConcurrency(items, 3');
     expect(pluginSource).toContain('no incomplete package was downloaded');
-    expect(pluginSource).toContain("'aria-label': 'Palette package preparation progress'");
+    expectAriaLabelSource(pluginSource, 'Palette package preparation progress');
     expect(pluginSource).toContain('palettePackageTotal');
     expect(pluginSource).toContain('PALETTE_MAX_ASSETS');
     expect(pluginSource).toContain('paletteUndo');
-    expect(pluginSource).toContain("'aria-label': 'Recent Sourcebook searches'");
+    expectAriaLabelSource(pluginSource, 'Recent Sourcebook searches');
     expect(pluginSource).toContain("'Clear recent'");
     expect(pluginSource).toContain("'Filter loaded results'");
     expect(pluginSource).toContain("'Sort loaded results'");
@@ -4877,7 +4887,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Filters and search options'");
     expect(pluginSource).toContain("'Gallery'");
     expect(pluginSource).toContain("'Research'");
-    expect(pluginSource).toContain("'aria-label': 'Saved Sourcebook palette tray'");
+    expectAriaLabelSource(pluginSource, 'Saved Sourcebook palette tray');
     expect(pluginSource).toContain("window.matchMedia('(max-width: 1023px)')");
     expect(pluginSource).toContain("boardView === 'gallery'");
     expect(pluginSource).toContain("'Replace palette'");
@@ -4895,13 +4905,13 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("createElement('canvas')");
     expect(pluginSource).toContain("toDataURL('image/jpeg'");
     expect(pluginSource).toContain("'Restored ' + storedLiveSession.results.length");
-    expect(pluginSource).toContain("'aria-label': 'Provider search progress'");
+    expectAriaLabelSource(pluginSource, 'Provider search progress');
     expect(pluginSource).toContain("'Cooling down'");
     expect(pluginSource).toContain("'Retrying once'");
     expect(pluginSource).toContain('onProgress: providerProgressForBatch(0)');
     expect(pluginSource).toContain('onProgress: providerProgressForBatch(nextPage)');
     expect(pluginSource).toContain('onProgress: providerProgressForBatch(targetBatch)');
-    expect(pluginSource).toContain("'aria-label': 'Stop the active Sourcebook search'");
+    expectAriaLabelSource(pluginSource, 'Stop the active Sourcebook search');
     expect(pluginSource).toContain("'Stop search'");
     expect(pluginSource).toContain('signal: liveRequest.signal');
     expect(pluginSource).toContain('previous.controller.abort()');
@@ -4929,7 +4939,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain('COMMONS_PROVIDER_PROFILES');
     expect(pluginSource).toContain('lg:overflow-y-auto');
     expect(pluginSource).toContain("tabIndex: 0");
-    expect(pluginSource).toContain("'aria-label': 'Selected source details and preparation controls'");
+    expectAriaLabelSource(pluginSource, 'Selected source details and preparation controls');
     expect(pluginSource).toContain("'data-sourcebook-mobile-dialog': 'true'");
     expect(pluginSource).toContain("'aria-labelledby': 'sourcebook-mobile-detail-title'");
     expect(pluginSource).toContain("'aria-describedby': 'sourcebook-mobile-detail-description'");
@@ -4939,44 +4949,44 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("element.setAttribute('inert', '')");
     expect(pluginSource).toContain("body.style.overflow = 'hidden'");
     expect(pluginSource).toContain('previousFocus && previousFocus.isConnected');
-    expect(pluginSource).toContain("'aria-label': 'Explore related visual sources'");
+    expectAriaLabelSource(pluginSource, 'Explore related visual sources');
     expect(pluginSource).toContain("'Find related across collections'");
     expect(pluginSource).toContain("'Why this appears'");
     expect(pluginSource).toContain("'Strong match'");
-    expect(pluginSource).toContain("'aria-label': 'Live match quality'");
+    expectAriaLabelSource(pluginSource, 'Live match quality');
     expect(pluginSource).toContain('Broad results stay on the board for exploration and are never added automatically.');
     expect(pluginSource).toContain('automaticCurationCandidates');
     expect(pluginSource).toContain('findSimilarAcrossCollections');
-    expect(pluginSource).toContain("'aria-label': 'Preparation presets'");
+    expectAriaLabelSource(pluginSource, 'Preparation presets');
     expect(pluginSource).toContain("'Full image'");
     expect(pluginSource).toContain("'Page background'");
     expect(pluginSource).toContain("'Header strip'");
     expect(pluginSource).toContain("'Repeat pattern'");
     expect(pluginSource).toContain("'Output shape'");
-    expect(pluginSource).toContain("'aria-label': 'Prepared image output shape'");
+    expectAriaLabelSource(pluginSource, 'Prepared image output shape');
     expect(pluginSource).toContain("'Landscape 16:9'");
     expect(pluginSource).toContain("'Portrait 3:4'");
     expect(pluginSource).toContain("'Header banner 8:3'");
     expect(pluginSource).toContain("'Find a sharper alternative'");
     expect(pluginSource).toContain("'sourcebook-print-readiness-title'");
     expect(pluginSource).toContain("'loaded preview measurement'");
-    expect(pluginSource).toContain("h('option', { value: 'print' }, 'Print readiness')");
+    expect(pluginSource).toMatch(/h\('option', \{ value: 'print' \}, (?:__alloT\('stem\.sourcebook\.[a-z0-9_]+', )?'Print readiness'\)?\)/);
     expect(pluginSource).toContain('prefer verified higher-resolution assets');
     expect(pluginSource).toContain("'Click the preview to place the crop focal point, or use the sliders.'");
     expect(pluginSource).toContain("'Click to move crop focal point'");
-    expect(pluginSource).toContain("'aria-label': 'Sourcebook search loading previews'");
+    expectAriaLabelSource(pluginSource, 'Sourcebook search loading previews');
     expect(pluginSource).toContain("'Checking the remaining public collections…'");
     expect(pluginSource).toContain('onPartial: function (items, report)');
     expect(pluginSource).toContain("' while the remaining collections continue.'");
-    expect(pluginSource).toContain("'aria-label': 'Sourcebook curated starter palette'");
-    expect(pluginSource).toContain("'aria-label': 'Selected visual previews'");
-    expect(pluginSource).toContain("'aria-label': 'Curated palette source coverage'");
+    expectAriaLabelSource(pluginSource, 'Sourcebook curated starter palette');
+    expectAriaLabelSource(pluginSource, 'Selected visual previews');
+    expectAriaLabelSource(pluginSource, 'Curated palette source coverage');
     expect(pluginSource).toContain("'✓ Every pick passed the reuse-rights gate'");
     expect(pluginSource).toContain("'✦ Inspire me'");
     expect(pluginSource).toContain('explainSelection(item, selectionQuery, kind)');
-    expect(pluginSource).toContain("'aria-label': 'Refine the curated Sourcebook selection'");
+    expectAriaLabelSource(pluginSource, 'Refine the curated Sourcebook selection');
     expect(pluginSource).toContain("'Tell Sourcebook how to adjust these picks'");
-    expect(pluginSource).toContain("'aria-label': 'Quick palette refinements'");
+    expectAriaLabelSource(pluginSource, 'Quick palette refinements');
     expect(pluginSource).toContain("'stronger linework'");
     expect(pluginSource).toContain("'less decorative'");
     expect(pluginSource).toContain('does not make another provider request.');
@@ -5007,6 +5017,240 @@ describe('Sourcebook initial feature contract', () => {
     expect(studioSource).toContain('usageIntent: usageIntent');
     expect(studioSource).toContain("origin: 'stem-sourcebook-credit'");
     expect(studioSource).toContain('Sourcebook asset added with its source and reuse information');
+  });
+
+  it('carries artist study aids in preparation and bakes them into prepared output', async () => {
+    const drawCalls = [];
+    const canvas = {
+      width: 0, height: 0,
+      getContext: () => ({
+        fillStyle: '', font: '',
+        fillRect: (...a) => drawCalls.push(['fillRect', ...a]),
+        drawImage: (...a) => drawCalls.push(['drawImage', ...a]),
+        translate: (...a) => drawCalls.push(['translate', ...a]),
+        scale: (...a) => drawCalls.push(['scale', ...a]),
+        setTransform: (...a) => drawCalls.push(['setTransform', ...a]),
+        getImageData: (x, y, w, h) => { drawCalls.push(['getImageData', w, h]); return { data: new Uint8ClampedArray(w * h * 4).fill(200) }; },
+        putImageData: () => drawCalls.push(['putImageData'])
+      }),
+      toDataURL: () => 'data:image/png;base64,BBBB'
+    };
+    class MockImage { set src(value) { this.width = 1400; this.height = 700; this.onload(); } }
+    const renderingWindow = loadSourcebook(undefined, { Image: MockImage, document: { createElement: (tag) => tag === 'canvas' ? canvas : null } });
+    const P = renderingWindow.SourcebookProviders;
+    const prep = P.normalizePreparation({ mode: 'fit', grayscale: 'yes', flip: true, grid: true });
+    expect([prep.grayscale, prep.flip, prep.grid, prep.posterize]).toEqual([false, true, true, false]);
+    expect(P.preparationBakesStudy({ grid: true })).toBe(false);
+    expect(P.studyPreparationSummary({ flip: true, posterize: true, grid: true })).toBe('flipped · 5-value study · thirds grid (screen only)');
+    // Fit without study aids keeps the original bytes (no canvas work at all).
+    const plain = await P.prepareImageReceipt('data:image/png;base64,AAAA', { mode: 'fit' });
+    expect(plain.dataUrl).toBe('data:image/png;base64,AAAA');
+    expect(drawCalls).toHaveLength(0);
+    // Fit with study aids renders through the canvas, flips before drawing, resets after, then recolours.
+    const study = await P.prepareImageReceipt('data:image/png;base64,AAAA', { mode: 'fit', grayscale: true, flip: true });
+    expect(study.dataUrl).toBe('data:image/png;base64,BBBB');
+    expect(canvas).toMatchObject({ width: 1400, height: 700 });
+    const names = drawCalls.map((call) => call[0]);
+    expect(names.indexOf('scale')).toBeLessThan(names.indexOf('drawImage'));
+    expect(names.indexOf('setTransform')).toBeGreaterThan(names.indexOf('drawImage'));
+    expect(names).toContain('putImageData');
+    expect(pluginSource).toContain("'data-sourcebook-study-aids': 'true'");
+    expect(pluginSource).toContain("'data-sourcebook-study-grid': 'true'");
+  });
+
+  it('extracts distinct dominant colour swatches and builds a credited reference board', () => {
+    const drawCalls = [];
+    let pixelPattern = 'flat';
+    const canvas = {
+      width: 0, height: 0,
+      getContext: () => ({
+        fillStyle: '', font: '',
+        fillRect: (...a) => drawCalls.push(['fillRect', ...a]),
+        drawImage: (...a) => drawCalls.push(['drawImage', ...a]),
+        fillText: (...a) => drawCalls.push(['fillText', ...a]),
+        measureText: (text) => ({ width: String(text).length * 8 }),
+        translate: () => {}, scale: (...a) => drawCalls.push(['scale', ...a]), save: () => {}, restore: () => {}, setTransform: () => {},
+        getImageData: (x, y, w, h) => {
+          const data = new Uint8ClampedArray(w * h * 4);
+          for (let i = 0; i < w * h; i += 1) {
+            const o = i * 4;
+            if (pixelPattern === 'flat') { data[o] = data[o + 1] = data[o + 2] = 120; }
+            else if (i % 3 === 0) { data[o] = 200; data[o + 1] = 30; data[o + 2] = 30; }
+            else if (i % 3 === 1) { data[o] = 30; data[o + 1] = 30; data[o + 2] = 210; }
+            else { data[o] = data[o + 1] = data[o + 2] = 240; }
+            data[o + 3] = 255;
+          }
+          return { data };
+        },
+        putImageData: () => drawCalls.push(['putImageData'])
+      }),
+      toDataURL: () => 'data:image/png;base64,BBBB'
+    };
+    const renderingWindow = loadSourcebook(undefined, { document: { createElement: (tag) => tag === 'canvas' ? canvas : null } });
+    const P = renderingWindow.SourcebookProviders;
+    pixelPattern = 'three';
+    const swatches = P.extractSwatches({ width: 100, height: 100 }, 6);
+    expect(swatches).toHaveLength(3);
+    expect(swatches.every((swatch) => /^#[0-9a-f]{6}$/.test(swatch.hex))).toBe(true);
+    expect(P.swatchesText(swatches).split(' ')).toHaveLength(3);
+    expect(P.extractSwatches(null, 6)).toHaveLength(0);
+    pixelPattern = 'flat';
+    drawCalls.length = 0;
+    expect(P.referenceBoardLayout(3)).toMatchObject({ columns: 2, rows: 2, width: 1600 });
+    expect(P.referenceBoardLayout(7).columns).toBe(3);
+    const items = [1, 2, 3].map((n) => ({ id: 'board-' + n, title: 'Study ' + n, creator: 'Artist ' + n, year: '1890', provider: 'Test', license: 'Public Domain', sourceUrl: 'https://example.org/' + n, rightsType: 'pd' }));
+    const entries = items.map((item, index) => ({ item, image: { width: 800, height: 400 }, swatches: [{ hex: '#112233', share: 50 }], prep: index === 0 ? { flip: true, posterize: true } : {} }));
+    expect(P.buildReferenceBoardDataUrl(entries, { title: 'My board' })).toBe('data:image/png;base64,BBBB');
+    expect(canvas).toMatchObject({ width: 1600, height: 120 + 2 * (600 + 118 + 44) });
+    const texts = drawCalls.filter((call) => call[0] === 'fillText').map((call) => call[1]);
+    expect(texts.some((text) => text.startsWith('My board'))).toBe(true);
+    expect(texts.filter((text) => /^\d\. Study/.test(text))).toHaveLength(3);
+    expect(texts.some((text) => text.includes('Artist 2'))).toBe(true);
+    expect(drawCalls.filter((call) => call[0] === 'drawImage')).toHaveLength(3);
+    expect(drawCalls.some((call) => call[0] === 'scale' && call[1] === -1)).toBe(true);
+    expect(P.buildReferenceBoardDataUrl([], {})).toBe('');
+    expect(pluginSource).toContain("'data-sourcebook-swatches': item.id");
+    expect(pluginSource).toContain('.reference-board.png');
+  });
+
+  it('adds figure and landscape material kinds, metric print sizes, and derivative-use guidance', () => {
+    const window = loadSourcebook();
+    const P = window.SourcebookProviders;
+    expect(window.SourcebookProviders.materials.every((item) => item.kind !== 'Figures')).toBe(true);
+    expect(pluginSource).toContain("'Figures', 'Landscapes', 'Visual assets'");
+    const commonsWindow = loadSourcebook();
+    expect(commonsWindow.SourcebookProviders.rijksSearchTerms('portrait study of a seated figure', 'All')).toContain('portrait');
+    expect(commonsWindow.SourcebookProviders.rijksSearchTerms('storm clouds over the harbour', 'Landscapes')).toContain('landscape');
+    expect(commonsWindow.SourcebookProviders.rijksSearchTerms('brainwaves and neuron diagrams', 'All')).toContain('anatomy');
+    const readiness = P.printReadiness({ pixelWidth: 3600, pixelHeight: 2400, pixelDimensionSource: 'catalog', rightsType: 'pd' }, { mode: 'fit' });
+    expect(readiness.print300).toBe('12.0 x 8.0 in at 300 DPI');
+    expect(readiness.print300cm).toBe('30.5 x 20.3 cm at 300 DPI');
+    expect(readiness.print150cm).toBe('61.0 x 40.6 cm at 150 DPI');
+    expect(P.derivativeUseGuidance('pd')).toMatch(/sell work made from this image/);
+    expect(P.derivativeUseGuidance('ccby')).toMatch(/must carry the credit line/);
+    expect(P.derivativeUseGuidance('nkr')).toBe('');
+    expect(pluginSource).toContain("'data-sourcebook-derivative-guidance': item.rightsType");
+  });
+
+  it('filters the loaded board by century and artist, and keeps per-asset notes through preparation', () => {
+    const window = loadSourcebook();
+    const P = window.SourcebookProviders;
+    const base = { provider: 'Wikimedia Commons', kind: 'Figures', rightsType: 'pd', license: 'Public Domain', imageUrl: 'https://example.org/a.jpg', downloadUrl: 'https://example.org/a.jpg', sourceUrl: 'https://example.org/a' };
+    const board = [
+      { ...base, id: 'f1', title: 'Seated figure', creator: 'Jean-Auguste-Dominique Ingres', year: '1820' },
+      { ...base, id: 'f2', title: 'Standing figure', creator: 'Jean-Auguste-Dominique Ingres', year: 'circa 1845-1850' },
+      { ...base, id: 'f3', title: 'Head study', creator: 'Unknown artist', year: 'early 1900s' },
+      { ...base, id: 'f4', title: 'Drapery', creator: 'Albrecht Dürer', year: 'undated' },
+    ];
+    expect(P.itemEraLabel(board[1])).toBe('1800s');
+    expect(P.itemEraLabel(board[2])).toBe('1900s');
+    expect(P.itemEraLabel(board[3])).toBe('Undated');
+    expect(P.itemCreatorLabel(board[2])).toBe('');
+    expect(Array.from(P.loadedEraCoverage(board, 'all')).map((entry) => [entry.era, entry.count])).toEqual([['1800s', 2], ['1900s', 1], ['Undated', 1]]);
+    expect(Array.from(P.loadedCreatorCoverage(board, 'all', 8)).map((entry) => [entry.creator, entry.count])).toEqual([['Jean-Auguste-Dominique Ingres', 2], ['Albrecht Dürer', 1]]);
+    expect(Array.from(P.filterLoadedResultsByFacets(board, { era: '1800s', creator: 'Jean-Auguste-Dominique Ingres' }, 'all')).map((item) => item.id)).toEqual(['f1', 'f2']);
+    expect(Array.from(P.filterLoadedResultsByFacets(board, { era: 'Undated' }, 'all')).map((item) => item.id)).toEqual(['f4']);
+    expect(pluginSource).toContain("'data-sourcebook-loaded-era': entry.era");
+    expect(pluginSource).toContain("'data-sourcebook-loaded-creator': entry.creator");
+    const prep = P.normalizePreparation({ mode: 'fit', note: '  Edge light on the drapery ' + 'x'.repeat(700) });
+    expect(prep.note.length).toBe(600);
+    expect(P.normalizePreparation({}).note).toBe('');
+    const manifest = P.buildPaletteManifest(['f1'], { f1: { note: 'Try for the harbour piece' } }, 'Notes', board);
+    expect(manifest.assets[0].preparation.note).toBe('Try for the harbour piece');
+    expect(pluginSource).toContain("'data-sourcebook-note': item.id");
+    expect(pluginSource).toContain("'<dt>Note</dt><dd>' + escapeHtml(itemPrep.note)");
+    expect(pluginSource).toContain("'<dt>Note</dt><dd>' + escapeHtml(prep.note)");
+  });
+
+  it('offers a study-set plan and phrases figure and landscape searches for every live provider', () => {
+    const window = loadSourcebook();
+    const P = window.SourcebookProviders;
+    expect(P.normalizeUsagePlan('study')).toBe('study');
+    const items = [
+      { id: 'study-figure', title: 'Seated figure study', kind: 'Figures', rightsType: 'pd', tags: ['figure'] },
+      { id: 'study-landscape', title: 'Harbour at dusk', kind: 'Landscapes', rightsType: 'pd', tags: ['landscape'] },
+      { id: 'study-diagram', title: 'Skeleton diagram', kind: 'Science', rightsType: 'pd', tags: ['anatomy', 'diagram'] },
+      { id: 'study-texture', title: 'Linen weave', kind: 'Textures', rightsType: 'pd', tags: ['texture'] },
+    ];
+    const planned = P.planPaletteUsage(items, {}, 'study');
+    expect(planned).toMatchObject({ planId: 'study', label: 'Study set', planned: 4 });
+    expect(planned.preparation['study-figure']).toMatchObject({ usageIntent: 'focal', usagePlan: 'study' });
+    expect(planned.preparation['study-landscape'].usageIntent).toMatch(/focal|background/);
+    expect(planned.preparation['study-diagram']).toMatchObject({ usageIntent: 'reference', usagePlan: 'study' });
+    expect(pluginSource).toContain("'data-sourcebook-usage-plan-action': planId");
+    expect(pluginSource).toContain("USAGE_PLAN_ORDER = ['balanced', 'education', 'artwork', 'study']");
+    // Every live provider's kind hints know the two artist kinds.
+    const hintBlocks = pluginSource.split('var kindHints = {').slice(1);
+    expect(hintBlocks).toHaveLength(8);
+    hintBlocks.forEach((block) => {
+      const body = block.slice(0, block.indexOf('};'));
+      expect(body).toMatch(/Figures: '/);
+      expect(body).toMatch(/Landscapes: '/);
+    });
+  });
+
+  it('draws prepared board entries once and offers a screen-only values view in the comparison grid', () => {
+    const drawCalls = [];
+    const canvas = {
+      width: 0, height: 0,
+      getContext: () => ({
+        fillStyle: '', font: '',
+        fillRect: (...a) => drawCalls.push(['fillRect', ...a]),
+        drawImage: (...a) => drawCalls.push(['drawImage', ...a]),
+        fillText: (...a) => drawCalls.push(['fillText', ...a]),
+        measureText: (text) => ({ width: String(text).length * 8 }),
+        translate: () => {}, scale: (...a) => drawCalls.push(['scale', ...a]), save: () => {}, restore: () => {}, setTransform: () => {},
+        getImageData: (x, y, w, h) => ({ data: new Uint8ClampedArray(w * h * 4).fill(120) }),
+        putImageData: () => drawCalls.push(['putImageData'])
+      }),
+      toDataURL: () => 'data:image/png;base64,BBBB'
+    };
+    const renderingWindow = loadSourcebook(undefined, { document: { createElement: (tag) => tag === 'canvas' ? canvas : null } });
+    const P = renderingWindow.SourcebookProviders;
+    const item = { id: 'board-prepared', title: 'Cropped study', creator: 'Artist', year: '1900', provider: 'Test', license: 'Public Domain', sourceUrl: 'https://example.org/1', rightsType: 'pd' };
+    // A prepared entry already carries flip and values in its pixels: the board must not reapply them.
+    P.buildReferenceBoardDataUrl([{ item, image: { width: 800, height: 400 }, swatches: [], prep: { mode: 'crop', flip: true, posterize: true, note: 'keep' }, prepared: true }], { title: 'Prepared' });
+    expect(drawCalls.some((call) => call[0] === 'scale' && call[1] === -1)).toBe(false);
+    expect(drawCalls.some((call) => call[0] === 'putImageData')).toBe(false);
+    expect(drawCalls.filter((call) => call[0] === 'fillText').map((call) => call[1])).toContain('keep');
+    expect(pluginSource).toContain('prepareImageReceipt(dataUrl, prep)');
+    expect(pluginSource).toContain("'data-sourcebook-compare-view': comparisonView");
+    expect(pluginSource).toContain("values: 'grayscale(1) contrast(1.6)'");
+  });
+
+  it('reads catalog medium honestly, categorises it deterministically, and filters the loaded board by it', () => {
+    const window = loadSourcebook();
+    const P = window.SourcebookProviders;
+    expect(P.normalizedMedium(['Oil on canvas', 'Oil on canvas', ' painting '])).toBe('Oil on canvas, painting');
+    expect(P.normalizedMedium('etching; engraving | etching')).toBe('etching, engraving');
+    expect(P.normalizedMedium(undefined)).toBe('');
+    expect(P.mediumCategory({ medium: 'Oil on canvas' })).toBe('Painting');
+    expect(P.mediumCategory({ medium: 'Etching and drypoint' })).toBe('Print');
+    expect(P.mediumCategory({ medium: 'Graphite on paper' })).toBe('Drawing');
+    expect(P.mediumCategory({ medium: 'Gelatin silver print' })).toBe('Photograph');
+    expect(P.mediumCategory({ medium: 'Wool tapestry' })).toBe('Textile');
+    expect(P.mediumCategory({ medium: 'Bronze' })).toBe('Sculpture or object');
+    expect(P.mediumCategory({ medium: 'Feathers and shell' })).toBe('Other medium');
+    expect(P.mediumCategory({ medium: '' })).toBe('');
+    expect(P.mediumCategory({})).toBe('');
+    const base = { provider: 'Wikimedia Commons', kind: 'Figures', rightsType: 'pd', license: 'Public Domain', imageUrl: 'https://example.org/a.jpg', downloadUrl: 'https://example.org/a.jpg', sourceUrl: 'https://example.org/a', creator: 'Maker', year: '1800' };
+    const board = [
+      { ...base, id: 'm1', title: 'A', medium: 'Oil on canvas' },
+      { ...base, id: 'm2', title: 'B', medium: 'Etching' },
+      { ...base, id: 'm3', title: 'C', medium: 'Oil on panel' },
+      { ...base, id: 'm4', title: 'D' },
+    ];
+    expect(Array.from(P.loadedMediumCoverage(board, 'all')).map((entry) => [entry.medium, entry.count])).toEqual([['Painting', 2], ['Print', 1]]);
+    expect(Array.from(P.filterLoadedResultsByFacets(board, { medium: 'Painting' }, 'all')).map((item) => item.id)).toEqual(['m1', 'm3']);
+    expect(Array.from(P.filterLoadedResultsByFacets(board, { medium: 'All' }, 'all'))).toHaveLength(4);
+    // Medium survives the portable asset round trip and the manifest, and the board haystack searches it.
+    const manifest = P.buildPalette(['m2'], {}, 'Media', board);
+    expect(manifest.assets[0].medium).toBe('Etching');
+    expect(Array.from(P.filterAndSortBoard(board, 'etching', 'recommended')).map((item) => item.id)).toEqual(['m2']);
+    // Only providers whose records carry medium emit it; Commons and Openverse builders do not.
+    const emitters = (pluginSource.match(/medium: normalizedMedium\(/g) || []).length;
+    expect(emitters).toBe(11);
+    expect(pluginSource).toContain("'data-sourcebook-loaded-medium': entry.medium");
   });
 
   it('is reachable from the loader, catalog, fallback renderer, and build mirror', () => {

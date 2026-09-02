@@ -269,15 +269,15 @@
   var QUIZ = [
     { q: 'How fast does the ISS travel?', o: ['~800 km/h', '~7,000 km/h', '~28,000 km/h', '~300,000 km/h'], a: 2, x: 'About 28,000 km/h (7.66 km/s) — one orbit of Earth every ~92 minutes, 16 sunrises a day.' },
     { q: 'Roughly how much of the station’s water is recycled?', o: ['10%', '50%', '75%', '~98%'], a: 3, x: 'As of 2023 the ECLSS recovers about 98% — including water distilled from urine and condensed from breath.' },
-    { q: 'Why must astronauts exercise ~2.5 hours a day?', o: ['To stay warm', 'Bones and muscles waste without gravity’s load', 'To generate electricity', 'NASA tradition'], a: 1, x: 'Without loading, bones lose ~1-1.5% density per month; exercise is medicine.' },
-    { q: 'How does the station get its oxygen mainly?', o: ['Tanks from Earth', 'Splitting water with electricity', 'Plants aboard', 'Compressing outside air'], a: 1, x: 'Electrolysis splits recycled water into O₂ and H₂; the H₂ feeds a Sabatier reactor to reclaim even more water.' },
+    { q: 'Why must astronauts exercise ~2.5 hours a day?', o: ['To stay warm', 'To generate electricity', 'NASA tradition', 'Bones and muscles waste without gravity’s load'], a: 3, x: 'Without loading, bones lose ~1-1.5% density per month; exercise is medicine.' },
+    { q: 'How does the station get its oxygen mainly?', o: ['Splitting water with electricity', 'Tanks from Earth', 'Plants aboard', 'Compressing outside air'], a: 0, x: 'Electrolysis splits recycled water into O₂ and H₂; the H₂ feeds a Sabatier reactor to reclaim even more water.' },
     { q: 'What keeps the station pointed correctly WITHOUT burning fuel?', o: ['Solar wind sails', 'Spinning control moment gyroscopes', 'Magnets in the hull', 'The robotic arm'], a: 1, x: 'Four large spinning flywheels twist the station by exchanging angular momentum — no propellant needed until they saturate.' },
     { q: 'Why does the station need regular reboosts?', o: ['Thin atmosphere drags it ~50-100 m lower per day', 'The Moon pulls it away', 'The crew requests them', 'Solar pressure pushes it down'], a: 0, x: 'Even at ~400 km, wisps of atmosphere slowly sap orbital energy; engines on Zvezda and cargo ships push it back up.' },
-    { q: 'The station orbits at an inclination of 51.6°. What does that number tell you?', o: ['How high above Earth it flies', 'The highest latitude it ever passes over', 'How fast it is travelling', 'How often it is resupplied'], a: 1, x: 'Inclination is the tilt of the orbit against the equator, so the station passes over everywhere between 51.6°N and 51.6°S — and never directly over the poles. 51.6° was chosen so that launches from Baikonur, at about 46°N, could reach it: a rocket can always aim for an inclination higher than its launch latitude, never lower.' },
+    { q: 'The station orbits at an inclination of 51.6°. What does that number tell you?', o: ['How high above Earth it flies', 'How fast it is travelling', 'The highest latitude it ever passes over', 'How often it is resupplied'], a: 2, x: 'Inclination is the tilt of the orbit against the equator, so the station passes over everywhere between 51.6°N and 51.6°S — and never directly over the poles. 51.6° was chosen so that launches from Baikonur, at about 46°N, could reach it: a rocket can always aim for an inclination higher than its launch latitude, never lower.' },
     { q: 'Which is the LARGEST module?', o: ['Zarya', 'Destiny', 'Kibo (Japan)', 'Columbus'], a: 2, x: 'JAXA’s Kibo — a big pressurized lab plus an exposed "back porch" and its own robotic arm.' },
-    { q: 'Salt and pepper aboard are used as…', o: ['Powders in shakers', 'Liquids in dropper bottles', 'Pills', 'They’re banned'], a: 1, x: 'Floating grains would drift into eyes, vents, and experiments — so seasonings are dissolved liquids.' },
+    { q: 'Salt and pepper aboard are used as…', o: ['Powders in shakers', 'Pills', 'They’re banned', 'Liquids in dropper bottles'], a: 3, x: 'Floating grains would drift into eyes, vents, and experiments — so seasonings are dissolved liquids.' },
     { q: 'What is a Whipple shield?', o: ['A sun shade', 'A spaced two-wall bumper that vaporizes debris', 'A radiation blanket', 'The airlock hatch'], a: 1, x: 'A thin standoff bumper shocks a hypervelocity particle into vapor and spray before it reaches the pressure hull.' },
-    { q: 'What is planned for the station around 2030-31?', o: ['Boost to the Moon', 'Sale to a museum', 'Controlled deorbit over the remote ocean', 'Left empty in orbit'], a: 2, x: 'Current plans call for a SpaceX-built deorbit vehicle to steer it into a controlled reentry over the South Pacific; commercial stations take over research in low Earth orbit.' }
+    { q: 'What is planned for the station around 2030-31?', o: ['Boost to the Moon', 'Controlled deorbit over the remote ocean', 'Sale to a museum', 'Left empty in orbit'], a: 1, x: 'Current plans call for a SpaceX-built deorbit vehicle to steer it into a controlled reentry over the South Pacific; commercial stations take over research in low Earth orbit.' }
   ];
 
   var QUIZ_TOPIC_LABELS = ['Velocity', 'Water', 'Human body', 'Oxygen', 'Attitude', 'Orbital drag', 'Inclination', 'Modules', 'Crew life', 'Shielding', 'Future'];
@@ -384,6 +384,38 @@
     return d;
   }
 
+  // The mask projected orthographically onto a disc, for the small Earths in
+  // the Orbit Lab and Day Aboard diagrams. They used to carry two hand-drawn
+  // green blobs; now they show the same real coastlines as the globe and the
+  // ground-track map. (lat0, lon0) is the sub-viewer point. Pure maths, so it
+  // renders in jsdom, and cached by geometry like issLandPath.
+  var _issLandDisc = {};
+  function issLandDiscPath(cx, cy, r, lat0, lon0) {
+    var key = [cx, cy, r, lat0, lon0].join('|');
+    if (_issLandDisc[key]) return _issLandDisc[key];
+    var step = Math.max(1, r / 46);
+    var p0 = lat0 * Math.PI / 180, sp = Math.sin(p0), cp = Math.cos(p0);
+    var parts = [];
+    for (var y = -r + step / 2; y < r; y += step) {
+      var ny = -y / r, open = null;
+      for (var x = -r + step / 2; x <= r; x += step) {
+        var nx = x / r, land = false;
+        var d2 = nx * nx + ny * ny;
+        if (d2 < 1) {
+          var nz = Math.sqrt(1 - d2);
+          var lat = Math.asin(ny * cp + nz * sp) * 180 / Math.PI;
+          var lon = lon0 + Math.atan2(nx, nz * cp - ny * sp) * 180 / Math.PI;
+          land = issIsLand(lat, lon);
+        }
+        if (land && open == null) open = x;
+        else if (!land && open != null) { parts.push('M' + (cx + open - step / 2).toFixed(1) + ' ' + (cy + y - step / 2).toFixed(1) + 'h' + (x - open + 0.3).toFixed(1) + 'v' + (step + 0.3).toFixed(1) + 'h-' + (x - open + 0.3).toFixed(1) + 'z'); open = null; }
+      }
+    }
+    var d = parts.join('');
+    _issLandDisc[key] = d;
+    return d;
+  }
+
   // What share of Earth's LAND lies inside a given band of latitude. Computed
   // from the mask rather than quoted, with each row weighted by cos(lat)
   // because equal-angle rows are not equal-area on a sphere.
@@ -483,6 +515,129 @@
   // Painted once per quality tier and reused across mounts: the pixel loops are
   // the most expensive thing in the whole tool's startup, and remounting a tab
   // must not pay for them twice.
+  // Procedural hull skins for the 3-D station. Two kinds: quilted MLI foil
+  // blankets (Russian segment) and rigid debris-shield panels with seam lines,
+  // rivet rows and handrail studs (US / ESA / JAXA modules). Painted in
+  // near-white greys so each module's own colour (which carries meaning)
+  // still multiplies through. A seeded LCG keeps the painter Math.random-free:
+  // the GL suite's byte-identical-mounts control depends on that.
+  var _issHullCanvases = {};
+  function issHullCanvas(kind) {
+    if (_issHullCanvases[kind]) return _issHullCanvases[kind];
+    var W = 512, H = 256;
+    var cvs = document.createElement('canvas');
+    cvs.setAttribute('aria-hidden', 'true');
+    cvs.width = W; cvs.height = H;
+    var g = cvs.getContext && cvs.getContext('2d');
+    if (!g) return null;
+    var seed = kind === 'mli' ? 7 : 3;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    var r, c, w, wx, wy;
+    g.fillStyle = '#f4f4f2'; g.fillRect(0, 0, W, H);
+    if (kind === 'mli') {
+      // Quilted blanket: 8 x 4 pillows, soft centre highlight, darker stitched
+      // edges, and a scatter of bright / dark foil wrinkles per pillow.
+      var cols = 8, rows = 4, pw = W / cols, ph = H / rows;
+      for (r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+        var x = c * pw, y = r * ph;
+        var grad = g.createRadialGradient(x + pw * 0.5, y + ph * 0.45, 2, x + pw * 0.5, y + ph * 0.5, pw * 0.7);
+        grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.7, '#ebe8e2'); grad.addColorStop(1, '#cfc9be');
+        g.fillStyle = grad; g.fillRect(x, y, pw, ph);
+        g.lineWidth = 1;
+        for (w = 0; w < 5; w++) { g.strokeStyle = 'rgba(255,255,255,.6)'; wx = x + rnd() * pw; wy = y + rnd() * ph; g.beginPath(); g.moveTo(wx, wy); g.lineTo(wx + (rnd() - .5) * 26, wy + (rnd() - .5) * 18); g.stroke(); }
+        for (w = 0; w < 4; w++) { g.strokeStyle = 'rgba(70,60,45,.35)'; wx = x + rnd() * pw; wy = y + rnd() * ph; g.beginPath(); g.moveTo(wx, wy); g.lineTo(wx + (rnd() - .5) * 22, wy + (rnd() - .5) * 14); g.stroke(); }
+      }
+      g.strokeStyle = 'rgba(60,50,35,.38)'; g.lineWidth = 2; g.setLineDash([4, 3]);
+      for (c = 0; c <= cols; c++) { g.beginPath(); g.moveTo(c * pw, 0); g.lineTo(c * pw, H); g.stroke(); }
+      for (r = 0; r <= rows; r++) { g.beginPath(); g.moveTo(0, r * ph); g.lineTo(W, r * ph); g.stroke(); }
+      g.setLineDash([]);
+    } else if (kind === 'cargo') {
+      // Crew transfer bag: woven fabric, black webbing straps, a white content
+      // label. Painted light so the material colour still tints it.
+      g.fillStyle = '#efeae0'; g.fillRect(0, 0, W, H);
+      g.strokeStyle = 'rgba(120,110,95,.22)'; g.lineWidth = 1;
+      for (k = 0; k < W; k += 6) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k, H); g.stroke(); }
+      for (k = 0; k < H; k += 6) { g.beginPath(); g.moveTo(0, k); g.lineTo(W, k); g.stroke(); }
+      g.fillStyle = '#1f2430';
+      [0.18, 0.82].forEach(function (fx) { g.fillRect(W * fx - 14, 0, 28, H); });
+      g.fillRect(0, H * 0.5 - 12, W, 24);
+      g.fillStyle = 'rgba(255,255,255,.18)';
+      [0.18, 0.82].forEach(function (fx) { g.fillRect(W * fx - 14, 0, 3, H); });
+      g.fillStyle = '#f8fafc'; g.fillRect(W * 0.36, H * 0.14, W * 0.28, H * 0.26);
+      g.strokeStyle = '#334155'; g.lineWidth = 2; g.strokeRect(W * 0.36, H * 0.14, W * 0.28, H * 0.26);
+      g.fillStyle = '#0f172a';
+      for (k = 0; k < 4; k++) g.fillRect(W * 0.38, H * 0.17 + k * 12, W * 0.24 * (0.5 + rnd() * 0.5), 4);
+      for (k = 0; k < 18; k++) g.fillRect(W * 0.38 + k * 7, H * 0.31, rnd() > 0.5 ? 2 : 4, 12);
+    } else if (kind === 'cupola') {
+      // Seven-window dome: the round nadir window sits at the sphere's pole
+      // (top strip of the map, u wraps around it) and six trapezoids ring it.
+      g.fillStyle = '#eef1f4'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#0b1c33'; g.fillRect(0, 0, W, 22);
+      g.fillStyle = '#9fb6c8'; g.fillRect(0, 22, W, 4);
+      for (k = 0; k < 6; k++) {
+        var cx0 = (k + 0.5) * W / 6, half = W / 6 * 0.36;
+        g.fillStyle = '#0b1c33'; g.beginPath(); g.moveTo(cx0 - half * 0.7, 70); g.lineTo(cx0 + half * 0.7, 70); g.lineTo(cx0 + half, 168); g.lineTo(cx0 - half, 168); g.closePath(); g.fill();
+        g.strokeStyle = '#9fb6c8'; g.lineWidth = 4; g.stroke();
+        g.fillStyle = 'rgba(255,255,255,.22)'; g.beginPath(); g.moveTo(cx0 - half * 0.5, 80); g.lineTo(cx0 - half * 0.2, 80); g.lineTo(cx0 - half * 0.55, 150); g.lineTo(cx0 - half * 0.85, 150); g.closePath(); g.fill();
+      }
+      g.strokeStyle = 'rgba(70,80,95,.4)'; g.lineWidth = 2;
+      for (k = 0; k <= 6; k++) { g.beginPath(); g.moveTo(k * W / 6, 26); g.lineTo(k * W / 6, H); g.stroke(); }
+      g.beginPath(); g.moveTo(0, 190); g.lineTo(W, 190); g.stroke();
+    } else if (kind === 'interior') {
+      // Tunnel wall for the crew-shift scene: rack fronts with louvres and
+      // small screens, white label strips, blue handrails between racks and
+      // a few soft stowage bags. Painted in final colours (the shell tint is
+      // near-white) so the corridor reads as a laboratory, not a grey tube.
+      g.fillStyle = '#6f7d8f'; g.fillRect(0, 0, W, H);
+      var rc = 6, rr = 2, rw = W / rc, rh = H / rr;
+      for (r = 0; r < rr; r++) for (c = 0; c < rc; c++) {
+        var rx = c * rw + 6, ry = r * rh + 6, rW = rw - 12, rH = rh - 12;
+        g.fillStyle = '#3a4859'; g.fillRect(rx, ry, rW, rH);
+        g.strokeStyle = 'rgba(203,213,225,.55)'; g.lineWidth = 1.5; g.strokeRect(rx + 0.5, ry + 0.5, rW - 1, rH - 1);
+        g.fillStyle = '#f1f5f9'; g.fillRect(rx + 6, ry + 6, rW - 12, 9);
+        g.fillStyle = '#1e293b';
+        for (k = 0; k < 4; k++) g.fillRect(rx + 10 + k * 14, ry + 9, 8, 3);
+        g.strokeStyle = 'rgba(148,163,184,.5)'; g.lineWidth = 1;
+        for (k = 1; k <= 5; k++) { g.beginPath(); g.moveTo(rx + 6, ry + 22 + k * ((rH - 30) / 6)); g.lineTo(rx + rW - 6, ry + 22 + k * ((rH - 30) / 6)); g.stroke(); }
+        if ((c + r) % 3 === 1) { g.fillStyle = '#0b3550'; g.fillRect(rx + 10, ry + 30, rW * 0.45, rH * 0.32); g.fillStyle = '#7dd3fc'; g.fillRect(rx + 13, ry + 33, rW * 0.45 - 6, rH * 0.32 - 6); g.fillStyle = '#0ea5e9'; for (k = 0; k < 3; k++) g.fillRect(rx + 16, ry + 38 + k * 7, rW * 0.3 - rnd() * 20, 2); }
+        if ((c + r) % 3 === 2) { g.fillStyle = '#9aa7ba'; g.fillRect(rx + rW * 0.5, ry + rH * 0.45, rW * 0.4, rH * 0.4); g.strokeStyle = '#e2e8f0'; g.lineWidth = 1; g.strokeRect(rx + rW * 0.5, ry + rH * 0.45, rW * 0.4, rH * 0.4); g.fillStyle = '#1976d2'; g.fillRect(rx + rW * 0.5 + 4, ry + rH * 0.45 + 4, rW * 0.4 - 8, 3); }
+      }
+      for (c = 1; c < rc; c++) {
+        g.fillStyle = (c % 2) ? '#1976d2' : '#d79a24'; g.fillRect(c * rw - 3, 14, 6, H - 28);
+        g.fillStyle = 'rgba(255,255,255,.55)'; g.fillRect(c * rw - 3, 14, 2, H - 28);
+        g.fillStyle = '#334155'; g.fillRect(c * rw - 6, 12, 12, 5); g.fillRect(c * rw - 6, H - 17, 12, 5);
+      }
+    } else {
+      // Rigid shield panels: 8 around the hull, 3 along it. Slight per-panel
+      // tone, a diagonal sheen, dark seams, rivet rows, and handrails.
+      var pc = 8, pr = 3, pw2 = W / pc, ph2 = H / pr, k;
+      for (r = 0; r < pr; r++) for (c = 0; c < pc; c++) {
+        var tone = 236 + Math.floor(rnd() * 16);
+        g.fillStyle = 'rgb(' + tone + ',' + tone + ',' + (tone - 3) + ')';
+        g.fillRect(c * pw2, r * ph2, pw2, ph2);
+        var sheen = g.createLinearGradient(c * pw2, r * ph2, c * pw2 + pw2, r * ph2 + ph2);
+        sheen.addColorStop(0, 'rgba(255,255,255,.3)'); sheen.addColorStop(0.5, 'rgba(255,255,255,0)'); sheen.addColorStop(1, 'rgba(90,100,115,.18)');
+        g.fillStyle = sheen; g.fillRect(c * pw2, r * ph2, pw2, ph2);
+      }
+      g.strokeStyle = 'rgba(70,80,95,.42)'; g.lineWidth = 2;
+      for (c = 0; c <= pc; c++) { g.beginPath(); g.moveTo(c * pw2, 0); g.lineTo(c * pw2, H); g.stroke(); }
+      for (r = 0; r <= pr; r++) { g.beginPath(); g.moveTo(0, r * ph2); g.lineTo(W, r * ph2); g.stroke(); }
+      g.fillStyle = 'rgba(80,90,105,.55)';
+      for (c = 0; c < pc; c++) for (k = 0; k < 6; k++) {
+        g.beginPath(); g.arc(c * pw2 + 4, k * (H / 6) + 10, 1.6, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(c * pw2 + pw2 - 4, k * (H / 6) + 10, 1.6, 0, Math.PI * 2); g.fill();
+      }
+      for (c = 0; c < pc; c += 2) {
+        var hx = c * pw2 + pw2 * 0.55, hy = ph2 * 1.5 - 3;
+        g.fillStyle = 'rgba(40,48,60,.8)'; g.fillRect(hx, hy, pw2 * 0.9, 6);
+        g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(hx, hy, pw2 * 0.9, 1.5);
+      }
+      g.fillStyle = 'rgba(30,40,60,.5)'; g.font = '700 10px ui-monospace, monospace';
+      for (c = 1; c < pc; c += 3) g.fillText('P' + c, c * pw2 + 6, ph2 * 0.5 + 4);
+    }
+    _issHullCanvases[kind] = cvs;
+    return cvs;
+  }
   var _issEarthCanvases = {};
   function issEarthCanvases(size) {
     var key = String(size);
@@ -765,10 +920,11 @@
           '@media (max-width:620px){.iss-interior-hud{grid-template-columns:1fr auto}.iss-interior-hud span:nth-child(3){display:none}.iss-interior-controls{grid-template-columns:1fr}.iss-interior-thrusters{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-safety{justify-content:stretch}.iss-interior-safety button{flex:1 1 110px}.iss-interior-route-hud{display:none}.iss-discovery-row{grid-template-columns:1fr}}@media (forced-colors:active){.iss-interior-3d,.iss-nav-challenge,.iss-interior-view-switch,.iss-interior-event,.iss-interior-braking,.iss-interior-objective,.iss-interior-next-hatch{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-interior-hud,.iss-interior-help{display:none}.iss-interior-reticle{--iss-motion-color:CanvasText}.iss-interior-impact-flash{display:none}}' +
           '.iss-station-stage{position:relative;border-radius:18px!important;border-color:rgba(125,211,252,.35)!important;box-shadow:0 18px 45px rgba(2,6,23,.42),inset 0 0 45px rgba(14,165,233,.08)}.iss-stage-hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.iss-hud-chip{padding:6px 9px;border:1px solid rgba(125,211,252,.25);border-radius:8px;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);color:#bae6fd;font:800 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-stage-help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border:1px solid rgba(148,163,184,.22);border-radius:20px;background:rgba(2,6,23,.64);backdrop-filter:blur(8px);color:#cbd5e1;font-size:9.5px;font-weight:700;pointer-events:none;white-space:nowrap}.iss-module-picker{padding:8px;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.34)}.iss-module-marker{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;transform:translate(-50%,-135%);pointer-events:none;transition:left .08s linear,top .08s linear,opacity .16s ease}.iss-module-marker i{display:block;width:18px;height:18px;border-left:1px solid #fbbf24;border-top:1px solid #fbbf24;transform:translate(9px,9px) rotate(-45deg)}.iss-module-marker span{padding:4px 7px;border:1px solid rgba(251,191,36,.5);border-radius:6px;background:rgba(2,6,23,.76);color:#fef3c7;font:850 8px ui-monospace,monospace;letter-spacing:.7px;box-shadow:0 0 16px rgba(251,191,36,.16)}.iss-hud-chip[data-phase="sunlight"]{color:#fde68a;border-color:rgba(251,191,36,.38)}.iss-hud-chip[data-phase="eclipse"]{color:#c7d2fe;border-color:rgba(129,140,248,.42)}.iss-orientation-widget{position:absolute;right:10px;bottom:8px;width:88px;height:88px;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(2,6,23,.45))}.iss-orientation-widget line{transition:x2 .08s linear,y2 .08s linear}' +
           '.iss-learning-visual{position:relative;overflow:hidden;margin:0 0 12px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:radial-gradient(circle at 50% 100%,rgba(14,165,233,.12),transparent 56%),rgba(2,6,23,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 25px rgba(2,6,23,.2)}.iss-learning-visual svg{display:block;width:100%;height:auto}.iss-visual-caption{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:10.5px;letter-spacing:.35px}.iss-flow-path{stroke-dasharray:7 7;animation:iss-flow 7s linear infinite}.iss-orbit-station{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-system-tabs{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.34)}.iss-system-tab[aria-pressed="true"]{box-shadow:inset 0 -2px 0 currentColor,0 7px 18px rgba(2,6,23,.2)}.iss-system-steps{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-system-steps button{min-height:31px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:9.5px;font-weight:800;cursor:pointer}.iss-system-steps button[aria-pressed="true"]{border-color:#7dd3fc;background:rgba(14,165,233,.18);color:#e0f2fe;box-shadow:inset 0 -2px 0 #38bdf8}.iss-system-coupling{margin-top:-4px}.iss-coupling-pipe{stroke-dasharray:6 6;animation:iss-flow 5s linear infinite}.iss-dock-canvas{box-shadow:0 16px 36px rgba(2,6,23,.34),inset 0 0 35px rgba(14,165,233,.08)}.iss-timeline{position:relative;padding-left:19px}.iss-timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:linear-gradient(#38bdf8,#818cf8,#22c55e);box-shadow:0 0 12px rgba(56,189,248,.35)}.iss-timeline-item{position:relative}.iss-timeline-item-button{width:100%;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-timeline-item-button:hover{background:linear-gradient(90deg,rgba(56,189,248,.08),transparent)}.iss-timeline-item:before{content:"";position:absolute;left:-18px;top:12px;width:9px;height:9px;border:2px solid #7dd3fc;border-radius:50%;background:#07101d;box-shadow:0 0 10px rgba(56,189,248,.55)}.iss-day-strip{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.32)}.iss-day-chip[aria-pressed="true"]{box-shadow:inset 0 -2px 0 #e879f9,0 7px 18px rgba(232,121,249,.12)}' +
-          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
-          '@media (max-width:520px){.iss-quiz-console{grid-template-columns:auto 1fr}.iss-quiz-score{grid-column:1/-1;text-align:left;display:flex;gap:6px;align-items:baseline}.iss-quiz-score strong{display:inline}.iss-visual-caption{flex-direction:column;gap:2px}.iss-location-strip{flex-wrap:wrap;overflow-x:visible}.iss-location-link{display:none}.iss-assembly-stepper{grid-template-columns:1fr 1fr}.iss-assembly-stepper span{grid-column:1/-1;grid-row:1;text-align:center}.iss-assembly-stepper button{grid-row:2}}' +          '.iss-ops-hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.25);border-radius:15px;background:radial-gradient(circle at 88% 18%,rgba(74,222,128,.12),transparent 30%),linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.iss-ops-health{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;border:5px solid currentColor;background:rgba(2,6,23,.52);font:900 17px ui-monospace,monospace;box-shadow:inset 0 0 22px rgba(2,6,23,.5),0 0 22px currentColor}.iss-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}.iss-ops-metric{min-width:0;overflow:visible;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.42)}.iss-ops-metric button{display:block;width:100%;padding:9px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-ops-metric button:hover{background:rgba(56,189,248,.07)}.iss-ops-metric button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-ops-metric-label{display:block;overflow:hidden;color:#94a3b8;font-size:8px;font-weight:850;letter-spacing:.7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.iss-ops-metric-value{display:block;margin-top:3px;color:#e0f2fe;font:850 13px ui-monospace,monospace}.iss-ops-metric small{display:block;margin-top:4px;color:#64748b;font:750 7.5px ui-monospace,monospace;letter-spacing:.3px}.iss-rule-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.iss-rule-light{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#fbbf24;box-shadow:0 0 9px #fbbf24}.iss-rule-light.is-go{background:#4ade80;box-shadow:0 0 9px #4ade80}.iss-rule-light.is-hold{background:#f87171;box-shadow:0 0 9px #f87171}.iss-ops-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}.iss-ops-presets button{min-width:0;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;cursor:pointer}.iss-ops-presets button[aria-pressed="true"]{border-color:#7dd3fc;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(99,102,241,.15));box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-presets strong,.iss-ops-presets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iss-ops-presets strong{font-size:9.5px}.iss-ops-presets small{margin-top:2px;color:#7f91a8;font-size:7.5px}.iss-preset-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;border:1px solid #475569;border-radius:50%;color:#7dd3fc;font:900 9px ui-monospace,monospace}.iss-custom-badge{grid-column:1/-1;padding:3px 7px;color:#fbbf24;font:800 8px ui-monospace,monospace;letter-spacing:.6px}.iss-ops-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:6px;padding:7px;margin-bottom:12px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.36)}.iss-ops-mode{min-height:39px;padding:7px!important}.iss-ops-mode[aria-pressed="true"]{background:linear-gradient(135deg,rgba(14,165,233,.3),rgba(99,102,241,.22))!important;border-color:#38bdf8!important;color:#e0f2fe!important;box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.iss-ops-control{padding:10px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38)}.iss-ops-control label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:10.5px;font-weight:800}.iss-ops-control input[type="range"]{width:100%;margin:9px 0 4px}.iss-meter{height:8px;overflow:hidden;margin-top:7px;border:1px solid #475569;border-radius:6px;background:#101827}.iss-meter>span{display:block;height:100%;border-radius:5px;transition:width .25s ease}.iss-spark{margin-top:7px;border-top:1px solid rgba(148,163,184,.12)}.iss-spark svg{display:block;width:100%;height:42px}.iss-forecast-legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px}.iss-forecast-legend span{display:flex;align-items:center;gap:5px}.iss-forecast-legend i{width:13px;height:3px;border-radius:3px}.iss-orbit-scrubber{padding:9px 10px 10px;border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.24)}.iss-orbit-scrubber label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:9.5px;font-weight:800}.iss-orbit-scrubber input{width:100%;margin:8px 0 7px}.iss-orbit-readout{display:flex;flex-wrap:wrap;gap:5px 13px;color:#94a3b8;font:750 8.5px ui-monospace,monospace}.iss-forecast-cursor{filter:drop-shadow(0 0 4px currentColor)}.iss-rule-status{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin:-2px 0 12px;padding:9px 10px;border:1px solid rgba(74,222,128,.28);border-radius:11px;background:rgba(34,197,94,.07)}.iss-rule-status.is-check{border-color:rgba(248,113,113,.38);background:rgba(239,68,68,.08)}.iss-rule-status-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#14532d;color:#bbf7d0;font-weight:900}.iss-rule-status.is-check .iss-rule-status-icon{background:#7f1d1d;color:#fecaca}.iss-rule-status strong{display:block;color:#bbf7d0;font:850 9px ui-monospace,monospace;letter-spacing:.7px}.iss-rule-status.is-check strong{color:#fecaca}.iss-rule-status p{margin:2px 0 0;color:#94a3b8;font-size:9.5px;line-height:1.35}.iss-rule-status button{padding:6px 9px;border:1px solid #64748b;border-radius:8px;background:rgba(2,6,23,.36);color:#e2e8f0;font-size:9px;font-weight:800;cursor:pointer}.iss-ops-schematic{margin-bottom:10px}.iss-ops-debrief{margin-top:12px;padding:12px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(2,6,23,.4)}.iss-ops-log{display:grid;gap:4px;margin-top:8px;color:#94a3b8;font:700 9.5px ui-monospace,monospace}.iss-emergency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.iss-emergency-choice{text-align:left;padding:10px!important}.iss-assembly-stage{position:relative;overflow:hidden;margin-bottom:10px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:#050b18}.iss-assembly-stage svg{display:block;width:100%;height:auto}.iss-assembly-growth{border-top:1px solid rgba(125,211,252,.18);background:#07101d}.iss-assembly-growth svg{display:block;width:100%;height:auto}.iss-location-strip{display:flex;align-items:center;gap:4px;margin:0 0 10px;padding:7px 9px;overflow-x:auto;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.35)}.iss-location-node{flex:0 0 auto;display:flex;align-items:center;gap:4px;color:#64748b;font-size:9px;font-weight:800}.iss-location-node.is-current{color:#7dd3fc}.iss-location-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.iss-location-link{width:18px;height:1px;background:#334155}.iss-network-focus{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-network-focus button{min-height:32px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.34);color:#cbd5e1;font-size:10px;font-weight:800;cursor:pointer}.iss-network-focus button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.18);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-network-detail{padding:0 10px 9px;color:#a9b8cb;font-size:10.5px;line-height:1.45}.iss-reference-key i{height:0!important;background:transparent!important;border-top:2px dashed #94a3b8}.iss-mission-replay{margin-top:10px;padding:10px;border:1px solid rgba(129,140,248,.24);border-radius:12px;background:rgba(30,27,75,.18)}.iss-replay-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-bottom:9px}.iss-replay-heading strong{color:#c7d2fe;font:850 10px ui-monospace,monospace;letter-spacing:.7px}.iss-replay-heading span{color:#94a3b8;font-size:10px}.iss-replay-lane{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-replay-lane:before{content:"";position:absolute;left:8%;right:8%;top:13px;height:2px;background:linear-gradient(90deg,#fbbf24,#fde68a,#818cf8,#38bdf8)}.iss-replay-lane button{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:3px 4px 6px;border:0;background:transparent;color:#cbd5e1;cursor:pointer}.iss-replay-lane button i{width:10px;height:10px;border:2px solid #818cf8;border-radius:50%;background:#0b1026;box-shadow:0 0 8px rgba(129,140,248,.5)}.iss-replay-lane button[aria-pressed="true"] i{background:#7dd3fc;border-color:#e0f2fe;box-shadow:0 0 11px #38bdf8}.iss-replay-lane strong{font:850 9.5px ui-monospace,monospace}.iss-replay-lane span{font-size:9.5px;font-weight:800;text-align:center}.iss-replay-lane small{color:#7f91a8;font-size:9px;text-align:center}.iss-map-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.iss-map-controls button{min-height:36px;padding:6px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.42);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-map-controls button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.16);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-hud-selection{color:#fef3c7;border-color:rgba(251,191,36,.35)}.iss-orientation-cue{flex:0 0 auto;padding:2px 4px;color:#fbbf24;font:850 8px ui-monospace,monospace;letter-spacing:.6px}.iss-hatch-enter{animation:iss-hatch-enter .34s ease-out}.iss-assembly-new{animation:iss-install-pulse 1.8s ease-in-out infinite}.iss-assembly-controls{padding:0 12px 12px}.iss-assembly-controls label{display:flex;justify-content:space-between;color:#cbd5e1;font-size:11px;font-weight:800}.iss-assembly-controls label strong{color:#7dd3fc}.iss-assembly-controls input{width:100%;margin:8px 0;accent-color:#38bdf8}.iss-assembly-stepper{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}.iss-assembly-stepper button{min-height:34px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-assembly-stepper button:disabled{opacity:.42;cursor:not-allowed}.iss-assembly-stepper span{color:#94a3b8;font:800 10px ui-monospace,monospace}.iss-timeline-item.is-active{margin-left:-8px;padding-left:8px!important;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(14,165,233,.12),transparent)}.iss-ops-presets small,.iss-ops-metric small,.iss-ops-metric-label,.iss-orbit-readout{font-size:10px}@keyframes iss-hatch-enter{from{opacity:.25;transform:scale(.94);filter:brightness(.55)}to{opacity:1;transform:scale(1);filter:brightness(1)}}@keyframes iss-install-pulse{50%{filter:drop-shadow(0 0 7px #7dd3fc)}}' +
+          '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-hover-name{position:absolute;z-index:3;left:0;top:0;padding:3px 7px;border:1px solid rgba(125,211,252,.45);border-radius:6px;background:rgba(2,6,23,.82);color:#e0f2fe;font:850 9.5px ui-monospace,monospace;letter-spacing:.6px;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .12s ease}.iss-quiz-hero{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:10px;padding:12px 14px;border:1px solid rgba(125,211,252,.28);border-radius:14px;background:radial-gradient(circle at 6% 50%,rgba(56,189,248,.22),transparent 38%),linear-gradient(120deg,rgba(2,6,23,.72),rgba(15,23,42,.5))}.iss-quiz-badge{filter:drop-shadow(0 0 8px rgba(56,189,248,.35))}.iss-quiz-kicker{color:#7dd3fc;font:850 9.5px ui-monospace,monospace;letter-spacing:1.3px}.iss-quiz-headline{color:#f1f5f9;font-size:15px;font-weight:800;margin:3px 0}.iss-quiz-meta{color:#94a3b8;font:800 9.5px ui-monospace,monospace;letter-spacing:.8px}.iss-quiz-letter{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:9px;border-radius:6px;border:1px solid #475569;background:rgba(2,6,23,.45);color:#bae6fd;font:850 10.5px ui-monospace,monospace;vertical-align:middle}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
+          '@media (max-width:520px){.iss-quiz-console{grid-template-columns:auto 1fr}.iss-quiz-score{grid-column:1/-1;text-align:left;display:flex;gap:6px;align-items:baseline}.iss-quiz-score strong{display:inline}.iss-visual-caption{flex-direction:column;gap:2px}.iss-location-strip{flex-wrap:wrap;overflow-x:visible}.iss-location-link{display:none}.iss-assembly-stepper{grid-template-columns:1fr 1fr}.iss-assembly-stepper span{grid-column:1/-1;grid-row:1;text-align:center}.iss-assembly-stepper button{grid-row:2}}' +          '.iss-ops-hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px;margin-bottom:12px;border:1px solid rgba(74,222,128,.25);border-radius:15px;background:radial-gradient(circle at 88% 18%,rgba(74,222,128,.12),transparent 30%),linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.iss-ops-health{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;border:5px solid currentColor;background:rgba(2,6,23,.52);font:900 17px ui-monospace,monospace;box-shadow:inset 0 0 22px rgba(2,6,23,.5),0 0 22px currentColor}.iss-ops-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:12px}.iss-ops-metric{min-width:0;overflow:visible;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.42)}.iss-ops-metric button{display:block;width:100%;padding:9px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-ops-metric button:hover{background:rgba(56,189,248,.07)}.iss-ops-metric button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}.iss-ops-metric-label{display:block;overflow:hidden;color:#94a3b8;font-size:8px;font-weight:850;letter-spacing:.7px;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.iss-ops-metric-value{display:block;margin-top:3px;color:#e0f2fe;font:850 13px ui-monospace,monospace}.iss-ops-metric small{display:block;margin-top:4px;color:#64748b;font:750 7.5px ui-monospace,monospace;letter-spacing:.3px}.iss-rule-heading{display:flex;align-items:center;justify-content:space-between;gap:6px}.iss-rule-light{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#fbbf24;box-shadow:0 0 9px #fbbf24}.iss-rule-light.is-go{background:#4ade80;box-shadow:0 0 9px #4ade80}.iss-rule-light.is-hold{background:#f87171;box-shadow:0 0 9px #f87171}.iss-ops-presets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:10px}.iss-ops-presets button{min-width:0;display:flex;align-items:center;gap:7px;padding:8px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;cursor:pointer}.iss-ops-presets button[aria-pressed="true"]{border-color:#7dd3fc;background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(99,102,241,.15));box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-presets strong,.iss-ops-presets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iss-ops-presets strong{font-size:9.5px}.iss-ops-presets small{margin-top:2px;color:#7f91a8;font-size:7.5px}.iss-preset-icon{display:grid;place-items:center;width:24px;height:24px;flex:0 0 auto;border:1px solid #475569;border-radius:50%;color:#7dd3fc;font:900 9px ui-monospace,monospace}.iss-custom-badge{grid-column:1/-1;padding:3px 7px;color:#fbbf24;font:800 8px ui-monospace,monospace;letter-spacing:.6px}.iss-ops-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:6px;padding:7px;margin-bottom:12px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.36)}.iss-ops-mode{min-height:39px;padding:7px!important}.iss-ops-mode[aria-pressed="true"]{background:linear-gradient(135deg,rgba(14,165,233,.3),rgba(99,102,241,.22))!important;border-color:#38bdf8!important;color:#e0f2fe!important;box-shadow:inset 0 -2px 0 #38bdf8}.iss-ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.iss-ops-control{padding:10px;border:1px solid var(--iss-line);border-radius:11px;background:rgba(2,6,23,.38)}.iss-ops-control label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:10.5px;font-weight:800}.iss-ops-control input[type="range"]{width:100%;margin:9px 0 4px}.iss-meter{height:8px;overflow:hidden;margin-top:7px;border:1px solid #475569;border-radius:6px;background:#101827}.iss-meter>span{display:block;height:100%;border-radius:5px;transition:width .25s ease}.iss-spark{margin-top:7px;border-top:1px solid rgba(148,163,184,.12)}.iss-spark svg{display:block;width:100%;height:42px}.iss-orbit-curve{padding-top:8px}.iss-orbit-curve svg{height:auto;max-width:720px;margin:0 auto}.iss-forecast-legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:9px}.iss-forecast-legend span{display:flex;align-items:center;gap:5px}.iss-forecast-legend i{width:13px;height:3px;border-radius:3px}.iss-orbit-scrubber{padding:9px 10px 10px;border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.24)}.iss-orbit-scrubber label{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:9.5px;font-weight:800}.iss-orbit-scrubber input{width:100%;margin:8px 0 7px}.iss-orbit-readout{display:flex;flex-wrap:wrap;gap:5px 13px;color:#94a3b8;font:750 8.5px ui-monospace,monospace}.iss-forecast-cursor{filter:drop-shadow(0 0 4px currentColor)}.iss-rule-status{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:center;margin:-2px 0 12px;padding:9px 10px;border:1px solid rgba(74,222,128,.28);border-radius:11px;background:rgba(34,197,94,.07)}.iss-rule-status.is-check{border-color:rgba(248,113,113,.38);background:rgba(239,68,68,.08)}.iss-rule-status-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#14532d;color:#bbf7d0;font-weight:900}.iss-rule-status.is-check .iss-rule-status-icon{background:#7f1d1d;color:#fecaca}.iss-rule-status strong{display:block;color:#bbf7d0;font:850 9px ui-monospace,monospace;letter-spacing:.7px}.iss-rule-status.is-check strong{color:#fecaca}.iss-rule-status p{margin:2px 0 0;color:#94a3b8;font-size:9.5px;line-height:1.35}.iss-rule-status button{padding:6px 9px;border:1px solid #64748b;border-radius:8px;background:rgba(2,6,23,.36);color:#e2e8f0;font-size:9px;font-weight:800;cursor:pointer}.iss-ops-schematic{margin-bottom:10px}.iss-ops-debrief{margin-top:12px;padding:12px;border:1px solid rgba(125,211,252,.22);border-radius:13px;background:rgba(2,6,23,.4)}.iss-ops-log{display:grid;gap:4px;margin-top:8px;color:#94a3b8;font:700 9.5px ui-monospace,monospace}.iss-emergency-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.iss-emergency-choice{text-align:left;padding:10px!important}.iss-assembly-stage{position:relative;overflow:hidden;margin-bottom:10px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:#050b18}.iss-assembly-stage svg{display:block;width:100%;height:auto}.iss-assembly-growth{border-top:1px solid rgba(125,211,252,.18);background:#07101d}.iss-assembly-growth svg{display:block;width:100%;height:auto}.iss-location-strip{display:flex;align-items:center;gap:4px;margin:0 0 10px;padding:7px 9px;overflow-x:auto;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.35)}.iss-location-node{flex:0 0 auto;display:flex;align-items:center;gap:4px;color:#64748b;font-size:9px;font-weight:800}.iss-location-node.is-current{color:#7dd3fc}.iss-location-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 9px currentColor}.iss-location-link{width:18px;height:1px;background:#334155}.iss-network-focus{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-network-focus button{min-height:32px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.34);color:#cbd5e1;font-size:10px;font-weight:800;cursor:pointer}.iss-network-focus button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.18);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-network-detail{padding:0 10px 9px;color:#a9b8cb;font-size:10.5px;line-height:1.45}.iss-reference-key i{height:0!important;background:transparent!important;border-top:2px dashed #94a3b8}.iss-mission-replay{margin-top:10px;padding:10px;border:1px solid rgba(129,140,248,.24);border-radius:12px;background:rgba(30,27,75,.18)}.iss-replay-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;margin-bottom:9px}.iss-replay-heading strong{color:#c7d2fe;font:850 10px ui-monospace,monospace;letter-spacing:.7px}.iss-replay-heading span{color:#94a3b8;font-size:10px}.iss-replay-lane{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.iss-replay-lane:before{content:"";position:absolute;left:8%;right:8%;top:13px;height:2px;background:linear-gradient(90deg,#fbbf24,#fde68a,#818cf8,#38bdf8)}.iss-replay-lane button{position:relative;z-index:1;display:grid;justify-items:center;gap:2px;padding:3px 4px 6px;border:0;background:transparent;color:#cbd5e1;cursor:pointer}.iss-replay-lane button i{width:10px;height:10px;border:2px solid #818cf8;border-radius:50%;background:#0b1026;box-shadow:0 0 8px rgba(129,140,248,.5)}.iss-replay-lane button[aria-pressed="true"] i{background:#7dd3fc;border-color:#e0f2fe;box-shadow:0 0 11px #38bdf8}.iss-replay-lane strong{font:850 9.5px ui-monospace,monospace}.iss-replay-lane span{font-size:9.5px;font-weight:800;text-align:center}.iss-replay-lane small{color:#7f91a8;font-size:9px;text-align:center}.iss-map-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.iss-map-controls button{min-height:36px;padding:6px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.42);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-map-controls button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(14,165,233,.16);color:#bae6fd;box-shadow:inset 0 -2px 0 #38bdf8}.iss-hud-selection{color:#fef3c7;border-color:rgba(251,191,36,.35)}.iss-orientation-cue{flex:0 0 auto;padding:2px 4px;color:#fbbf24;font:850 8px ui-monospace,monospace;letter-spacing:.6px}.iss-hatch-enter{animation:iss-hatch-enter .34s ease-out}.iss-assembly-new{animation:iss-install-pulse 1.8s ease-in-out infinite}.iss-assembly-controls{padding:0 12px 12px}.iss-assembly-controls label{display:flex;justify-content:space-between;color:#cbd5e1;font-size:11px;font-weight:800}.iss-assembly-controls label strong{color:#7dd3fc}.iss-assembly-controls input{width:100%;margin:8px 0;accent-color:#38bdf8}.iss-assembly-stepper{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center}.iss-assembly-stepper button{min-height:34px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:10.5px;font-weight:800;cursor:pointer}.iss-assembly-stepper button:disabled{opacity:.42;cursor:not-allowed}.iss-assembly-stepper span{color:#94a3b8;font:800 10px ui-monospace,monospace}.iss-timeline-item.is-active{margin-left:-8px;padding-left:8px!important;border-left:3px solid #38bdf8;background:linear-gradient(90deg,rgba(14,165,233,.12),transparent)}.iss-ops-presets small,.iss-ops-metric small,.iss-ops-metric-label,.iss-orbit-readout{font-size:10px}@keyframes iss-hatch-enter{from{opacity:.25;transform:scale(.94);filter:brightness(.55)}to{opacity:1;transform:scale(1);filter:brightness(1)}}@keyframes iss-install-pulse{50%{filter:drop-shadow(0 0 7px #7dd3fc)}}' +
           '@media (max-width:760px){.iss-ops-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-modes{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-ops-grid{grid-template-columns:1fr}.iss-ops-hero{grid-template-columns:1fr}.iss-ops-health{display:none}}@media (max-width:520px){.iss-rule-status{grid-template-columns:auto 1fr}.iss-rule-status button{grid-column:1/-1;width:100%}.iss-replay-lane{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-replay-lane:before{display:none}.iss-hud-selection,.iss-stage-hud .iss-hud-chip:nth-child(4){display:none}.iss-orientation-widget{width:70px;height:70px}}@media (max-width:420px){.iss-emergency-grid{grid-template-columns:1fr}.iss-orbit-readout{gap:4px 8px}}' +          '.iss-float{animation:iss-drift 4s ease-in-out infinite alternate}@keyframes iss-drift{from{transform:translate(0,-3px) rotate(-1deg)}to{transform:translate(7px,4px) rotate(2deg)}}@keyframes iss-pulse{50%{opacity:.48;box-shadow:0 0 0 7px rgba(74,222,128,0),0 0 22px #4ade80}}.iss-live-dot{animation:iss-pulse 2.4s ease-in-out infinite}' +
-          '@media (max-width:760px){.iss-root{padding:12px;border-radius:18px}.iss-hero{grid-template-columns:1fr}.iss-orbit-mark{display:none}.iss-status-strip{grid-template-columns:1fr 1fr}.iss-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-layout{grid-template-columns:1fr}.iss-panel{padding:11px}.iss-hud-chip:nth-child(2){display:none}}@media (max-width:420px){.iss-status-strip{grid-template-columns:1fr}.iss-status-value{font-size:10.5px}.iss-tab{font-size:10.5px!important;min-height:40px}.iss-stage-help{white-space:normal;width:calc(100% - 24px);text-align:center}.iss-route{grid-template-columns:1fr 1fr!important}}' +
+          '@media (max-width:760px){.iss-root{padding:12px;border-radius:18px}.iss-hero{grid-template-columns:1fr}.iss-orbit-mark{display:none}.iss-status-strip{grid-template-columns:1fr 1fr}.iss-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-layout{grid-template-columns:1fr}.iss-panel{padding:11px}.iss-hud-chip:nth-child(2){display:none}}@media (max-width:420px){.iss-status-strip{grid-template-columns:1fr 1fr}.iss-status-value{font-size:10.5px}.iss-tab{font-size:10.5px!important;min-height:40px}.iss-stage-help{white-space:normal;width:calc(100% - 24px);text-align:center}.iss-route{grid-template-columns:1fr 1fr!important}}' +
+          '@media (max-width:620px){.iss-fact-grid{grid-template-columns:1fr 1fr!important}.iss-learning-visual:not(.iss-blueprint){overflow-x:auto;-webkit-overflow-scrolling:touch}.iss-learning-visual:not(.iss-blueprint)>svg{min-width:560px}}' +
           '@media (forced-colors: active){.iss-root,.iss-panel,.iss-card,.iss-tablist,.iss-route,.iss-learning-visual{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;box-shadow:none!important}.iss-root:before,.iss-card:after{display:none}.iss-root button{forced-color-adjust:auto}.iss-root button:focus-visible,.iss-root input:focus-visible,.iss-root textarea:focus-visible,.iss-root summary:focus-visible,.iss-root canvas:focus-visible,.iss-root [tabindex]:focus-visible{outline:3px solid Highlight!important}.iss-root [aria-selected="true"],.iss-root [aria-pressed="true"],.iss-root [aria-current]{outline:2px solid Highlight;outline-offset:-2px}}@media (prefers-contrast: more){.iss-root{--iss-line:rgba(226,232,240,.72)}.iss-panel,.iss-card,.iss-tablist{backdrop-filter:none}.iss-status-label,.iss-visual-caption,.iss-network-detail{color:#e2e8f0}}@media (prefers-reduced-motion: reduce){.iss-root *,.iss-root *:before,.iss-root *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}'
         } });
       }
@@ -985,12 +1141,35 @@
             var len = m.size[1], rad = m.size[0];
             var geo, mesh;
             var mat = new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.38, metalness: 0.54, transparent: true, emissive: 0x000000 });
+            if (m.id !== 'truss' && m.id !== 'cupola') {
+              // Hull skin: one canvas per kind, u wraps the circumference and v
+              // repeats once per module diameter along its length. The same
+              // painter is colour-only: a bump map nearly doubled frame cost under
+              // software GL, for detail the seams already carry.
+              var hullKind = (m.id === 'zarya' || m.id === 'zvezda' || m.id === 'nauka') ? 'mli' : 'panel';
+              var hullSrc = null;
+              try { hullSrc = issHullCanvas(hullKind); } catch (eHull) { hullSrc = null; }
+              if (hullSrc && THREE.CanvasTexture) {
+                var hullTex = issTexture(hullSrc, true);
+                if (THREE.RepeatWrapping) hullTex.wrapT = THREE.RepeatWrapping;
+                hullTex.repeat.set(1, Math.max(1, Math.round(len / (rad * 2))));
+                mat.map = hullTex;
+                mat.roughness = hullKind === 'mli' ? 0.5 : 0.42;
+                mat.metalness = hullKind === 'mli' ? 0.42 : 0.3;
+                mat.needsUpdate = true;
+              }
+            }
             if (m.id === 'truss') {
               geo = new THREE.BoxGeometry(len, m.size[0], m.size[0]);
               mesh = new THREE.Mesh(geo, mat);
             } else if (m.id === 'cupola') {
               geo = new THREE.SphereGeometry(rad, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2);
-              mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.3, metalness: 0.56, transparent: true, emissive: 0x000000 }));
+              var cupolaMat = new THREE.MeshStandardMaterial({ color: m.color, roughness: 0.3, metalness: 0.56, transparent: true, emissive: 0x000000 });
+              try {
+                var cupolaSkin = issHullCanvas('cupola');
+                if (cupolaSkin && THREE.CanvasTexture) { cupolaMat.map = issTexture(cupolaSkin, true); cupolaMat.roughness = 0.4; cupolaMat.metalness = 0.3; cupolaMat.needsUpdate = true; }
+              } catch (eCupola) {}
+              mesh = new THREE.Mesh(geo, cupolaMat);
               mesh.rotation.x = Math.PI; // dome faces Earth (nadir)
             } else {
               geo = new THREE.CylinderGeometry(rad, rad, len, 20);
@@ -1166,6 +1345,7 @@
           var raycaster = new THREE.Raycaster();
           var mouseV = new THREE.Vector2();
           function pick(ev) {
+            if (dragTravel > 6) return; // this click closed a drag, not a tap
             var rect = cv.getBoundingClientRect();
             mouseV.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
             mouseV.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1182,7 +1362,41 @@
             }
           }
           cv.addEventListener('click', pick);
-          cv.style.cursor = 'pointer';
+          // Hover feedback: 'grab' over empty space (drag rotates), 'pointer'
+          // over a module, and the hovered module glows faintly so students
+          // can tell what is clickable before they click. Keyboard users get
+          // the same information from the module buttons below the map.
+          cv.style.cursor = 'grab';
+          cv._issHoverId = null;
+          function hoverAt(ev) {
+            var rect = cv.getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+            mouseV.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+            mouseV.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(mouseV, camera);
+            var hits = raycaster.intersectObjects(clickable, false);
+            var id = hits.length ? hits[0].object._issId : null;
+            if (id !== cv._issHoverId) {
+              cv._issHoverId = id;
+              cv.style.cursor = id ? 'pointer' : 'grab';
+              var hoverMarker = cv.parentElement && cv.parentElement.querySelector('[data-iss-hover-name]');
+              if (hoverMarker) {
+                var hm = null;
+                for (var hi = 0; hi < MODULES.length && id; hi++) { if (MODULES[hi].id === id) { hm = MODULES[hi]; break; } }
+                // The selection marker already names the selected module, so
+                // the chip only appears over a DIFFERENT one.
+                var chipVisible = !!hm && id !== cv._issWantSel;
+                hoverMarker.textContent = hm ? hm.name.split(' (')[0] : '';
+                hoverMarker.style.opacity = chipVisible ? '1' : '0';
+                hoverMarker.style.left = (ev.clientX - rect.left + 14) + 'px';
+                hoverMarker.style.top = (ev.clientY - rect.top - 10) + 'px';
+              }
+            } else if (id) {
+              var hoverMarker2 = cv.parentElement && cv.parentElement.querySelector('[data-iss-hover-name]');
+              if (hoverMarker2) { hoverMarker2.style.left = (ev.clientX - rect.left + 14) + 'px'; hoverMarker2.style.top = (ev.clientY - rect.top - 10) + 'px'; }
+            }
+          }
+          cv.addEventListener('pointerleave', function () { cv._issHoverId = null; cv.style.cursor = 'grab'; var hoverMarker = cv.parentElement && cv.parentElement.querySelector('[data-iss-hover-name]'); if (hoverMarker) hoverMarker.style.opacity = '0'; });
           // Without this, a touch drag on the canvas is claimed by the browser
           // for page scrolling: the pointer stream is cancelled and the station
           // never rotates, so drag-to-rotate was dead on touchscreen
@@ -1194,14 +1408,19 @@
 
           // Simple orbit-drag controls (pointer drag rotates the whole station group)
           var dragging = false, px0 = 0, py0 = 0, cameraTween = null, cameraFocusId = null;
-          function onDown(e) { dragging = true; cameraTween = null; cameraFocusId = null; px0 = e.clientX; py0 = e.clientY; }
+          // A drag ends with a click event too, so rotating the view used to select
+          // whatever module the pointer happened to land on. Track travel and let
+          // pick() ignore clicks that were really drags.
+          var dragTravel = 0;
+          function onDown(e) { dragging = true; dragTravel = 0; cameraTween = null; cameraFocusId = null; px0 = e.clientX; py0 = e.clientY; cv.style.cursor = 'grabbing'; }
           function onMove(e) {
-            if (!dragging) return;
+            if (!dragging) { if (e.target === cv && e.pointerType !== 'touch') hoverAt(e); return; }
+            dragTravel += Math.abs(e.clientX - px0) + Math.abs(e.clientY - py0);
             station.rotation.y += (e.clientX - px0) * 0.005;
             station.rotation.x = Math.max(-0.7, Math.min(0.7, station.rotation.x + (e.clientY - py0) * 0.003));
             px0 = e.clientX; py0 = e.clientY;
           }
-          function onUp() { dragging = false; }
+          function onUp() { dragging = false; cv.style.cursor = cv._issHoverId ? 'pointer' : 'grab'; }
           function onKey(e) {
             var handled = true;
             if (e.key === 'ArrowLeft') station.rotation.y -= .12;
@@ -1421,7 +1640,7 @@
               if (isSelected) curSel = candidate;
               if (candidate.material) {
                 candidate.material.opacity = cutaway && !isSelected ? .18 : 1;
-                if (candidate.material.emissive && candidate.material.emissive.setHex) candidate.material.emissive.setHex(isSelected ? 0x073b55 : 0x000000);
+                if (candidate.material.emissive && candidate.material.emissive.setHex) candidate.material.emissive.setHex(isSelected ? 0x073b55 : candidate._issId === cv._issHoverId ? 0x14364d : 0x000000);
               }
             }
             for (var di = 0; di < moduleDetails.length; di++) {
@@ -1482,7 +1701,7 @@
                 '|' + camera.position.x.toFixed(3) + ',' + camera.position.y.toFixed(3) + ',' + camera.position.z.toFixed(3) +
                 '|' + q.x.toFixed(4) + ',' + q.y.toFixed(4) + ',' + q.z.toFixed(4) + ',' + q.w.toFixed(4) +
                 '|' + station.rotation.x.toFixed(4) + ',' + station.rotation.y.toFixed(4) +
-                '|' + Wc + 'x' + Hc + '|' + (composer ? 1 : 0) + '|' + (_limbPainted ? 1 : 0);
+                '|' + Wc + 'x' + Hc + '|' + (composer ? 1 : 0) + '|' + (_limbPainted ? 1 : 0) + '|' + (cv._issHoverId || '');
               if (frameSig === _lastFrameSig && tick % 120 !== 0) { rafId = requestAnimationFrame(animate); return; }
               _lastFrameSig = frameSig;
             }
@@ -1627,6 +1846,19 @@
             color: 0x8d9aaa, emissive: 0x060b11, roughness: 0.76, metalness: 0.16,
             side: THREE.BackSide, transparent: true, opacity: 0.42, depthWrite: false
           });
+          // Rack fronts, label strips and handrails painted onto the tunnel wall.
+          // Colour-only (no bump), disposed with the other canvas textures.
+          try {
+            var interiorSkin = issHullCanvas('interior');
+            if (interiorSkin && THREE.CanvasTexture) {
+              var interiorTex = new THREE.CanvasTexture(interiorSkin);
+              if (THREE.sRGBEncoding) interiorTex.encoding = THREE.sRGBEncoding;
+              if (THREE.RepeatWrapping) { interiorTex.wrapS = THREE.RepeatWrapping; interiorTex.wrapT = THREE.RepeatWrapping; }
+              interiorTex.repeat.set(2, 2);
+              shellMat.map = interiorTex; shellMat.color.setHex(0xe2e8f0); shellMat.opacity = 0.85; shellMat.needsUpdate = true;
+              labelTextures.push(interiorTex);
+            }
+          } catch (eSkin) {}
           var panelMat = standardMat(0x9da9b7, 0x070d14);
           var rackMat = standardMat(0x26354a, 0x030812);
           var bulkheadMat = standardMat(0x536171, 0x03070c);
@@ -2241,6 +2473,15 @@
           var transferBag = new THREE.Group();
           transferBag.name = 'iss-bulky-transfer-bag';
           var transferBagMaterial = standardMat(0x7c3aed, 0x25104f);
+          try {
+            var cargoSkin = issHullCanvas('cargo');
+            if (cargoSkin && THREE.CanvasTexture) {
+              var cargoTex = new THREE.CanvasTexture(cargoSkin);
+              if (THREE.sRGBEncoding) cargoTex.encoding = THREE.sRGBEncoding;
+              transferBagMaterial.map = cargoTex; transferBagMaterial.color.setHex(0xb79cf0); transferBagMaterial.roughness = 0.82; transferBagMaterial.needsUpdate = true;
+              labelTextures.push(cargoTex);
+            }
+          } catch (eCargo) {}
           var transferBagPanelMaterial = standardMat(0xfbbf24, 0x4b2b03);
           transferBag.add(new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.52, 0.58), transferBagMaterial));
           [-0.25, 0.25].forEach(function (strapX) {
@@ -5308,7 +5549,12 @@
         if (!cv || cv._dockInit) return;
         cv._dockInit = true;
         var ctx2 = cv.getContext('2d');
-        var Wc = cv.width = 640, Hc = cv.height = 360;
+        var Wc = 640, Hc = 360;
+        // 2x backing store: the canvas displays up to 820 CSS px wide, so a
+        // 640 px bitmap went soft. Every draw call stays in 640x360 logical
+        // units via this one transform (nothing in the loop resets it).
+        cv.width = Wc * 2; cv.height = Hc * 2;
+        if (ctx2) ctx2.setTransform(2, 0, 0, 2, 0, 0); // jsdom has no 2-D context; never throw inside a React ref
         var realMode = cv._dockRealMode !== false;
         // Game state (meters; station docking port at origin, approach along +Y = right)
         var st = { x: 26, y: -190, vx: 0, vy: 1.0, fuel: 100, t: 0, over: false, msg: '', trail: [], lastTrail: 0, thrust: { up: false, down: false, fwd: false, back: false } };
@@ -5913,7 +6159,7 @@
                 'aria-label': __alloT('stem.spacestation.dock_aria', 'Docking simulator. Use arrow keys or W A S D to thrust. Goal: reach the docking port slower than 0.6 meters per second.'),
                 'aria-describedby': 'iss-dock-instructions iss-dock-status',
                 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D',
-                style: { width: '100%', maxWidth: 640, display: 'block', margin: '0 auto', borderRadius: 12, border: '1px solid #334155', background: '#050a18', cursor: 'crosshair' }
+                style: { width: '100%', maxWidth: 820, display: 'block', margin: '0 auto', borderRadius: 12, border: '1px solid #334155', background: '#050a18', cursor: 'crosshair' }
               }),
               h('div', { id: 'iss-dock-status', className: 'iss-sr-only', 'data-dock-hud': 'true', 'aria-live': 'off', 'aria-atomic': 'true' }, 'Phase far field · range 192 m · relative speed 1.00 m/s · stopping margin 185.3 m · fuel 100%'),
               h('div', { role: 'group', 'aria-label': 'Thruster controls', style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
@@ -7061,10 +7307,34 @@
           h('div', { className: 'iss-meter', role: 'meter', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': safe }, h('span', { style: { width: safe + '%', background: color, boxShadow: '0 0 10px ' + color } })),
           note ? h('div', { style: { marginTop: 4, color: '#64748b', fontSize: 8.5 } }, note) : null);
       }
-      function opsSpark(label, value, color, variance) {
-        var pts = [];
-        for (var i = 0; i < 12; i++) { var v = opsClamp(value + Math.sin(i * 1.37) * variance + Math.cos(i * .63) * variance * .35, 0, 100); pts.push((i * 20) + ',' + (38 - v * .3)); }
-        return h('div', { className: 'iss-spark' }, h('svg', { viewBox: '0 0 220 42', role: 'img', 'aria-label': label + ' trend, current normalized value ' + value.toFixed(0) + ' percent' }, h('path', { d: 'M0 38H220', stroke: '#263449', strokeWidth: 1 }), h('polyline', { points: pts.join(' '), fill: 'none', stroke: color, strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }), h('circle', { cx: 220, cy: 38 - opsClamp(value, 0, 100) * .3, r: 3, fill: color })), h('span', { className: 'iss-sr-only' }, label));
+      // One modelled series over the next 92-minute orbit, drawn from the same
+      // per-minute forecast the Integrated view uses. This replaced opsSpark,
+      // which drew a sine wave around the current value and labelled it a
+      // 'trend' - decoration presented as data.
+      function opsOrbitCurve(label, samples, field, sunlightMinutes, color, unit) {
+        var left = 40, right = 620, top = 16, bottom = 96;
+        function x(minute) { return left + minute / 92 * (right - left); }
+        function y(value) { return bottom - opsClamp(value, 0, 100) / 100 * (bottom - top); }
+        var first = samples[0], last = samples[samples.length - 1];
+        var minSample = samples.reduce(function (m, sm) { return sm[field] < m[field] ? sm : m; }, first);
+        var line = samples.map(function (sm, i) { return (i ? 'L' : 'M') + x(sm.minute).toFixed(1) + ' ' + y(sm[field]).toFixed(1); }).join(' ');
+        var area = line + ' L' + x(last.minute).toFixed(1) + ' ' + bottom + ' L' + x(first.minute).toFixed(1) + ' ' + bottom + ' Z';
+        var summary = label + '. Starts at ' + first[field].toFixed(0) + unit + ', ends the orbit at ' + last[field].toFixed(0) + unit + ', lowest ' + minSample[field].toFixed(0) + unit + ' at ' + minSample.minute.toFixed(0) + ' minutes. Sunlight for the first ' + sunlightMinutes.toFixed(0) + ' minutes, then eclipse.';
+        return h('div', { className: 'iss-spark iss-orbit-curve', 'data-iss-orbit-curve': field },
+          h('svg', { viewBox: '0 0 640 120', role: 'img', 'aria-label': summary },
+            h('rect', { x: left, y: top, width: x(sunlightMinutes) - left, height: bottom - top, fill: '#78350f', opacity: .22 }),
+            h('rect', { x: x(sunlightMinutes), y: top, width: right - x(sunlightMinutes), height: bottom - top, fill: '#1e1b4b', opacity: .5 }),
+            [0, 50, 100].map(function (v) { return h('g', { key: v }, h('line', { x1: left, y1: y(v), x2: right, y2: y(v), stroke: '#334155', strokeWidth: .7, strokeDasharray: v === 50 ? '3 4' : 'none' }), h('text', { x: left - 5, y: y(v) + 3, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, v + unit)); }),
+            h('path', { d: area, fill: color, opacity: .14 }),
+            h('path', { d: line, fill: 'none', stroke: color, strokeWidth: 2.2, strokeLinejoin: 'round' }),
+            h('circle', { cx: x(last.minute), cy: y(last[field]), r: 3.4, fill: color }),
+            h('text', { x: Math.min(right - 2, x(last.minute) - 6), y: Math.max(top + 9, y(last[field]) - 8), textAnchor: 'end', fill: color, fontSize: 9, fontWeight: 850 }, last[field].toFixed(0) + unit),
+            h('text', { x: left, y: top - 5, fill: '#fde68a', fontSize: 8, fontWeight: 850, letterSpacing: .8 }, 'SUNLIGHT'),
+            h('text', { x: x(sunlightMinutes) + 4, y: top - 5, fill: '#c7d2fe', fontSize: 8, fontWeight: 850, letterSpacing: .8 }, 'ECLIPSE'),
+            h('text', { x: left, y: bottom + 13, fill: '#94a3b8', fontSize: 8 }, '0 min'),
+            h('text', { x: x(46), y: bottom + 13, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8 }, '46 min'),
+            h('text', { x: right, y: bottom + 13, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, '92 min'),
+            h('text', { x: right, y: top - 5, textAnchor: 'end', fill: '#cbd5e1', fontSize: 8.5, fontWeight: 850, letterSpacing: .6 }, label.toUpperCase())));
       }
       function renderOpsForecast(samples, eclipseStart, cursorMinute, cursorSample, referenceSamples) {
         var left = 46, right = 618, top = 28, bottom = 158;
@@ -7126,7 +7396,22 @@
             h('defs', null, h('radialGradient', { id: 'iss-ops-earth', cx: '40%', cy: '30%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' }))),
             h('rect', { width: 640, height: 220, fill: '#040a16' }), h('circle', { cx: 320, cy: 310, r: 156, fill: 'url(#iss-ops-earth)', opacity: .72 }),
             nodes.map(function (n, i) { var on = active(n); return h('path', { key: 'p' + i, className: on ? 'iss-flow-path' : '', d: 'M320 111 Q' + ((320 + n.x) / 2) + ' ' + ((100 + n.y) / 2 - 13) + ' ' + n.x + ' ' + n.y, fill: 'none', stroke: on ? n.color : '#334155', strokeWidth: on ? 2.2 : 1, opacity: on ? .76 : .3 }); }),
-            h('g', { transform: 'translate(320,108)' }, h('rect', { x: -98, y: -5, width: 196, height: 10, rx: 4, fill: '#94a3b8' }), h('rect', { x: -45, y: -22, width: 90, height: 44, rx: 18, fill: '#dbe3ec', stroke: '#f8fafc' }), h('rect', { x: -151, y: -21, width: 45, height: 42, fill: '#aa751a', stroke: '#fbbf24' }), h('rect', { x: 106, y: -21, width: 45, height: 42, fill: '#aa751a', stroke: '#fbbf24' }), h('circle', { r: 7, fill: '#38bdf8' })),
+            h('g', { transform: 'translate(320,108)' },
+              // Station silhouette: lattice truss, four array wings with cell
+              // lines, two radiators, the module stack and Unity's cross node.
+              h('defs', null,
+                h('pattern', { id: 'iss-ops-lattice', width: 8, height: 10, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M0 0L8 10M8 0L0 10', stroke: '#e2e8f0', strokeWidth: .8, fill: 'none' })),
+                h('linearGradient', { id: 'iss-ops-hull', x1: 0, y1: 0, x2: 1, y2: 0 }, h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: .55 }), h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0 }), h('stop', { offset: '100%', stopColor: '#334155', stopOpacity: .45 }))),
+              h('rect', { x: -150, y: -5, width: 300, height: 10, rx: 2, fill: '#64748b' }),
+              h('rect', { x: -150, y: -5, width: 300, height: 10, rx: 2, fill: 'url(#iss-ops-lattice)', opacity: .75 }),
+              [-72, 40].map(function (rx) { return h('g', { key: rx }, h('rect', { x: rx, y: 11, width: 32, height: 15, fill: '#e2e8f0' }), [1, 2, 3].map(function (l) { return h('line', { key: l, x1: rx, y1: 11 + l * 3.75, x2: rx + 32, y2: 11 + l * 3.75, stroke: '#94a3b8', strokeWidth: .6 }); })); }),
+              [-150, -104, 104, 150].map(function (ax) { return h('g', { key: ax }, h('rect', { x: ax - 15, y: -40, width: 30, height: 80, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }), [1, 2, 3, 4, 5, 6, 7].map(function (l) { return h('line', { key: l, x1: ax - 15, y1: -40 + l * 10, x2: ax + 15, y2: -40 + l * 10, stroke: '#fde68a', strokeWidth: .6 }); }), h('line', { x1: ax, y1: -40, x2: ax, y2: 40, stroke: '#fde68a', strokeWidth: .6 })); }),
+              h('rect', { x: -9, y: -48, width: 18, height: 96, rx: 8, fill: '#e4dfd2', stroke: '#f8fafc' }),
+              h('rect', { x: -9, y: -48, width: 18, height: 96, rx: 8, fill: 'url(#iss-ops-hull)' }),
+              [-30, -12, 12, 30].map(function (sy) { return h('line', { key: sy, x1: -9, y1: sy, x2: 9, y2: sy, stroke: '#94a3b8', strokeWidth: .8 }); }),
+              h('rect', { x: -42, y: -8, width: 84, height: 16, rx: 7, fill: '#dbe3ec', stroke: '#f8fafc' }),
+              h('rect', { x: -42, y: -8, width: 84, height: 16, rx: 7, fill: 'url(#iss-ops-hull)' }),
+              h('circle', { r: 7, fill: '#38bdf8' })),
             nodes.map(function (n) { var on = active(n); return h('g', { key: n.label, transform: 'translate(' + n.x + ',' + n.y + ')', opacity: on ? 1 : .36 }, h('circle', { r: 28, fill: '#111d30', stroke: on ? n.color : '#475569', strokeWidth: on ? 2.8 : 1.2 }), h('circle', { r: 22, fill: n.color, opacity: on ? .12 : .03 }), h('text', { y: -3, textAnchor: 'middle', fill: on ? n.color : '#64748b', fontSize: 8, fontWeight: 900, letterSpacing: .8 }, n.label), h('text', { y: 12, textAnchor: 'middle', fill: on ? '#f8fafc' : '#94a3b8', fontSize: 10, fontWeight: 850 }, n.value)); }),
             h('text', { x: 20, y: 24, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'MISSION OPERATIONS // COUPLED SYSTEMS')),
           h('div', { className: 'iss-network-focus', role: 'group', 'aria-label': 'Highlight a station system flow' }, [{ id: 'all', label: 'All systems' }].concat(nodes.map(function (node) { return { id: node.id, label: node.label }; })).map(function (item) { var on = selectedFocus === item.id; return h('button', { key: item.id, type: 'button', 'data-iss-system-focus': item.id, 'aria-pressed': on, onClick: function () { upd({ opsFocus: item.id }); } }, item.label); })),
@@ -7302,14 +7587,14 @@
           return h('div', null,
             h('div', { className: 'iss-learning-visual', style: { padding: 12 } }, h('div', { style: { display: 'grid', gridTemplateColumns: (92 - eclipse) + 'fr ' + eclipse + 'fr', height: 44, overflow: 'hidden', borderRadius: 10 } }, h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#78350f,#92400e)', color: '#fff7ed', fontSize: 10, fontWeight: 900 } }, 'SUNLIGHT ' + (92 - eclipse).toFixed(0) + ' MIN'), h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#172554,#020617)', color: '#bfdbfe', fontSize: 10, fontWeight: 900 } }, 'ECLIPSE ' + eclipse.toFixed(0) + ' MIN'))),
             h('div', { className: 'iss-ops-grid' }, opsControl('iss-power-angle','Array face-on angle',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-power-eclipse','Eclipse duration',eclipse,20,45,1,' min','#818cf8','opsEclipse'), opsControl('iss-power-load','Research utilization',research,0,100,5,'%','#a78bfa','opsResearch'), opsControl('iss-power-battery','Starting battery',battery,0,100,1,'%','#4ade80','opsBattery'), statusBox('Solar generation',generation.toFixed(1) + ' kW','Face-on arrays maximize incident sunlight.','#fbbf24'), statusBox('Station demand',load.toFixed(1) + ' kW','Life support is the non-negotiable base load.','#7dd3fc')),
-            opsMeter('Battery after one orbit',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%'), opsSpark('Battery state',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',Math.abs(orbitDelta) + 3));
+            opsMeter('Battery after one orbit',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%'), opsOrbitCurve('Battery over the next orbit', orbitForecast, 'battery', sunlightMinutes, projectedBattery > 25 ? '#4ade80' : '#f87171', '%'));
         }
         function renderEclss() {
           return h('div', null, renderSystemSchematic(systemById('water')), h('div', { className: 'iss-ops-grid' }, opsControl('iss-eclss-crew','Crew demand',crew,3,11,1,' people','#7dd3fc','opsCrew'), opsControl('iss-eclss-recovery','Water recovery',recovery,70,99,.5,'%','#38bdf8','opsRecovery'), opsControl('iss-eclss-scrub','CO₂ scrubber output',scrub,40,100,1,'%','#34d399','opsScrub'), statusBox('Water recovered',waterReturn.toFixed(1) + ' L/day','Daily potable-water model for the selected crew.','#38bdf8'), statusBox('Water resupply gap',resupplyWater.toFixed(2) + ' L/day','Even a small open-loop loss compounds on Mars.','#fbbf24'), statusBox('Oxygen demand',oxygenNeed.toFixed(2) + ' kg/day','Electrolysis must replace crew consumption.','#34d399')),
-            opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for exploration-class missions'), opsMeter('Cabin-air quality',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171','Modeled CO₂ ' + co2.toFixed(0) + ' ppm — Earth air is ~420 ppm; crews work to stay under ' + CO2_ACTION_PPM), opsSpark('CO2 trend',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171',8));
+            opsMeter('Loop closure',recovery,'#38bdf8','Target ≥ 98% for exploration-class missions'), opsMeter('Cabin-air quality',airScore,co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171','Modeled CO₂ ' + co2.toFixed(0) + ' ppm — Earth air is ~420 ppm; crews work to stay under ' + CO2_ACTION_PPM));
         }
         function renderThermal() {
-          return h('div', null, renderSystemSchematic(systemById('thermal')), h('div', { className: 'iss-ops-grid' }, opsControl('iss-thermal-rad','Radiator deployment',radiator,30,100,1,'%','#fb923c','opsRadiator'), opsControl('iss-thermal-flow','Cooling-loop flow',cooling,40,100,1,'%','#38bdf8','opsCooling'), opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#a78bfa','opsResearch'), statusBox('Waste heat',wasteHeat.toFixed(1) + ' kW','Electronics and crew work become heat.','#f97316'), statusBox('Rejected heat',rejectedHeat.toFixed(1) + ' kW','Radiators emit infrared energy to space.','#38bdf8'), statusBox('Modeled cabin',cabinTemp.toFixed(1) + ' °C','Comfort band: 18–27 °C. ',cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171')), opsMeter('Thermal margin',thermalScore,cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171','Balance heat collected with heat rejected'), opsSpark('Cabin temperature stability',thermalScore,'#fb923c',6));
+          return h('div', null, renderSystemSchematic(systemById('thermal')), h('div', { className: 'iss-ops-grid' }, opsControl('iss-thermal-rad','Radiator deployment',radiator,30,100,1,'%','#fb923c','opsRadiator'), opsControl('iss-thermal-flow','Cooling-loop flow',cooling,40,100,1,'%','#38bdf8','opsCooling'), opsControl('iss-thermal-research','Heat-producing research',research,0,100,5,'%','#a78bfa','opsResearch'), statusBox('Waste heat',wasteHeat.toFixed(1) + ' kW','Electronics and crew work become heat.','#f97316'), statusBox('Rejected heat',rejectedHeat.toFixed(1) + ' kW','Radiators emit infrared energy to space.','#38bdf8'), statusBox('Modeled cabin',cabinTemp.toFixed(1) + ' °C','Comfort band: 18–27 °C. ',cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171')), opsMeter('Thermal margin',thermalScore,cabinTemp > 18 && cabinTemp < 27 ? '#4ade80' : '#f87171','Balance heat collected with heat rejected'), opsOrbitCurve('Thermal margin over the next orbit', orbitForecast, 'thermal', sunlightMinutes, '#fb923c', '%'));
         }
         function renderAttitude() {
           var wheelColor = nextCmg < 80 ? '#a78bfa' : '#f87171';
@@ -7331,7 +7616,7 @@
         }
         function renderHuman() {
           var exerciseProtection = opsClamp(exercise / 2.5 * 100,0,100);
-          return h('div', null, renderSystemSchematic(systemById('body')), h('div',{className:'iss-ops-grid'},opsControl('iss-human-days','Mission duration',missionDays,30,900,30,' days','#e879f9','opsMissionDays'),opsControl('iss-human-exercise','Daily exercise',exercise,0,3,.25,' h','#4ade80','opsExercise'),statusBox('Modeled bone loss',boneLoss.toFixed(1)+'%','Simplified from ~1–1.5% per month without countermeasures.',boneLoss<5?'#4ade80':'#fbbf24'),statusBox('Radiation exposure',(missionDays*.7).toFixed(0)+' mSv','Uses a midrange 0.7 mSv/day estimate.','#f97316')),opsMeter('Exercise protection',exerciseProtection,'#4ade80','ARED, treadmill, and cycle loading'),opsSpark('Musculoskeletal resilience',opsClamp(100-boneLoss*5,0,100),'#e879f9',7));
+          return h('div', null, renderSystemSchematic(systemById('body')), h('div',{className:'iss-ops-grid'},opsControl('iss-human-days','Mission duration',missionDays,30,900,30,' days','#e879f9','opsMissionDays'),opsControl('iss-human-exercise','Daily exercise',exercise,0,3,.25,' h','#4ade80','opsExercise'),statusBox('Modeled bone loss',boneLoss.toFixed(1)+'%','Simplified from ~1–1.5% per month without countermeasures.',boneLoss<5?'#4ade80':'#fbbf24'),statusBox('Radiation exposure',(missionDays*.7).toFixed(0)+' mSv','Uses a midrange 0.7 mSv/day estimate.','#f97316')),opsMeter('Exercise protection',exerciseProtection,'#4ade80','ARED, treadmill, and cycle loading'));
         }
         function renderEmergency() {
           var scenarios = {
@@ -7535,6 +7820,7 @@
             }),
             h('div', { className: 'iss-stage-hud', 'aria-hidden': 'true' }, h('span', { className: 'iss-hud-chip' }, 'ISS // ORBITAL VIEW'), h('span', { className: 'iss-hud-chip iss-hud-selection' }, 'SELECTED // ' + selModule.name.split(' (')[0].toUpperCase()), h('span', { className: 'iss-hud-chip', 'data-iss-light-phase': 'true', 'data-phase': 'sunlight' }, '☀ SUNLIGHT'), h('span', { className: 'iss-hud-chip' }, 'ALT ' + orbitAlt + ' KM  /  V ' + orbitV.toFixed(2) + ' KM/S')),
             h('div', { className: 'iss-module-marker', 'data-iss-module-marker': 'true', 'aria-hidden': 'true' }, h('i', null), h('span', null, selModule.name.split(' (')[0].toUpperCase())),
+            h('div', { className: 'iss-hover-name', 'data-iss-hover-name': 'true', 'aria-hidden': 'true' }),
             h('svg', { className: 'iss-orientation-widget', 'data-iss-orientation-widget': 'true', viewBox: '0 0 96 96', 'aria-hidden': 'true' },
               h('circle', { cx: 42, cy: 42, r: 27, fill: 'rgba(2,6,23,.55)', stroke: 'rgba(148,163,184,.28)' }),
               h('line', { 'data-iss-axis': 'x', x1: 42, y1: 42, x2: 67, y2: 42, stroke: '#f87171', strokeWidth: 2.2 }),
@@ -7676,6 +7962,7 @@
             h('path', { d: orbitArcPath(0, sunlightFraction), fill: 'none', stroke: '#fbbf24', strokeWidth: 2.5 }),
             h('path', { d: orbitArcPath(sunlightFraction, 1), fill: 'none', stroke: '#818cf8', strokeWidth: 2.5 }),
             h('circle', { cx: 320, cy: 131, r: 63, fill: 'url(#iss-day-earth)', stroke: '#7dd3fc', strokeWidth: 1.4 }),
+            h('path', { className: 'iss-earth-disc-land', fill: '#5fae78', opacity: .8, d: issLandDiscPath(320, 131, 63, 22, 12) }),
             h('path', { d: 'M320 68 A63 63 0 0 0 320 194 Z', fill: '#020617', opacity: .66 }),
             h('g', { className: 'iss-day-marker', transform: 'translate(' + sx.toFixed(1) + ',' + sy.toFixed(1) + ')' }, h('rect', { x: -18, y: -4, width: 36, height: 8, rx: 4, fill: '#e2e8f0' }), h('rect', { x: -31, y: -7, width: 11, height: 14, fill: '#c58a20', stroke: '#fbbf24' }), h('rect', { x: 20, y: -7, width: 11, height: 14, fill: '#c58a20', stroke: '#fbbf24' }), h('circle', { r: 3, fill: '#38bdf8' })),
             h('text', { x: 20, y: 50, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'CREW DAY // GMT ' + slot.h),
@@ -7833,8 +8120,12 @@
             h('ellipse', { cx: 320, cy: 140, rx: orbitRx + 7, ry: orbitRy + 3, fill: 'none', stroke: '#38bdf8', strokeWidth: .7, opacity: .2 }),
             h('circle', { cx: 320, cy: 158, r: 74, fill: '#38bdf8', opacity: .13 }),
             h('circle', { cx: 320, cy: 158, r: 68, fill: 'url(#iss-orbit-earth)', stroke: '#7dd3fc', strokeWidth: 1.4 }),
-            h('path', { d: 'M279 138 Q296 113 322 123 T365 130 Q351 145 332 143 T294 161 Z', fill: '#56a071', opacity: .74 }),
-            h('path', { d: 'M342 170 Q365 154 382 169 Q369 191 346 198 Q336 185 342 170 Z', fill: '#4d8f68', opacity: .65 }),
+            // Real coastlines (Natural Earth mask) seen from over the Atlantic,
+            // so the Americas, Europe and Africa are all recognisable.
+            // `d` deliberately last: the ground-track test keys on `<path d="M`
+            // to find the flat map's land path, and this disc shares its grammar.
+            h('path', { className: 'iss-earth-disc-land', fill: '#5fae78', opacity: .82, d: issLandDiscPath(320, 158, 68, 18, -28) }),
+            h('circle', { cx: 320, cy: 158, r: 68, fill: 'none', stroke: '#bfe9ff', strokeWidth: 3, opacity: .22 }),
             h('path', { d: 'M274 168 Q303 183 330 179', fill: 'none', stroke: '#dff6ff', strokeWidth: 6, opacity: .34 }),
             h('g', { className: 'iss-orbit-station', transform: 'translate(' + stationX.toFixed(1) + ',' + stationY.toFixed(1) + ') rotate(-18)' },
               h('rect', { x: -29, y: -2, width: 58, height: 4, rx: 2, fill: '#cbd5e1' }),
@@ -8253,6 +8544,7 @@
         return h('div', { className: 'iss-assembly-stage' },
           h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Station assembly visualization at ' + TIMELINE[step].y + '. ' + visible.length + ' major elements shown, ' + (arrayWings.length * 2) + ' of 8 solar array wings installed, ' + powerStage + ' kilowatts available. ' + installLabel + '.' },
             h('defs', null, h('pattern', { id: 'iss-assembly-grid', width: 24, height: 24, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M24 0H0V24', fill: 'none', stroke: '#38bdf8', strokeWidth: .45, opacity: .15 })), h('marker', { id: 'iss-deorbit-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#fb7185' })),
+              h('pattern', { id: 'iss-assembly-lattice', width: 7, height: 8, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M0 0L7 8M7 0L0 8', stroke: '#e2e8f0', strokeWidth: .7, fill: 'none' })),
               h('radialGradient', { id: 'iss-assembly-earth', cx: '46%', cy: '7%', r: '74%' },
                 h('stop', { offset: '0%', stopColor: '#8ed2f7' }), h('stop', { offset: '32%', stopColor: '#2470ad' }), h('stop', { offset: '100%', stopColor: '#08284f' })),
               h('filter', { id: 'iss-assembly-limb', x: '-25%', y: '-25%', width: '150%', height: '150%' }, h('feGaussianBlur', { stdDeviation: 6 }))),
@@ -8260,7 +8552,10 @@
             h('circle', { cx: 320, cy: 360, r: 175, fill: 'none', stroke: '#7dd3fc', strokeWidth: 7, opacity: .35, filter: 'url(#iss-assembly-limb)' }),
             h('circle', { cx: 320, cy: 360, r: 170, fill: 'url(#iss-assembly-earth)', opacity: .92, stroke: '#a5e2ff', strokeWidth: 2 }),
             step === TIMELINE.length - 1 ? h('g', null, h('path', { className: 'iss-deorbit-path', d: 'M550 54 Q490 116 386 177', fill: 'none', stroke: '#fb7185', strokeWidth: 2.4, strokeDasharray: '7 6', markerEnd: 'url(#iss-deorbit-arrow)' }), h('text', { x: 548, y: 42, textAnchor: 'end', fill: '#fecdd3', fontSize: 9, fontWeight: 850, letterSpacing: 1 }, 'CONTROLLED REENTRY')) : null,
-            step >= 3 ? h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 4, fill: '#94a3b8', opacity: step === TIMELINE.length - 1 ? .42 : 1 }) : null,
+            step >= 3 ? h('g', { opacity: step === TIMELINE.length - 1 ? .42 : 1 },
+              h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 2, fill: '#64748b' }),
+              h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 2, fill: 'url(#iss-assembly-lattice)', opacity: .8 }),
+              h('rect', { x: 110, y: 100, width: 420, height: 8, rx: 2, fill: 'none', stroke: '#cbd5e1', strokeWidth: .7 })) : null,
             // Solar arrays arrive on the dates they actually arrived. All four
             // wing pairs used to appear at once from 2002 and then sit there,
             // which flatly contradicted the AVAILABLE POWER figure climbing
@@ -8283,13 +8578,17 @@
               var bx = m.axis === 'x' ? -26 : -10, by = m.axis === 'z' ? -21 : -10;
               var bw = m.axis === 'x' ? 52 : 20, bh = m.axis === 'z' ? 42 : 20;
               return h('g', { key: m.id, className: isNew ? 'iss-assembly-new' : '', opacity: step === TIMELINE.length - 1 ? .42 : 1, transform: 'translate(' + x + ',' + y + ')' },
+                h('title', null, m.name + ' — ' + m.launched),
                 isNew ? h('rect', { x: bx - 5, y: by - 5, width: bw + 10, height: bh + 10, rx: 13, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.7, strokeDasharray: '4 3' }) : null,
                 h('rect', { x: bx, y: by, width: bw, height: bh, rx: 9, fill: color, stroke: '#e2e8f0', strokeWidth: 1.3 }),
                 // Same sheen-over-solid treatment as the crew-day bands, so the
                 // hulls read as cylinders rather than flat colour chips. The
                 // module colours themselves are untouched (they carry meaning).
                 h('rect', { x: bx, y: by, width: bw, height: bh * 0.42, rx: 9, fill: '#ffffff', opacity: 0.15 }),
-                h('circle', { r: 3, fill: '#38bdf8' }));
+                h('circle', { r: 3, fill: '#38bdf8' }),
+                // Name the module that arrived on this milestone, beside its
+                // dashed highlight; every module also carries a hover title.
+                isNew ? h('text', { x: 0, y: (m.axis === 'z' && m.pos[2] > 1) ? by + bh + 11 : by - 9, textAnchor: 'middle', fill: '#e0f2fe', fontSize: 7.5, fontWeight: 850, letterSpacing: .6, style: { paintOrder: 'stroke', stroke: '#040a16', strokeWidth: 3 } }, m.name.split(' (')[0].toUpperCase()) : null);
             }),
             h('text', { x: 20, y: 25, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'ORBITAL ASSEMBLY // ' + TIMELINE[step].y),
             h('text', { x: 20, y: 43, fill: '#cbd5e1', fontSize: 9 }, TIMELINE[step].e.length > 86 ? TIMELINE[step].e.slice(0, 86) + '…' : TIMELINE[step].e),
@@ -8350,7 +8649,9 @@
               h('text', { y: 17, textAnchor: 'middle', fill: score >= QUIZ_PASS ? '#86efac' : '#fde68a', fontSize: 7.5, fontWeight: 900, letterSpacing: 1 }, outcome)),
             h('text', { x: 190, y: 53, fill: '#94a3b8', fontSize: 8, fontWeight: 850, letterSpacing: 1 }, known ? 'QUESTION FLIGHT RECORD' : 'SCORE RECORD'),
             QUIZ_TOPIC_LABELS.map(function (label, i) {
-              var col = i % 5, row = Math.floor(i / 5), x = 216 + col * 82, y = 82 + row * 58;
+              // 6 per row: at 5 per row the 11th topic sat in a third row that
+              // fell outside the 198px viewBox and rendered as a clipped arc.
+              var col = i % 6, row = Math.floor(i / 6), x = 212 + col * 70, y = 82 + row * 58;
               var state = typeof results[i] === 'boolean' ? results[i] : null;
               var color = state === true ? '#4ade80' : state === false ? '#f87171' : '#64748b';
               var symbol = state === true ? '✓' : state === false ? '×' : '•';
@@ -8367,6 +8668,17 @@
         var q = QUIZ[qi];
         var picked = d.quizPicked;
         return h('div', null,
+          h('div', { className: 'iss-quiz-hero' },
+            h('svg', { className: 'iss-quiz-badge', viewBox: '0 0 64 64', width: 54, height: 54, 'aria-hidden': 'true' },
+              h('circle', { cx: 32, cy: 32, r: 30, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.2, opacity: .55 }),
+              h('ellipse', { cx: 32, cy: 32, rx: 27, ry: 11, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1, opacity: .7, transform: 'rotate(-24 32 32)' }),
+              h('circle', { cx: 32, cy: 32, r: 12, fill: '#1863a0', stroke: '#7dd3fc', strokeWidth: 1 }),
+              h('path', { className: 'iss-earth-disc-land', fill: '#5fae78', d: issLandDiscPath(32, 32, 12, 20, -20) }),
+              h('g', { transform: 'translate(52,21)' }, h('rect', { x: -7, y: -1, width: 14, height: 2, fill: '#cbd5e1' }), h('rect', { x: -3, y: -3, width: 6, height: 6, rx: 2, fill: '#f1f5f9' }), h('rect', { x: -11, y: -3, width: 4, height: 6, fill: '#c58a20' }), h('rect', { x: 7, y: -3, width: 4, height: 6, fill: '#c58a20' }))),
+            h('div', null,
+              h('div', { className: 'iss-quiz-kicker' }, __alloT('stem.spacestation.quiz_kicker', 'STATION CERTIFICATION // FLIGHT-CONTROLLER EXAM')),
+              h('div', { className: 'iss-quiz-headline' }, __alloT('stem.spacestation.quiz_headline', 'Prove you can keep a city-sized spacecraft alive.')),
+              h('div', { className: 'iss-quiz-meta' }, QUIZ.length + ' ' + __alloT('stem.spacestation.quiz_meta_questions', 'QUESTIONS') + ' · ' + __alloT('stem.spacestation.quiz_meta_pass', 'PASS AT') + ' ' + QUIZ_PASS + ' · ' + __alloT('stem.spacestation.quiz_meta_best', 'BEST') + ' ' + (d.quizBest || 0) + ' / ' + QUIZ.length))),
           renderQuizConsole(qi),
           d.quizDone ?
             card(__alloT('stem.spacestation.quiz_done', '🏁 Debrief'),
@@ -8394,7 +8706,7 @@
                         if (right && typeof awardXP === 'function') { try { awardXP(2); } catch (e) {} }
                       },
                       style: { textAlign: 'left', padding: '9px 12px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: picked == null ? 'pointer' : 'default', background: bg, color: TEXT, border: '1px solid ' + bd }
-                    }, answerState ? h('span', { className: 'iss-quiz-answer-state' }, answerState) : null, opt);
+                    }, answerState ? h('span', { className: 'iss-quiz-answer-state' }, answerState) : null, h('span', { className: 'iss-quiz-letter', 'aria-hidden': 'true' }, 'ABCD'.charAt(oi)), opt);
                   })),
                 picked != null ? h('div', { id: 'iss-quiz-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(2,6,23,0.4)', borderLeft: '3px solid ' + (picked === q.a ? '#22c55e' : '#ef4444'), fontSize: 12, color: TEXT, lineHeight: 1.55 } },
                   h('strong', { style: { color: picked === q.a ? '#4ade80' : '#f87171' } }, picked === q.a ? '✅ ' : '❌ '), q.x) : null,

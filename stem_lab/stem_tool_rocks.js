@@ -74,6 +74,7 @@
   // dispatches into the LATEST render's closure.
   var _rocksInitBox = { fn: null };
   var _rocksSelectBox = { fn: null };
+  var _rocksTourBox = { fn: null };
   var _rocksLastCanvas = null;
   function rocksLandscapeCanvasRef(canvasEl) {
     if (!canvasEl) {
@@ -1230,7 +1231,9 @@
       '15%{opacity:.9}80%{opacity:.7}100%{transform:translateY(-34px);opacity:0}}',
       '@keyframes rkSmear{from{stroke-dashoffset:150}to{stroke-dashoffset:0}}',
       '.rk-bubble{animation:rkBubbleRise 1.6s linear infinite}',
-      '.rk-smear{stroke-dasharray:150;animation:rkSmear .7s ease-out forwards}'
+      '.rk-smear{stroke-dasharray:150;animation:rkSmear .7s ease-out forwards}',
+      '@keyframes rkLensDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(5px,3px)}}',
+      '.rk-lens-drift{animation:rkLensDrift 3.4s ease-in-out infinite}'
     ].join('');
   }
 
@@ -2263,6 +2266,430 @@
   // tool browser listed a lowercase id and no blurb \u2014 87 of the other 90 STEM
   // tools carry a proper name and description, and the a11y audit flags the gap
   // as a catalog/context notice.
+  // ══ Observation-first workbench helpers ══
+  // WHY: the Mineral Workbench used to READ the specimen's properties to the
+  // learner — the lens overlay printed "Vitreous", the streak evidence said
+  // "Streak: Greenish-black", the balance printed ρ. A student never had to
+  // look at anything; the notebook filled itself. Identification is the act
+  // of classifying what you see, so every instrument now shows evidence only,
+  // and the learner records the classification. A misread is allowed: it
+  // eliminates the true mineral, the shortlist empties, and the tool asks the
+  // learner to look again instead of correcting them.
+  //
+  // Luster is recorded as one of four field classes. Each pool mineral maps
+  // to exactly one class from the FIRST term of its `luster` string, so the
+  // candidate filter and the choice buttons can never disagree.
+  var RK_LUSTER_CLASSES = [
+    { id: 'metallic', label: 'Metallic', hint: 'Shines like polished metal. Opaque: no light gets inside. A hard, mirror-like flash that slides as you tilt it.', sr: 'The surface acts like a mirror: a hard, bright reflection of the lamp with crisp edges, and no light passing into the specimen.' },
+    { id: 'glassy', label: 'Glassy (vitreous)', hint: 'Shines like broken glass. A small, sharp highlight, and light passes a little way into the specimen.', sr: 'The surface shines like glass: one small sharp highlight, and light passes into the specimen so the interior looks lit.' },
+    { id: 'pearly', label: 'Pearly or silky', hint: 'A soft, layered sheen like the inside of a seashell. The highlight is broad and blurred, with faint rainbow tints.', sr: 'The surface has a soft, layered sheen like the inside of a seashell: a broad, blurred highlight with faint rainbow tints along thin layers.' },
+    { id: 'dull', label: 'Waxy, resinous or dull', hint: 'A soft shine like candle wax or amber, or no shine at all like chalk. No crisp highlight anywhere.', sr: 'The surface is matte or waxy: no crisp highlight anywhere, like chalk or candle wax.' }
+  ];
+  var RK_LUSTER_WORDS = { metallic: 'metallic', submetallic: 'metallic', vitreous: 'glassy', glassy: 'glassy', adamantine: 'glassy', pearly: 'pearly', silky: 'pearly', waxy: 'dull', resinous: 'dull', earthy: 'dull', greasy: 'dull', dull: 'dull' };
+  function rkLusterClass(mineral) {
+    var first = String((mineral && mineral.luster) || '').split('/')[0].trim().toLowerCase();
+    return RK_LUSTER_WORDS[first] || 'dull';
+  }
+  function rkLusterClassInfo(id) {
+    for (var i = 0; i < RK_LUSTER_CLASSES.length; i++) if (RK_LUSTER_CLASSES[i].id === id) return RK_LUSTER_CLASSES[i];
+    return { id: 'unknown', label: 'Not recorded', hint: '', sr: '' };
+  }
+  // Powder-colour choices. Ids match wbStreakOutcomeFor() in the workbench
+  // ('powder-' + slug of the data's streak string), plus the grooved-plate
+  // outcome and one colour no pool mineral has, so the plate is a real
+  // observation rather than a two-way guess.
+  var RK_STREAK_CHOICES = [
+    { id: 'powder-white', label: 'White', hex: '#ffffff' },
+    { id: 'powder-greenish-black', label: 'Greenish-black', hex: '#16301c' },
+    { id: 'powder-black', label: 'Black', hex: '#171717' },
+    { id: 'powder-red-brown', label: 'Red-brown', hex: '#8b3a2a' },
+    { id: 'powder-lead-gray', label: 'Lead-gray', hex: '#8d949e' },
+    { id: 'powder-yellow-brown', label: 'Yellow-brown', hex: '#a1741f' },
+    { id: 'powder-white-yellow', label: 'Pale yellow', hex: '#fffbd6' },
+    { id: 'plate-scratched', label: 'No powder — the plate itself was grooved', hex: null }
+  ];
+  function rkStreakChoiceInfo(id) {
+    for (var i = 0; i < RK_STREAK_CHOICES.length; i++) if (RK_STREAK_CHOICES[i].id === id) return RK_STREAK_CHOICES[i];
+    return { id: 'unknown', label: 'Not recorded', hex: null };
+  }
+
+  // Form (shape) classes: the seventh evidence type. Derived ONCE here and used
+  // by the hand-specimen drawing, the 3D geometry, the screen-reader description
+  // of the bench and the candidate filter, so the picture, the model, the words
+  // and the evidence can never disagree ([[feedback_one_verdict_one_derivation]]).
+  var RK_FORM_CLASSES = [
+    { id: 'blocky', label: 'Blocky: corners and steps near right angles', hint: 'Breaks into box-like pieces; cleavage directions meet at about 90°.', sr: 'The fragment has box-like corners and stepped faces meeting near right angles.' },
+    { id: 'rhombs', label: 'Leaning blocks (rhombs)', hint: 'Faces are parallelograms that lean, like a squashed box.', sr: 'The fragment breaks into leaning, parallelogram-faced pieces.' },
+    { id: 'sheets', label: 'Thin sheets or flakes', hint: 'Peels into flexible layers like the pages of a book.', sr: 'The fragment is a stack of thin sheets that peel apart.' },
+    { id: 'prism', label: 'Six-sided column', hint: 'A long prism with a pointed end and lines running along its length.', sr: 'The fragment is a six-sided column with lengthwise lines.' },
+    { id: 'pyramids', label: 'Pointed pyramids', hint: 'Triangular faces meeting in points, like two pyramids base to base.', sr: 'The fragment shows triangular faces meeting in points.' },
+    { id: 'blades', label: 'Flat blade or tablet', hint: 'A thin, flat slab much wider than it is thick.', sr: 'The fragment is a thin, flat slab.' },
+    { id: 'ball', label: 'Ball of many small faces', hint: 'A rounded crystal covered in small four-sided faces, like a soccer ball (a dodecahedron).', sr: 'The fragment is a rounded crystal covered in many small faces.' },
+    { id: 'massive', label: 'No clear faces (massive)', hint: 'Lumpy or grainy with no flat faces or straight edges.', sr: 'The fragment is a lumpy mass without flat faces.' }
+  ];
+  // Overrides where the crystal SYSTEM is not what a hand specimen shows:
+  // specular hematite is a massive/platy ore, talc a foliated mass, selenite a
+  // tabular blade. Garnet (dodecahedral) is outside the workbench pool.
+  // Challenge set: diamond grows as octahedra; sulfur and olivine are met as
+  // massive crusts and granular masses; corundum as barrel-shaped prisms.
+  var RK_FORM_BY_ID = { hematite: 'massive', talc: 'sheets', gypsum: 'blades', diamond: 'pyramids', sulfur: 'massive', olivine: 'massive', corundum: 'prism' };
+  function rkFormClass(m) {
+    if (!m) return 'massive';
+    if (RK_FORM_BY_ID[m.id]) return RK_FORM_BY_ID[m.id];
+    var habit = String(m.habit || '').toLowerCase();
+    var sys = String(m.crystal || '').toLowerCase();
+    if (habit === 'micaceous') return 'sheets';
+    if (habit === 'octahedral') return 'pyramids';
+    if (habit === 'blocky90') return 'blocky';
+    if (habit === 'dodecahedral') return 'ball';
+    if (sys.indexOf('cubic') !== -1 || sys.indexOf('isometric') !== -1) return 'blocky';
+    if (sys.indexOf('hexagonal') !== -1 || sys.indexOf('orthorhombic') !== -1) return 'prism';
+    if (sys.indexOf('rhombohedral') !== -1 || sys.indexOf('trigonal') !== -1) return 'rhombs';
+    if (sys.indexOf('monoclinic') !== -1) return 'blades';
+    return 'massive';
+  }
+  function rkFormClassInfo(id) {
+    for (var i = 0; i < RK_FORM_CLASSES.length; i++) if (RK_FORM_CLASSES[i].id === id) return RK_FORM_CLASSES[i];
+    return { id: 'unknown', label: 'Not recorded', hint: '', sr: 'The fragment’s form has not been described.' };
+  }
+
+  // Hand specimen: an irregular broken fragment, NOT the idealised crystal the
+  // candidate cards show. The bench used to draw the unknown with the same
+  // rkMineralSwatch as the reference cards, so a learner could identify it by
+  // matching pictures. A field unknown is a chunk; its form shows through as
+  // cleavage steps, sheets or fracture, which is the real evidence.
+  function rkHandSpecimenSvg(h, mineral, size, opts) {
+    var S = size || 40, o = opts || {};
+    var base = (mineral && mineral.color) || '#cbd5e1';
+    var id = mineral ? mineral.id : 'x';
+    var cls = rkLusterClass(mineral);
+    var form = rkFormClass(mineral);
+    var rnd = rkSeed(id + '-hand');
+    var c = S / 2, kids = [], i;
+    var uid = 'rkhs-' + id + '-' + S;
+    kids.push(h('defs', { key: 'defs' },
+      h('radialGradient', { id: uid + '-vault', cx: '38%', cy: '30%', r: '78%' },
+        h('stop', { offset: '0%', stopColor: '#5b6b80' }), h('stop', { offset: '100%', stopColor: '#1c2738' })),
+      h('linearGradient', { id: uid + '-face', x1: '0%', y1: '0%', x2: '70%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: cls === 'metallic' ? 0.55 : 0.30 }),
+        h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.02 }),
+        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: cls === 'metallic' ? 0.45 : 0.32 })),
+      h('radialGradient', { id: uid + '-glow', cx: '45%', cy: '40%', r: '60%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.28 }), h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 }))
+    ));
+    if (o.plate !== false) kids.push(h('rect', { key: 'plate', x: 0, y: 0, width: S, height: S, rx: S * 0.16, fill: 'url(#' + uid + '-vault)' }));
+    kids.push(h('ellipse', { key: 'shadow', cx: c, cy: S * 0.84, rx: S * 0.30, ry: S * 0.055, fill: '#000000', opacity: 0.38 }));
+    var outline = 'rgba(0,0,0,0.55)';
+    var pts = [], n = 10;
+    if (form === 'sheets') {
+      // A book of sheets with a peeling top flake.
+      var kw = S * 0.30, kh = S * 0.20, kl = S * 0.09;
+      for (i = 0; i < 7; i++) {
+        var dy = (i - 3) * S * 0.035, dx = (rnd() - 0.5) * S * 0.04;
+        kids.push(h('polygon', { key: 'sheet' + i, points: [(c - kw + kl + dx) + ',' + (c - kh + dy), (c + kw + dx) + ',' + (c - kh * 0.8 + dy), (c + kw - kl + dx) + ',' + (c + kh * 0.25 + dy), (c - kw + dx) + ',' + (c + kh * 0.1 + dy)].join(' '), fill: base, stroke: outline, strokeWidth: 0.7, opacity: 0.92 }));
+      }
+      kids.push(h('polygon', { key: 'flake', points: [(c - kw + kl) + ',' + (c - kh - S * 0.11), (c + kw * 0.7) + ',' + (c - kh - S * 0.16), (c + kw * 0.5) + ',' + (c - kh - S * 0.02), (c - kw + kl * 0.3) + ',' + (c - kh - S * 0.01)].join(' '), fill: base, stroke: outline, strokeWidth: 0.7, opacity: 0.85 }));
+      pts = null;
+    } else {
+      for (i = 0; i < n; i++) {
+        var a = (i / n) * Math.PI * 2 - Math.PI / 2;
+        var r = S * 0.33 * (0.82 + rnd() * 0.30);
+        // Cleavable habits break with flatter, straighter faces.
+        if (form === 'blocky' || form === 'blades') r = S * 0.33 * (0.92 + rnd() * 0.14);
+        pts.push([c + Math.cos(a) * r, c + Math.sin(a) * r * 0.92]);
+      }
+      var poly = pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+      kids.push(h('polygon', { key: 'body', points: poly, fill: base, stroke: outline, strokeWidth: 0.9 }));
+      // Facets: wedges from the centre, alternating tone, so the chunk reads as
+      // a solid with broken faces rather than a flat blob.
+      var tones = [0.0, 0.14, 0.05, 0.22, 0.08, 0.18];
+      for (i = 0; i < n; i += 2) {
+        var p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+        kids.push(h('polygon', { key: 'facet' + i, points: [c + ',' + c, p1[0].toFixed(1) + ',' + p1[1].toFixed(1), p2[0].toFixed(1) + ',' + p2[1].toFixed(1), p3[0].toFixed(1) + ',' + p3[1].toFixed(1)].join(' '), fill: '#000000', opacity: tones[(i / 2) % tones.length] }));
+      }
+      kids.push(h('polygon', { key: 'faceShade', points: poly, fill: 'url(#' + uid + '-face)' }));
+      // Habit cues drawn ON the fragment.
+      var cue = 'rgba(0,0,0,0.32)';
+      if (form === 'blocky') {
+        // Right-angle cleavage steps.
+        kids.push(h('polyline', { key: 'stepA', points: [(c - S * 0.16) + ',' + (c - S * 0.02), (c - S * 0.16) + ',' + (c + S * 0.10), (c - S * 0.02) + ',' + (c + S * 0.10)].join(' '), fill: 'none', stroke: cue, strokeWidth: 0.9 }));
+        kids.push(h('polyline', { key: 'stepB', points: [(c + S * 0.02) + ',' + (c - S * 0.14), (c + S * 0.14) + ',' + (c - S * 0.14), (c + S * 0.14) + ',' + (c - S * 0.02)].join(' '), fill: 'none', stroke: cue, strokeWidth: 0.9 }));
+      } else if (form === 'rhombs') {
+        // Two sets of parallel cleavage traces meeting obliquely.
+        for (i = 0; i < 3; i++) {
+          kids.push(h('line', { key: 'rhA' + i, x1: (c - S * 0.18 + i * S * 0.09).toFixed(1), y1: (c + S * 0.12).toFixed(1), x2: (c - S * 0.06 + i * S * 0.09).toFixed(1), y2: (c - S * 0.14).toFixed(1), stroke: cue, strokeWidth: 0.7 }));
+        }
+        kids.push(h('line', { key: 'rhB', x1: (c - S * 0.2).toFixed(1), y1: (c + S * 0.02).toFixed(1), x2: (c + S * 0.16).toFixed(1), y2: (c - S * 0.03).toFixed(1), stroke: cue, strokeWidth: 0.7 }));
+      } else if (form === 'pyramids' || form === 'blades') {
+        // One flat face surviving on the fragment: a triangle for an octahedron,
+        // a broad rhomb for a tabular blade.
+        kids.push(h('polygon', { key: 'face', points: form === 'pyramids'
+          ? [(c - S * 0.12) + ',' + (c + S * 0.06), (c + S * 0.10) + ',' + (c + S * 0.08), (c - S * 0.01) + ',' + (c - S * 0.12)].join(' ')
+          : [(c - S * 0.12) + ',' + c, (c - S * 0.02) + ',' + (c - S * 0.12), (c + S * 0.12) + ',' + (c - S * 0.02), (c + S * 0.02) + ',' + (c + S * 0.10)].join(' '),
+          fill: '#ffffff', opacity: 0.22, stroke: cue, strokeWidth: 0.7 }));
+      } else if (form === 'ball') {
+        // A few small pentagon-ish facets over a rounded fragment.
+        for (i = 0; i < 3; i++) {
+          var bcx = c + (i - 1) * S * 0.13, bcy = c + (i % 2 ? S * 0.08 : -S * 0.06), br = S * 0.07;
+          kids.push(h('polygon', { key: 'ballf' + i, points: [0, 1, 2, 3, 4].map(function (k) { var ang = k * 1.2566 - 1.57; return (bcx + Math.cos(ang) * br).toFixed(1) + ',' + (bcy + Math.sin(ang) * br).toFixed(1); }).join(' '), fill: '#ffffff', opacity: 0.16, stroke: cue, strokeWidth: 0.6 }));
+        }
+      } else if (form === 'prism') {
+        // Prism striations along one surviving face.
+        for (i = 0; i < 4; i++) kids.push(h('line', { key: 'str' + i, x1: (c - S * 0.14 + i * S * 0.05).toFixed(1), y1: (c - S * 0.16).toFixed(1), x2: (c - S * 0.10 + i * S * 0.05).toFixed(1), y2: (c + S * 0.14).toFixed(1), stroke: cue, strokeWidth: 0.6 }));
+      } else if (cls === 'glassy') {
+        // Conchoidal fracture: concentric shell-like arcs.
+        for (i = 1; i <= 3; i++) kids.push(h('path', { key: 'conch' + i, d: 'M' + (c - S * 0.05 * i).toFixed(1) + ',' + (c + S * 0.02 * i).toFixed(1) + ' a' + (S * 0.07 * i).toFixed(1) + ',' + (S * 0.05 * i).toFixed(1) + ' 0 0 1 ' + (S * 0.12 * i).toFixed(1) + ',' + (-S * 0.02 * i).toFixed(1), fill: 'none', stroke: cue, strokeWidth: 0.6 }));
+      }
+      if (cls === 'dull' || form === 'massive') {
+        for (i = 0; i < 26; i++) kids.push(h('circle', { key: 'gr' + i, cx: (c + (rnd() - 0.5) * S * 0.46).toFixed(1), cy: (c + (rnd() - 0.5) * S * 0.42).toFixed(1), r: 0.55, fill: '#000000', opacity: 0.22 }));
+      }
+    }
+    // Luster shading: the visible difference between the four classes.
+    if (cls === 'metallic') {
+      kids.push(h('polygon', { key: 'mirror', points: [(c - S * 0.22) + ',' + (c - S * 0.08), (c - S * 0.04) + ',' + (c - S * 0.24), (c + S * 0.02) + ',' + (c - S * 0.20), (c - S * 0.18) + ',' + (c - S * 0.02)].join(' '), fill: '#ffffff', opacity: 0.72 }));
+      kids.push(h('polygon', { key: 'mirror2', points: [(c + S * 0.04) + ',' + (c + S * 0.10), (c + S * 0.16) + ',' + (c - S * 0.02), (c + S * 0.19) + ',' + (c + S * 0.01), (c + S * 0.07) + ',' + (c + S * 0.13)].join(' '), fill: '#ffffff', opacity: 0.35 }));
+    } else if (cls === 'glassy') {
+      kids.push(h('ellipse', { key: 'glow', cx: c, cy: c, rx: S * 0.26, ry: S * 0.22, fill: 'url(#' + uid + '-glow)' }));
+      kids.push(h('ellipse', { key: 'spec', cx: c - S * 0.12, cy: c - S * 0.14, rx: S * 0.05, ry: S * 0.025, fill: '#ffffff', opacity: 0.85, transform: 'rotate(-28 ' + (c - S * 0.12) + ' ' + (c - S * 0.14) + ')' }));
+      kids.push(h('circle', { key: 'spec2', cx: c + S * 0.10, cy: c + S * 0.06, r: S * 0.012, fill: '#ffffff', opacity: 0.7 }));
+    } else if (cls === 'pearly') {
+      kids.push(h('ellipse', { key: 'sheen1', cx: c - S * 0.04, cy: c - S * 0.06, rx: S * 0.22, ry: S * 0.09, fill: '#ffffff', opacity: 0.16, transform: 'rotate(-14 ' + c + ' ' + c + ')' }));
+      kids.push(h('ellipse', { key: 'sheen2', cx: c - S * 0.04, cy: c - S * 0.06, rx: S * 0.13, ry: S * 0.05, fill: '#ffffff', opacity: 0.22, transform: 'rotate(-14 ' + c + ' ' + c + ')' }));
+      kids.push(h('line', { key: 'irisA', x1: (c - S * 0.2).toFixed(1), y1: (c + S * 0.02).toFixed(1), x2: (c + S * 0.18).toFixed(1), y2: (c - S * 0.06).toFixed(1), stroke: '#f9a8d4', strokeWidth: 1.1, opacity: 0.35 }));
+      kids.push(h('line', { key: 'irisB', x1: (c - S * 0.18).toFixed(1), y1: (c + S * 0.06).toFixed(1), x2: (c + S * 0.2).toFixed(1), y2: (c - S * 0.02).toFixed(1), stroke: '#67e8f9', strokeWidth: 1.1, opacity: 0.30 }));
+    }
+    return h('svg', { viewBox: '0 0 ' + S + ' ' + S, width: S, height: S, role: 'img', 'aria-label': o.aria || 'Unknown hand specimen: an irregular broken fragment.', style: { display: 'block' } }, kids);
+  }
+
+  // Lens porthole: a magnified patch of surface whose ONLY job is to show how
+  // the surface handles light. Same rim and lamp position for every class, so
+  // the frame is never the cue; the highlight behaviour is.
+  function rkLensViewSvg(h, mineral, size, opts) {
+    var S = size || 120, o = opts || {};
+    var base = (mineral && mineral.color) || '#cbd5e1';
+    var cls = o.forceClass || rkLusterClass(mineral);
+    var id = (mineral ? mineral.id : 'x') + (o.forceClass ? '-ref' : '');
+    var rnd = rkSeed(id + '-lens');
+    var c = S / 2, r = S * 0.44, kids = [], i;
+    var uid = 'rklens-' + id + '-' + S;
+    // Highlights carry a slow drift when animated, so 'tilt it under the lamp'
+    // is visibly true even in the 2D porthole.
+    var drift = o.animate ? 'rk-lens-drift' : undefined;
+    kids.push(h('defs', { key: 'defs' },
+      h('clipPath', { id: uid + '-clip' }, h('circle', { cx: c, cy: c, r: r })),
+      h('radialGradient', { id: uid + '-inner', cx: '50%', cy: '55%', r: '55%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.34 }), h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })),
+      h('linearGradient', { id: uid + '-mirror', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.75 }),
+        h('stop', { offset: '38%', stopColor: '#ffffff', stopOpacity: 0.08 }),
+        h('stop', { offset: '62%', stopColor: '#000000', stopOpacity: 0.10 }),
+        h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.55 })),
+      h('linearGradient', { id: uid + '-pearl', x1: '0%', y1: '0%', x2: '100%', y2: '40%' },
+        h('stop', { offset: '0%', stopColor: '#fbcfe8', stopOpacity: 0.28 }),
+        h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.36 }),
+        h('stop', { offset: '100%', stopColor: '#a5f3fc', stopOpacity: 0.26 }))
+    ));
+    var g = [];
+    g.push(h('circle', { key: 'body', cx: c, cy: c, r: r, fill: base }));
+    if (cls === 'metallic') {
+      g.push(h('rect', { key: 'mirror', x: 0, y: 0, width: S, height: S, fill: 'url(#' + uid + '-mirror)' }));
+      // Crisp reflection of the lamp.
+      g.push(h('rect', { key: 'lamp', className: drift, x: c - r * 0.62, y: c - r * 0.58, width: r * 0.42, height: r * 0.16, rx: r * 0.04, fill: '#ffffff', opacity: 0.92, transform: 'rotate(-32 ' + c + ' ' + c + ')' }));
+      for (i = 0; i < 6; i++) g.push(h('line', { key: 'sc' + i, x1: (c - r + rnd() * r * 1.4).toFixed(1), y1: (c - r * 0.6 + rnd() * r * 1.4).toFixed(1), x2: (c - r * 0.2 + rnd() * r * 1.2).toFixed(1), y2: (c - r * 0.3 + rnd() * r * 1.2).toFixed(1), stroke: '#ffffff', strokeWidth: 0.5, opacity: 0.35 }));
+    } else if (cls === 'glassy') {
+      g.push(h('circle', { key: 'inner', cx: c, cy: c, r: r, fill: 'url(#' + uid + '-inner)' }));
+      for (i = 1; i <= 4; i++) g.push(h('path', { key: 'conch' + i, d: 'M' + (c - r * 0.16 * i).toFixed(1) + ',' + (c + r * 0.08 * i).toFixed(1) + ' a' + (r * 0.24 * i).toFixed(1) + ',' + (r * 0.16 * i).toFixed(1) + ' 0 0 1 ' + (r * 0.36 * i).toFixed(1) + ',' + (-r * 0.06 * i).toFixed(1), fill: 'none', stroke: '#000000', strokeWidth: 0.7, opacity: 0.22 }));
+      g.push(h('ellipse', { key: 'spec', className: drift, cx: c - r * 0.42, cy: c - r * 0.44, rx: r * 0.16, ry: r * 0.07, fill: '#ffffff', opacity: 0.92, transform: 'rotate(-32 ' + (c - r * 0.42) + ' ' + (c - r * 0.44) + ')' }));
+      g.push(h('circle', { key: 'spec2', className: drift, cx: c + r * 0.3, cy: c + r * 0.2, r: r * 0.035, fill: '#ffffff', opacity: 0.8 }));
+      g.push(h('path', { key: 'edgeGlint', d: 'M' + (c + r * 0.2).toFixed(1) + ',' + (c - r * 0.7).toFixed(1) + ' q' + (r * 0.45).toFixed(1) + ',' + (r * 0.3).toFixed(1) + ' ' + (r * 0.3).toFixed(1) + ',' + (r * 0.9).toFixed(1), fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, opacity: 0.55 }));
+    } else if (cls === 'pearly') {
+      for (i = 0; i < 9; i++) g.push(h('line', { key: 'layer' + i, x1: c - r, y1: (c - r * 0.8 + i * r * 0.2).toFixed(1), x2: c + r, y2: (c - r * 0.95 + i * r * 0.2).toFixed(1), stroke: '#000000', strokeWidth: 0.6, opacity: 0.18 }));
+      g.push(h('rect', { key: 'pearl', x: 0, y: 0, width: S, height: S, fill: 'url(#' + uid + '-pearl)' }));
+      for (i = 0; i < 4; i++) g.push(h('ellipse', { key: 'soft' + i, className: drift, cx: c - r * 0.3, cy: c - r * 0.2, rx: r * (0.62 - i * 0.12), ry: r * (0.30 - i * 0.055), fill: '#ffffff', opacity: 0.12, transform: 'rotate(-18 ' + (c - r * 0.3) + ' ' + (c - r * 0.2) + ')' }));
+    } else {
+      g.push(h('circle', { key: 'matte', cx: c, cy: c, r: r, fill: '#000000', opacity: 0.08 }));
+      for (i = 0; i < 90; i++) g.push(h('circle', { key: 'gr' + i, cx: (c + (rnd() - 0.5) * r * 1.9).toFixed(1), cy: (c + (rnd() - 0.5) * r * 1.9).toFixed(1), r: (0.5 + rnd() * 1.1).toFixed(2), fill: rnd() > 0.5 ? '#000000' : '#ffffff', opacity: 0.16 }));
+      g.push(h('ellipse', { key: 'waxy', cx: c - r * 0.35, cy: c - r * 0.35, rx: r * 0.3, ry: r * 0.18, fill: '#ffffff', opacity: cls === 'dull' ? 0.07 : 0.1 }));
+    }
+    kids.push(h('g', { key: 'view', clipPath: 'url(#' + uid + '-clip)' }, g));
+    // Rim + the lens's own glass reflection, identical for every class.
+    kids.push(h('circle', { key: 'rim', cx: c, cy: c, r: r, fill: 'none', stroke: '#0f172a', strokeWidth: S * 0.045 }));
+    kids.push(h('circle', { key: 'rim2', cx: c, cy: c, r: r + S * 0.03, fill: 'none', stroke: '#475569', strokeWidth: S * 0.012 }));
+    kids.push(h('path', { key: 'glass', d: 'M' + (c - r * 0.72).toFixed(1) + ',' + (c - r * 0.5).toFixed(1) + ' a' + r.toFixed(1) + ',' + r.toFixed(1) + ' 0 0 1 ' + (r * 0.5).toFixed(1) + ',' + (-r * 0.66).toFixed(1), fill: 'none', stroke: '#ffffff', strokeWidth: S * 0.018, opacity: 0.35, strokeLinecap: 'round' }));
+    // x/y are honoured when this is nested inside another svg; a transform on a
+    // wrapping <g> is NOT applied to a nested <svg> viewport by every engine.
+    return h('svg', { viewBox: '0 0 ' + S + ' ' + S, width: o.width || S, height: o.height || S, x: o.x, y: o.y, role: 'img', 'aria-label': o.aria || 'Magnified view of the specimen surface under a lamp.', style: { display: 'block', maxWidth: '100%' } }, kids);
+  }
+
+  // ── 3D hand specimen on the host viewer shell ──
+  // A physically-based rendering of the unknown so the learner can turn it
+  // under the lamp and watch how the highlight behaves: a metallic surface
+  // throws a hard mirror flash, glass a pin-point with light entering the
+  // body, a pearly book a soft sheen, a dull surface nothing. Same shell the
+  // crystal lab uses, so it inherits load/teardown/context-loss handling and
+  // degrades to the 2D lens view when WebGL or the CDN is unavailable.
+  var _rkSpecimenBox = { mineral: null };
+  function rkSpecimenEnvMap(THREE) {
+    // Six tiny canvases: a bright ceiling lamp, lit walls, dark floor. Cheap,
+    // and it is what makes metal and glass READ as metal and glass.
+    var faces = [];
+    var mk = function (paint) {
+      var cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+      var g = cv.getContext('2d'); paint(g); return cv;
+    };
+    var wall = function (light) {
+      return mk(function (g) {
+        var gr = g.createLinearGradient(0, 0, 0, 64);
+        gr.addColorStop(0, light ? '#dbe7f3' : '#8fa3b8'); gr.addColorStop(1, '#2b3646');
+        g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+        if (light) { g.fillStyle = '#ffffff'; g.fillRect(18, 8, 28, 14); }
+      });
+    };
+    faces.push(wall(true));   // +x
+    faces.push(wall(false));  // -x
+    faces.push(mk(function (g) { g.fillStyle = '#e8f0f8'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#ffffff'; g.fillRect(14, 14, 36, 36); })); // +y ceiling lamp
+    faces.push(mk(function (g) { g.fillStyle = '#3b2f24'; g.fillRect(0, 0, 64, 64); })); // -y floor
+    faces.push(wall(false));  // +z
+    faces.push(wall(true));   // -z
+    var tex = new THREE.CubeTexture(faces);
+    // Deliberately LEFT in linear encoding: the shell renders with linear output,
+    // and an sRGB-tagged map is decoded to linear on sample, which turned a
+    // mid-grey room into a quarter-brightness one and every metal near-black.
+    tex.needsUpdate = true;
+    return tex;
+  }
+  function rkSpecimenGeometry(THREE, m) {
+    var habit = String((m && m.habit) || '').toLowerCase();
+    var form = rkFormClass(m);
+    var rnd = rkSeed((m ? m.id : 'x') + '-geo');
+    var jitter = function (geo, amp) {
+      var pos = geo.attributes && geo.attributes.position;
+      if (!pos) return geo;
+      // Three's primitives are NON-indexed: a corner shared by three faces is
+      // stored three times. Jittering each copy independently tore the faces
+      // apart (slivers and holes). Key the offset on the rounded position so
+      // every copy of a corner moves together and the solid stays closed.
+      var seen = {};
+      for (var i = 0; i < pos.count; i++) {
+        var key = pos.getX(i).toFixed(3) + ',' + pos.getY(i).toFixed(3) + ',' + pos.getZ(i).toFixed(3);
+        if (!seen[key]) seen[key] = [(rnd() - 0.5) * amp, (rnd() - 0.5) * amp, (rnd() - 0.5) * amp];
+        var dlt = seen[key];
+        pos.setXYZ(i, pos.getX(i) + dlt[0], pos.getY(i) + dlt[1], pos.getZ(i) + dlt[2]);
+      }
+      pos.needsUpdate = true;
+      geo.computeVertexNormals();
+      return geo;
+    };
+    var shear = function (geo, kx) {
+      var mat = new THREE.Matrix4().set(1, kx, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+      geo.applyMatrix4(mat);
+      geo.computeVertexNormals();
+      return geo;
+    };
+    if (form === 'pyramids') return new THREE.OctahedronGeometry(1.15, 0);
+    if (form === 'ball') return new THREE.DodecahedronGeometry(1.05, 0);
+    if (form === 'blocky') return habit === 'blocky90' ? jitter(new THREE.BoxGeometry(1.5, 1.05, 1.2), 0.04) : jitter(new THREE.BoxGeometry(1.35, 1.35, 1.35), 0.05);
+    if (form === 'prism') {
+      var prism = new THREE.CylinderGeometry(0.6, 0.62, 1.5, 6);
+      var tip = new THREE.ConeGeometry(0.6, 0.55, 6);
+      tip.translate(0, 1.02, 0);
+      var merged = null;
+      try {
+        if (THREE.BufferGeometryUtils && THREE.BufferGeometryUtils.mergeBufferGeometries) merged = THREE.BufferGeometryUtils.mergeBufferGeometries([prism, tip]);
+      } catch (e) { merged = null; }
+      return merged || { group: [prism, tip] };
+    }
+    if (form === 'rhombs') return shear(new THREE.BoxGeometry(1.35, 1.1, 1.15), 0.42);
+    if (form === 'blades') return shear(new THREE.BoxGeometry(1.7, 0.32, 1.0), 0.22);
+    // massive (and 'sheets', which buildScene assembles from plates instead)
+    return jitter(new THREE.DodecahedronGeometry(1.05, 1), 0.14);
+  }
+  function rkSpecimenMaterial(THREE, m, env) {
+    var cls = rkLusterClass(m);
+    var color = new THREE.Color((m && m.color) || '#cbd5e1');
+    var mat;
+    if (cls === 'metallic') {
+      mat = new THREE.MeshStandardMaterial({ color: color, metalness: 1.0, roughness: 0.28, envMap: env, envMapIntensity: 1.5, flatShading: true });
+    } else if (cls === 'glassy') {
+      mat = new THREE.MeshPhysicalMaterial({ color: color, metalness: 0.0, roughness: 0.05, envMap: env, envMapIntensity: 1.1, transparent: true, opacity: 0.96, flatShading: true });
+      if ('clearcoat' in mat) { mat.clearcoat = 1.0; mat.clearcoatRoughness = 0.04; }
+      if ('transmission' in mat) mat.transmission = 0.45;
+      if ('thickness' in mat) mat.thickness = 0.8;
+      if ('ior' in mat) mat.ior = 1.55;
+    } else if (cls === 'pearly') {
+      var pale = color.clone().lerp(new THREE.Color('#ffffff'), 0.25);
+      mat = new THREE.MeshPhysicalMaterial({ color: pale, metalness: 0.05, roughness: 0.42, envMap: env, envMapIntensity: 0.8, flatShading: true });
+      if ('clearcoat' in mat) { mat.clearcoat = 0.9; mat.clearcoatRoughness = 0.38; }
+      if ('sheen' in mat) {
+        if (typeof mat.sheen === 'number') { mat.sheen = 0.8; if ('sheenColor' in mat) mat.sheenColor = new THREE.Color('#fbcfe8'); }
+        else mat.sheen = new THREE.Color('#fbcfe8');
+      }
+    } else {
+      mat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.0, roughness: 1.0, flatShading: true });
+    }
+    return mat;
+  }
+  function rkBuildSpecimenScene(THREE, api) {
+    var meshes = {}, picks = [];
+    var m = _rkSpecimenBox.mineral;
+    if (!m) return { meshes: meshes, picks: picks, anchor: null };
+    var anchor = new THREE.Group();
+    api.scene.add(anchor);
+    var env = rkSpecimenEnvMap(THREE);
+    var mat = rkSpecimenMaterial(THREE, m, env);
+    var body = new THREE.Group();
+    var i;
+    if (rkFormClass(m) === 'sheets') {
+      // A book of thin plates, top ones lifted like peeling sheets.
+      for (i = 0; i < 9; i++) {
+        var plate = new THREE.Mesh(new THREE.CylinderGeometry(1.0 + (i % 3) * 0.03, 1.0, 0.05, 6), mat);
+        plate.position.set((i % 2) * 0.03, -0.35 + i * 0.075 + (i > 6 ? (i - 6) * 0.06 : 0), (i % 3) * 0.02);
+        plate.rotation.z = i > 6 ? (i - 6) * 0.08 : 0;
+        plate.rotation.y = i * 0.05;
+        plate.castShadow = api.wantShadow; plate.receiveShadow = api.wantShadow;
+        body.add(plate);
+      }
+    } else {
+      var geo = rkSpecimenGeometry(THREE, m);
+      var parts = geo && geo.group ? geo.group : [geo];
+      for (i = 0; i < parts.length; i++) {
+        var mesh = new THREE.Mesh(parts[i], mat);
+        mesh.castShadow = api.wantShadow; mesh.receiveShadow = api.wantShadow;
+        body.add(mesh);
+      }
+    }
+    body.position.y = 0.15;
+    anchor.add(body);
+    // Bench top: a matte disc that catches the shadow, so the fragment sits
+    // on something instead of hanging in fog.
+    var floor = new THREE.Mesh(new THREE.CircleGeometry(2.4, 40), new THREE.MeshStandardMaterial({ color: api.dark ? 0x6b4c2f : 0xa97c4f, roughness: 0.95, metalness: 0 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.95;
+    floor.receiveShadow = api.wantShadow;
+    anchor.add(floor);
+    // A lamp glint sphere in the reflection direction helps metal/glass show
+    // a hard highlight even without the env map.
+    var lamp = new THREE.PointLight(0xfff2d6, 0.9, 12);
+    lamp.position.set(1.6, 3.2, 2.2);
+    anchor.add(lamp);
+    meshes.specimen = body;
+    var frame = function (now, sceneProps, reduced) {
+      if (reduced) return;
+      body.rotation.y = (now * 0.00035) % (Math.PI * 2);
+    };
+    return { meshes: meshes, picks: picks, anchor: anchor, frame: frame };
+  }
+  var RK_SPECIMEN_VIEWER = (function () {
+    var mk = window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) return null;
+    return mk({ parts: [], buildScene: rkBuildSpecimenScene, home: { yaw: -0.55, pitch: 0.42, dist: 4.4 } });
+  })();
+  // Identity-stable ref (see rkCrystalRef): an inline ref would rebuild the
+  // WebGL scene on every workbench render.
+  function rkSpecimenRef(node) {
+    if (RK_SPECIMEN_VIEWER) RK_SPECIMEN_VIEWER.attach(node || null);
+  }
+
   window.StemLab.registerTool('rocks', {
     icon: '\uD83E\uDEA8',
     label: 'Rocks & Minerals Explorer',
@@ -2490,15 +2917,15 @@ const d = labToolData.rocks || {};
 
             { id: 'talc', label: t('stem.rocks.talc'), hardness: 1, density: 2.75, streak: 'White', luster: 'Pearly/Waxy', crystal: 'Monoclinic', color: '#dcded2', formula: 'Mg\u2083Si\u2084O\u2081\u2080(OH)\u2082', desc: 'The softest known mineral, number 1 on the Mohs scale. Can be scratched with a fingernail! Has a soapy, greasy feel. Forms flat, foliated masses. Color ranges from white to pale green to gray. Metamorphic mineral formed from magnesium-rich rocks.', uses: 'Talcum powder, ceramics, paint filler, paper coating, cosmetics', funFact: 'Soapstone (used for carving and countertops) is a rock made mostly of talc. It was used by ancient cultures worldwide to carve cooking vessels because it retains heat well!', occurrence: 'Metamorphic rocks (ultramafic environments). Major deposits in China, India, USA (Vermont), France, and Brazil.' },
 
-            { id: 'diamond', label: t('stem.rocks.diamond'), hardness: 10, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon, the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes).', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
+            { id: 'diamond', label: t('stem.rocks.diamond'), hardness: 10, density: 3.52, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon, the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes).', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
 
             { id: 'magnetite', label: t('stem.rocks.magnetite'), hardness: 5.5, density: 5.18, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
 
             { id: 'hematite', label: t('stem.rocks.hematite'), hardness: 5.5, density: 5.26, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'Mars looks red because its surface materials contain oxidized iron minerals. Hematite occurs on Mars, but newer evidence suggests ferrihydrite may also be an important source of the planet\u2019s red dust. Hematite was also used as a pigment by prehistoric humans.', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
 
-            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
+            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, density: 4.32, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
 
-            { id: 'olivine', label: t('stem.rocks.olivine'), hardness: 6.5, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine is a dominant mineral in much of Earth\'s upper mantle, but bridgmanite deeper in the mantle is Earth\'s most abundant mineral overall. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
+            { id: 'olivine', label: t('stem.rocks.olivine'), hardness: 6.5, density: 3.32, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine is a dominant mineral in much of Earth\'s upper mantle, but bridgmanite deeper in the mantle is Earth\'s most abundant mineral overall. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
 
             { id: 'fluorite', label: t('stem.rocks.fluorite'), hardness: 4, density: 3.18, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world", comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England, "Blue John"), and Illinois (USA).' },
 
@@ -2506,11 +2933,11 @@ const d = labToolData.rocks || {};
 
             { id: 'gypsum', label: t('stem.rocks.gypsum'), hardness: 2, density: 2.32, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#efe9e0', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons, the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
 
-            { id: 'sulfur', label: t('stem.rocks.sulfur', 'Sulfur'), hardness: 2, streak: 'White-yellow', luster: 'Resinous/Adamantine', crystal: 'Orthorhombic', color: '#eab308', formula: 'S', desc: 'Native element with a distinctive bright yellow color. Very light and brittle, with a low melting point (115\u00B0C). Burning sulfur makes pungent sulfur dioxide gas; the rotten-egg odor at some volcanic sites comes from hydrogen sulfide, not sulfur itself. Associated with volcanic activity and hot springs. One of the few minerals that occurs as a native element.', uses: 'Sulfuric acid (most widely used chemical), gunpowder, rubber vulcanization, fungicides, matches', funFact: 'Sulfur was known to ancient civilizations as "brimstone" (burning stone). It is mentioned in the Bible and in the Odyssey by Homer! The moon Io of Jupiter is covered in sulfur from its 400+ active volcanoes, giving it a bright yellow-orange appearance.', occurrence: 'Volcanic fumaroles, hot springs, evaporite domes (Gulf Coast USA), Sicily, Japan, Indonesia.' },
+            { id: 'sulfur', label: t('stem.rocks.sulfur', 'Sulfur'), hardness: 2, density: 2.07, streak: 'White-yellow', luster: 'Resinous/Adamantine', crystal: 'Orthorhombic', color: '#eab308', formula: 'S', desc: 'Native element with a distinctive bright yellow color. Very light and brittle, with a low melting point (115\u00B0C). Burning sulfur makes pungent sulfur dioxide gas; the rotten-egg odor at some volcanic sites comes from hydrogen sulfide, not sulfur itself. Associated with volcanic activity and hot springs. One of the few minerals that occurs as a native element.', uses: 'Sulfuric acid (most widely used chemical), gunpowder, rubber vulcanization, fungicides, matches', funFact: 'Sulfur was known to ancient civilizations as "brimstone" (burning stone). It is mentioned in the Bible and in the Odyssey by Homer! The moon Io of Jupiter is covered in sulfur from its 400+ active volcanoes, giving it a bright yellow-orange appearance.', occurrence: 'Volcanic fumaroles, hot springs, evaporite domes (Gulf Coast USA), Sicily, Japan, Indonesia.' },
 
-            { id: 'corundum', label: t('stem.rocks.corundum'), hardness: 9, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities, where 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
+            { id: 'corundum', label: t('stem.rocks.corundum'), hardness: 9, density: 4.0, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities, where 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
 
-            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', habit: 'striated', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The 6.2 kg (31,000-carat) El-Dorado Topaz from Brazil is one of the world\'s largest faceted topazes; it was cut from a much heavier rough crystal. Imperial topaz (a rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
+            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, density: 3.53, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', habit: 'striated', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The 6.2 kg (31,000-carat) El-Dorado Topaz from Brazil is one of the world\'s largest faceted topazes; it was cut from a much heavier rough crystal. Imperial topaz (a rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
 
           ];
 
@@ -2930,9 +3357,14 @@ const d = labToolData.rocks || {};
 
             canvasEl._rocksInit = true;
 
-            const W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
+            // let, not const: the ResizeObserver below must be able to retarget the
+            // frame. With W/H frozen at init, a container that changed size after
+            // mount (sidebar toggle, rotation, late stylesheet) got a backing store of
+            // the new size drawn at the OLD size: the whole scene stretched and the
+            // right-hand zone marker fell off the canvas.
+            let W = canvasEl.width = canvasEl.offsetWidth * (window.devicePixelRatio || 1);
 
-            const H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
+            let H = canvasEl.height = canvasEl.offsetHeight * (window.devicePixelRatio || 1);
 
             const ctx = canvasEl.getContext('2d');
             if (!ctx) { canvasEl._rocksInit = false; return; }
@@ -2982,51 +3414,245 @@ const d = labToolData.rocks || {};
 
 
 
-            function drawLandscape() {
+            // ── Landscape scene ──
+            // The first thing a student sees in this tool. It used to be three
+            // flat silhouettes, five coloured rectangles and two emoji fossils
+            // at 50% alpha: nothing in it showed HOW the three rock families
+            // form. Now every zone carries its own process: a stratovolcano
+            // with alternating lava/ash layers and an ash plume, fed by a
+            // convecting magma chamber with a contact aureole; a river that
+            // carries sediment off the mountain into a lake where graded beds
+            // (shale, sandstone, limestone with fossils, conglomerate) stack
+            // youngest-on-top; a folded metamorphic root under the mountain
+            // with compression arrows. Rock-cycle arrows have heads and flow.
+            // Everything is deterministic (seeded, tick-driven), so the frame
+            // is identical for identical inputs and reduced-motion is static.
+            var rkLsSeeded = null;
+            function rkLsPrep() {
+              if (rkLsSeeded) return rkLsSeeded;
+              var rnd = rkSeed('rocks-landscape');
+              var grains = [], stipple = [], pebbles = [], sediment = [], stars = [];
+              var i;
+              for (i = 0; i < 160; i++) grains.push([rnd(), rnd(), rnd()]);
+              for (i = 0; i < 70; i++) stipple.push([rnd(), rnd()]);
+              for (i = 0; i < 26; i++) pebbles.push([rnd(), rnd(), rnd(), rnd()]);
+              for (i = 0; i < 12; i++) sediment.push(rnd());
+              rkLsSeeded = { grains: grains, stipple: stipple, pebbles: pebbles, sediment: sediment };
+              return rkLsSeeded;
+            }
+            // Rounded rectangle without ctx.roundRect (absent in older WebViews).
+            function rkLsRR(x, y, w, hh, r) {
+              ctx.beginPath();
+              ctx.moveTo(x + r, y);
+              ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+              ctx.lineTo(x + w, y + hh - r); ctx.quadraticCurveTo(x + w, y + hh, x + w - r, y + hh);
+              ctx.lineTo(x + r, y + hh); ctx.quadraticCurveTo(x, y + hh, x, y + hh - r);
+              ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+              ctx.closePath();
+            }
+            // Curved arrow with a real head. Dashes flow along it with tick.
+            function rkLsArrow(x0, y0, cx, cy, x1, y1, color, width, flow) {
+              ctx.save();
+              ctx.strokeStyle = color; ctx.fillStyle = color;
+              ctx.lineWidth = width;
+              ctx.lineCap = 'round';
+              if (flow) { ctx.setLineDash([7 * dpr, 6 * dpr]); ctx.lineDashOffset = -tick * 0.6 * dpr; }
+              ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(cx, cy, x1, y1); ctx.stroke();
+              ctx.setLineDash([]);
+              var ang = Math.atan2(y1 - cy, x1 - cx);
+              var hl = 9 * dpr;
+              ctx.beginPath();
+              ctx.moveTo(x1, y1);
+              ctx.lineTo(x1 - hl * Math.cos(ang - 0.45), y1 - hl * Math.sin(ang - 0.45));
+              ctx.lineTo(x1 - hl * Math.cos(ang + 0.45), y1 - hl * Math.sin(ang + 0.45));
+              ctx.closePath(); ctx.fill();
+              ctx.restore();
+            }
+            // Pills that carry a hitId are clickable: they record their box for
+            // onRockClick / onRockMove (reset every frame in drawLandscape).
+            var rkLsHits = [];
+            function rkLsPill(text, lx, ly, align, hitId) {
+              ctx.save();
+              ctx.setLineDash([]);
+              ctx.textAlign = align || 'left'; ctx.textBaseline = 'alphabetic';
+              ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
+              var tw = ctx.measureText(text).width;
+              var padX = 5 * dpr, boxH = 14 * dpr;
+              var bx = (align === 'center' ? lx - tw / 2 : lx) - padX, by = ly - 10 * dpr, bw = tw + padX * 2;
+              if (hitId) rkLsHits.push({ id: hitId, x: bx / W, y: by / H, w: bw / W, h: boxH / H });
+              rkLsRR(bx, by, bw, boxH, 4 * dpr);
+              ctx.fillStyle = 'rgba(15,23,42,0.82)';
+              ctx.fill();
+              ctx.fillStyle = '#ffffff';
+              ctx.fillText(text, lx, ly);
+              ctx.restore();
+            }
+            function rkLsProcess(zoneId) {
+              return zoneId === 'volcano' ? __alloT('stem.rocks.ls_process_igneous', 'Magma rises, cools and hardens → igneous')
+                : zoneId === 'river' ? __alloT('stem.rocks.ls_process_sedimentary', 'Sediment settles, compacts and cements → sedimentary')
+                  : __alloT('stem.rocks.ls_process_metamorphic', 'Buried rock is squeezed and heated → metamorphic');
+            }
+            function rkLsAnnounce(msg) {
+              try { var live = document.getElementById('allo-live-rocks'); if (live) live.textContent = msg; } catch (e) {}
+            }
+            // ── Guided tour: follow ONE rock around the cycle ──
+            // The static scene shows every process at once; the tour shows the
+            // sequence. A tracer travels each leg with a caption for the stage,
+            // announced to the live region. Under reduced motion the tracer
+            // does not move: each stage is a still frame, stepped by button.
+            var rkLsTour = { stage: -1, u: 0, playing: false };
+            var RK_LS_TOUR = [
+              { id: 'igneous', color: '#f97316', cap: __alloT('stem.rocks.tour_cap_igneous', 'Magma cools and hardens: igneous rock'), path: null },
+              { id: 'weather', color: '#fbbf24', cap: __alloT('stem.rocks.tour_cap_weather', 'Weathering and erosion break it into sediment'), path: null },
+              { id: 'sedimentary', color: '#d97706', cap: __alloT('stem.rocks.tour_cap_sedimentary', 'Sediment settles, compacts and cements: sedimentary rock'), path: null },
+              { id: 'metamorphic', color: '#a78bfa', cap: __alloT('stem.rocks.tour_cap_metamorphic', 'Buried, squeezed and heated: metamorphic rock'), path: null },
+              { id: 'melt', color: '#ef4444', cap: __alloT('stem.rocks.tour_cap_melt', 'Deep enough, it melts back into magma'), path: null }
+            ];
+            function rkLsTourPaths() {
+              // Recomputed each frame from W/H so a resize retargets the route.
+              RK_LS_TOUR[0].path = [[W * 0.18, H * 0.66], [W * 0.17, H * 0.30], [W * 0.255, H * 0.45]];
+              RK_LS_TOUR[1].path = [[W * 0.27, H * 0.44], [W * 0.38, H * 0.30], [W * 0.47, H * 0.46]];
+              RK_LS_TOUR[2].path = [[W * 0.47, H * 0.46], [W * 0.50, H * 0.62], [W * 0.60, H * 0.84]];
+              RK_LS_TOUR[3].path = [[W * 0.60, H * 0.84], [W * 0.70, H * 0.82], [W * 0.80, H * 0.68]];
+              RK_LS_TOUR[4].path = [[W * 0.70, H * 0.86], [W * 0.45, H * 0.99], [W * 0.24, H * 0.76]];
+            }
+            function rkLsTourAnnounce() {
+              if (rkLsTour.stage < 0) { rkLsAnnounce(__alloT('stem.rocks.tour_stopped', 'Rock cycle tour stopped.')); return; }
+              var st = RK_LS_TOUR[rkLsTour.stage];
+              rkLsAnnounce(__alloT('stem.rocks.tour_stage', 'Stage ') + (rkLsTour.stage + 1) + __alloT('stem.rocks.tour_of', ' of ') + RK_LS_TOUR.length + ': ' + st.cap + '.');
+            }
+            function rkLsTourCmd(cmd) {
+              if (cmd === 'play') { if (rkLsTour.stage < 0) { rkLsTour.stage = 0; rkLsTour.u = 0; } rkLsTour.playing = !rocksMotionReduced; rkLsTourAnnounce(); }
+              else if (cmd === 'stop') { rkLsTour.stage = -1; rkLsTour.u = 0; rkLsTour.playing = false; rkLsTourAnnounce(); }
+              else if (cmd === 'next') { rkLsTour.stage = rkLsTour.stage < 0 ? 0 : (rkLsTour.stage + 1) % RK_LS_TOUR.length; rkLsTour.u = 0; rkLsTourAnnounce(); }
+              else if (cmd === 'prev') { rkLsTour.stage = rkLsTour.stage <= 0 ? RK_LS_TOUR.length - 1 : rkLsTour.stage - 1; rkLsTour.u = 0; rkLsTourAnnounce(); }
+              else if (cmd === 'toggle') { rkLsTourCmd(rkLsTour.stage < 0 ? 'play' : 'stop'); return; }
+              else if (typeof cmd === 'string' && cmd.indexOf('goto:') === 0) { var gs = parseInt(cmd.slice(5), 10); if (gs >= 0 && gs < RK_LS_TOUR.length) { rkLsTour.stage = gs; rkLsTour.u = 0; rkLsTour.playing = !rocksMotionReduced; rkLsTourAnnounce(); } }
+              if (rocksMotionReduced) drawLandscape();
+            }
+            function rkLsDrawTour() {
+              if (rkLsTour.stage < 0) return;
+              rkLsTourPaths();
+              if (rkLsTour.playing && !rocksMotionReduced) {
+                rkLsTour.u += 1 / 220;
+                if (rkLsTour.u >= 1) { rkLsTour.u = 0; rkLsTour.stage = (rkLsTour.stage + 1) % RK_LS_TOUR.length; rkLsTourAnnounce(); }
+              }
+              var st = RK_LS_TOUR[rkLsTour.stage];
+              // Under reduced motion the tracer sits at the END of its leg: the
+              // still frame shows where the stage delivers the rock.
+              var u = rocksMotionReduced ? 1 : rkLsTour.u;
+              // Trail of the current leg, then the tracer.
+              ctx.save();
+              ctx.strokeStyle = st.color; ctx.lineWidth = 3 * dpr; ctx.lineCap = 'round'; ctx.globalAlpha = 0.85;
+              ctx.beginPath();
+              for (var ti = 0; ti <= 24; ti++) { var tp = rkLsBezier(st.path[0], st.path[1], st.path[2], (ti / 24) * u); if (ti === 0) ctx.moveTo(tp[0], tp[1]); else ctx.lineTo(tp[0], tp[1]); }
+              ctx.stroke();
+              var p = rkLsBezier(st.path[0], st.path[1], st.path[2], u);
+              ctx.globalAlpha = 1;
+              ctx.shadowColor = st.color; ctx.shadowBlur = 14 * dpr;
+              ctx.fillStyle = st.color;
+              ctx.beginPath(); ctx.arc(p[0], p[1], 7 * dpr, 0, Math.PI * 2); ctx.fill();
+              ctx.shadowBlur = 0;
+              ctx.fillStyle = '#ffffff';
+              ctx.beginPath(); ctx.arc(p[0], p[1], 3 * dpr, 0, Math.PI * 2); ctx.fill();
+              ctx.restore();
+              // Stage banner at the top centre, where nothing else lives.
+              rkLsPill(__alloT('stem.rocks.tour_stage', 'Stage ') + (rkLsTour.stage + 1) + __alloT('stem.rocks.tour_of', ' of ') + RK_LS_TOUR.length + ' · ' + st.cap, W * 0.5, H * 0.045, 'center');
+              // Stage dots.
+              for (var di = 0; di < RK_LS_TOUR.length; di++) {
+                ctx.beginPath(); ctx.arc(W * 0.5 + (di - 2) * 14 * dpr, H * 0.075, 3.2 * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = di === rkLsTour.stage ? '#ffffff' : 'rgba(255,255,255,0.4)'; ctx.fill();
+              }
+            }
+            function rkLsBezier(p0, p1, p2, u) {
+              var v = 1 - u;
+              return [v * v * p0[0] + 2 * v * u * p1[0] + u * u * p2[0], v * v * p0[1] + 2 * v * u * p1[1] + u * u * p2[1]];
+            }
 
+            function drawLandscape() {
+              var P = rkLsPrep();
+              var i, j;
+              rkLsHits.length = 0;
               ctx.clearRect(0, 0, W, H);
 
-              // Sky gradient
-
+              // ── Sky: deep zenith to hazy horizon, sun, drifting clouds ──
               const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
-
-              skyGrad.addColorStop(0, '#0c4a6e');
-
-              skyGrad.addColorStop(1, '#7dd3fc');
-
+              skyGrad.addColorStop(0, '#0b3a5e');
+              skyGrad.addColorStop(0.55, '#3b9ad6');
+              skyGrad.addColorStop(1, '#bfe6fa');
               ctx.fillStyle = skyGrad;
-
               ctx.fillRect(0, 0, W, H * 0.5);
+              var sunX = W * 0.55, sunY = H * 0.11;
+              var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, W * 0.11);
+              sunGlow.addColorStop(0, 'rgba(255,247,204,0.95)');
+              sunGlow.addColorStop(0.25, 'rgba(255,236,170,0.45)');
+              sunGlow.addColorStop(1, 'rgba(255,236,170,0)');
+              ctx.fillStyle = sunGlow;
+              ctx.fillRect(sunX - W * 0.12, sunY - W * 0.12, W * 0.24, W * 0.24);
+              ctx.beginPath(); ctx.arc(sunX, sunY, 11 * dpr, 0, Math.PI * 2); ctx.fillStyle = '#fff7cc'; ctx.fill();
+              // Distant ridge for depth.
+              ctx.beginPath();
+              ctx.moveTo(W * 0.30, H * 0.5);
+              ctx.lineTo(W * 0.38, H * 0.40); ctx.lineTo(W * 0.45, H * 0.44); ctx.lineTo(W * 0.52, H * 0.37);
+              ctx.lineTo(W * 0.58, H * 0.43); ctx.lineTo(W * 0.66, H * 0.39); ctx.lineTo(W * 0.72, H * 0.5);
+              ctx.closePath();
+              ctx.fillStyle = 'rgba(91,122,154,0.55)';
+              ctx.fill();
+              // Clouds: three clusters drifting right, wrapping.
+              for (i = 0; i < 3; i++) {
+                var cxC = ((W * (0.15 + i * 0.33) + tick * (0.35 + i * 0.12) * dpr) % (W * 1.3)) - W * 0.15;
+                var cyC = H * (0.09 + i * 0.05);
+                ctx.fillStyle = 'rgba(255,255,255,0.86)';
+                for (j = 0; j < 4; j++) {
+                  ctx.beginPath();
+                  ctx.ellipse(cxC + (j - 1.5) * 16 * dpr, cyC + (j % 2 ? 3 : -3) * dpr, (14 + (j % 2) * 8) * dpr, (8 + (j % 2) * 4) * dpr, 0, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+              }
 
+              // Birds: two small flocks crossing the sky. Life in the scene, and a
+              // sense of scale for the range behind them.
+              ctx.save();
+              ctx.strokeStyle = 'rgba(30,41,59,0.75)'; ctx.lineWidth = 1.3 * dpr; ctx.lineCap = 'round';
+              for (i = 0; i < 2; i++) {
+                var dir = i === 0 ? 1 : -1;
+                var fx = ((tick * (0.55 + i * 0.2) * dpr + W * (0.2 + i * 0.5)) % (W * 1.3)) - W * 0.15;
+                if (dir < 0) fx = W - fx;
+                var fy = H * (0.16 + i * 0.09);
+                for (j = 0; j < 4 + i; j++) {
+                  var bx = fx + (j - 2) * 11 * dpr * dir, by = fy + Math.abs(j - 2) * 5 * dpr + Math.sin(tick * 0.05 + j) * 1.5 * dpr;
+                  var flap = 2.2 * dpr + Math.sin(tick * 0.25 + j * 0.7) * 1.6 * dpr;
+                  ctx.beginPath(); ctx.moveTo(bx - 4 * dpr, by + flap); ctx.lineTo(bx, by); ctx.lineTo(bx + 4 * dpr, by + flap); ctx.stroke();
+                }
+              }
+              ctx.restore();
 
-
-              // Underground gradient
-
+              // ── Underground: bedrock gradient + grain ──
               const groundGrad = ctx.createLinearGradient(0, H * 0.5, 0, H);
-
-              groundGrad.addColorStop(0, '#78350f');
-
-              groundGrad.addColorStop(0.3, '#92400e');
-
-              groundGrad.addColorStop(1, '#451a03');
-
+              groundGrad.addColorStop(0, '#6b4423');
+              groundGrad.addColorStop(0.35, '#7c4a1e');
+              groundGrad.addColorStop(1, '#3a1607');
               ctx.fillStyle = groundGrad;
-
               ctx.fillRect(0, H * 0.5, W, H * 0.5);
+              for (i = 0; i < P.grains.length; i++) {
+                var gr = P.grains[i];
+                ctx.fillStyle = gr[2] > 0.5 ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.16)';
+                ctx.fillRect(gr[0] * W, H * 0.52 + gr[1] * H * 0.47, (1.5 + gr[2] * 2) * dpr, (1 + gr[2]) * dpr);
+              }
+              // Depth / temperature scale at the left edge.
+              var dsX = W * 0.012, dsY0 = H * 0.53, dsY1 = H * 0.97;
+              var dsGrad = ctx.createLinearGradient(0, dsY0, 0, dsY1);
+              dsGrad.addColorStop(0, '#93c5fd'); dsGrad.addColorStop(0.5, '#fbbf24'); dsGrad.addColorStop(1, '#ef4444');
+              ctx.fillStyle = dsGrad;
+              ctx.fillRect(dsX, dsY0, 5 * dpr, dsY1 - dsY0);
+              ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif';
+              ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+              ctx.fillText(__alloT('stem.rocks.ls_depth_top', '0 km · cool'), dsX + 8 * dpr, dsY0 + 3 * dpr);
+              ctx.fillText(__alloT('stem.rocks.ls_depth_bottom', '~35 km · hot'), dsX + 8 * dpr, dsY1 - 3 * dpr);
 
-
-
-              // Ground surface — a TURF BAND, not a fill to the canvas bottom.
-              // This path used to close at (W,H)/(0,H), so it painted the entire
-              // subsurface bright green and buried the underground gradient that
-              // had just been drawn. In a panel captioned "Cross-Section View"
-              // that left the sedimentary beds and the magma chamber apparently
-              // floating in a lawn. Now the turf is a thin skin over a soil
-              // horizon, and the rock beneath stays visible.
-
+              // ── Surface: soil horizon + turf band ──
               var turfH = H * 0.035;
               var surfaceY = function (x) { return H * 0.5 + Math.sin(x * 0.01 + tick * 0.01) * 3 * dpr; };
-
               var band = function (topOffset, bottomOffset, fill) {
                 ctx.beginPath();
                 ctx.moveTo(0, surfaceY(0) + topOffset);
@@ -3036,119 +3662,188 @@ const d = labToolData.rocks || {};
                 ctx.fillStyle = fill;
                 ctx.fill();
               };
-
-              // Soil horizon first, then the turf sitting on top of it.
               band(turfH * 0.9, turfH * 2.4, '#5b4426');
               band(0, turfH, '#65a30d');
 
-
-
-              // ── Volcano (left) ──
-
-              ctx.beginPath();
-
-              ctx.moveTo(W * 0.02, H * 0.52);
-
-              ctx.lineTo(W * 0.15, H * 0.12);
-
-              ctx.lineTo(W * 0.18, H * 0.08);
-
-              ctx.lineTo(W * 0.21, H * 0.12);
-
-              ctx.lineTo(W * 0.34, H * 0.52);
-
-              ctx.closePath();
-
-              const volcGrad = ctx.createLinearGradient(W * 0.15, H * 0.08, W * 0.15, H * 0.52);
-
-              volcGrad.addColorStop(0, '#7f1d1d');
-
-              volcGrad.addColorStop(0.4, '#991b1b');
-
-              volcGrad.addColorStop(1, '#57534e');
-
-              ctx.fillStyle = volcGrad;
-
-              ctx.fill();
-
-
-
-              // Lava flow
-
-              ctx.beginPath();
-
-              ctx.moveTo(W * 0.17, H * 0.1);
-
-              const lavaWave = Math.sin(tick * 0.05) * 5 * dpr;
-
-              ctx.quadraticCurveTo(W * 0.19 + lavaWave, H * 0.25, W * 0.24, H * 0.42);
-
-              ctx.lineTo(W * 0.22, H * 0.42);
-
-              ctx.quadraticCurveTo(W * 0.17 - lavaWave, H * 0.25, W * 0.16, H * 0.1);
-
-              ctx.closePath();
-
-              const lavaGrad = ctx.createLinearGradient(W * 0.17, H * 0.1, W * 0.17, H * 0.42);
-
-              lavaGrad.addColorStop(0, '#fef3c7');
-              lavaGrad.addColorStop(0.15, '#fbbf24');
-
-              lavaGrad.addColorStop(0.5, '#f97316');
-
-              lavaGrad.addColorStop(1, '#dc2626');
-
-              ctx.fillStyle = lavaGrad;
-
-              ctx.fill();
-
-
-
-              // Lava particles
-
-              for (let i = 0; i < 6; i++) {
-
-                const px = W * 0.17 + Math.sin(tick * 0.08 + i * 1.2) * 12 * dpr;
-
-                const py = H * 0.06 - Math.abs(Math.sin(tick * 0.06 + i * 0.9)) * 20 * dpr;
-
+              // ── Sedimentary basin (centre): lake, delta, graded beds ──
+              var bx0 = W * 0.38, bx1 = W * 0.70;
+              var bedTops = [0.55, 0.63, 0.71, 0.79, 0.87, 0.95];
+              var bedFill = ['#b09a7a', '#e0b062', '#d9d2bd', '#a8693a', '#3f3a34'];
+              var bedNames = ['shale', 'sandstone', 'limestone', 'conglomerate', 'mudstone'];
+              for (i = 0; i < 5; i++) {
+                var y0 = H * bedTops[i], y1 = H * bedTops[i + 1];
+                var dip = H * 0.012;
                 ctx.beginPath();
-
-                ctx.arc(px, py, (2 + Math.sin(tick * 0.1 + i)) * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = i % 2 === 0 ? '#fbbf24' : '#f97316';
-
+                ctx.moveTo(bx0, y0 + dip); ctx.lineTo(bx1, y0 - dip); ctx.lineTo(bx1, y1 - dip); ctx.lineTo(bx0, y1 + dip); ctx.closePath();
+                ctx.fillStyle = bedFill[i]; ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+                ctx.save();
+                ctx.clip();
+                if (bedNames[i] === 'shale' || bedNames[i] === 'mudstone') {
+                  ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 0.7 * dpr;
+                  for (j = 1; j < 6; j++) { var ly = y0 + (y1 - y0) * (j / 6); ctx.beginPath(); ctx.moveTo(bx0, ly + dip); ctx.lineTo(bx1, ly - dip); ctx.stroke(); }
+                } else if (bedNames[i] === 'sandstone') {
+                  ctx.fillStyle = 'rgba(120,70,20,0.35)';
+                  for (j = 0; j < P.stipple.length; j++) ctx.fillRect(bx0 + P.stipple[j][0] * (bx1 - bx0), y0 + P.stipple[j][1] * (y1 - y0), 1.4 * dpr, 1.4 * dpr);
+                } else if (bedNames[i] === 'conglomerate') {
+                  for (j = 0; j < P.pebbles.length; j++) {
+                    var pb = P.pebbles[j];
+                    ctx.beginPath();
+                    ctx.ellipse(bx0 + pb[0] * (bx1 - bx0), y0 + 0.15 * (y1 - y0) + pb[1] * 0.7 * (y1 - y0), (2.5 + pb[2] * 4) * dpr, (2 + pb[3] * 2.5) * dpr, pb[2] * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = pb[3] > 0.6 ? '#d6d3d1' : pb[3] > 0.3 ? '#7c6f64' : '#c2410c';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
+                  }
+                } else if (bedNames[i] === 'limestone') {
+                  // Fossils drawn as shapes, not emoji: ammonite, bivalve, fish.
+                  ctx.strokeStyle = 'rgba(60,45,30,0.75)'; ctx.lineWidth = 1.1 * dpr; ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                  var ax = W * 0.455, ay = (y0 + y1) / 2;
+                  ctx.beginPath();
+                  for (j = 0; j <= 60; j++) { var ta = j * 0.21, ra = (1 + ta * 1.9) * dpr; var px = ax + Math.cos(ta) * ra, py = ay + Math.sin(ta) * ra; if (j === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+                  ctx.stroke();
+                  var sx = W * 0.545, sy = ay + 4 * dpr;
+                  ctx.beginPath(); ctx.moveTo(sx - 9 * dpr, sy); ctx.quadraticCurveTo(sx, sy - 16 * dpr, sx + 9 * dpr, sy); ctx.closePath(); ctx.fill(); ctx.stroke();
+                  for (j = -2; j <= 2; j++) { ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + j * 3.5 * dpr, sy - (12 - Math.abs(j) * 2.5) * dpr); ctx.stroke(); }
+                  var fx = W * 0.63, fy = ay;
+                  ctx.beginPath(); ctx.moveTo(fx - 14 * dpr, fy); ctx.lineTo(fx + 10 * dpr, fy); ctx.stroke();
+                  for (j = -3; j <= 3; j++) { ctx.beginPath(); ctx.moveTo(fx + j * 3.5 * dpr, fy); ctx.lineTo(fx + j * 3.5 * dpr - 2 * dpr, fy - 5 * dpr); ctx.moveTo(fx + j * 3.5 * dpr, fy); ctx.lineTo(fx + j * 3.5 * dpr - 2 * dpr, fy + 5 * dpr); ctx.stroke(); }
+                  ctx.beginPath(); ctx.moveTo(fx + 10 * dpr, fy); ctx.lineTo(fx + 16 * dpr, fy - 5 * dpr); ctx.lineTo(fx + 16 * dpr, fy + 5 * dpr); ctx.closePath(); ctx.stroke();
+                  ctx.beginPath(); ctx.arc(fx - 14 * dpr, fy, 4 * dpr, 0, Math.PI * 2); ctx.stroke();
+                }
+                ctx.restore();
+              }
+              // Superposition cue: youngest on top.
+              rkLsArrow(W * 0.715, H * 0.84, W * 0.715, H * 0.70, W * 0.715, H * 0.58, 'rgba(255,255,255,0.85)', 1.6 * dpr, false);
+              ctx.save(); ctx.translate(W * 0.727, H * 0.72); ctx.rotate(-Math.PI / 2);
+              ctx.font = 'bold ' + (8 * dpr) + 'px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+              ctx.fillText(__alloT('stem.rocks.ls_younger', 'younger'), 0, 0);
+              ctx.restore();
+              // Lake with shimmer.
+              ctx.beginPath();
+              ctx.ellipse(W * 0.54, H * 0.505, W * 0.15, H * 0.022, 0, 0, Math.PI * 2);
+              ctx.fillStyle = '#38bdf8'; ctx.fill();
+              ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1 * dpr;
+              for (i = 0; i < 4; i++) {
+                var shx = W * (0.44 + i * 0.05) + Math.sin(tick * 0.05 + i) * 4 * dpr;
+                ctx.beginPath(); ctx.moveTo(shx, H * 0.505 + (i % 2) * 3 * dpr); ctx.lineTo(shx + 10 * dpr, H * 0.505 + (i % 2) * 3 * dpr); ctx.stroke();
+              }
+              // River from the mountain flank into the lake, with flow dashes.
+              var r0 = [W * 0.735, H * 0.28], r1 = [W * 0.70, H * 0.44], r2 = [W * 0.655, H * 0.505];
+              ctx.save();
+              ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 5 * dpr; ctx.lineCap = 'round';
+              ctx.beginPath(); ctx.moveTo(r0[0], r0[1]); ctx.quadraticCurveTo(r1[0], r1[1], r2[0], r2[1]); ctx.stroke();
+              ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.4 * dpr;
+              ctx.setLineDash([5 * dpr, 7 * dpr]); ctx.lineDashOffset = -tick * 0.8 * dpr;
+              ctx.beginPath(); ctx.moveTo(r0[0], r0[1]); ctx.quadraticCurveTo(r1[0], r1[1], r2[0], r2[1]); ctx.stroke();
+              ctx.restore();
+              // Delta fan where the river meets the lake.
+              ctx.beginPath();
+              ctx.moveTo(r2[0] + 4 * dpr, r2[1] - 5 * dpr);
+              ctx.quadraticCurveTo(W * 0.62, H * 0.49, W * 0.60, H * 0.515);
+              ctx.quadraticCurveTo(W * 0.635, H * 0.53, r2[0] + 8 * dpr, H * 0.52);
+              ctx.closePath();
+              ctx.fillStyle = '#d6b370'; ctx.fill();
+              // Sediment grains travelling down the river and settling.
+              for (i = 0; i < P.sediment.length; i++) {
+                var u = (tick * 0.004 + P.sediment[i]) % 1;
+                var sp2 = rkLsBezier(r0, r1, r2, u);
+                var settle = u > 0.85 ? (u - 0.85) / 0.15 : 0;
+                ctx.beginPath();
+                ctx.arc(sp2[0] - settle * 30 * dpr, sp2[1] + settle * 6 * dpr, (1.4 + P.sediment[i]) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(214,179,112,' + (1 - settle * 0.9) + ')';
                 ctx.fill();
-
               }
 
+              // ── Volcano (left): layered stratocone, crater, plume, lava ──
+              const conePts = [[W * 0.02, H * 0.52], [W * 0.15, H * 0.12], [W * 0.18, H * 0.10], [W * 0.21, H * 0.12], [W * 0.34, H * 0.52]];
+              ctx.beginPath();
+              ctx.moveTo(conePts[0][0], conePts[0][1]);
+              for (i = 1; i < conePts.length; i++) ctx.lineTo(conePts[i][0], conePts[i][1]);
+              ctx.closePath();
+              const volcGrad = ctx.createLinearGradient(W * 0.15, H * 0.10, W * 0.15, H * 0.52);
+              volcGrad.addColorStop(0, '#7f1d1d');
+              volcGrad.addColorStop(0.5, '#6b2f2f');
+              volcGrad.addColorStop(1, '#57534e');
+              ctx.fillStyle = volcGrad; ctx.fill();
+              ctx.save();
+              ctx.clip();
+              // Alternating lava / ash layers seen in cross-section.
+              for (i = 0; i < 9; i++) {
+                var lyY = H * (0.16 + i * 0.04);
+                var half = (lyY - H * 0.10) / (H * 0.42) * (W * 0.16);
+                ctx.beginPath();
+                ctx.moveTo(W * 0.18 - half - W * 0.02, lyY + H * 0.03);
+                ctx.lineTo(W * 0.18, lyY - H * 0.012);
+                ctx.lineTo(W * 0.18 + half + W * 0.02, lyY + H * 0.03);
+                ctx.lineTo(W * 0.18 + half + W * 0.02, lyY + H * 0.045);
+                ctx.lineTo(W * 0.18, lyY + H * 0.003);
+                ctx.lineTo(W * 0.18 - half - W * 0.02, lyY + H * 0.045);
+                ctx.closePath();
+                ctx.fillStyle = i % 2 ? 'rgba(80,80,80,0.55)' : 'rgba(153,27,27,0.55)';
+                ctx.fill();
+              }
+              ctx.restore();
+              // Crater bowl.
+              ctx.beginPath();
+              ctx.moveTo(W * 0.155, H * 0.12); ctx.quadraticCurveTo(W * 0.18, H * 0.155, W * 0.205, H * 0.12);
+              ctx.closePath();
+              ctx.fillStyle = '#3f1d1d'; ctx.fill();
+              // Ash plume: rising, expanding puffs.
+              for (i = 0; i < 9; i++) {
+                var ph = (tick * 0.5 + i * 27) % 240;
+                var pyp = H * 0.10 - ph * 0.55 * dpr;
+                var pxp = W * 0.18 + Math.sin(ph * 0.04 + i) * (4 + ph * 0.12) * dpr + ph * 0.18 * dpr;
+                var prad = (5 + ph * 0.09) * dpr;
+                if (pyp < -prad) continue;
+                ctx.beginPath(); ctx.arc(pxp, pyp, prad, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(90,90,100,' + (0.55 - ph / 240 * 0.5) + ')';
+                ctx.fill();
+              }
+              // Embers.
+              for (i = 0; i < 8; i++) {
+                const px = W * 0.18 + Math.sin(tick * 0.08 + i * 1.2) * 14 * dpr;
+                const py = H * 0.09 - Math.abs(Math.sin(tick * 0.06 + i * 0.9)) * 24 * dpr;
+                ctx.beginPath(); ctx.arc(px, py, (1.6 + Math.sin(tick * 0.1 + i)) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = i % 2 === 0 ? '#fbbf24' : '#f97316'; ctx.fill();
+              }
+              // Lava flow down the right flank, glowing.
+              ctx.save();
+              ctx.shadowColor = '#f97316'; ctx.shadowBlur = 10 * dpr;
+              ctx.beginPath();
+              ctx.moveTo(W * 0.185, H * 0.13);
+              const lavaWave = Math.sin(tick * 0.05) * 4 * dpr;
+              ctx.quadraticCurveTo(W * 0.21 + lavaWave, H * 0.27, W * 0.26, H * 0.44);
+              ctx.lineTo(W * 0.235, H * 0.445);
+              ctx.quadraticCurveTo(W * 0.19 - lavaWave, H * 0.27, W * 0.175, H * 0.13);
+              ctx.closePath();
+              const lavaGrad = ctx.createLinearGradient(W * 0.18, H * 0.13, W * 0.18, H * 0.44);
+              lavaGrad.addColorStop(0, '#fef3c7'); lavaGrad.addColorStop(0.2, '#fbbf24'); lavaGrad.addColorStop(0.6, '#f97316'); lavaGrad.addColorStop(1, '#991b1b');
+              ctx.fillStyle = lavaGrad; ctx.fill();
+              ctx.restore();
+              // Cooled basalt toe at the foot of the flow.
+              ctx.beginPath(); ctx.ellipse(W * 0.265, H * 0.455, 16 * dpr, 5 * dpr, 0, 0, Math.PI * 2); ctx.fillStyle = '#1f2937'; ctx.fill();
 
-
-              // Magma chamber underground
-
-              // Magma body. This was a smooth ellipse with a bright core, which
-              // read as a SUN sitting in the ground — and it had no visible
-              // connection to the volcano above it, so the melting pathway was
-              // implied only by a dashed arrow. Now an irregular chamber with a
-              // feeder conduit running up to the vent.
-
-              const mgX = W * 0.18, mgY = H * 0.75, mgRx = W * 0.085, mgRy = H * 0.11;
-
-              // Feeder conduit first, so the chamber overlaps its base.
+              // ── Magma chamber + conduit + aureole ──
+              const mgX = W * 0.18, mgY = H * 0.76, mgRx = W * 0.085, mgRy = H * 0.11;
+              // Heat halo, then aureole ring: country rock baked around the pluton.
+              var halo = ctx.createRadialGradient(mgX, mgY, mgRx * 0.8, mgX, mgY, mgRx * 1.9);
+              halo.addColorStop(0, 'rgba(249,115,22,0.30)'); halo.addColorStop(1, 'rgba(249,115,22,0)');
+              ctx.fillStyle = halo; ctx.fillRect(mgX - mgRx * 2, mgY - mgRy * 2.4, mgRx * 4, mgRy * 4.8);
+              ctx.save();
+              ctx.setLineDash([3 * dpr, 4 * dpr]); ctx.strokeStyle = 'rgba(251,191,36,0.55)'; ctx.lineWidth = 1.5 * dpr;
+              ctx.beginPath(); ctx.ellipse(mgX, mgY, mgRx * 1.45, mgRy * 1.45, 0, 0, Math.PI * 2); ctx.stroke();
+              ctx.restore();
+              // Feeder conduit.
               ctx.beginPath();
               ctx.moveTo(mgX - 7 * dpr, mgY - mgRy * 0.8);
-              ctx.quadraticCurveTo(W * 0.172, H * 0.62, W * 0.176, H * 0.5);
-              ctx.lineTo(W * 0.191, H * 0.5);
+              ctx.quadraticCurveTo(W * 0.172, H * 0.62, W * 0.176, H * 0.14);
+              ctx.lineTo(W * 0.186, H * 0.14);
               ctx.quadraticCurveTo(W * 0.187, H * 0.62, mgX + 7 * dpr, mgY - mgRy * 0.8);
               ctx.closePath();
-              const conduitGrad = ctx.createLinearGradient(0, H * 0.5, 0, mgY);
-              conduitGrad.addColorStop(0, '#b45309');
-              conduitGrad.addColorStop(1, '#ea580c');
-              ctx.fillStyle = conduitGrad;
-              ctx.fill();
-
-              // Irregular chamber outline — deterministic wobble, no randomness,
-              // so the scene is identical frame to frame.
+              const conduitGrad = ctx.createLinearGradient(0, H * 0.14, 0, mgY);
+              conduitGrad.addColorStop(0, '#fbbf24'); conduitGrad.addColorStop(0.4, '#c2410c'); conduitGrad.addColorStop(1, '#ea580c');
+              ctx.fillStyle = conduitGrad; ctx.fill();
+              // Irregular chamber, deterministic wobble.
               ctx.beginPath();
               for (let mi = 0; mi <= 28; mi++) {
                 const ma = (mi / 28) * Math.PI * 2;
@@ -3158,351 +3853,160 @@ const d = labToolData.rocks || {};
                 if (mi === 0) ctx.moveTo(mxp, myp); else ctx.lineTo(mxp, myp);
               }
               ctx.closePath();
-
               const magmaGrad = ctx.createRadialGradient(mgX - mgRx * 0.2, mgY - mgRy * 0.2, 0, mgX, mgY, mgRx * 1.25);
-
-              magmaGrad.addColorStop(0, '#fde047');
-              magmaGrad.addColorStop(0.42, '#ea580c');
-
-              magmaGrad.addColorStop(1, '#7f1d1d');
-
-              ctx.fillStyle = magmaGrad;
-
-              ctx.fill();
-
-              // Chilled margin: real plutons have a cooler rim against the country rock.
-              ctx.strokeStyle = 'rgba(69,26,3,0.75)';
-              ctx.lineWidth = 2 * dpr;
-              ctx.stroke();
-
-
-
-              // ── River & sedimentary layers (center) ──
-
-              // River
-
-              ctx.beginPath();
-
-              ctx.moveTo(W * 0.38, H * 0.48);
-
-              ctx.quadraticCurveTo(W * 0.45, H * 0.46 + Math.sin(tick * 0.02) * 3 * dpr, W * 0.55, H * 0.49);
-
-              ctx.quadraticCurveTo(W * 0.62, H * 0.5, W * 0.7, H * 0.48);
-
-              ctx.lineTo(W * 0.7, H * 0.52);
-
-              ctx.quadraticCurveTo(W * 0.62, H * 0.54, W * 0.55, H * 0.53);
-
-              ctx.quadraticCurveTo(W * 0.45, H * 0.5, W * 0.38, H * 0.52);
-
-              ctx.closePath();
-
-              ctx.fillStyle = '#38bdf8';
-
-              ctx.fill();
-
-
-
-              // Sedimentary layers underground
-
-              const layerColors = ['#d97706', '#fbbf24', '#92400e', '#b45309', '#78716c'];
-
-              for (let i = 0; i < 5; i++) {
-
-                const ly = H * 0.55 + i * H * 0.08;
-
-                ctx.fillStyle = layerColors[i];
-
-                ctx.fillRect(W * 0.38, ly, W * 0.32, H * 0.07);
-
-                ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-
-                ctx.lineWidth = 0.5 * dpr;
-
-                ctx.strokeRect(W * 0.38, ly, W * 0.32, H * 0.07);
-
+              magmaGrad.addColorStop(0, '#fde047'); magmaGrad.addColorStop(0.42, '#ea580c'); magmaGrad.addColorStop(1, '#7f1d1d');
+              ctx.fillStyle = magmaGrad; ctx.fill();
+              ctx.strokeStyle = 'rgba(69,26,3,0.75)'; ctx.lineWidth = 2 * dpr; ctx.stroke();
+              // Convection cells inside the chamber.
+              ctx.save();
+              ctx.strokeStyle = 'rgba(253,224,71,0.45)'; ctx.lineWidth = 1.5 * dpr;
+              for (i = 0; i < 3; i++) {
+                var ca = tick * 0.02 + i * 2.1;
+                ctx.beginPath(); ctx.ellipse(mgX + (i - 1) * mgRx * 0.45, mgY, mgRx * 0.28, mgRy * 0.5, 0, ca, ca + 3.6); ctx.stroke();
               }
+              ctx.restore();
 
-
-
-              // Fossil in layer
-
-              ctx.font = (14 * dpr) + 'px serif';
-
-              ctx.fillStyle = 'rgba(255,255,255,0.5)';
-
-              ctx.fillText('🦴', W * 0.5, H * 0.66);
-
-              ctx.fillText('🐚', W * 0.58, H * 0.74);
-
-
-
-              // ── Mountain (right, metamorphic) ──
-
+              // ── Mountain (right): peaks, snow, folded metamorphic root ──
               ctx.beginPath();
-
-              ctx.moveTo(W * 0.62, H * 0.52);
-
-              ctx.lineTo(W * 0.78, H * 0.06);
-
-              ctx.lineTo(W * 0.82, H * 0.02);
-
-              ctx.lineTo(W * 0.86, H * 0.06);
-
-              ctx.lineTo(W * 0.98, H * 0.52);
-
+              ctx.moveTo(W * 0.60, H * 0.52);
+              ctx.lineTo(W * 0.70, H * 0.22); ctx.lineTo(W * 0.745, H * 0.30);
+              ctx.lineTo(W * 0.80, H * 0.06); ctx.lineTo(W * 0.83, H * 0.02); ctx.lineTo(W * 0.86, H * 0.06);
+              ctx.lineTo(W * 0.985, H * 0.52);
               ctx.closePath();
-
               const mtGrad = ctx.createLinearGradient(W * 0.82, H * 0.02, W * 0.82, H * 0.52);
-
-              mtGrad.addColorStop(0, '#fafafa');
-
-              mtGrad.addColorStop(0.2, '#d1d5db');
-
-              mtGrad.addColorStop(0.5, '#94a3b8');
-
-              mtGrad.addColorStop(1, '#374151');
-
-              ctx.fillStyle = mtGrad;
-
-              ctx.fill();
-
-
-
-              // Metamorphic layers folded inside mountain underground
-
-              for (let i = 0; i < 4; i++) {
-
+              mtGrad.addColorStop(0, '#e5e7eb'); mtGrad.addColorStop(0.35, '#9ca3af'); mtGrad.addColorStop(1, '#374151');
+              ctx.fillStyle = mtGrad; ctx.fill();
+              // Tilted strata on the mountain face.
+              ctx.save(); ctx.clip();
+              ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1.2 * dpr;
+              for (i = 0; i < 7; i++) { ctx.beginPath(); ctx.moveTo(W * 0.62, H * (0.30 + i * 0.035)); ctx.lineTo(W * 0.98, H * (0.16 + i * 0.05)); ctx.stroke(); }
+              // Snow cap.
+              ctx.beginPath();
+              ctx.moveTo(W * 0.80, H * 0.06); ctx.lineTo(W * 0.83, H * 0.02); ctx.lineTo(W * 0.86, H * 0.06);
+              ctx.lineTo(W * 0.875, H * 0.115); ctx.lineTo(W * 0.86, H * 0.10); ctx.lineTo(W * 0.845, H * 0.125); ctx.lineTo(W * 0.825, H * 0.105); ctx.lineTo(W * 0.805, H * 0.125); ctx.lineTo(W * 0.79, H * 0.10);
+              ctx.closePath(); ctx.fillStyle = '#f8fafc'; ctx.fill();
+              ctx.restore();
+              // Folded metamorphic root: filled anticline bands.
+              var foldCols = ['#4c1d95', '#6d28d9', '#8b5cf6', '#a78bfa', '#c4b5fd', '#7c3aed'];
+              var fx0 = W * 0.63, fx1 = W * 0.975;
+              var foldY = function (k, x) {
+                var u = (x - fx0) / (fx1 - fx0);
+                var amp = H * 0.045 * (1 - k * 0.08);
+                return H * (0.60 + k * 0.058) - Math.sin(u * Math.PI) * amp + Math.sin(u * Math.PI * 3 + tick * 0.004) * H * 0.006;
+              };
+              for (i = 0; i < 6; i++) {
                 ctx.beginPath();
-
-                const baseY = H * 0.6 + i * H * 0.08;
-
-                ctx.moveTo(W * 0.65, baseY);
-
-                const fold = Math.sin(i * 0.8 + tick * 0.005) * 8 * dpr;
-
-                ctx.quadraticCurveTo(W * 0.78, baseY - 10 * dpr + fold, W * 0.92, baseY);
-
-                ctx.strokeStyle = ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'][i];
-
-                ctx.lineWidth = 3 * dpr;
-
-                ctx.stroke();
-
+                for (let x = fx0; x <= fx1; x += 4) { var yy = foldY(i, x); if (x === fx0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); }
+                for (let x = fx1; x >= fx0; x -= 4) ctx.lineTo(x, foldY(i + 1, x));
+                ctx.closePath();
+                ctx.fillStyle = foldCols[i]; ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
               }
+              // Rain squall over the range and rockfall down its flank: the cause
+              // behind the "weathering & erosion" arrow, not just the label.
+              ctx.save();
+              ctx.strokeStyle = 'rgba(191,219,254,0.55)'; ctx.lineWidth = 1.2 * dpr; ctx.lineCap = 'round';
+              for (i = 0; i < 14; i++) {
+                var rx = W * (0.63 + (i * 0.0137) % 0.16);
+                var ry = H * 0.10 + ((tick * 3.2 + i * 37) % (H * 0.30));
+                ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 3 * dpr, ry + 9 * dpr); ctx.stroke();
+              }
+              ctx.restore();
+              for (i = 0; i < 3; i++) {
+                var fu = ((tick * 0.006) + i / 3) % 1;
+                var fp = rkLsBezier([W * 0.705, H * 0.24], [W * 0.685, H * 0.36], [W * 0.66, H * 0.485], fu);
+                ctx.beginPath(); ctx.arc(fp[0], fp[1], (2.4 - fu) * dpr, 0, Math.PI * 2);
+                ctx.fillStyle = '#6b7280'; ctx.fill();
+                ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
+              }
+              // Compression arrows from both sides, pulsing.
+              const arrowAlpha = 0.55 + Math.sin(tick * 0.04) * 0.25;
+              var arrowCol = 'rgba(255,255,255,' + arrowAlpha + ')';
+              rkLsArrow(W * 0.615, H * 0.73, W * 0.635, H * 0.73, W * 0.655, H * 0.73, arrowCol, 3 * dpr, false);
+              rkLsArrow(W * 0.985, H * 0.73, W * 0.965, H * 0.73, W * 0.945, H * 0.73, arrowCol, 3 * dpr, false);
+              rkLsArrow(W * 0.80, H * 0.545, W * 0.80, H * 0.56, W * 0.80, H * 0.585, arrowCol, 3 * dpr, false);
+              rkLsPill(__alloT('stem.rocks.ls_pressure', 'pressure'), W * 0.80, H * 0.98, 'center', 3);
+              // Uplift arrow beside the range.
+              rkLsArrow(W * 0.575, H * 0.47, W * 0.575, H * 0.42, W * 0.575, H * 0.36, 'rgba(255,255,255,0.8)', 2 * dpr, false);
+              rkLsPill(__alloT('stem.rocks.ls_uplift', 'uplift'), W * 0.575, H * 0.335, 'center');
 
-
-
-              // Pressure arrows
-
-              const arrowAlpha = 0.3 + Math.sin(tick * 0.04) * 0.15;
-
-              ctx.fillStyle = `rgba(139,92,246,${arrowAlpha})`;
-
-              ctx.font = (16 * dpr) + 'px sans-serif';
-
-              ctx.fillText('→', W * 0.63, H * 0.72);
-
-              ctx.fillText('←', W * 0.93, H * 0.72);
-
-              ctx.fillText('↓', W * 0.8, H * 0.56);
-
-
-
-              // ── Always-on zone markers + hover highlights ──
-
+              // ── Zone markers + hover highlights (hit areas unchanged) ──
               zones.forEach(z => {
-
                 var zx = z.x * W, zy = z.y * H, zw = z.w * W, zh = z.h * H;
-
                 var isHover = hoverZone === z.id;
-
                 var zColor = ROCK_TYPES[z.type].color;
-
-
-
-                // Always-on: subtle zone boundary outline
-
                 ctx.save();
-
                 ctx.globalAlpha = isHover ? 0.6 : 0.15 + Math.sin(tick * 0.03) * 0.05;
-
                 ctx.strokeStyle = zColor;
-
                 ctx.lineWidth = (isHover ? 3 : 1.5) * dpr;
-
                 ctx.setLineDash(isHover ? [6 * dpr, 4 * dpr] : [3 * dpr, 6 * dpr]);
-
                 ctx.strokeRect(zx, zy, zw, zh);
-
                 ctx.setLineDash([]);
-
                 ctx.restore();
-
-
-
-                // Always-on: pulsing icon marker at zone center
-
                 var iconScale = 1 + Math.sin(tick * 0.04 + z.x * 10) * 0.15;
-
                 var cxZ = zx + zw / 2, cyZ = zy + zh / 2;
-
                 ctx.save();
-
                 ctx.globalAlpha = isHover ? 1.0 : 0.7;
-
-                // Glow behind icon
-
                 ctx.shadowColor = zColor;
-
                 ctx.shadowBlur = (isHover ? 16 : 8) * dpr;
-
                 ctx.fillStyle = 'rgba(0,0,0,0.4)';
-
                 ctx.beginPath();
-
                 ctx.arc(cxZ, cyZ - 2 * dpr, 14 * dpr * iconScale, 0, Math.PI * 2);
-
                 ctx.fill();
-
                 ctx.shadowBlur = 0;
-
-                // Icon emoji
-
                 ctx.font = 'bold ' + Math.round(18 * dpr * iconScale) + 'px sans-serif';
-
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
                 ctx.fillStyle = '#fff';
-
                 ctx.fillText(z.id === 'volcano' ? '🌋' : z.id === 'river' ? '🏖️' : '⛰️', cxZ, cyZ);
-
                 ctx.restore();
-
-
-
-                // Always-on: label below icon
-
                 ctx.save();
-
                 ctx.globalAlpha = isHover ? 0.95 : 0.55;
-
                 ctx.font = 'bold ' + (isHover ? 12 : 10) * dpr + 'px sans-serif';
-
                 ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-
-                // Text background pill
-
-                var labelText = z.id === 'volcano' ? 'Igneous' : z.id === 'river' ? 'Sedimentary' : 'Metamorphic';
-
+                var labelText = z.id === 'volcano' ? __alloT('stem.rocks.igneous', 'Igneous') : z.id === 'river' ? __alloT('stem.rocks.sedimentary', 'Sedimentary') : __alloT('stem.rocks.metamorphic', 'Metamorphic');
                 var labelW = ctx.measureText(labelText).width + 12 * dpr;
-
                 ctx.fillStyle = 'rgba(0,0,0,0.45)';
-
-                ctx.beginPath();
-
-                ctx.roundRect(cxZ - labelW / 2, cyZ + 16 * dpr, labelW, 18 * dpr, 6 * dpr);
-
+                rkLsRR(cxZ - labelW / 2, cyZ + 16 * dpr, labelW, 18 * dpr, 6 * dpr);
                 ctx.fill();
-
                 ctx.fillStyle = '#fff';
-
                 ctx.fillText(labelText, cxZ, cyZ + 18 * dpr);
-
                 ctx.restore();
-
-
-
-                // Hover: "Click to explore" hint
-
                 if (isHover) {
-
                   ctx.save();
-
                   ctx.font = (9 * dpr) + 'px sans-serif';
-
                   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-
                   ctx.fillStyle = 'rgba(255,255,255,0.7)';
-
-                  ctx.fillText('Click to explore →', cxZ, cyZ + 36 * dpr);
-
+                  ctx.fillText(__alloT('stem.rocks.ls_click_to_explore', 'Click to explore →'), cxZ, cyZ + 36 * dpr);
                   ctx.restore();
-
+                  // The process, in one line, where the eye already is.
+                  rkLsPill(rkLsProcess(z.id), cxZ, cyZ + 58 * dpr, 'center');
                 }
-
               });
 
+              // ── Rock-cycle arrows with heads and flowing dashes ──
+              var cyc = 'rgba(255,255,255,0.75)';
+              // Igneous → weathering → sediment
+              rkLsArrow(W * 0.30, H * 0.40, W * 0.38, H * 0.33, W * 0.46, H * 0.44, cyc, 2 * dpr, true);
+              rkLsPill(__alloT('stem.rocks.ls_weathering', 'Weathering & erosion'), W * 0.40, H * 0.27, 'center', 1);
+              // Sediment → heat/pressure → metamorphic
+              rkLsArrow(W * 0.60, H * 0.93, W * 0.63, H * 0.88, W * 0.66, H * 0.82, cyc, 2 * dpr, true);
+              rkLsPill(t('stem.rock_cycle.heat_pressure'), W * 0.60, H * 0.965, 'left', 3);
+              // Metamorphic → melting → magma
+              rkLsArrow(W * 0.62, H * 0.86, W * 0.45, H * 0.97, W * 0.29, H * 0.83, cyc, 2 * dpr, true);
+              rkLsPill(__alloT('stem.rocks.ls_melting', 'Melting'), W * 0.44, H * 0.91, 'center', 4);
+              // Sediment → rock: the one stage that had no label of its own.
+              rkLsPill(__alloT('stem.rocks.ls_deposition', 'Deposition'), W * 0.54, H * 0.585, 'center', 2);
+              // Magma → cooling → igneous
+              rkLsPill(__alloT('stem.rocks.ls_cooling', 'Cooling'), W * 0.27, H * 0.37, 'center', 0);
 
-
-              // Rock cycle arrows overlay
-
-              ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-
-              ctx.lineWidth = 2 * dpr;
-
-              ctx.setLineDash([4 * dpr, 4 * dpr]);
-
-              // Igneous → (weathering) → Sedimentary
-
-              ctx.beginPath(); ctx.moveTo(W * 0.32, H * 0.45); ctx.quadraticCurveTo(W * 0.4, H * 0.38, W * 0.48, H * 0.45); ctx.stroke();
-
-              // Process captions used to be 8px white at 60% opacity painted straight
-              // onto whatever was behind them — legible against sky, nearly invisible
-              // where they cross the bright sedimentary beds. Each now sits on its own
-              // dark pill, so all three read the same regardless of what they overlap.
-              const cycleLabel = function (text, lx, ly) {
-                ctx.save();
-                ctx.setLineDash([]);
-                ctx.textAlign = 'left';
-                ctx.font = 'bold ' + (9 * dpr) + 'px sans-serif';
-                var tw = ctx.measureText(text).width;
-                var padX = 5 * dpr, boxH = 14 * dpr, rr = 4 * dpr;
-                var bx = lx - padX, by = ly - 10 * dpr, bw = tw + padX * 2;
-                ctx.beginPath();
-                ctx.moveTo(bx + rr, by);
-                ctx.lineTo(bx + bw - rr, by); ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + rr);
-                ctx.lineTo(bx + bw, by + boxH - rr); ctx.quadraticCurveTo(bx + bw, by + boxH, bx + bw - rr, by + boxH);
-                ctx.lineTo(bx + rr, by + boxH); ctx.quadraticCurveTo(bx, by + boxH, bx, by + boxH - rr);
-                ctx.lineTo(bx, by + rr); ctx.quadraticCurveTo(bx, by, bx + rr, by);
-                ctx.closePath();
-                ctx.fillStyle = 'rgba(15,23,42,0.82)';
-                ctx.fill();
-                ctx.fillStyle = '#ffffff';
-                ctx.fillText(text, lx, ly);
-                ctx.restore();
-              };
-
-
-              cycleLabel('Weathering', W * 0.36, H * 0.38);
-
-              // Sedimentary → (heat/pressure) → Metamorphic
-
-              ctx.beginPath(); ctx.moveTo(W * 0.66, H * 0.7); ctx.quadraticCurveTo(W * 0.72, H * 0.65, W * 0.76, H * 0.62); ctx.stroke();
-
-              cycleLabel(t('stem.rock_cycle.heat_pressure'), W * 0.66, H * 0.62);
-
-              // Metamorphic → (melting) → Igneous (magma)
-
-              ctx.beginPath(); ctx.moveTo(W * 0.65, H * 0.85); ctx.quadraticCurveTo(W * 0.45, H * 0.88, W * 0.28, H * 0.78); ctx.stroke();
-
-              cycleLabel('Melting', W * 0.42, H * 0.9);
-
-              ctx.setLineDash([]);
-
-
-
-              // Magnification
-
+              rkLsDrawTour();
+              // Caption
               ctx.font = (10 * dpr) + 'px monospace';
-
-              ctx.fillStyle = 'rgba(255,255,255,0.5)';
-
-              ctx.fillText('🪨 Cross-Section View', 8 * dpr, H - 8 * dpr);
-
+              ctx.fillStyle = 'rgba(255,255,255,0.6)';
+              ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+              // Right of the depth-scale labels, so the two never overlap on a narrow canvas.
+              ctx.fillText('🪨 ' + __alloT('stem.rocks.ls_cross_section', 'Cross-Section View'), dsX + 8 * dpr + ctx.measureText(__alloT('stem.rocks.ls_depth_bottom', '~35 km · hot')).width + 14 * dpr, H - 8 * dpr);
             }
-
-
 
             let animId = null;
 
@@ -3526,6 +4030,10 @@ const d = labToolData.rocks || {};
 
             // Mouse hover for zones
 
+            function rkLsHitAt(mx, my) {
+              for (var hi = 0; hi < rkLsHits.length; hi++) { var hb = rkLsHits[hi]; if (mx >= hb.x && mx <= hb.x + hb.w && my >= hb.y && my <= hb.y + hb.h) return hb; }
+              return null;
+            }
             function onRockMove(e) {
 
               const rect = canvasEl.getBoundingClientRect();
@@ -3542,7 +4050,7 @@ const d = labToolData.rocks || {};
 
               });
 
-              canvasEl.style.cursor = hoverZone ? 'pointer' : 'default';
+              canvasEl.style.cursor = (hoverZone || rkLsHitAt(mx, my)) ? 'pointer' : 'default';
               if (rocksMotionReduced) drawLandscape();
 
             }
@@ -3557,6 +4065,9 @@ const d = labToolData.rocks || {};
 
               const my = (e.clientY - rect.top) / rect.height;
 
+              // A process label is a shortcut into the tour at that stage.
+              var hit = rkLsHitAt(mx, my);
+              if (hit) { rkLsTourCmd('goto:' + hit.id); if (canvasEl._onTourJump) canvasEl._onTourJump(); return; }
               zones.forEach(z => {
 
                 if (mx >= z.x && mx <= z.x + z.w && my >= z.y && my <= z.y + z.h) {
@@ -3587,36 +4098,47 @@ const d = labToolData.rocks || {};
 
             canvasEl.setAttribute('role', 'application');
 
-            canvasEl.setAttribute('aria-label', __alloT('stem.rocks.rock_cycle_landscape_aria', 'Rock cycle landscape. Press 1 for volcano igneous rocks, 2 for river delta sedimentary rocks, 3 for mountain core metamorphic rocks.'));
+            canvasEl.setAttribute('aria-label', __alloT('stem.rocks.rock_cycle_landscape_aria2', 'Rock cycle landscape. Press 1 for the volcano and igneous rocks, 2 for the river delta and sedimentary rocks, 3 for the mountain core and metamorphic rocks. The first press previews a zone; press it again, or Enter, to open it. Press T to follow one rock around the cycle, N and P to step through its stages.'));
 
             function onRockKey(e) {
-
+              // Two-press pattern. Sighted mouse users get a hover preview (caption
+              // + highlight) before committing; keyboard users used to get none —
+              // the first key press navigated away. Now the first press previews
+              // the zone and announces its process, the same key again (or Enter /
+              // Space) opens it, and Escape clears the preview.
+              if (e.key === 't' || e.key === 'T') { e.preventDefault(); rkLsTourCmd('toggle'); return; }
+              if ((e.key === 'n' || e.key === 'N') && rkLsTour.stage >= 0) { e.preventDefault(); rkLsTourCmd('next'); return; }
+              if ((e.key === 'p' || e.key === 'P') && rkLsTour.stage >= 0) { e.preventDefault(); rkLsTourCmd('prev'); return; }
               var zoneIdx = -1;
-
               if (e.key === '1' || e.key === 'v' || e.key === 'V') zoneIdx = 0;
-
               else if (e.key === '2' || e.key === 'r' || e.key === 'R') zoneIdx = 1;
-
               else if (e.key === '3' || e.key === 'm' || e.key === 'M') zoneIdx = 2;
-
-              if (zoneIdx >= 0) {
-
+              else if ((e.key === 'Enter' || e.key === ' ') && hoverZone) { for (var zi = 0; zi < zones.length; zi++) if (zones[zi].id === hoverZone) zoneIdx = zi; }
+              else if (e.key === 'Escape' && hoverZone) {
                 e.preventDefault();
-
-                var z = zones[zoneIdx];
-
-                hoverZone = z.id;
-
-                var typeRocks = ROCKS.filter(function (r) { return r.type === z.type; });
-
-                if (typeRocks.length > 0) canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+                hoverZone = null;
+                rkLsAnnounce(__alloT('stem.rocks.landscape_preview_cleared', 'Zone preview cleared.'));
                 if (rocksMotionReduced) drawLandscape();
-
+                return;
               }
-
+              if (zoneIdx < 0) return;
+              e.preventDefault();
+              var z = zones[zoneIdx];
+              if (hoverZone !== z.id) {
+                hoverZone = z.id;
+                rkLsAnnounce(z.label + '. ' + rkLsProcess(z.id) + '. ' + __alloT('stem.rocks.landscape_preview_open_hint', 'Press the same key again, Enter, or Space to open this zone; Escape to clear.'));
+                if (rocksMotionReduced) drawLandscape();
+                return;
+              }
+              var typeRocks = ROCKS.filter(function (r) { return r.type === z.type; });
+              if (typeRocks.length > 0) canvasEl._onSelectRock && canvasEl._onSelectRock(typeRocks[0].id, z.type);
+              if (rocksMotionReduced) drawLandscape();
             }
-
             canvasEl.addEventListener('keydown', onRockKey);
+            // Imperative handle for the React controls under the canvas.
+            canvasEl._rocksTourCmd = rkLsTourCmd;
+            canvasEl._onTourJump = function () { if (_rocksTourBox.fn) _rocksTourBox.fn(); };
+            canvasEl._rocksTourState = function () { return { stage: rkLsTour.stage, playing: rkLsTour.playing, total: RK_LS_TOUR.length }; };
 
 
 
@@ -3628,9 +4150,8 @@ const d = labToolData.rocks || {};
 
               if (Math.abs(canvasEl.width - newW) > 1 || Math.abs(canvasEl.height - newH) > 1) {
 
-                canvasEl.width = newW;
-
-                canvasEl.height = newH;
+                W = canvasEl.width = newW;
+                H = canvasEl.height = newH;
                 if (rocksMotionReduced) drawLandscape();
 
               }
@@ -3671,6 +4192,7 @@ const d = labToolData.rocks || {};
 
           // Zone clicks dispatch through here, so the canvas's handler is bound
           // once at mount but always runs the CURRENT render's closure.
+          _rocksTourBox.fn = function () { if (!d.tourOn) upd('tourOn', true); };
           _rocksSelectBox.fn = function (rockId, type) {
             upd("selectedRock", rockId);
             upd("selectedType", type);
@@ -3820,9 +4342,19 @@ const d = labToolData.rocks || {};
 
             mode === 'landscape' && React.createElement("div", null,
 
+              React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2", role: "group", "aria-label": __alloT('stem.rocks.tour_controls_aria', 'Rock cycle tour controls') },
+                React.createElement("button", { type: "button", "data-rocks-tour": d.tourOn ? 'stop' : 'play', "aria-pressed": !!d.tourOn, className: "rounded-xl px-3 py-2 min-h-[44px] text-[11px] font-black " + (d.tourOn ? "bg-amber-800 text-white hover:bg-amber-900" : "bg-amber-700 text-white hover:bg-amber-800"),
+                  onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd(d.tourOn ? 'stop' : 'play'); upd('tourOn', !d.tourOn); } },
+                  d.tourOn ? '■ ' + __alloT('stem.rocks.tour_stop', 'Stop the tour') : '▶ ' + __alloT('stem.rocks.tour_play', 'Follow one rock around the cycle')),
+                d.tourOn ? React.createElement("button", { type: "button", "data-rocks-tour": "prev", className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[11px] font-black text-amber-900 hover:bg-amber-50", "aria-label": __alloT('stem.rocks.tour_prev', 'Previous stage'), onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd('prev'); } }, '◀') : null,
+                d.tourOn ? React.createElement("button", { type: "button", "data-rocks-tour": "next", className: "rounded-xl border border-amber-300 bg-white px-3 py-2 min-h-[44px] text-[11px] font-black text-amber-900 hover:bg-amber-50", "aria-label": __alloT('stem.rocks.tour_next', 'Next stage'), onClick: function () { var cv = document.querySelector('[data-rocks-canvas]'); if (cv && cv._rocksTourCmd) cv._rocksTourCmd('next'); } }, '▶') : null,
+                React.createElement("span", { className: "text-[10.5px] text-slate-600" }, d.tourOn ? __alloT('stem.rocks.tour_hint_on', 'Watch the tracer; each stage is announced. Reduced motion shows one still frame per stage.') : __alloT('stem.rocks.tour_hint_off', 'A guided trip through all five stages, one rock at a time. You can also click any process label on the picture to start there.'))
+              ),
               React.createElement("p", { className: "text-xs text-slate-600 mb-2 italic" }, __alloT('stem.rocks.landscape_click_zones_hint', "Click landscape zones to explore rock types. Hover to see labels. Keyboard: Tab to canvas, then 1=Volcano, 2=River, 3=Mountain.")),
 
-              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: '520px' } },
+              // Height follows width on narrow screens so the scene keeps its shape
+              // (a fixed 520px at phone width squeezed it and collided the labels).
+              React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-200", style: { height: 'clamp(280px, 58vw, 520px)' } },
 
                 React.createElement("canvas", {
 
@@ -6068,7 +6600,15 @@ const d = labToolData.rocks || {};
                     '.rk-wb-shake{animation:rkWbShake .35s ease-in-out 2}',
                     '.rk-wb-pop{animation:rkWbPop .45s ease-out forwards}',
                     '.rk-wb-shine{animation:rkWbShine 2.6s ease-in-out infinite}',
-                    '.rk-wb-drip{animation:rkWbDrip .8s ease-in infinite}'
+                    '.rk-wb-drip{animation:rkWbDrip .8s ease-in infinite}',
+                    '@keyframes rkWbDrop{0%{transform:translateY(-46px);opacity:0}55%{transform:translateY(6px);opacity:1}75%{transform:translateY(-4px)}100%{transform:translateY(0)}}',
+                    '.rk-wb-drop{animation:rkWbDrop .7s cubic-bezier(.2,.8,.3,1.1) both}',
+                    '@keyframes rkWbGlide{0%{transform:translateX(0)}100%{transform:translateX(96px)}}',
+                    '.rk-wb-glide{animation:rkWbGlide .75s ease-in-out both}',
+                    '@keyframes rkWbRise{0%{transform:scaleY(.62)}100%{transform:scaleY(1)}}',
+                    '.rk-wb-rise{transform-origin:434px 132px;animation:rkWbRise 1.1s ease-out both}',
+                    '@keyframes rkWbNudge{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.45)}55%{box-shadow:0 0 0 7px rgba(245,158,11,0)}}',
+                    '.rk-wb-nudge{animation:rkWbNudge 2.6s ease-out infinite}'
                   ].join('');
                 }
               }
@@ -6103,6 +6643,11 @@ const d = labToolData.rocks || {};
 
               // Specimen pool: minerals with distinct, testable signatures.
               var WB_POOL = ['quartz', 'feldspar', 'mica', 'calcite', 'halite', 'pyrite', 'talc', 'gypsum', 'magnetite', 'hematite', 'galena', 'fluorite'];
+              // Challenge set: adds the catalogue's hard minerals. Four of them scratch
+              // the streak plate, so hardness bracketing with the harder references,
+              // density and form have to carry the identification.
+              var WB_POOL_CHALLENGE = WB_POOL.concat(['diamond', 'garnet', 'olivine', 'sulfur', 'corundum', 'topaz']);
+              var wbPoolFor = function () { return wb.pool === 'challenge' ? WB_POOL_CHALLENGE : WB_POOL; };
               var wbMineral = function (id) { for (var i = 0; i < MINERALS.length; i++) { if (MINERALS[i].id === id) return MINERALS[i]; } return null; };
               var WB_CARBONATES = ['calcite']; // keep in step with RK_CARBONATES
               var WB_MAGNETIC = ['magnetite'];
@@ -6133,13 +6678,15 @@ const d = labToolData.rocks || {};
                 }
                 return a;
               };
-              var wbDraw = function () {
-                var order = wbShuffle(WB_POOL);
+              // Optional fixed pick (the debrief's look-alike button); otherwise random.
+              var wbDraw = function (forcedId) {
+                var order = wbShuffle(wbPoolFor());
                 var choices = wb.spId ? order.filter(function (id) { return id !== wb.spId; }) : order;
+                var forced = typeof forcedId === 'string' && order.indexOf(forcedId) !== -1 ? forcedId : null;
                 updWb({
-                  spId: choices[Math.floor(Math.random() * choices.length)],
+                  spId: forced || choices[Math.floor(Math.random() * choices.length)],
                   order: order, scratch: {}, streakDone: false, fizz: null, magnet: null, density: false,
-                  lens: false, guessedWrong: [], selectedId: null, lastRejectedId: null, reviewId: null, candidateView: null, solvedId: null, anim: null,
+                  lens: false, formObs: null, streakObs: null, densityObs: null, pending: null, history: [], guessedWrong: [], selectedId: null, lastRejectedId: null, reviewId: null, candidateView: null, solvedId: null, anim: null,
                   toolsExpanded: false, candidatesExpanded: false,
                   claimEvidence: [], claimReasoning: null, claimConfidence: null, predictionTool: null, predictionValue: null,
                   solved: (wb.solved || 0), attempts: (wb.attempts || 0)
@@ -6151,24 +6698,20 @@ const d = labToolData.rocks || {};
               var sp = wb.spId ? wbMineral(wb.spId) : null;
               var spIsCarb = sp ? WB_CARBONATES.indexOf(sp.id) !== -1 : false;
               var spIsMag = sp ? WB_MAGNETIC.indexOf(sp.id) !== -1 : false;
+              // A trial that has run but whose result the learner has not yet
+              // classified. Instruments wait; the station keeps showing it.
+              var wbPendingTool = wb.pending && wb.pending.tool ? wb.pending.tool : null;
+              var wbPendingRefId = wbPendingTool === 'scratch' ? (wb.pending.ref || null) : null;
+              _rkSpecimenBox.mineral = sp;
               var wbObservedFormFor = function (m) {
-                if (!m) return __alloT('stem.rocks.wb_form_unknown', 'unknown reference form');
-                var habits = {
-                  blocky90: __alloT('stem.rocks.wb_form_blocky', 'blocky form with near-right-angle cleavage'),
-                  micaceous: __alloT('stem.rocks.wb_form_micaceous', 'thin, sheet-like form'),
-                  octahedral: __alloT('stem.rocks.wb_form_octahedral', 'octahedral form'),
-                  dodecahedral: __alloT('stem.rocks.wb_form_dodecahedral', 'dodecahedral form')
-                };
-                return habits[m.habit] || (m.crystal
-                  ? String(m.crystal) + __alloT('stem.rocks.wb_form_reference_suffix', ' reference form')
-                  : __alloT('stem.rocks.wb_form_unknown', 'unknown reference form'));
+                return __alloT('stem.rocks.wb_form_' + rkFormClass(m) + '_sr', rkFormClassInfo(rkFormClass(m)).sr);
               };
               // Use one transparent modeled specimen volume so the density
               // station shows the actual mass ÷ displaced-volume reasoning,
               // not a number that appears without its measurements.
               var wbModeledVolume = 10.0;
               var wbModeledMass = sp && typeof sp.density === 'number' ? sp.density * wbModeledVolume : 0;
-              var wbPlateScratched = !!wb.streakDone && !!sp && rkStreakPlateTooHard(sp);
+              var wbPlateScratched = wb.streakObs === 'plate-scratched';
               var wbStreakOutcomeFor = function (m) {
                 if (!m) return { id: 'unknown', label: __alloT('stem.rocks.wb_rail_pending', 'Not measured') };
                 if (rkStreakPlateTooHard(m)) return { id: 'plate-scratched', label: __alloT('stem.rocks.streak_plate_scratched_result', 'Plate scratched — no reliable powder streak') };
@@ -6184,6 +6727,12 @@ const d = labToolData.rocks || {};
                 };
               };
 
+              var wbStreakChoiceFor = function (id) { return rkStreakChoiceInfo(id); };
+              // Density bands the learner can choose from: every pool band plus
+              // distractors, so the arithmetic is a real step.
+              var wbDensityChoices = [2.1, 2.6, 3.1, 3.6, 4.1, 4.6, 5.1, 5.6, 7.1, 7.6].map(function (v) { return wbDensityOutcomeFor({ density: v }); });
+              var wbDensityChoiceFor = function (id) { for (var i = 0; i < wbDensityChoices.length; i++) if (wbDensityChoices[i].id === id) return wbDensityChoices[i]; return { id: 'unknown', label: __alloT('stem.rocks.wb_rail_pending', 'Not measured') }; };
+              var wbComputedDensity = wbModeledVolume ? wbModeledMass / wbModeledVolume : 0;
               // A tiny stable hash so each specimen gets its own silhouette.
               var wbHash = 0; if (sp) { for (var hI = 0; hI < sp.id.length; hI++) { wbHash = (wbHash * 31 + sp.id.charCodeAt(hI)) % 997; } }
               var wbJit = function (n, amp) { return ((wbHash * (n + 3) * 7919) % 100) / 100 * amp - amp / 2; };
@@ -6192,16 +6741,17 @@ const d = labToolData.rocks || {};
               var wbEvidence = [];
               // Match the coverage rail's property order. This is an
               // explanatory grouping, not a claim that tests ran in sequence.
-              if (wb.lens && sp) wbEvidence.push({ k: 'lens', text: __alloT('stem.rocks.wb_ev_lens', 'Lens: luster ') + sp.luster, test: function (m) { return m.luster === sp.luster; } });
-              if (wb.streakDone && sp) {
-                var wbObservedStreak = wbStreakOutcomeFor(sp);
+              if (wb.lens && sp) wbEvidence.push({ k: 'lens', text: __alloT('stem.rocks.wb_ev_lens', 'Lens: luster ') + rkLusterClassInfo(wb.lens).label.toLowerCase() + __alloT('stem.rocks.wb_ev_recorded_suffix', ' (your classification)'), test: function (m) { return rkLusterClass(m) === wb.lens; } });
+              if (wb.formObs && sp) wbEvidence.push({ k: 'form', text: __alloT('stem.rocks.wb_ev_form', 'Form: ') + rkFormClassInfo(wb.formObs).label.toLowerCase() + __alloT('stem.rocks.wb_ev_recorded_suffix', ' (your classification)'), test: function (m) { return rkFormClass(m) === wb.formObs; } });
+              if (wb.streakObs && sp) {
+                var wbObservedStreak = wbStreakChoiceFor(wb.streakObs);
                 wbEvidence.push({
                   // A groove without powder is hardness evidence, not a
                   // powder-color measurement. Keep one observation, but file
                   // it under hardness so two hardness trials cannot masquerade
                   // as two independent property types in the CER builder.
                   k: wbPlateScratched ? 'scratch_streak_plate' : 'streak',
-                  text: rkStreakPlateTooHard(sp) ? __alloT('stem.rocks.wb_ev_plate_scratched', 'Streak plate: no powder; the plate groove gives H > about 6.5') : __alloT('stem.rocks.wb_ev_streak', 'Streak: ') + sp.streak,
+                  text: wbPlateScratched ? __alloT('stem.rocks.wb_ev_plate_scratched', 'Streak plate: no powder; the plate groove gives H > about 6.5') : __alloT('stem.rocks.wb_ev_streak', 'Streak: ') + wbObservedStreak.label + __alloT('stem.rocks.wb_ev_recorded_suffix', ' (your classification)'),
                   test: function (m) { return wbStreakOutcomeFor(m).id === wbObservedStreak.id; }
                 });
               }
@@ -6225,9 +6775,9 @@ const d = labToolData.rocks || {};
               })();
               if (wb.fizz && sp) wbEvidence.push({ k: 'fizz', text: wb.fizz === 'fizz' ? __alloT('stem.rocks.wb_ev_fizz', 'Acid: immediate fizz (calcite response in this set)') : __alloT('stem.rocks.wb_ev_nofizz', 'Acid: no immediate visible fizz'), test: function (m) { return (WB_CARBONATES.indexOf(m.id) !== -1) === (wb.fizz === 'fizz'); } });
               if (wb.magnet && sp) wbEvidence.push({ k: 'magnet', text: wb.magnet === 'pull' ? __alloT('stem.rocks.wb_ev_pull', 'Magnet: strong pull') : __alloT('stem.rocks.wb_ev_nopull', 'Magnet: no attraction'), test: function (m) { return (WB_MAGNETIC.indexOf(m.id) !== -1) === (wb.magnet === 'pull'); } });
-              if (wb.density && sp && sp.density) {
-                var wbObservedDensity = wbDensityOutcomeFor(sp);
-                wbEvidence.push({ k: 'density', text: __alloT('stem.rocks.wb_ev_density', 'Density calculation: ') + wbModeledMass.toFixed(1) + ' g ÷ ' + wbModeledVolume.toFixed(1) + ' cm³ = ' + sp.density.toFixed(2) + ' g/cm³ — ' + wbObservedDensity.label, test: function (m) { return wbDensityOutcomeFor(m).id === wbObservedDensity.id; } });
+              if (wb.densityObs && sp && sp.density) {
+                var wbObservedDensity = wbDensityChoiceFor(wb.densityObs);
+                wbEvidence.push({ k: 'density', text: __alloT('stem.rocks.wb_ev_density', 'Density calculation: ') + wbModeledMass.toFixed(1) + ' g ÷ ' + wbModeledVolume.toFixed(1) + ' cm³ = ' + wbComputedDensity.toFixed(2) + ' g/cm³ — ' + wbObservedDensity.label + (wbDensityOutcomeFor({ density: wbComputedDensity }).id === wb.densityObs ? '' : __alloT('stem.rocks.wb_ev_density_recheck', ' (check your division: the readings do not land in this band)')), test: function (m) { return wbDensityOutcomeFor(m).id === wbObservedDensity.id; } });
               }
 
               var wbFits = function (m) { for (var i = 0; i < wbEvidence.length; i++) { if (!wbEvidence[i].test(m)) return false; } return true; };
@@ -6289,11 +6839,12 @@ const d = labToolData.rocks || {};
               // "7 / 6" that a full hardness bracket previously produced.
               var wbCoverage = [
                 { id: 'luster', icon: '🔍', label: __alloT('stem.rocks.wb_coverage_luster', 'Luster'), done: !!wb.lens },
-                { id: 'streak', icon: '➖', label: __alloT('stem.rocks.wb_coverage_streak', 'Streak'), done: !!wb.streakDone && !wbPlateScratched },
+                { id: 'form', icon: '🔷', label: __alloT('stem.rocks.wb_coverage_form', 'Form'), done: !!wb.formObs },
+                { id: 'streak', icon: '➖', label: __alloT('stem.rocks.wb_coverage_streak', 'Streak'), done: !!wb.streakObs && !wbPlateScratched },
                 { id: 'hardness', icon: '⛏️', label: __alloT('stem.rocks.wb_coverage_hardness', 'Hardness'), done: wbHardnessConfirmed, provisional: wbHardnessProvisional },
                 { id: 'acid', icon: '🧪', label: __alloT('stem.rocks.wb_coverage_acid', 'Acid'), done: !!wb.fizz },
                 { id: 'magnetism', icon: '🧲', label: __alloT('stem.rocks.wb_coverage_magnetism', 'Magnetism'), done: !!wb.magnet },
-                { id: 'density', icon: '⚖️', label: __alloT('stem.rocks.wb_coverage_density', 'Density'), done: !!wb.density }
+                { id: 'density', icon: '⚖️', label: __alloT('stem.rocks.wb_coverage_density', 'Density'), done: !!wb.densityObs }
               ];
               var wbEvidenceTypeCount = wbCoverage.filter(function (item) { return item.done; }).length;
               var wbProvisionalTypeCount = wbCoverage.filter(function (item) { return item.provisional; }).length;
@@ -6308,7 +6859,7 @@ const d = labToolData.rocks || {};
               };
               var wbNext = !wb.lens
                 ? { tool: 'lens', icon: '🔍', title: __alloT('stem.rocks.wb_next_lens', 'Start with the hand lens'), detail: __alloT('stem.rocks.wb_next_lens_detail', 'Luster is a fast first split: does the surface reflect like metal, glass, pearl, or wax?') }
-                  : !wb.streakDone
+                  : !wb.streakObs
                   ? { tool: 'streak', icon: '🍽️', title: __alloT('stem.rocks.wb_next_streak', 'Run the streak plate'), detail: __alloT('stem.rocks.wb_next_streak_detail', 'Softer minerals leave diagnostic powder; a harder specimen grooves the plate and provides a hardness clue instead.') }
                   : !wbHardnessConfirmed && wbRemaining > 2
                     ? { tool: 'steel_nail', icon: '▱', title: __alloT('stem.rocks.wb_next_scratch', 'Bracket the hardness'), detail: __alloT('stem.rocks.wb_next_scratch_detail', 'Try the glass reference at modeled Mohs 5.5, then choose a softer or harder calibrated point from the result.') }
@@ -6316,7 +6867,7 @@ const d = labToolData.rocks || {};
                       ? { tool: 'acid', icon: '🧪', title: __alloT('stem.rocks.wb_next_acid', 'Check for calcite’s acid response'), detail: __alloT('stem.rocks.wb_next_acid_detail', 'In this modeled reference set, an immediate supervised-acid fizz separates calcite from look-alikes.') }
                       : wbCandidateHas('magnetite') && !wb.magnet
                         ? { tool: 'magnet', icon: '🧲', title: __alloT('stem.rocks.wb_next_magnet', 'Check magnetism'), detail: __alloT('stem.rocks.wb_next_magnet_detail', 'A strong pull is unusually diagnostic and can settle a magnetite hypothesis.') }
-                        : !wb.density && wbRemaining > 1
+                        : !wb.densityObs && wbRemaining > 1
                           ? { tool: 'balance', icon: '⚖️', title: __alloT('stem.rocks.wb_next_density', 'Compare heft with density'), detail: __alloT('stem.rocks.wb_next_density_detail', 'Mass divided by displaced volume helps separate minerals that look alike.') }
                           : { tool: 'claim', icon: '🧠', title: __alloT('stem.rocks.wb_next_claim', 'Your evidence is ready'), detail: wbRemaining === 1 ? __alloT('stem.rocks.wb_next_claim_detail_one', 'Compare the remaining card with your notebook, then make the claim your evidence supports.') : __alloT('stem.rocks.wb_next_claim_detail', 'Compare the remaining cards with your notebook, then make the claim your evidence supports.') };
 
@@ -6331,7 +6882,8 @@ const d = labToolData.rocks || {};
               };
               var wbForecastOutcomeFor = function (tool, m) {
                 if (!m) return null;
-                if (tool === 'lens') return { id: wbOutcomeSlug(m.luster), label: m.luster };
+                if (tool === 'lens') return { id: rkLusterClass(m), label: rkLusterClassInfo(rkLusterClass(m)).label };
+                if (tool === 'form') return { id: rkFormClass(m), label: rkFormClassInfo(rkFormClass(m)).label };
                 if (tool === 'streak') return wbStreakOutcomeFor(m);
                 var scratchRef = wbScratchRefFor(tool);
                 if (scratchRef) {
@@ -6354,6 +6906,7 @@ const d = labToolData.rocks || {};
               var wbForecastTitleFor = function (tool) {
                 var scratchRef = wbScratchRefFor(tool);
                 if (scratchRef) return __alloT('stem.rocks.wb_forecast_hardness_with', 'a Mohs scratch test with ') + scratchRef.label;
+                if (tool === 'form') return __alloT('stem.rocks.wb_forecast_form_title', 'the fragment’s form');
                 return tool === 'lens' ? __alloT('stem.rocks.wb_forecast_luster_title', 'luster')
                   : tool === 'streak' ? __alloT('stem.rocks.wb_forecast_streak_title', 'a streak-plate result')
                     : tool === 'acid' ? __alloT('stem.rocks.wb_forecast_acid_title', 'an acid reaction')
@@ -6411,10 +6964,11 @@ const d = labToolData.rocks || {};
               };
               var wbAvailableTestTools = [];
               if (!wb.lens) wbAvailableTestTools.push('lens');
-              if (!wb.streakDone) wbAvailableTestTools.push('streak');
+              // 'form' is deliberately not ranked: see wbTestProfileFor.
+              if (!wb.streakObs) wbAvailableTestTools.push('streak');
               WB_REFS.forEach(function (ref) { if (!(wb.scratch || {})[ref.id]) wbAvailableTestTools.push(ref.id); });
               if (!wb.magnet) wbAvailableTestTools.push('magnet');
-              if (!wb.density) wbAvailableTestTools.push('balance');
+              if (!wb.densityObs) wbAvailableTestTools.push('balance');
               if (!wb.fizz) wbAvailableTestTools.push('acid');
               var wbTestRankings = wbAvailableTestTools.map(function (tool) {
                 var profile = wbTestProfileFor(tool);
@@ -6444,21 +6998,47 @@ const d = labToolData.rocks || {};
                 title: __alloT('stem.rocks.wb_reconcile_evidence', 'Recheck the conflicting observations'),
                 detail: __alloT('stem.rocks.wb_reconcile_evidence_detail', 'No reference candidate fits every recorded observation. Clear and rerun the measurements instead of making an unsupported claim.')
               };
-              else if (wbTestRankings.length && wbViableCandidates.length > 1) wbNext = wbTestRankings[0];
+              // Rankings drive the coach only once the learner has one observation.
+              // A fresh bench always starts with the lens: it is the non-destructive
+              // look every field geologist takes first, and with luster grouped into
+              // four classes the plate would otherwise edge it out on expected split.
+              else if (wbTestRankings.length && wbViableCandidates.length > 1 && wbEvidence.length > 0) wbNext = wbTestRankings[0];
               else if (wbClaimReady && wbViableCandidates.length === 1) wbNext = { tool: 'claim', icon: '🧠', title: __alloT('stem.rocks.wb_next_claim', 'Your evidence is ready'), detail: __alloT('stem.rocks.wb_next_claim_detail_one', 'Compare the remaining card with your notebook, then make the claim your evidence supports.') };
-              var wbForecastGroups = wbNext.tool === 'claim' ? [] : wbBuildForecast(wbNext.tool, wbViableCandidates);
+              if (wbPendingTool) wbNext = { tool: 'record', icon: '📝', title: __alloT('stem.rocks.wb_next_record', 'Record what you observed'), detail: __alloT('stem.rocks.wb_next_record_detail', 'Look at the specimen station, then choose the description that matches what you actually see. The notebook only fills with observations you record yourself.') };
+              var wbForecastGroups = (wbNext.tool === 'claim' || wbNext.tool === 'record') ? [] : wbBuildForecast(wbNext.tool, wbViableCandidates);
               var wbForecastPalette = ['#6d28d9', '#0f766e', '#b45309', '#be123c', '#0369a1', '#475569', '#4338ca', '#a21caf'];
+              // What the learner actually recorded for a tool, in forecast ids,
+              // so a prediction is checked against their observation.
+              var wbRecordedOutcomeFor = function (tool) {
+                if (!tool) return null;
+                if (tool === 'lens') return wb.lens ? { id: wb.lens, label: rkLusterClassInfo(wb.lens).label } : null;
+                if (tool === 'form') return wb.formObs ? { id: wb.formObs, label: rkFormClassInfo(wb.formObs).label } : null;
+                if (tool === 'streak') return wb.streakObs ? wbStreakChoiceFor(wb.streakObs) : null;
+                var recRef = wbScratchRefFor(tool);
+                if (recRef) {
+                  var rec = (wb.scratch || {})[recRef.id];
+                  if (!rec) return null;
+                  return rec === 'scratched' ? { id: 'scratches', label: recRef.label + ' ' + __alloT('stem.rocks.wb_forecast_ref_scratches', 'leaves a scratch') }
+                    : rec === 'borderline' ? { id: 'borderline', label: __alloT('stem.rocks.scratch_borderline', 'Modeled near-match—retest to confirm') }
+                      : { id: 'resists', label: __alloT('stem.rocks.wb_forecast_ref_resists', 'Specimen resists') + ' ' + recRef.label };
+                }
+                if (tool === 'acid') return wb.fizz ? (wb.fizz === 'fizz' ? { id: 'fizz', label: __alloT('stem.rocks.wb_forecast_fizz', 'Immediate visible fizz') } : { id: 'no-fizz', label: __alloT('stem.rocks.wb_forecast_no_fizz', 'No immediate visible fizz') }) : null;
+                if (tool === 'magnet') return wb.magnet ? (wb.magnet === 'pull' ? { id: 'pull', label: __alloT('stem.rocks.wb_forecast_pull', 'Strong magnetic pull') } : { id: 'no-pull', label: __alloT('stem.rocks.wb_forecast_no_pull', 'No magnetic pull') }) : null;
+                if (tool === 'balance') return wb.densityObs ? wbDensityChoiceFor(wb.densityObs) : null;
+                return null;
+              };
               var wbPredictionTool = wb.predictionTool || null;
               var wbPredictionValue = wb.predictionValue || null;
               var wbPredictionScratchRef = wbScratchRefFor(wbPredictionTool);
               var wbPredictionDone = wbPredictionTool === 'lens' ? !!wb.lens
-                : wbPredictionTool === 'streak' ? !!wb.streakDone
+                : wbPredictionTool === 'form' ? !!wb.formObs
+                : wbPredictionTool === 'streak' ? !!wb.streakObs
                   : wbPredictionScratchRef ? !!(wb.scratch || {})[wbPredictionScratchRef.id]
                     : wbPredictionTool === 'acid' ? !!wb.fizz
                       : wbPredictionTool === 'magnet' ? !!wb.magnet
-                        : wbPredictionTool === 'balance' ? !!wb.density : false;
-              var wbPredictionActual = wbPredictionDone && sp ? wbForecastOutcomeFor(wbPredictionTool, sp) : null;
-              var wbPredictionReferenceGroups = wbPredictionTool ? wbBuildForecast(wbPredictionTool, WB_POOL.map(wbMineral).filter(Boolean)) : [];
+                        : wbPredictionTool === 'balance' ? !!wb.densityObs : false;
+              var wbPredictionActual = wbPredictionDone && sp ? wbRecordedOutcomeFor(wbPredictionTool) : null;
+              var wbPredictionReferenceGroups = wbPredictionTool ? wbBuildForecast(wbPredictionTool, wbPoolFor().map(wbMineral).filter(Boolean)) : [];
               var wbPredictionExpected = wbPredictionReferenceGroups.filter(function (group) { return group.id === wbPredictionValue; })[0] || null;
               var wbPredictionMatched = !!wbPredictionActual && !!wbPredictionExpected && wbPredictionActual.id === wbPredictionExpected.id;
               // Collecting the minimum evidence does not mean the learner has
@@ -6468,6 +7048,7 @@ const d = labToolData.rocks || {};
               var wbEvidenceKind = function (key) {
                 if (key.indexOf('scratch_') === 0) return __alloT('stem.rocks.wb_kind_hardness', 'hardness');
                 return key === 'lens' ? __alloT('stem.rocks.wb_kind_luster', 'luster')
+                  : key === 'form' ? __alloT('stem.rocks.wb_kind_form', 'form')
                   : key === 'density' ? __alloT('stem.rocks.wb_kind_density', 'density')
                     : key === 'fizz' ? __alloT('stem.rocks.wb_kind_acid', 'acid reaction')
                       : key === 'magnet' ? __alloT('stem.rocks.wb_kind_magnet', 'magnetism')
@@ -6475,7 +7056,7 @@ const d = labToolData.rocks || {};
               };
               var wbEvidenceIcon = function (key) {
                 if (key.indexOf('scratch_') === 0) return '⛏️';
-                return key === 'lens' ? '🔍' : key === 'density' ? '⚖️' : key === 'fizz' ? '🧪' : key === 'magnet' ? '🧲' : '➖';
+                return key === 'lens' ? '🔍' : key === 'form' ? '🔷' : key === 'density' ? '⚖️' : key === 'fizz' ? '🧪' : key === 'magnet' ? '🧲' : '➖';
               };
               var wbMismatchKind = function (m) {
                 for (var i = 0; i < wbEvidence.length; i++) {
@@ -6532,8 +7113,9 @@ const d = labToolData.rocks || {};
               var wbMatchRowsFor = function (m) {
                 if (!m || !sp) return [];
                 var rows = [];
-                if (wb.lens) rows.push({ id: 'luster', label: __alloT('stem.rocks.wb_match_luster', 'Luster'), unknown: sp.luster, candidate: m.luster, matches: m.luster === sp.luster });
-                if (wb.streakDone && !wbPlateScratched) rows.push({ id: 'streak', label: __alloT('stem.rocks.wb_match_streak', 'Streak'), unknown: wbStreakOutcomeFor(sp).label, candidate: wbStreakOutcomeFor(m).label, matches: wbStreakOutcomeFor(m).id === wbStreakOutcomeFor(sp).id });
+                if (wb.lens) rows.push({ id: 'luster', label: __alloT('stem.rocks.wb_match_luster', 'Luster'), unknown: rkLusterClassInfo(wb.lens).label, candidate: m.luster + ' (' + rkLusterClassInfo(rkLusterClass(m)).label + ')', matches: rkLusterClass(m) === wb.lens });
+                if (wb.formObs) rows.push({ id: 'form', label: __alloT('stem.rocks.wb_match_form', 'Form'), unknown: rkFormClassInfo(wb.formObs).label, candidate: rkFormClassInfo(rkFormClass(m)).label, matches: rkFormClass(m) === wb.formObs });
+                if (wb.streakObs && !wbPlateScratched) rows.push({ id: 'streak', label: __alloT('stem.rocks.wb_match_streak', 'Streak'), unknown: wbStreakChoiceFor(wb.streakObs).label, candidate: wbStreakOutcomeFor(m).label, matches: wbStreakOutcomeFor(m).id === wb.streakObs });
                 if (wbHasHardnessEvidence) rows.push({
                   id: 'hardness', label: __alloT('stem.rocks.wb_match_hardness', 'Hardness'),
                   unknown: wbHardnessLabel + ' (modeled Mohs)',
@@ -6553,12 +7135,12 @@ const d = labToolData.rocks || {};
                   candidate: WB_MAGNETIC.indexOf(m.id) !== -1 ? __alloT('stem.rocks.wb_match_strong_pull', 'Strong pull') : __alloT('stem.rocks.wb_match_no_attraction', 'No attraction'),
                   matches: (WB_MAGNETIC.indexOf(m.id) !== -1) === (wb.magnet === 'pull')
                 });
-                if (wb.density && sp.density) {
-                  var unknownDensityOutcome = wbDensityOutcomeFor(sp);
+                if (wb.densityObs && sp.density) {
+                  var unknownDensityOutcome = wbDensityChoiceFor(wb.densityObs);
                   var candidateDensityOutcome = wbDensityOutcomeFor(m);
                   rows.push({
                     id: 'density', label: __alloT('stem.rocks.wb_match_density', 'Density'),
-                    unknown: sp.density.toFixed(2) + ' g/cm\u00b3 — ' + unknownDensityOutcome.label,
+                    unknown: wbComputedDensity.toFixed(2) + ' g/cm\u00b3 — ' + unknownDensityOutcome.label,
                     candidate: (m.density ? m.density.toFixed(2) + ' g/cm\u00b3 — ' : '') + candidateDensityOutcome.label,
                     matches: candidateDensityOutcome.id === unknownDensityOutcome.id
                   });
@@ -6632,7 +7214,8 @@ const d = labToolData.rocks || {};
               var wbSimilarityScoreFor = function (a, b) {
                 if (!a || !b) return -1;
                 var score = 0;
-                if (a.luster === b.luster) score++;
+                if (rkLusterClass(a) === rkLusterClass(b)) score++;
+                if (rkFormClass(a) === rkFormClass(b)) score++;
                 if (wbStreakOutcomeFor(a).id === wbStreakOutcomeFor(b).id) score++;
                 if (Math.abs(a.hardness - b.hardness) <= 1) score++;
                 if ((WB_CARBONATES.indexOf(a.id) !== -1) === (WB_CARBONATES.indexOf(b.id) !== -1)) score++;
@@ -6652,13 +7235,18 @@ const d = labToolData.rocks || {};
                 var separators = [];
                 var add = function (item) { if (item.differs) separators.push(item); };
                 add({
-                  id: 'luster', icon: '🔍', label: __alloT('stem.rocks.wb_faceoff_luster', 'Luster'), differs: a.luster !== b.luster,
-                  a: a.luster, b: b.luster, measured: !!wb.lens,
+                  id: 'luster', icon: '🔍', label: __alloT('stem.rocks.wb_faceoff_luster', 'Luster'), differs: rkLusterClass(a) !== rkLusterClass(b),
+                  a: a.luster + ' (' + rkLusterClassInfo(rkLusterClass(a)).label + ')', b: b.luster + ' (' + rkLusterClassInfo(rkLusterClass(b)).label + ')', measured: !!wb.lens,
                   prompt: __alloT('stem.rocks.wb_faceoff_luster_prompt', 'Compare how each surface reflects light under the hand lens.')
                 });
                 add({
+                  id: 'form', icon: '🔷', label: __alloT('stem.rocks.wb_faceoff_form', 'Form'), differs: rkFormClass(a) !== rkFormClass(b),
+                  a: rkFormClassInfo(rkFormClass(a)).label, b: rkFormClassInfo(rkFormClass(b)).label, measured: !!wb.formObs,
+                  prompt: __alloT('stem.rocks.wb_faceoff_form_prompt', 'Look at how each fragment breaks: corners, sheets, columns or no faces at all.')
+                });
+                add({
                   id: 'streak', icon: '➖', label: __alloT('stem.rocks.wb_faceoff_streak', 'Streak'), differs: wbStreakOutcomeFor(a).id !== wbStreakOutcomeFor(b).id,
-                  a: wbStreakOutcomeFor(a).label, b: wbStreakOutcomeFor(b).label, measured: !!wb.streakDone,
+                  a: wbStreakOutcomeFor(a).label, b: wbStreakOutcomeFor(b).label, measured: !!wb.streakObs,
                   prompt: __alloT('stem.rocks.wb_faceoff_streak_prompt', 'Powder color—or a scratched plate—can separate these references.')
                 });
                 add({
@@ -6681,7 +7269,7 @@ const d = labToolData.rocks || {};
                 add({
                   id: 'density', icon: '⚖️', label: __alloT('stem.rocks.wb_faceoff_density', 'Density'), differs: wbDensityOutcomeFor(a).id !== wbDensityOutcomeFor(b).id,
                   a: a.density ? a.density.toFixed(2) + ' g/cm³ · ' + wbDensityOutcomeFor(a).label : __alloT('stem.rocks.wb_faceoff_unknown', 'Unknown'),
-                  b: b.density ? b.density.toFixed(2) + ' g/cm³ · ' + wbDensityOutcomeFor(b).label : __alloT('stem.rocks.wb_faceoff_unknown', 'Unknown'), measured: !!wb.density,
+                  b: b.density ? b.density.toFixed(2) + ' g/cm³ · ' + wbDensityOutcomeFor(b).label : __alloT('stem.rocks.wb_faceoff_unknown', 'Unknown'), measured: !!wb.densityObs,
                   prompt: __alloT('stem.rocks.wb_faceoff_density_prompt', 'Calculated density can separate minerals that look alike.')
                 });
                 return separators;
@@ -6808,12 +7396,13 @@ const d = labToolData.rocks || {};
               // The bench animations are momentary by design; this rail keeps
               // their results visible while the learner scrolls and compares.
               var wbRailItems = [
-                { id: 'luster', icon: '🔍', label: __alloT('stem.rocks.wb_rail_luster', 'Luster'), done: !!wb.lens, value: wb.lens && sp ? sp.luster : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
-                { id: 'streak', icon: '➖', label: __alloT('stem.rocks.wb_rail_streak', 'Streak plate'), done: !!wb.streakDone, caution: wbPlateScratched, value: wb.streakDone && sp ? wbStreakOutcomeFor(sp).label : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
+                { id: 'luster', icon: '🔍', label: __alloT('stem.rocks.wb_rail_luster', 'Luster'), done: !!wb.lens, value: wb.lens ? rkLusterClassInfo(wb.lens).label : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
+                { id: 'form', icon: '🔷', label: __alloT('stem.rocks.wb_rail_form', 'Form'), done: !!wb.formObs, value: wb.formObs ? rkFormClassInfo(wb.formObs).label : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
+                { id: 'streak', icon: '➖', label: __alloT('stem.rocks.wb_rail_streak', 'Streak plate'), done: !!wb.streakObs, caution: wbPlateScratched, value: wb.streakObs ? wbStreakChoiceFor(wb.streakObs).label : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
                 { id: 'hardness', icon: '⛏️', label: __alloT('stem.rocks.wb_rail_hardness', 'Hardness'), done: wbHardnessConfirmed, provisional: wbHardnessProvisional, derived: wbPlateScratched && wbScratchCount === 0, value: wbHasHardnessEvidence ? wbHardnessLabel : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
                 { id: 'acid', icon: '🧪', label: __alloT('stem.rocks.wb_rail_acid', 'Acid'), done: !!wb.fizz, value: wb.fizz ? (wb.fizz === 'fizz' ? __alloT('stem.rocks.wb_match_fizzes', 'Fizzes') : __alloT('stem.rocks.wb_match_no_reaction', 'No reaction')) : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
                 { id: 'magnetism', icon: '🧲', label: __alloT('stem.rocks.wb_rail_magnet', 'Magnetism'), done: !!wb.magnet, value: wb.magnet ? (wb.magnet === 'pull' ? __alloT('stem.rocks.wb_match_strong_pull', 'Strong pull') : __alloT('stem.rocks.wb_match_no_attraction', 'No attraction')) : __alloT('stem.rocks.wb_rail_pending', 'Not measured') },
-                { id: 'density', icon: '⚖️', label: __alloT('stem.rocks.wb_rail_density', 'Density'), done: !!wb.density, value: wb.density && sp && sp.density ? sp.density.toFixed(2) + ' g/cm³' : __alloT('stem.rocks.wb_rail_pending', 'Not measured') }
+                { id: 'density', icon: '⚖️', label: __alloT('stem.rocks.wb_rail_density', 'Density'), done: !!wb.densityObs, value: wb.densityObs ? wbComputedDensity.toFixed(2) + ' g/cm³ · ' + wbDensityChoiceFor(wb.densityObs).label : __alloT('stem.rocks.wb_rail_pending', 'Not measured') }
               ];
               var wbRailGraphic = function (item) {
                 if (item.id === 'streak' && item.done && sp) {
@@ -6938,7 +7527,8 @@ const d = labToolData.rocks || {};
                       ) : null
                     )
                   ),
-                  !wbBusy && wbNext.tool !== 'claim' && wbNext.tool.indexOf('reconcile-') !== 0 && !wbToolsOpen ? React.createElement("button", {
+                  !wbBusy && wbNext.tool === 'record' ? React.createElement("button", { type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-sky-800 hover:bg-sky-900 text-white px-3.5 py-2.5 min-h-[44px] text-[11px] font-black", "data-wb-open-observation": wbPendingTool, onClick: function () { wbFocusAfterUpdate('[data-wb-observe-choice]'); } }, __alloT('stem.rocks.wb_go_observe', 'Go to the observation card')) : null,
+                  !wbBusy && wbNext.tool !== 'claim' && wbNext.tool !== 'record' && wbNext.tool.indexOf('reconcile-') !== 0 && !wbToolsOpen ? React.createElement("button", {
                     type: "button", className: "mt-3 w-full sm:w-auto rounded-xl bg-amber-800 hover:bg-amber-900 text-white px-3.5 py-2.5 min-h-[44px] text-[11px] font-black",
                     "aria-controls": "wb-tools-panel", "aria-expanded": false, "data-wb-open-recommended": wbNext.tool,
                     onClick: function () { wbUpdateAndFocus({ toolsExpanded: true }, '[data-wb-tool="' + wbNext.tool + '"]'); wbSay(__alloT('stem.rocks.wb_tools_opened_sr', 'Instrument tray opened. The recommended test is ') + wbNext.title + '.'); }
@@ -6990,9 +7580,9 @@ const d = labToolData.rocks || {};
                       React.createElement("h4", { id: "wb-evidence-rail-title", className: "text-[13px] font-black text-slate-900" }, __alloT('stem.rocks.wb_rail_title', 'Specimen evidence rail')),
                       React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, __alloT('stem.rocks.wb_rail_help', 'Each result stays visible while you compare candidates.'))
                     ),
-                    React.createElement("span", { className: "rounded-full bg-violet-50 border border-violet-200 px-2.5 py-1 text-[10.5px] font-black text-violet-900" }, wbEvidenceTypeCount + ' / 6 ' + __alloT('stem.rocks.wb_rail_captured', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
+                    React.createElement("span", { className: "rounded-full bg-violet-50 border border-violet-200 px-2.5 py-1 text-[10.5px] font-black text-violet-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_rail_captured', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
                   ),
-                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2", role: "list" }, wbRailItems.map(function (item) {
+                  React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2", role: "list" }, wbRailItems.map(function (item) {
                     return React.createElement("div", { key: item.id, role: "listitem", "data-wb-rail-property": item.id, "data-wb-rail-state": item.provisional ? 'provisional' : item.caution ? 'hardness-clue' : item.derived ? 'derived' : item.done ? 'captured' : 'pending', className: "rounded-xl border p-2 min-w-0 " + (item.caution || item.provisional ? "bg-amber-50 border-amber-300" : item.done ? "bg-emerald-50 border-emerald-300" : "bg-slate-50 border-slate-200") },
                       React.createElement("div", { className: "flex items-center gap-2" },
                         wbRailGraphic(item),
@@ -7015,7 +7605,13 @@ const d = labToolData.rocks || {};
                   guard: __alloT('stem.rocks.wb_guide_luster_guard', 'Luster is reflection, not the specimen’s color.')
                 },
                 {
-                  id: 'streak', icon: '➖', cue: __alloT('stem.rocks.wb_guide_streak_cue', 'PLATE'), label: __alloT('stem.rocks.wb_guide_streak', 'Streak plate'), done: !!wb.streakDone && !wbPlateScratched,
+                  id: 'form', icon: '🔷', cue: __alloT('stem.rocks.wb_guide_form_cue', 'SHAPE'), label: __alloT('stem.rocks.wb_guide_form', 'Form'), done: !!wb.formObs,
+                  meaning: __alloT('stem.rocks.wb_guide_form_meaning', 'The shape a mineral grows or breaks into: box-like corners, leaning rhombs, sheets, columns, pyramids, blades, or no faces at all.'),
+                  use: __alloT('stem.rocks.wb_guide_form_use', 'A free observation: describe the fragment on the bench (turn it in 3D) before running any instrument.'),
+                  guard: __alloT('stem.rocks.wb_guide_form_guard', 'A broken fragment shows cleavage and fracture, not the perfect crystal in a textbook; judge the corners and faces you can see.')
+                },
+                {
+                  id: 'streak', icon: '➖', cue: __alloT('stem.rocks.wb_guide_streak_cue', 'PLATE'), label: __alloT('stem.rocks.wb_guide_streak', 'Streak plate'), done: !!wb.streakObs && !wbPlateScratched,
                   meaning: __alloT('stem.rocks.wb_guide_streak_meaning', 'Softer minerals leave powder color on unglazed porcelain; harder minerals groove the plate instead.'),
                   use: __alloT('stem.rocks.wb_guide_streak_use', 'Use powder color to compare minerals, or a plate groove as evidence that hardness exceeds about 6.5.'),
                   guard: __alloT('stem.rocks.wb_guide_streak_guard', 'Powder color may differ from the outside surface color; a groove is hardness evidence, not a powder streak.')
@@ -7039,7 +7635,7 @@ const d = labToolData.rocks || {};
                   guard: __alloT('stem.rocks.wb_guide_magnet_guard', 'Dark color or heavy feel cannot prove magnetism.')
                 },
                 {
-                  id: 'density', icon: '⚖️', cue: __alloT('stem.rocks.wb_guide_density_cue', 'MASS ÷ VOL'), label: __alloT('stem.rocks.wb_guide_density', 'Density'), done: !!wb.density,
+                  id: 'density', icon: '⚖️', cue: __alloT('stem.rocks.wb_guide_density_cue', 'MASS ÷ VOL'), label: __alloT('stem.rocks.wb_guide_density', 'Density'), done: !!wb.densityObs,
                   meaning: __alloT('stem.rocks.wb_guide_density_meaning', 'Mass divided by volume, measured here in grams per cubic centimeter.'),
                   use: __alloT('stem.rocks.wb_guide_density_use', 'Use it to separate minerals that look similar but have different internal packing.'),
                   guard: __alloT('stem.rocks.wb_guide_density_guard', 'Density is not mass alone; specimen size changes mass, not density.')
@@ -7186,7 +7782,8 @@ const d = labToolData.rocks || {};
                 },
                   React.createElement("div", { className: "flex items-center gap-2.5 sm:gap-3 min-w-0" },
                     React.createElement("div", { className: "shrink-0 text-center" },
-                      React.createElement("div", { className: "rounded-xl ring-2 ring-amber-200" }, rkMineralSwatch(React.createElement, sp, 54)),
+                      React.createElement("div", { className: "rounded-xl ring-2 ring-amber-200" }, rkHandSpecimenSvg(React.createElement, sp, 54, { aria: __alloT('stem.rocks.wb_specimen_aria', 'Unknown hand specimen: an irregular broken fragment.') })),
+                      wb.lens ? React.createElement("div", { className: "mt-1 rounded-md bg-slate-900 p-0.5 inline-block", "data-wb-dock-porthole": "unknown" }, rkLensViewSvg(React.createElement, sp, 34, { aria: __alloT('stem.rocks.wb_lens_aria', 'Magnified patch of the specimen surface under the lamp. ') + wbSpecimenSr })) : null,
                       React.createElement("p", { className: "text-[10px] sm:text-[10.5px] font-black text-amber-900 mt-1" }, __alloT('stem.rocks.wb_compare_unknown', 'Unknown'))
                     ),
                     React.createElement("div", { className: "min-w-0 flex-1" },
@@ -7204,6 +7801,7 @@ const d = labToolData.rocks || {};
                     React.createElement("span", { className: "text-violet-700 text-lg font-black shrink-0", "aria-hidden": "true" }, '↔'),
                     wbSelected ? React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl ring-2 ring-violet-200" }, rkMineralSwatch(React.createElement, wbSelected, 54)),
+                      wb.lens ? React.createElement("div", { className: "mt-1 rounded-md bg-slate-900 p-0.5 inline-block", "data-wb-dock-porthole": wbSelected.id }, rkLensViewSvg(React.createElement, wbSelected, 34, { aria: wbSelected.label + __alloT('stem.rocks.wb_candidate_porthole_aria', ' under the lens: ') + rkLusterClassInfo(rkLusterClass(wbSelected)).sr })) : null,
                       React.createElement("p", { className: "text-[10px] sm:text-[10.5px] font-black text-violet-900 mt-1 leading-tight", style: { maxWidth: 74, overflowWrap: 'anywhere' } }, wbSelected.label)
                     ) : React.createElement("div", { className: "shrink-0 text-center" },
                       React.createElement("div", { className: "rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-xl font-black text-slate-600", style: { width: 54, height: 54 }, "aria-hidden": "true" }, '?'),
@@ -7289,7 +7887,7 @@ const d = labToolData.rocks || {};
                 );
               };
               var wbRun = function (kind, ms, finish, runState) {
-                if (wbBusy) return;
+                if (wbBusy || wbPendingTool) return;
                 sfxRockClick();
                 // Keep the initiating control mounted through the async result
                 // so keyboard and screen-reader focus cannot fall back to body.
@@ -7303,7 +7901,7 @@ const d = labToolData.rocks || {};
               var wbClearEvidence = function () {
                 wbUpdateAndFocus({
                   scratch: {}, streakDone: false, fizz: null, magnet: null, density: false,
-                  lens: false, guessedWrong: [], selectedId: null, lastRejectedId: null, reviewId: null, candidateView: null, solvedId: null, anim: null,
+                  lens: false, formObs: null, streakObs: null, densityObs: null, pending: null, history: [], guessedWrong: [], selectedId: null, lastRejectedId: null, reviewId: null, candidateView: null, solvedId: null, anim: null,
                   toolsExpanded: false, candidatesExpanded: false,
                   claimEvidence: [], claimReasoning: null, claimConfidence: null, predictionTool: null, predictionValue: null, activeScratchRef: null
                 }, '[data-wb-tool="lens"]');
@@ -7325,6 +7923,7 @@ const d = labToolData.rocks || {};
                   wbUpdateAndFocus({ solvedId: claimId, selectedId: claimId, lastRejectedId: null, reviewId: null, solved: (wb.solved || 0) + 1, attempts: (wb.attempts || 0) + 1 }, '[data-wb-next-specimen]');
                   setTimeout(function () { try { checkRocksChallenges({ ...d, wb: { ...wb, solvedId: claimId, solved: (wb.solved || 0) + 1 } }); } catch (e) {} }, 60);
                   wbSay(__alloT('stem.rocks.wb_sr_solved', 'Correct. The specimen is ') + wbSelected.label + '.');
+                  try { if (typeof stemCelebrate === 'function') stemCelebrate(); } catch (e) {}
                 } else {
                   wbUpdateAndFocus({ guessedWrong: (wb.guessedWrong || []).concat([claimId]), selectedId: null, lastRejectedId: claimId, reviewId: claimId, candidateView: 'setaside', claimEvidence: [], claimReasoning: null, claimConfidence: null, attempts: (wb.attempts || 0) + 1, anim: 'wrong' }, '[data-wb-review-close="' + claimId + '"]');
                   setTimeout(function () { try { wbSay(__alloT('stem.rocks.wb_sr_wrong', 'Not ') + wbSelected.label + '. ' + __alloT('stem.rocks.wb_sr_wrong2', 'Your evidence still fits it, so run a test that would tell them apart.')); } finally { updWb({ anim: null }); } }, 700);
@@ -7332,99 +7931,396 @@ const d = labToolData.rocks || {};
               };
 
               // ── The bench itself: SVG scene ──
-              var wbActiveScratchRef = wbScratchRefFor(wb.activeScratchRef);
+              // Evidence only. Nothing drawn here names a property: the plate
+              // shows a colour, the tile shows a mark, the beaker shows two
+              // readings. The learner classifies each in the observation card.
+              var wbActiveScratchRef = wbScratchRefFor(wb.activeScratchRef || wbPendingRefId);
               var wbActiveScratchOutcome = wbActiveScratchRef && sp ? rkScratchOutcome(wbActiveScratchRef.h, sp.hardness) : null;
-              var wbRightStationBusy = wb.anim === 'scratch' || wb.anim === 'density';
+              var wbShowScratch = (wb.anim === 'scratch' || wbPendingTool === 'scratch') && !!wbActiveScratchRef;
+              var wbShowDensity = wb.anim === 'density' || wbPendingTool === 'density';
+              var wbShowAcid = wb.anim === 'acid' || wbPendingTool === 'acid';
+              var wbShowMagnet = wb.anim === 'magnet' || wbPendingTool === 'magnet';
+              var wbShowLens = wb.anim === 'lens' || wbPendingTool === 'lens';
+              var wbRightStationBusy = wbShowScratch || wbShowDensity;
+              var wbSpecimenSr = rkLusterClassInfo(rkLusterClass(sp)).sr;
               var wbBench = sp && React.createElement("svg", {
                 viewBox: "0 0 560 250", role: "img", className: "w-full rounded-xl",
-                "aria-label": __alloT('stem.rocks.wb_bench_aria', 'Laboratory bench with an unknown specimen showing ') + wbObservedFormFor(sp) + __alloT('stem.rocks.wb_bench_aria_mid', ' and a ') + sp.luster + __alloT('stem.rocks.wb_bench_aria_end', ' surface. Test results are described in the field notebook below.'),
+                "aria-label": __alloT('stem.rocks.wb_bench_aria', 'Laboratory bench with an unknown specimen showing ') + wbObservedFormFor(sp) + __alloT('stem.rocks.wb_bench_aria_evidence', '. Its outward colour is visible; every other property must be tested. Each test leaves visible evidence at the station, described in the observation card and the field notebook.'),
                 style: { display: 'block', maxHeight: 250, background: 'linear-gradient(180deg,#1e293b 0%,#334155 58%,#7c5a35 58%,#a97c4f 63%,#8a6540 100%)' }
               },
-                // Field-station header, bench edge and a soft pool of light.
                 React.createElement("rect", { x: 18, y: 16, width: 176, height: 28, rx: 14, fill: "#0f172a", stroke: "#64748b", strokeWidth: 1.5 }),
-                React.createElement("circle", { cx: 36, cy: 30, r: 5, fill: wbBusy ? "#fbbf24" : "#34d399" }),
+                React.createElement("circle", { cx: 36, cy: 30, r: 5, fill: wbBusy ? "#fbbf24" : wbPendingTool ? "#38bdf8" : "#34d399" }),
                 React.createElement("text", { className: "hidden sm:inline", x: 50, y: 35, fontSize: 12, fill: "#f8fafc", fontWeight: 800, letterSpacing: 1.2 }, __alloT('stem.rocks.wb_field_station', 'FIELD STATION 01')),
                 React.createElement("rect", { x: 0, y: 145, width: 560, height: 4, fill: "#c99a68", opacity: 0.9 }),
                 React.createElement("ellipse", { cx: 280, cy: 175, rx: 190, ry: 26, fill: "#000", opacity: 0.28 }),
                 React.createElement("ellipse", { cx: 280, cy: 60, rx: 220, ry: 60, fill: "#f8fafc", opacity: 0.05 }),
-                // The same diagnostic crystal renderer used in the mineral
-                // collection now sits on the bench. The old generic polygon
-                // changed only colour; this shows habit and luster, the two
-                // visible observations a student is actually asked to make.
-                React.createElement("g", { className: wb.anim === 'magnet' && spIsMag ? 'rk-wb-tug' : (wb.anim === 'wrong' ? 'rk-wb-shake' : undefined) },
-                  React.createElement("g", { transform: "translate(215 30)" }, rkMineralSwatch(React.createElement, sp, 130))
+                // The unknown is a broken hand specimen, never the idealised
+                // crystal the candidate cards use, so it cannot be identified
+                // by matching pictures. Form shows through as cleavage steps,
+                // sheets or fracture — real evidence, not a label.
+                React.createElement("g", { key: 'specimen-' + sp.id, className: wbShowMagnet && spIsMag ? 'rk-wb-tug' : (wb.anim === 'wrong' ? 'rk-wb-shake' : 'rk-wb-drop'), "data-wb-specimen": "hand-specimen" },
+                  React.createElement("g", { transform: "translate(215 30)" }, rkHandSpecimenSvg(React.createElement, sp, 130, { plate: false, aria: __alloT('stem.rocks.wb_specimen_aria', 'Unknown hand specimen: an irregular broken fragment.') }))
                 ),
                 React.createElement("rect", { x: 213, y: 174, width: 134, height: 25, rx: 6, fill: "#f8fafc", stroke: "#cbd5e1", strokeWidth: 1.5 }),
                 React.createElement("text", { className: "hidden sm:inline", x: 280, y: 191, fontSize: 11, fill: "#334155", textAnchor: "middle", fontWeight: 900, letterSpacing: 1 }, __alloT('stem.rocks.wb_unknown_label', 'UNKNOWN SPECIMEN')),
-                // A simple scale bar makes this feel like a specimen station,
-                // not a floating app icon, without claiming an exact real size.
                 React.createElement("line", { x1: 220, y1: 216, x2: 340, y2: 216, stroke: "#f8fafc", strokeWidth: 2 }),
                 [0, 1, 2, 3, 4].map(function (i) { return React.createElement("line", { key: 'tick' + i, x1: 220 + i * 30, y1: 211, x2: 220 + i * 30, y2: 221, stroke: "#f8fafc", strokeWidth: 1.5 }); }),
                 React.createElement("text", { className: "hidden sm:inline", x: 280, y: 238, fontSize: 9, fill: "#e2e8f0", textAnchor: "middle", fontWeight: 700 }, __alloT('stem.rocks.wb_scale_reference', 'VISUAL SCALE REFERENCE')),
-                // streak tile appears once the streak test has run
+                // Streak plate: shows the powder (or the groove). The colour
+                // name is the learner's to supply.
                 (wb.anim === 'streak' || (wb.streakDone && !wbRightStationBusy)) ? React.createElement("g", { "data-wb-bench-observation": "streak" },
-                  React.createElement("rect", { x: 388, y: 120, width: 120, height: 52, rx: 6, fill: "#f8fafc", stroke: "#94a3b8", strokeWidth: 2 }),
+                  React.createElement("rect", { x: 388, y: 112, width: 120, height: 60, rx: 6, fill: "#e8e5de", stroke: "#94a3b8", strokeWidth: 2 }),
                   rkStreakPlateTooHard(sp)
-                    ? React.createElement("path", { className: wb.anim === 'streak' ? 'rk-smear' : undefined, d: "M400 152 C 424 138, 452 156, 496 140", fill: "none", stroke: "#64748b", strokeWidth: 2.5, strokeLinecap: "round" })
-                    : React.createElement("path", { className: wb.anim === 'streak' ? 'rk-smear' : undefined, d: "M400 152 C 424 138, 452 156, 496 140", fill: "none", stroke: (RK_STREAK_HEX[sp.streak] || '#cbd5e1'), strokeWidth: 9, strokeLinecap: "round", opacity: RK_STREAK_HEX[sp.streak] === '#ffffff' ? 0.95 : 0.9 }),
-                  !rkStreakPlateTooHard(sp) && RK_STREAK_HEX[sp.streak] === '#ffffff' ? React.createElement("path", { d: "M400 152 C 424 138, 452 156, 496 140", fill: "none", stroke: "#d7dde6", strokeWidth: 2, strokeDasharray: "3 5", opacity: 0.8 }) : null,
-                  rkStreakPlateTooHard(sp) ? React.createElement(React.Fragment, null,
-                    React.createElement("text", { className: "hidden sm:inline", x: 448, y: 185, fontSize: 8.5, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 }, __alloT('stem.rocks.wb_plate_no_powder_short', 'NO POWDER STREAK')),
-                    React.createElement("text", { className: "hidden sm:inline", x: 448, y: 196, fontSize: 8.5, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 }, __alloT('stem.rocks.wb_plate_hardness_short', 'PLATE GROOVE · H > 6.5'))
-                  ) : React.createElement("text", { className: "hidden sm:inline", x: 448, y: 187, fontSize: 9, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 }, __alloT('stem.rocks.wb_streak_recorded', 'STREAK RECORDED'))
+                    ? React.createElement("path", { className: wb.anim === 'streak' ? 'rk-smear' : undefined, d: "M400 152 C 424 138, 452 156, 496 140", fill: "none", stroke: "#8a8f97", strokeWidth: 2.5, strokeLinecap: "round" })
+                    : React.createElement(React.Fragment, null,
+                      React.createElement("path", { d: "M400 153.4 C 424 139.4, 452 157.4, 496 141.4", fill: "none", stroke: "rgba(90,84,70,0.30)", strokeWidth: 11, strokeLinecap: "round" }),
+                      React.createElement("path", { className: wb.anim === 'streak' ? 'rk-smear' : undefined, d: "M400 152 C 424 138, 452 156, 496 140", fill: "none", stroke: (RK_STREAK_HEX[sp.streak] || '#cbd5e1'), strokeWidth: 9, strokeLinecap: "round", opacity: 0.94 })
+                    ),
+                  wb.anim === 'streak' ? React.createElement("g", { className: "rk-wb-glide", "data-wb-streak-chip": "gliding" },
+                    React.createElement("polygon", { points: "396,150 404,140 414,142 416,152 408,158 398,156", fill: sp.color, stroke: "#0f172a", strokeWidth: 1 })
+                  ) : null,
+                  // Outward colour chip beside the plate: the comparison IS the lesson.
+                  React.createElement("rect", { x: 396, y: 118, width: 22, height: 12, rx: 2, fill: sp.color, stroke: "#64748b", strokeWidth: 1 }),
+                  React.createElement("text", { className: "hidden sm:inline", x: 448, y: 187, fontSize: 8.5, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 },
+                    rkStreakPlateTooHard(sp) ? __alloT('stem.rocks.wb_plate_no_powder_short', 'NO POWDER STREAK') : wb.streakObs ? __alloT('stem.rocks.wb_streak_recorded', 'STREAK RECORDED') : __alloT('stem.rocks.wb_record_prompt_short', 'RECORD WHAT YOU SEE')),
+                  rkStreakPlateTooHard(sp) ? React.createElement("text", { className: "hidden sm:inline", x: 448, y: 198, fontSize: 8.5, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 }, __alloT('stem.rocks.wb_plate_grooved_short', 'PLATE GROOVED')) : null
                 ) : null,
-                // Scratch feedback appears while the modeled reference moves;
-                // its final inequality remains in the persistent evidence rail.
-                wb.anim === 'scratch' && wbActiveScratchRef ? React.createElement("g", { className: "rk-wb-pop", "data-wb-bench-observation": "scratch" },
+                // Scratch tile: a groove cut INTO the surface (dark, with chips),
+                // a smear rubbed ON it (pale, no depth), or a broken trace.
+                wbShowScratch ? React.createElement("g", { className: "rk-wb-pop", "data-wb-bench-observation": "scratch" },
                   React.createElement("rect", { x: 388, y: 62, width: 120, height: 52, rx: 6, fill: sp.color, stroke: "#cbd5e1", strokeWidth: 2 }),
+                  React.createElement("rect", { x: 388, y: 62, width: 120, height: 14, rx: 6, fill: "#ffffff", opacity: 0.18 }),
                   wbActiveScratchOutcome === 'borderline' ? React.createElement(React.Fragment, null,
                     React.createElement("line", { x1: 400, y1: 89, x2: 496, y2: 89, stroke: rkMarkOn('#fef3c7', sp.color, 3), strokeWidth: 5.4, strokeLinecap: "round", strokeDasharray: "4 4" }),
                     React.createElement("line", { x1: 400, y1: 89, x2: 496, y2: 89, stroke: "#b45309", strokeWidth: 2.8, strokeLinecap: "round", strokeDasharray: "4 4" })
-                  ) : React.createElement("line", { x1: 400, y1: 89, x2: 496, y2: 89, stroke: rkMarkOn(wbActiveScratchOutcome === 'scratched' ? '#1f2937' : '#e2e8f0', sp.color, 3), strokeWidth: wbActiveScratchOutcome === 'scratched' ? 2.8 : 3.6, strokeLinecap: "round", opacity: 0.9 }),
-                  React.createElement("text", { className: "hidden sm:inline", x: 448, y: 128, fontSize: 8.5, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 }, wbActiveScratchOutcome === 'scratched' ? __alloT('stem.rocks.wb_result_scratch_short', 'SCRATCH') : wbActiveScratchOutcome === 'borderline' ? __alloT('stem.rocks.wb_result_near_short', 'NEAR-MATCH · RETEST') : __alloT('stem.rocks.wb_result_nomark_short', 'NO MARK'))
+                  ) : wbActiveScratchOutcome === 'scratched' ? React.createElement(React.Fragment, null,
+                    React.createElement("line", { x1: 400, y1: 89, x2: 496, y2: 89, stroke: rkMarkOn('#1f2937', sp.color, 3), strokeWidth: 2.8, strokeLinecap: "round", opacity: 0.92 }),
+                    React.createElement("line", { x1: 400, y1: 87.4, x2: 496, y2: 87.4, stroke: "#ffffff", strokeWidth: 1, strokeLinecap: "round", opacity: 0.5 }),
+                    [0, 1, 2, 3, 4].map(function (i) { return React.createElement("circle", { key: 'chip' + i, cx: 470 + i * 6 + (i % 2) * 3, cy: 93 + (i % 3) * 2.5, r: 1.1, fill: rkMarkOn('#1f2937', sp.color, 3), opacity: 0.7 }); })
+                  ) : React.createElement("line", { x1: 400, y1: 89, x2: 496, y2: 89, stroke: rkMarkOn('#e2e8f0', sp.color, 3), strokeWidth: 3.6, strokeLinecap: "round", opacity: 0.75 }),
+                  wb.anim === 'scratch' ? React.createElement("g", { className: "rk-wb-glide", "data-wb-scratch-tool": "gliding" },
+                    React.createElement("polygon", { points: "400,86 395,72 405,72", fill: wbActiveScratchOutcome === 'scratched' ? '#334155' : wbActiveScratchOutcome === 'borderline' ? '#d97706' : '#94a3b8', stroke: "#0f172a", strokeWidth: 0.9 }),
+                    React.createElement("rect", { x: 396, y: 56, width: 8, height: 16, rx: 2, fill: "#64748b", stroke: "#0f172a", strokeWidth: 0.9 })
+                  ) : null,
+                  React.createElement("text", { className: "hidden sm:inline", x: 448, y: 128, fontSize: 8.5, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 }, wbActiveScratchRef.label.replace(/^\S+\s/, '').toUpperCase() + ' · ' + __alloT('stem.rocks.wb_look_closely_short', 'LOOK CLOSELY'))
                 ) : null,
-                // acid bubbles while the acid test runs
-                wb.anim === 'acid' ? React.createElement("g", null,
+                // Acid: bubbles rise, or the drop just sits there.
+                wbShowAcid ? React.createElement("g", { "data-wb-bench-observation": "acid" },
                   React.createElement("path", { d: "M280 34 l7 14 a8 8 0 1 1 -14 0 z", fill: "#7dd3fc", stroke: "#0369a1", strokeWidth: 1.5 }),
-                  React.createElement("circle", { className: "rk-wb-drip", cx: 280, cy: 66, r: 3.4, fill: "#7dd3fc" }),
+                  wb.anim === 'acid' ? React.createElement("circle", { className: "rk-wb-drip", cx: 280, cy: 66, r: 3.4, fill: "#7dd3fc" }) : null,
+                  React.createElement("ellipse", { cx: 280, cy: 122, rx: 22, ry: 6, fill: "#7dd3fc", opacity: 0.55 }),
                   spIsCarb ? [0, 1, 2, 3, 4, 5].map(function (i) {
-                    return React.createElement("circle", { key: 'b' + i, className: "rk-bubble", cx: 258 + i * 11, cy: 118, r: 3 + (i % 3) * 1.6, fill: "#e0f2fe", stroke: "#7dd3fc", strokeWidth: 1, style: { animationDelay: (i * 0.18) + 's' } });
+                    return React.createElement("circle", { key: 'b' + i, className: wb.anim === 'acid' ? "rk-bubble" : undefined, cx: 258 + i * 9, cy: 118 - (wb.anim === 'acid' ? 0 : 6 + (i % 3) * 7), r: 2.6 + (i % 3) * 1.4, fill: "#e0f2fe", stroke: "#7dd3fc", strokeWidth: 1, style: wb.anim === 'acid' ? { animationDelay: (i * 0.18) + 's' } : undefined });
                   }) : null
                 ) : null,
-                // balance + displacement beaker while measuring density
-                wb.anim === 'density' ? React.createElement("g", { className: "rk-wb-pop", "data-wb-bench-observation": "density" },
+                // Balance + displacement beaker: two readings, no quotient.
+                wbShowDensity ? React.createElement("g", { className: "rk-wb-pop", "data-wb-bench-observation": "density" },
                   React.createElement("path", { d: "M392 60 h84 v66 a10 10 0 0 1 -10 10 h-64 a10 10 0 0 1 -10 -10 z", fill: "#e0f2fe", stroke: "#0369a1", strokeWidth: 2.5, opacity: 0.9 }),
-                  React.createElement("rect", { x: 396, y: 96, width: 76, height: 36, fill: "#7dd3fc", opacity: 0.65 }),
-                  React.createElement("rect", { className: "rk-wb-shine", x: 396, y: 88, width: 76, height: 8, fill: "#bae6fd" }),
+                  React.createElement("rect", { className: wb.anim === 'density' ? "rk-wb-rise" : undefined, "data-wb-density-water": wb.anim === 'density' ? 'rising' : 'settled', x: 396, y: 96, width: 76, height: 36, fill: "#7dd3fc", opacity: 0.65 }),
+                  React.createElement("rect", { className: wb.anim === 'density' ? "rk-wb-shine" : undefined, x: 396, y: 88, width: 76, height: 8, fill: "#bae6fd" }),
+                  React.createElement("line", { x1: 396, y1: 88, x2: 472, y2: 88, stroke: "#0369a1", strokeWidth: 1, strokeDasharray: "2 2" }),
                   React.createElement("polygon", { points: "424,104 414,122 444,122 434,104", fill: sp.color, stroke: "#0f172a", strokeWidth: 2 }),
-                  React.createElement("rect", { x: 402, y: 40, width: 64, height: 16, rx: 8, fill: "#0f172a", opacity: 0.85 }),
+                  React.createElement("rect", { x: 396, y: 40, width: 76, height: 16, rx: 8, fill: "#0f172a", opacity: 0.85 }),
                   React.createElement("text", { className: "hidden sm:inline", x: 434, y: 52, fontSize: 10, fill: "#f8fafc", textAnchor: "middle", fontWeight: 700 }, 'm = ' + wbModeledMass.toFixed(1) + ' g'),
                   React.createElement("text", { className: "hidden sm:inline", x: 434, y: 151, fontSize: 9, fill: "#f8fafc", textAnchor: "middle", fontWeight: 700 }, 'ΔV = ' + wbModeledVolume.toFixed(1) + ' cm³'),
-                  React.createElement("text", { className: "hidden sm:inline", x: 434, y: 165, fontSize: 9, fill: "#f8fafc", textAnchor: "middle", fontWeight: 800 }, 'ρ = ' + (sp.density || 0).toFixed(2) + ' g/cm³')
+                  React.createElement("text", { className: "hidden sm:inline", x: 434, y: 165, fontSize: 9, fill: "#fbbf24", textAnchor: "middle", fontWeight: 800 }, 'ρ = m ÷ V = ?')
                 ) : null,
-                // magnet swings in over the specimen
-                wb.anim === 'magnet' ? React.createElement("text", { className: "rk-wb-swing", x: 348, y: 84, fontSize: 40 }, '🧲') : null,
-                // lens overlay: a magnified porthole showing luster + crystal habit
-                wb.anim === 'lens' ? React.createElement("g", { className: "rk-wb-pop" },
-                  React.createElement("circle", { cx: 280, cy: 118, r: 62, fill: sp.color, stroke: "#0f172a", strokeWidth: 5 }),
-                  React.createElement("circle", { cx: 280, cy: 118, r: 62, fill: "url(#rkWbLensGrad)", opacity: 0.35 }),
-                  [0, 1, 2, 3].map(function (i) { return React.createElement("line", { key: 'cl' + i, x1: 236 + i * 24 + wbJit(i, 8), y1: 74, x2: 252 + i * 22 + wbJit(i + 4, 8), y2: 160, stroke: "#0f172a", strokeWidth: 1.4, opacity: 0.35 }); }),
-                  React.createElement("ellipse", { cx: 258, cy: 96, rx: 16, ry: 7, fill: "#fff", opacity: sp.luster.indexOf('Metallic') !== -1 ? 0.75 : (sp.luster.indexOf('Vitreous') !== -1 ? 0.5 : 0.25), transform: "rotate(-20 258 96)" }),
-                  React.createElement("rect", { x: 216, y: 168, width: 128, height: 20, rx: 10, fill: "#0f172a", opacity: 0.85 }),
-                  React.createElement("text", { className: "hidden sm:inline", x: 280, y: 182, fontSize: 12, fill: "#f8fafc", textAnchor: "middle", fontWeight: 700 }, sp.luster)
-                ) : null,
-                React.createElement("defs", null, React.createElement("radialGradient", { id: "rkWbLensGrad" }, React.createElement("stop", { offset: "60%", stopColor: "#fff", stopOpacity: 0 }), React.createElement("stop", { offset: "100%", stopColor: "#fff", stopOpacity: 0.9 })))
+                wbShowMagnet ? React.createElement("text", { className: wb.anim === 'magnet' ? "rk-wb-swing" : undefined, x: 348, y: 84, fontSize: 40, "data-wb-bench-observation": "magnet" }, '🧲') : null,
+                // Lens porthole: a magnified patch showing only how the surface
+                // handles light. No caption — that is the observation.
+                wbShowLens ? React.createElement("g", { className: "rk-wb-pop", "data-wb-bench-observation": "lens" },
+                  rkLensViewSvg(React.createElement, sp, 128, { x: 216, y: 54, animate: true, aria: __alloT('stem.rocks.wb_lens_aria', 'Magnified patch of the specimen surface under the lamp. ') + wbSpecimenSr })
+                ) : null
               );
 
+              // ── Observation card: the learner records what the bench shows ──
+              var wbRecordObservation = function (choiceId, choiceLabel) {
+                if (!wbPendingTool || !sp || wbBusy) return;
+                var patch = { pending: null, claimConfidence: null };
+                if (wbPendingTool === 'lens') patch.lens = choiceId;
+                else if (wbPendingTool === 'form') patch.formObs = choiceId;
+                else if (wbPendingTool === 'streak') patch.streakObs = choiceId;
+                else if (wbPendingTool === 'scratch' && wbActiveScratchRef) { var sc = { ...(wb.scratch || {}) }; sc[wbActiveScratchRef.id] = choiceId; patch.scratch = sc; }
+                else if (wbPendingTool === 'acid') patch.fizz = choiceId;
+                else if (wbPendingTool === 'magnet') patch.magnet = choiceId;
+                else if (wbPendingTool === 'density') patch.densityObs = choiceId;
+                else return;
+                // Reasoning trail: every record is kept, revisions included, so the
+                // debrief can replay the learner's path rather than only the end state.
+                patch.history = (wb.history || []).concat([{ tool: wbPendingTool, ref: wbPendingTool === 'scratch' && wbActiveScratchRef ? wbActiveScratchRef.id : undefined, choice: choiceId, label: choiceLabel }]);
+                sfxRockClick();
+                wbUpdateAndFocus(patch, '#wb-notebook-title');
+                wbSay(__alloT('stem.rocks.wb_recorded_sr', 'Recorded: ') + choiceLabel + '. ' + __alloT('stem.rocks.wb_recorded_sr2', 'The notebook and the candidate shortlist now use your observation.'));
+              };
+              var wbDiscardTrial = function () {
+                if (!wbPendingTool) return;
+                var patch = { pending: null };
+                if (wbPendingTool === 'streak') patch.streakDone = false;
+                if (wbPendingTool === 'density') patch.density = false;
+                var backTo = wbPendingTool === 'scratch' && wbActiveScratchRef ? wbActiveScratchRef.id : wbPendingTool === 'density' ? 'balance' : wbPendingTool;
+                wbUpdateAndFocus(patch, '[data-wb-tool="' + backTo + '"]');
+                wbSay(__alloT('stem.rocks.wb_discarded_sr', 'Trial discarded without recording. You can run it again.'));
+              };
+              // Re-open a recorded observation for another look. The old record
+              // stays until replaced, so a learner can compare, not just erase.
+              var wbReexamine = function (kind) {
+                if (wbBusy || wbPendingTool) return;
+                var pending = null, patch = {};
+                if (kind === 'lens') pending = { tool: 'lens' };
+                else if (kind === 'form') pending = { tool: 'form' };
+                else if (kind === 'streak' || kind === 'scratch_streak_plate') { pending = { tool: 'streak' }; patch.streakDone = true; }
+                else if (kind === 'fizz') pending = { tool: 'acid' };
+                else if (kind === 'magnet') pending = { tool: 'magnet' };
+                else if (kind === 'density') { pending = { tool: 'density' }; patch.density = true; }
+                else if (kind.indexOf('scratch_') === 0) pending = { tool: 'scratch', ref: kind.slice(8) };
+                if (!pending) return;
+                patch.pending = pending;
+                wbUpdateAndFocus(patch, '[data-wb-observe-choice]');
+                wbSay(__alloT('stem.rocks.wb_reexamine_sr', 'Looking again. The station shows the evidence; choose what you see to replace the earlier record.'));
+              };
+              // Tiny evidence icons for the choices, so each option shows the
+              // mark it names. Decorative: the label carries the meaning.
+              var wbChoiceTile = function (kind) {
+                var h = React.createElement, k = [];
+                var base = h('rect', { key: 'b', x: 2, y: 12, width: 40, height: 20, rx: 4, fill: '#cbd5e1', stroke: '#64748b', strokeWidth: 1 });
+                if (kind === 'scratched') k = [base, h('line', { key: 'l', x1: 8, y1: 22, x2: 34, y2: 22, stroke: '#1f2937', strokeWidth: 2.4, strokeLinecap: 'round' }), h('circle', { key: 'c1', cx: 35, cy: 25, r: 1.2, fill: '#1f2937' }), h('circle', { key: 'c2', cx: 38, cy: 23, r: 1, fill: '#1f2937' })];
+                else if (kind === 'no') k = [base, h('line', { key: 'l', x1: 8, y1: 22, x2: 34, y2: 22, stroke: '#f8fafc', strokeWidth: 3.2, strokeLinecap: 'round', opacity: 0.85 })];
+                else if (kind === 'borderline') k = [base, h('line', { key: 'l', x1: 8, y1: 22, x2: 36, y2: 22, stroke: '#b45309', strokeWidth: 2.6, strokeLinecap: 'round', strokeDasharray: '4 4' })];
+                else if (kind === 'fizz' || kind === 'nofizz') k = [h('rect', { key: 'b', x: 2, y: 24, width: 40, height: 14, rx: 3, fill: '#cbd5e1', stroke: '#64748b', strokeWidth: 1 }), h('ellipse', { key: 'd', cx: 22, cy: 24, rx: 9, ry: 3.5, fill: '#7dd3fc', opacity: 0.8 })].concat(kind === 'fizz' ? [h('circle', { key: 'u1', cx: 17, cy: 15, r: 2.2, fill: '#e0f2fe', stroke: '#0ea5e9', strokeWidth: 0.8 }), h('circle', { key: 'u2', cx: 24, cy: 9, r: 2.8, fill: '#e0f2fe', stroke: '#0ea5e9', strokeWidth: 0.8 }), h('circle', { key: 'u3', cx: 29, cy: 16, r: 1.8, fill: '#e0f2fe', stroke: '#0ea5e9', strokeWidth: 0.8 })] : []);
+                else if (kind.indexOf('form-') === 0) {
+                  var fk = kind.slice(5), ink = '#334155', fill = '#cbd5e1';
+                  if (fk === 'blocky') k = [h('polygon', { key: 'f', points: '10,16 28,16 28,34 10,34', fill: fill, stroke: ink, strokeWidth: 1 }), h('polygon', { key: 't', points: '10,16 16,10 34,10 28,16', fill: '#e2e8f0', stroke: ink, strokeWidth: 1 }), h('polygon', { key: 's', points: '28,16 34,10 34,28 28,34', fill: '#94a3b8', stroke: ink, strokeWidth: 1 })];
+                  else if (fk === 'rhombs') k = [h('polygon', { key: 'f', points: '8,32 18,12 38,12 28,32', fill: fill, stroke: ink, strokeWidth: 1 }), h('line', { key: 'l', x1: 13, y1: 22, x2: 33, y2: 22, stroke: ink, strokeWidth: 0.7, opacity: 0.6 })];
+                  else if (fk === 'sheets') k = [0, 1, 2, 3, 4].map(function (i) { return h('polygon', { key: 'p' + i, points: (8 + i) + ',' + (30 - i * 4) + ' ' + (30 + i) + ',' + (28 - i * 4) + ' ' + (36 + i) + ',' + (31 - i * 4) + ' ' + (14 + i) + ',' + (33 - i * 4), fill: i === 4 ? '#e2e8f0' : fill, stroke: ink, strokeWidth: 0.8 }); });
+                  else if (fk === 'prism') k = [h('polygon', { key: 'b', points: '16,16 28,16 28,36 16,36', fill: fill, stroke: ink, strokeWidth: 1 }), h('polygon', { key: 'c', points: '16,16 22,6 28,16', fill: '#e2e8f0', stroke: ink, strokeWidth: 1 }), h('line', { key: 'e', x1: 22, y1: 16, x2: 22, y2: 36, stroke: ink, strokeWidth: 0.7 })];
+                  else if (fk === 'pyramids') k = [h('polygon', { key: 'l', points: '22,6 10,22 22,38', fill: fill, stroke: ink, strokeWidth: 1 }), h('polygon', { key: 'r', points: '22,6 34,22 22,38', fill: '#94a3b8', stroke: ink, strokeWidth: 1 }), h('line', { key: 'w', x1: 10, y1: 22, x2: 34, y2: 22, stroke: ink, strokeWidth: 0.7 })];
+                  else if (fk === 'ball') k = [h('circle', { key: 'c', cx: 22, cy: 22, r: 14, fill: fill, stroke: ink, strokeWidth: 1 }), h('polygon', { key: 'p', points: '22,11 30,17 27,26 17,26 14,17', fill: '#e2e8f0', stroke: ink, strokeWidth: 0.8 }), h('line', { key: 'l1', x1: 30, y1: 17, x2: 35, y2: 15, stroke: ink, strokeWidth: 0.7 }), h('line', { key: 'l2', x1: 27, y1: 26, x2: 31, y2: 33, stroke: ink, strokeWidth: 0.7 }), h('line', { key: 'l3', x1: 17, y1: 26, x2: 13, y2: 33, stroke: ink, strokeWidth: 0.7 }), h('line', { key: 'l4', x1: 14, y1: 17, x2: 9, y2: 15, stroke: ink, strokeWidth: 0.7 })];
+                  else if (fk === 'blades') k = [h('polygon', { key: 'f', points: '6,26 30,20 38,24 14,30', fill: fill, stroke: ink, strokeWidth: 1 }), h('polygon', { key: 's', points: '14,30 38,24 38,28 14,34', fill: '#94a3b8', stroke: ink, strokeWidth: 1 })];
+                  else k = [h('path', { key: 'm', d: 'M10 26 q2 -12 14 -12 q12 0 12 10 q0 10 -12 12 q-14 -1 -14 -10 z', fill: fill, stroke: ink, strokeWidth: 1 }), h('circle', { key: 'g1', cx: 18, cy: 22, r: 1.2, fill: ink, opacity: 0.5 }), h('circle', { key: 'g2', cx: 26, cy: 28, r: 1.2, fill: ink, opacity: 0.5 }), h('circle', { key: 'g3', cx: 22, cy: 31, r: 1, fill: ink, opacity: 0.5 })];
+                }
+                else if (kind === 'pull' || kind === 'nopull') k = [h('rect', { key: 'm', x: 30, y: 8, width: 10, height: 26, rx: 3, fill: '#dc2626' }), h('rect', { key: 'm2', x: 30, y: 8, width: 10, height: 8, rx: 2, fill: '#f8fafc', opacity: 0.6 }), h('polygon', { key: 's', points: kind === 'pull' ? '18,16 28,20 26,30 16,28' : '4,16 14,20 12,30 2,28', fill: '#94a3b8', stroke: '#334155', strokeWidth: 1 })].concat(kind === 'pull' ? [h('path', { key: 'a', d: 'M6 22 h8 m-3 -3 l3 3 l-3 3', fill: 'none', stroke: '#0f172a', strokeWidth: 1.4 })] : []);
+                return h('svg', { viewBox: '0 0 44 44', width: 44, height: 44, 'aria-hidden': 'true', style: { display: 'block' }, 'data-wb-choice-tile': kind }, k);
+              };
+              var wbObservationChoices = function () {
+                if (wbPendingTool === 'lens') return RK_LUSTER_CLASSES.map(function (c) { return { id: c.id, label: __alloT('stem.rocks.wb_luster_' + c.id, c.label), hint: __alloT('stem.rocks.wb_luster_' + c.id + '_hint', c.hint), tile: rkLensViewSvg(React.createElement, { id: 'ref', color: '#9aa3ad' }, 44, { forceClass: c.id, aria: __alloT('stem.rocks.wb_luster_ref_aria', 'Reference sheen on a neutral grey surface: ') + c.label }) }; });
+                if (wbPendingTool === 'form') return RK_FORM_CLASSES.map(function (c) { return { id: c.id, tile: wbChoiceTile('form-' + c.id), label: __alloT('stem.rocks.wb_form_' + c.id, c.label), hint: __alloT('stem.rocks.wb_form_' + c.id + '_hint', c.hint) }; });
+                if (wbPendingTool === 'streak') return RK_STREAK_CHOICES.map(function (c) { return { id: c.id, label: __alloT('stem.rocks.wb_streak_choice_' + c.id, c.label), hex: c.hex }; });
+                if (wbPendingTool === 'scratch') return [
+                  { id: 'scratched', tile: wbChoiceTile('scratched'), label: __alloT('stem.rocks.wb_obs_scratched', 'It cut a groove into the specimen'), hint: __alloT('stem.rocks.wb_obs_scratched_hint', 'A dark line with tiny chips thrown ahead of the tip: the reference is harder than the specimen.') },
+                  { id: 'no', tile: wbChoiceTile('no'), label: __alloT('stem.rocks.wb_obs_no_mark', 'No groove: only a smear rubbed off the reference'), hint: __alloT('stem.rocks.wb_obs_no_mark_hint', 'A pale mark that sits on top and wipes away; the reference is softer than the specimen.') },
+                  { id: 'borderline', tile: wbChoiceTile('borderline'), label: __alloT('stem.rocks.wb_obs_borderline', 'Hard to tell: a broken, uneven trace'), hint: __alloT('stem.rocks.wb_obs_borderline_hint', 'Record it as provisional and confirm with the next softer or harder reference.') }
+                ];
+                if (wbPendingTool === 'acid') return [
+                  { id: 'fizz', tile: wbChoiceTile('fizz'), label: __alloT('stem.rocks.wb_obs_fizz', 'Bubbles rose from the drop'), hint: __alloT('stem.rocks.wb_obs_fizz_hint', 'Gas escaping means the acid is reacting with the mineral.') },
+                  { id: 'none', tile: wbChoiceTile('nofizz'), label: __alloT('stem.rocks.wb_obs_no_fizz', 'The drop sat still: no bubbles'), hint: __alloT('stem.rocks.wb_obs_no_fizz_hint', 'No visible reaction in cold dilute acid.') }
+                ];
+                if (wbPendingTool === 'magnet') return [
+                  { id: 'pull', tile: wbChoiceTile('pull'), label: __alloT('stem.rocks.wb_obs_pull', 'The specimen moved toward the magnet'), hint: __alloT('stem.rocks.wb_obs_pull_hint', 'It slid across the bench: a strong attraction.') },
+                  { id: 'none', tile: wbChoiceTile('nopull'), label: __alloT('stem.rocks.wb_obs_no_pull', 'No movement at all'), hint: __alloT('stem.rocks.wb_obs_no_pull_hint', 'The magnet passed close by and nothing happened.') }
+                ];
+                if (wbPendingTool === 'density') return wbDensityChoices.map(function (c) { return { id: c.id, label: c.label }; });
+                return [];
+              };
+              // Verdict for a history entry, computed ONLY once the claim is solved:
+              // 'revised' if a later record replaced it, 'match' if it agrees with
+              // the solved mineral's reference outcome, else 'mismatch'.
+              var wbHistoryToolKey = function (e) { return e.tool === 'scratch' ? e.ref : e.tool === 'density' ? 'balance' : e.tool; };
+              var wbHistoryChoiceAsForecastId = function (e) {
+                if (e.tool === 'scratch') return e.choice === 'scratched' ? 'scratches' : e.choice === 'no' ? 'resists' : 'borderline';
+                if (e.tool === 'acid') return e.choice === 'fizz' ? 'fizz' : 'no-fizz';
+                if (e.tool === 'magnet') return e.choice === 'pull' ? 'pull' : 'no-pull';
+                return e.choice;
+              };
+              var wbHistoryToolLabel = function (e) {
+                if (e.tool === 'scratch') { var r = wbScratchRefFor(e.ref); return r ? r.label.replace(/^\S+\s/, '') : __alloT('stem.rocks.wb_kind_hardness', 'hardness'); }
+                return e.tool === 'lens' ? __alloT('stem.rocks.wb_t_lens', 'Hand lens') : e.tool === 'form' ? __alloT('stem.rocks.wb_t_form', 'Describe its shape') : e.tool === 'streak' ? __alloT('stem.rocks.wb_t_streak', 'Streak plate') : e.tool === 'acid' ? __alloT('stem.rocks.wb_t_acid', 'Acid dropper') : e.tool === 'magnet' ? __alloT('stem.rocks.wb_t_magnet', 'Magnet') : __alloT('stem.rocks.wb_t_balance', 'Balance + beaker');
+              };
+              var wbDebriefRival = null;
+              if (wb.solvedId) {
+                var wbSolvedM = wbMineral(wb.solvedId);
+                wbPoolFor().forEach(function (id) {
+                  var cand = wbMineral(id);
+                  if (!cand || !wbSolvedM || cand.id === wbSolvedM.id) return;
+                  if (!wbDebriefRival || wbSimilarityScoreFor(wbSolvedM, cand) > wbSimilarityScoreFor(wbSolvedM, wbDebriefRival)) wbDebriefRival = cand;
+                });
+              }
+              var wbRenderReasoningTrail = function () {
+                var hist = wb.history || [];
+                var solved = wb.solvedId ? wbMineral(wb.solvedId) : null;
+                if (!solved || !hist.length) return null;
+                var rows = hist.map(function (e, i) {
+                  var key = wbHistoryToolKey(e);
+                  var later = hist.slice(i + 1).some(function (n) { return wbHistoryToolKey(n) === key; });
+                  var ref = wbForecastOutcomeFor(key, solved);
+                  var verdict = later ? 'revised' : (ref && ref.id === wbHistoryChoiceAsForecastId(e)) ? 'match' : 'mismatch';
+                  return { e: e, verdict: verdict, ref: ref };
+                });
+                var revised = rows.filter(function (r) { return r.verdict === 'revised'; }).length;
+                var mismatched = rows.filter(function (r) { return r.verdict === 'mismatch'; }).length;
+                return React.createElement("section", { className: "mt-3 rounded-xl border border-emerald-200 bg-white/80 p-2.5 text-left", "aria-labelledby": "wb-trail-title", "data-wb-debrief-history": hist.length, "data-wb-debrief-revised": revised, "data-wb-debrief-mismatched": mismatched },
+                  React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-800" }, __alloT('stem.rocks.wb_trail_eyebrow', 'Reasoning trail')),
+                  React.createElement("h6", { id: "wb-trail-title", className: "text-[12px] font-black text-slate-900 mt-0.5" }, __alloT('stem.rocks.wb_trail_title', 'How you got there')),
+                  React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-0.5 leading-relaxed" }, revised
+                    ? __alloT('stem.rocks.wb_trail_revised_help', 'Looking again and revising a reading is exactly what a careful observer does. Revised readings are kept here so you can see how your thinking changed.')
+                    : __alloT('stem.rocks.wb_trail_help', 'Every observation you recorded, in order, compared with the reference values for the mineral you identified.')),
+                  React.createElement("ol", { className: "mt-2 space-y-1.5" }, rows.map(function (r, i) {
+                    return React.createElement("li", { key: i, "data-wb-history-verdict": r.verdict, className: "rounded-lg border px-2.5 py-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] " + (r.verdict === 'match' ? "border-emerald-200 bg-emerald-50" : r.verdict === 'revised' ? "border-slate-200 bg-slate-50" : "border-amber-300 bg-amber-50") },
+                      React.createElement("span", { className: "w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 " + (r.verdict === 'match' ? "bg-emerald-700 text-white" : r.verdict === 'revised' ? "bg-slate-500 text-white" : "bg-amber-700 text-white"), "aria-hidden": "true" }, i + 1),
+                      React.createElement("span", { className: "font-black text-slate-900" }, wbHistoryToolLabel(r.e) + ':'),
+                      React.createElement("span", { className: "font-semibold " + (r.verdict === 'revised' ? "text-slate-600 line-through" : "text-slate-800") }, r.e.label),
+                      React.createElement("span", { className: "ml-auto rounded-full border px-2 py-0.5 text-[10px] font-black " + (r.verdict === 'match' ? "border-emerald-300 bg-white text-emerald-900" : r.verdict === 'revised' ? "border-slate-300 bg-white text-slate-700" : "border-amber-400 bg-white text-amber-900") },
+                        r.verdict === 'match' ? '\u2713 ' + __alloT('stem.rocks.wb_trail_match', 'Matches reference') : r.verdict === 'revised' ? '\u21bb ' + __alloT('stem.rocks.wb_trail_revised', 'Revised later') : '\u26a0 ' + __alloT('stem.rocks.wb_trail_mismatch', 'Worth a second look: reference says ') + (r.ref ? r.ref.label : '?'))
+                    );
+                  }))
+                );
+              };
+              // Plain-text notebook for pasting into an assignment or a lab report.
+              var wbNotebookText = function () {
+                var lines = [__alloT('stem.rocks.wb_nb_title', 'Mineral Workbench field notebook')];
+                lines.push(__alloT('stem.rocks.wb_nb_set', 'Candidate set: ') + ((wb.pool || 'standard') === 'challenge' ? __alloT('stem.rocks.wb_pool_challenge', 'Challenge set · 18') : __alloT('stem.rocks.wb_pool_standard', 'Standard set · 12')));
+                lines.push('');
+                lines.push(__alloT('stem.rocks.wb_nb_observations', 'Observations (in the order recorded):'));
+                if (!(wb.history || []).length && !wbEvidence.length) lines.push('  ' + __alloT('stem.rocks.wb_nb_none', 'none yet'));
+                (wb.history || []).forEach(function (e, i) { lines.push('  ' + (i + 1) + '. ' + wbHistoryToolLabel(e) + ': ' + e.label); });
+                lines.push('');
+                lines.push(__alloT('stem.rocks.wb_nb_evidence', 'Evidence in force:'));
+                wbEvidence.forEach(function (ev) { lines.push('  - ' + wbEvidenceKind(ev.k) + ': ' + ev.text); });
+                if (wbHasHardnessEvidence) lines.push('  - ' + __alloT('stem.rocks.wb_nb_hardness', 'Hardness constraint: ') + wbHardnessLabel);
+                lines.push('');
+                lines.push(__alloT('stem.rocks.wb_nb_shortlist', 'Candidates still fitting: ') + wbRemaining + ' / ' + (wb.order || []).length + (wbViableCandidates.length ? ' (' + wbViableCandidates.map(function (m) { return m.label; }).join(', ') + ')' : ''));
+                if (wbSelected) lines.push(__alloT('stem.rocks.wb_nb_claim', 'Claim: ') + wbSelected.label);
+                if (wbSelected && wbClaimReasoning && wbChosenRows.length >= 2) lines.push(__alloT('stem.rocks.wb_nb_reasoning', 'Reasoning: ') + wbReasoningSentence);
+                if (wb.solvedId) lines.push(__alloT('stem.rocks.wb_nb_identified', 'Identified: ') + (wbMineral(wb.solvedId) || {}).label);
+                return lines.join('\n');
+              };
+              var wbCopyNotebook = function () {
+                var txt = wbNotebookText(), ok = false;
+                try { if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(txt); ok = true; } } catch (e) {}
+                if (!ok) {
+                  try { var ta = document.createElement('textarea'); ta.value = txt; ta.setAttribute('aria-hidden', 'true'); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = !!document.execCommand('copy'); document.body.removeChild(ta); } catch (e) { ok = false; }
+                }
+                if (typeof addToast === 'function') { try { addToast(ok ? __alloT('stem.rocks.wb_nb_copied', 'Notebook copied to the clipboard.') : __alloT('stem.rocks.wb_nb_copy_failed', 'Could not copy. Select the notebook text and copy it by hand.'), ok ? 'success' : 'error'); } catch (e) {} }
+                wbSay(ok ? __alloT('stem.rocks.wb_nb_copied', 'Notebook copied to the clipboard.') : __alloT('stem.rocks.wb_nb_copy_failed', 'Could not copy. Select the notebook text and copy it by hand.'));
+              };
+              var wbRenderObservationCard = function () {
+                if (!wbPendingTool || !sp) return null;
+                var title = wbPendingTool === 'lens' ? __alloT('stem.rocks.wb_obs_title_lens', 'What does the surface do with light?')
+                  : wbPendingTool === 'form' ? __alloT('stem.rocks.wb_obs_title_form', 'What shape does the fragment break into?')
+                  : wbPendingTool === 'streak' ? __alloT('stem.rocks.wb_obs_title_streak', 'What is on the porcelain plate?')
+                    : wbPendingTool === 'scratch' ? __alloT('stem.rocks.wb_obs_title_scratch', 'Did the reference leave a real scratch?')
+                      : wbPendingTool === 'acid' ? __alloT('stem.rocks.wb_obs_title_acid', 'What happened when the acid touched the specimen?')
+                        : wbPendingTool === 'magnet' ? __alloT('stem.rocks.wb_obs_title_magnet', 'How did the specimen respond to the magnet?')
+                          : __alloT('stem.rocks.wb_obs_title_density', 'Work out the density from the two readings');
+                var help = wbPendingTool === 'form' ? __alloT('stem.rocks.wb_obs_help_form', 'Look at the corners, faces and edges of the fragment on the bench; turn it in 3D if that helps. Form is about shape, not colour or shine. Compare with the reference crystals on the candidate cards.')
+                  : wbPendingTool === 'lens' ? __alloT('stem.rocks.wb_obs_help_lens', 'Compare the porthole with the four reference sheens. They are all on the same grey surface, so the only difference between them is how they reflect the lamp. Colour is not luster.')
+                  : wbPendingTool === 'streak' ? __alloT('stem.rocks.wb_obs_help_streak', 'Name the colour of the powder itself, not the specimen. If the plate is grooved with no powder, the mineral is harder than porcelain.')
+                    : wbPendingTool === 'scratch' ? __alloT('stem.rocks.wb_obs_help_scratch', 'A groove cuts INTO the surface and throws chips. A smear is the reference’s own material rubbed ON the surface with no depth.')
+                      : wbPendingTool === 'acid' ? __alloT('stem.rocks.wb_obs_help_acid', 'Look at the drop on the specimen.')
+                        : wbPendingTool === 'magnet' ? __alloT('stem.rocks.wb_obs_help_magnet', 'Look at where the specimen is now compared with its outline on the bench.')
+                          : __alloT('stem.rocks.wb_obs_help_density', 'Density is mass divided by volume: ρ = m ÷ V. Divide the balance reading by the water the specimen displaced, then choose the band your answer falls in.');
+                var choices = wbObservationChoices();
+                var isLens = wbPendingTool === 'lens', isForm = wbPendingTool === 'form', isStreak = wbPendingTool === 'streak', isDensity = wbPendingTool === 'density';
+                return React.createElement("section", {
+                  className: "rounded-2xl border-2 border-sky-400 bg-sky-50 p-3 sm:p-4 rk-wb-pop",
+                  "aria-labelledby": "wb-observation-title", "data-wb-observation-card": wbPendingTool,
+                  "data-wb-observation-ref": wbActiveScratchRef && wbPendingTool === 'scratch' ? wbActiveScratchRef.id : undefined
+                },
+                  React.createElement("div", { className: "flex items-start gap-3" },
+                    React.createElement("span", { className: "w-10 h-10 rounded-xl bg-white flex items-center justify-center text-xl shadow-sm shrink-0", "aria-hidden": "true" }, '📝'),
+                    React.createElement("div", { className: "min-w-0 flex-1" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.14em] text-sky-800" }, __alloT('stem.rocks.wb_obs_eyebrow', 'Your observation')),
+                      React.createElement("h4", { id: "wb-observation-title", className: "text-[14px] sm:text-[15px] font-black text-slate-900 mt-0.5" }, title),
+                      React.createElement("p", { className: "text-[11px] sm:text-[11.5px] text-slate-700 mt-1 leading-relaxed" }, help)
+                    )
+                  ),
+                  isLens ? React.createElement("div", { className: "mt-3 flex flex-col sm:flex-row gap-3 items-start" },
+                    React.createElement("div", { className: "shrink-0 rounded-xl bg-slate-900 p-2", "data-wb-lens-porthole": "large" },
+                      rkLensViewSvg(React.createElement, sp, 160, { animate: true, aria: __alloT('stem.rocks.wb_lens_aria', 'Magnified patch of the specimen surface under the lamp. ') + wbSpecimenSr })
+                    ),
+                    React.createElement("div", { className: "min-w-0 flex-1" },
+                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-wide text-slate-700" }, __alloT('stem.rocks.wb_obs_tilt', 'Tilt it: turn the specimen under the lamp and watch the highlight')),
+                      React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_obs_tilt_help', 'A hard mirror flash that slides is metallic. One pin-sharp point with a lit interior is glassy. A wide soft glow along layers is pearly. No crisp highlight is dull or waxy.')),
+                      React.createElement("button", { type: "button", className: "mt-2 rounded-xl border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[10.5px] font-black text-slate-800 hover:border-sky-400 hover:bg-sky-100", "aria-pressed": !!wb.view3d, "data-wb-view3d": wb.view3d ? 'on' : 'off', onClick: function () { updWb({ view3d: !wb.view3d }); wbSay(wb.view3d ? __alloT('stem.rocks.wb_3d_closed_sr', '3D specimen closed.') : __alloT('stem.rocks.wb_3d_opened_sr', '3D specimen opened below the bench. Drag or use the arrow buttons to turn it.')); } }, wb.view3d ? '🧊 ' + __alloT('stem.rocks.wb_3d_hide', 'Hide 3D specimen') : '🧊 ' + __alloT('stem.rocks.wb_3d_show', 'Turn it in 3D'))
+                    )
+                  ) : null,
+                  isForm ? React.createElement("div", { className: "mt-3 flex flex-col sm:flex-row gap-3 items-start" },
+                    React.createElement("div", { className: "shrink-0 rounded-xl bg-slate-900 p-2", "data-wb-form-specimen": "large" }, rkHandSpecimenSvg(React.createElement, sp, 150, { plate: false, aria: __alloT('stem.rocks.wb_form_large_aria', 'The unknown fragment, enlarged. ') + wbObservedFormFor(sp) })),
+                    React.createElement("div", { className: "min-w-0 flex-1" },
+                      React.createElement("p", { className: "text-[10.5px] font-black uppercase tracking-wide text-slate-700" }, __alloT('stem.rocks.wb_obs_form_cue', 'Look for corners, sheets, columns or points')),
+                      React.createElement("p", { className: "text-[10.5px] text-slate-700 mt-0.5 leading-relaxed" }, __alloT('stem.rocks.wb_obs_form_cue_help', 'Right-angle steps mean box-like cleavage. Leaning faces mean rhombs. Layers that peel are sheets. A long six-sided column is a prism. Triangles meeting in points are pyramids. A thin slab is a blade. A rounded crystal of many small faces is a ball. Lumpy with no faces is massive.')),
+                      React.createElement("button", { type: "button", className: "mt-2 rounded-xl border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[10.5px] font-black text-slate-800 hover:border-sky-400 hover:bg-sky-100", "aria-pressed": !!wb.view3d, "data-wb-view3d": wb.view3d ? 'on' : 'off', onClick: function () { updWb({ view3d: !wb.view3d }); } }, wb.view3d ? '🧊 ' + __alloT('stem.rocks.wb_3d_hide', 'Hide 3D specimen') : '🧊 ' + __alloT('stem.rocks.wb_3d_show', 'Turn it in 3D'))
+                    )
+                  ) : null,
+                  isDensity ? React.createElement("dl", { className: "mt-3 grid grid-cols-2 gap-2", "data-wb-density-readings": "shown" },
+                    React.createElement("div", { className: "rounded-xl border border-sky-200 bg-white p-2.5" },
+                      React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_mass', 'Balance reading (mass)')),
+                      React.createElement("dd", { className: "text-[15px] font-black text-slate-900 mt-0.5" }, 'm = ' + wbModeledMass.toFixed(1) + ' g')
+                    ),
+                    React.createElement("div", { className: "rounded-xl border border-sky-200 bg-white p-2.5" },
+                      React.createElement("dt", { className: "text-[10px] font-black uppercase tracking-wide text-slate-600" }, __alloT('stem.rocks.wb_reading_volume', 'Water displaced (volume)')),
+                      React.createElement("dd", { className: "text-[15px] font-black text-slate-900 mt-0.5" }, 'V = ' + wbModeledVolume.toFixed(1) + ' cm³')
+                    )
+                  ) : null,
+                  React.createElement("div", { className: "mt-3 grid gap-2 " + (isDensity ? "grid-cols-2 sm:grid-cols-5" : isStreak ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-1 sm:grid-cols-2"), role: "group", "aria-label": __alloT('stem.rocks.wb_obs_choices_aria', 'Choose the description that matches what you see') },
+                    choices.map(function (c) {
+                      return React.createElement("button", {
+                        key: c.id, type: "button", "data-wb-observe-choice": c.id, "aria-disabled": wbBusy,
+                        className: "rounded-xl border border-slate-300 bg-white px-2.5 py-2.5 min-h-[48px] text-left hover:border-sky-500 hover:bg-sky-100 transition-all flex items-center gap-2.5",
+                        onClick: function (e) { if (wbBusy) { if (e && e.preventDefault) e.preventDefault(); return; } wbRecordObservation(c.id, c.label); }
+                      },
+                        c.tile ? React.createElement("span", { className: "shrink-0 rounded-lg overflow-hidden", "data-wb-luster-reference": c.id }, c.tile) : null,
+                        c.hex !== undefined ? React.createElement("span", { className: "shrink-0 w-7 h-7 rounded-md border border-slate-400", style: { background: c.hex || 'repeating-linear-gradient(135deg,#e8e5de,#e8e5de 3px,#94a3b8 3px,#94a3b8 4px)' }, "aria-hidden": "true" }) : null,
+                        React.createElement("span", { className: "min-w-0" },
+                          React.createElement("span", { className: "block text-[11.5px] font-black text-slate-900 leading-tight" }, c.label),
+                          c.hint ? React.createElement("span", { className: "block text-[10px] text-slate-700 mt-0.5 leading-snug" }, c.hint) : null
+                        )
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-between gap-2" },
+                    React.createElement("p", { className: "text-[10px] text-slate-700 italic" }, __alloT('stem.rocks.wb_obs_honesty', 'Record what you see, not what you expect. A misread will empty the shortlist, and you can look again.')),
+                    React.createElement("button", { type: "button", className: "rounded-lg border border-slate-300 bg-white px-3 py-2 min-h-[44px] text-[10px] font-black text-slate-800 hover:bg-slate-50", "data-wb-observe-discard": wbPendingTool, disabled: wbBusy, onClick: wbDiscardTrial }, __alloT('stem.rocks.wb_obs_discard', 'Discard this trial'))
+                  )
+                );
+              };
+              // 3D hand specimen on the host viewer shell. Lives under the bench
+              // so it is available for any test, not only while the lens is open.
+              var wbRenderSpecimen3d = function () {
+                if (!sp || !wb.view3d) return null;
+                if (!RK_SPECIMEN_VIEWER) return React.createElement("p", { className: "rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-[10.5px] text-slate-700", "data-wb-specimen-3d": "unavailable" }, __alloT('stem.rocks.wb_3d_unavailable', 'The 3D specimen is unavailable on this host. The lens porthole above carries the same luster evidence.'));
+                return React.createElement("section", { className: "rounded-2xl border border-slate-700 bg-slate-900 p-2", "aria-labelledby": "wb-3d-title", "data-wb-specimen-3d": "open" },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 px-1 pb-1.5" },
+                    React.createElement("h4", { id: "wb-3d-title", className: "text-[11px] font-black", style: { color: '#f1f5f9', background: '#0f172a' } }, '🧊 ' + __alloT('stem.rocks.wb_3d_title', 'Hand specimen under the lamp')),
+                    React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": __alloT('stem.rocks.wb_3d_controls_aria', '3D specimen view controls') },
+                      [
+                        ['◀', __alloT('stem.rocks.crystal3d_left', 'Rotate left'), function () { RK_SPECIMEN_VIEWER.nudge(-0.3, 0); }],
+                        ['▶', __alloT('stem.rocks.crystal3d_right', 'Rotate right'), function () { RK_SPECIMEN_VIEWER.nudge(0.3, 0); }],
+                        ['▲', __alloT('stem.rocks.crystal3d_up', 'Tilt up'), function () { RK_SPECIMEN_VIEWER.nudge(0, 0.2); }],
+                        ['▼', __alloT('stem.rocks.crystal3d_down', 'Tilt down'), function () { RK_SPECIMEN_VIEWER.nudge(0, -0.2); }],
+                        ['＋', __alloT('stem.rocks.crystal3d_in', 'Zoom in'), function () { RK_SPECIMEN_VIEWER.zoom(-0.6); }],
+                        ['－', __alloT('stem.rocks.crystal3d_out', 'Zoom out'), function () { RK_SPECIMEN_VIEWER.zoom(0.6); }],
+                        ['↺', __alloT('stem.rocks.crystal3d_reset', 'Reset view'), function () { RK_SPECIMEN_VIEWER.reset(); }]
+                      ].map(function (b) { return React.createElement("button", { key: b[1], type: "button", "aria-label": b[1], title: b[1], className: "w-9 h-9 min-h-[36px] rounded-lg bg-slate-800 border border-slate-600 text-[12px] font-black hover:bg-slate-700", style: { color: '#f1f5f9', background: '#1e293b' }, onClick: b[2] }, b[0]); })
+                    )
+                  ),
+                  React.createElement("div", {
+                    key: 'specimen3d-' + sp.id, ref: rkSpecimenRef,
+                    className: "relative w-full rounded-xl overflow-hidden border border-slate-700 bg-slate-950",
+                    style: { height: '260px' }, role: "img",
+                    "aria-label": __alloT('stem.rocks.wb_3d_aria', 'Rotating 3D model of the unknown hand specimen under a lamp. ') + wbSpecimenSr
+                  }),
+                  React.createElement("p", { className: "text-[10px] px-1 pt-1.5 leading-relaxed", style: { color: '#cbd5e1', background: '#0f172a' } }, __alloT('stem.rocks.wb_3d_help', 'Drag to turn it. Watch the highlight: does it slide like a mirror, stay as one sharp point, spread as a soft glow, or never appear?'))
+                );
+              };
               var wbToolBtn = function (opts) {
                 var doneTone = opts.caution ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-emerald-50 border-emerald-300 text-emerald-900";
-                var unavailable = wbBusy || opts.done;
+                var unavailable = wbBusy || opts.done || !!wbPendingTool;
                 return React.createElement("button", {
                   key: opts.key, type: "button", "aria-disabled": unavailable,
                   onClick: function (e) { if (unavailable) { if (e && e.preventDefault) e.preventDefault(); return; } opts.onClick(); },
                   "aria-label": (wbNext.tool === opts.key && !opts.done ? __alloT('stem.rocks.wb_recommended_aria', 'Recommended next test. ') : '') + opts.aria, title: opts.aria,
                   "data-wb-tool": opts.key,
-                  className: "px-2.5 py-2.5 rounded-xl text-left border transition-all min-h-[52px] flex flex-col justify-center " + (opts.done ? doneTone + " cursor-default" : wbBusy ? "bg-white border-slate-300 text-slate-700 cursor-wait opacity-65" : (wbNext.tool === opts.key ? "bg-amber-50 border-amber-400 text-slate-800 ring-2 ring-amber-200 hover:bg-amber-100" : "bg-white border-slate-300 text-slate-800 hover:border-amber-400 hover:-translate-y-0.5 hover:shadow-md"))
+                  className: "px-2.5 py-2.5 rounded-xl text-left border transition-all min-h-[52px] flex flex-col justify-center " + (opts.done ? doneTone + " cursor-default" : wbBusy ? "bg-white border-slate-300 text-slate-700 cursor-wait opacity-65" : (wbNext.tool === opts.key ? "bg-amber-50 border-amber-400 text-slate-800 ring-2 ring-amber-200 hover:bg-amber-100 rk-wb-nudge" : "bg-white border-slate-300 text-slate-800 hover:border-amber-400 hover:-translate-y-0.5 hover:shadow-md"))
                 },
                   React.createElement("span", { className: "text-[12px] font-black leading-tight" }, (opts.done ? '✓ ' : '') + opts.label),
                   opts.meta ? React.createElement("span", { className: "text-[10px] font-semibold text-slate-600 mt-1 leading-tight" }, opts.meta) : null,
@@ -7493,7 +8389,8 @@ const d = labToolData.rocks || {};
                 streak: __alloT('stem.rocks.wb_running_streak', 'Recording the powder streak…'),
                 acid: __alloT('stem.rocks.wb_running_acid', 'Watching for an acid reaction…'),
                 magnet: __alloT('stem.rocks.wb_running_magnet', 'Checking for magnetic pull…'),
-                lens: __alloT('stem.rocks.wb_running_lens', 'Examining luster and crystal form…'),
+                lens: __alloT('stem.rocks.wb_running_lens', 'Examining how the surface reflects light…'),
+                form: __alloT('stem.rocks.wb_running_form', 'Looking at the fragment’s shape…'),
                 density: __alloT('stem.rocks.wb_running_density', 'Measuring mass and displaced volume…'),
                 scratch: __alloT('stem.rocks.wb_running_scratch', 'Checking whether the reference leaves a true scratch…'),
                 wrong: __alloT('stem.rocks.wb_running_claim', 'That claim does not fit yet—compare the remaining evidence.')
@@ -7514,7 +8411,16 @@ const d = labToolData.rocks || {};
                       )
                     ); })
                   ),
-                  React.createElement("button", { className: "mt-5 px-5 py-3 rounded-xl bg-amber-700 text-white font-black shadow-md hover:bg-amber-800 hover:-translate-y-0.5 transition-all min-h-[48px]", onClick: wbDraw }, __alloT('stem.rocks.wb_open', '🪨 Put a specimen on the bench'))
+                  React.createElement("div", { className: "mt-5 inline-flex rounded-xl border border-amber-300 bg-white/80 p-1", role: "group", "aria-label": __alloT('stem.rocks.wb_pool_aria', 'Choose the candidate set') },
+                    [['standard', __alloT('stem.rocks.wb_pool_standard', 'Standard set · 12')], ['challenge', __alloT('stem.rocks.wb_pool_challenge', 'Challenge set · 18')]].map(function (opt) {
+                      var on = (wb.pool || 'standard') === opt[0];
+                      return React.createElement("button", { key: opt[0], type: "button", "aria-pressed": on, "data-wb-pool": opt[0], className: "rounded-lg px-3 py-2 min-h-[40px] text-[11px] font-black " + (on ? "bg-amber-700 text-white" : "text-amber-900 hover:bg-amber-100"), onClick: function () { updWb({ pool: opt[0] }); } }, opt[1]);
+                    })
+                  ),
+                  React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-1.5" }, (wb.pool || 'standard') === 'challenge' ? __alloT('stem.rocks.wb_pool_challenge_help', 'Adds diamond, garnet, olivine, sulfur, corundum and topaz. Several are harder than the streak plate, so the plate alone will not sort them.') : __alloT('stem.rocks.wb_pool_standard_help', 'Twelve common minerals with clearly different signatures.')),
+                  React.createElement("div", null,
+                    React.createElement("button", { className: "mt-4 px-5 py-3 rounded-xl bg-amber-700 text-white font-black shadow-md hover:bg-amber-800 hover:-translate-y-0.5 transition-all min-h-[48px]", onClick: wbDraw }, __alloT('stem.rocks.wb_open', '🪨 Put a specimen on the bench'))
+                  )
                 ) : React.createElement(React.Fragment, null,
                   // A compact investigation map stays visible as the state
                   // changes, giving students a stable sense of where they are.
@@ -7550,8 +8456,10 @@ const d = labToolData.rocks || {};
                   ),
                   wbBench,
                   React.createElement("p", { className: "sm:hidden rounded-lg bg-slate-800 px-3 py-2 text-[11px] font-semibold text-white leading-relaxed", "data-wb-mobile-bench-caption": "readable" },
-                    __alloT('stem.rocks.wb_unknown_mobile', 'Unknown specimen') + ' · ' + wbObservedFormFor(sp) + ' · ' + sp.luster + (wbPlateScratched ? ' · ' + __alloT('stem.rocks.wb_plate_mobile', 'No powder streak; plate groove gives H > 6.5') : '')
+                    __alloT('stem.rocks.wb_unknown_mobile', 'Unknown specimen') + ' · ' + wbObservedFormFor(sp) + (wbPlateScratched ? ' · ' + __alloT('stem.rocks.wb_plate_mobile', 'No powder streak; plate groove gives H > 6.5') : '')
                   ),
+                  wbRenderSpecimen3d(),
+                  wbRenderObservationCard(),
                   // Guided learners see the next scientific move immediately
                   // after the specimen; the full bench keeps evidence first.
                   wbGuided ? wbRenderActionHub() : null,
@@ -7571,11 +8479,12 @@ const d = labToolData.rocks || {};
                       ),
                       wbToolsOpen ? React.createElement(React.Fragment, null,
                       React.createElement("div", { id: "wb-tools-content", className: "grid sm:grid-cols-2 xl:grid-cols-3 gap-2" },
-                        wbToolBtn({ key: 'lens', label: '🔍 ' + __alloT('stem.rocks.wb_t_lens', 'Hand lens'), meta: __alloT('stem.rocks.wb_meta_lens', 'Observe luster + crystal form'), done: !!wb.lens, aria: __alloT('stem.rocks.wb_t_lens_aria', 'Examine the surface with a hand lens'), onClick: function () { wbRun('lens', 1600, function () { updWb({ lens: true }); wbSay(__alloT('stem.rocks.wb_sr_lens', 'Under the lens the luster is ') + sp.luster + '. ' + __alloT('stem.rocks.wb_sr_lens2', 'Observed reference form: ') + wbObservedFormFor(sp) + '.'); }); } }),
-                        wbToolBtn({ key: 'streak', label: '🍽️ ' + __alloT('stem.rocks.wb_t_streak', 'Streak plate'), meta: __alloT('stem.rocks.wb_meta_streak', 'Observe powder color or a plate scratch'), done: !!wb.streakDone, caution: wbPlateScratched, aria: __alloT('stem.rocks.wb_t_streak_aria', 'Run the streak-plate test'), onClick: function () { wbRun('streak', 900, function () { updWb({ streakDone: true }); sfxRockCrack(); wbSay(__alloT('stem.rocks.wb_sr_streak', 'Streak test complete. Observation: ') + wbStreakOutcomeFor(sp).label + '.'); }); } }),
-                        wbToolBtn({ key: 'magnet', label: '🧲 ' + __alloT('stem.rocks.wb_t_magnet', 'Magnet'), meta: __alloT('stem.rocks.wb_meta_magnet', 'Check for magnetic pull'), done: !!wb.magnet, aria: __alloT('stem.rocks.wb_t_magnet_aria', 'Bring a magnet close to the specimen'), onClick: function () { wbRun('magnet', 1100, function () { var r = spIsMag ? 'pull' : 'none'; updWb({ magnet: r }); wbSay(r === 'pull' ? __alloT('stem.rocks.wb_sr_pull', 'The specimen jumps to the magnet. Strongly magnetic.') : __alloT('stem.rocks.wb_sr_nopull', 'The magnet has no effect.')); }); } }),
-                        wbToolBtn({ key: 'acid', label: '🧪 ' + __alloT('stem.rocks.wb_t_acid', 'Acid dropper'), meta: __alloT('stem.rocks.wb_meta_acid', 'Virtual calcite-response check'), done: !!wb.fizz, aria: __alloT('stem.rocks.wb_t_acid_aria', 'Apply a virtual drop of dilute hydrochloric acid'), onClick: function () { wbRun('acid', 1400, function () { var r = spIsCarb ? 'fizz' : 'none'; updWb({ fizz: r }); (spIsCarb ? sfxRockCool : sfxRockClick)(); wbSay(r === 'fizz' ? __alloT('stem.rocks.wb_sr_fizz', 'Immediate carbon dioxide fizz supports calcite in this reference set.') : __alloT('stem.rocks.wb_sr_nofizz', 'No immediate visible fizz; this argues against calcite in this reference set.')); }); } }),
-                        wbToolBtn({ key: 'balance', label: '⚖️ ' + __alloT('stem.rocks.wb_t_balance', 'Balance + beaker'), meta: __alloT('stem.rocks.wb_meta_density', 'Calculate mass ÷ volume'), done: !!wb.density, aria: __alloT('stem.rocks.wb_t_balance_aria', 'Weigh the specimen and measure displacement to find density'), onClick: function () { wbRun('density', 1800, function () { updWb({ density: true }); sfxRockCool(); wbSay(__alloT('stem.rocks.wb_sr_density', 'Mass divided by displaced volume: ') + wbModeledMass.toFixed(1) + ' grams divided by ' + wbModeledVolume.toFixed(1) + ' cubic centimeters equals ' + (sp.density || 0).toFixed(2) + ' grams per cubic centimeter.'); }); } })
+                        wbToolBtn({ key: 'form', label: '🔷 ' + __alloT('stem.rocks.wb_t_form', 'Describe its shape'), meta: __alloT('stem.rocks.wb_meta_form', 'Free look: corners, sheets, columns or no faces'), done: !!wb.formObs, aria: __alloT('stem.rocks.wb_t_form_aria', 'Describe the form of the fragment on the bench'), onClick: function () { wbRun('form', 500, function () { updWb({ pending: { tool: 'form' } }); wbSay(wbObservedFormFor(sp) + ' ' + __alloT('stem.rocks.wb_sr_record_prompt', 'Choose the description that matches in the observation card.')); }); } }),
+                        wbToolBtn({ key: 'lens', label: '🔍 ' + __alloT('stem.rocks.wb_t_lens', 'Hand lens'), meta: __alloT('stem.rocks.wb_meta_lens', 'Look at how the surface reflects light'), done: !!wb.lens, aria: __alloT('stem.rocks.wb_t_lens_aria', 'Examine the surface with a hand lens'), onClick: function () { wbRun('lens', 1600, function () { updWb({ pending: { tool: 'lens' } }); wbSay(__alloT('stem.rocks.wb_sr_lens_evidence', 'Under the lens: ') + wbSpecimenSr + ' ' + __alloT('stem.rocks.wb_sr_lens2', 'Observed reference form: ') + wbObservedFormFor(sp) + '. ' + __alloT('stem.rocks.wb_sr_record_prompt', 'Choose the description that matches in the observation card.')); }); } }),
+                        wbToolBtn({ key: 'streak', label: '🍽️ ' + __alloT('stem.rocks.wb_t_streak', 'Streak plate'), meta: __alloT('stem.rocks.wb_meta_streak', 'Look at the powder colour, or a grooved plate'), done: !!wb.streakObs, caution: wbPlateScratched, aria: __alloT('stem.rocks.wb_t_streak_aria', 'Run the streak-plate test'), onClick: function () { wbRun('streak', 900, function () { updWb({ streakDone: true, pending: { tool: 'streak' } }); sfxRockCrack(); wbSay(rkStreakPlateTooHard(sp) ? __alloT('stem.rocks.wb_sr_streak_groove', 'The specimen cut a groove into the porcelain and left no powder.') : __alloT('stem.rocks.wb_sr_streak_powder', 'A powder mark crosses the plate. Its colour is ') + String(sp.streak).toLowerCase() + __alloT('stem.rocks.wb_sr_streak_powder2', ', shown beside the specimen’s outward colour.') + ' ' + __alloT('stem.rocks.wb_sr_record_prompt', 'Choose the description that matches in the observation card.')); }); } }),
+                        wbToolBtn({ key: 'magnet', label: '🧲 ' + __alloT('stem.rocks.wb_t_magnet', 'Magnet'), meta: __alloT('stem.rocks.wb_meta_magnet', 'Watch whether the specimen moves'), done: !!wb.magnet, aria: __alloT('stem.rocks.wb_t_magnet_aria', 'Bring a magnet close to the specimen'), onClick: function () { wbRun('magnet', 1100, function () { updWb({ pending: { tool: 'magnet' } }); wbSay((spIsMag ? __alloT('stem.rocks.wb_sr_magnet_moved', 'The specimen slid across the bench toward the magnet.') : __alloT('stem.rocks.wb_sr_magnet_still', 'The magnet passed close by and the specimen did not move.')) + ' ' + __alloT('stem.rocks.wb_sr_record_prompt', 'Choose the description that matches in the observation card.')); }); } }),
+                        wbToolBtn({ key: 'acid', label: '🧪 ' + __alloT('stem.rocks.wb_t_acid', 'Acid dropper'), meta: __alloT('stem.rocks.wb_meta_acid', 'Watch the drop on the surface'), done: !!wb.fizz, aria: __alloT('stem.rocks.wb_t_acid_aria', 'Apply a virtual drop of dilute hydrochloric acid'), onClick: function () { wbRun('acid', 1400, function () { updWb({ pending: { tool: 'acid' } }); (spIsCarb ? sfxRockCool : sfxRockClick)(); wbSay((spIsCarb ? __alloT('stem.rocks.wb_sr_acid_bubbles', 'Bubbles rise steadily from the drop.') : __alloT('stem.rocks.wb_sr_acid_still', 'The drop sits still on the surface; nothing rises from it.')) + ' ' + __alloT('stem.rocks.wb_sr_record_prompt', 'Choose the description that matches in the observation card.')); }); } }),
+                        wbToolBtn({ key: 'balance', label: '⚖️ ' + __alloT('stem.rocks.wb_t_balance', 'Balance + beaker'), meta: __alloT('stem.rocks.wb_meta_density', 'Read mass and volume, then divide'), done: !!wb.densityObs, aria: __alloT('stem.rocks.wb_t_balance_aria', 'Weigh the specimen and measure displacement to find density'), onClick: function () { wbRun('density', 1800, function () { updWb({ density: true, pending: { tool: 'density' } }); sfxRockCool(); wbSay(__alloT('stem.rocks.wb_sr_density_readings', 'The balance reads ') + wbModeledMass.toFixed(1) + __alloT('stem.rocks.wb_sr_density_readings2', ' grams. The water level rose by ') + wbModeledVolume.toFixed(1) + __alloT('stem.rocks.wb_sr_density_readings3', ' cubic centimetres. Divide mass by volume and choose the band your answer falls in.')); }); } })
                       ),
                       React.createElement("div", { className: "mt-4 pt-3 border-t border-slate-200" },
                         React.createElement("div", { className: "flex items-start justify-between gap-3 mb-2" },
@@ -7590,7 +8499,7 @@ const d = labToolData.rocks || {};
                           WB_REFS.map(function (ref) {
                             var res = (wb.scratch || {})[ref.id];
                             var derivedPlateResult = ref.id === 'streak_plate' && wbPlateScratched;
-                            return wbToolBtn({ key: ref.id, label: ref.label, meta: __alloT('stem.rocks.wb_mohs_value', 'Mohs') + ' ' + ref.h, result: derivedPlateResult ? __alloT('stem.rocks.wb_result_plate_derived', 'Bound recorded from the streak-plate groove') : res ? (res === 'scratched' ? __alloT('stem.rocks.wb_result_scratch', '✓ left a scratch') : res === 'borderline' ? __alloT('stem.rocks.scratch_borderline', 'Modeled near-match—retest to confirm') : __alloT('stem.rocks.wb_result_nomark', 'No mark observed')) : null, done: !!res || derivedPlateResult, caution: res === 'borderline', aria: __alloT('stem.rocks.wb_scratch_aria', 'Try to scratch the specimen with ') + ref.label.replace(/^\S+\s/, '') + ', Mohs ' + ref.h, onClick: function () { wbRun('scratch', 800, function () { var outcome = rkScratchOutcome(ref.h, sp.hardness); var sc = { ...(wb.scratch || {}) }; sc[ref.id] = outcome; updWb({ scratch: sc }); (outcome === 'scratched' ? sfxRockCrack : sfxRockClick)(); wbSay(outcome === 'scratched' ? __alloT('stem.rocks.wb_sr_scratched', 'It left a scratch. The specimen is softer than ') + ref.h + '.' : outcome === 'borderline' ? __alloT('stem.rocks.scratch_borderline_detail', 'The tool and mineral share the same modeled Mohs value, so the model narrows to approximate equality; real specimens vary, so confirm with another reference.') : __alloT('stem.rocks.wb_sr_not_scratched', 'No mark. The specimen is harder than ') + ref.h + '.'); }, { activeScratchRef: ref.id }); } });
+                            return wbToolBtn({ key: ref.id, label: ref.label, meta: __alloT('stem.rocks.wb_mohs_value', 'Mohs') + ' ' + ref.h, result: derivedPlateResult ? __alloT('stem.rocks.wb_result_plate_derived', 'Bound recorded from the streak-plate groove') : res ? (res === 'scratched' ? __alloT('stem.rocks.wb_result_scratch', '✓ left a scratch') : res === 'borderline' ? __alloT('stem.rocks.scratch_borderline', 'Modeled near-match—retest to confirm') : __alloT('stem.rocks.wb_result_nomark', 'No mark observed')) : null, done: !!res || derivedPlateResult, caution: res === 'borderline', aria: __alloT('stem.rocks.wb_scratch_aria', 'Try to scratch the specimen with ') + ref.label.replace(/^\S+\s/, '') + ', Mohs ' + ref.h, onClick: function () { wbRun('scratch', 800, function () { var outcome = rkScratchOutcome(ref.h, sp.hardness); updWb({ pending: { tool: 'scratch', ref: ref.id } }); (outcome === 'scratched' ? sfxRockCrack : sfxRockClick)(); wbSay((outcome === 'scratched' ? __alloT('stem.rocks.wb_sr_scratch_groove', 'The reference cut a dark groove with chips thrown ahead of the tip.') : outcome === 'borderline' ? __alloT('stem.rocks.wb_sr_scratch_trace', 'Only a broken, uneven trace: hard to tell whether it cut in.') : __alloT('stem.rocks.wb_sr_scratch_smear', 'Only a faint pale smear of the reference’s own material; the surface underneath is unmarked.')) + ' ' + __alloT('stem.rocks.wb_sr_record_prompt', 'Choose the description that matches in the observation card.')); }, { activeScratchRef: ref.id }); } });
                           })
                         )
                       ),
@@ -7604,13 +8513,13 @@ const d = labToolData.rocks || {};
                     // of evidence, with enough context to explain the reasoning.
                     React.createElement("aside", { className: "rounded-2xl border border-amber-300 p-3 sm:p-4 lg:col-span-2", style: { background: 'repeating-linear-gradient(180deg,#fffbeb,#fffbeb 29px,#fde68a55 30px)' }, "aria-labelledby": "wb-notebook-title" },
                       React.createElement("div", { className: "flex items-center justify-between gap-3" },
-                        React.createElement("h4", { id: "wb-notebook-title", className: "text-[12px] font-black text-amber-900 uppercase tracking-wide" }, '📓 ' + __alloT('stem.rocks.wb_notebook', 'Field notebook')),
-                        React.createElement("span", { className: "rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[10px] font-black text-amber-900" }, wbEvidenceTypeCount + ' / 6 ' + __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
+                        React.createElement("h4", { id: "wb-notebook-title", tabIndex: -1, className: "text-[12px] font-black text-amber-900 uppercase tracking-wide" }, '📓 ' + __alloT('stem.rocks.wb_notebook', 'Field notebook')),
+                        React.createElement("span", { className: "rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[10px] font-black text-amber-900" }, wbEvidenceTypeCount + ' / 7 ' + __alloT('stem.rocks.wb_confirmed_types_short', 'confirmed') + (wbProvisionalTypeCount ? ' · ' + wbProvisionalTypeCount + ' ' + __alloT('stem.rocks.wb_provisional_short', 'provisional') : ''))
                       ),
                       React.createElement("div", { className: "mt-3", role: "group", "aria-label": __alloT('stem.rocks.wb_coverage_aria', 'Evidence coverage by property type') },
                         React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1.5" },
                           React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wide text-amber-800" }, __alloT('stem.rocks.wb_coverage_title', 'Evidence coverage')),
-                          React.createElement("p", { className: "text-[10px] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_six_types', ' of 6 confirmed property types'))
+                          React.createElement("p", { className: "text-[10px] font-semibold text-amber-800" }, wbEvidenceTypeCount + __alloT('stem.rocks.wb_of_seven_types', ' of 7 confirmed property types'))
                         ),
                         React.createElement("div", { className: "grid grid-cols-2 gap-1.5", role: "list" }, wbCoverage.map(function (item) {
                           return React.createElement("div", {
@@ -7634,6 +8543,7 @@ const d = labToolData.rocks || {};
                           React.createElement("span", { className: "min-w-0 flex-1" },
                             React.createElement("span", { className: "block text-[10px] font-black uppercase tracking-wide text-amber-800" }, wbEvidenceKind(ev.k)),
                             React.createElement("span", { className: "block text-[11.5px] text-amber-900 font-semibold leading-snug" }, ev.text),
+                            React.createElement("button", { type: "button", className: "mt-1 mr-1.5 inline-flex items-center rounded-full border border-amber-400 bg-white/90 px-3 py-1 min-h-[44px] text-[10px] font-black text-amber-900 hover:bg-amber-100 disabled:opacity-50", "data-wb-reexamine": ev.k, disabled: wbBusy || !!wbPendingTool, "aria-label": __alloT('stem.rocks.wb_reexamine_aria', 'Look again and re-record: ') + wbEvidenceKind(ev.k), onClick: function () { wbReexamine(ev.k); } }, '👁 ' + __alloT('stem.rocks.wb_reexamine', 'Look again')),
                             React.createElement("span", { className: "inline-block mt-1 rounded-full border px-2 py-0.5 text-[10px] font-black " + (ev.provisional ? "bg-amber-100 border-amber-300 text-amber-900" : impact > 0 ? "bg-violet-50 border-violet-200 text-violet-900" : "bg-slate-50 border-slate-200 text-slate-600") }, ev.provisional ? __alloT('stem.rocks.wb_provisional_not_claim', 'Provisional model clue—confirm before using hardness in a claim') : impact > 0 ? __alloT('stem.rocks.wb_rules_out', 'Rules out ') + impact + __alloT('stem.rocks.wb_on_own', ' on its own') : __alloT('stem.rocks.wb_confirms_only', 'Confirms, but does not narrow alone'))
                           )
                         );
@@ -7651,10 +8561,12 @@ const d = labToolData.rocks || {};
                         React.createElement("div", { className: "h-2 rounded-full bg-amber-200 mt-1.5 overflow-hidden", role: "progressbar", "aria-label": __alloT('stem.rocks.wb_elimination_progress', 'Candidate elimination progress'), "aria-valuemin": 0, "aria-valuemax": (wb.order || []).length, "aria-valuenow": (wb.order || []).length - wbRemaining, "aria-valuetext": ((wb.order || []).length - wbRemaining) + ' ' + __alloT('stem.rocks.wb_eliminated', 'eliminated') + '; ' + wbRemaining + ' ' + __alloT('stem.rocks.wb_still_fit', 'still fit') + '.' },
                           React.createElement("div", { className: "h-full rounded-full bg-emerald-600 transition-all", style: { width: (((wb.order || []).length ? (((wb.order || []).length - wbRemaining) / wb.order.length) : 0) * 100) + '%' } })
                         ),
+                        React.createElement("button", { type: "button", className: "mt-3 rounded-lg border border-amber-300 bg-white/80 px-2.5 py-1.5 min-h-[40px] text-[10px] font-black text-amber-900 hover:bg-white", "data-wb-pool-toggle": (wb.pool || 'standard'), "aria-pressed": (wb.pool || 'standard') === 'challenge', onClick: function () { var next = (wb.pool || 'standard') === 'challenge' ? 'standard' : 'challenge'; updWb({ pool: next }); wbSay(next === 'challenge' ? __alloT('stem.rocks.wb_pool_next_challenge_sr', 'Challenge set selected for the next unknown: 18 candidates.') : __alloT('stem.rocks.wb_pool_next_standard_sr', 'Standard set selected for the next unknown: 12 candidates.')); } }, ((wb.pool || 'standard') === 'challenge' ? '★ ' + __alloT('stem.rocks.wb_pool_on', 'Challenge set on') : '☆ ' + __alloT('stem.rocks.wb_pool_off', 'Challenge set off')) + ' · ' + __alloT('stem.rocks.wb_pool_next', 'applies to the next unknown')),
                         React.createElement("p", { className: "text-[10.5px] text-amber-900 mt-3 italic" }, __alloT('stem.rocks.wb_reasoning_prompt', 'Reasoning check: why did the most diagnostic observation separate more candidates than surface color would?')),
                         React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3" },
                           React.createElement("button", { type: "button", disabled: wbBusy || wbEvidence.length === 0, className: "rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[10px] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbClearEvidence, "aria-label": __alloT('stem.rocks.wb_clear_aria', 'Clear observations and retest the same specimen') }, __alloT('stem.rocks.wb_clear', '↺ Clear evidence')),
-                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[10px] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: wbDraw, "aria-label": __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown'))
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "rounded-lg border border-slate-300 bg-white/80 px-2 py-2 text-[10px] font-black text-slate-800 hover:bg-white disabled:opacity-50 min-h-[44px]", onClick: function () { wbDraw(); }, "aria-label": __alloT('stem.rocks.wb_swap_aria', 'Put away this specimen and draw a different unknown from the ' + ((wb.pool || 'standard') === 'challenge' ? 'challenge' : 'standard') + ' set') }, __alloT('stem.rocks.wb_swap', '🔄 New unknown')),
+                          React.createElement("button", { type: "button", disabled: wbBusy, className: "col-span-2 rounded-lg border border-amber-300 bg-white/80 px-2 py-2 text-[10px] font-black text-amber-900 hover:bg-white disabled:opacity-50 min-h-[44px]", "data-wb-copy-notebook": "true", onClick: wbCopyNotebook, "aria-label": __alloT('stem.rocks.wb_nb_copy_aria', 'Copy the field notebook as plain text for a lab report') }, '📋 ' + __alloT('stem.rocks.wb_nb_copy', 'Copy notebook for my report'))
                         )
                       )
                     )
@@ -7702,7 +8614,10 @@ const d = labToolData.rocks || {};
                             React.createElement("p", { className: "text-[11px] text-emerald-800 mt-0.5" }, __alloT('stem.rocks.wb_solved_body', 'Named from ') + wbEvidenceTypeCount + __alloT('stem.rocks.wb_solved_body2', ' measured property types. Solved so far: ') + (wb.solved || 0) + '.')
                           )
                         ),
-                        React.createElement("button", { className: "w-full sm:w-auto shrink-0 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black min-h-[44px]", onClick: wbDraw, "data-wb-next-specimen": "true" }, __alloT('stem.rocks.wb_next', '🔄 Next specimen'))
+                        React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 shrink-0" },
+                          wbDebriefRival ? React.createElement("button", { className: "w-full sm:w-auto px-4 py-2.5 rounded-xl border-2 border-emerald-700 bg-white hover:bg-emerald-100 text-emerald-900 font-black min-h-[44px]", onClick: function () { wbDraw(wbDebriefRival.id); }, "data-wb-next-lookalike": wbDebriefRival.id, "aria-label": __alloT('stem.rocks.wb_next_lookalike_aria', 'Next: its closest look-alike, ') + wbDebriefRival.label }, '🕵️ ' + __alloT('stem.rocks.wb_next_lookalike', 'Try its look-alike: ') + wbDebriefRival.label) : null,
+                          React.createElement("button", { className: "w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black min-h-[44px]", onClick: function () { wbDraw(); }, "data-wb-next-specimen": "true" }, __alloT('stem.rocks.wb_next', '🔄 Next specimen'))
+                        )
                       ),
                       React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-left" },
                         React.createElement("div", { className: "rounded-xl border border-emerald-200 bg-white/80 p-2.5" },
@@ -7718,6 +8633,7 @@ const d = labToolData.rocks || {};
                           React.createElement("p", { className: "text-[10.5px] font-bold text-amber-900 mt-0.5" }, wbConfidenceLabel + '. ' + __alloT('stem.rocks.wb_debrief_evidence_level', 'Evidence level: ') + wbClaimSupport.label + '.')
                         )
                       ),
+                      wbRenderReasoningTrail(),
                       wbRenderMatchMap(wbMineral(wb.solvedId), 'debrief'),
                       React.createElement("aside", { className: "mt-2.5 rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-left" },
                         React.createElement("p", { className: "text-[10.5px] font-black text-amber-900" }, __alloT('stem.rocks.wb_debrief_guard_title', 'Field scientist reminder')),
@@ -7749,11 +8665,12 @@ const d = labToolData.rocks || {};
                         var mismatch = wbMismatchKind(m);
                         var facts = [];
                         if (wb.lens) facts.push({ k: 'l', text: __alloT('stem.rocks.wb_fact_luster', 'Luster: ') + m.luster });
-                        if (wb.streakDone) facts.push({ k: 's', text: __alloT('stem.rocks.wb_fact_streak', 'Streak: ') + wbStreakOutcomeFor(m).label });
+                        if (wb.formObs) facts.push({ k: 'f', text: __alloT('stem.rocks.wb_fact_form', 'Form: ') + rkFormClassInfo(rkFormClass(m)).label });
+                        if (wb.streakObs) facts.push({ k: 's', text: __alloT('stem.rocks.wb_fact_streak', 'Streak: ') + wbStreakOutcomeFor(m).label });
                         if (wbHasHardnessEvidence) facts.push({ k: 'h', text: __alloT('stem.rocks.wb_fact_mohs', 'Mohs: ') + m.hardness });
                         if (wb.fizz) facts.push({ k: 'a', text: WB_CARBONATES.indexOf(m.id) !== -1 ? __alloT('stem.rocks.wb_fact_fizz', 'Acid: fizzes') : __alloT('stem.rocks.wb_fact_nofizz', 'Acid: no fizz') });
                         if (wb.magnet) facts.push({ k: 'm', text: WB_MAGNETIC.indexOf(m.id) !== -1 ? __alloT('stem.rocks.wb_fact_pull', 'Magnet: pull') : __alloT('stem.rocks.wb_fact_nopull', 'Magnet: none') });
-                        if (wb.density && m.density) facts.push({ k: 'd', text: __alloT('stem.rocks.wb_fact_density', 'Density: ') + m.density.toFixed(2) });
+                        if (wb.densityObs && m.density) facts.push({ k: 'd', text: __alloT('stem.rocks.wb_fact_density', 'Density: ') + m.density.toFixed(2) });
                         return React.createElement("button", {
                           key: id, type: "button", "aria-disabled": wbBusy ? true : undefined, "aria-pressed": (out || wrong) ? undefined : selected, "aria-expanded": (out || wrong) ? reviewing : undefined, "aria-controls": reviewing ? "wb-setaside-inspector" : undefined, "data-wb-candidate": id, "data-wb-candidate-state": out ? 'eliminated' : (wrong ? 'rejected' : (selected ? 'selected' : 'viable')), "data-wb-reviewing": reviewing ? 'true' : 'false',
                           className: "rounded-xl border min-w-0 min-h-[94px] p-2.5 text-left transition-all flex gap-2.5 items-start overflow-hidden " + (wbBusy ? "cursor-wait opacity-65 transform-none " : "") + (out ? (reviewing ? "bg-slate-50 border-slate-600 text-slate-900 ring-2 ring-slate-300 shadow-md" : "bg-slate-100 border-slate-300 text-slate-700 hover:border-slate-500 hover:bg-slate-50") : wrong ? (reviewing ? "bg-rose-50 border-rose-600 text-rose-900 ring-2 ring-rose-200 shadow-md" : "bg-rose-50 border-rose-300 text-rose-900 hover:border-rose-500") : selected ? "bg-violet-50 border-violet-500 text-violet-900 ring-2 ring-violet-200 shadow-md" : "bg-white border-slate-300 text-slate-900 hover:border-violet-500 hover:-translate-y-0.5 hover:shadow-md"),
@@ -7772,8 +8689,12 @@ const d = labToolData.rocks || {};
                             wbSay(__alloT('stem.rocks.wb_selected_sr', 'Selected ') + m.label + __alloT('stem.rocks.wb_selected_sr2', ' as a possible claim. Review the claim builder before submitting.') + (changedClaim ? ' ' + __alloT('stem.rocks.wb_claim_changed_sr', 'Recheck the evidence, reasoning, and confidence before making a revised claim.') : ''));
                           }
                         },
-                          React.createElement("span", { className: "shrink-0 relative" },
+                          React.createElement("span", { className: "shrink-0 relative flex flex-col items-center gap-1" },
                             rkMineralSwatch(React.createElement, m, 50),
+                            // Once luster has been recorded, show how THIS reference looks
+                            // under the same lens so the unknown's porthole can be compared
+                            // card by card rather than against a word.
+                            wb.lens ? React.createElement("span", { className: "rounded-md bg-slate-900 p-0.5", "data-wb-candidate-porthole": m.id }, rkLensViewSvg(React.createElement, m, 34, { aria: m.label + __alloT('stem.rocks.wb_candidate_porthole_aria', ' under the lens: ') + rkLusterClassInfo(rkLusterClass(m)).sr })) : null,
                             (out || wrong || selected) ? React.createElement("span", { className: "absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-black " + (wrong ? "bg-rose-600" : selected ? "bg-violet-700" : "bg-slate-600"), "aria-hidden": "true" }, selected ? '✓' : '×') : null
                           ),
                           React.createElement("span", { className: "min-w-0 flex-1" },

@@ -1,0 +1,6 @@
+{
+  "stem.sourcebook.medium_facet": "Medium (from catalog records)",
+  "stem.sourcebook.filter_loaded_results_by_medium": "Filter loaded results by medium",
+  "stem.sourcebook.all_media": "All media",
+  "stem.sourcebook.medium_facet_note": "Only records whose catalog lists a medium or technique appear here; Commons and Openverse records carry none."
+}

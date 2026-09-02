@@ -1423,6 +1423,7 @@ function listMainVoiceEditableFields(context = {}) {
     handleStudentInput,
     inputText,
     isEditingScaffolds,
+    isTeacherMode,
     isGeneratingReflectionPrompt,
     isGradingReflection,
     isPersonaChatOpen,
@@ -1742,9 +1743,24 @@ function listMainVoiceEditableFields(context = {}) {
       { id: 'revision', label: 'Revision', aliases: ['revised response', 'revision note'], maxLength: 12000 },
       { id: 'transferReflection', label: 'Transfer reflection', aliases: ['transfer', 'where else this applies'] },
     ];
-    const visibleFields = challengeData.scope === 'compact'
-      ? phaseFields.filter((phase) => compactIds.has(phase.id))
-      : phaseFields;
+    // ONE derivation: the studio module decides which phases are visible and
+    // what they are called (family-aware, translated). The table above only
+    // supplies voice aliases and is the fallback when the module is absent.
+    const _acStudio = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AppliedChallenge) || null;
+    let _acModelPhases = null;
+    try {
+      _acModelPhases = _acStudio && typeof _acStudio.exportModel === 'function'
+        ? _acStudio.exportModel(challengeData, { t: typeof t === 'function' ? t : undefined }).phases
+        : null;
+    } catch (_) { _acModelPhases = null; }
+    const visibleFields = Array.isArray(_acModelPhases) && _acModelPhases.length
+      ? _acModelPhases.map((phase) => {
+          const known = phaseFields.find((row) => row.id === phase.id) || { aliases: [] };
+          return { id: phase.id, label: phase.label, aliases: known.aliases, maxLength: known.maxLength };
+        })
+      : (challengeData.scope === 'compact'
+        ? phaseFields.filter((phase) => compactIds.has(phase.id))
+        : phaseFields);
     const setWorkspaceValue = (key, next, maxLength) => {
       const bounded = String(next == null ? '' : next).slice(0, maxLength || 8000);
       handleNoteUpdate('workspace', (current) => ({
@@ -1762,6 +1778,45 @@ function listMainVoiceEditableFields(context = {}) {
       maxLength: phase.maxLength || 8000,
       setValue: (next) => setWorkspaceValue(phase.id, next, phase.maxLength || 8000),
     }));
+    // Self-check notes (one per criterion/constraint) and the teacher comment
+    // follow the studio module's item order so voice and screen agree.
+    const selfItems = _acStudio && _acStudio._testing && typeof _acStudio._testing.appliedChallengeSelfCheckItems === 'function'
+      ? _acStudio._testing.appliedChallengeSelfCheckItems(challengeData.brief) : [];
+    const criteriaCheck = challengeData.criteriaCheck && typeof challengeData.criteriaCheck === 'object' ? challengeData.criteriaCheck : {};
+    selfItems.forEach((item) => {
+      const rowLabel = (item.kind === 'criterion' ? 'Criterion' : 'Constraint') + ' ' + (item.index + 1);
+      fields.push({
+        id: 'applied-challenge-selfcheck-' + item.key,
+        label: rowLabel + ' self-check note',
+        aliases: ['self check ' + (item.index + 1), rowLabel.toLowerCase() + ' note', item.kind + ' note ' + (item.index + 1)],
+        value: criteriaCheck[item.key] && typeof criteriaCheck[item.key].note === 'string' ? criteriaCheck[item.key].note : '',
+        maxLength: 1200,
+        setValue: (next) => {
+          const bounded = String(next == null ? '' : next).slice(0, 1200);
+          handleNoteUpdate('criteriaCheck', (current) => {
+            const base = current && typeof current === 'object' ? current : criteriaCheck;
+            const entry = Object.assign({ rating: 'pending', note: '' }, base[item.key] || {}, { note: bounded });
+            return Object.assign({}, base, { [item.key]: entry });
+          });
+          handleNoteUpdate('coachHint', '');
+          handleNoteUpdate('feedback', null);
+        },
+      });
+    });
+    if (isTeacherMode === true) {
+      const comment = challengeData.teacherComment && typeof challengeData.teacherComment === 'object' ? challengeData.teacherComment : null;
+      fields.push({
+        id: 'applied-challenge-teacher-comment',
+        label: 'Teacher comment',
+        aliases: ['teacher comment', 'comment for the student', 'teacher note'],
+        value: comment && typeof comment.text === 'string' ? comment.text : '',
+        maxLength: 4000,
+        setValue: (next) => {
+          const bounded = String(next == null ? '' : next).slice(0, 4000);
+          handleNoteUpdate('teacherComment', bounded.trim() ? { text: bounded, updatedAt: new Date().toISOString() } : null);
+        },
+      });
+    }
   }
   return fields;
 }

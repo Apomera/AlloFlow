@@ -181,6 +181,13 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // School Rewards & Store (2026-09-02): listed so the deploy stamps its
+        // URL from the file's content hash instead of a hand pin in ANTI.
+        name: 'SchoolRewards',
+        filename: 'school_rewards_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'AlloData',
         filename: 'allo_data_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1543,6 +1550,7 @@ const COMPANION_ASSET_DIRS = [
     'life_skills_laundry',
     'life_skills_transit',
     'apps_script/educator_evaluation_share',
+    'apps_script/school_rewards',
     'timeline_studio',
     'verapdf',
     'zoom_gallery'

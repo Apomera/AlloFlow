@@ -604,6 +604,9 @@
       ,'@media(max-width:700px){.wc-pilot-stage[data-onboarding=true]{min-height:620px}}'
       ,'@media(forced-colors:active){.wc-pilot-camera-switch,.wc-pilot-camera-btn,.wc-pilot-route,.wc-pilot-launch,.wc-pilot-launch-card,.wc-pilot-launch-step,.wc-pilot-launch-btn{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-pilot-camera-btn[aria-pressed=true],.wc-pilot-launch-btn{background:Highlight;color:HighlightText}.wc-pilot-stage[data-camera-mode=water]::after{display:none}}'
       ,'@media(forced-colors:active){.wc-pilot-transition,.wc-pilot-transition-form,.wc-pilot-transition-evidence{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-pilot-transition-kicker,.wc-pilot-transition p,.wc-pilot-transition-arrow,.wc-pilot-transition-evidence span{color:CanvasText}}'
+      ,'.wc-pilot-key.is-move{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1}.wc-pilot-key-hint{font:800 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;color:#bae6fd;opacity:.9}.wc-pilot-cycle{z-index:6;bottom:98px;border-color:rgba(253,224,71,.55);pointer-events:auto}.wc-pilot-cycle-hint{color:#fde68a!important}.wc-pilot-cycle-btn{margin-top:7px;min-height:32px;padding:5px 12px;font-size:11px}@media(max-width:700px){.wc-pilot-cycle{top:64px;bottom:auto;left:8px;right:8px;width:auto}}@media(forced-colors:active){.wc-pilot-cycle{border-color:CanvasText}.wc-pilot-cycle-hint,.wc-pilot-key-hint{color:CanvasText!important}}'
+      ,'.wc-pilot-hud-toggle{display:none}@keyframes wc-pilot-gauge-pop{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}.wc-pilot-gauge.is-pop{animation:wc-pilot-gauge-pop .32s ease;transform-origin:left center}@media(prefers-reduced-motion:reduce){.wc-pilot-gauge.is-pop{animation:none!important}}@media(max-width:700px){.wc-pilot-hud-toggle{display:inline-block}.wc-pilot-stage[data-hud=compact] .wc-pilot-readouts,.wc-pilot-stage[data-hud=compact] .wc-pilot-buoy,.wc-pilot-stage[data-hud=compact] .wc-pilot-place,.wc-pilot-stage[data-hud=compact] .wc-pilot-ladder,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right .wc-pilot-gauge,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right .wc-pilot-hud-kicker,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left .wc-pilot-hud-kicker{display:none}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left{grid-template-columns:1fr;right:auto;min-width:0;padding:5px 8px}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right{bottom:auto;top:100px}}'
+      ,'.wc-pilot-hud-right{max-width:min(272px,34%)}.wc-pilot-goal{padding:7px 8px;border:1px solid rgba(110,231,183,.28);border-radius:8px;background:rgba(6,78,59,.34)}.wc-pilot-goal span{display:block;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a7f3d0}.wc-pilot-goal strong{display:block;margin-top:2px;font-size:11px;line-height:1.35;font-weight:700;color:#f0fdf4}@media(max-width:700px){.wc-pilot-hud-right{max-width:58%;gap:5px;padding:7px 8px}.wc-pilot-hud-right .wc-pilot-micro{display:none}.wc-pilot-goal{padding:5px 7px}.wc-pilot-goal strong{font-size:10px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}@media(forced-colors:active){.wc-pilot-goal{border:1px solid CanvasText;background:Canvas}.wc-pilot-goal span,.wc-pilot-goal strong{color:CanvasText}}'
       ,'.wc-pilot-buoy[data-state=pathway]{background:rgba(99,102,241,.2);color:#e0e7ff}.wc-pilot-readouts.is-pathway dd{font-size:11px;line-height:1.22}.wc-pilot-route.is-process{border-color:rgba(165,243,252,.5);background:linear-gradient(145deg,rgba(3,18,31,.96),rgba(30,41,59,.94))}.wc-pilot-route-progress{height:6px;margin-top:6px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-route-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#4ade80)}.wc-pilot-key-pathway{min-width:128px;background:#0f766e;border-color:#5eead4}.wc-pilot-key-pathway:hover{background:#0d9488}@media(forced-colors:active){.wc-pilot-route-progress{border:1px solid CanvasText;background:Canvas}.wc-pilot-route-progress i{background:Highlight}.wc-pilot-key-pathway{background:Highlight;color:HighlightText}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
@@ -11518,6 +11521,24 @@ const d = labToolData.waterCycle || {};
             }
             var nucGeo = new THREE.BufferGeometry();
             nucGeo.setAttribute('position', new THREE.BufferAttribute(nucPos, 3));
+            // Both collectable fields hang off THIS origin, not off the parcel.
+            // The first build placed them at world offsets from the start, so a
+            // parcel that drifted downwind left them behind; the fix after that
+            // anchored every mote to the parcel itself, which meant every mote
+            // kept a constant offset from the learner and steering toward one
+            // could never close the distance - condensation and coalescence
+            // happened on a timer while the learner's controls did nothing.
+            // The origin is re-centred on the parcel only once it has flown out
+            // of the field, so inside the field movement sweeps through it.
+            var fieldCx = START_X, fieldCz = START_Z, fieldCy = 0;
+            var FIELD_RECENTRE_XZ = 40, FIELD_RECENTRE_Y = 22;
+            // Minimum sim-seconds between coalescence hits. Sweeping through a
+            // field at flight speed otherwise scores a droplet every frame, and
+            // the cloud - the state the mode is built toward - lasted about one
+            // second before it rained out. Real coalescence is slow; this keeps
+            // it something the learner works at rather than a frame they pass.
+            var COALESCE_COOLDOWN_S = 0.6;
+            var coalesceCooldown = 0;
             function makeDotTexture(inner, outer) {
               var cv = document.createElement('canvas'); cv.width = cv.height = 64;
               var c2 = cv.getContext('2d');
@@ -12373,7 +12394,7 @@ const d = labToolData.waterCycle || {};
             var keyState = {};
             function onKeyDown(e) {
               var k = e.key.toLowerCase();
-              if (['w', 'a', 's', 'd', 'f', 'b', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift'].indexOf(k) === -1) return;
+              if (['w', 'a', 's', 'd', 'f', 'b', 'e', 'q', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift'].indexOf(k) === -1) return;
               // The canvas is focusable and documents these keys, so it owns them
               // while focused; letting them scroll the page instead is the classic
               // "the game fights the browser" bug.
@@ -12595,6 +12616,8 @@ const d = labToolData.waterCycle || {};
               plantPathway.visible = false;
               for (var i = 0; i < nucSeed.length; i++) nucSeed[i].live = true;
               for (var j = 0; j < dropSeed.length; j++) dropSeed[j].live = true;
+              fieldCx = px; fieldCz = pz; fieldCy = m2u(env.lclM);
+              coalesceCooldown = 0;
               // Reference planes and their labels are positioned FROM the
               // environment, so a scenario swap can never leave a stale cloud base
               // drawn at the previous scenario's height.
@@ -12727,6 +12750,7 @@ const d = labToolData.waterCycle || {};
                 canvasEl.dataset.parcelForm = sim.form;
                 canvasEl.dataset.parcelAltitudeM = String(Math.round(sim.altitudeM));
                 canvasEl.dataset.parcelStages = String(cov.done);
+                canvasEl.dataset.parcelElapsed = String(Math.round(sim.elapsed * 10) / 10);
                 canvasEl.dataset.pilotScenario = sim.scenario;
                 canvasEl.dataset.pilotSurface = surfaceUnder(px, pz);
                 canvasEl.dataset.pilotCamera = input.cameraMode === 'water' ? 'water' : 'follow';
@@ -12785,23 +12809,37 @@ const d = labToolData.waterCycle || {};
 
               var thrust = 0, strafe = 0, surge = 0;
               if (!input.paused) {
-                thrust = (keyState[' '] || keyState.w || keyState.arrowup || input.up ? 1 : 0)
-                       - (keyState.shift || keyState.s || keyState.arrowdown || input.down ? 1 : 0);
+                // Game-standard layout: W/S and the up/down arrows move forward
+                // and back across the world, A/D and the side arrows strafe,
+                // Space/E rise and Shift/Q sink. The first build put rise on W,
+                // so the one key every learner presses first sent them straight
+                // up instead of somewhere. F/B stay as quiet aliases.
+                thrust = (keyState[' '] || keyState.e || input.up ? 1 : 0)
+                       - (keyState.shift || keyState.q || input.down ? 1 : 0);
                 strafe = (keyState.d || keyState.arrowright || input.right ? 1 : 0)
                        - (keyState.a || keyState.arrowleft || input.left ? 1 : 0);
-                surge = (keyState.f || input.fwd ? 1 : 0) - (keyState.b || input.back ? 1 : 0);
+                surge = (keyState.w || keyState.arrowup || keyState.f || input.fwd ? 1 : 0)
+                      - (keyState.s || keyState.arrowdown || keyState.b || input.back ? 1 : 0);
               }
 
               // Horizontal motion is steered relative to where the camera looks,
               // which is what makes "fly toward that cloud" work as an instruction.
+              // Screen-right for this chase camera is (cos yaw, 0, -sin yaw): the
+              // camera sits at parcel + (sin yaw, cos yaw) looking back, and its
+              // local +x axis (Three's lookAt) is that vector. An earlier build
+              // used (-cos yaw, -sin yaw), which is only "right" at yaw = pi/2 and
+              // is screen-LEFT at yaw = 0 and straight FORWARD at yaw ~ 0.8, so
+              // "steer right" wandered with wherever the learner had dragged the
+              // view. It never read as mirrored, just as broken.
+              var rightX = Math.cos(yaw), rightZ = -Math.sin(yaw);
               var airborne = WCPK.isAirborne(sim.form);
               var guidedPathwayBeforeStep = sim.form === 'runoff' || sim.form === 'soil'
                 || sim.form === 'groundwater' || sim.form === 'plant';
               var speed = (WCPK.isFalling(sim.form) ? 15 : airborne ? 22 : 12) * (input.paused ? 0 : 1);
               var fwdX = -Math.sin(yaw), fwdZ = -Math.cos(yaw);
               if (!guidedPathwayBeforeStep) {
-                px += (fwdX * surge + Math.cos(yaw) * -strafe) * speed * dt;
-                pz += (fwdZ * surge + Math.sin(yaw) * -strafe) * speed * dt;
+                px += (fwdX * surge + rightX * strafe) * speed * dt;
+                pz += (fwdZ * surge + rightZ * strafe) * speed * dt;
               }
               // Wind pushes everything airborne downwind. This is why a parcel
               // that evaporates over the sea can rain over the land at all.
@@ -12820,16 +12858,21 @@ const d = labToolData.waterCycle || {};
                 var nx = nAttr.array[k * 3], ny = nAttr.array[k * 3 + 1], nz = nAttr.array[k * 3 + 2];
                 var ddx = nx - px, ddy = ny - py, ddz = nz - pz;
                 if (ddx * ddx + ddy * ddy + ddz * ddz < 100) {
-                  if (sim.form === 'vapor' && sim.altitudeM >= env.lclM) { nucleusHit = true; nucSeed[k].live = false; nAttr.array[k * 3 + 1] = -9999; nAttr.needsUpdate = true; }
+                  if (sim.form === 'vapor' && sim.altitudeM >= env.lclM) { nucleusHit = true; nucSeed[k].live = false; nAttr.array[k * 3 + 1] = -9999; nAttr.needsUpdate = true; break; }
                 }
               }
               var dAttr = dropGeo.attributes.position;
+              coalesceCooldown = Math.max(0, coalesceCooldown - dt);
               for (var q = 0; q < DROP_COUNT; q++) {
+                if (coalesceCooldown > 0) break;
                 if (!dropSeed[q].live) continue;
                 var dx2 = dAttr.array[q * 3] - px, dy2 = dAttr.array[q * 3 + 1] - py, dz2 = dAttr.array[q * 3 + 2] - pz;
                 if (dx2 * dx2 + dy2 * dy2 + dz2 * dz2 < 81) {
                   if (sim.form === 'droplet' || sim.form === 'cloud' || sim.form === 'ice') {
-                    dropletHit = true; dropSeed[q].live = false; dAttr.array[q * 3 + 1] = -9999; dAttr.needsUpdate = true;
+                    // One collision per frame. The kernel counts a hit per step,
+                    // so removing a whole clump in one frame credited one droplet
+                    // for seven collisions and the gauge never matched the scene.
+                    dropletHit = true; coalesceCooldown = COALESCE_COOLDOWN_S; dropSeed[q].live = false; dAttr.array[q * 3 + 1] = -9999; dAttr.needsUpdate = true; break;
                   }
                 }
               }
@@ -12984,13 +13027,20 @@ const d = labToolData.waterCycle || {};
               // Nuclei and droplets drift; both live in the saturated layer, which
               // is why they only appear once you are near the cloud base.
               var lclU = m2u(env.lclM);
+              var fieldDx = px - fieldCx, fieldDz = pz - fieldCz;
+              var fieldBaseY = Math.max(lclU, fieldCy);
+              if (fieldDx * fieldDx + fieldDz * fieldDz > FIELD_RECENTRE_XZ * FIELD_RECENTRE_XZ
+                || Math.abs(py - fieldBaseY) > FIELD_RECENTRE_Y) {
+                fieldCx = px; fieldCz = pz; fieldCy = py;
+                fieldBaseY = Math.max(lclU, fieldCy);
+              }
               for (var na2 = 0; na2 < NUC_COUNT; na2++) {
                 if (!nucSeed[na2].live) continue;
                 var ns = nucSeed[na2];
                 var ang2 = ns.a + (motionReduced ? 0 : t * 0.06);
-                nAttr.array[na2 * 3] = px + Math.cos(ang2) * ns.r;
+                nAttr.array[na2 * 3] = fieldCx + Math.cos(ang2) * ns.r;
                 nAttr.array[na2 * 3 + 1] = lclU + ns.yOff * 0.42 + (motionReduced ? 0 : Math.sin(t * 0.7 + ns.a) * 1.4);
-                nAttr.array[na2 * 3 + 2] = pz + Math.sin(ang2) * ns.r;
+                nAttr.array[na2 * 3 + 2] = fieldCz + Math.sin(ang2) * ns.r;
               }
               nAttr.needsUpdate = true;
               nuclei.visible = sim.form === 'vapor';
@@ -12998,9 +13048,9 @@ const d = labToolData.waterCycle || {};
                 if (!dropSeed[db].live) { dAttr.array[db * 3 + 1] = -9999; continue; }
                 var ds = dropSeed[db];
                 var ang3 = ds.a + (motionReduced ? 0 : t * 0.1);
-                dAttr.array[db * 3] = px + Math.cos(ang3) * ds.r;
-                dAttr.array[db * 3 + 1] = Math.max(lclU, py) + ds.yOff * 0.3 - 4;
-                dAttr.array[db * 3 + 2] = pz + Math.sin(ang3) * ds.r;
+                dAttr.array[db * 3] = fieldCx + Math.cos(ang3) * ds.r;
+                dAttr.array[db * 3 + 1] = fieldBaseY + ds.yOff * 0.3 - 4;
+                dAttr.array[db * 3 + 2] = fieldCz + Math.sin(ang3) * ds.r;
               }
               dAttr.needsUpdate = true;
               freeDrops.visible = (sim.form === 'droplet' || sim.form === 'cloud' || sim.form === 'ice');
@@ -14001,9 +14051,29 @@ const d = labToolData.waterCycle || {};
                 var loopDelta = Math.max(0, (next.loops || 0) - previousLoopCount);
                 if (loopDelta > 0) {
                   patch.journeyLoops = (wc.journeyLoops || 0) + loopDelta;
+                  // Completing a cycle used to be a silent counter bump. The
+                  // debrief names HOW the learner closed the loop and which of
+                  // the six stages they have still never been, so the next
+                  // flight has a purpose instead of repeating the first one.
+                  var cycleMissing = WCPK.stageOrder.filter(function(stageId) { return !cumulativePilotStages[stageId]; });
+                  var cycleNumber = (cur.loopsCompleted || 0) + loopDelta;
+                  var cycleVia = prevSnap && prevSnap.form ? prevSnap.form : '';
                   patch.pilot = Object.assign({}, patch.pilot, {
-                    loopsCompleted: (cur.loopsCompleted || 0) + loopDelta
+                    loopsCompleted: cycleNumber,
+                    lastCycle: {
+                      n: cycleNumber, via: cycleVia, missing: cycleMissing,
+                      done: WCPK.stageOrder.length - cycleMissing.length,
+                      elapsed: next.elapsed || 0, dismissed: false
+                    }
                   });
+                  setTimeout(function() {
+                    if (typeof announceToSR === 'function') {
+                      announceToSR(t('stem.watercycle.pilot_cycle_announce',
+                        'Cycle {n} complete. You returned to collected water. {done} of {total} stages experienced so far.')
+                        .replace('{n}', cycleNumber).replace('{done}', WCPK.stageOrder.length - cycleMissing.length).replace('{total}', WCPK.stageOrder.length));
+                    }
+                    if (addToast) addToast(t('stem.watercycle.pilot_cycle_toast', '🔁 Cycle {n} complete').replace('{n}', cycleNumber), 'success');
+                  }, 0);
                 }
                 var nextWaterCycle = Object.assign({}, wc, patch);
                 if (isLiveTransition || loopDelta > 0 || next.reason === 'restore'
@@ -14100,6 +14170,10 @@ const d = labToolData.waterCycle || {};
               return {
                 type: 'button', className: 'wc-pilot-key', 'aria-label': label,
                 onPointerDown: directOn, onPointerUp: directOff, onPointerLeave: directOff, onPointerCancel: directOff,
+                // A pointer press on a pad button must not move keyboard focus off
+                // the canvas: otherwise the first tap on any button silently kills
+                // WASD until the learner happens to click the scene again.
+                onMouseDown: function(e) { if (e && e.preventDefault) e.preventDefault(); },
                 onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); directOn(); } },
                 onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); directOff(); } },
                 onClick: impulse, onBlur: directOff
@@ -14107,7 +14181,7 @@ const d = labToolData.waterCycle || {};
             }
 
             function chooseScenario(id) {
-              setPilot({ scenario: id, snapshot: null, lastChange: null });
+              setPilot({ scenario: id, snapshot: null, lastChange: null, lastCycle: null });
               var i = pilotInput(); if (i) i.scenario = id;
               if (typeof announceToSR === 'function') {
                 var e2 = WCPK.environment(id);
@@ -14139,7 +14213,7 @@ const d = labToolData.waterCycle || {};
               }
             }
             function resetRun() {
-              setPilot({ snapshot: null, lastChange: null });
+              setPilot({ snapshot: null, lastChange: null, lastCycle: null });
               var i = pilotInput(); if (i) i.reset = 1;
               if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.pilot_run_reset_you_are_liquid_water_at_the', 'Run reset. You are liquid water at the sea surface.'));
             }
@@ -14204,7 +14278,7 @@ const d = labToolData.waterCycle || {};
                 var canvas = document.getElementById('wcPilotCanvas');
                 if (canvas && canvas.focus) canvas.focus();
               }, 0);
-              if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.pilot_experience_started', 'Be the Water started. You are liquid water in the sunlit ocean. Follow the Next goal instruction below the scene.'));
+              if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.pilot_experience_started', 'Be the Water started. You are liquid water in the sunlit ocean. Follow the Next goal panel at the top right of the scene.'));
             }
             function reopenPilotGuide() {
               setPilot({ onboardingComplete: false });
@@ -14582,6 +14656,39 @@ const d = labToolData.waterCycle || {};
               hard: { label: t('stem.watercycle.pilot_surface_hard', 'Hard ground'), outcome: t('stem.watercycle.pilot_surface_hard_outcome', 'Runoff - flow downhill toward a stream') }
             };
             var surfacePathway = surfacePathways[snap.surface] || surfacePathways.water;
+            var pilotLastCycle = pilotStored.lastCycle && typeof pilotStored.lastCycle === 'object' ? pilotStored.lastCycle : null;
+            var hudCompact = pilotStored.hudCompact === true;
+            var cycleViaLabels = {
+              rain: t('stem.watercycle.pilot_cycle_via_rain', 'Rain fell straight into open water'),
+              snow: t('stem.watercycle.pilot_cycle_via_snow', 'Snow fell straight into open water'),
+              runoff: t('stem.watercycle.pilot_cycle_via_runoff', 'Runoff carried you downhill to the stream'),
+              groundwater: t('stem.watercycle.pilot_cycle_via_groundwater', 'Groundwater seeped out at the spring')
+            };
+            var cycleMissingIds = pilotLastCycle && Array.isArray(pilotLastCycle.missing) ? pilotLastCycle.missing : [];
+            var cycleMissingLabels = cycleMissingIds.map(function(stageId) {
+              var stageMeta = STAGES.filter(function(st) { return st.id === stageId; })[0];
+              return stageMeta ? stageMeta.label : stageId;
+            });
+            var cycleStagesLine = !pilotLastCycle ? ''
+              : cycleMissingIds.length
+                ? t('stem.watercycle.pilot_cycle_stages_line', '{done} of {total} stages so far. Not yet: {missing}.')
+                    .replace('{done}', pilotLastCycle.done).replace('{total}', WCPK.stageOrder.length).replace('{missing}', cycleMissingLabels.join(', '))
+                : t('stem.watercycle.pilot_cycle_all_stages', 'All {total} stages experienced.').replace('{total}', WCPK.stageOrder.length);
+            var cycleHint = cycleMissingIds.indexOf('infiltration') !== -1
+              ? t('stem.watercycle.pilot_cycle_hint_infiltration', 'Next time, fall over the permeable meadow to soak in and become groundwater.')
+              : cycleMissingIds.indexOf('transpiration') !== -1
+              ? t('stem.watercycle.pilot_cycle_hint_transpiration', 'Next time, fall over the forest canopy to travel root to leaf.')
+              : cycleMissingIds.indexOf('precipitation') !== -1
+              ? t('stem.watercycle.pilot_cycle_hint_precipitation', 'Next time, keep collecting droplets until gravity wins and you fall.')
+              : t('stem.watercycle.pilot_cycle_hint_scenario', 'Try another scenario: the cloud base and freezing level move, so the same flight ends differently.');
+            function dismissCycleDebrief() {
+              if (!pilotLastCycle) return;
+              setPilot({ lastCycle: Object.assign({}, pilotLastCycle, { dismissed: true }) });
+              setTimeout(function() {
+                var canvas = document.getElementById('wcPilotCanvas');
+                if (canvas && canvas.focus) canvas.focus();
+              }, 0);
+            }
             var pathwayProgressPct = Math.max(0, Math.min(100, Math.round((snap.pathwayProgress || 0) * 100)));
             var landPathwayMeta = {
               runoff: {
@@ -14936,6 +15043,7 @@ const d = labToolData.waterCycle || {};
                 className: 'wc-pilot-stage',
                 'data-camera-mode': cameraMode,
                 'data-onboarding': String(!onboardingComplete),
+                'data-hud': hudCompact ? 'compact' : 'full',
                 'data-optics-stage': String(rainbowOptics.stage),
                 'data-optics-double': String(rainbowOptics.secondaryVisible)
               },
@@ -15104,6 +15212,14 @@ const d = labToolData.waterCycle || {};
                     'aria-pressed': cameraMode === 'water',
                     onClick: function() { chooseCameraMode('water'); }
                   }, t('stem.watercycle.pilot_water_view', 'Water view')),
+                  // Phones only (CSS hides it wider): at 390 px the two HUD
+                  // panels cover most of the world, so the learner can fold
+                  // everything except the form badge and the Next goal.
+                  h('button', {
+                    type: 'button', className: 'wc-pilot-camera-btn wc-pilot-hud-toggle',
+                    'aria-pressed': hudCompact,
+                    onClick: function() { setPilot({ hudCompact: !hudCompact }); }
+                  }, hudCompact ? t('stem.watercycle.pilot_hud_more', 'More HUD') : t('stem.watercycle.pilot_hud_less', 'Less HUD')),
                   h('button', {
                     type: 'button', className: 'wc-pilot-camera-btn wc-pilot-camera-help',
                     'aria-label': t('stem.watercycle.pilot_open_flight_guide', 'Open the flight guide'),
@@ -15236,7 +15352,7 @@ const d = labToolData.waterCycle || {};
                               ? t('stem.watercycle.pilot_heavy_enough_gravity_wins', 'Heavy enough — gravity wins')
                               : t('stem.watercycle.pilot_keep_collecting', 'Keep collecting: {n} droplets so far').replace('{n}', snap.droplets)))
                         : snap.form === 'droplet'
-                          ? h('div', { className: 'wc-pilot-gauge' },
+                          ? h('div', { key: 'drops-' + snap.droplets, className: 'wc-pilot-gauge is-pop' },
                               h('span', null, t('stem.watercycle.pilot_droplets_collected', 'Droplets collected')),
                               h('div', { className: 'wc-pilot-gauge-track' },
                                 h('i', { style: { width: Math.min(100, (snap.droplets / WCPK.DROPLETS_FOR_CLOUD) * 100) + '%' } })),
@@ -15261,7 +15377,26 @@ const d = labToolData.waterCycle || {};
                                 h('small', null, form.label)),
                   h('div', { className: 'wc-pilot-micro', 'data-molecular-phase': molecularModel.phase },
                     h('span', null, t('stem.watercycle.pilot_molecular_lens_label', 'Molecular lens - schematic H2O')),
-                    h('strong', null, molecularModel.label))
+                    h('strong', null, molecularModel.label)),
+                  // The objective was only rendered in the journey guide, which
+                  // sits more than a screen below the stage on a laptop, so the
+                  // learner flying the scene had no instruction in view at all.
+                  // The guide keeps the live-region copy; this is the in-stage mirror.
+                  h('div', { className: 'wc-pilot-goal', 'data-form': snap.form },
+                    h('span', null, t('stem.watercycle.pilot_next_goal', 'Next goal')),
+                    h('strong', null, objective))
+                ),
+
+                pilotLastCycle && !pilotLastCycle.dismissed && onboardingComplete && h('div', {
+                  className: 'wc-pilot-route wc-pilot-cycle', role: 'status', 'data-cycle': String(pilotLastCycle.n)
+                },
+                  h('span', { className: 'wc-pilot-route-kicker' },
+                    t('stem.watercycle.pilot_cycle_complete_kicker', 'Cycle {n} complete').replace('{n}', pilotLastCycle.n)),
+                  h('strong', null, cycleViaLabels[pilotLastCycle.via] || t('stem.watercycle.pilot_cycle_via_water', 'You returned to collected water')),
+                  h('small', null, cycleStagesLine),
+                  h('small', { className: 'wc-pilot-cycle-hint' }, cycleHint),
+                  h('button', { type: 'button', className: 'wc-pilot-btn wc-pilot-cycle-btn', onClick: dismissCycleDebrief },
+                    t('stem.watercycle.pilot_cycle_continue', 'Keep flying'))
                 ),
 
                 choosingLanding && onboardingComplete && h('div', {
@@ -15299,12 +15434,12 @@ const d = labToolData.waterCycle || {};
                     holdProps(activePathwayControl.key, activePathwayControl.aria),
                     { key: 'pathway', className: 'wc-pilot-key is-wide wc-pilot-key-pathway', 'data-control': 'pathway' }
                   ), activePathwayControl.label),
-                  !activeLandPathway && h('button', Object.assign(holdProps('up', t('stem.watercycle.pilot_rise_also_space_or_w', 'Rise. Also Space or W.')), { key: 'u', className: 'wc-pilot-key is-move is-rise', 'data-control': 'rise' }), '▲'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('down', t('stem.watercycle.pilot_sink_also_shift_or_s', 'Sink. Also Shift or S.')), { key: 'd', className: 'wc-pilot-key is-move is-sink', 'data-control': 'sink' }), '▼'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('left', t('stem.watercycle.pilot_steer_left_also_a_or_left_arrow', 'Steer left. Also A or Left Arrow.')), { key: 'l', className: 'wc-pilot-key is-move is-left', 'data-control': 'left' }), '◀'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('right', t('stem.watercycle.pilot_steer_right_also_d_or_right_arrow', 'Steer right. Also D or Right Arrow.')), { key: 'r', className: 'wc-pilot-key is-move is-right', 'data-control': 'right' }), '▶'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('fwd', t('stem.watercycle.pilot_move_forward_away_from_the_camera', 'Move forward, away from the camera. Also F.')), { key: 'f', className: 'wc-pilot-key is-move is-depth', 'data-control': 'forward' }), t('stem.watercycle.pilot_fwd', 'Fwd')),
-                  !activeLandPathway && h('button', Object.assign(holdProps('back', t('stem.watercycle.pilot_move_back_toward_the_camera', 'Move back, toward the camera. Also B.')), { key: 'b', className: 'wc-pilot-key is-move is-depth', 'data-control': 'back' }), t('stem.watercycle.pilot_back', 'Back'))
+                  !activeLandPathway && h('button', Object.assign(holdProps('up', t('stem.watercycle.pilot_rise_also_space_or_w', 'Rise. Also Space or E.')), { key: 'u', className: 'wc-pilot-key is-move is-rise', 'data-control': 'rise' }), h('span', { className: 'wc-pilot-key-glyph' }, '▲'), h('kbd', { className: 'wc-pilot-key-hint', 'aria-hidden': 'true' }, 'Space')),
+                  !activeLandPathway && h('button', Object.assign(holdProps('down', t('stem.watercycle.pilot_sink_also_shift_or_s', 'Sink. Also Shift or Q.')), { key: 'd', className: 'wc-pilot-key is-move is-sink', 'data-control': 'sink' }), h('span', { className: 'wc-pilot-key-glyph' }, '▼'), h('kbd', { className: 'wc-pilot-key-hint', 'aria-hidden': 'true' }, 'Shift')),
+                  !activeLandPathway && h('button', Object.assign(holdProps('left', t('stem.watercycle.pilot_steer_left_also_a_or_left_arrow', 'Steer left. Also A or Left Arrow.')), { key: 'l', className: 'wc-pilot-key is-move is-left', 'data-control': 'left' }), h('span', { className: 'wc-pilot-key-glyph' }, '◀'), h('kbd', { className: 'wc-pilot-key-hint', 'aria-hidden': 'true' }, 'A')),
+                  !activeLandPathway && h('button', Object.assign(holdProps('right', t('stem.watercycle.pilot_steer_right_also_d_or_right_arrow', 'Steer right. Also D or Right Arrow.')), { key: 'r', className: 'wc-pilot-key is-move is-right', 'data-control': 'right' }), h('span', { className: 'wc-pilot-key-glyph' }, '▶'), h('kbd', { className: 'wc-pilot-key-hint', 'aria-hidden': 'true' }, 'D')),
+                  !activeLandPathway && h('button', Object.assign(holdProps('fwd', t('stem.watercycle.pilot_move_forward_away_from_the_camera', 'Move forward, away from the camera. Also W or Up Arrow.')), { key: 'f', className: 'wc-pilot-key is-move is-depth', 'data-control': 'forward' }), h('span', { className: 'wc-pilot-key-glyph' }, t('stem.watercycle.pilot_fwd', 'Fwd')), h('kbd', { className: 'wc-pilot-key-hint', 'aria-hidden': 'true' }, 'W')),
+                  !activeLandPathway && h('button', Object.assign(holdProps('back', t('stem.watercycle.pilot_move_back_toward_the_camera', 'Move back, toward the camera. Also S or Down Arrow.')), { key: 'b', className: 'wc-pilot-key is-move is-depth', 'data-control': 'back' }), h('span', { className: 'wc-pilot-key-glyph' }, t('stem.watercycle.pilot_back', 'Back')), h('kbd', { className: 'wc-pilot-key-hint', 'aria-hidden': 'true' }, 'S'))
                   ),
                   h('div', { className: 'wc-pilot-pad-actions' },
                   h('button', {

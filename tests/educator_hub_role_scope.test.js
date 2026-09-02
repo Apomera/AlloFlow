@@ -44,7 +44,7 @@ const uiStrings = JSON.parse(readFileSync(resolve(root, 'ui_strings.js'), 'utf8'
 // Assessment Center's third tab is exactly the 'embedded research study suite'
 // X7 excluded from family mode; assessment-center itself stays visible to all
 // roles (F1 kept the Center for home-schooling parents).
-const HIDDEN_FOR_HOME = ['leadership-hub', 'professional-development', 'report-writer', 'research-suite'];
+const HIDDEN_FOR_HOME = ['leadership-hub', 'school-rewards', 'professional-development', 'report-writer', 'research-suite'];
 const KEPT_ARGUABLES = ['dynamic-assessment', 'polls-signups'];
 
 let Hub;

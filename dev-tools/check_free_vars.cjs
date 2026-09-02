@@ -64,7 +64,7 @@ const KNOWN_GLOBALS = new Set([
   'KeyboardEvent', 'MouseEvent', 'SpeechSynthesisUtterance', 'speechSynthesis',
   'MutationObserver', 'IntersectionObserver', 'ResizeObserver', 'getComputedStyle', 'matchMedia',
   'MediaRecorder', 'MediaStream', 'MediaSource',
-  'localStorage', 'sessionStorage', 'indexedDB', 'alert', 'confirm', 'prompt', 'btoa', 'AudioContext',
+  'localStorage', 'sessionStorage', 'indexedDB', 'IDBKeyRange', 'alert', 'confirm', 'prompt', 'btoa', 'AudioContext',
   'React', 'ReactDOM', 'process', 'require', 'module', 'exports', '__dirname', '__filename', 'Buffer',
   'WebSocket', 'Worker', 'Notification', 'CanvasRenderingContext2D', 'Path2D', 'OffscreenCanvas',
   'webkitAudioContext', 'speechSynthesis', 'SpeechSynthesisUtterance', 'ClipboardItem', 'arguments',

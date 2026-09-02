@@ -536,7 +536,7 @@ function ProjectSettingsView(props) {
   }, "Disconnect")), /*#__PURE__*/React.createElement("p", {
     id: "school-rewards-portal-help",
     className: "mt-2 text-xs leading-relaxed text-slate-500"
-  }, isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Deploy the reviewed apps_script/school_rewards package from a managed school account, restrict it to your Google Education domain, and paste its /exec URL here. AlloFlow stores only the launcher address.'))), isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
+  }, isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Open School Rewards & Store from Leadership Hub for the step-by-step setup: it copies the reviewed apps_script/school_rewards package, generates the one-time setup call, and saves the /exec URL. You can also paste the URL here. AlloFlow stores only the launcher address.'))), isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "principal-evaluation-title",
     className: "rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5"
   }, /*#__PURE__*/React.createElement("div", {
