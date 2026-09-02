@@ -3975,12 +3975,20 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
             _cancelPrefetchIfUnused(entry);
         });
     };
+    // speechSynthesis.cancel() is GLOBAL. Firing it on every stop cut off
+    // AlloBot replies and other read-alouds whenever this player stopped an
+    // <audio> clip that never touched the synthesizer. Cancel only while this
+    // player owns the utterance that is speaking or queued.
+    let _ownsUtterance = false;
     const _clearAudio = () => {
         const cleanup = _attemptCleanup;
         _attemptCleanup = null;
         if (cleanup) { try { cleanup(); } catch (e) {} }
         if (_audio) { try { _audio.pause(); } catch (e) {} _audio = null; }
-        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        if (_ownsUtterance) {
+            _ownsUtterance = false;
+            try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        }
     };
     const _stop = () => {
         // Error is already a terminal, non-playing state. Clearing it before a
@@ -4010,11 +4018,16 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
             resolve(false);
             return;
         }
+        // The mute gate around speechSynthesis.speak() swallows the call
+        // silently; without this check a muted fallback sat on the 12s start
+        // watchdog and then reported "not available".
+        if (isGlobalMuted()) { resolve(false); return; }
         let utterance;
         try { utterance = new SpeechSynthesisUtterance(text); } catch (e) { resolve(false); return; }
         let settled = false;
         let started = false;
         let cancelled = false;
+        let orphaned = false;
         let startTimer = null;
         const settle = (value) => { if (settled) return; settled = true; resolve(value); };
         const detach = () => {
@@ -4033,9 +4046,31 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         _attemptCleanup = cancelAttempt;
         utterance.rate = rate || 0.9;
         utterance.pitch = 1;
-        if (locale) utterance.lang = locale;
+        if (locale) {
+            utterance.lang = locale;
+            // lang alone lets the browser fall back to its default voice, which
+            // reads Spanish text with an English voice. Prefer an exact locale
+            // voice, then any voice for the same language.
+            try {
+                const voices = typeof window.speechSynthesis.getVoices === 'function' ? (window.speechSynthesis.getVoices() || []) : [];
+                const want = String(locale).toLowerCase();
+                const base = want.split('-')[0];
+                const match = voices.find((v) => String(v && v.lang || '').toLowerCase() === want)
+                    || voices.find((v) => String(v && v.lang || '').toLowerCase().split('-')[0] === base);
+                if (match) utterance.voice = match;
+            } catch (e) {}
+        }
         utterance.onstart = () => {
             if (cancelled || started) return;
+            if (orphaned) {
+                // The start watchdog gave up on this utterance while another
+                // feature was speaking. Now that it is the active one, cancel
+                // hits only it (and anything queued behind it), not theirs.
+                orphaned = false;
+                detach();
+                try { window.speechSynthesis.cancel(); } catch (e) {}
+                return;
+            }
             if (_state.currentId !== id) { cancelAttempt(); return; }
             started = true;
             if (startTimer) { clearTimeout(startTimer); startTimer = null; }
@@ -4045,17 +4080,24 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         };
         utterance.onend = () => {
             if (cancelled) return;
+            _ownsUtterance = false;
             release();
             detach();
             if (!started) { settle(false); return; }
             _finishIfCurrent(id);
         };
-        utterance.onerror = () => {
+        utterance.onerror = (event) => {
             if (cancelled) return;
+            _ownsUtterance = false;
             release();
             detach();
             if (!started) { settle(false); return; }
             if (_state.currentId !== id) return;
+            // "interrupted" / "canceled" mean another feature stopped the
+            // synthesizer on purpose (or the user did). That is an ordinary
+            // finish, not a failure to toast about.
+            const code = String(event && event.error || '').toLowerCase();
+            if (code === 'interrupted' || code === 'canceled') { _finishIfCurrent(id); return; }
             const message = _localized('toasts.tts_failed', 'Read-aloud failed. Please try again.');
             _failIfCurrent(id, message);
             _toast(message, 'error');
@@ -4063,15 +4105,31 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         startTimer = setTimeout(() => {
             if (cancelled || started) return;
             release();
-            cancelAttempt();
-            try { window.speechSynthesis.cancel(); } catch (e) {}
+            const synth = window.speechSynthesis;
+            let othersSpeaking = false;
+            try { othersSpeaking = !!(synth && synth.speaking); } catch (e) {}
+            if (!othersSpeaking) {
+                // Nothing else is talking, so the stuck utterance is ours and a
+                // cancel cannot hurt anyone.
+                cancelAttempt();
+                _ownsUtterance = false;
+                try { synth.cancel(); } catch (e) {}
+                return;
+            }
+            // Another feature is mid-utterance and ours is queued behind it. A
+            // global cancel here would cut them off, so give up on this request
+            // now and let onstart retire the utterance once it becomes active.
+            orphaned = true;
+            _ownsUtterance = false;
+            settle(false);
         }, 12000);
         if (_state.status !== 'generating') {
             _state = { ..._state, isPlaying: true, status: 'generating', error: null };
             _emit();
         }
+        _ownsUtterance = true;
         try { window.speechSynthesis.speak(utterance); }
-        catch (e) { release(); cancelAttempt(); }
+        catch (e) { _ownsUtterance = false; release(); cancelAttempt(); }
     });
     const _invalidateUrl = (url) => {
         try { if (typeof window.__alloInvalidateTtsUrl === 'function') window.__alloInvalidateTtsUrl(url); } catch (e) {}
