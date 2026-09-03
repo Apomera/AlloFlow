@@ -7,6 +7,8 @@ import { loadAlloModule } from './setup.js';
 const require = createRequire(import.meta.url);
 const moduleDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const shellSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
 const livePollingSource = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
 let React;
 let ReactDOMClient;
@@ -234,7 +236,7 @@ describe('session Q&A shell contract', () => {
 
     it('pins the ephemeral host opt-in and always-ready hidden guest capability', () => {
     expect(shellSource).toContain('const [liveSessionQaEnabled, setLiveSessionQaEnabled] = useState(false);');
-    expect(shellSource).toContain("aria-label={t('live_dock.moderated_qa') || 'Moderated live Q&A'}");
+    expect(liveDock).toContain("aria-label={t('live_dock.moderated_qa') || 'Moderated live Q&A'}");
     expect(shellSource).toContain('enableSessionQa: liveSessionQaEnabled');
     expect(shellSource).toContain('// The guest capability is always ready, but its Q&A launcher remains');
     expect(shellSource).toContain('enableSessionQa: true');

@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let ST;
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+// The Live Dock was extracted from ANTI into its own CDN view module.
+const liveDock = fs.readFileSync(path.join(ROOT, 'view_live_session_dock_source.jsx'), 'utf8');
 
 beforeAll(() => {
   global.window = global.window || {};
@@ -366,9 +368,9 @@ describe('ANTI wiring pins', () => {
 
   it('the Live Dock surfaces session health (roster + transport + last sync) with a diagnostics deep link', () => {
     expect(anti).toContain("window.__alloOpenDiagnosticsLog('session')"); // deep link
-    expect(anti).toMatch(/rosterCount \+ ' ' \+ \(rosterCount === 1/);
-    expect(anti).toContain("/REFUSED|write-failed|transport-unavailable/.test(ev.event)");
-    expect(anti).toContain("problemIsCurrent ? '⚠️' : '🟢'");
+    expect(liveDock).toMatch(/rosterCount \+ ' ' \+ \(rosterCount === 1/);
+    expect(liveDock).toContain("/REFUSED|write-failed|transport-unavailable/.test(ev.event)");
+    expect(liveDock).toContain("problemIsCurrent ? '⚠️' : '🟢'");
   });
 
   it('the mailbox pack effect routes through the module-owned cycle (stage 2)', () => {

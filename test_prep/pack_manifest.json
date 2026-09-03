@@ -1076,15 +1076,15 @@
       ],
       "title": "AP Calculus AB Independent Foundation Pilot",
       "shortTitle": "AP Calculus AB Foundation Pilot",
-      "description": "An independently authored 80-question AP Calculus AB initial foundation seed spanning all eight units. It tests calculus-specific blueprint metadata, representation and calculator routing, native learning chapters, and unscored response planning before expansion toward a complete bank.",
+      "description": "An independently authored 160-question AP Calculus AB expanded foundation spanning all eight units and forty four-item topic routes. It adds deterministic unscored diagnostics and remediation playbooks while preserving calculus-specific blueprint metadata, representation and calculator routing, native learning chapters, and response planning.",
       "disclaimer": "Independent, unofficial AP Calculus AB preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, or automated FRQ scores.",
       "credentialOwner": "College Board",
       "status": "preview",
-      "version": "0.1.0-internal-preview",
+      "version": "0.2.0-internal-preview",
       "blueprintLabel": "AP Calculus AB and BC Course and Exam Description with Fall 2026 clarifications and May 2027 exam format",
       "blueprintEffective": "Fall 2026 course clarifications; May 2027 exam format; public references reviewed 2026-08-25.",
       "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
-      "itemCount": 80,
+      "itemCount": 160,
       "domainCount": 8,
       "itemSchemaVersion": 2,
       "responseTypes": [
@@ -1094,12 +1094,12 @@
         "hybrid-digital"
       ],
       "packUrl": "./test_prep/ap_calculus_ab_foundation_pilot.json",
-      "sha256": "eac15110c2ed779295861dd4acb8d5c3097837c0f8425e98b7afe3e51df71486",
+      "sha256": "145f96d861aa8d4030147e7ffaa36a76f149954c4572c6f12dd5660cb5266316",
       "learningLibraryUrl": "./test_prep/ap_calculus_ab_foundation_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_calculus_ab_foundation_pilot_qa.json",
-      "learningLibrarySha256": "5be98f69215ca9602ff083751d8b9037e3d72d8cca1335521a9077322f312d83",
-      "nativeQaSha256": "72811c5c9b5b6fc949e405732f6414ff30c604a53a60844c1953725e6bb1d14e"
+      "learningLibrarySha256": "74140810a6b836d2c67fb938971a2ca7ed895bba44ce884684e5f4c515957522",
+      "nativeQaSha256": "1f7043161064b46ecb718737d20f274d55282186aed518629a1edaee4c2bd11e"
     }
   ]
 }

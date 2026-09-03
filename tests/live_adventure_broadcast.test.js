@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+// The Live Dock (where Call a vote lives) was extracted from ANTI into its own CDN view module.
+const liveDock = fs.readFileSync(path.join(ROOT, 'view_live_session_dock_source.jsx'), 'utf8');
 const shellCopies = [
   source,
   fs.readFileSync(path.join(ROOT, 'desktop', 'web-app', 'src', 'AlloFlowANTI.txt'), 'utf8'),
@@ -65,7 +67,7 @@ describe('live Adventure delivery wiring', () => {
   });
 
   it('offers a universal Call a vote action with current Adventure outcomes', () => {
-    shellCopies.forEach(copy => {
+    [liveDock].forEach(copy => {
       expect(copy).toContain("t('live_dock.call_vote') || 'Vote on outcomes'");
       expect(copy).toContain("type: 'mcq'");
       expect(copy).toContain("options: adventureVoteOptions.length >= 2 ? adventureVoteOptions.join('\\n') : 'Option A\\nOption B'");

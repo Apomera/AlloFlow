@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+// The mailbox/live-session card was extracted from ANTI into the share/session surfaces view module.
+const shareSurfaces = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
 const games = fs.readFileSync(path.join(ROOT, 'games_module.js'), 'utf8');
 
 describe('sort-game scoring economics', () => {
@@ -69,7 +71,8 @@ describe('module readiness loader', () => {
     });
 
     it('renders the still-loading pill with a failed-retry affordance after splash only', () => {
-        expect(anti).toMatch(/t\('mailbox\.loading_tools'\)[\s\S]{0,80}moduleLoadInfo\.pending\.length/);
+        // A comment explaining why the count is aria-hidden now sits between the label and the count.
+        expect(anti).toMatch(/t\('mailbox\.loading_tools'\)[\s\S]{0,400}moduleLoadInfo\.pending\.length/);
         expect(anti).toMatch(/moduleLoadInfo\.failed\.length[\s\S]{0,80}t\('mailbox\.failed_retry'\)/);
         expect(anti).toMatch(/isAppReady && \(moduleLoadInfo\.pending\.length > 0 \|\| moduleLoadInfo\.failed\.length > 0\)/);
         expect(anti).toMatch(/window\.__alloRetryFailedModules\?\.\(\)/);
@@ -109,7 +112,7 @@ describe('mailbox live-session parity', () => {
         expect(anti).toMatch(/Late-joiner welcome/);
         // Mode semantics match Firestore: teacher-paced gates auto-follow.
         expect(anti).toMatch(/mbLive && mbMode === 'sync'/);
-        expect(anti).toMatch(/Teacher-led: students follow your screen/);
+        expect(shareSurfaces).toMatch(/Teacher-led: students follow your screen/);
     });
 
     it('interruption resilience: teacher resume, RTC retry-forever, cursor self-heal, clean student pack', () => {
@@ -135,7 +138,7 @@ describe('mailbox live-session parity', () => {
         expect(anti).toMatch(/a: 'mysessions', admin/);
         expect(anti).toMatch(/setMbResumable\(open\)/);
         expect(anti).toMatch(/resumeMailboxLiveSession/);
-        expect(anti).toMatch(/t\('mailbox\.resume_class'\)[\s\S]{0,80}String\(s\.c\)\.toUpperCase\(\)/);
+        expect(shareSurfaces).toMatch(/t\('mailbox\.resume_class'\)[\s\S]{0,80}String\(s\.c\)\.toUpperCase\(\)/);
         // localStorage is documented as the non-Canvas fast path only.
         expect(anti).toMatch(/unavailable in the sandboxed Gemini Canvas iframe/);
     });

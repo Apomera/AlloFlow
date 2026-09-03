@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
+// The Live Session dock (audio-readiness chips + resend controls) was extracted from ANTI into its own CDN view module.
+const liveDock = readFileSync('view_live_session_dock_source.jsx', 'utf8');
 const app = readFileSync('desktop/web-app/src/App.jsx', 'utf8');
 const mailbox = readFileSync('apps_script/session_mailbox/Code.gs', 'utf8');
 const player = readFileSync('word_sounds_module.js', 'utf8');
@@ -125,9 +127,9 @@ describe('Word Sounds live audio delivery hardening', () => {
   it('reports last-mile audio readiness through the bounded live progress leaf', () => {
     for (const source of [anti, app]) {
     expect(source).toContain("structuralAudioStatus === 'missing'");
-      expect(source).toContain("t('word_sounds.audio_status_requested') || 'Resend requested'");
+      expect(liveDock).toContain("t('word_sounds.audio_status_requested') || 'Resend requested'");
       expect(source).toContain("handleRestoreView(resource, { suppressLiveFollow: true });");
-      expect(source).toContain("addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');");
+      expect(liveDock).toContain("addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');");
       expect(source).toContain('wordSoundsPreparedAudioStatus.ready');
       expect(source).toContain('mailboxVersion >= 14');
       expect(source).toContain('payload.audioStatus, payload.audioReady, payload.audioTotal');
@@ -135,9 +137,9 @@ describe('Word Sounds live audio delivery hardening', () => {
       expect(source).toContain('audioDeliveryAt: wordSoundsAudioDeliveryAt');
       expect(source).toContain('onPreparedAudioRetry: handleWordSoundsPreparedAudioRetry');
       expect(source).toContain('preparedAudioDeliveryAt: wordSoundsAudioDeliveryAt');
-      expect(source).toContain('audioDeliveryAt: resendAt');
-      expect(source).toContain("const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? (t('word_sounds.audio_resend') || 'Resend audio') : wsAudioLabel;");
-      expect(source).toContain("t('word_sounds.audio_review_repair_aria'");
+      expect(liveDock).toContain('audioDeliveryAt: resendAt');
+      expect(liveDock).toContain("const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? (t('word_sounds.audio_resend') || 'Resend audio') : wsAudioLabel;");
+      expect(liveDock).toContain("t('word_sounds.audio_review_repair_aria'");
     }
 
     const start = mailbox.indexOf('function validWsMetricNumber');

@@ -2308,8 +2308,10 @@ it('popup take deletion asks for confirmation (batch 2)', () => {
     expect(m).toContain("T('video_studio.hosted_link_label', 'Hosted video link (optional)')");
     // App side: the reference finally has a renderer (dead-data gap closed).
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    // Host-side Video Studio props were extracted from ANTI into the host bridge view module.
+    const hostBridge = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_source.jsx'), 'utf-8');
     const playerSource = readFileSync(resolve(process.cwd(), 'view_video_ref_player_source.jsx'), 'utf-8');
-    expect(anti).toContain('onSendVideoRefToFlow: (ref) => {');
+    expect(hostBridge).toContain('onSendVideoRefToFlow: (ref) => {');
     expect(playerSource).toContain('function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {');
     expect(anti).toContain('<VideoRefPlayerOverlay item={videoRefPlayerItem}');
     expect(anti).toContain("case 'video-ref': return <MonitorPlay size={16} />;");
@@ -2462,8 +2464,9 @@ it('popup take deletion asks for confirmation (batch 2)', () => {
     expect(m).toContain("ev.data.type === 'allostudio-demostop'");
     expect(m).toContain('propsRef.current.onRunDemoPlan');
     expect(m).toContain("{ error: 'a demo is already running' }");
-    // ANTI: props reuse AlloBot's planner/runner + shared single-flight guard.
-    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    // Host bridge (extracted from ANTI into video_studio_host_bridge_source.jsx): props reuse
+    // AlloBot's planner/runner + shared single-flight guard.
+    const anti = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_source.jsx'), 'utf-8');
     expect(anti).toContain('onPlanDemo: async (goal, options = {}) => {');
     expect(anti).toContain('signal: options.signal || null');
     expect(anti).toContain('onRunDemoPlan: async (steps, hooks, options) => {');
@@ -2513,8 +2516,8 @@ expect(html).toContain("var recordingMicWarning = '';");
     // Module clamp drops non-finite numbers.
     const m = moduleText();
     expect(m).toContain("(typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean'");
-    // Single-step demos plan via the single-command router fallback.
-    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    // Single-step demos plan via the single-command router fallback (host bridge module).
+    const anti = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_source.jsx'), 'utf-8');
     expect(anti).toContain('AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true, signal: options.signal || null })');
     expect(anti).toContain('The command planner is still loading — wait a moment and try again.');
   });
@@ -2530,7 +2533,7 @@ expect(html).toContain("var recordingMicWarning = '';");
   it('propagates Demo Autopilot cancellation through the bridge', () => {
     const html = popup();
     const m = moduleText();
-    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    const anti = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_source.jsx'), 'utf-8'); // host bridge module
     expect(m).toContain('var demoRunController = typeof AbortController');
     expect(m).toContain('signal: demoRunController.signal');
     expect(m).toContain('demoRunRef.current.controller.abort()');
@@ -3111,7 +3114,7 @@ expect(html).toContain("var recordingMicWarning = '';");
     expect(m).toContain('cleanupAfterStop = true');
     expect(m).toContain('{ rehearsal: !!drReq.rehearsal, cursorEmphasis: !(drReq.polish && drReq.polish.cursorEmphasis === false) }');
     expect(m).toContain('timedOut: !!(result && result.timedOut)');
-    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    const anti = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_source.jsx'), 'utf-8'); // host bridge module
     expect(m).toContain('pauseAfter: Math.round(Math.max(0.5, Math.min(8');
     expect(m).toContain("script: String((s && s.script) || '').slice(0, 400)");
     expect(anti).toContain("only: ['source-input', 'simplified']");
@@ -3160,7 +3163,8 @@ expect(html).toContain("var recordingMicWarning = '';");
 // teacher picks retry / skip / stop. After every run, an advisory AI audit
 // compares the goal against what actually executed.
 describe('demo steering junctures', () => {
-  const antiSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+  // The runner was extracted from ANTI into the host bridge view module; the slice follows it.
+  const antiSrc = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_source.jsx'), 'utf-8');
   const junctureHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
   const junctureMod = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
 
@@ -3251,14 +3255,20 @@ describe('demo steering junctures', () => {
     expect(r.stateSummary).toEqual({ contentLoaded: true, count: 3, view: 'quiz' });
   }, 15000);
 
-  it('the wait is bounded and both ANTI copies carry the juncture', () => {
-    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
-      const app = readFileSync(resolve(process.cwd(), path), 'utf-8');
-      expect(app, path).toContain("typeof hooks.onDecision === 'function'");
-      expect(app, path).toContain('startedWaiting > 240000');
-      expect(app, path).toContain("if (choice === 'retry') { i--; continue; }");
-      expect(app, path).toContain('stateSummary: stateSummaryForAudit()');
-    }
+  it('the wait is bounded and the host bridge source, its build and the public mirror carry the juncture', () => {
+    // The runner lives in the host bridge view module now (extracted from ANTI). The build rewrites
+    // arrow functions and statement layout, so the module is pinned on build-stable text and the
+    // public mirror on byte identity with the build.
+    const src = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_source.jsx'), 'utf-8');
+    expect(src).toContain("typeof hooks.onDecision === 'function'");
+    expect(src).toContain('startedWaiting > 240000');
+    expect(src).toContain("if (choice === 'retry') { i--; continue; }");
+    expect(src).toContain('stateSummary: stateSummaryForAudit()');
+    const built = readFileSync(resolve(process.cwd(), 'video_studio_host_bridge_module.js'), 'utf-8');
+    expect(built).toContain("typeof hooks.onDecision === 'function'");
+    expect(built).toContain('startedWaiting > 240000');
+    expect(built).toContain('stateSummary: stateSummaryForAudit()');
+    expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/video_studio_host_bridge_module.js'), 'utf-8')).toBe(built);
   });
 
   it('popup pauses the recording for the juncture and resumes before driving on', () => {

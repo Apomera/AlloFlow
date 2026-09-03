@@ -81,7 +81,11 @@ describe('exported annotation note popover accessibility', () => {
     dom = new JSDOM(html, {
       runScripts: 'dangerously',
       pretendToBeVisual: true,
-      url: 'https://example.test/note-popover-export.html',
+      // The export's annotation runtime awaits the shared learner workspace first. Without a
+      // nickname link that is the "Who is working on this resource?" prompt, which waits for a
+      // person forever here and no note would ever render. A nickname link is an explicit scope
+      // and never prompts, which is also how a real learner opens a shared-device export.
+      url: 'https://example.test/note-popover-export.html?nickname=Test%20Learner',
       virtualConsole,
     });
     await waitForRuntime(dom.window);

@@ -13,19 +13,21 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
 const polling = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
 const uiStrings = readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8');
 
 describe('Live Dashboard dock (teacher)', () => {
   it('mounts one dock that launches poll, quick check and pictionary', () => {
-    expect(anti).toContain("t('live_dock.title') || 'Live Dashboard'");
-    expect(anti).toContain("t('live_dock.call_vote') || 'Vote on outcomes'");
-    expect(anti).toContain("t('live_dock.poll') || 'Poll'");
-    expect(anti).toContain("t('live_dock.quick_check') || 'Check understanding'");
+    expect(liveDock).toContain("t('live_dock.title') || 'Live Dashboard'");
+    expect(liveDock).toContain("t('live_dock.call_vote') || 'Vote on outcomes'");
+    expect(liveDock).toContain("t('live_dock.poll') || 'Poll'");
+    expect(liveDock).toContain("t('live_dock.quick_check') || 'Check understanding'");
     expect(uiStrings).toContain('"teacher_paced": "Teacher-led"');
     expect(uiStrings).toContain('"start_tooltip": "Teach live or open the Live Dashboard"');
     expect(anti).toContain('setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false);');
-    expect(anti).toContain("t('live_dock.quick_check')");
+    expect(liveDock).toContain("t('live_dock.quick_check')");
     expect(anti).toContain('setShowPictionaryHost(true); setShowLiveDock(false);');
   });
 
@@ -36,11 +38,11 @@ describe('Live Dashboard dock (teacher)', () => {
 
   it('quick check seeds a 1-3 confused→ready rating poll', () => {
     expect(anti).toContain('1 = Confused\\n2 = Okay\\n3 = Ready');
-    expect(anti).toContain('ratingMin: 1, ratingMax: 3');
+    expect(liveDock).toContain('ratingMin: 1, ratingMax: 3');
   });
 
   it('shows a privacy note describing the peer-only transport', () => {
-    expect(anti).toContain("t('live_dock.privacy_note')");
+    expect(liveDock).toContain("t('live_dock.privacy_note')");
   });
 });
 
@@ -68,7 +70,7 @@ describe('Help signals (Tier-1 enum-only channel)', () => {
   it('teacher dock lists fresh signals and can clear them', () => {
     expect(anti).toContain('LIVE_SIGNAL_FRESH_MS');
     expect(anti).toContain('const clearSignal = (uid) =>');
-    expect(anti).toContain("t('live_dock.clear_all_signals')");
+    expect(liveDock).toContain("t('live_dock.clear_all_signals')");
   });
 });
 
@@ -120,11 +122,11 @@ describe('delivery acknowledgment (#10)', () => {
   });
 
   it('dock Students section shows delivery status with per-student push/clear', () => {
-    expect(anti).toContain("t('live_dock.group_students')");
-    expect(anti).toContain('const targetFor = (entry) => resolveLiveStudentResourceTarget({');
-    expect(anti).toContain("t('live_dock.status_on')");
-    expect(anti).toContain('handleSetStudentResource(uid, null)');
-    expect(anti).toContain('handleSetStudentResource(uid, generatedContent.id)');
+    expect(liveDock).toContain("t('live_dock.group_students')");
+    expect(liveDock).toContain('const targetFor = (entry) => resolveLiveStudentResourceTarget({');
+    expect(liveDock).toContain("t('live_dock.status_on')");
+    expect(liveDock).toContain('handleSetStudentResource(uid, null)');
+    expect(liveDock).toContain('handleSetStudentResource(uid, generatedContent.id)');
   });
 });
 

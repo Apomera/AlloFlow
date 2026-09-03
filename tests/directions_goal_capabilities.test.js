@@ -13,6 +13,8 @@ import { resolve } from 'node:path';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const anti = read('AlloFlowANTI.txt');
+// share/session surfaces view was extracted from ANTI into its own CDN view module; pins follow the code.
+const shareSurfaces = read('view_share_session_surfaces_source.jsx');
 const games = read('games_source.jsx');
 const renderers = read('view_renderers_source.jsx');
 const glossaryView = read('view_glossary_source.jsx');
@@ -279,8 +281,8 @@ describe('wiring pins', () => {
   });
   it('evidence carries confirmed, and the panel splits recorded from self-checked', () => {
     expect(anti).toContain('confirmed: !!o.confirmed');
-    expect(anti).toContain('ev.objectives.filter(o => o.done && o.confirmed).length');
-    expect(anti).toContain('ev.objectives.filter(o => o.done && !o.confirmed).length');
+    expect(shareSurfaces).toContain('ev.objectives.filter(o => o.done && o.confirmed).length');
+    expect(shareSurfaces).toContain('ev.objectives.filter(o => o.done && !o.confirmed).length');
   });
 });
 

@@ -14,6 +14,8 @@ import path from 'node:path';
 
 const read = (f) => fs.readFileSync(path.join(process.cwd(), f), 'utf8');
 const ANTI = read('AlloFlowANTI.txt');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = read('view_live_session_dock_source.jsx');
 const RULES = read('firestore.rules');
 const MAILBOX = read('apps_script/session_mailbox/Code.gs');
 
@@ -46,10 +48,10 @@ describe('presence heartbeat — teacher dock display', () => {
     expect(ANTI).toContain('const LIVE_ROSTER_PRESENCE_CONNECTED_MS = 95000;');
     expect(ANTI).toContain('const LIVE_ROSTER_PRESENCE_STALE_MS = 200000;');
     expect(ANTI).toContain('const classifyLiveRosterPresence =');
-    expect(ANTI).toContain('classifyLiveRosterPresence({ entry, now: dockNow })');
-    expect(ANTI).toMatch(/presence_gone.*disconnected\?/);
+    expect(liveDock).toContain('classifyLiveRosterPresence({ entry, now: dockNow })');
+    expect(liveDock).toMatch(/presence_gone.*disconnected\?/);
     // accessible: the dot carries the label, not color alone
-    expect(ANTI).toMatch(/aria-label=\{presence\.label\} title=\{presence\.label\}/);
+    expect(liveDock).toMatch(/aria-label=\{presence\.label\} title=\{presence\.label\}/);
   });
 });
 

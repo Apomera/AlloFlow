@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
 const sharedActivitySource = readFileSync(resolve(process.cwd(), 'shared_activity_source.jsx'), 'utf8');
 const endSessionPreviewSource = readFileSync(resolve(process.cwd(), 'view_end_session_preview_source.jsx'), 'utf8');
 const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
@@ -494,8 +496,11 @@ describe('session evidence report contract', () => {
     expect(previewSource).toContain('summary: latestSummary');
     expect(previewSource).toContain('const result = await handleSetStudentsResource(uids, resourceId);');
     expect(previewSource).not.toContain('updateDoc(');
-    expect(endSessionPreviewSource).toContain("aria-label={tx('end_session.choose_follow_up_resource', 'Choose the student-safe resource to send to an evidence cohort')}");
-    expect(endSessionPreviewSource).toContain("aria-label={tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}'");
+    // The resource picker is named by its visible <label> text now (no separate aria-label), and the
+    // send button composes its accessible name from the label plus the per-cohort description.
+    expect(endSessionPreviewSource).toMatch(/<label className="[^"]*">\s*\{tx\('end_session\.follow_up_resource', 'Follow-up resource'\)\}[\s\S]{0,600}<select/);
+    expect(endSessionPreviewSource).toContain("const sendActionDescription = tx('end_session.send_follow_up_resource', 'Send the selected follow-up resource to {count} connected learners in {cohort}'");
+    expect(endSessionPreviewSource).toContain("aria-label={sendActionLabel + '. ' + sendActionDescription}");
     expect(endSessionPreviewSource).toContain('disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy}');
   });
 
@@ -612,7 +617,7 @@ describe('live-session reliability refinements', () => {
     expect(helpers.resolveLiveStudentResourceTarget({
       entry: {}, groups: {}, currentResourceId: 'class', sessionMode: 'sync',
     })).toEqual({ resourceId: 'class', resourceAt: null });
-    expect(app).toContain("const targetAt = target ? Number(target.resourceAt) : NaN;");
+    expect(liveDock).toContain("const targetAt = target ? Number(target.resourceAt) : NaN;");
     expect(app).toContain("Object.prototype.hasOwnProperty.call(entry, 'viewingResourceAt')");
     expect(delivery.pendingUids).toEqual(['pending']);
     const recovery = helpers.summarizeLiveSessionResourceDelivery({

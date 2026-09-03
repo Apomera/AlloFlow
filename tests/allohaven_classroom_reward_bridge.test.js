@@ -132,6 +132,8 @@ describe('AlloHaven classroom reward ledger', () => {
 
 describe('live-session reward transport source contract', () => {
   const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+  // Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+  const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
   const haven = readFileSync(resolve(process.cwd(), 'allohaven_module.js'), 'utf8');
 
   it('allowlists only the bounded havenRewards leaf and writes through the privacy gate', () => {
@@ -150,9 +152,9 @@ describe('live-session reward transport source contract', () => {
   });
 
   it('renders an accessible private recognition control in the live dock', () => {
-    expect(anti).toContain("aria-label={t('allohaven.reason_aria') || 'AlloHaven recognition reason'}");
-    expect(anti).toContain("aria-label={'Recognize ' + (entry.name || 'student')");
-    expect(anti).toContain('Awards are private; no behavior notes are synced.');
+    expect(liveDock).toContain("aria-label={t('allohaven.reason_aria') || 'AlloHaven recognition reason'}");
+    expect(liveDock).toContain("aria-label={'Recognize ' + (entry.name || 'student')");
+    expect(liveDock).toContain('Awards are private; no behavior notes are synced.');
   });
 
   it('batches group and class recognition below the mailbox patch ceiling', () => {
@@ -165,9 +167,9 @@ describe('live-session reward transport source contract', () => {
   });
 
   it('offers private whole-class and populated-group actions without rankings', () => {
-    expect(anti).toContain("handleRecognizeStudents(Object.keys(rosterEntries), 'students')");
-    expect(anti).toContain("handleRecognizeStudents(groupUids, 'students in ' + groupLabel)");
-    expect(anti).toContain('Recognize all connected students with ');
+    expect(liveDock).toContain("handleRecognizeStudents(Object.keys(rosterEntries), 'students')");
+    expect(liveDock).toContain("handleRecognizeStudents(groupUids, 'students in ' + groupLabel)");
+    expect(liveDock).toContain('Recognize all connected students with ');
     expect(anti).not.toMatch(/haven(?:Reward)?Leaderboard|publicHavenBalance/i);
   });
 
@@ -226,9 +228,10 @@ describe('live-session reward transport source contract', () => {
   });
 
   it('renders an accessible teacher-only receipt and expandable recent audit', () => {
-    const panel = anti.slice(
-      anti.indexOf('<div style={dockGroupLabel}>Recognize</div>'),
-      anti.indexOf('// Students: delivery status'),
+    // The Recognize group renders inside the Live Dock view module now (extracted from ANTI).
+    const panel = liveDock.slice(
+      liveDock.indexOf('<div style={dockGroupLabel}>Recognize</div>'),
+      liveDock.indexOf('// Students: delivery status'),
     );
     expect(panel).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(panel).toContain('aria-controls="allohaven-recognition-delivery-audit"');
@@ -270,16 +273,17 @@ describe('live-session reward transport source contract', () => {
   });
 
   it('renders an accessible opt-in switch and cap-aware teacher controls', () => {
-    const panel = anti.slice(
-      anti.indexOf('<div style={dockGroupLabel}>Recognize</div>'),
-      anti.indexOf('// Students: delivery status'),
+    // The Recognize group renders inside the Live Dock view module now (extracted from ANTI).
+    const panel = liveDock.slice(
+      liveDock.indexOf('<div style={dockGroupLabel}>Recognize</div>'),
+      liveDock.indexOf('// Students: delivery status'),
     );
     expect(panel).toContain('role="switch"');
     expect(panel).toContain('aria-checked={havenRecognitionConfig.enabled}');
     expect(panel).toContain("aria-label={t('allohaven.token_cap_aria') || 'AlloHaven per-student session token cap'}");
     expect(panel).toContain('It remains off by default.');
     expect(panel).toContain('skipped at session cap');
-    expect(anti).toContain('disabled={!canRecognizeStudent}');
-    expect(anti).toContain('rewardTokensRemaining >= havenRewardAmount');
+    expect(liveDock).toContain('disabled={!canRecognizeStudent}');
+    expect(liveDock).toContain('rewardTokensRemaining >= havenRewardAmount');
     expect(panel).not.toMatch(/leaderboard|publicHavenBalance|token removal/i);
   });});

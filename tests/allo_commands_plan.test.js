@@ -576,6 +576,9 @@ describe('honest failure attribution for generation steps', () => {
   });
 
   it('both ANTI copies pass rethrowErrors from every generation ctx binding', () => {
+    // The Video Studio demo props (onPlanDemo/onRunDemoPlan) were extracted from ANTI into the host
+    // bridge view module; the 5-minute demo timeout is pinned there.
+    const hostBridge = readFileSync('video_studio_host_bridge_source.jsx', 'utf-8');
     for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const app = readFileSync(path, 'utf-8');
       expect(app, path).toContain("generateQuiz: () => handleGenerate('quiz', null, false, null, { rethrowErrors: true })");
@@ -585,7 +588,7 @@ describe('honest failure attribution for generation steps', () => {
       expect(app, path).toContain("generateAnalysis: () => handleGenerate('analysis', null, false, null, { rethrowErrors: true })");
       // Demo steps get 5 minutes, not the 3-minute default that killed
       // slow-but-honest generations mid-recording.
-      expect(app, path).toContain('timeoutMs: 300000');
+      expect(hostBridge).toContain('timeoutMs: 300000');
     }
   });
 

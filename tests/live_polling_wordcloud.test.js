@@ -5,6 +5,8 @@ import { loadAlloModule } from './setup.js';
 
 const pollingSource = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
 const shellSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
 
 let LivePolling;
 beforeAll(() => {
@@ -522,7 +524,7 @@ describe('Word Cloud reuses the existing live-poll lifecycle', () => {
     expect(shellSource).toContain('activitySnapshots: liveActivitySnapshots');
     expect(shellSource).toContain('onSendToStudents: (uids, resourceId) => handleSetStudentsResource(uids, resourceId)');
     expect(shellSource).toContain("transportKind: (mbLive || _alloMbBridgeActive()) ? 'mailbox' : 'firebase'");
-    expect(shellSource).toContain("width:'min(1180px, calc(100vw - 2rem))'");
+    expect(liveDock).toContain("width:'min(1180px, calc(100vw - 2rem))'");
     expect(shellSource).toContain('aria-modal="true"');
     expect(shellSource).toContain('useFocusTrap(liveDockPanelRef, showLiveDock');
     expect(shellSource).toContain('if (event.target === event.currentTarget) setShowLiveDock(false)');
@@ -535,8 +537,8 @@ describe('Word Cloud reuses the existing live-poll lifecycle', () => {
   });
 
   it('adds a Live Session Center preset that opens the existing polling panel', () => {
-    expect(shellSource).toContain("type: 'wordcloud'");
-    expect(shellSource).toContain("t('live_dock.word_cloud') || 'Word Cloud'");
+    expect(liveDock).toContain("type: 'wordcloud'");
+    expect(liveDock).toContain("t('live_dock.word_cloud') || 'Word Cloud'");
     expect(shellSource).toContain('setShowLivePollingPanel(true); setShowLiveDock(false);');
     expect(shellSource).toContain('initialPoll: livePollPreset');
   });

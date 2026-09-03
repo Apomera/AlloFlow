@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 
 const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// share/session surfaces view was extracted from ANTI into its own CDN view module; pins follow the code.
+const shareSurfaces = readFileSync(resolve(process.cwd(), 'view_share_session_surfaces_source.jsx'), 'utf8');
 const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
 const modal = readFileSync(resolve(process.cwd(), 'view_session_modal_source.jsx'), 'utf8');
 const endSessionPreviewSource = readFileSync(resolve(process.cwd(), 'view_end_session_preview_source.jsx'), 'utf8');
@@ -185,7 +187,7 @@ describe('privacy-safe roster session summaries', () => {
   });
 
   it('routes every teacher end surface through the shared preview', () => {
-    expect(app).toContain('<button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600');
+    expect(shareSurfaces).toContain('<button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600');
     expect(app).toContain('const handleEndLiveSession = () => requestEndLiveSession()');
     expect(app).toContain('onRequestEndSession={requestEndLiveSession}');
     expect(modal).toContain("typeof onRequestEndSession === 'function'");

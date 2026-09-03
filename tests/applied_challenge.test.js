@@ -58,7 +58,7 @@ describe('Applied Challenge Studio schema', () => {
     expect(data.supports.frameStarter).toContain('two materials');
     expect(data.workspace.response).toContain('layered insulation');
     expect(data.feedback.strength).toBe('Clear application');
-    expect(data.schemaVersion).toBe(5);
+    expect(data.schemaVersion).toBe(6);
     expect(data.brief.factVerified).toBe(false);
     expect(data.evidenceLedger).toEqual([]);
     expect(data.stressTest).toBeNull();

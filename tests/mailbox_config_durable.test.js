@@ -123,7 +123,8 @@ describe('the monolith wires it up', () => {
     // The bug the bridge work would otherwise have introduced: Forget cleared
     // localStorage only, so the next load's hydrate would restore the mailbox
     // from the bridge and it would come back from the dead.
-    for (const f of COPIES) {
+    // The mailbox card (Forget button + handler) was extracted from ANTI into the share/session surfaces view module.
+    for (const f of ['view_share_session_surfaces_source.jsx']) {
       const src = readFileSync(f, 'utf8');
       const forgetAt = src.indexOf('Forget mailbox');
       expect(forgetAt, f).toBeGreaterThan(0);

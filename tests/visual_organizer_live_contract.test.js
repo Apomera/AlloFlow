@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 const read = file => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 const host = read('AlloFlowANTI.txt');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = read('view_live_session_dock_source.jsx');
 const renderer = read('view_renderers_source.jsx');
 const rules = read('firestore.rules');
 const mailbox = read('apps_script/session_mailbox/Code.gs');
@@ -53,9 +55,9 @@ describe('visual organizer live activity contract', () => {
     expect(host).toContain("writeInteractiveOrganizerLaunchStatus('failed')");
     expect(host).toContain("[`roster.${user.uid}.organizerProgress`]: receipt");
     expect(host).toContain("status: isAttempt ? 'attempted' : 'complete'");
-    expect(host).toContain("'Organizer ready'");
-    expect(host).toContain("'Organizer failed to open'");
-    expect(host).toContain("'Organizer working'");
+    expect(liveDock).toContain("'Organizer ready'");
+    expect(liveDock).toContain("'Organizer failed to open'");
+    expect(liveDock).toContain("'Organizer working'");
     expect(host).toContain("'organizerProgress',");
   });
 
@@ -82,12 +84,12 @@ describe('visual organizer live activity contract', () => {
   it('keeps the running organizer observable and stoppable from the global live dashboard', () => {
     expect(host).toContain('const summarizeLiveOrganizerProgress = ({ roster, interactiveOrganizer } = {}) => {');
     expect(host).toContain('const liveOrganizerSummary = summarizeLiveOrganizerProgress({ roster: rosterEntries, interactiveOrganizer: liveOrganizer });');
-    expect(host).toContain('Live organizer activity');
-    expect(host).toContain('Student activity launch summary');
-    expect(host).toContain('handleRestoreView(organizerResource, { suppressLiveFollow: true });');
-    expect(host).toContain("onClick={() => broadcastInteractiveOrganizer(null)}");
+    expect(liveDock).toContain('Live organizer activity');
+    expect(liveDock).toContain('Student activity launch summary');
+    expect(liveDock).toContain('handleRestoreView(organizerResource, { suppressLiveFollow: true });');
+    expect(liveDock).toContain("onClick={() => broadcastInteractiveOrganizer(null)}");
     for (const status of ['complete', 'attempted', 'ready', 'working', 'loading', 'failed', 'pending']) {
-      expect(host).toContain(`{ key: '${status}'`);
+      expect(liveDock).toContain(`{ key: '${status}'`);
     }
   });
 
@@ -163,7 +165,7 @@ describe('visual organizer live activity contract', () => {
   it('retries only waiting or failed students without cycling the live activity', () => {
     expect(host).toContain('const getRetryableLiveOrganizerUids = ({ roster, interactiveOrganizer } = {}) => {');
     expect(host).toContain('interactiveOrganizer: { ...remote, retryAt, retryUids }');
-    expect(host).toContain('Retry waiting/failed (${retryableLiveOrganizerUids.length})');
+    expect(liveDock).toContain('Retry waiting/failed (${retryableLiveOrganizerUids.length})');
     expect(host).toContain('if (remote.armedAt === lastSeenInteractiveArmRef.current && !isTargetedRetry) return;');
     expect(host).toContain('if (isTargetedRetry) lastSeenInteractiveRetryRef.current = retryToken;');
     const normalizeStart = host.indexOf('const normalizeLiveOrganizerProgress =');

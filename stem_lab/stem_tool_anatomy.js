@@ -12885,8 +12885,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         ),
                         h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
                           h('h5', { className: 'text-sm font-black text-violet-800 mb-1' }, compareSel.name),
-                          h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-1' }, compareSel.fn.substring(0, 200) + (compareSel.fn.length > 200 ? '...' : '')),
-                          compareSel.clinical ? h('p', { className: 'text-[11px] text-rose-700 italic leading-relaxed' }, '\u26A0 ' + compareSel.clinical.substring(0, 150) + (compareSel.clinical.length > 150 ? '...' : '')) : null
+                          h('p', { className: 'text-[11px] text-slate-600 leading-relaxed mb-1' }, clipAtSentence(learnerText(compareSel), 200)),
+                          compareSel.clinical ? h('p', { className: 'text-[11px] text-rose-700 italic leading-relaxed' }, '\u26A0 ' + clipAtSentence(compareSel.clinical, 150)) : null
                         ),
                         h('table', { className: 'w-full mt-2 text-[11px]' },
                           h('caption', { className: 'sr-only' }, t('stem.anatomy.anatomy_data_table', 'anatomy data table')), h('thead', null,
@@ -13451,7 +13451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           ) : null,
                           flashcardPool[flashcardIdx % flashcardPool.length].clinical && gradeBand !== 'k2' ? h('div', { className: 'mt-2 pt-2 border-t border-teal-200' },
                             h('p', { className: 'text-[11px] font-bold text-rose-700 uppercase mb-0.5' }, t('stem.anatomy.clinical_2', '\u26A0 Clinical')),
-                            h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, flashcardPool[flashcardIdx % flashcardPool.length].clinical.substring(0, 200))
+                            h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, clipAtSentence(flashcardPool[flashcardIdx % flashcardPool.length].clinical, 200))
                           ) : null
                         )
                       ),

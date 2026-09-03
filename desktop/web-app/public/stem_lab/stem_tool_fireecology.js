@@ -3876,10 +3876,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 8 } },
                   rows.map(function (r) {
                     var col = r.pct >= 0.8 ? '#22c55e' : (r.pct >= 0.5 ? '#f59e0b' : '#ef4444');
+                    var txtCol = col === '#ef4444' ? '#fca5a5' : col;
                     return h('div', { key: r.name, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: '7px 10px' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } },
                         h('span', { style: { fontWeight: 700 } }, r.name),
-                        h('span', { style: { color: col, fontWeight: 700 } }, r.right + '/' + r.total)),
+                        h('span', { style: { color: txtCol, fontWeight: 700 } }, r.right + '/' + r.total)),
                       h('div', { style: { height: 5, borderRadius: 3, background: 'var(--allo-stem-deeper, #0f172a)', marginTop: 5 } },
                         h('div', { style: { width: Math.round(r.pct * 100) + '%', height: '100%', borderRadius: 3, background: col } })));
                   })),
@@ -5147,7 +5148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ),
               // Map legend
-              h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 6, paddingLeft: 4, display: 'flex', gap: 14, flexWrap: 'wrap' } },
+              h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, paddingLeft: 4, display: 'flex', gap: 14, flexWrap: 'wrap' } },
                 h('span', null, h('span', { style: { color: '#ef4444' } }, '🔥'), t('stem.fireecology.past_due', ' past due')),
                 h('span', null, h('span', { style: { color: '#fbbf24' } }, '🎯'), t('stem.fireecology.in_window', ' in window')),
                 h('span', null, h('span', { style: { color: '#facc15' } }, '⚠️'), t('stem.fireecology.fuel_high', ' fuel high')),
@@ -5312,7 +5313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ),
               h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, m.aiReadResponse),
               h('div', {
-                style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' }
+                style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' }
               },
                 t('stem.fireecology.ai_fire_ecology_educator_trained_on_do', 'AI fire ecology educator trained on documented Wabanaki fire stewardship research. '),
                 h('strong', null, t('stem.fireecology.it_is_not_a_wabanaki_person_and_does_n', 'It is not a Wabanaki person and does not speak for any Wabanaki nation.')),
@@ -6036,9 +6037,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', {
                 style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' }
               },
-                h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, t('stem.fireecology.campaign_seed', 'Campaign seed: ')),
+                h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.campaign_seed', 'Campaign seed: ')),
                 h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, m.seed || 'mosaic-default'),
-                h('div', { style: { marginTop: 4, fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', fontFamily: 'system-ui, sans-serif', fontStyle: 'italic' } },
+                h('div', { style: { marginTop: 4, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'system-ui, sans-serif', fontStyle: 'italic' } },
                   t('stem.fireecology.a_teacher_or_classmate_using_the_same_', 'A teacher or classmate using the same seed on the same difficulty gets the same starting state and the same sequence of yearly events.')
                 )
               )
@@ -6201,6 +6202,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             (function() {
               var isWarm = m.subPhase === 'warm';
               var phaseAccent = isWarm ? '#a16207' : '#1d4ed8';
+              // The border hue is too dark to read as text on this background.
+              var phaseText = isWarm ? '#f59e0b' : '#60a5fa';
               var phaseSoft = isWarm ? 'rgba(161,98,7,0.18)' : 'rgba(29,78,216,0.18)';
               var phaseLabel = isWarm ? '☼ Warm Season' : '❄ Cold Season';
               var phaseSubLabel = isWarm ? 'Sigwan-Nipon (spring + summer)' : 'Toqaq-Pun (fall + winter)';
@@ -6219,7 +6222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ),
                 h('div', null,
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.season', 'Season')),
-                  h('div', { style: { fontSize: 16, fontWeight: 800, color: phaseAccent } }, phaseLabel),
+                  h('div', { style: { fontSize: 16, fontWeight: 800, color: phaseText } }, phaseLabel),
                   h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, phaseSubLabel)
                 ),
                 h('div', null,
@@ -6303,10 +6306,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     ].map(function(st, si) {
                       var off = st.lowerIsBetter ? st.val - st.target : st.target - st.val;
                       var col = off <= 8 ? '#22c55e' : (off <= 20 ? '#f59e0b' : '#ef4444');
+                      var numCol = col === '#ef4444' ? '#fca5a5' : col;
                       var pct = Math.max(0, Math.min(100, st.val));
                       return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
                         h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st.key),
-                        h('div', { style: { fontSize: 15, fontWeight: 800, color: col } }, Math.round(st.val)),
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: numCol } }, Math.round(st.val)),
                         h('div', { style: { position: 'relative', height: 5, borderRadius: 3, background: 'var(--allo-stem-deeper, #0f172a)', margin: '3px 0 2px' } },
                           h('div', { style: { width: pct + '%', height: '100%', borderRadius: 3, background: col } }),
                           h('div', { style: { position: 'absolute', left: 'calc(' + Math.max(0, Math.min(100, st.target)) + '% - 1px)', top: -2, width: 2, height: 9, background: '#e2e8f0' } })
@@ -6371,7 +6375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               m.yearActions.map(function(a, ai) {
                 return h('div', { key: ai }, '• ' + a.tech + ' → ' + a.zone + ' (' + a.hours + 'h)' + (a.mult < 1 ? ' [off-season ×' + a.mult.toFixed(2) + ']' : ''));
               })
-            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, t('stem.fireecology.no_actions_yet_this_year_pick_a_zone_p', 'No actions yet this year. Pick a zone, pick a technique.'))
+            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, t('stem.fireecology.no_actions_yet_this_year_pick_a_zone_p', 'No actions yet this year. Pick a zone, pick a technique.'))
           );
         }
 
@@ -6901,7 +6905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } }, t('stem.fireecology.rank_progression', 'Rank progression')),
                   h('div', { style: { display: 'flex', gap: 4, alignItems: 'stretch' } },
                     [
-                      { name: t('stem.fireecology.apprentice', 'Apprentice'), min: 0, color: 'var(--allo-stem-text-soft, #64748b)' },
+                      { name: t('stem.fireecology.apprentice', 'Apprentice'), min: 0, color: 'var(--allo-stem-text-soft, #94a3b8)' },
                       { name: t('stem.fireecology.journeyman', 'Journeyman'), min: 80, color: '#84cc16' },
                       { name: t('stem.fireecology.skilled', 'Skilled'), min: 150, color: '#22c55e' },
                       { name: t('stem.fireecology.master', 'Master'), min: 220, color: tint('#f97316') },
@@ -6914,7 +6918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                           flex: 1, padding: '6px 4px', borderRadius: 6, textAlign: 'center',
                           background: achieved ? r.color + '33' : 'rgba(148,163,184,0.08)',
                           border: '1.5px solid ' + (current ? r.color : achieved ? r.color + '55' : 'rgba(148,163,184,0.20)'),
-                          fontSize: 9, fontWeight: 800, color: achieved ? r.color: 'var(--allo-stem-text-soft, #64748b)',
+                          fontSize: 9, fontWeight: 800, color: achieved ? r.color: 'var(--allo-stem-text-soft, #94a3b8)',
                           letterSpacing: '0.04em', textTransform: 'uppercase',
                           boxShadow: current ? '0 0 0 1px ' + r.color : 'none'
                         }

@@ -121,7 +121,8 @@ describe('Blueprint source and Universal image-style adapters', () => {
 });
 
 describe('Full Pack generation-matrix review UI', () => {
-  const source = read('AlloFlowANTI.txt');
+  // The Full Pack run view was extracted from ANTI into its own CDN module.
+  const source = read('view_full_pack_run_source.jsx');
 
   it('preserves reviewed matrix cells when run state is joined onto plan rows', () => {
     expect(source).toContain("return Object.assign({}, item, { key: item.uiId");

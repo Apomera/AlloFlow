@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = fs.readFileSync(path.join(ROOT, 'view_live_session_dock_source.jsx'), 'utf8');
 const source = fs.readFileSync(path.join(ROOT, 'view_live_lesson_run_source.jsx'), 'utf8');
 let api;
 let reactStub;
@@ -285,12 +287,12 @@ describe('prepared checkpoint UI', () => {
 
 describe('shell integration reuses canonical handlers', () => {
   it('passes session groups/roster and maps sends to the existing id-only handlers', () => {
-    expect(anti).toContain('groups: (sessionData && sessionData.groups) || {}');
+    expect(liveDock).toContain('groups: (sessionData && sessionData.groups) || {}');
     expect(anti).toContain('roster: rosterEntries');
-    expect(anti).toContain('onSendToGroup: (groupId, item) => handleSetGroupResource(groupId, item.id)');
-    expect(anti).toContain('onSendToStudent: (uid, item) => handleSetStudentResource(uid, item.id)');
-    expect(anti).toContain('onSendToStudents: (uids, item) => handleSetStudentsResource(uids, item.id)');
-    expect(anti).toContain('onReleaseStudentResources: handleReleaseStudentResources');
+    expect(liveDock).toContain('onSendToGroup: (groupId, item) => handleSetGroupResource(groupId, item.id)');
+    expect(liveDock).toContain('onSendToStudent: (uid, item) => handleSetStudentResource(uid, item.id)');
+    expect(liveDock).toContain('onSendToStudents: (uids, item) => handleSetStudentsResource(uids, item.id)');
+    expect(liveDock).toContain('onReleaseStudentResources: handleReleaseStudentResources');
     expect(anti).toContain('const handleSetStudentsResource = async (uids, resourceId, options = {}) =>');
     expect(anti).toContain('const handleReleaseStudentResources = async (uids) =>');
     expect(anti).toContain('entry.viewingResourceId !== entry.resourceId');

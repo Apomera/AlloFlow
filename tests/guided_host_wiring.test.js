@@ -12,6 +12,10 @@ const banner = readFileSync(resolve(root, 'view_guided_mode_banner_source.jsx'),
 const miscHandlers = readFileSync(resolve(root, 'misc_handlers_source.jsx'), 'utf8');
 const textPipeline = readFileSync(resolve(root, 'text_pipeline_helpers_source.jsx'), 'utf8');
 const dispatcher = readFileSync(resolve(root, 'generate_dispatcher_source.jsx'), 'utf8');
+// The Full Pack run view was extracted from ANTI into its own CDN module; guided anchors and
+// guided-step visibility for Package & Deliver live there now.
+const fullPackRun = readFileSync(resolve(root, 'view_full_pack_run_source.jsx'), 'utf8');
+const hostSurfaces = [app, header, fullPackRun];
 
 function guidedTourMapEntries() {
   const start = config.indexOf('const GUIDED_TOUR_MAP = {');
@@ -26,7 +30,7 @@ describe('Guided Mode host wiring', () => {
   it('maps every guided step to a real host DOM anchor', () => {
     const entries = guidedTourMapEntries();
     expect(entries.length).toBeGreaterThanOrEqual(20);
-    const missing = entries.filter(({ domId }) => !app.includes(`id="${domId}"`) && !app.includes(`id='${domId}'`));
+    const missing = entries.filter(({ domId }) => !hostSurfaces.some((s) => s.includes(`id="${domId}"`) || s.includes(`id='${domId}'`)));
     expect(missing).toEqual([]);
   });
 
@@ -291,8 +295,8 @@ describe('Guided Mode improvement wiring', () => {
       'Homework QR / self-contained link', 'Class Mailbox / hosted printable QR', 'Live class session', 'Editable AlloFlow project',
       'Adventure Storybook HTML (optional narration)', 'Persona private-session JSON + HTML transcript',
     ]) expect(config).toContain(option);
-    expect(app).toContain("onClick={() => openExportPreview('print')}");
-    expect(app).toContain('onClick={createGuidedHomeworkShare}');
+    expect(header).toContain("onClick={() => openExportPreview('print')}");
+    expect(fullPackRun).toContain('onClick={createGuidedHomeworkShare}');
     expect(app).toContain('setShowSessionStartOptions(true)');
     expect(app).toContain('previewGuidedStudentAssignment={previewGuidedStudentAssignment}');
     expect(app).toContain("onExportSuccess: () => completeGuidedDelivery('exportCreated')");
@@ -300,7 +304,7 @@ describe('Guided Mode improvement wiring', () => {
 
   it('keeps one intended left-panel surface visible for Directions, Delivery, and final review', () => {
     expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'directions')) ? undefined : 'none'");
-    expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final'");
+    expect(fullPackRun).toContain("guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final'");
     expect(app).toContain("if (currentStep.id === '_final') return false;");
     expect(app).toContain("guidedActiveSteps[guidedStep]?.id === 'alignment') ? undefined : 'none'");
     expect(app).not.toContain("guidedActiveSteps[guidedStep]?.id === 'alignment' || guidedActiveSteps[guidedStep]?.id === '_final'");

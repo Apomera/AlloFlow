@@ -15,6 +15,8 @@ import { CompressionStream as NodeCS, DecompressionStream as NodeDS } from 'node
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ANTI_PATH = path.join(ROOT, 'AlloFlowANTI.txt');
 const anti = fs.readFileSync(ANTI_PATH, 'utf8');
+// The share/session surfaces (incl. the self-contained pack modal) were extracted from ANTI into a CDN view module.
+const shareSurfaces = fs.readFileSync(path.join(ROOT, 'view_share_session_surfaces_source.jsx'), 'utf8');
 
 function sliceBetween(startMarker, endMarker) {
     const start = anti.indexOf(startMarker);
@@ -142,8 +144,8 @@ describe('ANTI wiring pins', () => {
 
     it('modal renders the pack variant with size guidance and a no-QR notice', () => {
         expect(anti).toMatch(/Self-contained homework link/);
-        expect(anti).toMatch(/too large for a scannable QR code/);
-        expect(anti).toMatch(/Make self-contained version \(no accounts needed\)/);
+        expect(shareSurfaces).toMatch(/too large for a scannable QR code/);
+        expect(shareSurfaces).toMatch(/Make self-contained version \(no accounts needed\)/);
         // QR generation is skipped for oversized packs.
         expect(anti).toMatch(/qrShareModal\?\.noQr \? '' : \(qrShareModal\?\.url \|\| ''\)/);
     });

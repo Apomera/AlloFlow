@@ -297,14 +297,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-life-stage-axis{display:flex;justify-content:space-between;gap:8px;margin-top:3px;color:#bda891;font-size:clamp(10px,2vw,11px);font-variant-numeric:tabular-nums;}',
       '.petslab-life-stage-key{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:7px;color:#e8d5b7;font-size:clamp(11px,2.2vw,12px);}',
       '.petslab-life-stage-note{margin:6px 0 0;color:#bda891;font-size:clamp(11px,2.2vw,12px);line-height:1.45;}',
-      '.petslab-life-comparison{margin-top:12px;padding:12px;border:1px solid rgba(124,58,237,.34);border-radius:12px;background:rgba(15,10,30,.32);}',
-      '.petslab-life-comparison h4{margin:0;color:#f8fafc;font-size:clamp(13px,2.7vw,15px);}',
-      '.petslab-life-comparison>p{margin:4px 0 10px;color:#cbd5e1;font-size:clamp(11px,2.2vw,12px);line-height:1.45;}',
+      '.petslab-life-comparison{margin-top:12px;padding:12px;border:1px solid rgba(245,158,11,.3);border-radius:12px;background:rgba(24,18,16,.5);}',
+      '.petslab-life-comparison h4{margin:0;color:#fef3e2;font-size:clamp(13px,2.7vw,15px);}',
+      '.petslab-life-comparison>p{margin:4px 0 10px;color:#e8d5b7;font-size:clamp(11px,2.2vw,12px);line-height:1.45;}',
       '.petslab-life-compare-list{display:grid;gap:8px;}',
       '.petslab-life-compare-row{display:grid;grid-template-columns:minmax(160px,.95fr) minmax(180px,1.6fr) 82px;gap:9px;align-items:center;min-width:0;}',
-      '.petslab-life-compare-name{min-width:0;color:#f8fafc;font-size:clamp(11px,2.25vw,13px);font-weight:800;line-height:1.35;}',
+      '.petslab-life-compare-name{min-width:0;color:#fef3e2;font-size:clamp(11px,2.25vw,13px);font-weight:800;line-height:1.35;}',
       '.petslab-life-compare-track{min-width:0;}',
-      '.petslab-life-compare-range{color:#e2e8f0;font:800 clamp(11px,2.2vw,12px)/1.25 ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right;}',
+      '.petslab-life-compare-range{color:#f0dcc2;font:800 clamp(11px,2.2vw,12px)/1.25 ui-monospace,SFMono-Regular,Consolas,monospace;text-align:right;}',
       '.petslab-life-bucket-mark{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 5px;border:1px solid currentColor;border-radius:7px;font-weight:950;}',
       '.petslab-picker-results{padding:14px;border:1px solid rgba(245,158,11,.46);border-radius:14px;background:linear-gradient(155deg,rgba(45,32,24,.98),rgba(24,18,16,.98));margin-bottom:14px;box-shadow:0 14px 32px rgba(0,0,0,.18);}' ,
       '.petslab-picker-results-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}' ,
@@ -4190,7 +4190,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       if (count >= 12) awardBadge('pets_pro', 'Lab Pathfinder (12 completed)');
       if (!quiet) petsAnnounce('Module marked complete. ' + count + ' completed.');
     }
-    function goToView(nextView, label) {
+    function goToView(nextView, label, extraPatch) {
+      // extraPatch lets a caller land on a specific sub-view — e.g. a
+      // cross-link that opens Diagrams already showing the air-sac schematic
+      // rather than dropping the student on the skull tab to go hunting.
+      // (Keep this comment INSIDE the body: tests/pets_evidence_records slices
+      // the source up to `function goToView(` and appends code on the same
+      // line, so a trailing // comment there swallows the wrapper.)
       var leavingAiPractice = view === 'aiPractice' && nextView !== 'aiPractice';
       if (leavingAiPractice) _aiRequestRef.current.seq += 1;
       if (nextView === 'menu') {
@@ -4201,7 +4207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         petsAnnounce('Back to menu');
         return;
       }
-      var navigationPatch = { view: nextView, lastView: nextView };
+      var navigationPatch = Object.assign({}, extraPatch || {}, { view: nextView, lastView: nextView });
       if (leavingAiPractice) {
         navigationPatch.aiLoadingCritique = false;
         navigationPatch.aiCritiqueRequest = null;
@@ -4317,7 +4323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           className: 'petslab-crosslink-action',
           'data-pets-focusable': true,
           onClick: function() {
-            if (target.view) goToView(target.view, target.label);
+            if (target.view) goToView(target.view, target.label, target.patch);
             else if (target.tool) openStemTool(target.tool, target.label);
           },
           style: btnPrimary({ marginTop: 9, padding: '8px 12px', fontSize: 12 })
@@ -5175,6 +5181,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🌲 Maine reality'),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
             'Maine has a strong working-dog culture: sled dogs (Iditarod-class kennels in Bethel + Greenville), Labrador retrievers everywhere (Lab is named for Labrador, just to the north), coon hounds in rural Maine. Tick + Lyme density is among the highest in the US — see the Zoonoses tile. Cold-climate breeds (Husky, Malamute, Bernese) thrive; brachycephalic breeds (pugs, bulldogs) struggle in summer humidity.')),
+        crossLink('Tooth shape reveals diet', h('span', null,
+          'A dog skull carries ', h('strong', { style: { color: T.text } }, 'flat-topped molars'),
+          ' a cat skull does not have — grinding surfaces that let dogs digest some plant matter. The labelled side-by-side is in Diagrams.'),
+          { view: 'diagrams', label: 'Diagrams', patch: { diagramView: 'skull' }, action: 'Compare the two skulls' }),
         crossLink('Operant theory deep-dive', h('span', null,
           'For the science of how dogs learn — reinforcement schedules, shaping, extinction — open ',
           h('strong', { style: { color: T.text } }, 'BehaviorLab'), '. This tile focuses on dog-specific physiology + history; the Pet Training tile applies BehaviorLab\'s theory to real-world scenarios (housetraining, recall, leash, alone-time).'),
@@ -5222,6 +5232,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ' is the largest domestic cat breed and an actual Maine native — emerged from working farm cats in the late 1800s, with cold-adapted features (large size for thermal mass, water-resistant coat, tufted paws like snowshoes, ear tufts to keep ear canals warm). Official state cat of Maine since 1985. Origin myths (raccoon hybrid, Marie Antoinette\'s cats) are charming but biologically false — Maine Coons are ',
             h('em', null, 'Felis catus'),
             ' selected by Maine winters.')),
+        crossLink('The skull backs up the biochemistry', h('span', null,
+          'A cat skull has ', h('strong', { style: { color: T.text } }, 'blade-like carnassials and no flat grinding surface'),
+          ' — shearing teeth only. Obligate carnivory shows up in the anatomy, not just the nutrient list above.'),
+          { view: 'diagrams', label: 'Diagrams', patch: { diagramView: 'skull' }, action: 'Compare the two skulls' }),
         crossLink('Cat training is real', h('span', null,
           'For the operant theory of how cats learn, see ', h('strong', { style: { color: T.text } }, 'BehaviorLab'),
           '. Cats train readily with food rewards + clickers — see the Pet Training tile. The "cats can\'t be trained" myth is in Myths Busted.'),
@@ -5328,6 +5342,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'Backyard chickens are increasingly common across Maine — productive layers + manageable. Avian influenza (HPAI) outbreaks have hit Maine flocks; biosecurity matters. For wild bird rescue, ',
             h('strong', { style: { color: T.accentHi } }, 'Avian Haven in Freedom, ME'),
             ' is the regional rehab center.')),
+        // The lab already draws the four-step air-sac schematic; it was only
+        // reachable from the menu, two clicks away from the paragraph that
+        // needs it.
+        crossLink('See the air sacs drawn', h('span', null,
+          'The one-way path through the ', h('strong', { style: { color: T.text } }, '9 air sacs'),
+          ' is easier to follow as a picture: fresh air fills the posterior sacs on the first inhale and only reaches the lung on the first exhale, so one packet of air crosses ',
+          h('strong', { style: { color: T.text } }, 'two breaths'), '.'),
+          { view: 'diagrams', label: 'Diagrams', patch: { diagramView: 'airsac' }, action: 'Open the air-sac diagram' }),
         footer());
     }
 
@@ -5856,14 +5878,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('rect', {
                   x: pad.l, y: pad.t,
                   width: W - pad.l - pad.r, height: H - pad.t - pad.b,
-                  rx: 5, fill: '#111827', opacity: 0.48
+                  rx: 5, fill: '#100b09', opacity: 0.55
                 }),
                 // Round grid, tick marks, and labels 1-10.
                 TR_MOMENTS.map(function(_, i) {
                   return h('g', { key: 'round-' + i },
                     h('line', {
                       x1: sx(i), y1: pad.t, x2: sx(i), y2: H - pad.b,
-                      stroke: '#475569', strokeWidth: 1, opacity: 0.32
+                      stroke: '#7a6350', strokeWidth: 1, opacity: 0.38
                     }),
                     h('line', {
                       x1: sx(i), y1: H - pad.b, x2: sx(i), y2: H - pad.b + 5,
@@ -5880,7 +5902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   return h('g', { key: 'level-' + i },
                     h('line', {
                       x1: pad.l, y1: sy(v), x2: W - pad.r, y2: sy(v),
-                      stroke: '#64748b', strokeWidth: 1, strokeDasharray: v === 0 ? null : '3 5', opacity: 0.58
+                      stroke: '#967c63', strokeWidth: 1, strokeDasharray: v === 0 ? null : '3 5', opacity: 0.6
                     }),
                     h('line', {
                       x1: pad.l - 5, y1: sy(v), x2: pad.l, y2: sy(v),
@@ -6169,6 +6191,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.warm } }, '⚠️ The dominance / "alpha" myth'),
           h('p', { style: { margin: 0, color: '#fde2e2', fontSize: 13, lineHeight: 1.6 } },
             'Skip "be the alpha." It was based on captive-wolf studies of unrelated wolves forced together (artificial). L. David Mech, the wolf researcher whose work popularized the term, has spent decades trying to retract it. Wild wolf packs are FAMILIES. Modern training (AVSAB, AVMA, AAVSB position) uses cooperative reinforcement — not status-based correction.')),
+        crossLink('The three-beat loop, drawn', h('span', null,
+          'Every scenario above is the same loop: ',
+          h('strong', { style: { color: T.text } }, 'antecedent → behavior → consequence'),
+          ', with the consequence changing how likely the behavior is next time. The labelled version is in Diagrams.'),
+          { view: 'diagrams', label: 'Diagrams', patch: { diagramView: 'operant' }, action: 'Open the operant loop diagram' }),
         crossLink('Theory deep-dive: BehaviorLab', h('span', null,
           'For interactive operant conditioning (reinforcement, schedules, shaping, extinction, chains, discrimination), open ',
           h('strong', { style: { color: T.text } }, 'BehaviorLab'),
@@ -9559,7 +9586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   stroke: '#f8fafc', strokeWidth: 2, strokeDasharray: '3 3', opacity: 0.8
                 });
               }),
-              h('circle', { cx: xForYear(costYears), cy: 35, r: 7, fill: '#f8fafc', stroke: '#0f172a', strokeWidth: 2 })
+              h('circle', { cx: xForYear(costYears), cy: 35, r: 7, fill: '#fff7df', stroke: '#241a15', strokeWidth: 2 })
             ),
             h('div', { className: 'petslab-cost-timeline-labels' },
               h('span', null, 'Adoption / plan starts'),
@@ -11110,10 +11137,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     focusable: 'false'
                   },
                     h('title', null, rowLabel),
-                    h('rect', { x: 1, y: 7, width: 98, height: 10, rx: 5, fill: T.bg, stroke: T.border, strokeWidth: 0.65 }),
-                    h('rect', { x: 1, y: 8, width: Math.max(0.8, endPct * 0.98), height: 8, rx: 4, fill: bucket.color, opacity: 0.52 }),
-                    h('rect', { x: 1 + minPct * 0.98, y: 8, width: Math.max(0.6, (endPct - minPct) * 0.98), height: 8, rx: 4, fill: bucket.color }),
-                    h('line', { x1: 1 + endPct * 0.98, y1: 4, x2: 1 + endPct * 0.98, y2: 20, stroke: '#f8fafc', strokeWidth: 1.1 })
+                    // Same stretched-corner trap as the commitment timeline:
+                    // viewBox 0 0 100 24 drawn at 100% x 32px with
+                    // preserveAspectRatio "none" scales x ~4x and y ~1.33x, so
+                    // a bare rx became a 20px-by-6.7px corner on a 13px bar.
+                    h('rect', { x: 1, y: 7, width: 98, height: 10, rx: 1.2, ry: 5, fill: T.bg, stroke: T.border, strokeWidth: 0.65 }),
+                    h('rect', { x: 1, y: 8, width: Math.max(0.8, endPct * 0.98), height: 8, rx: 1, ry: 4, fill: bucket.color, opacity: 0.52 }),
+                    h('rect', { x: 1 + minPct * 0.98, y: 8, width: Math.max(0.6, (endPct - minPct) * 0.98), height: 8, rx: 1, ry: 4, fill: bucket.color }),
+                    // Shared 25/50/75-year gridlines. Ten bars on "one 100-year
+                    // scale" are only comparable if the scale is actually drawn.
+                    h('g', { opacity: 0.5 },
+                      [25, 50, 75].map(function(tick) {
+                        return h('line', { key: 'cmp-tick-' + tick, x1: 1 + tick * 0.98, y1: 7, x2: 1 + tick * 0.98, y2: 17, stroke: T.dim, strokeWidth: 0.4 });
+                      })
+                    ),
+                    h('line', { x1: 1 + endPct * 0.98, y1: 4, x2: 1 + endPct * 0.98, y2: 20, stroke: '#fff7df', strokeWidth: 1.1 })
                   )
                 ),
                 h('span', { className: 'petslab-life-compare-range' }, visual.label)
@@ -12291,7 +12329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }),
           h('circle', { cx: 576, cy: 180, r: 45, fill: '#3a291d', stroke: '#d7aa62', strokeWidth: 2 }),
           h('path', { d: 'M 607 178 L 652 190 L 609 201 Z', fill: '#d7aa62', stroke: '#f6d59a', strokeWidth: 1.5 }),
-          h('circle', { cx: 588, cy: 167, r: 5.5, fill: '#111827' }),
+          h('circle', { cx: 588, cy: 167, r: 5.5, fill: '#241a15' }),
           h('circle', { cx: 590, cy: 165, r: 1.6, fill: '#fff8e7' }),
           h('path', { d: 'M 583 204 Q 603 157 626 112', stroke: '#d9eff7', strokeWidth: 8, fill: 'none', strokeLinecap: 'round' }),
           h('path', { d: 'M 583 204 Q 603 157 626 112', stroke: '#315b78', strokeWidth: 2, fill: 'none', strokeDasharray: '4 5' }),
@@ -12371,7 +12409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }),
           h('circle', { cx: 290, cy: 128, r: 34, fill: '#3a291d', stroke: '#d7aa62', strokeWidth: 2 }),
           h('path', { d: 'M 315 127 L 347 138 L 316 148 Z', fill: '#d7aa62' }),
-          h('circle', { cx: 299, cy: 118, r: 4.5, fill: '#111827' }),
+          h('circle', { cx: 299, cy: 118, r: 4.5, fill: '#241a15' }),
           h('path', { d: 'M 285 157 Q 304 116 318 83', stroke: '#d9eff7', strokeWidth: 7, fill: 'none', strokeLinecap: 'round' }),
           h('text', { x: 320, y: 78, fill: '#d9eff7', fontSize: 11, textAnchor: 'end', fontWeight: 800 }, 'Trachea'),
           [[93, 240, 27, 22], [67, 276, 25, 20], [116, 304, 29, 20], [146, 267, 23, 18]].map(function(sac, i) {
@@ -12944,16 +12982,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               ),
               h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4 } }, 'cats over ' + years + ' years (HSUS conservative estimate, assuming 50% survival to reproduction)')
             ),
-            // Mini-chart
-            h('div', { style: { marginTop: 12, padding: 8, borderRadius: 6, background: T.bg, display: 'flex', alignItems: 'flex-end', gap: 4, height: 80 }, 'aria-hidden': 'true' },
-              generations.map(function(g, i) {
-                var h_pct = Math.min(100, (g.count / Math.max(1, generations[generations.length - 1].count)) * 100);
-                return h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
-                  h('div', { style: { width: '100%', height: h_pct + '%', background: T.warm, borderRadius: '3px 3px 0 0', minHeight: 2 } }),
-                  h('div', { style: { fontSize: 9, color: T.dim } }, 'y' + g.year)
-                );
-              })
-            )
+            // Mini-chart.
+            // ★ This drew NOTHING. Each bar had `height: <pct>%` inside a
+            // column whose own height was `auto`, and a percentage height
+            // against an auto-height parent resolves to auto — so every bar
+            // collapsed to its 2px minHeight and the compounding curve, which
+            // is the entire point of the section, rendered as a flat line.
+            // Bar heights are now computed in pixels against a fixed plot
+            // height, which cannot silently collapse.
+            (function() {
+              var plotH = 74;
+              var peak = Math.max(1, generations[generations.length - 1].count);
+              return h('div', {
+                role: 'img',
+                'aria-label': 'Estimated descendants by year: ' + generations.map(function(g) {
+                  return 'year ' + g.year + ', ' + g.count.toLocaleString();
+                }).join('; ') + '.',
+                style: { marginTop: 12, padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.border, display: 'flex', alignItems: 'flex-end', gap: 4 }
+              },
+                generations.map(function(g, i) {
+                  var barH = Math.max(3, Math.round((g.count / peak) * plotH));
+                  var isLast = i === generations.length - 1;
+                  return h('div', { key: i, style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
+                    h('div', { 'aria-hidden': 'true', style: { fontSize: 9, fontWeight: 800, color: isLast ? T.accentHi : T.dim, whiteSpace: 'nowrap' } }, g.count.toLocaleString()),
+                    h('div', { 'aria-hidden': 'true', style: { width: '100%', height: barH, background: isLast ? T.accentHi : T.warm, borderRadius: '3px 3px 0 0' } }),
+                    h('div', { 'aria-hidden': 'true', style: { fontSize: 9, color: T.dim } }, 'y' + g.year)
+                  );
+                })
+              );
+            })()
           ),
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.ok, marginBottom: 8 } },
             h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.ok } }, '💵 Affordability'),
@@ -13729,7 +13786,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           position: 'relative',
           borderRadius: 14,
           overflow: 'hidden',
-          background: 'var(--allo-stem-canvas, #0f172a)',
+          // The stage letterboxes its 800x280 scene, so wherever the host does
+          // not define --allo-stem-canvas the bars down each side fell back to
+          // slate-950 while the trainer stage beside it is warm espresso.
+          background: 'var(--allo-stem-canvas, #241a15)',
           border: '1px solid ' + T.border,
           boxShadow: '0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
           marginBottom: 12
@@ -15270,19 +15330,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var pctOverall = totalSignals > 0 ? Math.round((unique / totalSignals) * 100) : 0;
 
       return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
-        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
-          h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 22 } }, '🗂️ Decoder Signal Log'),
+        // Same shape as backBar(): back control FIRST on the left as a
+        // secondary button, then the heading, then status. This view used to
+        // put an amber primary "← Menu" on the far RIGHT — the one screen in
+        // the lab where "go back" moved, and the only one where it competed
+        // with the page's real primary action.
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 } },
+          h('button', { 'data-pets-focusable': true,
+            'aria-label': 'Back to Pets Lab menu',
+            onClick: function () { goToView('menu'); },
+            style: btn({ padding: '6px 12px', fontSize: 12 })
+          }, '← Menu'),
+          h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 20, flex: '1 1 220px' } }, '🗂️ Decoder Signal Log'),
           modulesCompleted.decoderMastery
             ? h('span', { className: 'petslab-complete-status', role: 'status' }, '✓ Complete')
             : h('span', {
                 className: 'petslab-mastery-goal',
                 title: 'Signal Log coverage completes automatically after all 27 canonical signals are identified correctly at least once.',
-                style: { color: T.muted, fontSize: 11, fontWeight: 700 }
-              }, 'Coverage completes at 27 / 27'),
-          h('button', { 'data-pets-focusable': true,
-            onClick: function () { goToView('menu'); },
-            style: btnPrimary({ padding: '8px 14px', fontSize: 13 })
-          }, '← Menu')
+                style: { marginLeft: 'auto', color: T.muted, fontSize: 11, fontWeight: 700 }
+              }, 'Coverage completes at 27 / 27')
         ),
         // Hero summary
         h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, ' + T.cardAlt + ' 0%, ' + T.card + ' 100%)', border: '2px solid ' + T.accent, marginBottom: 16 } },
@@ -15295,7 +15361,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
                 'Every signal correctly identified in practice is logged here once. This is a coverage record—not proof of durable mastery, context transfer, safe handling, or a real-animal assessment. Quiz scores reset; the first-correct log remains.'
               ),
-              h('div', { style: { marginTop: 8, height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
+              // A bordered track, so an empty log still reads as "0 of a
+              // scale" rather than as a hairline in the dark.
+              h('div', { style: { marginTop: 8, height: 9, background: T.bg, border: '1px solid ' + T.border, borderRadius: 5, overflow: 'hidden' }, 'aria-hidden': 'true' },
                 h('div', { style: { width: pctOverall + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
               )
             )
@@ -15313,7 +15381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 16, fontWeight: 800 } }, s.species),
                 h('div', { style: { fontSize: 12, color: T.dim } }, decodedItems.length + ' of ' + total + ' logged'),
-                h('div', { style: { flex: 1, minWidth: 80, height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden' }, 'aria-hidden': 'true' },
+                h('div', { style: { flex: 1, minWidth: 80, height: 8, background: T.bg, border: '1px solid ' + T.border, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
                   h('div', { style: { width: pct + '%', height: '100%', background: T.accent } })
                 )
               ),

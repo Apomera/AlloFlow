@@ -21,6 +21,8 @@ class FakeNode {
     this.textContent = '';
     this._queryCache = {};
     this.innerHTML = '';
+    // The 2026-09-02 language menu reads sel.options and appends <option> nodes, as a real <select> allows.
+    this.options = [];
     this.classList = { add: value => { this.className += ` ${value}`; }, remove: value => { this.className = this.className.replace(value, ''); } };
   }
   set innerHTML(value) { this._innerHTML = String(value); this._queryCache = {}; }
@@ -44,6 +46,7 @@ class FakeNode {
     }
     return this._queryCache[selector];
   }
+  appendChild(child) { this.options.push(child); return child; }
   querySelector() { return null; }
   reset() { this.value = ''; }
   focus() {}

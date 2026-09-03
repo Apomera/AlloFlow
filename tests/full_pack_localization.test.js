@@ -29,7 +29,7 @@ describe('Full Pack and Blueprint localization coverage', () => {
   });
 
   it('routes the production review panel through translation keys', () => {
-    const source = read('AlloFlowANTI.txt');
+    const source = read('view_full_pack_run_source.jsx'); // the Full Pack panel was extracted from ANTI into its own CDN view module
     for (const key of [
       'fullpack.action_plan', 'fullpack.panel_plan', 'fullpack.settings_changed',
       'fullpack.capacity_preview', 'fullpack.provider', 'fullpack.hide_completed',
@@ -46,7 +46,7 @@ describe('Full Pack and Blueprint localization coverage', () => {
     expect(source).toContain("t('blueprint.saved_run_warning')");
   });
   it('keeps Full Pack failure summaries visible on narrow panels and links to the error log', () => {
-    const source = read('AlloFlowANTI.txt');
+    const source = read('view_full_pack_run_source.jsx'); // the Full Pack panel was extracted from ANTI into its own CDN view module
     expect(source).toContain('data-testid="full-pack-failure-reason"');
     expect(source).toContain('className="mt-0.5 break-words text-[10px] leading-snug text-rose-700"');
     expect(source).toContain('data-testid="full-pack-open-error-log"');

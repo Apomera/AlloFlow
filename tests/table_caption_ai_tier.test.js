@@ -127,7 +127,9 @@ describe('anti-drift: addAiTableCaptions is wired into the main flow before the 
     expect(callHits, 'expected exactly one addAiTableCaptions call site').toBe(1);
     expect(auditHits, 'expected exactly one finalAudit assignment').toBe(1);
     const callIdx = dp.indexOf('await addAiTableCaptions(');
-    const finalAuditIdx = dp.indexOf('const finalAudit = await auditOutputAccessibility(');
+    // `let finalAudit = null;` is declared two lines above the assignment now, so the ORDER pin
+    // follows the unique assignment already asserted above rather than a `const` that no longer exists.
+    const finalAuditIdx = dp.indexOf("finalAudit = await auditOutputAccessibility(_finalAuditHtml, { signal: _runAbortSignal, trigger: 'primary-final-audit' })");
     expect(callIdx).toBeGreaterThan(-1);
     expect(finalAuditIdx).toBeGreaterThan(-1);
     expect(callIdx).toBeLessThan(finalAuditIdx);

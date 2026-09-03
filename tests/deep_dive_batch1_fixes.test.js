@@ -35,14 +35,36 @@ const sliceFns = () => {
 };
 
 const sliceWait = (stubs) => {
+  // The wait grew closure dependencies after this harness was written (2026-09-02: storm budget,
+  // Retry-After-aware bound, auth-wall minimal probe). The REAL budget helpers ride along with the
+  // slice (never stubbed) and the gate's mutable state arrives as plain values. The probe is the
+  // seam this harness always had: it routes through stubs.callGemini so a test can still say
+  // "must not probe once aborted".
+  const bStart = dp.indexOf('var _GEMINI_STORM_BUDGET_DEFAULT_MS = ');
+  const bEnd = dp.indexOf('var _throttlePendingProbe = null;', bStart);
   const start = dp.indexOf('var waitForGeminiCalm = async function (opts) {');
   const end = dp.indexOf('// Pulse the dead-man watchdog', start);
+  expect(bStart).toBeGreaterThan(-1);
+  expect(bEnd).toBeGreaterThan(bStart);
   expect(start).toBeGreaterThan(-1);
   expect(end).toBeGreaterThan(start);
-  const src = dp.slice(start, end);
-  const make = new Function('_geminiThrottleInfo', '_pulsePipelineWatchdog', 'warnLog', 'callGemini',
+  const src = dp.slice(bStart, bEnd) + '\n' + dp.slice(start, end);
+  const make = new Function(
+    '_geminiThrottleInfo', '_pulsePipelineWatchdog', 'warnLog', '_geminiProbe', '_rawCallGemini',
+    '_pipeLog', '_pipeThrottleEvent', 'window', '_throttleCooldownMsTotal',
+    '_geminiAuthStreak', '_geminiTransientStreak', '_geminiCooldownUntil', '_geminiRetryAfterUntil',
+    '_geminiLastFailureProfile', '_hostTransportProfile', '_usesLocalTextBackend', '_rearmGeminiProbeCooldown',
+    '_GEMINI_STORM_TRIP', '_GEMINI_TRANSIENT_TRIP', '_GEMINI_RETRY_AFTER_CAP_MS', '_GEMINI_PROBE_RECOVER',
     src + '\nreturn waitForGeminiCalm;');
-  return make(stubs.info, stubs.pulse || (() => {}), stubs.warn || (() => {}), stubs.callGemini);
+  const probe = async (o) => { const r = await stubs.callGemini('Reply with exactly: OK', o); return /OK/.test(String(r || '')); };
+  // _GEMINI_PROBE_RECOVER is 1 here so one calm probe resumes at once: the two-probe hysteresis the
+  // product ships (2) is covered by gemini_probe_representative_recovery, and with it these
+  // shouldAbort tests would spend their whole 5s budget inside the confirmation sleep.
+  return make(stubs.info, stubs.pulse || (() => {}), stubs.warn || (() => {}), stubs.probe || probe, stubs.callGemini,
+    () => {}, () => {}, { __docPipelineState: {} }, 0,
+    0, 0, 0, 0,
+    null, () => null, () => false, () => {},
+    2, 3, 300000, 1);
 };
 
 describe('H2 — quota-classed errors feed the throttle machinery', () => {

@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = fs.readFileSync(path.join(ROOT, 'view_live_session_dock_source.jsx'), 'utf8');
 const liveLessonSource = fs.readFileSync(path.join(ROOT, 'view_live_lesson_run_source.jsx'), 'utf8');
 let moduleApi;
 
@@ -173,7 +175,7 @@ describe('Live Session Center integration', () => {
     expect(anti).toContain('setShowLiveLessonPrep(true)');
     expect(anti).toContain('{showLiveLessonPrep && (');
     expect(anti).toContain('preparationOnly: true');
-    expect(anti).toContain('onLaunchPreparedInteraction: launchPreparedLiveInteraction');
+    expect(liveDock).toContain('onLaunchPreparedInteraction: launchPreparedLiveInteraction');
     expect(anti).toContain('buildLivePreparedInteractionDescriptor(checkpoint, item, audience)');
   });
 

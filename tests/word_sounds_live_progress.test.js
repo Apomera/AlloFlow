@@ -73,8 +73,10 @@ describe('Tier-1 allowlist + write-path source pins (AlloFlowANTI.txt)', () => {
   });
 
   it('Live Session Center dock renders wsProgress and wsProbeResult chips', () => {
-    expect(anti).toMatch(/entry\.wsProgress && entry\.wsProgress\.total/);
-    expect(anti).toMatch(/entry\.wsProbeResult && entry\.wsProbeResult\.total/);
+    // The Live Session dock was extracted from ANTI into its own CDN view module.
+    const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
+    expect(liveDock).toMatch(/entry\.wsProgress && entry\.wsProgress\.total/);
+    expect(liveDock).toMatch(/entry\.wsProbeResult && entry\.wsProbeResult\.total/);
   });
 
   it('student self-open honors the saved lesson-plan sequence', () => {

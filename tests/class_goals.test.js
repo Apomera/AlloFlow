@@ -17,6 +17,8 @@ import { loadSessionSummaryApi } from './session_summary_test_utils.js';
 const require = createRequire(import.meta.url);
 let M;
 const ANTI = readFileSync('AlloFlowANTI.txt', 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync('view_live_session_dock_source.jsx', 'utf8');
 const sessionSummaryApi = loadSessionSummaryApi();
 
 beforeAll(() => {
@@ -69,7 +71,7 @@ describe('teacher side: ANTI source contracts', () => {
   });
 
   it('individual-recognition dropdown does not offer group_goal', () => {
-    expect(ANTI).toContain("ALLOHAVEN_CLASSROOM_REWARD_REASONS.filter(reason => reason.id !== 'group_goal').map(reason => (");
+    expect(liveDock).toContain("ALLOHAVEN_CLASSROOM_REWARD_REASONS.filter(reason => reason.id !== 'group_goal').map(reason => (");
   });
 
   it('award fans out through the standard batched path with the reason override', () => {
@@ -160,8 +162,8 @@ describe('Ring B/C: teams, tracked criteria, independent checklist (ANTI contrac
   });
 
   it('tracked criteria are an option, never a default — teacher-observed is the default path', () => {
-    expect(ANTI).toContain('<option value="none">Teacher observed (none)</option>');
-    expect(ANTI).toContain("trackedMetric: 'none'");
+    expect(liveDock).toContain('<option value="none">Teacher observed (none)</option>');
+    expect(liveDock).toContain("trackedMetric: 'none'");
   });
 });
 

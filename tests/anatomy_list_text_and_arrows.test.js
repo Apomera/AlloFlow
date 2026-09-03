@@ -59,6 +59,31 @@ describe('Anatomy structure list text', () => {
   }, 60_000);
 });
 
+describe('Anatomy prose truncation', () => {
+  // Round 27 (2026-09-03): three prose blocks still cut mid-word with a trailing "...", and the
+  // compare card showed clinical wording to young learners unlike every other surface.
+  it.each(ANATOMY_PATHS)('clips the compare card and flashcard clinical text on a boundary in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).not.toContain('compareSel.fn.substring(0, 200)');
+    expect(source).not.toContain('compareSel.clinical.substring(0, 150)');
+    expect(source).not.toMatch(/\.clinical\.substring\(0, 200\)/);
+    expect(source).toContain('clipAtSentence(learnerText(compareSel), 200)');
+    expect(source).toContain('clipAtSentence(compareSel.clinical, 150)');
+  });
+
+  it.each(ANATOMY_PATHS)('gives the compare card the wording the learner reads elsewhere in %s', (filePath) => {
+    const state = { system: 'circulatory', selectedStructure: 'heart', _compareStructure: 'kidneys' };
+    const young = render(filePath, state, { gradeLevel: '2' });
+    const older = render(filePath, state, OLDER);
+    const pick = (root) => root.querySelector('.bg-violet-50.rounded-lg p').textContent;
+    expect(pick(young)).toMatch(/filters that clean your blood/i);
+    expect(pick(older)).toMatch(/nephrons/);
+    for (const root of [young, older]) {
+      expect(pick(root)).not.toMatch(/\.\.\.$/);
+    }
+  }, 60_000);
+});
+
 describe('Anatomy Lens arrows', () => {
   it.each(ANATOMY_PATHS)('uses the same arrow glyph as the rest of the tool in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');

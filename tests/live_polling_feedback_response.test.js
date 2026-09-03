@@ -5,6 +5,8 @@ import { loadAlloModule } from './setup.js';
 
 const pollingSource = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
 const shellSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
 
 let LivePolling;
 beforeAll(() => {
@@ -172,9 +174,9 @@ describe('Feedback Response targeted peer protocol', () => {
 
 describe('Feedback Response composes existing UI and differentiation seams', () => {
   it('uses a freetext preset rather than registering another poll type', () => {
-    expect(shellSource).toContain("t('live_dock.feedback_response') || 'Feedback Response'");
+    expect(liveDock).toContain("t('live_dock.feedback_response') || 'Feedback Response'");
     expect(shellSource).toContain("type: 'freetext'");
-    expect(shellSource).toContain('feedbackEnabled: true');
+    expect(liveDock).toContain('feedbackEnabled: true');
     expect(pollingSource).toContain("enabled: pollType === 'freetext' && feedbackEnabled");
     expect(pollingSource).toContain("['rating', 'mcq', 'freetext', 'wordcloud']");
   });

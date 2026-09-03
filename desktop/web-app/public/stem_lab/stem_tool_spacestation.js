@@ -1154,6 +1154,9 @@
           // on a wing share its orientation, so the glint pass decomposes one world
           // quaternion per wing instead of one per panel.
           var wingPanelMats = [];
+          // Interior shells for the cutaway control; hidden in normal view.
+          var moduleCores = [];
+          var _issCoreTex = null;
           MODULES.forEach(function (m) {
             var len = m.size[1], rad = m.size[0];
             var geo, mesh;
@@ -1199,6 +1202,40 @@
             mesh._issId = m.id;
             station.add(mesh);
             clickable.push(mesh);
+            // Rack-lined core, revealed by the cutaway control. BackSide so the
+            // camera sees the far wall's racks through the near one.
+            if (m.id !== 'truss') {
+              try {
+                if (!_issCoreTex && THREE.CanvasTexture) {
+                  var coreSkin = issHullCanvas('interior');
+                  if (coreSkin) {
+                    _issCoreTex = issTexture(coreSkin, true);
+                    if (THREE.RepeatWrapping) _issCoreTex.wrapT = THREE.RepeatWrapping;
+                    _issCoreTex.repeat.set(1, 2);
+                  }
+                }
+                var coreTex = _issCoreTex;
+                if (coreTex) {
+                  var coreGeo = m.id === 'cupola'
+                    ? new THREE.SphereGeometry(rad * 0.8, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2)
+                    : new THREE.CylinderGeometry(rad * 0.8, rad * 0.8, len * 0.94, 18, 1, true);
+                  // Lit from inside, because modules are. Without the emissive
+                  // the core sits in the hull's shadow with the Sun outside and
+                  // reads as a grey smudge — physically right, visually useless.
+                  var core = new THREE.Mesh(coreGeo, new THREE.MeshStandardMaterial({
+                    map: coreTex, color: 0xffffff, roughness: 0.82, metalness: 0.08,
+                    emissive: 0xffffff, emissiveMap: coreTex, emissiveIntensity: 0.42,
+                    side: THREE.BackSide, transparent: true, opacity: 1
+                  }));
+                  core.position.copy(mesh.position);
+                  core.rotation.copy(mesh.rotation);
+                  core.visible = false;
+                  core._issParentId = m.id;
+                  station.add(core);
+                  moduleCores.push(core);
+                }
+              } catch (eCore) {}
+            }
             // Docking collars and a small illuminated viewport give each
             // pressurized module readable scale and silhouette.
             if (m.id !== 'truss' && m.id !== 'cupola') {
@@ -1665,15 +1702,22 @@
               var candidate = clickable[ci], isSelected = candidate._issId === wantId;
               if (isSelected) curSel = candidate;
               if (candidate.material) {
-                candidate.material.opacity = cutaway && !isSelected ? .18 : 1;
+                // In cutaway the SELECTED hull turns to glass so its core shows
+                // through; everything else ghosts back as before.
+                candidate.material.opacity = cutaway ? (isSelected ? .26 : .1) : 1;
                 if (candidate.material.emissive && candidate.material.emissive.setHex) candidate.material.emissive.setHex(isSelected ? 0x073b55 : candidate._issId === cv._issHoverId ? 0x14364d : 0x000000);
               }
+            }
+            for (var mc = 0; mc < moduleCores.length; mc++) {
+              var core2 = moduleCores[mc];
+              var coreOn = cutaway && core2._issParentId === wantId;
+              if (core2.visible !== coreOn) core2.visible = coreOn;
             }
             for (var di = 0; di < moduleDetails.length; di++) {
               var detail = moduleDetails[di], detailSelected = detail._issParentId === wantId;
               if (detail.material) {
                 detail.material.transparent = true;
-                detail.material.opacity = cutaway && !detailSelected ? .1 : 1;
+                detail.material.opacity = cutaway && !detailSelected ? .05 : 1;
               }
             }
             if (curSel) {
@@ -8218,6 +8262,7 @@
           h('svg', { viewBox: '0 0 640 245', role: 'img', 'aria-label': 'Orbit diagram at ' + orbitAlt + ' kilometers altitude, moving ' + orbitV.toFixed(2) + ' kilometers per second with a period of ' + orbitT.toFixed(1) + ' minutes. ' + comparisonText.toLowerCase() + '.' },
             h('defs', null,
               h('radialGradient', { id: 'iss-orbit-earth', cx: '35%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '52%', stopColor: '#1863a0' }), h('stop', { offset: '100%', stopColor: '#071c3b' })),
+              h('filter', { id: 'iss-orbit-cloud', x: '-60%', y: '-180%', width: '220%', height: '460%' }, h('feGaussianBlur', { stdDeviation: 3 })),
               h('linearGradient', { id: 'iss-orbit-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#050914' }), h('stop', { offset: '100%', stopColor: '#08182c' })),
               h('marker', { id: 'iss-velocity-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M0 0 L10 5 L0 10z', fill: '#4ade80' }))),
             h('rect', { width: 640, height: 245, fill: 'url(#iss-orbit-bg)' }),
@@ -8233,7 +8278,9 @@
             // to find the flat map's land path, and this disc shares its grammar.
             h('path', { className: 'iss-earth-disc-land', fill: '#5fae78', opacity: .82, d: issLandDiscPath(320, 158, 68, 18, -28) }),
             h('circle', { cx: 320, cy: 158, r: 68, fill: 'none', stroke: '#bfe9ff', strokeWidth: 3, opacity: .22 }),
-            h('path', { d: 'M274 168 Q303 183 330 179', fill: 'none', stroke: '#dff6ff', strokeWidth: 6, opacity: .34 }),
+            h('g', { filter: 'url(#iss-orbit-cloud)', opacity: .34 },
+              h('ellipse', { cx: 296, cy: 176, rx: 26, ry: 6, fill: '#dff6ff' }),
+              h('ellipse', { cx: 338, cy: 146, rx: 17, ry: 4.5, fill: '#dff6ff' })),
             h('g', { className: 'iss-orbit-station', transform: 'translate(' + stationX.toFixed(1) + ',' + stationY.toFixed(1) + ') rotate(-18)' },
               h('rect', { x: -29, y: -2, width: 58, height: 4, rx: 2, fill: '#cbd5e1' }),
               h('rect', { x: -18, y: -8, width: 36, height: 16, rx: 7, fill: '#e2e8f0', stroke: '#fff' }),

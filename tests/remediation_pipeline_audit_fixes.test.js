@@ -78,7 +78,9 @@ describe('temporary throttling checkpoints remediation instead of retrying into 
     expect(dp).toContain('accessibleHtml = snapshotHtml;');
     expect(dp).toContain('_throttlePaused = true;');
     expect(dp).toContain('const _remediationThrottlePaused = !!_loopOut.throttlePaused;');
-    expect(dp).toContain("_finalAuditIncompleteReason = 'remediation-paused-transient-throttle';");
+    // 2026-09-02: the reason became a ternary so a storm-budget pause names itself; the transient
+    // branch is still the same string.
+    expect(dp).toContain("_finalAuditIncompleteReason = (_loopOut && _loopOut.stormBudgetPaused) ? 'remediation-paused-storm-budget' : 'remediation-paused-transient-throttle';");
     expect(dp).toContain('_remediationThrottlePaused: _remediationThrottlePaused');
   });
 });

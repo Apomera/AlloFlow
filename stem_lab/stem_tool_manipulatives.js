@@ -147,8 +147,17 @@ window.StemLab = window.StemLab || {
     var places = ['ones', 'tens', 'hundreds', 'thousands'];
     var place = places[Math.floor(Math.random() * places.length)];
 
+    // Distractors are drawn from the OTHER nine digits, so a question always ships four distinct
+    // choices. The old three random digits could all collide with the answer (or each other) and
+    // the dedupe left a one- or two-choice question (caught by stem_manipulatives_engine, 2026-09-03).
+    function pvDigitOptions(answerDigit) {
+      var pool = [];
+      for (var pd = 0; pd <= 9; pd++) if (pd !== answerDigit) pool.push(pd);
+      pool.sort(function() { return Math.random() - 0.5; });
+      return [answerDigit].concat(pool.slice(0, 3)).map(String).sort(function() { return Math.random() - 0.5; });
+    }
     if (type === 'digit_place') {
-      return { type: type, q: 'What digit is in the ' + place + ' place of ' + num.toLocaleString() + '?', answer: digits[place].toString(), opts: [digits[place].toString(), Math.floor(Math.random()*10).toString(), Math.floor(Math.random()*10).toString(), Math.floor(Math.random()*10).toString()].filter(function(v, i, a) { return a.indexOf(v) === i; }).slice(0, 4).sort(function() { return Math.random() - 0.5; }) };
+      return { type: type, q: 'What digit is in the ' + place + ' place of ' + num.toLocaleString() + '?', answer: digits[place].toString(), opts: pvDigitOptions(digits[place]).sort(function() { return Math.random() - 0.5; }) };
     } else if (type === 'expanded_to_standard') {
       var exp = '';
       if (digits.thousands > 0) exp += digits.thousands + ',000';

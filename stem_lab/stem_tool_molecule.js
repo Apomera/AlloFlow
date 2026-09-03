@@ -4005,7 +4005,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     )
                   ),
 
-                  detail && React.createElement("div", { className: "border-t border-slate-200/50 bg-white/60 px-3 pb-3" },
+                  detail && React.createElement("div", { className: "border-t border-slate-200/50 bg-white/80 px-3 pb-3" },
 
                     React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2 mt-2" },
 

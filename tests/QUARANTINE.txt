@@ -32,9 +32,9 @@
 #   0 failures): app_shell_runtime_a11y, chatgpt_phase2_reliability.
 # 2026-08-10 — +3 released (verified independently: 3 files, 129 assertions, 0 failures, not
 #   just taken from the gate): brain_atlas_golden, lumen_render_golden, stem_tool_golden.
+# 2026-09-03 - +2 released (verified in the 356-file pipeline baseline run AND again in isolation:
+#   2 files, 42 assertions, 0 failures): deep_dive_batch3_fixes, individual_remediation_polish.
 
-tests/deep_dive_batch3_fixes.test.js  # 1 failing (verified in isolation 2026-08-17) · M6 wait-tick/gen-bump assertion; deterministic, needs a mechanism read, not a re-anchor
-tests/individual_remediation_polish.test.js  # 2 failing as of 2026-08-17 (was 4) · outcome-vs-completeness + M23 nested-dialog Escape; deterministic
 tests/plt_k6_5622_pack.test.js  # 5 failing as of 2026-08-17 (was 1 — GREW; the pack content moved under it) · registration/candour/diagnostic pins; needs a content-owner pass
 tests/stem_big_tools_golden.test.js  # 8 failing · big STEM tool render goldens (default state) renders + pins a digest for roadReady
 tests/stem_graph_tools_golden.test.js  # 10 failing · math/logic graph cluster render goldens (default state) renders + pins a digest for algebraCAS

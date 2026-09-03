@@ -7,6 +7,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// The share/session surfaces (incl. the hw-evidence panel) were extracted from ANTI into a CDN view module.
+const shareSurfaces = readFileSync(resolve(process.cwd(), 'view_share_session_surfaces_source.jsx'), 'utf8');
 // The resource-open handlers (soft gate, visited marking) moved to misc_handlers (2026-08-22).
 const handlers = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
 const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
@@ -163,7 +165,7 @@ describe('wiring pins', () => {
     expect(anti).toContain("[v.uid + '|' + v.directionsId]:");
     expect(anti).toMatch(/objectives: \(Array\.isArray\(v\.objectives\) \? v\.objectives : \[\]\)\.slice\(0, 20\)/);
     // the panel says what it is: device-reported, formative, not a grade
-    expect(anti).toContain('student-device reported — formative, not a grade');
+    expect(shareSurfaces).toContain('student-device reported — formative, not a grade');
   });
   it('P2: the soft gate NUDGES and never blocks — the open proceeds unconditionally', () => {
     const idx = handlers.indexOf('Phase 2 SOFT gate');

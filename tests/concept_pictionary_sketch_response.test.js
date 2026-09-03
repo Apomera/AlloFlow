@@ -5,6 +5,8 @@ import { loadAlloModule } from './setup.js';
 
 const source = readFileSync(resolve(process.cwd(), 'concept_pictionary_source.jsx'), 'utf8');
 const shell = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// Live Session dock was extracted from ANTI into its own CDN view module; pins follow the code.
+const liveDock = readFileSync(resolve(process.cwd(), 'view_live_session_dock_source.jsx'), 'utf8');
 
 let ConceptPictionary;
 beforeAll(() => {
@@ -217,7 +219,7 @@ describe('Sketch Response UI and existing resource-delivery integration', () => 
   });
 
   it('opens Sketch Response as a preset of the existing Pictionary host and excludes nonparticipants', () => {
-    expect(shell).toContain("setPictionaryInitialMode('sketch'); setShowPictionaryHost(true)");
+    expect(liveDock).toContain("setPictionaryInitialMode('sketch'); setShowPictionaryHost(true)");
     expect(shell).toContain('initialMode: pictionaryInitialMode');
     expect(shell).toContain("_picRoundMode !== 'sketch' ? 'guesser' : null");
     expect(source).toContain(
