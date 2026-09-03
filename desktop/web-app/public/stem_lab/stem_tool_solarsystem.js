@@ -496,7 +496,6 @@ const d = labToolData.solarSystem || {};
           // --- Reviewed surface/reference-level gravity ratios ---
           var GRAVITY_MAP = { Mercury: 0.38, Venus: 0.91, Earth: 1.0, Mars: 0.38, Jupiter: 2.53, Saturn: 1.06, Uranus: 0.89, Neptune: 1.14, Pluto: 0.06 };
           // Distance from Sun in AU
-          var DIST_AU = { Mercury: 0.39, Venus: 0.72, Earth: 1.0, Mars: 1.52, Jupiter: 5.20, Saturn: 9.58, Uranus: 19.22, Neptune: 30.05, Pluto: 39.48 };
 
           // Famous space missions per planet
           var MISSIONS = {
@@ -1260,6 +1259,13 @@ const d = labToolData.solarSystem || {};
           // and Earth's continents were invented polygons in the 2D card and
           // random blobs re-rolled on every mount in 3D.
           var SOLAR_SEMI_MAJOR_AU = { Mercury: 0.387, Venus: 0.723, Earth: 1.0, Mars: 1.524, Jupiter: 5.203, Saturn: 9.537, Uranus: 19.19, Neptune: 30.07, Pluto: 39.48 };
+          // Orbit sizes live in ONE table, `SOLAR_SEMI_MAJOR_AU`, which carries JPL's
+          // Keplerian elements. This alias is kept because other code reads the name.
+          // The values it used to hold disagreed with the rest of the tool: Saturn 9.58
+          // and Uranus 19.22, where the orbital periods (29.46 and 84.01 years) require
+          // 9.54 and 19.19 by Kepler's third law. Two tables for one fact is how a tool
+          // ends up quoting itself two different answers.
+          var DIST_AU = SOLAR_SEMI_MAJOR_AU;
           // Sidereal rotation relative to Earth's (direction is carried by the
           // axial tilt: Venus and Uranus are tilted past 90 degrees, so a
           // positive spin about their own axis already reads as retrograde).

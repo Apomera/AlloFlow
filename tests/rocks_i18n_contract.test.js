@@ -111,3 +111,80 @@ describe('screen-reader text goes through the translator like everything else', 
     });
   });
 });
+
+// ── The Rock Cycle machine's teaching content ──
+//
+// `stem.rock_cycle` held exactly three keys — the three agent names — while
+// RC_TRANSFORMS carried every product, condition, timescale, explanation,
+// field-evidence line and stage caption as bare English. That is the entire
+// scientific payload of the transformation machine, unreachable by any pack.
+describe('the transformation machine speaks through the translator', () => {
+  const src = () => readFileSync('stem_lab/stem_tool_rocks.js', 'utf8');
+
+  /** The real table, evaluated rather than regex-parsed: the prose carries
+   *  apostrophes, em dashes, arrows and subscripts, and a parser that got any
+   *  of them wrong would compare against truncated English. */
+  function transforms() {
+    const s = src();
+    const at = s.indexOf('var RC_TRANSFORMS = {');
+    expect(at, 'RC_TRANSFORMS').toBeGreaterThan(-1);
+    const open = s.indexOf('{', at);
+    const BACKSLASH = String.fromCharCode(92);
+    let depth = 0, end = -1, inStr = null;
+    for (let i = open; i < s.length; i++) {
+      const ch = s[i];
+      if (inStr) {
+        if (ch === BACKSLASH) { i++; continue; }
+        if (ch === inStr) inStr = null;
+        continue;
+      }
+      if (ch === "'" || ch === '"' || ch === '`') { inStr = ch; continue; }
+      if (ch === '{') depth++;
+      else if (ch === '}') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    expect(end).toBeGreaterThan(open);
+    return new Function('return (' + s.slice(open, end + 1) + ')')();
+  }
+
+  it('localizes through the one lookup every consumer already used', () => {
+    const s = src();
+    expect(s).toContain("var base = 'stem.rock_cycle.tx_' + specimenId + '_' + agentId + '_';");
+    expect(s).toContain("out.stages = rec.stages.map(function (stage, i) { return __alloT(base + 'stage' + i, stage); });");
+    // family and texture are ids the renderer switches on; translating them
+    // would break the drawing, so they must stay out of the text list.
+    const list = /const RC_TX_TEXT = \[([^\]]+)\]/.exec(s);
+    expect(list, 'RC_TX_TEXT').toBeTruthy();
+    expect(list[1]).not.toContain('family');
+    expect(list[1]).not.toContain('texture');
+  });
+
+  it('has a catalogue key for every string the table ships', () => {
+    const table = transforms();
+    const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.rock_cycle;
+    const TEXT = ['product', 'process', 'conditions', 'time', 'change', 'evidence', 'caveat'];
+    let checked = 0;
+    Object.keys(table).forEach((specId) => {
+      Object.keys(table[specId]).forEach((agentId) => {
+        const rec = table[specId][agentId];
+        const base = 'tx_' + specId + '_' + agentId + '_';
+        TEXT.forEach((k) => {
+          if (typeof rec[k] !== 'string') return;
+          expect(strings[base + k], base + k).toBe(rec[k]);
+          checked++;
+        });
+        (rec.stages || []).forEach((st, i) => {
+          expect(strings[base + 'stage' + i], base + 'stage' + i).toBe(st);
+          checked++;
+        });
+      });
+    });
+    // Non-vacuous: the table really does carry this much prose.
+    expect(checked).toBeGreaterThan(200);
+  });
+
+  it('paints no bare label on the rock-cycle canvas either', () => {
+    const s = src();
+    expect(s).toContain("__alloT('stem.rock_cycle.canvas_badge', 'Rock Cycle')");
+    expect(s).not.toContain("ctx.fillText('\u{1FAA8} Rock Cycle'");
+  });
+});

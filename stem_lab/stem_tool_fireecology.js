@@ -4303,7 +4303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     var label = key.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase(); });
                     return h('div', { key: key, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 10, textAlign: 'center' } },
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, label),
-                      h('div', { style: { fontSize: 14, fontWeight: 700, color: '#ef4444' } }, cs.stats[key])
+                      h('div', { style: { fontSize: 14, fontWeight: 700, color: '#fca5a5' } }, cs.stats[key])
                     );
                   })
                 ),

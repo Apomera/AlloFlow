@@ -9762,9 +9762,22 @@ const d = labToolData.rockCycle || {};
             for (var i = 0; i < RC_AGENTS.length; i++) { if (RC_AGENTS[i].id === id) return RC_AGENTS[i]; }
             return null;
           };
+          // Text fields only. `family` and `texture` are ids the renderer
+          // switches on, so translating them would break the drawing.
+          const RC_TX_TEXT = ['product', 'process', 'conditions', 'time', 'change', 'evidence', 'caveat'];
           const rcLookup = function (specimenId, agentId) {
             var row = RC_TRANSFORMS[specimenId];
-            return (row && row[agentId]) ? row[agentId] : null;
+            var rec = (row && row[agentId]) ? row[agentId] : null;
+            if (!rec) return null;
+            var base = 'stem.rock_cycle.tx_' + specimenId + '_' + agentId + '_';
+            var out = Object.assign({}, rec);
+            RC_TX_TEXT.forEach(function (key) {
+              if (typeof rec[key] === 'string') out[key] = __alloT(base + key, rec[key]);
+            });
+            if (Object.prototype.toString.call(rec.stages) === '[object Array]') {
+              out.stages = rec.stages.map(function (stage, i) { return __alloT(base + 'stage' + i, stage); });
+            }
+            return out;
           };
 
           // Family palette. Literal hex only — SVG presentation attributes do not
@@ -10617,7 +10630,7 @@ const d = labToolData.rockCycle || {};
 
               ctx.fillStyle = 'rgba(226,232,240,0.8)';
 
-              ctx.fillText('\uD83E\uDEA8 Rock Cycle', 12 * dpr, 19 * dpr);
+              ctx.fillText('\uD83E\uDEA8 ' + __alloT('stem.rock_cycle.canvas_badge', 'Rock Cycle'), 12 * dpr, 19 * dpr);
 
               scheduleRockCycleFrame();
 
