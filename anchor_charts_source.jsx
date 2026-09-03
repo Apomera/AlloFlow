@@ -230,7 +230,7 @@ const AnchorChartSection = React.memo((props) => {
           position: 'relative',
         }}>
           {iconUrl ? (
-            <img src={iconUrl} alt={label ? (label + ' section icon') : (iconPrompt || `Section ${sectionIndex + 1} icon`)} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            <img src={iconUrl} alt="" role="presentation" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           ) : isRegeneratingIcon ? (
             <span className="text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none" role="status">Drawing…</span>
           ) : (

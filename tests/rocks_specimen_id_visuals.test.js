@@ -613,7 +613,10 @@ describe('mineral habit — the crystal is the shape the words name', () => {
     const rows = src.split('\n').filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l));
     const ids = rows.map((l) => /\{\s*id:\s*'(\w+)'/.exec(l)[1]);
     const found = [];
-    let i = 0;
+    // Start at the catalogue grid: the Mohs index strip above it draws ten
+    // swatches of its own, which are not grid tiles.
+    let i = markup.indexOf('data-mineral-grid');
+    expect(i, 'mineral grid marker').toBeGreaterThan(-1);
     while ((i = markup.indexOf('<svg', i)) >= 0) {
       const end = markup.indexOf('</svg>', i);
       found.push(markup.slice(i, end + 6));
@@ -735,7 +738,7 @@ describe('mineral habit — the crystal is the shape the words name', () => {
     // field doing paint duty and text duty at once.
     const src = readFileSync(ROCKS_FILE, 'utf8');
     const rows = src.split('\n').filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l));
-    expect(rows.length).toBe(18);
+    expect(rows.length).toBe(23);
     rows.forEach((l) => {
       const colour = /\bcolor:\s*'([^']+)'/.exec(l);
       expect(colour, `${/\{\s*id:\s*'(\w+)'/.exec(l)[1]} has no colour`).toBeTruthy();
@@ -808,7 +811,10 @@ describe('mineral catalog science copy stays accurate', () => {
 
   it('scopes the acid result to immediate calcite behavior, not every carbonate', () => {
     const src = source();
-    expect(src).toContain('Calcite typically fizzes immediately; some other carbonates react weakly or only when powdered.');
+    // The dropper now has three carbonates to find, so the copy must say what a
+    // fizz actually proves (the GROUP) while keeping the weak-reactor caveat.
+    expect(src).toContain('A fizz means a carbonate, not a particular mineral');
+    expect(src).toContain('react only weakly or when powdered, so no fizz is weaker evidence than a fizz');
     expect(src).toContain('Calcite gives an immediate carbon-dioxide fizz in cold dilute acid; some other carbonates can react slowly.');
     expect(src).toContain('does not prove that every carbonate is absent.');
 
@@ -920,5 +926,354 @@ describe('quiz bank is answerable', () => {
       if (nOpts !== nFb) bad.push(`Q${i + 1}: ${nOpts} options vs ${nFb} explanations`);
     });
     expect(bad).toEqual([]);
+  });
+});
+
+describe('the catalogue gaps closed in round 15', () => {
+  const block = () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    return src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
+  };
+
+  it('carries gabbro, the rock the transformation machine already named', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    // RC_TRANSFORMS says basalt melts and cools to "Basalt or Gabbro", and
+    // diorite's own description places it "between granite and gabbro" — but
+    // there was no gabbro specimen to look at.
+    expect(src).toContain('Basalt or Gabbro');
+    expect(block()).toContain("{ id: 'gabbro', type: 'igneous'");
+    const row = block().slice(block().indexOf("{ id: 'gabbro'"));
+    expect(row.slice(0, row.indexOf('\n'))).toContain("texture: 'coarse-grained'");
+  });
+
+  it('draws breccia with angular clasts, not conglomerate rounded ones', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const rows = block().split('\n');
+    const breccia = rows.filter((l) => l.includes("{ id: 'breccia'"))[0];
+    const conglom = rows.filter((l) => l.includes("{ id: 'conglom'"))[0];
+    expect(breccia, 'breccia row').toBeTruthy();
+    // The clast SHAPE is the whole difference between the two rocks, so they
+    // must not share a texture: 'clastic-coarse' draws rounded ellipses.
+    expect(conglom).toContain("texture: 'clastic-coarse'");
+    expect(breccia).toContain("texture: 'clastic-angular'");
+    expect(src).toContain("} else if (tex === 'clastic-angular') {");
+    expect(src).toContain("g.push(h('polygon', { key: 'ac' + i");
+    // Both textures need their plain-English gloss.
+    const gloss = src.slice(src.indexOf('var RK_TEXTURE_GLOSS'), src.indexOf('var RK_TEXTURE_GLOSS') + 2000);
+    expect(gloss).toContain("'clastic-angular'");
+  });
+
+  it('renders a distinct swatch for each of the two new rocks', () => {
+    const { markup } = renderRocks({ mode: 'rocks' });
+    const svgs = [];
+    let i = 0;
+    while ((i = markup.indexOf('<svg', i)) >= 0) { const end = markup.indexOf('</svg>', i); svgs.push(markup.slice(i, end + 6)); i = end + 6; }
+    const ids = [...block().matchAll(/\{ id: '(\w+)', type: '/g)]
+      .filter((m) => block().slice(m.index, block().indexOf('\n', m.index)).includes('desc:'))
+      .map((m) => m[1]);
+    expect(ids).toContain('gabbro');
+    expect(ids).toContain('breccia');
+    const brecciaSvg = svgs[ids.indexOf('breccia')] || '';
+    expect(brecciaSvg, 'breccia swatch').toContain('<polygon');
+    const conglomSvg = svgs[ids.indexOf('conglom')] || '';
+    expect(conglomSvg, 'conglomerate swatch').toContain('<ellipse');
+  });
+
+  it('completes the Mohs index set with apatite at 5', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const minerals = src.slice(src.indexOf('const MINERALS = ['), src.indexOf('const QUIZ_BANK'));
+    const byHardness = {};
+    // Several minerals share a whole number (gypsum and sulfur are both 2), so
+    // collect every id at each value rather than letting the last one win.
+    [...minerals.matchAll(/\{ id: '(\w+)',[^\n]*?hardness: ([\d.]+)/g)]
+      .forEach((m) => { (byHardness[Number(m[2])] = byHardness[Number(m[2])] || []).push(m[1]); });
+    // Talc 1 through diamond 10: every whole step on the scale is now present.
+    [[1, 'talc'], [2, 'gypsum'], [3, 'calcite'], [4, 'fluorite'], [5, 'apatite'],
+     [6, 'feldspar'], [7, 'quartz'], [8, 'topaz'], [9, 'corundum'], [10, 'diamond']]
+      .forEach(([h, id]) => expect(byHardness[h] || [], `Mohs ${h}`).toContain(id));
+  });
+
+  it('keeps apatite out of the workbench pools, where it would be unsolvable', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    // Apatite and fluorite are identical on every instrument the bench has:
+    // both glassy, both a white streak, both scratched by the glass reference
+    // and not by copper, and 3.19 vs 3.18 g/cm3 is one density band. Cleavage
+    // separates them in the field and the bench does not measure it.
+    // The two array literals themselves, not the surrounding comment that
+    // explains why apatite is missing from them.
+    const literal = (name) => {
+      const at = src.indexOf('var ' + name + ' = ');
+      return src.slice(at, src.indexOf(';', at));
+    };
+    expect(literal('WB_POOL')).toContain("'quartz'");
+    expect(literal('WB_POOL')).not.toContain('apatite');
+    expect(literal('WB_POOL_CHALLENGE')).toContain("'topaz'");
+    expect(literal('WB_POOL_CHALLENGE')).not.toContain('apatite');
+    expect(src).toContain('would make an unsolvable specimen');
+  });
+
+  it('gives apatite an honest structure entry rather than an invented one', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const lattice = src.slice(src.indexOf('var RK_LATTICE = {'), src.indexOf('var RK_CELL_GEOMETRY'));
+    expect(lattice).toContain('apatite:');
+    const row = lattice.slice(lattice.indexOf('apatite:'));
+    const line = row.slice(0, row.indexOf('\n'));
+    expect(line).toContain('exact: false'); // the channel anions are not drawn
+    expect(line).toContain('fluorapatite');
+    expect(src).toContain("P:  { color: 0xf472b6");
+  });
+});
+
+describe('the last two catalogue gaps: grain size and organic rock', () => {
+  const block = () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    return src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('));
+  };
+  const rowFor = (id) => block().split('\n').filter((l) => l.includes("{ id: '" + id + "',"))[0] || '';
+
+  it('completes the clastic grain-size series sand, silt, clay', () => {
+    // Sandstone (grains visible), siltstone (gritty, not resolvable), shale
+    // (smooth and fissile). Each needs its OWN texture or the picture repeats.
+    const textures = ['sandstone', 'siltstone', 'shale'].map((id) => /texture: '([^']+)'/.exec(rowFor(id))[1]);
+    expect(textures).toEqual(['clastic', 'clastic-fine', 'fine-layered']);
+    expect(new Set(textures).size).toBe(3);
+    expect(rowFor('siltstone')).toContain('gritty');
+  });
+
+  it('carries coal, the one common rock that is not made of mineral grains', () => {
+    const row = rowFor('coal');
+    expect(row, 'coal row').toBeTruthy();
+    expect(row).toContain("type: 'sedimentary'");
+    expect(row).toContain("texture: 'organic-banded'");
+    // Rank is the lesson coal exists to teach, so it must be stated.
+    ['peat', 'lignite', 'bituminous', 'anthracite'].forEach((w) => expect(row, w).toContain(w));
+  });
+
+  it('glosses and silhouettes both new textures', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const gloss = src.slice(src.indexOf('var RK_TEXTURE_GLOSS'), src.indexOf('var RK_TEXTURE_GLOSS') + 2000);
+    ['clastic-fine', 'organic-banded'].forEach((tex) => {
+      expect(gloss, tex).toContain("'" + tex + "'");
+      expect(src.slice(src.indexOf('var RK_SILHOUETTE = {'), src.indexOf('function rkSilhouettePath')), tex).toContain("'" + tex + "'");
+    });
+  });
+
+  it('draws coal and siltstone with their own art, not a shared fallback', () => {
+    const { markup } = renderRocks({ mode: 'rocks' });
+    const svgs = [];
+    let i = 0;
+    while ((i = markup.indexOf('<svg', i)) >= 0) { const end = markup.indexOf('</svg>', i); svgs.push(markup.slice(i, end + 6)); i = end + 6; }
+    const ids = [...block().matchAll(/\{ id: '(\w+)', type: '/g)]
+      .filter((m) => block().slice(m.index, block().indexOf('\n', m.index)).includes('desc:'))
+      .map((m) => m[1]);
+    expect(ids).toContain('coal');
+    expect(ids).toContain('siltstone');
+    // Coal: banded, with bright vitrain layers over the dull ones.
+    expect(svgs[ids.indexOf('coal')]).toContain('#cbd5e1');
+    // Siltstone: a dense fine speckle, far more grains than sandstone draws.
+    const silt = (svgs[ids.indexOf('siltstone')].match(/<circle/g) || []).length;
+    const sand = (svgs[ids.indexOf('sandstone')].match(/<circle/g) || []).length;
+    expect(silt).toBeGreaterThan(sand);
+  });
+
+  it('makes coal opaque in the thin section instead of inventing crystals', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const optics = src.slice(src.indexOf('var RK_OPTICS = {'), src.indexOf('var RK_THIN_SECTION'));
+    expect(optics).toContain('organic:');
+    const organic = optics.slice(optics.indexOf('organic:'));
+    const line = organic.slice(0, organic.indexOf('\n'));
+    expect(line).toContain('opaque: true');
+    expect(line).toContain('REFLECTED light');
+    const sections = src.slice(src.indexOf('var RK_THIN_SECTION = {'), src.indexOf('function rkThinSectionSvg'));
+    expect(sections.slice(sections.indexOf('coal:'), sections.indexOf('\n', sections.indexOf('coal:')))).toContain("['organic', 0.93]");
+  });
+
+  it('pairs graphite against diamond: same element, opposite structure', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const minerals = src.slice(src.indexOf('const MINERALS = ['), src.indexOf('const QUIZ_BANK'));
+    const g = minerals.slice(minerals.indexOf("{ id: 'graphite'"));
+    const row = g.slice(0, g.indexOf('\n'));
+    expect(row).toContain("formula: 'C'");
+    expect(row).toContain('hardness: 1.5');
+    const diamond = minerals.slice(minerals.indexOf("{ id: 'diamond'"));
+    expect(diamond.slice(0, diamond.indexOf('\n'))).toContain("formula: 'C'");
+    // The structure, not the composition, has to carry the explanation.
+    const lattice = src.slice(src.indexOf('var RK_LATTICE = {'), src.indexOf('var RK_CELL_GEOMETRY'));
+    const gl = lattice.slice(lattice.indexOf('graphite:'));
+    expect(gl.slice(0, gl.indexOf('\n'))).toContain('exact: true');
+    expect(src).toContain("} else if (kind === 'graphite') {");
+  });
+
+  it('adds graphite to the challenge set, where the bench can actually resolve it', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const at = src.indexOf('var WB_POOL_CHALLENGE = ');
+    expect(src.slice(at, src.indexOf(';', at))).toContain("'graphite'");
+    // The pool label and its help text must agree with the array.
+    // The label is DERIVED from the array now, so assert on what renders and
+    // on the array it came from, never on a hand-typed number in the source.
+    const literalArr = src.slice(at, src.indexOf(';', at));
+    // WB_POOL_CHALLENGE = WB_POOL.concat([...]), so the literal holds only
+    // the additions; the standard twelve come from WB_POOL.
+    const count = 12 + (literalArr.match(/'/g) || []).length / 2;
+    const { markup } = renderRocks({ mode: 'workbench' });
+    expect(markup).toContain('Challenge set · ' + count);
+    expect(markup).toContain('Standard set · 12');
+    expect(src).toContain('topaz, graphite and the two copper carbonates');
+  });
+});
+
+describe('the mica pair and the Mohs index set', () => {
+  const minerals = () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    return src.slice(src.indexOf('const MINERALS = ['), src.indexOf('const QUIZ_BANK'));
+  };
+  const rowFor = (id) => {
+    const at = minerals().indexOf("{ id: '" + id + "'");
+    return at < 0 ? '' : minerals().slice(at, minerals().indexOf('\n', at));
+  };
+
+  it('carries both micas, sharing everything the bench measures', () => {
+    const musc = rowFor('mica');
+    const biot = rowFor('biotite');
+    expect(biot, 'biotite row').toBeTruthy();
+    expect(musc).toContain("crystal: 'Monoclinic'");
+    expect(biot).toContain("crystal: 'Monoclinic'");
+    // Same streak, and 2.82 vs 3.00 g/cm3 sits inside a single 0.5-wide band.
+    expect(/streak: '([^']+)'/.exec(musc)[1]).toBe(/streak: '([^']+)'/.exec(biot)[1]);
+    const d1 = Number(/density: ([\d.]+)/.exec(musc)[1]);
+    const d2 = Number(/density: ([\d.]+)/.exec(biot)[1]);
+    expect(Math.abs(d1 - d2)).toBeLessThan(0.5);
+    // What actually separates them is colour, and the description says so.
+    expect(biot).toContain('muscovite');
+    expect(biot).toMatch(/silvery|pale/);
+  });
+
+  it('keeps biotite out of the workbench pools for that reason', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const literal = (name) => { const at = src.indexOf('var ' + name + ' = '); return src.slice(at, src.indexOf(';', at)); };
+    expect(literal('WB_POOL')).not.toContain('biotite');
+    expect(literal('WB_POOL_CHALLENGE')).not.toContain('biotite');
+    expect(src).toContain('refuses to accept as an answer');
+  });
+
+  it('has every one of the ten minerals that define the Mohs scale', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const at = src.indexOf('var RK_MOHS_INDEX = [');
+    const table = src.slice(at, src.indexOf('];', at));
+    const steps = [...table.matchAll(/\['(\w+)', (\d+)\]/g)].map((m) => [m[1], Number(m[2])]);
+    expect(steps.map((r) => r[1])).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    steps.forEach(([id, n]) => {
+      const row = rowFor(id);
+      expect(row, `${id} is missing from the catalogue`).toBeTruthy();
+      // The index mineral's hardness must actually BE its step.
+      expect(Number(/hardness: ([\d.]+)/.exec(row)[1]), `${id} at Mohs ${n}`).toBe(n);
+    });
+  });
+
+  it('renders the scale as ten openable minerals, above the catalogue grid', () => {
+    const { markup } = renderRocks({ mode: 'minerals' });
+    expect(markup).toContain('data-mohs-scale="index-minerals"');
+    for (let n = 1; n <= 10; n++) expect(markup, `step ${n}`).toContain('data-mohs-step="' + n + '"');
+    // The strip comes before the grid, so the scale frames the catalogue.
+    expect(markup.indexOf('data-mohs-scale')).toBeLessThan(markup.indexOf('data-mineral-grid'));
+    // Mohs is ordinal. Saying so here is the difference between a scale and a ruler.
+    expect(markup).toContain('a ranking, not a measurement');
+  });
+
+  it('opens the mineral a scale step names, and marks it pressed', () => {
+    const store = { rocks: { mode: 'minerals' }, rockCycle: {} };
+    const node = treeFor(store);
+    const step5 = findAll(node, (n) => n.type === 'button' && n.props['data-mohs-step'] === '5')[0];
+    expect(step5, 'step 5 control').toBeTruthy();
+    expect(step5.props['aria-pressed']).toBe(false);
+    step5.props.onClick();
+    expect(store.rocks.selectedMineral).toBe('apatite');
+    expect(store.rocks.selectedRock).toBeNull();
+    const again = findAll(treeFor(store), (n) => n.type === 'button' && n.props['data-mohs-step'] === '5')[0];
+    expect(again.props['aria-pressed']).toBe(true);
+  });
+});
+
+describe('a rock is not a mineral, and its hardness cannot pretend to be', () => {
+  it('labels the rock figure as approximate scratch resistance, with the reason', () => {
+    const { markup } = renderRocks({ mode: 'rocks', selectedRock: 'sandstone' });
+    // Sandstone's 6.5 is QUARTZ's number; a poorly cemented sandstone crumbles
+    // under a fingernail. The card used to print it as "Hardness (Mohs) 6.5/10"
+    // beside a Mohs bar, exactly as a mineral card does.
+    expect(markup).toContain('Scratch resistance (approx.)');
+    expect(markup).toContain('~6.5/10');
+    expect(markup).toContain('Mohs is defined for MINERALS');
+    expect(markup).toContain('how well the grains are cemented');
+    expect(markup).toContain('Roughly where that sits on the Mohs scale');
+  });
+
+  it('leaves the mineral card saying Mohs outright, because there it is true', () => {
+    const { markup } = renderRocks({ mode: 'minerals', selectedMineral: 'quartz' });
+    expect(markup).toContain('7 / 10');
+    expect(markup).not.toContain('Scratch resistance (approx.)');
+    expect(markup).toContain('Mohs Position');
+  });
+});
+
+describe('every tab has to render something, and the copy has to match the data', () => {
+  const src = () => readFileSync(ROCKS_FILE, 'utf8');
+
+  it('renders the quiz from the mode alone, with no second flag to lose', () => {
+    // `d.quizMode` was the mode spelled a second way: written only by the tab
+    // handler, read only by the quiz. Missing it while mode is 'quiz' gave an
+    // active tab highlight over a blank page.
+    const { markup } = renderRocks({ mode: 'quiz', quizIdx: 0 });
+    expect(markup).toContain('Question ');
+    expect(src()).not.toContain('d.quizMode');
+    expect(src()).not.toContain('upd("quizMode"');
+  });
+
+  it('keeps every other tab rendering its own body', () => {
+    const bodies = {
+      landscape: 'data-rocks-canvas',
+      rocks: 'data-mineral-grid',      // not present here; checked below instead
+      minerals: 'data-mohs-scale',
+      mystery: 'Mystery Rock Challenge',
+      workbench: 'data-rocks-workbench',
+      weathHunt: 'Rock weathering discovery',
+    };
+    Object.keys(bodies).forEach((m) => {
+      const { markup } = renderRocks({ mode: m });
+      const needle = m === 'rocks' ? 'rkclip-granite' : bodies[m];
+      expect(markup.length, `${m} rendered an empty body`).toBeGreaterThan(2000);
+      expect(markup, m).toContain(needle);
+    });
+  });
+
+  it('frames the weathering outcrop instead of floating it in white gutters', () => {
+    // maxWidth and auto margins were on the SVG while the border was on the
+    // wrapper, so the artwork stopped well short of its own frame.
+    const s = src();
+    const svg = s.slice(s.indexOf('function rkWeatheringSvg'), s.indexOf('// ══ 3D crystal structure lab'));
+    expect(svg).toContain("style: { display: 'block' }");
+    expect(svg).not.toContain("maxWidth: '420px'");
+    expect(s).toContain("style: { borderColor: sm.border, maxWidth: '420px', margin: '0 auto' }");
+  });
+
+  it('states catalogue sizes in the blurb that match the tables', () => {
+    const s = src();
+    const rocks = [...s.slice(s.indexOf('var RK_ROCKS = ['), s.indexOf('function rkRockSwatch('))
+      .matchAll(/\{ id: '(\w+)', type: '/g)].length;
+    const minerals = [...s.slice(s.indexOf('const MINERALS = ['), s.indexOf('const QUIZ_BANK'))
+      .matchAll(/\{ id: '(\w+)', label:/g)].length;
+    const claim = /identify (\d+) rock specimens and (\d+) minerals/.exec(s);
+    expect(claim, 'catalogue blurb').toBeTruthy();
+    expect(Number(claim[1]), 'rock count in the tool blurb').toBe(rocks);
+    expect(Number(claim[2]), 'mineral count in the tool blurb').toBe(minerals);
+  });
+
+  it('derives pool sizes rather than writing them into prose', () => {
+    const s = src();
+    // The screen-reader announcement said "18 candidates" while the challenge
+    // pool held 21. Nobody testing by eye could ever have seen it.
+    expect(s).not.toMatch(/next unknown: \d+ candidates/);
+    expect(s).toContain("(next === 'challenge' ? WB_POOL_CHALLENGE.length : WB_POOL.length)");
+    expect(s).not.toContain("'Challenge set · 21'");
+    expect(s).not.toContain("'Standard set · 12'");
   });
 });

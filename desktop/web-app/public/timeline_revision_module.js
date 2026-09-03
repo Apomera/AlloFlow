@@ -517,7 +517,7 @@ var createTimelineRevision = function(deps) {
           return prev;
         }
         var nextItems = prevItems.slice();
-        nextItems[liveIdx] = Object.assign({}, nextItems[liveIdx], { image: imageUrl });
+        nextItems[liveIdx] = Object.assign({}, nextItems[liveIdx], { image: imageUrl, altHash: 'regenerated' });
         var nextData = prevIsArray ? nextItems : Object.assign({}, prevData, { items: nextItems });
         var updated = Object.assign({}, prev, { data: nextData });
         setHistory(function(h) { return h.map(function(item) { return item.id === prev.id ? updated : item; }); });

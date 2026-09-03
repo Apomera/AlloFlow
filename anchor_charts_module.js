@@ -241,7 +241,7 @@ const AnchorChartSection = React.memo((props) => {
       alignItems: "center",
       justifyContent: "center",
       position: "relative"
-    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: label ? label + " section icon" : iconPrompt || `Section ${sectionIndex + 1} icon`, style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
+    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: "", role: "presentation", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

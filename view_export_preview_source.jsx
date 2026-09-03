@@ -9151,6 +9151,8 @@ function ExportPreviewView(props) {
                                     out.push('**' + (verified ? maT('facts_verified', 'Teacher-verified facts') : maT('facts_pending', 'Facts awaiting teacher review')) + ':**');
                                     (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach(f => { if (f) out.push('- ' + esc(f)); });
                                     if (c.mapping) out.push('', '_' + maT('mapping_heading', 'How the cue connects') + ':_ ' + esc(c.mapping));
+                                    const hook = maRules && typeof maRules.hookFact === 'function' ? maRules.hookFact(c) : null;
+                                    if (hook) out.push('', '**' + maT('hook_heading', 'Did you know?') + '** ' + esc(hook.text) + (hook.sourceUrl ? ' (' + hook.sourceUrl + ')' : ''));
                                     out.push('');
                                   });
                                 }

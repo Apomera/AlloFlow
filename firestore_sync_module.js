@@ -68,6 +68,28 @@
     'retrievalAttempts',
   ]);
 
+  // Teacher working data on Memory Aid cards: the advisory web-search fact
+  // check (verdicts, correction prose, source URLs) and the AI visual critique.
+  // It is stripped at the LIVE-SESSION boundary only, so students never receive
+  // it, but it stays in the teacher's own cloud history (sanitizeHistoryForCloud
+  // must NOT call this, or the teacher loses their check on another device).
+  const TEACHER_ONLY_MEMORY_AID_CARD_KEYS = ['factCheck', 'visualCheck'];
+  function stripMemoryAidTeacherWorkingData(item) {
+    if (!isMemoryAidBoundaryNode(item)) return item;
+    const data = item.data;
+    if (!data || typeof data !== 'object' || !Array.isArray(data.cards)) return item;
+    let changed = false;
+    const cards = data.cards.map(card => {
+      if (!card || typeof card !== 'object' || Array.isArray(card)) return card;
+      if (!TEACHER_ONLY_MEMORY_AID_CARD_KEYS.some(key => Object.prototype.hasOwnProperty.call(card, key))) return card;
+      changed = true;
+      const next = { ...card };
+      TEACHER_ONLY_MEMORY_AID_CARD_KEYS.forEach(key => { delete next[key]; });
+      return next;
+    });
+    return changed ? { ...item, data: { ...data, cards } } : item;
+  }
+
   function stripMemoryAidPracticeEvidence(value, seen) {
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
     const prototype = Object.getPrototypeOf(value);
@@ -442,7 +464,7 @@
   function prepareSessionResourcesForWrite(resources, options) {
     const maxBytes = Math.max(1024, Number(options && options.maxBytes) || SESSION_RESOURCE_SYNC_MAX_BYTES);
     const source = Array.isArray(resources) ? resources : [];
-    const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeSessionValue(item, 'resource')));
+    const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource')));
     const kept = [];
     let droppedCount = 0;
 

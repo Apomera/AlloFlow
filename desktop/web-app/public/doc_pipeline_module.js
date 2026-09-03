@@ -20792,6 +20792,9 @@ HTML section ${chunkNum}/${chunks.length}:
     try {
       if (_imageCancelled() || typeof DOMParser === 'undefined' || typeof callGeminiVision !== 'function') return out;
       const htmlDoc2 = new DOMParser().parseFromString(htmlContent, 'text/html');
+      // Alt text is content, not chrome: write it in the document's language
+      // (WCAG 3.1.1/3.1.2), taken from the caller or the remediated <html lang>.
+      const _docLang = String(opts.documentLanguage || (htmlDoc2.documentElement && htmlDoc2.documentElement.getAttribute('lang')) || '').trim();
       const imgs = Array.from(htmlDoc2.querySelectorAll('img')).filter((im) => /^data:image\//i.test(im.getAttribute('src') || '') && !im.getAttribute('data-allo-kind'));
       if (!imgs.length) return out;
       // ── Duplicate grouping (2026-06-10, maintainer ask): extraction often
@@ -20834,6 +20837,7 @@ HTML section ${chunkNum}/${chunks.length}:
             + '{"kind":"photo|chart|diagram|equation|map|decorative|image-of-text","alt":"one factual sentence","latex":"(equations only)","chartSummary":"(charts only: the trend in 1-2 sentences)","chartData":{"columns":["..."],"rows":[["..."]]},"extractedText":"(image-of-text only: the complete text content, verbatim)"}\n'
             + 'Rules: for an EQUATION, alt must be the SPOKEN form (e.g. "x equals negative b plus or minus the square root of b squared minus 4 a c, all over 2 a") and latex the LaTeX. '
             + 'For a CHART, give chartSummary and AT MOST 8 rows of APPROXIMATE values actually visible in the image. '
+            + (_docLang && !/^en(-|$)/i.test(_docLang) ? 'LANGUAGE: write "alt", "chartSummary" and "extractedText" in the document language (' + _docLang + '); keep the JSON keys and the "kind" value in English. ' : '')
             + 'If the image is primarily TEXT rendered as a picture (a scanned paragraph, a screenshot of writing, a text box saved as an image) → kind "image-of-text" with extractedText = the complete verbatim text. '
             + 'NEVER invent data you cannot see. Purely ornamental → kind "decorative" with alt "". Unsure of kind → "photo".'
             + (grp.members.length > 1 ? ('\nNOTE: this exact image appears ' + grp.members.length + ' times across the document — recurring headers, logos, and watermarks are usually "decorative".') : ''),
@@ -38048,7 +38052,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
                               : '';
                           const imageHtml = gItem.image
-                              ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                              ? `<img loading="lazy" src="${gItem.image}" alt="" role="presentation" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
@@ -38209,7 +38213,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <tbody>
                       ${item.data.map(gItem => `
                       <tr>
-                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" />` : ''}</td>` : ''}
+                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="" role="presentation" />` : ''}</td>` : ''}
                           <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
                             <strong class="gloss-term">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
                           </td>
@@ -39420,7 +39424,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
               .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
           const _vpRenderPanel = (panel, idx) => {
-              const _imgUrl = _vpImageOv[idx] || panel.imageUrl || '';
+              // An animated panel exports its first frame as a poster (WCAG 2.2.2: no
+              // auto-playing motion on paper or in a static page) plus a note.
+              const _animated = !_vpImageOv[idx] && Array.isArray(panel.frames) && panel.frames.length > 1;
+              const _imgUrl = _vpImageOv[idx] || (_animated ? panel.frames[0] : panel.imageUrl) || '';
+              const _animNote = _animated ? (function () {
+                  let note = '';
+                  try { const v = typeof t === 'function' ? t('alt_text.animation_poster_note', { motion: panel.motionPrompt || '', count: panel.frames.length }) : ''; if (typeof v === 'string' && v && v !== 'alt_text.animation_poster_note') note = v; } catch (_) {}
+                  return note || ('Animation: ' + (panel.motionPrompt || '') + ' (' + panel.frames.length + ' frames; the first frame is shown here)');
+              })() : '';
               const _cap = (_vpCaptionOv[idx] !== undefined ? _vpCaptionOv[idx] : (panel.caption || ''));
               const _aiLabels = Array.isArray(panel.labels) ? panel.labels : [];
               const _userLs = Array.isArray(_vpUserLabels[idx]) ? _vpUserLabels[idx] : [];
@@ -39481,7 +39493,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return `
                   <figure class="vp-panel" style="margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:visible;${_vpPad}">
                       <div class="vp-image-wrap" style="position:relative;">
-                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(_cap || 'Panel ' + (idx + 1))}" style="width:100%;height:auto;display:block;" />` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
+                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(panel.decorative ? '' : (panel.alt || _cap || 'Panel ' + (idx + 1)))}"${panel.decorative ? ' role="presentation"' : ''} style="width:100%;height:auto;display:block;" />${_animated ? '<p style="margin:6px 0 0;font-size:0.85em;color:#475569;">' + _vpEsc(_animNote) + '</p>' : ''}` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
                           ${_svgHtml}
                           ${_aiLabelHtml}
                           ${_userLabelHtml}
@@ -39504,7 +39516,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               _vpBody = `${_planTitle}<div class="vp-grid" style="display:grid;grid-template-columns:repeat(${_gridCols},minmax(0,1fr));gap:14px;">${_panelsHtml}</div>`;
           } else if (item.data.imageUrl) {
               _vpBody = _vpRenderPanel(
-                  { imageUrl: item.data.imageUrl, caption: item.data.prompt || '', labels: [] },
+                  { imageUrl: item.data.imageUrl, caption: item.data.prompt || '', labels: [], alt: item.data.decorative ? '' : (item.data.altText || ''), altSource: item.data.altSource || '', decorative: item.data.decorative === true },
                   0
               );
           } else {
@@ -40210,7 +40222,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▲</button>
                                   <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▼</button>
                               </div>` : ''}
-                              ${te.image ? `<img src="${te.image}" alt="" style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
+                              ${te.image ? `<img src="${te.image}" alt="${String(te.alt || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"${te.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
                               <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
                                   ${te.event}
                                   ${te.event_en ? `<div style="color:#64748b;font-size:0.85em;margin-top:4px;font-style:italic;">${te.event_en}</div>` : ''}
@@ -40276,7 +40288,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <li style="margin-bottom: 20px; position: relative;">
                               <div aria-hidden="true" style="position: absolute; left: -32px; top: 0; width: 16px; height: 16px; background: #4f46e5; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #4338ca;"></div>
                               <div style="background: ${i % 2 === 0 ? '#f8fafc' : '#eef2ff'}; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; display:flex; gap:12px; align-items:flex-start;">
-                                  ${t.image ? `<img src="${t.image}" alt="${(t.date ? t.date + ': ' : '') + (t.event || '')}" style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
+                                  ${t.image ? `<img src="${t.image}" alt="${String(t.alt || ((t.date ? t.date + ': ' : '') + (t.event || ''))).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"${t.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
                                   <div style="flex:1;min-width:0;">
                                       <div style="margin-bottom: 4px;">
                                           <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${t.date}</span>
@@ -41089,13 +41101,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       : hasAccessibleVisual
                         ? '<p style="margin:7px 0 0;color:#475569;">' + _maT('export_use_visual_cue', 'Use the visual cue and its description.') + '</p>'
                         : '<p role="note" style="margin:7px 0 0;color:#78350f;font-weight:700;">' + _maT('export_no_accessible_cue', 'No accessible recall cue is available yet. Ask your teacher to add one before practicing.') + '</p>';
-                  if (!factsVerified) {
-                      return '<article class="memory-aid-authoring-sheet memory-aid-review-pending" style="margin:0 0 18px;padding:16px;border:1px solid #fbbf24;border-radius:10px;background:#fffbeb;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
-                          + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">' + _maT('export_authoring_only_kicker', 'Authoring only · facts awaiting teacher review') + '</p>'
+                  // A card with no cue AND no picture (a student-authored card before
+                  // the student writes one) gets the authoring sheet even when its
+                  // facts are verified: a recall sheet with an empty cue box is a dead
+                  // page. A card whose picture lacks an accessible description keeps
+                  // the recall sheet so the omission note can explain itself.
+                  const cueMissing = !cue && !visualImage;
+                  const pendingReview = !factsVerified;
+                  if (pendingReview || cueMissing) {
+                      return '<article class="memory-aid-authoring-sheet' + (pendingReview ? ' memory-aid-review-pending' : ' memory-aid-cue-pending') + '" style="margin:0 0 18px;padding:16px;border:1px solid #fbbf24;border-radius:10px;background:#fffbeb;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
+                          + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">' + (pendingReview ? _maT('export_authoring_only_kicker', 'Authoring only · facts awaiting teacher review') : _maT('export_authoring_no_cue_kicker', 'Authoring only · create your cue first')) + '</p>'
                           + '<h3 id="' + titleId + '" style="margin:0;color:#78350f;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
-                          + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;"><strong>' + _maT('export_recall_unavailable_label', 'Recall practice is unavailable:') + '</strong> ' + _maT('export_recall_unavailable_note', 'These facts have not been marked teacher verified. You may create or revise the cue, but this sheet intentionally omits recall, confidence, and self-check fields until review is complete.') + '</p>'
+                          + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;"><strong>' + _maT('export_recall_unavailable_label', 'Recall practice is unavailable:') + '</strong> ' + (pendingReview ? _maT('export_recall_unavailable_note', 'These facts have not been marked teacher verified. You may create or revise the cue, but this sheet intentionally omits recall, confidence, and self-check fields until review is complete.') : _maT('export_no_cue_note', 'This card has no written or visual cue yet. Create your cue below; recall practice opens once a cue exists.')) + '</p>'
                           + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #fcd34d;border-radius:8px;background:#fff;">'
-                          + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">' + _maT('export_current_cue_draft', 'Current cue draft') + '</h4>' + cueBody + recallVisualHtml + '</section>'
+                          + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">' + _maT('export_current_cue_draft', 'Current cue draft') + '</h4>' + (cueMissing ? '<p style="margin:7px 0 0;color:#475569;">' + _maT('export_no_cue_yet', 'No cue yet. Create yours below.') + '</p>' : cueBody) + recallVisualHtml + '</section>'
                           + '<section role="group" aria-labelledby="' + authoringId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
                           + '<h4 id="' + authoringId + '" style="margin:0;color:#0f172a;">' + _maT('export_create_or_revise_cue', 'Create or revise your memory cue') + '</h4>'
                           + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">' + escapeHtml(c.studentPrompt || _maT('export_authoring_prompt_default', 'Create or personalize a cue. Your teacher will verify the facts before you use it for recall practice.')) + '</p>'
@@ -41133,6 +41152,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       + (scaffoldSteps ? '<ol style="margin:8px 0 0;padding-left:22px;">' + scaffoldSteps + '</ol>' : '') + '</section>'
                     : '<section style="margin-top:12px;padding:12px;border:1px solid #ddd6fe;border-radius:8px;background:#f5f3ff;"><h4 style="margin:0 0 6px;color:#5b21b6;">' + _maT('coach_heading', 'Coach questions') + '</h4>'
                       + (coachPrompts ? '<ul style="margin:0;padding-left:22px;">' + coachPrompts + '</ul>' : '<div>' + _maT('export_coach_default', 'Choose a cue and connect every part to an accurate fact.') + '</div>') + '</section>';
+              const hookFact = _maRules && typeof _maRules.hookFact === 'function' ? _maRules.hookFact(c) : null;
+              const hookHtml = hookFact
+                  ? '<section style="margin-top:12px;padding:12px;border:1px solid #fed7aa;border-radius:8px;background:#fff7ed;break-inside:avoid;"><h4 style="margin:0 0 5px;color:#9a3412;">' + _maT('hook_heading', 'Did you know?') + '</h4><p style="margin:0;">' + escapeHtml(hookFact.text) + '</p>'
+                    + (hookFact.sourceUrl
+                        ? '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_from_web_note', 'From the web. Check the source:') + ' <a href="' + escapeHtml(hookFact.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(hookFact.sourceTitle || hookFact.sourceUrl) + '</a></p>'
+                        : '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + '</p>') + '</section>'
+                  : '';
               const draft = String(c.studentDraft || '').trim();
               const reasoning = String(c.studentReasoning || '').trim();
               // Downloaded interactive HTML (not the paper worksheet, not the
@@ -41152,6 +41178,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   + '<div style="font-size:0.78em;color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || _maT('export_memory_aid_fallback', 'Memory aid')) + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || _maT('mode_student_authored_compact', 'Student-authored')) + '</div></div>'
                   + '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">' + factsHeading + '</h4>'
                   + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>' + _maT('export_no_facts', 'No facts were supplied.') + '</div>') + factsReviewNote + '</section>'
+                  + hookHtml
                   + modeBlock
                   + (c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">' + _maT('mapping_heading', 'How the cue connects') + '</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
                   + visualHtml
@@ -46926,6 +46953,10 @@ window.AlloModules.createDocPipeline.rehydrateVerificationHtmlBinding = _alloReh
 window.AlloModules.createDocPipeline.sanitizeRemediationHtml = _alloSanitizeRemediationHtml;
 window.AlloModules.createDocPipeline.sanitizeRemediationProject = _alloSanitizeRemediationProject;
 window.AlloModules.createDocPipeline.interactiveObjectProfileFor = _alloInteractiveObjectProfileFor;
+// Shared alt-text rules (the AltText service delegates here so the app and the
+// remediation pipeline can never disagree about what a weak description is).
+window.AlloModules.createDocPipeline.altQuality = _alloAltQuality;
+window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality;
 window.AlloModules.createDocPipeline.interactiveObjectManifestItem = _alloInteractiveObjectManifestItem;
 window.AlloModules.createDocPipeline.interactiveObjectProfileSummary = _alloInteractiveObjectProfileSummary;
 window.AlloModules.createDocPipeline.INTERACTIVE_OBJECT_PROFILE_VERSION = ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION;

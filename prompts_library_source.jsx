@@ -137,6 +137,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         3. Essential Question: A provocative, open-ended question to guide inquiry.
         4. "Hook" Activity: An engaging opening script (2-3 mins). **Explicitly reference** the "Visual Support" or "Adventure Mode" if available in context.
         5. Direct Instruction Script (Mini-Lesson): A DETAILED, STEP-BY-STEP SCRIPT (10-15 mins).
+        PACING (REQUIRED): Every timed segment ("hook", "directInstruction", "guidedPractice", "independentPractice", "closure") MUST begin with its time estimate in parentheses using the literal token "min", e.g. "(10 min) Teacher says: ...". Keep the token "min" exactly as written even when the plan is in ${language}. The five estimates should add up to one realistic class period for ${gradeLevel} (typically 40-60 minutes) and must account for the reading load of the Leveled Text and the number of quiz items in the inventory.
            - Include specific dialogue for the teacher (using labels like "Teacher says:" translated into ${language}).
            - Break down the core concept clearly using analogies appropriate for ${gradeLevel}.
            - Include specific "Check for Understanding" questions to ask the class, along with expected student responses.

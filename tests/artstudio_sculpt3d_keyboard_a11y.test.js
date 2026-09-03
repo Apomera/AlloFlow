@@ -309,6 +309,9 @@ describe('Art Studio Sculpt 3D accessibility', () => {
       sculptRecipe: { name: 'Custom', parts: [{ shape: 'box', color: '#ff0000', position: [0, 0.5, 0] }] },
     });
     const canvas = host.querySelector('canvas');
+    // Pointer movement is camera-relative (screen-right follows the orbit),
+    // and auto-rotation drifts the view under jsdom, so pin the view angle.
+    canvas._p3d.yaw = 0;
 
     await act(async () => {
       canvas.dispatchEvent(new MouseEvent('pointerdown', { clientX: 100, clientY: 100, bubbles: true }));
@@ -343,6 +346,9 @@ describe('Art Studio Sculpt 3D accessibility', () => {
       },
     });
     const canvas = host.querySelector('canvas');
+    // Pointer movement is camera-relative (screen-right follows the orbit),
+    // and auto-rotation drifts the view under jsdom, so pin the view angle.
+    canvas._p3d.yaw = 0;
     expect(canvas.dataset.snap).toBe('0.25');
 
     await act(async () => {

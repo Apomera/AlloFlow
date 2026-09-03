@@ -24,7 +24,37 @@
   }
 
   var VERSION = 'p3d/1';
-  var SHAPES = { box: 1, sphere: 1, cylinder: 1, cone: 1, torus: 1 };
+  // 'lathe' and 'extrude' are the two DRAWN shapes: a student-authored 2-D
+  // profile becomes a solid of revolution (vase, bottle, chess piece) or a
+  // pushed-out outline (cookie-cutter star, letter). Every other tool on this
+  // module (Sculpt 3D, Free Forms, Geometry Sandbox) renders them for free.
+  var SHAPES = { box: 1, sphere: 1, cylinder: 1, cone: 1, torus: 1, lathe: 1, extrude: 1 };
+  var PROFILE_SHAPES = { lathe: 1, extrude: 1 };
+  var PROFILE_MIN_POINTS = 3, PROFILE_MAX_POINTS = 24;
+  // lathe: [radius 0..1, height 0..1] from the bottom of the part, revolved
+  // around its vertical axis. extrude: outline [x, y] in -1..1, pushed out
+  // along the part's depth. Both scale by the part's size.
+  var DEFAULT_PROFILES = {
+    lathe: [[0.42, 0], [0.7, 0.08], [0.82, 0.24], [0.62, 0.48], [0.5, 0.66], [0.66, 0.84], [0.56, 1]],
+    extrude: [[0, 1], [0.28, 0.32], [0.95, 0.31], [0.45, -0.12], [0.59, -0.81], [0, -0.4], [-0.59, -0.81], [-0.45, -0.12], [-0.95, 0.31], [-0.28, 0.32]]
+  };
+  function normalizeProfile(shape, raw) {
+    if (!PROFILE_SHAPES[shape]) return null;
+    var lathe = shape === 'lathe';
+    var out = [];
+    if (Array.isArray(raw)) {
+      for (var i = 0; i < raw.length && out.length < PROFILE_MAX_POINTS; i++) {
+        var pt = raw[i];
+        if (!Array.isArray(pt) || !isNum(pt[0]) || !isNum(pt[1])) continue;
+        out.push(lathe
+          ? [clamp(pt[0], 0.02, 1, 0.5), clamp(pt[1], 0, 1, 0.5)]
+          : [clamp(pt[0], -1, 1, 0), clamp(pt[1], -1, 1, 0)]);
+      }
+    }
+    if (out.length < PROFILE_MIN_POINTS) return DEFAULT_PROFILES[shape].map(function (p) { return p.slice(); });
+    return out;
+  }
+  function copyProfile(profile) { return Array.isArray(profile) ? profile.map(function (p) { return p.slice(); }) : undefined; }
   var FINISHES = { standard: 1, matte: 1, gloss: 1, metal: 1, wire: 1 };
   var MAX_PARTS = 24;
   var FALLBACK_COLOR = '#818cf8';
@@ -60,6 +90,7 @@
       var rot = Array.isArray(p.rotation) ? p.rotation : [];
       var stretch = Array.isArray(p.stretch) ? p.stretch : [];
       var requestedFinish = typeof p.finish === 'string' ? p.finish.toLowerCase().trim() : '';
+      var profile = PROFILE_SHAPES[shape] ? normalizeProfile(shape, p.profile) : null;
       parts.push({
         shape: shape,
         label: partLabel(p.label),
@@ -78,6 +109,8 @@
         hidden: p.hidden === true,
         locked: p.locked === true
       });
+      // Only drawn shapes carry a profile; other parts keep their exact key set.
+      if (profile) parts[parts.length - 1].profile = profile;
     }
     if (!parts.length) return null;
     return {
@@ -390,11 +423,13 @@
   var PART_PALETTE = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#f8fafc', '#334155'];
   var PART_DEFAULT_SIZE = {
     box: [0.4, 0.4, 0.4], sphere: [0.25, 0.25, 0.25], cylinder: [0.15, 0.5, 0.15],
-    cone: [0.2, 0.45, 0.2], torus: [0.25, 0.06, 0.06]
+    cone: [0.2, 0.45, 0.2], torus: [0.25, 0.06, 0.06],
+    // lathe: [radius, height] · extrude: [width, height, depth]
+    lathe: [0.3, 0.6, 0.3], extrude: [0.5, 0.5, 0.18]
   };
   function _copyParts(r) {
     return r.parts.map(function (p) {
-      return { shape: p.shape, label: p.label, size: p.size.slice(), stretch: p.stretch.slice(), deform: normalizeDeform(p.deform), position: p.position.slice(), rotation: p.rotation.slice(), color: p.color, finish: p.finish, opacity: p.opacity, hidden: p.hidden, locked: p.locked };
+      return { shape: p.shape, label: p.label, size: p.size.slice(), stretch: p.stretch.slice(), deform: normalizeDeform(p.deform), position: p.position.slice(), rotation: p.rotation.slice(), color: p.color, finish: p.finish, opacity: p.opacity, hidden: p.hidden, locked: p.locked, profile: copyProfile(p.profile) };
     });
   }
   function _rebuild(r, parts) {
@@ -412,6 +447,7 @@
       position: [0, 0.5, 0],
       rotation: [0, 0, 0],
       color: PART_PALETTE[(isNum(index) ? index : 0) % PART_PALETTE.length],
+      profile: PROFILE_SHAPES[sh] ? DEFAULT_PROFILES[sh].map(function (p) { return p.slice(); }) : undefined,
       finish: 'standard',
       opacity: 1,
       hidden: false,
@@ -453,6 +489,7 @@
     if (!r || !r.parts[index] || r.parts.length >= MAX_PARTS) return r;
     var parts = _copyParts(r);
     var copy = { shape: parts[index].shape, label: parts[index].label, size: parts[index].size.slice(), stretch: parts[index].stretch.slice(), deform: normalizeDeform(parts[index].deform), position: parts[index].position.slice(), rotation: parts[index].rotation.slice(), color: parts[index].color, finish: parts[index].finish, opacity: parts[index].opacity, hidden: parts[index].hidden, locked: parts[index].locked };
+    copy.profile = copyProfile(parts[index].profile);
     if (copy.label) copy.label = (copy.label + ' copy').slice(0, 40);
     copy.hidden = false;
     copy.locked = false;
@@ -556,6 +593,21 @@
         else if (p.shape === 'cylinder') geo = new THREE.CylinderGeometry(p.size[0], p.size[0], p.size[1], 20, shaped ? 12 : 1);
         else if (p.shape === 'cone') geo = new THREE.ConeGeometry(p.size[0], p.size[1], 20, shaped ? 12 : 1);
         else if (p.shape === 'torus') geo = new THREE.TorusGeometry(p.size[0], p.size[1], 12, 28);
+        else if (p.shape === 'lathe') {
+          var lathePts = p.profile.map(function (pt) { return new THREE.Vector2(pt[0] * p.size[0], pt[1] * p.size[1]); });
+          geo = new THREE.LatheGeometry(lathePts, 28);
+          // Centre on the part position like every other primitive.
+          if (geo.translate) geo.translate(0, -p.size[1] / 2, 0);
+        } else if (p.shape === 'extrude') {
+          var outline = new THREE.Shape();
+          p.profile.forEach(function (pt, k) {
+            var x = pt[0] * p.size[0] / 2, y = pt[1] * p.size[1] / 2;
+            if (k === 0) outline.moveTo(x, y); else outline.lineTo(x, y);
+          });
+          if (outline.closePath) outline.closePath();
+          geo = new THREE.ExtrudeGeometry(outline, { depth: p.size[2], bevelEnabled: false, curveSegments: 4 });
+          if (geo.translate) geo.translate(0, 0, -p.size[2] / 2);
+        }
       } catch (e) { geo = null; }
       if (!geo) return;
       deformGeometry(geo, p.deform);
@@ -591,6 +643,10 @@
   window.AlloModules.Prim3D = {
     version: VERSION,
     SHAPES: Object.keys(SHAPES),
+    PROFILE_SHAPES: Object.keys(PROFILE_SHAPES),
+    DEFAULT_PROFILES: DEFAULT_PROFILES,
+    PROFILE_MAX_POINTS: PROFILE_MAX_POINTS,
+    normalizeProfile: normalizeProfile,
     MAX_PARTS: MAX_PARTS,
     normalizeRecipe: normalizeRecipe,
     parseRecipe: parseRecipe,

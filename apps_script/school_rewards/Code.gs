@@ -80,12 +80,12 @@ function statusPageHtml_() {
     var actor = currentActor_(), config = configMap_(book_());
     ok = true;
     headline = 'Deployment check passed';
-    detail = 'This deployment answers for a signed-in ' + esc(actor.role) + ' account. Open the portal once as each intended role and confirm each sees only its own surface.';
+    detail = 'The link works and you are signed in as ' + esc(actor.role) + '. You can close this tab and go back to AlloFlow to tick the last step. Then ask one staff member and one student to open the portal once, so each role has been seen working.';
     rows = [['Service', SR_SERVICE], ['Script version', SR_VERSION], ['Repository schema', number_(config.schemaVersion) || 'not set up'], ['School', config.schoolName || ''], ['Academic year', config.academicYear || ''], ['Allowed domain', config.allowedDomain || ''], ['Your role', actor.role], ['Setup state', PropertiesService.getScriptProperties().getProperty('SR_SETUP_STATE') || 'not run']];
   } catch (err) {
     var failure = publicError_(err);
     headline = 'Deployment check failed';
-    detail = failure.error + ' (' + failure.code + '). Check that you are signed into a managed account in the allowed domain, that the one-time setup ran, and that the deployment is the latest version.';
+    detail = failure.error + ' (' + failure.code + '). Three things to check: you are signed in with a school account on the allowed domain; the one-time setup was run; the deployment is the newest version (Deploy, Manage deployments).';
     rows = [['Service', SR_SERVICE], ['Script version', SR_VERSION]];
   }
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>School Rewards deployment check</title>'
@@ -545,9 +545,9 @@ function reviewSchoolRewardsPrintRequest(request) {
       if (!printModelReadyForQuote_(model)) throw srError_('asset_handoff_required', 'This GLB/STL registration still needs a school-managed printable asset before it can be quoted.');
       var decision = payload.preflightDecision || 'APPROVED';
       if (['APPROVED', 'OVERRIDE'].indexOf(decision) < 0) throw srError_('bad_preflight', 'Preflight decision must be approved or override.');
-      if (decision === 'OVERRIDE' && !payload.reason) throw srError_('reason_required', 'A preflight override requires a staff reason.');
+      if (decision === 'OVERRIDE' && !payload.reason) throw srError_('reason_required', 'Say why the preflight warnings are being overridden.');
       var quote = integer_(payload.quotePoints, 1, 100000, 'Quote points'), expiresAt = iso_(payload.quoteExpiresAt);
-      if (!expiresAt || new Date(expiresAt).getTime() <= new Date().getTime()) throw srError_('bad_quote', 'Quote expiration must be in the future.');
+      if (!expiresAt || new Date(expiresAt).getTime() <= new Date().getTime()) throw srError_('bad_quote', 'Choose a quote expiry date in the future.');
       item.status = 'QUOTED'; item.quotePoints = quote; item.quoteExpiresAt = expiresAt;
       item.approvedMaterialId = payload.approvedMaterialId; item.printerProfileId = payload.printerProfileId;
       item.estimatedGrams = integer_(payload.estimatedGrams == null ? 0 : payload.estimatedGrams, 0, 100000, 'Estimated grams');
@@ -579,7 +579,7 @@ function confirmSchoolRewardsPrintQuote(request) {
       var repaired = printReservationResult_(book, item, existingHold); rememberIdem_(key, operation, repaired); return repaired;
     }
     if (item.status !== 'QUOTED') throw srError_('invalid_transition', 'This request does not have a quote awaiting confirmation.');
-    if (!item.quoteExpiresAt || new Date(item.quoteExpiresAt).getTime() <= new Date().getTime()) throw srError_('quote_expired', 'This quote has expired. Ask staff to review it again.');
+    if (!item.quoteExpiresAt || new Date(item.quoteExpiresAt).getTime() <= new Date().getTime()) throw srError_('quote_expired', 'This quote has expired. Ask staff to review the request again.');
     var windowItem = windowById_(book, item.windowId);
     requireOpenWindowNow_(windowItem, 'Print quote confirmation');
     var model = requirePrintModel_(book, item.modelId);
@@ -631,7 +631,7 @@ function cancelSchoolRewardsPrintRequest(request) {
     var item = requirePrintRequest_(book, requestId), at = now_();
     if (actor.role === 'student') {
       if (item.studentId !== actor.studentId) throw srError_('denied', 'Students can cancel only their own request.');
-      if (['SUBMITTED', 'REVISION_REQUESTED', 'QUOTED', 'RESERVED', 'CANCELLING'].indexOf(item.status) < 0) throw srError_('invalid_transition', 'Ask staff for help cancelling a request that has entered the print queue.');
+      if (['SUBMITTED', 'REVISION_REQUESTED', 'QUOTED', 'RESERVED', 'CANCELLING'].indexOf(item.status) < 0) throw srError_('invalid_transition', 'This request is already in the print queue. Ask staff to cancel it.');
     } else if (['SUBMITTED', 'REVISION_REQUESTED', 'QUOTED', 'RESERVED', 'QUEUED', 'PRINTING', 'READY', 'CANCELLING'].indexOf(item.status) < 0 && item.status !== 'CANCELLED') throw srError_('invalid_transition', 'This print request cannot be cancelled.');
     var hold = item.holdId ? pointHoldById_(book, item.holdId) : null;
     if (item.status !== 'CANCELLED') {
@@ -686,7 +686,7 @@ function refundSchoolRewardsPrintRequest(request) {
     var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(); assertNoPendingCoreOperation_(book, '');
     var item = requirePrintRequest_(book, requestId);
-    if (['FULFILLED', 'REFUNDING', 'REFUNDED'].indexOf(item.status) < 0) throw srError_('invalid_transition', 'Only a fulfilled print can be refunded.');
+    if (['FULFILLED', 'REFUNDING', 'REFUNDED'].indexOf(item.status) < 0) throw srError_('invalid_transition', 'Only a print that has been handed to the student can be refunded.');
     assertReceiptDeliverySettled_(book, item.id, 'PURCHASE');
     var spend = spendForPrintRequest_(book, item.id);
     if (!spend || spend.amount !== -item.quotePoints) throw srError_('reconciliation', 'The print request and spending ledger do not reconcile.');
@@ -737,11 +737,11 @@ function adminBulkUpsertRewardsStudents(values) {
     var normalized = values.map(function(value) {
       var requestedId = text_(value && value.id, 80, ''), student = normalizeStudent_(value, domain, requestedId);
       var matchedId = requestedId ? byId[requestedId] : null, matchedEmail = byEmail[student.email];
-      if (matchedEmail && requestedId && matchedEmail.id !== requestedId) throw srError_('duplicate_student', 'That student email is already assigned to another student.');
-      if (matchedId && matchedEmail && matchedId.id !== matchedEmail.id) throw srError_('duplicate_student', 'The supplied student ID and email belong to different roster records.');
+      if (matchedEmail && requestedId && matchedEmail.id !== requestedId) throw srError_('duplicate_student', 'That email already belongs to another student on the roster.');
+      if (matchedId && matchedEmail && matchedId.id !== matchedEmail.id) throw srError_('duplicate_student', 'The student ID and the email in this row belong to two different students. Check the row.');
       student.id = requestedId || (matchedEmail ? matchedEmail.id : uuid_());
       if (seenEmails[student.email]) throw srError_('duplicate_student', 'The upload contains a duplicate student email: ' + student.email);
-      if (seenIds[student.id]) throw srError_('duplicate_student', 'The upload resolves more than once to the same student record.');
+      if (seenIds[student.id]) throw srError_('duplicate_student', 'Two rows in the upload point to the same student. Remove the duplicate row.');
       seenEmails[student.email] = true; seenIds[student.id] = true;
       return student;
     });
@@ -888,14 +888,14 @@ function reverseSchoolRewardsEntry(request) {
     if (state && state.result) return state.result;
     if (!state) {
       var original = ledgerById_(book, entryId);
-      if (!original) throw srError_('not_found', 'Ledger entry was not found.');
+      if (!original) throw srError_('not_found', 'That award could not be found. Refresh and try again.');
       if (actor.role === 'staff') {
         if (normalizeEmail_(original.actorEmail) !== actor.email) throw srError_('denied', 'Staff can undo only their own awards.');
         var recordedAt = Date.parse(original.at);
         if (!(recordedAt > 0) || Date.now() - recordedAt > SR_STAFF_UNDO_MS) throw srError_('undo_expired', 'The undo window has passed. Ask an administrator to correct this award.');
       }
       if (original.kind === 'REVERSAL' || reversalExists_(book, entryId)) throw srError_('already_reversed', 'That entry has already been reversed.');
-      if (original.kind !== 'EARN') throw srError_('order_refund_required', 'This pilot reverses award entries only. Purchase returns require an order-level refund so inventory and the ledger stay aligned.');
+      if (original.kind !== 'EARN') throw srError_('order_refund_required', 'To return a purchase, refund the order from the Store tab. That restores the points and the stock together.');
       var delta = -original.amount, before = pointAvailability_(book, original.studentId);
       if (before.availableBalance + delta < 0) throw srError_('points_reserved', 'This correction would consume points reserved for an active print request. Cancel the request first.');
       state = startCoreOperation_(book, key, operation, 'reverse', {
@@ -924,7 +924,7 @@ function checkoutSchoolRewardsOrder(request) {
       var total = 0, orderLines = [];
       lines.forEach(function(line) {
         var item = byId[line.catalogId];
-        if (!item || !item.active) throw srError_('catalog_changed', 'A selected item is no longer available.');
+        if (!item || !item.active) throw srError_('catalog_changed', 'One of the items in the cart is no longer available. Remove it and continue.');
         if (item.inventoryLimit >= 0 && item.remaining < line.quantity) throw srError_('inventory', item.name + ' does not have enough inventory.');
         var lineTotal = item.cost * line.quantity; total += lineTotal;
         orderLines.push({ catalogId: item.id, itemName: item.name, quantity: line.quantity, unitCost: item.cost, lineTotal: lineTotal });
@@ -953,9 +953,9 @@ function refundSchoolRewardsOrder(request) {
     if (state && state.result) return state.result;
     if (!state) {
       var order = orderById_(book, orderId);
-      if (!order) throw srError_('not_found', 'Order was not found.');
+      if (!order) throw srError_('not_found', 'That order could not be found. Refresh and try again.');
       if (printRequestByOrderId_(book, orderId)) throw srError_('print_refund_required', 'Use the print-request refund so its workflow and point hold remain reconciled.');
-      if (order.status !== 'COMPLETED') throw srError_('not_refundable', 'Only a completed order can be refunded.');
+      if (order.status !== 'COMPLETED') throw srError_('not_refundable', 'Only a completed purchase can be refunded.');
       assertReceiptDeliverySettled_(book, orderId, 'PURCHASE');
       var spend = spendForOrder_(book, orderId);
       if (!spend || spend.amount !== -order.total) throw srError_('reconciliation', 'The order and spending ledger do not reconcile.');
@@ -1045,7 +1045,7 @@ function resendSchoolRewardsOrderReceipt(request) {
   return locked_(function() {
     var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(), order = orderById_(book, orderId);
-    if (!order) throw srError_('not_found', 'Order was not found.');
+    if (!order) throw srError_('not_found', 'That order could not be found. Refresh and try again.');
     if (kind === 'PURCHASE' && order.status !== 'COMPLETED') throw srError_('bad_receipt', 'A purchase receipt can be resent only while the order is completed.');
     if (kind === 'REFUND' && order.status !== 'REFUNDED') throw srError_('bad_receipt', 'A refund receipt is available only after the order is refunded.');
     var sent = sentReceiptForOrder_(book, orderId, kind), previous = latestReceiptForOrder_(book, orderId, kind), availability = pointAvailability_(book, order.studentId), receipt;
@@ -1109,7 +1109,7 @@ function configureSchoolRewardsEmailSchedule(request) {
   requireMailSchemaV6_(book_());
   var enabled = request.enabled === true, weekday = text_(request.weekday, 12, 'FRIDAY').toUpperCase();
   var hour = integer_(request.hour == null ? 16 : request.hour, 0, 23, 'Hour');
-  if (!{ MONDAY: 1, TUESDAY: 1, WEDNESDAY: 1, THURSDAY: 1, FRIDAY: 1 }[weekday]) throw srError_('bad_schedule', 'Choose a school weekday.');
+  if (!{ MONDAY: 1, TUESDAY: 1, WEDNESDAY: 1, THURSDAY: 1, FRIDAY: 1 }[weekday]) throw srError_('bad_schedule', 'Choose a weekday for the schedule.');
   ScriptApp.getProjectTriggers().forEach(function(trigger) { if (trigger.getHandlerFunction() === 'runScheduledSchoolRewardsStatements') ScriptApp.deleteTrigger(trigger); });
   PropertiesService.getScriptProperties().setProperty('SR_EMAIL_TRIGGER_REGISTRATION', '');
   if (enabled) {
@@ -1183,7 +1183,7 @@ function resolveSchoolRewardsMailDelivery(request) {
   var note = text_(request.note, 240, ''), key = idemKey_(request.idempotencyKey);
   if (status !== 'SENT' && status !== 'FAILED') throw srError_('mail_delivery_state', 'Resolved mail status must be sent or failed.');
   if (note.length < 8) throw srError_('reason_required', 'Record how delivery was verified using at least 8 characters.');
-  if (/@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(note)) throw srError_('mail_privacy', 'Do not include an email address in the resolution note.');
+  if (/@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(note)) throw srError_('mail_privacy', 'Leave email addresses out of the note; describe what was checked instead.');
   var operation = printIdemOperation_('mail_delivery_resolve', actor, { outboxId: outboxId, status: status, note: note });
   var result = locked_(function() {
     var prior = idemResult_(key, operation);
@@ -1438,7 +1438,11 @@ function sendOrderReceipt_(book, student, order, balance, kind) {
 // repositories need no migration). The portal saves the student's own choice
 // from its language menu; an administrator can set it for a student. Balance
 // statements then go out in that language. Guardian digests stay English.
-var SR_LANGUAGES = ['en', 'es'];
+/* SR_LANGUAGES_START */
+// Generated by _build_school_rewards_i18n.js. Portal interface languages.
+// Balance statement emails exist only in English and Spanish; see statementCopy_.
+var SR_LANGUAGES = ["en", "es"];
+/* SR_LANGUAGES_END */
 function prefsSheet_(book) {
   var sheet = book.getSheetByName('Preferences');
   if (!sheet) { sheet = book.insertSheet('Preferences'); sheet.getRange(1, 1, 1, 3).setValues([['StudentId', 'Language', 'UpdatedAt']]); }
@@ -1516,17 +1520,17 @@ function statementHtml_(student, availability, asOf, config, windowItem, prizes)
 function windowSentence_(item, copy) { var c = copy || statementCopy_('en'); if (item.status === 'OPEN') return c.windowOpen; if (item.status === 'PREVIEW') return c.windowPreview(item); return c.windowOther(item); }
 
 function currentActor_() {
-  if (!configured_()) throw srError_('not_configured', 'School Rewards has not been configured.');
+  if (!configured_()) throw srError_('not_configured', 'School Rewards has not been set up yet. The one-time setup in AlloFlow creates the repository.');
   var email = activeEmail_();
-  if (emailDomain_(email) !== allowedDomain_()) throw srError_('denied', 'Use an authorized managed Google Education account.');
+  if (emailDomain_(email) !== allowedDomain_()) throw srError_('denied', 'Sign in with your school Google account, not a personal one.');
   var list = members_(book_());
   for (var i = 0; i < list.length; i++) if (list[i].email === email && list[i].active) return { email: email, displayName: list[i].displayName, role: list[i].role };
   var roster = students_(book_());
   for (var j = 0; j < roster.length; j++) if (roster[j].email === email && roster[j].active) return { email: email, displayName: roster[j].firstName, role: 'student', studentId: roster[j].id };
-  throw srError_('denied', 'This managed account is not an active School Rewards member.');
+  throw srError_('denied', 'This account is signed in, but it is not on the School Rewards member list. Ask an administrator to add you.');
 }
 function scheduledAdminActor_(event, expectedHandler, registrationProperty) {
-  if (!configured_()) throw srError_('not_configured', 'School Rewards has not been configured.');
+  if (!configured_()) throw srError_('not_configured', 'School Rewards has not been set up yet. The one-time setup in AlloFlow creates the repository.');
   var interactiveEmail = normalizeEmail_(Session.getActiveUser().getEmail());
   if (interactiveEmail) {
     var interactiveActor = currentActor_();
@@ -1576,43 +1580,43 @@ function putConfig_(book, values) { var sheet = sheet_(book, 'Config'), map = co
 function configMap_(book) { var map = {}; rows_(sheet_(book, 'Config'), 2).forEach(function(row) { map[String(row[0])] = String(row[1] || ''); }); return map; }
 
 function members_(book) { return rows_(sheet_(book, 'Members'), 4).map(function(row) { return { email: normalizeEmail_(row[0]), displayName: String(row[1] || ''), role: String(row[2] || ''), active: bool_(row[3]) }; }); }
-function normalizeMember_(value, domain) { value = object_(value); var email = normalizeEmail_(value.email), role = text_(value.role, 20, '').toLowerCase(); if (!email || emailDomain_(email) !== domain) throw srError_('bad_member', 'Member email must be in the configured domain.'); if (SR_ROLES.indexOf(role) < 0) throw srError_('bad_member', 'Role must be admin, staff, or cashier.'); return { email: email, displayName: text_(value.displayName, 120, email.split('@')[0]), role: role, active: value.active !== false }; }
+function normalizeMember_(value, domain) { value = object_(value); var email = normalizeEmail_(value.email), role = text_(value.role, 20, '').toLowerCase(); if (!email || emailDomain_(email) !== domain) throw srError_('bad_member', 'Use a school email address that ends in the school domain.'); if (SR_ROLES.indexOf(role) < 0) throw srError_('bad_member', 'Choose a role: administrator, staff, or cashier.'); return { email: email, displayName: text_(value.displayName, 120, email.split('@')[0]), role: role, active: value.active !== false }; }
 function upsertMemberRow_(book, member) { upsert_(sheet_(book, 'Members'), 4, member.email, safeRow_([member.email, member.displayName, member.role, member.active])); }
-function assertAdminInvariant_(member) { var count = 0; members_(book_()).forEach(function(item) { if (item.email !== member.email && item.role === 'admin' && item.active) count++; }); if (member.role === 'admin' && member.active) count++; if (!count) throw srError_('admin_required', 'At least one active administrator is required.'); }
+function assertAdminInvariant_(member) { var count = 0; members_(book_()).forEach(function(item) { if (item.email !== member.email && item.role === 'admin' && item.active) count++; }); if (member.role === 'admin' && member.active) count++; if (!count) throw srError_('admin_required', 'The school needs at least one active administrator, so this account cannot be removed or demoted.'); }
 
 function students_(book) { return rows_(sheet_(book, 'Students'), 9).map(function(row) { return { id: String(row[0] || ''), firstName: String(row[1] || ''), lastInitial: String(row[2] || ''), grade: String(row[3] || ''), homeroom: String(row[4] || ''), email: normalizeEmail_(row[5]), active: bool_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }); }
-function normalizeStudent_(value, domain, existingId) { value = object_(value); var email = normalizeEmail_(value.email), firstName = text_(value.firstName, 80, ''); if (!email || emailDomain_(email) !== domain) throw srError_('bad_student', 'Student email must be a managed address in the configured domain.'); if (!firstName) throw srError_('bad_student', 'Student first name is required.'); return { id: existingId || text_(value.id, 80, ''), firstName: firstName, lastInitial: text_(value.lastInitial, 4, '').slice(0, 1).toUpperCase(), grade: text_(value.grade, 20, ''), homeroom: text_(value.homeroom, 80, ''), email: email, active: value.active !== false }; }
+function normalizeStudent_(value, domain, existingId) { value = object_(value); var email = normalizeEmail_(value.email), firstName = text_(value.firstName, 80, ''); if (!email || emailDomain_(email) !== domain) throw srError_('bad_student', 'Use the student\'s school Google email, which must end in the school domain.'); if (!firstName) throw srError_('bad_student', 'Student first name is required.'); return { id: existingId || text_(value.id, 80, ''), firstName: firstName, lastInitial: text_(value.lastInitial, 4, '').slice(0, 1).toUpperCase(), grade: text_(value.grade, 20, ''), homeroom: text_(value.homeroom, 80, ''), email: email, active: value.active !== false }; }
 function upsertStudentRow_(book, student) {
   var existing = students_(book), studentId = student.id || uuid_(), createdAt = now_();
-  existing.forEach(function(item) { if (item.email === student.email && item.id !== studentId) throw srError_('duplicate_student', 'That student email is already assigned.'); if (item.id === studentId) createdAt = item.createdAt || createdAt; });
+  existing.forEach(function(item) { if (item.email === student.email && item.id !== studentId) throw srError_('duplicate_student', 'That email is already on the roster.'); if (item.id === studentId) createdAt = item.createdAt || createdAt; });
   assertMailRecipientMutationAllowed_(book, studentId, '');
   var saved = { id: studentId, firstName: student.firstName, lastInitial: student.lastInitial, grade: student.grade, homeroom: student.homeroom, email: student.email, active: student.active, createdAt: createdAt, updatedAt: now_() };
   upsert_(sheet_(book, 'Students'), 9, studentId, safeRow_([saved.id, saved.firstName, saved.lastInitial, saved.grade, saved.homeroom, saved.email, saved.active, saved.createdAt, saved.updatedAt]));
   if (!balancesMap_(book)[studentId]) sheet_(book, 'Balances').appendRow(safeRow_([studentId, 0, 0, 0, now_()])); return saved;
 }
 function studentById_(book, studentId) { var list = students_(book); for (var i = 0; i < list.length; i++) if (list[i].id === studentId) return list[i]; return null; }
-function requireStudentRecord_(book, studentId) { var student = studentById_(book, studentId); if (!student) throw srError_('not_found', 'Student record was not found.'); return student; }
-function requireStudent_(book, studentId) { var student = requireStudentRecord_(book, studentId); if (student.active) return student; throw srError_('not_found', 'Active student was not found.'); }
+function requireStudentRecord_(book, studentId) { var student = studentById_(book, studentId); if (!student) throw srError_('not_found', 'That student could not be found on the roster.'); return student; }
+function requireStudent_(book, studentId) { var student = requireStudentRecord_(book, studentId); if (student.active) return student; throw srError_('not_found', 'That student is not on the active roster.'); }
 
 function guardians_(book) { return rows_(sheet_(book, 'Guardians'), 9).map(function(row) { return { id: String(row[0] || ''), studentId: String(row[1] || ''), guardianEmail: normalizeEmail_(row[2]), guardianName: String(row[3] || ''), relationship: String(row[4] || ''), active: bool_(row[5]), consentConfirmedAt: cell_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }); }
 function guardianById_(book, guardianId) { var list = guardians_(book); for (var i = 0; i < list.length; i++) if (list[i].id === guardianId) return list[i]; return null; }
 function normalizeGuardian_(book, value) {
   value = object_(value); var studentId = id_(value.studentId, 'student'), email = normalizeEmail_(value.guardianEmail), requestedId = optionalId_(value.id, 'guardian mapping'); requireStudent_(book, studentId);
-  if (!email) throw srError_('bad_guardian', 'A valid guardian email is required.');
+  if (!email) throw srError_('bad_guardian', 'Enter the guardian\'s email address.');
   var list = guardians_(book), existing = requestedId ? guardianById_(book, requestedId) : null;
   if (!existing) for (var i = 0; i < list.length; i++) if (list[i].studentId === studentId && list[i].guardianEmail === email) { existing = list[i]; break; }
-  if (existing && existing.studentId !== studentId) throw srError_('bad_guardian', 'A guardian mapping cannot be moved to another student.');
+  if (existing && existing.studentId !== studentId) throw srError_('bad_guardian', 'A guardian link belongs to one student. Remove it and add a new link for the other student.');
   var active = value.active !== false, consentAt = '';
   if (active) {
     if (value.consentConfirmed === true) consentAt = now_();
     else if (existing && existing.active && existing.guardianEmail === email && existing.consentConfirmedAt) consentAt = existing.consentConfirmedAt;
-    else throw srError_('consent_required', 'Confirm fresh guardian communication authorization before enabling or re-enabling digests.');
+    else throw srError_('consent_required', 'Tick the box confirming the school has current permission to email this guardian before turning digests on.');
   }
   return { id: existing ? existing.id : requestedId, studentId: studentId, guardianEmail: email, guardianName: text_(value.guardianName, 120, existing ? existing.guardianName : ''), relationship: text_(value.relationship, 80, existing ? existing.relationship : 'Guardian'), active: active, consentConfirmedAt: consentAt, createdAt: existing ? existing.createdAt : '', updatedAt: '' };
 }
 function upsertGuardianRow_(book, guardian) {
   var at = now_(); guardian.id = guardian.id || uuid_(); guardian.createdAt = guardian.createdAt || at; guardian.updatedAt = at;
-  guardians_(book).forEach(function(item) { if (item.id !== guardian.id && item.studentId === guardian.studentId && item.guardianEmail === guardian.guardianEmail) throw srError_('duplicate_guardian', 'That guardian mapping already exists.'); });
+  guardians_(book).forEach(function(item) { if (item.id !== guardian.id && item.studentId === guardian.studentId && item.guardianEmail === guardian.guardianEmail) throw srError_('duplicate_guardian', 'That guardian is already linked to this student.'); });
   assertMailRecipientMutationAllowed_(book, guardian.studentId, guardian.id);
   upsert_(sheet_(book, 'Guardians'), 9, guardian.id, safeRow_([guardian.id, guardian.studentId, guardian.guardianEmail, guardian.guardianName, guardian.relationship, guardian.active, guardian.consentConfirmedAt, guardian.createdAt, guardian.updatedAt])); return guardian;
 }
@@ -1629,7 +1633,7 @@ function guardianDigestBodies_(guardian, student, availability, earned, progress
 }
 
 function normalizeSisSnapshot_(book, request) {
-  var formatVersion = text_(request.formatVersion, 60, ''); if (formatVersion !== 'alloflow-sis-roster/1') throw srError_('bad_sis_snapshot', 'Use SIS snapshot format alloflow-sis-roster/1.');
+  var formatVersion = text_(request.formatVersion, 60, ''); if (formatVersion !== 'alloflow-sis-roster/1') throw srError_('bad_sis_snapshot', 'This file is not an AlloFlow roster snapshot. Export it again through the district process.');
   var snapshotId = id_(request.snapshotId, 'SIS snapshot'), raw = Array.isArray(request.students) ? request.students : [];
   if (!raw.length || raw.length > SR_MAX_BATCH) throw srError_('bad_sis_snapshot', 'Provide between 1 and ' + SR_MAX_BATCH + ' SIS roster rows.');
   var existing = students_(book), byEmail = {}, byId = {}; existing.forEach(function(student) { byEmail[student.email] = student; byId[student.id] = student; });
@@ -1658,9 +1662,9 @@ function sisImportBySnapshotId_(book, snapshotId) { var list = sisImports_(book)
 function upsertSisImportRow_(book, item) { upsert_(sheet_(book, 'SisImports'), 11, item.id, safeRow_([item.id, item.snapshotId, item.formatVersion, item.contentHash, item.createdCount, item.updatedCount, item.unchangedCount, item.status, item.appliedAt, item.actorHash, item.createdAt])); }
 
 function categories_(book) { return rows_(sheet_(book, 'Categories'), 9).map(function(row) { return { id: String(row[0] || ''), name: String(row[1] || ''), description: String(row[2] || ''), framework: String(row[3] || ''), color: String(row[4] || ''), active: bool_(row[5]), sortOrder: number_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }).sort(function(a, b) { return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name); }); }
-function normalizeCategory_(value) { value = object_(value); var framework = text_(value.framework, 30, 'CUSTOM').toUpperCase(); if (framework !== 'HOWL' && framework !== 'CUSTOM') framework = 'CUSTOM'; var color = text_(value.color, 20, '#6046b6'); if (!/^#[0-9a-f]{6}$/i.test(color)) throw srError_('bad_category', 'Category color must be a six-digit hex color.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 80, ''), description: text_(value.description, 300, ''), framework: framework, color: color, active: value.active !== false, sortOrder: integer_(value.sortOrder == null ? 100 : value.sortOrder, 0, 10000, 'Sort order') }; }
+function normalizeCategory_(value) { value = object_(value); var framework = text_(value.framework, 30, 'CUSTOM').toUpperCase(); if (framework !== 'HOWL' && framework !== 'CUSTOM') framework = 'CUSTOM'; var color = text_(value.color, 20, '#6046b6'); if (!/^#[0-9a-f]{6}$/i.test(color)) throw srError_('bad_category', 'Pick a colour for the category from the colour picker.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 80, ''), description: text_(value.description, 300, ''), framework: framework, color: color, active: value.active !== false, sortOrder: integer_(value.sortOrder == null ? 100 : value.sortOrder, 0, 10000, 'Sort order') }; }
 function upsertCategoryRow_(book, value) { if (!value.name) throw srError_('bad_category', 'Category name is required.'); var existing = categories_(book), categoryId = value.id || uuid_(), createdAt = now_(); existing.forEach(function(old) { if (old.id === categoryId) createdAt = old.createdAt || createdAt; }); var saved = { id: categoryId, name: value.name, description: value.description, framework: value.framework, color: value.color, active: value.active, sortOrder: value.sortOrder, createdAt: createdAt, updatedAt: now_() }; upsert_(sheet_(book, 'Categories'), 9, categoryId, safeRow_([saved.id, saved.name, saved.description, saved.framework, saved.color, saved.active, saved.sortOrder, saved.createdAt, saved.updatedAt])); return saved; }
-function requireCategory_(book, categoryId) { var list = categories_(book); for (var i = 0; i < list.length; i++) if (list[i].id === categoryId && list[i].active) return list[i]; throw srError_('not_found', 'Active recognition category was not found.'); }
+function requireCategory_(book, categoryId) { var list = categories_(book); for (var i = 0; i < list.length; i++) if (list[i].id === categoryId && list[i].active) return list[i]; throw srError_('not_found', 'That recognition category is no longer active. Choose another.'); }
 function seedHowlCategories_(book) { [
   ['Responsibility', 'Follows through, prepares, and takes ownership of choices.', '#2563eb'],
   ['Collaboration', 'Contributes, listens, and helps a group learn together.', '#0f766e'],
@@ -1853,9 +1857,9 @@ function normalizeCatalogRequest_(value) {
   var expectedProvided = value.expectedInventoryVersion != null && value.expectedInventoryVersion !== '';
   var limit = limitProvided ? integer_(value.inventoryLimit, -1, 100000, 'Inventory limit') : null;
   var remaining = remainingProvided ? integer_(value.remaining, -1, 100000, 'Remaining inventory') : null;
-  if (remainingProvided && !limitProvided) throw srError_('bad_catalog', 'Inventory adjustments must include the explicit target inventory limit.');
-  if (limitProvided && limit < 0 && remainingProvided && remaining !== -1) throw srError_('bad_catalog', 'Unlimited inventory must use -1 as its remaining value.');
-  if (limitProvided && limit >= 0 && remainingProvided && (remaining < 0 || remaining > limit)) throw srError_('bad_catalog', 'Remaining inventory must be between zero and the target limit.');
+  if (remainingProvided && !limitProvided) throw srError_('bad_catalog', 'Enter the new stock limit for this item before saving.');
+  if (limitProvided && limit < 0 && remainingProvided && remaining !== -1) throw srError_('bad_catalog', 'An unlimited item has no remaining count. Leave the remaining field empty, or choose a stock limit instead.');
+  if (limitProvided && limit >= 0 && remainingProvided && (remaining < 0 || remaining > limit)) throw srError_('bad_catalog', 'Remaining stock must be between zero and the stock limit.');
   return {
     id: text_(value.id, 80, ''), name: nameProvided ? text_(value.name, 120, '') : null, nameProvided: nameProvided,
     description: descriptionProvided ? text_(value.description, 500, '') : null, descriptionProvided: descriptionProvided,
@@ -1873,13 +1877,13 @@ function assertInventorySchemaReady_(book) {
 function prepareCatalogIntent_(book, request, key, actor) {
   assertInventorySchemaReady_(book);
   var at = now_(), oldItem = request.id ? catalogById_(book, id_(request.id, 'catalog item')) : null;
-  if (request.id && !oldItem) throw srError_('not_found', 'Store item was not found.');
+  if (request.id && !oldItem) throw srError_('not_found', 'That store item no longer exists. Refresh the catalog.');
   if (oldItem && oldItem.inventoryVersion < 1) throw srError_('inventory_migration_required', 'Run the School Rewards schema v5 inventory migration before editing this catalog item.');
   var oldTail = oldItem ? assertInventoryChainTailMatchesCatalog_(book, oldItem) : null;
   var mode, itemId, targetLimit, targetRemaining, targetVersion, createdAt, movements = [];
   if (!oldItem) {
-    if (!request.nameProvided || !request.name || !request.costProvided) throw srError_('bad_catalog', 'New store items require a name and point cost.');
-    if (request.expectedInventoryVersion != null || request.inventoryTransition) throw srError_('bad_catalog', 'New catalog items cannot include an existing-item version or inventory transition.');
+    if (!request.nameProvided || !request.name || !request.costProvided) throw srError_('bad_catalog', 'Give the item a name and a point cost.');
+    if (request.expectedInventoryVersion != null || request.inventoryTransition) throw srError_('bad_catalog', 'This is a new item, so set its stock directly; there is nothing to adjust yet.');
     mode = 'CREATE'; itemId = operationEntityId_('catalog', key); targetLimit = request.inventoryLimitProvided ? request.inventoryLimit : -1;
     targetRemaining = targetLimit < 0 ? -1 : request.remainingProvided ? request.remaining : targetLimit;
     targetVersion = 1; createdAt = at;
@@ -1889,20 +1893,20 @@ function prepareCatalogIntent_(book, request, key, actor) {
     targetLimit = request.inventoryLimitProvided ? request.inventoryLimit : oldItem.inventoryLimit;
     targetRemaining = request.remainingProvided ? request.remaining : oldItem.remaining;
     if (targetLimit < 0) {
-      if (request.remainingProvided && targetRemaining !== -1) throw srError_('bad_catalog', 'Unlimited inventory must use -1 as its remaining value.');
+      if (request.remainingProvided && targetRemaining !== -1) throw srError_('bad_catalog', 'An unlimited item has no remaining count. Leave the remaining field empty, or choose a stock limit instead.');
       targetRemaining = -1;
-    } else if (targetRemaining < 0 || targetRemaining > targetLimit) throw srError_('bad_catalog', 'Remaining inventory must be between zero and the target limit.');
+    } else if (targetRemaining < 0 || targetRemaining > targetLimit) throw srError_('bad_catalog', 'Remaining stock must be between zero and the stock limit.');
     var changed = targetLimit !== oldItem.inventoryLimit || targetRemaining !== oldItem.remaining;
     if (!changed) {
-      if (request.inventoryTransition) throw srError_('bad_catalog', 'Inventory transition is allowed only when changing between finite and unlimited stock.');
+      if (request.inventoryTransition) throw srError_('bad_catalog', 'An item can only switch between a stock count and unlimited stock; make that change on its own, then edit the other details.');
       mode = 'METADATA'; targetVersion = oldItem.inventoryVersion;
     } else {
-      if (!request.remainingProvided) throw srError_('bad_catalog', 'Inventory changes require an explicit target remaining value.');
+      if (!request.remainingProvided) throw srError_('bad_catalog', 'Enter how many of this item remain before saving.');
       if (request.expectedInventoryVersion !== oldItem.inventoryVersion) throw srError_('inventory_stale', 'Inventory changed after this item was loaded. Refresh the catalog and try the adjustment again.');
-      if (request.reason.length < 8) throw srError_('bad_catalog', 'Describe the inventory adjustment with a meaningful reason.');
+      if (request.reason.length < 8) throw srError_('bad_catalog', 'Say why the stock is changing, for example "10 more delivered".');
       var transition = oldItem.inventoryLimit < 0 && targetLimit >= 0 ? 'TO_FINITE' : oldItem.inventoryLimit >= 0 && targetLimit < 0 ? 'TO_UNLIMITED' : '';
       if (transition && request.inventoryTransition !== transition) throw srError_('inventory_transition_required', 'Changing between finite and unlimited inventory requires the explicit ' + transition + ' transition.');
-      if (!transition && request.inventoryTransition) throw srError_('bad_catalog', 'Inventory transition is allowed only when changing between finite and unlimited stock.');
+      if (!transition && request.inventoryTransition) throw srError_('bad_catalog', 'An item can only switch between a stock count and unlimited stock; make that change on its own, then edit the other details.');
       mode = 'INVENTORY'; targetVersion = oldItem.inventoryVersion + 1;
       var delta = oldItem.inventoryLimit >= 0 && targetLimit >= 0 ? targetRemaining - oldItem.remaining : 0;
       movements = [newInventoryMovementSpec_(itemId, targetVersion, 'ADMIN_ADJUST', delta, oldItem.inventoryLimit, oldItem.remaining, targetLimit, targetRemaining, 'catalog_admin', itemId, actor, at, key, request.reason, oldTail.hash)];
@@ -2011,7 +2015,7 @@ function buildStoreInventoryMovements_(book, lines, direction, kind, key, refere
   var out = [];
   lines.forEach(function(line) {
     var item = catalogById_(book, line.catalogId);
-    if (!item) throw srError_('catalog_changed', 'Store item was not found.');
+    if (!item) throw srError_('catalog_changed', 'That store item no longer exists. Refresh the catalog.');
     var tail = assertInventoryChainTailMatchesCatalog_(book, item), delta = direction * line.quantity;
     var afterRemaining = item.inventoryLimit < 0 ? -1 : item.remaining + delta;
     if (item.inventoryLimit >= 0 && (afterRemaining < 0 || afterRemaining > item.inventoryLimit)) throw srError_(direction < 0 ? 'inventory' : 'reconciliation', direction < 0 ? item.name + ' does not have enough inventory.' : 'Refund would make inventory exceed its configured limit for ' + item.name + '.');
@@ -2019,10 +2023,10 @@ function buildStoreInventoryMovements_(book, lines, direction, kind, key, refere
   });
   return out;
 }
-function assertInventoryRestorable_(book, lines) { var byId = {}, quantities = {}; catalog_(book).forEach(function(item) { byId[item.id] = item; }); lines.forEach(function(line) { var quantity = Number(line.quantity); if (!isFinite(quantity) || Math.floor(quantity) !== quantity || quantity < 1) throw srError_('reconciliation', 'Refund order quantities are invalid.'); quantities[line.catalogId] = (quantities[line.catalogId] || 0) + quantity; }); return Object.keys(quantities).map(function(itemId) { var item = byId[itemId]; if (!item) throw srError_('catalog_changed', 'Refund inventory item was not found.'); if (item.inventoryLimit >= 0 && (item.remaining < 0 || item.remaining > item.inventoryLimit || item.remaining + quantities[itemId] > item.inventoryLimit)) throw srError_('reconciliation', 'Refund would make inventory exceed its configured limit for ' + item.name + '.'); return { catalogId: itemId, quantity: quantities[itemId] }; }); }
+function assertInventoryRestorable_(book, lines) { var byId = {}, quantities = {}; catalog_(book).forEach(function(item) { byId[item.id] = item; }); lines.forEach(function(line) { var quantity = Number(line.quantity); if (!isFinite(quantity) || Math.floor(quantity) !== quantity || quantity < 1) throw srError_('reconciliation', 'Refund order quantities are invalid.'); quantities[line.catalogId] = (quantities[line.catalogId] || 0) + quantity; }); return Object.keys(quantities).map(function(itemId) { var item = byId[itemId]; if (!item) throw srError_('catalog_changed', 'The item on this order has been removed from the catalog, so its stock cannot be restored automatically.'); if (item.inventoryLimit >= 0 && (item.remaining < 0 || item.remaining > item.inventoryLimit || item.remaining + quantities[itemId] > item.inventoryLimit)) throw srError_('reconciliation', 'Refund would make inventory exceed its configured limit for ' + item.name + '.'); return { catalogId: itemId, quantity: quantities[itemId] }; }); }
 
 function windows_(book) { return rows_(sheet_(book, 'StoreWindows'), 7).map(function(row) { return { id: String(row[0] || ''), name: String(row[1] || ''), startsAt: cell_(row[2]), endsAt: cell_(row[3]), status: String(row[4] || ''), createdAt: cell_(row[5]), updatedAt: cell_(row[6]) }; }); }
-function normalizeWindow_(value) { value = object_(value); var status = text_(value.status, 20, 'DRAFT').toUpperCase(); if (SR_WINDOW_STATES.indexOf(status) < 0) throw srError_('bad_window', 'Store status is not valid.'); var startsAt = iso_(value.startsAt), endsAt = iso_(value.endsAt); if (startsAt && endsAt && startsAt >= endsAt) throw srError_('bad_window', 'Store end must be after its start.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 120, 'Trimester store'), startsAt: startsAt, endsAt: endsAt, status: status }; }
+function normalizeWindow_(value) { value = object_(value); var status = text_(value.status, 20, 'DRAFT').toUpperCase(); if (SR_WINDOW_STATES.indexOf(status) < 0) throw srError_('bad_window', 'Choose a store status: draft, preview, open, closed, or archived.'); var startsAt = iso_(value.startsAt), endsAt = iso_(value.endsAt); if (startsAt && endsAt && startsAt >= endsAt) throw srError_('bad_window', 'The store closing date must be after its opening date.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 120, 'Trimester store'), startsAt: startsAt, endsAt: endsAt, status: status }; }
 function upsertWindowRow_(book, value) { var existing = windows_(book), windowId = value.id || uuid_(), createdAt = now_(); existing.forEach(function(old) { if (old.id === windowId) createdAt = old.createdAt || createdAt; }); var saved = { id: windowId, name: value.name, startsAt: value.startsAt, endsAt: value.endsAt, status: value.status, createdAt: createdAt, updatedAt: now_() }; upsert_(sheet_(book, 'StoreWindows'), 7, windowId, safeRow_([saved.id, saved.name, saved.startsAt, saved.endsAt, saved.status, saved.createdAt, saved.updatedAt])); return saved; }
 function windowById_(book, windowId) { var list = windows_(book); for (var i = 0; i < list.length; i++) if (list[i].id === windowId) return list[i]; return null; }
 function windowTimeState_(item) { var at = new Date().getTime(), starts = item && item.startsAt ? new Date(item.startsAt).getTime() : null, ends = item && item.endsAt ? new Date(item.endsAt).getTime() : null; if (starts != null && at < starts) return 'NOT_STARTED'; if (ends != null && at >= ends) return 'ENDED'; return 'ACTIVE'; }
@@ -2054,7 +2058,7 @@ function reversalExists_(book, entryId) { return ledger_(book).some(function(ent
 
 function balancesMap_(book) { var map = {}; rows_(sheet_(book, 'Balances'), 5).forEach(function(row) { map[String(row[0])] = { studentId: String(row[0]), earned: number_(row[1]), spent: number_(row[2]), balance: number_(row[3]), updatedAt: cell_(row[4]) }; }); return map; }
 function balance_(book, studentId) { return balancesMap_(book)[studentId] || { studentId: studentId, earned: 0, spent: 0, balance: 0, updatedAt: '' }; }
-function applyBalance_(book, studentId, earnedDelta, spentDelta) { var value = balance_(book, studentId); value.earned += earnedDelta; value.spent += spentDelta; value.balance = value.earned - value.spent; if (value.balance < 0) throw srError_('insufficient_balance', 'Balance cannot be negative.'); value.updatedAt = now_(); upsert_(sheet_(book, 'Balances'), 5, studentId, safeRow_([studentId, value.earned, value.spent, value.balance, value.updatedAt])); return value; }
+function applyBalance_(book, studentId, earnedDelta, spentDelta) { var value = balance_(book, studentId); value.earned += earnedDelta; value.spent += spentDelta; value.balance = value.earned - value.spent; if (value.balance < 0) throw srError_('insufficient_balance', 'This would take the student below zero points.'); value.updatedAt = now_(); upsert_(sheet_(book, 'Balances'), 5, studentId, safeRow_([studentId, value.earned, value.spent, value.balance, value.updatedAt])); return value; }
 function expectedBalanceFromEntries_(entries, studentId) {
   var earned = 0, spent = 0, net = 0;
   entries.forEach(function(entry) {
@@ -2112,7 +2116,7 @@ function receiptDtosForOrders_(book, orderList) { var ids = {}, latest = {}; ord
 function sentReceiptForOrder_(book, orderId, kind) { var list = receipts_(book); for (var i = list.length - 1; i >= 0; i--) if (list[i].orderId === orderId && list[i].kind === kind && list[i].status === 'SENT') return list[i]; return null; }
 function latestReceiptForOrder_(book, orderId, kind) { var list = receipts_(book); for (var i = list.length - 1; i >= 0; i--) if (list[i].orderId === orderId && list[i].kind === kind) return list[i]; return null; }
 function assertReceiptDeliverySettled_(book, orderId, kind) { var receipt = latestReceiptForOrder_(book, orderId, kind); if (receipt && (receipt.status === 'PENDING' || receipt.status === 'UNKNOWN')) throw srError_('receipt_uncertain', 'Resolve the uncertain ' + kind.toLowerCase() + ' receipt delivery before continuing.'); }
-function setOrderStatus_(book, orderId, status) { var order = orderById_(book, orderId); if (!order) throw srError_('not_found', 'Order was not found.'); upsert_(sheet_(book, 'Orders'), 8, orderId, safeRow_([order.id, order.studentId, order.windowId, order.total, status, order.actorEmail, order.at, order.idempotencyKey])); }
+function setOrderStatus_(book, orderId, status) { var order = orderById_(book, orderId); if (!order) throw srError_('not_found', 'That order could not be found. Refresh and try again.'); upsert_(sheet_(book, 'Orders'), 8, orderId, safeRow_([order.id, order.studentId, order.windowId, order.total, status, order.actorEmail, order.at, order.idempotencyKey])); }
 function reconcileInventoryPlan_(book, plan, faultStage) {
   (plan || []).forEach(function(target) {
     var item = catalog_(book).filter(function(candidate) { return candidate.id === target.catalogId; })[0];
@@ -2135,7 +2139,7 @@ function reconcileInventoryMovements_(book, movements, faultPrefix) {
   });
 }
 function spendForOrder_(book, orderId) { var list = ledger_(book); for (var i = 0; i < list.length; i++) if (list[i].kind === 'SPEND' && list[i].referenceType === 'order' && list[i].referenceId === orderId) return list[i]; return null; }
-function cart_(value) { if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('bad_cart', 'Choose between 1 and 50 store items.'); var map = {}; value.forEach(function(line) { var itemId = id_(line && line.catalogId, 'catalog item'), quantity = integer_(line && line.quantity, 1, 100, 'Quantity'); map[itemId] = (map[itemId] || 0) + quantity; }); return Object.keys(map).sort().map(function(itemId) { return { catalogId: itemId, quantity: map[itemId] }; }); }
+function cart_(value) { if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('bad_cart', 'Add between 1 and 50 items to the cart.'); var map = {}; value.forEach(function(line) { var itemId = id_(line && line.catalogId, 'catalog item'), quantity = integer_(line && line.quantity, 1, 100, 'Quantity'); map[itemId] = (map[itemId] || 0) + quantity; }); return Object.keys(map).sort().map(function(itemId) { return { catalogId: itemId, quantity: map[itemId] }; }); }
 function statementKeys_(book) { var map = {}; rows_(sheet_(book, 'Statements'), 7).forEach(function(row) { if (String(row[4]) === 'SENT') map[String(row[1]) + '|' + String(row[2])] = true; }); return map; }
 function emailSchedule_() { var props = PropertiesService.getScriptProperties(); return { enabled: props.getProperty('SR_EMAIL_ENABLED') === 'true', weekday: props.getProperty('SR_EMAIL_WEEKDAY') || 'FRIDAY', hour: number_(props.getProperty('SR_EMAIL_HOUR') || 16) }; }
 function mailQuota_() { try { return Math.max(0, Number(MailApp.getRemainingDailyQuota()) || 0); } catch (_) { return 0; } }
@@ -2932,14 +2936,14 @@ function appendAuditOnce_(value, actor) {
   if (auditEventExists_(value.event, value.id)) return;
   appendAudit_(value, actor);
 }
-function idemKey_(value) { var key = text_(value, 120, ''); if (!/^[A-Za-z0-9:_-]{8,120}$/.test(key)) throw srError_('bad_idempotency_key', 'A stable request key is required.'); return key; }
+function idemKey_(value) { var key = text_(value, 120, ''); if (!/^[A-Za-z0-9:_-]{8,120}$/.test(key)) throw srError_('bad_idempotency_key', 'The request was missing its safety key. Reload the page and try again.'); return key; }
 function idemRecords_(book, key) { return rows_(sheet_(book, 'Idempotency'), 4).filter(function(row) { return String(row[0]) === key; }); }
 function parseIdemPayload_(value) { try { return JSON.parse(String(value || '{}')); } catch (_) { throw srError_('idempotency_corrupt', 'The saved request record is not valid JSON. Review the integrity report.'); } }
 function idemResult_(key, operation) {
   var records = idemRecords_(book_(), key);
   if (records.length > 1) throw srError_('idempotency_corrupt', 'That request key appears more than once. Review the integrity report.');
   if (!records.length) return null;
-  if (String(records[0][1]) !== operation) throw srError_('idempotency_conflict', 'That request key was already used.');
+  if (String(records[0][1]) !== operation) throw srError_('idempotency_conflict', 'This action was already recorded once. Refresh to see it; nothing was done twice.');
   var saved = parseIdemPayload_(records[0][2]);
   if (saved && saved.journalVersion === 1) return saved.state === 'COMPLETED' ? saved.result : null;
   return saved;
@@ -3173,7 +3177,7 @@ function loadCoreOperation_(book, key, operation, kind) {
   var records = idemRecords_(book, key);
   if (records.length > 1) throw srError_('idempotency_corrupt', 'That request key appears more than once. Review the integrity report.');
   if (!records.length) return null;
-  if (String(records[0][1]) !== operation) throw srError_('idempotency_conflict', 'That request key was already used.');
+  if (String(records[0][1]) !== operation) throw srError_('idempotency_conflict', 'This action was already recorded once. Refresh to see it; nothing was done twice.');
   var saved = parseIdemPayload_(records[0][2]);
   if (!saved || saved.journalVersion !== 1) return { legacy: true, result: saved };
   if (saved.kind !== kind || !saved.intent || ['INTENT', 'MUTATIONS_APPLIED', 'COMPLETED'].indexOf(saved.state) < 0) throw srError_('idempotency_corrupt', 'The saved operation journal is invalid. Review the integrity report.');
@@ -3708,7 +3712,7 @@ function buildSchoolRewardsIntegrityReport_(book, holdAgeDays, pendingAgeMinutes
   };
 }
 
-function locked_(callback) { var lock = LockService.getScriptLock(); if (!lock.tryLock(30000)) throw srError_('busy', 'School Rewards is busy. Try again.'); try { return callback(); } finally { lock.releaseLock(); } }
+function locked_(callback) { var lock = LockService.getScriptLock(); if (!lock.tryLock(30000)) throw srError_('busy', 'Someone else is saving right now. Wait a moment and try again.'); try { return callback(); } finally { lock.releaseLock(); } }
 function rows_(sheet, width) { var last = sheet.getLastRow(); return last < 2 ? [] : sheet.getRange(2, 1, last - 1, width).getValues(); }
 function upsert_(sheet, width, key, row) { var current = rows_(sheet, width); for (var i = 0; i < current.length; i++) if (String(current[i][0]) === String(key)) { sheet.getRange(i + 2, 1, 1, width).setValues([row]); return; } sheet.appendRow(row); }
 function object_(value) { return value && Object.prototype.toString.call(value) === '[object Object]' ? value : {}; }
@@ -3722,10 +3726,10 @@ function optionalId_(value, label) { var out = text_(value, 80, ''); return out 
 function normalizeEmail_(value) { var email = String(value || '').trim().toLowerCase(); return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : ''; }
 function normalizeDomain_(value) { var domain = String(value || '').trim().toLowerCase().replace(/^@/, ''); return /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(domain) && domain.indexOf('.') > 0 ? domain : ''; }
 function emailDomain_(email) { return normalizeEmail_(email).split('@')[1] || ''; }
-function activeEmail_() { var email = normalizeEmail_(Session.getActiveUser().getEmail()); if (!email) throw srError_('identity_unavailable', 'Google did not provide a managed account identity.'); return email; }
+function activeEmail_() { var email = normalizeEmail_(Session.getActiveUser().getEmail()); if (!email) throw srError_('identity_unavailable', 'Google did not say who is signed in. Sign out, sign back in with your school account, and reload.'); return email; }
 function now_() { return new Date().toISOString(); }
 function uuid_() { return Utilities.getUuid(); }
-function iso_(value) { if (!value) return ''; var date = new Date(String(value)); if (isNaN(date.getTime())) throw srError_('bad_date', 'Use a valid date and time.'); return date.toISOString(); }
+function iso_(value) { if (!value) return ''; var date = new Date(String(value)); if (isNaN(date.getTime())) throw srError_('bad_date', 'Enter a date and time.'); return date.toISOString(); }
 function httpsUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\//i.test(out) || out.length > 600) throw srError_('bad_url', 'Use an HTTPS URL.'); return out; }
 function webAppUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(out)) throw srError_('bad_url', 'Use the Apps Script /exec URL.'); return out; }
 function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^[=+\-@]/.test(value) ? "'" + value : value; }); }

@@ -153,3 +153,120 @@ describe('bench motion cues', () => {
     expect(magnetBtn).not.toContain('rk-wb-nudge');
   });
 });
+
+describe('field case', () => {
+  it('stays hidden until the first specimen is named', () => {
+    expect(markupOf({ lens: 'metallic' })).not.toContain('data-wb-field-case');
+  });
+
+  it('shows one chip per named mineral and folds the rest into an honest remainder', () => {
+    const markup = markupOf({ collected: ['pyrite', 'calcite'], solvedId: null, lens: 'metallic' });
+    expect(markup).toContain('data-wb-field-case="partial"');
+    expect(markup).toContain('data-wb-case-count="2"');
+    expect(markup).toContain('data-wb-case-id="pyrite"');
+    expect(markup).toContain('data-wb-case-id="calcite"');
+    expect(markup).toContain('2 / 12 named');
+    expect(markup).toContain('10 still unnamed');
+    expect((markup.match(/data-wb-case-slot="filled"/g) || []).length).toBe(2);
+    expect((markup.match(/data-wb-case-slot="empty"/g) || []).length).toBe(1);
+  });
+
+  it('ignores minerals collected outside the active pool', () => {
+    const markup = markupOf({ collected: ['pyrite', 'diamond'], lens: 'metallic' });
+    expect(markup).toContain('data-wb-case-count="1"');
+    expect(markup).not.toContain('data-wb-case-id="diamond"');
+  });
+
+  it('marks the case complete once every mineral in the pool is named', () => {
+    const markup = markupOf({ collected: POOL.slice(), lens: 'metallic' });
+    expect(markup).toContain('data-wb-field-case="complete"');
+    expect(markup).toContain('Case complete');
+    expect(markup).not.toContain('still unnamed');
+  });
+
+  it('adds the solved mineral to the case exactly once', () => {
+    const solved = {
+      spId: 'pyrite', selectedId: 'pyrite', collected: ['pyrite', 'calcite'],
+      lens: 'metallic', streakDone: true, streakObs: 'powder-greenish-black',
+      claimEvidence: ['luster', 'streak'], claimReasoning: 'both', claimConfidence: 'very',
+    };
+    const t = tree(solved);
+    const submit = findAll(t.node, (n) => n.type === 'button' && n.props.children === 'Submit evidence-based claim')[0];
+    expect(submit.props.disabled).toBe(false);
+    submit.props.onClick();
+    expect(t.store.rocks.wb.collected).toEqual(['pyrite', 'calcite']);
+    expect(t.store.rocks.wb.solvedId).toBe('pyrite');
+  });
+});
+
+describe('experimental design review', () => {
+  const solved = (id, extra) => Object.assign({ spId: id, solvedId: id, selectedId: id }, extra);
+
+  it('stays out of the way until the specimen is solved', () => {
+    expect(markupOf({ lens: 'metallic', history: [{ tool: 'lens', choice: 'metallic', label: 'Metallic' }] }))
+      .not.toContain('data-wb-efficiency');
+  });
+
+  it('needs at least one recorded trial before it reviews anything', () => {
+    expect(markupOf(solved('pyrite', { lens: 'metallic', history: [] }))).not.toContain('data-wb-efficiency');
+  });
+
+  it('credits a run that matched the hindsight-shortest path', () => {
+    const markup = markupOf(solved('pyrite', {
+      streakDone: true, streakObs: 'powder-greenish-black',
+      history: [{ tool: 'streak', choice: 'powder-greenish-black', label: 'Greenish-black' }],
+    }));
+    expect(markup).toContain('data-wb-efficiency="lean"');
+    expect(markup).toContain('data-wb-efficiency-minimum="1"');
+    expect(markup).toContain('data-wb-efficiency-used="1"');
+    expect(markup).toContain('Tests you ran: 1. Shortest sufficient path, visible only in hindsight: 1.');
+    expect(markup).toContain('what efficient experimental design looks like');
+  });
+
+  it('defends the extra tests when the run was longer than the minimum', () => {
+    const markup = markupOf(solved('pyrite', {
+      lens: 'metallic', streakDone: true, streakObs: 'powder-greenish-black',
+      history: [
+        { tool: 'lens', choice: 'metallic', label: 'Metallic' },
+        { tool: 'streak', choice: 'powder-greenish-black', label: 'Greenish-black' },
+        { tool: 'magnet', choice: 'none', label: 'No movement' },
+        { tool: 'scratch', ref: 'steel_nail', choice: 'no', label: 'No groove' },
+      ],
+    }));
+    expect(markup).toContain('data-wb-efficiency="longer"');
+    expect(markup).toContain('data-wb-efficiency-used="4"');
+    expect(markup).toContain('the extra tests were not wasted');
+  });
+
+  it('counts repeated trials on one instrument as a single test', () => {
+    const markup = markupOf(solved('pyrite', {
+      lens: 'metallic', streakDone: true, streakObs: 'powder-greenish-black',
+      history: [
+        { tool: 'lens', choice: 'pearly', label: 'Pearly' },
+        { tool: 'lens', choice: 'metallic', label: 'Metallic' },
+        { tool: 'streak', choice: 'powder-greenish-black', label: 'Greenish-black' },
+      ],
+    }));
+    expect(markup).toContain('data-wb-efficiency-used="2"');
+  });
+
+  it('names shortest paths that are geologically the right answer', () => {
+    const trial = [{ tool: 'lens', choice: 'metallic', label: 'Metallic' }];
+    const run = (id) => markupOf(solved(id, { lens: 'metallic', history: trial }));
+    // Pyrite's greenish-black powder is unique in the standard pool.
+    expect(run('pyrite')).toContain('That path: a streak-plate result.');
+    // Calcite is the only carbonate here, so the acid drop settles it alone.
+    expect(run('calcite')).toContain('That path: an acid reaction.');
+    // Nothing single-property separates mica; luster plus a fingernail does.
+    expect(run('mica')).toContain('data-wb-efficiency-minimum="2"');
+  });
+
+  it('never claims the fragment shape alone was enough', () => {
+    // Form is excluded from the search for the same reason the coach never
+    // recommends it: shape on a broken fragment is a weak diagnostic.
+    ['quartz', 'calcite', 'gypsum', 'magnetite', 'hematite'].forEach((id) => {
+      const markup = markupOf(solved(id, { lens: 'metallic', history: [{ tool: 'lens', choice: 'metallic', label: 'Metallic' }] }));
+      expect(markup, id).not.toContain('That path: the fragment');
+    });
+  });
+});

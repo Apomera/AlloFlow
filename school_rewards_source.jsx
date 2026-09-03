@@ -113,6 +113,96 @@ function srSetupSnippet(form) {
   ].join('\n');
 }
 
+// Shared fetch for the four package files: local tree first, then the CDN
+// mirror, and nothing is accepted unless every signature is present.
+async function srFetchPackageFile(file) {
+  const path = SR_SOURCE_DIR + file.name;
+  const urls = ['/' + path, SR_CDN_BASE + path];
+  for (const url of urls) {
+    try {
+      const response = await fetch(url, { credentials: 'omit' });
+      if (!response.ok) continue;
+      const source = await response.text();
+      if (source && file.signatures.every((token) => source.includes(token))) return source;
+    } catch (_) {}
+  }
+  return '';
+}
+
+// IT handoff (2026-09-02). Principals rarely do the editor steps themselves.
+// One packet lets a technology coordinator finish the Apps Script work and
+// send back the /exec link. The HTML packet embeds the four files and the
+// generated setup function with copy buttons; the text version links to the
+// published sources instead so it fits in an email.
+function srHandoffSteps(form) {
+  const school = String(form.schoolName || '').trim() || 'our school';
+  return [
+    ['Open script.new', 'Sign in to the managed Google Workspace account that will own the ledger (a durable role account is safer than a personal one), then open https://script.new/. Click "Untitled project" at the top and name it AlloFlow School Rewards. Open Project Settings (the gear on the left) and tick "Show appsscript.json manifest file in editor".'],
+    ['Replace Code.gs', 'Code.gs is already open with a few starter lines. Click inside it, press Ctrl+A (Cmd+A on a Mac), paste the Code.gs source over it, then press Ctrl+S to save.'],
+    ['Add the Portal page', 'In the Files list on the left click the + beside Files and choose HTML. Type Portal as the name (the editor adds .html itself) and press Enter. Select its starter lines with Ctrl+A, paste the Portal.html source, and save.'],
+    ['Add the Index page', 'Same again: click the + beside Files, choose HTML, name it Index, press Enter, select the starter lines, paste the Index.html source, and save.'],
+    ['Replace appsscript.json', 'Click appsscript.json in the Files list, select everything with Ctrl+A, paste the manifest source, and save.'],
+    ['Run the one-time setup', 'Open Code.gs, press Ctrl+End to reach the bottom, paste the setup function (below), and save. In the toolbar, the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup, then click Run. Google shows an authorisation screen: pick the account, click Advanced, then "Go to AlloFlow School Rewards (unsafe)" (that wording appears for every in-house script that is not published to the store), then Allow. The Execution log should end with "ok": true. You may delete the pasted function afterwards.'],
+    ['Deploy privately', 'Click Deploy (top right), then New deployment. Beside "Select type" click the gear and choose Web app. Description: School Rewards. Execute as: Me. Who has access: your organisation (the domain), never Anyone. Click Deploy and copy the Web app URL that ends in /exec.'],
+    ['Send the link back', 'Send that /exec link to the person who gave you this packet (for ' + school + '). They paste it into AlloFlow and the tool is live. If any file changes later, use Deploy, Manage deployments, edit, New version, or the change will not go live.'],
+  ];
+}
+function srHandoffText(form, snippet) {
+  const lines = ['AlloFlow School Rewards: setup instructions for the technology coordinator', 'School: ' + (form.schoolName || '(not set yet)'), 'Allowed sign-in domain: ' + (form.allowedDomain || '(not set yet)'), '', 'Sources to paste (open each link, press Ctrl+A, then Ctrl+C):'];
+  SR_FILES.forEach((file) => lines.push('  ' + file.name + ': ' + SR_CDN_BASE + SR_SOURCE_DIR + file.name));
+  lines.push('');
+  srHandoffSteps(form).forEach((step, i) => lines.push((i + 1) + '. ' + step[0], '   ' + step[1], ''));
+  lines.push('Setup function to paste at the end of Code.gs (step 6):', '', snippet, '', 'Full manual: ' + SR_CDN_BASE + 'school-rewards-manual');
+  return lines.join('\n');
+}
+function srHandoffHtml(form, snippet, sources) {
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const block = (id, label, text) => '<section class="file" id="sec-' + id + '"><h3>' + esc(label) + '</h3><p><button type="button" data-copy="' + id + '">Copy ' + esc(label) + '</button> <span class="ok" id="ok-' + id + '" role="status"></span></p><textarea id="' + id + '" readonly spellcheck="false" aria-label="' + esc(label) + ' source">' + esc(text) + '</textarea></section>';
+  const files = SR_FILES.map((file) => {
+    const id = file.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    if (sources && sources[file.name]) return block(id, file.name, sources[file.name]);
+    return '<section class="file"><h3>' + esc(file.name) + '</h3><p>Open <a href="' + esc(SR_CDN_BASE + SR_SOURCE_DIR + file.name) + '">' + esc(file.name) + '</a>, press Ctrl+A, then Ctrl+C.</p></section>';
+  }).join('');
+  const steps = srHandoffSteps(form).map((step) => '<li><strong>' + esc(step[0]) + '.</strong> ' + esc(step[1]) + '</li>').join('');
+  const school = esc(form.schoolName || 'the school');
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AlloFlow School Rewards: setup for IT</title><style>body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;color:#172033}h1{font-size:24px}h2{font-size:19px;margin-top:28px}h3{font-size:16px;margin:0 0 6px}ol{padding-left:22px}li{margin:0 0 12px}.file{border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px;margin:12px 0}textarea{width:100%;min-height:140px;font:12px ui-monospace,Consolas,monospace;box-sizing:border-box}button{min-height:40px;border-radius:9px;border:1px solid #1e40af;background:#1e40af;color:#fff;font-weight:700;padding:6px 14px;cursor:pointer}.ok{font-weight:700;color:#166534}.note{background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:10px 12px}</style></head><body><h1>AlloFlow School Rewards: setup for the technology coordinator</h1><p>Prepared for <strong>' + school + '</strong>' + (form.allowedDomain ? ' (sign-in domain <code>' + esc(form.allowedDomain) + '</code>)' : '') + '. Everything you need is on this page: the eight steps, the four files with copy buttons, and the one-time setup function. It takes about twenty minutes. Nothing here contains student data.</p><p class="note">Do this signed in to the managed Google Workspace account that should own the ledger, not a personal account. The account that runs the setup becomes the first administrator.</p><h2>Steps</h2><ol>' + steps + '</ol><h2>Files to paste</h2>' + files + '<h2>Setup function (step 6)</h2>' + block('setup-fn', 'setup function', snippet) + '<p>Full manual: <a href="' + esc(SR_CDN_BASE + 'school-rewards-manual') + '">' + esc(SR_CDN_BASE + 'school-rewards-manual') + '</a></p><script>document.querySelectorAll("[data-copy]").forEach(function(b){b.onclick=function(){var ta=document.getElementById(b.getAttribute("data-copy"));var ok=document.getElementById("ok-"+b.getAttribute("data-copy"));ta.focus();ta.select();var done=false;try{done=document.execCommand("copy")}catch(e){}if(!done&&navigator.clipboard){navigator.clipboard.writeText(ta.value).then(function(){ok.textContent="Copied"},function(){ok.textContent="Press Ctrl+C now; the text is selected."})}else{ok.textContent=done?"Copied":"Press Ctrl+C now; the text is selected."}}});</script></body></html>';
+}
+
+function SrHandoff({ form, snippet, tt }) {
+  const [state, setState] = React.useState('');
+  const download = async () => {
+    setState('loading');
+    const sources = {};
+    for (const file of SR_FILES) { const source = await srFetchPackageFile(file); if (source) sources[file.name] = source; }
+    const missing = SR_FILES.filter((file) => !sources[file.name]).length;
+    try {
+      const blob = new Blob([srHandoffHtml(form, snippet, sources)], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = 'school-rewards-setup-for-it.html';
+      document.body.appendChild(link); link.click(); link.remove();
+      window.setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      setState(missing ? 'partial' : 'downloaded');
+    } catch (_) { setState('failed'); }
+  };
+  const copyText = async () => { setState((await srCopyText(srHandoffText(form, snippet))) ? 'copied' : 'copyfailed'); };
+  const messages = {
+    loading: tt('schoolrewards.handoff_loading', 'Gathering the files…'),
+    downloaded: tt('schoolrewards.handoff_downloaded', 'Downloaded school-rewards-setup-for-it.html. Email it to your technology coordinator; it holds every file, the steps, and the setup function.'),
+    partial: tt('schoolrewards.handoff_partial', 'Downloaded school-rewards-setup-for-it.html. Some files could not be fetched just now, so the packet links to them instead.'),
+    failed: tt('schoolrewards.handoff_failed', 'The file could not be created in this window. Use the copy button instead.'),
+    copied: tt('schoolrewards.handoff_copied', 'Copied. Paste it into an email; the file sources are linked inside.'),
+    copyfailed: tt('schoolrewards.handoff_copy_failed', 'Clipboard is blocked in this window. Use the download button instead.'),
+  };
+  return <div className="mt-3">
+    <div className="flex flex-wrap gap-2">
+      <button type="button" className={SR_BTN_PRIMARY} onClick={download} disabled={state === 'loading'} data-help-key="schoolrewards_handoff_download">{tt('schoolrewards.handoff_download', 'Download instructions for IT')}</button>
+      <button type="button" className={SR_BTN_SECONDARY} onClick={copyText} data-help-key="schoolrewards_handoff_copy">{tt('schoolrewards.handoff_copy', 'Copy as email text')}</button>
+    </div>
+    {messages[state] && <p className="m-0 mt-2 text-xs text-slate-800" role="status">{messages[state]}</p>}
+  </div>;
+}
+
 function srMakeTt(t) {
   return (key, fallback) => {
     if (typeof t === 'function') {
@@ -139,17 +229,8 @@ function SrCopySource({ file, onCopied, tt }) {
   const manualRef = React.useRef(null);
   const fetchSource = React.useCallback(async () => {
     if (sourceRef.current) return sourceRef.current;
-    const path = SR_SOURCE_DIR + file.name;
-    const urls = ['/' + path, SR_CDN_BASE + path];
-    let source = '';
-    for (const url of urls) {
-      try {
-        const response = await fetch(url, { credentials: 'omit' });
-        if (response.ok) { source = await response.text(); break; }
-      } catch (_) {}
-    }
-    if (!source || !file.signatures.every((token) => source.includes(token))) return '';
-    sourceRef.current = source;
+    const source = await srFetchPackageFile(file);
+    if (source) sourceRef.current = source;
     return source;
   }, [file]);
   React.useEffect(() => { fetchSource().catch(() => ''); }, [fetchSource]);
@@ -472,8 +553,10 @@ function SchoolRewardsPanel(props) {
   // Code.gs answers ?api=status with a plain-language check page (and
   // ?api=health with JSON), but only for a signed-in domain account, so the
   // check opens in the browser rather than being fetched from this frame.
+  const [healthHint, setHealthHint] = React.useState(false);
   const openHealth = () => {
     if (!connected) return;
+    setHealthHint(true);
     openWindow(portalUrl + '?api=status', tt('schoolrewards.popup_blocked_check', 'The deployment check was blocked. Allow pop-ups for AlloFlow and try again.'));
   };
   const copySnippet = async () => {
@@ -597,20 +680,25 @@ function SchoolRewardsPanel(props) {
           <p className="mt-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-950" role="status" data-help-key="schoolrewards_next_step">
             {nextStep ? <><strong>{tt('schoolrewards.next_step', 'Next step:')}</strong> {stepLabels[nextStep]}</> : <strong>{tt('schoolrewards.all_done', 'Setup complete. The portal is connected and verified on this device.')}</strong>}
           </p>
+          {showSetup && <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-4" data-help-key="schoolrewards_handoff">
+            <p className="m-0 text-sm font-black text-slate-900">{tt('schoolrewards.handoff_title', 'Not doing the editor steps yourself?')}</p>
+            <p className="m-0 mt-1 text-sm leading-relaxed text-slate-800">{tt('schoolrewards.handoff_body', 'Steps 2 to 8 happen in the Google Apps Script editor. Fill in the school details under step 7 first, then hand the whole job to your technology coordinator as one file. They send back a link and you paste it in step 9.')}</p>
+            <SrHandoff form={form} snippet={snippet} tt={tt} />
+          </div>}
           <ol id="schoolrewards-setup-body" hidden={!showSetup} className="mt-3 list-none space-y-3 p-0">
             {stepCard('approval', tt('schoolrewards.step_approval', 'Confirm district review and the managed account'), tt('schoolrewards.step_approval_body', 'The school or district reviews Code.gs, Portal.html, Index.html, and appsscript.json, plus Apps Script use, Sheet storage, mail sending, and retention. Sign into the managed Google Education account that will own the ledger, the mail trigger, and the private print-model folder; a durable role account is safer than a personal one.'))}
             {stepCard('project', tt('schoolrewards.step_project', 'Create the private project'), <>{tt('schoolrewards.step_project_body_a', 'Open ')}<a className="font-bold text-emerald-900 underline" href="https://script.new/" target="_blank" rel="noopener noreferrer">script.new</a>{tt('schoolrewards.step_project_body_b', ', verify the account again, and name the project ')}<code className="rounded bg-slate-100 px-1">AlloFlow School Rewards</code>{tt('schoolrewards.step_project_body_c', '. In Project Settings turn on "Show appsscript.json manifest file in editor".')}</>)}
-            {fileCard(SR_FILES[0], tt('schoolrewards.step_code', 'Replace Code.gs'), tt('schoolrewards.step_code_body', 'Select all starter code, paste this source, and save.'))}
-            {fileCard(SR_FILES[1], tt('schoolrewards.step_portal', 'Add the Portal page'), <>{tt('schoolrewards.step_portal_body_a', 'Choose + → HTML, name it exactly ')}<code className="rounded bg-slate-100 px-1">Portal</code>{tt('schoolrewards.step_portal_body_b', ', then paste this source.')}</>)}
-            {fileCard(SR_FILES[2], tt('schoolrewards.step_index', 'Add the Index page'), <>{tt('schoolrewards.step_index_body_a', 'Choose + → HTML, name it exactly ')}<code className="rounded bg-slate-100 px-1">Index</code>{tt('schoolrewards.step_index_body_b', ', then paste this source. It only wraps the Portal page.')}</>)}
-            {fileCard(SR_FILES[3], tt('schoolrewards.step_manifest', 'Replace appsscript.json'), tt('schoolrewards.step_manifest_body', 'Open the manifest in the editor and replace it with this one. It restricts the web app to your domain, runs it as the deploying account, and declares the Sheets, Drive, mail, and trigger scopes the ledger needs.'))}
-            {stepCard('setup', tt('schoolrewards.step_setup', 'Run the one-time repository setup'), tt('schoolrewards.step_setup_body', 'Fill in the school details, copy the generated function, paste it at the end of Code.gs, choose runInitialSchoolRewardsSetup in the function menu, and click Run. Approve the scopes once. The account that runs it becomes the first administrator and the allowed domain must match its email domain. Staff, cashiers, and students are added afterwards inside the portal (administrator editing and CSV roster import).'),
+            {fileCard(SR_FILES[0], tt('schoolrewards.step_code', 'Replace Code.gs'), tt('schoolrewards.step_code_body', 'Code.gs is already open in the editor with a few starter lines. Click inside it, press Ctrl+A (Cmd+A on a Mac) to select everything, paste this source over it with Ctrl+V, then save with Ctrl+S. The copy button puts the whole file on your clipboard.'))}
+            {fileCard(SR_FILES[1], tt('schoolrewards.step_portal', 'Add the Portal page'), <>{tt('schoolrewards.step_portal_body_a', 'In the Files list on the left, click the + beside Files and choose HTML. A new file appears with its name selected: type ')}<code className="rounded bg-slate-100 px-1">Portal</code>{tt('schoolrewards.step_portal_body_b', ' (the editor adds .html itself) and press Enter. Select its starter lines with Ctrl+A, paste this source, and save with Ctrl+S.')}</>)}
+            {fileCard(SR_FILES[2], tt('schoolrewards.step_index', 'Add the Index page'), <>{tt('schoolrewards.step_index_body_a', 'Same as the Portal page: click the + beside Files, choose HTML, type ')}<code className="rounded bg-slate-100 px-1">Index</code>{tt('schoolrewards.step_index_body_b', ', press Enter, select the starter lines, paste this source, and save. This page only wraps the Portal page; it is what the web address opens.')}</>)}
+            {fileCard(SR_FILES[3], tt('schoolrewards.step_manifest', 'Replace appsscript.json'), tt('schoolrewards.step_manifest_body', 'In the Files list click appsscript.json (it appears once the Project Settings option from step 2 is on). Select everything in it with Ctrl+A, paste this manifest, and save. It restricts the web app to your domain, runs it as the deploying account, and declares the Sheets, Drive, mail, and trigger scopes the ledger needs.'))}
+            {stepCard('setup', tt('schoolrewards.step_setup', 'Run the one-time repository setup'), tt('schoolrewards.step_setup_body', 'Fill in the school details below and copy the generated function. In the editor open Code.gs, press Ctrl+End to reach the bottom, paste it there, and save. In the toolbar the dropdown beside Debug lists the functions: choose runInitialSchoolRewardsSetup and click Run. Google asks you to authorise once: pick the account, click Advanced, then "Go to AlloFlow School Rewards (unsafe)" (that wording appears for every in-house script), then Allow. The Execution log should end with "ok": true. The account that runs it becomes the first administrator, and the domain must match its email. Staff, cashiers, and students are added later inside the portal.'),
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_school', 'School name')}<input className={SR_INPUT + ' mt-1 font-normal'} value={form.schoolName || ''} onChange={(event) => setForm('schoolName', event.target.value)} placeholder="Example Elementary" /></label>
-                <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_domain', 'Allowed Google Workspace domain')}<input className={SR_INPUT + ' mt-1 font-normal'} value={form.allowedDomain || ''} onChange={(event) => setForm('allowedDomain', event.target.value)} placeholder="school.example" inputMode="url" autoComplete="off" spellCheck={false} /></label>
+                <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_domain', 'School sign-in domain')}<span className="block font-normal text-slate-700">{tt('schoolrewards.form_domain_help', 'The part after the @ in your school email, for example lincoln.k12.example. Only accounts on this domain can sign in.')}</span><input className={SR_INPUT + ' mt-1 font-normal'} value={form.allowedDomain || ''} onChange={(event) => setForm('allowedDomain', event.target.value)} placeholder="school.example" inputMode="url" autoComplete="off" spellCheck={false} /></label>
                 <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_year', 'Academic year')}<input className={SR_INPUT + ' mt-1 font-normal'} value={form.academicYear || ''} onChange={(event) => setForm('academicYear', event.target.value)} placeholder="2026-27" /></label>
-                <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_thresholds', 'Growth level thresholds (net points)')}<input className={SR_INPUT + ' mt-1 font-normal'} value={form.levelThresholds || ''} onChange={(event) => setForm('levelThresholds', event.target.value)} placeholder="0, 25, 75, 150, 300" inputMode="numeric" /></label>
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 sm:col-span-2"><input type="checkbox" className="h-5 w-5 accent-emerald-700" checked={form.seedHowls !== false} onChange={(event) => setForm('seedHowls', event.target.checked)} />{tt('schoolrewards.form_seed', 'Seed the default HOWL recognition categories (editable later in the portal)')}</label>
+                <label className="block text-xs font-black text-slate-800">{tt('schoolrewards.form_thresholds', 'Growth levels')}<span className="block font-normal text-slate-700">{tt('schoolrewards.form_thresholds_help', 'Students reach a new level at each number of points. The defaults suit most schools; change them only if you already have levels.')}</span><input className={SR_INPUT + ' mt-1 font-normal'} value={form.levelThresholds || ''} onChange={(event) => setForm('levelThresholds', event.target.value)} placeholder="0, 25, 75, 150, 300" inputMode="numeric" /></label>
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-800 sm:col-span-2"><input type="checkbox" className="h-5 w-5 accent-emerald-700" checked={form.seedHowls !== false} onChange={(event) => setForm('seedHowls', event.target.checked)} />{tt('schoolrewards.form_seed', 'Start with the built-in recognition categories (you can rename or replace them in the portal later)')}</label>
                 <div className="sm:col-span-2">
                   <label htmlFor="schoolrewards-setup-snippet" className="block text-xs font-black text-slate-800">{tt('schoolrewards.snippet_label', 'Generated setup function')}</label>
                   <textarea id="schoolrewards-setup-snippet" className={SR_INPUT + ' mt-1 font-mono text-xs'} readOnly rows={9} value={snippet} spellCheck={false} onFocus={(event) => event.target.select()} data-help-key="schoolrewards_setup_snippet" />
@@ -620,7 +708,7 @@ function SchoolRewardsPanel(props) {
                   </div>
                 </div>
               </div>)}
-            {stepCard('deployed', tt('schoolrewards.step_deployed', 'Deploy as a domain-restricted web app'), tt('schoolrewards.step_deployed_body', 'Choose Deploy → New deployment → Web app. Execute as: Me (the deploying account). Who has access: users in your Google Workspace domain, never Anyone. Review the account and scopes, then copy the URL that ends in /exec. Any later source change needs a new deployment version.'))}
+            {stepCard('deployed', tt('schoolrewards.step_deployed', 'Deploy as a domain-restricted web app'), tt('schoolrewards.step_deployed_body', 'Click Deploy (top right), then New deployment. Beside "Select type" click the gear and choose Web app. Execute as: Me. Who has access: your organisation (the domain), never Anyone. Click Deploy, approve if asked, and copy the Web app URL that ends in /exec. Any later change to a file needs Deploy, Manage deployments, New version before it goes live.'))}
             {stepCard('connected', tt('schoolrewards.step_connected', 'Paste the deployment URL and connect'), tt('schoolrewards.step_connected_body', 'Saved on this device only; each leader who needs the launcher pastes it once. Google sign-in still decides what each person can see.'),
               <form className="mt-3" onSubmit={(event) => { event.preventDefault(); savePortalUrl(urlDraft); }}>
                 <label htmlFor="schoolrewards-portal-url" className="block text-xs font-black text-slate-800">{tt('schoolrewards.url_label', 'School or district Apps Script web-app URL')}</label>
@@ -630,10 +718,11 @@ function SchoolRewardsPanel(props) {
                 </div>
                 <p id="schoolrewards-portal-url-help" className={'mt-2 text-xs leading-relaxed ' + (urlMessage.tone === 'error' ? 'text-rose-900' : 'text-slate-700')} role={urlMessage.text ? 'status' : undefined}>{urlMessage.text || tt('schoolrewards.url_help', 'Only an HTTPS script.google.com address ending in /macros/s/{deployment}/exec is accepted.')}</p>
               </form>)}
-            {stepCard('verified', tt('schoolrewards.step_verified', 'Verify the deployment and each role'), tt('schoolrewards.step_verified_body', 'Open the deployment check: the page should say "Deployment check passed" with your school, domain, script version 6, and your role. Then open the portal once as each intended role and confirm that students, staff, cashiers, and administrators see only their own surfaces.'),
+            {stepCard('verified', tt('schoolrewards.step_verified', 'Verify the deployment and each role'), tt('schoolrewards.step_verified_body', 'Open the deployment check: a page should say "Deployment check passed" with your school and your role. Then open the portal: the Admin setup tab has a First-week checklist that ticks itself as staff, students, prizes, and the first award appear, so you can see each role working without borrowing accounts.'),
               <div className="mt-3 flex flex-wrap gap-2">
                 <button type="button" className={SR_BTN_SECONDARY} onClick={openHealth} disabled={!connected}>{tt('schoolrewards.open_check', 'Open deployment check')}</button>
                 <button type="button" className={SR_BTN_SECONDARY} onClick={openPortal} disabled={!connected}>{tt('schoolrewards.open_portal', 'Open School Rewards portal')}</button>
+                {healthHint && <p className="m-0 w-full text-xs leading-relaxed text-slate-800" role="status" data-help-key="schoolrewards_health_hint">{tt('schoolrewards.health_hint', 'A new tab opened. If Google asks you to sign in, use your school account. A green "Deployment check passed" means the link works: come back and tick this step. Red means the page says what to check.')}</p>}
               </div>)}
           </ol>
         </section>

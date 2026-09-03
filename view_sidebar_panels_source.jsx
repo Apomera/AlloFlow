@@ -2548,7 +2548,7 @@ function GlossaryPanel(props) {
     glossaryCustomInstructions, glossaryDefinitionLevel, glossaryTier2Count,
     glossaryTier3Count, gradeLevel, handleGenerate,
     hasSourceOrAnalysis, includeEtymology, isProcessing,
-    selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
+    leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
     setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count,
     setIncludeEtymology, t
   } = props;
@@ -2637,9 +2637,16 @@ function GlossaryPanel(props) {
                         translate into, or a teacher cannot tell whether translations are
                         coming — but it is not the place to edit the list. */}
                     <div className="mb-3 text-xs text-slate-600" data-help-key="glossary_language_summary">
-                        {selectedLanguages.length > 0
-                            ? <span>{t('glossary.will_translate') || 'Will include translations for'}: <span className="font-bold text-sky-700">{selectedLanguages.join(', ')}</span></span>
-                            : <span className="italic">{t('glossary.no_languages_hint') || 'No translation languages set — add them in Universal Settings.'}</span>}
+                        {(() => {
+                            // Translation columns follow the universal Output Language
+                            // (2026-09-03): every selected language only when the output is
+                            // "All Selected Languages"; otherwise the one output language.
+                            const output = String(leveledTextLanguage || 'English').replace(/\s+/g, ' ').trim();
+                            const columns = /^all selected languages$/i.test(output) ? (selectedLanguages || []) : (/^english$/i.test(output) ? [] : [output]);
+                            return columns.length > 0
+                                ? <span>{t('glossary.will_translate') || 'Will include translations for'}: <span className="font-bold text-sky-700">{columns.join(', ')}</span> <span className="text-slate-500">({t('glossary.follows_output_language') || 'follows the Output Language in Universal Settings'})</span></span>
+                                : <span className="italic">{t('glossary.english_only_hint') || 'English only. Set an Output Language in Universal Settings to add a translation column.'}</span>;
+                        })()}
                     </div>
                     <div className="mt-3 pt-2 border-t border-slate-100">
                         <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none" data-help-key="glossary_auto_remove">

@@ -18,13 +18,17 @@ describe('rocks canvas animation loops', () => {
       expect(source).toContain('function isRocksHidden()');
       expect(source).toContain('function cancelRocksFrame()');
       expect(source).toContain('function scheduleRocksFrame()');
-      expect(source).toContain('if (!rocksAlive || rocksMotionReduced || animId || isRocksHidden()) return;');
+      expect(source).toContain('if (!rocksAlive || rocksMotionReduced() || animId || isRocksHidden()) return;');
       expect(source).toContain('animId = requestAnimationFrame(loop);');
       expect(source).toContain("document.addEventListener('visibilitychange', onRocksVisibilityChange);");
       expect(source).toContain("document.removeEventListener('visibilitychange', onRocksVisibilityChange);");
       expect(source).toContain('if (!canvasEl.isConnected) { canvasEl._rocksCleanup(); return; }');
-      expect(source).toContain('if (!rocksMotionReduced) tick++;');
-      expect(source).toContain('if (rocksMotionReduced) drawLandscape();');
+      expect(source).toContain('if (!rocksMotionReduced()) tick++;');
+      expect(source).toContain('if (rocksMotionReduced()) drawLandscape();');
+      // WCAG 2.2.2: the flag is read per FRAME from the dataset, so the control
+      // can stop the scene for a user who never set the OS preference.
+      expect(source).toContain("return canvasEl.dataset.rocksMotionOff === '1';");
+      expect(source).toContain('canvasEl._rocksSetMotion = function (off) {');
       expect(source).toContain('canvasEl._rocksRO = null;');
       expect(source).toContain('canvasEl._rocksCleanup = null;');
       expect(source).not.toContain('animId = requestAnimationFrame(loop);\\n\\n            }\\n\\n            animId = requestAnimationFrame(loop);');

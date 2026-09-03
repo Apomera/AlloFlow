@@ -3650,8 +3650,30 @@
     };
   }
 
+  // Render installs its translators here so module-scope message helpers can localize
+  // without changing their signatures. Before the first render they fall back to English.
+  var sourcebookTranslate = { f: null, n: null };
+  function sbTf(key, fallback, vars) {
+    if (typeof sourcebookTranslate.f === 'function') return sourcebookTranslate.f(key, fallback, vars);
+    var out = String(fallback);
+    if (vars) Object.keys(vars).forEach(function (name) { out = out.split('{' + name + '}').join(String(vars[name])); });
+    return out;
+  }
+  function sbTn(key, count, one, other, vars) {
+    if (typeof sourcebookTranslate.n === 'function') return sourcebookTranslate.n(key, count, one, other, vars);
+    var n = Number(count) || 0;
+    return sbTf(key, n === 1 ? one : other, Object.assign({ count: n }, vars || {}));
+  }
+
   function curatedProviderMessage(provider) {
-    return 'Showing verified results from Sourcebook’s curated shelf.';
+    return sbTf('stem.sourcebook.msg_curated_shelf_results', 'Showing verified results from Sourcebook’s curated shelf.');
+  }
+
+  function isSourcebookOnline() {
+    try {
+      var nav = (typeof window !== 'undefined' && window.navigator) || (typeof navigator !== 'undefined' ? navigator : null);
+      return !nav || typeof nav.onLine !== 'boolean' ? true : nav.onLine;
+    } catch (error) { return true; }
   }
 
   function searchOpenSources(query, options) {
@@ -4245,13 +4267,13 @@
 
   function liveResultSummary(items) {
     var list = Array.isArray(items) ? items : [];
-    if (!list.length) return 'No live results passed the selected rights allowlist.';
+    if (!list.length) return sbTf('stem.sourcebook.msg_no_live_results_allowlist', 'No live results passed the selected rights allowlist.');
     var counts = {};
     list.forEach(function (item) { counts[item.provider] = (counts[item.provider] || 0) + 1; });
     var breakdown = LIVE_PROVIDER_NAMES.filter(function (name) {
       return counts[name];
     }).map(function (name) { return counts[name] + ' ' + name; }).join(' · ');
-    return list.length + ' live result' + (list.length === 1 ? '' : 's') + ' passed the selected rights allowlist.' + (breakdown ? ' ' + breakdown + '.' : '');
+    return sbTn('stem.sourcebook.msg_live_results_allowlist', list.length, '{count} live result passed the selected rights allowlist.', '{count} live results passed the selected rights allowlist.') + (breakdown ? ' ' + breakdown + '.' : '');
   }
 
   function portableAsset(item) {
@@ -4806,6 +4828,22 @@
     };
   }
 
+  // Swatches the student read for an asset travel with its preparation so the
+  // board, the packages, and the manifest all carry the colours they actually saw.
+  function normalizedSwatches(value) {
+    if (!Array.isArray(value)) return [];
+    var seen = {};
+    var out = [];
+    value.forEach(function (entry) {
+      var hex = String(entry && entry.hex || '').trim().toLowerCase();
+      if (!/^#[0-9a-f]{6}$/.test(hex) || seen[hex] || out.length >= 8) return;
+      seen[hex] = true;
+      var share = Number(entry.share);
+      out.push({ hex: hex, share: Math.max(0, Math.min(100, isFinite(share) ? Math.round(share) : 0)) });
+    });
+    return out;
+  }
+
   function normalizedPreparation(value) {
     var prep = value && typeof value === 'object' ? value : {};
     var mode = prep.mode === 'crop' || prep.mode === 'tile' ? prep.mode : 'fit';
@@ -4832,7 +4870,8 @@
       grayscale: prep.grayscale === true,
       flip: prep.flip === true,
       grid: prep.grid === true,
-      posterize: prep.posterize === true
+      posterize: prep.posterize === true,
+      swatches: normalizedSwatches(prep.swatches)
     };
   }
 
@@ -5766,11 +5805,22 @@
       }).catch(function () { return initialUrl; });
   }
 
+  // A dropped connection rejects the fetch promise itself; an HTTP error resolves.
+  // Only the former is retried, once, so request-counting contracts see one call per success.
+  function fetchWithOneRetry(url, options, delayMs) {
+    return window.fetch(url, options).catch(function (error) {
+      if (!isSourcebookOnline()) throw error;
+      return new Promise(function (resolve) { setTimeout(resolve, delayMs == null ? 600 : delayMs); }).then(function () {
+        return window.fetch(url, options);
+      });
+    });
+  }
+
   function fetchImageDataUrl(item) {
     if (!item || typeof window.fetch !== 'function') return Promise.reject(new Error('This source cannot be fetched in this browser.'));
     return resolveFetchableImageUrl(item).then(function (url) {
       if (!/^https:\/\//i.test(url)) throw new Error('This source cannot be fetched in this browser.');
-      return window.fetch(url, { mode: 'cors', credentials: 'omit' });
+      return fetchWithOneRetry(url, { mode: 'cors', credentials: 'omit' });
     }).then(function (response) {
       if (!response || !response.ok) throw new Error('The source image could not be downloaded.');
       var length = Number(response.headers && response.headers.get && response.headers.get('content-length')) || 0;
@@ -5782,7 +5832,7 @@
   function fetchContactThumbnailDataUrl(item) {
     var url = safeHttpsUrl(item && item.imageUrl);
     if (!url || typeof window.fetch !== 'function') return Promise.reject(new Error('Thumbnail unavailable.'));
-    return window.fetch(url, { mode: 'cors', credentials: 'omit' }).then(function (response) {
+    return fetchWithOneRetry(url, { mode: 'cors', credentials: 'omit' }).then(function (response) {
       if (!response || !response.ok) throw new Error('Thumbnail unavailable.');
       var length = Number(response.headers && response.headers.get && response.headers.get('content-length')) || 0;
       if (length > 5000000) throw new Error('Thumbnail is too large for visual review.');
@@ -5927,6 +5977,12 @@
   // Colour swatches: sample a downscaled copy, bucket to 4 bits per channel,
   // then pick the most frequent buckets that stay visually distinct. Pure canvas
   // work on the thumbnail the tool already fetches; no network, no AI.
+  // Theme CSS is code, not copy: it must never pass through the translation layer.
+  // Dark theme needs nothing here: the STEM shell renders tools on a light card and the host's
+  // dark rules are scoped away from that card, so the authored light palette applies as-is.
+  var SOURCEBOOK_THEME_CSS = ".sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}"
+    + ".theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}.theme-contrast .sourcebook-tool a{text-decoration:underline!important}.theme-contrast .sourcebook-tool [class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .sourcebook-tool [class*=\"border-[#\"]{border-color:#ffff00!important}.theme-contrast .sourcebook-tool [aria-pressed=\"true\"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important;text-decoration:underline!important}";
+
   function sourcebookDocument() {
     if (typeof window !== 'undefined' && window.document && typeof window.document.createElement === 'function') return window.document;
     if (typeof document !== 'undefined' && document && typeof document.createElement === 'function') return document;
@@ -6133,7 +6189,7 @@
         })
         .then(function (loaded) {
           return loadContactImage(loaded.dataUrl).then(function (image) {
-            return { item: item, image: image, swatches: extractSwatches(image, 6), prep: prep, prepared: loaded.prepared };
+            return { item: item, image: image, swatches: prep.swatches.length ? prep.swatches : extractSwatches(image, 6), prep: prep, prepared: loaded.prepared };
           });
         })
         .catch(function () { return null; })
@@ -6193,7 +6249,7 @@
       + (sourceUrl ? '<a class="button alt" href="' + escapeHtml(sourceUrl) + '">Open source record</a>' : '')
       + '<span class="screen-note">Use your browser\'s Print command for a source sheet.</span></nav>'
       + '<section class="details"><div class="rights"><strong>' + escapeHtml(item.license) + '</strong><p>' + escapeHtml(item.rightsNote) + '</p>' + licenseLink + '</div>'
-      + '<dl><dt>Intended use</dt><dd>' + escapeHtml(usageIntent.label + ' - ' + usageIntent.sourceLabel) + '</dd><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Image purpose</dt><dd>' + escapeHtml(imagePurpose) + '</dd><dt>Alt text</dt><dd>' + escapeHtml(packagedAltText) + '</dd><dt>Alt text basis</dt><dd>' + escapeHtml(accessibilityBasis) + '</dd><dt>Alt text review</dt><dd>' + escapeHtml(accessibilityReviewLabel) + '</dd>' + (prep.note ? '<dt>Note</dt><dd>' + escapeHtml(prep.note) + '</dd>' : '') + '<dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Material type</dt><dd>' + escapeHtml(item.kind) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd><dt>Source record</dt><dd>' + (sourceUrl ? '<a href="' + escapeHtml(sourceUrl) + '">' + escapeHtml(sourceUrl) + '</a>' : 'See provider record') + '</dd></dl>'
+      + '<dl><dt>Intended use</dt><dd>' + escapeHtml(usageIntent.label + ' - ' + usageIntent.sourceLabel) + '</dd><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Image purpose</dt><dd>' + escapeHtml(imagePurpose) + '</dd><dt>Alt text</dt><dd>' + escapeHtml(packagedAltText) + '</dd><dt>Alt text basis</dt><dd>' + escapeHtml(accessibilityBasis) + '</dd><dt>Alt text review</dt><dd>' + escapeHtml(accessibilityReviewLabel) + '</dd>' + (prep.note ? '<dt>Note</dt><dd>' + escapeHtml(prep.note) + '</dd>' : '') + (prep.swatches.length ? '<dt>Swatches</dt><dd>' + escapeHtml(swatchesText(prep.swatches)) + '</dd>' : '') + '<dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Material type</dt><dd>' + escapeHtml(item.kind) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd><dt>Source record</dt><dd>' + (sourceUrl ? '<a href="' + escapeHtml(sourceUrl) + '">' + escapeHtml(sourceUrl) + '</a>' : 'See provider record') + '</dd></dl>'
       + '<h2>Credit and provenance</h2><p class="credit">' + escapeHtml(attributionText(item)) + '</p><p class="notice">This item passed Sourcebook\'s Public Domain, CC0, or CC BY allowlist. Rights metadata is reproduced from the linked item record; verify that record for your intended use.</p></section></main></body></html>';
   }
 
@@ -6273,7 +6329,7 @@
         + (sourceUrl ? '<a class="button alt" href="' + escapeHtml(sourceUrl) + '">Open source record</a>' : '') + '</div>'
         + '<div class="rights"><strong>' + escapeHtml(item.license) + '</strong><p>' + escapeHtml(item.rightsNote) + '</p>'
         + (licenseUrl ? '<a href="' + escapeHtml(licenseUrl) + '">Review license terms</a>' : '') + '</div>'
-        + '<dl><dt>Output preflight</dt><dd>' + escapeHtml(itemPreflightNote) + '</dd><dt>Intended use</dt><dd>' + escapeHtml(itemPreflightRow.usageIntentLabel + ' - ' + itemPreflightRow.usageIntentSourceLabel) + '</dd><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Image purpose</dt><dd>' + escapeHtml(imagePurpose) + '</dd><dt>Alt text</dt><dd>' + escapeHtml(packagedAltText) + '</dd><dt>Alt text basis</dt><dd>' + escapeHtml(accessibilityBasis) + '</dd><dt>Alt text review</dt><dd>' + escapeHtml(accessibilityReviewLabel) + '</dd>' + (itemPrep.note ? '<dt>Note</dt><dd>' + escapeHtml(itemPrep.note) + '</dd>' : '') + '<dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd></dl>'
+        + '<dl><dt>Output preflight</dt><dd>' + escapeHtml(itemPreflightNote) + '</dd><dt>Intended use</dt><dd>' + escapeHtml(itemPreflightRow.usageIntentLabel + ' - ' + itemPreflightRow.usageIntentSourceLabel) + '</dd><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Image purpose</dt><dd>' + escapeHtml(imagePurpose) + '</dd><dt>Alt text</dt><dd>' + escapeHtml(packagedAltText) + '</dd><dt>Alt text basis</dt><dd>' + escapeHtml(accessibilityBasis) + '</dd><dt>Alt text review</dt><dd>' + escapeHtml(accessibilityReviewLabel) + '</dd>' + (itemPrep.note ? '<dt>Note</dt><dd>' + escapeHtml(itemPrep.note) + '</dd>' : '') + (itemPrep.swatches.length ? '<dt>Swatches</dt><dd>' + escapeHtml(swatchesText(itemPrep.swatches)) + '</dd>' : '') + '<dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd></dl>'
         + '<h3>Credit and provenance</h3><p class="credit">' + escapeHtml(attributionText(item)) + '</p></div></article>';
     });
     if (cards.some(function (card) { return !card; })) return '';
@@ -6614,6 +6670,12 @@
     extractSwatchesFromDataUrl: extractSwatchesFromDataUrl,
     swatchesText: swatchesText,
     referenceBoardLayout: referenceBoardLayout,
+    normalizedPreparation: normalizedPreparation,
+    normalizedSwatches: normalizedSwatches,
+    fetchWithOneRetry: fetchWithOneRetry,
+    themeCss: SOURCEBOOK_THEME_CSS,
+    isSourcebookOnline: isSourcebookOnline,
+    liveResultSummary: liveResultSummary,
     buildReferenceBoardDataUrl: buildReferenceBoardDataUrl,
     renderPreparedDataUrl: renderPreparedDataUrl,
     buildSourcePackage: buildSourcePackageHtml,
@@ -6674,6 +6736,12 @@
       // i18n: ctx.t returns a translation or undefined and ignores the 2nd arg, so the
       // wrapper applies the English fallback itself (dev-tools/check_i18n_fallback.cjs).
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Parameterized strings: {name} placeholders are substituted after translation, so packs can reorder them.
+      var __alloTf = function (k, fb, vars) { var s = String(__alloT(k, fb)); if (vars) Object.keys(vars).forEach(function (name) { s = s.split('{' + name + '}').join(String(vars[name])); }); return s; };
+      // Count-aware strings: packs supply <key>_one and <key>_other; English fallbacks are given inline.
+      var __alloTn = function (k, count, one, other, vars) { var n = Number(count) || 0; var v = Object.assign({ count: n }, vars || {}); return __alloTf(n === 1 ? k + '_one' : k + '_other', n === 1 ? one : other, v); };
+      sourcebookTranslate.f = __alloTf;
+      sourcebookTranslate.n = __alloTn;
       var React = ctx.React;
       var h = React.createElement;
       var capability = sourcebookCapabilityMode(ctx);
@@ -6704,6 +6772,8 @@
       var storedSearchHistory = normalizeSearchHistory(rootState.searchHistory);
       var storedBoardSort = ['recommended', 'title', 'source', 'rights', 'print'].indexOf(rootState.boardSort) !== -1 ? rootState.boardSort : 'recommended';
       var storedBoardView = rootState.boardView === 'research' ? 'research' : 'gallery';
+      var storedComparisonView = ['color', 'gray', 'values'].indexOf(rootState.comparisonView) !== -1 ? rootState.comparisonView : 'color';
+      var storedBoardColumns = [2, 3, 4].indexOf(Number(rootState.referenceBoardColumns)) !== -1 ? Number(rootState.referenceBoardColumns) : 0;
       var _draftState = React.useState(storedQuery);
       var draft = _draftState[0];
       var setDraft = _draftState[1];
@@ -6759,7 +6829,7 @@
       var comparisonOpen = _comparisonOpenState[0];
       var setComparisonOpen = _comparisonOpenState[1];
       // Screen-only study filter for the comparison grid (colour / grayscale / values).
-      var _comparisonViewState = React.useState('color');
+      var _comparisonViewState = React.useState(storedComparisonView);
       var comparisonView = _comparisonViewState[0];
       var setComparisonView = _comparisonViewState[1];
       var COMPARISON_VIEW_FILTERS = { color: undefined, gray: 'grayscale(1)', values: 'grayscale(1) contrast(1.6)' };
@@ -6787,6 +6857,11 @@
       var _liveResultsState = React.useState(storedLiveSession ? storedLiveSession.results : []);
       var liveResults = _liveResultsState[0];
       var setLiveResults = _liveResultsState[1];
+      var _onlineState = React.useState(isSourcebookOnline());
+      var isOnline = _onlineState[0];
+      var setIsOnline = _onlineState[1];
+      var onlineRef = React.useRef(isOnline);
+      onlineRef.current = isOnline;
       var _liveStatusState = React.useState(storedLiveSession ? 'ready' : (storedSmkLiveSession ? 'loading' : 'idle'));
       var liveStatus = _liveStatusState[0];
       var setLiveStatus = _liveStatusState[1];
@@ -6942,7 +7017,7 @@
         var liveRequest = beginLiveRequest();
         setLiveResults([]);
         setLiveStatus('loading');
-        setLiveMessage('Verifying saved source records before restoring this board...');
+        setLiveMessage(__alloT('stem.sourcebook.msg_verifying_saved_source_records_before_restoring_this', 'Verifying saved source records before restoring this board...'));
         revalidateLiveSession(rootState.liveSession, { signal: liveRequest.signal }).then(function (restored) {
           if (liveRequestRef.current !== liveRequest.id) return;
           setDraft(restored.query);
@@ -6957,17 +7032,17 @@
           setDiscoveryNote(restored.discoveryNote);
           setLiveResults(restored.results);
           setLiveStatus('ready');
-          setLiveMessage('Restored ' + restored.results.length + ' results after checking every rights-sensitive record against its current source record.');
+          setLiveMessage(__alloTn('stem.sourcebook.msg_restored_results', restored.results.length, 'Restored {count} result after checking every rights-sensitive record against its current source record.', 'Restored {count} results after checking every rights-sensitive record against its current source record.'));
           setProviderProgress({});
           finishLiveRequest(liveRequest.id);
-          announce('Saved Sourcebook results verified and restored');
+          announce(__alloT('stem.sourcebook.msg_saved_sourcebook_results_verified_and_restored', 'Saved Sourcebook results verified and restored'));
         }).catch(function (error) {
           if (liveRequestRef.current !== liveRequest.id) return;
           finishLiveRequest(liveRequest.id);
           setLiveResults([]);
           setLiveStatus('error');
-          setLiveMessage('Saved source-verified results could not be verified, so none of them were restored. ' + (error && error.message ? error.message : 'Try a new search when the network is available.'));
-          announce('Saved source-verified results were not restored');
+          setLiveMessage(__alloTf('stem.sourcebook.msg_saved_results_not_restored', 'Saved source-verified results could not be verified, so none of them were restored. {reason}', { reason: error && error.message ? error.message : __alloT('stem.sourcebook.msg_try_new_search_when_online', 'Try a new search when the network is available.') }));
+          announce(__alloT('stem.sourcebook.msg_saved_source_verified_results_were_not_restored', 'Saved source-verified results were not restored'));
         });
         return function () {
           if (liveAbortRef.current && liveAbortRef.current.id === liveRequest.id) {
@@ -7030,14 +7105,14 @@
             }
           });
           patch({ savedAssets: nextSavedAssets, collection: nextCollection, preparation: nextPreparation });
-          announce('Saved source-verified palette assets verified');
+          announce(__alloT('stem.sourcebook.msg_saved_source_verified_palette_assets_verified', 'Saved source-verified palette assets verified'));
         }).catch(function (error) {
           if (savedSmkRequestRef.current !== requestId) return;
           savedSmkAbortRef.current = null;
           setVerifiedSavedSmkAssets({});
           setSavedSmkVerificationStatus('error');
           setSavedSmkMessage('Saved source-verified assets are hidden because current source records could not be verified. ' + (error && error.message ? error.message : 'Try again when the network is available.'));
-          announce('Saved source-verified palette assets hidden because verification failed');
+          announce(__alloT('stem.sourcebook.msg_saved_source_verified_palette_assets_hidden_because', 'Saved source-verified palette assets hidden because verification failed'));
         });
         return function () {
           if (savedSmkAbortRef.current && savedSmkAbortRef.current.id === requestId) {
@@ -7139,18 +7214,18 @@
         var boardItems = exportItems.slice(0, 12);
         if (!boardItems.length || referenceBoardProgress) return;
         setReferenceBoardProgress(1);
-        announce('Preparing a reference board for ' + boardItems.length + ' sources');
+        announce(__alloTn('stem.sourcebook.msg_preparing_reference_board', boardItems.length, 'Preparing a reference board for {count} source', 'Preparing a reference board for {count} sources'));
         loadReferenceBoardEntries(boardItems, preparation, function (done, total) { setReferenceBoardProgress(1 + Math.round((done / total) * 98)); }).then(function (entries) {
           if (!entries.length) throw new Error('No palette images could be loaded for the board.');
-          var dataUrl = buildReferenceBoardDataUrl(entries, { title: storedTitle });
+          var dataUrl = buildReferenceBoardDataUrl(entries, { title: storedTitle, columns: referenceBoardColumns });
           if (!dataUrl || !downloadDataUrlFile(dataUrl, sourcebookSlug(storedTitle, 'sourcebook-palette') + '.reference-board.png')) throw new Error('The reference board could not be encoded in this browser.');
           toast(entries.length === boardItems.length
-            ? 'Reference board downloaded with credits and swatches under every image.'
-            : entries.length + ' of ' + boardItems.length + ' images could be loaded; the board carries those with their credits.', entries.length === boardItems.length ? 'success' : 'info');
-          announce('Reference board downloaded');
+            ? __alloT('stem.sourcebook.msg_reference_board_downloaded_full', 'Reference board downloaded with credits and swatches under every image.')
+            : __alloTf('stem.sourcebook.msg_reference_board_downloaded_partial', '{loaded} of {total} images could be loaded; the board carries those with their credits.', { loaded: entries.length, total: boardItems.length }), entries.length === boardItems.length ? 'success' : 'info');
+          announce(__alloT('stem.sourcebook.msg_reference_board_downloaded', 'Reference board downloaded'));
         }).catch(function (error) {
-          toast((error && error.message ? error.message : 'The reference board could not be prepared.') + ' The saved palette is unchanged.', 'error');
-          announce('Could not download the reference board');
+          toast(__alloTf('stem.sourcebook.msg_reference_board_failed', '{reason} The saved palette is unchanged.', { reason: error && error.message ? error.message : __alloT('stem.sourcebook.msg_reference_board_not_prepared', 'The reference board could not be prepared.') }), 'error');
+          announce(__alloT('stem.sourcebook.msg_could_not_download_the_reference_board', 'Could not download the reference board'));
         }).then(function () { setReferenceBoardProgress(0); });
       }
 
@@ -7244,7 +7319,7 @@
         setCurationBusy(false);
         setRetryingProvider('');
         setLiveStatus(liveResults.length ? 'ready' : 'idle');
-        setLiveMessage(message || (liveResults.length ? 'Search stopped. Your existing verified board is unchanged.' : 'Search stopped.'));
+        setLiveMessage(message || (liveResults.length ? __alloT('stem.sourcebook.msg_search_stopped_board_unchanged', 'Search stopped. Your existing verified board is unchanged.') : __alloT('stem.sourcebook.msg_search_stopped', 'Search stopped.')));
         setProviderProgress(function (current) {
           var next = {};
           Object.keys(current || {}).forEach(function (name) {
@@ -7254,7 +7329,7 @@
           });
           return next;
         });
-        announce('Sourcebook search stopped');
+        announce(__alloT('stem.sourcebook.msg_sourcebook_search_stopped', 'Sourcebook search stopped'));
       }
 
       function announce(message) {
@@ -7328,8 +7403,8 @@
         setCheckedPaletteIds([]);
         setPaletteFilter('');
         setShowingCollection(true);
-        toast('Restored the previous Sourcebook palette.', 'success');
-        announce('Previous Sourcebook palette restored');
+        toast(__alloT('stem.sourcebook.msg_restored_the_previous_sourcebook_palette', 'Restored the previous Sourcebook palette.'), 'success');
+        announce(__alloT('stem.sourcebook.msg_previous_sourcebook_palette_restored', 'Previous Sourcebook palette restored'));
       }
 
       function addItemsToPalette(items, message) {
@@ -7356,8 +7431,8 @@
           patch({ collection: nextCollection, savedAssets: nextAssets, paletteUndo: null });
         }
         if (message || skipped) {
-          var exactMessage = added === eligible.length && message ? message : (added ? 'Saved ' + added + ' new reusable asset' + (added === 1 ? '' : 's') + ' to your palette.' : 'Those assets are already in your palette.');
-          if (skipped) exactMessage += ' The palette is limited to ' + PALETTE_MAX_ASSETS + ' assets for dependable export and printing.';
+          var exactMessage = added === eligible.length && message ? message : (added ? __alloTn('stem.sourcebook.msg_saved_new_assets', added, 'Saved {count} new reusable asset to your palette.', 'Saved {count} new reusable assets to your palette.') : __alloT('stem.sourcebook.msg_assets_already_in_palette', 'Those assets are already in your palette.'));
+          if (skipped) exactMessage += ' ' + __alloTf('stem.sourcebook.msg_palette_limited_to', 'The palette is limited to {max} assets for dependable export and printing.', { max: PALETTE_MAX_ASSETS });
           toast(exactMessage, added ? 'success' : 'info');
         }
         return added;
@@ -7386,13 +7461,13 @@
         var latestGoal = Math.max((latest.selectedItems || []).length, normalizePaletteTarget(latest.paletteTarget));
         var latestPlanId = normalizedUsagePlan(latest.paletteRolePlanId);
         if (targetSize !== latestGoal || latestPlanId !== planId) {
-          toast('The palette goal or visual plan changed while Sourcebook searched. The rights-verified results are open, but nothing was changed automatically.', 'info');
-          announce('Role search results are ready; palette planning changed before automatic placement');
+          toast(__alloT('stem.sourcebook.msg_the_palette_goal_or_visual_plan_changed', 'The palette goal or visual plan changed while Sourcebook searched. The rights-verified results are open, but nothing was changed automatically.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_role_search_results_are_ready_palette_planning', 'Role search results are ready; palette planning changed before automatic placement'));
           return 0;
         }
         if (Object.keys(latest.savedAssets || {}).length && latest.savedSmkVerificationStatus !== 'ready') {
-          toast('The role search finished, but saved-source verification must be ready before Sourcebook changes the palette. The rights-verified results are still open for review.', 'info');
-          announce('Role search results are ready; saved-source verification must finish before changing the palette');
+          toast(__alloT('stem.sourcebook.msg_the_role_search_finished_but_saved_source', 'The role search finished, but saved-source verification must be ready before Sourcebook changes the palette. The rights-verified results are still open for review.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_role_search_results_are_ready_saved_source', 'Role search results are ready; saved-source verification must finish before changing the palette'));
           return 0;
         }
         var currentAction = planPaletteRoleGapAction(
@@ -7404,8 +7479,8 @@
           latest.checkedPaletteIds || []
         );
         if (currentAction.mode !== requestedMode) {
-          toast('The visual-set gap changed while Sourcebook searched. The rights-verified results are open, but the palette was left as you arranged it.', 'info');
-          announce('Role search results are ready; the visual-set gap changed before automatic placement');
+          toast(__alloT('stem.sourcebook.msg_the_visual_set_gap_changed_while_sourcebook', 'The visual-set gap changed while Sourcebook searched. The rights-verified results are open, but the palette was left as you arranged it.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_role_search_results_are_ready_the_visual', 'Role search results are ready; the visual-set gap changed before automatic placement'));
           return 0;
         }
         if (requestedMode === 'replace') {
@@ -7414,8 +7489,8 @@
             return id === requestedReplaceIds[index];
           });
           if (!replacementsStable) {
-            toast('The assets eligible for replacement changed while Sourcebook searched. Your palette was left untouched and the new results are open for review.', 'info');
-            announce('Role search results are ready; protected replacement choices changed');
+            toast(__alloT('stem.sourcebook.msg_the_assets_eligible_for_replacement_changed_while', 'The assets eligible for replacement changed while Sourcebook searched. Your palette was left untouched and the new results are open for review.'), 'info');
+            announce(__alloT('stem.sourcebook.msg_role_search_results_are_ready_protected_replacement', 'Role search results are ready; protected replacement choices changed'));
             return 0;
           }
         }
@@ -7432,22 +7507,22 @@
           return nextCollection.indexOf(item.id) === -1;
         }).slice(0, Math.max(0, mutationCount));
         if (!additions.length) {
-          toast('No new metadata-supported match was available for that role. The rights-verified results are still open for review.', 'info');
-          announce('No new rights-verified match was available for the requested visual-set role');
+          toast(__alloT('stem.sourcebook.msg_no_new_metadata_supported_match_was_available', 'No new metadata-supported match was available for that role. The rights-verified results are still open for review.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_no_new_rights_verified_match_was_available', 'No new rights-verified match was available for the requested visual-set role'));
           return 0;
         }
         var undoSnapshot = createLatestPaletteUndoSnapshot(latest);
         if (nextCollection.length && !undoSnapshot) {
-          toast('Sourcebook could not create a dependable undo snapshot, so it left your palette unchanged. The rights-verified results remain open for review.', 'info');
-          announce('Role search results are ready; automatic placement paused because undo was unavailable');
+          toast(__alloT('stem.sourcebook.msg_sourcebook_could_not_create_a_dependable_undo', 'Sourcebook could not create a dependable undo snapshot, so it left your palette unchanged. The rights-verified results remain open for review.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_role_search_results_are_ready_automatic_placement', 'Role search results are ready; automatic placement paused because undo was unavailable'));
           return 0;
         }
         var roleLabel = (USAGE_INTENTS[roleId] || USAGE_INTENTS.flexible).shortLabel.toLowerCase();
         if (requestedMode === 'replace') {
           var replacementResult = applyPaletteRoleReplacements(nextCollection, requestedReplaceIds.slice(0, additions.length), additions.map(function (item) { return item.id; }));
           if (!replacementResult.changed) {
-            toast('The replacement opportunity changed while Sourcebook searched. Your palette was left untouched.', 'info');
-            announce('Role search results are ready; no safe replacement remained');
+            toast(__alloT('stem.sourcebook.msg_the_replacement_opportunity_changed_while_sourcebook_searched', 'The replacement opportunity changed while Sourcebook searched. Your palette was left untouched.'), 'info');
+            announce(__alloT('stem.sourcebook.msg_role_search_results_are_ready_no_safe', 'Role search results are ready; no safe replacement remained'));
             return 0;
           }
           nextCollection = replacementResult.collection;
@@ -7472,8 +7547,8 @@
           setCheckedPaletteIds(function (current) {
             return current.filter(function (id) { return removedIds.indexOf(id) === -1; });
           });
-          toast('Replaced ' + replacementResult.changed + ' overrepresented asset' + (replacementResult.changed === 1 ? '' : 's') + ' with rights-verified ' + roleLabel + ' material. The palette stays at ' + nextCollection.length + ' assets, and undo is available.', 'success');
-          announce('Replaced ' + replacementResult.changed + ' overrepresented assets for the ' + roleLabel + ' role without growing the palette');
+          toast(__alloTn('stem.sourcebook.msg_replaced_overrepresented_toast', replacementResult.changed, 'Replaced {count} overrepresented asset with rights-verified {role} material. The palette stays at {size} assets, and undo is available.', 'Replaced {count} overrepresented assets with rights-verified {role} material. The palette stays at {size} assets, and undo is available.', { role: roleLabel, size: nextCollection.length }), 'success');
+          announce(__alloTf('stem.sourcebook.msg_replaced_overrepresented_announce', 'Replaced {count} overrepresented assets for the {role} role without growing the palette', { count: replacementResult.changed, role: roleLabel }));
           return replacementResult.changed;
         }
         additions.forEach(function (item) {
@@ -7491,8 +7566,8 @@
           preparation: nextPreparation,
           paletteUndo: undoSnapshot
         });
-        toast('Added ' + additions.length + ' rights-verified ' + roleLabel + ' asset' + (additions.length === 1 ? '' : 's') + ' within your ' + targetSize + '-asset goal. Undo is available.', 'success');
-        announce('Added ' + additions.length + ' rights-verified assets for the ' + roleLabel + ' role within the palette goal');
+        toast(__alloTn('stem.sourcebook.msg_added_role_assets_toast', additions.length, 'Added {count} rights-verified {role} asset within your {goal}-asset goal. Undo is available.', 'Added {count} rights-verified {role} assets within your {goal}-asset goal. Undo is available.', { role: roleLabel, goal: targetSize }), 'success');
+        announce(__alloTf('stem.sourcebook.msg_added_role_assets_announce', 'Added {count} rights-verified assets for the {role} role within the palette goal', { count: additions.length, role: roleLabel }));
         return additions.length;
       }
 
@@ -7517,7 +7592,7 @@
         setCheckedPaletteIds([]);
         setShowingCollection(true);
         if (message) toast(message, 'success');
-        announce('Replaced Sourcebook palette with ' + nextCollection.length + ' recommendations');
+        announce(__alloTf('stem.sourcebook.msg_replaced_palette_with_recommendations', 'Replaced Sourcebook palette with {count} recommendations', { count: nextCollection.length }));
         return nextCollection.length;
       }
 
@@ -7589,11 +7664,11 @@
         if (providerSpecific) setProvider('All');
         patch(providerSpecific ? { provider: 'All', liveSession: null } : { liveSession: null });
         setLiveMessage(providerSpecific
-          ? failedName + ' could not be reached. The collection filter switched to All; showing the built-in shelf as an offline fallback.'
-          : 'Federated search is unavailable. The small built-in shelf is still ready as an offline fallback.');
+          ? __alloTf('stem.sourcebook.msg_provider_unreachable_fallback', '{name} could not be reached. The collection filter switched to All; showing the built-in shelf as an offline fallback.', { name: failedName })
+          : __alloT('stem.sourcebook.msg_federated_search_unavailable', 'Federated search is unavailable. The small built-in shelf is still ready as an offline fallback.'));
         announce(providerSpecific
-          ? failedName + ' unavailable. Collection filter switched to All and curated results are shown.'
-          : 'Live search unavailable. Showing curated Sourcebook results.');
+          ? __alloTf('stem.sourcebook.msg_provider_unavailable_announce', '{name} unavailable. Collection filter switched to All and curated results are shown.', { name: failedName })
+          : __alloT('stem.sourcebook.msg_live_search_unavailable_announce', 'Live search unavailable. Showing curated Sourcebook results.'));
       }
 
       function runLiveSearch(value, requestedKind, shouldAutoPick, providerOverride, roleFillRequest) {
@@ -7617,16 +7692,16 @@
           finishLiveRequest(requestId);
           return;
         }
-        if (!providerSupportsLiveSearch(activeProvider)) {
+        if (!providerSupportsLiveSearch(activeProvider) || !onlineRef.current) {
           setProviderProgress({});
           setLiveResults([]);
           setLiveStatus('ready');
-          setLiveMessage(curatedProviderMessage(activeProvider));
+          setLiveMessage(onlineRef.current ? curatedProviderMessage(activeProvider) : __alloT('stem.sourcebook.msg_offline_curated_results', 'You look offline, so no collection was contacted. Showing the built-in shelf; live search resumes when the connection returns.'));
           setDiscoveryPlan(null);
           setSearchPage(0);
           setCanLoadMore(false);
           patch({ liveSession: null });
-          announce(searchMaterials(next, requestedKind || kind, activeProvider, rightsScope).length + ' verified curated Sourcebook results for ' + next);
+          announce(__alloTf('stem.sourcebook.msg_curated_results_for_query', '{count} verified curated Sourcebook results for {query}', { count: searchMaterials(next, requestedKind || kind, activeProvider, rightsScope).length, query: next }));
           finishLiveRequest(requestId);
           return;
         }
@@ -7637,7 +7712,7 @@
         setDiscoveryPlan(null);
         setSearchPage(0);
         setCanLoadMore(false);
-        setLiveMessage(capability.textAi ? 'Gemini is refining the search plan; Sourcebook independently verifies every result\u2019s rights.' : 'No-AI mode: searching public collections, checking item-level rights, and ranking catalog metadata...');
+        setLiveMessage(capability.textAi ? __alloT('stem.sourcebook.msg_gemini_refining_plan', 'Gemini is refining the search plan; Sourcebook independently verifies every result\u2019s rights.') : __alloT('stem.sourcebook.msg_no_ai_searching', 'No-AI mode: searching public collections, checking item-level rights, and ranking catalog metadata...'));
         requestDiscoveryPlan(next, requestedKind || kind).then(function (plan) {
           if (roleFillRequest) plan = Object.assign({}, plan, { paletteSize: roleFillRequest.count });
           return searchOpenSources(next, {
@@ -7652,7 +7727,7 @@
                 setActiveId(streamedItems[0].id);
                 patch({ activeId: streamedItems[0].id });
               }
-              setLiveMessage('Showing ' + streamedItems.length + ' rights-verified visual' + (streamedItems.length === 1 ? '' : 's') + ' from ' + String(report && report.provider || 'a public collection') + ' while the remaining collections continue.');
+              setLiveMessage(__alloTn('stem.sourcebook.msg_streamed_results', streamedItems.length, 'Showing {count} rights-verified visual from {provider} while the remaining collections continue.', 'Showing {count} rights-verified visuals from {provider} while the remaining collections continue.', { provider: String(report && report.provider || __alloT('stem.sourcebook.msg_a_public_collection', 'a public collection')) }));
             }
           }).then(function (items) {
             return { plan: plan, items: items };
@@ -7661,7 +7736,7 @@
           if (requestId !== liveRequestRef.current) return;
           setDiscoveryPlan(result.plan);
           if (visualReview && capability.visionAi && result.items.length > 1) {
-            setLiveMessage('Preparing a temporary contact sheet so Gemini can visually compare the verified thumbnails.');
+            setLiveMessage(__alloT('stem.sourcebook.msg_preparing_a_temporary_contact_sheet_so_gemini', 'Preparing a temporary contact sheet so Gemini can visually compare the verified thumbnails.'));
           }
           return requestAiCuration(result.items, result.plan).then(function (curation) {
             if (requestId !== liveRequestRef.current) return;
@@ -7681,17 +7756,19 @@
             setCanLoadMore(canSearchMore);
             var matchQuality = summarizeMatchQuality(result.items, result.plan.query, result.plan.kind);
             var nextDiscoveryNote = (curation.visionUsed ? 'Gemini visual review: ' : (curation.aiUsed ? 'Gemini metadata review: ' : 'Deterministic metadata ranking: ')) + (curation.reason || result.plan.reason);
-            setLiveMessage(liveResultSummary(result.items) + ' ' + (curation.items.length
-              ? curation.items.length + ' metadata-supported match' + (curation.items.length === 1 ? ' was' : 'es were') + ' selected' + (curation.visionUsed ? ' after visual review.' : ' for a starter palette.')
-              : 'No result was auto-selected because none had matching catalog metadata.') + (matchQuality.broad ? ' ' + matchQuality.broad + ' broad result' + (matchQuality.broad === 1 ? ' remains' : 's remain') + ' available for exploration.' : ''));
+            var selectedNote = curation.items.length
+              ? __alloTn('stem.sourcebook.msg_matches_selected', curation.items.length, '{count} metadata-supported match was selected {tail}', '{count} metadata-supported matches were selected {tail}', { tail: curation.visionUsed ? __alloT('stem.sourcebook.msg_after_visual_review', 'after visual review.') : __alloT('stem.sourcebook.msg_for_a_starter_palette', 'for a starter palette.') })
+              : __alloT('stem.sourcebook.msg_no_result_auto_selected', 'No result was auto-selected because none had matching catalog metadata.');
+            var broadNote = matchQuality.broad ? ' ' + __alloTn('stem.sourcebook.msg_broad_results_remain', matchQuality.broad, '{count} broad result remains available for exploration.', '{count} broad results remain available for exploration.') : '';
+            setLiveMessage(liveResultSummary(result.items) + ' ' + selectedNote + broadNote);
             setDiscoveryNote(nextDiscoveryNote);
             persistLiveBoard(decorated, { query: next, kind: requestedKind || kind, provider: activeProvider, page: 0, canLoadMore: canSearchMore, discoveryPlan: result.plan, discoveryNote: nextDiscoveryNote });
             if (roleFillRequest) {
               addRoleFillItemsToPalette(curation.items, roleFillRequest);
             } else if (shouldAutoPick && autoCurate && curation.items.length) {
-              addItemsToPalette(curation.items, 'Sourcebook selected ' + curation.items.length + ' verified matches and added them to your palette.');
+              addItemsToPalette(curation.items, __alloTf('stem.sourcebook.msg_selected_matches_added', 'Sourcebook selected {count} verified matches and added them to your palette.', { count: curation.items.length }));
             }
-            announce(result.items.length + ' verified live Sourcebook results found; ' + curation.items.length + ' strongest matches selected');
+            announce(__alloTf('stem.sourcebook.msg_live_results_found', '{found} verified live Sourcebook results found; {selected} strongest matches selected', { found: result.items.length, selected: curation.items.length }));
             finishLiveRequest(requestId);
           });
         }).catch(function () {
@@ -7708,11 +7785,11 @@
         var targetRequest = beginLiveRequest();
         var requestId = targetRequest.id;
         var plan = Object.assign({}, discoveryPlan || buildDiscoveryPlan(query, kind, paletteTarget), { paletteSize: paletteTarget });
-        var action = retryFailedBatch ? 'Retrying' : 'Searching deeper in';
+        var action = retryFailedBatch ? __alloT('stem.sourcebook.msg_action_retrying', 'Retrying') : __alloT('stem.sourcebook.msg_action_searching_deeper_in', 'Searching deeper in');
         setRetryingProvider(name);
         setLiveStatus('loading-more');
-        setLiveMessage(action + ' ' + name + ' only (collection batch ' + (targetBatch + 1) + '). Your current rights-verified board will stay in place.');
-        announce(action + ' ' + name + ' only');
+        setLiveMessage(__alloTf('stem.sourcebook.msg_targeted_batch_live', '{action} {name} only (collection batch {batch}). Your current rights-verified board will stay in place.', { action: action, name: name, batch: targetBatch + 1 }));
+        announce(__alloTf('stem.sourcebook.msg_targeted_batch_announce', '{action} {name} only', { action: action, name: name }));
         searchOpenSources(query, {
           kind: kind, provider: name, rightsScope: rightsScope, queries: plan.queries,
           limit: 24, resultLimit: 48, page: targetBatch, onProgress: providerProgressForBatch(targetBatch), signal: targetRequest.signal
@@ -7730,23 +7807,25 @@
             patch({ activeId: merged[0].id });
           }
           setLiveMessage(additions.length
-            ? name + (retryFailedBatch ? ' recovered ' : ' added ') + additions.length + ' new rights-verified asset' + (additions.length === 1 ? '' : 's') + ' from collection batch ' + (targetBatch + 1) + '. ' + merged.length + ' live matches are now on the board.'
-            : name + ' completed collection batch ' + (targetBatch + 1) + ', but no new asset matched the current query and reuse scope. Your board is unchanged.');
+            ? (retryFailedBatch
+              ? __alloTn('stem.sourcebook.msg_batch_recovered', additions.length, '{name} recovered {count} new rights-verified asset from collection batch {batch}. {total} live matches are now on the board.', '{name} recovered {count} new rights-verified assets from collection batch {batch}. {total} live matches are now on the board.', { name: name, batch: targetBatch + 1, total: merged.length })
+              : __alloTn('stem.sourcebook.msg_batch_added', additions.length, '{name} added {count} new rights-verified asset from collection batch {batch}. {total} live matches are now on the board.', '{name} added {count} new rights-verified assets from collection batch {batch}. {total} live matches are now on the board.', { name: name, batch: targetBatch + 1, total: merged.length }))
+            : __alloTf('stem.sourcebook.msg_batch_no_new_assets', '{name} completed collection batch {batch}, but no new asset matched the current query and reuse scope. Your board is unchanged.', { name: name, batch: targetBatch + 1 }));
           persistLiveBoard(merged, {
             query: query, kind: kind, provider: provider, rightsScope: rightsScope,
             page: searchPage, canLoadMore: canLoadMore, discoveryPlan: plan, discoveryNote: discoveryNote
           });
           announce(additions.length
-            ? additions.length + ' verified Sourcebook results added from ' + name
-            : name + ' completed the next collection batch with no new matching reusable assets');
+            ? __alloTf('stem.sourcebook.msg_batch_results_added_announce', '{count} verified Sourcebook results added from {name}', { count: additions.length, name: name })
+            : __alloTf('stem.sourcebook.msg_batch_no_new_announce', '{name} completed the next collection batch with no new matching reusable assets', { name: name }));
           finishLiveRequest(requestId);
         }, function () {
           if (requestId !== liveRequestRef.current) return;
           finishLiveRequest(requestId);
           setRetryingProvider('');
           setLiveStatus(liveResults.length ? 'ready' : 'error');
-          setLiveMessage(name + ' collection batch ' + (targetBatch + 1) + ' is unavailable. Your current rights-verified board is unchanged; retry this collection later.');
-          announce(name + ' collection batch could not be reached');
+          setLiveMessage(__alloTf('stem.sourcebook.msg_batch_unavailable', '{name} collection batch {batch} is unavailable. Your current rights-verified board is unchanged; retry this collection later.', { name: name, batch: targetBatch + 1 }));
+          announce(__alloTf('stem.sourcebook.msg_batch_unreachable_announce', '{name} collection batch could not be reached', { name: name }));
         });
       }
 
@@ -7774,8 +7853,8 @@
         if (!item || !item.id || !ALLOWED_RIGHTS[item.rightsType]) return;
         var exists = pinnedRecommendationIds.indexOf(item.id) !== -1;
         if (!exists && pinnedRecommendationIds.length >= paletteTarget) {
-          toast('You can keep up to ' + paletteTarget + ' picks for this palette size. Release one before keeping another.', 'info');
-          announce('Sourcebook keep limit reached');
+          toast(__alloTf('stem.sourcebook.msg_keep_limit', 'You can keep up to {max} picks for this palette size. Release one before keeping another.', { max: paletteTarget }), 'info');
+          announce(__alloT('stem.sourcebook.msg_sourcebook_keep_limit_reached', 'Sourcebook keep limit reached'));
           return;
         }
         var nextPinned = exists
@@ -7783,7 +7862,7 @@
           : pinnedRecommendationIds.concat([item.id]);
         setPinnedRecommendationIds(nextPinned);
         patch({ pinnedRecommendationIds: nextPinned });
-        announce(exists ? 'Released ' + item.title + ' from the next refinement' : 'Keeping ' + item.title + ' in the next refinement');
+        announce(exists ? __alloTf('stem.sourcebook.msg_released_from_refinement', 'Released {title} from the next refinement', { title: item.title }) : __alloTf('stem.sourcebook.msg_keeping_in_refinement', 'Keeping {title} in the next refinement', { title: item.title }));
       }
 
       function submitSearch(value, options) {
@@ -7829,7 +7908,7 @@
         setRefinementDraft('');
         patch({ query: next, kind: nextKind, provider: nextProvider, searchHistory: nextHistory });
         var count = searchMaterials(next, nextKind, nextProvider, rightsScope).length;
-        announce(count + ' curated Sourcebook results for ' + (next || 'all materials'));
+        announce(__alloTf('stem.sourcebook.msg_curated_results_count', '{count} curated Sourcebook results for {query}', { count: count, query: next || __alloT('stem.sourcebook.msg_all_materials', 'all materials') }));
         runLiveSearch(next, nextKind, true, nextProvider, roleFill);
       }
 
@@ -7839,8 +7918,8 @@
         setShowingCollection(false);
         setBoardFilter('');
         submitSearch(similarQuery, { kind: item.kind, provider: 'All' });
-        toast('Searching every live collection for visuals related to “' + item.title + '”.', 'info');
-        announce('Searching across collections for visuals related to ' + item.title);
+        toast(__alloTf('stem.sourcebook.msg_searching_related_toast', 'Searching every live collection for visuals related to “{title}”.', { title: item.title }), 'info');
+        announce(__alloTf('stem.sourcebook.msg_searching_related_announce', 'Searching across collections for visuals related to {title}', { title: item.title }));
       }
 
       function findMoreFromCollection(item) {
@@ -7850,8 +7929,8 @@
         setShowingCollection(false);
         setBoardFilter('');
         submitSearch(focusedQuery, { kind: item.kind || kind, provider: item.provider });
-        toast('Searching only ' + item.provider + ' for more visuals like this.', 'info');
-        announce('Searching only ' + item.provider);
+        toast(__alloTf('stem.sourcebook.msg_searching_only_provider_toast', 'Searching only {provider} for more visuals like this.', { provider: item.provider }), 'info');
+        announce(__alloTf('stem.sourcebook.msg_searching_only_provider_announce', 'Searching only {provider}', { provider: item.provider }));
       }
 
       function findSharperAlternative(item) {
@@ -7861,8 +7940,8 @@
         setShowingCollection(false);
         setBoardFilter('');
         submitSearch(sharperQuery, { kind: item.kind, provider: 'All' });
-        toast('Searching public collections for a sharper alternative to \u201c' + item.title + '\u201d.', 'info');
-        announce('Searching for a higher-resolution alternative to ' + item.title);
+        toast(__alloTf('stem.sourcebook.msg_searching_sharper_toast', 'Searching public collections for a sharper alternative to \u201c{title}\u201d.', { title: item.title }), 'info');
+        announce(__alloTf('stem.sourcebook.msg_searching_sharper_announce', 'Searching for a higher-resolution alternative to {title}', { title: item.title }));
       }
 
       function fillPaletteRoleGap(group) {
@@ -7870,9 +7949,9 @@
         var latest = latestPaletteStateRef.current || { collection: [], preparation: {}, selectedItems: [] };
         if (latest.savedSmkVerificationStatus === 'loading' || latest.savedSmkVerificationStatus === 'error') {
           toast(latest.savedSmkVerificationStatus === 'error'
-            ? 'Retry the saved-source rights check before filling another visual-set role.'
-            : 'Wait for the saved-source rights check to finish before filling another visual-set role.', 'info');
-          announce('Saved-source verification must be ready before role-gap search');
+            ? __alloT('stem.sourcebook.msg_retry_saved_source_check', 'Retry the saved-source rights check before filling another visual-set role.')
+            : __alloT('stem.sourcebook.msg_wait_saved_source_check', 'Wait for the saved-source rights check to finish before filling another visual-set role.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_saved_source_verification_must_be_ready_before', 'Saved-source verification must be ready before role-gap search'));
           return;
         }
         var action = planPaletteRoleGapAction(
@@ -7884,13 +7963,13 @@
           latest.checkedPaletteIds || checkedPaletteIds
         );
         if (action.mode === 'blocked') {
-          toast('Sourcebook is protecting every overrepresented asset because it is manually assigned, prepared, or selected. Choose an asset to remove or clear its preparation before trying again.', 'info');
-          announce('Role replacement is blocked because all overrepresented assets are protected');
+          toast(__alloT('stem.sourcebook.msg_sourcebook_is_protecting_every_overrepresented_asset_because', 'Sourcebook is protecting every overrepresented asset because it is manually assigned, prepared, or selected. Choose an asset to remove or clear its preparation before trying again.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_role_replacement_is_blocked_because_all_overrepresented', 'Role replacement is blocked because all overrepresented assets are protected'));
           return;
         }
         if (action.mode === 'covered' || !action.count) {
-          toast('That visual-set role is already covered.', 'info');
-          announce('Requested visual-set role is already covered');
+          toast(__alloT('stem.sourcebook.msg_that_visual_set_role_is_already_covered', 'That visual-set role is already covered.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_requested_visual_set_role_is_already_covered', 'Requested visual-set role is already covered'));
           return;
         }
         var roleQuery = buildPaletteRoleSearch(group.id, latest.selectedItems || selectedItems, paletteRoleBoard.planId, query);
@@ -7910,18 +7989,18 @@
           }
         });
         if (action.mode === 'replace') {
-          toast('Finding ' + action.count + ' rights-verified ' + group.shortLabel.toLowerCase() + ' asset' + (action.count === 1 ? '' : 's') + ' to replace overrepresented material without growing your ' + action.goal + '-asset palette. Undo will be available.', 'info');
-          announce('Searching public collections for a reversible ' + group.shortLabel.toLowerCase() + ' role replacement');
+          toast(__alloTn('stem.sourcebook.msg_finding_replacement_assets', action.count, 'Finding {count} rights-verified {role} asset to replace overrepresented material without growing your {goal}-asset palette. Undo will be available.', 'Finding {count} rights-verified {role} assets to replace overrepresented material without growing your {goal}-asset palette. Undo will be available.', { role: group.shortLabel.toLowerCase(), goal: action.goal }), 'info');
+          announce(__alloTf('stem.sourcebook.msg_searching_role_replacement', 'Searching public collections for a reversible {role} role replacement', { role: group.shortLabel.toLowerCase() }));
         } else {
-          toast('Finding and adding up to ' + action.count + ' rights-verified ' + group.shortLabel.toLowerCase() + ' asset' + (action.count === 1 ? '' : 's') + ' within your ' + action.goal + '-asset goal.', 'info');
-          announce('Searching public collections to fill the ' + group.shortLabel.toLowerCase() + ' visual-set role within the palette goal');
+          toast(__alloTn('stem.sourcebook.msg_finding_role_assets', action.count, 'Finding and adding up to {count} rights-verified {role} asset within your {goal}-asset goal.', 'Finding and adding up to {count} rights-verified {role} assets within your {goal}-asset goal.', { role: group.shortLabel.toLowerCase(), goal: action.goal }), 'info');
+          announce(__alloTf('stem.sourcebook.msg_searching_role_fill', 'Searching public collections to fill the {role} visual-set role within the palette goal', { role: group.shortLabel.toLowerCase() }));
         }
       }
 
       function clearSearchHistory() {
         setRecentSearches([]);
         patch({ searchHistory: [] });
-        announce('Recent Sourcebook searches cleared');
+        announce(__alloT('stem.sourcebook.msg_recent_sourcebook_searches_cleared', 'Recent Sourcebook searches cleared'));
       }
 
       function changePaletteTarget(value) {
@@ -7933,8 +8012,8 @@
         patch({ paletteTarget: nextTarget, pinnedRecommendationIds: nextPinned });
         if (nextPlan) setDiscoveryPlan(nextPlan);
         if (liveResults.length) persistLiveBoard(liveResults, { paletteTarget: nextTarget, discoveryPlan: nextPlan || discoveryPlan });
-        if (liveResults.length) setLiveMessage('Palette goal set to ' + nextTarget + '. Choose Re-curate matches to refresh the recommendations already loaded.');
-        announce('Sourcebook palette goal set to ' + nextTarget + ' assets');
+        if (liveResults.length) setLiveMessage(__alloTf('stem.sourcebook.msg_palette_goal_set_live', 'Palette goal set to {goal}. Choose Re-curate matches to refresh the recommendations already loaded.', { goal: nextTarget }));
+        announce(__alloTf('stem.sourcebook.msg_palette_goal_set_announce', 'Sourcebook palette goal set to {goal} assets', { goal: nextTarget }));
       }
 
       function loadMoreResults() {
@@ -7945,7 +8024,7 @@
         var plan = Object.assign({}, discoveryPlan || buildDiscoveryPlan(query, kind, paletteTarget), { paletteSize: paletteTarget });
         setLiveStatus('loading-more');
         setProviderProgress({});
-        setLiveMessage('Searching deeper in the public collections and checking another batch of item-level rights...');
+        setLiveMessage(__alloT('stem.sourcebook.msg_searching_deeper_in_the_public_collections_and', 'Searching deeper in the public collections and checking another batch of item-level rights...'));
         searchOpenSources(query, {
           kind: kind, provider: provider, rightsScope: rightsScope, queries: plan.queries,
           limit: 24, resultLimit: 48, page: nextPage, onProgress: providerProgressForBatch(nextPage), signal: liveRequest.signal
@@ -7961,21 +8040,21 @@
           setCanLoadMore(moreAvailable);
           setLiveStatus('ready');
           setLiveMessage(additions.length
-            ? 'Added ' + additions.length + ' newly verified assets. ' + merged.length + ' live matches are now on the board.'
+            ? __alloTf('stem.sourcebook.msg_load_more_added', 'Added {count} newly verified assets. {total} live matches are now on the board.', { count: additions.length, total: merged.length })
             : (moreAvailable
-              ? 'This search interpretation added no new rights-verified assets. Choose Find more to try the next interpretation.'
-              : 'No additional rights-verified assets were found after checking the available interpretations.'));
+              ? __alloT('stem.sourcebook.msg_load_more_none_try_next', 'This search interpretation added no new rights-verified assets. Choose Find more to try the next interpretation.')
+              : __alloT('stem.sourcebook.msg_load_more_none_exhausted', 'No additional rights-verified assets were found after checking the available interpretations.')));
           persistLiveBoard(merged, { page: nextPage, canLoadMore: moreAvailable, discoveryPlan: plan });
           announce(additions.length
-            ? additions.length + ' more verified Sourcebook results added'
-            : (moreAvailable ? 'No new matches in this interpretation; another is ready' : 'No more verified Sourcebook results found'));
+            ? __alloTf('stem.sourcebook.msg_load_more_added_announce', '{count} more verified Sourcebook results added', { count: additions.length })
+            : (moreAvailable ? __alloT('stem.sourcebook.msg_load_more_another_ready', 'No new matches in this interpretation; another is ready') : __alloT('stem.sourcebook.msg_load_more_no_more', 'No more verified Sourcebook results found')));
           finishLiveRequest(requestId);
         }).catch(function () {
           if (requestId !== liveRequestRef.current) return;
           finishLiveRequest(requestId);
           setLiveStatus('ready');
-          setLiveMessage('The next provider batch could not be reached. Your current verified results are unchanged; you can try again.');
-          announce('Could not load more Sourcebook results');
+          setLiveMessage(__alloT('stem.sourcebook.msg_the_next_provider_batch_could_not_be', 'The next provider batch could not be reached. Your current verified results are unchanged; you can try again.'));
+          announce(__alloT('stem.sourcebook.msg_could_not_load_more_sourcebook_results', 'Could not load more Sourcebook results'));
         });
       }
 
@@ -7995,8 +8074,8 @@
         setCanLoadMore(false);
         setPinnedRecommendationIds([]);
         patch({ liveSession: null, pinnedRecommendationIds: [] });
-        toast('Saved live Sourcebook board cleared. Your palette is unchanged.', 'info');
-        announce('Live Sourcebook result board cleared');
+        toast(__alloT('stem.sourcebook.msg_saved_live_sourcebook_board_cleared_your_palette', 'Saved live Sourcebook board cleared. Your palette is unchanged.'), 'info');
+        announce(__alloT('stem.sourcebook.msg_live_sourcebook_result_board_cleared', 'Live Sourcebook result board cleared'));
       }
 
       function refreshCuration(refinement) {
@@ -8014,10 +8093,10 @@
         setCurationBusy(true);
         setLiveStatus('curating');
         setLiveMessage(directive
-          ? 'Re-evaluating the verified board for “' + directive + '” without making another provider request...'
+          ? __alloTf('stem.sourcebook.msg_recurate_directive', 'Re-evaluating the verified board for “{directive}” without making another provider request...', { directive: directive })
           : (visualReview && capability.visionAi
-            ? 'Preparing a temporary contact sheet and visually reviewing the expanded board...'
-            : 'Reviewing the expanded board and selecting a fresh, varied starter palette...'));
+            ? __alloT('stem.sourcebook.msg_recurate_visual', 'Preparing a temporary contact sheet and visually reviewing the expanded board...')
+            : __alloT('stem.sourcebook.msg_recurate_plain', 'Reviewing the expanded board and selecting a fresh, varied starter palette...')));
         requestAiCuration(candidates, plan).then(function (curation) {
           if (requestId !== liveRequestRef.current) return;
           var nextPicks = mergePinnedSelection(pinnedItems, curation.items, plan.paletteSize);
@@ -8039,16 +8118,20 @@
           setRefinementDraft('');
           setLiveStatus('ready');
           var refreshedQuality = summarizeMatchQuality(liveResults, plan.query, plan.kind);
-          setLiveMessage(liveResultSummary(liveResults) + ' ' + (nextPicks.length
-            ? nextPicks.length + ' fresh recommendation' + (nextPicks.length === 1 ? ' is' : 's are') + ' marked first'
-            : 'No result was auto-selected because none had matching catalog metadata') + (pinnedItems.length ? '; ' + pinnedItems.length + ' kept pick' + (pinnedItems.length === 1 ? ' stayed' : 's stayed') + ' in place' : '') + (curation.visionUsed ? ' after visual review.' : '.') + (refreshedQuality.broad ? ' ' + refreshedQuality.broad + ' broad result' + (refreshedQuality.broad === 1 ? ' stays' : 's stay') + ' available on the board.' : ''));
+          var refreshedNote = nextPicks.length
+            ? __alloTn('stem.sourcebook.msg_fresh_recommendations_first', nextPicks.length, '{count} fresh recommendation is marked first', '{count} fresh recommendations are marked first')
+            : __alloT('stem.sourcebook.msg_no_result_auto_selected_short', 'No result was auto-selected because none had matching catalog metadata');
+          var keptNote = pinnedItems.length ? '; ' + __alloTn('stem.sourcebook.msg_kept_picks_stayed', pinnedItems.length, '{count} kept pick stayed in place', '{count} kept picks stayed in place') : '';
+          var reviewTail = curation.visionUsed ? ' ' + __alloT('stem.sourcebook.msg_after_visual_review', 'after visual review.') : '.';
+          var refreshedBroad = refreshedQuality.broad ? ' ' + __alloTn('stem.sourcebook.msg_broad_results_stay', refreshedQuality.broad, '{count} broad result stays available on the board.', '{count} broad results stay available on the board.') : '';
+          setLiveMessage(liveResultSummary(liveResults) + ' ' + refreshedNote + keptNote + reviewTail + refreshedBroad);
           persistLiveBoard(decorated, { discoveryPlan: plan, discoveryNote: nextDiscoveryNote });
-          if (autoCurate && nextPicks.length) addItemsToPalette(nextPicks, 'Added ' + nextPicks.length + ' refreshed recommendations to your palette.');
-          announce(directive ? 'Sourcebook recommendations refined toward ' + directive : 'Sourcebook recommendations refreshed');
+          if (autoCurate && nextPicks.length) addItemsToPalette(nextPicks, __alloTf('stem.sourcebook.msg_added_refreshed_recommendations', 'Added {count} refreshed recommendations to your palette.', { count: nextPicks.length }));
+          announce(directive ? __alloTf('stem.sourcebook.msg_recommendations_refined_toward', 'Sourcebook recommendations refined toward {directive}', { directive: directive }) : __alloT('stem.sourcebook.msg_recommendations_refreshed', 'Sourcebook recommendations refreshed'));
         }, function () {
           if (requestId !== liveRequestRef.current) return;
           setLiveStatus('ready');
-          setLiveMessage('Recommendations could not be refreshed. Your verified results are unchanged.');
+          setLiveMessage(__alloT('stem.sourcebook.msg_recommendations_could_not_be_refreshed_your_verified', 'Recommendations could not be refreshed. Your verified results are unchanged.'));
         }).then(function () {
           if (requestId !== liveRequestRef.current) return;
           setCurationBusy(false);
@@ -8065,8 +8148,8 @@
         setPaletteFilter('');
         setPaletteAccessibilityFilter('all');
         setShowingCollection(false);
-        toast('Sourcebook palette cleared.', 'info');
-        announce('Sourcebook palette cleared');
+        toast(__alloT('stem.sourcebook.msg_sourcebook_palette_cleared', 'Sourcebook palette cleared.'), 'info');
+        announce(__alloT('stem.sourcebook.msg_sourcebook_palette_cleared_2', 'Sourcebook palette cleared'));
       }
 
       function movePaletteItem(id, direction) {
@@ -8077,7 +8160,7 @@
         var moved = next.splice(index, 1)[0];
         next.splice(target, 0, moved);
         patch({ collection: next, paletteUndo: createPaletteUndoSnapshot() });
-        announce('Moved Sourcebook palette item ' + (direction < 0 ? 'earlier' : 'later'));
+        announce(direction < 0 ? __alloT('stem.sourcebook.msg_moved_item_earlier', 'Moved Sourcebook palette item earlier') : __alloT('stem.sourcebook.msg_moved_item_later', 'Moved Sourcebook palette item later'));
       }
 
       function setFilter(filterKind, value) {
@@ -8179,8 +8262,8 @@
         var id = item.id;
         var exists = collection.indexOf(id) !== -1;
         if (!exists && collection.length >= PALETTE_MAX_ASSETS) {
-          toast('Your palette already has ' + PALETTE_MAX_ASSETS + ' assets. Remove one before saving another so exports stay dependable.', 'info');
-          announce('Sourcebook palette limit reached');
+          toast(__alloTf('stem.sourcebook.msg_palette_full', 'Your palette already has {max} assets. Remove one before saving another so exports stay dependable.', { max: PALETTE_MAX_ASSETS }), 'info');
+          announce(__alloT('stem.sourcebook.msg_sourcebook_palette_limit_reached', 'Sourcebook palette limit reached'));
           return;
         }
         var next = exists ? collection.filter(function (saved) { return saved !== id; }) : collection.concat([id]);
@@ -8188,10 +8271,18 @@
         if (exists) delete nextAssets[id];
         else if (item.live) nextAssets[id] = portableAsset(item);
         trustCurrentSavedSmkAssets(nextAssets);
-        patch({ collection: next, savedAssets: nextAssets, paletteUndo: exists ? createPaletteUndoSnapshot() : null });
+        var knownSwatches = !exists && Array.isArray(swatchesById[id]) ? normalizedSwatches(swatchesById[id]) : [];
+        var nextPreparation = preparation;
+        if (knownSwatches.length) {
+          nextPreparation = Object.assign({}, preparation);
+          nextPreparation[id] = Object.assign({}, nextPreparation[id] || {}, { swatches: knownSwatches });
+        }
+        patch(knownSwatches.length
+          ? { collection: next, savedAssets: nextAssets, preparation: nextPreparation, paletteUndo: null }
+          : { collection: next, savedAssets: nextAssets, paletteUndo: exists ? createPaletteUndoSnapshot() : null });
         if (exists) setCheckedPaletteIds(function (current) { return current.filter(function (checkedId) { return checkedId !== id; }); });
-        toast(exists ? 'Removed from source palette.' : 'Saved to source palette.', exists ? 'info' : 'success');
-        announce(exists ? 'Removed item from source palette' : 'Saved item to source palette');
+        toast(exists ? __alloT('stem.sourcebook.msg_removed_from_palette', 'Removed from source palette.') : __alloT('stem.sourcebook.msg_saved_to_palette', 'Saved to source palette.'), exists ? 'info' : 'success');
+        announce(exists ? __alloT('stem.sourcebook.msg_removed_item_announce', 'Removed item from source palette') : __alloT('stem.sourcebook.msg_saved_item_announce', 'Saved item to source palette'));
       }
 
       function updatePrep(id, values) {
@@ -8239,8 +8330,8 @@
           paletteUndo: createPaletteUndoSnapshot()
         });
         setCheckedPaletteIds([]);
-        toast('Removed ' + removeIds.length + ' selected asset' + (removeIds.length === 1 ? '' : 's') + '. You can undo this change.', 'info');
-        announce('Removed selected Sourcebook palette assets');
+        toast(__alloTn('stem.sourcebook.msg_removed_selected_assets', removeIds.length, 'Removed {count} selected asset. You can undo this change.', 'Removed {count} selected assets. You can undo this change.'), 'info');
+        announce(__alloT('stem.sourcebook.msg_removed_selected_sourcebook_palette_assets', 'Removed selected Sourcebook palette assets'));
       }
 
       function applyPreparationToPalette(mode) {
@@ -8255,9 +8346,9 @@
           else next[id] = Object.assign({}, current, { mode: 'tile' });
         });
         patch({ preparation: next, paletteUndo: createPaletteUndoSnapshot() });
-        var label = mode === 'reset' ? 'reset to fit' : 'set to ' + mode;
-        var scope = targetIds.length === collection.length ? 'Every palette asset' : targetIds.length + ' selected asset' + (targetIds.length === 1 ? '' : 's');
-        toast(scope + ' ' + (targetIds.length === 1 ? 'is' : 'are') + ' ' + label + '.', 'success');
+        var label = mode === 'reset' ? __alloT('stem.sourcebook.msg_prep_reset_to_fit', 'reset to fit') : __alloTf('stem.sourcebook.msg_prep_set_to_mode', 'set to {mode}', { mode: mode });
+        var scope = targetIds.length === collection.length ? __alloT('stem.sourcebook.msg_every_palette_asset', 'Every palette asset') : __alloTn('stem.sourcebook.msg_selected_assets_scope', targetIds.length, '{count} selected asset', '{count} selected assets');
+        toast(__alloTn('stem.sourcebook.msg_prep_scope_applied', targetIds.length, '{scope} is {label}.', '{scope} are {label}.', { scope: scope, label: label }), 'success');
         announce(scope + ' ' + label);
       }
 
@@ -8272,9 +8363,9 @@
         });
         patch({ preparation: next, paletteUndo: createPaletteUndoSnapshot() });
         var intentLabel = USAGE_INTENTS[normalizedIntent].label;
-        var scope = targetIds.length === collection.length ? 'Every palette asset' : targetIds.length + ' selected asset' + (targetIds.length === 1 ? '' : 's');
-        toast(scope + ' will use ' + intentLabel.toLowerCase() + '.', 'success');
-        announce(scope + ' planned as ' + intentLabel);
+        var scope = targetIds.length === collection.length ? __alloT('stem.sourcebook.msg_every_palette_asset', 'Every palette asset') : __alloTn('stem.sourcebook.msg_selected_assets_scope', targetIds.length, '{count} selected asset', '{count} selected assets');
+        toast(__alloTf('stem.sourcebook.msg_scope_will_use_intent', '{scope} will use {intent}.', { scope: scope, intent: intentLabel.toLowerCase() }), 'success');
+        announce(__alloTf('stem.sourcebook.msg_scope_planned_as', '{scope} planned as {intent}', { scope: scope, intent: intentLabel }));
       }
 
       function applyUsagePlanToPalette(planValue) {
@@ -8287,28 +8378,28 @@
         }).filter(Boolean);
         var planned = planPaletteUsage(targetItems, preparation, planId);
         if (!planned.planned) {
-          toast('Every selected asset already has a role you set. Reset intended use to Sourcebook suggestion before auto-planning it.', 'info');
+          toast(__alloT('stem.sourcebook.msg_every_selected_asset_already_has_a_role', 'Every selected asset already has a role you set. Reset intended use to Sourcebook suggestion before auto-planning it.'), 'info');
           return;
         }
         var next = Object.assign({}, preparation, planned.preparation);
         patch({ preparation: next, paletteUndo: createPaletteUndoSnapshot() });
         var preservedNote = planned.preserved ? ' Kept ' + planned.preserved + ' role' + (planned.preserved === 1 ? '' : 's') + ' you already set.' : '';
-        toast('Planned ' + planned.planned + ' asset' + (planned.planned === 1 ? '' : 's') + ' as a ' + planned.label.toLowerCase() + '.' + preservedNote, 'success');
-        announce('Sourcebook applied the ' + planned.label + ' role plan');
+        toast(__alloTn('stem.sourcebook.msg_planned_assets_as', planned.planned, 'Planned {count} asset as a {plan}.', 'Planned {count} assets as a {plan}.', { plan: planned.label.toLowerCase() }) + preservedNote, 'success');
+        announce(__alloTf('stem.sourcebook.msg_applied_role_plan', 'Sourcebook applied the {plan} role plan', { plan: planned.label }));
       }
 
       function sendToPageDesigner(item) {
         if (!item || !ALLOWED_RIGHTS[item.rightsType]) {
-          toast('Only an asset with verified reuse rights can be sent to Page Designer.', 'error');
+          toast(__alloT('stem.sourcebook.msg_only_an_asset_with_verified_reuse_rights', 'Only an asset with verified reuse rights can be sent to Page Designer.'), 'error');
           return;
         }
         if (typeof ctx.onUseArtwork !== 'function') {
-          toast('Page Designer handoff is not available in this version of AlloFlow.', 'info');
+          toast(__alloT('stem.sourcebook.msg_page_designer_handoff_is_not_available_in', 'Page Designer handoff is not available in this version of AlloFlow.'), 'info');
           return;
         }
         var prep = normalizedPreparation(preparation[item.id]);
         setHandoffId(item.id);
-        announce('Preparing ' + item.title + ' for Page Designer');
+        announce(__alloTf('stem.sourcebook.msg_preparing_for_page_designer', 'Preparing {title} for Page Designer', { title: item.title }));
         fetchImageDataUrl(item).then(function (dataUrl) {
           return prepareImageReceipt(dataUrl, prep);
         }).then(function (preparedReceipt) {
@@ -8318,43 +8409,43 @@
         }).catch(function (error) {
           var message = error && error.message ? error.message : 'The source image could not be prepared.';
           toast(message + ' You can still open the image and upload it in Page Designer.', 'error');
-          announce('Could not prepare the Sourcebook asset for Page Designer');
+          announce(__alloT('stem.sourcebook.msg_could_not_prepare_the_sourcebook_asset_for', 'Could not prepare the Sourcebook asset for Page Designer'));
         }).then(function () { setHandoffId(''); });
       }
 
       function saveSourcePackage(item) {
         if (!item || !ALLOWED_RIGHTS[item.rightsType]) {
-          toast('Only an asset with verified reuse rights can be downloaded.', 'error');
+          toast(__alloT('stem.sourcebook.msg_only_an_asset_with_verified_reuse_rights_2', 'Only an asset with verified reuse rights can be downloaded.'), 'error');
           return;
         }
         var prep = normalizedPreparation(preparation[item.id]);
         setPackageId(item.id);
-        announce('Preparing a downloadable source package for ' + item.title);
+        announce(__alloTf('stem.sourcebook.msg_preparing_source_package', 'Preparing a downloadable source package for {title}', { title: item.title }));
         fetchImageDataUrl(item).then(function (dataUrl) {
           return prepareImageReceipt(dataUrl, prep);
         }).then(function (preparedReceipt) {
           if (!downloadSourcePackage(item, prep, preparedReceipt)) throw new Error('This browser could not save the source package.');
           bumpQuestCounter('packagesSaved');
-          toast('Source package downloaded with the prepared image, credit, license, and source record.', 'success');
-          announce('Source package downloaded for ' + item.title);
+          toast(__alloT('stem.sourcebook.msg_source_package_downloaded_with_the_prepared_image', 'Source package downloaded with the prepared image, credit, license, and source record.'), 'success');
+          announce(__alloTf('stem.sourcebook.msg_source_package_downloaded_for', 'Source package downloaded for {title}', { title: item.title }));
         }).catch(function (error) {
           var message = error && error.message ? error.message : 'The source package could not be prepared.';
           toast(message + ' You can still open the printable image and copy its credit.', 'error');
-          announce('Could not download the Sourcebook source package');
+          announce(__alloT('stem.sourcebook.msg_could_not_download_the_sourcebook_source_package', 'Could not download the Sourcebook source package'));
         }).then(function () { setPackageId(''); });
       }
 
       function savePalettePackage() {
         var items = exportItems.slice();
         if (!items.length || items.some(function (item) { return !ALLOWED_RIGHTS[item.rightsType]; })) {
-          toast('Only a non-empty palette of verified reusable assets can be downloaded.', 'error');
+          toast(__alloT('stem.sourcebook.msg_only_a_non_empty_palette_of_verified', 'Only a non-empty palette of verified reusable assets can be downloaded.'), 'error');
           return;
         }
         var preparedImages = {};
         setPalettePackageBusy(true);
         setPalettePackageProgress(0);
         setPalettePackageTotal(items.length);
-        announce('Preparing ' + items.length + ' palette assets for download');
+        announce(__alloTf('stem.sourcebook.msg_preparing_palette_download', 'Preparing {count} palette assets for download', { count: items.length }));
         mapWithConcurrency(items, 3, function (item) {
           var itemPrep = normalizedPreparation(preparation[item.id]);
           return fetchImageDataUrl(item).then(function (dataUrl) {
@@ -8372,12 +8463,12 @@
           if (failed) throw new Error(failed + ' of ' + items.length + ' source images could not be prepared, so no incomplete package was downloaded.');
           if (!downloadPalettePackage(items, preparation, storedTitle, preparedImages)) throw new Error('This browser could not save the palette package.');
           bumpQuestCounter('packagesSaved');
-          toast('Palette package downloaded with prepared images, credits, licenses, and source records.', 'success');
-          announce('Sourcebook palette package downloaded');
+          toast(__alloT('stem.sourcebook.msg_palette_package_downloaded_with_prepared_images_credits', 'Palette package downloaded with prepared images, credits, licenses, and source records.'), 'success');
+          announce(__alloT('stem.sourcebook.msg_sourcebook_palette_package_downloaded', 'Sourcebook palette package downloaded'));
         }).catch(function (error) {
           var message = error && error.message ? error.message : 'The palette package could not be prepared.';
           toast(message + ' Your saved palette remains available.', 'error');
-          announce('Could not download the Sourcebook palette package');
+          announce(__alloT('stem.sourcebook.msg_could_not_download_the_sourcebook_palette_package', 'Could not download the Sourcebook palette package'));
         }).then(function () {
           setPalettePackageBusy(false);
           setPalettePackageProgress(0);
@@ -8391,11 +8482,11 @@
         if (!file) return;
         input.value = '';
         if (file.size > 2000000) {
-          toast('This palette manifest is too large to import safely (2 MB maximum).', 'error');
+          toast(__alloT('stem.sourcebook.msg_this_palette_manifest_is_too_large_to', 'This palette manifest is too large to import safely (2 MB maximum).'), 'error');
           return;
         }
         if (typeof FileReader === 'undefined') {
-          toast('This browser cannot read a palette manifest.', 'error');
+          toast(__alloT('stem.sourcebook.msg_this_browser_cannot_read_a_palette_manifest', 'This browser cannot read a palette manifest.'), 'error');
           return;
         }
         var reader = new FileReader();
@@ -8405,8 +8496,8 @@
             parsed = JSON.parse(String(reader.result || ''));
           } catch (error) {
             setPaletteImportBusy(false);
-            toast('The palette manifest is not valid JSON.', 'error');
-            announce('Could not import the Sourcebook palette manifest');
+            toast(__alloT('stem.sourcebook.msg_the_palette_manifest_is_not_valid_json', 'The palette manifest is not valid JSON.'), 'error');
+            announce(__alloT('stem.sourcebook.msg_could_not_import_the_sourcebook_palette_manifest', 'Could not import the Sourcebook palette manifest'));
             return;
           }
           revalidatePaletteManifest(parsed).then(function (imported) {
@@ -8435,22 +8526,22 @@
             setPaletteFilter('');
             setShowingCollection(true);
             var importMessage = added
-              ? 'Imported ' + added + ' new verified source' + (added === 1 ? '' : 's') + ' into your palette.'
-              : 'Updated the matching verified sources already in your palette.';
-            if (imported.assets.some(function (item) { return item.provider === RIJKS_PROVIDER; })) importMessage += ' Every Rijksmuseum image was rechecked against its current EDM record before import.';
-            if (imported.assets.some(function (item) { return item.provider === SMK_PROVIDER; })) importMessage += ' Every SMK Open record was checked against the current SMK API before import.';
-            if (skipped) importMessage += ' ' + skipped + ' additional source' + (skipped === 1 ? ' was' : 's were') + ' skipped because the palette limit is ' + PALETTE_MAX_ASSETS + ' assets.';
+              ? __alloTn('stem.sourcebook.msg_imported_sources', added, 'Imported {count} new verified source into your palette.', 'Imported {count} new verified sources into your palette.')
+              : __alloT('stem.sourcebook.msg_imported_updated_existing', 'Updated the matching verified sources already in your palette.');
+            if (imported.assets.some(function (item) { return item.provider === RIJKS_PROVIDER; })) importMessage += ' ' + __alloT('stem.sourcebook.msg_import_rijks_rechecked', 'Every Rijksmuseum image was rechecked against its current EDM record before import.');
+            if (imported.assets.some(function (item) { return item.provider === SMK_PROVIDER; })) importMessage += ' ' + __alloT('stem.sourcebook.msg_import_smk_rechecked', 'Every SMK Open record was checked against the current SMK API before import.');
+            if (skipped) importMessage += ' ' + __alloTn('stem.sourcebook.msg_import_skipped', skipped, '{count} additional source was skipped because the palette limit is {max} assets.', '{count} additional sources were skipped because the palette limit is {max} assets.', { max: PALETTE_MAX_ASSETS });
             toast(importMessage, 'success');
-            announce('Imported ' + added + ' new verified Sourcebook assets');
+            announce(__alloTf('stem.sourcebook.msg_imported_assets_announce', 'Imported {count} new verified Sourcebook assets', { count: added }));
           }).catch(function (error) {
-            toast('Nothing was imported. ' + (error && error.message ? error.message : 'The palette manifest could not be verified.'), 'error');
-            announce('Could not import the Sourcebook palette manifest');
+            toast(__alloTf('stem.sourcebook.msg_nothing_imported', 'Nothing was imported. {reason}', { reason: error && error.message ? error.message : __alloT('stem.sourcebook.msg_manifest_not_verified', 'The palette manifest could not be verified.') }), 'error');
+            announce(__alloT('stem.sourcebook.msg_could_not_import_the_sourcebook_palette_manifest_2', 'Could not import the Sourcebook palette manifest'));
           }).then(function () { setPaletteImportBusy(false); });
         };
         reader.onerror = function () {
           setPaletteImportBusy(false);
-          toast('The palette manifest could not be read.', 'error');
-          announce('Could not read the Sourcebook palette manifest');
+          toast(__alloT('stem.sourcebook.msg_the_palette_manifest_could_not_be_read', 'The palette manifest could not be read.'), 'error');
+          announce(__alloT('stem.sourcebook.msg_could_not_read_the_sourcebook_palette_manifest', 'Could not read the Sourcebook palette manifest'));
         };
         setPaletteImportBusy(true);
         reader.readAsText(file);
@@ -8562,11 +8653,50 @@
       var swatchesById = swatchState[0];
       var setSwatchesById = swatchState[1];
       var swatchRequestRef = React.useRef({});
+      var _referenceBoardColumnsState = React.useState(storedBoardColumns);
+      var referenceBoardColumns = _referenceBoardColumnsState[0];
+      var setReferenceBoardColumns = _referenceBoardColumnsState[1];
       var referenceBoardState = React.useState(0);
       var referenceBoardProgress = referenceBoardState[0];
       var setReferenceBoardProgress = referenceBoardState[1];
       // Reads colours from the card thumbnail ONLY when asked: inspecting an asset
       // must never start a request on its own (the browse/compare contracts count them).
+      // Stored swatches win when the session has not read fresh ones.
+      function swatchesFor(target) {
+        var id = target && target.id;
+        if (!id) return undefined;
+        var known = swatchesById[id];
+        if (known !== undefined) return known;
+        var stored = normalizedPreparation(preparation[id]).swatches;
+        return stored.length ? stored : undefined;
+      }
+      function persistSwatches(id, swatches) {
+        var latest = latestPaletteStateRef.current || {};
+        var currentCollection = Array.isArray(latest.collection) ? latest.collection : collection;
+        if (!swatches.length || currentCollection.indexOf(id) === -1) return;
+        var currentPreparation = latest.preparation && typeof latest.preparation === 'object' ? latest.preparation : preparation;
+        var next = Object.assign({}, currentPreparation);
+        next[id] = Object.assign({}, next[id] || {}, { swatches: swatches });
+        patch({ preparation: next });
+      }
+      React.useEffect(function () {
+        if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+        function goOnline() {
+          setIsOnline(true);
+          toast(__alloT('stem.sourcebook.msg_back_online', 'Back online. Search again to refresh live results.'), 'success');
+          announce(__alloT('stem.sourcebook.msg_back_online_announce', 'Connection restored; live collection search is available again'));
+        }
+        function goOffline() {
+          setIsOnline(false);
+          announce(__alloT('stem.sourcebook.msg_went_offline_announce', 'Connection lost; your saved palette and the built-in shelf still work'));
+        }
+        window.addEventListener('online', goOnline);
+        window.addEventListener('offline', goOffline);
+        return function () {
+          window.removeEventListener('online', goOnline);
+          window.removeEventListener('offline', goOffline);
+        };
+      }, []);
       function readSwatches(target) {
         var id = target && target.id;
         if (!id || swatchRequestRef.current[id]) return;
@@ -8574,7 +8704,8 @@
         setSwatchesById(function (current) { var next = Object.assign({}, current); next[id] = null; return next; });
         fetchContactThumbnailDataUrl(target).then(function (dataUrl) { return extractSwatchesFromDataUrl(dataUrl, 6); }).then(function (swatches) {
           setSwatchesById(function (current) { var next = Object.assign({}, current); next[id] = swatches; return next; });
-          announce(swatches.length ? swatches.length + ' colour swatches read from ' + target.title : 'No colours could be read from ' + target.title);
+          persistSwatches(id, swatches);
+          announce(swatches.length ? __alloTf('stem.sourcebook.msg_swatches_read', '{count} colour swatches read from {title}', { count: swatches.length, title: target.title }) : __alloTf('stem.sourcebook.msg_no_swatches_read', 'No colours could be read from {title}', { title: target.title }));
         }).catch(function () {
           swatchRequestRef.current[id] = false;
           setSwatchesById(function (current) { var next = Object.assign({}, current); next[id] = []; return next; });
@@ -8607,14 +8738,14 @@
         setLoadedCreatorFilter('All');
         setLoadedMediumFilter('All');
         activateFirstLoadedResult(next);
-        announce(value === 'All' ? 'Showing every century in the loaded results' : 'Showing ' + next.length + ' loaded result' + (next.length === 1 ? '' : 's') + ' from the ' + value);
+        announce(value === 'All' ? __alloT('stem.sourcebook.msg_showing_every_century', 'Showing every century in the loaded results') : __alloTn('stem.sourcebook.msg_showing_results_from_era', next.length, 'Showing {count} loaded result from the {era}', 'Showing {count} loaded results from the {era}', { era: value }));
       }
 
       function chooseLoadedMedium(value) {
         var next = filterLoadedResultsByFacets(loadedCreatorResults, { medium: value }, rightsScope);
         setLoadedMediumFilter(value);
         activateFirstLoadedResult(next);
-        announce(value === 'All' ? 'Showing every medium in the loaded results' : 'Showing ' + next.length + ' loaded ' + value.toLowerCase() + ' result' + (next.length === 1 ? '' : 's'));
+        announce(value === 'All' ? __alloT('stem.sourcebook.msg_showing_every_medium', 'Showing every medium in the loaded results') : __alloTn('stem.sourcebook.msg_showing_results_of_medium', next.length, 'Showing {count} loaded {medium} result', 'Showing {count} loaded {medium} results', { medium: value.toLowerCase() }));
       }
 
       function chooseLoadedCreator(value) {
@@ -8622,7 +8753,7 @@
         setLoadedCreatorFilter(value);
         setLoadedMediumFilter('All');
         activateFirstLoadedResult(next);
-        announce(value === 'All' ? 'Showing every artist in the loaded results' : 'Showing ' + next.length + ' loaded result' + (next.length === 1 ? '' : 's') + ' by ' + value);
+        announce(value === 'All' ? __alloT('stem.sourcebook.msg_showing_every_artist', 'Showing every artist in the loaded results') : __alloTn('stem.sourcebook.msg_showing_results_by_creator', next.length, 'Showing {count} loaded result by {creator}', 'Showing {count} loaded results by {creator}', { creator: value }));
       }
 
       function activateFirstLoadedResult(items) {
@@ -8643,8 +8774,8 @@
         setLoadedMediumFilter('All');
         activateFirstLoadedResult(next);
         announce(value === 'All'
-          ? 'Showing all ' + next.length + ' loaded Sourcebook results'
-          : 'Showing ' + next.length + ' loaded results from ' + value);
+          ? __alloTf('stem.sourcebook.msg_showing_all_loaded', 'Showing all {count} loaded Sourcebook results', { count: next.length })
+          : __alloTf('stem.sourcebook.msg_showing_results_from_provider', 'Showing {count} loaded results from {provider}', { count: next.length, provider: value }));
       }
 
       function chooseLoadedKind(value) {
@@ -8656,8 +8787,8 @@
         setLoadedMediumFilter('All');
         activateFirstLoadedResult(next);
         announce(value === 'All'
-          ? 'Showing every visual type in the selected loaded collections'
-          : 'Showing ' + next.length + ' loaded ' + value.toLowerCase() + ' result' + (next.length === 1 ? '' : 's'));
+          ? __alloT('stem.sourcebook.msg_showing_every_kind', 'Showing every visual type in the selected loaded collections')
+          : __alloTn('stem.sourcebook.msg_showing_results_of_kind', next.length, 'Showing {count} loaded {kind} result', 'Showing {count} loaded {kind} results', { kind: value.toLowerCase() }));
       }
 
       function chooseLoadedRights(value) {
@@ -8667,15 +8798,15 @@
         setLoadedCreatorFilter('All');
         setLoadedMediumFilter('All');
         activateFirstLoadedResult(next);
-        var label = value === 'All' ? 'all allowed reuse statuses' : (loadedRightsCoverageList.filter(function (entry) { return entry.rightsType === value; })[0] || { label: value }).label;
-        announce('Showing ' + next.length + ' loaded results with ' + label);
+        var label = value === 'All' ? __alloT('stem.sourcebook.msg_all_allowed_reuse_statuses', 'all allowed reuse statuses') : (loadedRightsCoverageList.filter(function (entry) { return entry.rightsType === value; })[0] || { label: value }).label;
+        announce(__alloTf('stem.sourcebook.msg_showing_results_with_rights', 'Showing {count} loaded results with {rights}', { count: next.length, rights: label }));
       }
 
       function clearLoadedFilters() {
         resetLoadedFacets();
         setBoardFilter('');
         activateFirstLoadedResult(combinedResults);
-        announce('Cleared all local Sourcebook board filters');
+        announce(__alloT('stem.sourcebook.msg_cleared_all_local_sourcebook_board_filters', 'Cleared all local Sourcebook board filters'));
       }
 
       function controlButton(label, selected, onClick, extra) {
@@ -8703,33 +8834,33 @@
           nextIds.splice(currentIndex, 1);
           setComparisonIds(nextIds);
           if (nextIds.length < 2 && comparisonOpen) setComparisonOpen(false);
-          announce('Removed ' + item.title + ' from the comparison shortlist');
+          announce(__alloTf('stem.sourcebook.msg_removed_from_comparison', 'Removed {title} from the comparison shortlist', { title: item.title }));
           return;
         }
         if (nextIds.length >= COMPARISON_MAX_ASSETS) {
-          toast('Comparison holds up to four rights-verified assets. Remove one before adding another.', 'info');
-          announce('Comparison shortlist is full at four assets');
+          toast(__alloT('stem.sourcebook.msg_comparison_holds_up_to_four_rights_verified', 'Comparison holds up to four rights-verified assets. Remove one before adding another.'), 'info');
+          announce(__alloT('stem.sourcebook.msg_comparison_shortlist_is_full_at_four_assets', 'Comparison shortlist is full at four assets'));
           return;
         }
         nextIds.push(item.id);
         setComparisonIds(nextIds);
-        announce('Added ' + item.title + ' to the comparison shortlist. ' + nextIds.length + ' of four selected.');
+        announce(__alloTf('stem.sourcebook.msg_added_to_comparison', 'Added {title} to the comparison shortlist. {count} of four selected.', { title: item.title, count: nextIds.length }));
       }
 
       function clearComparison() {
         if (!comparisonItems.length) return;
         setComparisonIds([]);
         setComparisonOpen(false);
-        announce('Cleared the Sourcebook comparison shortlist');
+        announce(__alloT('stem.sourcebook.msg_cleared_the_sourcebook_comparison_shortlist', 'Cleared the Sourcebook comparison shortlist'));
       }
 
       function openComparison() {
         if (comparisonItems.length < 2) {
-          announce('Add at least two rights-verified assets to compare');
+          announce(__alloT('stem.sourcebook.msg_add_at_least_two_rights_verified_assets', 'Add at least two rights-verified assets to compare'));
           return;
         }
         setComparisonOpen(true);
-        announce('Comparing ' + comparisonItems.length + ' rights-verified Sourcebook assets');
+        announce(__alloTf('stem.sourcebook.msg_comparing_assets', 'Comparing {count} rights-verified Sourcebook assets', { count: comparisonItems.length }));
       }
 
       function preview(item, prep, height, onFocusPoint, showOutputAspect, cardPresentation) {
@@ -8810,7 +8941,7 @@
         if (!item) return;
         setActiveId(item.id);
         patch({ activeId: item.id });
-        announce('Inspecting ' + item.title + ' from ' + providerPresentation(item.provider).name + '. Reuse rights: ' + item.rightsShort + '.');
+        announce(__alloTf('stem.sourcebook.msg_inspecting_item', 'Inspecting {title} from {provider}. Reuse rights: {rights}.', { title: item.title, provider: providerPresentation(item.provider).name, rights: item.rightsShort }));
         if (window.matchMedia && window.matchMedia('(max-width: 1023px)').matches) {
           mobileDetailTriggerRef.current = typeof document !== 'undefined' ? document.activeElement : null;
           setMobileDetailOpen(true);
@@ -8836,7 +8967,7 @@
         },
           h('input', {
             type: 'checkbox', checked: checked, disabled: palettePackageBusy, onChange: function () { togglePaletteCheck(item.id); },
-            className: 'h-4 w-4 accent-[#183b32]', 'aria-label': 'Select ' + item.title + ' for palette actions'
+            className: 'h-4 w-4 accent-[#183b32]', 'aria-label': __alloTf('stem.sourcebook.aria_select_for_palette_actions', 'Select {title} for palette actions', { title: item.title })
           }),
           __alloT('stem.sourcebook.select', 'Select')
         ), h('button', {
@@ -8845,7 +8976,7 @@
           'data-sourcebook-inspect': item.id,
           'aria-pressed': active.id === item.id ? 'true' : 'false',
           'aria-controls': 'sourcebook-detail-panel',
-          'aria-label': 'Inspect and prepare ' + item.title + ' from ' + providerInfo.name + '. Reuse rights: ' + item.rightsShort + '.' + (item.provider === MUSEUMS_VICTORIA_PROVIDER ? ' Review the source record for cultural context before use.' : '')
+          'aria-label': __alloTf('stem.sourcebook.aria_inspect_and_prepare', 'Inspect and prepare {title} from {provider}. Reuse rights: {rights}.', { title: item.title, provider: providerInfo.name, rights: item.rightsShort }) + (item.provider === MUSEUMS_VICTORIA_PROVIDER ? ' ' + __alloT('stem.sourcebook.aria_review_cultural_context', 'Review the source record for cultural context before use.') : '')
         }, preview(item, { mode: 'fit', zoom: 100, x: 50, y: 50 }, boardView === 'gallery' ? 180 : (item.kind === 'Archival' || item.kind === 'Botanical' ? 280 : 210), null, false, providerInfo),
           h('span', { 'aria-hidden': 'true', className: 'pointer-events-none absolute bottom-2 right-3 rounded-full bg-[#183b32]/95 px-2.5 py-1 text-[10px] font-black text-white shadow-sm' }, __alloT('stem.sourcebook.inspect_prepare', 'Inspect & prepare'))
         ),
@@ -8853,7 +8984,13 @@
           h('p', { 'data-sourcebook-card-provider': providerInfo.name, className: 'mb-1 text-[10px] font-black uppercase tracking-[.12em] text-[#4d685e]' }, providerInfo.name),
           h('div', { className: 'min-w-0' },
             h('h3', { className: 'font-black text-[#18352d] leading-tight' }, item.title),
-            h('p', { className: 'mt-1 text-[11px] text-[#5c6e67]' }, item.creator + ' · ' + item.year)
+            h('p', { className: 'mt-1 text-[11px] text-[#5c6e67]' }, item.creator + ' · ' + item.year),
+            (function () {
+              var strip = swatchesFor(item);
+              return strip && strip.length ? h('ul', { className: 'mt-1.5 flex gap-1', 'aria-label': __alloT('stem.sourcebook.card_swatches', 'Colour swatches read from this image'), 'data-sourcebook-card-swatches': item.id }, strip.slice(0, 6).map(function (swatch) {
+                return h('li', { key: swatch.hex, className: 'h-3.5 w-3.5 rounded-sm border border-[#c8d4ce]', style: { background: swatch.hex }, title: swatch.hex.toUpperCase() }, h('span', { className: 'sr-only' }, swatch.hex.toUpperCase()));
+              })) : null;
+            })()
           ),
           h('div', {
             className: 'mt-2 flex flex-wrap gap-1.5 text-[11px] font-black',
@@ -8910,17 +9047,17 @@
           showingCollection && h('button', {
             type: 'button', disabled: palettePackageBusy || paletteIndex <= 0, onClick: function () { movePaletteItem(item.id, -1); },
             className: 'min-h-[42px] px-3 rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] disabled:opacity-35',
-            'aria-label': 'Move ' + item.title + ' earlier in palette'
+            'aria-label': __alloTf('stem.sourcebook.aria_move_earlier', 'Move {title} earlier in palette', { title: item.title })
           }, __alloT('stem.sourcebook.earlier', 'Earlier')),
           showingCollection && h('button', {
             type: 'button', disabled: palettePackageBusy || paletteIndex < 0 || paletteIndex >= collection.length - 1, onClick: function () { movePaletteItem(item.id, 1); },
             className: 'min-h-[42px] px-3 rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] disabled:opacity-35',
-            'aria-label': 'Move ' + item.title + ' later in palette'
+            'aria-label': __alloTf('stem.sourcebook.aria_move_later', 'Move {title} later in palette', { title: item.title })
           }, __alloT('stem.sourcebook.later', 'Later')),
           h('a', {
             href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
             className: 'min-h-[42px] px-3 inline-flex items-center rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] hover:bg-[#f2f5f3]',
-            'aria-label': 'Open source record for ' + item.title + ' in a new tab'
+            'aria-label': __alloTf('stem.sourcebook.aria_open_source_record', 'Open source record for {title} in a new tab', { title: item.title })
           }, __alloT('stem.sourcebook.source_record', 'Source record ↗'))
         ));
       }
@@ -8978,25 +9115,25 @@
             h('section', { className: 'rounded-2xl bg-white border border-[#c8d4ce] p-4', 'aria-labelledby': 'sourcebook-swatches-title', 'data-sourcebook-swatches': item.id },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('h3', { id: 'sourcebook-swatches-title', className: 'font-black text-sm text-[#243e35]' }, __alloT('stem.sourcebook.colour_swatches', 'Colour swatches')),
-                (swatchesById[item.id] || []).length > 0 && h('button', {
+                (swatchesFor(item) || []).length > 0 && h('button', {
                   type: 'button',
                   onClick: function () {
-                    copyText(swatchesText(swatchesById[item.id])).then(function (copied) { toast(copied ? 'Swatch hex codes copied.' : 'Swatches could not be copied in this browser.', copied ? 'success' : 'error'); });
+                    copyText(swatchesText(swatchesFor(item))).then(function (copied) { toast(copied ? __alloT('stem.sourcebook.msg_swatches_copied', 'Swatch hex codes copied.') : __alloT('stem.sourcebook.msg_swatches_not_copied', 'Swatches could not be copied in this browser.'), copied ? 'success' : 'error'); });
                   },
                   className: 'min-h-[36px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42]'
                 }, __alloT('stem.sourcebook.copy_hex', 'Copy hex'))
               ),
-              swatchesById[item.id] === undefined
+              swatchesFor(item) === undefined
                 ? h('button', {
                     type: 'button', onClick: function () { readSwatches(item); },
                     'data-sourcebook-read-swatches': item.id,
                     title: __alloT('stem.sourcebook.read_colours_title', 'Fetch the preview once and read its dominant colours locally; nothing is sent anywhere'),
                     className: 'mt-2 min-h-[40px] w-full rounded-xl border border-[#a9bbb3] bg-[#f2f6f3] px-3 text-xs font-black text-[#294d42] hover:bg-[#e6efe9]'
                   }, __alloT('stem.sourcebook.read_colours', 'Read colours from this image'))
-                : (swatchesById[item.id] === null
+                : (swatchesFor(item) === null
                   ? h('p', { className: 'mt-2 text-[11px] text-[#4f625b]', role: 'status' }, __alloT('stem.sourcebook.swatches_reading', 'Reading colours from the preview...'))
-                  : (swatchesById[item.id].length
-                  ? h('ul', { className: 'mt-2 grid grid-cols-3 gap-2', 'aria-label': __alloT('stem.sourcebook.dominant_colours', 'Dominant colours in this image') }, swatchesById[item.id].map(function (swatch) {
+                  : (swatchesFor(item).length
+                  ? h('ul', { className: 'mt-2 grid grid-cols-3 gap-2', 'aria-label': __alloT('stem.sourcebook.dominant_colours', 'Dominant colours in this image') }, swatchesFor(item).map(function (swatch) {
                       return h('li', { key: swatch.hex, className: 'flex items-center gap-2 text-[11px] font-black text-[#294d42]' },
                         h('span', { 'aria-hidden': 'true', className: 'inline-block h-6 w-6 rounded-md border border-[#c8d4ce]', style: { background: swatch.hex } }),
                         h('span', null, swatch.hex.toUpperCase()),
@@ -9018,8 +9155,8 @@
                 h('summary', { className: 'cursor-pointer text-[11px] font-black text-[#315c50]' }, __alloT('stem.sourcebook.how_reuse_rights_were_checked', 'How reuse rights were checked')),
                 h('p', { className: 'mt-2 break-words text-[10px] leading-relaxed text-[#5a6f67]', 'data-sourcebook-rights-evidence': 'true' }, item.rightsMetadataSource)
               ),
-              item.licenseUrl && h('a', { href: item.licenseUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Open license terms for ' + item.title + ' in a new tab', className: 'inline-block mt-2 mr-3 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.license_terms', 'License terms ↗')),
-              h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Verify ' + item.title + ' on its source record in a new tab', className: 'inline-block mt-2 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.verify_on_source_record', 'Verify on source record ↗'))
+              item.licenseUrl && h('a', { href: item.licenseUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_open_license_terms', 'Open license terms for {title} in a new tab', { title: item.title }), className: 'inline-block mt-2 mr-3 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.license_terms', 'License terms ↗')),
+              h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_verify_on_source_record', 'Verify {title} on its source record in a new tab', { title: item.title }), className: 'inline-block mt-2 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, __alloT('stem.sourcebook.verify_on_source_record', 'Verify on source record ↗'))
             ),
             item.provider === MUSEUMS_VICTORIA_PROVIDER && h('section', {
               className: 'rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-950',
@@ -9097,13 +9234,18 @@
               ),
               activePrep.mode !== 'tile' && h('div', { className: 'grid grid-cols-1 gap-3' },
                 activePrep.mode === 'crop' && h('p', { className: 'rounded-xl bg-[#e8f0ec] px-3 py-2 text-[11px] font-bold leading-relaxed text-[#38564d]' }, __alloT('stem.sourcebook.click_the_preview_to_place_the_crop_fo', 'Click the preview to place the crop focal point, or use the sliders.')),
-                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, 'Zoom ' + activePrep.zoom + '%',
+                (activePrep.zoom !== 100 || activePrep.x !== 50 || activePrep.y !== 50) && h('button', {
+                  type: 'button', onClick: function () { updatePrep(item.id, { zoom: 100, x: 50, y: 50 }); },
+                  'data-sourcebook-recentre-crop': item.id,
+                  className: 'min-h-[36px] w-full rounded-xl border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#53685f] hover:bg-[#f2f6f3]'
+                }, __alloT('stem.sourcebook.recentre_crop', 'Re-centre crop and reset zoom')),
+                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_zoom_percent', 'Zoom {value}%', { value: activePrep.zoom }),
                   h('input', { type: 'range', min: 100, max: 220, step: 5, value: activePrep.zoom, onChange: function (event) { updatePrep(item.id, { zoom: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.image_zoom', 'Image zoom') })
                 ),
-                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, 'Horizontal ' + activePrep.x + '%',
+                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_horizontal_percent', 'Horizontal {value}%', { value: activePrep.x }),
                   h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.x, onChange: function (event) { updatePrep(item.id, { x: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.horizontal_crop_focus', 'Horizontal crop focus') })
                 ),
-                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, 'Vertical ' + activePrep.y + '%',
+                h('label', { className: 'text-[11px] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_vertical_percent', 'Vertical {value}%', { value: activePrep.y }),
                   h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.y, onChange: function (event) { updatePrep(item.id, { y: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.vertical_crop_focus', 'Vertical crop focus') })
                 )
               ),
@@ -9169,8 +9311,8 @@
                       type: 'button',
                       onClick: function () {
                         updatePrep(item.id, { decorative: false, altTextReviewed: true });
-                        toast('Alt text marked reviewed for this asset.', 'success');
-                        announce('Sourcebook alt text marked reviewed');
+                        toast(__alloT('stem.sourcebook.msg_alt_text_marked_reviewed_for_this_asset', 'Alt text marked reviewed for this asset.'), 'success');
+                        announce(__alloT('stem.sourcebook.msg_sourcebook_alt_text_marked_reviewed', 'Sourcebook alt text marked reviewed'));
                       },
                       className: 'min-h-[38px] rounded-lg bg-[#276b57] px-3 text-[10px] font-black text-white hover:bg-[#1f5847]',
                       'data-sourcebook-confirm-alt-text': item.id
@@ -9207,11 +9349,11 @@
               item.live === true && providerSupportsLiveSearch(item.provider) && h('button', {
                 type: 'button', onClick: function () { findMoreFromCollection(item); },
                 'data-sourcebook-more-from-provider': item.provider,
-                'aria-label': 'Find more ' + item.kind + ' assets from ' + item.provider,
+                'aria-label': __alloTf('stem.sourcebook.aria_find_more_from_provider', 'Find more {kind} assets from {provider}', { kind: item.kind, provider: item.provider }),
                 className: 'col-span-2 min-h-[44px] rounded-xl bg-[#e6efe9] border border-[#9eb9ae] px-3 font-black text-xs text-[#214c3f] hover:bg-[#d8e8e0]'
               }, 'More from ' + providerPresentation(item.provider).name),
               h('button', { type: 'button', onClick: function () {
-                copyText(attributionText(item)).then(function (copied) { if (copied) bumpQuestCounter('creditsCopied'); toast(copied ? 'Attribution copied.' : 'Attribution could not be copied in this browser.', copied ? 'success' : 'error'); });
+                copyText(attributionText(item)).then(function (copied) { if (copied) bumpQuestCounter('creditsCopied'); toast(copied ? __alloT('stem.sourcebook.msg_attribution_copied', 'Attribution copied.') : __alloT('stem.sourcebook.msg_attribution_not_copied', 'Attribution could not be copied in this browser.'), copied ? 'success' : 'error'); });
               }, className: 'min-h-[44px] rounded-xl bg-white border border-[#a9bbb3] font-black text-xs text-[#294d42]' }, __alloT('stem.sourcebook.copy_credit', 'Copy credit')),
               h('a', { href: item.downloadUrl, target: '_blank', rel: 'noopener noreferrer', className: 'col-span-2 min-h-[44px] inline-flex justify-center items-center rounded-xl bg-white border border-[#a9bbb3] font-black text-xs text-[#294d42]' }, __alloT('stem.sourcebook.open_printable_image', 'Open printable image ↗'))
             )
@@ -9220,7 +9362,7 @@
       }
 
       return h('div', { ref: sourcebookRootRef, className: 'sourcebook-tool min-h-full text-[#1c342c] bg-[#f7f4ed]', 'data-sourcebook': 'true' },  // ★The root declared an ink but no GROUND, so only the cream detail panel had paper under it and the main column fell onto the theme canvas: fine on white in light, but #18352d on #0f172a in dark -- 1.34:1 on the 'Browse the starting shelf' heading. This tool's whole design is a paper/cream book, unconditional in both themes, so the ground belongs on the root next to the ink that assumes it.
-        h('style', null, __alloT('stem.sourcebook.sourcebook_tool_sb_ink_18352d_sb_paper', '.sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}')),
+        h('style', null, SOURCEBOOK_THEME_CSS),
         h('header', { className: 'relative overflow-hidden rounded-3xl border border-[#a9c2b8] bg-[#e8efe9] p-5 md:p-7 mb-5' },
           h('div', { 'aria-hidden': 'true', className: 'absolute -right-12 -top-16 w-64 h-64 rounded-full border-[36px] border-[#c8ddd4] opacity-70' }),
           h('div', { 'aria-hidden': 'true', className: 'absolute right-12 bottom-0 text-[110px] leading-none font-serif text-[#d1e1da] select-none' }, 'S'),
@@ -9302,7 +9444,7 @@
               key: item.id, type: 'button', role: 'listitem', onClick: function () { inspectSourcebookItem(item); },
               className: 'relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border-2 bg-[#edf1ed] ' + (isChecked ? 'border-amber-500 ring-2 ring-amber-200' : (isActive ? 'border-[#2f6b59]' : 'border-[#cad6d0]')),
               title: 'Preview ' + item.title,
-              'aria-label': 'Preview saved source ' + item.title,
+              'aria-label': __alloTf('stem.sourcebook.aria_preview_saved_source', 'Preview saved source {title}', { title: item.title }),
               'aria-pressed': isActive ? 'true' : 'false',
               'aria-controls': 'sourcebook-detail-panel'
             },
@@ -9324,11 +9466,15 @@
             'data-sourcebook-retry-verification': 'true'
           }, __alloT('stem.sourcebook.retry_verification', 'Retry verification'))
         ),
+        !isOnline && h('div', {
+          className: 'sb-no-print mb-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-950',
+          role: 'status', 'aria-live': 'polite', 'data-sourcebook-offline': 'true'
+        }, __alloT('stem.sourcebook.offline_banner', 'You look offline. Your saved palette, prepared images, packages, and the built-in shelf still work; live collection search resumes when the connection returns.')),
         query && liveStatus !== 'idle' && h('div', {
           className: 'sb-no-print mb-4 flex items-center gap-3 rounded-xl border px-3 py-2 text-xs font-bold ' + (liveStatus === 'error' ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950'),
           ref: liveStatusRef, tabIndex: -1, role: 'status', 'aria-live': 'polite', 'data-sourcebook-live-status': liveStatus
         },
-          h('span', { className: 'min-w-0 flex-1' }, liveMessage || 'Searching public collections and checking item-level rights metadata…'),
+          h('span', { className: 'min-w-0 flex-1' }, liveMessage || __alloT('stem.sourcebook.msg_searching_public_collections_default', 'Searching public collections and checking item-level rights metadata…')),
           searchActive && h('button', { type: 'button', onClick: function () { stopLiveRequest(); }, className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/70 px-3 py-2 text-[11px] font-black', 'aria-label': __alloT('stem.sourcebook.stop_the_active_sourcebook_search', 'Stop the active Sourcebook search') }, __alloT('stem.sourcebook.stop_search', 'Stop search'))
         ),
         providerReportList.length > 0 && h('details', { className: 'sb-no-print mb-4 rounded-2xl border border-[#bfd0c8] bg-[#f7faf8] px-3 py-2', open: searchActive || providerRetryableCount > 0 || undefined, 'aria-label': __alloT('stem.sourcebook.provider_search_progress', 'Provider search progress') },
@@ -9345,7 +9491,7 @@
           var isTargeting = retryingProvider === report.provider;
           var loadedProviderCount = liveResults.filter(function (item) { return item.provider === report.provider && allowedByRightsScope(item, rightsScope); }).length;
           var tone = good ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (working ? 'border-sky-200 bg-sky-50 text-sky-950' : 'border-amber-200 bg-amber-50 text-amber-950');
-          var statusLabel = report.status === 'ready' ? report.count + ' verified' : (report.status === 'cached' ? report.count + ' cached' : (report.status === 'cooldown' ? 'Cooling down' : (report.status === 'retrying' ? 'Retrying once' : (report.status === 'cancelled' ? 'Stopped' : (report.status === 'error' ? 'Unavailable' : 'Searching')))));
+          var statusLabel = report.status === 'ready' ? __alloTf('stem.sourcebook.status_count_verified', '{count} verified', { count: report.count }) : (report.status === 'cached' ? __alloTf('stem.sourcebook.status_count_cached', '{count} cached', { count: report.count }) : (report.status === 'cooldown' ? __alloT('stem.sourcebook.status_cooling_down', 'Cooling down') : (report.status === 'retrying' ? __alloT('stem.sourcebook.status_retrying_once', 'Retrying once') : (report.status === 'cancelled' ? __alloT('stem.sourcebook.status_stopped', 'Stopped') : (report.status === 'error' ? __alloT('stem.sourcebook.status_unavailable', 'Unavailable') : __alloT('stem.sourcebook.status_searching', 'Searching'))))));
           return h('div', { key: report.provider, className: 'rounded-xl border px-3 py-2 ' + tone },
             h('div', { className: 'flex items-center justify-between gap-2' },
               h('strong', { className: 'truncate text-[11px]' }, report.provider),
@@ -9355,7 +9501,7 @@
             h('p', {
               className: 'mt-1 text-[10px] font-black uppercase tracking-[.05em] opacity-70',
               'data-sourcebook-provider-batch': report.provider
-            }, 'Collection batch ' + (report.batch + 1) + ' / ' + loadedProviderCount + ' loaded on board'),
+            }, __alloTf('stem.sourcebook.label_collection_batch_loaded', 'Collection batch {batch} / {count} loaded on board', { batch: report.batch + 1, count: loadedProviderCount })),
             hasProviderAction && h('div', { className: 'mt-2 border-t border-current/20 pt-2' },
               h('p', { className: 'mb-2 text-[10px] font-bold leading-snug opacity-80' }, canRetry
                 ? 'Retries this collection batch only; current verified board stays intact.'
@@ -9399,7 +9545,7 @@
               h('span', { className: 'mt-1 block text-[9px] font-black uppercase tracking-[.08em] text-amber-800' }, __alloT('stem.sourcebook.need_attention', 'Need attention'))
             )
           ),
-          h('div', { className: 'px-4 pt-3', 'aria-label': 'Collection reports resolved ' + coverageGuide.completionPercent + ' percent' },
+          h('div', { className: 'px-4 pt-3', 'aria-label': __alloTf('stem.sourcebook.aria_collection_reports_resolved', 'Collection reports resolved {percent} percent', { percent: coverageGuide.completionPercent }) },
             h('div', { className: 'flex items-center justify-between text-[10px] font-black uppercase tracking-[.07em] text-[#526c62]' },
               h('span', null, coverageGuide.checkedCount + ' checked / ' + coverageGuide.totalCount + ' reporting'),
               h('span', null, coverageGuide.completionPercent + '% resolved')
@@ -9624,7 +9770,7 @@
                 )
               ),
               h('p', { className: 'mt-3 rounded-lg bg-[#183b32] px-3 py-2 text-[10px] font-bold text-white', role: 'status', 'aria-live': 'polite', 'data-sourcebook-loaded-facet-status': 'true' },
-                'Showing ' + loadedFacetResults.length + ' of ' + combinedResults.length + ' loaded rights-verified result' + (combinedResults.length === 1 ? '' : 's')
+                __alloTn('stem.sourcebook.label_showing_n_of_total_verified', combinedResults.length, 'Showing {shown} of {count} loaded rights-verified result', 'Showing {shown} of {count} loaded rights-verified results', { shown: loadedFacetResults.length })
                   + (effectiveLoadedProviderFilter === 'All' ? ' across all loaded collections' : ' from ' + effectiveLoadedProviderFilter)
                   + (effectiveLoadedKindFilter === 'All' ? '' : ' · ' + effectiveLoadedKindFilter)
                   + (effectiveLoadedEraFilter === 'All' ? '' : ' · ' + effectiveLoadedEraFilter)
@@ -9706,7 +9852,7 @@
                   }, recommendedIsPalette ? 'Using this palette' : ((collection.length ? 'Replace palette' : 'Use as palette') + ' (' + recommendedItems.length + ')')),
                   h('button', {
                     type: 'button', disabled: recommendedSavedCount === recommendedItems.length,
-                    onClick: function () { addItemsToPalette(recommendedItems, 'Saved ' + recommendedItems.length + ' recommended assets to your palette.'); },
+                    onClick: function () { addItemsToPalette(recommendedItems, __alloTf('stem.sourcebook.msg_saved_recommended_assets', 'Saved {count} recommended assets to your palette.', { count: recommendedItems.length })); },
                     className: 'min-h-[42px] rounded-xl border border-[#75988c] bg-white/10 px-4 text-xs font-black text-white disabled:opacity-60'
                   }, recommendedSavedCount === recommendedItems.length ? 'All picks saved' : 'Save recommendations (' + recommendedItems.length + ')'),
                   h('button', {
@@ -9747,7 +9893,7 @@
                     type: 'button',
                     onClick: function () { inspectSourcebookItem(item); },
                     className: 'block w-full text-left',
-                    'aria-label': 'Inspect curated pick ' + (index + 1) + ': ' + item.title,
+                    'aria-label': __alloTf('stem.sourcebook.aria_inspect_curated_pick', 'Inspect curated pick {n}: {title}', { n: index + 1, title: item.title }),
                     'aria-pressed': active && active.id === item.id ? 'true' : 'false',
                     'aria-controls': 'sourcebook-detail-panel'
                   },
@@ -9787,21 +9933,34 @@
                 paletteImportBusy ? 'Verifying import...' : 'Import .json',
                 h('input', { type: 'file', accept: '.json,application/json', disabled: palettePackageBusy || paletteImportBusy || savedSmkVerificationStatus === 'loading', onChange: importPaletteManifest, className: 'sr-only', 'aria-label': __alloT('stem.sourcebook.import_sourcebook_palette_manifest', 'Import Sourcebook palette manifest') })
               ),
+              h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#294d42]' },
+                __alloT('stem.sourcebook.board_columns', 'Board columns'),
+                h('select', {
+                  value: String(referenceBoardColumns), 'data-sourcebook-board-columns': String(referenceBoardColumns),
+                  onChange: function (event) { var value = Number(event.target.value) || 0; setReferenceBoardColumns(value); patch({ referenceBoardColumns: value }); },
+                  className: 'rounded-lg border border-[#b6c4be] bg-white px-2 py-1 text-[11px] font-black text-[#183b32]',
+                  'aria-label': __alloT('stem.sourcebook.board_columns_aria', 'Reference board column count')
+                },
+                  h('option', { value: '0' }, __alloT('stem.sourcebook.board_columns_auto', 'Auto')),
+                  h('option', { value: '2' }, '2'),
+                  h('option', { value: '3' }, '3'),
+                  h('option', { value: '4' }, '4'))
+              ),
               h('button', {
                 type: 'button', disabled: !exportItems.length || palettePackageBusy || referenceBoardProgress > 0, onClick: downloadReferenceBoard,
                 'aria-busy': referenceBoardProgress > 0 ? 'true' : 'false',
                 title: __alloT('stem.sourcebook.reference_board_title', 'Download a pinnable PNG board of the palette with credits and colour swatches under every image'),
                 className: 'min-h-[42px] px-4 rounded-xl border border-[#245a49] bg-white text-[#183b32] text-xs font-black disabled:opacity-40'
               }, referenceBoardProgress > 0 ? __alloT('stem.sourcebook.reference_board_busy', 'Building board...') + ' ' + referenceBoardProgress + '%' : __alloT('stem.sourcebook.reference_board', 'Reference board (PNG)')),
-              h('button', { type: 'button', disabled: !exportItems.length || palettePackageBusy, onClick: savePalettePackage, className: 'min-h-[42px] px-4 rounded-xl bg-[#245a49] text-white text-xs font-black disabled:opacity-40', title: __alloT('stem.sourcebook.prepared_images_credits_licenses_and_s', 'Prepared images, credits, licenses, and source records in one offline-friendly file') }, palettePackageBusy ? 'Preparing ' + palettePackageProgress + ' / ' + palettePackageTotal + '…' : (checkedPaletteItems.length ? 'Download selected package (' + exportItems.length + ')' : 'Download package')),
-              h('button', { type: 'button', disabled: !exportItems.length, onClick: function () { if (!downloadPaletteManifest(exportIds, preparation, storedTitle, exportItems)) toast('The palette manifest could not be downloaded in this browser.', 'error'); }, className: 'min-h-[42px] px-4 rounded-xl border border-[#507268] bg-white text-[#244c40] text-xs font-black disabled:opacity-40', title: __alloT('stem.sourcebook.portable_manifest_for_future_page_desi', 'Portable manifest for future Page Designer import') }, checkedPaletteItems.length ? 'Export selected .json' : 'Export .json'),
+              h('button', { type: 'button', disabled: !exportItems.length || palettePackageBusy, onClick: savePalettePackage, className: 'min-h-[42px] px-4 rounded-xl bg-[#245a49] text-white text-xs font-black disabled:opacity-40', title: __alloT('stem.sourcebook.prepared_images_credits_licenses_and_s', 'Prepared images, credits, licenses, and source records in one offline-friendly file') }, palettePackageBusy ? __alloTf('stem.sourcebook.label_preparing_progress', 'Preparing {done} / {total}…', { done: palettePackageProgress, total: palettePackageTotal }) : (checkedPaletteItems.length ? __alloTf('stem.sourcebook.label_download_selected_package', 'Download selected package ({count})', { count: exportItems.length }) : __alloT('stem.sourcebook.label_download_package', 'Download package'))),
+              h('button', { type: 'button', disabled: !exportItems.length, onClick: function () { if (!downloadPaletteManifest(exportIds, preparation, storedTitle, exportItems)) toast(__alloT('stem.sourcebook.msg_the_palette_manifest_could_not_be_downloaded', 'The palette manifest could not be downloaded in this browser.'), 'error'); }, className: 'min-h-[42px] px-4 rounded-xl border border-[#507268] bg-white text-[#244c40] text-xs font-black disabled:opacity-40', title: __alloT('stem.sourcebook.portable_manifest_for_future_page_desi', 'Portable manifest for future Page Designer import') }, checkedPaletteItems.length ? __alloT('stem.sourcebook.label_export_selected_json', 'Export selected .json') : __alloT('stem.sourcebook.label_export_json', 'Export .json')),
               h('button', { type: 'button', disabled: !exportItems.length, onClick: function () {
                 copyText(paletteAttributionText(exportItems)).then(function (copied) {
-                  toast(copied ? (checkedPaletteItems.length ? 'Selected palette credits copied.' : 'All palette credits copied.') : 'Credits could not be copied in this browser.', copied ? 'success' : 'error');
-                  announce(copied ? 'Palette credits copied' : 'Could not copy palette credits');
+                  toast(copied ? (checkedPaletteItems.length ? __alloT('stem.sourcebook.msg_selected_credits_copied', 'Selected palette credits copied.') : __alloT('stem.sourcebook.msg_all_credits_copied', 'All palette credits copied.')) : __alloT('stem.sourcebook.msg_credits_not_copied', 'Credits could not be copied in this browser.'), copied ? 'success' : 'error');
+                  announce(copied ? __alloT('stem.sourcebook.msg_credits_copied_announce', 'Palette credits copied') : __alloT('stem.sourcebook.msg_credits_not_copied_announce', 'Could not copy palette credits'));
                 });
               }, className: 'min-h-[42px] px-4 rounded-xl border border-[#507268] bg-white text-[#244c40] text-xs font-black disabled:opacity-40' }, checkedPaletteItems.length ? 'Copy selected credits' : 'Copy credits'),
-              h('button', { type: 'button', disabled: !exportItems.length, onClick: function () { if (!printCollection(exportItems, preparation, storedTitle)) toast('Allow pop-ups to open the print sheet.', 'error'); }, className: 'min-h-[42px] px-4 rounded-xl bg-[#b84d37] text-white text-xs font-black disabled:opacity-40' }, checkedPaletteItems.length ? 'Print selected (' + exportItems.length + ')' : 'Print palette'),
+              h('button', { type: 'button', disabled: !exportItems.length, onClick: function () { if (!printCollection(exportItems, preparation, storedTitle)) toast(__alloT('stem.sourcebook.msg_allow_pop_ups_to_open_the_print', 'Allow pop-ups to open the print sheet.'), 'error'); }, className: 'min-h-[42px] px-4 rounded-xl bg-[#b84d37] text-white text-xs font-black disabled:opacity-40' }, checkedPaletteItems.length ? __alloTf('stem.sourcebook.label_print_selected_count', 'Print selected ({count})', { count: exportItems.length }) : __alloT('stem.sourcebook.label_print_palette', 'Print palette')),
               h('button', { type: 'button', disabled: !selectedItems.length || palettePackageBusy, onClick: clearPalette, className: 'min-h-[42px] px-4 rounded-xl border border-red-300 bg-white text-red-800 text-xs font-black disabled:opacity-40' }, __alloT('stem.sourcebook.clear_palette', 'Clear palette'))
             ),
             showingCollection && palettePackageBusy && h('div', { className: 'sb-no-print mb-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[11px] font-bold text-sky-950', role: 'status', 'aria-live': 'polite' },
@@ -9947,7 +10106,7 @@
                             onClick: function () { inspectSourcebookItem(roleItem); },
                             className: 'group relative aspect-square min-w-0 overflow-hidden rounded-xl border border-violet-200 bg-violet-50 text-left focus:outline-none focus:ring-2 focus:ring-violet-500',
                             title: roleItem.title + ' - ' + roleItem.sourceLabel,
-                            'aria-label': 'Inspect ' + roleItem.title + ' planned as ' + group.label,
+                            'aria-label': __alloTf('stem.sourcebook.aria_inspect_planned_as', 'Inspect {title} planned as {role}', { title: roleItem.title, role: group.label }),
                             'data-sourcebook-role-asset': roleItem.id
                           },
                             h('img', { src: roleItem.imageUrl, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer', className: 'h-full w-full object-cover transition-transform group-hover:scale-105' }),
@@ -9959,7 +10118,7 @@
                           'data-sourcebook-role-gap': group.id,
                           'data-sourcebook-role-action': roleAction.mode
                         },
-                          h('span', { className: 'text-[10px] font-black text-amber-900' }, 'Needs ' + group.missing + ' ' + group.shortLabel.toLowerCase()),
+                          h('span', { className: 'text-[10px] font-black text-amber-900' }, __alloTf('stem.sourcebook.label_needs_role_count', 'Needs {count} {role}', { count: group.missing, role: group.shortLabel.toLowerCase() })),
                           h('span', { className: 'mt-1 text-[8px] font-bold uppercase tracking-[.1em] text-amber-700' }, roleAction.mode === 'replace' ? 'Rebalance opportunity' : 'Suggested gap'),
                           h('button', {
                             type: 'button',
@@ -10052,8 +10211,8 @@
                     disabled: !outputPreflightRows.length,
                     onClick: function () {
                       copyText(outputPreflightReportText).then(function (copied) {
-                        toast(copied ? 'Output preflight report copied.' : 'The preflight report could not be copied in this browser.', copied ? 'success' : 'error');
-                        announce(copied ? 'Output preflight report copied' : 'Could not copy output preflight report');
+                        toast(copied ? __alloT('stem.sourcebook.msg_preflight_copied', 'Output preflight report copied.') : __alloT('stem.sourcebook.msg_preflight_not_copied', 'The preflight report could not be copied in this browser.'), copied ? 'success' : 'error');
+                        announce(copied ? __alloT('stem.sourcebook.msg_preflight_copied_announce', 'Output preflight report copied') : __alloT('stem.sourcebook.msg_preflight_not_copied_announce', 'Could not copy output preflight report'));
                       });
                     },
                     className: 'min-h-[42px] rounded-xl border border-[#6c8b80] bg-white px-4 text-xs font-black text-[#244c40] disabled:opacity-40',
@@ -10066,7 +10225,7 @@
                       if (!nextOutputReviewItem) return;
                       setPaletteAccessibilityFilter('all');
                       inspectSourcebookItem(nextOutputReviewItem);
-                      announce('Reviewing remaining output checks for ' + nextOutputReviewItem.title);
+                      announce(__alloTf('stem.sourcebook.msg_reviewing_output_checks', 'Reviewing remaining output checks for {title}', { title: nextOutputReviewItem.title }));
                     },
                     className: 'min-h-[42px] rounded-xl bg-[#b84d37] px-4 text-xs font-black text-white disabled:opacity-40',
                     'data-sourcebook-review-next-check': nextOutputReviewItem ? nextOutputReviewItem.id : '',
@@ -10103,7 +10262,7 @@
                           if (!rowItem) return;
                           setPaletteAccessibilityFilter('all');
                           inspectSourcebookItem(rowItem);
-                          announce('Inspecting output checks for ' + rowItem.title);
+                          announce(__alloTf('stem.sourcebook.msg_inspecting_output_checks', 'Inspecting output checks for {title}', { title: rowItem.title }));
                         },
                         className: 'min-h-[38px] shrink-0 rounded-lg border border-[#8fa69d] bg-white px-3 text-[10px] font-black text-[#244c40]'
                       }, row.status === 'review' ? 'Review' : 'Inspect')
@@ -10173,7 +10332,7 @@
                     if (!nextAccessibilityReviewItem) return;
                     setPaletteAccessibilityFilter('suggested');
                     inspectSourcebookItem(nextAccessibilityReviewItem);
-                    announce('Reviewing accessibility for ' + nextAccessibilityReviewItem.title);
+                    announce(__alloTf('stem.sourcebook.msg_reviewing_accessibility', 'Reviewing accessibility for {title}', { title: nextAccessibilityReviewItem.title }));
                   },
                   className: 'min-h-[42px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40',
                   'data-sourcebook-review-next': nextAccessibilityReviewItem ? nextAccessibilityReviewItem.id : ''
@@ -10188,7 +10347,7 @@
               h('button', { type: 'button', onClick: function () { applyPreparationToPalette('fit'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Fit selected' : 'Fit all'),
               h('button', { type: 'button', onClick: function () { applyPreparationToPalette('crop'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Crop selected' : 'Crop all'),
               h('button', { type: 'button', onClick: function () { applyPreparationToPalette('tile'); }, className: 'min-h-[36px] rounded-lg border border-[#8fa69d] bg-white px-3 text-[11px] font-black text-[#244c40]' }, checkedPaletteItems.length ? 'Tile selected' : 'Tile all'),
-              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('reset'); }, className: 'min-h-[36px] rounded-lg border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#53685f]' }, checkedPaletteItems.length ? 'Reset selected' : 'Reset all')
+              h('button', { type: 'button', onClick: function () { applyPreparationToPalette('reset'); }, className: 'min-h-[36px] rounded-lg border border-[#b6c4be] bg-white px-3 text-[11px] font-black text-[#53685f]' }, checkedPaletteItems.length ? __alloT('stem.sourcebook.label_reset_selected', 'Reset selected') : __alloT('stem.sourcebook.label_reset_all', 'Reset all'))
             ),
             !showingCollection && searchActive && liveResults.length === 0 && h('section', {
               className: 'sb-no-print mb-4 rounded-2xl border border-sky-200 bg-sky-50/70 p-3',
@@ -10244,7 +10403,7 @@
                   h('button', {
                     type: 'button', onClick: function () { toggleComparison(item); },
                     className: 'min-h-[40px] shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black text-slate-700',
-                    'aria-label': 'Remove ' + item.title + ' from comparison',
+                    'aria-label': __alloTf('stem.sourcebook.aria_remove_from_comparison', 'Remove {title} from comparison', { title: item.title }),
                     'data-sourcebook-comparison-remove': item.id
                   }, __alloT('stem.sourcebook.remove', 'Remove'))
                 );
@@ -10266,7 +10425,7 @@
                     [['color', __alloT('stem.sourcebook.compare_colour', 'Colour')], ['gray', __alloT('stem.sourcebook.compare_gray', 'Grayscale')], ['values', __alloT('stem.sourcebook.compare_values', 'Values')]].map(function (entry) {
                       var selected = comparisonView === entry[0];
                       return h('button', {
-                        key: entry[0], type: 'button', onClick: function () { setComparisonView(entry[0]); },
+                        key: entry[0], type: 'button', onClick: function () { setComparisonView(entry[0]); patch({ comparisonView: entry[0] }); },
                         'aria-pressed': selected ? 'true' : 'false',
                         'data-sourcebook-compare-view-option': entry[0],
                         className: 'min-h-[44px] px-3 text-xs font-black ' + (selected ? 'bg-[#f3ead7] text-[#183b32]' : 'bg-white/10 text-white hover:bg-white/20')
@@ -10275,7 +10434,7 @@
                   ),
                   h('button', {
                     type: 'button',
-                    onClick: function () { addItemsToPalette(comparisonItems, 'Saved ' + comparisonItems.length + ' compared assets to your palette.'); },
+                    onClick: function () { addItemsToPalette(comparisonItems, __alloTf('stem.sourcebook.msg_saved_compared_assets', 'Saved {count} compared assets to your palette.', { count: comparisonItems.length })); },
                     className: 'min-h-[44px] rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32]',
                     'data-sourcebook-save-comparison': 'true'
                   }, 'Save compared (' + comparisonItems.length + ')'),
@@ -10300,7 +10459,7 @@
                 },
                   h('div', { className: 'relative h-44 overflow-hidden bg-[#e8ece7]' },
                     h('img', { src: item.imageUrl, alt: '', loading: 'lazy', className: 'h-full w-full object-contain', style: { filter: COMPARISON_VIEW_FILTERS[comparisonView] }, onError: function (event) { event.currentTarget.style.display = 'none'; } }),
-                    h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[10px] font-black text-white' }, 'Candidate ' + (index + 1)),
+                    h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[10px] font-black text-white' }, __alloTf('stem.sourcebook.label_candidate_n', 'Candidate {n}', { n: index + 1 })),
                     h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-950' }, item.rightsShort)
                   ),
                   h('div', { className: 'p-4' },
@@ -10365,7 +10524,7 @@
               'data-sourcebook-loaded-results': visible.length + '/' + refinedResults.length
             },
               h('div', null,
-                h('p', { className: 'text-xs font-black text-[#29483f]', role: 'status', 'aria-live': 'polite' }, 'Showing ' + visible.length + ' of ' + refinedResults.length + ' loaded results'),
+                h('p', { className: 'text-xs font-black text-[#29483f]', role: 'status', 'aria-live': 'polite' }, __alloTf('stem.sourcebook.label_showing_n_of_total_loaded', 'Showing {shown} of {total} loaded results', { shown: visible.length, total: refinedResults.length })),
                 h('p', { className: 'mt-1 text-[11px] leading-relaxed text-[#5a6f67]' }, __alloT('stem.sourcebook.these_assets_are_already_rights_checke', 'These assets are already rights-checked and loaded. Reveal more without starting another provider search.'))
               ),
               h('button', {
@@ -10374,7 +10533,7 @@
                   if (hiddenLoadedResultCount <= 0) return;
                   var nextVisibleLimit = Math.min(refinedResults.length, effectiveBoardVisibleLimit + BOARD_RENDER_STEP);
                   setBoardVisibleLimit(nextVisibleLimit);
-                  announce('Showing ' + nextVisibleLimit + ' of ' + refinedResults.length + ' loaded Sourcebook results');
+                  announce(__alloTf('stem.sourcebook.msg_showing_n_of_total_announce', 'Showing {shown} of {total} loaded Sourcebook results', { shown: nextVisibleLimit, total: refinedResults.length }));
                 },
                 className: 'min-h-[42px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white shadow-sm hover:bg-[#245447] aria-disabled:cursor-default aria-disabled:opacity-70',
                 'aria-controls': 'sourcebook-results-board',
@@ -10391,7 +10550,7 @@
               ),
               h('p', { className: 'mt-2 text-xs leading-relaxed text-[#cadbd5]' }, __alloT('stem.sourcebook.sourcebook_s_built_in_shelf_works_offl', 'Sourcebook’s built-in shelf works offline once loaded. Provider links are optional handoffs and may show items that have not passed Sourcebook’s allowlist; only results shown on the Sourcebook board are admitted.')),
               h('div', { className: 'grid sm:grid-cols-2 gap-2 mt-4' }, PROVIDERS.map(function (source) {
-                return h('a', { key: source.id, href: source.search(query || draft), target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Open ' + source.name + ' search in a new tab', className: 'rounded-2xl border border-[#527067] bg-[#27473e] p-3 hover:bg-[#31564b]' },
+                return h('a', { key: source.id, href: source.search(query || draft), target: '_blank', rel: 'noopener noreferrer', 'aria-label': __alloTf('stem.sourcebook.aria_open_provider_search', 'Open {name} search in a new tab', { name: source.name }), className: 'rounded-2xl border border-[#527067] bg-[#27473e] p-3 hover:bg-[#31564b]' },
                   h('div', { className: 'flex items-center gap-3' },
                     h('span', { 'aria-hidden': 'true', className: 'w-9 h-9 rounded-xl bg-[#e5eee9] text-[#1e493d] inline-flex items-center justify-center text-[10px] font-black' }, source.mark),
                     h('div', null, h('p', { className: 'text-xs font-black' }, source.name + ' ↗'), h('p', { className: 'text-[11px] text-[#b8cec6] mt-0.5' }, source.note))

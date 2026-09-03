@@ -232,7 +232,8 @@ describe('Anatomy Lab saved-state recovery', () => {
   });
 
   it('puts Need-practice cards first and freezes the deck order once a card is rated', () => {
-    const reviewFirst = renderAnatomy({ _activeTab: 'flashcards', complexity: 3, _flashcardIdx: 0, _structureConfidence: { scaphoid_bone: 'practice', skull: 'mastered' } });
+    // The skull rating carries today's stamp: since 2026-09-02 a rating without one counts as due for a re-check.
+    const reviewFirst = renderAnatomy({ _activeTab: 'flashcards', complexity: 3, _flashcardIdx: 0, _structureConfidence: { scaphoid_bone: 'practice', skull: 'mastered' }, _confidenceAt: { skull: Date.now() } });
     expect(reviewFirst).toContain('role="group" aria-label="Flashcard 1 of 23: Scaphoid Bone"');
     expect(reviewFirst).toContain('1 card(s) marked Need practice are at the front of this deck.');
 

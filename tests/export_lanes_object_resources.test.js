@@ -127,7 +127,7 @@ describe('sibling lanes and registries', () => {
     const module = readFileSync(resolve(process.cwd(), 'memory_aid_source.jsx'), 'utf8');
     const help = readFileSync(resolve(process.cwd(), 'help_strings.js'), 'utf8');
     const keys = Array.from(module.matchAll(/data-help-key="([a-z_]+)"/g)).map((m) => m[1]);
-    expect(keys.sort()).toEqual(['memory_aid_authorship', 'memory_aid_count', 'memory_aid_generate_button', 'memory_aid_instructions', 'memory_aid_reasoning', 'memory_aid_selection']);
+    expect(keys.sort()).toEqual(['memory_aid_authorship', 'memory_aid_count', 'memory_aid_generate_button', 'memory_aid_hook_facts', 'memory_aid_instructions', 'memory_aid_reasoning', 'memory_aid_selection', 'memory_aid_visuals']);
     for (const key of keys) expect(help).toMatch(new RegExp("^\\s*'" + key + "':\\s*\"", 'm'));
   });
 });

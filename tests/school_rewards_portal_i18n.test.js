@@ -60,7 +60,7 @@ describe('saved language (2026-09-02)', () => {
 
 describe('portal translation layer', () => {
   it('translates rendered text, attributes, and numeric patterns, and restores English losslessly', async () => {
-    const i18n = fixture('<div id="metric-students-label">My available-to-spend balance</div><div id="pts">42 pts</div><p id="need">38 more points needed</p><input id="search" placeholder="Name, grade, or homeroom" aria-label="Search students"><button id="goal" aria-label="Save for Robotics kit hour">Save for this</button>');
+    const i18n = fixture('<div id="metric-students-label">My available-to-spend balance</div><div id="pts">42 pts</div><p id="need">38 more points needed</p><input id="search" placeholder="Robotics kit hour" aria-label="Search students"><button id="goal" aria-label="Save for Robotics kit hour">Save for this</button>');
     expect(i18n.language()).toBe('en');
     i18n.setLanguage('es');
     expect(document.getElementById('metric-students-label').textContent).toBe('Mi saldo disponible para gastar');
@@ -69,8 +69,9 @@ describe('portal translation layer', () => {
     expect(document.getElementById('need').textContent).toBe('Faltan 38 puntos');
     expect(document.getElementById('goal').textContent).toBe('Ahorrar para esto');
     expect(document.getElementById('goal').getAttribute('aria-label')).toBe('Ahorrar para Robotics kit hour');
-    // Untranslated strings stay English rather than breaking.
-    expect(document.getElementById('search').getAttribute('placeholder')).toBe('Name, grade, or homeroom');
+    // School-entered content is never translated: prize names, category names
+    // and rosters belong to the school, so they pass through untouched.
+    expect(document.getElementById('search').getAttribute('placeholder')).toBe('Robotics kit hour');
     expect(document.documentElement.lang).toBe('es');
     expect(localStorage.getItem('alloflow_school_rewards_lang')).toBe('es');
     // The language menu itself is never translated.

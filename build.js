@@ -1233,6 +1233,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AltTextModule',
+        filename: 'alt_text_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'MemoryAidModule',
         filename: 'memory_aid_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1654,6 +1659,19 @@ const COMPILE_PAIRS = [
                 stdio: 'inherit',
             });
             return fs.readFileSync(path.join(ROOT, 'image_asset_editor_module.js'), 'utf8');
+        },
+    },
+    {
+        name: 'AltText',
+        srcPath: path.join(ROOT, 'alt_text_source.jsx'),
+        modPath: path.join(ROOT, 'alt_text_module.js'),
+        publicPath: path.join(ROOT, 'desktop', 'web-app', 'public', 'alt_text_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_alt_text_module.js')], {
+                cwd: ROOT,
+                stdio: 'inherit',
+            });
+            return fs.readFileSync(path.join(ROOT, 'alt_text_module.js'), 'utf8');
         },
     },
     {

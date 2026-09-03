@@ -70,14 +70,25 @@ describe('editable tour script', () => {
     click(container.querySelector('#ae-tab-about'));
     const editor = container.querySelector('#ae-tour-script');
     expect(editor.textContent).toContain('Built-in');
-    const textarea = editor.querySelector('textarea');
-    setValue(textarea, 'not json', window.HTMLTextAreaElement.prototype);
-    click(button(editor, /^Save tour script/));
-    expect(container.querySelector('#ae-simulation-studio').textContent).toContain('not valid JSON');
+    // Form-based: one card per step, no JSON anywhere.
+    expect(editor.textContent).not.toMatch(/JSON/);
+    expect(editor.querySelectorAll('.ae-tour-step-card').length).toBe(7);
+    while (container.querySelector('#ae-tour-script').querySelectorAll('.ae-tour-step-card').length > 1) {
+      click(button(container.querySelector('#ae-tour-script').querySelectorAll('.ae-tour-step-card')[1], /^Remove/));
+    }
+    const card = () => container.querySelector('#ae-tour-script').querySelector('.ae-tour-step-card');
+    expect(button(card(), /^Remove/).disabled).toBe(true);
+    setValue(card().querySelector('input'), '', window.HTMLInputElement.prototype);
+    click(button(container.querySelector('#ae-tour-script'), /^Save tour$/));
+    expect(container.querySelector('#ae-simulation-studio').textContent).toContain('Step 1 needs a title and a sentence');
     expect(localStorage.getItem(TOUR_KEY)).toBeNull();
-    setValue(textarea, JSON.stringify([{ tab: 'overview', title: 'Only step', text: 'A one-step tour for a quick demo.' }]), window.HTMLTextAreaElement.prototype);
-    click(button(editor, /^Save tour script/));
+    setValue(card().querySelector('input'), 'Only step', window.HTMLInputElement.prototype);
+    setValue(card().querySelector('textarea'), 'A one-step tour for a quick demo.', window.HTMLTextAreaElement.prototype);
+    act(() => { const sel = card().querySelector('select'); Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set.call(sel, 'overview'); sel.dispatchEvent(new Event('change', { bubbles: true })); });
+    click(button(container.querySelector('#ae-tour-script'), /^Save tour$/));
     expect(JSON.parse(localStorage.getItem(TOUR_KEY))).toEqual([{ tab: 'overview', title: 'Only step', text: 'A one-step tour for a quick demo.' }]);
+    click(button(container.querySelector('#ae-tour-script'), /^Add a step/));
+    expect(container.querySelector('#ae-tour-script').querySelectorAll('.ae-tour-step-card').length).toBe(2);
     expect(editor.textContent).toContain('Custom');
     click(button(editor, /^Restore built-in tour/));
     expect(localStorage.getItem(TOUR_KEY)).toBeNull();

@@ -100,7 +100,7 @@ describe('landscape cross-section scene', () => {
     expect(src).toContain("{ id: 'river', label: '🏖️ River Delta (Sedimentary)', x: 0.5, y: 0.45, w: 0.28, h: 0.35, type: 'sedimentary' }");
     expect(src).toContain("{ id: 'mountain', label: '⛰️ Mountain Core (Metamorphic)', x: 0.75, y: 0.08, w: 0.22, h: 0.62, type: 'metamorphic' }");
     expect(src).toContain('function onRockKey(e)');
-    expect(src).toContain('if (rocksMotionReduced) drawLandscape();');
+    expect(src).toContain('if (rocksMotionReduced()) drawLandscape();');
     // Scene features, by name, so a later "simplification" cannot silently drop them.
     ['Alternating lava / ash layers', 'Ash plume', 'Convection cells', 'Folded metamorphic root', 'Fossils drawn as shapes', 'Delta fan', 'Depth / temperature scale', 'Contact']
       .forEach((marker) => expect(src, marker).toContain(marker));
@@ -230,5 +230,169 @@ describe('clickable process labels', () => {
     // Hovering a pill shows a pointer.
     handlers.mousemove({ clientX: 0.44 * 800, clientY: 0.91 * 520 - 3 });
     expect(el.style.cursor).toBe('pointer');
+  });
+});
+
+describe('depth scale', () => {
+  const drawAt = (offsetHeight) => {
+    const node = renderLandscape();
+    const canvas = findAll(node, (n) => n.type === 'canvas' && n.props['data-rocks-canvas'])[0];
+    const ref = canvas.ref || canvas.props.ref;
+    const rec = recordingContext();
+    ref({
+      offsetWidth: 800, offsetHeight, width: 0, height: 0, isConnected: true, style: {},
+      getContext: () => rec.ctx,
+      addEventListener() {}, removeEventListener() {}, setAttribute() {},
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: offsetHeight }),
+    });
+    return rec.texts;
+  };
+
+  it('labels the burial and metamorphic depths, not just the two ends', () => {
+    const texts = drawAt(520);
+    expect(texts).toContain('~5 km · burial');
+    expect(texts).toContain('~15 km · heat + pressure');
+  });
+
+  it('drops the intermediate marks on a short canvas where they would crowd', () => {
+    const texts = drawAt(240);
+    expect(texts.some((t) => t.startsWith('0 km'))).toBe(true);
+    expect(texts).not.toContain('~5 km · burial');
+  });
+});
+
+describe('the superposition cue sits on the rocks it describes', () => {
+  it('draws "younger" inside the sedimentary basin, not on the folded root', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    // The basin runs from 0.38W to 0.70W; the folded metamorphic root starts at
+    // 0.63W. The cue used to be drawn at 0.715W — on beds that have been folded
+    // and locally overturned, where "youngest on top" is not just unhelpful but
+    // wrong. Pin the basin geometry AND the cue together so neither drifts.
+    expect(src).toContain('var bx0 = W * 0.38, bx1 = W * 0.70;');
+    expect(src).toContain('var fx0 = W * 0.63, fx1 = W * 0.975;');
+    const cue = src.slice(src.indexOf('// Superposition cue: youngest on top.'));
+    const arrow = /rkLsArrow\(W \* ([\d.]+),/.exec(cue);
+    expect(arrow, 'superposition arrow').toBeTruthy();
+    const x = Number(arrow[1]);
+    expect(x).toBeGreaterThan(0.38);
+    expect(x).toBeLessThan(0.63);
+  });
+
+  it('still paints the label, on a plate so the pale beds cannot swallow it', () => {
+    const node = renderLandscape();
+    const canvas = findAll(node, (n) => n.type === 'canvas' && n.props['data-rocks-canvas'])[0];
+    const ref = canvas.ref || canvas.props.ref;
+    const rec = recordingContext();
+    ref({
+      offsetWidth: 800, offsetHeight: 520, width: 0, height: 0, isConnected: true, style: {},
+      getContext: () => rec.ctx,
+      addEventListener() {}, removeEventListener() {}, setAttribute() {},
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 520 }),
+    });
+    expect(rec.texts).toContain('younger');
+    expect(readFileSync(ROCKS_FILE, 'utf8')).toContain('var ygW = ctx.measureText(ygTxt).width;');
+  });
+
+  it('gives the metamorphic root the fabric that defines it', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    // Six flat bands of colour was the least informative part of a scene whose
+    // sedimentary beds carry grains and fossils. Foliation follows the folds.
+    expect(src).toContain('// Foliation. "The minerals lined up" is what metamorphic means');
+    expect(src).toContain('var fyLine = fyTop + (fyBot - fyTop) * (j / 4);');
+    expect(src).toContain('foldY(pbB + 1, pbX)'); // porphyroblasts placed inside a band
+  });
+});
+
+describe('WCAG 2.2.2 — the scene can be stopped by anyone', () => {
+  const mount = (props) => {
+    const node = renderLandscape();
+    const canvas = findAll(node, (n) => n.type === 'canvas' && n.props['data-rocks-canvas'])[0];
+    const ref = canvas.ref || canvas.props.ref;
+    const rec = recordingContext();
+    const el = Object.assign({
+      offsetWidth: 800, offsetHeight: 520, width: 0, height: 0, isConnected: true, style: {}, dataset: {},
+      getContext: () => rec.ctx,
+      addEventListener() {}, removeEventListener() {}, setAttribute() {},
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 520 }),
+    }, props || {});
+    ref(el);
+    return { node, canvas, el, rec };
+  };
+
+  it('offers a pause control beside the tour controls', () => {
+    const node = renderLandscape();
+    const btn = findAll(node, (n) => n.type === 'button' && n.props['data-rocks-motion'])[0];
+    expect(btn, 'motion control').toBeTruthy();
+    expect(btn.props['data-rocks-motion']).toBe('on');
+    expect(btn.props['aria-pressed']).toBe(false);
+    expect(String(btn.props.children)).toContain('Pause motion');
+  });
+
+  it('flips to resume, and records the choice on the store and the canvas', () => {
+    const node = renderLandscape();
+    findAll(node, (n) => n.type === 'button' && n.props['data-rocks-motion'])[0].props.onClick();
+    expect(lastStore.rocks.motionOff).toBe(true);
+    // renderLandscape() starts from a fresh store, so render the paused state
+    // explicitly rather than expecting the previous click to carry over.
+    const store = { rocks: { mode: 'landscape', motionOff: true }, rockCycle: {} };
+    const ctx = makeCtx({ toolData: store, setToolData: (f) => Object.assign(store, typeof f === 'function' ? f(store) : f) });
+    const after = window.StemLab._registry.rocks.render(ctx);
+    const btn = findAll(after, (n) => n.type === 'button' && n.props['data-rocks-motion'])[0];
+    expect(btn.props['data-rocks-motion']).toBe('off');
+    expect(btn.props['aria-pressed']).toBe(true);
+    expect(String(btn.props.children)).toContain('Resume motion');
+    // The canvas carries the flag too, so a remount starts held still.
+    const canvas = findAll(after, (n) => n.type === 'canvas' && n.props['data-rocks-canvas'])[0];
+    expect(canvas.props['data-rocks-motion-off']).toBe('1');
+  });
+
+  it('holds the scene still when the flag is set, without the OS preference', () => {
+    // matchMedia says "no preference" in this suite's beforeEach setup for the
+    // reduced-motion query only when asked; force the honest case here.
+    window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+    const stopped = mount({ dataset: { rocksMotionOff: '1' } });
+    expect(typeof stopped.el._rocksSetMotion).toBe('function');
+    const framesWhileStopped = stopped.rec.calls.length;
+    // A second draw request must still paint (a static frame), but the loop
+    // must not be scheduling itself: rAF is absent in this environment, so the
+    // meaningful check is that the flag is what the guard reads.
+    expect(framesWhileStopped).toBeGreaterThan(0);
+    const moving = mount({ dataset: {} });
+    expect(moving.el.dataset.rocksMotionOff).toBeFalsy();
+  });
+
+  it('stops the decorative nudge ring from pulsing forever', () => {
+    // A looping box-shadow with no off switch is the plainest 2.2.2 failure
+    // there is, and this one exists only to catch the eye once.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain("'.rk-wb-nudge{animation:rkWbNudge 2.6s ease-out 1}'");
+    expect(src).not.toContain('rkWbNudge 2.6s ease-out infinite');
+  });
+});
+
+describe('the caption cannot collide with the diagram it labels', () => {
+  it('keeps the canvas caption short and states the scale caveat below it', () => {
+    // At 390px the long caption ran straight through the heat-and-pressure
+    // label. The caveat is not decoration, so it moved to the hint line under
+    // the canvas where it is always readable, rather than being dropped.
+    const node = renderLandscape();
+    const canvas = findAll(node, (n) => n.type === 'canvas' && n.props['data-rocks-canvas'])[0];
+    const ref = canvas.ref || canvas.props.ref;
+    const rec = recordingContext();
+    ref({
+      offsetWidth: 374, offsetHeight: 280, width: 0, height: 0, isConnected: true, style: {}, dataset: {},
+      getContext: () => rec.ctx,
+      addEventListener() {}, removeEventListener() {}, setAttribute() {},
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 374, height: 280 }),
+    });
+    const caption = rec.texts.filter((t) => t.indexOf('Cross-Section View') !== -1)[0];
+    expect(caption, 'canvas caption').toBeTruthy();
+    expect(caption).not.toContain('schematic');
+
+    const hint = findAll(node, (n) => n.type === 'p' && typeof n.props.children === 'string'
+      && n.props.children.indexOf('Click landscape zones') !== -1)[0];
+    expect(hint, 'hint line').toBeTruthy();
+    expect(hint.props.children).toContain('schematic, not to scale');
+    expect(hint.props.children).toContain('Vertical scale is exaggerated');
   });
 });

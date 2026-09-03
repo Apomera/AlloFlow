@@ -2211,6 +2211,7 @@ function GlossaryPanel(props) {
     hasSourceOrAnalysis,
     includeEtymology,
     isProcessing,
+    leveledTextLanguage,
     selectedLanguages,
     setAutoRemoveWords,
     setGlossaryCustomInstructions,
@@ -2287,7 +2288,11 @@ function GlossaryPanel(props) {
       onChange: setGlossaryCustomInstructions,
       placeholderKey: "glossary.placeholder_instructions"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "mb-3 text-xs text-slate-600", "data-help-key": "glossary_language_summary" }, selectedLanguages.length > 0 ? /* @__PURE__ */ React.createElement("span", null, t("glossary.will_translate") || "Will include translations for", ": ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sky-700" }, selectedLanguages.join(", "))) : /* @__PURE__ */ React.createElement("span", { className: "italic" }, t("glossary.no_languages_hint") || "No translation languages set \u2014 add them in Universal Settings.")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none", "data-help-key": "glossary_auto_remove" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mb-3 text-xs text-slate-600", "data-help-key": "glossary_language_summary" }, (() => {
+    const output = String(leveledTextLanguage || "English").replace(/\s+/g, " ").trim();
+    const columns = /^all selected languages$/i.test(output) ? selectedLanguages || [] : /^english$/i.test(output) ? [] : [output];
+    return columns.length > 0 ? /* @__PURE__ */ React.createElement("span", null, t("glossary.will_translate") || "Will include translations for", ": ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sky-700" }, columns.join(", ")), " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "(", t("glossary.follows_output_language") || "follows the Output Language in Universal Settings", ")")) : /* @__PURE__ */ React.createElement("span", { className: "italic" }, t("glossary.english_only_hint") || "English only. Set an Output Language in Universal Settings to add a translation column.");
+  })()), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none", "data-help-key": "glossary_auto_remove" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_auto_remove_words"),

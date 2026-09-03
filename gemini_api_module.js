@@ -939,6 +939,17 @@ const createGeminiAPI = (deps) => {
       }
     };
 
+    // One request may carry several images (the shared alt-text service batches
+    // descriptions). Accept the legacy (base64, mimeType) pair or an array of
+    // { data, mimeType } / base64 strings; every entry becomes an inlineData part.
+    const _visionImageParts = (base64Data, mimeType) => {
+      const list = Array.isArray(base64Data) ? base64Data : [base64Data];
+      return list.map(entry => {
+        const data = entry && typeof entry === 'object' ? entry.data : entry;
+        const mime = (entry && typeof entry === 'object' && entry.mimeType) || mimeType || 'image/jpeg';
+        return { inlineData: { mimeType: mime, data: String(data == null ? '' : data) } };
+      }).filter(part => part.inlineData.data);
+    };
     const callGeminiVision = async (prompt, base64Data, mimeType, options = null) => {
       const _explicitSignal = options && options.signal
         ? options.signal
@@ -967,9 +978,8 @@ const createGeminiAPI = (deps) => {
       const payload = {
         contents: [{
           parts: [
-            { text: _protectAttachmentPrompt(prompt, options) },
-            { inlineData: { mimeType: mimeType || "image/jpeg", data: base64Data } }
-          ]
+            { text: _protectAttachmentPrompt(prompt, options) }
+          ].concat(_visionImageParts(base64Data, mimeType))
         }],
         generationConfig: { maxOutputTokens: 65536 }
       };

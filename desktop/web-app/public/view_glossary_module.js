@@ -2088,7 +2088,8 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: generatedContent?.data[flashcardIndex].image,
-    alt: t('flashcards.alt_visual'),
+    alt: "",
+    role: "presentation",
     className: "max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100",
     decoding: "async"
   })), /*#__PURE__*/React.createElement("h2", {
@@ -2134,7 +2135,8 @@ function GlossaryView(props) {
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: generatedContent?.data[flashcardIndex].image,
-    alt: "Visual",
+    alt: "",
+    role: "presentation",
     className: "max-h-full max-w-full object-contain rounded-lg shadow-sm border border-slate-100",
     decoding: "async"
   })), /*#__PURE__*/React.createElement("h2", {
@@ -2463,7 +2465,7 @@ function GlossaryView(props) {
   }, "▶ ", glossaryNextLabel, " (", rosterQueue[0], ")"), /*#__PURE__*/React.createElement("button", {
     onClick: closeScreenerResults,
     className: `${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`
-  }, rosterQueue.length > 0 ? '{glossarySkipLabel} / {glossaryDoneLabel}' : glossaryDoneLabel)), /*#__PURE__*/React.createElement("button", {
+  }, rosterQueue.length > 0 ? glossarySkipLabel + ' / ' + glossaryDoneLabel : glossaryDoneLabel)), /*#__PURE__*/React.createElement("button", {
     onClick: exportScreeningCSV,
     className: "w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
   }, "📊 Export Screening CSV"))), gameMode === 'wordsearch' && gameData && /*#__PURE__*/React.createElement("div", {
@@ -2898,7 +2900,8 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement("img", {
       loading: "lazy",
       src: item.image,
-      alt: `${item.term} icon`,
+      alt: "",
+      role: "presentation",
       style: {
         width: `${glossaryImageSize}px`,
         height: `${glossaryImageSize}px`

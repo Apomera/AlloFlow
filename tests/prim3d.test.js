@@ -392,3 +392,73 @@ describe('Prim3D recipe editing ops (hand-built sculpting seams)', () => {
     expect(edited.tint).toBe('#ff00ff');
   });
 });
+
+describe('Prim3D drawn shapes (lathe + extrude profiles)', () => {
+  function threeStub() {
+    function Group() { this.children = []; this.userData = {}; this.scale = { setScalar: () => {} }; this.add = (c) => this.children.push(c); }
+    function Mesh(geo, mat) { this.geo = geo; this.mat = mat; this.position = { set: () => {} }; this.rotation = { set: () => {} }; this.scale = { set: () => {} }; this.userData = {}; }
+    const geo = function () { return {}; };
+    function Vector2(x, y) { this.x = x; this.y = y; }
+    function Shape() { this.ops = []; this.moveTo = (x, y) => this.ops.push(['m', x, y]); this.lineTo = (x, y) => this.ops.push(['l', x, y]); this.closePath = () => this.ops.push(['z']); }
+    function LatheGeometry(points, segments) { this.points = points; this.segments = segments; this.translated = null; this.translate = (x, y, z) => { this.translated = [x, y, z]; }; }
+    function ExtrudeGeometry(shape, opts) { this.shape = shape; this.opts = opts; this.translated = null; this.translate = (x, y, z) => { this.translated = [x, y, z]; }; }
+    return {
+      Group, Mesh, Vector2, Shape, LatheGeometry, ExtrudeGeometry,
+      BoxGeometry: geo, SphereGeometry: geo, CylinderGeometry: geo, ConeGeometry: geo, TorusGeometry: geo,
+      MeshStandardMaterial: function (o) { this.opts = o; },
+      Color: function (c) { this.c = c; },
+    };
+  }
+  it('exposes the drawn shapes and their default profiles', () => {
+    expect(P.SHAPES).toContain('lathe');
+    expect(P.SHAPES).toContain('extrude');
+    expect(P.PROFILE_SHAPES).toEqual(['lathe', 'extrude']);
+    expect(P.DEFAULT_PROFILES.lathe.length).toBeGreaterThanOrEqual(3);
+    expect(P.DEFAULT_PROFILES.extrude.length).toBeGreaterThanOrEqual(3);
+  });
+  it('keeps a valid profile, clamps points, and falls back to the default when too few survive', () => {
+    const r = P.normalizeRecipe({ parts: [
+      { shape: 'lathe', profile: [[0.2, 0], [1.7, 0.5], [0.4, 1], ['x', 1], [0.3]] },
+      { shape: 'extrude', profile: [[0, 1], [2, -2]] },
+      { shape: 'box', profile: [[0, 0], [1, 1], [1, 0]] },
+    ] });
+    expect(r.parts[0].profile).toEqual([[0.2, 0], [1, 0.5], [0.4, 1]]);
+    expect(r.parts[1].profile).toEqual(P.DEFAULT_PROFILES.extrude);
+    expect(Object.prototype.hasOwnProperty.call(r.parts[2], 'profile')).toBe(false);
+  });
+  it('caps a profile at PROFILE_MAX_POINTS', () => {
+    const many = Array.from({ length: 60 }, (_, i) => [0.5, i / 60]);
+    const r = P.normalizeRecipe({ parts: [{ shape: 'lathe', profile: many }] });
+    expect(r.parts[0].profile.length).toBe(P.PROFILE_MAX_POINTS);
+  });
+  it('newPart, updatePart and duplicatePart carry the profile through', () => {
+    const fresh = P.newPart('lathe', 0);
+    expect(fresh.profile).toEqual(P.DEFAULT_PROFILES.lathe);
+    let r = P.addPart(null, 'extrude');
+    expect(r.parts[0].profile).toEqual(P.DEFAULT_PROFILES.extrude);
+    r = P.updatePart(r, 0, { profile: [[0, 1], [1, -1], [-1, -1]] });
+    expect(r.parts[0].profile).toEqual([[0, 1], [1, -1], [-1, -1]]);
+    r = P.duplicatePart(r, 0);
+    expect(r.parts[1].profile).toEqual([[0, 1], [1, -1], [-1, -1]]);
+    expect(r.parts[1].profile).not.toBe(r.parts[0].profile);
+  });
+  it('builds a lathe from scaled profile points, centred on the part', () => {
+    const g = P.buildObject(threeStub(), { parts: [{ shape: 'lathe', size: [0.5, 2, 0.5], profile: [[0.5, 0], [1, 0.5], [0.5, 1]] }] });
+    expect(g.children.length).toBe(1);
+    const geo = g.children[0].geo;
+    expect(geo.points.map((v) => [v.x, v.y])).toEqual([[0.25, 0], [0.5, 1], [0.25, 2]]);
+    expect(geo.translated).toEqual([0, -1, 0]);
+  });
+  it('builds an extrude from a closed outline, centred on its depth', () => {
+    const g = P.buildObject(threeStub(), { parts: [{ shape: 'extrude', size: [2, 1, 0.4], profile: [[-1, -1], [1, -1], [0, 1]] }] });
+    const geo = g.children[0].geo;
+    expect(geo.shape.ops).toEqual([['m', -1, -0.5], ['l', 1, -0.5], ['l', 0, 0.5], ['z']]);
+    expect(geo.opts.depth).toBe(0.4);
+    expect(geo.translated).toEqual([0, 0, -0.2]);
+  });
+  it('still drops a drawn part cleanly when THREE lacks the geometry classes', () => {
+    const bare = threeStub();
+    delete bare.LatheGeometry;
+    expect(P.buildObject(bare, { parts: [{ shape: 'lathe' }] })).toBe(null);
+  });
+});

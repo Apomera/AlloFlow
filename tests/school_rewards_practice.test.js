@@ -131,7 +131,15 @@ describe('practice page', () => {
     expect(PAGE.indexOf('/* SR_PRACTICE_START */')).toBeLessThan(PAGE.indexOf('<main class="shell">'));
     expect(PAGE).toContain('id="practice-role"');
     expect(PAGE).toContain('id="practice-scenario"');
-    expect(PAGE).toContain('id="practice-tour-steps"');
+    expect(PAGE).toContain('id="practice-tour-list"');
+    expect(PAGE).toContain('id="practice-add-step"');
+    // No JSON is ever typed by a person: rows and step cards only.
+    const ui = PAGE.slice(PAGE.indexOf('/* SR_PRACTICE_UI_START */'), PAGE.indexOf('/* SR_PRACTICE_UI_END */'));
+    expect(ui).toContain('renderTour');
+    expect(ui).not.toContain('practice-tour-steps');
+    expect(ui).not.toContain('JSON.parse($(');
+    expect(ui).not.toContain('window.alert(');
+    expect(PAGE).not.toContain('not valid JSON');
     expect(PAGE).toContain('/* SR_PRACTICE_UI_START */');
     // The portal markup and script are embedded unchanged.
     const portal = readFileSync(resolve(ROOT, 'apps_script/school_rewards/Portal.html'), 'utf8').replace(/\r\n/g, '\n');

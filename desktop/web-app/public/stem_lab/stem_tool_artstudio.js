@@ -2391,6 +2391,43 @@ const d = labToolData.artStudio || {};
             var SIM_W = 192, SIM_H = 192, COUNT = SIM_W * SIM_H;
             var mainCtx = canvas.getContext('2d');
             if (!mainCtx) return;
+            // The simulation stays on its grid; the DISPLAY gets a 2x backing
+            // store. The canvas is CSS-stretched to the column and again by the
+            // device pixel ratio, so a 512px bitmap of a 192-cell grid showed
+            // every cell as a soft block. Brush maths and stored snapshots keep
+            // using the logical 512 size.
+            var LOGICAL_W = canvas.width || 512, LOGICAL_H = canvas.height || 512;
+            var DISPLAY_SCALE = 2;
+            try { canvas.width = LOGICAL_W * DISPLAY_SCALE; canvas.height = LOGICAL_H * DISPLAY_SCALE; } catch (eSize) {}
+            // Fine paper grain at display resolution, multiplied over the wash so
+            // pigment reads as settling into the paper's tooth instead of into
+            // simulation cells. Seeded, so repaints are identical.
+            var grainCanvas = null;
+            try {
+              var grainW = canvas.width, grainH = canvas.height;
+              var gc = document.createElement('canvas');
+              gc.setAttribute('aria-hidden', 'true');
+              gc.width = grainW; gc.height = grainH;
+              var gctx = gc.getContext && gc.getContext('2d');
+              if (gctx && gctx.createImageData && gctx.putImageData) {
+                var grainImage = gctx.createImageData(grainW, grainH);
+                var gd = grainImage.data;
+                for (var gy = 0; gy < grainH; gy++) {
+                  var fibre = Math.sin(gy * 0.61) * 0.5 + Math.sin(gy * 0.173 + 1.3) * 0.5;
+                  for (var gx = 0; gx < grainW; gx++) {
+                    var gi = gy * grainW + gx;
+                    var tooth = Math.sin(gi * 12.9898 + gy * 78.233) * 43758.5453;
+                    tooth = tooth - Math.floor(tooth);
+                    var streak = Math.sin(gx * 0.047 + fibre * 2.1) * 0.5 + 0.5;
+                    var lum = 255 - Math.round(tooth * 16 + streak * 4);
+                    var go = gi * 4;
+                    gd[go] = lum; gd[go + 1] = lum; gd[go + 2] = lum; gd[go + 3] = 255;
+                  }
+                }
+                gctx.putImageData(grainImage, 0, 0);
+                grainCanvas = gc;
+              }
+            } catch (eGrain) { grainCanvas = null; }
 
             var simCanvas = document.createElement('canvas');
             simCanvas.setAttribute('aria-hidden', 'true');
@@ -2416,7 +2453,16 @@ const d = labToolData.artStudio || {};
               var fiber = seededNoise(pi * 0.37 + 91.4);
               var cellX = pi % SIM_W;
               var cellY = Math.floor(pi / SIM_W);
-              var cluster = seededNoise(Math.floor(cellX / 6) * 17.13 + Math.floor(cellY / 6) * 31.71 + 8.4);
+              // Smooth value noise on a 6-cell lattice. The old version hashed
+              // floor(x/6), floor(y/6), which stamped every wash with hard 6x6
+              // squares - the 'pixelated' look. Same period, interpolated.
+              var latticeX = cellX / 6, latticeY = cellY / 6;
+              var lx0 = Math.floor(latticeX), ly0 = Math.floor(latticeY);
+              var fx = latticeX - lx0, fy = latticeY - ly0;
+              fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+              var n00 = seededNoise(lx0 * 17.13 + ly0 * 31.71 + 8.4), n10 = seededNoise((lx0 + 1) * 17.13 + ly0 * 31.71 + 8.4);
+              var n01 = seededNoise(lx0 * 17.13 + (ly0 + 1) * 31.71 + 8.4), n11 = seededNoise((lx0 + 1) * 17.13 + (ly0 + 1) * 31.71 + 8.4);
+              var cluster = (n00 * (1 - fx) + n10 * fx) * (1 - fy) + (n01 * (1 - fx) + n11 * fx) * fy;
               var microCluster = seededNoise(pi * 0.73 + 17.2);
               granulationNoise[pi] = clamp(cluster * 0.78 + microCluster * 0.22, 0, 1);
               var tone = 247 + Math.round((grain - 0.5) * 7 + (fiber - 0.5) * 2);
@@ -2954,9 +3000,17 @@ const d = labToolData.artStudio || {};
               mainCtx.save();
               mainCtx.clearRect(0, 0, canvas.width, canvas.height);
               mainCtx.imageSmoothingEnabled = true;
+              try { mainCtx.imageSmoothingQuality = 'high'; } catch (eQ) {}
               if (baseImage) mainCtx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
               else mainCtx.drawImage(paperCanvas, 0, 0, canvas.width, canvas.height);
               mainCtx.drawImage(simCanvas, 0, 0, canvas.width, canvas.height);
+              if (grainCanvas && params.paper > 0.02) {
+                mainCtx.globalCompositeOperation = 'multiply';
+                mainCtx.globalAlpha = 0.22 + params.paper * 0.34;
+                mainCtx.drawImage(grainCanvas, 0, 0, canvas.width, canvas.height);
+                mainCtx.globalCompositeOperation = 'source-over';
+                mainCtx.globalAlpha = 1;
+              }
               if (diagnosticsEnabled && params.showFlow) drawFlowDiagnostics();
               mainCtx.restore();
               updateStatus();
@@ -2965,7 +3019,17 @@ const d = labToolData.artStudio || {};
             function captureCleanSnapshot() {
               var snapshot = '';
               render(false);
-              try { snapshot = canvas.toDataURL('image/png'); }
+              // Snapshots stay at the logical size: they are stored in tool data and
+              // IndexedDB, and a 2x bitmap would quadruple every saved painting.
+              try {
+                var snapCanvas = document.createElement('canvas');
+                snapCanvas.width = LOGICAL_W; snapCanvas.height = LOGICAL_H;
+                var snapCtx = snapCanvas.getContext && snapCanvas.getContext('2d');
+                if (snapCtx && typeof snapCtx.drawImage === 'function' && canvas.width !== LOGICAL_W) {
+                  snapCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, LOGICAL_W, LOGICAL_H);
+                  snapshot = snapCanvas.toDataURL('image/png');
+                } else snapshot = canvas.toDataURL('image/png');
+              }
               catch (_) { snapshot = ''; }
               render(true);
               return snapshot;
@@ -3212,7 +3276,7 @@ const d = labToolData.artStudio || {};
               pigmentScale *= 0.72 + speedDeposit * 0.36;
               var waterLoad = clamp(0.56 + reservoirWater * 0.44, 0.32, 1);
               var pigmentLoad = clamp(0.48 + reservoirPigment * 0.52, 0.28, 1);
-              var radius = Math.max(1.5, params.size * (SIM_W / Math.max(1, canvas.width)) * brushScale * (0.72 + safePressure * 0.46));
+              var radius = Math.max(1.5, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * brushScale * (0.72 + safePressure * 0.46));
               var aspect = 1 + tilt * (params.brush === 'wash' ? 1.05 : 0.72);
               var majorRadius = radius * aspect;
               var minorRadius = radius / (1 + tilt * 0.18);
@@ -3497,7 +3561,7 @@ const d = labToolData.artStudio || {};
             }
 
             function strokeTo(x, y, dynamics) {
-              var radius = Math.max(2, params.size * (SIM_W / Math.max(1, canvas.width)) * 0.35);
+              var radius = Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.35);
               var targetPressure = dynamics.pressure;
               var targetTilt = dynamics.tilt;
               var targetAngle = dynamics.angle;
@@ -3584,7 +3648,7 @@ const d = labToolData.artStudio || {};
                 if (typeof announceToSR === 'function') announceToSR(didRedo ? 'Watercolor redone.' : 'Nothing to redo.');
                 return;
               }
-              var move = Math.max(2, params.size * (SIM_W / Math.max(1, canvas.width)) * 0.55);
+              var move = Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.55);
               var moved = false;
               if (event.key === 'ArrowLeft') { keyboardX = clamp(keyboardX - move, 0, SIM_W - 1); moved = true; }
               else if (event.key === 'ArrowRight') { keyboardX = clamp(keyboardX + move, 0, SIM_W - 1); moved = true; }
@@ -7006,6 +7070,127 @@ const d = labToolData.artStudio || {};
                 });
               };
               var partOp = function(op) { var next = op(P3D, recipe); if (next !== recipe) setRecipe(next); };
+              // ── Draw-your-own-shape pad (lathe + extrude parts) ──
+              // The 2-D profile lives on the part (part.profile) and Prim3D turns
+              // it into a solid, so Free Forms and Geometry Sandbox render it too.
+              // Pointer drawing happens on the canvas element (no React per move);
+              // the point select + X/Y sliders + buttons are the keyboard path.
+              function renderProfilePad() {
+                var padPart = recipe && recipe.parts ? recipe.parts[sel] : null;
+                if (!padPart || !Array.isArray(padPart.profile) || !P3D) return null;
+                var isLathe = padPart.shape === 'lathe';
+                var profile = padPart.profile.map(function (pt) { return pt.slice(); });
+                var maxPts = P3D.PROFILE_MAX_POINTS || 24;
+                var padSel = Math.max(0, Math.min(profile.length - 1, Number(d.sculptProfilePoint || 0)));
+                var padLocked = !!padPart.locked;
+                var PAD = 180, M = 12;
+                function commitProfile(next, message) {
+                  var clean = typeof P3D.normalizeProfile === 'function' ? P3D.normalizeProfile(padPart.shape, next) : next;
+                  partOp(function(P, r) { return P.updatePart(r, sel, { profile: clean }); });
+                  if (message && typeof announceToSR === 'function') announceToSR(message);
+                }
+                // Lathe: the spin axis runs down the middle of the pad; the profile is drawn on
+                // the right half and mirrored as a ghost on the left, so the silhouette
+                // reads as the finished vase.
+                function toPad(pt) { return isLathe ? [PAD / 2 + pt[0] * (PAD / 2 - M), PAD - M - pt[1] * (PAD - 2 * M)] : [PAD / 2 + pt[0] * (PAD / 2 - M), PAD / 2 - pt[1] * (PAD / 2 - M)]; }
+                function fromPad(x, y) { return isLathe ? [Math.abs(x - PAD / 2) / (PAD / 2 - M), (PAD - M - y) / (PAD - 2 * M)] : [(x - PAD / 2) / (PAD / 2 - M), (PAD / 2 - y) / (PAD / 2 - M)]; }
+                function drawPad(cnv) {
+                  var st = cnv._profilePad; if (!st) return;
+                  var ctx = cnv.getContext && cnv.getContext('2d'); if (!ctx || typeof ctx.clearRect !== 'function') return;
+                  var pts = st.profile;
+                  ctx.clearRect(0, 0, PAD, PAD);
+                  ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, PAD, PAD);
+                  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+                  for (var g = M; g <= PAD - M; g += (PAD - 2 * M) / 6) { ctx.beginPath(); ctx.moveTo(g, M); ctx.lineTo(g, PAD - M); ctx.stroke(); ctx.beginPath(); ctx.moveTo(M, g); ctx.lineTo(PAD - M, g); ctx.stroke(); }
+                  if (st.isLathe) {
+                    ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(PAD / 2, M); ctx.lineTo(PAD / 2, PAD - M); ctx.stroke(); ctx.setLineDash([]);
+                    // ghost of the mirrored half, so the silhouette reads as a vase
+                    ctx.strokeStyle = 'rgba(148,163,184,.55)'; ctx.beginPath();
+                    pts.forEach(function (pt, i) { var p = toPad(pt); var mx = PAD - p[0]; if (i) ctx.lineTo(mx, p[1]); else ctx.moveTo(mx, p[1]); }); ctx.stroke();
+                  } else {
+                    ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(PAD / 2, M); ctx.lineTo(PAD / 2, PAD - M); ctx.moveTo(M, PAD / 2); ctx.lineTo(PAD - M, PAD / 2); ctx.stroke(); ctx.setLineDash([]);
+                  }
+                  ctx.strokeStyle = '#7c3aed'; ctx.lineWidth = 2.2; ctx.fillStyle = 'rgba(124,58,237,.12)'; ctx.beginPath();
+                  pts.forEach(function (pt, i) { var p = toPad(pt); if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); });
+                  if (!st.isLathe) { ctx.closePath(); ctx.fill(); }
+                  ctx.stroke();
+                  pts.forEach(function (pt, i) { var p = toPad(pt); ctx.beginPath(); ctx.arc(p[0], p[1], i === st.sel ? 6 : 4.2, 0, Math.PI * 2); ctx.fillStyle = i === st.sel ? '#db2777' : '#7c3aed'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); });
+                }
+                function padPoint(cnv, ev) {
+                  var rect = cnv.getBoundingClientRect();
+                  var scale = rect.width ? PAD / rect.width : 1;
+                  return [Math.max(0, Math.min(PAD, (ev.clientX - rect.left) * scale)), Math.max(0, Math.min(PAD, (ev.clientY - rect.top) * scale))];
+                }
+                var padRef = function (cnv) {
+                  if (!cnv) return;
+                  cnv._profilePad = Object.assign(cnv._profilePad || {}, { profile: profile, isLathe: isLathe, sel: padSel, locked: padLocked, commit: commitProfile, maxPts: maxPts, drag: (cnv._profilePad && cnv._profilePad.drag) || null });
+                  drawPad(cnv);
+                  if (cnv._profilePadBound) return;
+                  cnv._profilePadBound = true;
+                  cnv.addEventListener('pointerdown', function (ev) {
+                    var st = cnv._profilePad; if (!st || st.locked) return;
+                    if (ev.button !== undefined && ev.button !== 0) return;
+                    ev.preventDefault();
+                    var p = padPoint(cnv, ev), best = -1, bestD = 14;
+                    st.profile.forEach(function (pt, i) { var q = toPad(pt); var dd = Math.hypot(q[0] - p[0], q[1] - p[1]); if (dd < bestD) { bestD = dd; best = i; } });
+                    if (best < 0) {
+                      if (st.profile.length >= st.maxPts) return;
+                      var np = fromPad(p[0], p[1]);
+                      var at = st.profile.length;
+                      if (st.isLathe) { at = 0; while (at < st.profile.length && st.profile[at][1] <= np[1]) at++; }
+                      else { var nearest = 0, nd = Infinity; st.profile.forEach(function (pt, i) { var q = toPad(pt); var dd = Math.hypot(q[0] - p[0], q[1] - p[1]); if (dd < nd) { nd = dd; nearest = i; } }); at = nearest + 1; }
+                      st.profile.splice(at, 0, np);
+                      best = at;
+                    }
+                    st.sel = best;
+                    st.drag = { index: best, moved: false };
+                    try { cnv.setPointerCapture(ev.pointerId); } catch (e) {}
+                    drawPad(cnv);
+                  });
+                  cnv.addEventListener('pointermove', function (ev) {
+                    var st = cnv._profilePad; if (!st || !st.drag) return;
+                    var p = padPoint(cnv, ev);
+                    st.profile[st.drag.index] = fromPad(p[0], p[1]);
+                    st.drag.moved = true;
+                    drawPad(cnv);
+                  });
+                  function finishDrag() {
+                    var st = cnv._profilePad; if (!st || !st.drag) return;
+                    var idx = st.drag.index; st.drag = null;
+                    upd('sculptProfilePoint', idx);
+                    st.commit(st.profile.map(function (pt) { return pt.slice(); }), 'Shape point ' + (idx + 1) + ' set.');
+                  }
+                  cnv.addEventListener('pointerup', finishDrag);
+                  cnv.addEventListener('pointercancel', finishDrag);
+                  cnv.addEventListener('lostpointercapture', finishDrag);
+                };
+                var xMin = isLathe ? 2 : -100, yMin = isLathe ? 0 : -100;
+                var selPt = profile[padSel];
+                function setCoord(axis, value) { var next = profile.map(function (pt) { return pt.slice(); }); next[padSel][axis] = value / 100; commitProfile(next); }
+                var padSummary = (isLathe ? 'Lathe profile' : 'Outline') + ' with ' + profile.length + ' points; point ' + (padSel + 1) + ' selected.';
+                return React.createElement("div", { className: "mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-2", "data-artstudio-profile-pad": padPart.shape },
+                  React.createElement("p", { className: "mb-1 text-[11px] font-black text-fuchsia-800" }, isLathe ? __alloT('stem.artstudio.sculpt_draw_lathe', 'Draw your own shape - it spins around the axis') : __alloT('stem.artstudio.sculpt_draw_extrude', 'Draw your own outline - it is pushed out into a solid')),
+                  React.createElement("p", { id: "artstudio-profile-pad-help", className: "mb-1 text-[10px] text-slate-600" }, isLathe ? __alloT('stem.artstudio.sculpt_draw_lathe_help', 'Click on the pad to add a point, drag a point to move it. Points run from the bottom to the top; the dashed line is the spin axis.') : __alloT('stem.artstudio.sculpt_draw_extrude_help', 'Click on the pad to add a point after the nearest one, drag a point to move it. The outline closes itself.')),
+                  React.createElement("div", { className: "flex flex-wrap items-start gap-2" },
+                    React.createElement("canvas", { id: "artstudio-profile-pad", ref: padRef, width: PAD, height: PAD, role: "img", "aria-label": padSummary, "aria-describedby": "artstudio-profile-pad-help", className: "rounded-lg border border-fuchsia-300 bg-white", style: { width: PAD + 'px', height: PAD + 'px', touchAction: 'none', cursor: padLocked ? 'not-allowed' : 'crosshair' } }),
+                    React.createElement("div", { className: "flex-1 min-w-[160px]", role: "group", "aria-label": isLathe ? 'Lathe profile points' : 'Outline points' },
+                      React.createElement("label", { className: "grid grid-cols-[52px_1fr] items-center gap-1 text-[10px] text-slate-600" }, 'Point',
+                        React.createElement("select", { value: padSel, "aria-label": "Selected shape point", className: "rounded border border-slate-300 px-1 py-0.5 text-[10px]", onChange: function(event) { upd('sculptProfilePoint', Number(event.target.value)); } }, profile.map(function (_, i) { return React.createElement("option", { key: i, value: i }, 'Point ' + (i + 1)); }))),
+                      React.createElement("label", { className: "grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[10px] text-slate-600" }, isLathe ? 'Radius' : 'X',
+                        React.createElement("input", { type: "range", "data-profile-axis": "x", min: xMin, max: 100, step: 1, value: Math.round(selPt[0] * 100), disabled: padLocked, "aria-label": (isLathe ? 'Radius of point ' : 'X of point ') + (padSel + 1), onChange: function(event) { setCoord(0, Number(event.target.value)); } }),
+                        React.createElement("output", null, Math.round(selPt[0] * 100))),
+                      React.createElement("label", { className: "grid grid-cols-[52px_1fr_34px] items-center gap-1 text-[10px] text-slate-600" }, isLathe ? 'Height' : 'Y',
+                        React.createElement("input", { type: "range", "data-profile-axis": "y", min: yMin, max: 100, step: 1, value: Math.round(selPt[1] * 100), disabled: padLocked, "aria-label": (isLathe ? 'Height of point ' : 'Y of point ') + (padSel + 1), onChange: function(event) { setCoord(1, Number(event.target.value)); } }),
+                        React.createElement("output", null, Math.round(selPt[1] * 100))),
+                      React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" },
+                        React.createElement("button", { type: "button", className: mini, disabled: padLocked || profile.length >= maxPts, "aria-label": "Add a shape point after the selected point", onClick: function() { var next = profile.map(function (pt) { return pt.slice(); }); var a = next[padSel], b = next[Math.min(next.length - 1, padSel + 1)]; var mid = padSel === next.length - 1 ? [a[0], a[1]] : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; if (padSel === next.length - 1) mid[isLathe ? 1 : 0] = Math.min(1, mid[isLathe ? 1 : 0] + 0.1); next.splice(padSel + 1, 0, mid); upd('sculptProfilePoint', padSel + 1); commitProfile(next, 'Added shape point ' + (padSel + 2) + '.'); } }, '+ Point'),
+                        React.createElement("button", { type: "button", className: mini, disabled: padLocked || profile.length <= 3, "aria-label": "Remove the selected shape point", onClick: function() { var next = profile.map(function (pt) { return pt.slice(); }); next.splice(padSel, 1); upd('sculptProfilePoint', Math.max(0, padSel - 1)); commitProfile(next, 'Removed shape point ' + (padSel + 1) + '.'); } }, '- Point'),
+                        P3D.DEFAULT_PROFILES && P3D.DEFAULT_PROFILES[padPart.shape] ? React.createElement("button", { type: "button", className: mini, disabled: padLocked, "aria-label": "Reset the drawn shape to its starter shape", onClick: function() { upd('sculptProfilePoint', 0); commitProfile(P3D.DEFAULT_PROFILES[padPart.shape].map(function (pt) { return pt.slice(); }), 'Shape reset.'); } }, 'Reset') : null
+                      )
+                    )
+                  )
+                );
+              }
               function beginSculptRangeEdit() {
                 var canvas = _cnvBox.current;
                 if (!canvas) return;
@@ -7186,10 +7371,16 @@ const d = labToolData.artStudio || {};
                     var lockedAxis = st.transformAxis === 'x' ? 0 : st.transformAxis === 'y' ? 1 : st.transformAxis === 'z' ? 2 : -1;
                     if (st.drag.kind === 'move') {
                       if (lockedAxis < 0) {
-                        st.drag.raw[0] = Math.max(-4, Math.min(4, st.drag.raw[0] + dx * 0.006));
+                        // Screen-right is the camera's right vector on the ground plane,
+                        // not world +X. The camera orbits, so a rightward drag used to
+                        // move the part diagonally, and backwards past 90 degrees of yaw.
+                        var rightX = Math.cos(st.yaw), rightZ = -Math.sin(st.yaw) || 0; // `|| 0` keeps -0 out of stored positions
+                        st.drag.raw[0] = Math.max(-4, Math.min(4, st.drag.raw[0] + dx * 0.006 * rightX));
+                        st.drag.raw[2] = Math.max(-4, Math.min(4, st.drag.raw[2] + dx * 0.006 * rightZ));
                         st.drag.raw[1] = Math.max(-4, Math.min(8, st.drag.raw[1] - dy * 0.006));
                         st.drag.current[0] = snapSculptValue(st.drag.raw[0], ev.altKey, st.snap);
                         st.drag.current[1] = snapSculptValue(st.drag.raw[1], ev.altKey, st.snap);
+                        st.drag.current[2] = snapSculptValue(st.drag.raw[2], ev.altKey, st.snap);
                       } else {
                         var moveDelta = lockedAxis === 0 ? dx * 0.006 : lockedAxis === 1 ? -dy * 0.006 : (dx - dy) * 0.0045;
                         var moveUpper = lockedAxis === 1 ? 8 : 4;
@@ -7219,7 +7410,10 @@ const d = labToolData.artStudio || {};
                         st.drag.mesh.scale.set(st.drag.current[0], st.drag.current[1], st.drag.current[2]);
                       }
                     } else {
-                      st.yaw += dx * 0.01;
+                      // Dragging right turns the sculpture to the right (the object
+                      // follows the hand, as in every common 3-D viewer). It used to
+                      // move the CAMERA right, so the model appeared to turn left.
+                      st.yaw -= dx * 0.01;
                       st.pitch = Math.max(0.05, Math.min(1.45, st.pitch + dy * 0.008));
                     }
                     if (st.drag.kind !== 'orbit') st.drag.moved = st.drag.moved || Math.abs(dx) + Math.abs(dy) > 0;
@@ -7352,7 +7546,7 @@ const d = labToolData.artStudio || {};
                   if (recipe) { try { st2.obj = P3D.buildObject(window.THREE, recipe, { unit: 1 }); if (st2.obj) st2.scene.add(st2.obj); } catch (e) {} }
                 }
               };
-              var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩' };
+              var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩', lathe: '🏺', extrude: '⭐' };
               var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-500 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
               var doAiSculpt = function() {
                 // busy flag lives on window, NOT in toolData — a persisted busy
@@ -7574,6 +7768,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("button", { className: mini + " flex-1 px-2", "aria-label": selectedPart.hidden ? "Show selected part" : "Hide selected part", "aria-pressed": selectedPart.hidden, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { hidden: !selectedPart.hidden }); }); } }, selectedPart.hidden ? '\uD83D\uDC41 Show' : '\uD83D\uDE48 Hide'),
                       React.createElement("button", { className: mini + " flex-1 px-2", "aria-label": selectedPart.locked ? "Unlock selected part transforms" : "Lock selected part transforms", "aria-pressed": selectedPart.locked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { locked: !selectedPart.locked }); }); } }, selectedPart.locked ? '\uD83D\uDD13 Unlock' : '\uD83D\uDD12 Lock')
                     ),
+                    (selectedPart.shape === 'lathe' || selectedPart.shape === 'extrude') ? renderProfilePad() : null,
                     React.createElement("div", { className: "mb-2 rounded-xl border border-violet-200 bg-violet-50 p-2" },
                       React.createElement("p", { className: "mb-1 text-[11px] font-black text-violet-800" }, 'Morph selected form'),
                       React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": "Morph selected form" }, builtInMorphProfiles.map(function(profile) {
@@ -7643,7 +7838,7 @@ const d = labToolData.artStudio || {};
                         ),
                         React.createElement("div", null,
                           React.createElement("p", { className: "text-[11px] font-black text-slate-600" }, 'Size'),
-                          (selectedPart.shape === 'box' ? ['Width', 'Height', 'Depth'] : selectedPart.shape === 'sphere' ? ['Radius'] : selectedPart.shape === 'torus' ? ['Ring radius', 'Tube radius'] : ['Radius', 'Height']).map(function(label, axis) {
+                          (selectedPart.shape === 'box' ? ['Width', 'Height', 'Depth'] : selectedPart.shape === 'sphere' ? ['Radius'] : selectedPart.shape === 'torus' ? ['Ring radius', 'Tube radius'] : selectedPart.shape === 'extrude' ? ['Width', 'Height', 'Depth'] : ['Radius', 'Height']).map(function(label, axis) {
                             return React.createElement("label", { key: label, className: "grid grid-cols-[72px_1fr_34px] items-center gap-1 text-[10px] text-slate-600" }, label,
                               React.createElement("input", Object.assign({ type: "range", min: 0.02, max: 4, step: 0.02, value: selectedPart.size[axis], disabled: selectedPartLocked, onChange: function(event) { var size = selectedPart.size.slice(); size[axis] = parseFloat(event.target.value); rangePartOp(function(P, r) { return P.updatePart(r, sel, { size: size }); }); } }, sculptRangeProps())),
                               React.createElement("output", null, Number(selectedPart.size[axis]).toFixed(2))

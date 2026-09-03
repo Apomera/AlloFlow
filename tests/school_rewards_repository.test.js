@@ -272,7 +272,7 @@ describe('School Rewards Apps Script repository', () => {
   it('uses managed identity and role checks instead of client-supplied actors', () => {
     const h = harness(); setup(h);
     h.setActive(`outsider@${DOMAIN}`);
-    expect(() => h.call('getSchoolRewardsBootstrap')).toThrow(/not an active School Rewards member/i);
+    expect(() => h.call('getSchoolRewardsBootstrap')).toThrow(/not on the School Rewards member list/i);
     h.setActive(CASHIER);
     expect(() => h.call('awardSchoolRewardsPoints', { studentId: 'entity-000000000001', amount: 5, reason: 'Kindness', idempotencyKey: 'award_role_01' })).toThrow(/role cannot perform/i);
     const cashierView = h.call('getSchoolRewardsBootstrap');
@@ -294,10 +294,10 @@ describe('School Rewards Apps Script repository', () => {
     h.call('adminUpsertRewardsMember', { email: STAFF, displayName: 'Teacher', role: 'staff', active: false });
     expect(h.call('getSchoolRewardsBootstrap').members.find(member => member.email === STAFF)).toMatchObject({ role: 'staff', active: false });
     h.setActive(STAFF);
-    expect(() => h.call('getSchoolRewardsBootstrap')).toThrow(/not an active School Rewards member/i);
+    expect(() => h.call('getSchoolRewardsBootstrap')).toThrow(/not on the School Rewards member list/i);
 
     h.setActive(ADMIN);
-    expect(() => h.call('adminUpsertRewardsMember', { email: ADMIN, displayName: 'Administrator', role: 'admin', active: false })).toThrow(/active administrator is required/i);
+    expect(() => h.call('adminUpsertRewardsMember', { email: ADMIN, displayName: 'Administrator', role: 'admin', active: false })).toThrow(/needs at least one active administrator/i);
     expect(h.call('getSchoolRewardsBootstrap').members.find(member => member.email === ADMIN)).toMatchObject({ role: 'admin', active: true });
   });
 
@@ -308,7 +308,7 @@ describe('School Rewards Apps Script repository', () => {
     const second = h.call('awardSchoolRewardsPoints', request);
     expect(first.entry.id).toBe(second.entry.id);
     expect(second.balance).toBe(25);
-    expect(() => h.call('awardSchoolRewardsPoints', { ...request, amount: 24 })).toThrow(/request key was already used/i);
+    expect(() => h.call('awardSchoolRewardsPoints', { ...request, amount: 24 })).toThrow(/already recorded once/i);
     expect(h.rows('Ledger')).toHaveLength(2);
     h.setActive(ADMIN);
     const corrected = h.call('reverseSchoolRewardsEntry', { entryId: first.entry.id, reason: 'Duplicate staff entry', idempotencyKey: 'reverse_award_01' });
@@ -338,7 +338,7 @@ describe('School Rewards Apps Script repository', () => {
     h.call('adminUpsertRewardsCategory', { id: category.id, name: category.name, description: category.description, framework: category.framework, color: category.color, sortOrder: category.sortOrder, active: false });
     expect(h.call('getSchoolRewardsBootstrap').categories.find(item => item.id === category.id)).toMatchObject({ name: category.name, active: false });
     h.setActive(STAFF);
-    expect(() => h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 5, categoryId: category.id, reason: 'New attempt', idempotencyKey: 'award_inactive_category1' })).toThrow(/active recognition category/i);
+    expect(() => h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 5, categoryId: category.id, reason: 'New attempt', idempotencyKey: 'award_inactive_category1' })).toThrow(/recognition category is no longer active/i);
     expect(h.call('getSchoolRewardsBootstrap').categories.find(item => item.id === category.id)).toMatchObject({ name: category.name, active: false });
     h.setActive(STUDENT);
     expect(h.call('getSchoolRewardsBootstrap').progress.find(item => item.categoryId === category.id)).toMatchObject({ name: category.name, active: false, points: 15 });
@@ -358,7 +358,7 @@ describe('School Rewards Apps Script repository', () => {
     expect(retry.order.id).toBe(first.order.id);
     expect(h.rows('Orders')).toHaveLength(2);
     expect(h.rows('Catalog')[1][5]).toBe(3);
-    expect(() => h.call('checkoutSchoolRewardsOrder', { ...request, lines: [{ catalogId: prize.id, quantity: 1 }] })).toThrow(/request key was already used/i);
+    expect(() => h.call('checkoutSchoolRewardsOrder', { ...request, lines: [{ catalogId: prize.id, quantity: 1 }] })).toThrow(/already recorded once/i);
     expect(() => h.call('checkoutSchoolRewardsOrder', { ...request, idempotencyKey: 'checkout_no_funds_02' })).toThrow(/enough points/i);
   });
 
@@ -995,7 +995,7 @@ describe('School Rewards Apps Script repository', () => {
     expect(() => h.call('adminBulkUpsertRewardsStudents', [
       { firstName: 'Jordan', lastInitial: 'K', grade: '6', homeroom: '6B', email: `jordan@${DOMAIN}` },
       { id: 'different-student-id', firstName: 'Incorrect claim', email: STUDENT },
-    ])).toThrow(/already assigned|different roster|duplicate student/i);
+    ])).toThrow(/already belongs to another|already on the roster|two different students|duplicate student/i);
     Object.entries(before).forEach(([name, rows]) => expect(h.rows(name)).toEqual(rows));
     expect(() => h.call('adminBulkUpsertRewardsStudents', [{ firstName: '   ', email: `blankname@${DOMAIN}` }])).toThrow(/first name is required/i);
     Object.entries(before).forEach(([name, rows]) => expect(h.rows(name)).toEqual(rows));
@@ -1015,7 +1015,7 @@ describe('School Rewards Apps Script repository', () => {
     expect(first.model).toMatchObject({ sourceFormat: 'RECIPE', assetStatus: 'READY', publicationStatus: 'PRIVATE', unitDeclaration: '1 recipe unit = 50 mm' });
     expect(first.model).not.toHaveProperty('originalFileId');
     expect(h.rows('PrintModels')).toHaveLength(2);
-    expect(() => h.call('createSchoolRewardsPrintModel', { ...recipeInput, title: 'Changed title' })).toThrow(/request key was already used/i);
+    expect(() => h.call('createSchoolRewardsPrintModel', { ...recipeInput, title: 'Changed title' })).toThrow(/already recorded once/i);
 
     const glb = h.call('createSchoolRewardsPrintModel', {
       title: 'Minecraft structure', sourceFormat: 'GLB', contentHash: 'a'.repeat(64), byteSize: 2048,
@@ -1306,7 +1306,7 @@ describe('School Rewards Apps Script repository', () => {
     expect(JSON.stringify(summary)).not.toContain(student.id);
     expect(JSON.stringify(summary)).not.toContain('Private classroom observation');
     expect(JSON.stringify(summary)).not.toContain('Family requested messages stop.');
-    expect(() => h.call('adminUpsertSchoolRewardsGuardian', { ...guardianInput, id: guardian.id, active: true, consentConfirmed: false, idempotencyKey: 'v4_guardian_reenable_bad' })).toThrow(/fresh.*authorization/i);
+    expect(() => h.call('adminUpsertSchoolRewardsGuardian', { ...guardianInput, id: guardian.id, active: true, consentConfirmed: false, idempotencyKey: 'v4_guardian_reenable_bad' })).toThrow(/current permission to email/i);
     const reenabled = h.call('adminUpsertSchoolRewardsGuardian', { ...guardianInput, id: guardian.id, active: true, consentConfirmed: true, idempotencyKey: 'v4_guardian_reenable01' }).guardian;
     expect(reenabled.active).toBe(true);
     expect(reenabled.consentConfirmedAt).toBeTruthy();

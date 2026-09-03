@@ -288,6 +288,60 @@ describe('host wiring and package mirror', () => {
   });
 });
 
+describe('IT handoff (2026-09-02)', () => {
+  it('copies plain-language instructions with links to the sources and the generated setup function', async () => {
+    window.alloCopyText = vi.fn(async () => true);
+    localStorage.setItem('allo_school_rewards_setup_v1', JSON.stringify({ steps: [], form: { schoolName: 'Lincoln Elementary', allowedDomain: 'lincoln.k12.example' } }));
+    const dialog = await mountPanel({ portalUrl: '' });
+    const box = dialog.querySelector('[data-help-key="schoolrewards_handoff"]');
+    expect(box.textContent).toMatch(/Not doing the editor steps yourself/);
+    await settle(() => box.querySelector('[data-help-key="schoolrewards_handoff_copy"]').click());
+    const text = window.alloCopyText.mock.calls[0][0];
+    expect(text).toContain('Lincoln Elementary');
+    expect(text).toContain('https://alloflow-cdn.pages.dev/apps_script/school_rewards/Code.gs');
+    expect(text).toContain("allowedDomain: 'lincoln.k12.example'");
+    expect(text).toContain('runInitialSchoolRewardsSetup');
+    expect(text).toContain('dropdown beside Debug');
+    expect(text).toContain('Go to AlloFlow School Rewards (unsafe)');
+    expect(text).toContain('8. Send the link back');
+    // The steps themselves never mention a technical format; only the pasted function's log line does.
+    expect(text.slice(0, text.indexOf('Setup function to paste'))).not.toMatch(/JSON/);
+    expect(box.textContent).toMatch(/Copied\. Paste it into an email/);
+  });
+
+  it('downloads a self-contained packet that embeds the verified sources with copy buttons', async () => {
+    const created = [];
+    const originalCreate = URL.createObjectURL;
+    URL.createObjectURL = vi.fn((blob) => { created.push(blob); return 'blob:test'; });
+    URL.revokeObjectURL = vi.fn();
+    try {
+      const dialog = await mountPanel({ portalUrl: '' });
+      const box = dialog.querySelector('[data-help-key="schoolrewards_handoff"]');
+      await settle(() => box.querySelector('[data-help-key="schoolrewards_handoff_download"]').click());
+      await new Promise((res) => setTimeout(res, 60));
+      expect(created.length).toBe(1);
+      const html = await created[0].text();
+      expect(html).toContain('<title>AlloFlow School Rewards: setup for IT</title>');
+      expect(html).toContain('function setupSchoolRewardsRepository');
+      expect(html).toContain('id=&quot;school-title&quot;');
+      expect(html).toContain('data-copy="code-gs"');
+      expect(html).toContain('data-copy="appsscript-json"');
+      expect(html).toContain('function runInitialSchoolRewardsSetup()');
+      expect(box.textContent).toMatch(/Downloaded school-rewards-setup-for-it\.html/);
+    } finally {
+      URL.createObjectURL = originalCreate;
+    }
+  });
+
+  it('links to the published sources when a file cannot be fetched, instead of shipping a partial file', () => {
+    const html = testing.srHandoffHtml({ schoolName: 'Lincoln' }, 'function runInitialSchoolRewardsSetup() {}', { 'Code.gs': 'function setupSchoolRewardsRepository() {}' });
+    expect(html).toContain('data-copy="code-gs"');
+    expect(html).not.toContain('data-copy="portal-html"');
+    expect(html).toContain('href="https://alloflow-cdn.pages.dev/apps_script/school_rewards/Portal.html"');
+    expect(testing.srHandoffSteps({}).length).toBe(8);
+  });
+});
+
 describe('share with staff (2026-09-02)', () => {
   it('shows the staff link and QR when connected and copies through the shell helper', async () => {
     window.__alloMakeQrSvg = vi.fn(async () => '<svg data-test="qr"></svg>');

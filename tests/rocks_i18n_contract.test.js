@@ -65,3 +65,49 @@ describe('rocks i18n call-style contract', () => {
     expect(lookup('stem.rocks.igneous')).toBe('Igneous');
   });
 });
+
+// ── The accessibility layer is user-facing text too ──
+//
+// Seven screen-reader announcements and the texture gloss shipped as bare
+// English literals that no language pack could reach. The gloss is what a
+// screen reader reads INSTEAD of the specimen picture, so in any other
+// language the rock grid was unusable.
+describe('screen-reader text goes through the translator like everything else', () => {
+  const src = () => readFileSync('stem_lab/stem_tool_rocks.js', 'utf8');
+
+  it('finds the announcements at all, so the check below is not vacuous', () => {
+    expect((src().match(/announceToSR\(/g) || []).length).toBeGreaterThan(8);
+  });
+
+  it('never passes a bare English literal to announceToSR', () => {
+    const bare = [];
+    const re = /announceToSR\(\s*(['"])/g;
+    const s = src();
+    let m;
+    while ((m = re.exec(s))) {
+      // A localized call opens with __alloT(, a variable, or a template of one.
+      bare.push(s.slice(m.index, m.index + 90));
+    }
+    expect(bare, `bare literal(s) passed to announceToSR:\n${bare.join('\n')}`).toEqual([]);
+  });
+
+  it('reads every texture gloss through the translator, in one place', () => {
+    const s = src();
+    expect(s).toContain("return __alloT('stem.rocks.texture_gloss_' + texture, english);");
+    // Exactly three mentions survive: the table, the comment naming it, and the
+    // single lookup inside rkGloss. Any fourth is a call site that skipped it.
+    expect((s.match(/RK_TEXTURE_GLOSS/g) || []).length).toBe(3);
+  });
+
+  it('has a catalogue key for every gloss the table defines', () => {
+    const s = src();
+    const at = s.indexOf('var RK_TEXTURE_GLOSS = {');
+    const block = s.slice(at, s.indexOf('};', at));
+    const ids = [...block.matchAll(/'([\w-]+)':\s*'/g)].map((x) => x[1]);
+    expect(ids.length).toBeGreaterThan(10);
+    const strings = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
+    ids.forEach((id) => {
+      expect(strings.stem.rocks, `texture_gloss_${id}`).toHaveProperty('texture_gloss_' + id);
+    });
+  });
+});

@@ -226,7 +226,10 @@ describe('test-bench implementation', () => {
   it('names the carbonate set instead of comparing an id inline', () => {
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      expect(src).toContain("var RK_CARBONATES = ['calcite'];");
+      // Hoisted to module scope so the minerals lab and the workbench read ONE
+      // list; there were two, each asking the other to be kept in step by hand.
+      expect(src).toContain("var RK_CARBONATE_IDS = ['calcite', 'malachite', 'azurite'];");
+      expect(src).not.toContain("var RK_CARBONATES = ");
       expect(src).not.toContain("if (targetId === 'calcite') {");
     });
   });
@@ -1365,7 +1368,7 @@ describe('streak plate — the powder is visible for every mineral', () => {
 
   it('separates every streak colour from the plate it is drawn on', () => {
     const mins = minerals();
-    expect(mins.length).toBe(18);
+    expect(mins.length).toBe(23);
     let checked = 0;
     mins.forEach((m) => {
       const svg = plate(m.id);
@@ -1384,7 +1387,7 @@ describe('streak plate — the powder is visible for every mineral', () => {
         .toBeGreaterThan(0.10);
     });
     // Guard against the assertion quietly covering nothing.
-    expect(checked).toBe(18);
+    expect(checked).toBe(23);
   });
 
   it('keeps a pale powder legible as a deposit, not as a hue', () => {
@@ -1459,7 +1462,7 @@ describe('scratch bench — the mark is visible on every specimen', () => {
 
   it('separates both the groove and the smear from the body they are drawn on', () => {
     const mins = minerals();
-    expect(mins.length).toBe(18);
+    expect(mins.length).toBe(23);
     let checked = 0;
     // A diamond scribe cuts everything; a fingernail cuts almost nothing. Between
     // them every mineral gets tested for both marks.
@@ -1487,7 +1490,7 @@ describe('scratch bench — the mark is visible on every specimen', () => {
           `${m.id}/${tool}: mark ${mark[1]} is invisible on body ${body[1]}`).toBeGreaterThan(0.10);
       });
     });
-    expect(checked).toBe(36);
+    expect(checked).toBe(46);
   });
 
   it('was genuinely broken before — magnetite scored exactly zero', () => {

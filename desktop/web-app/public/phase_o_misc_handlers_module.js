@@ -4,6 +4,46 @@ if(window.AlloModules&&window.AlloModules.PhaseOHandlersModule){console.log("[CD
 // 6 misc handlers across class sessions, image refinement, standards
 // lookup, wizard flow, blueprint execution.
 
+// Shared alt-text upkeep for the image tool: after the pixels change, describe
+// the NEW picture through window.AlloModules.AltText (batched, resource
+// language). A description a person wrote is never overwritten; the image-hash
+// mismatch marks it stale in the edit field instead.
+const _redescribeImageContent = async (content, deps) => {
+  const A = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText;
+  const data = content && content.data;
+  if (!A || !data) return;
+  const targets = [];
+  const plan = data.visualPlan;
+  if (plan && Array.isArray(plan.panels) && plan.panels.length > 1) {
+    plan.panels.forEach((panel) => {
+      if (!panel || !panel.imageUrl) return;
+      const poster = Array.isArray(panel.frames) && panel.frames.length > 1 ? panel.frames[0] : panel.imageUrl;
+      targets.push({ altSource: panel.altSource, dataUrl: poster, context: panel.caption || panel.imagenPrompt || panel.motionPrompt || data.prompt,
+        apply: (r) => { panel.alt = r.decorative ? '' : r.alt; panel.altSource = r.source; panel.decorative = r.decorative === true; panel.altHash = A.hashImage(poster); } });
+    });
+  } else if (data.imageUrl) {
+    targets.push({ altSource: data.altSource, dataUrl: data.imageUrl, context: data.prompt,
+      apply: (r) => { data.altText = r.decorative ? '' : r.alt; data.altSource = r.source; data.decorative = r.decorative === true; data.altHash = A.hashImage(data.imageUrl); } });
+  }
+  const live = [];
+  targets.forEach((target) => {
+    if (target.altSource === 'author') return;
+    live.push(target);
+  });
+  if (!live.length) return;
+  try {
+    const results = await A.draftAlts(live.map((target, index) => ({ id: index, dataUrl: target.dataUrl, context: target.context })), { language: deps && deps.language, callGeminiVision: deps && deps.callGeminiVision });
+    results.forEach((r, index) => { if (r) live[index].apply(r); });
+  } catch (error) {
+    try { console.warn('[AltText] refresh after image edit skipped:', error && error.message ? error.message : error); } catch (_) {}
+  }
+  if (plan && Array.isArray(plan.panels) && plan.panels.length > 1 && plan.panels[0] && plan.panels[0].alt) {
+    data.altText = plan.panels[0].alt;
+    data.altSource = plan.panels[0].altSource;
+    data.altHash = plan.panels[0].altHash;
+  }
+};
+
 const startClassSession = async (deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, studentAiPolicyForShare, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, differentiationRange, differentiationTypes, differentiationCustomGrades, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] startClassSession fired"); } catch(_) {}
@@ -193,6 +233,7 @@ const handleRefineImage = async (deps) => {
                     prompt: `(Edited) ${generatedContent?.data.prompt}`
                 }
             };
+            await _redescribeImageContent(updatedContent, { callGeminiVision, language: leveledTextLanguage });
             setGeneratedContent(updatedContent);
             setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
             setImageRefinementInput('');
@@ -208,6 +249,7 @@ const handleRefineImage = async (deps) => {
                     prompt: `(Edited) ${generatedContent?.data.prompt}`
                 }
             };
+            await _redescribeImageContent(updatedContent, { callGeminiVision, language: leveledTextLanguage });
             setGeneratedContent(updatedContent);
             setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
             setImageRefinementInput('');

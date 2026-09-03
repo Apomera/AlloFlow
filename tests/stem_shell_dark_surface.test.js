@@ -118,6 +118,8 @@ describe('STEM tool shell — dark theme surface', () => {
     const markup = renderThroughHost('rocks', { rocks: { mode: 'rocks' }, rockCycle: {} }, 'dark');
     expect(markup).toContain('data-stem-tool-surface');
     expect(markup).toContain('background:#ffffff');
+    // Native fields inside the light card must not inherit the document's dark colour scheme.
+    expect(markup).toContain('color-scheme:light');
   });
 
   it('leaves the light theme exactly as it was — no extra surface', () => {

@@ -2807,6 +2807,7 @@
             + '<p style="margin-top:8px;font-weight:700">' + (verified ? _maT('facts_verified', 'Teacher-verified facts') : _maT('facts_pending', 'Facts awaiting teacher review')) + '</p>'
             + (facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '')
             + (c.mapping ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + esc(String(c.mapping).slice(0, 500)) + '</em></p>' : '')
+            + (function() { const hook = rules && typeof rules.hookFact === 'function' ? rules.hookFact(c) : null; return hook ? '<p style="margin-top:8px;font-size:13px;color:#9a3412"><strong>' + _maT('hook_heading', 'Did you know?') + '</strong> ' + esc(hook.text) + '</p>' : ''; })()
             + '</div></div>');
         });
       } else if (item.type === 'anchor-chart' && item.data && Array.isArray(item.data.sections)) {

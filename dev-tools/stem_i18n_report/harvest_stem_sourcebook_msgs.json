@@ -1,0 +1,20 @@
+{
+  "stem.sourcebook.msg_offline_curated_results": "You look offline, so no collection was contacted. Showing the built-in shelf; live search resumes when the connection returns.",
+  "stem.sourcebook.msg_back_online": "Back online. Search again to refresh live results.",
+  "stem.sourcebook.msg_back_online_announce": "Connection restored; live collection search is available again",
+  "stem.sourcebook.msg_went_offline_announce": "Connection lost; your saved palette and the built-in shelf still work",
+  "stem.sourcebook.offline_banner": "You look offline. Your saved palette, prepared images, packages, and the built-in shelf still work; live collection search resumes when the connection returns.",
+  "stem.sourcebook.msg_searching_public_collections_default": "Searching public collections and checking item-level rights metadata…",
+  "stem.sourcebook.status_cooling_down": "Cooling down",
+  "stem.sourcebook.status_retrying_once": "Retrying once",
+  "stem.sourcebook.status_stopped": "Stopped",
+  "stem.sourcebook.status_unavailable": "Unavailable",
+  "stem.sourcebook.status_searching": "Searching",
+  "stem.sourcebook.msg_curated_shelf_results": "Showing verified results from Sourcebook’s curated shelf.",
+  "stem.sourcebook.msg_no_live_results_allowlist": "No live results passed the selected rights allowlist.",
+  "stem.sourcebook.status_count_verified": "{count} verified",
+  "stem.sourcebook.status_count_cached": "{count} cached",
+  "stem.sourcebook.label_collection_batch_loaded": "Collection batch {batch} / {count} loaded on board",
+  "stem.sourcebook.msg_live_results_allowlist_one": "{count} live result passed the selected rights allowlist.",
+  "stem.sourcebook.msg_live_results_allowlist_other": "{count} live results passed the selected rights allowlist."
+}

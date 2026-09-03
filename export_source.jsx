@@ -1982,6 +1982,8 @@ const createExport = (deps) => {
                         if (cue) runs.push({ text: cue, options: { fontSize: 15, bold: true, color: "0F766E", breakLine: true, bullet: false, paraSpaceBefore: 4 } });
                         runs.push(heading(factsLabel, verified ? "166534" : "92400E"));
                         facts.forEach((fact) => runs.push(bullet(fact)));
+                        const hook = _memoryAidRules && typeof _memoryAidRules.hookFact === 'function' ? _memoryAidRules.hookFact(c) : null;
+                        if (hook) runs.push({ text: _nsT('memory_aid.hook_heading', 'Did you know?') + ' ' + clip(hook.text, 400), options: { fontSize: 12, color: "9A3412", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
                         if (c.mapping) runs.push({ text: clip(c.mapping, 500), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
                         addRichSlide(itemTitle + ' \u00B7 ' + (ci + 1) + '/' + cards.length, runs, target + '. ' + factsLabel + ': ' + facts.join('; '));
                     });

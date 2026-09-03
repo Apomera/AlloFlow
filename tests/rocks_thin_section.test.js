@@ -63,7 +63,7 @@ describe('thin section — coverage', () => {
     const rocks = [...src.slice(src.indexOf('var RK_ROCKS = ['), src.indexOf('function rkRockSwatch('))
       .matchAll(/\{ id: '(\w+)'/g)].map((m) => m[1]);
 
-    expect(rocks.length).toBe(20);
+    expect(rocks.length).toBe(24);
     rocks.forEach((id) => {
       expect(keys, `${id} has no thin section`).toContain(id);
     });
@@ -74,7 +74,7 @@ describe('thin section — coverage', () => {
     const block = src.slice(src.indexOf('var RK_THIN_SECTION = {'), src.indexOf('function rkThinSectionSvg'));
     // `fabric` sits between mag and parts, so do not assume they are adjacent.
     const rows = [...block.matchAll(/(\w+):\s*\{ mag: \d+,[^[]*parts: \[([\s\S]*?)\],\s*look:/g)];
-    expect(rows.length).toBe(20);
+    expect(rows.length).toBe(24);
     rows.forEach((r) => {
       const fracs = [...r[2].matchAll(/,\s*([\d.]+)\]/g)].map((m) => parseFloat(m[1]));
       const sum = fracs.reduce((a, b) => a + b, 0);
@@ -158,7 +158,7 @@ describe('thin section — the texture has to match the caption', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     const block = src.slice(src.indexOf('var RK_THIN_SECTION = {'), src.indexOf('function rkThinSectionSvg'));
     const rows = [...block.matchAll(/^\s{4}(\w+):\s*\{ mag: \d+, fabric: '(\w+)'/gm)];
-    expect(rows.length).toBe(20);
+    expect(rows.length).toBe(24);
     rows.forEach((r) => {
       // 'shards' is fragmental like clastic but keeps angular edges — ash was
       // never transported, so nothing rounded it. 'plates' is fragmental and

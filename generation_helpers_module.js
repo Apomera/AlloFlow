@@ -178,6 +178,7 @@ const _FULL_PACK_TOOL_OPTION_FIELDS = Object.freeze([
   'noteTakingTemplateType', 'anchorChartType',
   'memoryAidSelectionMode', 'memoryAidTypes', 'memoryAidAuthorshipMode',
   'memoryAidReflectionLevel', 'memoryAidReasoningRequired', 'memoryAidCount',
+  'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts',
   'appliedChallengeSelectionMode', 'appliedChallengeFamily',
   'appliedChallengeAgencyMode', 'appliedChallengeScope',
   'frameType', 'fillInTheBlank', 'vocabularyType', 'isAdventureStoryMode',

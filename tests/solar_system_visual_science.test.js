@@ -52,7 +52,11 @@ describe('solar system visual science model', () => {
     expect(source).toContain("label: '13 narrow, dark rings'");
     expect(source).toContain("label: 'five main rings and four outer-ring arcs'");
     expect(source).toContain('function addSolarRingSystem(parent, planet)');
-    expect(source).toContain('const asteroidCount = 360;');
+    // The belt carries three size classes and the Kirkwood resonance gaps,
+    // so it is no longer one uniform ring of identical points.
+    expect(source).toContain('const KIRKWOOD = [23.17, 24.39, 24.89];');
+    expect(source).toContain('function solarBeltRadius()');
+    expect(source).toContain('Kirkwood gaps cleared by Jupiter resonances');
     expect(source).toContain('const kuiperCount = 520;');
     expect(source).toContain("data-region-model': 'asteroid-2-to-4-au-kuiper-30-to-50-au'");
     expect(source).toContain('body sizes and debris density enlarged');
@@ -153,7 +157,9 @@ describe('solar system visual science model', () => {
     expect(source).toContain('data-solarsystem-world-spotlight');
     expect(source).toContain('className: "solar-world-spotlight"');
     expect(source).toContain('role: "figure"');
-    expect(source).toContain('PLANET_PORTRAITS[spotlightPlanet.key]');
+    expect(source).toContain('solarPortraitFor(spotlightPlanet.key)');
+    expect(source).toContain('function solarWorldPortrait(key)');
+    expect(source).toContain('return solarWorldPortrait(key) || PLANET_PORTRAITS[key];');
     expect(source).toContain('RINGED_GIANTS[spotlightPlanet.key]');
     expect(source).toContain('spotlightPlanet.atmosphere');
     expect(source).toContain('spotlightPlanet.surface');

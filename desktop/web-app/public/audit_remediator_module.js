@@ -202,6 +202,43 @@
       });
     }
 
+    // ---- Cognitive load / pacing ----
+    // Missing or unrealistic segment durations are fixed by regenerating the
+    // lesson plan: the generator now opens every segment with "(N min)".
+    var cl = comprehensive.cognitiveLoad;
+    if (cl && !cl.notApplicable && !cl.notEvaluated && !cl.computeFailed && cl.status && cl.status !== 'Aligned') {
+      var existingPlan = findExistingItem(history, 'lesson-plan');
+      var missingDurations = !(cl.claimedTotalMinutes > 0);
+      var clRecs = Array.isArray(cl.recommendations) ? cl.recommendations.filter(function (r) { return typeof r === 'string' && r; }) : [];
+      var clDetail = clRecs[0] || (cl.llmReview && cl.llmReview.narrative) || 'Lesson pacing needs adjustment.';
+      actions.push({
+        id: actionId('pace'),
+        dimension: 'Cognitive load / pacing',
+        icon: '⏱️',
+        label: missingDurations
+          ? (existingPlan ? 'Regenerate ' : 'Generate ') + 'Lesson Plan with segment time estimates'
+          : 'Regenerate Lesson Plan with adjusted pacing',
+        detail: clDetail,
+        target: 'lesson-plan',
+        existingItemId: existingPlan ? existingPlan.id : null,
+        configHints: {},
+        source: clDetail,
+      });
+      var adjustments = cl.llmReview && Array.isArray(cl.llmReview.specificAdjustments) ? cl.llmReview.specificAdjustments : [];
+      adjustments.forEach(function (adj) {
+        if (typeof adj !== 'string' || !adj.trim()) return;
+        actions.push({
+          id: actionId('pace'),
+          dimension: 'Cognitive load / pacing',
+          icon: '⏱️',
+          label: 'Manual review',
+          detail: adj,
+          target: 'manual',
+          source: adj,
+        });
+      });
+    }
+
     // ---- UDL pillars ----
     var udl = comprehensive.udl;
     if (udl) {

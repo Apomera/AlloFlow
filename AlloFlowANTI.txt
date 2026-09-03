@@ -13824,6 +13824,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=6f5822bb9');
     loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=6f5822bb9');
     loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=6f5822bb9');
+    loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=6f5822bb9');
     loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=6f5822bb9');
     loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=6f5822bb9');
     loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=6f5822bb9');
@@ -28996,6 +28997,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [memoryAidReflectionLevel, setMemoryAidReflectionLevel] = useState('quick');
   const [memoryAidReasoningRequired, setMemoryAidReasoningRequired] = useState(false);
   const [memoryAidCount, setMemoryAidCount] = useState(3);
+  const [memoryAidIncludeVisuals, setMemoryAidIncludeVisuals] = useState(true);
+  const [memoryAidIncludeHookFacts, setMemoryAidIncludeHookFacts] = useState(false);
   // Per-resource custom instructions for the four types whose dispatcher
   // branches consumed effCustomInstructions while the resolver had no case for
   // them (structurally always '') — added 2026-07-28 with the resolver fix.
@@ -31776,6 +31779,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       memoryAidReflectionLevel,
       memoryAidReasoningRequired,
       memoryAidCount,
+      memoryAidIncludeVisuals,
+      memoryAidIncludeHookFacts,
       frameType,
       fillInTheBlank,
       vocabularyType,
@@ -34271,6 +34276,21 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
     if (_m && typeof _m.handleRefinePanel === "function") return _m.handleRefinePanel(panelIdx, editInstruction, _alloCmapHandlersDeps());
     throw new Error("[handleRefinePanel] CmapHandlers module not loaded - reload the page");
+  };
+  // Per-panel field patch (alt text, provenance, decorative flag) for the shared
+  // ImageAltField inside VisualPanelGrid. Mirrors handleUpdateVisualLabel.
+  const handleUpdateVisualPanel = (panelIdx, patch) => {
+      if (!generatedContent?.data?.visualPlan || !patch || typeof patch !== 'object') return;
+      const plan = generatedContent.data.visualPlan;
+      const updatedPanels = [...plan.panels];
+      updatedPanels[panelIdx] = { ...updatedPanels[panelIdx], ...patch };
+      const updatedPlan = { ...plan, panels: updatedPanels };
+      const first = panelIdx === 0 && Object.prototype.hasOwnProperty.call(patch, 'alt')
+          ? { altText: patch.alt, altSource: patch.altSource, altHash: patch.altHash }
+          : {};
+      const updatedContent = { ...generatedContent, data: { ...generatedContent.data, ...first, visualPlan: updatedPlan } };
+      setGeneratedContent(updatedContent);
+      setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
   const handleUpdateVisualLabel = (panelIdx, labelIdx, newText) => {
       if (!generatedContent?.data?.visualPlan) return;
@@ -45407,7 +45427,7 @@ ${_alloActivityContext(activity)}
       useEmojis, universalImageStyle, imageGenerationStyle, imageAspectRatio, outlineType, visualStyle,
       visualCustomStyle, visualLayoutMode, quizMode, noteTakingTemplateType, anchorChartType,
       appliedChallengeSelectionMode, appliedChallengeFamily, appliedChallengeAgencyMode, appliedChallengeScope, appliedChallengeCustomInstructions,
-      memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, mcqVisualMode,
+      memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, memoryAidIncludeVisuals, memoryAidIncludeHookFacts, mcqVisualMode,
       isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode,
       adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode,
       vocabularyType: typeof vocabularyType !== 'undefined' ? vocabularyType : undefined,
@@ -46319,6 +46339,8 @@ ${_alloActivityContext(activity)}
         memoryAidReflectionLevel,
         memoryAidReasoningRequired,
         memoryAidCount,
+        memoryAidIncludeVisuals,
+        memoryAidIncludeHookFacts,
         visualCustomInstructions,
         lessonCustomAdditions,
         timelineTopic,
@@ -46402,6 +46424,8 @@ ${_alloActivityContext(activity)}
         cleanJson,
         safeJsonParse,
         callImagen,
+        callGeminiVision,
+        webSearchProvider: WebSearchProvider,
         extractSourceTextForProcessing,
         resolveTranslationPolicy,
         formatLessonDNA,
@@ -46809,7 +46833,11 @@ ${_alloActivityContext(activity)}
     const currentItems = isArrayShape ? data : (data?.items || []);
     const newItems = [...currentItems];
     const updatedItem = { ...newItems[index] };
-    if (isEn) {
+    if (field && typeof field === 'object') {
+         // Multi-field patch (alt text + provenance + hash) in ONE write; sequential
+         // single-field calls would each start from the same stale snapshot.
+         Object.assign(updatedItem, field);
+    } else if (isEn) {
          updatedItem[`${field}_en`] = value;
     } else {
          updatedItem[field] = value;
@@ -51051,7 +51079,7 @@ ${_alloActivityContext(activity)}
           expandedTools, InfoTooltip, autoRemoveWords, glossaryCustomInstructions,
           glossaryDefinitionLevel, glossaryTier2Count, glossaryTier3Count, gradeLevel,
           handleGenerate, hasSourceOrAnalysis, includeEtymology, isProcessing,
-          selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
+          leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
           setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
           t
                 })}
@@ -51171,6 +51199,8 @@ ${_alloActivityContext(activity)}
                   memoryAidReflectionLevel, setMemoryAidReflectionLevel,
                   memoryAidReasoningRequired, setMemoryAidReasoningRequired,
                   memoryAidCount, setMemoryAidCount,
+                  memoryAidIncludeVisuals, setMemoryAidIncludeVisuals,
+                  memoryAidIncludeHookFacts, setMemoryAidIncludeHookFacts,
                   memoryAidCustomInstructions, setMemoryAidCustomInstructions,
                   t
                 })}
@@ -52843,7 +52873,7 @@ ${_alloActivityContext(activity)}
                     singleImageFileRef,
                     setLabelChallengeResults, setSingleImageOverride, setHistory,
                     setGeneratedContent, setImageRefinementInput,
-                    handleRefinePanel, handleUpdateVisualLabel, handleSpeak, handleScoreUpdate,
+                    handleRefinePanel, handleUpdateVisualLabel, handleUpdateVisualPanel, handleSpeak, handleScoreUpdate,
                     handleRestoreImage, handleRefineImage, handleDownloadImage,
                     handleAnimatePanel, handleRegeneratePanelFrame, handleDeletePanelFrame,
                     handleDuplicatePanelFrame, handleReorderPanelFrame, handleSetPanelFps,
@@ -52854,6 +52884,11 @@ ${_alloActivityContext(activity)}
                   (generatedContent?.data?.comprehensive && (generatedContent.data.comprehensive.overall?.dimensionsEvaluated || 0) > 0)
                 ) && window.AlloModules && window.AlloModules.AlignmentReportView && React.createElement(window.AlloModules.AlignmentReportView, {
                     t, generatedContent,
+                    // Freshness notice: the view compares the audit's included artifact ids and
+                    // timestamp against current history and offers a one-click re-run.
+                    history,
+                    isProcessing,
+                    onRerunAudit: () => { if (!isProcessing) handleGenerate('alignment-report'); },
                     onConfirmAttribution: handleConfirmAlignmentAttribution,
                     onExportAlignmentGraph: handleExportAlignmentGraph,
                     onApplyFixes: () => setIsAuditRemediatorOpen(true),

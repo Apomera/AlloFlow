@@ -14,6 +14,8 @@ function ImageView(props) {
   var setHistory = props.setHistory;
   var setGeneratedContent = props.setGeneratedContent;
   var setImageRefinementInput = props.setImageRefinementInput;
+  var handleUpdateVisualPanel = props.handleUpdateVisualPanel;
+  const [altBusy, setAltBusy] = React.useState(false);
   var handleRefinePanel = props.handleRefinePanel;
   var handleUpdateVisualLabel = props.handleUpdateVisualLabel;
   var handleSpeak = props.handleSpeak;
@@ -49,6 +51,8 @@ function ImageView(props) {
                                     onReorderFrame={handleReorderPanelFrame}
                                     onSetPanelFps={handleSetPanelFps}
                                     onUpdateLabel={handleUpdateVisualLabel}
+                                    onUpdatePanel={handleUpdateVisualPanel}
+                                    language={leveledTextLanguage}
                                     onSpeak={handleSpeak}
                                     t={t}
                                     isTeacherMode={isTeacherMode}
@@ -84,7 +88,7 @@ function ImageView(props) {
                                 />
                             ) : generatedContent?.data.imageUrl ? (
                                 <div style={{position:'relative'}}>
-                                <img src={singleImageOverride || generatedContent?.data.imageUrl} alt={generatedContent?.data.altText || generatedContent?.data.prompt} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
+                                <img src={singleImageOverride || generatedContent?.data.imageUrl} alt={generatedContent?.data.decorative ? '' : (generatedContent?.data.altText || '')} role={generatedContent?.data.decorative ? 'presentation' : undefined} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
                                 {isTeacherMode && (
                                   <div style={{position:'absolute',top:'8px',right:'8px',display:'flex',gap:'6px'}}>
                                     <input type="file" accept="image/*" ref={singleImageFileRef} style={{display:'none'}} aria-label={t('common.upload_replacement_image') || 'Upload replacement image'}
@@ -113,6 +117,33 @@ function ImageView(props) {
                                     )}
                                   </div>
                                 )}
+                                {isTeacherMode && window.AlloModules && window.AlloModules.ImageAltField && (() => {
+                                    const A = window.AlloModules.AltText;
+                                    const d = generatedContent?.data || {};
+                                    const currentUrl = singleImageOverride || d.imageUrl;
+                                    const stale = !!(A && d.altHash && currentUrl && A.hashImage(currentUrl) !== d.altHash);
+                                    const patch = (fields) => {
+                                        const updated = { ...generatedContent, data: { ...d, ...fields } };
+                                        setGeneratedContent(updated);
+                                        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updated : item));
+                                    };
+                                    const regenerate = async () => {
+                                        const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
+                                        if (!A || !vision || !currentUrl) return;
+                                        setAltBusy(true);
+                                        try {
+                                            const [r] = await A.draftAlts([{ id: 0, dataUrl: currentUrl, context: d.prompt }], { language: leveledTextLanguage, callGeminiVision: vision });
+                                            if (r) patch({ altText: r.decorative ? '' : r.alt, altSource: r.source, decorative: r.decorative === true, altHash: A.hashImage(currentUrl) });
+                                        } finally { setAltBusy(false); }
+                                    };
+                                    return React.createElement(window.AlloModules.ImageAltField, {
+                                        id: 'visual-alt-' + (generatedContent?.id || 'single'), t: t, value: d.altText || '',
+                                        source: stale ? 'stale' : (d.altSource || (d.altText ? 'planning' : '')), decorative: d.decorative === true, busy: altBusy,
+                                        onChange: (value) => patch({ altText: value, altSource: 'author', altHash: (currentUrl && A) ? A.hashImage(currentUrl) : d.altHash }),
+                                        onDecorativeChange: (flag) => patch({ decorative: flag }),
+                                        onRegenerate: regenerate,
+                                    });
+                                })()}
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center p-8 text-slate-600 gap-4 w-full">

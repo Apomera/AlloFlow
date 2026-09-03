@@ -2386,7 +2386,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain('data-sourcebook-more-from-provider');
     expect(pluginSource).toContain("'More from ' + providerPresentation(item.provider).name");
     expect(pluginSource).toContain("var focusedQuery = buildSimilarSearch(item) || String(item.title || '').trim() || String(query || '').trim();");
-    expect(pluginSource).toContain("announce('Searching only ' + item.provider)");
+    expect(pluginSource).toContain("'Searching only {provider}', { provider: item.provider }");
     expect(window.SourcebookProviders.providerPresentation('National Gallery of Art Open Access')).toEqual({
       name: 'National Gallery of Art Open Access', mark: 'NGA', known: true
     });
@@ -4859,11 +4859,11 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Select shown ('");
     expect(pluginSource).toContain("'Clear selection'");
     expect(pluginSource).toContain("'Remove selected ('");
-    expect(pluginSource).toContain("'Select ' + item.title + ' for palette actions'");
-    expect(pluginSource).toContain("'Download selected package ('");
+    expect(pluginSource).toContain("'Select {title} for palette actions', { title: item.title }");
+    expect(pluginSource).toContain("'Download selected package ({count})'");
     expect(pluginSource).toContain("'Export selected .json'");
-    expect(pluginSource).toContain("'Print selected ('");
-    expect(pluginSource).toContain("'Preparing ' + palettePackageProgress");
+    expect(pluginSource).toContain("'Print selected ({count})'");
+    expect(pluginSource).toContain("'Preparing {done} / {total}…', { done: palettePackageProgress");
     expect(pluginSource).toContain('mapWithConcurrency(items, 3');
     expect(pluginSource).toContain('no incomplete package was downloaded');
     expectAriaLabelSource(pluginSource, 'Palette package preparation progress');
@@ -4915,7 +4915,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Stop search'");
     expect(pluginSource).toContain('signal: liveRequest.signal');
     expect(pluginSource).toContain('previous.controller.abort()');
-    expect(pluginSource).toContain("'Move ' + item.title + ' earlier in palette'");
+    expect(pluginSource).toContain("'Move {title} earlier in palette', { title: item.title }");
     expect(pluginSource).toContain("'Earlier'");
     expect(pluginSource).toContain("'Later'");
     expect(pluginSource).toContain("ctx.generateText");
@@ -4977,7 +4977,7 @@ describe('Sourcebook initial feature contract', () => {
     expectAriaLabelSource(pluginSource, 'Sourcebook search loading previews');
     expect(pluginSource).toContain("'Checking the remaining public collections…'");
     expect(pluginSource).toContain('onPartial: function (items, report)');
-    expect(pluginSource).toContain("' while the remaining collections continue.'");
+    expect(pluginSource).toContain("'Showing {count} rights-verified visuals from {provider} while the remaining collections continue.'");
     expectAriaLabelSource(pluginSource, 'Sourcebook curated starter palette');
     expectAriaLabelSource(pluginSource, 'Selected visual previews');
     expectAriaLabelSource(pluginSource, 'Curated palette source coverage');
@@ -5251,6 +5251,201 @@ describe('Sourcebook initial feature contract', () => {
     const emitters = (pluginSource.match(/medium: normalizedMedium\(/g) || []).length;
     expect(emitters).toBe(11);
     expect(pluginSource).toContain("'data-sourcebook-loaded-medium': entry.medium");
+  });
+
+  it('keeps read swatches with the preparation record, shows them on cards, and localizes counted messages through packs', async () => {
+    const sourceWindow = loadSourcebook();
+    const P = sourceWindow.SourcebookProviders;
+    // Validation: hex only, de-duplicated, capped at eight, share clamped.
+    const swatches = P.normalizedSwatches([
+      { hex: '#AABBCC', share: 140 }, { hex: '#aabbcc', share: 10 }, { hex: 'red', share: 5 }, { hex: '#112233', share: -4 },
+      { hex: '#000001' }, { hex: '#000002' }, { hex: '#000003' }, { hex: '#000004' }, { hex: '#000005' }, { hex: '#000006' }, { hex: '#000007' }
+    ]);
+    expect(Array.from(swatches).map((entry) => entry.hex + ':' + entry.share)).toEqual(['#aabbcc:100', '#112233:0', '#000001:0', '#000002:0', '#000003:0', '#000004:0', '#000005:0', '#000006:0']);
+    expect(P.normalizedPreparation({ mode: 'fit' }).swatches.length).toBe(0);
+    // Board honours a requested column count and falls back to the automatic layout otherwise.
+    expect(P.referenceBoardLayout(6, { columns: 4 }).columns).toBe(4);
+    expect(P.referenceBoardLayout(6, { columns: 0 }).columns).toBe(3);
+    expect(pluginSource).toContain('columns: referenceBoardColumns');
+    expect(pluginSource).toContain("'data-sourcebook-board-columns'");
+    expect(pluginSource).toContain("swatches: prep.swatches.length ? prep.swatches : extractSwatches(image, 6)");
+    expect((pluginSource.match(/<dt>Swatches<\/dt>/g) || []).length).toBe(2);
+    expect(pluginSource).toContain("patch({ comparisonView: entry[0] })");
+
+    const payload = aicPayload(60);
+    const items = payload.data.map((record) => P.normalizeAicArtwork(record, payload.config, 'public-domain textile', 'Patterns')).filter(Boolean);
+    const session = P.buildLiveSession(items, { query: 'public-domain textile', kind: 'Patterns', provider: 'All', rightsScope: 'pd' }, Date.now());
+    const first = items[0];
+    // The manifest carries the stored swatches through normalizedPreparation.
+    const manifest = P.buildPalette([first.id], { [first.id]: { mode: 'fit', swatches: [{ hex: '#123456', share: 60 }, { hex: '#abcdef', share: 40 }] } }, 'Swatches', items);
+    expect(Array.from(manifest.assets[0].preparation.swatches).map((entry) => entry.hex)).toEqual(['#123456', '#abcdef']);
+
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousProviders = browserWindow.SourcebookProviders;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    try {
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      // A pack that reorders placeholders and supplies its own plural forms.
+      const pack = {
+        'stem.sourcebook.label_showing_n_of_total_loaded': 'Mostrando {shown} de {total} resultados',
+        'stem.sourcebook.label_showing_n_of_total_verified_other': 'De {count} verificados se muestran {shown}',
+        'stem.sourcebook.card_swatches': 'Colores leídos'
+      };
+      const ctx = {
+        React: ReactLib,
+        toolData: { sourcebook: {
+          liveSession: session,
+          collection: [first.id], savedAssets: { [first.id]: first },
+          preparation: { [first.id]: { mode: 'fit', swatches: [{ hex: '#123456', share: 60 }, { hex: '#abcdef', share: 40 }] } },
+          referenceBoardColumns: 3
+        } },
+        t(key, fallback) { return Object.prototype.hasOwnProperty.call(pack, key) ? pack[key] : undefined; },
+        updateMulti() {}, update() {}, announceToSR() {}, addToast() {}
+      };
+      function Harness() { return tool.render(ctx); }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      expect(host.querySelector('[data-sourcebook-loaded-results]')?.textContent).toMatch(/Mostrando 24 de \d+ resultados/);
+      expect(host.querySelector('[data-sourcebook-loaded-facet-status="true"]')?.textContent).toMatch(/De \d+ verificados se muestran \d+/);
+      const strip = host.querySelector('[data-sourcebook-card-swatches="' + first.id + '"]');
+      expect(strip).toBeTruthy();
+      expect(strip.getAttribute('aria-label')).toBe('Colores leídos');
+      expect(strip.querySelectorAll('li')).toHaveLength(2);
+      expect(host.querySelectorAll('[data-sourcebook-card-swatches]')).toHaveLength(1);
+      // Untranslated keys still fall back to English (the pack returns undefined for them).
+      expect(host.textContent).toContain('Inspect & prepare');
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.SourcebookProviders = previousProviders;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('retries image fetches once on a dropped connection and answers offline searches from the shelf without any provider request', async () => {
+    let calls = 0;
+    let failFirst = true;
+    const sourceWindow = loadSourcebook((url) => {
+      calls += 1;
+      if (failFirst) { failFirst = false; return Promise.reject(new TypeError('Failed to fetch')); }
+      return Promise.resolve({ ok: true, url });
+    }, { navigator: { onLine: true } });
+    const P = sourceWindow.SourcebookProviders;
+    expect(P.isSourcebookOnline()).toBe(true);
+    const recovered = await P.fetchWithOneRetry('https://example.org/a.jpg', { mode: 'cors' }, 0);
+    expect(recovered.ok).toBe(true);
+    expect(calls).toBe(2);
+    // An HTTP error resolves and is never retried.
+    calls = 0;
+    const badWindow = loadSourcebook(() => { calls += 1; return Promise.resolve({ ok: false, status: 404 }); });
+    const bad = await badWindow.SourcebookProviders.fetchWithOneRetry('https://example.org/b.jpg', {}, 0);
+    expect(bad.ok).toBe(false);
+    expect(calls).toBe(1);
+    // Summaries pluralize through the count-aware helper and keep the provider breakdown.
+    expect(P.liveResultSummary([])).toBe('No live results passed the selected rights allowlist.');
+    expect(P.liveResultSummary([{ provider: 'Wikimedia Commons' }])).toBe('1 live result passed the selected rights allowlist. 1 Wikimedia Commons.');
+    expect(P.liveResultSummary([{ provider: 'Wikimedia Commons' }, { provider: 'Wikimedia Commons' }])).toBe('2 live results passed the selected rights allowlist. 2 Wikimedia Commons.');
+    expect(pluginSource).toContain("if (!providerSupportsLiveSearch(activeProvider) || !onlineRef.current) {");
+    expect(pluginSource).toContain("window.addEventListener('offline', goOffline)");
+
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousProviders = browserWindow.SourcebookProviders;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousFetch = browserWindow.fetch;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    let requests = 0;
+    Object.defineProperty(browserWindow.navigator, 'onLine', { configurable: true, get: () => false });
+    try {
+      browserWindow.fetch = () => { requests += 1; return Promise.reject(new Error('Offline searches must not fetch.')); };
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      const ctx = {
+        React: ReactLib,
+        toolData: { sourcebook: { query: 'contour map', provider: 'All', rightsScope: 'pd', autoCurate: false } },
+        updateMulti() {}, update() {}, announceToSR() {}, addToast() {}
+      };
+      function Harness() { return tool.render(ctx); }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      expect(host.querySelector('[data-sourcebook-offline="true"]')).toBeTruthy();
+      const searchForm = host.querySelector('#sourcebook-search').closest('form');
+      await ReactLib.act(async () => {
+        searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+      expect(requests).toBe(0);
+      expect(host.querySelector('[data-sourcebook-live-status="ready"]')?.textContent).toContain('You look offline, so no collection was contacted');
+      expect(host.querySelectorAll('[data-sourcebook-result-card]').length).toBeGreaterThan(0);
+    } finally {
+      delete browserWindow.navigator.onLine;
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.fetch = previousFetch;
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.SourcebookProviders = previousProviders;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('ships scoped high-contrast theme CSS as code, never through the translation layer, and no dark rules', () => {
+    const window = loadSourcebook();
+    const css = window.SourcebookProviders.themeCss;
+    expect(typeof css).toBe('string');
+    // Base layout rules survive unchanged.
+    expect(css).toContain('.sourcebook-tool .sb-detail{scrollbar-gutter:stable');
+    expect(css).toContain('@media print{.sourcebook-tool .sb-no-print{display:none!important}}');
+    // Dark theme is the shell's light card with the host rules scoped away from it, so the tool ships no dark rules of its own.
+    expect(css).not.toContain('.theme-dark');
+    // High contrast: tags the host does not force, gradients (background-image survives the bg-* rule),
+    // and a non-colour cue for pressed chips.
+    expect(css).toContain('.theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}');
+    expect(css).toContain('.theme-contrast .sourcebook-tool [class*="bg-gradient"]{background-image:none!important}');
+    expect(css).toContain('.theme-contrast .sourcebook-tool [aria-pressed="true"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important');
+    // The style element renders the constant, and the old translated-CSS key is gone everywhere.
+    expect(pluginSource).toContain("h('style', null, SOURCEBOOK_THEME_CSS)");
+    expect(pluginSource).not.toContain('sourcebook_tool_sb_ink_18352d_sb_paper');
+    const uiStrings = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'ui_strings.js'), 'utf8'));
+    expect(uiStrings.stem.sourcebook.sourcebook_tool_sb_ink_18352d_sb_paper).toBeUndefined();
   });
 
   it('is reachable from the loader, catalog, fallback renderer, and build mirror', () => {

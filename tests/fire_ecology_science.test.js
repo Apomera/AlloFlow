@@ -82,3 +82,78 @@ describe('Fire Ecology quiz accessibility', () => {
     expect(html).not.toContain('aria-label="Select Answer"');
   });
 });
+
+describe('Fire Ecology cross-screen number agreement', () => {
+  // The Carbon Calculator models the cultural-burn / wildfire ratio and the quiz states it
+  // in words. Those are two derivations of one fact, so they have to be checked against
+  // each other rather than maintained by hand: the quiz previously keyed "5-10x LESS"
+  // while CARBON_DATA implied about 13x.
+  function carbonPerAcre(source, key) {
+    const block = source.slice(source.indexOf(`${key}: {`, source.indexOf('var CARBON_DATA')));
+    return Number(block.match(/co2PerAcre:\s*([0-9.]+)/)[1]);
+  }
+
+  it('keys a quiz answer that matches the carbon model it points at', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
+    const ratio = carbonPerAcre(source, 'wildfire') / carbonPerAcre(source, 'culturalBurn');
+    expect(ratio).toBeGreaterThan(7);
+    expect(ratio).toBeLessThan(20);
+    expect(source).toContain('Cultural burning releases roughly ten times less carbon per acre');
+    expect(source).not.toContain('5-10x LESS carbon per acre');
+  });
+
+  it('gives every quiz item an explanation and an activity to revisit', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
+    const bank = source.slice(source.indexOf('var QUIZ_QUESTIONS = ['), source.indexOf('// The authored bank put'));
+    const questions = (bank.match(/\{ q: '/g) || []).length;
+    const whys = (bank.match(/ why: '/g) || []).length;
+    expect(questions).toBeGreaterThan(0);
+    expect(whys).toBe(questions);
+    expect(source).toContain("'data-fe-quiz-why'");
+  });
+
+  it('moves simulator carbon in the direction the carbon ledger claims', () => {
+    // CARBON_DATA calls a cultural burn a sink over ten years and a prescribed burn a wash.
+    // The simulator advances in ten-year steps, so its carbon term has to agree: it used to
+    // subtract on every burn and add only for suppression, which taught the opposite.
+    const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
+    const ledger = source.slice(source.indexOf('var CARBON_DATA'));
+    const net = (key) => Number(ledger.slice(ledger.indexOf(`${key}: {`)).match(/netCarbon10yr:\s*(-?[0-9.]+)/)[1]);
+    expect(net('culturalBurn')).toBeLessThan(0);
+    expect(net('prescribedBurn')).toBe(0);
+
+    const cultural = source.slice(source.indexOf("if (action === 'culturalBurn')"), source.indexOf("} else if (action === 'suppress')"));
+    expect(cultural).toContain('newSim.carbonStored = clamp(s.carbonStored + 2, 0, 200)');
+    const prescribed = source.slice(source.indexOf("} else if (action === 'prescribe')"), source.indexOf('// Natural recovery'));
+    expect(prescribed).toContain('newSim.carbonStored = clamp(s.carbonStored, 0, 200)');
+    expect(prescribed).not.toContain('s.carbonStored - ');
+  });
+
+  it('explains a greyed-out mosaic technique in text, not only in a tooltip', () => {
+    // Disabled buttons are not focusable, so a title attribute is unreachable by keyboard
+    // and skipped by screen readers: the Cold Season rule was invisible to those users.
+    const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
+    expect(source).toContain("'data-fe-technique-reasons'");
+    expect(source).toContain('Greyed out');
+    expect(source).not.toContain("' (only available in '");
+  });
+
+  it('explains the 3D toggle when no WebGL viewer is available', () => {
+    // The harness provides no window.StemLab.makeOrbitViewer, which is the same situation as
+    // a device without WebGL: the toggle is disabled, so the reason has to be in the page.
+    const html = renderFireEcology({ tab: 'simulator' });
+    expect(html).toContain('data-fe-no3d');
+    expect(html).toContain('needs WebGL');
+    expect(html).toContain('The 2D cross-section runs the same model');
+    expect(html).toContain('3D landscape, unavailable on this device');
+  });
+
+  it('awards every badge it advertises, and never from inside render', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
+    const declared = [...source.matchAll(/\{ id: '([A-Za-z0-9]+)', icon: '[^']*', label: '/g)].map((m) => m[1]);
+    expect(declared.length).toBeGreaterThan(20);
+    const unawarded = declared.filter((id) => !source.includes(`checkBadge('${id}')`));
+    expect(unawarded).toEqual([]);
+    expect(source).not.toContain("(function() { checkBadge('waterProtector'); return null; })()");
+  });
+});

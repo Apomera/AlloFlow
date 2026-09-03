@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Space Explorer usability harness</title>
+<link rel="stylesheet" href="/desktop/web-app/public/app/static/css/main.2c7048fb.css">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:#020617;color:#f8fafc}
+  body{font-family:ui-sans-serif,system-ui,sans-serif}
+  #wrap{width:min(100%,960px);margin:0 auto;padding:16px}
+</style></head>
+<body><div id="wrap"></div>
+<script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
+<script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
+<script>
+  window.__events = { errors: [], toasts: [] };
+  window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
+  window.addEventListener('unhandledrejection', function (e) { window.__events.errors.push('unhandled: ' + e.reason); });
+  window.StemLab = {
+    _registry: {},
+    registerTool: function (id, cfg) { cfg.id = id; this._registry[id] = cfg; },
+    isRegistered: function (id) { return !!this._registry[id]; }
+  };
+  window.__mount = function (seed) {
+    var cfg = window.StemLab._registry.spaceExplorer;
+    var root = ReactDOM.createRoot(document.getElementById('wrap'));
+    window.__root = root;
+    function Harness() {
+      var state = React.useState({ spaceExplorer: seed || {} });
+      var toolData = state[0], setToolData = state[1];
+      React.useEffect(function () { window.__state = toolData.spaceExplorer || {}; }, [toolData]);
+      return cfg.render({
+        React: React,
+        toolData: toolData,
+        setToolData: setToolData,
+        addToast: function (message, kind) { window.__events.toasts.push({ message: message, kind: kind }); },
+        callGemini: null,
+        awardXP: function () {},
+        icons: {},
+        viewportWidth: window.innerWidth,
+        t: function (key, fallback) { return fallback == null ? key : fallback; }
+      });
+    }
+    root.render(React.createElement(Harness));
+  };
+</script></body></html>

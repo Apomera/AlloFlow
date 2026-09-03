@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T21:01:10.122Z",
+  "generatedAt": "2026-09-03T00:03:21.592Z",
   "source": {
     "stemToolFileCount": 147,
     "registeredToolCount": 149
@@ -1883,7 +1883,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Peel anatomical layers and click organs across specimens (frog, fetal pig, earthworm, perch and more) with quizzes and flashcards.",
-      "renderedBytes": 65414,
+      "renderedBytes": 65397,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -2139,7 +2139,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.",
-      "renderedBytes": 25911,
+      "renderedBytes": 25953,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -2630,7 +2630,7 @@
         "block builder"
       ],
       "desc": "Explore guided geometry lessons or open a free-build sandbox, measure connected creations, and continue selected builds in Print Lab.",
-      "renderedBytes": 1347,
+      "renderedBytes": 1355,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,
@@ -2656,7 +2656,7 @@
           "severity": "warning",
           "code": "placeholder-render",
           "message": "First screen is still a loading placeholder, so this tool was not really audited.",
-          "renderedBytes": 1347,
+          "renderedBytes": 1355,
           "reason": "aria-busy",
           "text": "Geometry World 🧱 💎 🏆 Building your world 🌍 Geometry World Loading the 3D engine and preparing interactive geometry.."
         }
@@ -3942,7 +3942,7 @@
       "lightBackground": false,
       "aliases": [],
       "desc": "Football play-design: route geometry, coverage zones, open-receiver analysis",
-      "renderedBytes": 18755,
+      "renderedBytes": 18745,
       "settlePasses": 2,
       "auditedAs": "default",
       "standardShell": true,
@@ -4510,7 +4510,7 @@
         "archival materials"
       ],
       "desc": "Find open textures and visual assets for educational materials or artwork, with source and reuse information.",
-      "renderedBytes": 98898,
+      "renderedBytes": 101267,
       "settlePasses": 1,
       "auditedAs": "default",
       "standardShell": true,

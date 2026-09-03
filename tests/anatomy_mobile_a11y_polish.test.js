@@ -142,9 +142,38 @@ describe('Anatomy mobile topbar', () => {
     expect(source).toMatch(/\.anatomy-topbar-back\{[^}]*grid-row:1;[^}]*min-width:44px;min-height:44px/);
     expect(source).toMatch(/\.anatomy-topbar-title\{[^}]*grid-column:2\/-1;grid-row:1/);
     expect(source).toMatch(/\.anatomy-topbar-action\{[^}]*min-height:44px/);
+    // Three actions share row 2 since 2026-09-02. nth-of-type counts buttons and Back is the
+    // first, so the actions are buttons 2-4; before this the Study sheet button was unplaced
+    // and auto-flowed into the 44px Back column on a third row with its label wrapped.
     expect(source).toMatch(/\.anatomy-topbar-action:nth-of-type\(2\)\{[^}]*grid-column:1\/3;grid-row:2/);
-    expect(source).toMatch(/\.anatomy-topbar-snapshot\{[^}]*grid-column:3\/5;grid-row:2/);
+    expect(source).toMatch(/\.anatomy-topbar-action:nth-of-type\(3\)\{[^}]*grid-column:3\/4;grid-row:2/);
+    expect(source).toMatch(/\.anatomy-topbar-snapshot\{[^}]*grid-column:4\/5;grid-row:2/);
   });
+});
+
+describe('Anatomy mode banner', () => {
+  it.each(ANATOMY_PATHS)('carries the Go deeper actions instead of a separate band in %s', (filePath) => {
+    // 2026-09-02: the standalone .anatomy-deeper-row strip was folded into the mode banner.
+    // Measured at 1280x1000, the workspace moved from 601px down the page to 539px.
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).not.toContain("className: 'anatomy-deeper-row mb-3'");
+    expect(source).toContain('.anatomy-mode-actions{display:flex;');
+
+    const root = parseMarkup(renderAnatomy(filePath));
+    const banner = root.querySelector('.anatomy-mode-card');
+    const actions = banner?.querySelector('[data-anatomy-deeper-row="true"]');
+    expect(actions).not.toBeNull();
+    expect(actions.getAttribute('aria-label')).toBe('Go deeper');
+    const labels = [...actions.querySelectorAll('button')].map((b) => b.textContent.trim());
+    expect(labels).toHaveLength(3);
+    expect(labels[0]).toMatch(/Anatomy Lens/);
+    expect(labels[2]).toMatch(/Mastery map/);
+
+    // The Imaging workspace takes the full width, so the banner there carries no actions.
+    const imaging = parseMarkup(renderAnatomy(filePath, { _activeTab: 'imaging' }));
+    expect(imaging.querySelector('.anatomy-mode-card')).not.toBeNull();
+    expect(imaging.querySelector('[data-anatomy-deeper-row="true"]')).toBeNull();
+  }, 60_000);
 });
 
 describe('Anatomy active-system contrast', () => {
@@ -169,6 +198,43 @@ describe('Anatomy active-system contrast', () => {
       expect(['#ffffff', '#020617']).toContain(activeSystem.props.style.color);
       expect(activeSystem.props.className).not.toContain('text-white');
     });
+  }, 60_000);
+});
+
+describe('Anatomy retrieval announcements', () => {
+  // Every mode that grades an answer must speak the result through the host announcer.
+  // A role=status block alone is not enough: it is inserted into the DOM together with its
+  // text, which screen readers routinely miss. The quiz was silent until 2026-09-02.
+  const HANDLERS = ['answerQuizOption', 'answerSpotterOption', 'answerConnectionCheck', 'answerSpot'];
+
+  it.each(ANATOMY_PATHS)('announces the result from every answer handler in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    for (const handler of HANDLERS) {
+      const start = source.indexOf('function ' + handler + '(');
+      expect(start, handler).toBeGreaterThan(-1);
+      const body = source.slice(start, start + 1600);
+      expect(body, handler).toContain('announceToSR(');
+    }
+    expect(source).toContain("t('stem.anatomy.quiz_sr_wrong', 'Not quite. The answer was ')");
+  });
+});
+
+describe('Anatomy compare-surface contrast', () => {
+  it.each(ANATOMY_PATHS)('keeps the kicker and clinical warning above 4.5:1 on the violet tray in %s', (filePath) => {
+    // axe, 2026-09-02, with animations frozen: on the compare tray ground #f5f3ff the kicker
+    // (#64748b) measured 4.33:1 and the 11px italic clinical warning (#e11d48) measured 4.28:1.
+    // Freeze animations before auditing: the shell's "enter" animation makes axe report blended
+    // greys for elements that are fine once settled.
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain('.anatomy-kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#475569;}');
+    expect(source).not.toContain("'text-[11px] text-rose-600 italic leading-relaxed'");
+    expect(source).toContain("'text-[11px] text-rose-700 italic leading-relaxed'");
+
+    const root = parseMarkup(renderAnatomy(filePath, { selectedStructure: 'femur', _compareStructure: 'tibia' }));
+    const tray = root.querySelector('[data-anatomy-compare-tray="true"]');
+    expect(tray).not.toBeNull();
+    expect(root.querySelector('.anatomy-structure-detail p.text-rose-700')).not.toBeNull();
+    expect(root.querySelector('.anatomy-structure-detail p.text-rose-600')).toBeNull();
   }, 60_000);
 });
 

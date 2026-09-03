@@ -1881,6 +1881,11 @@
                   style: {
                     background: '#ffffff',
                     color: '#0f172a',
+                    // The dark theme sets `color-scheme: dark` on the document, so native form
+                    // controls inside this light card were drawn with the UA's dark field
+                    // background (#3b3b3b) under the card's dark ink: 1.59:1 on 11 of 14 tools
+                    // measured 2026-09-02. Fields inside a light card must be light too.
+                    colorScheme: 'light',
                     borderRadius: 10,
                     padding: 10,
                     minHeight: 'calc(100vh - 56px)'

@@ -18,6 +18,11 @@ const helpers = new Function(helperPrefix + `
     selectCurriculumArtifacts,
     normalizeAuditLanguageTag,
     collectAuditText,
+    extractAuditArtifactText,
+    stripAuditCitationMarkup,
+    summarizeAuditCitations,
+    capMissingPacingEvidence,
+    computeCognitiveLoad,
     _auditTextAccessEvidence,
     _auditFingerprint,
     _auditContentFingerprint
@@ -359,5 +364,148 @@ describe('curriculum audit report WCAG regressions', () => {
     expect(reportSource).toContain('role="region" aria-labelledby="curriculum-audit-report-heading"');
     expect(reportSource).toContain('<h1 id="curriculum-audit-report-heading"');
     expect(reportSource).toContain('<time dateTime={generatedAt}>');
+  });
+});
+
+describe('curriculum audit text measurement is fair to structured artifacts and intentional citations', () => {
+  const seventy = Array.from({ length: 70 }, (_, i) => 'word' + i).join(' ');
+  const lessonPlan = {
+    id: 'lp1',
+    type: 'lesson-plan',
+    timestamp: '2026-09-02T23:44:00.000Z',
+    data: {
+      materialsNeeded: ['Projector', 'Paper'],
+      objectives: ['SWBAT explain REM sleep'],
+      hook: seventy,
+      directInstruction: seventy,
+      guidedPractice: seventy,
+      independentPractice: seventy,
+      closure: seventy,
+    },
+  };
+
+  it('does not measure a lesson plan as one unbroken passage', () => {
+    const result = helpers.computeContentAccessibility([lessonPlan], {}, '5th Grade');
+    expect(result.longestUnbrokenPassage).toBe(70);
+    expect(result.recommendations.some(r => /Longest unbroken passage/.test(r))).toBe(false);
+  });
+
+  it('still flags a genuinely unbroken prose passage', () => {
+    const longProse = Array.from({ length: 260 }, (_, i) => 'w' + i).join(' ');
+    const result = helpers.computeContentAccessibility([{ type: 'simplified', data: longProse }], {}, '5th Grade');
+    expect(result.longestUnbrokenPassage).toBe(260);
+    expect(result.recommendations.some(r => /Longest unbroken passage/.test(r))).toBe(true);
+  });
+
+  const cited = 'Dreams happen during REM sleep. [⁽¹⁾](https://en.wikipedia.org/wiki/Dream_(disambiguation)) They are involuntary. [⁽²⁾](https://example.org/a)\n\n## Source Text References\n\n1. [Dream](https://en.wikipedia.org/wiki/Dream)\n\n2. [Other](https://example.org/a)';
+
+  it('strips inline citation markers and the references trailer from audited text', () => {
+    const stripped = helpers.stripAuditCitationMarkup(cited);
+    expect(stripped).toBe('Dreams happen during REM sleep. They are involuntary.');
+    const text = helpers.extractAuditArtifactText({ type: 'simplified', data: cited });
+    expect(text).not.toMatch(/⁽|Source Text References|wikipedia/);
+  });
+
+  it('reports the citation markers it removed so reviewers know they are intentional', () => {
+    const summary = helpers.summarizeAuditCitations([{ id: 'a1', title: 'Adapted Text', type: 'simplified', data: cited }, lessonPlan]);
+    expect(summary.markers).toBe(2);
+    expect(summary.artifactsWithMarkers).toBe(1);
+    expect(summary.artifactsWithReferences).toBe(1);
+    const a11y = helpers.computeContentAccessibility([{ id: 'a1', type: 'simplified', data: cited }], {}, '5th Grade');
+    expect(a11y.inlineCitations.markers).toBe(2);
+  });
+
+  it('does not count citation markers as vocabulary words', () => {
+    const vocab = helpers.computeVocabularyFit([{ id: 'a1', type: 'simplified', data: cited }], '5th Grade', 'English');
+    expect(vocab.totalWords).toBe(8);
+  });
+});
+
+describe('generators and report view carry the audit expectations', () => {
+  it('lesson plan prompt requires parseable per-segment durations', () => {
+    const promptsSource = readFileSync(resolve(process.cwd(), 'prompts_library_source.jsx'), 'utf8');
+    expect(promptsSource).toMatch(/PACING \(REQUIRED\)[\s\S]*"\(10 min\)/);
+  });
+
+  it('accessibility reviewer is told inline citations are intentional', () => {
+    expect(dispatcherSource).toMatch(/INTENTIONAL, educator-enabled feature \(Keep Citations\)/);
+    expect(dispatcherSource).not.toMatch(/e\.g\., "add a Visual Organizer/);
+  });
+
+  it('report view exposes a freshness notice with a re-run action', () => {
+    expect(reportSource).toMatch(/function computeAuditFreshness/);
+    expect(reportSource).toMatch(/onRerunAudit/);
+  });
+});
+
+describe('vocabulary fit measures student-facing text fairly', () => {
+  const studentText = 'Dreams happen during REM sleep. The brain organizes memories and emotions while you rest.';
+  const teacherScript = Array.from({ length: 40 }, (_, i) => 'instructional scaffolded pedagogical' + i).join(' ');
+
+  it('ignores teacher-facing lesson plan and activity guide text', () => {
+    const base = helpers.computeVocabularyFit([{ id: 's1', type: 'simplified', data: studentText }], '5th Grade', 'English');
+    const withTeacher = helpers.computeVocabularyFit([
+      { id: 's1', type: 'simplified', data: studentText },
+      { id: 'lp', type: 'lesson-plan', data: { directInstruction: teacherScript, guidedPractice: teacherScript } },
+      { id: 'b', type: 'brainstorm', data: { activities: [{ title: 'Diorama', description: teacherScript }] } },
+    ], '5th Grade', 'English');
+    expect(withTeacher.auditedTextWords).toBe(base.auditedTextWords);
+    expect(withTeacher.tier2Count).toBe(base.tier2Count);
+  });
+
+  it('drops artifact ids, timestamps, and domains from the vocabulary stream', () => {
+    const result = helpers.computeVocabularyFit([
+      { id: 's1', type: 'simplified', data: studentText },
+      { id: 'n1', type: 'note-taking', data: { resourceId: '1788392599103tzfwn0evh', generatedAt: '2026-09-02T23:04:08.284Z', host: 'www.sleepfoundation.org' } },
+    ], '5th Grade', 'English');
+    expect(result.auditedTextWords).toBe(14);
+    expect(result.tier2Examples.join(' ')).not.toMatch(/1788|sleepfoundation|2026/);
+  });
+
+  it('counts inflected forms of one word once', () => {
+    const inflected = 'Students student student\u2019s dreaming dreams dreamed dream organize organized organizes organizing.';
+    const result = helpers.computeVocabularyFit([{ id: 's1', type: 'simplified', data: inflected }], '5th Grade', 'English');
+    expect(result.uniqueWords).toBe(3);
+    expect(result.tier2Count).toBe(1);
+  });
+
+  it('does not count an adapted-text fallback source twice', () => {
+    const result = helpers.computeVocabularyFit([{ id: 's1', type: 'simplified', data: studentText }], '5th Grade', 'English');
+    expect(result.sourceSelection).toBe('adapted-fallback-not-primary');
+    expect(result.auditedTextWords).toBe(result.sourceWords);
+  });
+
+  it('scales tier expectations from the stated 500-word norm', () => {
+    const result = helpers.computeVocabularyFit([{ id: 's1', type: 'simplified', data: Array.from({ length: 1000 }, () => 'sleep').join(' ') }], '5th Grade', 'English');
+    expect(result.expected.scale).toBe(2);
+    expect(result.expected.tier2).toBe(16);
+  });
+});
+
+describe('pacing evidence and metadata hygiene', () => {
+  it('keeps missing segment durations at Partially Aligned even after an LLM downgrade', () => {
+    const dim = { status: 'Not Aligned', claimedTotalMinutes: 0, estimatedTotalMinutes: 38, notes: 'x' };
+    const capped = helpers.capMissingPacingEvidence(dim);
+    expect(capped.status).toBe('Partially Aligned');
+    expect(capped.pacingEvidence).toBe('missing');
+  });
+
+  it('does not soften a real pacing contradiction', () => {
+    const dim = { status: 'Not Aligned', claimedTotalMinutes: 20, estimatedTotalMinutes: 60 };
+    expect(helpers.capMissingPacingEvidence(dim).status).toBe('Not Aligned');
+  });
+
+  it('parses "(10 min)" prefixes the lesson-plan prompt now requires', () => {
+    const plan = { type: 'lesson-plan', data: { hook: '(5 min) Show the image.', directInstruction: '(15 min) Teacher says...', guidedPractice: '(10 min) Groups sort.', independentPractice: '(10 min) Solo notes.', closure: '(5 min) Exit ticket.' } };
+    const result = helpers.computeCognitiveLoad([plan], 1000, '5th Grade');
+    expect(result.claimedTotalMinutes).toBe(45);
+    expect(result.recommendations.some(r => /does not specify segment durations/.test(r))).toBe(false);
+  });
+
+  it('keeps quiz scoring metadata out of the audited text', () => {
+    const quiz = { type: 'quiz', data: { mode: 'pre-check', modeLabel: 'Pre-Check (Readiness Check)', scoringPolicy: 'ai-provisional', itemCountMismatch: 'relation-mismatch', questions: [{ type: 'mcq', question: 'Which stage has vivid dreams?', options: ['REM', 'Deep'], correctAnswer: 'REM', factCheck: 'Verified against source.', distractorQuality: ['ok'] }] } };
+    const text = helpers.extractAuditArtifactText(quiz);
+    expect(text).toMatch(/vivid dreams/);
+    expect(text).not.toMatch(/provisional|Readiness|mismatch|Verified against/);
   });
 });

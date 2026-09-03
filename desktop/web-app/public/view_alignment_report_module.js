@@ -2518,9 +2518,65 @@ function ComprehensiveBlock(p) {
     label: "Cultural responsiveness"
   }));
 }
+// Types the audit never scores; a new one of these does not make a report stale.
+var FRESHNESS_IGNORED_TYPES = {
+  'alignment-report': true,
+  'udl-advice': true
+};
+function computeAuditFreshness(generatedContent, history) {
+  var comp = generatedContent && generatedContent.data && generatedContent.data.comprehensive;
+  if (!comp || !Array.isArray(history)) return null;
+  var generatedAt = comp.auditMetadata && comp.auditMetadata.generatedAt ? Date.parse(comp.auditMetadata.generatedAt) : NaN;
+  if (isNaN(generatedAt)) generatedAt = generatedContent.timestamp ? Date.parse(generatedContent.timestamp) : NaN;
+  if (isNaN(generatedAt)) return null;
+  var included = {};
+  var includedIds = comp.auditScope && Array.isArray(comp.auditScope.includedArtifactIds) ? comp.auditScope.includedArtifactIds : [];
+  includedIds.forEach(function (id) {
+    included[String(id)] = true;
+  });
+  var auditId = String(generatedContent.id || '');
+  var present = {};
+  var added = [];
+  history.forEach(function (item) {
+    if (!item || !item.type || FRESHNESS_IGNORED_TYPES[item.type]) return;
+    var id = String(item.id || '');
+    if (id) present[id] = true;
+    if (id && included[id]) return;
+    if (id && id === auditId) return;
+    var ts = item.timestamp ? Date.parse(item.timestamp) : NaN;
+    if (!isNaN(ts) && ts > generatedAt) added.push(item.title || item.type);
+  });
+  var removed = includedIds.filter(function (id) {
+    return !present[String(id)];
+  }).length;
+  return {
+    added: added,
+    removed: removed,
+    stale: added.length > 0 || removed > 0
+  };
+}
+function AuditFreshnessNotice(p) {
+  var f = p.freshness;
+  if (!f || !f.stale) return null;
+  var parts = [];
+  if (f.added.length > 0) parts.push(f.added.length + (f.added.length === 1 ? ' resource was' : ' resources were') + ' created after this audit ran (' + f.added.slice(0, 4).join(', ') + (f.added.length > 4 ? ', …' : '') + ')');
+  if (f.removed > 0) parts.push(f.removed + (f.removed === 1 ? ' audited resource is' : ' audited resources are') + ' no longer in this lesson');
+  return /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "p-3 rounded-lg border border-amber-300 bg-amber-50 flex flex-wrap items-center gap-3 print:hidden"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-amber-950 flex-1 min-w-[16rem] m-0"
+  }, /*#__PURE__*/React.createElement("strong", null, "This audit may be out of date."), " ", parts.join('; '), ". Findings and the score do not reflect those changes."), typeof p.onRerunAudit === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: p.onRerunAudit,
+    disabled: !!p.isProcessing,
+    className: "flex-shrink-0 px-3 py-1.5 rounded-md bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 disabled:opacity-60 disabled:cursor-not-allowed"
+  }, p.isProcessing ? 'Re-running…' : 'Re-run audit'));
+}
 function AlignmentReportView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
+  var freshness = computeAuditFreshness(generatedContent, props.history);
   var comprehensive = generatedContent && generatedContent.data && generatedContent.data.comprehensive;
   var reports = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.reports) ? generatedContent.data.reports : [];
   if (!comprehensive) return /*#__PURE__*/React.createElement("section", {
@@ -2550,8 +2606,13 @@ function AlignmentReportView(props) {
     id: "curriculum-audit-report-heading",
     className: "sr-only"
   }, "Curriculum audit report"),
+  /*#__PURE__*/
   // Executive summary banner — readiness score + top fixes + Apply button.
-  comprehensive && /*#__PURE__*/React.createElement(ExecutiveSummary, {
+  React.createElement(AuditFreshnessNotice, {
+    freshness: freshness,
+    onRerunAudit: props.onRerunAudit,
+    isProcessing: props.isProcessing
+  }), comprehensive && /*#__PURE__*/React.createElement(ExecutiveSummary, {
     t: t,
     comp: comprehensive,
     standardsReportCount: reports.length,

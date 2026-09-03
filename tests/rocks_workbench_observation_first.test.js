@@ -296,9 +296,9 @@ describe('form: the seventh evidence type, one derivation', () => {
 });
 
 describe('challenge set', () => {
-  const CHALLENGE = POOL.concat(['diamond', 'garnet', 'olivine', 'sulfur', 'corundum', 'topaz']);
+  const CHALLENGE = POOL.concat(['diamond', 'garnet', 'olivine', 'sulfur', 'corundum', 'topaz', 'graphite', 'malachite', 'azurite']);
 
-  it('every catalogue mineral now carries a density, so the balance works for all eighteen', () => {
+  it('every catalogue mineral now carries a density, so the balance works for all twenty-one', () => {
     const src = readFileSync(ROCKS_FILE, 'utf8');
     CHALLENGE.forEach((id) => {
       const line = new RegExp(`\{ id: '${id}',[^\n]*`).exec(src)[0];
@@ -306,12 +306,12 @@ describe('challenge set', () => {
     });
   });
 
-  it('draws from the eighteen-mineral pool when the challenge set is chosen', () => {
+  it('draws from the twenty-one-mineral pool when the challenge set is chosen', () => {
     const { store, node } = tree({ spId: null, pool: 'challenge' });
     const open = findAll(node, (n) => n.type === 'button' && /Put a specimen/.test(JSON.stringify(n.props.children || '')))[0];
     expect(open, 'open button').toBeTruthy();
     open.props.onClick();
-    expect(store.rocks.wb.order).toHaveLength(18);
+    expect(store.rocks.wb.order).toHaveLength(21);
     expect(CHALLENGE).toContain(store.rocks.wb.spId);
     const standard = tree({ spId: null });
     findAll(standard.node, (n) => n.type === 'button' && /Put a specimen/.test(JSON.stringify(n.props.children || '')))[0].props.onClick();
@@ -361,5 +361,135 @@ describe('candidate portholes and canvas i18n', () => {
     expect(bare, 'canvas text without __alloT:\n  ' + bare.join('\n  ')).toEqual([]);
     const tour = src.slice(src.indexOf('var RK_LS_TOUR = ['), src.indexOf('function rkLsTourPaths'));
     expect(tour).not.toMatch(/cap: '/);
+  });
+});
+
+describe('the acid test stops being a one-mineral trick', () => {
+  const CARB = POOL.concat(['diamond', 'garnet', 'olivine', 'sulfur', 'corundum', 'topaz', 'graphite', 'malachite', 'azurite']);
+  const src = () => readFileSync(ROCKS_FILE, 'utf8');
+
+  it('reads one carbonate list from module scope, not two copies', () => {
+    const s = src();
+    expect(s).toContain("var RK_CARBONATE_IDS = ['calcite', 'malachite', 'azurite'];");
+    expect(s).toContain('var WB_CARBONATES = RK_CARBONATE_IDS;');
+    // The old shape: a second literal inside the minerals lab.
+    expect(s).not.toContain("var RK_CARBONATES = ");
+  });
+
+  it('draws bubbles for all three carbonates and for nothing else', () => {
+    // spIsCarb gates the bubble circles on the bench, so the drawing is the
+    // check: every carbonate bubbles, nothing else does.
+    const bubbles = (id) => {
+      const m = markupOf({ spId: id, order: CARB, pending: { tool: 'acid' } });
+      const g = m.slice(m.indexOf('data-wb-bench-observation="acid"'));
+      return (g.slice(0, g.indexOf('</g>')).match(/fill="#e0f2fe"/g) || []).length;
+    };
+    const fizzers = CARB.filter((id) => bubbles(id) > 0).sort();
+    expect(fizzers).toEqual(['azurite', 'calcite', 'malachite']);
+  });
+
+  it('no longer lets a fizz name calcite on its own in the challenge set', () => {
+    // Standard set: calcite is the only carbonate, so the acid drop finishes it.
+    const std = markupOf({ spId: 'calcite', solvedId: 'calcite', selectedId: 'calcite', order: POOL, fizz: 'fizz', history: [{ tool: 'acid', choice: 'fizz', label: 'Bubbles' }] });
+    expect(/data-wb-efficiency-minimum="(\d+)"/.exec(std)[1]).toBe('1');
+    // Challenge set: three minerals fizz, so it cannot.
+    const chal = markupOf({ spId: 'calcite', solvedId: 'calcite', selectedId: 'calcite', order: CARB, fizz: 'fizz', history: [{ tool: 'acid', choice: 'fizz', label: 'Bubbles' }] });
+    expect(Number(/data-wb-efficiency-minimum="(\d+)"/.exec(chal)[1])).toBeGreaterThan(1);
+  });
+
+  it('separates the copper carbonates by the colour of their powder', () => {
+    const green = markupOf({ spId: 'malachite', order: CARB, streakDone: true, streakObs: 'powder-green' });
+    expect(green).toContain('data-wb-candidate="malachite"');
+    expect(green).toContain('1 still fit');
+    const blue = markupOf({ spId: 'azurite', order: CARB, streakDone: true, streakObs: 'powder-pale-blue' });
+    expect(blue).toContain('data-wb-candidate="azurite"');
+    expect(blue).toContain('1 still fit');
+  });
+
+  it('offers both new powder colours on the plate', () => {
+    const m = markupOf({ spId: 'malachite', order: CARB, streakDone: true, pending: { tool: 'streak' } });
+    expect(m).toContain('data-wb-observe-choice="powder-green"');
+    expect(m).toContain('data-wb-observe-choice="powder-pale-blue"');
+  });
+
+  it('tells the learner what a fizz actually proves', () => {
+    const s = src();
+    expect(s).toContain('Fizzing means a carbonate.');
+    expect(s).toContain('a fizz narrows the field instead of finishing it');
+    // The coach must not gate the acid recommendation on calcite alone.
+    expect(s).not.toContain("wbCandidateHas('calcite')");
+    expect(s).toContain('WB_CARBONATES.some(wbCandidateHas)');
+  });
+});
+
+describe('the impasse: when nothing fits', () => {
+  // A mis-recorded observation can eliminate every candidate. The board used to
+  // show an empty shelf and an elimination bar at a triumphant 100% green.
+  const stuck = {
+    spId: 'pyrite', order: POOL, lens: 'metallic',
+    scratch: { penny: 'scratched', steel_nail: 'no' }, // cannot both be true
+    history: [
+      { tool: 'lens', choice: 'metallic', label: 'Metallic' },
+      { tool: 'scratch', ref: 'penny', choice: 'scratched', label: 'It cut a groove' },
+      { tool: 'scratch', ref: 'steel_nail', choice: 'no', label: 'No groove' },
+    ],
+  };
+
+  it('says so, and names the conflict', () => {
+    const m = markupOf(stuck);
+    expect(m).toContain('data-wb-impasse="hardness-conflict"');
+    expect(m).toContain('No candidate fits every observation.');
+    expect(m).toContain('cannot both be true');
+    expect(m).toContain('0 still fit');
+  });
+
+  it('never renders while a candidate still fits', () => {
+    expect(markupOf({ lens: 'metallic' })).not.toContain('data-wb-impasse');
+  });
+
+  it('stops the elimination bar reading as success at the moment it is stuck', () => {
+    expect(markupOf(stuck)).toContain('bg-rose-500');
+    expect(markupOf({ lens: 'metallic' })).toContain('bg-emerald-600');
+  });
+
+  it('offers a way out for every property already recorded', () => {
+    const { node } = tree(stuck);
+    const outs = findAll(node, (n) => n.type === 'button' && typeof n.props['data-wb-impasse-reexamine'] === 'string')
+      .map((n) => n.props['data-wb-impasse-reexamine']);
+    expect(outs).toContain('lens');
+    expect(outs).toContain('scratch_penny');
+    expect(outs).toContain('scratch_steel_nail');
+    // Every key offered must be one wbReexamine actually handles, or the
+    // button is a dead end at the exact point the learner is stuck.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const fn = src.slice(src.indexOf('var wbReexamine = function'), src.indexOf('var wbChoiceTile'));
+    outs.forEach((k) => {
+      const handled = fn.includes("=== '" + k + "'") || (k.startsWith('scratch_') && fn.includes("kind.indexOf('scratch_') === 0"));
+      expect(handled, `wbReexamine does not handle ${k}`).toBe(true);
+    });
+  });
+
+  it('names WHICH reference to redo, not just "hardness" twice', () => {
+    const m = markupOf(stuck);
+    // Two scratch trials both fall under the hardness property, so a generic
+    // label would print the same button twice at the point of confusion.
+    expect(m).toContain('Look again: 🪙 Copper reference (modeled)');
+    expect(m).toContain('Look again: ▱ Glass reference (modeled)');
+    expect((m.match(/Look again: hardness/g) || []).length).toBe(0);
+  });
+
+  it('re-opens the observation card for the property the learner picks', () => {
+    const t = tree(stuck);
+    findAll(t.node, (n) => n.type === 'button' && n.props['data-wb-impasse-reexamine'] === 'lens')[0].props.onClick();
+    expect(t.store.rocks.wb.pending).toEqual({ tool: 'lens' });
+  });
+
+  it('clears only the hardness trials, keeping the rest of the notebook', () => {
+    const t = tree(stuck);
+    const clear = findAll(t.node, (n) => n.type === 'button' && n.props['data-wb-impasse-action'] === 'clear-hardness')[0];
+    expect(clear, 'clear-hardness control').toBeTruthy();
+    clear.props.onClick();
+    expect(t.store.rocks.wb.scratch).toEqual({});
+    expect(t.store.rocks.wb.lens).toBe('metallic');
   });
 });

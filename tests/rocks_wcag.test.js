@@ -121,7 +121,7 @@ describe('WCAG 1.4.11 — non-text contrast on the graphics that carry meaning',
   it('gives every scratch result 3:1 against its own specimen', () => {
     const h = helpers();
     const rows = src().split('\n').filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l));
-    expect(rows.length).toBe(18);
+    expect(rows.length).toBe(23);
     rows.forEach((l) => {
       const id = /\{\s*id:\s*'(\w+)'/.exec(l)[1];
       const body = /\bcolor:\s*'([^']+)'/.exec(l)[1];
@@ -142,7 +142,7 @@ describe('WCAG 1.4.11 — non-text contrast on the graphics that carry meaning',
     const s = src();
     const block = s.slice(s.indexOf('var RK_ROCKS = ['), s.indexOf('function rkRockSwatch('));
     const rocks = block.split('\n').filter((l) => /\{ id: '/.test(l) && l.includes('desc:'));
-    expect(rocks.length).toBe(20);
+    expect(rocks.length).toBe(24);
     rocks.forEach((l) => {
       const id = /\{ id: '(\w+)'/.exec(l)[1];
       const cols = [...(/grainColors:\s*\[([^\]]*)\]/.exec(l)[1]).matchAll(/#[0-9a-fA-F]{6}/g)].map((m) => m[0]);

@@ -42,6 +42,8 @@
   var setHistory = props.setHistory;
   var setGeneratedContent = props.setGeneratedContent;
   var setImageRefinementInput = props.setImageRefinementInput;
+  var handleUpdateVisualPanel = props.handleUpdateVisualPanel;
+  const [altBusy, setAltBusy] = React.useState(false);
   var handleRefinePanel = props.handleRefinePanel;
   var handleUpdateVisualLabel = props.handleUpdateVisualLabel;
   var handleSpeak = props.handleSpeak;
@@ -81,6 +83,8 @@
     onReorderFrame: handleReorderPanelFrame,
     onSetPanelFps: handleSetPanelFps,
     onUpdateLabel: handleUpdateVisualLabel,
+    onUpdatePanel: handleUpdateVisualPanel,
+    language: leveledTextLanguage,
     onSpeak: handleSpeak,
     t: t,
     isTeacherMode: isTeacherMode,
@@ -124,7 +128,8 @@
     }
   }, /*#__PURE__*/React.createElement("img", {
     src: singleImageOverride || generatedContent?.data.imageUrl,
-    alt: generatedContent?.data.altText || generatedContent?.data.prompt,
+    alt: generatedContent?.data.decorative ? '' : generatedContent?.data.altText || '',
+    role: generatedContent?.data.decorative ? 'presentation' : undefined,
     className: "w-full h-auto rounded",
     loading: "lazy",
     decoding: "async"
@@ -165,7 +170,63 @@
     title: t('visuals.restore_ai_image') || 'Restore AI image',
     onClick: () => setSingleImageOverride(null),
     className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-all shadow-sm cursor-pointer"
-  }, "↩️ ", t('visuals.restore_original') || 'Restore'))) : /*#__PURE__*/React.createElement("div", {
+  }, "↩️ ", t('visuals.restore_original') || 'Restore')), isTeacherMode && window.AlloModules && window.AlloModules.ImageAltField && (() => {
+    const A = window.AlloModules.AltText;
+    const d = generatedContent?.data || {};
+    const currentUrl = singleImageOverride || d.imageUrl;
+    const stale = !!(A && d.altHash && currentUrl && A.hashImage(currentUrl) !== d.altHash);
+    const patch = fields => {
+      const updated = {
+        ...generatedContent,
+        data: {
+          ...d,
+          ...fields
+        }
+      };
+      setGeneratedContent(updated);
+      setHistory(prev => prev.map(item => item.id === generatedContent.id ? updated : item));
+    };
+    const regenerate = async () => {
+      const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
+      if (!A || !vision || !currentUrl) return;
+      setAltBusy(true);
+      try {
+        const [r] = await A.draftAlts([{
+          id: 0,
+          dataUrl: currentUrl,
+          context: d.prompt
+        }], {
+          language: leveledTextLanguage,
+          callGeminiVision: vision
+        });
+        if (r) patch({
+          altText: r.decorative ? '' : r.alt,
+          altSource: r.source,
+          decorative: r.decorative === true,
+          altHash: A.hashImage(currentUrl)
+        });
+      } finally {
+        setAltBusy(false);
+      }
+    };
+    return React.createElement(window.AlloModules.ImageAltField, {
+      id: 'visual-alt-' + (generatedContent?.id || 'single'),
+      t: t,
+      value: d.altText || '',
+      source: stale ? 'stale' : d.altSource || (d.altText ? 'planning' : ''),
+      decorative: d.decorative === true,
+      busy: altBusy,
+      onChange: value => patch({
+        altText: value,
+        altSource: 'author',
+        altHash: currentUrl && A ? A.hashImage(currentUrl) : d.altHash
+      }),
+      onDecorativeChange: flag => patch({
+        decorative: flag
+      }),
+      onRegenerate: regenerate
+    });
+  })()) : /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center justify-center p-8 text-slate-600 gap-4 w-full"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-200 p-4 rounded-full"

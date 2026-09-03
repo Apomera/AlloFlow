@@ -1104,7 +1104,7 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-world-card{position:relative;overflow:hidden;isolation:isolate;min-width:0;width:100%}',
               '.solar-cosmos .solar-world-card::before{content:"";position:absolute;z-index:-1;left:8px;right:8px;top:29px;height:1px;background:linear-gradient(90deg,transparent,rgba(129,140,248,.30),transparent)}',
               '.solar-cosmos .solar-world-thumb-wrap{position:relative;display:grid;width:36px;height:36px;place-items:center;flex:0 0 auto}',
-              '.solar-cosmos .solar-world-thumb{position:relative;z-index:2;display:block;width:28px;height:28px;border-radius:50%;background:var(--planet-portrait);box-shadow:inset -6px -5px 8px rgba(2,6,23,.48),inset 4px 3px 6px rgba(255,255,255,.28),0 0 14px var(--planet-glow);transition:transform .18s ease,filter .18s ease}',
+              '.solar-cosmos .solar-world-thumb{position:relative;z-index:2;display:block;width:28px;height:28px;border-radius:50%;background:var(--planet-portrait);background-size:100% 100%;background-repeat:no-repeat;background-position:center;box-shadow:inset -6px -5px 8px rgba(2,6,23,.48),inset 4px 3px 6px rgba(255,255,255,.28),0 0 14px var(--planet-glow);transition:transform .18s ease,filter .18s ease}',
               '.solar-cosmos .solar-world-thumb::after{content:"";position:absolute;inset:3px 5px 13px 5px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent);filter:blur(1px)}',
               '.solar-cosmos .solar-world-ring{position:absolute;z-index:1;left:0;top:14px;width:36px;height:10px;border:2px solid var(--ring-color);border-radius:50%;transform:rotate(-14deg);box-shadow:0 0 7px var(--planet-glow);pointer-events:none}',
               '.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb{transform:scale(1.12);filter:saturate(1.12)}',
@@ -1125,7 +1125,7 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-spotlight-orbit--two{width:68%;height:51%}',
               '.solar-cosmos .solar-spotlight-orbit--three{width:92%;height:70%;border-color:rgba(103,232,249,.16)}',
               '.solar-cosmos .solar-spotlight-body-wrap{position:absolute;left:50%;top:50%;width:172px;height:172px;transform:translate(-50%,-50%)}',
-              '.solar-cosmos .solar-spotlight-body{position:absolute;z-index:3;inset:8px;border:1px solid rgba(255,255,255,.52);border-radius:50%;background:var(--spotlight-portrait);box-shadow:inset -25px -18px 34px rgba(2,6,23,.62),inset 13px 10px 22px rgba(255,255,255,.17),0 0 24px var(--spotlight-color),0 0 58px color-mix(in srgb,var(--spotlight-color) 34%,transparent)}',
+              '.solar-cosmos .solar-spotlight-body{position:absolute;z-index:3;inset:8px;border:1px solid rgba(255,255,255,.52);border-radius:50%;background:var(--spotlight-portrait);background-size:100% 100%;background-repeat:no-repeat;background-position:center;box-shadow:inset -25px -18px 34px rgba(2,6,23,.62),inset 13px 10px 22px rgba(255,255,255,.17),0 0 24px var(--spotlight-color),0 0 58px color-mix(in srgb,var(--spotlight-color) 34%,transparent)}',
               '.solar-cosmos .solar-spotlight-body::after{content:"";position:absolute;inset:10px 22px 88px 24px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.28),transparent);filter:blur(3px)}',
               '.solar-cosmos .solar-spotlight-ring{position:absolute;z-index:4;left:50%;top:50%;width:214px;height:58px;border:5px double var(--spotlight-ring);border-radius:50%;box-shadow:0 0 13px color-mix(in srgb,var(--spotlight-ring) 42%,transparent);transform:translate(-50%,-50%) rotate(-14deg);pointer-events:none}',
               '.solar-cosmos .solar-spotlight-moon{position:absolute;z-index:5;width:9px;height:9px;border:1px solid rgba(255,255,255,.72);border-radius:50%;background:#cbd5e1;box-shadow:inset -2px -2px 3px rgba(2,6,23,.62),0 0 8px rgba(226,232,240,.55)}',
@@ -1160,7 +1160,7 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-compare-stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.46;background:radial-gradient(1px 1px at 12% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 41% 14%,#a5f3fc,transparent 60%),radial-gradient(1.5px 1.5px at 72% 32%,#fde68a,transparent 60%),radial-gradient(1px 1px at 91% 12%,#fff,transparent 60%)}',
               '.solar-cosmos .solar-compare-world{position:relative;z-index:1;display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:flex-end;color:#f8fafc;text-align:center}',
               '.solar-cosmos .solar-compare-visual{position:relative;display:flex;width:100%;height:116px;align-items:flex-end;justify-content:center}',
-              '.solar-cosmos .solar-compare-circle{position:relative;z-index:2;display:block;flex:0 0 auto;border-radius:50%;background:var(--compare-portrait);box-shadow:inset -14px -10px 20px rgba(2,6,23,.50),inset 7px 6px 12px rgba(255,255,255,.22),0 0 24px var(--compare-glow)}',
+              '.solar-cosmos .solar-compare-circle{position:relative;z-index:2;display:block;flex:0 0 auto;border-radius:50%;background:var(--compare-portrait);background-size:100% 100%;background-repeat:no-repeat;background-position:center;box-shadow:inset -14px -10px 20px rgba(2,6,23,.50),inset 7px 6px 12px rgba(255,255,255,.22),0 0 24px var(--compare-glow)}',
               '.solar-cosmos .solar-compare-ring{position:absolute;z-index:1;bottom:var(--compare-ring-bottom);width:var(--compare-ring-width);height:var(--compare-ring-height);border:2px solid var(--compare-ring-color);border-radius:50%;transform:rotate(-13deg);box-shadow:0 0 8px var(--compare-glow)}',
               '.solar-cosmos .solar-compare-name{display:block;max-width:100%;margin-top:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:900;line-height:1.15}',
               '.solar-cosmos .solar-compare-diameter{margin-top:2px;color:#cbd5e1;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace}',
@@ -1252,6 +1252,874 @@ const d = labToolData.solarSystem || {};
             Neptune: 'radial-gradient(circle at 62% 57%,#152b84 0 9%,transparent 11%),radial-gradient(circle at 33% 27%,#76a9ff,#3155c7 58%,#18265f 100%)',
             Pluto: 'radial-gradient(ellipse at 60% 38%,#e9ddd1 0 18%,transparent 20%),radial-gradient(circle at 34% 28%,#c8b7a6,#806b64 62%,#403845 100%)'
           };
+
+          // ── Shared planet appearance ─────────────────────────────────────
+          // ONE source for how a world looks, used by the 3D texture painter and
+          // the 2D surface card. Before this the card filled the disc with the
+          // UI accent colour (Jupiter was #f97316 orange, Saturn #eab308 yellow)
+          // and Earth's continents were invented polygons in the 2D card and
+          // random blobs re-rolled on every mount in 3D.
+          var SOLAR_SEMI_MAJOR_AU = { Mercury: 0.387, Venus: 0.723, Earth: 1.0, Mars: 1.524, Jupiter: 5.203, Saturn: 9.537, Uranus: 19.19, Neptune: 30.07, Pluto: 39.48 };
+          // Sidereal rotation relative to Earth's (direction is carried by the
+          // axial tilt: Venus and Uranus are tilted past 90 degrees, so a
+          // positive spin about their own axis already reads as retrograde).
+          var SOLAR_SPIN_RATE = { Mercury: 1 / 58.65, Venus: 1 / 243.0, Earth: 1, Mars: 1 / 1.026, Jupiter: 1 / 0.414, Saturn: 1 / 0.444, Uranus: 1 / 0.718, Neptune: 1 / 0.671, Pluto: 1 / 6.387 };
+          // Lit / shaded body colours drawn from the worlds' true albedo hues.
+          // Polar flattening (equatorial minus polar radius over equatorial).
+          // Saturn is visibly squashed; the others are subtle but real.
+          var SOLAR_OBLATENESS = { Earth: 0.0034, Mars: 0.0059, Jupiter: 0.0649, Saturn: 0.0980, Uranus: 0.0229, Neptune: 0.0171 };
+          // The surface card turns each globe at a rate proportional to its real
+          // sidereal spin, clamped so Venus still visibly moves and Jupiter does
+          // not blur: Earth = 1 turn per ~35 s at 60 fps.
+          function solarCardSpinRate(key) {
+            var rel = SOLAR_SPIN_RATE[key] || 1;
+            return 0.003 * Math.max(0.2, Math.min(2.4, rel));
+          }
+          // Real cloud-band structure, [north edge, south edge, colour, alpha].
+          // Jupiter's belts (dark, sinking) and zones (light, rising) are named
+          // features at fixed latitudes with very unequal widths: the flat
+          // ten-equal-stripes version taught that a gas giant is evenly striped.
+          var SOLAR_LAT_BANDS = {
+            Jupiter: [
+              [90, 62, '#8d8a90', 0.9], [62, 48, '#c7bda8', 0.9], [48, 35, '#dccdb4', 0.9], [35, 24, '#f0e3c6', 0.95],
+              [24, 17, '#a9713f', 0.9], [17, 7, '#8c542c', 0.95], [7, -7, '#f6ecd2', 0.98],
+              [-7, -21, '#93582f', 0.95], [-21, -26, '#eaddbe', 0.9], [-26, -40, '#a06c42', 0.88],
+              [-40, -53, '#dccbaa', 0.85], [-53, -62, '#c7bda8', 0.88], [-62, -90, '#8e8a8f', 0.9]
+            ],
+            Saturn: [
+              [90, 63, '#c8a86a', 0.85], [63, 40, '#e6d3a0', 0.9], [40, 22, '#f2e4b8', 0.92],
+              [22, 7, '#dcc086', 0.9], [7, -7, '#f7ecc8', 0.95], [-7, -25, '#dfc48c', 0.9],
+              [-25, -45, '#eddfae', 0.88], [-45, -90, '#c2a473', 0.85]
+            ],
+            Uranus: [
+              [90, 55, '#d8f4f6', 0.85], [55, 20, '#bfeaee', 0.85], [20, -20, '#a9dfe6', 0.9],
+              [-20, -55, '#b7e6ec', 0.85], [-55, -90, '#cdeef2', 0.85]
+            ],
+            Neptune: [
+              [90, 55, '#4f7ad8', 0.85], [55, 25, '#3a5fc8', 0.9], [25, -12, '#2c48b4', 0.92],
+              [-12, -45, '#3557c4', 0.9], [-45, -90, '#4a72d2', 0.85]
+            ]
+          };
+          // Named storms at their real coordinates, so they rotate over the limb
+          // with the planet instead of sliding across the face.
+          var SOLAR_STORMS = {
+            Jupiter: { lat: -22, lonW: 15, latH: 10, core: '#bd6b4e', halo: 'rgba(232,206,178,0.62)', eye: 'rgba(150,66,42,0.85)' },
+            Neptune: { lat: -22, lonW: 22, latH: 11, core: 'rgba(14,24,86,0.8)', halo: 'rgba(120,155,235,0.35)' }
+          };
+          // Orthographic point from a longitude already expressed in radians
+          // relative to the sub-viewer meridian.
+          function solarOrthoRel(lamRad, latDeg, phi0, R) {
+            var phi = latDeg * Math.PI / 180, cosPhi = Math.cos(phi), sinPhi = Math.sin(phi);
+            return {
+              x: R * cosPhi * Math.sin(lamRad),
+              y: -R * (Math.cos(phi0) * sinPhi - Math.sin(phi0) * cosPhi * Math.cos(lamRad)),
+              z: Math.sin(phi0) * sinPhi + Math.cos(phi0) * cosPhi * Math.cos(lamRad)
+            };
+          }
+          // Half-width of the visible longitude span of a parallel: the far side
+          // of a latitude circle is hidden, and how much is hidden depends on the
+          // sub-viewer latitude, which is what makes bands curve near the poles.
+          function solarParallelSpan(latDeg, phi0) {
+            var k = -Math.tan(phi0) * Math.tan(latDeg * Math.PI / 180);
+            if (k <= -1) return Math.PI;
+            if (k >= 1) return 0;
+            return Math.acos(k);
+          }
+          function solarLatBandPath(ctx, latHigh, latLow, cx, cy, R, phi0) {
+            var hiSpan = solarParallelSpan(latHigh, phi0), loSpan = solarParallelSpan(latLow, phi0);
+            if (hiSpan <= 0 && loSpan <= 0) return false;
+            var STEPS = 30, i, q;
+            ctx.beginPath();
+            for (i = 0; i <= STEPS; i++) {
+              q = solarOrthoRel(-hiSpan + 2 * hiSpan * i / STEPS, latHigh, phi0, R);
+              if (i === 0) ctx.moveTo(cx + q.x, cy + q.y); else ctx.lineTo(cx + q.x, cy + q.y);
+            }
+            for (i = STEPS; i >= 0; i--) {
+              q = solarOrthoRel(-loSpan + 2 * loSpan * i / STEPS, latLow, phi0, R);
+              ctx.lineTo(cx + q.x, cy + q.y);
+            }
+            ctx.closePath();
+            return true;
+          }
+          // Equirectangular cloud deck for a giant, painted from SOLAR_LAT_BANDS so
+          // the 3D globe and the 2D card are the same planet. Band boundaries are
+          // wavy rather than ruled, because the belt edges are shear zones between
+          // opposing jet streams, and every position is seeded so the world does
+          // not reshuffle itself on each mount.
+          function solarPaintGiantEquirect(g, W, H, key) {
+            var bands = SOLAR_LAT_BANDS[key] || SOLAR_LAT_BANDS.Jupiter;
+            function Y(lat) { return (90 - lat) / 180 * H; }
+            var rnd = solarSeededRandom(key.charCodeAt(0) * 977 + key.length * 31);
+            var b, x;
+            g.fillStyle = bands[Math.floor(bands.length / 2)][2];
+            g.fillRect(0, 0, W, H);
+            for (b = 0; b < bands.length; b++) {
+              var lb = bands[b];
+              g.globalAlpha = lb[3];
+              g.fillStyle = lb[2];
+              g.beginPath();
+              for (x = 0; x <= W; x += 2) {
+                var wobTop = Math.sin(x * 0.035 + b * 1.7) * (H * 0.006) + Math.sin(x * 0.011 + b * 0.6) * (H * 0.010);
+                if (x === 0) g.moveTo(x, Y(lb[0]) + wobTop); else g.lineTo(x, Y(lb[0]) + wobTop);
+              }
+              for (x = W; x >= 0; x -= 2) {
+                var wobBot = Math.sin(x * 0.031 + b * 2.3) * (H * 0.006) + Math.sin(x * 0.013 + b * 1.1) * (H * 0.010);
+                g.lineTo(x, Y(lb[1]) + wobBot);
+              }
+              g.closePath();
+              g.fill();
+            }
+            // Billows along each boundary: a belt edge is a shear zone between
+            // opposing jets, so it curdles rather than ruling a clean line.
+            for (b = 0; b < bands.length - 1; b++) {
+              var edgeY = Y(bands[b][1]);
+              var above = bands[b][2], below = bands[b + 1][2];
+              for (var bl = 0; bl < 46; bl++) {
+                var blx = (bl / 46) * W + (rnd() - 0.5) * (W / 46);
+                var blr = W * (0.008 + rnd() * 0.022);
+                g.globalAlpha = 0.2 + rnd() * 0.3;
+                g.fillStyle = rnd() < 0.5 ? above : below;
+                g.beginPath();
+                g.ellipse(blx, edgeY + (rnd() - 0.5) * H * 0.014, blr, H * (0.008 + rnd() * 0.012), 0, 0, Math.PI * 2);
+                g.fill();
+              }
+            }
+            g.globalAlpha = 1;
+            // Jet-stream streaks and festoons riding the belt boundaries.
+            for (var st = 0; st < 110; st++) {
+              var band = bands[Math.floor(rnd() * bands.length)];
+              g.globalAlpha = 0.08 + rnd() * 0.16;
+              g.fillStyle = rnd() < 0.5 ? '#fff6e2' : 'rgba(72,40,20,0.9)';
+              g.fillRect(rnd() * W, Y(band[1] + (rnd() - 0.5) * 3), W * (0.02 + rnd() * 0.09), Math.max(1, H * 0.006));
+            }
+            g.globalAlpha = 1;
+            var storm = SOLAR_STORMS[key];
+            if (storm) {
+              var sx = W * 0.68, sy = Y(storm.lat);
+              var sw = storm.lonW / 360 * W, sh = storm.latH / 180 * H;
+              g.fillStyle = storm.halo;
+              g.beginPath(); g.ellipse(sx, sy, sw * 1.55, sh * 1.5, 0, 0, Math.PI * 2); g.fill();
+              g.fillStyle = storm.core;
+              g.beginPath(); g.ellipse(sx, sy, sw, sh, 0, 0, Math.PI * 2); g.fill();
+              if (storm.eye) {
+                g.fillStyle = storm.eye;
+                g.beginPath(); g.ellipse(sx, sy, sw * 0.5, sh * 0.5, 0, 0, Math.PI * 2); g.fill();
+              }
+            }
+            if (key === 'Jupiter') {
+              // The "string of pearls": white anticyclonic ovals near 40 S.
+              g.fillStyle = 'rgba(255,250,238,0.85)';
+              for (var ov = 0; ov < 5; ov++) {
+                g.beginPath();
+                g.ellipse((0.1 + ov * 0.18) * W, Y(-40 + (ov % 2) * 2.5), W * 0.013, H * 0.013, 0, 0, Math.PI * 2);
+                g.fill();
+              }
+            }
+          }
+          // Small equirectangular surfaces for the moons the scene actually names.
+          // Kept at 256x128: they are a handful of pixels across in the orrery, but
+          // the difference between Io's sulfur, Europa's cracks, Ganymede's grooves
+          // and Callisto's crater saturation is visible even at that size, and it is
+          // the point of showing them at all.
+          function solarPaintMoonEquirect(g, W, H, kind) {
+            var rnd = solarSeededRandom(kind.charCodeAt(0) * 613 + kind.length * 97);
+            var i, x, y, r;
+            if (kind === 'luna') {
+              g.fillStyle = '#9d9a94'; g.fillRect(0, 0, W, H);
+              // The maria are basalt floods on the near side, darker and rounder
+              // than anything in the bright highlands around them.
+              // The near-side maria as separate basalt seas: Imbrium and Serenitatis
+              // in the north, Tranquillitatis and Fecunditatis along the equator,
+              // Procellarum sprawling down the western limb, Crisium isolated in the
+              // east. Their separation is what makes the near side recognisable.
+              var maria = [
+                { x: 0.30, y: 0.26, rx: 0.075, ry: 0.155, a: 0.3 },
+                { x: 0.375, y: 0.28, rx: 0.045, ry: 0.10, a: 0 },
+                { x: 0.40, y: 0.40, rx: 0.05, ry: 0.10, a: 0 },
+                { x: 0.455, y: 0.47, rx: 0.035, ry: 0.075, a: 0 },
+                { x: 0.215, y: 0.42, rx: 0.065, ry: 0.24, a: -0.15 },
+                { x: 0.30, y: 0.55, rx: 0.045, ry: 0.10, a: 0.2 },
+                { x: 0.485, y: 0.28, rx: 0.028, ry: 0.06, a: 0 }
+              ];
+              for (i = 0; i < maria.length; i++) {
+                var ma = maria[i];
+                g.fillStyle = 'rgba(74,74,80,0.85)';
+                g.beginPath(); g.ellipse(ma.x * W, ma.y * H, ma.rx * W, ma.ry * H, ma.a, 0, Math.PI * 2); g.fill();
+                // A softer shore keeps a sea from reading as a stamped oval.
+                g.fillStyle = 'rgba(88,88,94,0.4)';
+                g.beginPath(); g.ellipse(ma.x * W, ma.y * H, ma.rx * W * 1.18, ma.ry * H * 1.12, ma.a, 0, Math.PI * 2); g.fill();
+              }
+              for (i = 0; i < 150; i++) {
+                r = (0.004 + rnd() * rnd() * 0.03) * W;
+                g.fillStyle = 'rgba(60,58,56,' + (0.14 + rnd() * 0.2).toFixed(3) + ')';
+                g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, Math.PI * 2); g.fill();
+                g.strokeStyle = 'rgba(226,224,218,0.28)'; g.lineWidth = 1;
+                g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, Math.PI); g.stroke();
+              }
+            } else if (kind === 'io') {
+              // Sulfur and sulfur dioxide frost, repaved so often by volcanism that
+              // Io has essentially no impact craters at all.
+              g.fillStyle = '#e6cf6a'; g.fillRect(0, 0, W, H);
+              for (i = 0; i < 90; i++) {
+                r = (0.01 + rnd() * rnd() * 0.06) * W;
+                var tone = rnd();
+                g.fillStyle = tone < 0.4 ? 'rgba(120,42,26,0.55)' : tone < 0.7 ? 'rgba(246,238,206,0.6)' : 'rgba(196,120,32,0.5)';
+                // Two overlapping lobes read as a lava flow; one ellipse reads as a dot.
+                var ix = rnd() * W, iy = rnd() * H, iang = rnd() * 3;
+                g.beginPath();
+                g.ellipse(ix, iy, r, r * (0.4 + rnd() * 0.5), iang, 0, Math.PI * 2);
+                g.fill();
+                g.beginPath();
+                g.ellipse(ix + Math.cos(iang) * r * 0.8, iy + Math.sin(iang) * r * 0.5, r * 0.7, r * (0.3 + rnd() * 0.4), iang + 0.6, 0, Math.PI * 2);
+                g.fill();
+              }
+              // Dark volcanic vents with pale plume deposits ringed around them.
+              for (i = 0; i < 12; i++) {
+                x = rnd() * W; y = rnd() * H; r = (0.008 + rnd() * 0.012) * W;
+                g.fillStyle = 'rgba(252,246,222,0.4)';
+                g.beginPath(); g.arc(x, y, r * 3.2, 0, Math.PI * 2); g.fill();
+                g.fillStyle = 'rgba(48,22,14,0.8)';
+                g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+              }
+            } else if (kind === 'europa') {
+              // The smoothest surface in the solar system, scored by lineae: long
+              // reddish fractures in an ice shell over a global ocean.
+              g.fillStyle = '#e9e6dd'; g.fillRect(0, 0, W, H);
+              for (i = 0; i < 46; i++) {
+                g.strokeStyle = 'rgba(140,76,44,' + (0.35 + rnd() * 0.45).toFixed(3) + ')';
+                g.lineWidth = 1.2 + rnd() * 3.2;
+                g.beginPath();
+                var lx = rnd() * W, ly = rnd() * H, ang = rnd() * Math.PI;
+                g.moveTo(lx, ly);
+                for (var seg = 1; seg <= 5; seg++) {
+                  ang += (rnd() - 0.5) * 0.5;
+                  lx += Math.cos(ang) * W * 0.09; ly += Math.sin(ang) * H * 0.06;
+                  g.lineTo(lx, ly);
+                }
+                g.stroke();
+              }
+              g.fillStyle = 'rgba(190,150,120,0.22)';
+              for (i = 0; i < 16; i++) { r = (0.01 + rnd() * 0.03) * W; g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, Math.PI * 2); g.fill(); }
+            } else if (kind === 'ganymede') {
+              // Two terrains side by side: ancient dark cratered ground, and younger
+              // bright bands grooved by tectonics.
+              g.fillStyle = '#6f675d'; g.fillRect(0, 0, W, H);
+              // Sulci: bright bands of younger ice, each one a parallel set of
+              // ridges and troughs. They cut the dark terrain into blocks, so they
+              // stay near-vertical and roughly the same width instead of fanning.
+              for (i = 0; i < 8; i++) {
+                var bx = (i + 0.5) / 8 * W + (rnd() - 0.5) * W * 0.09;
+                var bw = W * (0.02 + rnd() * rnd() * 0.075);
+                var tilt = (rnd() - 0.5) * 0.3;
+                g.save();
+                g.translate(bx, H / 2); g.rotate(tilt);
+                g.fillStyle = 'rgba(166,160,149,' + (0.42 + rnd() * 0.22).toFixed(3) + ')';
+                g.fillRect(-bw / 2, -H, bw, H * 2);
+                // The grooves themselves, running along the band.
+                g.strokeStyle = 'rgba(120,114,104,0.2)'; g.lineWidth = 1;
+                for (var gr = 0; gr < 6; gr++) {
+                  var gxp = -bw / 2 + bw * (gr + 0.5) / 6;
+                  g.beginPath(); g.moveTo(gxp, -H); g.lineTo(gxp, H); g.stroke();
+                }
+                g.restore();
+              }
+              for (i = 0; i < 60; i++) {
+                r = (0.005 + rnd() * rnd() * 0.025) * W;
+                g.fillStyle = 'rgba(238,236,230,' + (0.2 + rnd() * 0.3).toFixed(3) + ')';
+                g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, Math.PI * 2); g.fill();
+              }
+            } else if (kind === 'callisto') {
+              // The most heavily cratered body known: an ancient dark surface with
+              // bright ice exposed by every impact.
+              g.fillStyle = '#4f4740'; g.fillRect(0, 0, W, H);
+              for (i = 0; i < 220; i++) {
+                r = (0.004 + rnd() * rnd() * 0.045) * W;
+                x = rnd() * W; y = rnd() * H;
+                g.fillStyle = 'rgba(214,208,196,' + (0.18 + rnd() * 0.4).toFixed(3) + ')';
+                g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+                g.fillStyle = 'rgba(36,32,28,0.5)';
+                g.beginPath(); g.arc(x, y, r * 0.55, 0, Math.PI * 2); g.fill();
+              }
+            } else if (kind === 'uranian') {
+              // The Uranian moons are dark, ancient water ice. Miranda in particular
+              // looks assembled from mismatched pieces, with Verona Rupes, the
+              // tallest known cliff in the solar system, cut across it.
+              g.fillStyle = '#8d8b88'; g.fillRect(0, 0, W, H);
+              for (i = 0; i < 110; i++) {
+                r = (0.005 + rnd() * rnd() * 0.04) * W;
+                g.fillStyle = 'rgba(58,56,54,' + (0.15 + rnd() * 0.28).toFixed(3) + ')';
+                g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, Math.PI * 2); g.fill();
+              }
+              g.strokeStyle = 'rgba(48,46,44,0.5)'; g.lineWidth = 2;
+              for (i = 0; i < 7; i++) {
+                g.beginPath();
+                var ux = rnd() * W, uy = rnd() * H;
+                g.moveTo(ux, uy); g.lineTo(ux + (rnd() - 0.5) * W * 0.35, uy + (rnd() - 0.5) * H * 0.5);
+                g.stroke();
+              }
+            } else if (kind === 'triton') {
+              // Nitrogen frost with a pinkish tint, the "cantaloupe" terrain, and
+              // dark streaks downwind of the geysers Voyager 2 caught erupting.
+              g.fillStyle = '#e6dcd6'; g.fillRect(0, 0, W, H);
+              g.fillStyle = 'rgba(228,206,196,0.7)';
+              for (i = 0; i < 60; i++) {
+                r = (0.02 + rnd() * 0.03) * W;
+                g.beginPath(); g.arc(rnd() * W, rnd() * H * 0.75, r, 0, Math.PI * 2); g.fill();
+              }
+              // South polar cap: Voyager found it fresh and bright.
+              g.fillStyle = '#f7f2ee';
+              g.fillRect(0, H * 0.72, W, H * 0.28);
+              g.strokeStyle = 'rgba(90,70,62,0.55)'; g.lineWidth = 2;
+              for (i = 0; i < 9; i++) {
+                var gx2 = rnd() * W, gy2 = H * (0.74 + rnd() * 0.2);
+                g.beginPath(); g.moveTo(gx2, gy2); g.lineTo(gx2 + W * (0.04 + rnd() * 0.1), gy2 + H * 0.01); g.stroke();
+              }
+            } else if (kind === 'titan') {
+              // A nitrogen atmosphere thick enough that no surface detail shows:
+              // Titan is a featureless orange ball in visible light.
+              var tg = g.createLinearGradient(0, 0, 0, H);
+              tg.addColorStop(0, '#c98a3c'); tg.addColorStop(0.5, '#e2a856'); tg.addColorStop(1, '#c07f34');
+              g.fillStyle = tg; g.fillRect(0, 0, W, H);
+              g.globalAlpha = 0.14;
+              for (i = 0; i < 26; i++) {
+                g.fillStyle = rnd() < 0.5 ? '#f6d69a' : '#a4641f';
+                g.fillRect(0, rnd() * H, W, H * (0.01 + rnd() * 0.03));
+              }
+              g.globalAlpha = 1;
+            } else if (kind === 'enceladus') {
+              // Fresh ice, the most reflective surface in the solar system, cut by
+              // the south-polar tiger stripes that vent water into space.
+              g.fillStyle = '#f4f7f8'; g.fillRect(0, 0, W, H);
+              g.strokeStyle = 'rgba(150,180,196,0.7)'; g.lineWidth = 2.2;
+              for (i = 0; i < 4; i++) {
+                g.beginPath();
+                g.moveTo(W * (0.3 + i * 0.05), H * 0.86);
+                g.lineTo(W * (0.62 + i * 0.05), H * 0.92);
+                g.stroke();
+              }
+              g.strokeStyle = 'rgba(180,200,212,0.4)'; g.lineWidth = 1;
+              for (i = 0; i < 24; i++) {
+                g.beginPath(); g.moveTo(rnd() * W, rnd() * H); g.lineTo(rnd() * W, rnd() * H); g.stroke();
+              }
+            } else {
+              g.fillStyle = '#9a938a'; g.fillRect(0, 0, W, H);
+            }
+          }
+          var SOLAR_BODY_PALETTE = {
+            Mercury: ['#a39d96', '#3a3734'], Venus: ['#f1dcae', '#b0823f'], Earth: ['#2f6fb5', '#0b2447'],
+            Mars: ['#d47a52', '#6b2c1c'], Jupiter: ['#e4ccaa', '#8a5633'], Saturn: ['#ecdcab', '#9f854d'],
+            Uranus: ['#c6ecef', '#57a0ad'], Neptune: ['#5273dc', '#17246a'], Pluto: ['#dac8b0', '#574540']
+          };
+          var SOLAR_BAND_COLORS = {
+            Jupiter: ['rgba(140,86,48,', 'rgba(244,228,200,', 'rgba(176,112,64,', 'rgba(236,216,184,', 'rgba(120,70,36,', 'rgba(248,236,212,', 'rgba(160,100,56,', 'rgba(232,208,172,'],
+            Saturn: ['rgba(176,140,84,', 'rgba(244,232,196,', 'rgba(196,164,100,', 'rgba(240,226,184,', 'rgba(170,136,80,', 'rgba(248,238,204,', 'rgba(186,152,92,', 'rgba(236,222,176,'],
+            Uranus: ['rgba(150,215,220,', 'rgba(220,245,247,', 'rgba(120,190,200,', 'rgba(205,238,241,', 'rgba(135,200,208,', 'rgba(230,248,250,', 'rgba(110,180,192,', 'rgba(200,236,240,'],
+            Neptune: ['rgba(40,60,170,', 'rgba(110,140,230,', 'rgba(30,45,140,', 'rgba(90,120,220,', 'rgba(50,72,180,', 'rgba(130,160,240,', 'rgba(26,40,130,', 'rgba(100,130,225,']
+          };
+          // Simplified real coastlines, [lon, lat] in degrees. Hand-simplified from
+          // the Natural Earth 110m outlines to ~15-30 vertices per landmass: enough
+          // for every continent to be recognisable at card size, small enough to
+          // live in source. Deserts, tundra, and ice are painted as overlays.
+          var SOLAR_EARTH_LAND = [
+            { name: 'North America', pts: [[-168, 66], [-156, 71], [-141, 70], [-125, 72], [-108, 73], [-95, 74], [-82, 70], [-64, 61], [-56, 51], [-66, 44], [-71, 42], [-76, 36], [-81, 31], [-80, 25], [-83, 29], [-89, 30], [-94, 29], [-97, 26], [-97, 22], [-105, 20], [-110, 24], [-115, 30], [-117, 33], [-122, 37], [-124, 43], [-124, 48], [-130, 54], [-137, 58], [-146, 61], [-154, 59], [-162, 58], [-166, 61], [-165, 65]] },
+            { name: 'Central America', pts: [[-105, 20], [-97, 19], [-92, 15], [-87, 15], [-84, 10], [-80, 8], [-77, 8], [-79, 9], [-83, 8], [-87, 13], [-92, 14], [-96, 16], [-104, 19]] },
+            { name: 'South America', pts: [[-77, 8], [-72, 12], [-62, 10], [-52, 5], [-50, 0], [-44, -2], [-35, -6], [-38, -13], [-39, -18], [-42, -23], [-48, -27], [-53, -33], [-58, -38], [-62, -40], [-65, -45], [-68, -50], [-69, -55], [-74, -52], [-74, -46], [-73, -40], [-72, -33], [-70, -25], [-70, -18], [-76, -14], [-81, -6], [-81, -2], [-79, 2], [-77, 5]] },
+            { name: 'Greenland', pts: [[-52, 60], [-45, 60], [-42, 63], [-32, 68], [-22, 70], [-18, 76], [-22, 81], [-38, 83], [-58, 82], [-70, 78], [-64, 73], [-55, 68], [-52, 64]] },
+            { name: 'Iceland', pts: [[-24, 64], [-19, 63], [-14, 65], [-16, 66], [-22, 66]] },
+            { name: 'Britain', pts: [[-5, 50], [1, 51], [2, 53], [-1, 55], [-2, 57], [-4, 59], [-6, 58], [-6, 55], [-5, 53], [-5, 51]] },
+            { name: 'Ireland', pts: [[-10, 52], [-6, 52], [-6, 55], [-8, 55], [-10, 54]] },
+            { name: 'Eurasia', pts: [[-9, 43], [-2, 44], [3, 43], [8, 44], [12, 44], [16, 40], [18, 40], [20, 38], [23, 37], [26, 38], [28, 37], [36, 36], [35, 33], [34, 30], [36, 24], [39, 21], [43, 13], [45, 13], [52, 16], [57, 19], [57, 24], [52, 25], [56, 27], [61, 25], [66, 25], [72, 21], [73, 16], [77, 8], [80, 13], [82, 17], [87, 22], [92, 22], [94, 18], [98, 10], [100, 5], [103, 1], [104, 5], [102, 10], [105, 9], [109, 12], [108, 18], [107, 21], [112, 22], [117, 23], [120, 27], [122, 31], [121, 36], [118, 39], [122, 40], [126, 39], [129, 35], [130, 38], [128, 40], [131, 43], [135, 45], [140, 50], [141, 54], [145, 59], [156, 51], [162, 57], [160, 60], [164, 62], [170, 60], [180, 65], [180, 71], [170, 70], [160, 70], [150, 72], [140, 73], [128, 73], [118, 74], [108, 77], [96, 76], [84, 74], [72, 73], [68, 69], [60, 69], [54, 69], [44, 68], [40, 65], [36, 66], [31, 70], [20, 70], [14, 68], [10, 63], [6, 62], [5, 58], [9, 57], [11, 54], [8, 54], [5, 53], [2, 51], [-2, 49], [-5, 48], [-2, 46], [-9, 43]] },
+            { name: 'Scandinavia gap', pts: [[10, 59], [12, 56], [18, 57], [24, 60], [22, 63], [26, 66], [20, 69], [14, 66], [11, 62]], water: true },
+            { name: 'Africa', pts: [[-17, 15], [-17, 21], [-13, 28], [-10, 30], [-6, 36], [0, 36], [10, 37], [11, 34], [19, 31], [25, 32], [32, 31], [34, 28], [37, 22], [38, 18], [43, 12], [51, 12], [51, 10], [46, 3], [42, -1], [40, -6], [40, -11], [36, -18], [35, -24], [33, -28], [27, -34], [20, -35], [17, -30], [14, -23], [12, -17], [12, -9], [9, -2], [9, 4], [5, 5], [-2, 5], [-8, 5], [-13, 8], [-17, 12]] },
+            { name: 'Madagascar', pts: [[44, -13], [49, -13], [50, -16], [49, -22], [47, -25], [44, -25], [43, -20], [44, -16]] },
+            { name: 'Arabia gulf', pts: [[48, 30], [50, 27], [55, 25], [57, 24], [56, 27], [51, 30]], water: true },
+            { name: 'Sumatra', pts: [[95, 5], [98, 4], [103, -1], [106, -6], [102, -5], [98, 0], [95, 3]] },
+            { name: 'Borneo', pts: [[109, 1], [111, 4], [117, 7], [119, 4], [118, 0], [116, -4], [110, -3], [109, -1]] },
+            { name: 'Java', pts: [[105, -6], [111, -7], [115, -8], [114, -9], [106, -7]] },
+            { name: 'New Guinea', pts: [[131, -1], [136, -2], [141, -3], [147, -6], [151, -8], [148, -10], [142, -9], [138, -8], [134, -6], [132, -3]] },
+            { name: 'Philippines', pts: [[120, 18], [122, 17], [124, 13], [126, 8], [124, 6], [122, 8], [121, 12], [119, 16]] },
+            { name: 'Japan', pts: [[130, 31], [133, 34], [136, 34], [140, 36], [141, 40], [140, 43], [143, 44], [145, 44], [144, 42], [141, 41], [140, 37], [137, 35], [132, 32]] },
+            { name: 'Sri Lanka', pts: [[80, 10], [82, 8], [81, 6], [80, 7]] },
+            { name: 'Cuba', pts: [[-85, 22], [-80, 23], [-75, 21], [-74, 20], [-78, 20], [-83, 22]] },
+            { name: 'Hispaniola', pts: [[-74, 20], [-69, 20], [-68, 18], [-72, 18]] },
+            { name: 'Australia', pts: [[114, -22], [118, -20], [122, -17], [126, -14], [130, -12], [133, -12], [136, -12], [138, -16], [141, -13], [143, -10], [145, -15], [147, -19], [151, -24], [153, -28], [152, -32], [150, -37], [146, -39], [144, -38], [140, -38], [138, -35], [136, -35], [131, -32], [126, -33], [122, -34], [117, -35], [115, -33], [114, -28], [113, -24]] },
+            { name: 'Tasmania', pts: [[145, -41], [148, -41], [148, -43], [146, -44], [145, -42]] },
+            { name: 'New Zealand', pts: [[173, -35], [176, -37], [178, -38], [177, -40], [175, -41], [174, -39]] },
+            { name: 'New Zealand S', pts: [[172, -41], [174, -42], [171, -45], [167, -46], [166, -45], [170, -43]] },
+            // Inland seas and great lakes, painted over the land that carries them.
+            { name: 'Hudson Bay', water: true, pts: [[-95, 51], [-88, 52], [-79, 56], [-78, 62], [-83, 65], [-92, 64], [-95, 58]] },
+            { name: 'Great Lakes', water: true, pts: [[-92, 46], [-85, 49], [-80, 46], [-76, 44], [-79, 42], [-84, 42], [-88, 43]] },
+            { name: 'Black Sea', water: true, pts: [[28, 42], [34, 46], [41, 45], [42, 42], [36, 41], [30, 41]] },
+            { name: 'Caspian Sea', water: true, pts: [[48, 38], [47, 44], [50, 47], [53, 45], [54, 41], [52, 37]] },
+            { name: 'Mediterranean', water: true, pts: [[-5, 36], [5, 38], [14, 38], [20, 36], [28, 36], [35, 34], [32, 31], [22, 32], [12, 34], [2, 35], [-4, 34]] },
+            { name: 'Red Sea', water: true, pts: [[34, 28], [38, 22], [43, 13], [45, 12], [40, 20], [36, 27]] },
+            { name: 'Antarctica', pts: [[-180, -70], [-160, -74], [-140, -75], [-120, -74], [-100, -73], [-80, -73], [-62, -65], [-58, -64], [-62, -70], [-45, -78], [-30, -75], [-10, -70], [10, -70], [30, -69], [50, -67], [70, -68], [90, -66], [110, -66], [130, -66], [150, -68], [170, -72], [180, -78], [180, -90], [-180, -90]] }
+          ];
+          var SOLAR_EARTH_OVERLAYS = [
+            { kind: 'desert', pts: [[-16, 16], [33, 16], [35, 22], [34, 31], [11, 33], [-4, 32], [-14, 27]] },
+            { kind: 'desert', pts: [[38, 14], [55, 18], [57, 24], [50, 29], [40, 30], [36, 24]] },
+            { kind: 'desert', pts: [[57, 26], [70, 26], [72, 32], [63, 36], [56, 34]] },
+            { kind: 'desert', pts: [[76, 36], [96, 38], [110, 40], [108, 44], [92, 46], [78, 44]] },
+            { kind: 'desert', pts: [[116, -20], [138, -20], [141, -28], [136, -33], [124, -32], [117, -27]] },
+            { kind: 'desert', pts: [[-116, 30], [-105, 30], [-104, 24], [-110, 22], [-115, 27]] },
+            { kind: 'desert', pts: [[-71, -18], [-69, -18], [-69, -27], [-71, -26]] },
+            { kind: 'desert', pts: [[14, -20], [20, -20], [21, -30], [15, -30]] },
+            { kind: 'forest', pts: [[-74, 2], [-60, 4], [-50, 0], [-48, -6], [-58, -12], [-70, -10], [-76, -4]] },
+            { kind: 'forest', pts: [[10, 4], [28, 4], [30, -4], [22, -8], [12, -4]] },
+            { kind: 'tundra', pts: [[-165, 62], [-100, 62], [-60, 62], [-60, 74], [-100, 74], [-165, 70]] },
+            { kind: 'tundra', pts: [[40, 63], [100, 64], [170, 66], [170, 72], [110, 74], [70, 73], [44, 68]] },
+            { kind: 'ice', pts: [[-58, 62], [-42, 62], [-24, 70], [-20, 80], [-40, 83], [-62, 80], [-66, 72]] },
+            // The Antarctic sheet follows the real coast (the peninsula reaches
+            // about 63 S) rather than a straight parallel: cutting it at 72 S left
+            // a green ring of bare continent showing between the coast and the ice.
+            { kind: 'ice', pts: [[-180, -70], [-140, -73], [-100, -72], [-75, -70], [-58, -62], [-45, -70], [-20, -69], [10, -68], [40, -66], [75, -65], [110, -65], [145, -67], [180, -70], [180, -90], [-180, -90]] },
+            // Arctic sea ice: the north pole is floating ice over open ocean, and a
+            // bare blue pole is the single most obvious thing missing from a world map.
+            { kind: 'seaIce', pts: [[-180, 74], [-120, 71], [-60, 74], [0, 72], [60, 75], [120, 72], [180, 74], [180, 90], [-180, 90]] }
+          ];
+          var SOLAR_EARTH_PAINT = {
+            oceanShallow: '#2c6fb3', oceanDeep: '#12467f', oceanPolar: '#1d4f86',
+            land: '#4c8a45', landDark: '#39723a', desert: '#c9ad6d', forest: '#2f6b33', tundra: '#7c8a63', ice: '#f3f7fa', seaIce: '#e8f1f6'
+          };
+          // Deterministic pseudo-random for clouds: the same Earth every mount.
+          function solarSeededRandom(seed) {
+            var x = seed | 0 || 1;
+            return function () { x = (x * 1103515245 + 12345) & 0x7fffffff; return x / 0x7fffffff; };
+          }
+          // Paint Earth onto an equirectangular canvas context of size W x H.
+          function solarPaintEarthEquirect(g, W, H, withClouds) {
+            function X(lon) { return (lon + 180) / 360 * W; }
+            function Y(lat) { return (90 - lat) / 180 * H; }
+            function poly(rawPts) {
+              var pts = solarSmoothRing(rawPts);
+              g.beginPath();
+              for (var i = 0; i < pts.length; i++) { var x = X(pts[i][0]), y = Y(pts[i][1]); if (i === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+              g.closePath();
+            }
+            var og = g.createLinearGradient(0, 0, 0, H);
+            og.addColorStop(0, SOLAR_EARTH_PAINT.oceanPolar); og.addColorStop(0.28, SOLAR_EARTH_PAINT.oceanDeep);
+            og.addColorStop(0.5, SOLAR_EARTH_PAINT.oceanShallow); og.addColorStop(0.72, SOLAR_EARTH_PAINT.oceanDeep); og.addColorStop(1, SOLAR_EARTH_PAINT.oceanPolar);
+            g.fillStyle = og; g.fillRect(0, 0, W, H);
+            for (var li = 0; li < SOLAR_EARTH_LAND.length; li++) {
+              var lm = SOLAR_EARTH_LAND[li];
+              poly(lm.pts);
+              g.fillStyle = lm.water ? SOLAR_EARTH_PAINT.oceanShallow : SOLAR_EARTH_PAINT.land;
+              g.fill();
+            }
+            for (var oi = 0; oi < SOLAR_EARTH_OVERLAYS.length; oi++) {
+              var ov = SOLAR_EARTH_OVERLAYS[oi];
+              g.save();
+              // Overlays are clipped to land so a desert never spills into the sea.
+              if (ov.kind !== 'ice' && ov.kind !== 'seaIce') {
+                g.beginPath();
+                for (var ci = 0; ci < SOLAR_EARTH_LAND.length; ci++) {
+                  if (SOLAR_EARTH_LAND[ci].water) continue;
+                  var cp = SOLAR_EARTH_LAND[ci].pts;
+                  for (var k = 0; k < cp.length; k++) { var qx = X(cp[k][0]), qy = Y(cp[k][1]); if (k === 0) g.moveTo(qx, qy); else g.lineTo(qx, qy); }
+                  g.closePath();
+                }
+                g.clip();
+              }
+              poly(ov.pts);
+              g.fillStyle = SOLAR_EARTH_PAINT[ov.kind];
+              g.globalAlpha = ov.kind === 'forest' ? 0.75 : ov.kind === 'tundra' ? 0.7 : ov.kind === 'seaIce' ? 0.9 : 1;
+              g.fill();
+              g.restore();
+            }
+            // Coast shading gives the land an edge against the water.
+            g.strokeStyle = 'rgba(20,40,30,0.35)'; g.lineWidth = Math.max(1, W / 512);
+            for (var si = 0; si < SOLAR_EARTH_LAND.length; si++) {
+              if (SOLAR_EARTH_LAND[si].water) continue;
+              // A polar landmass is closed along the pole itself, and stroking
+              // that edge draws a dark seam straight across the ice cap.
+              var polar = false;
+              for (var pv2 = 0; pv2 < SOLAR_EARTH_LAND[si].pts.length; pv2++) { if (Math.abs(SOLAR_EARTH_LAND[si].pts[pv2][1]) >= 88) { polar = true; break; } }
+              if (polar) continue;
+              poly(SOLAR_EARTH_LAND[si].pts); g.stroke();
+            }
+            if (withClouds) {
+              var rnd = solarSeededRandom(7331);
+              g.fillStyle = '#ffffff';
+              for (var cl = 0; cl < 70; cl++) {
+                var clat = (rnd() * 2 - 1) * 70;
+                var band = Math.abs(clat) < 12 ? 0.55 : Math.abs(clat) > 40 ? 0.6 : 0.3;   // ITCZ and storm tracks are cloudier than the subtropics
+                g.globalAlpha = 0.22 + band * 0.35 * rnd();
+                g.beginPath();
+                g.ellipse(rnd() * W, Y(clat), (0.03 + rnd() * 0.07) * W, (0.012 + rnd() * 0.02) * H, 0, 0, Math.PI * 2);
+                g.fill();
+              }
+              g.globalAlpha = 1;
+            }
+          }
+          // Orthographic projection for the 2D disc. lambda0 = sub-viewer longitude
+          // (radians), phi0 = sub-viewer latitude (radians). Returns null when the
+          // point is on the far hemisphere.
+          function solarOrtho(lonDeg, latDeg, lambda0, phi0, R) {
+            var lam = lonDeg * Math.PI / 180 - lambda0, phi = latDeg * Math.PI / 180;
+            var cosPhi = Math.cos(phi), sinPhi = Math.sin(phi);
+            var z = Math.sin(phi0) * sinPhi + Math.cos(phi0) * cosPhi * Math.cos(lam);
+            return { x: R * cosPhi * Math.sin(lam), y: -R * (Math.cos(phi0) * sinPhi - Math.sin(phi0) * cosPhi * Math.cos(lam)), z: z };
+          }
+          // Draw a lon/lat polygon on the disc. Far-side vertices are pushed to
+          // the limb, which keeps continents that straddle the edge closed.
+          function solarDrawOrthoPoly(ctx, rawPts, cx, cy, R, lambda0, phi0) {
+            var pts = solarSmoothRing(rawPts);
+            var anyVisible = false, proj = [];
+            for (var i = 0; i < pts.length; i++) {
+              var q = solarOrtho(pts[i][0], pts[i][1], lambda0, phi0, R);
+              if (q.z > 0) anyVisible = true;
+              else { var len = Math.hypot(q.x, q.y) || 1; q.x = q.x / len * R; q.y = q.y / len * R; }
+              proj.push(q);
+            }
+            if (!anyVisible) return false;
+            ctx.beginPath();
+            for (var j = 0; j < proj.length; j++) { if (j === 0) ctx.moveTo(cx + proj[j].x, cy + proj[j].y); else ctx.lineTo(cx + proj[j].x, cy + proj[j].y); }
+            ctx.closePath();
+            return true;
+          }
+          // Mars albedo geography, [lon E, lat]. Classical dark markings (basaltic
+          // sand seas) and bright dusty regions from the USGS/Viking albedo map,
+          // simplified the same way as Earth's coastlines.
+          var SOLAR_MARS_PAINT = { base: '#c4683f', dust: '#d98a5c', dark: 'rgba(78,38,26,0.62)', darkSoft: 'rgba(96,50,34,0.42)', cap: '#f3efe8', canyon: 'rgba(60,28,18,0.8)', volcano: '#b85c3a' };
+          var SOLAR_MARS_DARK = [
+            // The wedge that Huygens sketched in 1659: broad in the north, tapering
+            // to a point near the equator.
+            { name: 'Syrtis Major', pts: [[281, 19], [288, 21], [296, 20], [300, 15], [301, 8], [297, 2], [292, -2], [288, -3], [285, 2], [283, 9], [280, 14]] },
+            { name: 'Mare Acidalium', pts: [[314, 48], [322, 58], [334, 63], [346, 61], [353, 52], [351, 43], [343, 35], [330, 32], [319, 37]] },
+            { name: 'Sinus Meridiani', pts: [[349, 4], [358, 5], [6, 3], [11, -3], [8, -9], [0, -11], [351, -8], [345, -2]] },
+            { name: 'Mare Erythraeum', pts: [[307, -16], [320, -14], [336, -17], [350, -21], [353, -31], [345, -39], [330, -41], [315, -37], [305, -27]] },
+            { name: 'Solis Lacus', pts: [[259, -24], [270, -20], [281, -22], [287, -28], [283, -35], [271, -37], [261, -33]], soft: true },
+            { name: 'Mare Cimmerium', pts: [[192, -14], [208, -11], [226, -13], [239, -19], [237, -31], [222, -38], [203, -37], [189, -29]] },
+            { name: 'Mare Tyrrhenum', pts: [[240, -11], [254, -12], [265, -17], [268, -26], [259, -32], [244, -30], [236, -21]] },
+            { name: 'Mare Sirenum', pts: [[139, -22], [156, -18], [174, -19], [190, -25], [189, -38], [170, -44], [149, -41], [136, -32]] },
+            { name: 'Mare Australe', pts: [[15, -62], [70, -60], [125, -63], [160, -70], [110, -76], [45, -74], [8, -70]], soft: true },
+            { name: 'Utopia Planitia', pts: [[66, 34], [88, 38], [107, 43], [118, 53], [104, 60], [80, 59], [62, 50], [57, 41]], soft: true },
+            { name: 'Aurorae Sinus', pts: [[294, -5], [306, -4], [316, -8], [318, -16], [308, -21], [297, -17]] }
+          ];
+          var SOLAR_MARS_BRIGHT = [
+            { name: 'Hellas Planitia', pts: [[46, -30], [62, -27], [80, -29], [92, -36], [93, -47], [80, -57], [60, -57], [46, -50], [40, -40]] },
+            { name: 'Arabia Terra', pts: [[350, 6], [6, 3], [24, 5], [43, 11], [50, 24], [44, 35], [26, 40], [7, 37], [352, 26], [347, 15]] },
+            { name: 'Elysium Planitia', pts: [[122, 9], [142, 8], [160, 13], [171, 25], [163, 35], [140, 34], [124, 27], [117, 17]] },
+            { name: 'Tharsis', pts: [[214, -14], [232, -18], [252, -17], [266, -7], [268, 8], [259, 22], [239, 27], [221, 19], [211, 3]] },
+            { name: 'Argyre', pts: [[299, -43], [312, -41], [325, -44], [328, -53], [316, -58], [302, -55], [295, -49]] },
+            { name: 'Amazonis Planitia', pts: [[157, -3], [178, -2], [197, 3], [203, 16], [192, 27], [170, 26], [156, 16], [151, 6]] },
+            { name: 'Chryse Planitia', pts: [[305, 15], [318, 15], [330, 20], [332, 30], [320, 35], [307, 30], [301, 22]] }
+          ];
+          var SOLAR_MARS_VOLCANOES = [
+            { name: 'Olympus Mons', lon: 226, lat: 18, r: 4.2 },
+            { name: 'Ascraeus Mons', lon: 256, lat: 11, r: 2.4 },
+            { name: 'Pavonis Mons', lon: 247, lat: 0, r: 2.2 },
+            { name: 'Arsia Mons', lon: 240, lat: -9, r: 2.6 },
+            { name: 'Elysium Mons', lon: 147, lat: 25, r: 2.4 }
+          ];
+          // Valles Marineris as a filled, tapering trough: narrow at Noctis
+          // Labyrinthus in the west, widest at Melas Chasma, fraying into the
+          // outflow channels toward Chryse in the east.
+          var SOLAR_MARS_CANYON = [
+            [259, -7], [270, -8], [283, -9], [296, -10], [309, -12], [322, -13], [330, -15],
+            [322, -18], [309, -17], [296, -15], [283, -14], [270, -12], [261, -10]
+          ];
+          function solarMarsCapPolygon(north) {
+            var pts = [];
+            for (var lon = -180; lon <= 180; lon += 15) {
+              var wobble = Math.sin(lon * 0.09 + (north ? 0.4 : 2.1)) * 2;
+              pts.push([lon, north ? 82 + wobble : -84 + wobble]);
+            }
+            pts.push([180, north ? 90 : -90]); pts.push([-180, north ? 90 : -90]);
+            return pts;
+          }
+          function solarMarsWrap(lon) { return lon > 180 ? lon - 360 : lon; }
+          function solarMarsPoly(pts) { return pts.map(function (q) { return [solarMarsWrap(q[0]), q[1]]; }); }
+          function solarPaintMarsEquirect(g, W, H) {
+            function X(lon) { return (solarMarsWrap(lon) + 180) / 360 * W; }
+            function Y(lat) { return (90 - lat) / 180 * H; }
+            function poly(rawPts) {
+              var pts = solarSmoothRing(rawPts);
+              g.beginPath();
+              for (var i = 0; i < pts.length; i++) { var x = X(pts[i][0]), y = Y(pts[i][1]); if (i === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+              g.closePath();
+            }
+            var bg = g.createLinearGradient(0, 0, 0, H);
+            bg.addColorStop(0, '#b9603a'); bg.addColorStop(0.5, SOLAR_MARS_PAINT.base); bg.addColorStop(1, '#ad5836');
+            g.fillStyle = bg; g.fillRect(0, 0, W, H);
+            var bi;
+            for (bi = 0; bi < SOLAR_MARS_BRIGHT.length; bi++) { poly(SOLAR_MARS_BRIGHT[bi].pts); g.fillStyle = SOLAR_MARS_PAINT.dust; g.globalAlpha = 0.85; g.fill(); }
+            g.globalAlpha = 1;
+            for (bi = 0; bi < SOLAR_MARS_DARK.length; bi++) { poly(SOLAR_MARS_DARK[bi].pts); g.fillStyle = SOLAR_MARS_DARK[bi].soft ? SOLAR_MARS_PAINT.darkSoft : SOLAR_MARS_PAINT.dark; g.fill(); }
+            poly(SOLAR_MARS_CANYON);
+            g.fillStyle = SOLAR_MARS_PAINT.canyon;
+            g.fill();
+            for (bi = 0; bi < SOLAR_MARS_VOLCANOES.length; bi++) {
+              var v = SOLAR_MARS_VOLCANOES[bi];
+              var vr = v.r / 360 * W;
+              var vg = g.createRadialGradient(X(v.lon), Y(v.lat), 0, X(v.lon), Y(v.lat), vr);
+              vg.addColorStop(0, SOLAR_MARS_PAINT.volcano); vg.addColorStop(0.5, 'rgba(184,92,58,0.6)'); vg.addColorStop(1, 'rgba(184,92,58,0)');
+              g.fillStyle = vg; g.beginPath(); g.arc(X(v.lon), Y(v.lat), vr, 0, Math.PI * 2); g.fill();
+            }
+            g.fillStyle = SOLAR_MARS_PAINT.cap;
+            poly(solarMarsCapPolygon(true)); g.fill();
+            poly(solarMarsCapPolygon(false)); g.fill();
+          }
+          // Chaikin corner-cutting: the hand-simplified outlines have 15-30
+          // vertices and read as angular at card size; one pass doubles the
+          // vertex count and rounds every corner without moving the shape.
+          function solarSmoothRing(pts) {
+            if (!pts || pts.length < 4) return pts;
+            // Polar shapes keep their exact vertices: corner-cutting would retreat
+            // the cap from the pole and leave a ring of bare ground behind it.
+            for (var pv = 0; pv < pts.length; pv++) {
+              if (Math.abs(pts[pv][1]) >= 88) return pts;
+            }
+            var out = [];
+            for (var i = 0; i < pts.length; i++) {
+              var a = pts[i], b = pts[(i + 1) % pts.length];
+              // Interpolate longitude the short way round the antimeridian, so
+              // a polygon that crosses 180 E (Sputnik Planitia, the ice caps)
+              // does not sprout a corner on the far side of the globe.
+              var bl = b[0];
+              if (bl - a[0] > 180) bl -= 360; else if (a[0] - bl > 180) bl += 360;
+              out.push([a[0] * 0.75 + bl * 0.25, a[1] * 0.75 + b[1] * 0.25]);
+              out.push([a[0] * 0.25 + bl * 0.75, a[1] * 0.25 + b[1] * 0.75]);
+            }
+            return out;
+          }
+          // Pluto (New Horizons, 2015). Longitudes east; the heart faces Charon's
+          // far side at ~180 E. Sputnik Planitia is the smooth nitrogen-ice west
+          // lobe; the east lobe is rougher methane frost; Cthulhu Macula is the
+          // dark tholin belt along the equator west of the heart.
+          var SOLAR_PLUTO_PAINT = { base: '#bb9974', sputnik: '#f7f2e8', eastLobe: '#ddcdb6', cthulhu: 'rgba(58,32,24,0.82)', polar: '#e0d4c4', crater: 'rgba(70,50,40,0.32)' };
+          var SOLAR_PLUTO_REGIONS = [
+            { name: 'Lowell Regio', kind: 'polar', pts: [[-180, 62], [-120, 60], [-60, 64], [0, 61], [60, 63], [120, 60], [180, 62], [180, 90], [-180, 90]] },
+            // The dark tholin belt west of the heart: broad in the middle, tapering
+            // at both ends, and sitting squarely on the equator.
+            { name: 'Cthulhu Macula', kind: 'cthulhu', pts: [[8, 3], [24, 10], [48, 13], [76, 14], [104, 12], [128, 9], [146, 5], [150, -5], [138, -15], [112, -21], [80, -23], [52, -21], [28, -15], [10, -6]] },
+            // The heart's eastern lobe is rougher methane-frost upland, distinctly
+            // separate from the smooth nitrogen ice to its west.
+            { name: 'Tombaugh Regio east', kind: 'eastLobe', pts: [[196, 30], [204, 36], [214, 34], [221, 25], [222, 13], [216, 4], [206, 1], [198, 8], [194, 19]] },
+            // Sputnik Planitia: a 1,000 km basin of convecting nitrogen ice, broad
+            // and rounded in the north and tapering to a point in the south.
+            { name: 'Sputnik Planitia', kind: 'sputnik', pts: [[152, 17], [155, 29], [161, 40], [170, 47], [180, 49], [188, 45], [192, 35], [193, 23], [190, 11], [184, 1], [176, -6], [167, -4], [158, 5]] }
+          ];
+          var SOLAR_PLUTO_CRATERS = [[40, 30], [90, 35], [-60, 20], [-100, -20], [-30, -40], [110, -45], [60, -55], [-140, -50], [20, 45]];
+          // Mercury (MESSENGER). Caloris is the giant impact basin; Hokusai,
+          // Kuiper and Debussy are the bright rayed craters; the northern smooth
+          // plains are slightly lighter volcanic flows.
+          var SOLAR_MERCURY_PAINT = { base: '#77726c', plains: '#8a857e', basinFloor: '#938d85', basinRim: 'rgba(38,34,31,0.8)', crater: 'rgba(34,30,28,0.5)', rim: 'rgba(226,222,214,0.4)', ray: 'rgba(242,240,236,0.32)' };
+          var SOLAR_MERCURY_FEATURES = [
+            { name: 'Caloris Basin', kind: 'basin', lon: 163, lat: 30, r: 15 },
+            { name: 'Hokusai', kind: 'rayed', lon: 17, lat: 58, r: 3, rays: 9 },
+            { name: 'Kuiper', kind: 'rayed', lon: -31, lat: -11, r: 2.2, rays: 7 },
+            { name: 'Debussy', kind: 'rayed', lon: 13, lat: -34, r: 2.6, rays: 8 },
+            { name: 'Rembrandt', kind: 'basin', lon: 88, lat: -33, r: 7 },
+            { name: 'Tolstoj', kind: 'basin', lon: -164, lat: -16, r: 5 },
+            { name: 'Beethoven', kind: 'basin', lon: -124, lat: -20, r: 9 },
+            { name: 'Rachmaninoff', kind: 'basin', lon: 58, lat: 28, r: 4 },
+            { name: 'Sobkou Planitia', kind: 'basin', lon: -130, lat: 35, r: 6 },
+            // Antipodal to Caloris: the "weird terrain", hills thrown up where the
+            // impact's seismic waves met again on the far side of the planet.
+            { name: 'Chaotic terrain', kind: 'basin', lon: -17, lat: -30, r: 7 }
+          ];
+          var SOLAR_MERCURY_PLAINS = [[-30, 55], [60, 52], [120, 58], [120, 80], [-30, 80]];
+          function solarMercuryCraterField() {
+            var rnd = solarSeededRandom(2601), field = [];
+            for (var i = 0; i < 240; i++) {
+              var lat = (rnd() * 2 - 1) * 80;
+              field.push({ lon: rnd() * 360 - 180, lat: lat, r: 0.6 + rnd() * rnd() * 4.5 });
+            }
+            return field;
+          }
+          var SOLAR_MERCURY_CRATERS = solarMercuryCraterField();
+          function solarPaintPlutoEquirect(g, W, H) {
+            function X(lon) { return (lon + 180) / 360 * W; }
+            function Y(lat) { return (90 - lat) / 180 * H; }
+            function poly(pts) {
+              var sm = solarSmoothRing(pts);
+              g.beginPath();
+              for (var i = 0; i < sm.length; i++) { var x = X(sm[i][0]), y = Y(sm[i][1]); if (i === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+              g.closePath();
+            }
+            var bg = g.createLinearGradient(0, 0, 0, H);
+            bg.addColorStop(0, '#d2b89c'); bg.addColorStop(0.5, SOLAR_PLUTO_PAINT.base); bg.addColorStop(1, '#b8987a');
+            g.fillStyle = bg; g.fillRect(0, 0, W, H);
+            var rnd = solarSeededRandom(1930);
+            for (var m = 0; m < 70; m++) {
+              var mr = (0.006 + rnd() * rnd() * 0.05) * W;
+              g.fillStyle = 'rgba(' + (100 + Math.floor(rnd() * 70)) + ',' + (70 + Math.floor(rnd() * 40)) + ',' + (50 + Math.floor(rnd() * 30)) + ',' + (0.07 + rnd() * 0.1).toFixed(3) + ')';
+              g.beginPath();
+              g.ellipse(rnd() * W, rnd() * H, mr, mr * (0.5 + rnd() * 0.6), rnd() * 3, 0, Math.PI * 2);
+              g.fill();
+            }
+            // Paint every region at three longitudes. Anything crossing 180 E has
+            // part of itself off one edge of an equirectangular canvas, and the
+            // copy a turn away supplies the piece that belongs on the other side.
+            for (var ri = 0; ri < SOLAR_PLUTO_REGIONS.length; ri++) {
+              var reg = SOLAR_PLUTO_REGIONS[ri];
+              g.fillStyle = SOLAR_PLUTO_PAINT[reg.kind];
+              if (reg.kind === 'polar') { poly(reg.pts); g.fill(); continue; }
+              for (var shift = -360; shift <= 360; shift += 360) {
+                (function (sh) {
+                  poly(reg.pts.map(function (q) { return [q[0] + sh, q[1]]; }));
+                })(shift);
+                g.fill();
+              }
+            }
+            g.fillStyle = SOLAR_PLUTO_PAINT.crater;
+            for (var ci = 0; ci < SOLAR_PLUTO_CRATERS.length; ci++) {
+              var pcr = W * (0.008 + (ci % 3) * 0.005);
+              g.beginPath(); g.arc(X(SOLAR_PLUTO_CRATERS[ci][0]), Y(SOLAR_PLUTO_CRATERS[ci][1]), pcr, 0, Math.PI * 2); g.fill();
+            }
+          }
+          function solarPaintMercuryEquirect(g, W, H) {
+            function X(lon) { return (lon + 180) / 360 * W; }
+            function Y(lat) { return (90 - lat) / 180 * H; }
+            g.fillStyle = SOLAR_MERCURY_PAINT.base; g.fillRect(0, 0, W, H);
+            var rnd = solarSeededRandom(4470);
+            for (var sp = 0; sp < 1400; sp++) {
+              g.fillStyle = 'rgba(' + (rnd() < 0.5 ? '255,255,255' : '0,0,0') + ',' + (0.04 + rnd() * 0.08) + ')';
+              g.fillRect(rnd() * W, rnd() * H, 1 + rnd() * 2, 1 + rnd() * 2);
+            }
+            var pl = solarSmoothRing(SOLAR_MERCURY_PLAINS);
+            g.beginPath(); for (var pi = 0; pi < pl.length; pi++) { if (pi === 0) g.moveTo(X(pl[pi][0]), Y(pl[pi][1])); else g.lineTo(X(pl[pi][0]), Y(pl[pi][1])); } g.closePath();
+            g.fillStyle = SOLAR_MERCURY_PAINT.plains; g.fill();
+            var ci;
+            for (ci = 0; ci < SOLAR_MERCURY_CRATERS.length; ci++) {
+              var cr = SOLAR_MERCURY_CRATERS[ci], crr = cr.r / 360 * W;
+              g.fillStyle = SOLAR_MERCURY_PAINT.crater; g.beginPath(); g.arc(X(cr.lon), Y(cr.lat), crr, 0, Math.PI * 2); g.fill();
+              g.strokeStyle = SOLAR_MERCURY_PAINT.rim; g.lineWidth = Math.max(0.6, crr * 0.18); g.beginPath(); g.arc(X(cr.lon), Y(cr.lat), crr, Math.PI * 0.8, Math.PI * 1.8); g.stroke();
+            }
+            for (ci = 0; ci < SOLAR_MERCURY_FEATURES.length; ci++) {
+              var f = SOLAR_MERCURY_FEATURES[ci], fr = f.r / 360 * W, fx = X(f.lon), fy = Y(f.lat);
+              if (f.kind === 'basin') {
+                g.fillStyle = 'rgba(150,144,136,0.5)';
+                g.beginPath(); g.arc(fx, fy, fr * 1.28, 0, Math.PI * 2); g.fill();
+                g.fillStyle = SOLAR_MERCURY_PAINT.basinFloor;
+                g.beginPath(); g.arc(fx, fy, fr, 0, Math.PI * 2); g.fill();
+                g.strokeStyle = SOLAR_MERCURY_PAINT.basinRim; g.lineWidth = Math.max(1.5, fr * 0.16);
+                g.beginPath(); g.arc(fx, fy, fr, 0, Math.PI * 2); g.stroke();
+                // Concentric inner ring: these are multi-ring basins, not craters.
+                g.strokeStyle = 'rgba(50,46,42,0.4)'; g.lineWidth = Math.max(1, fr * 0.07);
+                g.beginPath(); g.arc(fx, fy, fr * 0.58, 0, Math.PI * 2); g.stroke();
+              } else {
+                g.strokeStyle = SOLAR_MERCURY_PAINT.ray; g.lineWidth = Math.max(0.8, fr * 0.16);
+                for (var ry = 0; ry < f.rays; ry++) {
+                  var ang = ry / f.rays * Math.PI * 2 + 0.3, len = fr * (3.5 + (ry % 3) * 1.6);
+                  g.beginPath(); g.moveTo(fx + Math.cos(ang) * fr, fy + Math.sin(ang) * fr); g.lineTo(fx + Math.cos(ang) * len, fy + Math.sin(ang) * len); g.stroke();
+                }
+                g.fillStyle = '#d9d5cf'; g.beginPath(); g.arc(fx, fy, fr, 0, Math.PI * 2); g.fill();
+                g.fillStyle = SOLAR_MERCURY_PAINT.crater; g.beginPath(); g.arc(fx, fy, fr * 0.6, 0, Math.PI * 2); g.fill();
+              }
+            }
+          }
+          // Portrait thumbnails, painted once per world and cached as data URLs.
+          // They project the SAME geography the cards and globes use, so a world is
+          // recognisable at 48 px in the chooser and identical to the one the learner
+          // opens. The old table was CSS gradients, which cannot draw a coastline.
+          var SOLAR_PORTRAIT_CACHE = {};
+          function solarWorldPortrait(key) {
+            if (SOLAR_PORTRAIT_CACHE[key] !== undefined) return SOLAR_PORTRAIT_CACHE[key];
+            var result = null;
+            try {
+              var S = 256, R = S * 0.5;
+              var cv = document.createElement('canvas');
+              cv.setAttribute('aria-hidden', 'true');
+              cv.width = cv.height = S;
+              var g = cv.getContext('2d');
+              if (!g) { SOLAR_PORTRAIT_CACHE[key] = null; return null; }
+              var cx = R, cy = R, lambda0 = key === 'Pluto' ? 3.05 : key === 'Mars' ? 4.9 : key === 'Earth' ? 0.35 : 0.6;
+              var phi0 = 12 * Math.PI / 180;
+              var palette = SOLAR_BODY_PALETTE[key] || ['#8a8a8a', '#333333'];
+              g.save();
+              g.beginPath(); g.arc(cx, cy, R * 0.97, 0, Math.PI * 2); g.clip();
+              var base = g.createRadialGradient(cx - R * 0.3, cy - R * 0.32, R * 0.08, cx, cy, R);
+              base.addColorStop(0, palette[0]);
+              base.addColorStop(0.72, palette[0]);
+              base.addColorStop(1, palette[1]);
+              g.fillStyle = base;
+              g.fillRect(0, 0, S, S);
+              var i;
+              if (key === 'Earth') {
+                var ocean = g.createRadialGradient(cx - R * 0.3, cy - R * 0.3, R * 0.1, cx, cy, R);
+                ocean.addColorStop(0, '#3b7fc4'); ocean.addColorStop(0.65, SOLAR_EARTH_PAINT.oceanShallow); ocean.addColorStop(1, SOLAR_EARTH_PAINT.oceanDeep);
+                g.fillStyle = ocean; g.fillRect(0, 0, S, S);
+                for (i = 0; i < SOLAR_EARTH_LAND.length; i++) {
+                  if (solarDrawOrthoPoly(g, SOLAR_EARTH_LAND[i].pts, cx, cy, R * 0.97, lambda0, phi0)) {
+                    g.fillStyle = SOLAR_EARTH_LAND[i].water ? SOLAR_EARTH_PAINT.oceanShallow : SOLAR_EARTH_PAINT.land;
+                    g.fill();
+                  }
+                }
+                for (i = 0; i < SOLAR_EARTH_OVERLAYS.length; i++) {
+                  if (solarDrawOrthoPoly(g, SOLAR_EARTH_OVERLAYS[i].pts, cx, cy, R * 0.97, lambda0, phi0)) {
+                    g.fillStyle = SOLAR_EARTH_PAINT[SOLAR_EARTH_OVERLAYS[i].kind];
+                    g.globalAlpha = SOLAR_EARTH_OVERLAYS[i].kind === 'forest' ? 0.7 : 0.92;
+                    g.fill();
+                    g.globalAlpha = 1;
+                  }
+                }
+              } else if (key === 'Mars') {
+                for (i = 0; i < SOLAR_MARS_BRIGHT.length; i++) {
+                  if (solarDrawOrthoPoly(g, solarMarsPoly(SOLAR_MARS_BRIGHT[i].pts), cx, cy, R * 0.97, lambda0, phi0)) { g.globalAlpha = 0.8; g.fillStyle = SOLAR_MARS_PAINT.dust; g.fill(); g.globalAlpha = 1; }
+                }
+                for (i = 0; i < SOLAR_MARS_DARK.length; i++) {
+                  if (solarDrawOrthoPoly(g, solarMarsPoly(SOLAR_MARS_DARK[i].pts), cx, cy, R * 0.97, lambda0, phi0)) { g.fillStyle = SOLAR_MARS_DARK[i].soft ? SOLAR_MARS_PAINT.darkSoft : SOLAR_MARS_PAINT.dark; g.fill(); }
+                }
+                g.fillStyle = SOLAR_MARS_PAINT.cap;
+                if (solarDrawOrthoPoly(g, solarMarsCapPolygon(true), cx, cy, R * 0.97, lambda0, phi0)) g.fill();
+                if (solarDrawOrthoPoly(g, solarMarsCapPolygon(false), cx, cy, R * 0.97, lambda0, phi0)) g.fill();
+              } else if (key === 'Pluto') {
+                for (i = 0; i < SOLAR_PLUTO_REGIONS.length; i++) {
+                  if (solarDrawOrthoPoly(g, SOLAR_PLUTO_REGIONS[i].pts, cx, cy, R * 0.97, lambda0, phi0)) { g.fillStyle = SOLAR_PLUTO_PAINT[SOLAR_PLUTO_REGIONS[i].kind]; g.fill(); }
+                }
+              } else if (key === 'Mercury') {
+                for (i = 0; i < SOLAR_MERCURY_CRATERS.length; i++) {
+                  var mq = solarOrtho(SOLAR_MERCURY_CRATERS[i].lon, SOLAR_MERCURY_CRATERS[i].lat, lambda0, phi0, R * 0.97);
+                  if (mq.z <= 0.05) continue;
+                  var mr = R * 0.97 * (SOLAR_MERCURY_CRATERS[i].r / 90);
+                  g.fillStyle = SOLAR_MERCURY_PAINT.crater;
+                  g.beginPath(); g.ellipse(cx + mq.x, cy + mq.y, mr * (0.3 + 0.7 * mq.z), mr, 0, 0, Math.PI * 2); g.fill();
+                }
+                for (i = 0; i < SOLAR_MERCURY_FEATURES.length; i++) {
+                  var mf = SOLAR_MERCURY_FEATURES[i];
+                  if (mf.kind !== 'basin') continue;
+                  var fq = solarOrtho(mf.lon, mf.lat, lambda0, phi0, R * 0.97);
+                  if (fq.z <= 0.05) continue;
+                  var fr = R * 0.97 * (mf.r / 90);
+                  g.fillStyle = SOLAR_MERCURY_PAINT.basinFloor;
+                  g.beginPath(); g.ellipse(cx + fq.x, cy + fq.y, fr * (0.3 + 0.7 * fq.z), fr, 0, 0, Math.PI * 2); g.fill();
+                }
+              } else if (SOLAR_LAT_BANDS[key]) {
+                var bands = SOLAR_LAT_BANDS[key];
+                for (i = 0; i < bands.length; i++) {
+                  if (solarLatBandPath(g, bands[i][0], bands[i][1], cx, cy, R * 0.98, phi0)) {
+                    g.globalAlpha = bands[i][3]; g.fillStyle = bands[i][2]; g.fill(); g.globalAlpha = 1;
+                  }
+                }
+                var storm = SOLAR_STORMS[key];
+                if (storm) {
+                  var sq = solarOrthoRel(0.5, storm.lat, phi0, R * 0.98);
+                  if (sq.z > 0.1) {
+                    g.fillStyle = storm.core;
+                    g.beginPath(); g.ellipse(cx + sq.x, cy + sq.y, R * (storm.lonW / 90) * sq.z, R * (storm.latH / 90), 0, 0, Math.PI * 2); g.fill();
+                  }
+                }
+              }
+              // Terminator, so the thumbnail reads as a lit sphere rather than a sticker.
+              var shade = g.createRadialGradient(cx - R * 0.34, cy - R * 0.34, R * 0.12, cx - R * 0.34, cy - R * 0.34, R * 1.85);
+              shade.addColorStop(0, 'rgba(255,255,255,0.14)');
+              shade.addColorStop(0.5, 'rgba(0,0,0,0)');
+              shade.addColorStop(1, 'rgba(0,0,0,0.66)');
+              g.fillStyle = shade; g.fillRect(0, 0, S, S);
+              g.restore();
+              result = 'url("' + cv.toDataURL('image/png') + '")';
+            } catch (portraitError) {
+              result = null;
+            }
+            SOLAR_PORTRAIT_CACHE[key] = result;
+            return result;
+          }
+          // Falls back to the old gradient if a canvas is unavailable (server render).
+          function solarPortraitFor(key) {
+            return solarWorldPortrait(key) || PLANET_PORTRAITS[key];
+          }
           var PLANET_KINDS = {
             Mercury: 'Rocky', Venus: 'Rocky', Earth: 'Rocky', Mars: 'Rocky',
             Jupiter: 'Gas giant', Saturn: 'Gas giant', Uranus: 'Ice giant', Neptune: 'Ice giant', Pluto: 'Dwarf world'
@@ -1354,7 +2222,7 @@ const d = labToolData.solarSystem || {};
               var ringHeight = Math.max(4, diameter * 0.28);
               return React.createElement("div", { className: "solar-compare-world", key: 'compare-world-' + p.key },
                 React.createElement("div", { className: "solar-compare-visual", "aria-hidden": "true", style: {
-                  '--compare-portrait': PLANET_PORTRAITS[p.key],
+                  '--compare-portrait': solarPortraitFor(p.key),
                   '--compare-glow': p.color,
                   '--compare-ring-color': ringColorFor(p),
                   '--compare-ring-width': ringWidth + 'px',
@@ -1469,7 +2337,12 @@ const d = labToolData.solarSystem || {};
             var planetX = 320 + 215 * Math.cos(orbitTheta);
             var planetY = 140 + 88 * Math.sin(orbitTheta);
             var axisLength = 34;
-            var axisX = Math.sin(world.tiltDeg * Math.PI / 180) * axisLength;
+            // The axis keeps ONE fixed direction in space, and that direction has to
+            // agree with the declination the readouts use: at phase 25 the model puts
+            // the subsolar point at +23.4 degrees, northern summer, with the planet
+            // drawn to the RIGHT of the Sun. So the north end must lean LEFT, toward
+            // the Sun. Leaning it right drew every solstice as the opposite season.
+            var axisX = -Math.sin(world.tiltDeg * Math.PI / 180) * axisLength;
             var axisY = -Math.cos(world.tiltDeg * Math.PI / 180) * axisLength;
             var sunlightDescription = planet.name + ' at ' + phaseLabel + '. At 45 degrees latitude, the north has ' + northMetrics.dayHours.toFixed(1) + ' hours of daylight and a ' + northMetrics.noonElevation.toFixed(1) + ' degree noon Sun; the south has ' + southMetrics.dayHours.toFixed(1) + ' hours and a ' + southMetrics.noonElevation.toFixed(1) + ' degree noon Sun.';
             var seasonAnswer = expectedHemisphere === 'equal'
@@ -2456,6 +3329,26 @@ const d = labToolData.solarSystem || {};
 
               scene.add(sun);
 
+              // Limb darkening: the Sun's edge is measurably dimmer and redder than
+              // its centre, because a sightline near the limb only reaches the cooler
+              // upper photosphere. A camera-facing overlay is the cheap way to show it
+              // on a sphere without a custom shader.
+              const limbCanvas = document.createElement('canvas'); limbCanvas.setAttribute('aria-hidden', 'true');
+              limbCanvas.width = limbCanvas.height = 128;
+              const limbCtx = limbCanvas.getContext('2d');
+              const limbGrad = limbCtx.createRadialGradient(64, 64, 10, 64, 64, 64);
+              limbGrad.addColorStop(0, 'rgba(120,40,0,0)');
+              limbGrad.addColorStop(0.62, 'rgba(120,40,0,0.05)');
+              limbGrad.addColorStop(0.88, 'rgba(122,44,4,0.3)');
+              limbGrad.addColorStop(1, 'rgba(96,30,0,0.55)');
+              limbCtx.fillStyle = limbGrad;
+              limbCtx.beginPath(); limbCtx.arc(64, 64, 64, 0, Math.PI * 2); limbCtx.fill();
+              const limbSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: new THREE.CanvasTexture(limbCanvas), transparent: true, depthWrite: false, depthTest: false
+              }));
+              limbSprite.scale.set(11.2, 11.2, 1);
+              limbSprite.renderOrder = 2;
+              sun.add(limbSprite);
               const sunLight = new THREE.PointLight(0xffffff, 1.5, 200);
 
               scene.add(sunLight);
@@ -2537,7 +3430,10 @@ const d = labToolData.solarSystem || {};
               // Regio heart on Pluto...) so planets are recognizable at a glance instead of
               // generic noise balls. Painted once at scene init; 256×128 each.
               function makeWorldTex(p, idx) {
-                const W = 256, H = 128;
+                // Earth carries real geography, so it gets four times the texel budget.
+                // Every world with painted geography or band structure gets the full
+                // budget; only the generic-noise fallback still uses 256.
+                const W = p.terrainType === 'volcanic' ? 256 : 1024, H = W / 2;
                 const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
                 c.width = W; c.height = H;
                 const g = c.getContext('2d');
@@ -2545,35 +3441,30 @@ const d = labToolData.solarSystem || {};
                 function tint(f, a) {
                   return 'rgba(' + Math.min(255, Math.round(R0 * f)) + ',' + Math.min(255, Math.round(G0 * f)) + ',' + Math.min(255, Math.round(B0 * f)) + ',' + (a == null ? 1 : a) + ')';
                 }
-                // Horizontal latitude bands with sine-warped edges (gas/ice giants)
-                function drawBands(bands, warpAmp, warpFreq) {
-                  for (let x = 0; x < W; x++) {
-                    const off = Math.sin(x * warpFreq) * warpAmp + Math.sin(x * warpFreq * 2.7 + 1.3) * warpAmp * 0.5;
-                    for (let b = 0; b < bands.length; b++) {
-                      const y0 = (b / bands.length) * H + off * Math.sin(b * 1.7 + x * 0.02);
-                      const y1 = ((b + 1) / bands.length) * H + off * Math.sin((b + 1) * 1.7 + x * 0.02);
-                      g.fillStyle = bands[b];
-                      g.fillRect(x, y0, 1, Math.max(1, y1 - y0 + 1));
-                    }
-                  }
-                }
                 if (p.terrainType === 'cratered') {
-                  // Mercury: airless regolith speckle + craters with sunlit rims
-                  g.fillStyle = tint(0.9); g.fillRect(0, 0, W, H);
-                  for (let s = 0; s < 900; s++) {
-                    g.fillStyle = tint(0.75 + Math.random() * 0.45, 0.5);
-                    g.fillRect(Math.random() * W, Math.random() * H, 1, 1);
-                  }
-                  for (let cr = 0; cr < 34; cr++) {
-                    const cx = Math.random() * W, cy = 8 + Math.random() * (H - 16), r = 2 + Math.random() * 7;
-                    g.fillStyle = tint(0.62, 0.9);
-                    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
-                    g.strokeStyle = tint(1.3, 0.8); g.lineWidth = 1;
-                    g.beginPath(); g.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 1.75); g.stroke();
-                  }
+                  // Mercury: Caloris, the rayed craters, and a seeded crater field
+                  // from the shared table.
+                  solarPaintMercuryEquirect(g, W, H);
                 } else if (p.terrainType === 'volcanic') {
-                  // Venus: sulfuric cloud deck — warm bands + chevron swirls (the UV "Y" pattern)
-                  drawBands(['#e8c884', '#f4dca4', '#d9ae66', '#f0d494', '#e2bc74', '#f6e0ac', '#dcb26c', '#eccc8c'], 5, 0.05);
+                  // Venus: sulfuric cloud deck — a smooth cream haze whose only
+                  // structure is the broad ultraviolet chevron. In visible light the
+                  // disc is essentially featureless, so there are no crisp bands.
+                  const venusDeck = g.createLinearGradient(0, 0, 0, H);
+                  venusDeck.addColorStop(0, '#d9b877');
+                  venusDeck.addColorStop(0.28, '#f2dfa8');
+                  venusDeck.addColorStop(0.5, '#f8ebc4');
+                  venusDeck.addColorStop(0.72, '#efd9a0');
+                  venusDeck.addColorStop(1, '#d2ad6c');
+                  g.fillStyle = venusDeck; g.fillRect(0, 0, W, H);
+                  const venusRnd = solarSeededRandom(2243);
+                  g.globalAlpha = 0.16;
+                  for (let vh = 0; vh < 60; vh++) {
+                    g.fillStyle = venusRnd() < 0.5 ? '#fff6dc' : '#c99a4e';
+                    g.beginPath();
+                    g.ellipse(venusRnd() * W, venusRnd() * H, W * (0.03 + venusRnd() * 0.09), H * 0.02, 0, 0, Math.PI * 2);
+                    g.fill();
+                  }
+                  g.globalAlpha = 1;
                   g.globalAlpha = 0.18; g.strokeStyle = '#fff2cc'; g.lineWidth = 3;
                   for (let v = 0; v < 7; v++) {
                     g.beginPath();
@@ -2585,119 +3476,50 @@ const d = labToolData.solarSystem || {};
                   }
                   g.globalAlpha = 1;
                 } else if (p.terrainType === 'earthlike') {
-                  // Earth: oceans, continent clusters, ragged ice caps, cloud streaks
-                  const og = g.createLinearGradient(0, 0, 0, H);
-                  og.addColorStop(0, '#27538f'); og.addColorStop(0.5, '#1d63b8'); og.addColorStop(1, '#27538f');
-                  g.fillStyle = og; g.fillRect(0, 0, W, H);
-                  for (let ct = 0; ct < 7; ct++) {
-                    const bx = Math.random() * W, by = H * 0.2 + Math.random() * H * 0.6;
-                    for (let bl = 0; bl < 22; bl++) {
-                      const px = bx + (Math.random() - 0.5) * 46, py = by + (Math.random() - 0.5) * 26;
-                      g.fillStyle = Math.random() < 0.28 ? '#b09a62' : (Math.random() < 0.5 ? '#3f8f46' : '#356e3c');
-                      g.beginPath(); g.arc((px + W) % W, py, 3 + Math.random() * 8, 0, Math.PI * 2); g.fill();
-                    }
-                  }
-                  g.fillStyle = '#eef6fb';
-                  for (let x = 0; x < W; x += 2) {
-                    g.fillRect(x, 0, 2, 9 + Math.sin(x * 0.11) * 3 + Math.random() * 3);
-                    const capS = 9 + Math.cos(x * 0.13) * 3 + Math.random() * 3;
-                    g.fillRect(x, H - capS, 2, capS);
-                  }
-                  g.globalAlpha = 0.5; g.fillStyle = '#ffffff';
-                  for (let cl = 0; cl < 26; cl++) {
-                    g.beginPath();
-                    g.ellipse(Math.random() * W, Math.random() * H, 7 + Math.random() * 17, 1.6 + Math.random() * 2.4, 0, 0, Math.PI * 2);
-                    g.fill();
-                  }
-                  g.globalAlpha = 1;
+                  // Earth: real coastlines, deserts, forests, tundra, and ice from the
+                  // shared geography table, with deterministic clouds.
+                  solarPaintEarthEquirect(g, W, H, false);
                 } else if (p.terrainType === 'desert') {
-                  // Mars: rust dunes, dark basalt maria, a canyon scar, small polar caps
-                  const mg = g.createLinearGradient(0, 0, 0, H);
-                  mg.addColorStop(0, '#b4573a'); mg.addColorStop(0.5, '#c96a42'); mg.addColorStop(1, '#a85234');
-                  g.fillStyle = mg; g.fillRect(0, 0, W, H);
-                  for (let mm = 0; mm < 9; mm++) {
-                    g.fillStyle = mm % 3 === 0 ? 'rgba(230,170,120,0.35)' : 'rgba(90,42,28,0.4)';
-                    g.beginPath();
-                    g.ellipse(Math.random() * W, H * 0.25 + Math.random() * H * 0.5, 12 + Math.random() * 26, 5 + Math.random() * 10, Math.random() * 0.8 - 0.4, 0, Math.PI * 2);
-                    g.fill();
-                  }
-                  g.strokeStyle = 'rgba(70,30,20,0.55)'; g.lineWidth = 2.5;
-                  g.beginPath(); g.moveTo(W * 0.3, H * 0.55);
-                  g.bezierCurveTo(W * 0.42, H * 0.5, W * 0.52, H * 0.58, W * 0.62, H * 0.53); g.stroke();
-                  g.fillStyle = '#f2ede4';
-                  for (let x = 0; x < W; x += 2) {
-                    g.fillRect(x, 0, 2, 5 + Math.random() * 3);
-                    g.fillRect(x, H - (4 + Math.random() * 3), 2, 8);
-                  }
+                  // Mars: classical albedo markings, Tharsis volcanoes, Valles
+                  // Marineris, and residual polar caps from the shared table.
+                  solarPaintMarsEquirect(g, W, H);
                 } else if (p.terrainType === 'gasgiant' && idx === 4) {
-                  // Jupiter: high-contrast belts + Great Red Spot + white oval storms
-                  drawBands(['#e8d5b5', '#c9a06a', '#f2e4c8', '#b5713f', '#ead8b8', '#a8622f', '#f4e8d0', '#c08a52', '#e5d0ac', '#caa273'], 3.5, 0.06);
-                  g.globalAlpha = 0.22;
-                  for (let jt = 0; jt < 60; jt++) {
-                    g.fillStyle = Math.random() < 0.5 ? '#fff4dd' : '#8a4a20';
-                    g.fillRect(Math.random() * W, Math.random() * H, 10 + Math.random() * 30, 1);
-                  }
-                  g.globalAlpha = 1;
-                  g.fillStyle = 'rgba(244,232,208,0.85)';
-                  g.beginPath(); g.ellipse(W * 0.68, H * 0.66, 15, 8, 0, 0, Math.PI * 2); g.fill();
-                  g.fillStyle = '#c0492e';
-                  g.beginPath(); g.ellipse(W * 0.68, H * 0.66, 12, 6, 0, 0, Math.PI * 2); g.fill();
-                  g.fillStyle = '#9c3a24';
-                  g.beginPath(); g.ellipse(W * 0.68, H * 0.66, 7, 3.6, 0, 0, Math.PI * 2); g.fill();
-                  g.fillStyle = 'rgba(255,248,230,0.8)';
-                  for (let ws = 0; ws < 5; ws++) {
-                    g.beginPath();
-                    g.ellipse(Math.random() * W, H * (0.6 + Math.random() * 0.25), 3 + Math.random() * 3, 1.6 + Math.random(), 0, 0, Math.PI * 2);
-                    g.fill();
-                  }
+                  // Jupiter: real belts and zones, the Great Red Spot at 22 S, and
+                  // the white ovals, all from the shared tables.
+                  solarPaintGiantEquirect(g, W, H, 'Jupiter');
                 } else if (p.terrainType === 'gasgiant') {
-                  // Saturn: soft muted gold bands under a smoothing haze + dark polar cap
-                  drawBands(['#e9d9a8', '#dcc088', '#f0e2b8', '#d2b478', '#e6d4a0', '#d8bc84', '#eee0b4', '#d5b87e'], 2, 0.04);
-                  const hz = g.createLinearGradient(0, 0, 0, H);
-                  hz.addColorStop(0, 'rgba(240,228,190,0.35)'); hz.addColorStop(0.5, 'rgba(240,228,190,0)'); hz.addColorStop(1, 'rgba(226,208,160,0.35)');
-                  g.fillStyle = hz; g.fillRect(0, 0, W, H);
+                  // Saturn: the same band structure, muted, under a polar haze.
+                  solarPaintGiantEquirect(g, W, H, 'Saturn');
+                  const saturnHaze = g.createLinearGradient(0, 0, 0, H);
+                  saturnHaze.addColorStop(0, 'rgba(240,228,190,0.35)');
+                  saturnHaze.addColorStop(0.5, 'rgba(240,228,190,0)');
+                  saturnHaze.addColorStop(1, 'rgba(226,208,160,0.35)');
+                  g.fillStyle = saturnHaze; g.fillRect(0, 0, W, H);
                   g.fillStyle = 'rgba(140,110,70,0.45)';
-                  g.fillRect(0, 0, W, 6);
+                  g.fillRect(0, 0, W, H * 0.045);
                 } else if (p.terrainType === 'icegiant' && idx === 6) {
-                  // Uranus: near-featureless teal with a bright sunlit polar hood
-                  g.fillStyle = '#8fd8de'; g.fillRect(0, 0, W, H);
-                  const ug = g.createLinearGradient(0, 0, 0, H);
-                  ug.addColorStop(0, 'rgba(255,255,255,0.22)'); ug.addColorStop(0.45, 'rgba(120,210,220,0)'); ug.addColorStop(1, 'rgba(60,150,170,0.28)');
-                  g.fillStyle = ug; g.fillRect(0, 0, W, H);
-                  g.globalAlpha = 0.08; g.fillStyle = '#ffffff';
-                  for (let ub = 0; ub < 5; ub++) g.fillRect(0, H * (0.18 + ub * 0.16), W, 3);
-                  g.globalAlpha = 1;
+                  // Uranus: almost featureless teal, with the bright sunlit polar hood.
+                  solarPaintGiantEquirect(g, W, H, 'Uranus');
+                  const uranusHood = g.createLinearGradient(0, 0, 0, H);
+                  uranusHood.addColorStop(0, 'rgba(255,255,255,0.22)');
+                  uranusHood.addColorStop(0.45, 'rgba(120,210,220,0)');
+                  uranusHood.addColorStop(1, 'rgba(60,150,170,0.28)');
+                  g.fillStyle = uranusHood; g.fillRect(0, 0, W, H);
                   g.fillStyle = 'rgba(220,245,248,0.5)';
-                  g.beginPath(); g.ellipse(W * 0.5, 6, W * 0.3, 10, 0, 0, Math.PI * 2); g.fill();
+                  g.beginPath(); g.ellipse(W * 0.5, H * 0.05, W * 0.3, H * 0.08, 0, 0, Math.PI * 2); g.fill();
                 } else if (p.terrainType === 'icegiant') {
-                  // Neptune: deep blue belts, methane cirrus streaks, Great Dark Spot
-                  drawBands(['#3d55c8', '#2a3fa8', '#4a63d8', '#2f47b4', '#4159cc', '#26389c'], 2.5, 0.05);
+                  // Neptune: deep methane blue, bright cirrus streaks, and the dark spot.
+                  solarPaintGiantEquirect(g, W, H, 'Neptune');
+                  const neptuneRnd = solarSeededRandom(8317);
                   g.globalAlpha = 0.55; g.fillStyle = '#dce8ff';
-                  for (let nc = 0; nc < 10; nc++) {
-                    g.fillRect(Math.random() * W, H * (0.2 + Math.random() * 0.5), 18 + Math.random() * 40, 1.5);
+                  for (let nc = 0; nc < 14; nc++) {
+                    g.fillRect(neptuneRnd() * W, H * (0.2 + neptuneRnd() * 0.5), W * (0.05 + neptuneRnd() * 0.12), Math.max(1, H * 0.008));
                   }
                   g.globalAlpha = 1;
-                  g.fillStyle = 'rgba(12,20,72,0.75)';
-                  g.beginPath(); g.ellipse(W * 0.42, H * 0.42, 13, 7, 0, 0, Math.PI * 2); g.fill();
-                  g.strokeStyle = 'rgba(150,180,255,0.4)'; g.lineWidth = 1.5;
-                  g.beginPath(); g.ellipse(W * 0.42, H * 0.42, 13, 7, 0, 0, Math.PI * 2); g.stroke();
                 } else if (p.terrainType === 'iceworld') {
-                  // Pluto: mottled tholin patches, dark Cthulhu Macula, bright Tombaugh Regio heart
-                  g.fillStyle = '#c9b493'; g.fillRect(0, 0, W, H);
-                  for (let pt = 0; pt < 40; pt++) {
-                    g.fillStyle = 'rgba(' + (120 + Math.floor(Math.random() * 60)) + ',' + (80 + Math.floor(Math.random() * 40)) + ',' + (50 + Math.floor(Math.random() * 30)) + ',0.3)';
-                    g.beginPath(); g.arc(Math.random() * W, Math.random() * H, 3 + Math.random() * 9, 0, Math.PI * 2); g.fill();
-                  }
-                  g.fillStyle = 'rgba(74,44,32,0.75)';
-                  g.beginPath(); g.ellipse(W * 0.30, H * 0.52, 34, 11, 0, 0, Math.PI * 2); g.fill();
-                  g.fillStyle = '#f2ead8';
-                  g.beginPath();
-                  g.arc(W * 0.60, H * 0.47, 8, 0, Math.PI * 2);
-                  g.arc(W * 0.66, H * 0.47, 8, 0, Math.PI * 2);
-                  g.fill();
-                  g.beginPath();
-                  g.moveTo(W * 0.545, H * 0.50); g.lineTo(W * 0.63, H * 0.68); g.lineTo(W * 0.715, H * 0.50);
-                  g.closePath(); g.fill();
+                  // Pluto: Sputnik Planitia, the east lobe, Cthulhu Macula, and Lowell
+                  // Regio at their New Horizons coordinates.
+                  solarPaintPlutoEquirect(g, W, H);
                 } else {
                   return makePlanetTex(p.rgb, 1.0 + idx * 0.3);
                 }
@@ -2715,6 +3537,19 @@ const d = labToolData.solarSystem || {};
 
               // â"€â"€ Create planets â"€â"€
 
+              // Moon materials come from the shared painters, so a named moon in the
+              // scene carries its real surface rather than a flat grey ball.
+              const solarMoonTexCache = {};
+              function solarMoonMaterial(kind, fallbackColor) {
+                if (!solarMoonTexCache[kind]) {
+                  const mc = document.createElement('canvas'); mc.setAttribute('aria-hidden', 'true');
+                  mc.width = 256; mc.height = 128;
+                  solarPaintMoonEquirect(mc.getContext('2d'), 256, 128, kind);
+                  const mt = new THREE.CanvasTexture(mc); mt.needsUpdate = true;
+                  solarMoonTexCache[kind] = mt;
+                }
+                return new THREE.MeshStandardMaterial({ map: solarMoonTexCache[kind], color: 0xffffff, roughness: kind === 'europa' || kind === 'enceladus' ? 0.55 : 0.9, metalness: 0 });
+              }
               const planetMeshes = [];
 
               const orbitLines = [];
@@ -2867,14 +3702,37 @@ const d = labToolData.solarSystem || {};
 
                 // Planet sphere
 
-                const geo = new THREE.SphereGeometry(p.size, 24, 24);
-
+                // 48 segments: at 24 the close-up silhouette showed visible facets.
+                const geo = new THREE.SphereGeometry(p.size, 48, 48);
                 const tex = makeWorldTex(p, idx);
-
                 const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: p.terrainType === 'earthlike' ? 0.45 : 0.8, metalness: 0.1 }); // ocean sun-glint on Earth
-
                 const mesh = new THREE.Mesh(geo, mat);
-
+                // Flatten along the spin axis (local y, before the tilt is applied).
+                if (SOLAR_OBLATENESS[p.key]) mesh.scale.y = 1 - SOLAR_OBLATENESS[p.key];
+                if (p.terrainType === 'earthlike') {
+                  // A separate cloud shell that turns a little faster than the
+                  // surface, so weather visibly moves over the continents instead
+                  // of being baked into the map.
+                  const cloudCv = document.createElement('canvas'); cloudCv.setAttribute('aria-hidden', 'true');
+                  cloudCv.width = 1024; cloudCv.height = 512;
+                  const cg = cloudCv.getContext('2d');
+                  const cloudRnd = solarSeededRandom(9137);
+                  cg.fillStyle = '#ffffff';
+                  for (let cl = 0; cl < 140; cl++) {
+                    const clat = (cloudRnd() * 2 - 1) * 72;
+                    const belt = Math.abs(clat) < 12 ? 0.75 : Math.abs(clat) > 42 ? 0.8 : 0.35;
+                    cg.globalAlpha = 0.35 + belt * 0.5 * cloudRnd();
+                    cg.beginPath();
+                    cg.ellipse(cloudRnd() * 1024, (90 - clat) / 180 * 512, 18 + cloudRnd() * 70, 5 + cloudRnd() * 12, (cloudRnd() - 0.5) * 0.6, 0, Math.PI * 2);
+                    cg.fill();
+                  }
+                  const cloudTex = new THREE.CanvasTexture(cloudCv); cloudTex.needsUpdate = true;
+                  const cloudMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(p.size * 1.018, 48, 48),
+                    new THREE.MeshStandardMaterial({ map: cloudTex, transparent: true, opacity: 0.9, depthWrite: false, roughness: 1, metalness: 0 })
+                  );
+                  mesh.add(cloudMesh); mesh._cloudMesh = cloudMesh;
+                }
                 mesh.userData = { name: p.name, idx: idx, orbitE: p.orbitE, orbitI: p.orbitI };
 
                 // Real axial tilt — Euler order ZXY means the per-frame rotation.y spin turns
@@ -2900,7 +3758,8 @@ const d = labToolData.solarSystem || {};
                 planetMeshes.push(mesh);
 
                 // Atmosphere glow — soft halo around planets with atmospheres
-                if (p.atmosphere && p.atmosphere !== 'None' && p.atmosphere.indexOf('None') === -1) {
+                // 'Virtually none' (Mercury) must count as none: an airless world has no halo.
+                if (p.atmosphere && !/\bnone\b/i.test(p.atmosphere) && p.terrainType !== 'cratered') {
                   var glowSize = p.size * 2.4;
                   var glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 128; glowCanvas.height = 128;
                   var gctx = glowCanvas.getContext('2d');
@@ -2918,56 +3777,152 @@ const d = labToolData.solarSystem || {};
                 // Saturn's rings
 
                 if (p.name === t('stem.solar_sys.earth')) {
-                  const moonGeo = new THREE.SphereGeometry(0.12, 8, 8);
-                  const moonMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.9 });
+                  const moonGeo = new THREE.SphereGeometry(0.12, 20, 20);
+                  const moonMat = solarMoonMaterial('luna');
                   const moonMesh = new THREE.Mesh(moonGeo, moonMat);
                   moonMesh._orbitAngle = 0; moonMesh._dist = p.size + 0.6;
                   mesh.add(moonMesh); mesh._moonObj = moonMesh;
                 }
                 if (p.name === t('stem.solar_sys.mars')) {
                   mesh._moons = [];
-                  for(let m=0; m<2; m++) {
-                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshStandardMaterial({color: 0x999999, roughness: 0.9})); // Phobos/Deimos now sunlit like every other moon
-                    jm._dist = p.size + 0.3 + m * 0.2; jm._orbitAngle = Math.random() * Math.PI * 2; jm._speed = 4 - m;
+                  // Phobos and Deimos are captured rubble, 22 km and 12 km across and
+                  // visibly lumpy, so they are squashed rather than left as spheres.
+                  const MARTIAN = [
+                    { r: 0.045, scale: [1.25, 0.82, 0.95], dist: 0.30, speed: 4, color: 0x7d736a },
+                    { r: 0.030, scale: [1.15, 0.88, 1.0], dist: 0.50, speed: 3, color: 0x8b8177 }
+                  ];
+                  for (let m = 0; m < MARTIAN.length; m++) {
+                    const mm = MARTIAN[m];
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(mm.r, 10, 8), new THREE.MeshStandardMaterial({ color: mm.color, roughness: 0.95, flatShading: true }));
+                    jm.scale.set(mm.scale[0], mm.scale[1], mm.scale[2]);
+                    jm._dist = p.size + mm.dist; jm._orbitAngle = m * 2.4; jm._speed = mm.speed;
                     mesh.add(jm); mesh._moons.push(jm);
                   }
                 }
                 if (p.name === t('stem.solar_sys.jupiter')) {
                   mesh._moons = [];
-                  for(let m=0; m<4; m++) {
-                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.08+Math.random()*0.05, 8, 8), new THREE.MeshStandardMaterial({color: 0xddccaa}));
-                    jm._dist = p.size + 0.6 + m * 0.4; jm._orbitAngle = Math.random() * Math.PI * 2; jm._speed = 3 - m * 0.4;
+                  // The four Galilean moons. Radii scale with the real ones (Ganymede
+                  // largest, Europa smallest), colours follow their surfaces (Io's
+                  // sulfur yellow, Europa's ice, Ganymede's grey-brown, Callisto's
+                  // dark crust), and orbital speeds follow their period ratios
+                  // (1.77 : 3.55 : 7.15 : 16.7 days). Distances stay compressed.
+                  const GALILEAN = [
+                    { name: 'Io', r: 0.10, color: 0xd9c56a, dist: 0.55, speed: 3.4 },
+                    { name: 'Europa', r: 0.085, color: 0xe8e4dc, dist: 0.85, speed: 1.7 },
+                    { name: 'Ganymede', r: 0.14, color: 0xa89a86, dist: 1.30, speed: 0.84 },
+                    { name: 'Callisto', r: 0.13, color: 0x6f665e, dist: 1.90, speed: 0.36 }
+                  ];
+                  for (let m = 0; m < GALILEAN.length; m++) {
+                    const gm = GALILEAN[m];
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(gm.r, 18, 18), solarMoonMaterial(gm.name.toLowerCase()));
+                    jm._dist = p.size + gm.dist; jm._orbitAngle = m * 1.7; jm._speed = gm.speed; jm.userData.moonName = gm.name;
                     mesh.add(jm); mesh._moons.push(jm);
                   }
                 }
                 if (p.name === t('stem.solar_sys.saturn')) {
                   mesh._moons = [];
-                  for(let m=0; m<3; m++) {
-                    const jm = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), new THREE.MeshStandardMaterial({color: 0xddddcc}));
-                    jm._dist = p.size * 2.4 + m * 0.5; jm._orbitAngle = Math.random() * Math.PI * 2; jm._speed = 2 - m * 0.3;
+                  // Enceladus (bright ice), Rhea, and Titan (orange haze) outside
+                  // the ring plane, with speeds in their real period ratios
+                  // (1.37 : 4.52 : 15.9 days).
+                  const SATURNIAN = [
+                    { name: 'Enceladus', r: 0.045, color: 0xf4f6f8, dist: 2.45, speed: 2.6 },
+                    { name: 'Rhea', r: 0.07, color: 0xd6d3cc, dist: 2.75, speed: 0.79 },
+                    { name: 'Titan', r: 0.15, color: 0xd8a052, dist: 3.25, speed: 0.22 }
+                  ];
+                  for (let m = 0; m < SATURNIAN.length; m++) {
+                    const sm = SATURNIAN[m];
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(sm.r, 18, 18),
+                      sm.name === 'Rhea' ? new THREE.MeshStandardMaterial({ color: sm.color, roughness: 0.9 })
+                        : solarMoonMaterial(sm.name.toLowerCase()));
+                    jm._dist = p.size * sm.dist; jm._orbitAngle = m * 2.1; jm._speed = sm.speed; jm.userData.moonName = sm.name;
+                    if (sm.name === 'Titan') {
+                      // Titan's haze stands hundreds of kilometres above the surface and
+                      // is the reason nothing below it is visible. Drawing it as a shell
+                      // rather than baking it into the ball is what makes it read as air.
+                      const hazeMesh = new THREE.Mesh(
+                        new THREE.SphereGeometry(sm.r * 1.22, 16, 16),
+                        new THREE.MeshBasicMaterial({ color: 0xe0a866, transparent: true, opacity: 0.28, side: THREE.BackSide, depthWrite: false })
+                      );
+                      jm.add(hazeMesh);
+                    }
                     mesh.add(jm); mesh._moons.push(jm);
                   }
                 }
 
+                if (p.name === t('stem.solar_sys.uranus')) {
+                  mesh._moons = [];
+                  // The five major moons orbit in Uranus' equatorial plane. Because
+                  // they hang off the tilted planet mesh they inherit its 98 degree
+                  // axis, so the whole system circles almost perpendicular to every
+                  // other orbit in the scene, which is exactly the point.
+                  const URANIAN = [
+                    { name: 'Miranda', r: 0.024, dist: 0.50, speed: 2.8 },
+                    { name: 'Ariel', r: 0.042, dist: 0.75, speed: 1.6 },
+                    { name: 'Umbriel', r: 0.041, dist: 1.00, speed: 0.97 },
+                    { name: 'Titania', r: 0.055, dist: 1.45, speed: 0.46 },
+                    { name: 'Oberon', r: 0.053, dist: 1.90, speed: 0.30 }
+                  ];
+                  for (let m = 0; m < URANIAN.length; m++) {
+                    const um = URANIAN[m];
+                    const jm = new THREE.Mesh(new THREE.SphereGeometry(um.r, 16, 16), solarMoonMaterial('uranian'));
+                    jm._dist = p.size + um.dist; jm._orbitAngle = m * 1.9; jm._speed = um.speed; jm.userData.moonName = um.name;
+                    mesh.add(jm); mesh._moons.push(jm);
+                  }
+                }
+                if (p.name === t('stem.solar_sys.neptune')) {
+                  mesh._moons = [];
+                  // Triton orbits BACKWARDS, the only large moon in the solar system
+                  // that does. A negative rate is the whole fact: it was captured
+                  // from the Kuiper Belt rather than forming alongside Neptune.
+                  const triton = new THREE.Mesh(new THREE.SphereGeometry(0.077, 18, 18), solarMoonMaterial('triton'));
+                  triton._dist = p.size + 0.9; triton._orbitAngle = 0.6; triton._speed = -0.68;
+                  triton.userData.moonName = 'Triton';
+                  triton.userData.retrograde = true;
+                  mesh.add(triton); mesh._moons.push(triton);
+                }
                 if (p.hasRings) {
 
                   const ringGeo = new THREE.RingGeometry(p.size * 1.2, p.size * 2.37, 96);
 
-                  const ringCanvas = document.createElement('canvas'); ringCanvas.setAttribute('aria-hidden', 'true'); ringCanvas.width = 256; ringCanvas.height = 1;
-
+                  // Radial profile from the real ring radii, in Saturn radii, mapped
+                  // across the mesh's 1.2 to 2.37 span. A smooth gradient turned the
+                  // Cassini Division into a soft shadow; it is a 4,700 km gap swept
+                  // clear by a resonance with Mimas, and it should read as a gap.
+                  const RING_W = 1024;
+                  const ringCanvas = document.createElement('canvas'); ringCanvas.setAttribute('aria-hidden', 'true'); ringCanvas.width = RING_W; ringCanvas.height = 1;
                   const rctx = ringCanvas.getContext('2d');
-
-                  const rGrad = rctx.createLinearGradient(0, 0, 256, 0);
-
-                  rGrad.addColorStop(0, 'rgba(210,180,120,0.0)'); rGrad.addColorStop(0.15, 'rgba(210,180,120,0.7)');
-
-                  rGrad.addColorStop(0.4, 'rgba(180,160,100,0.5)'); rGrad.addColorStop(0.5, 'rgba(140,130,80,0.1)');
-
-                  rGrad.addColorStop(0.6, 'rgba(200,170,110,0.6)'); rGrad.addColorStop(0.85, 'rgba(180,150,90,0.4)');
-
-                  rGrad.addColorStop(1, 'rgba(160,140,80,0.0)');
-
-                  rctx.fillStyle = rGrad; rctx.fillRect(0, 0, 256, 1);
+                  const ringProfile = [
+                    { from: 1.200, to: 1.236, a: 0.10, c: '#b9a880' },
+                    { from: 1.239, to: 1.527, a: 0.40, c: '#c3ac7d' },
+                    { from: 1.527, to: 1.760, a: 0.95, c: '#efe0b4' },
+                    { from: 1.760, to: 1.951, a: 0.86, c: '#e6d5a6' },
+                    { from: 1.951, to: 2.025, a: 0.06, c: '#8e8570' },
+                    { from: 2.025, to: 2.214, a: 0.66, c: '#ddc9a0' },
+                    { from: 2.214, to: 2.219, a: 0.03, c: '#6d6455' },
+                    { from: 2.219, to: 2.265, a: 0.62, c: '#d6c398' },
+                    { from: 2.265, to: 2.269, a: 0.05, c: '#6d6455' },
+                    { from: 2.269, to: 2.324, a: 0.04, c: '#7d7360' },
+                    { from: 2.324, to: 2.330, a: 0.34, c: '#efe6cc' }
+                  ];
+                  rctx.clearRect(0, 0, RING_W, 1);
+                  function solarRingU(rr) { return (rr - 1.2) / (2.37 - 1.2); }
+                  for (let rb = 0; rb < ringProfile.length; rb++) {
+                    const ringBand = ringProfile[rb];
+                    const rx0 = solarRingU(ringBand.from) * RING_W, rx1 = solarRingU(ringBand.to) * RING_W;
+                    rctx.globalAlpha = ringBand.a;
+                    rctx.fillStyle = ringBand.c;
+                    rctx.fillRect(rx0, 0, Math.max(1, rx1 - rx0), 1);
+                  }
+                  // Ringlet striations, so the bands do not read as flat plastic.
+                  const ringRnd = solarSeededRandom(6011);
+                  for (let rl = 0; rl < 160; rl++) {
+                    const ru = ringRnd();
+                    if (1.2 + ru * 1.17 > 1.951 && 1.2 + ru * 1.17 < 2.025) continue;
+                    rctx.globalAlpha = 0.06 + ringRnd() * 0.14;
+                    rctx.fillStyle = ringRnd() < 0.5 ? '#fff6dc' : '#8d7f5f';
+                    rctx.fillRect(ru * RING_W, 0, 1 + ringRnd() * 2, 1);
+                  }
+                  rctx.globalAlpha = 1;
 
                   const ringTex = new THREE.CanvasTexture(ringCanvas);
 
@@ -3000,63 +3955,95 @@ const d = labToolData.solarSystem || {};
                 return solarDebrisSeed / 4294967296;
               }
 
-              const asteroidCount = 360;
-
-              const asteroidGeo = new THREE.BufferGeometry();
-
-              const aPos = new Float32Array(asteroidCount * 3);
-
-              for (let i = 0; i < asteroidCount; i++) {
-
-                const ang = solarDebrisRandom() * Math.PI * 2;
-
-                const r = 21.5 + solarDebrisRandom() * 4.6;
-
-                aPos[i * 3] = Math.cos(ang) * r;
-
-                aPos[i * 3 + 1] = (solarDebrisRandom() - 0.5) * 0.8;
-
-                aPos[i * 3 + 2] = Math.sin(ang) * r;
-
+              // The belt is not a uniform ring. Resonances with Jupiter have swept the
+              // Kirkwood gaps clear near 2.50, 2.82 and 2.95 AU, and the population runs
+              // from a few bodies hundreds of kilometres across down to countless
+              // specks. Three size classes and the gaps carry both facts.
+              const BELT_INNER = 21.5, BELT_SPAN = 4.6;
+              const KIRKWOOD = [23.17, 24.39, 24.89];
+              function solarBeltRadius() {
+                for (let tries = 0; tries < 24; tries++) {
+                  const r = BELT_INNER + solarDebrisRandom() * BELT_SPAN;
+                  let clear = true;
+                  for (let k = 0; k < KIRKWOOD.length; k++) {
+                    if (Math.abs(r - KIRKWOOD[k]) < 0.09) { clear = false; break; }
+                  }
+                  if (clear) return r;
+                }
+                return BELT_INNER + solarDebrisRandom() * BELT_SPAN;
               }
-
-              asteroidGeo.setAttribute('position', new THREE.BufferAttribute(aPos, 3));
-
-              const asteroidPoints = new THREE.Points(asteroidGeo, new THREE.PointsMaterial({
-                color: 0xb7a18c,
-                size: 0.095,
-                sizeAttenuation: true,
-                transparent: true,
-                opacity: 0.72,
-                depthWrite: false
-              }));
-              asteroidPoints.userData.region = 'Main asteroid belt, mostly empty space, shown with exaggerated density';
-              scene.add(asteroidPoints);
+              const BELT_CLASSES = [
+                { count: 420, size: 0.055, opacity: 0.55, color: 0x9d8b78 },
+                { count: 150, size: 0.10, opacity: 0.72, color: 0xb7a18c },
+                { count: 26, size: 0.19, opacity: 0.9, color: 0xd2c1a8 }
+              ];
+              const asteroidLayers = [];
+              for (let bc = 0; bc < BELT_CLASSES.length; bc++) {
+                const beltClass = BELT_CLASSES[bc];
+                const clsGeo = new THREE.BufferGeometry();
+                const clsPos = new Float32Array(beltClass.count * 3);
+                for (let i = 0; i < beltClass.count; i++) {
+                  const ang = solarDebrisRandom() * Math.PI * 2;
+                  const r = solarBeltRadius();
+                  clsPos[i * 3] = Math.cos(ang) * r;
+                  clsPos[i * 3 + 1] = (solarDebrisRandom() - 0.5) * 0.8;
+                  clsPos[i * 3 + 2] = Math.sin(ang) * r;
+                }
+                clsGeo.setAttribute('position', new THREE.BufferAttribute(clsPos, 3));
+                const clsPoints = new THREE.Points(clsGeo, new THREE.PointsMaterial({
+                  color: beltClass.color,
+                  size: beltClass.size,
+                  sizeAttenuation: true,
+                  transparent: true,
+                  opacity: beltClass.opacity,
+                  depthWrite: false
+                }));
+                clsPoints.userData.region = 'Main asteroid belt, mostly empty space, shown with exaggerated density; Kirkwood gaps cleared by Jupiter resonances';
+                scene.add(clsPoints);
+                asteroidLayers.push(clsPoints);
+              }
+              const asteroidPoints = asteroidLayers[1];
 
               // Kuiper Belt: a much thicker, colder doughnut beyond Neptune. This is a
               // representative point cloud, not one marker per real object.
+              // The Kuiper Belt has structure of its own. A third of it is plutinos,
+              // locked in a 3:2 resonance with Neptune at about 39.4 AU, which is
+              // where Pluto sits and why Pluto's orbit is stable despite crossing
+              // Neptune's. Beyond them lies the classical belt, and past that the
+              // scattered disc on steeply inclined orbits.
               const kuiperCount = 520;
-              const kuiperGeo = new THREE.BufferGeometry();
-              const kuiperPos = new Float32Array(kuiperCount * 3);
-              for (let kboIndex = 0; kboIndex < kuiperCount; kboIndex++) {
-                const kboAngle = solarDebrisRandom() * Math.PI * 2;
-                const kboRadius = 54 + solarDebrisRandom() * 15;
-                const kboThickness = (solarDebrisRandom() - 0.5) * (2.2 + kboRadius * 0.10);
-                kuiperPos[kboIndex * 3] = Math.cos(kboAngle) * kboRadius;
-                kuiperPos[kboIndex * 3 + 1] = kboThickness;
-                kuiperPos[kboIndex * 3 + 2] = Math.sin(kboAngle) * kboRadius;
+              const KUIPER_GROUPS = [
+                { share: 0.34, from: 59.4, to: 60.6, tilt: 0.16, size: 0.095, color: 0x9fd4ee, opacity: 0.5 },
+                { share: 0.54, from: 61.8, to: 67.4, tilt: 0.10, size: 0.075, color: 0x8cc8e8, opacity: 0.42 },
+                { share: 0.12, from: 67.8, to: 75.0, tilt: 0.42, size: 0.07, color: 0x7fb4dc, opacity: 0.34 }
+              ];
+              const kuiperLayers = [];
+              for (let kg = 0; kg < KUIPER_GROUPS.length; kg++) {
+                const group = KUIPER_GROUPS[kg];
+                const groupCount = Math.max(1, Math.round(kuiperCount * group.share));
+                const groupGeo = new THREE.BufferGeometry();
+                const groupPos = new Float32Array(groupCount * 3);
+                for (let i = 0; i < groupCount; i++) {
+                  const kboAngle = solarDebrisRandom() * Math.PI * 2;
+                  const kboRadius = group.from + solarDebrisRandom() * (group.to - group.from);
+                  groupPos[i * 3] = Math.cos(kboAngle) * kboRadius;
+                  groupPos[i * 3 + 1] = (solarDebrisRandom() - 0.5) * kboRadius * group.tilt;
+                  groupPos[i * 3 + 2] = Math.sin(kboAngle) * kboRadius;
+                }
+                groupGeo.setAttribute('position', new THREE.BufferAttribute(groupPos, 3));
+                const groupPoints = new THREE.Points(groupGeo, new THREE.PointsMaterial({
+                  color: group.color,
+                  size: group.size,
+                  sizeAttenuation: true,
+                  transparent: true,
+                  opacity: group.opacity,
+                  depthWrite: false
+                }));
+                groupPoints.userData.region = 'Kuiper Belt, approximately 30 to 50 AU; plutinos in 3:2 resonance with Neptune, the classical belt beyond them, and the inclined scattered disc';
+                scene.add(groupPoints);
+                kuiperLayers.push(groupPoints);
               }
-              kuiperGeo.setAttribute('position', new THREE.BufferAttribute(kuiperPos, 3));
-              const kuiperPoints = new THREE.Points(kuiperGeo, new THREE.PointsMaterial({
-                color: 0x8cc8e8,
-                size: 0.085,
-                sizeAttenuation: true,
-                transparent: true,
-                opacity: 0.42,
-                depthWrite: false
-              }));
-              kuiperPoints.userData.region = 'Kuiper Belt, approximately 30 to 50 AU';
-              scene.add(kuiperPoints);
+              const kuiperPoints = kuiperLayers[1];
 
               const cometGeo = new THREE.SphereGeometry(0.15, 8, 8);
               const cometMat = new THREE.MeshBasicMaterial({ color: 0xaaffff });
@@ -3500,7 +4487,9 @@ const d = labToolData.solarSystem || {};
 
                   solarOrbitPoint(mesh._orbitBody, mesh._meanAnomaly, mesh.position);
 
-                  mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
+                  // Sidereal day relative to Earth: Jupiter turns 2.4x faster, Venus 243x slower.
+                  mesh.rotation.y += 0.02 * speed * (SOLAR_SPIN_RATE[mesh._orbitBody && mesh._orbitBody.key] || 1) * (isPaused ? 0 : 1);
+                  if (mesh._cloudMesh && !isPaused) mesh._cloudMesh.rotation.y += 0.004 * speed;
 
                   if (mesh._moonObj && !isPaused) {
                     mesh._moonObj._orbitAngle += 0.05 * speed;
@@ -3598,36 +4587,38 @@ const d = labToolData.solarSystem || {};
 
                 // Slowly rotate asteroids
 
-                const aArr = asteroidGeo.attributes.position.array;
-
+                // Every size class orbits, not just the one layer that used to exist,
+                // and inner asteroids sweep round faster than outer ones the way
+                // Kepler's third law requires.
                 if (!isPaused) {
-
-                  for (let i = 0; i < asteroidCount; i++) {
-
-                    const x = aArr[i * 3]; const z = aArr[i * 3 + 2];
-
-                    const a = Math.atan2(z, x) + 0.0003 * speed;
-
-                    const r = Math.sqrt(x * x + z * z);
-
-                    aArr[i * 3] = Math.cos(a) * r;
-
-                    aArr[i * 3 + 2] = Math.sin(a) * r;
-
+                  for (let al = 0; al < asteroidLayers.length; al++) {
+                    const layerAttr = asteroidLayers[al].geometry.attributes.position;
+                    const aArr = layerAttr.array;
+                    for (let i = 0; i < aArr.length / 3; i++) {
+                      const x = aArr[i * 3]; const z = aArr[i * 3 + 2];
+                      const r = Math.sqrt(x * x + z * z);
+                      const a = Math.atan2(z, x) + 0.0003 * speed * Math.pow(23.8 / Math.max(r, 1), 1.5);
+                      aArr[i * 3] = Math.cos(a) * r;
+                      aArr[i * 3 + 2] = Math.sin(a) * r;
+                    }
+                    layerAttr.needsUpdate = true;
                   }
 
-                  asteroidGeo.attributes.position.needsUpdate = true;
-
-                  const kArr = kuiperGeo.attributes.position.array;
-                  for (let kboIndex = 0; kboIndex < kuiperCount; kboIndex++) {
-                    const kx = kArr[kboIndex * 3];
-                    const kz = kArr[kboIndex * 3 + 2];
-                    const kboAngle = Math.atan2(kz, kx) + 0.000045 * speed;
-                    const kboRadius = Math.sqrt(kx * kx + kz * kz);
-                    kArr[kboIndex * 3] = Math.cos(kboAngle) * kboRadius;
-                    kArr[kboIndex * 3 + 2] = Math.sin(kboAngle) * kboRadius;
+                  // Each group drifts at its own rate; the distant scattered disc
+                  // barely moves at all over a classroom session.
+                  for (let kl = 0; kl < kuiperLayers.length; kl++) {
+                    const kAttr = kuiperLayers[kl].geometry.attributes.position;
+                    const kArr = kAttr.array;
+                    for (let kboIndex = 0; kboIndex < kArr.length / 3; kboIndex++) {
+                      const kx = kArr[kboIndex * 3];
+                      const kz = kArr[kboIndex * 3 + 2];
+                      const kr = Math.sqrt(kx * kx + kz * kz);
+                      const ka = Math.atan2(kz, kx) + 0.00006 * speed * Math.pow(62 / Math.max(kr, 1), 1.5);
+                      kArr[kboIndex * 3] = Math.cos(ka) * kr;
+                      kArr[kboIndex * 3 + 2] = Math.sin(ka) * kr;
+                    }
+                    kAttr.needsUpdate = true;
                   }
-                  kuiperGeo.attributes.position.needsUpdate = true;
 
                 }
 
@@ -3733,18 +4724,37 @@ const d = labToolData.solarSystem || {};
                     liveLabels.push(entry);
                   });
 
-                  // Vertical declutter, nearest the top of the screen keeps its place.
-                  liveLabels.sort(function (a, b) { return a.y - b.y; });
-                  for (var li = 1; li < liveLabels.length; li++) {
-                    var prevLabel = liveLabels[li - 1], curLabel = liveLabels[li];
-                    var collisionSpan = ((prevLabel.labelWidth || 80) + (curLabel.labelWidth || 80)) * 0.5 + 8;
-                    if (Math.abs(curLabel.x - prevLabel.x) < collisionSpan && curLabel.y - prevLabel.y < 18) {
-                      if (compactLabelMode && (prevLabel.isSelected || curLabel.isSelected)) {
-                        (prevLabel.isSelected ? curLabel : prevLabel).suppressed = true;
-                      } else {
-                        curLabel.y = prevLabel.y + 18;
+                  // Declutter. The selected pill is anchored to its world; every
+                  // other pill is tested against ALL pills already placed (not just
+                  // its neighbour in y-order) and stepped down by its measured
+                  // height until it is clear. Display coordinates live in dx/dy so
+                  // the eased projection in x/y is never mutated by the layout, which
+                  // used to make crowded labels drift a little further each frame.
+                  // Near the Sun the inner planets sit within a few pixels of each
+                  // other, so the old fixed 18 px step left Venus and Mercury
+                  // buried under the Earth pill.
+                  liveLabels.sort(function (a, b) {
+                    if (a.isSelected !== b.isSelected) return a.isSelected ? -1 : 1;
+                    return a.y - b.y;
+                  });
+                  var placedLabels = [];
+                  for (var li = 0; li < liveLabels.length; li++) {
+                    var curLabel = liveLabels[li];
+                    curLabel.dx = curLabel.x; curLabel.dy = curLabel.y;
+                    var curH = curLabel.labelHeight || 20;
+                    for (var guard = 0; guard < 10; guard++) {
+                      var blocker = null;
+                      for (var pi = 0; pi < placedLabels.length; pi++) {
+                        var placed = placedLabels[pi];
+                        var collisionSpan = ((placed.labelWidth || 80) + (curLabel.labelWidth || 80)) * 0.5 + 6;
+                        var verticalSpan = ((placed.labelHeight || 20) + curH) * 0.5 + 2;
+                        if (Math.abs(curLabel.dx - placed.dx) < collisionSpan && Math.abs(curLabel.dy - placed.dy) < verticalSpan) { blocker = placed; break; }
                       }
+                      if (!blocker) break;
+                      if (compactLabelMode && blocker.isSelected) { curLabel.suppressed = true; break; }
+                      curLabel.dy = blocker.dy + ((blocker.labelHeight || 20) + curH) * 0.5 + 3;
                     }
+                    if (!curLabel.suppressed) placedLabels.push(curLabel);
                   }
 
                   for (var lj = 0; lj < liveLabels.length; lj++) {
@@ -3764,9 +4774,9 @@ const d = labToolData.solarSystem || {};
                     var labelWidth = Math.min(W - 12, live.labelWidth || 80);
                     var labelHalfWidth = labelWidth * 0.5;
                     var labelHeight = live.labelHeight || 20;
-                    var labelX = Math.max(labelHalfWidth + 6, Math.min(W - labelHalfWidth - 6, live.x));
+                    var labelX = Math.max(labelHalfWidth + 6, Math.min(W - labelHalfWidth - 6, live.dx != null ? live.dx : live.x));
                     var labelBottomLimit = compactLabelMode ? H - 142 : H - 46;
-                    var labelY = Math.max(labelHeight + 8, Math.min(labelBottomLimit, live.y));
+                    var labelY = Math.max(labelHeight + 8, Math.min(labelBottomLimit, live.dy != null ? live.dy : live.y));
                     // Keep a top-left label clear of the live telemetry card,
                     // using its measured footprint so translated text can grow safely.
                     if (compactLabelMode && labelY - labelHeight < telemetryClearY && labelX - labelHalfWidth < telemetryClearX) {
@@ -4118,7 +5128,7 @@ const d = labToolData.solarSystem || {};
                           var visited = planetsVisited.indexOf(p.name) !== -1;
                           var active = sel && sel.name === p.name;
                           var portraitStyle = {
-                            '--planet-portrait': PLANET_PORTRAITS[p.key],
+                            '--planet-portrait': solarPortraitFor(p.key),
                             '--planet-glow': p.color,
                             '--ring-color': p.key === 'Saturn' ? 'rgba(250,219,140,.90)' : (p.key === 'Uranus' ? 'rgba(165,243,252,.48)' : (p.key === 'Neptune' ? 'rgba(147,197,253,.38)' : 'rgba(231,210,167,.32)'))
                           };
@@ -4165,7 +5175,7 @@ const d = labToolData.solarSystem || {};
                       role: "figure",
                       "aria-label": (spotlightIsReference ? "Reference world spotlight for " : "Selected world spotlight for ") + spotlightPlanet.name,
                       className: "solar-world-spotlight",
-                      style: { "--spotlight-color": spotlightPlanet.color, "--spotlight-portrait": PLANET_PORTRAITS[spotlightPlanet.key], "--spotlight-ring": spotlightRingColor }
+                      style: { "--spotlight-color": spotlightPlanet.color, "--spotlight-portrait": solarPortraitFor(spotlightPlanet.key), "--spotlight-ring": spotlightRingColor }
                     },
                       React.createElement("div", { className: "solar-world-spotlight-header" },
                         React.createElement("div", { className: "min-w-0" },
@@ -10967,6 +11977,13 @@ const d = labToolData.solarSystem || {};
                         _atmoHitArea = { x: cx, y: cy, innerR: planetR, outerR: planetR * 1.25 };
                         _moonHitAreas = [];
                         _featureLabels = [];
+                        // Saturn and Jupiter are visibly flattened by their spin (9.8 % and
+                        // 6.5 %). Everything from the body to the rings is drawn inside a
+                        // vertical squash about the disc centre; the caption and stars
+                        // stay outside it.
+                        var bodyFlatten = (sel.key === 'Saturn' || sel.key === 'Jupiter') && SOLAR_OBLATENESS[sel.key] ? SOLAR_OBLATENESS[sel.key] : 0;
+                        ctx.save();
+                        if (bodyFlatten) { ctx.translate(cx, cy); ctx.scale(1, 1 - bodyFlatten); ctx.translate(-cx, -cy); }
 
                         // Atmosphere glow
 
@@ -10994,11 +12011,12 @@ const d = labToolData.solarSystem || {};
 
                         var bodyGrad = ctx.createLinearGradient(cx - planetR, cy - planetR, cx + planetR, cy + planetR);
 
-                        bodyGrad.addColorStop(0, selectedAccent);
+                        var bodyPalette = SOLAR_BODY_PALETTE[sel.key] || [selectedAccent, selectedAccent];
+                        bodyGrad.addColorStop(0, bodyPalette[0]);
 
                         var darkerColor = selectedAccent.length >= 7 ? '#' + Math.max(0, parseInt(selectedAccent.slice(1, 3), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(selectedAccent.slice(3, 5), 16) - 60).toString(16).padStart(2, '0') + Math.max(0, parseInt(selectedAccent.slice(5, 7), 16) - 60).toString(16).padStart(2, '0') : selectedAccent;
 
-                        bodyGrad.addColorStop(1, darkerColor);
+                        bodyGrad.addColorStop(1, bodyPalette[1]);
 
                         ctx.fillStyle = bodyGrad;
 
@@ -11006,300 +12024,327 @@ const d = labToolData.solarSystem || {};
 
                         // Surface features — planet-specific rich detail
                         if (isGas) {
-                          // Cloud bands with varying widths and colors
-                          var bandColors = sel.key === 'Jupiter' ? ['rgba(180,120,60,', 'rgba(220,180,120,', 'rgba(160,100,50,', 'rgba(200,160,100,', 'rgba(140,90,40,', 'rgba(230,200,140,', 'rgba(170,110,55,', 'rgba(190,140,80,'] :
-                            sel.key === 'Saturn' ? ['rgba(200,170,100,', 'rgba(220,190,130,', 'rgba(180,150,80,', 'rgba(210,180,120,', 'rgba(190,160,90,', 'rgba(230,200,140,', 'rgba(170,140,70,', 'rgba(200,170,100,'] :
-                            ['rgba(100,160,160,', 'rgba(80,140,140,', 'rgba(120,180,180,', 'rgba(90,150,150,', 'rgba(110,170,170,', 'rgba(70,130,130,', 'rgba(100,160,160,', 'rgba(85,145,145,'];
-                          for (var bi = 0; bi < 10; bi++) {
-                            var bandH = planetR * 2 / 10;
-                            var by = cy - planetR + bi * bandH;
-                            var wave = Math.sin(tick * 0.008 + bi * 1.5) * 3 + Math.sin(tick * 0.003 + bi * 0.7) * 2;
-                            var bandAlpha = 0.06 + 0.04 * Math.sin(bi * 1.8);
-                            ctx.fillStyle = bandColors[bi % bandColors.length] + bandAlpha + ')';
-                            ctx.fillRect(cx - planetR, by + wave - bandH * 0.6, planetR * 2, bandH * 1.2);
-                            // Turbulent edge eddies
-                            if (bi % 3 === 0) {
-                              for (var ei = 0; ei < 4; ei++) {
-                                var ex = cx - planetR * 0.6 + ei * planetR * 0.35 + Math.sin(tick * 0.005 + ei) * 8;
-                                ctx.fillStyle = bandColors[(bi + 1) % bandColors.length] + '0.05)';
-                                ctx.beginPath();
-                                ctx.ellipse(ex, by + wave, 8 + ei * 2, 4, tick * 0.002 + ei, 0, Math.PI * 2);
-                                ctx.fill();
+                          // Bands follow lines of latitude on the sphere: each one is
+                          // clipped to the disc, curved by the sub-viewer latitude, and
+                          // given its real width, so belts and zones read as the
+                          // unequal features they are.
+                          var latBands = SOLAR_LAT_BANDS[sel.key] || SOLAR_LAT_BANDS.Jupiter;
+                          var gasPhi0 = 10 * Math.PI / 180;
+                          var gasSpin = tick * solarCardSpinRate(sel.key) + _dragRotation;
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2); ctx.clip();
+                          if (sel.key === 'Uranus') { ctx.translate(cx, cy); ctx.rotate(97.8 * Math.PI / 180 - Math.PI / 2); ctx.translate(-cx, -cy); }
+                          for (var bi = 0; bi < latBands.length; bi++) {
+                            var lb = latBands[bi];
+                            // A slow shear on the band edges stands in for the jet
+                            // streams that keep belt boundaries rippling.
+                            var shear = Math.sin(tick * 0.006 + bi * 1.4) * 0.6;
+                            if (solarLatBandPath(ctx, lb[0] + shear, lb[1] - shear, cx, cy, planetR * 1.002, gasPhi0)) {
+                              ctx.globalAlpha = lb[3];
+                              ctx.fillStyle = lb[2];
+                              ctx.fill();
+                            }
+                          }
+                          ctx.globalAlpha = 1;
+                          // Turbulent festoons along the belt/zone boundaries.
+                          for (var fi = 0; fi < 14; fi++) {
+                            var fLat = latBands[fi % latBands.length][1];
+                            var fLam = (fi * 0.9 + tick * 0.004) % (Math.PI * 2) - Math.PI;
+                            var fq = solarOrthoRel(fLam, fLat, gasPhi0, planetR);
+                            if (fq.z <= 0.12) continue;
+                            ctx.globalAlpha = 0.16 * fq.z;
+                            ctx.fillStyle = fi % 2 ? '#fff6e2' : '#6b3b1c';
+                            ctx.beginPath();
+                            ctx.ellipse(cx + fq.x, cy + fq.y, planetR * 0.10 * fq.z, planetR * 0.022, 0, 0, Math.PI * 2);
+                            ctx.fill();
+                          }
+                          ctx.globalAlpha = 1;
+                          // Named storm at its real latitude.
+                          var storm = SOLAR_STORMS[sel.key];
+                          if (storm) {
+                            var stormLam = (gasSpin * 0.92) % (Math.PI * 2);
+                            if (stormLam > Math.PI) stormLam -= Math.PI * 2;
+                            var sq = solarOrthoRel(stormLam, storm.lat, gasPhi0, planetR);
+                            if (sq.z > 0.08) {
+                              var sw = planetR * (storm.lonW / 90) * sq.z, sh = planetR * (storm.latH / 90);
+                              ctx.save();
+                              ctx.translate(cx + sq.x, cy + sq.y);
+                              var haloGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(sw, sh) * 1.7);
+                              haloGrad.addColorStop(0, storm.halo);
+                              haloGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                              ctx.fillStyle = haloGrad;
+                              ctx.beginPath(); ctx.ellipse(0, 0, sw * 1.7, sh * 1.7, 0, 0, Math.PI * 2); ctx.fill();
+                              ctx.fillStyle = storm.core;
+                              ctx.beginPath(); ctx.ellipse(0, 0, sw, sh, 0, 0, Math.PI * 2); ctx.fill();
+                              if (storm.eye) {
+                                ctx.fillStyle = storm.eye;
+                                ctx.beginPath(); ctx.ellipse(0, 0, sw * 0.52, sh * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+                              }
+                              ctx.globalAlpha = 0.5;
+                              ctx.strokeStyle = 'rgba(255,235,215,0.6)'; ctx.lineWidth = 1;
+                              ctx.beginPath(); ctx.ellipse(0, 0, sw * 1.18, sh * 1.25, 0, 0, Math.PI * 2); ctx.stroke();
+                              ctx.restore();
+                              if (sel.key === 'Jupiter') {
+                                _featureLabels.push({ x: cx + sq.x, y: cy + sq.y, r: Math.max(sw, sh) * 1.4, name: __alloT('stem.solarsystem.great_red_spot', 'Great Red Spot'), desc: __alloT('stem.solarsystem.great_red_spot_desc', 'A high-pressure storm at 22 degrees south, wider than Earth and shrinking for a century.') });
                               }
                             }
                           }
-                          // Great Red Spot (Jupiter) or hexagonal vortex indicator (Saturn)
-                          if (sel.key === 'Jupiter') {
-                            var spotPhase = tick * 0.004 + _dragRotation;
-                            var spotX = cx + Math.cos(spotPhase) * planetR * 0.25;
-                            var spotY = cy + planetR * 0.18;
-                            // Register GRS as hoverable feature
-                            if (Math.sqrt(Math.pow(spotX - cx, 2) + Math.pow(spotY - cy, 2)) < planetR * 0.9) {
-                              _featureLabels.push({ x: spotX, y: spotY, r: planetR * 0.15, name: __alloT('stem.solarsystem.great_red_spot', 'Great Red Spot'), desc: __alloT('stem.solarsystem.storm_raging_350_years_larger_than_ear', 'Storm raging for nearly 200 years, larger than Earth') });
-                            }
-                            // Outer swirl
-                            ctx.save();
-                            ctx.translate(spotX, spotY);
-                            ctx.rotate(tick * 0.003);
-                            var grsGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, planetR * 0.18);
-                            grsGrad.addColorStop(0, 'rgba(200,80,30,0.35)');
-                            grsGrad.addColorStop(0.5, 'rgba(180,60,20,0.2)');
-                            grsGrad.addColorStop(1, 'rgba(160,50,15,0)');
-                            ctx.fillStyle = grsGrad;
-                            ctx.beginPath();
-                            ctx.ellipse(0, 0, planetR * 0.2, planetR * 0.11, 0.15, 0, Math.PI * 2);
-                            ctx.fill();
-                            // Inner eye
-                            ctx.fillStyle = 'rgba(220,100,40,0.3)';
-                            ctx.beginPath();
-                            ctx.ellipse(0, 0, planetR * 0.08, planetR * 0.045, 0, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.restore();
-                          } else if (sel.key === 'Saturn') {
-                            // Hexagonal polar vortex hint at top
-                            _featureLabels.push({ x: cx, y: cy - planetR * 0.75, r: planetR * 0.15, name: __alloT('stem.solarsystem.hexagonal_vortex', 'Hexagonal Vortex'), desc: __alloT('stem.solarsystem.persistent_hexagon_at_north_pole_14_50', 'Persistent hexagon at north pole, 14,500 km per side') });
-                            ctx.save();
-                            ctx.globalAlpha = 0.12;
-                            ctx.strokeStyle = '#eab308';
-                            ctx.lineWidth = 1;
-                            ctx.translate(cx, cy - planetR * 0.75);
-                            ctx.rotate(tick * 0.002);
-                            ctx.beginPath();
-                            for (var hi = 0; hi < 7; hi++) {
-                              var ha = hi * Math.PI * 2 / 6;
-                              var hx = Math.cos(ha) * planetR * 0.18;
-                              var hy = Math.sin(ha) * planetR * 0.08;
-                              hi === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
-                            }
-                            ctx.closePath();
-                            ctx.stroke();
-                            ctx.restore();
-                          }
-                        } else if (sel.terrainType === 'earthlike') {
-                          // Earth: realistic continents + ocean + clouds + atmosphere
-                          var rotPhase = tick * 0.003 + _dragRotation;
-                          ctx.save();
-                          ctx.beginPath(); ctx.arc(cx, cy, planetR * 0.98, 0, Math.PI * 2); ctx.clip();
-                          // Ocean base — deep blue gradient
-                          var oceanGrad = ctx.createRadialGradient(cx - planetR * 0.2, cy - planetR * 0.2, planetR * 0.1, cx, cy, planetR);
-                          oceanGrad.addColorStop(0, '#1e6091'); oceanGrad.addColorStop(0.5, '#155e75'); oceanGrad.addColorStop(1, '#0c4a6e');
-                          ctx.globalAlpha = 0.35;
-                          ctx.fillStyle = oceanGrad;
-                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
-                          // Continent shapes (multi-point polygons for realistic coastlines)
-                          ctx.globalAlpha = 0.35;
-                          function drawContinent(points, color, offsetX) {
-                            var ox = Math.sin(rotPhase) * planetR * 0.4 + (offsetX || 0);
-                            ctx.beginPath();
-                            for (var ci = 0; ci < points.length; ci++) {
-                              var px = cx + (points[ci][0] + ox / planetR) * planetR;
-                              var py = cy + points[ci][1] * planetR;
-                              if (ci === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-                            }
-                            ctx.closePath();
-                            ctx.fillStyle = color; ctx.fill();
-                            // Coastline
-                            ctx.strokeStyle = '#1b4332'; ctx.lineWidth = 0.5; ctx.globalAlpha = 0.15; ctx.stroke();
-                            ctx.globalAlpha = 0.35;
-                          }
-                          // North America
-                          drawContinent([[-0.35,-0.35],[-0.25,-0.45],[-0.15,-0.42],[-0.08,-0.35],[-0.05,-0.25],[-0.12,-0.15],[-0.18,-0.12],[-0.08,-0.05],[-0.15,0.0],[-0.25,-0.05],[-0.35,-0.15],[-0.40,-0.25]], '#2d6a4f');
-                          // South America
-                          drawContinent([[-0.15,0.02],[-0.08,0.0],[-0.03,0.05],[0.0,0.15],[-0.02,0.30],[-0.08,0.38],[-0.15,0.35],[-0.18,0.22],[-0.20,0.10]], '#40916c');
-                          // Europe
-                          drawContinent([[0.10,-0.38],[0.18,-0.42],[0.25,-0.38],[0.22,-0.32],[0.15,-0.28],[0.10,-0.30]], '#52b788');
-                          // Africa
-                          drawContinent([[0.12,-0.25],[0.20,-0.28],[0.28,-0.22],[0.30,-0.10],[0.28,0.05],[0.22,0.15],[0.15,0.18],[0.10,0.10],[0.08,-0.05],[0.10,-0.15]], '#3a8f5c');
-                          // Asia (large)
-                          drawContinent([[0.25,-0.40],[0.35,-0.45],[0.50,-0.42],[0.60,-0.35],[0.55,-0.25],[0.50,-0.15],[0.45,-0.05],[0.35,-0.08],[0.30,-0.18],[0.25,-0.28]], '#2d6a4f');
-                          // India
-                          drawContinent([[0.35,-0.10],[0.40,-0.05],[0.38,0.08],[0.33,0.12],[0.30,0.05],[0.32,-0.05]], '#4ade80');
-                          // Australia
-                          drawContinent([[0.45,0.18],[0.55,0.15],[0.60,0.22],[0.58,0.30],[0.50,0.32],[0.42,0.28],[0.42,0.22]], '#74c69d');
-                          // Antarctica (ice cap)
-                          drawContinent([[-0.30,0.42],[-0.10,0.40],[0.10,0.42],[0.25,0.44],[0.15,0.48],[-0.05,0.48],[-0.25,0.46]], '#e2e8f0');
-                          ctx.globalAlpha = 1;
-                          // Mountain ranges (subtle brown ridges)
-                          ctx.save(); ctx.globalAlpha = 0.08;
-                          // Andes
-                          ctx.beginPath(); ctx.moveTo(cx - planetR * 0.18 + Math.sin(rotPhase) * planetR * 0.4, cy + planetR * 0.02);
-                          ctx.lineTo(cx - planetR * 0.16 + Math.sin(rotPhase) * planetR * 0.4, cy + planetR * 0.30);
-                          ctx.strokeStyle = '#78350f'; ctx.lineWidth = 2; ctx.stroke();
-                          // Himalayas
-                          ctx.beginPath(); ctx.moveTo(cx + planetR * 0.32 + Math.sin(rotPhase) * planetR * 0.4, cy - planetR * 0.12);
-                          ctx.lineTo(cx + planetR * 0.42 + Math.sin(rotPhase) * planetR * 0.4, cy - planetR * 0.08);
-                          ctx.stroke();
-                          ctx.restore();
-                          // Cloud layer (white wisps, rotating slightly faster than surface)
-                          ctx.save(); ctx.globalAlpha = 0.12;
-                          var cloudRot = rotPhase * 1.15; // clouds move faster than surface
-                          for (var cli = 0; cli < 8; cli++) {
-                            var clAngle = (cli / 8) * Math.PI * 2 + cloudRot;
-                            var clDist = planetR * (0.3 + cli * 0.08);
-                            var clx = cx + Math.cos(clAngle) * clDist * 0.7;
-                            var cly = cy + Math.sin(clAngle) * clDist * 0.4;
-                            if (Math.sqrt(Math.pow(clx - cx, 2) + Math.pow(cly - cy, 2)) < planetR * 0.9) {
+                          // Saturn's polar hexagon sits at 78 N, not at the top of the disc.
+                          if (sel.key === 'Saturn') {
+                            var hq = solarOrthoRel(0, 78, gasPhi0, planetR);
+                            if (hq.z > 0) {
+                              ctx.save();
+                              ctx.globalAlpha = 0.3;
+                              ctx.strokeStyle = '#f6e6b4'; ctx.lineWidth = 1.2;
+                              ctx.translate(cx + hq.x, cy + hq.y);
+                              ctx.rotate(tick * 0.002);
                               ctx.beginPath();
-                              ctx.ellipse(clx, cly, planetR * 0.12 + cli * 2, planetR * 0.03, clAngle * 0.5, 0, Math.PI * 2);
-                              ctx.fillStyle = '#ffffff'; ctx.fill();
+                              for (var hi = 0; hi <= 6; hi++) {
+                                var ha = hi * Math.PI / 3;
+                                var hx = Math.cos(ha) * planetR * 0.2, hy = Math.sin(ha) * planetR * 0.2 * 0.32;
+                                if (hi === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+                              }
+                              ctx.closePath(); ctx.stroke();
+                              ctx.restore();
+                              _featureLabels.push({ x: cx + hq.x, y: cy + hq.y, r: planetR * 0.16, name: __alloT('stem.solarsystem.hexagonal_vortex', 'Hexagonal Vortex'), desc: __alloT('stem.solarsystem.hexagonal_vortex_desc', 'A six-sided jet stream around the north pole, wider than two Earths.') });
                             }
                           }
-                          // Tropical storm spiral (near equator)
-                          var stormX = cx + Math.sin(cloudRot * 0.5) * planetR * 0.3;
-                          var stormY = cy + planetR * 0.05;
-                          if (Math.sqrt(Math.pow(stormX - cx, 2) + Math.pow(stormY - cy, 2)) < planetR * 0.8) {
+                          // Limb darkening: a gas giant has no sharp edge, and the
+                          // flat stripes made the disc read as a painted circle.
+                          var limbGrad = ctx.createRadialGradient(cx, cy, planetR * 0.62, cx, cy, planetR);
+                          limbGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                          limbGrad.addColorStop(0.82, 'rgba(0,0,0,0.16)');
+                          limbGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
+                          ctx.fillStyle = limbGrad;
+                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                          ctx.restore();
+                        } else if (sel.terrainType === 'earthlike') {
+                          // Real geography on an orthographic globe. The globe turns
+                          // about its axis (continents wrap over the limb instead of
+                          // sliding back and forth), the terminator follows a fixed
+                          // sun on the left, and feature labels are placed by their
+                          // true longitude and latitude so they ride with the land.
+                          var rotPhase = tick * solarCardSpinRate('Earth') + _dragRotation;
+                          var earthLambda0 = rotPhase, earthPhi0 = 12 * Math.PI / 180;
+                          var earthR = planetR * 0.985;
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, earthR, 0, Math.PI * 2); ctx.clip();
+                          var oceanGrad = ctx.createRadialGradient(cx - earthR * 0.35, cy - earthR * 0.35, earthR * 0.1, cx, cy, earthR);
+                          oceanGrad.addColorStop(0, '#3b7fc4'); oceanGrad.addColorStop(0.6, SOLAR_EARTH_PAINT.oceanShallow); oceanGrad.addColorStop(1, SOLAR_EARTH_PAINT.oceanDeep);
+                          ctx.fillStyle = oceanGrad;
+                          ctx.fillRect(cx - earthR, cy - earthR, earthR * 2, earthR * 2);
+                          for (var eli = 0; eli < SOLAR_EARTH_LAND.length; eli++) {
+                            var landmass = SOLAR_EARTH_LAND[eli];
+                            if (solarDrawOrthoPoly(ctx, landmass.pts, cx, cy, earthR, earthLambda0, earthPhi0)) {
+                              ctx.fillStyle = landmass.water ? SOLAR_EARTH_PAINT.oceanShallow : SOLAR_EARTH_PAINT.land;
+                              ctx.fill();
+                              if (!landmass.water) { ctx.strokeStyle = 'rgba(20,40,30,0.45)'; ctx.lineWidth = 0.8; ctx.stroke(); }
+                            }
+                          }
+                          for (var eoi = 0; eoi < SOLAR_EARTH_OVERLAYS.length; eoi++) {
+                            var earthOverlay = SOLAR_EARTH_OVERLAYS[eoi];
+                            if (solarDrawOrthoPoly(ctx, earthOverlay.pts, cx, cy, earthR, earthLambda0, earthPhi0)) {
+                              ctx.fillStyle = SOLAR_EARTH_PAINT[earthOverlay.kind];
+                              ctx.globalAlpha = earthOverlay.kind === 'forest' ? 0.7 : earthOverlay.kind === 'tundra' ? 0.65 : earthOverlay.kind === 'seaIce' ? 0.88 : 0.95;
+                              ctx.fill();
+                              ctx.globalAlpha = 1;
+                            }
+                          }
+                          // Clouds ride slightly faster than the surface and wrap with it.
+                          var cloudRnd = solarSeededRandom(4211);
+                          ctx.fillStyle = '#ffffff';
+                          for (var cli = 0; cli < 34; cli++) {
+                            var cLon = cloudRnd() * 360 - 180, cLat = (cloudRnd() * 2 - 1) * 65;
+                            var cW = 8 + cloudRnd() * 22, cH = 2.5 + cloudRnd() * 5;
+                            var cq = solarOrtho(cLon, cLat, earthLambda0 * 1.12, earthPhi0, earthR);
+                            if (cq.z <= 0.05) continue;
+                            ctx.globalAlpha = 0.28 + 0.4 * cq.z;
                             ctx.beginPath();
-                            for (var sti = 0; sti < 20; sti++) {
-                              var stAngle = sti * 0.4 + tick * 0.02;
-                              var stDist2 = 2 + sti * 1.2;
-                              ctx.lineTo(stormX + Math.cos(stAngle) * stDist2, stormY + Math.sin(stAngle) * stDist2);
-                            }
-                            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+                            ctx.ellipse(cx + cq.x, cy + cq.y, cW * (0.35 + 0.65 * cq.z), cH, 0, 0, Math.PI * 2);
+                            ctx.fill();
                           }
+                          ctx.globalAlpha = 1;
+                          // Day/night terminator: the Sun sits to the upper left.
+                          var termGrad = ctx.createRadialGradient(cx - earthR * 0.7, cy - earthR * 0.3, earthR * 0.25, cx - earthR * 0.7, cy - earthR * 0.3, earthR * 2.05);
+                          termGrad.addColorStop(0, 'rgba(255,255,255,0.10)');
+                          termGrad.addColorStop(0.45, 'rgba(0,0,0,0)');
+                          termGrad.addColorStop(0.72, 'rgba(0,0,0,0.55)');
+                          termGrad.addColorStop(1, 'rgba(0,0,0,0.88)');
+                          ctx.fillStyle = termGrad;
+                          ctx.fillRect(cx - earthR, cy - earthR, earthR * 2, earthR * 2);
                           ctx.restore();
-                          ctx.restore();
-                          // Atmosphere rim glow (blue haze at edges)
-                          ctx.save(); ctx.globalAlpha = 0.25;
-                          var atmosGrad = ctx.createRadialGradient(cx, cy, planetR * 0.85, cx, cy, planetR * 1.05);
+                          ctx.save(); ctx.globalAlpha = 0.35;
+                          var atmosGrad = ctx.createRadialGradient(cx, cy, planetR * 0.9, cx, cy, planetR * 1.06);
                           atmosGrad.addColorStop(0, 'transparent');
-                          atmosGrad.addColorStop(0.6, 'rgba(56,189,248,0.3)');
-                          atmosGrad.addColorStop(1, 'rgba(14,165,233,0.1)');
-                          ctx.beginPath(); ctx.arc(cx, cy, planetR * 1.05, 0, Math.PI * 2);
+                          atmosGrad.addColorStop(0.55, 'rgba(120,190,255,0.35)');
+                          atmosGrad.addColorStop(1, 'rgba(56,150,255,0.05)');
+                          ctx.beginPath(); ctx.arc(cx, cy, planetR * 1.06, 0, Math.PI * 2);
                           ctx.fillStyle = atmosGrad; ctx.fill();
                           ctx.restore();
-                          // Feature labels
-                          _featureLabels.push({ x: cx - planetR * 0.3, y: cy - planetR * 0.2, r: planetR * 0.15, name: __alloT('stem.solarsystem.pacific_ocean', 'Pacific Ocean'), desc: __alloT('stem.solarsystem.largest_ocean_covers_more_area_than_al', 'Largest ocean \u2014 covers more area than all land combined (165.25 million km\u00B2)') });
-                          _featureLabels.push({ x: cx + planetR * 0.2, y: cy + planetR * 0.15, r: planetR * 0.1, name: __alloT('stem.solarsystem.mid_ocean_ridge', 'Mid-Ocean Ridge'), desc: __alloT('stem.solarsystem.65_000_km_underwater_mountain_chain_wh', '65,000 km underwater mountain chain where new ocean floor is born') });
-                          _featureLabels.push({ x: cx + planetR * 0.35, y: cy - planetR * 0.12, r: planetR * 0.08, name: __alloT('stem.solarsystem.himalayas', 'Himalayas'), desc: __alloT('stem.solarsystem.highest_mountain_range_on_earth_formed', 'Highest mountain range on Earth, formed by Indian plate collision') });
+                          var earthFeatures = [
+                            { lon: 87, lat: 28, r: 0.09, name: __alloT('stem.solarsystem.himalayas', 'Himalayas'), desc: __alloT('stem.solarsystem.himalayas_desc', 'Formed by India colliding with Asia. Still rising ~5 mm/year.') },
+                            { lon: -150, lat: 0, r: 0.16, name: __alloT('stem.solarsystem.pacific_ocean', 'Pacific Ocean'), desc: __alloT('stem.solarsystem.pacific_ocean_desc', 'Largest ocean, covering a third of Earth\'s surface.') },
+                            { lon: -28, lat: 5, r: 0.1, name: __alloT('stem.solarsystem.mid_ocean_ridge', 'Mid-Ocean Ridge'), desc: __alloT('stem.solarsystem.mid_ocean_ridge_desc', 'Longest mountain range, where new ocean crust forms.') },
+                            { lon: 12, lat: 23, r: 0.11, name: __alloT('stem.solarsystem.sahara', 'Sahara'), desc: __alloT('stem.solarsystem.sahara_desc', 'Largest hot desert; its dust fertilises the Amazon.') },
+                            { lon: -62, lat: -4, r: 0.09, name: __alloT('stem.solarsystem.amazon', 'Amazon'), desc: __alloT('stem.solarsystem.amazon_desc', 'Largest rainforest, home to a tenth of known species.') }
+                          ];
+                          for (var efi = 0; efi < earthFeatures.length; efi++) {
+                            var ef = earthFeatures[efi];
+                            var eq = solarOrtho(ef.lon, ef.lat, earthLambda0, earthPhi0, earthR);
+                            if (eq.z > 0.2) _featureLabels.push({ x: cx + eq.x, y: cy + eq.y, r: planetR * ef.r, name: ef.name, desc: ef.desc });
+                          }
                         } else if (sel.terrainType === 'desert') {
-                          // Mars: Valles Marineris canyon scar + Olympus Mons
-                          _featureLabels.push({ x: cx - planetR * 0.35, y: cy - planetR * 0.2, r: planetR * 0.12, name: __alloT('stem.solarsystem.olympus_mons', 'Olympus Mons'), desc: __alloT('stem.solarsystem.tallest_volcano_in_the_solar_system_21', 'Tallest volcano in the solar system (21.9 km)') });
-                          _featureLabels.push({ x: cx + planetR * 0.1, y: cy + planetR * 0.05, r: planetR * 0.2, name: __alloT('stem.solarsystem.valles_marineris', 'Valles Marineris'), desc: __alloT('stem.solarsystem.4_000_km_canyon_system_7_km_deep', '4,000 km canyon system, 7 km deep') });
-                          ctx.globalAlpha = 0.15;
-                          // Canyon scar across equator
-                          ctx.strokeStyle = '#6b2a1a';
-                          ctx.lineWidth = 3;
-                          ctx.beginPath();
-                          var canyonY = cy + planetR * 0.05;
-                          ctx.moveTo(cx - planetR * 0.6, canyonY - 2);
-                          ctx.bezierCurveTo(cx - planetR * 0.2, canyonY + 5, cx + planetR * 0.1, canyonY - 3, cx + planetR * 0.5, canyonY + 1);
-                          ctx.stroke();
-                          // Olympus Mons (large light circle)
-                          ctx.fillStyle = '#c9653a';
-                          ctx.beginPath();
-                          ctx.arc(cx - planetR * 0.35, cy - planetR * 0.2, planetR * 0.12, 0, Math.PI * 2);
-                          ctx.fill();
-                          ctx.strokeStyle = 'rgba(180,120,80,0.2)';
-                          ctx.lineWidth = 1;
-                          ctx.beginPath();
-                          ctx.arc(cx - planetR * 0.35, cy - planetR * 0.2, planetR * 0.15, 0, Math.PI * 2);
-                          ctx.stroke();
+                          // Mars on the same orthographic globe as Earth: the dark
+                          // basaltic markings, bright dusty basins, the Tharsis
+                          // volcanoes, Valles Marineris, and the polar caps all sit at
+                          // their real coordinates and turn with the planet.
+                          var marsLambda0 = tick * solarCardSpinRate('Mars') + _dragRotation, marsPhi0 = 10 * Math.PI / 180;
+                          var marsR = planetR * 0.985;
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, marsR, 0, Math.PI * 2); ctx.clip();
+                          var marsBase = ctx.createRadialGradient(cx - marsR * 0.3, cy - marsR * 0.3, marsR * 0.1, cx, cy, marsR);
+                          marsBase.addColorStop(0, '#d47a52'); marsBase.addColorStop(0.7, SOLAR_MARS_PAINT.base); marsBase.addColorStop(1, '#8f4426');
+                          ctx.fillStyle = marsBase; ctx.fillRect(cx - marsR, cy - marsR, marsR * 2, marsR * 2);
+                          var mi;
+                          for (mi = 0; mi < SOLAR_MARS_BRIGHT.length; mi++) {
+                            if (solarDrawOrthoPoly(ctx, solarMarsPoly(SOLAR_MARS_BRIGHT[mi].pts), cx, cy, marsR, marsLambda0, marsPhi0)) { ctx.globalAlpha = 0.8; ctx.fillStyle = SOLAR_MARS_PAINT.dust; ctx.fill(); }
+                          }
                           ctx.globalAlpha = 1;
-                          // Dust texture across surface
-                          for (var di = 0; di < 20; di++) {
-                            var dx = cx + ((di * 83 + 41) % Math.floor(planetR * 1.4)) - planetR * 0.7;
-                            var dy = cy + ((di * 61 + 23) % Math.floor(planetR * 1.2)) - planetR * 0.6;
-                            if (Math.sqrt((dx - cx) * (dx - cx) + (dy - cy) * (dy - cy)) < planetR * 0.9) {
-                              ctx.fillStyle = 'rgba(0,0,0,0.04)';
-                              ctx.beginPath();
-                              ctx.ellipse(dx, dy, 4 + di % 6, 2 + di % 3, di * 0.5, 0, Math.PI * 2);
-                              ctx.fill();
-                            }
+                          for (mi = 0; mi < SOLAR_MARS_DARK.length; mi++) {
+                            if (solarDrawOrthoPoly(ctx, solarMarsPoly(SOLAR_MARS_DARK[mi].pts), cx, cy, marsR, marsLambda0, marsPhi0)) { ctx.fillStyle = SOLAR_MARS_DARK[mi].soft ? SOLAR_MARS_PAINT.darkSoft : SOLAR_MARS_PAINT.dark; ctx.fill(); }
+                          }
+                          if (solarDrawOrthoPoly(ctx, solarMarsPoly(SOLAR_MARS_CANYON), cx, cy, marsR, marsLambda0, marsPhi0)) {
+                            ctx.fillStyle = SOLAR_MARS_PAINT.canyon;
+                            ctx.fill();
+                          }
+                          for (mi = 0; mi < SOLAR_MARS_VOLCANOES.length; mi++) {
+                            var mv = SOLAR_MARS_VOLCANOES[mi];
+                            var vq = solarOrtho(solarMarsWrap(mv.lon), mv.lat, marsLambda0, marsPhi0, marsR);
+                            if (vq.z <= 0.05) continue;
+                            var vpr = marsR * (mv.r / 90) * (0.5 + 0.5 * vq.z);
+                            var vgr = ctx.createRadialGradient(cx + vq.x, cy + vq.y, 0, cx + vq.x, cy + vq.y, vpr);
+                            vgr.addColorStop(0, SOLAR_MARS_PAINT.volcano); vgr.addColorStop(0.55, 'rgba(184,92,58,0.55)'); vgr.addColorStop(1, 'rgba(184,92,58,0)');
+                            ctx.fillStyle = vgr; ctx.beginPath(); ctx.arc(cx + vq.x, cy + vq.y, vpr, 0, Math.PI * 2); ctx.fill();
+                          }
+                          ctx.fillStyle = SOLAR_MARS_PAINT.cap;
+                          if (solarDrawOrthoPoly(ctx, solarMarsCapPolygon(true), cx, cy, marsR, marsLambda0, marsPhi0)) ctx.fill();
+                          if (solarDrawOrthoPoly(ctx, solarMarsCapPolygon(false), cx, cy, marsR, marsLambda0, marsPhi0)) ctx.fill();
+                          ctx.restore();
+                          var marsFeatures = [
+                            { lon: 226, lat: 18, r: 0.12, name: __alloT('stem.solarsystem.olympus_mons', 'Olympus Mons'), desc: __alloT('stem.solarsystem.olympus_mons_desc', 'Tallest volcano in the solar system, 21.9 km high and 600 km across.') },
+                            { lon: 290, lat: -13, r: 0.14, name: __alloT('stem.solarsystem.valles_marineris', 'Valles Marineris'), desc: __alloT('stem.solarsystem.valles_marineris_desc', 'A canyon system 4,000 km long and up to 7 km deep.') },
+                            { lon: 70, lat: -42, r: 0.12, name: __alloT('stem.solarsystem.hellas_planitia', 'Hellas Planitia'), desc: __alloT('stem.solarsystem.hellas_planitia_desc', 'A 2,300 km impact basin, the deepest point on Mars.') },
+                            { lon: 292, lat: 10, r: 0.1, name: __alloT('stem.solarsystem.syrtis_major', 'Syrtis Major'), desc: __alloT('stem.solarsystem.syrtis_major_desc', 'Dark volcanic plain, the first surface feature ever recorded on another planet (1659).') }
+                          ];
+                          for (var mfi = 0; mfi < marsFeatures.length; mfi++) {
+                            var mf = marsFeatures[mfi];
+                            var mq = solarOrtho(solarMarsWrap(mf.lon), mf.lat, marsLambda0, marsPhi0, marsR);
+                            if (mq.z > 0.2) _featureLabels.push({ x: cx + mq.x, y: cy + mq.y, r: planetR * mf.r, name: mf.name, desc: mf.desc });
                           }
                         } else if (sel.terrainType === 'volcanic') {
                           // Venus: lava flows + volcanic calderas
                           _featureLabels.push({ x: cx - planetR * 0.2, y: cy - planetR * 0.25, r: planetR * 0.12, name: __alloT('stem.solarsystem.maxwell_montes', 'Maxwell Montes'), desc: __alloT('stem.solarsystem.highest_point_on_venus_at_11_km_coated', 'Highest point on Venus at 11 km \u2014 coated in metallic "snow" of lead and bismuth sulfide') });
                           _featureLabels.push({ x: cx + planetR * 0.25, y: cy - planetR * 0.3, r: planetR * 0.15, name: __alloT('stem.solarsystem.ishtar_terra', 'Ishtar Terra'), desc: __alloT('stem.solarsystem.highland_continent_australia_sized_con', 'Highland continent (Australia-sized) containing Maxwell Montes \u2014 one of two main "continents"') });
                           _featureLabels.push({ x: cx + planetR * 0.1, y: cy + planetR * 0.2, r: planetR * 0.12, name: __alloT('stem.solarsystem.aphrodite_terra', 'Aphrodite Terra'), desc: __alloT('stem.solarsystem.largest_highland_region_stretches_alon', 'Largest highland region \u2014 stretches along the equator like a vast volcanic plateau') });
-                          for (var vfi = 0; vfi < 6; vfi++) {
-                            var vfx = cx + ((vfi * 79 + 17) % Math.floor(planetR * 1.4)) - planetR * 0.7;
-                            var vfy = cy + ((vfi * 53 + 31) % Math.floor(planetR * 1.2)) - planetR * 0.6;
-                            if (Math.sqrt((vfx - cx) * (vfx - cx) + (vfy - cy) * (vfy - cy)) < planetR * 0.8) {
-                              // Caldera
-                              ctx.fillStyle = 'rgba(200,100,20,' + (0.08 + Math.sin(tick * 0.02 + vfi) * 0.04) + ')';
-                              ctx.beginPath();
-                              ctx.arc(vfx, vfy, 5 + vfi % 4 * 3, 0, Math.PI * 2);
-                              ctx.fill();
-                              // Lava glow
-                              var lavaGlow = ctx.createRadialGradient(vfx, vfy, 0, vfx, vfy, 8 + vfi * 2);
-                              lavaGlow.addColorStop(0, 'rgba(255,100,0,' + (0.06 + Math.sin(tick * 0.03 + vfi * 2) * 0.03) + ')');
-                              lavaGlow.addColorStop(1, 'rgba(255,50,0,0)');
-                              ctx.fillStyle = lavaGlow;
-                              ctx.beginPath();
-                              ctx.arc(vfx, vfy, 10 + vfi * 3, 0, Math.PI * 2);
-                              ctx.fill();
+                          // Venus from space is a near-featureless pale cloud deck. The
+                          // only structure a camera sees is the faint horizontal "Y"
+                          // chevron pattern in the upper clouds, drifting with the
+                          // four-day super-rotation of the atmosphere.
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, planetR * 0.985, 0, Math.PI * 2); ctx.clip();
+                          var venusPhase = tick * 0.006 + _dragRotation; // cloud-deck super-rotation, not the 243-day surface spin
+                          for (var vci = 0; vci < 7; vci++) {
+                            var bandY = cy + (vci - 3) * planetR * 0.24;
+                            ctx.globalAlpha = 0.07 + 0.03 * Math.sin(vci * 1.3);
+                            ctx.strokeStyle = vci % 2 ? '#fff7dc' : '#b9852f';
+                            ctx.lineWidth = planetR * 0.05;
+                            ctx.beginPath();
+                            for (var vx = -planetR; vx <= planetR; vx += planetR * 0.1) {
+                              var chevron = Math.abs(Math.sin((vx / planetR) * 1.6 + venusPhase + vci)) * planetR * 0.09;
+                              var vy = bandY + chevron * (vci < 3 ? 1 : -1) * Math.abs(vci - 3) * 0.35;
+                              if (vx === -planetR) ctx.moveTo(cx + vx, vy); else ctx.lineTo(cx + vx, vy);
                             }
+                            ctx.stroke();
                           }
+                          ctx.restore();
+                          ctx.globalAlpha = 1;
                         } else if (sel.terrainType === 'iceworld') {
-                          // Pluto/iceworld: Tombaugh Regio heart + icy craters
-                          // Heart-shaped bright region
-                          var heartX = cx + Math.sin(_dragRotation + tick * 0.003) * planetR * 0.15;
-                          var heartY = cy - planetR * 0.05;
-                          ctx.globalAlpha = 0.2;
-                          ctx.fillStyle = '#e8ddd0';
-                          // Draw heart shape from two arcs + triangle
-                          ctx.beginPath();
-                          var hs = planetR * 0.18;
-                          ctx.moveTo(heartX, heartY + hs * 0.6);
-                          ctx.bezierCurveTo(heartX + hs * 0.8, heartY - hs * 0.3, heartX + hs * 0.5, heartY - hs * 0.8, heartX, heartY - hs * 0.3);
-                          ctx.bezierCurveTo(heartX - hs * 0.5, heartY - hs * 0.8, heartX - hs * 0.8, heartY - hs * 0.3, heartX, heartY + hs * 0.6);
-                          ctx.fill();
-                          // Inner brighter region (Sputnik Planitia)
-                          ctx.globalAlpha = 0.12;
-                          ctx.fillStyle = '#f0ece0';
-                          ctx.beginPath();
-                          ctx.ellipse(heartX - hs * 0.15, heartY, hs * 0.35, hs * 0.4, 0.1, 0, Math.PI * 2);
-                          ctx.fill();
-                          ctx.globalAlpha = 1;
-                          _featureLabels.push({ x: heartX, y: heartY, r: hs, name: __alloT('stem.solarsystem.tombaugh_regio', 'Tombaugh Regio'), desc: __alloT('stem.solarsystem.heart_shaped_nitrogen_glacier_sputnik_', 'Heart-shaped nitrogen glacier \u2014 Sputnik Planitia ice plain') });
-                          // Dark reddish Cthulhu Macula
-                          ctx.globalAlpha = 0.1;
-                          ctx.fillStyle = '#6b3a2a';
-                          var cthX = cx + planetR * 0.3 + Math.sin(_dragRotation) * 5;
-                          ctx.beginPath();
-                          ctx.ellipse(cthX, cy + planetR * 0.15, planetR * 0.2, planetR * 0.1, 0.3, 0, Math.PI * 2);
-                          ctx.fill();
-                          ctx.globalAlpha = 1;
-                          _featureLabels.push({ x: cthX, y: cy + planetR * 0.15, r: planetR * 0.15, name: __alloT('stem.solarsystem.cthulhu_macula', 'Cthulhu Macula'), desc: __alloT('stem.solarsystem.dark_region_colored_by_tholins_complex', 'Dark region colored by tholins \u2014 complex organic molecules') });
-                          // Icy craters
-                          for (var ici = 0; ici < 12; ici++) {
-                            var icx = cx + ((ici * 97 + 31) % Math.floor(planetR * 1.4)) - planetR * 0.7;
-                            var icy2 = cy + ((ici * 73 + 17) % Math.floor(planetR * 1.2)) - planetR * 0.6;
-                            var icr = 2 + (ici % 5) * 2;
-                            if (Math.sqrt((icx - cx) * (icx - cx) + (icy2 - cy) * (icy2 - cy)) + icr < planetR * 0.9) {
-                              ctx.fillStyle = 'rgba(200,210,220,0.06)';
-                              ctx.beginPath(); ctx.arc(icx, icy2, icr, 0, Math.PI * 2); ctx.fill();
-                            }
+                          // Pluto on the orthographic globe: the heart's two lobes,
+                          // Cthulhu Macula, and the bright methane north, each at
+                          // New Horizons coordinates and turning with the dwarf planet.
+                          var plutoLambda0 = tick * solarCardSpinRate('Pluto') + _dragRotation, plutoPhi0 = 20 * Math.PI / 180;
+                          var plutoR = planetR * 0.985;
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, plutoR, 0, Math.PI * 2); ctx.clip();
+                          var plutoBase = ctx.createRadialGradient(cx - plutoR * 0.3, cy - plutoR * 0.3, plutoR * 0.1, cx, cy, plutoR);
+                          plutoBase.addColorStop(0, '#d8bfa3'); plutoBase.addColorStop(0.7, SOLAR_PLUTO_PAINT.base); plutoBase.addColorStop(1, '#9d7f66');
+                          ctx.fillStyle = plutoBase; ctx.fillRect(cx - plutoR, cy - plutoR, plutoR * 2, plutoR * 2);
+                          for (var pri = 0; pri < SOLAR_PLUTO_REGIONS.length; pri++) {
+                            var preg = SOLAR_PLUTO_REGIONS[pri];
+                            if (solarDrawOrthoPoly(ctx, preg.pts, cx, cy, plutoR, plutoLambda0, plutoPhi0)) { ctx.fillStyle = SOLAR_PLUTO_PAINT[preg.kind]; ctx.fill(); }
+                          }
+                          ctx.fillStyle = SOLAR_PLUTO_PAINT.crater;
+                          for (var pci = 0; pci < SOLAR_PLUTO_CRATERS.length; pci++) {
+                            var pcq = solarOrtho(SOLAR_PLUTO_CRATERS[pci][0], SOLAR_PLUTO_CRATERS[pci][1], plutoLambda0, plutoPhi0, plutoR);
+                            if (pcq.z > 0.1) { ctx.beginPath(); ctx.ellipse(cx + pcq.x, cy + pcq.y, plutoR * 0.05 * (0.4 + 0.6 * pcq.z), plutoR * 0.05, 0, 0, Math.PI * 2); ctx.fill(); }
+                          }
+                          ctx.restore();
+                          var plutoFeatures = [
+                            { lon: 178, lat: 22, r: 0.16, name: __alloT('stem.solarsystem.tombaugh_regio', 'Tombaugh Regio'), desc: __alloT('stem.solarsystem.tombaugh_regio_desc', 'The heart: a 1,000 km basin of nitrogen ice that slowly convects.') },
+                            { lon: 90, lat: -6, r: 0.14, name: __alloT('stem.solarsystem.cthulhu_macula', 'Cthulhu Macula'), desc: __alloT('stem.solarsystem.cthulhu_macula_desc', 'Dark equatorial belt coated in reddish tholins made by sunlight on methane.') }
+                          ];
+                          for (var pfi = 0; pfi < plutoFeatures.length; pfi++) {
+                            var pf = plutoFeatures[pfi];
+                            var pq = solarOrtho(pf.lon, pf.lat, plutoLambda0, plutoPhi0, plutoR);
+                            if (pq.z > 0.2) _featureLabels.push({ x: cx + pq.x, y: cy + pq.y, r: planetR * pf.r, name: pf.name, desc: pf.desc });
                           }
                         } else {
-                          // Generic rocky: craters with varied sizes + depth shadows
-                          for (var ci = 0; ci < 20; ci++) {
-                            var crx = cx + ((ci * 97 + 31) % Math.floor(planetR * 1.6)) - planetR * 0.8;
-                            var cry = cy + ((ci * 73 + 17) % Math.floor(planetR * 1.4)) - planetR * 0.7;
-                            var crr = 2 + (ci % 7) * 3;
-                            if (Math.sqrt((crx - cx) * (crx - cx) + (cry - cy) * (cry - cy)) + crr < planetR) {
-                              // Crater shadow (darker on sunward side)
-                              ctx.fillStyle = 'rgba(0,0,0,' + (0.06 + crr * 0.005) + ')';
-                              ctx.beginPath();
-                              ctx.arc(crx + 1, cry + 1, crr, 0, Math.PI * 2);
-                              ctx.fill();
-                              // Crater rim highlight
-                              ctx.strokeStyle = 'rgba(255,255,255,' + (0.04 + crr * 0.003) + ')';
-                              ctx.lineWidth = 0.6;
-                              ctx.beginPath();
-                              ctx.arc(crx - 1, cry - 1, crr, Math.PI * 0.8, Math.PI * 1.8);
-                              ctx.stroke();
-                              // Central peak for large craters
-                              if (crr > 10) {
-                                ctx.fillStyle = 'rgba(255,255,255,0.04)';
-                                ctx.beginPath();
-                                ctx.arc(crx, cry, crr * 0.2, 0, Math.PI * 2);
-                                ctx.fill();
+                          // Mercury on the orthographic globe: seeded crater field,
+                          // Caloris Basin, and the bright rayed craters at their
+                          // MESSENGER coordinates.
+                          var mercLambda0 = tick * solarCardSpinRate('Mercury') + _dragRotation, mercPhi0 = 8 * Math.PI / 180;
+                          var mercR = planetR * 0.985;
+                          ctx.save();
+                          ctx.beginPath(); ctx.arc(cx, cy, mercR, 0, Math.PI * 2); ctx.clip();
+                          if (solarDrawOrthoPoly(ctx, SOLAR_MERCURY_PLAINS, cx, cy, mercR, mercLambda0, mercPhi0)) { ctx.fillStyle = SOLAR_MERCURY_PAINT.plains; ctx.fill(); }
+                          var mci;
+                          for (mci = 0; mci < SOLAR_MERCURY_CRATERS.length; mci++) {
+                            var mcr = SOLAR_MERCURY_CRATERS[mci];
+                            var mcq = solarOrtho(mcr.lon, mcr.lat, mercLambda0, mercPhi0, mercR);
+                            if (mcq.z <= 0.05) continue;
+                            var mrr = mercR * (mcr.r / 90);
+                            ctx.fillStyle = SOLAR_MERCURY_PAINT.crater; ctx.beginPath(); ctx.ellipse(cx + mcq.x, cy + mcq.y, mrr * (0.3 + 0.7 * mcq.z), mrr, 0, 0, Math.PI * 2); ctx.fill();
+                            ctx.strokeStyle = SOLAR_MERCURY_PAINT.rim; ctx.lineWidth = Math.max(0.5, mrr * 0.2); ctx.beginPath(); ctx.ellipse(cx + mcq.x, cy + mcq.y, mrr * (0.3 + 0.7 * mcq.z), mrr, 0, Math.PI * 0.8, Math.PI * 1.8); ctx.stroke();
+                          }
+                          for (mci = 0; mci < SOLAR_MERCURY_FEATURES.length; mci++) {
+                            var mf2 = SOLAR_MERCURY_FEATURES[mci];
+                            var mfq = solarOrtho(mf2.lon, mf2.lat, mercLambda0, mercPhi0, mercR);
+                            if (mfq.z <= 0.05) continue;
+                            var mfr = mercR * (mf2.r / 90), mfx = cx + mfq.x, mfy = cy + mfq.y;
+                            if (mf2.kind === 'basin') {
+                              ctx.fillStyle = SOLAR_MERCURY_PAINT.basinFloor; ctx.beginPath(); ctx.ellipse(mfx, mfy, mfr * (0.3 + 0.7 * mfq.z), mfr, 0, 0, Math.PI * 2); ctx.fill();
+                              ctx.strokeStyle = SOLAR_MERCURY_PAINT.basinRim; ctx.lineWidth = Math.max(1, mfr * 0.1); ctx.beginPath(); ctx.ellipse(mfx, mfy, mfr * (0.3 + 0.7 * mfq.z), mfr, 0, 0, Math.PI * 2); ctx.stroke();
+                            } else {
+                              ctx.strokeStyle = SOLAR_MERCURY_PAINT.ray; ctx.lineWidth = Math.max(0.7, mfr * 0.15);
+                              for (var mry = 0; mry < mf2.rays; mry++) {
+                                var mang = mry / mf2.rays * Math.PI * 2 + 0.3, mlen = mfr * (3.5 + (mry % 3) * 1.6) * (0.5 + 0.5 * mfq.z);
+                                ctx.beginPath(); ctx.moveTo(mfx + Math.cos(mang) * mfr, mfy + Math.sin(mang) * mfr); ctx.lineTo(mfx + Math.cos(mang) * mlen, mfy + Math.sin(mang) * mlen); ctx.stroke();
                               }
+                              ctx.fillStyle = '#d9d5cf'; ctx.beginPath(); ctx.arc(mfx, mfy, mfr, 0, Math.PI * 2); ctx.fill();
                             }
                           }
+                          ctx.restore();
+                          var mercFeatures = [
+                            { lon: 163, lat: 30, r: 0.16, name: __alloT('stem.solarsystem.caloris_basin', 'Caloris Basin'), desc: __alloT('stem.solarsystem.caloris_basin_desc', 'A 1,550 km impact basin; the shock sent hills rippling to the far side of the planet.') },
+                            { lon: 17, lat: 58, r: 0.08, name: __alloT('stem.solarsystem.hokusai_crater', 'Hokusai'), desc: __alloT('stem.solarsystem.hokusai_crater_desc', 'Young rayed crater whose bright ejecta streaks wrap much of the planet.') }
+                          ];
+                          for (var mfi2 = 0; mfi2 < mercFeatures.length; mfi2++) {
+                            var mfe = mercFeatures[mfi2];
+                            var mfeq = solarOrtho(mfe.lon, mfe.lat, mercLambda0, mercPhi0, mercR);
+                            if (mfeq.z > 0.2) _featureLabels.push({ x: cx + mfeq.x, y: cy + mfeq.y, r: planetR * mfe.r, name: mfe.name, desc: mfe.desc });
+                          }
                         }
-
+                        // Lighting: shadow on right side
                         // Lighting: shadow on right side
 
                         var shadowGrad = ctx.createLinearGradient(cx - planetR, cy, cx + planetR, cy);
@@ -11328,6 +12373,7 @@ const d = labToolData.solarSystem || {};
 
                         ctx.restore();
 
+                        ctx.restore(); // end of the oblateness squash
                         // A stable glass caption keeps the identity, scale data, and
                         // interaction cue readable instead of clipping them against
                         // the last few pixels of the canvas.
@@ -11473,28 +12519,37 @@ const d = labToolData.solarSystem || {};
                           var ringBands = [
                             // [innerR multiplier, width, alpha, color, name]
                             [1.12, 4, 0.08, '#d4c090', 'D Ring'],
-                            [1.18, 8, 0.35, '#c9a04a', 'C Ring'],
-                            [1.28, 14, 0.5, '#eab308', 'B Ring (brightest)'],
+                            [1.18, 8, 0.35, '#c4b087', 'C Ring'],
+                            [1.28, 14, 0.5, '#eadbaa', 'B Ring (brightest)'],
                             // Cassini Division (gap)
                             [1.47, 3, 0.06, '#222222', 'Cassini Division'],
-                            [1.51, 12, 0.4, '#d4a017', 'A Ring'],
+                            [1.51, 12, 0.4, '#d9c48c', 'A Ring'],
                             // Encke Gap
                             [1.64, 1.5, 0.04, '#111111', 'Encke Gap'],
-                            [1.66, 5, 0.3, '#c9a04a', 'A Ring outer'],
+                            [1.66, 5, 0.3, '#c4b087', 'A Ring outer'],
                             [1.74, 3, 0.1, '#aa8830', 'F Ring (thin)']
                           ];
-                          // Draw back half of rings (behind planet)
+                          // Draw back half of rings (behind planet). The rings are
+                          // painted after the body, so the far half has to be clipped
+                          // to the sky outside the disc or it lies across the planet's
+                          // own face - the one thing a ring can never do.
+                          ctx.save();
+                          ctx.beginPath();
+                          ctx.rect(0, 0, W, H);
+                          ctx.arc(cx, cy, planetR * 0.995, 0, Math.PI * 2, true);
+                          ctx.clip('evenodd');
                           ringBands.forEach(function(rb) {
                             var rInner = planetR * rb[0];
                             var rOuter = rInner + rb[1];
                             ctx.globalAlpha = rb[2] * 0.7;
                             ctx.fillStyle = rb[3];
                             ctx.beginPath();
-                            ctx.ellipse(cx, cy, rOuter, rOuter * 0.18, ringTilt, Math.PI * 0.05, Math.PI * 0.95);
-                            ctx.ellipse(cx, cy, rInner, rInner * 0.18, ringTilt, Math.PI * 0.95, Math.PI * 0.05, true);
+                            ctx.ellipse(cx, cy, rOuter, rOuter * 0.18, ringTilt, Math.PI * 1.05, Math.PI * 1.95);
+                            ctx.ellipse(cx, cy, rInner, rInner * 0.18, ringTilt, Math.PI * 1.95, Math.PI * 1.05, true);
                             ctx.closePath();
                             ctx.fill();
                           });
+                          ctx.restore();
                           // Ring shadow on planet body
                           ctx.save();
                           ctx.beginPath();
@@ -11513,11 +12568,34 @@ const d = labToolData.solarSystem || {};
                             ctx.globalAlpha = rb[2];
                             ctx.fillStyle = rb[3];
                             ctx.beginPath();
-                            ctx.ellipse(cx, cy, rOuter, rOuter * 0.18, ringTilt, Math.PI * 1.05, Math.PI * 1.95);
-                            ctx.ellipse(cx, cy, rInner, rInner * 0.18, ringTilt, Math.PI * 1.95, Math.PI * 1.05, true);
+                            ctx.ellipse(cx, cy, rOuter, rOuter * 0.18, ringTilt, Math.PI * 0.05, Math.PI * 0.95);
+                            ctx.ellipse(cx, cy, rInner, rInner * 0.18, ringTilt, Math.PI * 0.95, Math.PI * 0.05, true);
                             ctx.closePath();
                             ctx.fill();
                           });
+                          // The planet casts a shadow across its own rings, opposite the
+                          // Sun (this scene lights from the upper left). Without it the
+                          // rings read as a painted decal rather than orbiting rubble.
+                          var ringOuter = planetR * 1.74 + 3;
+                          ctx.save();
+                          ctx.beginPath();
+                          ctx.ellipse(cx, cy, ringOuter, ringOuter * 0.18, ringTilt, 0, Math.PI * 2);
+                          ctx.ellipse(cx, cy, planetR * 1.12, planetR * 1.12 * 0.18, ringTilt, 0, Math.PI * 2, true);
+                          ctx.clip('evenodd');
+                          var ringShadow = ctx.createLinearGradient(cx, cy, cx + ringOuter, cy + ringOuter * 0.28);
+                          ringShadow.addColorStop(0, 'rgba(2,4,14,0.92)');
+                          ringShadow.addColorStop(0.5, 'rgba(2,4,14,0.78)');
+                          ringShadow.addColorStop(0.85, 'rgba(2,4,14,0.3)');
+                          ringShadow.addColorStop(1, 'rgba(2,4,14,0)');
+                          ctx.fillStyle = ringShadow;
+                          ctx.beginPath();
+                          ctx.moveTo(cx, cy - planetR * 0.95);
+                          ctx.lineTo(cx + ringOuter * 1.15, cy - ringOuter * 0.02);
+                          ctx.lineTo(cx + ringOuter * 1.15, cy + ringOuter * 0.5);
+                          ctx.lineTo(cx, cy + planetR * 0.95);
+                          ctx.closePath();
+                          ctx.fill();
+                          ctx.restore();
                           // Sparkle particles scattered on rings
                           ctx.globalAlpha = 0.4;
                           ctx.fillStyle = '#fff';
@@ -11600,7 +12678,9 @@ const d = labToolData.solarSystem || {};
                         }
 
                         // === ENHANCED: Polar ice caps for rocky planets ===
-                        if (!isGas && sel.terrainType !== 'volcanic') {
+                        // Earth and Mars paint their own caps at the poles of the globe;
+                        // these flat slabs would sit across the disc regardless of tilt.
+                        if (!isGas && sel.terrainType !== 'volcanic' && sel.terrainType !== 'earthlike' && sel.terrainType !== 'desert' && sel.terrainType !== 'cratered' && sel.terrainType !== 'iceworld') {
                           ctx.save();
                           ctx.beginPath();
                           ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
@@ -11657,11 +12737,32 @@ const d = labToolData.solarSystem || {};
                           ctx.globalAlpha = 0.12;
                           ctx.strokeStyle = '#67e8f9';
                           ctx.lineWidth = 1;
-                          for (var uri = 0; uri < 3; uri++) {
-                            var urR = planetR * (1.15 + uri * 0.06);
-                            ctx.beginPath();
-                            ctx.ellipse(cx, cy, urR, urR * 0.08, axisTilt - Math.PI / 2, 0, Math.PI * 2);
-                            ctx.stroke();
+                          // Uranus' rings lie in its equatorial plane, so with the axis
+                          // nearly in the sky plane they present nearly face-on from
+                          // the Sun in the late 2020s (equinox was 2007). Radii follow
+                          // the ring table (1.55-2.0 planet radii; epsilon brightest).
+                          var uranusRingRadii = [1.58, 1.69, 1.82, 2.0];
+                          // Two passes: the far half of each ring is clipped to the
+                          // region outside the disc (it is behind the planet), the near
+                          // half is drawn over it.
+                          for (var uPass = 0; uPass < 2; uPass++) {
+                            ctx.save();
+                            if (uPass === 0) {
+                              ctx.beginPath();
+                              ctx.rect(0, 0, W, H);
+                              ctx.arc(cx, cy, planetR, 0, Math.PI * 2, true);
+                              ctx.clip('evenodd');
+                            }
+                            for (var uri = 0; uri < uranusRingRadii.length; uri++) {
+                              var urR = planetR * uranusRingRadii[uri];
+                              ctx.globalAlpha = uri === 3 ? 0.34 : 0.14;
+                              ctx.lineWidth = uri === 3 ? 1.6 : 1;
+                              ctx.strokeStyle = '#9fe3ea';
+                              ctx.beginPath();
+                              ctx.ellipse(cx, cy, urR, urR * 0.62, axisTilt - Math.PI / 2, uPass === 0 ? Math.PI : 0, uPass === 0 ? Math.PI * 2 : Math.PI);
+                              ctx.stroke();
+                            }
+                            ctx.restore();
                           }
                           ctx.globalAlpha = 1;
                           _featureLabels.push({ x: cx + planetR * 0.8, y: cy - planetR * 0.9, r: 15, name: __alloT('stem.solarsystem.97_8_axial_tilt', '97.8\u00B0 Axial Tilt'), desc: __alloT('stem.solarsystem.knocked_sideways_by_an_ancient_collisi', 'Likely knocked sideways long ago, perhaps by a collision with a world at least as big as Earth') });
@@ -11995,7 +13096,10 @@ const d = labToolData.solarSystem || {};
                         ctx.font = 'bold 10px system-ui';
                         ctx.fillStyle = '#fef3c7';
                         ctx.textAlign = 'left';
-                        ctx.fillText(sel.dist ? sel.dist + ' AU' : '', 28, 18);
+                        // Real semi-major axis. `sel.dist` is the compressed display
+                        // radius of the 3D orrery (Earth = 14), which an earlier build
+                        // printed here as if it were astronomical units.
+                        ctx.fillText(SOLAR_SEMI_MAJOR_AU[sel.key] != null ? (SOLAR_SEMI_MAJOR_AU[sel.key] < 10 ? SOLAR_SEMI_MAJOR_AU[sel.key].toFixed(2) : SOLAR_SEMI_MAJOR_AU[sel.key].toFixed(1)) + ' AU' : '', 28, 18);
                         ctx.globalAlpha = 1;
 
                         if (!surfaceReducedMotion && surfacePageVisible) {
@@ -12406,7 +13510,11 @@ const d = labToolData.solarSystem || {};
                         }
 
                         // Right hemisphere is the observable exterior; left is the modeled cutaway.
-                        var exteriorBase = typeof selectedAccent === 'string' && selectedAccent.charAt(0) === '#' ? selectedAccent : layers[0].color;
+                        // The exterior hemisphere uses the same body palette and geography
+                        // as the surface card and the 3D globe, so the cutaway's outside
+                        // never contradicts the world the learner just looked at.
+                        var exteriorPalette = SOLAR_BODY_PALETTE[sel.key] || [layers[0].color, layers[0].color];
+                        var exteriorBase = exteriorPalette[0];
                         ctx2.save();
                         ctx2.beginPath();
                         ctx2.arc(cx, cy, maxR, -Math.PI / 2, Math.PI / 2, false);
@@ -12414,26 +13522,55 @@ const d = labToolData.solarSystem || {};
                         ctx2.closePath();
                         ctx2.clip();
                         var exteriorGradient = ctx2.createRadialGradient(cx + maxR * 0.24, cy - maxR * 0.26, maxR * 0.04, cx, cy, maxR * 1.04);
-                        exteriorGradient.addColorStop(0, '#f8fafc');
+                        // Soft sun glint rather than a white hole in the ocean.
+                        exteriorGradient.addColorStop(0, 'rgba(255,255,255,0.45)');
                         exteriorGradient.addColorStop(0.16, exteriorBase);
-                        exteriorGradient.addColorStop(0.70, layers[0].color);
+                        exteriorGradient.addColorStop(0.70, exteriorPalette[1]);
                         exteriorGradient.addColorStop(1, '#111827');
                         ctx2.fillStyle = exteriorGradient;
                         ctx2.fillRect(cx, cy - maxR, maxR + 2, maxR * 2);
-                        if (sel.terrainType === 'gasgiant') {
+                        var cutawayLambda0 = -0.9, cutawayPhi0 = 12 * Math.PI / 180;
+                        function cutawayRegions(list, colorFor, alphaFor) {
+                          for (var ri = 0; ri < list.length; ri++) {
+                            if (solarDrawOrthoPoly(ctx2, list[ri].pts, cx, cy, maxR, cutawayLambda0, cutawayPhi0)) {
+                              ctx2.globalAlpha = alphaFor ? alphaFor(list[ri]) : 1;
+                              ctx2.fillStyle = colorFor(list[ri]);
+                              ctx2.fill();
+                            }
+                          }
+                          ctx2.globalAlpha = 1;
+                        }
+                        if (sel.terrainType === 'gasgiant' || sel.terrainType === 'icegiant') {
+                          var cutawayBands = SOLAR_BAND_COLORS[sel.key];
                           for (var band = 0; band < 10; band++) {
-                            ctx2.fillStyle = band % 2 ? 'rgba(255,255,255,0.10)' : 'rgba(71,35,20,0.16)';
-                            ctx2.fillRect(cx, cy - maxR + band * maxR * 0.2, maxR + 2, maxR * 0.09);
+                            ctx2.fillStyle = cutawayBands ? cutawayBands[band % cutawayBands.length] + '0.34)' : (band % 2 ? 'rgba(255,255,255,0.10)' : 'rgba(71,35,20,0.16)');
+                            ctx2.fillRect(cx, cy - maxR + band * maxR * 0.2, maxR + 2, maxR * 0.11);
                           }
                         } else if (sel.key === 'Earth') {
-                          ctx2.fillStyle = 'rgba(74,222,128,0.72)';
-                          ctx2.beginPath(); ctx2.ellipse(cx + maxR * 0.30, cy - maxR * 0.18, maxR * 0.18, maxR * 0.29, -0.5, 0, Math.PI * 2); ctx2.fill();
-                          ctx2.beginPath(); ctx2.ellipse(cx + maxR * 0.55, cy + maxR * 0.28, maxR * 0.19, maxR * 0.12, 0.3, 0, Math.PI * 2); ctx2.fill();
-                        } else if (sel.key === 'Mars' || sel.key === 'Mercury') {
-                          ctx2.fillStyle = 'rgba(30,20,18,0.28)';
-                          ctx2.beginPath(); ctx2.arc(cx + maxR * 0.46, cy - maxR * 0.20, maxR * 0.10, 0, Math.PI * 2); ctx2.fill();
-                          ctx2.beginPath(); ctx2.arc(cx + maxR * 0.66, cy + maxR * 0.31, maxR * 0.07, 0, Math.PI * 2); ctx2.fill();
+                          cutawayRegions(SOLAR_EARTH_LAND, function (lm) { return lm.water ? SOLAR_EARTH_PAINT.oceanShallow : SOLAR_EARTH_PAINT.land; });
+                          cutawayRegions(SOLAR_EARTH_OVERLAYS, function (ov) { return SOLAR_EARTH_PAINT[ov.kind]; }, function (ov) { return ov.kind === 'forest' ? 0.7 : ov.kind === 'tundra' ? 0.65 : 0.95; });
+                        } else if (sel.key === 'Mars') {
+                          cutawayRegions(SOLAR_MARS_BRIGHT.map(function (r) { return { pts: solarMarsPoly(r.pts) }; }), function () { return SOLAR_MARS_PAINT.dust; }, function () { return 0.8; });
+                          cutawayRegions(SOLAR_MARS_DARK.map(function (r) { return { pts: solarMarsPoly(r.pts), soft: r.soft }; }), function (r) { return r.soft ? SOLAR_MARS_PAINT.darkSoft : SOLAR_MARS_PAINT.dark; });
+                          ctx2.fillStyle = SOLAR_MARS_PAINT.cap;
+                          if (solarDrawOrthoPoly(ctx2, solarMarsCapPolygon(true), cx, cy, maxR, cutawayLambda0, cutawayPhi0)) ctx2.fill();
+                          if (solarDrawOrthoPoly(ctx2, solarMarsCapPolygon(false), cx, cy, maxR, cutawayLambda0, cutawayPhi0)) ctx2.fill();
+                        } else if (sel.key === 'Pluto') {
+                          cutawayRegions(SOLAR_PLUTO_REGIONS, function (r) { return SOLAR_PLUTO_PAINT[r.kind]; });
+                        } else if (sel.key === 'Mercury') {
+                          ctx2.fillStyle = SOLAR_MERCURY_PAINT.crater;
+                          for (var mci = 0; mci < SOLAR_MERCURY_CRATERS.length; mci++) {
+                            var mq = solarOrtho(SOLAR_MERCURY_CRATERS[mci].lon, SOLAR_MERCURY_CRATERS[mci].lat, cutawayLambda0, cutawayPhi0, maxR);
+                            if (mq.z > 0.05) { var mr = maxR * (SOLAR_MERCURY_CRATERS[mci].r / 90); ctx2.beginPath(); ctx2.ellipse(cx + mq.x, cy + mq.y, mr * (0.3 + 0.7 * mq.z), mr, 0, 0, Math.PI * 2); ctx2.fill(); }
+                          }
                         }
+                        // Terminator shading so the exterior reads as a lit sphere.
+                        var cutawayShade = ctx2.createRadialGradient(cx + maxR * 0.2, cy - maxR * 0.3, maxR * 0.2, cx + maxR * 0.2, cy - maxR * 0.3, maxR * 1.9);
+                        cutawayShade.addColorStop(0, 'rgba(255,255,255,0.08)');
+                        cutawayShade.addColorStop(0.5, 'rgba(0,0,0,0)');
+                        cutawayShade.addColorStop(1, 'rgba(0,0,0,0.55)');
+                        ctx2.fillStyle = cutawayShade;
+                        ctx2.fillRect(cx, cy - maxR, maxR + 2, maxR * 2);
                         ctx2.restore();
                         ctx2.beginPath();
                         ctx2.arc(cx, cy, maxR, -Math.PI / 2, Math.PI / 2, false);
@@ -12547,7 +13684,8 @@ const d = labToolData.solarSystem || {};
                         ctx2.fillText(__alloT('stem.solarsystem.interior_canvas_title', sel.name + ' Interior'), cx, 22, Math.max(180, cw - 24));
                         ctx2.font = '10px sans-serif';
                         ctx2.fillStyle = '#cbd5e1';
-                        ctx2.fillText(__alloT('stem.solarsystem.cross_section_not_to_scale', 'Modeled cross-section — not to scale'), cx, 38, Math.max(180, cw - 24));
+                        // Below the disc, not on top of the hemisphere labels (which sit at cy - maxR - 10).
+                        ctx2.fillText(__alloT('stem.solarsystem.cross_section_not_to_scale', 'Modeled cross-section — not to scale'), cx, Math.min(ch - 8, cy + maxR + 18), Math.max(180, cw - 24));
                       };
                       solarInteriorDrawRef.current();
                     }

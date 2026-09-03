@@ -44,6 +44,56 @@ var Sparkles = _lazyIcon('Sparkles');
 var Trash2 = _lazyIcon('Trash2');
 var X = _lazyIcon('X');
 function TimelineView(props) {
+  // Shared description field for a timeline picture (edit mode). One
+  // multi-field write per change: handleTimelineChange accepts an object.
+  const [altBusyIdx, setAltBusyIdx] = React.useState(null);
+  const renderTimelineAltField = (item, idx) => {
+    const Field = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ImageAltField;
+    const A = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AltText;
+    const change = props.handleTimelineChange;
+    if (!Field || !item || !item.image || typeof change !== 'function') return null;
+    const stale = !!(A && item.altHash && A.hashImage(item.image) !== item.altHash);
+    const regenerate = async () => {
+      const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
+      if (!A || !vision) return;
+      setAltBusyIdx(idx);
+      try {
+        const [r] = await A.draftAlts([{
+          id: idx,
+          dataUrl: item.image,
+          context: item.event || item.content
+        }], {
+          language: props.leveledTextLanguage,
+          callGeminiVision: vision
+        });
+        if (r) change(idx, {
+          alt: r.decorative ? '' : r.alt,
+          altSource: r.source,
+          decorative: r.decorative === true,
+          altHash: A.hashImage(item.image)
+        });
+      } finally {
+        setAltBusyIdx(null);
+      }
+    };
+    return React.createElement(Field, {
+      id: 'timeline-alt-' + idx,
+      t: props.t,
+      value: item.alt || '',
+      source: stale ? 'stale' : item.altSource || '',
+      decorative: item.decorative === true,
+      busy: altBusyIdx === idx,
+      onChange: value => change(idx, {
+        alt: value,
+        altSource: 'author',
+        altHash: A ? A.hashImage(item.image) : ''
+      }),
+      onDecorativeChange: flag => change(idx, {
+        decorative: flag
+      }),
+      onRegenerate: regenerate
+    });
+  };
   // Pure data refs
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -317,9 +367,9 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: item.image,
-    alt: `${item.date || ''}: ${item.event || ''}`,
+    alt: item.decorative ? '' : item.alt || `${item.date || ''}: ${item.event || ''}`,
     className: "w-12 h-12 object-contain rounded border border-slate-400 bg-white"
-  }), /*#__PURE__*/React.createElement("button", {
+  }), isEditingTimeline && renderTimelineAltField(item, idx), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date),
     disabled: isGeneratingTimelineImage[idx],
     "aria-busy": !!isGeneratingTimelineImage[idx],
@@ -413,7 +463,7 @@ function TimelineView(props) {
   }, item.image && /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
     src: item.image,
-    alt: `${item.date || ''}: ${item.event || ''}`,
+    alt: item.decorative ? '' : item.alt || `${item.date || ''}: ${item.event || ''}`,
     className: "object-contain rounded-lg bg-white border border-slate-100 shrink-0",
     style: {
       width: `${timelineImageSize}px`,

@@ -122,7 +122,7 @@ describe('crystal lab — honesty about what is drawn', () => {
       .matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1]);
     const minerals = [...src.slice(src.indexOf('const MINERALS = ['), src.indexOf('const QUIZ_BANK'))
       .matchAll(/\{ id: '(\w+)'/g)].map((m) => m[1]);
-    expect(minerals.length).toBe(18);
+    expect(minerals.length).toBe(23);
     minerals.forEach((id) => {
       expect(drawn, `${id} has no real structure`).toContain(id);
     });
@@ -445,7 +445,9 @@ describe('crystal lab structures', () => {
     return m ? parseFloat(m[1]) : 1.15;
   }
 
-  const HOMO = { diamond: ['C'], rings: ['S'], pyrite: ['S'] };
+  // Graphite is carbon bonded to carbon inside each sheet, the same exception
+  // diamond needs. The gap BETWEEN sheets is left unbonded on purpose.
+  const HOMO = { diamond: ['C'], graphite: ['C'], rings: ['S'], pyrite: ['S'] };
 
   /** Bonds the scene would draw, applying the same rules the builder applies. */
   function bondsOf(spec) {
@@ -479,7 +481,29 @@ describe('crystal lab structures', () => {
   }
 
   it('covers every mineral with either a real structure or a unit cell', () => {
-    expect(specs().length).toBe(18);
+    expect(specs().length).toBe(23);
+  });
+
+  it('bonds graphite within each sheet and never across the gap', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const atoms = fn('rkLatticeAtoms')('graphite', 'C', 'C');
+    expect(atoms.length).toBeGreaterThan(20);
+    const cut = 1.15;
+    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+    let inPlane = 0, across = 0;
+    for (let i = 0; i < atoms.length; i++) {
+      for (let j = i + 1; j < atoms.length; j++) {
+        const d = dist(atoms[i], atoms[j]);
+        if (d > cut || d < 1e-4) continue;
+        if (Math.abs(atoms[i].y - atoms[j].y) < 1e-6) inPlane++; else across++;
+      }
+    }
+    expect(inPlane).toBeGreaterThan(30);
+    // The unbonded gap between sheets IS the reason graphite is Mohs 1 to 2.
+    expect(across).toBe(0);
+    const layers = new Set(atoms.map((a) => a.y.toFixed(3)));
+    expect(layers.size).toBe(3);
+    expect(src).toContain("spec.kind === 'graphite' ? 1.15");
   });
 
   it('leaves no atom floating without a single bond', () => {
@@ -673,7 +697,7 @@ describe('crystal lab — the tests cannot drift from the builder', () => {
   // mirror to be updated with them.
   it('pins the rules the bond model mirrors', () => {
     const s = readFileSync(ROCKS_FILE, 'utf8');
-    expect(s).toContain("var RK_HOMOATOMIC = { diamond: { C: 1 }, rings: { S: 1 }, pyrite: { S: 1 } };");
+    expect(s).toContain("var RK_HOMOATOMIC = { diamond: { C: 1 }, graphite: { C: 1 }, rings: { S: 1 }, pyrite: { S: 1 } };");
     expect(s).toContain("if (p === 'C' || q === 'C') return (p === 'O' || q === 'O') ? 0.60 : 0;");
     expect(s).toContain("pairLimit = function (p, q) { return (p === 'S' && q === 'S') ? 0.70 : 1.15; };");
     expect(s).toContain("rkSpinelBondPairs(atoms).forEach(function (pair)");

@@ -8780,6 +8780,8 @@ ${pageCss}
                   if (f) out.push("- " + esc(f));
                 });
                 if (c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
+                const hook = maRules && typeof maRules.hookFact === "function" ? maRules.hookFact(c) : null;
+                if (hook) out.push("", "**" + maT("hook_heading", "Did you know?") + "** " + esc(hook.text) + (hook.sourceUrl ? " (" + hook.sourceUrl + ")" : ""));
                 out.push("");
               });
             } else if (ty === "image" && d && d.prompt) {
