@@ -179,6 +179,7 @@ test_extract_query.js
 test-results/
 playwright-report/
 playwright-report-mobile/
+test-output-*/
 playwright/.cache/
 
 # Reading Library scraper cache — 9.4 MB / 200+ downloaded source HTML files,
