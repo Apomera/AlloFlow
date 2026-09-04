@@ -265,6 +265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '.fl-fisherlab-root .fl-brief-visual { display:grid; grid-template-columns:minmax(0,1fr); gap:12px; min-width:0; }',
       '.fl-fisherlab-root .fl-brief-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }',
       '.fl-fisherlab-root .fl-warmup-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start; }',
+      '@media(max-width:700px) { .fl-fisherlab-root .fl-measurement-plot text { font-size:20px; } }',
       '.fl-fisherlab-root .fl-route-card:hover { border-color:#7dd3fc !important; background:#10334a !important; }',
       '.fl-fisherlab-root summary { cursor:pointer; min-height:44px; align-content:center; }',
       '.fl-fisherlab-root summary:focus-visible, .fl-fisherlab-root select:focus-visible { outline:3px solid #7dd3fc; outline-offset:3px; }',
@@ -5808,6 +5809,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreSpeciesComparison: getCoreSpeciesComparison,
     normalizeCoreLearningNotes: normalizeCoreLearningNotes,
     getCoreLearningNoteReview: getCoreLearningNoteReview,
+    getCoreMeasurementModel: getCoreMeasurementModel,
+    getCoreMeasurementComparison: getCoreMeasurementComparison,
+    appendCoreMeasurementEvidence: appendCoreMeasurementEvidence,
     buildCoreLearningNotebookText: buildCoreLearningNotebookText,
     writeCoreLearningNote: writeCoreLearningNote,
     buildCoreLearningNoteText: buildCoreLearningNoteText,
@@ -13869,6 +13873,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     next[key] = enabled === true;
     return next;
   }
+  // Deterministic reference measurements isolate alignment from reading spread.
+  function getCoreMeasurementModel(value) {
+    var input = value || {}, aligned = input.aligned === true, wideSpread = input.wideSpread === true;
+    var center = aligned ? 120 : 125, halfRange = wideSpread ? 4 : 1;
+    return { aligned: aligned, wideSpread: wideSpread, reference: 12,
+      readings: [center - halfRange, center, center + halfRange].map(function(n) { return n / 10; }),
+      mean: center / 10, spread: halfRange / 5, meanError: (center - 120) / 10 };
+  }
+  function getCoreMeasurementComparison(kept, current) {
+    if (!kept) return null;
+    var a = getCoreMeasurementModel(kept), b = getCoreMeasurementModel(current);
+    var alignmentChanged = a.aligned !== b.aligned, spreadChanged = a.wideSpread !== b.wideSpread;
+    var changed = alignmentChanged ? (spreadChanged ? 'both' : 'alignment') : (spreadChanged ? 'spread' : 'none');
+    var guidance = {
+      none: 'The settings match. Change alignment or reading spread to test one idea.',
+      alignment: 'Only alignment changed. Compare the means: the shared offset changes, while the spread stays the same.',
+      spread: 'Only reading spread changed. Compare the ranges: repeatability changes, while the mean and its offset stay the same in these symmetric model sets.',
+      both: 'Both settings changed. You can describe the difference, but change just one setting to isolate its effect.'
+    };
+    return { kept: a, current: b, changed: changed, guidance: guidance[changed] };
+  }
+  function appendCoreMeasurementEvidence(current, kept, model) {
+    var comparison = getCoreMeasurementComparison(kept, model);
+    if (!comparison || comparison.changed === 'none') return { ok: false, value: typeof current === 'string' ? current : '' };
+    function describe(label, set) {
+      return label + ' (' + (set.aligned ? 'aligned' : 'offset zero') + '): ' + set.readings.map(function(n) { return n.toFixed(1); }).join(', ') +
+        '; mean ' + set.mean.toFixed(1) + '; range ' + set.spread.toFixed(1) + '; mean error +' + set.meanError.toFixed(1) + ' units.';
+    }
+    var evidence = 'Measurement model; known reference 12.0 units. ' + describe('Kept', comparison.kept) + ' ' + describe('Current', comparison.current) +
+      ' Changed: ' + comparison.changed + '. Illustrative sets, not catch measurements.';
+    return appendCoreLearningEvidence(current, evidence);
+  }
+
   // Guided investigations use model trials, never simulator or catch progress.
   var CORE_GUIDED_LESSONS = {
   "navigation": {
@@ -17523,8 +17560,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var warmupTopic = warmupTopicHook[0], setWarmupTopic = warmupTopicHook[1];
     var warmupAnswersHook = useState({});
     var warmupAnswers = warmupAnswersHook[0], setWarmupAnswers = warmupAnswersHook[1];
-    var warmupExperimentHook = useState({ distance: 2, speed: 4, secondSample: false, aligned: false });
+    var warmupExperimentHook = useState({ distance: 2, speed: 4, secondSample: false, aligned: false, wideSpread: false });
     var warmupExperiment = warmupExperimentHook[0], setWarmupExperiment = warmupExperimentHook[1];
+    var measurementKeptHook = useState(null);
+    var measurementKept = measurementKeptHook[0], setMeasurementKept = measurementKeptHook[1];
+    var measurementEvidenceHook = useState('');
+    var measurementEvidenceStatus = measurementEvidenceHook[0], setMeasurementEvidenceStatus = measurementEvidenceHook[1];
     var learningNotesHook = useState(loadCoreLearningNotes);
     var learningNotes = learningNotesHook[0], setLearningNotes = learningNotesHook[1];
     var savedLearningNotesHook = useState(function() { return normalizeCoreLearningNotes(learningNotes); });
@@ -19414,6 +19455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var model = guided ? guidedJourney.model : warmupExperiment;
       var textStyle = { fontSize: 13, lineHeight: 1.6, color: '#dbeafe', margin: '8px 0 12px' };
       function updateModel(key, value) {
+        if (topic === 'measurement') setMeasurementEvidenceStatus('');
         if (guided) setGuidedJourney(function(previous) { var model = Object.assign({}, previous.model); model[key] = value; return Object.assign({}, previous, { model: model }); });
         else setWarmupExperiment(function(previous) { var next = Object.assign({}, previous); next[key] = value; return next; });
       }
@@ -19475,22 +19517,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             guided && model.secondSample ? h('p', { style: textStyle }, model.secondTotal === 10 ? 'Equal sample sizes: (80% + 20%) ÷ 2 = 50% agrees with pooling the counts.' : 'Unequal sample sizes: averaging 80% and 20% gives 50%, but pooling the counts gives ' + Number(samplingModel.percent.toFixed(1)) + '%. The larger sample contributes more fish.') : null,
             h('p', { style: textStyle }, 'Explain what changed: the original catch did not change; the evidence you included did. Even two spots cannot establish the population across a whole region.')));
       } else {
-        var offset = model.aligned ? 0 : 0.5;
-        var readings = [11.9, 12.0, 12.1].map(function(value) { return (value + offset).toFixed(1); });
+        var measurement = getCoreMeasurementModel(model);
+        var comparison = getCoreMeasurementComparison(measurementKept, model);
+        var measurementButtonStyle = { minHeight: 44, padding: '10px 13px', borderRadius: 8, border: '1px solid #5eead4', background: '#0b2637', color: '#e0f2fe', fontSize: 13, lineHeight: 1.5, cursor: 'pointer', textAlign: 'left' };
+        function measurementPlot(label, set) {
+          function x(value) { return 24 + (value - 11.4) / 1.8 * 292; }
+          return h('div', { key: label, 'data-measurement-set': label, style: { marginTop: 14 } },
+            h('strong', { style: { color: '#e0f2fe', fontSize: 14 } }, label + ' · ' + (set.aligned ? 'aligned zero' : 'zero offset +0.5')),
+            h('svg', { className: 'fl-measurement-plot', viewBox: '0 0 340 100', 'aria-hidden': 'true', focusable: 'false', style: { width: '100%', height: 'auto', display: 'block', marginTop: 4 } },
+              h('line', { x1: 24, y1: 70, x2: 316, y2: 70, stroke: '#94a3b8' }),
+              [11.4, 12, 12.6, 13.2].map(function(n) { return h('g', { key: n },
+                h('line', { x1: x(n), y1: 67, x2: x(n), y2: 75, stroke: '#94a3b8' }),
+                h('text', { x: x(n), y: 93, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 13 }, n.toFixed(1))); }),
+              h('line', { x1: x(12), y1: 5, x2: x(12), y2: 67, stroke: '#5eead4', strokeWidth: 2, strokeDasharray: '4 3' }),
+              h('line', { x1: x(set.readings[0]), y1: 28, x2: x(set.readings[2]), y2: 28, stroke: '#38bdf8', strokeWidth: 3 }),
+              set.readings.map(function(n, i) { return h('circle', { key: i, cx: x(n), cy: 28, r: 6, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 1 }); }),
+              h('path', { d: 'M ' + x(set.mean) + ' 47 l 7 7 l -7 7 l -7 -7 Z', fill: '#fbbf24' })),
+            h('p', { style: Object.assign({}, textStyle, { margin: '0 0 4px' }) }, 'Readings: ' + set.readings.map(function(n) { return n.toFixed(1); }).join(', ') + ' units.'),
+            h('p', { style: Object.assign({}, textStyle, { margin: 0 }) }, 'Mean ' + set.mean.toFixed(1) + ' · Range ' + set.spread.toFixed(1) + ' · Mean error +' + set.meanError.toFixed(1) + ' units'));
+        }
         content = h('div', { className: 'fl-warmup-grid' },
           h('div', null,
-            h('p', { style: textStyle }, 'New model: measure a reference object known to be 12.0 units long. A misplaced zero adds 0.5 units to every reading. Predict whether averaging three readings removes that offset.'),
+            h('p', { style: textStyle }, 'Measure a reference object known to be 12.0 units long. A misplaced zero adds 0.5 units to every reading. Predict whether closely agreeing readings must be close to the reference.'),
             h('label', { style: { display: 'flex', gap: 10, alignItems: 'center', minHeight: 44, color: '#e0f2fe', fontSize: 13, cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: model.aligned, onChange: function(e) { updateModel('aligned', e.target.checked); }, style: { width: 20, height: 20, accentColor: '#5eead4', flexShrink: 0 } }), 'Align the ruler with zero'),
-            h('ol', { 'aria-label': 'Repeated measurements', style: { display: 'flex', flexWrap: 'wrap', gap: 8, padding: 0, listStyle: 'none' } }, readings.map(function(value, index) {
+            h('label', { style: { display: 'grid', gap: 6, margin: '10px 0', color: '#e0f2fe', fontSize: 13 } }, 'Reading spread',
+              h('select', { value: model.wideSpread ? 'wide' : 'tight', onChange: function(e) { updateModel('wideSpread', e.target.value === 'wide'); }, style: { width: '100%', minWidth: 0, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #627d91', color: '#f1f5f9', background: '#061c2b', fontSize: 14 } },
+                h('option', { value: 'tight' }, 'Tight · range 0.2 units'), h('option', { value: 'wide' }, 'Wide · range 0.8 units'))),
+            h('ol', { 'aria-label': 'Repeated measurements', style: { display: 'flex', flexWrap: 'wrap', gap: 8, padding: 0, listStyle: 'none' } }, measurement.readings.map(function(value, index) {
               return h('li', { key: index, style: { flex: '1 1 65px', background: '#0b2637', border: '1px solid #355064', padding: 10, borderRadius: 8, color: '#e0f2fe', fontSize: 13 } },
-                h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 11 } }, 'Reading ' + (index + 1)), h('strong', { style: { fontSize: 20 } }, value));
-            }))),
-          h('div', { style: { background: '#061c2b', borderRadius: 10, padding: 16, border: '1px solid #355064' } },
-            h('p', { 'data-investigation-result': 'measurement', 'aria-live': 'polite', style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#5eead4' } }, 'Mean: ' + (12 + offset).toFixed(1) + ' units'),
-            h('p', { style: textStyle }, 'Known length: 12.0 units · Mean error: +' + offset.toFixed(1) + ' units'),
-            h('p', { style: textStyle }, 'The spread stays 0.2 units in both sets. Alignment changes accuracy here, while the repeatability stays the same.'),
-            h('p', { style: textStyle }, 'Explain why: repeated readings can agree closely and still share the same error. These illustrative values do not come from your catch.')));
+                h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 11 } }, 'Reading ' + (index + 1)), h('strong', { style: { fontSize: 20 } }, value.toFixed(1)));
+            })),
+            h('p', { style: textStyle }, 'Keep one set, then change one setting. Does the mean move, the spread change, or both?'),
+            h('button', { type: 'button', className: 'fl-btn', style: measurementButtonStyle, onClick: function() { setMeasurementKept({ aligned: model.aligned, wideSpread: model.wideSpread }); setMeasurementEvidenceStatus(''); } }, measurementKept ? 'Replace kept set with current set' : 'Keep this set for comparison'),
+            h('p', { style: Object.assign({}, textStyle, { color: '#cbd5e1', fontSize: 12 }) }, 'The kept set lasts for this session. Add its values to your note to save or download them.'),
+            comparison ? h('div', { 'data-measurement-comparison': comparison.changed, style: { padding: 12, borderLeft: '3px solid #c4b5fd', background: '#172a40', borderRadius: 7 } },
+              h('p', { 'aria-live': 'polite', style: Object.assign({}, textStyle, { marginTop: 0 }) }, comparison.guidance),
+              h('button', { type: 'button', className: 'fl-btn', disabled: comparison.changed === 'none', style: Object.assign({}, measurementButtonStyle, { opacity: comparison.changed === 'none' ? 0.6 : 1 }), onClick: function() {
+                var result = appendCoreMeasurementEvidence(learningNotes.measurement.evidence, measurementKept, model);
+                if (result.ok) {
+                  setLearningNotes(function(previous) { var next = Object.assign({}, previous); next.measurement = Object.assign({}, previous.measurement, { evidence: result.value }); return next; });
+                  setLearningNoteStatus(function(previous) { return Object.assign({}, previous, { measurement: 'dirty' }); });
+                  setOpenLearningNote('measurement');
+                  learningFocusTargetRef.current = 'fl-learning-measurement-evidence';
+                  setNoteFocusTick(function(previous) { return previous + 1; });
+                }
+                setMeasurementEvidenceStatus(result.ok ? 'Comparison values added to your draft. Explain what they support, then save or download your note.' : 'Your existing note is unchanged. There is not enough space for this comparison; summarize the values in your own words.');
+              } }, 'Add comparison to measurement note'),
+              h('p', { role: 'status', style: Object.assign({}, textStyle, { marginBottom: 0 }) }, measurementEvidenceStatus)) : null),
+          h('div', { style: { background: 'radial-gradient(ellipse at top right,rgba(14,116,144,0.25),transparent 70%),#061c2b', borderRadius: 10, padding: 16, border: '1px solid #355064' } },
+            h('p', { 'data-investigation-result': 'measurement', 'aria-live': 'polite', style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#5eead4' } }, 'Mean: ' + measurement.mean.toFixed(1) + ' units'),
+            h('p', { style: textStyle }, 'Known length: 12.0 units · Mean error: +' + measurement.meanError.toFixed(1) + ' units'),
+            h('p', { style: Object.assign({}, textStyle, { fontSize: 12 }) }, 'Same scale for both sets · units. Circles: readings. Gold diamond: mean. Dashed line: known reference.'),
+            measurementKept ? measurementPlot('Kept set', getCoreMeasurementModel(measurementKept)) : null,
+            measurementPlot('Current set', measurement),
+            h('p', { style: textStyle }, 'Range = largest − smallest reading. A smaller range means better repeatability here; it does not guarantee accuracy.'),
+            h('p', { style: textStyle }, 'These illustrative sets are symmetric, so changing spread leaves their mean unchanged. Real repeated measurements need not behave this way. Averaging alone does not remove a shared zero offset.')));
       }
       return h(guided ? 'div' : 'details', { key: topic, 'data-fisherlab-investigation': topic, style: { marginTop: 16, border: '1px solid #3c6874', borderRadius: 10, background: '#0b2432', padding: '0 14px 14px' } },
         guided ? null : h('summary', { style: { color: '#99f6e4', fontSize: 14, fontWeight: 800 } }, 'Try a mini-investigation'),
