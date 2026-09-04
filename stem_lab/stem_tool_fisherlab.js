@@ -5785,6 +5785,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
 
   window.__FisherLabCore = {
+    createCoreQuizRound: createCoreQuizRound,
+    answerCoreQuizRound: answerCoreQuizRound,
+    advanceCoreQuizRound: advanceCoreQuizRound,
+    summarizeCoreQuizRound: summarizeCoreQuizRound,
+    retryCoreQuizRound: retryCoreQuizRound,
+    getCoreQuizQuestion: getCoreQuizQuestion,
     filterCoreSpeciesProfiles: filterCoreSpeciesProfiles,
     getCoreSpeciesComparison: getCoreSpeciesComparison,
     normalizeCoreLearningNotes: normalizeCoreLearningNotes,
@@ -12744,8 +12750,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   // DATA: QUIZ
   // ───────────────────────────────────────────────────────────
   var QUIZ_QUESTIONS = [
-    { q: 'You\'re entering Portland Harbor from sea. You see a red conical buoy ahead. Which side should you pass it on?',
+    { q: 'When returning from sea under IALA Region B buoyage, on which side of your boat should red channel marks remain?',
       a: ['Port (left), keeping the red mark to port', 'Starboard (right)', 'Either side', 'Stop and wait'], correct: 1,
+      sourceLabel: 'US Coast Guard: lateral aids', sourceUrl: 'https://www.uscgboating.org/images/486.PDF',
       explain: '"Red Right Returning" — when returning to harbor in IALA Region B (North America), keep red marks on your starboard (right) side.' },
     { q: 'Two power vessels are meeting head-on. What should both do?',
       a: ['Both alter course to port', 'Both alter course to starboard', 'Smaller vessel gives way', 'Vessel on starboard tack stands on'], correct: 1,
@@ -12756,9 +12763,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     { q: 'You\'re about to fish for striped bass in Maine. The fish you caught measures 33 inches. Can you keep it?',
       a: ['Yes, it\'s above the minimum size', 'No, it\'s above the slot upper limit', 'Yes, but only if it\'s a male', 'Only if you have a commercial license'], correct: 1,
       explain: 'Maine\'s striper slot is typically 28–31 inches. A 33-inch fish is above the slot upper limit and must be released. Slot limits protect the largest breeders.' },
-    { q: 'In what tidal stage is fishing often best?',
-      a: ['Peak high tide (deepest water)', 'Slack tide (change-over)', 'Lowest low tide', 'It doesn\'t matter'], correct: 1,
-      explain: 'Slack tide (the ~30 min when current changes direction) is often the best fishing window — current calms, bait can hold position, predator fish move into shallower water to feed.' },
+    { q: 'What does slack water describe?',
+      a: ['The highest water level of the day', 'A period when tidal current is weak or near zero', 'A whole day without a change in water level', 'The lowest water level at every location'], correct: 1,
+      sourceLabel: 'NOAA: tides and tidal currents', sourceUrl: 'https://oceanservice.noaa.gov/education/tutorial_tides/tides01_intro.html',
+      explain: 'Slack water refers to the weakest tidal currents between flood and ebb. It describes current strength, rather than the height of the water. Water level and current are different observations.' },
     { q: 'What is dead reckoning?',
       a: ['Predicting weather and sea state from the sky without any instruments', 'Using GPS only at night when landmarks cannot be seen', 'Estimating position from course + speed + time from last fix', 'Calling for help on VHF 16'], correct: 2,
       explain: 'Dead reckoning is the foundation of pre-GPS navigation: distance = speed × time. Crew tracks course steered + speed since the last known fix to estimate current position. Still taught and used as backup when electronics fail.' },
@@ -12987,6 +12995,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   // ───────────────────────────────────────────────────────────
   // DATA: MISSIONS
   // ───────────────────────────────────────────────────────────
+  function getCoreQuizQuestion(index) {
+    if (!Number.isInteger(index) || index < 0 || index >= QUIZ_QUESTIONS.length) return null;
+    var question = QUIZ_QUESTIONS[index];
+    return { q: question.q, a: question.a.slice(), correct: question.correct, explain: question.explain, sourceLabel: question.sourceLabel, sourceUrl: question.sourceUrl };
+  }
+  function createCoreQuizRound(size, offset) {
+    var total = QUIZ_QUESTIONS.length;
+    var length = size === 'full' ? total : Math.min(5, total);
+    var start = Number.isInteger(offset) && offset >= 0 ? offset % total : 0;
+    var indices = [];
+    for (var i = 0; i < length; i++) indices.push((start + i) % total);
+    return { indices: indices, cursor: 0, answers: {}, phase: 'question', firstPass: null, nextStart: (start + length) % total };
+  }
+  function answerCoreQuizRound(round, option) {
+    if (!round || round.phase !== 'question') return round;
+    var index = round.indices[round.cursor];
+    var question = getCoreQuizQuestion(index);
+    if (!question || !Number.isInteger(option) || option < 0 || option >= question.a.length || Object.prototype.hasOwnProperty.call(round.answers, index)) return round;
+    var answers = Object.assign({}, round.answers); answers[index] = option;
+    return Object.assign({}, round, { answers: answers });
+  }
+  function advanceCoreQuizRound(round) {
+    if (!round || round.phase !== 'question' || !Object.prototype.hasOwnProperty.call(round.answers, round.indices[round.cursor])) return round;
+    return round.cursor + 1 < round.indices.length ? Object.assign({}, round, { cursor: round.cursor + 1 }) : Object.assign({}, round, { phase: 'results' });
+  }
+  function summarizeCoreQuizRound(round) {
+    var correct = 0, answered = 0, missed = [];
+    round.indices.forEach(function(index) {
+      if (!Object.prototype.hasOwnProperty.call(round.answers, index)) return;
+      answered++;
+      if (round.answers[index] === QUIZ_QUESTIONS[index].correct) correct++;
+      else missed.push(index);
+    });
+    return { correct: correct, answered: answered, total: round.indices.length, missed: missed };
+  }
+  function retryCoreQuizRound(round) {
+    if (!round || round.phase !== 'results') return round;
+    var summary = summarizeCoreQuizRound(round);
+    if (!summary.missed.length) return round;
+    return { indices: summary.missed.slice(), cursor: 0, answers: {}, phase: 'question', firstPass: round.firstPass || { correct: summary.correct, total: summary.total }, nextStart: round.nextStart };
+  }
+
   var MISSIONS = [
     { id: 'mission-1', playable: true, title: 'First Cast: Casco Bay Stewardship Run',
       brief: 'Training date: September 15, 2026. Cast off from Custom House Wharf, follow IALA-B marks outbound, make a safe traffic maneuver, catch and classify Atlantic cod, inspect a lobster, and return with the challenge fuel reserve.',
@@ -21498,62 +21548,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           })));
     }
 
-    // ─── QUIZ tab
-    var quizStateHook = useState({ idx: 0, answers: {}, finished: false, score: 0 });
+    // ─── QUIZ tab: first attempts and retrieval retries remain separate.
+    var quizStateHook = useState(null);
     var quizState = quizStateHook[0], setQuizState = quizStateHook[1];
+    var quizLengthHook = useState('quick');
+    var quizLength = quizLengthHook[0], setQuizLength = quizLengthHook[1];
+    useEffect(function() {
+      if (tab !== 'quiz' || !quizState) return;
+      var target = document.getElementById(quizState.phase === 'results' ? 'fl-quiz-results-title' : 'fl-quiz-question-title');
+      focusCoreElement(target);
+      if (target) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }, [tab, quizState && quizState.cursor, quizState && quizState.phase]);
 
     function quizTab() {
-      if (quizState.finished) {
-        return h('div', null, h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '✅ Quiz Results'),
-          h('div', { style: { fontSize: 28, fontWeight: 900, color: '#bae6fd', marginBottom: 8 } },
-            quizState.score + ' / ' + QUIZ_QUESTIONS.length),
-          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-            quizState.score >= QUIZ_QUESTIONS.length * 0.85 ? '🏆 Mastery — you\'re ready for open water.' :
-            quizState.score >= QUIZ_QUESTIONS.length * 0.7 ? '✓ Solid — review missed items + retry.' :
-            '⚠ Keep studying — review Buoyage, COLREGS, Regs tabs.'),
-          h('div', { style: { marginTop: 10 } },
-            QUIZ_QUESTIONS.map(function(q, qi) {
-              var picked = quizState.answers[qi];
-              var correct = picked === q.correct;
-              return h('div', { key: qi, style: { padding: 8, marginBottom: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 6, borderLeft: '3px solid ' + (correct ? '#86efac' : '#fb923c') } },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: correct ? '#86efac' : '#fb923c', marginBottom: 4 } },
-                  (correct ? '✓ ' : '✕ ') + 'Q' + (qi + 1) + ': ' + q.q),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Your answer: ' + (typeof picked === 'number' ? q.a[picked] : 'skipped')),
-                !correct ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 2 } }, 'Correct: ' + q.a[q.correct]) : null,
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } }, q.explain));
-            })),
-          h('button', { className: 'fl-btn',
-            onClick: function() { setQuizState({ idx: 0, answers: {}, finished: false, score: 0 }); },
-            style: { marginTop: 14, padding: '10px 20px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontWeight: 800, cursor: 'pointer' } }, 'Retake quiz')));
+      var buttonStyle = { minHeight: 44, padding: '10px 14px', border: '1px solid #557789', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14, lineHeight: 1.5, cursor: 'pointer', textAlign: 'left' };
+      var primaryStyle = Object.assign({}, buttonStyle, { background: '#115e59', borderColor: '#5eead4', color: '#f0fdfa', fontWeight: 800 });
+      function startRound() { setQuizState(createCoreQuizRound(quizLength, quizState ? quizState.nextStart : 0)); }
+      function quizSource(q) { return q.sourceUrl ? h('a', { href: q.sourceUrl, target: '_blank', rel: 'noopener noreferrer', style: { color: '#bae6fd', display: 'inline-block', marginTop: 8, textDecoration: 'underline', fontSize: 13 } }, q.sourceLabel + ' (opens in a new tab)') : null; }
+      function roundLengthControl() {
+        return h('div', { style: { display: 'grid', gap: 6, maxWidth: 320 } },
+          h('label', { htmlFor: 'fl-quiz-length', style: { color: '#bae6fd', fontSize: 13, fontWeight: 800 } }, 'Round length'),
+          h('select', { id: 'fl-quiz-length', value: quizLength, onChange: function(e) { setQuizLength(e.target.value); }, style: Object.assign({}, buttonStyle, { width: '100%', minWidth: 0 }) },
+            h('option', { value: 'quick' }, 'Quick round · 5 questions'), h('option', { value: 'full' }, 'Full bank · ' + QUIZ_QUESTIONS.length + ' questions')));
       }
-      var q = QUIZ_QUESTIONS[quizState.idx];
-      return h('div', null,
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '✅ FisherLab Quiz — Q' + (quizState.idx + 1) + ' of ' + QUIZ_QUESTIONS.length),
-          h('p', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 12 } }, q.q),
-          q.a.map(function(opt, oi) {
-            return h('button', { key: oi, className: 'fl-btn',
-              onClick: function() {
-                var newAnswers = Object.assign({}, quizState.answers);
-                newAnswers[quizState.idx] = oi;
-                var nextIdx = quizState.idx + 1;
-                if (nextIdx >= QUIZ_QUESTIONS.length) {
-                  var sc = 0;
-                  for (var qq = 0; qq < QUIZ_QUESTIONS.length; qq++) {
-                    if (newAnswers[qq] === QUIZ_QUESTIONS[qq].correct) sc++;
-                  }
-                  setQuizState({ idx: nextIdx, answers: newAnswers, finished: true, score: sc });
-                  flAnnounce('Quiz complete. Score ' + sc + ' of ' + QUIZ_QUESTIONS.length);
-                } else {
-                  setQuizState({ idx: nextIdx, answers: newAnswers, finished: false, score: 0 });
-                }
-              },
-              style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6,
-                background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.3)',
-                borderRadius: 8, fontSize: 12, cursor: 'pointer' } },
-              String.fromCharCode(65 + oi) + '. ' + opt);
-          })));
+      if (!quizState) return h('section', { 'data-fisherlab-quiz': 'ready', 'aria-labelledby': 'fl-quiz-start-title', style: Object.assign({}, cardStyle, { padding: 22, background: 'radial-gradient(ellipse at top right, #124854, transparent 70%), #091f33', borderTop: '3px solid #5eead4' }) },
+        h('div', { style: { color: '#99f6e4', fontWeight: 900, fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase' } }, 'FisherLab practice'),
+        h('h2', { id: 'fl-quiz-start-title', style: { margin: '10px 0', color: '#f8fafc', fontSize: 28, lineHeight: 1.2 } }, 'Make a choice. Understand why.'),
+        h('p', { style: { color: '#dbeafe', fontSize: 14, lineHeight: 1.6, maxWidth: 650 } }, 'Try a short round, read the explanation after each answer, then revisit only the questions you missed. Your first-attempt score stays separate from retry practice.'),
+        h('ol', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, padding: 0, listStyle: 'none', margin: '18px 0' } }, ['Choose an answer', 'Read the explanation', 'Retry and reflect'].map(function(label, i) {
+          return h('li', { key: label, style: { padding: '10px 14px', background: '#0f3447', border: '1px solid #396779', borderRadius: 8, color: '#e0f2fe', fontSize: 13 } }, (i + 1) + '. ' + label);
+        })), roundLengthControl(),
+        h('button', { type: 'button', className: 'fl-btn', onClick: startRound, style: Object.assign({}, primaryStyle, { marginTop: 14 }) }, quizLength === 'full' ? 'Start full-bank round' : 'Start 5-question round'),
+        h('p', { style: { color: '#b8cedf', fontSize: 12, lineHeight: 1.5, margin: '14px 0 0' } }, 'Maine-centered practice bank. Rule questions use instructional scenarios; consult the official sources in the Regulations section for current rules. Progress stays available while this lab is open.'));
+      var summary = summarizeCoreQuizRound(quizState);
+      if (quizState.phase === 'results') {
+        var first = quizState.firstPass || summary;
+        return h('section', { 'data-fisherlab-quiz': 'results', style: Object.assign({}, cardStyle, { padding: 22, borderTop: '3px solid #5eead4' }) },
+          h('h2', { id: 'fl-quiz-results-title', tabIndex: -1, style: { margin: '0 0 12px', fontSize: 26, color: '#f8fafc' } }, 'Round complete'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14 } },
+            h('div', { 'data-quiz-first-score': first.correct + '/' + first.total, style: { padding: 16, borderRadius: 10, border: '1px solid #3d6a7c', background: '#0c2f40' } },
+              h('div', { style: { color: '#bae6fd', fontSize: 13 } }, 'First attempt'), h('strong', { style: { color: '#99f6e4', fontSize: 30 } }, first.correct + ' / ' + first.total)),
+            quizState.firstPass ? h('div', { 'data-quiz-retry-score': summary.correct + '/' + summary.total, style: { padding: 16, borderRadius: 10, border: '1px solid #736539', background: '#26313a' } },
+              h('div', { style: { color: '#fde68a', fontSize: 13 } }, 'This retry round'), h('strong', { style: { color: '#fde68a', fontSize: 30 } }, summary.correct + ' / ' + summary.total)) : null),
+          h('p', { style: { color: '#dbeafe', fontSize: 14, lineHeight: 1.6 } }, summary.missed.length ? summary.missed.length + ' question' + (summary.missed.length === 1 ? '' : 's') + ' to revisit. Read the reasoning, then try recalling it without the explanation.' : 'Every answer in this round is correct. Explain one decision in your own words before moving on.'),
+          summary.missed.length ? h('button', { type: 'button', className: 'fl-btn', onClick: function() { setQuizState(retryCoreQuizRound(quizState)); }, style: primaryStyle }, 'Retry missed questions (' + summary.missed.length + ')') : null,
+          h('details', { style: { marginTop: 16, border: '1px solid #35586c', borderRadius: 8, padding: '0 12px 12px' } },
+            h('summary', { style: { color: '#e0f2fe', fontSize: 14, fontWeight: 800 } }, 'Review answers & explanations'),
+            quizState.indices.map(function(index) {
+              var q = QUIZ_QUESTIONS[index], picked = quizState.answers[index], correct = picked === q.correct;
+              return h('article', { key: index, style: { padding: 12, marginTop: 10, background: '#0c2638', borderLeft: '3px solid ' + (correct ? '#5eead4' : '#fbbf24'), borderRadius: 6, color: '#e0f2fe', fontSize: 13, lineHeight: 1.6 } },
+                h('strong', { style: { color: correct ? '#99f6e4' : '#fde68a' } }, (correct ? 'Correct · ' : 'Revisit · ') + q.q),
+                h('p', null, 'Your answer: ' + q.a[picked]), !correct ? h('p', null, 'Correct answer: ' + q.a[q.correct]) : null, h('p', null, q.explain), quizSource(q));
+            })),
+          h('div', { style: { marginTop: 18, paddingTop: 16, borderTop: '1px solid #35586c' } }, roundLengthControl(),
+            h('button', { type: 'button', className: 'fl-btn', onClick: startRound, style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Start another round')));
+      }
+      var index = quizState.indices[quizState.cursor], q = QUIZ_QUESTIONS[index];
+      var answered = Object.prototype.hasOwnProperty.call(quizState.answers, index);
+      var picked = quizState.answers[index], correct = picked === q.correct;
+      return h('section', { 'data-fisherlab-quiz': 'question', 'data-quiz-bank-index': index, style: Object.assign({}, cardStyle, { padding: 22 }) },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 10, color: '#bae6fd', fontSize: 13 } },
+          h('strong', null, quizState.firstPass ? 'Retry practice' : 'First attempt'), h('span', null, 'Question ' + (quizState.cursor + 1) + ' of ' + quizState.indices.length)),
+        h('progress', { value: summary.answered, max: summary.total, 'aria-label': 'Questions answered in this round', style: { width: '100%', height: 10, marginBottom: 18, accentColor: '#5eead4' } }),
+        h('h2', { id: 'fl-quiz-question-title', tabIndex: -1, style: { fontSize: 21, lineHeight: 1.45, margin: '0 0 16px', color: '#f8fafc' } }, q.q),
+        h('div', { style: { display: 'grid', gap: 9 } }, q.a.map(function(option, oi) {
+          var chosen = picked === oi;
+          return h('button', { key: index + '-' + oi, type: 'button', className: 'fl-btn', 'data-quiz-option': oi, 'aria-pressed': chosen, 'aria-disabled': answered, tabIndex: answered && !chosen ? -1 : 0,
+            onClick: function() { setQuizState(function(current) { return answerCoreQuizRound(current, oi); }); },
+            style: Object.assign({}, buttonStyle, { borderColor: chosen ? (correct ? '#5eead4' : '#fbbf24') : '#557789', background: chosen ? '#153d46' : '#0d283b', cursor: answered ? 'default' : 'pointer' }) },
+            h('span', { 'aria-hidden': 'true', style: { color: '#7dd3fc', marginRight: 10, fontWeight: 900 } }, String.fromCharCode(65 + oi)), option);
+        })),
+        h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-quiz-feedback': answered ? 'answered' : 'waiting' }, answered ?
+          h('div', { style: { marginTop: 16, padding: 16, borderRadius: 9, borderLeft: '4px solid ' + (correct ? '#5eead4' : '#fbbf24'), background: '#0e3040', color: '#e0f2fe', fontSize: 14, lineHeight: 1.6 } },
+            h('strong', { style: { color: correct ? '#99f6e4' : '#fde68a' } }, correct ? 'Correct — here is why' : 'A useful point to revisit'),
+            !correct ? h('p', null, 'Correct answer: ' + q.a[q.correct]) : null,
+            h('p', { style: { margin: '8px 0 0' } }, q.explain), quizSource(q)) : null),
+        answered ? h('button', { type: 'button', className: 'fl-btn', onClick: function() { setQuizState(function(current) { return advanceCoreQuizRound(current); }); }, style: Object.assign({}, primaryStyle, { marginTop: 16 }) }, quizState.cursor + 1 === quizState.indices.length ? 'See round results' : 'Next question') :
+          h('p', { style: { color: '#b8cedf', fontSize: 12, margin: '12px 0 0' } }, 'Choose one answer. You can read the explanation before moving on.'));
     }
 
     // ─── WEATHER tab
