@@ -1504,7 +1504,8 @@ Return ONLY valid JSON:
       const frameIdx = getPausedFrameIdx(panelIdx);
       const displayUrl = paused ? panel.frames[frameIdx] : panel.imageUrl;
       const motionDesc = panel.alt || panel.motionPrompt || (panel.caption || "Animated panel");
-      const altText = `${t("common.animated_panel_alt") || "Animated panel"}: ${motionDesc}, ${panel.frames.length} ${t("common.frames_label") || "frames"}${paused ? ` \u2014 ${t("common.paused_at_frame") || "paused at frame"} ${frameIdx + 1}` : ""}`;
+      const pausedStep = paused ? frameIdx === 0 ? t("common.paused_frame_start") || "showing the starting state" : Array.isArray(panel.motionSteps) && typeof panel.motionSteps[frameIdx - 1] === "string" && panel.motionSteps[frameIdx - 1].trim() ? t("common.paused_frame_change", { change: panel.motionSteps[frameIdx - 1].trim() }) || "showing the change: " + panel.motionSteps[frameIdx - 1].trim() : "" : "";
+      const altText = `${t("common.animated_panel_alt") || "Animated panel"}: ${motionDesc}, ${panel.frames.length} ${t("common.frames_label") || "frames"}${paused ? ` \u2014 ${t("common.paused_at_frame") || "paused at frame"} ${frameIdx + 1}${pausedStep ? ", " + pausedStep : ""}` : ""}`;
       return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("img", { src: displayUrl, alt: altText, loading: "lazy", style: { width: "100%", display: "block", maxHeight: "320px", objectFit: "contain", background: "#f8fafc" } }), paused && /* @__PURE__ */ React.createElement(
         "button",
         {

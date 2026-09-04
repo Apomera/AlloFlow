@@ -178,6 +178,28 @@ const GUIDED_DETAIL = {
     "example": "TITLE: HOW PLANTS MAKE FOOD\nChart type: process → 5 numbered steps with ↓ connectors, each with a marker icon.\n\n① CATCH THE LIGHT\n   • Chlorophyll is the green pigment\n   • Lives inside the leaves\n   • Grabs energy from sunlight\n   [icon: a green leaf with a small sun]\n   ↓\n② BREATHE IN CO₂\n   • Air enters tiny holes = stomata\n   • Takes in carbon dioxide\n   [icon: tiny pores on a leaf surface]\n   ↓\n③ DRINK WATER\n   • Roots pull water from soil\n   • Water travels up the stem to the leaves\n   [icon: roots soaking up water drops]\n   ↓\n④ MAKE GLUCOSE\n   • Sun energy mixes CO₂ + water\n   • Builds glucose, a sugar\n   • Stores energy for later\n   [icon: a sugar cube glowing with energy]\n   ↓\n⑤ RELEASE OXYGEN\n   • Oxygen leaves as a by-product\n   • Goes back into the air\n   • The air we breathe!\n   [icon: an oxygen bubble floating up]\n\nOn screen: a paper-textured poster, Permanent Marker title, five marker-colored blocks (red/blue/green/orange/purple) with step badges. If Interactive mode is armed, students fill blank rows and the AI grader returns a 'What you did well' card, a 'One thing to try next' card, and a '+80 XP' pill."
   },
 
+
+
+  "memory-aid": {
+    "headline": "Build memory aids students can personalise and explain",
+    "inputs": [
+      "Source text (up to 4000 chars) and the topic label (sourceTopic)",
+      "Aid selection (Auto Mix, or chosen types: acronym, rhyme, chunking, story chain, keyword, visual, analogy, sequence)",
+      "Authorship pathway (See one / Build one / Create one, or a single mode) and the number of targets (3-5)",
+      "Include visual cues (default on) and Add web-sourced fun facts (default off)",
+      "Reading grade level and teacher instructions"
+    ],
+    "outputs": [
+      "content { title, instructions, cards[] } with schemaVersion 2",
+      "Each card: { target, essentialFacts[], type, mode, aiExample or scaffoldSteps or coachPrompts, mapping, studentPrompt, reasoningPrompt }",
+      "One AI picture per example and scaffolded card, described from the drawn image for screen readers",
+      "An optional linked Did-you-know fact per target, labelled with its source",
+      "Private recall practice per learner, stored on the device and never exported"
+    ],
+    "how": "The handler picks high-value memory targets and separates what must stay accurate (essentialFacts) from the creative cue a student may personalise. Cards arrive teacher-checked because you generated and pushed them; use Mark facts for re-review to hold one back, or Check facts with web search for an advisory verdict with sources. With visuals on it then draws one picture per example or scaffolded card and describes the drawn picture, so student-authored cards stay open for the student to make their own.",
+    "example": "MEMORY TARGET 1 of 3 - The inputs of photosynthesis\n\nWHAT MUST STAY ACCURATE\n  - Plants take in carbon dioxide and water.\n  - Light energy drives the reaction.\n\nAI EXAMPLE (See one)\n  \"Cows Won\u2019t Look\" = Carbon dioxide, Water, Light.\n\nHOW THE CUE CONNECTS\n  Each first letter names one input, in the order the diagram shows them.\n\nDID YOU KNOW?\n  A large tree can move hundreds of litres of water in a single day. (linked source)\n\nTARGET 3 is student-authored: coach questions only, no example and no picture, so the student builds and explains their own cue."
+  },
+
   "image": {
     "headline": "Generate a labeled diagram of the concept",
     "inputs": [
@@ -1020,7 +1042,7 @@ function GuidedModeBanner({
   const _gdLi = { fontSize: '12px', color: 'rgba(203,213,225,0.92)', lineHeight: '1.5', marginBottom: '3px', display: 'flex', gap: '6px' };
   const _gdPre = { margin: '6px 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px', lineHeight: '1.6', color: 'rgba(226,232,240,0.92)', fontFamily: 'inherit', background: 'rgba(15,23,42,0.55)', borderRadius: '8px', padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)' };
   const STEP_META = { 'source-input': ['1–2 min', 'manual'], 'ui-tool-wordsounds': ['2–4 min', 'interactive'], math: ['3–8 min', 'interactive'], image: ['1–3 min', 'image_ai'], directions: ['2–4 min', 'manual'], 'package-deliver': ['2–5 min', 'export'], '_final': ['1 min', 'manual'] };
-  const AI_PLAN_DEFAULT_MINUTES = { analysis: 2, glossary: 2, simplified: 2, 'ui-tool-wordsounds': 3, outline: 2, 'anchor-chart': 2, image: 2, faq: 2, 'sentence-frames': 2, 'note-taking': 2, brainstorm: 2, persona: 4, timeline: 2, 'concept-sort': 2, dbq: 3, math: 6, adventure: 5, quiz: 3, alignment: 2, 'lesson-plan': 3 };
+  const AI_PLAN_DEFAULT_MINUTES = { analysis: 2, glossary: 2, simplified: 2, 'ui-tool-wordsounds': 3, outline: 2, 'anchor-chart': 2, image: 2, faq: 2, 'sentence-frames': 2, 'note-taking': 2, 'memory-aid': 5, 'applied-challenge': 3, brainstorm: 2, persona: 4, timeline: 2, 'concept-sort': 2, dbq: 3, math: 6, adventure: 5, quiz: 3, alignment: 2, 'lesson-plan': 3 };
   const estimateAiPlanMinutes = (stepIds) => {
     const optionalMinutes = (Array.isArray(stepIds) ? stepIds : []).reduce((total, id) => {
       const observed = Number(durationStats[String(guidedProviderProfile || 'default') + ':' + id]?.averageMs);

@@ -2070,11 +2070,26 @@ function _validateTableGrid(grid) {
   //    an inbound rowspan. A rowspan-covered row legitimately supplies only its
   //    uncovered columns as explicit cells (the covered columns carry real content
   //    from above), so its remaining cells may be blank without the row being empty.
-  for (let _ri = 0; _ri < grid.rows.length; _ri++) {
-    if (_rowHasInboundRowspan[_ri]) continue;
-    const _rc = (grid.rows[_ri] && Array.isArray(grid.rows[_ri].cells)) ? grid.rows[_ri].cells : [];
-    if (_rc.length >= 1 && _rc.every((c) => String((c && c.text) || '').replace(/\s+/g, ' ').trim() === '')) {
-      return { ok: false, reason: 'row-' + _ri + '-all-empty' };
+  //    A populated header row changes the reading entirely: it proves the grid WAS
+  //    read, so a blank data row under it is the worksheet's own content, not a
+  //    silent failure. Rejecting those threw away a correct transcription — scopes,
+  //    merged row headers and all — and shipped the flatter table the caller
+  //    already held. A genuine Vision failure loses the headers too, and is still
+  //    caught below (and by the shape/geometry checks above).
+  let _headerTextSeen = false;
+  for (const _hr of grid.rows) {
+    for (const _hc of ((_hr && _hr.cells) ? _hr.cells : [])) {
+      if (_hc && _hc.isHeader && String(_hc.text || '').trim() !== '') { _headerTextSeen = true; break; }
+    }
+    if (_headerTextSeen) break;
+  }
+  if (!_headerTextSeen) {
+    for (let _ri = 0; _ri < grid.rows.length; _ri++) {
+      if (_rowHasInboundRowspan[_ri]) continue;
+      const _rc = (grid.rows[_ri] && Array.isArray(grid.rows[_ri].cells)) ? grid.rows[_ri].cells : [];
+      if (_rc.length >= 1 && _rc.every((c) => String((c && c.text) || '').replace(/\s+/g, ' ').trim() === '')) {
+        return { ok: false, reason: 'row-' + _ri + '-all-empty' };
+      }
     }
   }
   // NB: assign-then-return (not `return { ... }` at 2-space indent) on purpose —
@@ -2082,6 +2097,75 @@ function _validateTableGrid(grid) {
   // `\n  return {`, so a module-scope `return {` here would masquerade as it.
   const _gridOk = { ok: true, cols: colCount, rows: grid.rows.length };
   return _gridOk;
+}
+
+// Re-attach source hyperlinks that survived extraction as plain text.
+//
+// The pipeline reads every Link annotation out of the PDF, counts them, and warns
+// when the output has fewer ("the source had ~13 hyperlink(s) but the output has 1").
+// Extraction works from rendered page images and a text layer, neither of which
+// carries a destination — the href lives in the annotation layer — so descriptive
+// link text arrives as ordinary words and the reader cannot act on it.
+//
+// _srcLinks pairs each URL with the anchor text it covered in the source, so this
+// restores real links WITHOUT a model call and WITHOUT inventing destinations: it
+// only ever wraps text that carried that exact href in the original document.
+//
+// Deliberately conservative. It rewrites a run of text only when it is:
+//   • an exact match for the source anchor text,
+//   • inside a text node (never an attribute value or a tag),
+//   • not already inside an <a>, and never inside <style>, <script> or <title>.
+// Anything else is left alone: a missing link is a documented fidelity note, but a
+// WRONG link sends a reader somewhere the author never pointed them.
+function _reattachSourceLinks(html, srcLinks) {
+  if (!html || !Array.isArray(srcLinks) || srcLinks.length === 0) return { html, count: 0 };
+  const _esc = (u) => String(u).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Longest text first: a link whose words contain a shorter link's words must claim
+  // them before the shorter one can.
+  const links = srcLinks
+    .filter((l) => l && typeof l.text === 'string' && typeof l.url === 'string' && l.text.trim().length >= 8 && /^(https?:|mailto:)/i.test(l.url))
+    .slice()
+    .sort((a, b) => b.text.length - a.text.length);
+  if (links.length === 0) return { html, count: 0 };
+
+  const used = new Set();
+  let anchorDepth = 0, skipDepth = 0, count = 0;
+  let out = '';
+  let i = 0;
+  while (i < html.length) {
+    const lt = html.indexOf('<', i);
+    if (lt === -1) { out += _rewriteTextRun(html.slice(i)); break; }
+    out += _rewriteTextRun(html.slice(i, lt));
+    const gt = html.indexOf('>', lt);
+    if (gt === -1) { out += html.slice(lt); break; }
+    const tag = html.slice(lt, gt + 1);
+    const m = /^<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9-]*)/.exec(tag);
+    if (m) {
+      const closing = m[1] === '/';
+      const name = m[2].toLowerCase();
+      const selfClosing = /\/>$/.test(tag);
+      if (name === 'a' && !selfClosing) anchorDepth = closing ? Math.max(0, anchorDepth - 1) : anchorDepth + 1;
+      else if ((name === 'style' || name === 'script' || name === 'title') && !selfClosing) skipDepth = closing ? Math.max(0, skipDepth - 1) : skipDepth + 1;
+    }
+    out += tag;
+    i = gt + 1;
+  }
+  return { html: out, count };
+
+  function _rewriteTextRun(run) {
+    if (!run || anchorDepth > 0 || skipDepth > 0) return run;
+    for (const l of links) {
+      if (used.has(l.text)) continue;
+      const at = run.indexOf(l.text);
+      if (at === -1) continue;
+      used.add(l.text);
+      count++;
+      return run.slice(0, at)
+        + '<a href="' + _esc(l.url) + '">' + run.slice(at, at + l.text.length) + '</a>'
+        + run.slice(at + l.text.length);
+    }
+    return run;
+  }
 }
 
 // Emit accessibility-grade HTML from a validated grid: real <th scope="col|row|
@@ -10945,7 +11029,27 @@ var createDocPipeline = function(deps) {
       block.rows.forEach(r => { if (Array.isArray(r)) r.forEach(c => allCells.push(c)); else allCells.push(r); });
       const total = allCells.length;
       const empty = allCells.filter(c => !c || (typeof c === 'string' && c.trim().length === 0)).length;
-      if (total > 0 && empty / total > 0.5) return 'table-mostly-empty (' + empty + '/' + total + ')';
+      // A blank worksheet is not a failed extraction. Teachers remediate forms —
+      // expense sheets, course trackers, sign-up grids — whose data cells are EMPTY
+      // BY DESIGN. When the headers came through and every row is the width those
+      // headers describe, the extractor plainly read the table; the cells are blank
+      // because the document's cells are blank. Flagging it spends two model calls
+      // (rich-grid, then legend) that can only return null, and _validateTableGrid
+      // then rejects the CORRECT rich transcription for the same reason — so the
+      // flat table ships with weaker semantics than the re-extraction had produced.
+      const _hdrs = Array.isArray(block.headers)
+        ? block.headers.filter(h => String(h == null ? '' : h).trim() !== '')
+        : [];
+      // Deliberately narrow: the exemption needs the emptiness to be UNIFORM.
+      // A worksheet is blank in every data cell; a botched read is patchy, so a
+      // grid with one stray populated cell stays suspect and still gets its
+      // rich re-extraction (which _validateTableGrid now accepts rather than
+      // discarding, so the partial case is repaired instead of merely reported).
+      const _allDataCellsBlank = total > 0 && empty === total;
+      const _structureIntact = _hdrs.length >= 2
+        && block.rows.length > 0
+        && block.rows.every(r => Array.isArray(r) && r.length === _hdrs.length);
+      if (total > 0 && empty / total > 0.5 && !(_structureIntact && _allDataCellsBlank)) return 'table-mostly-empty (' + empty + '/' + total + ')';
       // Small "categorized" tables with a legend/key/figure caption — Gemini
       // grouped specific items into abstract categories then ran out of cells.
       const hdrCount = Array.isArray(block.headers) ? block.headers.length : 0;
@@ -13440,9 +13544,15 @@ var createDocPipeline = function(deps) {
       //   (3) the same URL repeated on every page (a district footer) counted once per page.
       // The output side counts <a href> elements, so the honest baseline is DISTINCT EXTERNAL URLs.
       const _srcLinkUrls = new Set();
+      // The URL alone only ever powered a warning ("12 may have been dropped").
+      // Pairing it with the anchor text it covers turns that warning into something
+      // repairable: a deterministic pass can re-attach the href to the exact words it
+      // belonged to, with no model call and no chance of inventing a destination.
+      const _srcLinkPairs = [];
       for (let p = 1; p <= pdf.numPages; p++) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
+          const _pageLinkAnnots = [];
           try {
             const _annots = await _withTimeout(page.getAnnotations(), 15000, 'getAnnotations (text layer) p' + p);
             for (let ai = 0; ai < (_annots || []).length; ai++) {
@@ -13453,9 +13563,39 @@ var createDocPipeline = function(deps) {
               const _u = String(_a.url || _a.unsafeUrl || '').trim();
               if (!_u) continue; // internal destination (TOC/footnote/cross-reference) — the output owes it no <a href>
               _srcLinkUrls.add(_u);
+              if (Array.isArray(_a.rect) && _a.rect.length === 4) _pageLinkAnnots.push({ url: _u, rect: _a.rect });
             }
           } catch (_) { /* annotations are a bonus signal — never fail a page over them */ }
           const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
+          // Recover each link's anchor text by overlap. Text items and annotation rects
+          // share the unscaled PDF user space, so a simple area-overlap test is enough;
+          // an item counts as inside the link when most of it falls within the rect.
+          // Anything ambiguous simply yields no pair — the re-link pass then leaves that
+          // link alone rather than guessing at it.
+          if (_pageLinkAnnots.length > 0) {
+            try {
+              const _boxes = (tc.items || []).map((it) => {
+                const _t = it.transform || [1, 0, 0, 1, 0, 0];
+                const _w = it.width || 0;
+                const _h = it.height || Math.abs(_t[3]) || 10;
+                return { str: String(it.str || ''), x0: _t[4], y0: _t[5], x1: _t[4] + _w, y1: _t[5] + _h };
+              });
+              for (const _la of _pageLinkAnnots) {
+                const _rx0 = Math.min(_la.rect[0], _la.rect[2]), _rx1 = Math.max(_la.rect[0], _la.rect[2]);
+                const _ry0 = Math.min(_la.rect[1], _la.rect[3]), _ry1 = Math.max(_la.rect[1], _la.rect[3]);
+                let _txt = '';
+                for (const _b of _boxes) {
+                  const _ox = Math.min(_b.x1, _rx1) - Math.max(_b.x0, _rx0);
+                  const _oy = Math.min(_b.y1, _ry1) - Math.max(_b.y0, _ry0);
+                  if (_ox <= 0 || _oy <= 0) continue;
+                  const _area = Math.max(1, (_b.x1 - _b.x0) * (_b.y1 - _b.y0));
+                  if ((_ox * _oy) / _area > 0.4) _txt += _b.str;
+                }
+                _txt = _txt.replace(/\s+/g, ' ').trim();
+                if (_txt.length >= 8) _srcLinkPairs.push({ text: _txt, url: _la.url });
+              }
+            } catch (_) { /* pairing is a bonus signal — never fail a page over it */ }
+          }
           // Column-aware reading order (H-5 repair, 2026-07-01). _alloOrderTextItems detects a
           // high-confidence column gutter and reads column-by-column; on ANY ambiguity (single
           // column, table-aligned rows, unbalanced sides) it returns the exact legacy
@@ -13509,6 +13649,17 @@ var createDocPipeline = function(deps) {
       // guaranteed false "dropped links" warning. (check_free_vars caught the first attempt to read
       // a `pageRange` that does not exist in this scope — three ReferenceErrors in waiting.)
       try { if (typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
+      // Distinct (text, url) pairs, longest text first so a link whose text contains a
+      // shorter link's text is re-attached before the shorter one can claim the words.
+      try {
+        if (typeof window !== 'undefined') {
+          const _seen = new Set();
+          window.__alloSourceLinks = _srcLinkPairs
+            .filter((lp) => { const k = lp.text + '\u0000' + lp.url; if (_seen.has(k)) return false; _seen.add(k); return true; })
+            .sort((a, b) => b.text.length - a.text.length)
+            .slice(0, 500);
+        }
+      } catch (_) {}
       if (_srcLinkAnnotations > 0) { try { warnLog('[PDF Det] ' + _srcLinkAnnotations + ' hyperlink annotation(s) in the source — the output is expected to carry them'); } catch (_) {} }
       if (_csRepairedPages > 0) { try { warnLog('[PDF Det] content-stream spacing repair: removed ' + _csRepairedSpaces + ' spurious space(s) across ' + _csRepairedPages + ' page(s) — characters untouched'); } catch (_) {} }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
@@ -17677,12 +17828,30 @@ var createDocPipeline = function(deps) {
       const _structTreeDirective = _structTree && _structTree.hasTags
         ? (() => {
             const rc = _structTree.roleCounts || {};
-            const summary = Object.entries(rc).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([r, n]) => `${r}×${n}`).join(', ');
-            const outline = _untrustedPromptDataBlock('SOURCE TAG TREE HEADING OUTLINE', (_structTree.headings || []).slice(0, 12).map(h => `  H${h.level}: ${h.text}`).join('\n'));
+            // Rare roles are not unimportant roles. An H1 occurs ONCE while TD occurs
+            // dozens of times, so a purely count-ranked top-12 drops the single most
+            // structurally significant element in the document — and an auditor reading
+            // only this line then reports the h1 as missing. Pin heading roles in
+            // regardless of rank; rank only decides which of the REST get listed.
+            const _rcEntries = Object.entries(rc);
+            const _isHeadingRole = (e) => /^H[1-6]$/i.test(e[0]);
+            const _headingRoles = _rcEntries.filter(_isHeadingRole).sort((a, b) => a[0].localeCompare(b[0]));
+            const _otherRoles = _rcEntries.filter((e) => !_isHeadingRole(e)).sort((a, b) => b[1] - a[1]).slice(0, 12);
+            const summary = _headingRoles.concat(_otherRoles).map(([r, n]) => `${r}×${n}`).join(', ');
+            // The outline was capped at 12 with no signal that it had been cut, so a
+            // 17-heading document showed the auditor 12 and the extractor all 17 — two
+            // stages disagreeing about what the document contains. Raise the cap and,
+            // when it still bites, say so rather than presenting a partial view as whole.
+            const _allHeadings = _structTree.headings || [];
+            const _shownHeadings = _allHeadings.slice(0, 40);
+            const _elidedHeadings = _allHeadings.length - _shownHeadings.length;
+            const outline = _untrustedPromptDataBlock('SOURCE TAG TREE HEADING OUTLINE',
+              _shownHeadings.map(h => `  H${h.level}: ${h.text}`).join('\n')
+              + (_elidedHeadings > 0 ? `\n  ... and ${_elidedHeadings} further heading(s), not listed here` : ''));
             const altLine = (_structTree.altTextMissing > 0 || _structTree.altTextPresent > 0)
               ? `\nAlt-text coverage in tag tree: ${_structTree.altTextPresent} present, ${_structTree.altTextMissing} missing (on Figure/Image roles).`
               : '';
-            return `\n\n═══ PRE-EXTRACTED TAG STRUCTURE ═══\nThis PDF ships a logical structure tree (it is already tagged). Roles found: ${summary}.${altLine}${outline ? `\nHeading outline (first 12):\n${outline}` : ''}\nWhen scoring, GIVE CREDIT for headings/landmarks/tables/figures that the tag tree already encodes. Only penalize if the visible content contradicts the tagging (e.g., a tagged H1 whose text is non-meaningful, a Figure tag missing alt text). Do NOT deduct points for missing heading hierarchy if H1/H2/H3 tags are already present.\n═══════════════════════════════════\n`;
+            return `\n\n═══ PRE-EXTRACTED TAG STRUCTURE ═══\nThis PDF ships a logical structure tree (it is already tagged). Roles found: ${summary}.${altLine}${outline ? `\nHeading outline (${_shownHeadings.length} of ${_allHeadings.length}):\n${outline}` : ''}\nWhen scoring, GIVE CREDIT for headings/landmarks/tables/figures that the tag tree already encodes. Only penalize if the visible content contradicts the tagging (e.g., a tagged H1 whose text is non-meaningful, a Figure tag missing alt text). Do NOT deduct points for missing heading hierarchy if H1/H2/H3 tags are already present.\n═══════════════════════════════════\n`;
           })()
         : '';
       // ── Output-language directive (Tier 3 i18n) ──
@@ -28786,6 +28955,22 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
         // 5. Ensure all tables have scope on th elements
         { const _thN = (accessibleHtml.match(/<th(?![^>]*scope)/gi) || []).length; accessibleHtml = _stampThScopeGeometryAware(accessibleHtml); aiFixCount += _thN; } // geometry-aware scope (th-scope-geometry)
+
+        // 5b. Re-attach hyperlinks the source had but extraction could not carry.
+        //     The destinations come from the PDF's own annotation layer, so this adds
+        //     no model call, spends no quota, and can only restore links the author
+        //     actually placed. Silent no-op when the source had none.
+        try {
+          const _srcLinks = (typeof window !== 'undefined' && Array.isArray(window.__alloSourceLinks)) ? window.__alloSourceLinks : null;
+          if (_srcLinks && _srcLinks.length > 0) {
+            const _rl = _reattachSourceLinks(accessibleHtml, _srcLinks);
+            if (_rl.count > 0) {
+              accessibleHtml = _rl.html;
+              aiFixCount += _rl.count;
+              warnLog('[PDF Fix] re-attached ' + _rl.count + ' source hyperlink(s) that extraction had flattened to plain text');
+            }
+          }
+        } catch (_) { /* never fail a run over a link repair */ }
 
         // 6. Ensure all links have descriptive text (not empty)
         accessibleHtml = accessibleHtml.replace(/<a([^>]*)>\s*<\/a>/gi, (match, attrs) => {
@@ -41022,7 +41207,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (!_maRules && typeof warnLog === 'function') warnLog('[Export] Memory Aid module rules unavailable; exporting with fail-safe (unverified) verdicts.');
           const normalizeImage = _maRules && typeof _maRules.normalizeImage === 'function' ? _maRules.normalizeImage : safeDataImage;
           const cardVerified = (card) => !!(_maRules && typeof _maRules.isCardVerified === 'function' && _maRules.isCardVerified(card));
-          const specificVisualAlt = (value) => !!(_maRules && typeof _maRules.isSpecificVisualAlt === 'function' && _maRules.isSpecificVisualAlt(value));
+          // Card-aware: a 'planning' or 'stale' description is the illustration
+          // brief, not a description of the drawn image, so it must not count as
+          // an accessible alternative. Falls back to the string check on an
+          // older module build.
+          const specificVisualAlt = (card) => {
+              if (_maRules && typeof _maRules.isTrustworthyVisualAlt === 'function') return !!_maRules.isTrustworthyVisualAlt(card);
+              const value = card && typeof card === 'object' ? card.visualAlt : card;
+              return !!(_maRules && typeof _maRules.isSpecificVisualAlt === 'function' && _maRules.isSpecificVisualAlt(value));
+          };
           const placeholderAlt = (card) => (_maRules && typeof _maRules.placeholderVisualAlt === 'function'
               ? _maRules.placeholderVisualAlt(card)
               : 'Unreviewed visual cue for ' + (String((card && card.target) || '').replace(/\s+/g, ' ').trim().slice(0, 300) || 'this memory target') + '. A specific description of visible details is still needed.');
@@ -41076,7 +41269,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     + '<h4 style="margin:0 0 8px;color:#701a75;">' + _maT('export_optional_visual_cue', 'Optional visual cue') + '</h4>'
                     + '<img src="' + escapeHtml(visualImage) + '" alt="' + escapeHtml(visualAlt) + '" style="display:block;max-width:100%;max-height:360px;width:auto;height:auto;margin:0 auto;border-radius:6px;object-fit:contain;" />'
                     + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>' + _maT('export_source_label', 'Source:') + '</strong> ' + visualSourceLabels[visualSource] + '<br><strong>' + _maT('export_image_description_label', 'Image description:') + '</strong> ' + escapeHtml(visualAlt) + '</figcaption></figure>'
-                    + visualReviewHtml + visualCheckHtml
+                    + (isTeacher ? visualReviewHtml + visualCheckHtml : '')
                   : '';
               if (recallWorksheet) {
                   const cue = practiceCue(c);
@@ -41086,7 +41279,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const cueId = idBase + '-cue';
                   const responseId = idBase + '-response';
                   const authoringId = idBase + '-authoring';
-                  const hasAccessibleVisual = !!visualImage && specificVisualAlt(c.visualAlt);
+                  const hasAccessibleVisual = !!visualImage && specificVisualAlt(c);
                   const recallVisualHtml = hasAccessibleVisual
                       ? '<figure style="margin:10px 0 0;padding:10px;border:1px solid #a5f3fc;border-radius:8px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
                         + '<img src="' + escapeHtml(visualImage) + '" alt="' + escapeHtml(String(c.visualAlt).trim().slice(0, 800)) + '" style="display:block;max-width:100%;max-height:300px;width:auto;height:auto;margin:0 auto;border-radius:6px;object-fit:contain;" />'
@@ -41136,7 +41329,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       + '</fieldset></article>';
               }
               const facts = listHtml(c.essentialFacts || c.facts);
-              const factsHeading = factsVerified ? _maT('facts_verified', 'Teacher-verified facts') : _maT('facts_pending', 'Facts awaiting teacher review');
+              const factsHeading = isTeacher
+                  ? (factsVerified ? _maT('facts_verified', 'Teacher-verified facts') : _maT('facts_pending', 'Facts awaiting teacher review'))
+                  : (factsVerified ? _maT('facts_student_heading', 'Facts to remember') : _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.'));
               const factsReviewNote = factsVerified
                   ? ''
                   : '<p role="note" style="margin:8px 0 0;padding:8px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#78350f;font-weight:700;">' + _maT('export_do_not_practice_note', 'Do not use this card for recall practice until a teacher verifies the facts.') + '</p>';
@@ -41154,7 +41349,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const hookHtml = hookFact
                   ? '<section style="margin-top:12px;padding:12px;border:1px solid #fed7aa;border-radius:8px;background:#fff7ed;break-inside:avoid;"><h4 style="margin:0 0 5px;color:#9a3412;">' + _maT('hook_heading', 'Did you know?') + '</h4><p style="margin:0;">' + escapeHtml(hookFact.text) + '</p>'
                     + (hookFact.sourceUrl
-                        ? '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_from_web_note', 'From the web. Check the source:') + ' <a href="' + escapeHtml(hookFact.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(hookFact.sourceTitle || hookFact.sourceUrl) + '</a></p>'
+                        ? '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_from_web_note', 'From the web. Check the source:') + ' <a href="' + escapeHtml(hookFact.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(hookFact.sourceTitle || hookFact.sourceUrl) + '</a>' + (hookFact.sourceHost && hookFact.sourceTitle ? ' \u00b7 ' + escapeHtml(_maT('hook_source_host', 'goes to {host}').replace('{host}', hookFact.sourceHost)) : '') + '</p>'
                         : '<p style="margin:5px 0 0;font-size:0.85em;color:#475569;">' + _maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + '</p>') + '</section>'
                   : '';
               const draft = String(c.studentDraft || '').trim();

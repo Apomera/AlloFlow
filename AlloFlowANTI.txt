@@ -6452,7 +6452,8 @@ const _alloDiagnosticReason = (value) => {
 };const _alloDiagnosticResourceTypes = new Set([
   'analysis', 'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm',
   'faq', 'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
-  'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'gemini-bridge',
+  'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid',
+  'applied-challenge', 'gemini-bridge',
 ]);
 const _alloDiagnosticResourceType = value => {
   const type = String(value || '').toLowerCase();
@@ -18467,7 +18468,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setPendingRole(null);
   };
   const handleToggleAllTools = () => {
-      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
+      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
       const areAllExpanded = allToolIds.every(id => expandedTools.includes(id));
       if (areAllExpanded) {
           setExpandedTools([]);
@@ -24035,6 +24036,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                     if (item.type === 'image' && parsedData && typeof parsedData === 'object') {
                         const { imageUrl, ...rest } = parsedData;
                         parsedData = { ...rest, imageUrl: null };
+                    }
+                    if (item.type === 'memory-aid' && parsedData && typeof parsedData === 'object' && Array.isArray(parsedData.cards)) {
+                        // Generated card art is regenerable and is by far the
+                        // heaviest field once visuals default on; drop it (and the
+                        // description that names it) so the retry actually shrinks.
+                        parsedData = { ...parsedData, cards: parsedData.cards.map(card => {
+                            if (!card || typeof card !== 'object' || !card.visualImage) return card;
+                            const { visualImage, visualAlt, visualAltSource, ...restCard } = card;
+                            return restCard;
+                        }) };
                     }
                     if (item.type === 'adventure' && parsedData && typeof parsedData === 'object') {
                         const { sceneImage, ...rest } = parsedData;
@@ -40546,7 +40557,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       const relevantTypes = [
           'quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline',
           'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds',
-          'note-taking', 'anchor-chart', 'dbq', 'faq', 'outline', 'image',
+          'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge',
+          'dbq', 'faq', 'outline', 'image',
           'fluency-record', 'storyforge-submission', 'poettree-submission',
           'litlab-submission', 'lingua-submission',
       ];
@@ -46540,7 +46552,7 @@ ${_alloActivityContext(activity)}
     throw new Error("[handleGenerate] GenDispatcher module not loaded - reload the page");
   };
   const GUIDED_RETRY_TYPES = {
-    analysis: 'analysis', glossary: 'glossary', simplified: 'simplified', outline: 'outline', 'anchor-chart': 'anchor-chart', image: 'image', faq: 'faq', 'sentence-frames': 'sentence-frames', 'note-taking': 'note-taking', brainstorm: 'brainstorm', persona: 'persona', timeline: 'timeline', 'concept-sort': 'concept-sort', dbq: 'dbq', adventure: 'adventure', quiz: 'quiz', alignment: 'alignment-report', 'lesson-plan': 'lesson-plan'
+    analysis: 'analysis', glossary: 'glossary', simplified: 'simplified', outline: 'outline', 'anchor-chart': 'anchor-chart', 'memory-aid': 'memory-aid', 'applied-challenge': 'applied-challenge', image: 'image', faq: 'faq', 'sentence-frames': 'sentence-frames', 'note-taking': 'note-taking', brainstorm: 'brainstorm', persona: 'persona', timeline: 'timeline', 'concept-sort': 'concept-sort', dbq: 'dbq', adventure: 'adventure', quiz: 'quiz', alignment: 'alignment-report', 'lesson-plan': 'lesson-plan'
   };
   const retryGuidedStep = async () => {
     const id = guidedActiveSteps[guidedStep]?.id;
@@ -48832,6 +48844,9 @@ ${_alloActivityContext(activity)}
             return 'resource-folder';
         case 'quiz':
             return 'grad-cap';
+        case 'memory-aid':
+        case 'applied-challenge':
+            return 'thinking-cap';
         case 'adventure':
         case 'timeline':
             return 'explorer-hat';
@@ -50991,7 +51006,7 @@ ${_alloActivityContext(activity)}
                 </div>
               );
               if (ToolCatalogControls) return React.createElement(ToolCatalogControls, {
-                allEditorsExpanded: expandedTools.length >= 16,
+                allEditorsExpanded: expandedTools.length >= 18,
                 group: toolCatalogGroup,
                 isExpanded: isToolCatalogExpanded,
                 onCollapse: () => setIsToolCatalogExpanded(false),

@@ -2688,7 +2688,7 @@
   // with a DENY list instead of dumping JSON: never lesson source excerpts or
   // snippets, learner practice evidence, AI feedback, ids/timestamps, or media
   // (data: URLs, base64, image/audio keys). Returns bounded plain-text lines.
-  const _RESOURCE_TEXT_DENY = /^(id|resourceId|schemaVersion|type|mode|status|family|kind|key|layout|chartType|templateType|language|gradeLevel|level|createdAt|updatedAt|generatedAt|reviewedAt|apiKey|token|secret|password|sourceExcerpt|sourceText|sourceTextSnippet|excerpt|lessonRef|practiceAttempts|retrievalAttempts|feedback|coachHint|visualCheck|visualReview|visualSyncOmission|basisKey|cueKey|factKeys|translations|omittedAssets|omittedAssetManifest)$/i;
+  const _RESOURCE_TEXT_DENY = /^(id|resourceId|schemaVersion|type|mode|status|family|kind|key|layout|chartType|templateType|language|gradeLevel|level|createdAt|updatedAt|generatedAt|reviewedAt|apiKey|token|secret|password|sourceExcerpt|sourceText|sourceTextSnippet|excerpt|lessonRef|factCheck|verdicts|practiceAttempts|retrievalAttempts|feedback|coachHint|visualCheck|visualReview|visualSyncOmission|basisKey|cueKey|factKeys|translations|omittedAssets|omittedAssetManifest)$/i;
   const _RESOURCE_MEDIA_KEY = /(image|icon|audio|video|thumbnail|avatar|base64|dataurl|blob|portrait|recording|url|src|svg|glb)/i;
   const _RESOURCE_PLAIN_KEY = /^(text|content|body|value|summary|description|label|title|question|prompt|answer|term|def|definition|main|event|item|items|bullets|steps|cues|notes|name|heading|target|essentialFacts|facts)$/i;
   const summarizeResourceText = (item, options) => {
@@ -2800,14 +2800,28 @@
           const c = card && typeof card === 'object' ? card : {};
           const facts = (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).map(function(f) { return String(f == null ? '' : f).slice(0, 600).trim(); }).filter(Boolean);
           const verified = !!(rules && typeof rules.isCardVerified === 'function' && rules.isCardVerified(c));
-          const cue = rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000);
+          const cueBlock = rules && typeof rules.cueBlock === 'function' ? rules.cueBlock(c) : null;
+          const cue = cueBlock ? cueBlock.cue : (rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000));
           slides.push('<div class="slide"><div class="slide-title">' + esc(title) + ' &middot; ' + (ci + 1) + '/' + cards.length + '</div><div class="slide-body">'
             + '<p style="font-size:16px;font-weight:700">' + esc(c.target || _maT('memory_target', 'Memory target')) + '</p>'
             + (cue ? '<p style="font-size:15px;font-weight:600;color:#0f766e;white-space:pre-wrap">' + esc(cue.slice(0, 700)) + '</p>' : '')
-            + '<p style="margin-top:8px;font-weight:700">' + (verified ? _maT('facts_verified', 'Teacher-verified facts') : _maT('facts_pending', 'Facts awaiting teacher review')) + '</p>'
+            + (cueBlock && cueBlock.steps.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#3730a3">' + esc(_maT('scaffold_heading', 'Build it with support')) + '</p><ol style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.steps.map(function(s) { return '<li>' + esc(String(s).slice(0, 500)) + '</li>'; }).join('') + '</ol>' : '')
+            + (cueBlock && cueBlock.visualDescription ? '<p style="margin-top:6px;font-size:13px;color:#0f766e"><strong>' + esc(_maT('export_visual_cue_described', 'Picture cue, described:')) + '</strong> ' + esc(String(cueBlock.visualDescription).slice(0, 700)) + '</p>' : '')
+            + (cueBlock && cueBlock.prompts.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#5b21b6">' + esc(_maT('coach_heading', 'Coach questions')) + '</p><ul style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.prompts.map(function(p) { return '<li>' + esc(String(p).slice(0, 500)) + '</li>'; }).join('') + '</ul>' : '')
+            + '<p style="margin-top:8px;font-weight:700">' + (verified ? _maT('facts_student_heading', 'Facts to remember') : _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + '</p>'
             + (facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '')
             + (c.mapping ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + esc(String(c.mapping).slice(0, 500)) + '</em></p>' : '')
-            + (function() { const hook = rules && typeof rules.hookFact === 'function' ? rules.hookFact(c) : null; return hook ? '<p style="margin-top:8px;font-size:13px;color:#9a3412"><strong>' + _maT('hook_heading', 'Did you know?') + '</strong> ' + esc(hook.text) + '</p>' : ''; })()
+            + (function() {
+                const hook = rules && typeof rules.hookFact === 'function' ? rules.hookFact(c) : null;
+                if (!hook) return '';
+                // Carry the provenance the shared rule returns: an unattributed
+                // web claim must not sit under the facts heading with the same
+                // authority as the reviewed facts.
+                const source = hook.webVerified && hook.sourceUrl
+                  ? '<br><span style="font-size:11px;color:#78716c">' + _maT('hook_from_web_note', 'From the web. Check the source:') + ' <a href="' + esc(hook.sourceUrl) + '" style="color:#9a3412">' + esc(hook.sourceTitle || hook.sourceUrl) + '</a>' + (hook.sourceHost && hook.sourceTitle ? ' \u00b7 ' + esc(_maT('hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost)) : '') + '</span>'
+                  : '<br><span style="font-size:11px;color:#78716c">' + _maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + '</span>';
+                return '<p style="margin-top:8px;font-size:13px;color:#9a3412"><strong>' + _maT('hook_heading', 'Did you know?') + '</strong> ' + esc(hook.text) + source + '</p>';
+              })()
             + '</div></div>');
         });
       } else if (item.type === 'anchor-chart' && item.data && Array.isArray(item.data.sections)) {

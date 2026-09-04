@@ -153,7 +153,7 @@ describe('Memory Aid export rules are shared with the live view', () => {
       expect(sheet.querySelector('.memory-aid-authoring-sheet')).not.toBeNull();
       expect(sheet.querySelector('img')).toBeNull();
       const full = section(fresh.generateFullPackHTML([item([card])], 'Memory recall', false, {}, { includeTeacherKey: false, annotations: [] }));
-      expect(full.textContent).toContain('Facts awaiting teacher review');
+      expect(full.textContent).toContain('Your teacher is still checking these facts');
     } finally {
       window.AlloModules.MemoryAid = saved;
     }
@@ -210,9 +210,39 @@ describe('Memory Aid slides preview', () => {
     const slides = Array.from(body.querySelectorAll('.slide')).map((s) => s.textContent);
     const stateSlide = slides.find((s) => s.includes('States of matter'));
     const waterSlide = slides.find((s) => s.includes('Water cycle'));
-    expect(stateSlide).toContain('Teacher-verified facts');
-    expect(waterSlide).toContain('Facts awaiting teacher review');
+    expect(stateSlide).toContain('Facts to remember');
+    expect(waterSlide).toContain('Your teacher is still checking these facts');
+    expect(stateSlide).not.toContain('Teacher-verified facts');
     expect(waterSlide).not.toContain('Teacher-verified facts');
+  });
+});
+
+describe('B5 · every deck lane carries a cue, not bare facts', () => {
+  // All three deck lanes rendered practiceCue alone. A scaffolded card whose
+  // student has not drafted yet, and a card whose cue IS the picture, reached
+  // the projector as a target and a fact list with nothing to recall from.
+  const scaffolded = { id: 'c-scaffold', target: 'Order of operations', essentialFacts: ['Parentheses first.'], factLocked: true, factVerified: true, type: 'sequence-cue', mode: 'scaffolded', scaffoldSteps: ['Name each operation.', 'Give each one a word.'] };
+  const pictureOnly = { id: 'c-picture', target: 'Cell wall', essentialFacts: ['A cell wall is rigid.'], factLocked: true, factVerified: true, type: 'analogy-pattern', mode: 'student-authored', visualImage: 'data:image/png;base64,' + 'A'.repeat(200), visualAlt: 'A brick wall around a green cell.', visualAltSource: 'vision' };
+  const blank = { id: 'c-blank', target: 'Photosynthesis', essentialFacts: ['Plants use light.'], factLocked: true, factVerified: true, type: 'story-chain', mode: 'student-authored', coachPrompts: ['What familiar image could cue it?'] };
+
+  it('fills exactly one rung of the ladder', () => {
+    expect(rules.cueBlock(verifiedCard)).toMatchObject({ cue: 'My statue cue', steps: [], visualDescription: '', prompts: [] });
+    expect(rules.cueBlock(scaffolded)).toMatchObject({ cue: '', steps: ['Name each operation.', 'Give each one a word.'], visualDescription: '', prompts: [] });
+    expect(rules.cueBlock(pictureOnly)).toMatchObject({ cue: '', steps: [], visualDescription: 'A brick wall around a green cell.', prompts: [] });
+    expect(rules.cueBlock(blank).prompts).toContain('What familiar image could cue it?');
+    // A planning description is the brief written before the picture existed,
+    // so it is not something a class can rely on; drop to coach questions.
+    const planned = rules.cueBlock({ ...pictureOnly, visualAltSource: 'planning' });
+    expect(planned.visualDescription).toBe('');
+    expect(planned.prompts.length).toBeGreaterThan(0);
+  });
+
+  it('renders that rung on the slide', () => {
+    const html = handlers.getSlidesPreviewHTML({ sourceTopic: 'Matter', gradeLevel: '5th Grade', getExportableHistory: () => [item([scaffolded, pictureOnly, blank])] });
+    const slides = Array.from(new DOMParser().parseFromString(html, 'text/html').body.querySelectorAll('.slide')).map((s) => s.textContent);
+    expect(slides.find((s) => s.includes('Order of operations'))).toContain('Name each operation.');
+    expect(slides.find((s) => s.includes('Cell wall'))).toContain('A brick wall around a green cell.');
+    expect(slides.find((s) => s.includes('Photosynthesis'))).toContain('What familiar image could cue it?');
   });
 });
 
@@ -294,7 +324,9 @@ describe('Memory Aid translation namespace', () => {
       t: marker, isRtlLang: () => false, updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
     });
     const full = section(translated.generateFullPackHTML([item([verifiedCard])], 'Memory recall', false, {}, { includeTeacherKey: false, annotations: [] }));
-    expect(full.textContent).toContain('[memory_aid.facts_verified]');
+    // Student-facing pack: the student heading key, through the same namespace.
+    // (The teacher appendix wording is pinned in export_quiz_html_worksheet_parity.)
+    expect(full.textContent).toContain('[memory_aid.facts_student_heading]');
     expect(full.textContent).toContain('[memory_aid.type_analogy_pattern_label]');
     expect(full.textContent).toContain('[memory_aid.export_create_remix_heading]');
     expect(full.textContent).not.toContain('Teacher-verified facts');
@@ -302,7 +334,7 @@ describe('Memory Aid translation namespace', () => {
     expect(sheet.textContent).toContain('[memory_aid.export_recall_kicker]');
     expect(sheet.textContent).toContain('[memory_aid.confidence_not_sure_label]');
     const slides = handlers.getSlidesPreviewHTML({ sourceTopic: 'Matter', gradeLevel: '5', t: marker, getExportableHistory: () => [item([verifiedCard])] });
-    expect(slides).toContain('[memory_aid.facts_verified]');
+    expect(slides).toContain('[memory_aid.facts_student_heading]');
     expect(slides).not.toContain('Teacher-verified facts');
   });
 });
@@ -329,12 +361,15 @@ describe('Memory Aid host wiring and help', () => {
 
   it('exports a NotebookLM section instead of an empty heading', () => {
     const preview = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
-    const branch = preview.indexOf("else if (ty === 'memory-aid' && d && Array.isArray(d.cards))");
+    const branch = preview.indexOf("else if (ty === 'memory-aid' && d && typeof d === 'object')");
     const fallback = preview.indexOf("const tx = (d && (d.text || d.content || d.summary)) || '';");
     expect(branch).toBeGreaterThan(-1);
     expect(fallback).toBeGreaterThan(branch);
     const slice = preview.slice(branch, fallback);
     expect(slice).toContain('exportRules');
     expect(slice).not.toContain('sourceExcerpt');
+    // The notebook lane reads the same cue ladder as the slide and PPTX lanes.
+    expect(slice).toContain('cueBlock');
+    expect(slice).toContain('export_visual_cue_described');
   });
 });

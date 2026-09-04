@@ -1975,17 +1975,42 @@ const createExport = (deps) => {
                         const c = card && typeof card === 'object' ? card : {};
                         const facts = listOf(c.essentialFacts || c.facts, 10);
                         const verified = !!(_memoryAidRules && typeof _memoryAidRules.isCardVerified === 'function' && _memoryAidRules.isCardVerified(c));
-                        const cue = _memoryAidRules && typeof _memoryAidRules.practiceCue === 'function' ? clip(_memoryAidRules.practiceCue(c), 700) : clip(c.studentDraft || c.aiExample || c.scaffoldStarter, 700);
+                        const cueBlock = _memoryAidRules && typeof _memoryAidRules.cueBlock === 'function' ? _memoryAidRules.cueBlock(c) : null;
+                        const cue = cueBlock ? clip(cueBlock.cue, 700) : clip(c.studentDraft || c.aiExample || c.scaffoldStarter, 700);
                         const target = clip(c.target, 300) || _nsT('memory_aid.memory_target', 'Memory target');
-                        const factsLabel = verified ? _nsT('memory_aid.facts_verified', 'Teacher-verified facts') : _nsT('memory_aid.facts_pending', 'Facts awaiting teacher review');
+                        const factsLabel = verified ? _nsT('memory_aid.facts_student_heading', 'Facts to remember') : _nsT('memory_aid.facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.');
                         const runs = [{ text: target, options: { fontSize: 20, bold: true, color: darkText, breakLine: true, bullet: false } }];
                         if (cue) runs.push({ text: cue, options: { fontSize: 15, bold: true, color: "0F766E", breakLine: true, bullet: false, paraSpaceBefore: 4 } });
+                        // The module hands back exactly one filled rung, so a card
+                        // with no drafted cue still projects something to work from.
+                        if (cueBlock && cueBlock.steps.length) {
+                            runs.push(heading(_nsT('memory_aid.scaffold_heading', 'Build it with support'), "3730A3"));
+                            cueBlock.steps.forEach((step) => runs.push(bullet(clip(step, 500))));
+                        }
+                        if (cueBlock && cueBlock.visualDescription) runs.push({ text: _nsT('memory_aid.export_visual_cue_described', 'Picture cue, described:') + ' ' + clip(cueBlock.visualDescription, 700), options: { fontSize: 13, color: "0F766E", breakLine: true, bullet: false, paraSpaceBefore: 4 } });
+                        if (cueBlock && cueBlock.prompts.length) {
+                            runs.push(heading(_nsT('memory_aid.coach_heading', 'Coach questions'), "5B21B6"));
+                            cueBlock.prompts.forEach((prompt) => runs.push(bullet(clip(prompt, 500))));
+                        }
                         runs.push(heading(factsLabel, verified ? "166534" : "92400E"));
                         facts.forEach((fact) => runs.push(bullet(fact)));
                         const hook = _memoryAidRules && typeof _memoryAidRules.hookFact === 'function' ? _memoryAidRules.hookFact(c) : null;
-                        if (hook) runs.push({ text: _nsT('memory_aid.hook_heading', 'Did you know?') + ' ' + clip(hook.text, 400), options: { fontSize: 12, color: "9A3412", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
+                        if (hook) {
+                            runs.push({ text: _nsT('memory_aid.hook_heading', 'Did you know?') + ' ' + clip(hook.text, 400), options: { fontSize: 12, color: "9A3412", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
+                            // Provenance travels with the claim, as it does in the view and the HTML lane.
+                            if (hook.webVerified && hook.sourceUrl) {
+                                const hookHost = hook.sourceHost && hook.sourceTitle ? ' \u00B7 ' + _nsT('memory_aid.hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost) : '';
+                                runs.push({ text: _nsT('memory_aid.hook_from_web_note', 'From the web. Check the source:') + ' ' + clip(hook.sourceTitle || hook.sourceUrl, 200) + hookHost, options: { fontSize: 10, color: "78716C", breakLine: true, bullet: false, hyperlink: { url: hook.sourceUrl, tooltip: clip(hook.sourceTitle || hook.sourceUrl, 200) } } });
+                            } else {
+                                runs.push({ text: _nsT('memory_aid.hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.'), options: { fontSize: 10, color: "78716C", breakLine: true, bullet: false } });
+                            }
+                        }
                         if (c.mapping) runs.push({ text: clip(c.mapping, 500), options: { fontSize: 12, italic: true, color: "475569", breakLine: true, bullet: false, paraSpaceBefore: 6 } });
-                        addRichSlide(itemTitle + ' \u00B7 ' + (ci + 1) + '/' + cards.length, runs, target + '. ' + factsLabel + ': ' + facts.join('; '));
+                        const cueNote = cue
+                            || (cueBlock && cueBlock.steps.length ? cueBlock.steps.join(' ') : '')
+                            || (cueBlock && cueBlock.visualDescription)
+                            || (cueBlock && cueBlock.prompts.length ? cueBlock.prompts.join(' ') : '');
+                        addRichSlide(itemTitle + ' \u00B7 ' + (ci + 1) + '/' + cards.length, runs, target + '. ' + (cueNote ? cueNote + '. ' : '') + factsLabel + ': ' + facts.join('; '));
                     });
                 } else if (type === 'anchor-chart' && item.data && Array.isArray(item.data.sections)) {
                     // Anchor chart: one slide per section; icons are skipped.

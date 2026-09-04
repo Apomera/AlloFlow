@@ -525,6 +525,12 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
     visualCustomInstructions, lessonCustomAdditions, timelineTopic, fillInTheBlank,
     conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions,
     anchorChartCustomInstructions, personaCustomInstructions,
+    memoryAidCustomInstructions, appliedChallengeCustomInstructions,
+    memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode,
+    memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount,
+    memoryAidIncludeVisuals, memoryAidIncludeHookFacts,
+    appliedChallengeSelectionMode, appliedChallengeFamily,
+    appliedChallengeAgencyMode, appliedChallengeScope,
     includeBibliography, aiProviderProfile,
     resourceCount, fullPackTargetGroup, expandedTools, dokOptions, audioBank, voiceMap,
     // Latent-bug fix from auditor: STATE_QUERY intent ("what's my voice speed?")
@@ -678,6 +684,8 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
           dbq: { customInstructions: String(dbqCustomInstructions || '') },
           'note-taking': { customInstructions: String(noteTakingCustomInstructions || '') },
           'anchor-chart': { customInstructions: String(anchorChartCustomInstructions || '') },
+          'memory-aid': { customInstructions: String(memoryAidCustomInstructions || '') },
+          'applied-challenge': { customInstructions: String(appliedChallengeCustomInstructions || '') },
           persona: { customInstructions: String(personaCustomInstructions || '') },
       };
       Object.keys(frozenToolOverrides).forEach((type) => {
@@ -688,6 +696,11 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       const frozenGenerationOptions = {
           outlineType, visualStyle, visualCustomStyle, visualLayoutMode,
           quizMode, quizMcqCount, noteTakingTemplateType, anchorChartType,
+          memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode,
+          memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount,
+          memoryAidIncludeVisuals, memoryAidIncludeHookFacts,
+          appliedChallengeSelectionMode, appliedChallengeFamily,
+          appliedChallengeAgencyMode, appliedChallengeScope,
           frameType, fillInTheBlank, vocabularyType, mcqVisualMode,
           isAdventureStoryMode, isSocialStoryMode, isImmersiveMode,
           adventureChanceMode, adventureConsistentCharacters,

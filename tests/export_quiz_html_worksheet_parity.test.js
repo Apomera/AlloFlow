@@ -404,8 +404,10 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     const section = doc.querySelector('.memory-aid-export');
     expect(section).not.toBeNull();
     expect(section.textContent).toContain('Solids retain shape.');
-    expect(section.textContent).toContain('Teacher-verified facts');
-    expect(section.textContent).toContain('Facts awaiting teacher review');
+    // includeTeacherKey is false here, so this pack is what a student receives.
+    expect(section.textContent).toContain('Facts to remember');
+    expect(section.textContent).toContain('Your teacher is still checking these facts');
+    expect(section.textContent).not.toContain('Teacher-verified facts');
     expect(section.textContent).toContain('Do not use this card for recall practice until a teacher verifies the facts.');
     expect(section.textContent).toContain('A statue stays shaped');
     expect(section.textContent).toContain('My cue');
@@ -417,12 +419,17 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(images[0].getAttribute('alt')).toBe('Statue & container cue');
     expect(section.textContent).toContain('Source: Uploaded visual');
     expect(section.textContent).toContain('Image description: Statue & container cue');
-    expect(section.textContent).toContain('Teacher approved');
-    expect(section.textContent).toContain('The cue matches <facts> after teacher review.');
-    expect(section.textContent).toContain('AI visual check (advisory)');
-    expect(section.textContent).toContain('Gas is not represented.');
-    expect(section.textContent).toContain('This feedback does not replace teacher approval.');
-    expect(html).toContain('The cue matches &lt;facts&gt; after teacher review.');
+    // Teacher review status and the advisory AI critique are teacher chrome:
+    // absent from the student pack, present in the teacher appendix.
+    expect(section.textContent).not.toContain('Teacher approved');
+    expect(section.textContent).not.toContain('The cue matches <facts> after teacher review.');
+    expect(section.textContent).not.toContain('AI visual check (advisory)');
+    expect(section.textContent).not.toContain('This feedback does not replace teacher approval.');
+    const teacherHtml = pipeline.generateFullPackHTML([memoryAid], 'Memory export', false, {}, { includeTeacherKey: true, annotations: [] });
+    expect(teacherHtml).toContain('Teacher approved');
+    expect(teacherHtml).toContain('AI visual check');
+    expect(html).not.toContain('The cue matches &lt;facts&gt; after teacher review.');
+    expect(teacherHtml).toContain('The cue matches &lt;facts&gt; after teacher review.');
     expect(html).toContain('States &lt;script&gt;alert(1)&lt;/script&gt;');
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).not.toContain('PRIVATE SOURCE EXCERPT SHOULD NOT APPEAR');

@@ -438,6 +438,34 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
       }
     });
   }
+  // Memory Aid cards carry one visual each and the description that names it.
+  // Restore both together through the module's shared deliverable predicate,
+  // so a student never receives a description of a picture that was dropped.
+  if (item.type === 'memory-aid' && Array.isArray(item?.data?.cards) && Array.isArray(cleaned?.data?.cards)) {
+    const memoryAidRules = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules || null;
+    let remainingMemoryAidChars = 5 * 1024 * 1024;
+    const safeMemoryAidImageSource = value => {
+      if (typeof value !== 'string') return null;
+      const source = value.trim();
+      if (!source || source.length > remainingMemoryAidChars) return null;
+      const deliverable = memoryAidRules && typeof memoryAidRules.isDeliverableVisual === 'function' ? memoryAidRules.isDeliverableVisual(source) : source.length <= 4096 && /^https:\/\/[^\s]+$/i.test(source) || /^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[a-z0-9+/=\r\n]+$/i.test(source);
+      if (!deliverable) return null;
+      remainingMemoryAidChars -= source.length;
+      return source;
+    };
+    item.data.cards.forEach((sourceCard, cardIndex) => {
+      const packedCard = cleaned.data.cards[cardIndex];
+      if (!sourceCard || !packedCard || typeof packedCard !== 'object') return;
+      const restored = safeMemoryAidImageSource(sourceCard.visualImage);
+      packedCard.visualImage = restored;
+      // A description without its picture is worse than neither: it tells a
+      // screen-reader student about something nobody else can see.
+      if (!restored) {
+        packedCard.visualAlt = '';
+        packedCard.visualAltSource = '';
+      }
+    });
+  }
   // Word Sounds packs are chunked, so they may carry teacher-prepared
   // speech. The shared session sanitizer removes nested `base64` fields;
   // restore only this tool-owned, tightly validated audio map. Microphone

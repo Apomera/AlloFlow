@@ -86,7 +86,9 @@
       'anchor-chart': ['chartType', 'sourceTopic'],
       'memory-aid': ['memoryAidSelectionMode', 'memoryAidTypes',
         'memoryAidAuthorshipMode', 'memoryAidReflectionLevel',
-        'memoryAidReasoningRequired', 'memoryAidCount'],
+        'memoryAidReasoningRequired', 'memoryAidCount',
+        'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts'],
+      timeline: ['timelineMode', 'timelineItemCount', 'timelineTopic', 'includeTimelineVisuals'],
       'applied-challenge': ['appliedChallengeSelectionMode', 'appliedChallengeFamily',
         'appliedChallengeAgencyMode', 'appliedChallengeScope'],
       brainstorm: ['isIndependentMode'],
@@ -104,6 +106,7 @@
     'anchorChartType', 'memoryAidSelectionMode', 'memoryAidTypes',
     'memoryAidAuthorshipMode', 'memoryAidReflectionLevel',
     'memoryAidReasoningRequired', 'memoryAidCount',
+    'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts', 'includeTimelineVisuals',
     'appliedChallengeSelectionMode', 'appliedChallengeFamily',
     'appliedChallengeAgencyMode', 'appliedChallengeScope',
     'imageGenerationStyle', 'imageAspectRatio'

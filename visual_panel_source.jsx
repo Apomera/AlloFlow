@@ -1521,7 +1521,15 @@ Return ONLY valid JSON:
                                         const frameIdx = getPausedFrameIdx(panelIdx);
                                         const displayUrl = paused ? panel.frames[frameIdx] : panel.imageUrl;
                                         const motionDesc = panel.alt || panel.motionPrompt || (panel.caption || 'Animated panel');
-                                        const altText = `${t('common.animated_panel_alt') || 'Animated panel'}: ${motionDesc}, ${panel.frames.length} ${t('common.frames_label') || 'frames'}${paused ? ` — ${t('common.paused_at_frame') || 'paused at frame'} ${frameIdx + 1}` : ''}`;
+                                        // steps[i] is the change that produced frames[i + 1]; frame 0 is the start.
+                                        const pausedStep = paused
+                                            ? (frameIdx === 0
+                                                ? (t('common.paused_frame_start') || 'showing the starting state')
+                                                : (Array.isArray(panel.motionSteps) && typeof panel.motionSteps[frameIdx - 1] === 'string' && panel.motionSteps[frameIdx - 1].trim()
+                                                    ? (t('common.paused_frame_change', { change: panel.motionSteps[frameIdx - 1].trim() }) || ('showing the change: ' + panel.motionSteps[frameIdx - 1].trim()))
+                                                    : ''))
+                                            : '';
+                                        const altText = `${t('common.animated_panel_alt') || 'Animated panel'}: ${motionDesc}, ${panel.frames.length} ${t('common.frames_label') || 'frames'}${paused ? ` — ${t('common.paused_at_frame') || 'paused at frame'} ${frameIdx + 1}${pausedStep ? ', ' + pausedStep : ''}` : ''}`;
                                         return (
                                             <>
                                                 <img src={displayUrl} alt={altText} loading="lazy" style={{ width: '100%', display: 'block', maxHeight: '320px', objectFit: 'contain', background: '#f8fafc' }} />

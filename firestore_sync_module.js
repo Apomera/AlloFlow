@@ -221,6 +221,18 @@
     message: 'Uploaded visual omitted from cloud sync; the local original was not changed.'
   });
 
+  // Generated art is shed FIRST because it can be recreated. Say so in the
+  // copy itself: previously it vanished with only a console warning, so a
+  // teacher on a second device saw pictureless cards and no explanation.
+  const MEMORY_AID_REGENERABLE_VISUAL_OMISSION = Object.freeze({
+    schemaVersion: 1,
+    asset: 'visual',
+    reason: 'cloud-artwork-budget',
+    originalSource: 'ai-generated',
+    availability: 'regenerable',
+    message: 'AI visual omitted from this cloud copy to fit artwork storage limits. Regenerate it here, or open the device where it was created.'
+  });
+
   function stripMemoryAidCardArtwork(cards, mode) {
     if (!Array.isArray(cards)) return { value: cards, changed: false };
     let changed = false;
@@ -234,7 +246,11 @@
       const next = { ...card };
       if (hasVisualImage) delete next.visualImage;
       if (hasLegacyImage) delete next.imageUrl;
-      if (uploaded) next.visualSyncOmission = { ...MEMORY_AID_UPLOADED_VISUAL_OMISSION };
+      next.visualSyncOmission = uploaded
+        ? { ...MEMORY_AID_UPLOADED_VISUAL_OMISSION }
+        : { ...MEMORY_AID_REGENERABLE_VISUAL_OMISSION };
+      // The description named a picture this copy no longer carries.
+      if (!uploaded) { delete next.visualAlt; delete next.visualAltSource; }
       changed = true;
       return next;
     });

@@ -8757,7 +8757,7 @@ ${pageCss}
                 its.filter((x) => x && x.categoryId === c.id).forEach((x) => out.push("- " + esc(x.content)));
                 out.push("");
               });
-            } else if (ty === "memory-aid" && d && Array.isArray(d.cards)) {
+            } else if (ty === "memory-aid" && d && typeof d === "object") {
               const maRules = typeof window !== "undefined" && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules || null;
               const maT = (key, fallback) => {
                 const fullKey = "memory_aid." + key;
@@ -8769,19 +8769,38 @@ ${pageCss}
                 return fallback;
               };
               if (d.instructions) out.push(esc(d.instructions), "");
-              d.cards.slice(0, 8).forEach((c, ci) => {
+              const maCards = Array.isArray(d.cards) ? d.cards : d.cards && typeof d.cards === "object" ? Object.values(d.cards) : [];
+              maCards.slice(0, 8).forEach((c, ci) => {
                 if (!c || typeof c !== "object") return;
                 out.push("### " + (ci + 1) + ". " + esc(c.target || maT("memory_target", "Memory target")), "");
-                const cue = maRules && typeof maRules.practiceCue === "function" ? maRules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || "").trim();
+                const cueBlock = maRules && typeof maRules.cueBlock === "function" ? maRules.cueBlock(c) : null;
+                const cue = cueBlock ? cueBlock.cue : String(c.studentDraft || c.aiExample || c.scaffoldStarter || "").trim();
                 if (cue) out.push("**" + maT("export_memory_cue_label", "Memory cue:") + "** " + esc(cue), "");
+                if (cueBlock && cueBlock.steps.length) {
+                  out.push("**" + maT("scaffold_heading", "Build it with support") + ":**");
+                  cueBlock.steps.forEach((step, si) => out.push(si + 1 + ". " + esc(step)));
+                  out.push("");
+                }
+                if (cueBlock && cueBlock.visualDescription) out.push("**" + maT("export_visual_cue_described", "Picture cue, described:") + "** " + esc(cueBlock.visualDescription), "");
+                if (cueBlock && cueBlock.prompts.length) {
+                  out.push("**" + maT("coach_heading", "Coach questions") + ":**");
+                  cueBlock.prompts.forEach((prompt2) => out.push("- " + esc(prompt2)));
+                  out.push("");
+                }
                 const verified = !!(maRules && typeof maRules.isCardVerified === "function" && maRules.isCardVerified(c));
-                out.push("**" + (verified ? maT("facts_verified", "Teacher-verified facts") : maT("facts_pending", "Facts awaiting teacher review")) + ":**");
+                out.push("**" + (verified ? maT("facts_student_heading", "Facts to remember") : maT("facts_pending_student_note", "Your teacher is still checking these facts. Recall practice opens when they finish.")) + ":**");
                 (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).forEach((f) => {
                   if (f) out.push("- " + esc(f));
                 });
                 if (c.mapping) out.push("", "_" + maT("mapping_heading", "How the cue connects") + ":_ " + esc(c.mapping));
                 const hook = maRules && typeof maRules.hookFact === "function" ? maRules.hookFact(c) : null;
-                if (hook) out.push("", "**" + maT("hook_heading", "Did you know?") + "** " + esc(hook.text) + (hook.sourceUrl ? " (" + hook.sourceUrl + ")" : ""));
+                if (hook) {
+                  const mdText = String(hook.text || "").replace(/([\\`*_[\]()~>#+=|{}!-])/g, "\\$1");
+                  const mdUrl = String(hook.sourceUrl || "").replace(/[()\[\]\s]/g, encodeURIComponent);
+                  const mdTitle = String(hook.sourceTitle || hook.sourceUrl || "").replace(/([\\`*_[\]()~])/g, "\\$1");
+                  const cite = hook.webVerified && mdUrl ? " (" + maT("hook_from_web_note", "From the web. Check the source:") + " [" + mdTitle + "](" + mdUrl + ")" + (hook.sourceHost && hook.sourceTitle ? " \xB7 " + maT("hook_source_host", "goes to {host}").replace("{host}", hook.sourceHost) : "") + ")" : " (" + maT("hook_unsourced_note", "Fun fact from AI knowledge. Ask your teacher if you want to check it.") + ")";
+                  out.push("", "**" + maT("hook_heading", "Did you know?") + "** " + mdText + cite);
+                }
                 out.push("");
               });
             } else if (ty === "image" && d && d.prompt) {

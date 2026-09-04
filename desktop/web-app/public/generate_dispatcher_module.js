@@ -2212,6 +2212,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             : { signal: generationSignal };
         return callImagen(...args);
     };
+    const callGeminiVisionWithSignal = (...args) => {
+        if (!generationSignal) return callGeminiVision(...args);
+        const options = args[3];
+        args[3] = options && typeof options === 'object'
+            ? Object.assign({}, options, { signal: options.signal || generationSignal })
+            : { signal: generationSignal };
+        return callGeminiVision(...args);
+    };
     const callGeminiImageEditWithSignal = (...args) => {
         if (!generationSignal) return callGeminiImageEdit(...args);
         const options = args[5];
@@ -4203,6 +4211,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             content.altSource = 'planning';
             await _draftAltsFor(executedPlan.panels.map((panel) => (panel && panel.imageUrl ? {
                 dataUrl: (Array.isArray(panel.frames) && panel.frames.length > 1) ? panel.frames[0] : panel.imageUrl,
+                // An animated panel is described from its first and last frame:
+                // frame 1 alone says nothing about the change it demonstrates.
+                motion: Array.isArray(panel.frames) && panel.frames.length > 1,
+                frames: Array.isArray(panel.frames) ? panel.frames : null,
                 context: panel.caption || panel.imagenPrompt || panel.motionPrompt || altText,
                 apply: (r) => { panel.alt = r.decorative ? '' : r.alt; panel.altSource = r.altSource; panel.decorative = r.decorative; panel.altHash = r.altHash; },
             } : null)).filter(Boolean), effectiveLanguage);
@@ -7634,8 +7646,12 @@ Return ONLY JSON:
                   const visualStyleText = String(universalImageStyle || imageGenerationStyle || '').trim();
                   const generateVisual = async (card) => {
                       try {
-                          // 512 px keeps five auto visuals under ~250 KB per resource.
-                          const image = await callImagenWithSignal(memoryAidRules.visualPrompt(card, visualStyleText, card.visualPrompt), 512, 0.82);
+                          // 512 px keeps five auto visuals under ~250 KB per resource,
+                          // and the teacher's low-quality preference is honoured here
+                          // exactly as the visual-panel lane honours it.
+                          const _maWidth = useLowQualityVisuals ? 320 : 512;
+                          const _maQuality = useLowQualityVisuals ? 0.6 : 0.82;
+                          const image = await callImagenWithSignal(memoryAidRules.visualPrompt(card, visualStyleText, card.visualPrompt), _maWidth, _maQuality);
                           if (typeof image === 'string' && /^data:image\//i.test(image)) {
                               card.visualImage = image;
                               card.visualSource = 'ai-generated';
@@ -7646,7 +7662,7 @@ Return ONLY JSON:
                               if (typeof callGeminiVision === 'function' && typeof memoryAidRules.visualCheckPrompt === 'function' && typeof memoryAidRules.parseVisualCheck === 'function') {
                                   try {
                                       const mimeMatch = image.match(/^data:(image\/[a-z0-9.+-]+);base64,/i);
-                                      const rawCheck = await callGeminiVision(memoryAidRules.visualCheckPrompt(card, { language: effectiveLanguage }), image.slice(image.indexOf(',') + 1), mimeMatch ? mimeMatch[1].toLowerCase() : 'image/png');
+                                      const rawCheck = await callGeminiVisionWithSignal(memoryAidRules.visualCheckPrompt(card, { language: effectiveLanguage }), image.slice(image.indexOf(',') + 1), mimeMatch ? mimeMatch[1].toLowerCase() : 'image/png');
                                       const check = memoryAidRules.parseVisualCheck(rawCheck);
                                       if (check && typeof check === 'object') {
                                           card.visualCheck = Object.assign({}, check, { createdAt: new Date().toISOString() });

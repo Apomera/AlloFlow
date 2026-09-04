@@ -39,6 +39,70 @@ afterEach(async () => {
   host = null;
 });
 
+describe('animations are described by their change, not their first frame', () => {
+  // An animated panel's content IS the change. Drafting alt from frames[0]
+  // produced a still description of the starting state, which tells a reader
+  // who cannot see the animation nothing about what it demonstrates.
+  const animated = { id: 'anim', motion: true, frames: [PNG, JPG, PNG], dataUrl: PNG, context: 'water evaporating' };
+
+  it('sends the first and last frame with a motion prompt', async () => {
+    const calls = [];
+    const callGeminiVision = vi.fn(async (prompt, parts) => {
+      calls.push({ prompt, parts });
+      return '[{"index":1,"kind":"animation","alt":"A puddle shrinks as vapour rises from it.","matchesBrief":true}]';
+    });
+    const [result] = await A.draftAlts([animated], { callGeminiVision });
+    expect(callGeminiVision).toHaveBeenCalledTimes(1);
+    // Two frames, first and last — not the middle one, and not just frames[0].
+    expect(Array.isArray(calls[0].parts)).toBe(true);
+    expect(calls[0].parts.length).toBe(2);
+    expect(calls[0].prompt).toContain('IMAGE 1 is the FIRST frame');
+    expect(calls[0].prompt).toContain('what CHANGES');
+    expect(result).toMatchObject({ alt: 'A puddle shrinks as vapour rises from it.', kind: 'animation', source: 'vision', decorative: false });
+  });
+
+  it('keeps stills batched while an animation takes its own call', async () => {
+    const callGeminiVision = vi.fn(async (prompt, parts) => (parts.length === 2 && prompt.includes('FIRST frame')
+      ? '[{"index":1,"kind":"animation","alt":"A seed opens into a sprout.","matchesBrief":true}]'
+      : '[{"index":1,"kind":"illustration","alt":"A labelled beaker.","matchesBrief":true},{"index":2,"kind":"illustration","alt":"A thermometer.","matchesBrief":true}]'));
+    const results = await A.draftAlts([
+      { id: 'a', dataUrl: PNG, context: 'beaker' },
+      animated,
+      { id: 'b', dataUrl: JPG, context: 'thermometer' },
+    ], { callGeminiVision });
+    // One motion call plus ONE batch for the two stills, not three calls.
+    expect(callGeminiVision).toHaveBeenCalledTimes(2);
+    // Results stay in input order regardless of which lane produced them.
+    expect(results.map(r => r.alt)).toEqual(['A labelled beaker.', 'A seed opens into a sprout.', 'A thermometer.']);
+  });
+
+  it('falls back to planning text when the motion call fails, and never blocks the stills', async () => {
+    const callGeminiVision = vi.fn(async (prompt) => {
+      if (prompt.includes('FIRST frame')) throw new Error('vision down');
+      return '[{"index":1,"kind":"illustration","alt":"A labelled beaker.","matchesBrief":true}]';
+    });
+    const results = await A.draftAlts([animated, { id: 'a', dataUrl: PNG, context: 'beaker' }], { callGeminiVision });
+    expect(results[0].source).toBe('planning');
+    expect(results[1]).toMatchObject({ alt: 'A labelled beaker.', source: 'vision' });
+  });
+
+  it('treats a single-frame panel as an ordinary still', async () => {
+    const callGeminiVision = vi.fn(async () => '[{"index":1,"kind":"illustration","alt":"A still beaker.","matchesBrief":true}]');
+    const [result] = await A.draftAlts([{ id: 's', motion: true, frames: [PNG], dataUrl: PNG, context: 'beaker' }], { callGeminiVision });
+    expect(callGeminiVision.mock.calls[0][0]).not.toContain('FIRST frame');
+    expect(result).toMatchObject({ alt: 'A still beaker.', kind: 'illustration' });
+  });
+
+  it('the panel lane asks for motion drafting', () => {
+    const dispatcher = readFileSync(resolve(process.cwd(), 'generate_dispatcher_source.jsx'), 'utf8');
+    expect(dispatcher).toContain('motion: Array.isArray(panel.frames) && panel.frames.length > 1');
+    // A paused frame describes the still it is showing, not the whole animation.
+    const panel = readFileSync(resolve(process.cwd(), 'visual_panel_source.jsx'), 'utf8');
+    expect(panel).toContain('paused_frame_start');
+    expect(panel).toContain('panel.motionSteps[frameIdx - 1]');
+  });
+});
+
 describe('quality and prompt helpers', () => {
   it('delegates quality checks to the remediation checker so the two rule sets cannot drift', () => {
     expect(typeof window.AlloModules.createDocPipeline.altQuality).toBe('function');

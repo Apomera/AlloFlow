@@ -2556,7 +2556,9 @@ describe('Memory Aid Studio interaction integrity', () => {
       visualAlt: 'A statue.',
     };
     await renderMemoryAid({ ...baseData, cards: [visualCard] }, { handleNoteUpdate, callGeminiVision });
-    expect(host.textContent).toContain('Not yet teacher-reviewed');
+    // The teacher review status is workflow chrome: the student seat no longer
+    // shows it (a student sees only a note that asks them to change something).
+    expect(host.textContent).not.toContain('Not yet teacher-reviewed');
     const button = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Check facts + draft description');
     expect(button).toBeTruthy();
     await act(async () => button.click());

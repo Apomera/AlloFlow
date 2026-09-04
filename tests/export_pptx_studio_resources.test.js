@@ -90,9 +90,20 @@ describe('PowerPoint export of studio resources', () => {
     expect(allText).toContain('Solids retain shape.');
     const stateSlide = record.slides.find((s) => s.texts.some((x) => x.text.includes('States of matter')));
     const waterSlide = record.slides.find((s) => s.texts.some((x) => x.text.includes('Water cycle')));
-    expect(stateSlide.texts.map((x) => x.text).join('\n')).toContain('Teacher-verified facts');
-    expect(waterSlide.texts.map((x) => x.text).join('\n')).toContain('Facts awaiting teacher review');
+    // A projected deck is student-facing: no teacher-review vocabulary on it.
+    expect(stateSlide.texts.map((x) => x.text).join('\n')).toContain('Facts to remember');
+    expect(waterSlide.texts.map((x) => x.text).join('\n')).toContain('Your teacher is still checking these facts');
+    expect(allText).not.toContain('Teacher-verified facts');
+    expect(allText).not.toContain('Facts awaiting teacher review');
     for (const secret of ['PRIVATE_SOURCE_EXCERPT', 'PRIVATE_SNIPPET', 'PRIVATE_FEEDBACK', 'PRIVATE_RECALL', 'AAAAAAAA']) expect(allText).not.toContain(secret);
+  });
+
+  it('projects a cue for a card whose student has not drafted one yet', async () => {
+    // Without the shared ladder this slide was a target and a fact list.
+    const scaffolded = { id: 'c3', target: 'Order of operations', essentialFacts: ['Parentheses first.'], factLocked: true, factVerified: true, type: 'sequence-cue', mode: 'scaffolded', scaffoldSteps: ['Name each operation.'] };
+    const { allText } = await runExport([{ ...memoryAid, data: { ...memoryAid.data, cards: [scaffolded] } }]);
+    expect(allText).toContain('Build it with support');
+    expect(allText).toContain('Name each operation.');
   });
 
   it('renders anchor charts, Cornell notes, and applied challenge briefs', async () => {

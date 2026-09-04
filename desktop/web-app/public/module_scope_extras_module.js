@@ -593,6 +593,11 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
         processField(term, "image", seed.concat(["term", termIndex]));
       });
     }
+    if (item.type === "memory-aid" && item.data && Array.isArray(item.data.cards)) {
+      item.data.cards.forEach((card, cardIndex) => {
+        if (card && typeof card === "object") processField(card, "visualImage", seed.concat(["card", cardIndex]));
+      });
+    }
     if (item.type === "adventure" && item.data) {
       processField(item.data, "sceneImage", seed);
       if (Array.isArray(item.data.inventory)) {

@@ -122,6 +122,11 @@ describe('schema: hook facts and fact checks', () => {
     expect(H.normalizeMemoryAidCard({ ...generatedCard, hookFact: { text: 'x', sourceUrl: 'javascript:alert(1)' } }, 0, {}).hookFact.sourceUrl).toBe('');
     expect(H.normalizeMemoryAidCard({ ...generatedCard, hookFact: { text: '   ' } }, 0, {}).hookFact).toBeNull();
     expect(rules.hookFact({ hookFact: { text: 'Kept', sourceUrl: 'http://example.org' } })).toMatchObject({ text: 'Kept', sourceUrl: 'http://example.org/' });
+    // A3: the destination travels with the hook, so a reader can judge the link
+    // before following it rather than after. The www is noise, so it is dropped.
+    expect(card.hookFact.sourceHost).toBe('example.org');
+    expect(H.normalizeMemoryAidCard({ ...generatedCard, hookFact: { text: 'x', sourceUrl: 'https://www.si.edu/a/b?q=1' } }, 0, {}).hookFact.sourceHost).toBe('si.edu');
+    expect(H.normalizeMemoryAidCard({ ...generatedCard, hookFact: { text: 'x' } }, 0, {}).hookFact.sourceHost).toBe('');
   });
 
   it('parses plain-text verdicts, maps grounding chunks to sources, and never flips factVerified', () => {
@@ -396,8 +401,9 @@ describe('follow-up batch: migration, correction, drawn-image descriptions', () 
   it('describes the drawn picture through the vision helper at 512 px and stamps schema 2', () => {
     const dispatcher = readFileSync(resolve(process.cwd(), 'generate_dispatcher_source.jsx'), 'utf8');
     const branch = dispatcher.slice(dispatcher.indexOf("} else if (type === 'memory-aid') {"), dispatcher.indexOf("} else if (type === 'anchor-chart') {"));
-    expect(branch).toContain('512, 0.82');
-    expect(branch).toContain('callGeminiVision(memoryAidRules.visualCheckPrompt(card, { language: effectiveLanguage })');
+    expect(branch).toContain('useLowQualityVisuals ? 320 : 512');
+    // Through the signalled wrapper: a raw call would inherit the PDF global.
+    expect(branch).toContain('callGeminiVisionWithSignal(memoryAidRules.visualCheckPrompt(card, { language: effectiveLanguage })');
     expect(branch).toContain("if (check.suggestedAlt) { card.visualAlt = check.suggestedAlt; card.visualAltSource = 'vision'; }");
     expect(branch).toContain('schemaVersion: 2,');
     expect(dispatcher).toContain('safeJsonParse, callImagen, callGeminiVision,');
@@ -435,7 +441,9 @@ describe('fun-fact provenance and the student worksheet', () => {
     expect(branch).toContain('hookResult = await callGemini(hookPrompt, false, true, null, hookQuery);');
     expect(branch).toContain('factVerified: facts.length > 0,');
     const module = readFileSync(resolve(process.cwd(), 'memory_aid_source.jsx'), 'utf8');
-    expect(module).toContain("await callGemini(token.input.text, false, true, null, _maPromptData(card.target, 200) || null);");
+    // The card target is the search query (5th arg); the 6th is the studio's own
+    // abort signal, without which the call inherits the PDF remediation global.
+    expect(module).toContain("await callGemini(token.input.text, false, true, null, _maPromptData(card.target, 200) || null, _maTokenSignal(token));");
   });
 
   it('strips the teacher fact check at the live-session boundary but not from the teacher cloud history', () => {
@@ -494,6 +502,9 @@ describe('generation and export contracts', () => {
     const slides = window.AlloModules.ExportHandlers.getSlidesPreviewHTML({ sourceTopic: 'Water', gradeLevel: '5', t: (key) => key, getExportableHistory: () => [item([checkedCard])] });
     expect(slides).toContain('HOOK_FACT_TEXT');
     expect(slides).not.toContain('FACT_CHECK');
+    // A3: both printed lanes name the destination beside the model-supplied title.
+    expect(full).toContain('goes to example.org');
+    expect(slides).toContain('goes to example.org');
   });
 
   it('adds the hook line to the NotebookLM and PPTX lanes through the shared rule', () => {
