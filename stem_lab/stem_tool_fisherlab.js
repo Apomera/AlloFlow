@@ -5809,6 +5809,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreSpeciesComparison: getCoreSpeciesComparison,
     normalizeCoreLearningNotes: normalizeCoreLearningNotes,
     getCoreLearningNoteReview: getCoreLearningNoteReview,
+    getCoreExplanationPractice: getCoreExplanationPractice,
+    getCoreExplanationFeedback: getCoreExplanationFeedback,
     getCoreMeasurementModel: getCoreMeasurementModel,
     getCoreMeasurementComparison: getCoreMeasurementComparison,
     appendCoreMeasurementEvidence: appendCoreMeasurementEvidence,
@@ -13873,6 +13875,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     next[key] = enabled === true;
     return next;
   }
+  // Optional examples support reasoning without grading or changing student writing.
+  var CORE_EXPLANATION_PRACTICE = {
+  "navigation": {
+    "title": "Connect a calculation to a claim",
+    "scenario": "A model holds distance at 3 nautical miles, with no current or stops. At 6 knots the trip takes 30 minutes; at 3 knots it takes 60 minutes.",
+    "question": "Which explanation connects these values to the claim?",
+    "choices": [
+      {
+        "text": "The slower trip takes longer because 60 is a larger number than 30.",
+        "supported": false,
+        "feedback": "That restates the result. Explain the relationship: at a fixed distance, halving speed doubles travel time because time = distance ÷ speed."
+      },
+      {
+        "text": "At the same distance, halving speed doubles time because time = distance ÷ speed.",
+        "supported": true,
+        "feedback": "This links the values with a mathematical relationship and names what was held constant. Add the units and an assumption to make the explanation more complete."
+      }
+    ],
+    "parts": [
+      {
+        "label": "Claim",
+        "text": "For this fixed route, halving speed doubles the model travel time."
+      },
+      {
+        "label": "Evidence",
+        "text": "Over 3 nautical miles, 6 knots gives 30 minutes and 3 knots gives 60 minutes."
+      },
+      {
+        "label": "Reasoning",
+        "text": "Time = distance ÷ speed. With distance fixed, dividing by half the speed gives twice the time."
+      },
+      {
+        "label": "Limit",
+        "text": "The model omits current and stops; I would check these before estimating a real trip."
+      }
+    ],
+    "reflection": "In your own investigation, which quantity stayed fixed? Explain why your values support your claim."
+  },
+  "sampling": {
+    "title": "Use counts to support a sample claim",
+    "scenario": "A model catch has 6 target fish out of 8 at spot A, and 2 out of 12 at spot B.",
+    "question": "Which explanation correctly combines the evidence?",
+    "choices": [
+      {
+        "text": "8 of the 20 sampled fish are targets: pool the counts to get 40% of this combined sample.",
+        "supported": true,
+        "feedback": "Each sampled fish contributes once: (6 + 2) ÷ (8 + 12) = 40%. This keeps the claim about the sample, rather than assuming it describes all fish in the region."
+      },
+      {
+        "text": "Average the two site percentages equally to find the target share of the combined sample.",
+        "supported": false,
+        "feedback": "The sample sizes differ: 8 and 12. An equal average gives each site the same weight. Pooling the target and total counts gives 8 ÷ 20 = 40% of the combined sample."
+      }
+    ],
+    "parts": [
+      {
+        "label": "Claim",
+        "text": "Target fish make up 40% of this combined sample."
+      },
+      {
+        "label": "Evidence",
+        "text": "Spot A contributes 6 targets out of 8; spot B contributes 2 out of 12. Together: 8 out of 20."
+      },
+      {
+        "label": "Reasoning",
+        "text": "Pooling counts gives each sampled fish equal weight. The larger sample contributes more fish, so the site percentages cannot be averaged equally."
+      },
+      {
+        "label": "Limit",
+        "text": "Two spots do not establish the regional population. I would compare sampling methods, locations, and times."
+      }
+    ],
+    "reflection": "In your own evidence, what was counted? Distinguish a sample result from a claim about the whole region."
+  },
+  "measurement": {
+    "title": "Separate agreement from accuracy",
+    "scenario": "A reference object is known to be 14.5 units long. Three model readings are 14.8, 15.0, and 15.2 units.",
+    "question": "Which explanation accounts for both agreement and the reference?",
+    "choices": [
+      {
+        "text": "The readings are close together, so the average must be accurate.",
+        "supported": false,
+        "feedback": "Close readings show agreement, but can share an offset. Their mean is 15.0 units: 0.5 above the known reference. Averaging has not removed that difference."
+      },
+      {
+        "text": "The range is 0.4 units, but the mean is 0.5 above the reference; agreement alone does not establish accuracy.",
+        "supported": true,
+        "feedback": "This separates spread from the mean’s difference from the reference. The numbers reveal a discrepancy; they do not by themselves identify its cause. Check the zero, units, and method."
+      }
+    ],
+    "parts": [
+      {
+        "label": "Claim",
+        "text": "These readings agree fairly closely but overestimate the known reference on average."
+      },
+      {
+        "label": "Evidence",
+        "text": "The range is 15.2 − 14.8 = 0.4 units. The mean is 15.0 units, compared with a 14.5-unit reference."
+      },
+      {
+        "label": "Reasoning",
+        "text": "Range describes spread; the mean minus the reference gives +0.5 units. A small spread can coexist with a shared error."
+      },
+      {
+        "label": "Limit",
+        "text": "These model readings do not establish the cause. I would check the zero point, units, and endpoints, then repeat."
+      }
+    ],
+    "reflection": "In your own comparison, what changed: spread, mean error, or both? Use the reference to explain the difference."
+  }
+};
+
+  function getCoreExplanationPractice(topic) {
+    return Object.prototype.hasOwnProperty.call(CORE_EXPLANATION_PRACTICE, topic) ? JSON.parse(JSON.stringify(CORE_EXPLANATION_PRACTICE[topic])) : null;
+  }
+  function getCoreExplanationFeedback(topic, choice) {
+    var practice = getCoreExplanationPractice(topic);
+    if (!practice || typeof choice !== 'number' || choice % 1 !== 0 || choice < 0 || choice >= practice.choices.length) return null;
+    return { supported: practice.choices[choice].supported, feedback: practice.choices[choice].feedback };
+  }
+
   // Deterministic reference measurements isolate alignment from reading spread.
   function getCoreMeasurementModel(value) {
     var input = value || {}, aligned = input.aligned === true, wideSpread = input.wideSpread === true;
@@ -17566,6 +17689,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var measurementKept = measurementKeptHook[0], setMeasurementKept = measurementKeptHook[1];
     var measurementEvidenceHook = useState('');
     var measurementEvidenceStatus = measurementEvidenceHook[0], setMeasurementEvidenceStatus = measurementEvidenceHook[1];
+    var explanationPracticeHook = useState({});
+    var explanationPractice = explanationPracticeHook[0], setExplanationPractice = explanationPracticeHook[1];
     var learningNotesHook = useState(loadCoreLearningNotes);
     var learningNotes = learningNotesHook[0], setLearningNotes = learningNotesHook[1];
     var savedLearningNotesHook = useState(function() { return normalizeCoreLearningNotes(learningNotes); });
@@ -19388,6 +19513,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('button', { type: 'button', className: 'fl-btn', disabled: !text, onClick: downloadNotebook, style: Object.assign({}, buttonStyle, { marginTop: 14, borderColor: '#c4b5fd', color: '#e9d5ff', background: '#252540', opacity: text ? 1 : 0.6 }) }, 'Download all current notes'),
         h('p', { role: 'status', style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, notebookDownloadStatus || 'Downloads include current writing, including unsaved edits. They do not change saved notes.'));
     }
+    function explanationPracticeCard(topic) {
+      var practice = getCoreExplanationPractice(topic);
+      if (!practice) return null;
+      var state = explanationPractice[topic] || {};
+      var feedback = getCoreExplanationFeedback(topic, state.choice);
+      var contentId = 'fl-explanation-practice-' + topic;
+      var textStyle = { color: '#dbeafe', fontSize: 13, lineHeight: 1.65 };
+      var buttonStyle = { minHeight: 44, padding: '10px 12px', background: '#0b2637', border: '1px solid #627d91', borderRadius: 8, color: '#e0f2fe', textAlign: 'left', lineHeight: 1.6, fontSize: 13, cursor: 'pointer' };
+      function update(patch) {
+        setExplanationPractice(function(previous) { var next = Object.assign({}, previous); next[topic] = Object.assign({}, previous[topic] || {}, patch); return next; });
+      }
+      return h('div', { 'data-fisherlab-explanation-practice': topic, style: { margin: '12px 0', border: '1px solid #60567e', borderRadius: 10, background: '#102537', overflow: 'hidden' } },
+        h('button', { type: 'button', className: 'fl-btn', 'aria-expanded': !!state.open, 'aria-controls': contentId, onClick: function() { update({ open: !state.open }); },
+          style: Object.assign({}, buttonStyle, { border: 0, width: '100%', background: 'linear-gradient(110deg,#223148,#123545)', color: '#e9d5ff', fontWeight: 800 }) }, (state.open ? '▾ ' : '▸ ') + 'Try an explanation check'),
+        h('div', { id: contentId, hidden: !state.open, style: { padding: '0 14px 14px' } }, state.open ? h(React.Fragment, null,
+          h('p', { style: Object.assign({}, textStyle, { color: '#cbd5e1', fontSize: 12 }) }, 'Optional practice · a separate model example. Your choice is not a grade or an assessment of your note.'),
+          h('h4', { style: { color: '#f8fafc', fontSize: 17, margin: '12px 0 8px' } }, practice.title),
+          h('p', { style: textStyle }, practice.scenario),
+          h('fieldset', { style: { margin: 0, border: 0, padding: 0, minWidth: 0 } },
+            h('legend', { style: Object.assign({}, textStyle, { color: '#e0f2fe', fontWeight: 800, marginBottom: 8 }) }, practice.question),
+            h('div', { style: { display: 'grid', gap: 8 } }, practice.choices.map(function(choice, index) {
+              return h('button', { key: index, type: 'button', className: 'fl-btn', 'aria-pressed': state.choice === index, onClick: function() { update({ choice: index }); },
+                style: Object.assign({}, buttonStyle, state.choice === index ? { background: '#134044', borderColor: '#5eead4' } : {}) }, choice.text);
+            }))),
+          h('div', { role: 'status', 'aria-atomic': 'true', style: { marginTop: 12 } }, feedback ? h('div', { style: { borderLeft: '3px solid ' + (feedback.supported ? '#5eead4' : '#fbbf24'), padding: 12, background: '#0b2637', borderRadius: 7 } },
+            h('strong', { style: { color: feedback.supported ? '#99f6e4' : '#fde68a', fontSize: 13 } }, feedback.supported ? 'This connects the evidence.' : 'Look for the missing link.'),
+            h('p', { style: Object.assign({}, textStyle, { margin: '6px 0 0' }) }, feedback.feedback)) : null),
+          feedback ? h('div', { 'data-explanation-example': topic },
+            h('h5', { style: { fontSize: 14, color: '#e9d5ff', margin: '18px 0 10px' } }, 'One worked explanation'),
+            h('ol', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 } }, practice.parts.map(function(part, index) {
+              var color = ['#5eead4', '#7dd3fc', '#c4b5fd', '#fde68a'][index];
+              return h('li', { key: part.label, style: { borderLeft: '3px solid ' + color, padding: '10px 12px', background: '#0a2030', borderRadius: 7 } },
+                h('strong', { style: { color: color, fontSize: 12 } }, (index + 1) + ' · ' + part.label),
+                h('p', { style: Object.assign({}, textStyle, { margin: '4px 0 0' }) }, part.text));
+            })),
+            h('p', { style: Object.assign({}, textStyle, { color: '#e9d5ff' }) }, practice.reflection),
+            h('p', { style: Object.assign({}, textStyle, { fontSize: 12, color: '#cbd5e1' }) }, 'Use your own investigation’s values and observations in your note. The example above is not added to your writing.')) : null,
+          h('button', { type: 'button', className: 'fl-btn', style: Object.assign({}, buttonStyle, { marginTop: 12, borderColor: '#c4b5fd' }), onClick: function() {
+            update({ open: false });
+            learningFocusTargetRef.current = 'fl-learning-' + topic + '-evidence';
+            setNoteFocusTick(function(previous) { return previous + 1; });
+          } }, 'Return to my evidence')) : null));
+    }
     function learningNotebook(topic, expanded) {
       var note = learningNotes[topic];
       var status = learningNoteStatus[topic];
@@ -19422,6 +19590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 12px' } }, 'Turn your observations into an explanation. Save keeps this topic’s note in this browser; download gives you a text file to keep or share.'),
         h('p', { 'data-learning-note-review': review.filled, style: { color: '#bae6fd', fontSize: 13, lineHeight: 1.6, padding: 10, background: '#102e42', borderRadius: 7 } },
           review.filled + ' of 3 parts have writing. ' + (review.filled === 3 ? 'Check that the evidence supports your claim and names a limit; filled fields are not a grade.' : 'Next: add ' + ({ claim: 'your claim', evidence: 'evidence and reasoning', next: 'a limit or next check' })[review.nextField] + '.')),
+        explanationPracticeCard(topic),
         h('div', { style: { display: 'grid', gap: 12 } }, [
           { field: 'claim', label: 'My claim', hint: 'What do you think the evidence shows?' },
           { field: 'evidence', label: 'Evidence & reasoning', hint: 'Name a value or observation, say whether it came from the model or the voyage, and explain how it supports your claim.' },
