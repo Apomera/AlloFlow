@@ -99,6 +99,8 @@ Recent validation from the desktop work:
 
 ## Work Log
 
+Brain Atlas workspace refinement (2026-09-04, Codex): done locally. Compact default with remembered overview choice, Browse topics entry, readable overview/route text, compact progress cards, persistent Diagram labels disclosure, and route scroll/focus. Source/public mirrors match; preserved existing contrast edit and restored saved-quiz handler placement in the committed source. Validation: 112 focused tests, intentional render goldens, source/public syntax, scoped diff check, and browser interaction/reflow checks at 1280 light, 390 dark, and 320 contrast passed. Atlas frame moves from 946 to 472 px in the desktop harness. No deployment.
+
 Brain Atlas continuation (2026-09-04, Codex): done locally in stem_lab/stem_tool_brainatlas.js, its desktop public mirror, and tests/brain_atlas_saved_quiz.test.js. Added finite saved-study rounds, first-try completion summaries, targeted retries, answer locking, and keyboard focus handoff. Existing contrast-theme edit preserved. Validation: 109 tests across five Brain Atlas suites passed; source/public syntax, mirror parity, and scoped diff check passed. No deployment.
 
 | Date | Agent | Files | Status | Notes |

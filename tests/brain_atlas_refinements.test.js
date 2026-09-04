@@ -270,7 +270,7 @@ describe('brainAtlas refinement contracts', () => {
   it('lets learners compact the mission overview while keeping the atlas available', () => {
     loadTool(FILE, 'brainAtlas');
     const src = readFileSync(FILE, 'utf8');
-    const expanded = render({ view: 'lateral' });
+    const expanded = render({ view: 'lateral', overviewCollapsed: false });
     const collapsed = render({ view: 'lateral', overviewCollapsed: true });
 
     expect(expanded).toContain('data-brainatlas-overview-collapsed="false"');
@@ -279,7 +279,7 @@ describe('brainAtlas refinement contracts', () => {
     expect(expanded).toMatch(/Collapse overview/);
     expect(collapsed).toContain('data-brainatlas-overview-collapsed="true"');
     expect(collapsed).toContain('aria-expanded="false"');
-    expect(collapsed).toMatch(/Expand overview/);
+    expect(collapsed).toMatch(/Browse topics/);
     expect(collapsed).toContain('data-brainatlas-route-library="true"');
     expect(src).toContain('.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mission-copy');
     expect(src).toContain('.brainatlas-mission[data-brainatlas-overview-collapsed="true"] .brainatlas-mission-inner{grid-template-columns:minmax(0,1fr);');
