@@ -1,6 +1,6 @@
 # Brain Atlas: authored Plain view cards
 
-September 4, 2026. Eight side-view regions now have an authored big idea, everyday example, related idea, explanation prompt, and optional sample explanation: frontal, prefrontal, primary motor cortex, parietal, temporal, occipital, cerebellum, and brainstem.
+September 4, 2026. Fourteen regions now have an authored big idea, everyday example, related idea, explanation prompt, and optional sample explanation. Eight are in the lateral view: frontal, prefrontal, primary motor cortex, parietal, temporal, occipital, cerebellum, and brainstem. Six are in the medial view: corpus callosum, thalamus, hypothalamus, hippocampus, amygdala, and ventricles.
 
 The examples and questions are original teaching illustrations, not descriptions of experiments or claims that an activity is localized to a single region. The shared note explicitly describes network contributions. Related-region links connect learning ideas; they do not claim a direct anatomical projection between the two areas. There is no score or mastery inference from revealing an explanation.
 
@@ -12,17 +12,17 @@ Background sources checked:
 
 Scope and fallback:
 
-- Authored cards appear only for these eight IDs in the lateral view while Plain view is selected.
+- Authored cards appear only for their assigned view while Plain view is selected: eight lateral IDs and six medial IDs. Unsupported regions retain their prior detail rendering.
 - Existing function, clinical, and anatomical fields remain in Advanced. Other views and unsupported IDs keep their existing detail rendering.
 - Cards use translation keys with English fallbacks and require no AI or network request to render.
 - Optional explanations use native disclosures keyed by region, so a revealed answer does not stay open when moving to a new region.
 - The related-region action stays in the same orientation, clears stale search/3D selection, and reveals and focuses the new detail panel. It does not award points.
 
-Validation targets: all eight cards; Advanced/fallback behavior; related-region selection/focus; explanation reset; desktop/phone reflow; dark and contrast readability; existing Brain Atlas science and quiz regressions.
+Validation targets: all fourteen cards; Advanced/fallback behavior; related-region selection/focus; explanation reset; desktop/phone reflow; dark and contrast readability; existing Brain Atlas science and quiz regressions.
 
 ## Optional understanding checks
 
-Each of the eight cards now has one original application question with three contribution-based answers and feedback specific to each choice. The questions use the same background sources and functional distinctions as the cards above. They ask about the contribution highlighted in an example, rather than assigning a whole activity to one brain region.
+Each of the fourteen cards now has one original application question with three contribution-based answers and feedback specific to each choice. The questions use the same background sources and functional distinctions as the cards above. They ask about the contribution highlighted in an example, rather than assigning a whole activity to one brain region.
 
 Checks are explicitly ungraded and allow reference to the card. Answer order is rotated by region but stays stable across rerenders. The selected answer is stored by region; correctness is derived from the authored question, never from a saved score. An answer locks until the learner resets or retries. Retry clears only that region's answer. There are no points, new mastery claims, AI calls, or external answer storage.
 
@@ -38,8 +38,24 @@ Stage, prediction, checkpoint answer, and optional reflection use the existing a
 
 ## Contextual vocabulary
 
-The eight authored cards and all five movement-lesson screens now offer a native Key words disclosure. Each screen has two to four relevant definitions drawn from one 12-term dictionary; its collapsed preview names the terms available. Definitions are optional, render without AI, and use translation keys with English fallbacks. Cortex and lobe are explicitly scoped to the cerebrum in this lesson rather than presented as universal definitions for every brain structure.
+The fourteen authored cards and all five movement-lesson screens offer a native Key words disclosure. Each screen has two to four relevant definitions drawn from one 19-term dictionary; its collapsed preview names the terms available. Definitions are optional, render without AI, and use translation keys with English fallbacks. Cortex and lobe are explicitly scoped to the cerebrum in this lesson rather than presented as universal definitions for every brain structure.
 
 Opening or closing Key words saves one atlas-wide reading preference. Changing regions or lesson stages replaces the vocabulary with the relevant terms and keeps that preference, without changing a prediction, checkpoint, reflection, or quiz score. Advanced and unsupported cards retain their existing content. Native summary controls support keyboard use; semantic definition lists, readable text, and wrapped previews support smaller screens.
 
 Factual background follows the sources above, with nerve-cell communication checked against [NINDS: The Life and Death of a Neuron](https://www.ninds.nih.gov/es/node/8172) and broad anatomy against [NIMH: Get to Know Your Brain](https://www.nimh.nih.gov/news/media/2023/get-to-know-your-brain). Definitions use original wording and do not add clinical guidance.
+
+
+## Medial-view extension
+
+The six introductory deep-structure cards use the same optional explanations, context vocabulary, per-region answer storage, and retry flow as the side-view cards. Related links stay in the medial view and compare learning ideas; they do not assert a direct anatomical projection. The card data identifies its intended view and a specific background source, preventing a specialized view that reuses a structure ID from silently inheriting introductory content.
+
+Factual scope and sources reviewed September 4, 2026:
+
+- Corpus callosum: a major route for information sharing between hemispheres; two-hand examples illustrate communication, without implying that one hemisphere acts alone. [NCBI: Corpus Callosum](https://www.ncbi.nlm.nih.gov/books/NBK448209/).
+- Thalamus: processing and relaying much sensory information; no claim that all senses must pass through it or that relaying alone explains comprehension. [NCBI: Thalamus](https://www.ncbi.nlm.nih.gov/books/NBK542184/).
+- Hypothalamus: regulation of internal conditions, including temperature and water balance; homeostasis is ongoing adjustment, not an unchanging set point. [NCBI: Hypothalamus](https://www.ncbi.nlm.nih.gov/books/NBK525993/).
+- Hippocampus: contributions to memories of events and places within a broader network; no storage-box or all-memory claim. [NCBI: Hippocampus](https://www.ncbi.nlm.nih.gov/books/NBK482171/).
+- Amygdala: emotional learning includes positive and negative significance. Examples are original teaching scenarios, not reports of a specific human or animal experiment. [NIMH: Amygdala RDoC element](https://www.nimh.nih.gov/research/research-funded-by-nimh/rdoc/units/circuits/150934).
+- Ventricles: CSF-containing spaces, explicitly distinguished from nerve tissue; CSF has supporting and cushioning roles. The card does not teach clinical assessment or prevention of head injury. [NCBI: Cerebrospinal Fluid](https://www.ncbi.nlm.nih.gov/books/NBK470578/).
+
+Added vocabulary: hemisphere, relay, homeostasis, hormone, event memory, emotional significance, and cerebrospinal fluid. Existing advanced fields and the other medial regions are outside this content pass.

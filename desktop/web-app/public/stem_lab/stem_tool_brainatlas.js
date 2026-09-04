@@ -8497,6 +8497,62 @@ var d = labToolData.brainAtlas || {};
               explanation: t('stem.brainatlas.plain_brainstem_explanation', "Breathing usually continues automatically. Waving is an example of a movement you choose."),
               next: "motor_cortex"
             },
+            corpus_callosum: {
+              view: 'medial', source: 'https://www.ncbi.nlm.nih.gov/books/NBK448209/',
+              idea: t('stem.brainatlas.plain_corpus_callosum_idea', 'A bundle of nerve fibers that helps the two halves of the cerebrum share information.'),
+              example: t('stem.brainatlas.plain_corpus_callosum_example', 'Using both hands to fold paper draws on communication between brain areas on both sides.'),
+              connection: t('stem.brainatlas.plain_corpus_callosum_connection', 'The two hemispheres usually work together during everyday activities.'),
+              question: t('stem.brainatlas.plain_corpus_callosum_question', 'Why could sharing information help when both hands work on one task?'),
+              explanation: t('stem.brainatlas.plain_corpus_callosum_explanation', 'Information about what each hand is doing can help guide a shared action. The corpus callosum is one major route for communication between hemispheres.'),
+              next: 'thalamus'
+            },
+            thalamus: {
+              view: 'medial', source: 'https://www.ncbi.nlm.nih.gov/books/NBK542184/',
+              idea: t('stem.brainatlas.plain_thalamus_idea', 'Helps process and pass along much of the sensory information going to the cortex.'),
+              example: t('stem.brainatlas.plain_thalamus_example', 'Sound information from a ringing bell passes through a thalamic relay on its way to auditory cortex.'),
+              connection: t('stem.brainatlas.plain_thalamus_connection', 'Relaying information is one contribution; interpreting and using it involves wider networks.'),
+              question: t('stem.brainatlas.plain_thalamus_question', 'How is passing along sound information different from understanding what a bell means?'),
+              explanation: t('stem.brainatlas.plain_thalamus_explanation', 'The relay helps make sound information available to other areas. Learning what the bell means and deciding what to do also draw on memory and other processes.'),
+              next: 'hypothalamus'
+            },
+            hypothalamus: {
+              view: 'medial', source: 'https://www.ncbi.nlm.nih.gov/books/NBK525993/',
+              idea: t('stem.brainatlas.plain_hypothalamus_idea', 'Helps regulate internal conditions, including body temperature and water balance.'),
+              example: t('stem.brainatlas.plain_hypothalamus_example', 'During a warm day, body signals help guide responses such as thirst and adjustments in heat loss.'),
+              connection: t('stem.brainatlas.plain_hypothalamus_connection', 'Nerve signals and hormones help connect internal needs with body responses.'),
+              question: t('stem.brainatlas.plain_hypothalamus_question', 'Why might the body need different adjustments during a warm day and a cool night?'),
+              explanation: t('stem.brainatlas.plain_hypothalamus_explanation', 'Conditions change, so the body adjusts its responses to keep internal conditions within useful ranges. This ongoing regulation is called homeostasis.'),
+              next: 'thalamus'
+            },
+            hippocampus: {
+              view: 'medial', source: 'https://www.ncbi.nlm.nih.gov/books/NBK482171/',
+              idea: t('stem.brainatlas.plain_hippocampus_idea', 'Helps form memories of experiences and supports learning about places.'),
+              example: t('stem.brainatlas.plain_hippocampus_example', 'After visiting a new room, you remember where you sat and what happened there.'),
+              connection: t('stem.brainatlas.plain_hippocampus_connection', 'Remembering uses several brain areas. Memories are not all kept in one place.'),
+              question: t('stem.brainatlas.plain_hippocampus_question', 'What details could connect an event with the place where it happened?'),
+              explanation: t('stem.brainatlas.plain_hippocampus_explanation', 'Remembering who was there, what happened, and where you were can connect parts of an experience. The hippocampus contributes within a wider memory network.'),
+              next: 'amygdala'
+            },
+            amygdala: {
+              view: 'medial', source: 'https://www.nimh.nih.gov/research/research-funded-by-nimh/rdoc/units/circuits/150934',
+              idea: t('stem.brainatlas.plain_amygdala_idea', 'Helps learn and respond to emotionally important events.'),
+              example: t('stem.brainatlas.plain_amygdala_example', 'A sound can gain emotional meaning when you learn that it predicts an exciting activity.'),
+              connection: t('stem.brainatlas.plain_amygdala_connection', 'Its contributions include more than fear, and emotions involve many brain areas.'),
+              question: t('stem.brainatlas.plain_amygdala_question', 'How can the same sound feel different after you learn what it predicts?'),
+              explanation: t('stem.brainatlas.plain_amygdala_explanation', 'Learning can change how important a sound is to you. The amygdala contributes to networks for emotional learning, including both pleasant and unpleasant experiences.'),
+              next: 'hippocampus'
+            },
+            ventricles: {
+              view: 'medial', source: 'https://www.ncbi.nlm.nih.gov/books/NBK470578/',
+              idea: t('stem.brainatlas.plain_ventricles_idea', 'Connected spaces inside the brain that contain cerebrospinal fluid, or CSF.'),
+              example: t('stem.brainatlas.plain_ventricles_example', 'While you read or move, CSF circulates through these spaces and around the brain and spinal cord.'),
+              connection: t('stem.brainatlas.plain_ventricles_connection', 'CSF helps support and cushion the brain. Fluid spaces and nerve tissue have different roles.'),
+              question: t('stem.brainatlas.plain_ventricles_question', 'How is a fluid-filled space different from an area that processes nerve signals?'),
+              explanation: t('stem.brainatlas.plain_ventricles_explanation', 'A ventricle is a space containing fluid. Nerve cells in brain tissue process and pass along signals; the space itself is not a thinking center.'),
+              note: t('stem.brainatlas.plain_ventricles_note', 'The atlas shows both brain tissue and fluid spaces. A labeled structure does not always mean an area of nerve cells.'),
+              next: 'corpus_callosum'
+            },
+
           };
 
           // Small, context-matched vocabulary lists share one optional reading preference.
@@ -8512,7 +8568,15 @@ var d = labToolData.brainAtlas || {};
             coordination: { term: t('stem.brainatlas.word_coordination', 'Coordination'), definition: t('stem.brainatlas.word_coordination_definition', 'Adjusting the timing and size of movements so they work together, such as keeping a cup steady while lifting it.') },
             network: { term: t('stem.brainatlas.word_network', 'Brain network'), definition: t('stem.brainatlas.word_network_definition', 'Connected brain areas that work together. An activity usually draws on contributions from several areas.') },
             signal: { term: t('stem.brainatlas.word_signal', 'Nerve signal'), definition: t('stem.brainatlas.word_signal_definition', 'Information carried by nerve cells. These cells communicate using electrical changes and chemical messengers.') },
-            automatic: { term: t('stem.brainatlas.word_automatic', 'Automatic'), definition: t('stem.brainatlas.word_automatic_definition', 'Happening without a deliberate plan for each step. Breathing usually continues this way while you do other things.') }
+            automatic: { term: t('stem.brainatlas.word_automatic', 'Automatic'), definition: t('stem.brainatlas.word_automatic_definition', 'Happening without a deliberate plan for each step. Breathing usually continues this way while you do other things.') },
+            hemisphere: { term: t('stem.brainatlas.word_hemisphere', 'Hemisphere'), definition: t('stem.brainatlas.word_hemisphere_definition', 'One of the two halves of the cerebrum, the large upper part of the brain.') },
+            relay: { term: t('stem.brainatlas.word_relay', 'Relay'), definition: t('stem.brainatlas.word_relay_definition', 'Passing information along. A thalamic relay can also process information before sending it to other brain areas.') },
+            homeostasis: { term: t('stem.brainatlas.word_homeostasis', 'Homeostasis'), definition: t('stem.brainatlas.word_homeostasis_definition', 'Ongoing adjustments that help keep conditions inside the body within useful ranges.') },
+            hormone: { term: t('stem.brainatlas.word_hormone', 'Hormone'), definition: t('stem.brainatlas.word_hormone_definition', 'A chemical messenger released into the blood that signals other parts of the body.') },
+            event_memory: { term: t('stem.brainatlas.word_event_memory', 'Event memory'), definition: t('stem.brainatlas.word_event_memory_definition', 'Remembering a particular experience, including what happened and where or when it happened.') },
+            significance: { term: t('stem.brainatlas.word_significance', 'Emotional significance'), definition: t('stem.brainatlas.word_significance_definition', 'How much something matters emotionally in a situation. Learning what it predicts can change that meaning.') },
+            csf: { term: t('stem.brainatlas.word_csf', 'Cerebrospinal fluid (CSF)'), definition: t('stem.brainatlas.word_csf_definition', 'Clear fluid in the ventricles and around the brain and spinal cord. It helps support and cushion these structures.') },
+
           };
           var BRAIN_ATLAS_CARD_WORDS = {
             frontal: ['lobe', 'network'],
@@ -8522,7 +8586,13 @@ var d = labToolData.brainAtlas || {};
             temporal: ['lobe', 'network'],
             occipital: ['visual', 'sensory', 'signal'],
             cerebellum: ['coordination', 'network'],
-            brainstem: ['automatic', 'voluntary', 'network']
+            brainstem: ['automatic', 'voluntary', 'network'],
+            corpus_callosum: ['hemisphere', 'signal', 'network'],
+            thalamus: ['sensory', 'relay', 'cortex'],
+            hypothalamus: ['homeostasis', 'hormone', 'automatic'],
+            hippocampus: ['event_memory', 'network'],
+            amygdala: ['significance', 'network'],
+            ventricles: ['csf', 'signal']
           };
           var BRAIN_ATLAS_MOVEMENT_WORDS = [
             ['cerebrum', 'lobe', 'cortex'], ['motor', 'signal', 'lobe'], ['cortex', 'voluntary', 'signal'], ['motor', 'cortex', 'network'], ['motor', 'cortex', 'network']
@@ -8591,8 +8661,40 @@ var d = labToolData.brainAtlas || {};
               choices: [t('stem.brainatlas.check_brainstem_choice_0', "Supporting a body function without planning each breath"), t('stem.brainatlas.check_brainstem_choice_1', "Choosing the next puzzle piece"), t('stem.brainatlas.check_brainstem_choice_2', "Noticing the colors of the puzzle")],
               feedback: [t('stem.brainatlas.check_brainstem_feedback_0', "Breathing usually continues without a separate deliberate plan for each breath. Brainstem systems contribute to this ongoing function."), t('stem.brainatlas.check_brainstem_feedback_1', "Choosing a piece is part of the puzzle task. It does not explain the ongoing breathing described here."), t('stem.brainatlas.check_brainstem_feedback_2', "Color information can help solve the puzzle, but it does not describe the ongoing body function in the question.")]
             },
+            corpus_callosum: {
+              question: t('stem.brainatlas.check_corpus_callosum_question', 'A learner uses both hands to tie a bow. Which contribution are we highlighting?'),
+              choices: [t('stem.brainatlas.check_corpus_callosum_choice_0', 'Sharing information between the cerebral hemispheres'), t('stem.brainatlas.check_corpus_callosum_choice_1', 'Regulating body temperature during the task'), t('stem.brainatlas.check_corpus_callosum_choice_2', 'Containing fluid that cushions the brain')],
+              feedback: [t('stem.brainatlas.check_corpus_callosum_feedback_0', 'Sharing information can help the two sides contribute to a coordinated task. Many other areas also help guide the hands.'), t('stem.brainatlas.check_corpus_callosum_feedback_1', 'Temperature regulation continues, but the example highlights communication between the two sides during a shared action.'), t('stem.brainatlas.check_corpus_callosum_feedback_2', 'Fluid spaces have a supportive role. The corpus callosum is a bundle of nerve fibers used for communication.')]
+            },
+            thalamus: {
+              question: t('stem.brainatlas.check_thalamus_question', 'Sound information from a doorbell is on its way to auditory cortex. Which contribution fits a thalamic relay?'),
+              choices: [t('stem.brainatlas.check_thalamus_choice_0', 'Processing and passing along the sound information'), t('stem.brainatlas.check_thalamus_choice_1', 'Storing everything the learner knows about doorbells'), t('stem.brainatlas.check_thalamus_choice_2', 'Adjusting water balance inside the body')],
+              feedback: [t('stem.brainatlas.check_thalamus_feedback_0', 'The auditory pathway includes a thalamic relay. Understanding the bell and deciding how to respond involve additional brain areas.'), t('stem.brainatlas.check_thalamus_feedback_1', 'Memory involves a wider network. Here the focus is the relay of incoming sound information.'), t('stem.brainatlas.check_thalamus_feedback_2', 'Water balance is an internal-regulation task. This question focuses on processing sensory information.')]
+            },
+            hypothalamus: {
+              question: t('stem.brainatlas.check_hypothalamus_question', 'A learner becomes thirsty after a warm outdoor activity. Which contribution is highlighted?'),
+              choices: [t('stem.brainatlas.check_hypothalamus_choice_0', 'Helping regulate internal conditions and water needs'), t('stem.brainatlas.check_hypothalamus_choice_1', 'Remembering where yesterday\'s activity took place'), t('stem.brainatlas.check_hypothalamus_choice_2', 'Passing sound information to auditory cortex')],
+              feedback: [t('stem.brainatlas.check_hypothalamus_feedback_0', 'Thirst relates to regulation of the body\'s internal conditions. The hypothalamus participates with other body and brain systems.'), t('stem.brainatlas.check_hypothalamus_feedback_1', 'Remembering an event is a different contribution. This example emphasizes a current internal need.'), t('stem.brainatlas.check_hypothalamus_feedback_2', 'An auditory relay helps process sound. It does not explain the water-balance contribution in this example.')]
+            },
+            hippocampus: {
+              question: t('stem.brainatlas.check_hippocampus_question', 'After a first visit to a library, a learner remembers where they sat and what they read. Which contribution is highlighted?'),
+              choices: [t('stem.brainatlas.check_hippocampus_choice_0', 'Forming a memory that connects an experience with a place'), t('stem.brainatlas.check_hippocampus_choice_1', 'Detecting only the brightness of the lights'), t('stem.brainatlas.check_hippocampus_choice_2', 'Keeping body temperature within a useful range')],
+              feedback: [t('stem.brainatlas.check_hippocampus_feedback_0', 'The example connects parts of a new experience. The hippocampus contributes to this kind of memory within a larger network.'), t('stem.brainatlas.check_hippocampus_feedback_1', 'Visual information may be part of the experience, but noticing brightness alone does not explain remembering what happened and where.'), t('stem.brainatlas.check_hippocampus_feedback_2', 'Temperature regulation supports ongoing body function. The question focuses on remembering a new experience.')]
+            },
+            amygdala: {
+              question: t('stem.brainatlas.check_amygdala_question', 'A learner becomes excited by a tune after learning that it signals a favorite activity. Which contribution fits?'),
+              choices: [t('stem.brainatlas.check_amygdala_choice_0', 'Learning the emotional significance of a cue'), t('stem.brainatlas.check_amygdala_choice_1', 'Producing every emotion in one isolated brain area'), t('stem.brainatlas.check_amygdala_choice_2', 'Only detecting the loudness of the tune')],
+              feedback: [t('stem.brainatlas.check_amygdala_feedback_0', 'Learning changes what the tune means to the learner. Amygdala networks contribute to emotional learning, including positive experiences.'), t('stem.brainatlas.check_amygdala_feedback_1', 'Emotions involve many brain areas. The amygdala is one contributor, not an isolated source of every feeling.'), t('stem.brainatlas.check_amygdala_feedback_2', 'Loudness is one sound feature. This example emphasizes a learned emotional meaning, beyond the sound itself.')]
+            },
+            ventricles: {
+              question: t('stem.brainatlas.check_ventricles_question', 'A learner sees a ventricle labeled beside brain tissue. Which statement best explains the difference?'),
+              choices: [t('stem.brainatlas.check_ventricles_choice_0', 'The ventricle contains fluid; nerve cells in the surrounding tissue process signals.'), t('stem.brainatlas.check_ventricles_choice_1', 'The ventricle is a bundle of nerve fibers linking hemispheres.'), t('stem.brainatlas.check_ventricles_choice_2', 'The ventricle plans movements while the surrounding tissue only supports it.')],
+              feedback: [t('stem.brainatlas.check_ventricles_feedback_0', 'Ventricles are fluid-filled spaces. CSF circulates through them and helps support the brain and spinal cord.'), t('stem.brainatlas.check_ventricles_feedback_1', 'A nerve-fiber bundle carries signals. A ventricle is a fluid space rather than that kind of tissue.'), t('stem.brainatlas.check_ventricles_feedback_2', 'Planning draws on nerve-cell networks. The ventricle label identifies a space containing fluid.')]
+            },
+
           };
-          var plainLesson = !showAdvancedDetail && viewKey === 'lateral' && sel ? BRAIN_ATLAS_PLAIN_LESSONS[sel.id] : null;
+          var selectedPlainLesson = sel ? BRAIN_ATLAS_PLAIN_LESSONS[sel.id] : null;
+          var plainLesson = !showAdvancedDetail && selectedPlainLesson && viewKey === (selectedPlainLesson.view || 'lateral') ? selectedPlainLesson : null;
           var plainCheck = plainLesson ? BRAIN_ATLAS_PLAIN_CHECKS[sel.id] : null;
           var plainCheckOpen = !!(plainCheck && d.plainCheckRegion === sel.id);
           var plainCheckAnswers = d.plainCheckAnswers && typeof d.plainCheckAnswers === 'object' && !Array.isArray(d.plainCheckAnswers) ? d.plainCheckAnswers : {};
@@ -11634,7 +11736,7 @@ var d = labToolData.brainAtlas || {};
                           React.createElement("summary", null, t('stem.brainatlas.one_way_to_explain', 'One way to explain it')),
                           React.createElement("p", null, plainLesson.explanation)
                         ),
-                        React.createElement("p", { className: "brainatlas-plain-network-note" }, t('stem.brainatlas.network_learning_note', 'Brain regions work together. These examples describe contributions, not jobs done by one region alone.')),
+                        React.createElement("p", { className: "brainatlas-plain-network-note" }, plainLesson.note || t('stem.brainatlas.network_learning_note', 'Brain regions work together. These examples describe contributions, not jobs done by one region alone.')),
                         React.createElement("div", { className: "brainatlas-plain-lesson-actions" },
                           React.createElement("button", { type: "button", "data-brainatlas-check-toggle": "true", "aria-expanded": plainCheckOpen ? "true" : "false", "aria-controls": plainCheckOpen ? "brainatlas-plain-check" : undefined, onClick: function () { upd('plainCheckRegion', plainCheckOpen ? '' : sel.id); if (!plainCheckOpen) focusBrainAtlasPlainCheck(); } }, plainCheckOpen ? t('stem.brainatlas.close_understanding_check', 'Close check') : t('stem.brainatlas.check_understanding', 'Check understanding')),
                           React.createElement("button", { type: "button", "data-brainatlas-plain-next": plainLesson.next, onClick: function () {
@@ -11643,7 +11745,7 @@ var d = labToolData.brainAtlas || {};
                             upd('selectedRegion', nextRegion.id); upd('selected3DStructure', ''); upd('search', '');
                             window.setTimeout(function () { scrollToBrainAtlasSection('brainatlas-region-detail', nextRegion.name); }, 40);
                           } }, t('stem.brainatlas.explore_related_region', 'Explore related region'), ': ', (regions.find(function (region) { return region.id === plainLesson.next; }) || {}).name),
-                          React.createElement("a", { href: (sel.id === 'prefrontal' || sel.id === 'motor_cortex') ? 'https://www.ncbi.nlm.nih.gov/books/NBK554483/' : 'https://www.nimh.nih.gov/news/media/2023/get-to-know-your-brain', target: '_blank', rel: 'noopener noreferrer' }, t('stem.brainatlas.read_background_source', 'Read background source'))
+                          React.createElement("a", { href: plainLesson.source || ((sel.id === 'prefrontal' || sel.id === 'motor_cortex') ? 'https://www.ncbi.nlm.nih.gov/books/NBK554483/' : 'https://www.nimh.nih.gov/news/media/2023/get-to-know-your-brain'), target: '_blank', rel: 'noopener noreferrer' }, t('stem.brainatlas.read_background_source', 'Read background source'))
                         ),
                         plainCheckOpen && React.createElement("section", { id: "brainatlas-plain-check", className: "brainatlas-plain-check", "data-brainatlas-plain-check": sel.id, "aria-labelledby": "brainatlas-plain-check-question", tabIndex: -1 },
                           React.createElement("h5", null, t('stem.brainatlas.apply_the_idea', 'Apply the idea')),
