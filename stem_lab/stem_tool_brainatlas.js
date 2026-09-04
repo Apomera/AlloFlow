@@ -534,6 +534,7 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-mission-inner{padding:10px 14px;}.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-mission-kicker{display:none;}.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-mission-title-row{align-items:center;}.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-mission-title{font-size:16px;line-height:1.3;}.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-view-panel-note,.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-view-eyebrow{display:none;}.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-view-panel-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}.brainatlas-tool-shell[data-brainatlas-compact="true"] .brainatlas-view-count{margin:0;}.brainatlas-tool-shell .brainatlas-overview-toggle{min-height:44px;white-space:normal;}.brainatlas-tool-shell .brainatlas-metric-value{overflow-wrap:anywhere;}.brainatlas-tool-shell .brainatlas-route-card{min-height:148px;}',
     '.brainatlas-label-disclosure{border-bottom:1px solid var(--ba-border);background:var(--ba-panel);}.brainatlas-label-disclosure>summary{min-height:44px;box-sizing:border-box;padding:11px 14px;cursor:pointer;color:var(--ba-text);font-size:13px;font-weight:800;line-height:1.5;}.brainatlas-label-disclosure>summary>span{margin-left:8px;font-size:12px;font-weight:400;color:var(--ba-muted);}.brainatlas-label-disclosure[open]>summary{border-bottom:1px solid var(--ba-border);}.brainatlas-label-disclosure .brainatlas-label-toolbar{border-bottom:0;}@media(max-width:460px){.brainatlas-label-disclosure>summary>span{display:block;margin-left:16px;}}',
     '.brainatlas-detail-takeaways[data-brainatlas-authored-plain] strong{font-size:12px;text-transform:none;}.brainatlas-detail-takeaways[data-brainatlas-authored-plain] span{font-size:14px;line-height:1.55;}.brainatlas-plain-lesson{border:1px solid var(--ba-border);border-radius:12px;padding:14px;background:var(--ba-panel);color:var(--ba-text);}.brainatlas-plain-lesson h5{font-size:15px;font-weight:800;margin:0 0 8px;}.brainatlas-plain-lesson p{font-size:14px;line-height:1.6;margin:8px 0;overflow-wrap:anywhere;}.brainatlas-plain-explanation{margin:10px 0;border-block:1px solid var(--ba-border);}.brainatlas-plain-explanation summary{min-height:44px;box-sizing:border-box;padding:11px 0;cursor:pointer;font-size:14px;font-weight:700;}.brainatlas-plain-lesson .brainatlas-plain-network-note{font-size:13px;color:var(--ba-muted);}.brainatlas-plain-lesson-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;}.brainatlas-plain-lesson-actions button,.brainatlas-plain-lesson-actions a{min-height:44px;box-sizing:border-box;font-size:13px;line-height:1.5;overflow-wrap:anywhere;}.brainatlas-plain-lesson-actions button{border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:10px;max-width:100%;text-align:left;}.brainatlas-plain-lesson-actions a{display:inline-flex;align-items:center;text-decoration:underline;color:var(--ba-sky-ink);}',
+    '.brainatlas-plain-check{margin-top:16px;padding:14px;border:1px solid var(--ba-border);border-radius:10px;background:var(--ba-surface);scroll-margin-top:80px;}.brainatlas-plain-check:focus{outline:3px solid var(--ba-focus);outline-offset:3px;}.brainatlas-plain-check .brainatlas-plain-check-support{font-size:13px;color:var(--ba-muted);}.brainatlas-plain-check-choices{display:grid;gap:8px;margin:12px 0;}.brainatlas-plain-check-choices button,.brainatlas-plain-check-reset{box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);font-size:14px;line-height:1.5;text-align:left;overflow-wrap:anywhere;}.brainatlas-plain-check-choices button[aria-pressed=true]{border:2px solid var(--ba-purple);font-weight:800;}.brainatlas-plain-check-feedback{border-left:4px solid var(--ba-amber);border-radius:6px;background:var(--ba-panel);padding:10px 12px;margin:12px 0;}.brainatlas-plain-check-feedback[data-correct=true]{border-left-color:var(--ba-teal);}.brainatlas-plain-check-feedback strong{font-size:14px;}.brainatlas-plain-check-feedback p{margin-bottom:0;}',
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -8494,7 +8495,74 @@ var d = labToolData.brainAtlas || {};
               next: "motor_cortex"
             },
           };
+          // Optional application checks use the same factual scope as the authored cards.
+          var BRAIN_ATLAS_PLAIN_CHECKS = {
+            frontal: {
+              question: t('stem.brainatlas.check_frontal_question', "Before building a model, a learner decides which steps to do first. Which contribution does this illustrate?"),
+              choices: [t('stem.brainatlas.check_frontal_choice_0', "Organizing an action before doing it"), t('stem.brainatlas.check_frontal_choice_1', "Processing light from the eyes"), t('stem.brainatlas.check_frontal_choice_2', "Keeping breathing going automatically")],
+              feedback: [t('stem.brainatlas.check_frontal_feedback_0', "The example is about organizing steps toward a goal. Carrying out the plan also uses other brain areas."), t('stem.brainatlas.check_frontal_feedback_1', "Visual information can help with building, but deciding the order of steps is the planning part of this example."), t('stem.brainatlas.check_frontal_feedback_2', "Breathing continues during the task, but it does not explain choosing the order of the steps.")]
+            },
+            prefrontal: {
+              question: t('stem.brainatlas.check_prefrontal_question', "A learner keeps a rule in mind while choosing the next move in a game. Which contribution is most relevant?"),
+              choices: [t('stem.brainatlas.check_prefrontal_choice_0', "Using a remembered goal to guide a choice"), t('stem.brainatlas.check_prefrontal_choice_1', "Detecting the color of a game piece"), t('stem.brainatlas.check_prefrontal_choice_2', "Sending a signal to move a finger")],
+              feedback: [t('stem.brainatlas.check_prefrontal_feedback_0', "Keeping the rule in mind helps guide the choice. This draws on working-memory and control networks."), t('stem.brainatlas.check_prefrontal_feedback_1', "Seeing a piece can supply useful information, but the question is about holding a rule in mind and using it."), t('stem.brainatlas.check_prefrontal_feedback_2', "Moving a finger carries out an action. The example emphasizes choosing an action while remembering a rule.")]
+            },
+            motor_cortex: {
+              question: t('stem.brainatlas.check_motor_cortex_question', "A learner chooses to tap a rhythm with one hand. Which contribution are we focusing on?"),
+              choices: [t('stem.brainatlas.check_motor_cortex_choice_0', "Sending signals for the chosen hand movements"), t('stem.brainatlas.check_motor_cortex_choice_1', "Keeping the plan in mind before starting"), t('stem.brainatlas.check_motor_cortex_choice_2', "Recognizing the sound of the rhythm")],
+              feedback: [t('stem.brainatlas.check_motor_cortex_feedback_0', "The focus is on signals for voluntary movement. Planning, sound processing, and coordination can also contribute."), t('stem.brainatlas.check_motor_cortex_feedback_1', "Remembering the plan can help, but here the focus is on sending movement signals to carry it out."), t('stem.brainatlas.check_motor_cortex_feedback_2', "Hearing the rhythm can help guide the task, but recognizing sound is different from sending movement signals.")]
+            },
+            parietal: {
+              question: t('stem.brainatlas.check_parietal_question', "A learner reaches for a pencil without looking directly at their hand. What information can help guide the reach?"),
+              choices: [t('stem.brainatlas.check_parietal_choice_0', "Where the hand and target are"), t('stem.brainatlas.check_parietal_choice_1', "Only the words the learner plans to say"), t('stem.brainatlas.check_parietal_choice_2', "Only the sound of the pencil moving")],
+              feedback: [t('stem.brainatlas.check_parietal_feedback_0', "Information about body position and the surroundings helps guide movement. A reach also needs movement signals."), t('stem.brainatlas.check_parietal_feedback_1', "Planning speech does not provide all the body-position information needed to guide a reach."), t('stem.brainatlas.check_parietal_feedback_2', "Sound can offer a clue, but it is not the only information used to locate the hand and target.")]
+            },
+            temporal: {
+              question: t('stem.brainatlas.check_temporal_question', "A learner hears a familiar voice on a recording. Which contribution is highlighted?"),
+              choices: [t('stem.brainatlas.check_temporal_choice_0', "Processing the sounds in the voice"), t('stem.brainatlas.check_temporal_choice_1', "Processing the colors on the screen"), t('stem.brainatlas.check_temporal_choice_2', "Adjusting the balance of the body")],
+              feedback: [t('stem.brainatlas.check_temporal_feedback_0', "Processing sound is central to this example. Recognizing a person and understanding a message involve wider networks."), t('stem.brainatlas.check_temporal_feedback_1', "Colors are visual information. This example focuses on hearing a voice."), t('stem.brainatlas.check_temporal_feedback_2', "Balance can matter while listening, but it is not the sound-processing contribution described here.")]
+            },
+            occipital: {
+              question: t('stem.brainatlas.check_occipital_question', "A learner notices the shape and color of a kite. Which kind of information is highlighted?"),
+              choices: [t('stem.brainatlas.check_occipital_choice_0', "Information arriving through vision"), t('stem.brainatlas.check_occipital_choice_1', "Information about the sound of a voice"), t('stem.brainatlas.check_occipital_choice_2', "The deliberate signal to move a hand")],
+              feedback: [t('stem.brainatlas.check_occipital_feedback_0', "Shape and color in this example are visual information. Other regions help interpret and use that information."), t('stem.brainatlas.check_occipital_feedback_1', "A voice provides sound information. The example is about seeing the kite."), t('stem.brainatlas.check_occipital_feedback_2', "The learner might later move a hand, but noticing shape and color is the visual part of the example.")]
+            },
+            cerebellum: {
+              question: t('stem.brainatlas.check_cerebellum_question', "A learner adjusts a hand movement to keep a cup steady. Which contribution is highlighted?"),
+              choices: [t('stem.brainatlas.check_cerebellum_choice_0', "Coordinating the movement as it unfolds"), t('stem.brainatlas.check_cerebellum_choice_1', "Deciding what to drink before moving"), t('stem.brainatlas.check_cerebellum_choice_2', "Recognizing the color of the cup")],
+              feedback: [t('stem.brainatlas.check_cerebellum_feedback_0', "Keeping the movement steady involves coordination. This is one contribution within a larger movement network."), t('stem.brainatlas.check_cerebellum_feedback_1', "Choosing what to drink is planning or decision-making. The example focuses on adjusting the movement."), t('stem.brainatlas.check_cerebellum_feedback_2', "Seeing the cup can help, but recognizing color is different from coordinating a steady movement.")]
+            },
+            brainstem: {
+              question: t('stem.brainatlas.check_brainstem_question', "A learner is absorbed in a puzzle while breathing continues. Which contribution is highlighted?"),
+              choices: [t('stem.brainatlas.check_brainstem_choice_0', "Supporting a body function without planning each breath"), t('stem.brainatlas.check_brainstem_choice_1', "Choosing the next puzzle piece"), t('stem.brainatlas.check_brainstem_choice_2', "Noticing the colors of the puzzle")],
+              feedback: [t('stem.brainatlas.check_brainstem_feedback_0', "Breathing usually continues without a separate deliberate plan for each breath. Brainstem systems contribute to this ongoing function."), t('stem.brainatlas.check_brainstem_feedback_1', "Choosing a piece is part of the puzzle task. It does not explain the ongoing breathing described here."), t('stem.brainatlas.check_brainstem_feedback_2', "Color information can help solve the puzzle, but it does not describe the ongoing body function in the question.")]
+            },
+          };
           var plainLesson = !showAdvancedDetail && viewKey === 'lateral' && sel ? BRAIN_ATLAS_PLAIN_LESSONS[sel.id] : null;
+          var plainCheck = plainLesson ? BRAIN_ATLAS_PLAIN_CHECKS[sel.id] : null;
+          var plainCheckOpen = !!(plainCheck && d.plainCheckRegion === sel.id);
+          var plainCheckAnswers = d.plainCheckAnswers && typeof d.plainCheckAnswers === 'object' && !Array.isArray(d.plainCheckAnswers) ? d.plainCheckAnswers : {};
+          var plainCheckChoice = plainCheck && [0, 1, 2].indexOf(plainCheckAnswers[sel.id]) >= 0 ? plainCheckAnswers[sel.id] : null;
+          var plainCheckOrder = [0, 1, 2];
+          if (plainCheck) {
+            var checkOffset = Object.keys(BRAIN_ATLAS_PLAIN_CHECKS).indexOf(sel.id) % 3;
+            plainCheckOrder = plainCheckOrder.slice(checkOffset).concat(plainCheckOrder.slice(0, checkOffset));
+          }
+          function focusBrainAtlasPlainCheck() {
+            window.setTimeout(function () { scrollToBrainAtlasSection('brainatlas-plain-check', ''); }, 40);
+          }
+          function answerBrainAtlasPlainCheck(choice) {
+            if (!plainCheckOpen || plainCheckChoice !== null || [0, 1, 2].indexOf(choice) < 0) return;
+            var answers = Object.assign({}, plainCheckAnswers); answers[sel.id] = choice;
+            upd('plainCheckAnswers', answers);
+          }
+          function resetBrainAtlasPlainCheck() {
+            if (!plainCheck) return;
+            var answers = Object.assign({}, plainCheckAnswers); delete answers[sel.id];
+            upd('plainCheckAnswers', answers);
+            focusBrainAtlasPlainCheck();
+          }
+
           function brainAtlasPlainTakeaway(region) {
             if (!region) return t('stem.brainatlas.pick_a_region_takeaway', 'Pick a region to see its student takeaway.');
             return brainAtlasShortText(region.fn, 210);
@@ -11380,6 +11448,7 @@ var d = labToolData.brainAtlas || {};
                         ),
                         React.createElement("p", { className: "brainatlas-plain-network-note" }, t('stem.brainatlas.network_learning_note', 'Brain regions work together. These examples describe contributions, not jobs done by one region alone.')),
                         React.createElement("div", { className: "brainatlas-plain-lesson-actions" },
+                          React.createElement("button", { type: "button", "data-brainatlas-check-toggle": "true", "aria-expanded": plainCheckOpen ? "true" : "false", "aria-controls": plainCheckOpen ? "brainatlas-plain-check" : undefined, onClick: function () { upd('plainCheckRegion', plainCheckOpen ? '' : sel.id); if (!plainCheckOpen) focusBrainAtlasPlainCheck(); } }, plainCheckOpen ? t('stem.brainatlas.close_understanding_check', 'Close check') : t('stem.brainatlas.check_understanding', 'Check understanding')),
                           React.createElement("button", { type: "button", "data-brainatlas-plain-next": plainLesson.next, onClick: function () {
                             var nextRegion = regions.find(function (region) { return region.id === plainLesson.next; });
                             if (!nextRegion) return;
@@ -11387,6 +11456,21 @@ var d = labToolData.brainAtlas || {};
                             window.setTimeout(function () { scrollToBrainAtlasSection('brainatlas-region-detail', nextRegion.name); }, 40);
                           } }, t('stem.brainatlas.explore_related_region', 'Explore related region'), ': ', (regions.find(function (region) { return region.id === plainLesson.next; }) || {}).name),
                           React.createElement("a", { href: (sel.id === 'prefrontal' || sel.id === 'motor_cortex') ? 'https://www.ncbi.nlm.nih.gov/books/NBK554483/' : 'https://www.nimh.nih.gov/news/media/2023/get-to-know-your-brain', target: '_blank', rel: 'noopener noreferrer' }, t('stem.brainatlas.read_background_source', 'Read background source'))
+                        ),
+                        plainCheckOpen && React.createElement("section", { id: "brainatlas-plain-check", className: "brainatlas-plain-check", "data-brainatlas-plain-check": sel.id, "aria-labelledby": "brainatlas-plain-check-question", tabIndex: -1 },
+                          React.createElement("h5", null, t('stem.brainatlas.apply_the_idea', 'Apply the idea')),
+                          React.createElement("p", { className: "brainatlas-plain-check-support" }, t('stem.brainatlas.check_support', 'Use the learning card if helpful. This is practice, not a grade.')),
+                          React.createElement("p", { id: "brainatlas-plain-check-question" }, plainCheck.question),
+                          React.createElement("div", { className: "brainatlas-plain-check-choices", role: "group", "aria-labelledby": "brainatlas-plain-check-question" },
+                            plainCheckOrder.map(function (choice) {
+                              return React.createElement("button", { key: choice, type: "button", "data-brainatlas-check-choice": choice, "aria-pressed": plainCheckChoice === choice ? "true" : "false", "aria-disabled": plainCheckChoice !== null ? "true" : "false", onClick: function () { answerBrainAtlasPlainCheck(choice); } }, plainCheck.choices[choice]);
+                            })
+                          ),
+                          plainCheckChoice !== null && React.createElement("div", { className: "brainatlas-plain-check-feedback", "data-correct": plainCheckChoice === 0 ? "true" : "false", role: "status" },
+                            React.createElement("strong", null, plainCheckChoice === 0 ? t('stem.brainatlas.check_fits', 'Yes, that fits this example.') : t('stem.brainatlas.check_different', 'That describes a different contribution.')),
+                            React.createElement("p", null, plainCheck.feedback[plainCheckChoice])
+                          ),
+                          plainCheckChoice !== null && React.createElement("button", { type: "button", className: "brainatlas-plain-check-reset", "data-brainatlas-check-reset": "true", onClick: resetBrainAtlasPlainCheck }, plainCheckChoice === 0 ? t('stem.brainatlas.reset_check', 'Reset check') : t('stem.brainatlas.try_check_again', 'Try again'))
                         )
                       ) :
                       React.createElement("div", { className: "brainatlas-plain-summary", "data-brainatlas-plain-summary": "true" },
