@@ -720,6 +720,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return MAINE_SPECIES;
   }
 
+  function filterCoreSpeciesProfiles(region, query, group) {
+    var terms = String(query || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    return getSpeciesForRegion(region).filter(function(species) {
+      if (group && group !== 'all' && species.group !== group) return false;
+      var text = [species.name, species.sci, species.group, species.idMarks, species.habitat].join(' ').toLowerCase();
+      return terms.every(function(term) { return text.indexOf(term) !== -1; });
+    });
+  }
+  function getCoreSpeciesComparison(region, firstId, secondId) {
+    var list = getSpeciesForRegion(region);
+    var first = list.find(function(species) { return species.id === firstId; }) || list[0];
+    var second = list.find(function(species) { return species.id === secondId && species.id !== first.id; }) || list.find(function(species) { return species.id !== first.id; });
+    return second ? [first, second] : [first];
+  }
+
   var CORE_SIM_PROFILES = {
     maine: { title: 'Casco Bay Stewardship Run', targetFishId: 'cod', targetFish: 'Atlantic cod', trapCatch: 'lobster', trapSpeciesId: 'lobster', destination: 'Halfway Rock', scenarioDate: 'September 15, 2026' },
     chesapeake: { title: 'Chesapeake Stewardship Run', targetFishId: 'stripedbass', targetFish: 'striped bass', trapCatch: 'blue crab', trapSpeciesId: 'bluecrab', destination: 'Thomas Point grounds' },
@@ -5770,6 +5785,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
 
   window.__FisherLabCore = {
+    filterCoreSpeciesProfiles: filterCoreSpeciesProfiles,
+    getCoreSpeciesComparison: getCoreSpeciesComparison,
     normalizeCoreLearningNotes: normalizeCoreLearningNotes,
     writeCoreLearningNote: writeCoreLearningNote,
     buildCoreLearningNoteText: buildCoreLearningNoteText,
@@ -16996,6 +17013,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
+    var speciesQueryHook = useState('');
+    var speciesQuery = speciesQueryHook[0], setSpeciesQuery = speciesQueryHook[1];
+    var speciesGroupHook = useState('all');
+    var speciesGroup = speciesGroupHook[0], setSpeciesGroup = speciesGroupHook[1];
+    var speciesPairHook = useState(['cod', 'haddock']);
+    var speciesPair = speciesPairHook[0], setSpeciesPair = speciesPairHook[1];
+    useEffect(function() { setSpeciesQuery(''); setSpeciesGroup('all'); }, [region]);
     var speciesFocusHook = useState('');
     var speciesFocusId = speciesFocusHook[0], setSpeciesFocusId = speciesFocusHook[1];
     var practiceTargetHook = useState('');
@@ -19232,6 +19256,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (!masteryRow) return;
         setRegion(masteryRow.region);
         setSpeciesFocusId(masteryRow.speciesId);
+        setSpeciesQuery('');
+        setSpeciesGroup('all');
         setTab('species');
         flAnnounce('Opening ' + masteryRow.label + ' in the ' + masteryRow.regionLabel + ' species guide.');
         setTimeout(function() {
@@ -21063,9 +21089,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── SPECIES tab
+    function speciesComparison() {
+      var pair = getCoreSpeciesComparison(region, speciesPair[0], speciesPair[1]);
+      var list = getSpeciesForRegion(region);
+      return h('details', { 'data-fisherlab-species-comparison': region, style: { border: '1px solid #457384', borderRadius: 12, background: 'linear-gradient(130deg,#0b3440,#11283d)', padding: '0 16px 16px', marginBottom: 16 } },
+        h('summary', { style: { color: '#99f6e4', fontSize: 16, fontWeight: 900 } }, 'Compare two species'),
+        h('p', { style: { fontSize: 13, lineHeight: 1.6, color: '#dbeafe', margin: '0 0 14px' } }, 'Choose two profiles from this region. Find one difference in their ID marks, then explain which feature you would inspect on another specimen. Use habitat as context for your claim.'),
+        h('div', { className: 'fl-warmup-grid' }, pair.map(function(species, index) {
+          var art = getCoreSpeciesArt(species.id);
+          var accent = index ? '#fde68a' : '#99f6e4';
+          return h('article', { key: index, 'aria-label': 'Comparison profile ' + (index + 1), style: { minWidth: 0, border: '1px solid #3b5f70', borderTop: '3px solid ' + accent, borderRadius: 9, padding: 14, background: '#091f30' } },
+            h('div', { style: { color: accent, fontSize: 13, fontWeight: 800, display: 'grid', gap: 6 } }, h('label', { htmlFor: 'fl-compare-species-' + index }, 'Species ' + (index + 1)),
+              h('select', { id: 'fl-compare-species-' + index, value: species.id, onChange: function(e) { var next = pair.map(function(item) { return item.id; }); next[index] = e.target.value; setSpeciesPair(next); },
+                style: { width: '100%', minWidth: 0, minHeight: 44, padding: 8, border: '1px solid #648294', borderRadius: 6, background: '#0e2c40', color: '#f1f5f9', fontSize: 13 } },
+                list.filter(function(item) { return !pair[1 - index] || item.id !== pair[1 - index].id; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.name); }))),
+            h('h3', { style: { margin: '14px 0 3px', fontSize: 19, color: '#f8fafc' } }, species.name),
+            h('p', { style: { color: '#b8cedf', fontSize: 12, fontStyle: 'italic', margin: '0 0 12px' } }, species.sci),
+            art ? h('figure', { key: species.id, style: { margin: '0 0 12px', padding: 10, background: '#f4f1e8', borderRadius: 7 } },
+              h('img', { src: art.url, alt: 'Scientific illustration of ' + species.name, loading: 'lazy', onError: function(e) { var figure = e.target.closest('figure'); if (figure) figure.style.display = 'none'; },
+                style: { display: 'block', width: '100%', height: 120, objectFit: 'contain' } }),
+              h('figcaption', { style: { marginTop: 6, color: '#374151', fontSize: 10, lineHeight: 1.5 } }, art.artist + ' · ' + art.licence + ' · via Wikimedia Commons')) : null,
+            h('dl', { style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: '#e0f2fe' } },
+              h('dt', { style: { fontWeight: 900, color: accent } }, 'ID marks to compare'),
+              h('dd', { style: { margin: '4px 0 12px' } }, species.idMarks),
+              h('dt', { style: { fontWeight: 900, color: accent } }, 'Habitat context'),
+              h('dd', { style: { margin: '4px 0 12px' } }, species.habitat),
+              h('dt', { style: { fontWeight: 900, color: accent } }, 'Depth in this profile'),
+              h('dd', { style: { margin: '4px 0 0' } }, species.depth || 'Not listed')));
+        })),
+        h('div', { style: { borderTop: '1px solid #416375', marginTop: 16, paddingTop: 12, fontSize: 13, color: '#dbeafe', lineHeight: 1.6 } },
+          h('strong', { style: { color: '#99f6e4' } }, 'Explain your identification. '), 'Both profiles mention ___. The difference I would check is ___. I would need a closer look at ___ before deciding.'),
+        h('p', { style: { color: '#b8cedf', fontSize: 12, margin: '8px 0 0', lineHeight: 1.5 } }, 'Illustrations are not shown at a common scale. These profile comparisons are study practice and do not add a catch record or identification score.'));
+    }
+
     function speciesTab() {
       var regionProfile = REGIONS[region] || REGIONS.maine;
-      var regionalSpecies = getSpeciesForRegion(region).slice();
+      var allRegionalSpecies = getSpeciesForRegion(region);
+      var groups = allRegionalSpecies.map(function(species) { return species.group; }).filter(function(group, index, list) { return list.indexOf(group) === index; }).sort();
+      var regionalSpecies = filterCoreSpeciesProfiles(region, speciesQuery, speciesGroup);
       regionalSpecies.sort(function(a, b) {
         if (a.id === speciesFocusId) return -1;
         if (b.id === speciesFocusId) return 1;
@@ -21078,6 +21139,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, fontStyle: 'italic' } },
             'Regional practice profiles for ' + regionProfile.label + '. These are instructional identification and scenario-rule summaries, not live legal guidance. Verify current rules with ' + regionProfile.dmrAuthority + ' before fishing.'),
 
+          speciesComparison(),
+          h('div', { 'data-fisherlab-species-search': region, style: { padding: 14, marginBottom: 16, borderRadius: 10, border: '1px solid #35596c', background: '#0b2537' } },
+            h('div', { className: 'fl-warmup-grid' },
+              h('label', { style: { display: 'grid', gap: 6, color: '#e0f2fe', fontSize: 13, fontWeight: 800 } }, 'Find a species',
+                h('input', { type: 'search', value: speciesQuery, placeholder: 'Name, field mark, or habitat', onChange: function(e) { setSpeciesQuery(e.target.value); },
+                  style: { boxSizing: 'border-box', width: '100%', minWidth: 0, minHeight: 44, padding: 10, background: '#061c2b', color: '#f1f5f9', border: '1px solid #648294', borderRadius: 6, fontSize: 13 } })),
+              h('div', { style: { display: 'grid', gap: 6, color: '#e0f2fe', fontSize: 13, fontWeight: 800 } }, h('label', { htmlFor: 'fl-species-group' }, 'Species group'),
+                h('select', { id: 'fl-species-group', value: speciesGroup, onChange: function(e) { setSpeciesGroup(e.target.value); }, style: { width: '100%', minWidth: 0, minHeight: 44, padding: 10, background: '#061c2b', color: '#f1f5f9', border: '1px solid #648294', borderRadius: 6, fontSize: 13 } },
+                  h('option', { value: 'all' }, 'All groups'), groups.map(function(group) { return h('option', { key: group, value: group }, group); })))),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 10 } },
+              h('p', { 'aria-live': 'polite', 'data-fisherlab-species-count': regionalSpecies.length, style: { margin: 0, fontSize: 13, color: '#bae6fd', lineHeight: 1.5 } }, regionalSpecies.length + ' of ' + allRegionalSpecies.length + ' regional profiles' + (!regionalSpecies.length ? ' · Try another name, feature, or group.' : '')),
+              speciesQuery || speciesGroup !== 'all' ? h('button', { type: 'button', className: 'fl-btn', onClick: function() { setSpeciesQuery(''); setSpeciesGroup('all'); }, style: { minHeight: 44, padding: '8px 12px', background: '#123a4c', color: '#e0f2fe', border: '1px solid #648294', borderRadius: 6, cursor: 'pointer', fontSize: 13 } }, 'Clear species filters') : null)),
+          h('details', { style: { marginBottom: 16, padding: '0 12px 12px', border: '1px solid #35596c', borderRadius: 8 } },
+          h('summary', { style: { fontSize: 13, fontWeight: 800, color: '#bae6fd' } }, 'Anatomy & identification diagrams'),
           // Every ID note below is written in anatomical shorthand. A student
           // who cannot point to a pectoral fin cannot use any of it.
           h('div', { style: { fontSize: 12, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, 'Reading an ID note — the parts by name'),
@@ -21089,7 +21164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               'Drawn rather than photographed on purpose: the schematic isolates diagnostic field marks that can be compared across specimens and viewing angles.'),
             h('div', { style: { marginBottom: 14 } }, flCodHaddockSvg(h))) :
             h('p', { style: { margin: '0 0 14px', padding: 9, borderRadius: 7, background: 'rgba(14,116,144,0.12)', color: '#bae6fd', fontSize: 11, lineHeight: 1.5 } },
-              'Regional focus: compare the diagnostic field marks, habitat, and scenario rules on each profile below.'),
+              'Regional focus: compare the diagnostic field marks, habitat, and scenario rules on each profile below.')),
 
           regionalSpecies.map(function(s, i) {
             var focused = speciesFocusId === s.id;

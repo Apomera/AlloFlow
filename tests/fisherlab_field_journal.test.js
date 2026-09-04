@@ -413,7 +413,7 @@ describe('Fisher Lab field journal UI wiring', () => {
     expect(source).toContain("setRegion(masteryRow.region)");
     expect(source).toContain("setSpeciesFocusId(masteryRow.speciesId)");
     expect(source).toContain("'Species evidence stages ordered by learning priority'");
-    expect(speciesBlock).toContain("getSpeciesForRegion(region).slice()");
+    expect(speciesBlock).toContain("filterCoreSpeciesProfiles(region, speciesQuery, speciesGroup)");
     expect(speciesBlock).toContain("regionalSpecies.map(function(s, i)");
     expect(speciesBlock).not.toContain('MAINE_SPECIES.map');
     expect(speciesBlock).toContain("regionProfile.label + ' Species ID'");

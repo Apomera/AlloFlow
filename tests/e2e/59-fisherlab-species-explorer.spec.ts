@@ -1,0 +1,81 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_fisherlab.js', toolId: 'fisherLab', width: 1180, height: 980, appStyles: true, extraScripts: ['desktop/web-app/node_modules/axe-core/axe.min.js'] });
+test.beforeAll(async () => { await harness.start(); });
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { await harness.destroy(page); });
+async function openSpecies(page: any) {
+  await harness.mount(page, {}, undefined, { expectCanvas: false });
+  await page.getByRole('button', { name: /^Know the catch\./ }).click();
+}
+test('searches, filters and compares regional profiles with distinct selections', async ({ page }) => {
+  await openSpecies(page);
+  const profiles = page.locator('[data-fisherlab-species-profile]');
+  const total = await profiles.count();
+  expect(total).toBeGreaterThan(20);
+  await page.getByLabel('Find a species', { exact: true }).fill('Gadus morhua');
+  await expect(profiles).toHaveCount(1);
+  await expect(profiles.first()).toHaveAttribute('data-fisherlab-species-profile', 'cod');
+  await page.getByLabel('Species group', { exact: true }).selectOption('inshore');
+  await expect(profiles).toHaveCount(0);
+  await expect(page.locator('[data-fisherlab-species-count]')).toContainText('Try another');
+  await page.getByRole('button', { name: 'Clear species filters', exact: true }).click();
+  await expect(profiles).toHaveCount(total);
+  const compare = page.locator('[data-fisherlab-species-comparison]');
+  await compare.locator('summary').click();
+  await expect(compare.getByLabel('Species 1', { exact: true })).toHaveValue('cod');
+  await expect(compare.getByLabel('Species 2', { exact: true })).toHaveValue('haddock');
+  await compare.getByLabel('Species 1', { exact: true }).selectOption('pollock');
+  await compare.getByLabel('Species 2', { exact: true }).selectOption('cod');
+  await expect(compare.getByRole('article', { name: 'Comparison profile 1' })).toContainText('Slim body');
+  await expect(compare.getByRole('article', { name: 'Comparison profile 2' })).toContainText('barbel on chin');
+  await expect(compare.getByLabel('Species 1', { exact: true }).locator('option[value="cod"]')).toHaveCount(0);
+  await compare.screenshot({ path: 'scratch/fisherlab-species-comparison-desktop.png' });
+  await page.getByLabel('Find a species', { exact: true }).fill('pale curved');
+  await page.getByLabel('Region:', { exact: true }).selectOption('pnw');
+  await expect(page.getByLabel('Find a species', { exact: true })).toHaveValue('');
+  await expect(page.getByLabel('Species group', { exact: true })).toHaveValue('all');
+  await expect(compare.getByLabel('Species 1', { exact: true })).toHaveValue('chinook');
+  await expect(compare.getByLabel('Species 2', { exact: true })).toHaveValue('coho');
+  await expect(compare.getByLabel('Species 1', { exact: true }).locator('option[value="cod"]')).toHaveCount(0);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+test('comparison supports narrow screens, keyboard input, and missing artwork', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 850 });
+  await page.route('**/assets/fisherlab/species/**', route => route.abort());
+  await openSpecies(page);
+  await page.evaluate(() => { document.getElementById('wrap')!.style.width = '360px'; });
+  await page.getByRole('button', { name: 'Large text', exact: true }).click();
+  const compare = page.locator('[data-fisherlab-species-comparison]');
+  await compare.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(compare.getByLabel('Species 1', { exact: true })).toBeVisible();
+  await expect(compare.getByRole('article', { name: 'Comparison profile 1' })).toContainText('Three dorsal fins');
+  for (const figure of await compare.locator('figure').all()) await expect(figure).toBeHidden();
+  const violations = await page.evaluate(async () => (await (window as any).axe.run('[data-fisherlab-species-comparison], [data-fisherlab-species-search]', { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'aria-valid-attr-value', 'aria-allowed-attr'] } })).violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => n.target) })));
+  expect(violations).toEqual([]);
+  const widths = await page.locator('[data-fisherlab-species-comparison], [data-fisherlab-species-search]').evaluateAll(elements => elements.map(el => ({ client: el.clientWidth, scroll: el.scrollWidth, right: el.getBoundingClientRect().right })));
+  for (const value of widths) { expect(value.scroll).toBeLessThanOrEqual(value.client + 1); expect(value.right).toBeLessThanOrEqual(360); }
+  await compare.screenshot({ path: 'scratch/fisherlab-species-comparison-mobile.png' });
+  await page.unroute('**/assets/fisherlab/species/**');
+  await compare.getByLabel('Species 1', { exact: true }).selectOption('pollock');
+  const recoveredArt = compare.getByRole('article', { name: 'Comparison profile 1' }).locator('figure');
+  await expect(recoveredArt).toBeVisible();
+  await expect.poll(() => recoveredArt.locator('img').evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+});
+test('journal review clears old species filters before focusing the requested profile', async ({ page }) => {
+  await openSpecies(page);
+  await page.evaluate(() => {
+    localStorage.setItem('fisherLab.state.v1', JSON.stringify({ region: 'maine', lifeLog: [{ observationId: 'cod-review', speciesId: 'cod', label: 'Atlantic Cod', length: 24, action: 'release', identificationCorrect: true, ruleCorrect: true, correct: true, region: 'maine', ts: 1000 }] }));
+  });
+  await harness.mount(page, {}, undefined, { expectCanvas: false });
+  await page.getByRole('button', { name: /^Know the catch\./ }).click();
+  await page.getByLabel('Find a species', { exact: true }).fill('no match here');
+  await expect(page.locator('[data-fisherlab-species-profile]')).toHaveCount(0);
+  await page.locator('#fl-section-search').fill('journal');
+  await page.getByRole('button', { name: /Field Journal/ }).click();
+  await page.getByRole('button', { name: /Open Atlantic Cod profile/ }).click();
+  await expect(page.getByLabel('Find a species', { exact: true })).toHaveValue('');
+  await expect(page.locator('#fl-species-cod')).toBeFocused();
+  await expect(page.locator('#fl-species-cod')).toContainText('Focused from your species evidence map');
+});
