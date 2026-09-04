@@ -5785,6 +5785,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
 
   window.__FisherLabCore = {
+    createCoreSamplingJourney: createCoreSamplingJourney,
+    getCoreSamplingModel: getCoreSamplingModel,
+    captureCoreSamplingTrial: captureCoreSamplingTrial,
+    advanceCoreSamplingJourney: advanceCoreSamplingJourney,
+    appendCoreSamplingEvidence: appendCoreSamplingEvidence,
     createCoreNavigationJourney: createCoreNavigationJourney,
     captureCoreNavigationTrial: captureCoreNavigationTrial,
     advanceCoreNavigationJourney: advanceCoreNavigationJourney,
@@ -13575,6 +13580,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return next;
   }
   // Guided investigations use model trials, never simulator or catch progress.
+  function createCoreSamplingJourney() {
+    return { step: 0, prediction: '', model: { secondSample: false, secondTotal: 10 }, trials: [], observation: '', chartLabel: '' };
+  }
+  function getCoreSamplingModel(model) {
+    if (!model || typeof model.secondSample !== 'boolean' || [5, 10, 15, 20, 25, 30].indexOf(model.secondTotal) < 0) return null;
+    var bTotal = model.secondSample ? model.secondTotal : 0;
+    var target = 8 + bTotal / 5, total = 10 + bTotal;
+    return { secondSample: model.secondSample, bTotal: bTotal, bTarget: bTotal / 5, target: target, total: total, percent: target / total * 100 };
+  }
+  function captureCoreSamplingTrial(journey) {
+    if (!journey || journey.step !== 1 || journey.trials.length >= 2) return journey;
+    var trial = getCoreSamplingModel(journey.model);
+    if (!trial || trial.secondSample !== (journey.trials.length === 1)) return journey;
+    return Object.assign({}, journey, { trials: journey.trials.concat([trial]) });
+  }
+  function advanceCoreSamplingJourney(journey, note) {
+    if (!journey || journey.step < 0 || journey.step > 3) return journey;
+    if (journey.step === 0 && !journey.prediction.trim()) return journey;
+    if (journey.step === 1 && (journey.trials.length !== 2 || journey.trials[0].secondSample !== false || journey.trials[1].secondSample !== true)) return journey;
+    if (journey.step === 2 && (!journey.observation.trim() || !journey.chartLabel)) return journey;
+    if (journey.step === 3 && (!note || !['claim', 'evidence', 'next'].every(function(key) { return typeof note[key] === 'string' && note[key].trim(); }))) return journey;
+    return Object.assign({}, journey, { step: journey.step + 1 });
+  }
+  function appendCoreSamplingEvidence(current, journey) {
+    if (!journey || journey.trials.length !== 2) return { ok: false, value: typeof current === 'string' ? current : '' };
+    var combined = journey.trials[1];
+    var evidence = 'Sampling model: spot A = 8/10 target fish; spot B = ' + combined.bTarget + '/' + combined.bTotal +
+      '. A alone = 80%; pooled = ' + combined.target + '/' + combined.total + ' = ' + Number(combined.percent.toFixed(1)) +
+      '%. Model counts are not journal records or a regional population estimate.\nJournal reflection (' + journey.chartLabel + '): ' + journey.observation;
+    return appendCoreLearningEvidence(current, evidence);
+  }
   function createCoreNavigationJourney() {
     return { step: 0, prediction: '', model: { distance: 2, speed: 4 }, trials: [], observation: '', chartLabel: '' };
   }
@@ -13601,7 +13637,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }).join('; ') + '.\nChart observation (' + journey.chartLabel + '): ' + journey.observation;
   }
   function appendCoreNavigationEvidence(current, journey) {
-    var addition = buildCoreNavigationEvidence(journey);
+    return appendCoreLearningEvidence(current, buildCoreNavigationEvidence(journey));
+  }
+  function appendCoreLearningEvidence(current, addition) {
     var existing = typeof current === 'string' ? current : '';
     if (!addition) return { ok: false, value: existing };
     if (existing.indexOf(addition) >= 0) return { ok: true, value: existing };
@@ -17090,8 +17128,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var learningNoteStatus = learningNoteStatusHook[0], setLearningNoteStatus = learningNoteStatusHook[1];
     var learningFocusHook = useState(null);
     var learningFocus = learningFocusHook[0], setLearningFocus = learningFocusHook[1];
-    var navigationJourneyHook = useState(null);
-    var navigationJourney = navigationJourneyHook[0], setNavigationJourney = navigationJourneyHook[1];
+    var guidedJourneysHook = useState({ navigation: null, sampling: null });
+    var guidedJourneys = guidedJourneysHook[0], setGuidedJourneys = guidedJourneysHook[1];
+    var journeyTopicHook = useState('navigation');
+    var journeyTopic = journeyTopicHook[0], setJourneyTopic = journeyTopicHook[1];
+    var guidedJourney = guidedJourneys[journeyTopic];
+    function setGuidedJourney(value) {
+      setGuidedJourneys(function(previous) { var next = Object.assign({}, previous); next[journeyTopic] = typeof value === 'function' ? value(previous[journeyTopic]) : value; return next; });
+    }
     var journeyActiveHook = useState(false);
     var journeyActive = journeyActiveHook[0], setJourneyActive = journeyActiveHook[1];
     var journeyEvidenceStatusHook = useState('');
@@ -17103,7 +17147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       learningFocusTargetRef.current = null;
       var target = document.getElementById(targetId);
       if (target) { focusCoreElement(target); target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
-    }, [tab, navigationJourney && navigationJourney.step, journeyActive]);
+    }, [tab, guidedJourney && guidedJourney.step, journeyActive, journeyTopic]);
     var tabSearchHook = useState('');
     var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
@@ -18906,10 +18950,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     function warmupInvestigation(topic, guided) {
-      var model = guided ? navigationJourney.model : warmupExperiment;
+      var model = guided ? guidedJourney.model : warmupExperiment;
       var textStyle = { fontSize: 13, lineHeight: 1.6, color: '#dbeafe', margin: '8px 0 12px' };
       function updateModel(key, value) {
-        if (guided) setNavigationJourney(function(previous) { var model = Object.assign({}, previous.model); model[key] = value; return Object.assign({}, previous, { model: model }); });
+        if (guided) setGuidedJourney(function(previous) { var model = Object.assign({}, previous.model); model[key] = value; return Object.assign({}, previous, { model: model }); });
         else setWarmupExperiment(function(previous) { var next = Object.assign({}, previous); next[key] = value; return next; });
       }
       function meter(label, amount, total, color) {
@@ -18944,19 +18988,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             travelBar('Your boat: ' + model.speed + ' knots', minutes, '#fbbf24'),
             h('p', { style: Object.assign({}, textStyle, { marginBottom: 0 }) }, 'Bars compare travel time over the same distance. This model holds current and stops at zero.')));
       } else if (topic === 'sampling') {
-        var count = model.secondSample ? 10 : 8;
-        var total = model.secondSample ? 20 : 10;
+        var samplingModel = getCoreSamplingModel({ secondSample: model.secondSample, secondTotal: guided ? model.secondTotal : 10 });
+        var count = samplingModel.target, total = samplingModel.total;
+        function sampleDots(amount, size, color) {
+          return h('div', { 'aria-hidden': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(10,minmax(0,1fr))', gap: 5, marginTop: 8 } },
+            Array.from({ length: size }, function(_, i) { return h('span', { key: i, style: { aspectRatio: '1', borderRadius: '50%', background: i < amount ? color : '#64748b' } }); }));
+        }
         content = h('div', { className: 'fl-warmup-grid' },
           h('div', null,
-            h('p', { style: textStyle }, 'Spot A produced 8 fish of the target species out of 10. Predict how the combined percentage changes if spot B contributes 2 of the same species out of 10.'),
+            h('p', { style: textStyle }, guided ? 'Model data: spot A has 8 target fish out of 10 (80%). Spot B has a 20% target share. Change how many fish spot B contributes, while keeping both site shares fixed.' : 'Spot A produced 8 fish of the target species out of 10. Predict how the combined percentage changes if spot B contributes 2 of the same species out of 10.'),
             h('label', { style: { display: 'flex', gap: 10, alignItems: 'center', minHeight: 44, color: '#e0f2fe', fontSize: 13, cursor: 'pointer' } },
               h('input', { type: 'checkbox', checked: model.secondSample, onChange: function(e) { updateModel('secondSample', e.target.checked); }, style: { width: 20, height: 20, accentColor: '#5eead4', flexShrink: 0 } }), 'Include spot B'),
             meter('Spot A · target species', 8, 10, '#5eead4'),
-            model.secondSample ? meter('Spot B · target species', 2, 10, '#fbbf24') : null),
+            guided ? sampleDots(8, 10, '#5eead4') : null,
+            guided && model.secondSample ? h('label', { style: { display: 'grid', gap: 6, marginTop: 14, fontSize: 13, color: '#e0f2fe' } }, 'Spot B sample size',
+              h('span', null, model.secondTotal + ' fish'),
+              h('input', { type: 'range', min: 5, max: 30, step: 5, value: model.secondTotal, 'aria-valuetext': model.secondTotal + ' fish', onChange: function(e) { updateModel('secondTotal', Number(e.target.value)); }, style: { width: '100%', minWidth: 0, minHeight: 44, accentColor: '#fbbf24' } })) : null,
+            model.secondSample ? meter('Spot B · target species', samplingModel.bTarget, samplingModel.bTotal, '#fbbf24') : null,
+            guided && model.secondSample ? sampleDots(samplingModel.bTarget, samplingModel.bTotal, '#fbbf24') : null,
+            guided ? h('p', { style: textStyle }, 'Each dot is one model fish. Colored dots are the target species; gray dots are other species. Counts and percentages are also shown in text.') : null),
           h('div', { style: { background: '#061c2b', borderRadius: 10, padding: 16, border: '1px solid #355064' } },
-            h('p', { 'data-investigation-result': 'sampling', 'aria-live': 'polite', style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#5eead4' } }, Math.round(count / total * 100) + '% of the combined sample'),
+            h('p', { 'data-investigation-result': 'sampling', 'aria-live': 'polite', style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#5eead4' } }, (guided ? Number((count / total * 100).toFixed(1)) : Math.round(count / total * 100)) + '% of the combined sample'),
             h('p', { style: textStyle }, count + ' target-species fish ÷ ' + total + ' sampled fish × 100'),
             meter('Combined catch', count, total, '#38bdf8'),
+            guided && model.secondSample ? h('p', { style: textStyle }, model.secondTotal === 10 ? 'Equal sample sizes: (80% + 20%) ÷ 2 = 50% agrees with pooling the counts.' : 'Unequal sample sizes: averaging 80% and 20% gives 50%, but pooling the counts gives ' + Number(samplingModel.percent.toFixed(1)) + '%. The larger sample contributes more fish.') : null,
             h('p', { style: textStyle }, 'Explain what changed: the original catch did not change; the evidence you included did. Even two spots cannot establish the population across a whole region.')));
       } else {
         var offset = model.aligned ? 0 : 0.5;
@@ -18981,87 +19036,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('p', { style: { margin: '0 0 10px', fontSize: 11, color: '#bae6fd', letterSpacing: '0.05em', textTransform: 'uppercase' } }, 'Model data · change one factor, explain the result'), content);
     }
 
-    function openNavigationJourney(fresh) {
-      var next = fresh || !navigationJourney ? createCoreNavigationJourney() : navigationJourney;
-      setNavigationJourney(next);
+    function openGuidedJourney(fresh) {
+      var next = fresh || !guidedJourney ? (journeyTopic === 'sampling' ? createCoreSamplingJourney() : createCoreNavigationJourney()) : guidedJourney;
+      setGuidedJourney(next);
       setJourneyActive(true);
       setLearningFocus(null);
       setJourneyEvidenceStatus('');
-      setTab(next.step === 2 ? 'chart' : 'home');
+      setTab(next.step === 2 ? (journeyTopic === 'sampling' ? 'journal' : 'chart') : 'home');
       setTabSearch('');
       learningFocusTargetRef.current = 'fl-journey-title';
     }
-    function navigationJourneyLauncher() {
-      return h('section', { id: 'fl-journey-launch', tabIndex: -1, 'aria-label': 'Guided navigation investigation', style: Object.assign({}, cardStyle, { padding: 18, borderLeft: '4px solid #5eead4', background: 'linear-gradient(120deg,#0c343c,#10273c)' }) },
-        h('strong', { style: { color: '#99f6e4', fontSize: 17 } }, 'How long will the trip take?'),
-        h('p', { style: { color: '#dbeafe', fontSize: 13, lineHeight: 1.6, margin: '8px 0 12px' } }, 'Optional guided investigation · about 10–15 minutes. Predict, compare model trials, inspect the chart, and explain your evidence. Your place stays available while this lab is open.'),
-        h('button', { type: 'button', className: 'fl-btn', onClick: function() { openNavigationJourney(false); }, style: { minHeight: 44, padding: '10px 14px', border: '1px solid #5eead4', borderRadius: 8, background: '#115e59', color: '#f0fdfa', fontSize: 14, cursor: 'pointer' } },
-          navigationJourney ? (navigationJourney.step === 4 ? 'Review investigation' : 'Continue investigation') : 'Start guided investigation'));
+    function guidedJourneyLauncher() {
+      return h('section', { id: 'fl-journey-launch', tabIndex: -1, 'aria-label': 'Guided investigation', style: Object.assign({}, cardStyle, { padding: 18, borderLeft: '4px solid #5eead4', background: 'linear-gradient(120deg,#0c343c,#10273c)' }) },
+        h('div', { style: { display: 'grid', gap: 6, maxWidth: 440, marginBottom: 14, color: '#bae6fd', fontSize: 13 } }, h('label', { htmlFor: 'fl-investigation-topic' }, 'Investigation topic'),
+          h('select', { id: 'fl-investigation-topic', value: journeyTopic, onChange: function(e) { setJourneyTopic(e.target.value); setJourneyEvidenceStatus(''); }, style: { width: '100%', minHeight: 44, padding: 10, border: '1px solid #6b91a3', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14 } },
+            h('option', { value: 'navigation' }, 'Navigation · travel time'),
+            h('option', { value: 'sampling' }, 'Sampling · what does a catch tell us?'))),
+        h('strong', { style: { color: '#99f6e4', fontSize: 17 } }, journeyTopic === 'sampling' ? 'Can one catch tell the whole story?' : 'How long will the trip take?'),
+        h('p', { style: { color: '#dbeafe', fontSize: 13, lineHeight: 1.6, margin: '8px 0 12px' } }, journeyTopic === 'sampling' ? 'Optional guided investigation · about 10–15 minutes. Predict, combine two model samples, inspect your field journal, and explain what the evidence can support. Each topic keeps its place while this lab is open.' : 'Optional guided investigation · about 10–15 minutes. Predict, compare model trials, inspect the chart, and explain your evidence. Each topic keeps its place while this lab is open.'),
+        h('button', { type: 'button', className: 'fl-btn', onClick: function() { openGuidedJourney(false); }, style: { minHeight: 44, padding: '10px 14px', border: '1px solid #5eead4', borderRadius: 8, background: '#115e59', color: '#f0fdfa', fontSize: 14, cursor: 'pointer' } },
+          guidedJourney ? (guidedJourney.step === 4 ? 'Review investigation' : 'Continue investigation') : 'Start guided investigation'));
     }
-    function navigationJourneyCard() {
-      if (!journeyActive || !navigationJourney) return null;
-      var journey = navigationJourney;
-      var expectedTab = journey.step === 2 ? 'chart' : 'home';
+    function guidedJourneyCard() {
+      if (!journeyActive || !guidedJourney) return null;
+      var journey = guidedJourney;
+      var sampling = journeyTopic === 'sampling';
+      var evidenceTab = sampling ? 'journal' : 'chart';
+      var evidenceName = sampling ? 'journal' : 'chart';
+      var expectedTab = journey.step === 2 ? evidenceTab : 'home';
       var buttonStyle = { minHeight: 44, padding: '10px 14px', border: '1px solid #6b91a3', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14, lineHeight: 1.5, cursor: 'pointer' };
       var primaryStyle = Object.assign({}, buttonStyle, { background: '#115e59', borderColor: '#5eead4', color: '#f0fdfa', fontWeight: 800 });
       if (tab !== expectedTab) return h('aside', { 'aria-label': 'Investigation in progress', style: Object.assign({}, cardStyle, { padding: 14 }) },
-        h('span', { style: { color: '#dbeafe', fontSize: 14, marginRight: 12 } }, 'Your navigation investigation is waiting here.'),
-        h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { openNavigationJourney(false); } }, 'Continue investigation'));
-      var titles = ['Make a prediction', 'Compare two model trials', 'Inspect the training chart', 'Explain your evidence', 'Investigation complete'];
+        h('span', { style: { color: '#dbeafe', fontSize: 14, marginRight: 12 } }, 'Your ' + journeyTopic + ' investigation is waiting here.'),
+        h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { openGuidedJourney(false); } }, 'Continue investigation'));
+      var titles = ['Make a prediction', sampling ? 'Compare two sampling views' : 'Compare two model trials', sampling ? 'Inspect your field journal' : 'Inspect the training chart', 'Explain your evidence', 'Investigation complete'];
       var labels = ['Predict', 'Compare', 'Inspect', 'Explain'];
       var textStyle = { fontSize: 14, color: '#dbeafe', lineHeight: 1.65 };
-      function update(field, value) { setNavigationJourney(function(previous) { var next = Object.assign({}, previous); next[field] = value; return next; }); }
+      function update(field, value) { setGuidedJourney(function(previous) { var next = Object.assign({}, previous); next[field] = value; return next; }); }
       function go(next) {
-        setNavigationJourney(next);
-        setTab(next.step === 2 ? 'chart' : 'home');
+        setGuidedJourney(next);
+        setTab(next.step === 2 ? (journeyTopic === 'sampling' ? 'journal' : 'chart') : 'home');
         setTabSearch('');
         learningFocusTargetRef.current = 'fl-journey-title';
       }
       function field(label, value, onChange, hint, limit) {
         return h('label', { style: { display: 'grid', gap: 7, color: '#e0f2fe', fontSize: 14, fontWeight: 800 } }, label,
           h('span', { style: { color: '#cbd5e1', fontSize: 13, fontWeight: 400, lineHeight: 1.6 } }, hint),
-          h('textarea', { id: label === 'My chart observation' ? 'fl-journey-observation' : 'fl-journey-prediction', value: value, maxLength: limit, rows: 3, onChange: onChange, style: { width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 12, borderRadius: 8, border: '1px solid #6b91a3', background: '#061c2b', color: '#f1f5f9', fontSize: 14, lineHeight: 1.6, resize: 'vertical' } }));
+          h('textarea', { id: label === 'My prediction' ? 'fl-journey-prediction' : 'fl-journey-observation', value: value, maxLength: limit, rows: 3, onChange: onChange, style: { width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 12, borderRadius: 8, border: '1px solid #6b91a3', background: '#061c2b', color: '#f1f5f9', fontSize: 14, lineHeight: 1.6, resize: 'vertical' } }));
       }
       var content;
       if (journey.step === 0) content = h('div', null,
-        h('p', { style: textStyle }, 'A boat travels 2 nautical miles at a steady 4 knots. Predict what happens to the travel time if its speed falls to 2 knots. Keep distance the same; assume no current or stops.'),
+        h('p', { style: textStyle }, sampling ? 'Spot A has 8 target fish out of 10. Spot B has 2 target fish out of 10. Predict how combining the samples changes the target percentage, and whether either sample tells us the percentage across the whole region.' : 'A boat travels 2 nautical miles at a steady 4 knots. Predict what happens to the travel time if its speed falls to 2 knots. Keep distance the same; assume no current or stops.'),
         field('My prediction', journey.prediction, function(e) { update('prediction', e.target.value.slice(0, 180)); }, 'Write what you expect and why. You can revise your explanation after testing.', 180));
       else if (journey.step === 1) {
         var first = journey.trials[0];
-        var captureAllowed = journey.trials.length < 2 && (!first || (first.distance === journey.model.distance && first.speed !== journey.model.speed));
+        var captureAllowed = sampling ? captureCoreSamplingTrial(journey) !== journey : journey.trials.length < 2 && (!first || (first.distance === journey.model.distance && first.speed !== journey.model.speed));
         content = h('div', null,
           h('p', { style: textStyle }, h('strong', null, 'Your prediction: '), journey.prediction),
-          h('p', { style: textStyle }, 'Record one trial. Then change only boat speed and record a second trial. The two trials must use the same route length.'),
-          warmupInvestigation('navigation', true),
+          h('p', { style: textStyle }, sampling ? 'Record spot A alone first. Then include spot B and record the combined sample. You may adjust spot B’s sample size before recording to explore how sample size affects the pooled result.' : 'Record one trial. Then change only boat speed and record a second trial. The two trials must use the same route length.'),
+          warmupInvestigation(journeyTopic, true),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 } },
-            h('button', { type: 'button', className: 'fl-btn', disabled: !captureAllowed, style: Object.assign({}, buttonStyle, !captureAllowed ? { opacity: 0.6, cursor: 'default' } : {}), onClick: function() { setNavigationJourney(captureCoreNavigationTrial); } }, journey.trials.length === 2 ? 'Two trials recorded' : 'Record trial ' + (journey.trials.length + 1)),
+            h('button', { type: 'button', className: 'fl-btn', disabled: !captureAllowed, style: Object.assign({}, buttonStyle, !captureAllowed ? { opacity: 0.6, cursor: 'default' } : {}), onClick: function() { setGuidedJourney(sampling ? captureCoreSamplingTrial : captureCoreNavigationTrial); } }, journey.trials.length === 2 ? 'Two trials recorded' : 'Record trial ' + (journey.trials.length + 1)),
             journey.trials.length ? h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { update('trials', []); } }, 'Clear recorded trials') : null),
-          h('div', { role: 'status', style: textStyle }, journey.trials.length === 2 ? 'Two trials recorded. Compare their times, then continue.' : first ? 'For trial 2, keep ' + first.distance + ' nautical miles and choose a different speed.' : 'No trials recorded yet.'));
+          h('div', { role: 'status', style: textStyle }, journey.trials.length === 2 ? sampling ? 'Two sampling views recorded. Compare the counts and percentages, then continue.' : 'Two trials recorded. Compare their times, then continue.' : first ? (sampling ? 'Include spot B to record the combined sample.' : 'For trial 2, keep ' + first.distance + ' nautical miles and choose a different speed.') : (sampling ? 'Keep spot B unchecked to record spot A alone first.' : 'No trials recorded yet.')));
       } else if (journey.step === 2) content = h('div', null,
-        h('p', { style: textStyle }, 'Look at the chart below. Identify a route feature or planning step that could affect travel time. Explain what this simplified model leaves out; the chart does not establish actual travel times.'),
-        h('a', { href: '#fl-journey-chart', style: { display: 'inline-block', padding: '10px 0', color: '#99f6e4', fontSize: 14 }, onClick: function(e) { e.preventDefault(); var chart = document.getElementById('fl-journey-chart'); if (chart) { focusCoreElement(chart); chart.scrollIntoView({ block: 'start' }); } } }, 'Inspect chart below ↓'),
-        field('My chart observation', journey.observation, function(e) { var value = e.target.value.slice(0, 180); setNavigationJourney(function(previous) { return Object.assign({}, previous, { observation: value, chartLabel: getCoreTrainingChartBrief(region).label }); }); }, 'Name one feature or planning step, then one assumption you would check.', 180),
+        h('p', { style: textStyle }, sampling ? 'Inspect your field journal below. Describe what its records can support and one source of sampling bias, such as location or tackle choice. If it is empty, state that and describe what you would record on a future trip. Keep model counts separate from journal observations.' : 'Look at the chart below. Identify a route feature or planning step that could affect travel time. Explain what this simplified model leaves out; the chart does not establish actual travel times.'),
+        h('a', { href: sampling ? '#fl-journal-title' : '#fl-journey-chart', style: { display: 'inline-block', padding: '10px 0', color: '#99f6e4', fontSize: 14 }, onClick: function(e) { e.preventDefault(); var chart = document.getElementById(sampling ? 'fl-journal-title' : 'fl-journey-chart'); if (chart) { focusCoreElement(chart); chart.scrollIntoView({ block: 'start' }); } } }, 'Inspect ' + evidenceName + ' below ↓'),
+        field(sampling ? 'My journal reflection' : 'My chart observation', journey.observation, function(e) { var value = e.target.value.slice(0, 180); setGuidedJourney(function(previous) { return Object.assign({}, previous, { observation: value, chartLabel: sampling ? (journalRegionFilter === 'all' ? 'All waters' : (REGIONS[journalRegionFilter === 'current' ? region : journalRegionFilter] || REGIONS[region]).label) : getCoreTrainingChartBrief(region).label }); }); }, sampling ? 'Describe an observation and a limit, or state that there are no records and propose a sampling plan.' : 'Name one feature or planning step, then one assumption you would check.', 180),
         journey.chartLabel ? h('p', { style: textStyle }, 'Observation recorded for: ' + journey.chartLabel) : null);
       else content = h('div', null,
         h('p', { style: textStyle }, h('strong', null, 'Your original prediction: '), journey.prediction),
-        h('p', { style: textStyle }, h('strong', null, 'Chart observation (' + journey.chartLabel + '): '), journey.observation),
+        h('p', { style: textStyle }, h('strong', null, (sampling ? 'Journal reflection (' : 'Chart observation (') + journey.chartLabel + '): '), journey.observation),
         journey.step === 3 ? h('div', null,
-          h('p', { style: textStyle }, 'Use the notebook to explain whether the trials support your prediction. Include the comparison, your reasoning, and one limit or next check. These are model results and a chart observation, not measured voyage data.'),
+          h('p', { style: textStyle }, sampling ? 'Explain how adding spot B changed the percentage. Use pooled counts if sample sizes differ, and distinguish a sample claim from a population claim. Connect your journal reflection to one next sampling step.' : 'Use the notebook to explain whether the trials support your prediction. Include the comparison, your reasoning, and one limit or next check. These are model results and a chart observation, not measured voyage data.'),
           h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() {
-            var result = appendCoreNavigationEvidence(learningNotes.navigation.evidence, journey);
+            var result = (sampling ? appendCoreSamplingEvidence : appendCoreNavigationEvidence)(learningNotes[journeyTopic].evidence, journey);
             if (result.ok) {
-              setLearningNotes(function(previous) { return Object.assign({}, previous, { navigation: Object.assign({}, previous.navigation, { evidence: result.value }) }); });
-              setLearningNoteStatus(function(previous) { return Object.assign({}, previous, { navigation: 'dirty' }); });
+              setLearningNotes(function(previous) { var next = Object.assign({}, previous); next[journeyTopic] = Object.assign({}, previous[journeyTopic], { evidence: result.value }); return next; });
+              setLearningNoteStatus(function(previous) { var next = Object.assign({}, previous); next[journeyTopic] = 'dirty'; return next; });
             }
-            setJourneyEvidenceStatus(result.ok ? 'Trial values and chart observation added to your draft. Add your reasoning, then save or download.' : 'Your existing note is unchanged. There is not enough space to append all the evidence; summarize the trial values in your own words.');
+            setJourneyEvidenceStatus(result.ok ? 'Trial values and ' + evidenceName + ' reflection added to your draft. Add your reasoning, then save or download.' : 'Your existing note is unchanged. There is not enough space to append all the evidence; summarize the trial values in your own words.');
           } }, 'Add investigation evidence to note'),
           h('p', { role: 'status', style: textStyle }, journeyEvidenceStatus)) :
           h('p', { style: textStyle }, 'You completed the investigation steps. Review your explanation with a partner or teacher: does it connect the values to your claim and acknowledge a limit? Completion records participation, not a grade. Save or download your note below to keep it.'),
-        learningNotebook('navigation', true));
-      var advanced = advanceCoreNavigationJourney(journey, learningNotes.navigation);
-      return h('section', { 'data-fisherlab-journey': String(journey.step), 'aria-labelledby': 'fl-journey-title', style: Object.assign({}, cardStyle, { padding: 22, background: 'radial-gradient(ellipse at top right,rgba(13,148,136,0.23),transparent 65%),#091f33', borderTop: '3px solid #5eead4' }) },
+        learningNotebook(journeyTopic, true));
+      var advanced = (sampling ? advanceCoreSamplingJourney : advanceCoreNavigationJourney)(journey, learningNotes[journeyTopic]);
+      return h('section', { 'data-fisherlab-journey': String(journey.step), 'data-fisherlab-journey-topic': journeyTopic, 'aria-labelledby': 'fl-journey-title', style: Object.assign({}, cardStyle, { padding: 22, background: 'radial-gradient(ellipse at top right,rgba(13,148,136,0.23),transparent 65%),#091f33', borderTop: '3px solid #5eead4' }) },
         h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
-          h('span', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, letterSpacing: '0.05em' } }, 'NAVIGATION INVESTIGATION · ' + (journey.step === 4 ? 'COMPLETE' : 'STEP ' + (journey.step + 1) + ' OF 4')),
+          h('span', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, letterSpacing: '0.05em' } }, journeyTopic.toUpperCase() + ' INVESTIGATION · ' + (journey.step === 4 ? 'COMPLETE' : 'STEP ' + (journey.step + 1) + ' OF 4')),
           h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setJourneyActive(false); learningFocusTargetRef.current = 'fl-journey-launch'; setTab('home'); } }, journey.step === 4 ? 'Return to warmups' : 'Pause investigation')),
         h('ol', { 'aria-label': 'Investigation steps', style: { display: 'flex', flexWrap: 'wrap', gap: 8, listStyle: 'none', padding: 0, margin: '18px 0' } }, labels.map(function(label, i) {
           return h('li', { key: label, 'aria-current': journey.step === i ? 'step' : undefined, style: { padding: '7px 11px', borderRadius: 7, border: '1px solid ' + (journey.step === i ? '#5eead4' : '#395b70'), background: journey.step === i ? '#134044' : '#0d293a', color: journey.step >= i ? '#d7fff5' : '#cbd5e1', fontSize: 13 } }, (journey.step > i ? '✓ ' : (i + 1) + '. ') + label);
@@ -19069,15 +19131,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('h3', { id: 'fl-journey-title', tabIndex: -1, style: { fontSize: 25, lineHeight: 1.3, color: '#f8fafc', margin: '0 0 14px' } }, titles[journey.step]),
         journey.trials.length ? h('ul', { 'aria-label': 'Recorded model trials', style: { listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: 10 } }, journey.trials.map(function(trial, i) {
           return h('li', { key: i, style: { flex: '1 1 180px', padding: 14, border: '1px solid #477589', borderRadius: 9, background: '#0b2d3e', color: '#dbeafe', fontSize: 13, lineHeight: 1.7 } },
-            h('span', null, 'Trial ' + (i + 1) + ' · ' + trial.distance + ' nautical miles · ' + trial.speed + ' knots'),
-            h('strong', { style: { display: 'block', fontSize: 24, color: i ? '#fde68a' : '#99f6e4' } }, Number(trial.minutes.toFixed(1)) + ' minutes'));
+            h('span', null, sampling ? (i ? 'A + B · ' : 'Spot A alone · ') + trial.target + ' target fish / ' + trial.total + ' fish' : 'Trial ' + (i + 1) + ' · ' + trial.distance + ' nautical miles · ' + trial.speed + ' knots'),
+            h('strong', { style: { display: 'block', fontSize: 24, color: i ? '#fde68a' : '#99f6e4' } }, sampling ? Number(trial.percent.toFixed(1)) + '%' : Number(trial.minutes.toFixed(1)) + ' minutes'));
         })) : null,
         content,
-        journey.step < 4 && advanced === journey ? h('p', { style: Object.assign({}, textStyle, { fontSize: 12 }) }, ['Write a prediction to continue. It does not have to be correct.', 'Record two trials at different speeds over the same distance to continue.', 'Write your chart observation to continue.', 'Fill in all three notebook fields to finish. Your explanation is not automatically graded.'][journey.step]) : null,
+        journey.step < 4 && advanced === journey ? h('p', { style: Object.assign({}, textStyle, { fontSize: 12 }) }, ['Write a prediction to continue. It does not have to be correct.', sampling ? 'Record spot A alone and then A + B to continue.' : 'Record two trials at different speeds over the same distance to continue.', 'Write your ' + evidenceName + ' reflection to continue.', 'Fill in all three notebook fields to finish. Your explanation is not automatically graded.'][journey.step]) : null,
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 18, borderTop: '1px solid #35586c', paddingTop: 16 } },
           journey.step > 0 && journey.step < 4 ? h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { go(Object.assign({}, journey, { step: journey.step - 1 })); } }, 'Previous step') : null,
-          journey.step < 4 ? h('button', { type: 'button', className: 'fl-btn', disabled: advanced === journey, style: Object.assign({}, primaryStyle, advanced === journey ? { opacity: 0.6, cursor: 'default' } : {}), onClick: function() { if (advanced !== journey) go(advanced); } }, ['Test my prediction →', 'Continue to the chart →', 'Continue to explanation →', 'Finish investigation'][journey.step]) :
-            h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { openNavigationJourney(true); } }, 'Start a new investigation')),
+          journey.step < 4 ? h('button', { type: 'button', className: 'fl-btn', disabled: advanced === journey, style: Object.assign({}, primaryStyle, advanced === journey ? { opacity: 0.6, cursor: 'default' } : {}), onClick: function() { if (advanced !== journey) go(advanced); } }, ['Test my prediction →', 'Continue to the ' + evidenceName + ' →', 'Continue to explanation →', 'Finish investigation'][journey.step]) :
+            h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { openGuidedJourney(true); } }, 'Start a new investigation')),
         h('p', { style: { color: '#b8cedf', fontSize: 12, lineHeight: 1.6, marginBottom: 0 } }, 'Investigation steps and trials last while this lab is open. Saved notebook entries remain in this browser.'));
     }
 
@@ -19286,7 +19348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             })
           )
         ),
-        journeyActive ? navigationJourneyCard() : h(React.Fragment, null, navigationJourneyLauncher(), learningWarmup()),
+        journeyActive ? guidedJourneyCard() : h(React.Fragment, null, guidedJourneyLauncher(), learningWarmup()),
         h('details', { style: cardStyle },
           h('summary', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'Voyage context & learning progress'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -19547,7 +19609,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' } },
             h('div', { style: { maxWidth: 720 } },
               h('div', { style: Object.assign({}, headerStyle, { color: '#f0abfc', marginBottom: 5 }) }, 'Voyage evidence'),
-              h('h2', { id: 'fl-journal-title', style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 24, lineHeight: 1.15 } }, 'Field Journal & Decision Evidence'),
+              h('h2', { id: 'fl-journal-title', tabIndex: -1, style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 24, lineHeight: 1.15 } }, 'Field Journal & Decision Evidence'),
+              journeyActive && journeyTopic === 'sampling' && guidedJourney && guidedJourney.step === 2 ? h('a', { href: '#fl-journey-observation', style: { display: 'inline-block', padding: '10px 0', color: '#99f6e4', fontSize: 14 }, onClick: function(e) {
+                e.preventDefault(); var reflection = document.getElementById('fl-journey-observation'); if (reflection) { focusCoreElement(reflection); reflection.scrollIntoView({ block: 'center' }); }
+              } }, 'Back to my journal reflection ↑') : null,
               h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } },
                 'Every completed catch decision is recorded, including releases and attempts that need review. Use the evidence to spot patterns in species, measurements, and stewardship decisions, not just the fish retained.')),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -21113,7 +21178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         regionBar(),
         h('div', { style: cardStyle },
           h('div', { id: 'fl-journey-chart', tabIndex: -1, style: headerStyle }, '🗺 Chart Room — ' + chartBrief.label + ' (' + chartBrief.portName + ')'),
-          journeyActive && navigationJourney && navigationJourney.step === 2 ? h('a', { href: '#fl-journey-observation', style: { display: 'inline-block', padding: '10px 0', color: '#99f6e4', fontSize: 14 }, onClick: function(e) {
+          journeyActive && journeyTopic === 'navigation' && guidedJourney && guidedJourney.step === 2 ? h('a', { href: '#fl-journey-observation', style: { display: 'inline-block', padding: '10px 0', color: '#99f6e4', fontSize: 14 }, onClick: function(e) {
             e.preventDefault(); var observation = document.getElementById('fl-journey-observation'); if (observation) { focusCoreElement(observation); observation.scrollIntoView({ block: 'center' }); }
           } }, 'Back to my chart observation ↑') : null,
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
@@ -23430,7 +23495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── Main render
     var activeTabEntry = TABS.find(function(tabEntry) { return tabEntry.id === tab; }) || TABS[0];
     var activeSectionScope = getCoreSectionScope(tab, region);
-    return h('div', { className: 'fl-fisherlab-root' + (accessibilityPreferences.largeText ? ' fl-large-text' : ''), 'data-caption-mode': accessibilityPreferences.captionMode ? 'true' : 'false', 'data-static-camera': accessibilityPreferences.staticCamera ? 'true' : 'false', style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
+    return h('div', { className: 'fl-fisherlab-root' + (accessibilityPreferences.largeText ? ' fl-large-text' : ''), 'data-caption-mode': accessibilityPreferences.captionMode ? 'true' : 'false', 'data-static-camera': accessibilityPreferences.staticCamera ? 'true' : 'false', style: { minWidth: 0, width: '100%', boxSizing: 'border-box', padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
       voyageRecoveryBanner(),
       voyageStorageWarning(),
       voyageRescueStatusNotice(),
@@ -23454,7 +23519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('strong', { id: 'fl-section-scope-title', style: { color: activeSectionScope.scope === 'maine-curriculum' ? '#fde68a' : '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' } }, activeSectionScope.title),
         h('span', { style: { fontSize: 11, lineHeight: 1.45 } }, activeSectionScope.message)
       ) : null,
-      tab !== 'home' ? navigationJourneyCard() : null,
+      tab !== 'home' ? guidedJourneyCard() : null,
       learningFocusCard(),
       tab === 'home' ? homeTab() :
       tab === 'journal' ? journalTab() :
