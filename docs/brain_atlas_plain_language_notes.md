@@ -34,3 +34,12 @@ A four-stage lesson connects the existing frontal-lobe and primary-motor-cortex 
 The lesson is optional. Its stages can be revisited or skipped, and its text descriptions work without precise diagram interaction. Show in atlas selects the requested structure in lateral 2D view; Lesson navigation returns to the saved stage. Prediction feedback appears in Inspect. The final checkpoint gives choice-specific feedback and permits retry; completion distinguishes a fitting answer, a concept to revisit, and an unanswered checkpoint. It does not award points or claim mastery.
 
 Stage, prediction, checkpoint answer, and optional reflection use the existing atlas state. Closing, inspecting a region, or reviewing the comparison preserves these fields. No AI or new external storage is introduced. Reflection is optional, limited to 2,000 characters, and rendered as text; learners may instead think, speak, or draw their explanation. Calm neutral surfaces, 44px controls, responsive comparison columns, explicit stage labels, and keyboard focus support the same journey on phones and desktop.
+
+
+## Contextual vocabulary
+
+The eight authored cards and all five movement-lesson screens now offer a native Key words disclosure. Each screen has two to four relevant definitions drawn from one 12-term dictionary; its collapsed preview names the terms available. Definitions are optional, render without AI, and use translation keys with English fallbacks. Cortex and lobe are explicitly scoped to the cerebrum in this lesson rather than presented as universal definitions for every brain structure.
+
+Opening or closing Key words saves one atlas-wide reading preference. Changing regions or lesson stages replaces the vocabulary with the relevant terms and keeps that preference, without changing a prediction, checkpoint, reflection, or quiz score. Advanced and unsupported cards retain their existing content. Native summary controls support keyboard use; semantic definition lists, readable text, and wrapped previews support smaller screens.
+
+Factual background follows the sources above, with nerve-cell communication checked against [NINDS: The Life and Death of a Neuron](https://www.ninds.nih.gov/es/node/8172) and broad anatomy against [NIMH: Get to Know Your Brain](https://www.nimh.nih.gov/news/media/2023/get-to-know-your-brain). Definitions use original wording and do not add clinical guidance.

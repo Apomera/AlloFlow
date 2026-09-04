@@ -537,6 +537,7 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-plain-check{margin-top:16px;padding:14px;border:1px solid var(--ba-border);border-radius:10px;background:var(--ba-surface);scroll-margin-top:80px;}.brainatlas-plain-check:focus{outline:3px solid var(--ba-focus);outline-offset:3px;}.brainatlas-plain-check .brainatlas-plain-check-support{font-size:13px;color:var(--ba-muted);}.brainatlas-plain-check-choices{display:grid;gap:8px;margin:12px 0;}.brainatlas-plain-check-choices button,.brainatlas-plain-check-reset{box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);font-size:14px;line-height:1.5;text-align:left;overflow-wrap:anywhere;}.brainatlas-plain-check-choices button[aria-pressed=true]{border:2px solid var(--ba-purple);font-weight:800;}.brainatlas-plain-check-feedback{border-left:4px solid var(--ba-amber);border-radius:6px;background:var(--ba-panel);padding:10px 12px;margin:12px 0;}.brainatlas-plain-check-feedback[data-correct=true]{border-left-color:var(--ba-teal);}.brainatlas-plain-check-feedback strong{font-size:14px;}.brainatlas-plain-check-feedback p{margin-bottom:0;}',
     '.brainatlas-movement-lesson{max-width:960px;margin:16px auto;padding:20px;border:1px solid var(--ba-border);border-radius:14px;background:var(--ba-panel);color:var(--ba-text);scroll-margin-top:90px;}.brainatlas-movement-lesson:focus,.brainatlas-movement-lesson button:focus-visible,.brainatlas-movement-lesson summary:focus-visible,.brainatlas-movement-lesson textarea:focus-visible,.brainatlas-movement-lesson a:focus-visible{outline:3px solid var(--ba-focus);outline-offset:3px;}.brainatlas-lesson-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}.brainatlas-movement-lesson h3{font-size:20px;font-weight:750;margin:0;}.brainatlas-movement-lesson h4{font-size:18px;font-weight:700;margin:0 0 12px;}.brainatlas-movement-lesson h5{font-size:16px;font-weight:700;margin:0;}.brainatlas-movement-lesson p{font-size:15px;line-height:1.6;margin:10px 0;overflow-wrap:anywhere;}.brainatlas-movement-lesson .brainatlas-lesson-eyebrow,.brainatlas-movement-lesson .brainatlas-lesson-support{font-size:13px;color:var(--ba-muted);}.brainatlas-movement-lesson .brainatlas-lesson-eyebrow{margin:0 0 4px;}.brainatlas-movement-lesson button,.brainatlas-movement-lesson summary{min-height:44px;box-sizing:border-box;font-size:14px;line-height:1.5;cursor:pointer;}.brainatlas-movement-lesson button{padding:10px 12px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);text-align:left;overflow-wrap:anywhere;}.brainatlas-lesson-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:18px 0;}.brainatlas-lesson-steps button{padding:10px 6px;text-align:center;}.brainatlas-lesson-steps button[aria-current=step],.brainatlas-lesson-choices button[aria-pressed=true]{border:2px solid var(--ba-text);font-weight:700;}.brainatlas-lesson-body{padding:16px 0;border-block:1px solid var(--ba-border);}.brainatlas-lesson-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}.brainatlas-lesson-comparison article{min-width:0;}.brainatlas-lesson-choices{display:grid;gap:8px;margin:14px 0;}.brainatlas-lesson-feedback{padding:12px 16px;border-left:3px solid var(--ba-text);background:var(--ba-surface);margin:14px 0;font-size:15px;line-height:1.6;}.brainatlas-lesson-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}.brainatlas-movement-lesson .brainatlas-lesson-primary{font-weight:700;border-width:2px;}.brainatlas-lesson-hint summary{padding:10px 0;}.brainatlas-lesson-reflection-label{display:block;font-size:15px;font-weight:650;margin-top:18px;}.brainatlas-movement-lesson textarea{box-sizing:border-box;width:100%;min-height:90px;padding:12px;font-size:16px;line-height:1.6;background:var(--ba-surface);color:var(--ba-text);border:1px solid var(--ba-border);border-radius:8px;resize:vertical;}.brainatlas-movement-lesson a{display:inline-flex;align-items:center;min-height:44px;color:var(--ba-sky-ink);text-decoration:underline;font-size:14px;}.brainatlas-lesson-saved-reflection{white-space:pre-wrap;}@media(max-width:540px){.brainatlas-movement-lesson{padding:14px;}.brainatlas-lesson-comparison{grid-template-columns:1fr;}.brainatlas-lesson-comparison article+article{padding-top:16px;border-top:1px solid var(--ba-border);}.brainatlas-lesson-steps{gap:4px;}.brainatlas-lesson-steps button{font-size:13px;}}',
     '.brainatlas-section-nav[data-brainatlas-lesson-nav=true]{display:flex;position:sticky;top:6px;z-index:40;align-items:center;gap:6px;padding:6px;border:1px solid var(--ba-border);border-radius:10px;background:var(--ba-panel);}.brainatlas-section-nav[data-brainatlas-lesson-nav=true] .brainatlas-section-nav-actions{flex:1;}.brainatlas-section-nav[data-brainatlas-lesson-nav=true] .brainatlas-section-nav-label{display:none;}.brainatlas-section-nav[data-brainatlas-lesson-nav=true] button{font-size:12px;min-height:44px;white-space:normal;padding:6px;}',
+    '.brainatlas-keywords{margin:12px 0;border-block:1px solid var(--ba-border);color:var(--ba-text);}.brainatlas-keywords summary{min-height:44px;box-sizing:border-box;padding:10px 0;cursor:pointer;font-size:14px;line-height:1.5;overflow-wrap:anywhere;}.brainatlas-keywords summary:focus-visible{outline:3px solid var(--ba-focus);outline-offset:3px;border-radius:4px;}.brainatlas-keywords-title{font-weight:700;}.brainatlas-keywords-preview{display:block;margin:3px 0 0 16px;font-size:13px;font-weight:400;color:var(--ba-muted);}.brainatlas-keywords dl{margin:0;padding:0 0 12px;}.brainatlas-keywords dl>div+div{margin-top:12px;}.brainatlas-keywords dt{font-size:14px;font-weight:700;line-height:1.5;}.brainatlas-keywords dd{margin:3px 0 0;font-size:14px;font-weight:400;line-height:1.6;max-width:65ch;overflow-wrap:anywhere;}',
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -8497,6 +8498,57 @@ var d = labToolData.brainAtlas || {};
               next: "motor_cortex"
             },
           };
+
+          // Small, context-matched vocabulary lists share one optional reading preference.
+          var BRAIN_ATLAS_KEY_WORDS = {
+            cerebrum: { term: t('stem.brainatlas.word_cerebrum', 'Cerebrum'), definition: t('stem.brainatlas.word_cerebrum_definition', 'The large upper part of the brain. It has two halves, called hemispheres, and several regions called lobes.') },
+            lobe: { term: t('stem.brainatlas.word_lobe', 'Lobe'), definition: t('stem.brainatlas.word_lobe_definition', 'Here, a major region of the cerebrum, the large upper part of the brain. Each lobe contains areas that contribute to different functions.') },
+            cortex: { term: t('stem.brainatlas.word_cortex', 'Cortex'), definition: t('stem.brainatlas.word_cortex_definition', 'Here, the folded outer layer of the cerebrum, the large upper part of the brain. The primary motor cortex is one part of this layer.') },
+            motor: { term: t('stem.brainatlas.word_motor', 'Motor'), definition: t('stem.brainatlas.word_motor_definition', 'Related to movement. Motor signals help produce movements of the body.') },
+            voluntary: { term: t('stem.brainatlas.word_voluntary', 'Voluntary'), definition: t('stem.brainatlas.word_voluntary_definition', 'Describes a movement you choose to make, such as reaching for an object.') },
+            working_memory: { term: t('stem.brainatlas.word_working_memory', 'Working memory'), definition: t('stem.brainatlas.word_working_memory_definition', 'Keeping information available briefly so you can use it, such as remembering a rule while choosing a move.') },
+            sensory: { term: t('stem.brainatlas.word_sensory', 'Sensory information'), definition: t('stem.brainatlas.word_sensory_definition', 'Information from the senses, including touch and the sense of where your body parts are.') },
+            visual: { term: t('stem.brainatlas.word_visual', 'Visual'), definition: t('stem.brainatlas.word_visual_definition', 'Related to seeing. Shape, color, and the position of an object can provide visual information.') },
+            coordination: { term: t('stem.brainatlas.word_coordination', 'Coordination'), definition: t('stem.brainatlas.word_coordination_definition', 'Adjusting the timing and size of movements so they work together, such as keeping a cup steady while lifting it.') },
+            network: { term: t('stem.brainatlas.word_network', 'Brain network'), definition: t('stem.brainatlas.word_network_definition', 'Connected brain areas that work together. An activity usually draws on contributions from several areas.') },
+            signal: { term: t('stem.brainatlas.word_signal', 'Nerve signal'), definition: t('stem.brainatlas.word_signal_definition', 'Information carried by nerve cells. These cells communicate using electrical changes and chemical messengers.') },
+            automatic: { term: t('stem.brainatlas.word_automatic', 'Automatic'), definition: t('stem.brainatlas.word_automatic_definition', 'Happening without a deliberate plan for each step. Breathing usually continues this way while you do other things.') }
+          };
+          var BRAIN_ATLAS_CARD_WORDS = {
+            frontal: ['lobe', 'network'],
+            prefrontal: ['working_memory', 'network'],
+            motor_cortex: ['cortex', 'voluntary', 'signal', 'coordination'],
+            parietal: ['sensory', 'signal', 'network'],
+            temporal: ['lobe', 'network'],
+            occipital: ['visual', 'sensory', 'signal'],
+            cerebellum: ['coordination', 'network'],
+            brainstem: ['automatic', 'voluntary', 'network']
+          };
+          var BRAIN_ATLAS_MOVEMENT_WORDS = [
+            ['cerebrum', 'lobe', 'cortex'], ['motor', 'signal', 'lobe'], ['cortex', 'voluntary', 'signal'], ['motor', 'cortex', 'network'], ['motor', 'cortex', 'network']
+          ];
+          function renderBrainAtlasKeyWords(termIds, contextId) {
+            var words = (termIds || []).filter(function (id, index, ids) { return BRAIN_ATLAS_KEY_WORDS[id] && ids.indexOf(id) === index; });
+            if (!words.length) return null;
+            return React.createElement('details', {
+              className: 'brainatlas-keywords', 'data-brainatlas-keywords': contextId,
+              open: d.keyWordsOpen === true,
+              onToggle: function (event) {
+                var nextOpen = event.currentTarget.open;
+                if (nextOpen !== (d.keyWordsOpen === true)) upd('keyWordsOpen', nextOpen);
+              }
+            },
+              React.createElement('summary', null,
+                React.createElement('span', { className: 'brainatlas-keywords-title' }, t('stem.brainatlas.key_words', 'Key words')),
+                React.createElement('span', { className: 'brainatlas-keywords-preview' }, words.map(function (id) { return BRAIN_ATLAS_KEY_WORDS[id].term; }).join(' · '))
+              ),
+              React.createElement('dl', null, words.map(function (id) {
+                var word = BRAIN_ATLAS_KEY_WORDS[id];
+                return React.createElement('div', { key: id, 'data-brainatlas-word': id }, React.createElement('dt', null, word.term), React.createElement('dd', null, word.definition));
+              }))
+            );
+          }
+
           // Optional application checks use the same factual scope as the authored cards.
           var BRAIN_ATLAS_PLAIN_CHECKS = {
             frontal: {
@@ -8640,6 +8692,7 @@ var d = labToolData.brainAtlas || {};
               })),
               R('div', { className: 'brainatlas-lesson-body', key: step },
                 R('h4', { id: 'brainatlas-movement-stage' }, step < 4 ? movementSteps[step] : t('stem.brainatlas.movement_complete', 'Lesson complete')),
+                renderBrainAtlasKeyWords(BRAIN_ATLAS_MOVEMENT_WORDS[step], 'movement-' + step),
                 step === 0 && R(React.Fragment, null,
                   R('p', null, t('stem.brainatlas.movement_notice_prompt', 'Compare the whole frontal lobe with the primary motor cortex inside it. Use the descriptions below, or highlight each one in the atlas.')),
                   regionCards(false),
@@ -11576,6 +11629,7 @@ var d = labToolData.brainAtlas || {};
                       plainLesson ? React.createElement("section", { className: "brainatlas-plain-lesson", "data-brainatlas-plain-lesson": sel.id, "aria-labelledby": "brainatlas-plain-question" },
                         React.createElement("h5", { id: "brainatlas-plain-question" }, t('stem.brainatlas.think_it_through', 'Think it through')),
                         React.createElement("p", null, plainLesson.question),
+                        renderBrainAtlasKeyWords(BRAIN_ATLAS_CARD_WORDS[sel.id], 'card-' + sel.id),
                         React.createElement("details", { key: sel.id, className: "brainatlas-plain-explanation" },
                           React.createElement("summary", null, t('stem.brainatlas.one_way_to_explain', 'One way to explain it')),
                           React.createElement("p", null, plainLesson.explanation)
