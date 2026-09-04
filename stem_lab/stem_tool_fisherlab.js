@@ -261,6 +261,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     s.id = 'fisherlab-css';
     s.textContent = [
       '.fl-btn:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
+      '.fl-fisherlab-root .fl-brief-grid { display:grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap:24px; align-items:center; }',
+      '.fl-fisherlab-root .fl-brief-visual { display:grid; grid-template-columns:minmax(0,1fr); gap:12px; min-width:0; }',
+      '.fl-fisherlab-root .fl-brief-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }',
+      '.fl-fisherlab-root .fl-warmup-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start; }',
+      '.fl-fisherlab-root .fl-route-card:hover { border-color:#7dd3fc !important; background:#10334a !important; }',
+      '.fl-fisherlab-root summary { cursor:pointer; min-height:44px; align-content:center; }',
+      '.fl-fisherlab-root summary:focus-visible, .fl-fisherlab-root select:focus-visible { outline:3px solid #7dd3fc; outline-offset:3px; }',
+      '@media(max-width:700px) { .fl-fisherlab-root .fl-brief-grid, .fl-fisherlab-root .fl-warmup-grid { grid-template-columns:minmax(0,1fr); } }',
       '.fl-card { background: linear-gradient(135deg, rgba(14,30,48,0.92), rgba(8,18,32,0.92)); border: 1px solid rgba(56,189,248,0.22); border-radius: 12px; padding: 14px 16px; color: #e2e8f0; }',
       '.fl-pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(56,189,248,0.12); color:#bae6fd; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }',
       '.fl-fisherlab-root.fl-large-text p, .fl-fisherlab-root.fl-large-text li, .fl-fisherlab-root.fl-large-text label, .fl-fisherlab-root.fl-large-text button, .fl-fisherlab-root.fl-large-text input, .fl-fisherlab-root.fl-large-text select, .fl-fisherlab-root.fl-large-text textarea, .fl-fisherlab-root.fl-large-text td, .fl-fisherlab-root.fl-large-text th, .fl-fisherlab-root.fl-large-text figcaption { font-size: 15px !important; line-height: 1.5 !important; }',
@@ -16922,6 +16930,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var accessibilityPreferences = accessibilityHook[0], setAccessibilityPreferences = accessibilityHook[1];
     var tabHook = useState('home');
     var tab = tabHook[0], setTab = tabHook[1];
+    var warmupTopicHook = useState('navigation');
+    var warmupTopic = warmupTopicHook[0], setWarmupTopic = warmupTopicHook[1];
+    var warmupAnswersHook = useState({});
+    var warmupAnswers = warmupAnswersHook[0], setWarmupAnswers = warmupAnswersHook[1];
     var tabSearchHook = useState('');
     var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
@@ -18655,6 +18667,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── HOME tab
+    // Optional retrieval practice: answers stay in this mounted session and never
+    // count as voyage completion or field observations.
+    function learningWarmup() {
+      var lessons = [
+        { id: 'navigation', label: 'Navigation math', title: 'Same route. Different speed.',
+          setup: 'Imagine a 2-nautical-mile route at a steady 4 knots. One knot means one nautical mile per hour. For this model, ignore current and stops.',
+          question: 'At 2 knots, how would travel time change?', choices: ['It doubles: 30 to 60 minutes', 'It halves: 30 to 15 minutes'], correct: 0,
+          explanation: 'Time = distance ÷ speed. At 4 knots: 2 ÷ 4 = 0.5 hours. At 2 knots: 2 ÷ 2 = 1 hour. Halving speed doubles time for the same distance.',
+          transfer: 'On the chart, describe one reason a real trip could take longer than your calculation. Name an assumption you would need to check.',
+          tab: 'chart', action: 'Explore the chart', visual: 'time' },
+        { id: 'sampling', label: 'Evidence & sampling', title: 'Your catch is a sample.',
+          setup: 'Imagine that 8 of 10 fish caught at one spot with one kind of tackle are the same species.',
+          question: 'Which claim does this evidence support?', choices: ['80% of all fish in the region are this species', '80% of this catch sample are this species'], correct: 1,
+          explanation: '8 ÷ 10 = 80% of this sample. One spot and one tackle choice do not represent every habitat or species. A catch record describes what was caught under those conditions.',
+          transfer: 'In your field journal, name what your observations show and what they cannot establish. How would sampling another spot strengthen your investigation?',
+          tab: 'journal', action: 'Examine journal evidence', visual: 'sample' },
+        { id: 'measurement', label: 'Measurement & uncertainty', title: 'A number needs context.',
+          setup: 'In a made-up measurement exercise, a specimen is 12.0 units long. Your two readings are 11.8 and 12.2 units. This is a measurement model, not a harvest rule.',
+          question: 'What is the strongest next step?', choices: ['Keep only the reading that supports your claim', 'Check alignment and repeat the measurement'], correct: 1,
+          explanation: 'The readings differ by 0.4 units. Check the zero point, unit, and endpoints, then repeat using the same method. Averaging alone would not fix a ruler that was misaligned.',
+          transfer: 'During specimen inspection, explain how you measured before making a decision. What additional evidence would make you more confident?',
+          tab: 'sim', action: 'Open specimen practice in the sim', visual: 'measure' }
+      ];
+      var lesson = lessons.find(function(item) { return item.id === warmupTopic; }) || lessons[0];
+      var choice = warmupAnswers[lesson.id];
+      var answered = typeof choice === 'number';
+      var correct = choice === lesson.correct;
+      var buttonStyle = { minHeight: 44, padding: '10px 13px', borderRadius: 8, border: '1px solid #467086', background: '#0b2637', color: '#e0f2fe', fontSize: 13, lineHeight: 1.5, textAlign: 'left', cursor: 'pointer' };
+      return h('section', { 'aria-labelledby': 'fl-warmup-title', 'data-fisherlab-warmup': lesson.id, style: Object.assign({}, cardStyle, { padding: 20, borderTop: '3px solid #5eead4' }) },
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 } },
+          h('div', null,
+            h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' } }, 'Think like a field scientist'),
+            h('h3', { id: 'fl-warmup-title', style: { margin: '5px 0', fontSize: 21, color: '#f8fafc' } }, 'Predict. Check. Investigate.'),
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12 } }, 'Optional warmup · choose a claim, then test your reasoning.')),
+          h('label', { style: { display: 'grid', gap: 5, color: '#bae6fd', fontSize: 12 } }, 'Warmup topic',
+            h('select', { value: lesson.id, onChange: function(e) { setWarmupTopic(e.target.value); }, style: Object.assign({}, buttonStyle, { maxWidth: '100%' }) },
+              lessons.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })))),
+        h('div', { className: 'fl-warmup-grid' },
+          h('div', null,
+            h('h4', { style: { margin: '0 0 8px', fontSize: 17, color: '#f8fafc' } }, lesson.title),
+            h('p', { style: { fontSize: 13, lineHeight: 1.65, color: '#cbd5e1', margin: '0 0 14px' } }, lesson.setup),
+            h('div', { 'aria-hidden': 'true', style: { borderRadius: 10, background: '#061c2b', border: '1px solid #26485e', padding: 16 } },
+              lesson.visual === 'time' ? h('div', { style: { display: 'grid', gap: 10, fontSize: 13, color: '#e0f2fe' } },
+                ['4 kn · 30 min', '2 kn · ' + (answered ? '60 min' : '? min')].map(function(label, index) { return h('div', { key: label },
+                  h('span', null, label), h('div', { style: { marginTop: 6, width: index ? '100%' : '50%', height: 10, borderRadius: 3, background: index ? '#fbbf24' : '#38bdf8' } })); })) :
+              lesson.visual === 'sample' ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(10,minmax(0,1fr))', gap: 5 } }, Array.from({ length: 10 }, function(_, i) { return h('span', { key: i, style: { height: 25, borderRadius: '50% 50% 30% 30%', background: i < 8 ? '#5eead4' : '#64748b' } }); })) :
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, color: '#fbbf24', fontFamily: 'monospace', fontSize: 20 } }, h('span', null, '11.8'), h('span', { style: { color: '#94a3b8' } }, '↔'), h('span', null, '12.2')))),
+          h('div', null,
+            h('fieldset', { style: { border: 0, padding: 0, margin: 0, minWidth: 0 } },
+              h('legend', { style: { fontSize: 14, fontWeight: 800, color: '#e0f2fe', marginBottom: 10 } }, lesson.question),
+              h('div', { style: { display: 'grid', gap: 8 } }, lesson.choices.map(function(label, index) {
+                return h('button', { key: lesson.id + index, type: 'button', className: 'fl-btn', 'aria-pressed': choice === index,
+                  onClick: function() { setWarmupAnswers(function(previous) { var next = Object.assign({}, previous); next[lesson.id] = index; return next; }); },
+                  style: Object.assign({}, buttonStyle, choice === index ? { borderColor: '#5eead4', background: '#134044' } : {}) }, label);
+              }))),
+            h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 12 } }, answered ?
+              h('div', { style: { padding: 12, borderRadius: 8, background: '#102d3d', borderLeft: '3px solid ' + (correct ? '#5eead4' : '#fbbf24') } },
+                h('strong', { style: { color: correct ? '#99f6e4' : '#fde68a', fontSize: 13 } }, correct ? 'Supported by the evidence' : 'Reconsider your claim'),
+                h('p', { style: { margin: '6px 0 0', fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, lesson.explanation)) : null))),
+        answered ? h('div', { style: { borderTop: '1px solid #294455', marginTop: 16, paddingTop: 14 } },
+          h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } }, h('strong', { style: { color: '#5eead4' } }, 'Take it into the lab. '), lesson.transfer),
+          h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setTab(lesson.tab); flAnnounce(lesson.action); } }, lesson.action + ' →'),
+          h('details', { style: { marginTop: 8, color: '#cbd5e1', fontSize: 13 } },
+            h('summary', null, 'Need a discussion starter?'),
+            h('p', { style: { lineHeight: 1.6 } }, 'My claim is ___. My evidence is ___. This supports my claim because ___. One limit of my evidence is ___. Next I would check ___.'))) : null);
+    }
+
     function homeTab() {
       var saved = loadState();
       var completedState = saved.completedMissions || {};
@@ -18690,19 +18769,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           'data-fisherlab-command': 'true',
           'aria-labelledby': 'fl-command-title',
           style: Object.assign({}, cardStyle, {
-            padding: 16,
-            background: 'linear-gradient(135deg, rgba(8,47,73,0.96), rgba(6,78,59,0.86) 58%, rgba(17,24,39,0.94))',
+            padding: 24,
+            background: 'radial-gradient(ellipse at top right, rgba(13,148,136,0.26), transparent 65%), linear-gradient(135deg, #082f49, #062d35 58%, #101b2e)',
             border: '1px solid rgba(125,211,252,0.34)',
             boxShadow: '0 18px 45px rgba(2,8,23,0.28)',
             overflow: 'hidden'
           })
         },
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'stretch' } },
+          h('div', { className: 'fl-brief-grid' },
             h('div', { style: { minWidth: 0 } },
               h('div', { style: Object.assign({}, headerStyle, { color: '#a7f3d0', marginBottom: 6 }) }, 'FisherLab Harbor Briefing'),
-              h('h2', { id: 'fl-command-title', style: { margin: '0 0 8px', fontSize: 24, lineHeight: 1.1, color: '#f8fafc', fontWeight: 900 } }, 'Choose a route, then cast off'),
+              h('h2', { id: 'fl-command-title', style: { margin: '0 0 8px', fontSize: 'clamp(28px, 3.2vw, 42px)', lineHeight: 1.08, color: '#f8fafc', fontWeight: 900 } }, 'Read the water. Make your call.'),
               h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: '#dbeafe', maxWidth: 660 } },
-                isMaineCurriculum ? 'Start with the sim when you want motion and decisions, or warm up with chart, rules, species, and regulations before leaving the harbor. The full curriculum stays below when you need it.' :
+                isMaineCurriculum ? 'Pilot a skiff, investigate your catch, and explain the evidence behind your decisions. Start with a guided voyage, or try a quick science warmup below.' :
                   'Start with the regional core voyage, or warm up with its chart-planning schematic, traffic rule, species guide, and instructional regulation profile.'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 [
@@ -18729,9 +18808,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 })
               )
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) minmax(110px, 0.55fr)', gap: 10, minWidth: 0 } },
+            h('div', { className: 'fl-brief-visual' },
               h('svg', { viewBox: '0 0 340 184', role: 'img', 'aria-label': 'Schematic training sequence from ' + activeRegion.portName + ' to ' + activeMission.destination + '; not a nautical chart', style: { width: '100%', height: '100%', minHeight: 160, borderRadius: 8, background: '#082f49', border: '1px solid rgba(186,230,253,0.24)', display: 'block' } },
                 h('rect', { x: 0, y: 0, width: 340, height: 184, fill: '#082f49' }),
+                h('path', { d: 'M0 46 H340 M0 92 H340 M0 138 H340 M68 0 V184 M136 0 V184 M204 0 V184 M272 0 V184', stroke: '#7dd3fc', strokeWidth: 0.5, opacity: 0.18, fill: 'none' }),
+                h('path', { d: 'M0 90 Q80 72 130 45 T270 0 M0 106 Q80 88 145 53 T300 0 M0 122 Q85 99 156 67 T330 0', stroke: '#38bdf8', strokeWidth: 1, opacity: 0.26, fill: 'none' }),
                 h('path', { d: 'M0 135 C52 116 76 132 118 106 C160 80 192 92 224 62 C252 36 294 35 340 20 L340 184 L0 184 Z', fill: '#064e3b', opacity: 0.78 }),
                 h('path', { d: 'M42 142 C88 118 126 108 166 92 C204 76 236 58 292 42', fill: 'none', stroke: '#fde68a', strokeWidth: 4, strokeLinecap: 'round', strokeDasharray: '8 8' }),
                 h('circle', { cx: 42, cy: 142, r: 9, fill: '#38bdf8', stroke: '#e0f2fe', strokeWidth: 3 }),
@@ -18745,7 +18826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('text', { x: 18, y: 22, fill: '#bae6fd', fontSize: 11 }, buoyageCheck.ruleLabel),
                 h('text', { x: 322, y: 174, fill: '#bae6fd', fontSize: 9, fontWeight: 900, textAnchor: 'end' }, 'SCHEMATIC ONLY')
               ),
-              h('div', { style: { display: 'grid', gap: 8 } },
+              h('div', { className: 'fl-brief-stats' },
                 [
                   { label: 'Region records', value: regionJournalSummary.observations, color: '#c4b5fd' },
                   { label: 'Species', value: caughtCount + '/' + getSpeciesForRegion(region).length, color: '#86efac' },
@@ -18763,7 +18844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               return h('button', {
                 key: route.tab,
                 type: 'button',
-                className: 'fl-btn',
+                className: 'fl-btn fl-route-card',
                 'aria-label': route.title + '. ' + route.detail,
                 onClick: function() {
                   setTab(route.tab);
@@ -18774,8 +18855,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   textAlign: 'left',
                   padding: 12,
                   borderRadius: 8,
-                  border: '1px solid rgba(226,232,240,0.16)',
-                  background: 'linear-gradient(180deg, rgba(15,23,42,0.76), rgba(8,13,24,0.78))',
+                  border: '1px solid ' + (route.tab === 'sim' ? '#5eead4' : 'rgba(226,232,240,0.16)'),
+                  background: route.tab === 'sim' ? 'linear-gradient(145deg, #115e59, #123747)' : 'linear-gradient(180deg, rgba(15,23,42,0.76), rgba(8,13,24,0.78))',
                   color: '#e2e8f0',
                   cursor: 'pointer',
                   display: 'flex',
@@ -18791,8 +18872,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             })
           )
         ),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🎣 FisherLab — Boating & Fishing Sim'),
+        learningWarmup(),
+        h('details', { style: cardStyle },
+          h('summary', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'Voyage context & learning progress'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
             'Work the ' + activeRegion.label + ' practice profile from ' + activeRegion.portName + ' toward ' + activeMission.destination + '. Rehearse ' + activeRegion.buoyage + ' buoyage, make a ' + activeEncounter.rule + ' decision around ' + activeEncounter.vessel + ', classify ' + activeMission.targetFish + ', inspect ' + activeMission.trapCatch + ', and return safely.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px', fontStyle: 'italic' } },
@@ -18899,8 +18981,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 ].map(function(objective, index) { return h('li', { key: index }, objective); })),
               h('p', { style: { margin: 0, color: '#fde68a' } }, 'The full expedition roadmap is Maine-specific. This regional profile records one core voyage and does not mark the Maine curriculum complete.'))
           ),
-        h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'How to play'),
+        h('details', { style: cardStyle },
+          h('summary', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'How to play'),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             h('p', null, h('b', null, 'Steering: '), 'WASD or arrow keys. W/Up = throttle forward. S/Down = reverse. A/Left + D/Right = turn. Space = throttle boost.'),
             h('p', null, h('b', null, 'Fishing: '), 'At the grounds, slow below 1 knot and press F. Read the water, select spot, depth, tackle, and presentation; place the cast, react to the bite, manage line tension, then identify, measure, and classify the landed fish.'),
