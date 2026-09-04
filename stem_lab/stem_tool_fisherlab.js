@@ -5785,6 +5785,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
 
   window.__FisherLabCore = {
+    getCoreGuidedLesson: getCoreGuidedLesson,
+    buildCoreLessonSheetText: buildCoreLessonSheetText,
     createCoreSamplingJourney: createCoreSamplingJourney,
     getCoreSamplingModel: getCoreSamplingModel,
     captureCoreSamplingTrial: captureCoreSamplingTrial,
@@ -13866,6 +13868,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return next;
   }
   // Guided investigations use model trials, never simulator or catch progress.
+  var CORE_GUIDED_LESSONS = {
+  "navigation": {
+    "id": "navigation",
+    "title": "How long will the trip take?",
+    "duration": "10–15 minutes",
+    "goal": "Explain how speed changes travel time over a fixed distance, then identify a limit of the model.",
+    "materials": "Fisher Lab chart and time model; notebook or student sheet. No 3D simulator required.",
+    "steps": [
+      {
+        "label": "Predict",
+        "prompt": "For a 2-nautical-mile route, predict what happens to travel time when speed falls from 4 to 2 knots. Explain why."
+      },
+      {
+        "label": "Compare",
+        "prompt": "Record two trials at different speeds over the same distance. Include nautical miles, knots, and minutes."
+      },
+      {
+        "label": "Inspect",
+        "prompt": "Inspect the training chart. Name a feature or planning step that could change a real travel time."
+      },
+      {
+        "label": "Explain",
+        "prompt": "Does the comparison support your prediction? Connect the values to your claim and name one assumption to check."
+      }
+    ],
+    "supports": [
+      "Work in pairs: one learner changes the model; the other records evidence. Swap roles after the first trial.",
+      "Use the sentence frame: At the same distance, changing speed from ___ to ___ changed time from ___ to ___.",
+      "Offer an oral explanation or a sketch before writing in the notebook."
+    ],
+    "discussion": "What stayed the same between trials? How would you know whether a change in time came from speed or distance?",
+    "checklist": [
+      "Two trials use the same distance and different speeds.",
+      "Values include units and distinguish a prediction from a model result.",
+      "The explanation connects the comparison to the claim.",
+      "A chart observation and one model limitation are identified."
+    ],
+    "extension": "Predict a new speed before using the slider, then compare the result with your prediction."
+  },
+  "sampling": {
+    "id": "sampling",
+    "title": "Can one catch tell the whole story?",
+    "duration": "10–15 minutes",
+    "goal": "Combine sample counts correctly and explain why a catch sample cannot establish a whole region’s population.",
+    "materials": "Fisher Lab sampling model and field journal; notebook or student sheet. An empty journal is fine.",
+    "steps": [
+      {
+        "label": "Predict",
+        "prompt": "Spot A has 8 target fish out of 10. Spot B has 2 out of 10. Predict how combining them changes the target percentage."
+      },
+      {
+        "label": "Compare",
+        "prompt": "Record A alone, then A + B. Record target counts and total counts. Try changing spot B’s sample size while keeping its target share fixed."
+      },
+      {
+        "label": "Inspect",
+        "prompt": "Inspect the field journal. Describe what its records can support and one sampling limit. If empty, state that and propose what to record next."
+      },
+      {
+        "label": "Explain",
+        "prompt": "Explain the pooled percentage using the counts. Separate model results from journal records and a claim about the whole region."
+      }
+    ],
+    "supports": [
+      "Use the fish dots to count target fish and all fish before calculating a percentage.",
+      "Use the sentence frame: Our sample shows ___. It does not establish ___ because ___.",
+      "Discuss the sampling plan aloud or sketch two collection sites before writing."
+    ],
+    "discussion": "If the two samples have different sizes, why can averaging their percentages give the wrong pooled result?",
+    "checklist": [
+      "Target and total counts are recorded for A and A + B.",
+      "The pooled percentage uses pooled counts when sizes differ.",
+      "Model counts are kept separate from journal observations.",
+      "The claim names a sampling limit and a useful next collection step."
+    ],
+    "extension": "Make spot B larger than spot A. Predict the direction of change before checking the pooled percentage."
+  }
+};
+  function getCoreGuidedLesson(topic) {
+    return Object.prototype.hasOwnProperty.call(CORE_GUIDED_LESSONS, topic) ? JSON.parse(JSON.stringify(CORE_GUIDED_LESSONS[topic])) : null;
+  }
+  function buildCoreLessonSheetText(topic) {
+    var lesson = getCoreGuidedLesson(topic);
+    if (!lesson) return '';
+    return ['FISHER LAB · STUDENT EVIDENCE SHEET', lesson.title, 'Suggested time: ' + lesson.duration,
+      'Learning goal: ' + lesson.goal, '', 'Model evidence is not a voyage record or an automatic grade.', '',
+      lesson.steps.map(function(step, i) { return (i + 1) + '. ' + step.label.toUpperCase() + '\n' + step.prompt + '\n\nMy response / values and units:\n____________________________________________________________\n____________________________________________________________\n'; }).join('\n'),
+      'EVIDENCE CHECKLIST', lesson.checklist.map(function(item) { return '[ ] ' + item; }).join('\n'),
+      '', 'Use a sketch or oral explanation with your teacher if that helps you show your reasoning.'].join('\n');
+  }
   function createCoreSamplingJourney() {
     return { step: 0, prediction: '', model: { secondSample: false, secondTotal: 10 }, trials: [], observation: '', chartLabel: '' };
   }
@@ -17422,6 +17514,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function setGuidedJourney(value) {
       setGuidedJourneys(function(previous) { var next = Object.assign({}, previous); next[journeyTopic] = typeof value === 'function' ? value(previous[journeyTopic]) : value; return next; });
     }
+    var lessonLaunchTopicHook = useState(null);
+    var lessonLaunchTopic = lessonLaunchTopicHook[0], setLessonLaunchTopic = lessonLaunchTopicHook[1];
+    var lessonDownloadStatusHook = useState({});
+    var lessonDownloadStatus = lessonDownloadStatusHook[0], setLessonDownloadStatus = lessonDownloadStatusHook[1];
     var journeyActiveHook = useState(false);
     var journeyActive = journeyActiveHook[0], setJourneyActive = journeyActiveHook[1];
     var journeyEvidenceStatusHook = useState('');
@@ -19322,13 +19418,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('p', { style: { margin: '0 0 10px', fontSize: 11, color: '#bae6fd', letterSpacing: '0.05em', textTransform: 'uppercase' } }, 'Model data · change one factor, explain the result'), content);
     }
 
-    function openGuidedJourney(fresh) {
-      var next = fresh || !guidedJourney ? (journeyTopic === 'sampling' ? createCoreSamplingJourney() : createCoreNavigationJourney()) : guidedJourney;
-      setGuidedJourney(next);
+    function openGuidedJourney(fresh, requestedTopic) {
+      var topic = requestedTopic === 'sampling' || requestedTopic === 'navigation' ? requestedTopic : journeyTopic;
+      var current = guidedJourneys[topic];
+      var next = fresh || !current ? (topic === 'sampling' ? createCoreSamplingJourney() : createCoreNavigationJourney()) : current;
+      setJourneyTopic(topic);
+      setGuidedJourneys(function(previous) { var updated = Object.assign({}, previous); updated[topic] = next; return updated; });
       setJourneyActive(true);
       setLearningFocus(null);
       setJourneyEvidenceStatus('');
-      setTab(next.step === 2 ? (journeyTopic === 'sampling' ? 'journal' : 'chart') : 'home');
+      setTab(next.step === 2 ? (topic === 'sampling' ? 'journal' : 'chart') : 'home');
       setTabSearch('');
       learningFocusTargetRef.current = 'fl-journey-title';
     }
@@ -19410,7 +19509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('section', { 'data-fisherlab-journey': String(journey.step), 'data-fisherlab-journey-topic': journeyTopic, 'aria-labelledby': 'fl-journey-title', style: Object.assign({}, cardStyle, { padding: 22, background: 'radial-gradient(ellipse at top right,rgba(13,148,136,0.23),transparent 65%),#091f33', borderTop: '3px solid #5eead4' }) },
         h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
           h('span', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, letterSpacing: '0.05em' } }, journeyTopic.toUpperCase() + ' INVESTIGATION · ' + (journey.step === 4 ? 'COMPLETE' : 'STEP ' + (journey.step + 1) + ' OF 4')),
-          h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setJourneyActive(false); learningFocusTargetRef.current = 'fl-journey-launch'; setTab('home'); } }, journey.step === 4 ? 'Return to warmups' : 'Pause investigation')),
+          h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setJourneyActive(false); var teacherReturn = lessonLaunchTopic === journeyTopic; learningFocusTargetRef.current = teacherReturn ? 'fl-teacher-title' : 'fl-journey-launch'; setTab(teacherReturn ? 'lessonplans' : 'home'); } }, lessonLaunchTopic === journeyTopic ? (journey.step === 4 ? 'Return to lesson plans' : 'Pause and return to lesson plans') : journey.step === 4 ? 'Return to warmups' : 'Pause investigation')),
         h('ol', { 'aria-label': 'Investigation steps', style: { display: 'flex', flexWrap: 'wrap', gap: 8, listStyle: 'none', padding: 0, margin: '18px 0' } }, labels.map(function(label, i) {
           return h('li', { key: label, 'aria-current': journey.step === i ? 'step' : undefined, style: { padding: '7px 11px', borderRadius: 7, border: '1px solid ' + (journey.step === i ? '#5eead4' : '#395b70'), background: journey.step === i ? '#134044' : '#0d293a', color: journey.step >= i ? '#d7fff5' : '#cbd5e1', fontSize: 13 } }, (journey.step > i ? '✓ ' : (i + 1) + '. ') + label);
         })),
@@ -22534,11 +22633,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── LESSON PLANS tab
+    function guidedLessonCards() {
+      function downloadSheet(topic) {
+        var url = null, anchor = null;
+        try {
+          url = window.URL.createObjectURL(new Blob([buildCoreLessonSheetText(topic)], { type: 'text/plain;charset=utf-8' }));
+          anchor = document.createElement('a'); anchor.href = url; anchor.download = 'fisherlab-' + topic + '-student-sheet.txt';
+          document.body.appendChild(anchor); anchor.click(); anchor.remove();
+          var completedUrl = url; setTimeout(function() { window.URL.revokeObjectURL(completedUrl); }, 0);
+          setLessonDownloadStatus(function(previous) { var next = Object.assign({}, previous); next[topic] = 'Student sheet download prepared.'; return next; });
+        } catch (_) {
+          if (anchor && anchor.parentNode) anchor.remove();
+          if (url) window.URL.revokeObjectURL(url);
+          setLessonDownloadStatus(function(previous) { var next = Object.assign({}, previous); next[topic] = 'The download could not start. You can still use the prompts and checklist below.'; return next; });
+        }
+      }
+      var buttonStyle = { minHeight: 44, padding: '10px 14px', border: '1px solid #7293a5', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14, lineHeight: 1.5, cursor: 'pointer' };
+      return h('section', { 'data-fisherlab-teacher-lessons': 'true', 'aria-labelledby': 'fl-teacher-title', style: Object.assign({}, cardStyle, { padding: 22, background: 'radial-gradient(ellipse at top right,rgba(13,148,136,0.25),transparent 70%),#091f33', borderTop: '3px solid #5eead4' }) },
+        h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, letterSpacing: '0.06em' } }, 'TEACH WITH FISHER LAB'),
+        h('h2', { id: 'fl-teacher-title', tabIndex: -1, style: { margin: '8px 0', color: '#f8fafc', fontSize: 27, lineHeight: 1.3 } }, 'Launch a short investigation'),
+        h('p', { style: { color: '#dbeafe', fontSize: 14, lineHeight: 1.6 } }, 'Choose a learning goal, preview the evidence students will produce, and launch the activity on this device. Existing work resumes for that topic.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 16 } }, ['navigation','sampling'].map(function(topic) {
+          var lesson = getCoreGuidedLesson(topic), progress = guidedJourneys[topic];
+          return h('article', { key: topic, 'data-fisherlab-lesson': topic, style: { minWidth: 0, padding: 18, border: '1px solid #436b7b', borderTop: '3px solid ' + (topic === 'navigation' ? '#7dd3fc' : '#fbbf24'), borderRadius: 10, background: '#0a2636', color: '#dbeafe', fontSize: 14, lineHeight: 1.6 } },
+            h('p', { style: { margin: 0, color: '#bae6fd', fontSize: 12, fontWeight: 800 } }, lesson.duration + ' · ' + (topic === 'navigation' ? 'Distance, speed & time' : 'Samples, counts & claims')),
+            h('h3', { style: { color: '#f8fafc', fontSize: 21, lineHeight: 1.3, margin: '8px 0' } }, lesson.title),
+            h('p', null, lesson.goal),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              h('button', { type: 'button', className: 'fl-btn', style: Object.assign({}, buttonStyle, { background: '#115e59', color: '#f0fdfa', borderColor: '#5eead4', fontWeight: 800 }), onClick: function() { setLessonLaunchTopic(topic); openGuidedJourney(false, topic); } }, progress ? (progress.step === 4 ? 'Review investigation' : 'Resume investigation') : 'Launch investigation'),
+              h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { downloadSheet(topic); } }, 'Download student sheet')),
+            h('p', { role: 'status', style: { color: '#cbd5e1', fontSize: 12, margin: '8px 0', lineHeight: 1.6 } }, lessonDownloadStatus[topic] || 'Student sheet: plain text with blank response spaces and an evidence checklist.'),
+            h('details', { style: { marginTop: 12, paddingTop: 10, borderTop: '1px solid #35586c' } },
+              h('summary', { style: { color: '#99f6e4', fontWeight: 800 } }, 'Teaching notes & evidence checklist'),
+              h('p', null, lesson.materials),
+              h('ol', { style: { paddingLeft: 22 } }, lesson.steps.map(function(step) { return h('li', { key: step.label, style: { marginBottom: 10 } }, h('strong', { style: { color: '#bae6fd' } }, step.label + ': '), step.prompt); })),
+              h('h4', { style: { color: '#f8fafc', marginBottom: 6 } }, 'Support participation'),
+              h('ul', { style: { paddingLeft: 22 } }, lesson.supports.map(function(item) { return h('li', { key: item, style: { marginBottom: 8 } }, item); })),
+              h('p', null, h('strong', { style: { color: '#fde68a' } }, 'Ask: '), lesson.discussion),
+              h('h4', { style: { color: '#f8fafc', marginBottom: 6 } }, 'Look for this evidence'),
+              h('ul', { style: { paddingLeft: 22 } }, lesson.checklist.map(function(item) { return h('li', { key: item, style: { marginBottom: 8 } }, item); })),
+              h('p', { style: { fontSize: 13, color: '#cbd5e1' } }, 'Use this checklist for discussion and feedback. Completing the activity does not automatically demonstrate mastery.'),
+              h('p', null, h('strong', { style: { color: '#99f6e4' } }, 'Extend: '), lesson.extension)));
+        })));
+    }
     function lessonPlansTab() {
-      return h('div', null, h('div', { style: cardStyle },
-        h('div', { style: headerStyle }, '📓 Lesson Plans (for teachers)'),
+      return h('div', null, guidedLessonCards(), h('details', { style: cardStyle },
+        h('summary', { style: headerStyle }, 'Extended lesson library · ' + LESSON_PLANS.length + ' plans'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
-          'Ready-to-use templates aligned to Maine + EL Education + NGSS / Maine Indian Education (LD 291) standards. Build on these for your context.'),
+          'Adapt these longer templates to your students, available resources, and local curriculum. Check the referenced materials and standards before teaching.'),
         LESSON_PLANS.map(function(lp, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 6 } },
