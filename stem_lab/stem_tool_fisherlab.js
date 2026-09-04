@@ -5770,6 +5770,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
 
   window.__FisherLabCore = {
+    normalizeCoreLearningNotes: normalizeCoreLearningNotes,
+    writeCoreLearningNote: writeCoreLearningNote,
+    buildCoreLearningNoteText: buildCoreLearningNoteText,
     getCoreQuizAnswerDistribution: getCoreQuizAnswerDistribution,
     getCoreBuoyGlyph: getCoreBuoyGlyph,
     getCoreSimBuoySpec: getCoreSimBuoySpec,
@@ -13499,6 +13502,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     next[key] = enabled === true;
     return next;
   }
+  // Learning reflections are separate from simulator checkpoints and catch evidence.
+  // Save only the active topic into the latest notebook, preserving other topics.
+  function normalizeCoreLearningNotes(value) {
+    var result = {};
+    ['navigation', 'sampling', 'measurement'].forEach(function(topic) {
+      var entry = value && Object.prototype.hasOwnProperty.call(value, topic) && value[topic];
+      var note = {};
+      ['claim', 'evidence', 'next'].forEach(function(field) {
+        note[field] = entry && typeof entry[field] === 'string' ? entry[field].slice(0, 600) : '';
+      });
+      result[topic] = note;
+    });
+    return result;
+  }
+  function loadCoreLearningNotes() {
+    try { return normalizeCoreLearningNotes(JSON.parse(window.localStorage.getItem('fisherLab.learningNotes.v1') || '{}')); }
+    catch (_) { return normalizeCoreLearningNotes(null); }
+  }
+  function writeCoreLearningNote(storage, topic, draft) {
+    if (['navigation', 'sampling', 'measurement'].indexOf(topic) < 0) return { ok: false };
+    try {
+      var notes = normalizeCoreLearningNotes(JSON.parse(storage.getItem('fisherLab.learningNotes.v1') || '{}'));
+      var input = {}; input[topic] = draft;
+      notes[topic] = normalizeCoreLearningNotes(input)[topic];
+      storage.setItem('fisherLab.learningNotes.v1', JSON.stringify(notes));
+      return { ok: true };
+    } catch (_) { return { ok: false }; }
+  }
+  function buildCoreLearningNoteText(topic, value) {
+    if (['navigation', 'sampling', 'measurement'].indexOf(topic) < 0) return '';
+    var input = {}; input[topic] = value;
+    var note = normalizeCoreLearningNotes(input)[topic];
+    if (!note) return '';
+    var titles = { navigation: 'Navigation math', sampling: 'Evidence & sampling', measurement: 'Measurement & uncertainty' };
+    return ['Fisher Lab learning note', titles[topic], 'Student reflection; not a voyage or catch record.', '',
+      'MY CLAIM', note.claim || '(Not recorded)', '', 'EVIDENCE & REASONING', note.evidence || '(Not recorded)', '',
+      'WHAT I WOULD CHECK NEXT', note.next || '(Not recorded)', ''].join('\n');
+  }
+
   function normalizeFisherLabState(value) {
     var input = isFisherLabRecord(value) ? value : {};
     var missionIsKnown = typeof input.currentMission === 'string' && MISSIONS.some(function(mission) { return mission.id === input.currentMission; });
@@ -16936,6 +16978,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var warmupAnswers = warmupAnswersHook[0], setWarmupAnswers = warmupAnswersHook[1];
     var warmupExperimentHook = useState({ distance: 2, speed: 4, secondSample: false, aligned: false });
     var warmupExperiment = warmupExperimentHook[0], setWarmupExperiment = warmupExperimentHook[1];
+    var learningNotesHook = useState(loadCoreLearningNotes);
+    var learningNotes = learningNotesHook[0], setLearningNotes = learningNotesHook[1];
+    var learningNoteStatusHook = useState({});
+    var learningNoteStatus = learningNoteStatusHook[0], setLearningNoteStatus = learningNoteStatusHook[1];
+    var learningFocusHook = useState(null);
+    var learningFocus = learningFocusHook[0], setLearningFocus = learningFocusHook[1];
+    var learningFocusTargetRef = useRef(null);
+    useEffect(function() {
+      var targetId = learningFocusTargetRef.current;
+      if (!targetId) return;
+      learningFocusTargetRef.current = null;
+      var target = document.getElementById(targetId);
+      if (target) { focusCoreElement(target); target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
+    }, [tab]);
     var tabSearchHook = useState('');
     var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
@@ -18671,6 +18727,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── HOME tab
     // Optional retrieval practice: answers stay in this mounted session and never
     // count as voyage completion or field observations.
+    function learningNotebook(topic) {
+      var note = learningNotes[topic];
+      var status = learningNoteStatus[topic];
+      var hasText = !!(note.claim.trim() || note.evidence.trim() || note.next.trim());
+      var messages = { dirty: 'Unsaved changes — save or download your note.', saved: 'Saved in this browser.', error: 'Could not save in this browser. Your draft is still here; try saving again or download it.', downloaded: 'Download prepared from your current draft. Use Save note to keep changes in this browser.', downloadError: 'Download could not start. Your draft is still here.' };
+      function setNoteStatus(value) { setLearningNoteStatus(function(previous) { var next = Object.assign({}, previous); next[topic] = value; return next; }); }
+      function saveNote() {
+        var result;
+        try { result = writeCoreLearningNote(window.localStorage, topic, note); } catch (_) { result = { ok: false }; }
+        setNoteStatus(result.ok ? 'saved' : 'error');
+      }
+      function downloadNote() {
+        var url = null;
+        var anchor = null;
+        try {
+          url = window.URL.createObjectURL(new Blob([buildCoreLearningNoteText(topic, note)], { type: 'text/plain;charset=utf-8' }));
+          anchor = document.createElement('a'); anchor.href = url; anchor.download = 'fisher-lab-' + topic + '-note.txt';
+          document.body.appendChild(anchor); anchor.click(); anchor.remove();
+          var completedUrl = url;
+          setTimeout(function() { window.URL.revokeObjectURL(completedUrl); }, 0);
+          setNoteStatus('downloaded');
+        } catch (_) {
+          if (anchor && anchor.parentNode) anchor.remove();
+          if (url) window.URL.revokeObjectURL(url);
+          setNoteStatus('downloadError');
+        }
+      }
+      return h('details', { key: 'note-' + topic, 'data-fisherlab-learning-note': topic, style: { marginTop: 14, padding: '0 14px 14px', borderRadius: 10, border: '1px solid #466078', background: '#0c2334' } },
+        h('summary', { style: { color: '#e0f2fe', fontWeight: 800, fontSize: 14 } }, 'Keep a learning note' + (hasText ? ' · Draft available' : '')),
+        h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 12px' } }, 'Turn your observations into an explanation. Save keeps this topic’s note in this browser; download gives you a text file to keep or share.'),
+        h('div', { style: { display: 'grid', gap: 12 } }, [
+          { field: 'claim', label: 'My claim', hint: 'What do you think the evidence shows?' },
+          { field: 'evidence', label: 'Evidence & reasoning', hint: 'Name a value or observation, say whether it came from the model or the voyage, and explain how it supports your claim.' },
+          { field: 'next', label: 'What I would check next', hint: 'Name one limit, unanswered question, or change you would test.' }
+        ].map(function(item) {
+          var id = 'fl-learning-' + topic + '-' + item.field;
+          return h('div', { key: item.field, style: { display: 'grid', gap: 5, fontSize: 13, color: '#e0f2fe' } },
+            h('label', { htmlFor: id, style: { fontWeight: 800 } }, item.label),
+            h('span', { id: id + '-hint', style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, item.hint),
+            h('textarea', { id: id, value: note[item.field], maxLength: 600, rows: item.field === 'evidence' ? 3 : 2, 'aria-describedby': id + '-hint',
+              onChange: function(e) { var value = e.target.value; setLearningNotes(function(previous) { var next = Object.assign({}, previous); next[topic] = Object.assign({}, previous[topic]); next[topic][item.field] = value.slice(0, 600); return next; }); setNoteStatus('dirty'); },
+              style: { width: '100%', minWidth: 0, boxSizing: 'border-box', padding: 10, border: '1px solid #627d91', borderRadius: 6, background: '#061c2b', color: '#f1f5f9', fontSize: 14, lineHeight: 1.5, resize: 'vertical' } }));
+        })),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
+          h('button', { type: 'button', className: 'fl-btn', onClick: saveNote, style: { minHeight: 44, padding: '8px 14px', border: '1px solid #5eead4', borderRadius: 7, background: '#115e59', color: '#f0fdfa', cursor: 'pointer', fontSize: 13, fontWeight: 800 } }, 'Save note'),
+          h('button', { type: 'button', className: 'fl-btn', onClick: downloadNote, style: { minHeight: 44, padding: '8px 14px', border: '1px solid #627d91', borderRadius: 7, background: '#0c2638', color: '#e0f2fe', cursor: 'pointer', fontSize: 13 } }, 'Download note')),
+        h('p', { 'aria-live': 'polite', 'data-learning-note-status': status || 'initial', style: { margin: '10px 0 0', color: status === 'error' || status === 'downloadError' ? '#fde68a' : '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, messages[status] || (hasText ? 'Saved note loaded from this browser.' : 'No saved note for this topic yet.')));
+    }
+    function learningFocusCard() {
+      if (!learningFocus || tab !== learningFocus.tab) return null;
+      return h('aside', { id: 'fl-learning-focus', tabIndex: -1, 'aria-labelledby': 'fl-learning-focus-title', 'data-fisherlab-learning-focus': learningFocus.topic,
+        style: { padding: 16, marginBottom: 14, border: '1px solid #5eead4', borderLeft: '4px solid #5eead4', borderRadius: 10, background: 'linear-gradient(120deg,#0c343c,#10273c)', color: '#e0f2fe' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 } },
+          h('strong', { id: 'fl-learning-focus-title', style: { color: '#99f6e4', fontSize: 14 } }, 'Investigation focus · ' + learningFocus.label),
+          h('button', { type: 'button', className: 'fl-btn', style: { minHeight: 44, padding: '8px 12px', border: '1px solid #7c9dad', borderRadius: 7, background: '#0b2637', color: '#e0f2fe', fontSize: 13, cursor: 'pointer' },
+            onClick: function() { setWarmupTopic(learningFocus.topic); learningFocusTargetRef.current = 'fl-warmup-title'; setTab('home'); setTabSearch(''); } }, 'Back to warmup')),
+        h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '8px 0' } }, learningFocus.prompt), learningNotebook(learningFocus.topic));
+    }
+
     function warmupInvestigation(topic) {
       var model = warmupExperiment;
       var textStyle = { fontSize: 13, lineHeight: 1.6, color: '#dbeafe', margin: '8px 0 12px' };
@@ -18776,7 +18891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 } },
           h('div', null,
             h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase' } }, 'Think like a field scientist'),
-            h('h3', { id: 'fl-warmup-title', style: { margin: '5px 0', fontSize: 21, color: '#f8fafc' } }, 'Predict. Check. Investigate.'),
+            h('h3', { id: 'fl-warmup-title', tabIndex: -1, style: { margin: '5px 0', fontSize: 21, color: '#f8fafc' } }, 'Predict. Check. Investigate.'),
             h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12 } }, 'Optional warmup · choose a claim, then test your reasoning.')),
           h('label', { style: { display: 'grid', gap: 5, color: '#bae6fd', fontSize: 12 } }, 'Warmup topic',
             h('select', { value: lesson.id, onChange: function(e) { setWarmupTopic(e.target.value); }, style: Object.assign({}, buttonStyle, { maxWidth: '100%' }) },
@@ -18806,10 +18921,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         answered ? warmupInvestigation(lesson.id) : null,
         answered ? h('div', { style: { borderTop: '1px solid #294455', marginTop: 16, paddingTop: 14 } },
           h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } }, h('strong', { style: { color: '#5eead4' } }, 'Take it into the lab. '), lesson.transfer),
-          h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setTab(lesson.tab); flAnnounce(lesson.action); } }, lesson.action + ' →'),
+          h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setLearningFocus({ topic: lesson.id, tab: lesson.tab, label: lesson.label, prompt: lesson.transfer }); learningFocusTargetRef.current = 'fl-learning-focus'; setTabSearch(''); setTab(lesson.tab); flAnnounce(lesson.action); } }, lesson.action + ' →'),
           h('details', { style: { marginTop: 8, color: '#cbd5e1', fontSize: 13 } },
             h('summary', null, 'Need a discussion starter?'),
-            h('p', { style: { lineHeight: 1.6 } }, 'My claim is ___. My evidence is ___. This supports my claim because ___. One limit of my evidence is ___. Next I would check ___.'))) : null);
+            h('p', { style: { lineHeight: 1.6 } }, 'My claim is ___. My evidence is ___. This supports my claim because ___. One limit of my evidence is ___. Next I would check ___.'))) : null,
+        learningNotebook(lesson.id));
     }
 
     function homeTab() {
@@ -23043,6 +23159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('strong', { id: 'fl-section-scope-title', style: { color: activeSectionScope.scope === 'maine-curriculum' ? '#fde68a' : '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' } }, activeSectionScope.title),
         h('span', { style: { fontSize: 11, lineHeight: 1.45 } }, activeSectionScope.message)
       ) : null,
+      learningFocusCard(),
       tab === 'home' ? homeTab() :
       tab === 'journal' ? journalTab() :
       tab === 'aqcond' ? aqCondTab() :
