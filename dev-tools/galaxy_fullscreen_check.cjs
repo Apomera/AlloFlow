@@ -127,6 +127,10 @@ async function runMode(chromium, mode) {
       nativeFs: !!document.fullscreenElement,
       bodyOverflow: document.body.style.overflow,
       rect: r ? { top: Math.round(r.top), left: Math.round(r.left), w: Math.round(r.width), h: Math.round(r.height) } : null,
+      // Document-relative top as well. Leaving the immersive view focuses the
+      // canvas, and focusing scrolls it into view - a viewport-relative
+      // comparison then reads a legitimate scroll as "not restored".
+      docTop: r ? Math.round(r.top + window.scrollY) : null,
       canvasBox: cv ? { w: Math.round(cv.getBoundingClientRect().width), h: Math.round(cv.getBoundingClientRect().height) } : null,
       status: (document.querySelector('[data-galaxy-announcer]') || {}).textContent || '',
     };
@@ -166,8 +170,14 @@ async function runMode(chromium, mode) {
     && Math.abs(during.rect.w - VIEWPORT.width) <= 2
     && Math.abs(during.rect.h - VIEWPORT.height) <= 2;
   const grew = during.canvasBox && before.canvasBox && during.canvasBox.h > before.canvasBox.h;
+  // ★ Compare the frame's position in the DOCUMENT, not in the viewport. Exiting the
+  // immersive fallback calls canvasEl.focus() so keyboard users land back on the thing
+  // they were exploring, and focusing scrolls it into view. That is correct behaviour,
+  // but it moved the viewport-relative top by ~89px and made three of the four surfaces
+  // report FAIL on a tool that had restored everything properly - attribute cleared,
+  // pill gone, body overflow released, inline position and height back.
   const restored = !after.immersive && !after.pill
-    && after.rect && Math.abs(after.rect.top - before.rect.top) <= 2
+    && after.rect && Math.abs(after.docTop - before.docTop) <= 2
     && Math.abs(after.rect.h - before.rect.h) <= 2
     && after.bodyOverflow === before.bodyOverflow;
 
@@ -185,6 +195,7 @@ async function runMode(chromium, mode) {
     + '\n          canvas ' + JSON.stringify(before.canvasBox) + ' -> ' + JSON.stringify(during.canvasBox)
     + '  covers=' + covers + ' grew=' + grew + ' pill=' + during.pill
     + ' bodyLock=' + JSON.stringify(during.bodyOverflow) + ' restored=' + restored
+    + ' docTop ' + before.docTop + '->' + after.docTop
     + '\n          status: ' + during.status.replace(/\s+/g, ' ').slice(0, 90));
   if (nativeStuck) console.log('          (headless kept the page fullscreen after exitFullscreen; restore leg not exercised)');
   if (logs.length) console.log('          console errors: ' + logs.slice(0, 3).join(' | '));

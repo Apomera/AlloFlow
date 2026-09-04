@@ -104,6 +104,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       { id: 'predict_correctly', label: 'Complete an integral estimate comparison', icon: '\uD83D\uDCCF', check: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)); }, progress: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)) ? 'Compared!' : 'Try estimating'; } } // Legacy id retained for saved quest compatibility.
     ],
     render: function(ctx) {
+      // This tool paints no ground of its own, so its chrome sits on the
+      // HOST surface: a white card in light and dark, pure BLACK in the
+      // contrast theme, where these slate inks measured 1.4-2.8:1.
+      // Only the elements that actually land on the host ground get this
+      // treatment - text on the tool's own tinted cards reads as authored.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -2097,7 +2104,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // Tab bar
           h('div', { className: 'flex flex-wrap gap-1 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
             CALCULUS_TABS.map(function(item, tabIndex){
-              return h('button',{ key:item[0], id:'calculus-tab-'+item[0], 'aria-controls':'calculus-panel-'+item[0], onClick:function(){upd('tab',item[0]);}, onKeyDown:function(e){calculusTabKeyDown(e, tabIndex);}, role:'tab','aria-selected':tab===item[0], tabIndex:tab===item[0]?0:-1, className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
+              return h('button',{ key:item[0], id:'calculus-tab-'+item[0], 'aria-controls':'calculus-panel-'+item[0], onClick:function(){upd('tab',item[0]);}, onKeyDown:function(e){calculusTabKeyDown(e, tabIndex);}, role:'tab','aria-selected':tab===item[0], tabIndex:tab===item[0]?0:-1, className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':('text-slate-600 hover:text-slate-700' + onHostInk))},item[1]);
             })
           ),
 
@@ -2191,7 +2198,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('button', { type:'button', 'aria-pressed':predictMode, onClick: function(){ upd('predictMode',!predictMode); upd('predictSubmitted',false); upd('predictInput',''); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (predictMode?'bg-violet-600 text-white':'bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100')
               }, predictMode ? '\uD83D\uDCCF Estimate Mode ON' : '\uD83D\uDCCF Try Estimate Mode'),
-              !predictMode && h('span', { className: 'text-[11px] text-slate-600' }, '\u2014 estimate the integral before it\u2019s revealed')
+              !predictMode && h('span', { className: 'text-[11px] text-slate-600' + onHostInk }, '\u2014 estimate the integral before it\u2019s revealed')
             ),
 
             predictMode && !predictSubmitted && h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', 'data-calculus-estimation-challenge': 'quantitative-calibration', style:{animation:'calcFade 0.3s ease'} },
@@ -2324,7 +2331,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
             // Presets
             h('div', { className: 'mt-3 flex flex-wrap gap-1.5 items-center' },
-              h('span',{ className:'text-[11px] font-bold text-slate-600'},'Load:'),
+              h('span',{ className:'text-[11px] font-bold text-slate-600' + onHostInk},'Load:'),
               PRESETS.map(function(p){
                 return h('button',{ key:p.label,onClick:function(){
                   setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:p.a,b:p.b,c:p.c,xMin:p.xMin,xMax:p.xMax,n:p.n,overUnderChecked:false,predictSubmitted:false,antiChecked:false,antiA:'',antiB:'',antiC2:''})});});
@@ -2443,7 +2450,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           tab === 'challenge' && h('div', { key: 'challenge' },
 
             h('div',{ className:'flex items-center gap-2 mb-3 flex-wrap'},
-              h('span',{ className:'text-sm font-black text-red-800'},'\uD83C\uDFAF Calculus Challenges'),
+              h('span',{ className:'text-sm font-black text-red-800' + onHostInk},'\uD83C\uDFAF Calculus Challenges'),
               cScore>0 && h('span',{ className:'ml-auto text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border'},'\u2B50 '+cScore+' | \uD83D\uDD25 '+cStreak)
             ),
             h('div',{ className:'flex flex-wrap gap-1.5 mb-2'},
@@ -2451,7 +2458,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 return h('button',{ "aria-label": "Start "+cm.label+" challenge",'aria-pressed':cMode===cm.id,key:cm.id,onClick:function(){upd('calcChallengeMode',cm.id);upd('calcQuiz',null);upd('calcHint','');},className:'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all '+(cMode===cm.id?cm.activeClass+' text-white shadow-md':'bg-slate-100 text-slate-600 hover:bg-slate-200')},cm.label);
               })
             ),
-            h('p',{className:'text-[11px] text-slate-600 italic mb-3'},
+            h('p',{className:'text-[11px] text-slate-600 italic mb-3' + onHostInk},
               cMode==='estimate'?'Pick the correct definite integral value from 4 choices.':
               cMode==='overunder'?'Decide if the Riemann sum is an over or underestimate — and understand why.':
               cMode==='method'?'Which approximation method gives the smallest error?':
@@ -2499,7 +2506,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // ══════════════════════════════════════════════════════════════
           tab === 'discover' && h('div', { key: 'discover' },
 
-            h('p',{className:'text-xs text-slate-600 italic mb-3'},'Guided investigations \u2014 you measure, predict, and find the pattern. The tool is your calculator, not your teacher.'),
+            h('p',{className:'text-xs text-slate-600 italic mb-3' + onHostInk},'Guided investigations \u2014 you measure, predict, and find the pattern. The tool is your calculator, not your teacher.'),
 
             // Mission selector
             h('div',{ className:'flex gap-2 mb-4 flex-wrap'},
@@ -2531,16 +2538,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
                 // Step 0: Setup + first observation
                 step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
-                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Set up the investigation'),
-                  h('p',{className:'text-xs text-slate-600 mb-3'},'Click this preset to load f(x) = x\u00B2 with bounds [0,3] and left Riemann sums. Then switch to the Integral tab to see the graph.'),
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2' + onHostInk},'\u2460 Set up the investigation'),
+                  h('p',{className:'text-xs text-slate-600 mb-3' + onHostInk},'Click this preset to load f(x) = x\u00B2 with bounds [0,3] and left Riemann sums. Then switch to the Integral tab to see the graph.'),
                   h('button',{ onClick:function(){
                     setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:4,mode:'left',tab:'discover',predictMode:false,overUnderChecked:false})});});
                     addToast('Loaded \u222B x\u00B2 [0,3] with n=4, Left Riemann','success');
                     stemBeep&&stemBeep('click');
                   },className:'px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-all mb-3'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=4'),
-                  h('p',{className:'text-xs text-slate-700 mb-2 font-bold'},'Now go to the Integral tab and find the error value for n=4. Come back and enter it below:'),
+                  h('p',{className:'text-xs text-slate-700 mb-2 font-bold' + onHostInk},'Now go to the Integral tab and find the error value for n=4. Come back and enter it below:'),
                   h('div',{ className:'flex gap-2 items-center'},
-                    h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=4:'),
+                    h('span',{ className:'text-xs font-bold text-slate-600' + onHostInk},'Error at n=4:'),
                     h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'','aria-label':'Riemann-sum error at n equals 4',onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Got it",disabled:!data.err4,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
@@ -2564,7 +2571,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 Measure at n=8'),
                   h('p',{className:'text-xs text-slate-600 mb-3'},'Go to the Integral tab, set n=8 (using the slider), and record the error:'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
-                    h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=8:'),
+                    h('span',{ className:'text-xs font-bold text-slate-600' + onHostInk},'Error at n=8:'),
                     h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'','aria-label':'Riemann-sum error at n equals 8',onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Got it",disabled:!data.err8,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
@@ -2907,7 +2914,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               return h(React.Fragment, null,
                 // Header strip
-                h('div', { className: 'flex items-center gap-2 mb-2 text-xs text-slate-600' },
+                h('div', { className: 'flex items-center gap-2 mb-2 text-xs text-slate-600' + onHostInk },
                   h('span', { className: 'font-bold' }, 'Visualize'),
                   h('span', { className: 'text-slate-400' }, '\u2022'),
                   h('span', {}, 'See the ideas before you see the formulas'),
@@ -2939,7 +2946,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 // Function picker (shown only for views that use it)
                 (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'riemann') &&
                 h('div', { className: 'flex gap-1 flex-wrap text-[11px] mb-2' },
-                  h('span', { className: 'text-slate-600 font-semibold self-center mr-1' }, 'f(x) ='),
+                  h('span', { className: 'text-slate-600 font-semibold self-center mr-1' + onHostInk }, 'f(x) ='),
                   Object.keys(CALC_FUNCS).map(function(fid) {
                     var active = vizFn === fid;
                     return h('button', {
@@ -3006,7 +3013,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   }, '\u26F6')
                 ),
                 // Per-view explainer strip
-                h('div', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' },
+                h('div', { className: 'mt-2 text-[11px] text-slate-600 leading-relaxed' + onHostInk },
                   vizView === 'zoom'    && 'Use the point and zoom sliders, or drag across the canvas. Any smooth curve becomes a straight line up close; that local slope IS the derivative.',
                   vizView === 'tangent' && 'Use the tangent x\u2080 slider, or drag across the canvas. The tangent line swings while f\u2032(x) traces itself on the right panel.',
                   vizView === 'motion'  && 'Use the time slider, or drag across the canvas. Velocity = slope; acceleration = slope of velocity. Three panels update together.',

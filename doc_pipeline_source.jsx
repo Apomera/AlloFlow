@@ -2128,7 +2128,13 @@ function _reattachSourceLinks(html, srcLinks) {
     .sort((a, b) => b.text.length - a.text.length);
   if (links.length === 0) return { html, count: 0 };
 
-  const used = new Set();
+  // Remaining budget per pair: how many times that link appeared in the source.
+  // Absent or malformed, it falls back to 1 — the previous conservative behaviour.
+  const budget = new Map();
+  for (const l of links) {
+    const n = Number(l.occurrences);
+    budget.set(l, Number.isFinite(n) && n >= 1 ? Math.min(Math.floor(n), 50) : 1);
+  }
   let anchorDepth = 0, skipDepth = 0, count = 0;
   let out = '';
   let i = 0;
@@ -2155,10 +2161,10 @@ function _reattachSourceLinks(html, srcLinks) {
   function _rewriteTextRun(run) {
     if (!run || anchorDepth > 0 || skipDepth > 0) return run;
     for (const l of links) {
-      if (used.has(l.text)) continue;
+      if ((budget.get(l) || 0) <= 0) continue;
       const at = run.indexOf(l.text);
       if (at === -1) continue;
-      used.add(l.text);
+      budget.set(l, budget.get(l) - 1);
       count++;
       return run.slice(0, at)
         + '<a href="' + _esc(l.url) + '">' + run.slice(at, at + l.text.length) + '</a>'
@@ -5202,6 +5208,25 @@ function _computeStructuralFidelityNotes(srcText, outHtml, srcCounts) {
   if (_srcLinks >= 2 && _outLinks < _srcLinks && (_srcLinks - _outLinks) >= Math.max(2, Math.ceil(_srcLinks * 0.2))) {
     notes.push({ kind: 'links', msg: 'Links: the source had ~' + _srcLinks + ' hyperlink(s) but the output has ' + _outLinks + ' — ' + (_srcLinks - _outLinks) + ' may have been dropped. Check the Diff.' });
   }
+  // (#4b) Form controls — a fillable source against an output that has none. Counted
+  // from the PDF's own Widget annotations, so this fires only when the source really
+  // was a form. The advice is the actionable part: an HTML export is readable but not
+  // fillable, and a teacher handing it to a student needs to know that before they do.
+  const _srcForm = _counts.formFields;
+  const _srcFields = _srcForm && Number(_srcForm.fields);
+  if (Number.isFinite(_srcFields) && _srcFields > 0) {
+    const _outFields = (_out.match(/<(?:input|textarea|select)\b/gi) || []).length;
+    if (_outFields < _srcFields) {
+      const _named = Number(_srcForm.withAccessibleName) || 0;
+      notes.push({
+        kind: 'formFields',
+        msg: 'Form fields: the source is a fillable form with ' + _srcFields + ' field(s)'
+          + (_named > 0 ? ' (' + _named + ' carrying the author\u2019s own field label)' : '')
+          + ' but the output has ' + _outFields + ' — the accessible version can be read but not filled in.'
+          + ' Give learners the tagged PDF, or an editable copy, if they need to type answers.',
+      });
+    }
+  }
   // (#3) Tables — markdown table blocks (one divider row each) vs output <table>.
   const _srcTables = _src.split('\n').filter((l) => { const t = l.trim(); return t.indexOf('|') !== -1 && /-{3,}/.test(t) && /^[|:\-\s]+$/.test(t); }).length;
   const _outTables = (_out.match(/<table[\s>]/gi) || []).length;
@@ -5341,6 +5366,7 @@ function _alloDistributionVerdict(r, opts) {
   if (eaFails != null && eaFails > 0) cautions.push('the second checker (Equal Access) still reports ' + eaFails + ' rule failure' + (eaFails === 1 ? '' : 's'));
   if (kinds.placement) cautions.push('some source content is present but out of reading order (gathered in the "Preserved source content" box)');
   if (kinds.links) cautions.push('some hyperlinks from the source may have been dropped — check the Diff');
+  if (kinds.formFields) cautions.push('the source was a fillable form and this HTML version cannot be typed into — hand out the tagged PDF if learners need to answer in the document');
   if (kinds.folioLeak) cautions.push('a stray page number may appear inline in the text — search and delete it');
   if (kinds.lowOcrAccuracy || kinds.lowOcrConfidence) cautions.push('this is a scan and parts of the OCR read are low-confidence — skim the output against the original');
   if (kinds.ocrDupeCollapse) cautions.push('repeated-word OCR echoes were auto-collapsed — verify the affected sentences');
@@ -9592,6 +9618,10 @@ var createDocPipeline = function(deps) {
       // warning the primary pass had raised — the two-lane drift this audit keeps finding.
       let _srcCounts = null;
       try { const _n = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; if (Number.isFinite(_n) && _n > 0) _srcCounts = { links: _n }; } catch (_) {}
+      try {
+        const _ff = (typeof window !== 'undefined') ? window.__alloSourceFormFields : null;
+        if (_ff && Number.isFinite(_ff.fields) && _ff.fields > 0) _srcCounts = Object.assign({}, _srcCounts, { formFields: _ff });
+      } catch (_) {}
       try { out.structuralNotes = _computeStructuralFidelityNotes(sourceText, html, _srcCounts) || []; } catch (_) { out.structuralNotes = []; }
       out.fidelityNotes = (out.structuralNotes || []).slice();
       if (out.placementWarn) out.fidelityNotes.push({ kind: 'placement', msg: out.placementWarn });
@@ -13549,6 +13579,14 @@ var createDocPipeline = function(deps) {
       // repairable: a deterministic pass can re-attach the href to the exact words it
       // belonged to, with no model call and no chance of inventing a destination.
       const _srcLinkPairs = [];
+      // A fillable PDF becomes an UNFILLABLE web page: extraction reads text and
+      // pixels, and a form control is neither. Worse, these fields usually carry the
+      // author's own tooltip (the /TU entry) as an accessible name — so the source
+      // was, in this one respect, MORE accessible than the remediated output. That is
+      // not something to lose silently, so count them and say so in the report.
+      const _srcFieldNames = new Set();
+      let _srcFieldWidgets = 0;
+      let _srcFieldsNamed = 0;
       for (let p = 1; p <= pdf.numPages; p++) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
@@ -13559,6 +13597,12 @@ var createDocPipeline = function(deps) {
               const _a = _annots[ai];
               // A Link annotation with no destination at all is decorative chrome, not a link the
               // output owes an <a> for.
+              if (_a && _a.subtype === 'Widget' && _a.fieldType) {
+                _srcFieldWidgets++;
+                const _fn = String(_a.fieldName || '').trim();
+                if (_fn) _srcFieldNames.add(_fn);
+                if (String(_a.alternativeText || '').trim()) _srcFieldsNamed++;
+              }
               if (!_a || _a.subtype !== 'Link') continue;
               const _u = String(_a.url || _a.unsafeUrl || '').trim();
               if (!_u) continue; // internal destination (TOC/footnote/cross-reference) — the output owes it no <a href>
@@ -13649,13 +13693,35 @@ var createDocPipeline = function(deps) {
       // guaranteed false "dropped links" warning. (check_free_vars caught the first attempt to read
       // a `pageRange` that does not exist in this scope — three ReferenceErrors in waiting.)
       try { if (typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
+      // Distinct field names where the PDF supplies them (a radio group is several
+      // widgets but ONE field); widget count otherwise.
+      try {
+        if (typeof window !== 'undefined') {
+          window.__alloSourceFormFields = {
+            fields: _srcFieldNames.size > 0 ? _srcFieldNames.size : _srcFieldWidgets,
+            widgets: _srcFieldWidgets,
+            withAccessibleName: _srcFieldsNamed,
+          };
+        }
+      } catch (_) {}
+      if (_srcFieldWidgets > 0) { try { warnLog('[PDF Det] ' + _srcFieldWidgets + ' form control(s) in the source (' + _srcFieldsNamed + ' with an author-supplied accessible name) — an HTML export cannot carry them'); } catch (_) {} }
       // Distinct (text, url) pairs, longest text first so a link whose text contains a
       // shorter link's text is re-attached before the shorter one can claim the words.
       try {
         if (typeof window !== 'undefined') {
           const _seen = new Set();
-          window.__alloSourceLinks = _srcLinkPairs
-            .filter((lp) => { const k = lp.text + '\u0000' + lp.url; if (_seen.has(k)) return false; _seen.add(k); return true; })
+          // Keep how MANY times each pair occurred. A URL repeated on every page — the
+          // district footer the link-count comment warns about — is one distinct pair but
+          // several real links, and collapsing it to one left the document's remaining
+          // occurrences as plain words. The count is a hard ceiling: the repair can never
+          // create more links than the source actually carried.
+          const _byPair = new Map();
+          for (const _lp of _srcLinkPairs) {
+            const _k = _lp.text + String.fromCharCode(0) + _lp.url;
+            if (!_byPair.has(_k)) { _byPair.set(_k, { text: _lp.text, url: _lp.url, occurrences: 0 }); _seen.add(_k); }
+            _byPair.get(_k).occurrences++;
+          }
+          window.__alloSourceLinks = [..._byPair.values()]
             .sort((a, b) => b.text.length - a.text.length)
             .slice(0, 500);
         }
@@ -30058,6 +30124,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const _lc = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null;
           const _sliceRun = !!(_pageRange && (_pageRange[0] || _pageRange[1]));
           if (!_sliceRun && Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc };
+          // Form controls ride the SAME page-range refusal: counting a whole form's
+          // fields against a ten-page slice would cry wolf exactly the way the link
+          // baseline used to.
+          const _ff = (typeof window !== 'undefined') ? window.__alloSourceFormFields : null;
+          if (!_sliceRun && _ff && Number.isFinite(_ff.fields) && _ff.fields > 0) {
+            _srcStructCounts = Object.assign({}, _srcStructCounts, { formFields: _ff });
+          }
         } catch (_) {}
         _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml, _srcStructCounts);
         // H14 (audit 2026-07-26): the image/caption pairing check runs back in Step 2, long before

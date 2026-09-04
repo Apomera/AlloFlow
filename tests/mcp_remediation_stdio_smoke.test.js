@@ -92,7 +92,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(res.instructions).toContain('remediation_capabilities');
     expect(res.instructions).toContain('dataHandling');
     expect(res.instructions).not.toContain('portable-remediation');
-    expect(res.capabilities.resources).toEqual({ subscribe: false, listChanged: false });
+    expect(res.capabilities.resources).toEqual({ subscribe: false, listChanged: true });
     expect(res.capabilities.prompts).toEqual({ listChanged: false });
     expect(res.capabilities.extensions['io.modelcontextprotocol/skills']).toEqual({});
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');

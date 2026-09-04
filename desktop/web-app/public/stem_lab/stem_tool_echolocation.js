@@ -828,8 +828,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center' },
             h('div', { className: 'text-2xl mb-1' }, '\uD83E\uDD87'),
-            h('div', { className: 'text-lg font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, t('stem.echolocation.choose_your_bat_species', 'Choose Your Bat Species')),
-            h('p', { className: 'text-xs mt-1 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
+            h('div', { className: 'text-lg font-black ' + (isContrast ? 'text-white' : (isDark ? 'text-indigo-200' : 'text-indigo-800')) }, t('stem.echolocation.choose_your_bat_species', 'Choose Your Bat Species')),
+            h('p', { className: 'text-xs mt-1 ' + (isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-600')) },
               t('stem.echolocation.each_species_has_unique_echolocation_a', 'Each species has unique echolocation abilities and hunting strategies. Your choice changes how the sonar simulator works.'))
           ),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4', role: 'radiogroup', 'aria-label': t('stem.echolocation.select_bat_species', 'Select bat species') },
@@ -1677,8 +1677,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // Bug fix: light-mode subtitle was 'text-slate-200' on both
           // branches, effectively invisible on a light background.
           h('div', { className: 'text-center' },
-            h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, t('stem.echolocation.3d_cave_echolocation', '\uD83D\uDD26 3D Cave Echolocation')),
-            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, t('stem.echolocation.survive_in_the_dark_using_sonar_catch_', 'Survive in the dark using sonar. Catch as many insects as you can before energy runs out. Press E to pulse. WASD to fly.'))
+            h('h3', { className: 'text-lg font-bold ' + (isContrast ? 'text-white' : (isDark ? 'text-emerald-300' : 'text-emerald-700')) }, t('stem.echolocation.3d_cave_echolocation', '\uD83D\uDD26 3D Cave Echolocation')),
+            h('p', { className: 'text-xs ' + (isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-700')) }, t('stem.echolocation.survive_in_the_dark_using_sonar_catch_', 'Survive in the dark using sonar. Catch as many insects as you can before energy runs out. Press E to pulse. WASD to fly.'))
           ),
           // \u2500\u2500 Pre-flight brief (collapsible) \u2500\u2500
           // Goal, controls, and the science it teaches in one place.
@@ -1731,7 +1731,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             )
           ),
           // Three.js not loaded
-          !threeReady && h('div', { className: 'text-center p-8 text-slate-600' },
+          !threeReady && h('div', { className: 'text-center p-8 ' + (isContrast ? 'text-white' : 'text-slate-600') },
             h('p', null, threeLoadError
               ? t('stem.echolocation.three_js_failed_to_load', 'The 3D engine could not be loaded.')
               : t('stem.echolocation.loading_3d_engine_three_js_required', 'Loading 3D engine... (Three.js required)')),
@@ -3722,10 +3722,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { className: 'text-xs font-black text-indigo-400' }, (dopplerFreq / 1000).toFixed(1) + ' kHz'),
                 h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.emitted', 'Emitted'))),
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
-                h('div', { className: 'text-xs font-black ' + (freqDiff > 0 ? 'text-blue-400' : freqDiff < 0 ? 'text-red-400' : 'text-slate-200') }, (shiftedFreq / 1000).toFixed(1) + ' kHz'),
+                h('div', { className: 'text-xs font-black ' + (freqDiff > 0 ? 'text-blue-400' : freqDiff < 0 ? 'text-red-400' : (isDark ? 'text-slate-200' : 'text-slate-600')) }, (shiftedFreq / 1000).toFixed(1) + ' kHz'),
                 h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.received', 'Received'))),
               h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-slate-700/50' : 'bg-slate-100') },
-                h('div', { className: 'text-xs font-black ' + (freqDiff > 0 ? 'text-blue-400' : freqDiff < 0 ? 'text-red-400' : 'text-slate-200') },
+                h('div', { className: 'text-xs font-black ' + (freqDiff > 0 ? 'text-blue-400' : freqDiff < 0 ? 'text-red-400' : (isDark ? 'text-slate-200' : 'text-slate-600')) },
                   (freqDiff >= 0 ? '+' : '') + (freqDiff / 1000).toFixed(1) + ' kHz'),
                 h('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, t('stem.echolocation.shift', 'Shift')))
             ),
@@ -5226,8 +5226,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       // ═════════════════════════════════════════
       // MAIN RENDER
       // ═════════════════════════════════════════
-      var textColor = isDark ? 'text-slate-200' : 'text-slate-800';
-      var subtextColor = isDark ? 'text-slate-200' : 'text-slate-600';
+      // The header sits on the HOST ground, which is a white card in light and
+      // dark but pure BLACK in the contrast theme — where slate-800 measured
+      // 1.44:1 and took the tool's own name with it.
+      var textColor = isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-800');
+      var subtextColor = isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-600');
 
       // Own the ground in dark (2026-08-23): the header and tab inks already
       // branch on isDark, but the shell painted nothing, so light inks floated

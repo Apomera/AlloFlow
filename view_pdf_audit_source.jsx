@@ -4467,7 +4467,16 @@ function PdfAuditView(props) {
   const _beginVisibleAuditRun = (event, detail) => {
     _auditGateLog(event, detail);
     if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(true);
-    setPdfAuditResult(null);
+    // Do NOT null the result here. Nulling left pdfAuditLoading as the modal's ONLY owner for
+    // the whole run, and invalidatePdfAuditRun (reached from any startNewPdfAudit /
+    // _closePdfAuditModal) clears exactly that flag - so an invalidation landing mid-audit
+    // closed the modal outright, dropped the user on the main screen, and threw the finished
+    // audit away with no toast and no trace (field report 2026-09-04, one-click path; same
+    // class as the 2026-08-15/16/18/23 epoch-desync recurrences). Keeping the chooser/result
+    // as the owner makes the worst case landing back on the chooser card with the document
+    // still attached. The render gate skips _choosing while pdfAuditLoading is true, so a
+    // healthy run still shows the spinner exactly as before.
+    setPdfAuditResult((previous) => _viewAuditFallbackResult(previous, pendingPdfFile));
   };
   const _restoreVisibleAuditAfterFailure = (snapshot) => {
     if (typeof setPdfAuditLoading === 'function') setPdfAuditLoading(false);
@@ -7496,6 +7505,11 @@ function PdfAuditView(props) {
   }, []);
 
   const _modalWorkBusy = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;
+  // A stray Escape or backdrop click during an audit used to close the modal with NO
+  // confirmation (safeCloseAudit only guards work that already produced a pdfFixResult),
+  // silently aborting the run. The explicit close button stays on _modalWorkBusy so there
+  // is always a deliberate way out even if a loading flag ever strands true.
+  const _modalDismissBusy = _modalWorkBusy || pdfAuditLoading;
   const _batchSummaryPending = pdfBatchSummary
     ? (Number.isFinite(pdfBatchSummary.pending) ? pdfBatchSummary.pending : pdfBatchQueue.filter((item) => !item.status || item.status === 'pending' || item.status === 'processing').length)
     : 0;
@@ -7513,12 +7527,12 @@ function PdfAuditView(props) {
           role="dialog" aria-modal="true" aria-label={t('pdf_audit.modal_aria') || 'PDF Accessibility Audit'}
           tabIndex={-1}
           onClick={(e) => {
-            if (e.target === e.currentTarget && !_modalWorkBusy) {
+            if (e.target === e.currentTarget && !_modalDismissBusy) {
               safeCloseAudit();
             }
           }}
           onKeyDown={(e) => {
-            if (e.key === 'Escape' && !_modalWorkBusy) {
+            if (e.key === 'Escape' && !_modalDismissBusy) {
               safeCloseAudit();
             }
           }}
@@ -7564,7 +7578,7 @@ function PdfAuditView(props) {
                 <X size={18} aria-hidden="true"/>
               </button>
             </div>
-            {pdfAuditResult?._choosing ? (
+            {pdfAuditResult?._choosing && !pdfAuditLoading ? (
               <div className="p-8 text-center">
                 {/* ── Batch Mode Toggle (hidden in the focused remediation
                     mode — the desktop "Document remediation" install choice

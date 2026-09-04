@@ -13847,6 +13847,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     (function startDeferredModulePump() {
       var pauseUntil = 0;
       var scheduled = false;
+      // Three background scripts at a time, not one. The guards that actually
+      // protect the main thread are the ones inside pump() -- hidden tab, launch
+      // pad, isInputPending, the idle callback, and the timeRemaining() check
+      // between each dispatch -- and every one of them still runs. Single-file
+      // added nothing those do not already do; it only meant the ~142 deferred
+      // modules drained at best one per 360ms, so the queue the "N left" pill
+      // counts took the better part of a minute on an idle machine.
+      var PUMP_PARALLEL = 3;
+      // Every pointerdown pushes the pause 3s out, so someone working steadily
+      // could hold the whole queue indefinitely. Once blocked this long, let one
+      // module per window through so it still drains under continuous use.
+      var PUMP_STARVE_MS = 8000;
+      var pumpDispatched = Object.create(null);
+      var starvedSince = 0;
       var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       var slowBackground = !!(connection && (connection.saveData || /(^|-)2g$/.test(String(connection.effectiveType || ''))));
       var markInteraction = function() { pauseUntil = performance.now() + 3000; };
@@ -13877,19 +13891,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         if (document.hidden || workspaceConcealed) { schedule(300); return; }
         var inputPending = navigator.scheduling && typeof navigator.scheduling.isInputPending === 'function'
           && navigator.scheduling.isInputPending();
-        if (performance.now() < pauseUntil || inputPending) { schedule(220); return; }
+        var nowMs = performance.now();
+        var blocked = nowMs < pauseUntil || inputPending;
+        if (blocked) {
+          if (!starvedSince) starvedSince = nowMs;
+          if (nowMs - starvedSince < PUMP_STARVE_MS) { schedule(220); return; }
+          // One module per starve window, not one per pump: past this point the
+          // person is still interacting, so the queue creeps rather than resumes.
+          starvedSince = nowMs;
+        } else {
+          starvedSince = 0;
+        }
 
-        var pendingCount = Object.keys(__alloModuleRegistry).reduce(function(total, name) {
-          return total + (__alloModuleRegistry[name] && __alloModuleRegistry[name].status === 'pending' ? 1 : 0);
-        }, 0);
-        // One background script at a time keeps parse/evaluation bursts from
-        // competing with clicks. Data Saver / 2G gets an extra-wide cooldown.
-        var available = Math.max(0, 1 - pendingCount);
+        // Count only what THIS pump put in flight. Counting every 'pending' entry
+        // in the registry meant a module the pump never queued -- boot chrome, or
+        // the one a person just opened, which promotes itself immediately -- held
+        // the whole background queue at zero budget until it finished loading.
+        var inFlight = 0;
+        for (var dispatchedName in pumpDispatched) {
+          var dispatchedEntry = __alloModuleRegistry[dispatchedName];
+          if (dispatchedEntry && dispatchedEntry.status === 'pending') inFlight++;
+          else delete pumpDispatched[dispatchedName];
+        }
+        // Data Saver / 2G keeps the single-file cooldown, and so does a pump that
+        // is only running because continuous input has starved it.
+        var budget = (blocked || slowBackground) ? 1 : PUMP_PARALLEL;
+        var available = Math.max(0, budget - inFlight);
         while (available > 0 && __alloDeferredModuleQueue.length
           && (deadline.didTimeout || deadline.timeRemaining() > 10)) {
           var queued = __alloDeferredModuleQueue.shift();
           if (__alloDeferredModuleNames[queued.name] !== queued) continue;
           delete __alloDeferredModuleNames[queued.name];
+          pumpDispatched[queued.name] = true;
           __alloLoadModuleNow(queued.name, queued.url);
           available--;
         }

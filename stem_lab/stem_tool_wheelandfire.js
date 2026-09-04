@@ -4932,6 +4932,14 @@
           var selectedWare = enclosedLoadLayout(probeIndex)[0];
           var selectedWareX = selectedWare.x;
           var selectedWareScale = selectedWare.scale;
+          // The stress caption is anchored 'end', so it grows LEFTWARD from
+          // this x. With the ware on the left of the chamber the sentence ran
+          // off the canvas (~34 user units). Same clamp idiom the peak-stress
+          // label already uses.
+          // Measured: the caption is ~238 user units wide in a 560-unit
+          // canvas and is anchored 'end', so its x must be at least ~242 for
+          // the sentence to start inside the frame.
+          var wareLabelX = Math.max(242, selectedWareX - 34);
           var selectedWareCoreY = selectedShelfY - 2 - vessel.heightCm * selectedWareScale * previewScale * .5;
           var openLoadPieces = openLoadLayout();
           var openThermalPiece = openLoadPieces[0];
@@ -5083,8 +5091,8 @@
               h('circle', { cx: selectedWareX, cy: selectedWareCoreY, r: 8, fill: wareMidMarkerColor, stroke: '#7c2d12', strokeWidth: 1 }),
               h('circle', { cx: selectedWareX, cy: selectedWareCoreY, r: 4, fill: wareCoreMarkerColor, stroke: '#fff7ed', strokeWidth: 1 }),
               h('line', { x1: selectedWareX - 10, y1: selectedWareCoreY - 5, x2: selectedWareX - 30, y2: selectedWareCoreY - 17, stroke: wareCoreMarkerColor, strokeWidth: 1.5 }),
-              h('text', { x: selectedWareX - 34, y: selectedWareCoreY - 5, fill: wareStressColor, fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'stress ' + Math.round(wareThermalStress.stressPct) + '% | ' + wareThermalStress.tensionMode),
-              h('text', { x: selectedWareX - 34, y: selectedWareCoreY - 19, fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'section ' + Math.round(wareCore.surfaceTemperatureC) + '° → ' + Math.round(wareCore.coreTemperatureC) + '°')
+              h('text', { x: wareLabelX, y: selectedWareCoreY - 5, fill: wareStressColor, fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'stress ' + Math.round(wareThermalStress.stressPct) + '% | ' + wareThermalStress.tensionMode),
+              h('text', { x: wareLabelX, y: selectedWareCoreY - 19, fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'section ' + Math.round(wareCore.surfaceTemperatureC) + '° → ' + Math.round(wareCore.coreTemperatureC) + '°')
             ),
             h('g', { 'aria-hidden': 'true' },
               h('path', { d: 'M476 ' + [118, 207, 296][probeIndex] + ' H350', fill: 'none', stroke: '#67e8f9', strokeWidth: 3, strokeDasharray: '7 5' }),

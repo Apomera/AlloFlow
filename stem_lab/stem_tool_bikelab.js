@@ -331,6 +331,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The hub screen paints no ground, so its title, subtitle, section label
+      // and footer sit on the HOST surface - white in light and dark, pure
+      // BLACK in the contrast theme, where 'BikeLab' measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -530,8 +535,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
           h('div', { className: 'text-center mb-6' },
             h('div', { className: 'text-6xl mb-3' }, '🚲'),
-            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'BikeLab'),
-            h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' },
+            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' + onHostInk }, 'BikeLab'),
+            h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' + onHostInk },
               t('stem.bikelab.physics_mechanics_and_maintenance_lear', 'Physics, mechanics, and maintenance — learn the science of cycling and the real-world skills to keep a bike rolling.'))
           ),
           // Progress banner — encourages exploration of all 8 modules.
@@ -557,15 +562,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
               })
             )
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.bikelab.core_modules', 'Core Modules')),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' + onHostInk }, t('stem.bikelab.core_modules', 'Core Modules')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, t('stem.bikelab.quick_labs', 'Quick Labs')),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' + onHostInk }, t('stem.bikelab.quick_labs', 'Quick Labs')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
-          h('div', { className: 'mt-8 text-center text-xs text-slate-600' },
+          h('div', { className: 'mt-8 text-center text-xs text-slate-600' + onHostInk },
             t('stem.bikelab.stem_lab_tool_side_view_2d_canvas_no_p', 'STEAM Lab tool · Side-view 2D canvas · No plugins required')
           )
         );

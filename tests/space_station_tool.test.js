@@ -2470,7 +2470,11 @@ describe('space station tool', () => {
         expect(html, 'quiz question ' + i + ' should render').toContain('iss-quiz-option-' + i + '-0');
         expect(html, 'quiz question ' + i + ' should not leak undefined').not.toContain('undefined');
       }
-    });
+      // ~50 full React mounts of an 800 KB tool. Measured on IDENTICAL code it
+      // swings 3.5s-5.7s with machine load, so against vitest's 5s default it
+      // fails intermittently and the failure reads as "a module renders wrong"
+      // rather than "the box was busy". Same fix as the catalog test below.
+    }, 30000);
 
     it('renders every operations mode, preset scenario and emergency', () => {
       // Same class again: the Operations tab is the tool's most branch-heavy
@@ -2505,7 +2509,11 @@ describe('space station tool', () => {
         expect(html, 'emergency ' + emergency + ' should render').toContain('iss-ops-grid');
         expect(html, 'emergency ' + emergency + ' should not leak undefined').not.toContain('undefined');
       });
-    });
+      // ~50 full React mounts of an 800 KB tool. Measured on identical code it
+      // swings 3.5s-5.7s with machine load, so against vitest's 5s default it
+      // fails intermittently and the failure reads as "a module renders wrong"
+      // rather than "the box was busy". Same fix as the catalog test below.
+    }, 30000);
 
     it('derives the relay numbers from the same physics it teaches', () => {
       const html = mountWithSeed({ ...BASE, tab: 'systems', sysIdx: 6, sysStep: 0 });

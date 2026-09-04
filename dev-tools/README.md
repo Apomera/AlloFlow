@@ -128,12 +128,87 @@ Pre-deploy gate for the JSX-view extraction pattern (DBQ / Glossary / Timeline /
 ### Render-crash gate (`check_render_refs` / `check_keyless_map` / `check_stem_render` / `check_sel_render` / `check_module_render` / `check_aria_handler`)
 The six blocking checks that `deploy.sh` Step 0.6 and `npm run verify:gate` run before any deploy — they statically render-smoke the monolith + STEM/SEL plugins to catch undefined-ref / keyless-map / setState-in-render crash classes before they ship. The highest-value gate in this folder.
 
+### `check_stem_layout_defects.cjs` (NEW — Sep 4, chromium)
+Renders a STEM tool and measures **geometry**, which is where a family of bugs lives that every
+other gate is blind to: they parse, they pass `check_stem_render`, they pass axe with zero
+violations, and they pass the tool's own unit tests.
+
+```bash
+node dev-tools/check_stem_layout_defects.cjs stem_lab/stem_tool_pets.js          # one tool
+node dev-tools/check_stem_layout_defects.cjs stem_lab/stem_tool_pets.js --deep   # + walk its tabs/views
+node dev-tools/check_stem_layout_defects.cjs --all --deep --dark --json          # lab-wide (long)
+```
+
+Five detectors, each reporting a measured number: `collapsed-percent-height` (a `height: N%`
+bar inside an auto-height parent renders as a hairline — this shipped as a chart that drew
+nothing), `light-ink-on-host-card` (the own-ground family), `overlay-collision`,
+`svg-text-outside-viewbox`, and a static `nonuniform-rx` lint.
+
+**★ Run it in `--dark` too.** stem_lab renders every tool on a WHITE card in *both* themes, so
+dark is where the own-ground family lives: the first light sweep found 154 findings, the first
+dark sweep found 517.
+
+**★ Screenshot-verify a finding before fixing it.** Eleven distinct false-positive classes are
+documented in the file header and fixed in the detectors (emoji are a colour font; SVG text is
+painted by `fill` and sits on sibling rects; `getBBox()` is pre-transform; `sr-only` text is
+meant to be stacked; a mid-render style read can mix values across elements; …). The header
+also lists the three permanent KNOWN-INTENTIONAL findings so the board reads clean.
+
 ### i18n checks (`check_lang_json.cjs` + `dev-tools/i18n/`)
 `check_lang_json.cjs` (`verify:lang-json`) validates all 63 mirrored `lang/*.js` pack files parse as JSON. The `dev-tools/i18n/` subtree holds the translation toolchain — see [`dev-tools/i18n/README.md`](i18n/README.md) (gap reports, key merging, `check_safety_string_spanglish.cjs` = `verify:spanglish`, `ingest_translation_feedback.cjs`).
 
 > **This catalog is a curated subset.** The repo has ~50 `dev-tools/*` scripts and 40+ `verify:*` npm scripts. `npm run verify:gate` / `npm run verify:all` chain the blocking ones; run `npm run` or grep `package.json` for the complete, authoritative list.
 
 ---
+
+### Galaxy Explorer harnesses (`galaxy_*.cjs`)
+
+Fourteen scripts, all headless chromium against the real
+`stem_lab/stem_tool_galaxy.js`. The tool is a 3-D scene plus six modes plus thirteen
+hand-drawn canvas branches, and almost none of that is reachable from Vitest: the smoke
+harness resolves `ensureThree()` with a promise that never settles, and the scene builder
+swallows its own exceptions behind one "3-D unavailable" card. These exist because each
+one caught something the unit tests could not see.
+
+```bash
+node dev-tools/galaxy_core_clipping.cjs      OUT --shapes=barredSpiral --observe=visible,radio
+node dev-tools/galaxy_a11y_audit.cjs         OUT [--shots]
+node dev-tools/galaxy_canvas_text_contrast.cjs OUT      # over-canvas labels vs REAL pixels
+node dev-tools/galaxy_no_webgl_check.cjs     OUT        # the 2-D fallback, all morphologies
+node dev-tools/galaxy_reduced_motion_check.cjs OUT/galaxy-canvas-text.html
+node dev-tools/galaxy_fullscreen_check.cjs   OUT        # native + 3 blocked-embed surfaces
+node dev-tools/galaxy_saved_state_sweep.cjs  OUT        # 26 stale/impossible saved states
+node dev-tools/galaxy_stage_sheet.cjs        OUT        # all 13 Star Life branches
+node dev-tools/galaxy_responsive_sweep.cjs   OUT [--shots]   # overflow at 390-1024px
+node dev-tools/galaxy_keyboard_contract.cjs  OUT        # the keys the alt text promises
+node dev-tools/galaxy_mode_churn.cjs         OUT [cycles]    # WebGL context leaks
+node dev-tools/galaxy_panel_shot.cjs         OUT '<state-json>' '<selector>' NAME WIDTH [--open]
+```
+
+**Read this before trusting a result.** Every one of these has produced a confident
+wrong answer at least once, and the traps are recorded in each file's header:
+
+- `galaxy_a11y_audit --shots` uses `fullPage: true`, and **that capture misrenders
+  layout** — it showed a correct `grid-cols-7` picker as seven stacked rows. Use
+  `galaxy_panel_shot` (clipped, 1:1) for anything about spacing or size. The audit also
+  grades **disabled** controls and composites semi-transparent inline backgrounds against
+  an assumed white page, so its contrast list needs a screenshot before you act on it.
+- Playwright's actionability waits **never settle** while the scene's rAF loop runs.
+  Screenshots time out; `scrollIntoViewIfNeeded` hangs. Neutralise `requestAnimationFrame`
+  after the scene settles — but *after* any scrolling, and re-measure clip boxes then.
+- A **closed `<details>` still reports layout boxes** for its children, so a selector
+  inside one resolves to a plausible rect that paints nothing. `--open` expands them.
+- Readouts must **discriminate**: ~76% of stars are M-type, so the Object Inspector
+  cannot tell two different stars apart. Use the selection reticle's world position.
+- Pair each Star Life stage with a mass that can reach it (`blue_supergiant` needs
+  >25 M☉, otherwise it correctly resolves to main sequence and looks like dead code).
+- Aladin's offline mirror errors arrive **late** and get blamed on the next case.
+
+Baseline as of 2026-09-04: clipping/chroma steady across four morphologies, 0 sub-24px
+targets, 0 responsive overflow, 2-D fallback clean, reduced motion completely still,
+23/23 over-canvas labels above AA, 26/26 saved states render, 10/10 keyboard controls
+work, fullscreen OK on all four surfaces, and mode churn releases every WebGL context
+(made == lost).
 
 ## Architecture notes
 

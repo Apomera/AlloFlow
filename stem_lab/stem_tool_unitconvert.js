@@ -1078,7 +1078,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { fromUnit: d.toUnit, toUnit: d.fromUnit }) });
                     });
                   },
-                  className: 'text-2xl text-cyan-400 font-bold hover:scale-125 transition-transform px-2 tracking-tight',
+                  // cyan-700, matching the 14 other cyan controls in this file.
+                  // This was the file's only text-cyan-400: 1.81:1 on the white
+                  // card, so the swap control was the palest thing on screen.
+                  className: 'text-2xl text-cyan-700 font-bold hover:scale-125 transition-transform px-2 tracking-tight',
                   title: t('stem.unitconvert.swap_units_2', 'Swap units')
                 }, '\u21C4'),
 

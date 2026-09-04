@@ -122,11 +122,42 @@ function keywordsFrom(text) {
   return out;
 }
 
+// Resolve a dotted ui_strings key ('stem.tools_menu.physics_chemistry') to its English string.
+// ui_strings.js is strict JSON, so it is read and parsed rather than evaluated.
+let _uiStrings = null;
+function uiString(key) {
+  if (!_uiStrings) {
+    try { _uiStrings = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui_strings.js'), 'utf8')); }
+    catch (e) { _uiStrings = {}; }
+  }
+  let node = _uiStrings;
+  for (const part of String(key).split('.')) {
+    if (!node || typeof node !== 'object') return null;
+    node = node[part];
+  }
+  return typeof node === 'string' && node.trim() ? node : null;
+}
+
 // The catalog carries the human-facing section a tool sits in, plus any
 // hand-written search aliases. Both are useful routing signal.
+// Read a tile's human-facing label, whichever of the three label forms it uses. Returns null when
+// the tile has no label at all, so callers can fall back rather than publish an empty name.
+function tileLabel(text) {
+  // Both quote styles: a name containing an apostrophe is written double-quoted
+  // (label: "RoadReady: Driver's Ed"), and a single-quote-only matcher fell through to the raw id.
+  const literal = text.match(/label:\s*(['"])((?:\\.|(?!\1)[^\\])*)\1/);
+  if (literal) return decode(literal[2]);
+  const withFallback = text.match(/label:\s*t\(\s*'[^']+'\s*,\s*(['"])((?:\\.|(?!\1)[^\\])*)\1/);
+  if (withFallback) return decode(withFallback[2]);
+  const keyOnly = text.match(/label:\s*t\(\s*'([^']+)'\s*\)/);
+  const resolved = keyOnly ? uiString(keyOnly[1]) : null;
+  return resolved ? decode(resolved) : null;
+}
+
 function readCatalogContext() {
   const src = fs.readFileSync(CATALOG, 'utf8');
   const sections = {};   // toolId -> section label
+  const labels = {};     // toolId -> human-facing tool name
   let current = '';
   const tileRe = /\{[^{}]*?\bid:\s*'([A-Za-z0-9_$]+)'[^{}]*?\}/g;
   // Walk the array in order, tracking the most recent category header.
@@ -135,26 +166,50 @@ function readCatalogContext() {
   // Window must exceed the longest tile desc, or long-desc tiles (the Law
   // Navigator, PaperTrail) never reach their `ready: true` and lose their
   // section. 400 was too small; descs here run past 600 chars.
-  const rowRe = /id:\s*'([A-Za-z0-9_$]+)'[\s\S]{0,1500}?(?:category:\s*true|ready:\s*true)/g;
+  // The id class must accept ANY quoted id, not just identifier characters. `_cat_Physics&Chemistry`
+  // carries an ampersand, so an [A-Za-z0-9_$]+ class failed to match that row at all — the header
+  // was skipped silently and all six of its tools (molecule, wave, magnetism, titrationLab,
+  // nuclearLab, opticsLab) inherited the preceding "Earth & Space Science" heading.
+  const rowRe = /id:\s*'([^']+)'[\s\S]{0,1500}?(?:category:\s*true|ready:\s*true)/g;
   let r;
   while ((r = rowRe.exec(region)) !== null) {
     const id = r[1];
     const isHeader = /category:\s*true/.test(r[0]);
     if (isHeader) {
-      const lm = r[0].match(/label:\s*'((?:\\.|[^'\\])*)'/)
-        || r[0].match(/label:\s*t\(\s*'[^']+'\s*,\s*'((?:\\.|[^'\\])*)'/);
-      current = lm ? decode(lm[1]).replace(/^[^\w]+/, '') : current;
+      // Three label forms appear on category headers, and all three must resolve or the header
+      // silently keeps the PREVIOUS category — which is worse than blank, because every tool under
+      // it is then filed under someone else's heading.
+      //   'Geometry & Measurement'                      a plain literal
+      //   t('stem.tools_menu.arts_music', 'Arts & Music') a key WITH an English fallback
+      //   t('stem.tools_menu.physics_chemistry')          a key with NO fallback  <-- was unhandled
+      // Measured 2026-09-03 before this fix: the first two headers (Math Fundamentals, Advanced
+      // Math) use the bare form, so their 20 tools carried section ''; Physics & Chemistry uses it
+      // too, so molecule, wave, magnetism, titrationLab, nuclearLab and opticsLab were all filed
+      // under "Earth & Space Science". `section` feeds the search `_terms`, so those tools were
+      // matchable on the wrong branch of science and the math tools on no branch at all.
+      const keyOnly = r[0].match(/label:\s*t\(\s*'([^']+)'\s*\)/);
+      const label = tileLabel(r[0]);
+      if (!label && keyOnly) {
+        throw new Error('Category header ' + id + ' uses t(' + JSON.stringify(keyOnly[1])
+          + ') and ui_strings.js has no such key, so its section cannot be resolved. Add the key, '
+          + 'or give the header an English fallback: t(key, \'English\').');
+      }
+      current = label ? String(label).replace(/^[^\w]+/, '').trim() : current;
     } else if (!id.startsWith('_cat_')) {
       sections[id] = current;
+      // First wins: the catalog array is walked before any later array that reuses an id, so the
+      // first label seen is the catalog tile's name rather than a mission or quest title.
+      const own = tileLabel(r[0]);
+      if (own && !labels[id]) labels[id] = own;
     }
   }
   const aliases = {};
   const aliasBlock = src.slice(src.indexOf('var _searchAliasMap = {'), src.indexOf('function _normalizeToolSearchText'));
   for (const a of aliasBlock.matchAll(/^\s+([A-Za-z][A-Za-z0-9_$]*):\s*'([^']*)'/gm)) aliases[a[1]] = a[2];
-  return { sections, aliases };
+  return { sections, labels, aliases };
 }
 
-const { sections, aliases } = readCatalogContext();
+const { sections, labels: catalogLabels, aliases } = readCatalogContext();
 
 const records = [];
 for (const f of fs.readdirSync(STEM_DIR)) {
@@ -187,7 +242,13 @@ for (const f of fs.readdirSync(STEM_DIR)) {
     t.topics = topics;
     t.allHeadings = allHeadings;
     const description = decode(t.description).slice(0, MAX_DESC);
-    const label = decode(t.label);
+    // The catalog tile is the authority on a tool's NAME: it is what the STEM Lab renders and what
+    // a teacher recognises. The per-file guess below it takes the first `label:` in the config head,
+    // which lands on a quest hook when the tool declares questHooks first (appLab read "Generate
+    // your first app", geologyExplorer "Identify 5 different rocks") and falls through to the raw id
+    // when the head has no label at all ("codingPlayground", "petsLab"). 25 of 147 were wrong that
+    // way before this fix, and those names reach both STEM search and the public tool directory.
+    const label = catalogLabels[t.id] || decode(t.label);
     const section = sections[t.id] || '';
     const toolTopics = t.topics || [];
     records.push({

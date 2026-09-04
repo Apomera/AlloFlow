@@ -102,6 +102,10 @@ const wsYearLog = Array.from({ length: 10 }, (_, i) => ({
   cascades: [],
 }));
 const wsDebrief = {
+  // The real campaign always stamps a seed (startStewardCampaign), so omitting it here rendered a
+  // bare "Campaign seed:" label with nothing after it — a phantom defect in the shot, and exactly
+  // the shape of the genuine "undefined / 6" debrief bug this harness was built to catch.
+  seed: 'steward-harness-fixture-0001',
   phase: 'debrief', difficulty: 'coordinator', year: 11, maxYears: 10,
   hoursPerYear: 18, hoursLeft: 0, yearActions: [], cascadesFiredThisYear: [],
   connectivityBoosts: 3, fundingBonusNextYear: 0, deepDiveComponent: null,
@@ -170,6 +174,15 @@ const SHOTS = [
   ['01-explorer-light', {}, false],
   ['02-explorer-dark', {}, true],
   ['03-explorer-night-light', { climSolar: 0.2, climateAdjusted: true }, false],
+  // Dusk was never shot, and that is exactly why the terrain kept noon colour through the whole
+  // dawn/dusk band while the sky turned orange: no picture ever showed the middle of the range.
+  ['03b-explorer-dusk-light', { climSolar: 0.45, climateAdjusted: true }, false],
+  // The rainbow was previously drawn only above 70% sun — exactly the altitudes at which a rainbow
+  // cannot exist — so no shot ever showed one under conditions that occur in nature. These two
+  // bracket the 42-degree rule the pilot lab teaches: a low Sun through rain makes a wide bow, and
+  // the same rain under a high Sun makes none at all.
+  ['03c-explorer-rainbow-low-sun', { climSolar: 0.42, climTemp: 18, landRainIntensity: 88, climateAdjusted: true, landAdjusted: true }, false],
+  ['03d-explorer-no-bow-high-sun', { climSolar: 1.0, climTemp: 18, landRainIntensity: 88, climateAdjusted: true, landAdjusted: true }, false],
   ['04-steward-setup-light', { wcMode: 'steward' }, false],
   ['05-steward-setup-dark', { wcMode: 'steward' }, true],
   ['06-steward-debrief-light', { wcMode: 'steward', steward: wsDebrief }, false],
@@ -232,7 +245,11 @@ const MOBILE_SHOTS = [
   // The pilot HUD stacks four overlays on one canvas (form badge, altitude
   // ladder, gauge, control pad), which is the arrangement most likely to
   // collide at phone width.
+  // ★ This shot claimed to cover the HUD but did not: without onboardingComplete the pilot renders
+  // its onboarding card, so the four stacked overlays the comment above describes were never once
+  // photographed at phone width. Both states are worth having, so keep the card AND fly.
   ['M4-pilot-light', { wcMode: 'pilot' }, false],
+  ['M4b-pilot-hud-light', { wcMode: 'pilot', pilot: { onboardingComplete: true } }, false],
   ['M1-explorer-light', {}, false],
   ['M2-preciplab-light', { wcMode: 'precipHunt' }, false],
   ['M2b-preciplab-3d-light', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains' } }, false],
@@ -391,6 +408,16 @@ const MOBILE_SHOTS = [
     await mob.evaluate(({ s, d }) => window.__mount(s, d), { s: state, d: dark });
     await mob.waitForTimeout(3500);
     await mob.screenshot({ path: path.join(OUT, label + '.png'), fullPage: true });
+    // Crop the scene itself as well. The full-page phone shot renders the canvas a few hundred
+    // pixels wide inside an 8,000px column, which is far too small to judge anything drawn ON it —
+    // so canvas work has only ever been reviewed at desktop width, and whether a label or a chip
+    // still fits once the scene is a third of the size was nobody's evidence.
+    const mobShell = await mob.$('canvas.wc-journey-3d') || await mob.$('.wc-canvas-shell')
+      || await mob.$('.wc-precip-chamber') || await mob.$('canvas.wc-pilot-canvas');
+    if (mobShell) {
+      try { await mobShell.screenshot({ path: path.join(OUT, label + '-canvas.png') }); }
+      catch (e) { console.log('   (mobile canvas crop skipped: ' + e.message.slice(0, 60) + ')'); }
+    }
     const overflow = await mob.evaluate(() => ({
       doc: document.documentElement.scrollWidth,
       win: window.innerWidth,
@@ -405,6 +432,34 @@ const MOBILE_SHOTS = [
         return worst;
       })(),
     }));
+    // Overlays stacked on one canvas are the thing most likely to collide once the scene narrows,
+    // and a screenshot only shows it if somebody looks. Report it as a number instead: any pair of
+    // absolutely-positioned HUD panels whose boxes intersect by more than a hairline.
+    const collisions = await mob.evaluate(() => {
+      const shell = document.querySelector('.wc-canvas-shell, .wc-pilot-stage, .wc-precip-chamber');
+      if (!shell) return [];
+      // While the pilot is still on its launch card the whole HUD renders BEHIND it, so its panels
+      // overlap each other without anyone ever seeing it. Skip that view rather than report noise.
+      // ★Do not try to settle this with elementFromPoint: every HUD panel sets pointer-events:none,
+      // so the topmost element at a panel's own centre is the canvas underneath it and the probe
+      // rejects all of them — which is how this check first measured, silently, nothing at all.
+      if (shell.querySelector('.wc-pilot-launch')) return [];
+      const panels = [...shell.querySelectorAll('.wc-pilot-hud, .wc-pilot-ladder-mark, .wc-pilot-pad, .wc-pilot-camera-bar, .wc-canvas-title, .wc-chip-row')]
+        .map((el) => ({ cls: (el.className || '').toString().split(/\s+/)[0], r: el.getBoundingClientRect(), st: getComputedStyle(el) }))
+        .filter((p) => p.r.width > 2 && p.r.height > 2
+          && p.st.visibility !== 'hidden' && p.st.display !== 'none' && Number(p.st.opacity) > 0.05);
+      const hits = [];
+      for (let i = 0; i < panels.length; i++) {
+        for (let j = i + 1; j < panels.length; j++) {
+          const a = panels[i].r, b = panels[j].r;
+          const ox = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          if (ox > 2 && oy > 2) hits.push(panels[i].cls + ' x ' + panels[j].cls + ' (' + Math.round(ox) + 'x' + Math.round(oy) + ')');
+        }
+      }
+      return hits;
+    });
+    if (collisions.length) console.log('   ★OVERLAP ' + collisions.join('; '));
     const bad = overflow.doc > overflow.win + 1;
     console.log('shot ' + label + (bad
       ? '  ★OVERFLOW doc=' + overflow.doc + ' > win=' + overflow.win + (overflow.widest ? ' worst=' + JSON.stringify(overflow.widest) : '')

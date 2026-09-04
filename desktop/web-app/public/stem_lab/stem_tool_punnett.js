@@ -1161,6 +1161,11 @@ window.StemLab = window.StemLab || {
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // These sit on the HOST surface, not on one of this tool own panels -
+      // white in light and dark, pure BLACK in the contrast theme, where the
+      // grid heading measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
 
@@ -2231,8 +2236,8 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'punnett-step-heading mt-1' },
                 h('span', { className: 'punnett-step-number', 'aria-hidden': 'true' }, '3'),
                 h('div', null,
-                  h('h3', { className: 'text-sm font-black text-slate-800 m-0' }, 'Read the offspring probabilities'),
-                  h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Rows and columns are parent gametes; squares are equally likely when each modeled gamete is equally frequent.')
+                  h('h3', { className: 'text-sm font-black text-slate-800 m-0' + onHostInk }, 'Read the offspring probabilities'),
+                  h('p', { className: 'text-[11px] text-slate-600 mt-0.5' + onHostInk }, 'Rows and columns are parent gametes; squares are equally likely when each modeled gamete is equally frequent.')
                 )
               ),
 
@@ -2261,7 +2266,7 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 h('div', { style: { minWidth: 0 } },
-                  h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, 'Outcome mix'),
+                  h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, 'Outcome mix'),
                   h('div', { style: { display: 'grid', gap: 7 } },
                     phenotypeMix.map(function(item) {
                       return h('div', { key: item.id, style: { border: '1px solid ' + item.border, borderRadius: 10, padding: '8px 10px', background: item.soft } },
@@ -2421,7 +2426,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Educational Callout
-              !isDihybrid && h('p', { className: 'mt-3 text-xs text-slate-600 italic' },
+              !isDihybrid && h('p', { className: 'mt-3 text-xs text-slate-600 italic' + onHostInk },
                 (function() {
                   if (inheritMode === 'incomplete') {
                     if (blendCount === 4) return '\uD83D\uDCA1 100% intermediate phenotype. Every modeled offspring is heterozygous; this can occur when the parents contribute different homozygous alleles.';
@@ -2474,12 +2479,12 @@ window.StemLab = window.StemLab || {
                     className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold rounded-lg border-2 transition-all ' +
                       (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-600')
                   }, isDihybrid ? '\uD83E\uDDEC Dihybrid ON (4\u00D74)' : '\uD83E\uDDEC Dihybrid Cross (4\u00D74)'),
-                  isDihybrid && h('span', { className: 'text-[11px] text-slate-600' }, 'Two genes, 16 offspring combinations')
+                  isDihybrid && h('span', { className: 'text-[11px] text-slate-600' + onHostInk }, 'Two genes, 16 offspring combinations')
                 ),
 
                 isDihybrid && h('div', null,
                   // Dihybrid info
-                  h('p', { className: 'text-xs text-slate-600 italic mb-3' },
+                  h('p', { className: 'text-xs text-slate-600 italic mb-3' + onHostInk },
                     gradeText(
                       'Two traits at the same time! Watch how they mix together.',
                       'A dihybrid cross tracks TWO genes at once. Each parent passes one allele for each gene.',
@@ -2636,7 +2641,7 @@ window.StemLab = window.StemLab || {
 
                   // Dihybrid Quick Crosses
                   h('div', { className: 'mt-3 border-t border-slate-200 pt-3' },
-                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Dihybrid Quick Crosses'),
+                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83E\uDDEC Dihybrid Quick Crosses'),
                     h('div', { className: 'flex flex-wrap gap-1.5' },
                       DIHYBRID_PRESETS.map(function(dp) {
                         return h('button', { key: dp.label,
@@ -2665,7 +2670,7 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // Dihybrid educational callout
-                  h('p', { className: 'mt-3 text-xs text-slate-600 italic' },
+                  h('p', { className: 'mt-3 text-xs text-slate-600 italic' + onHostInk },
                     diPreset
                       ? '\uD83D\uDCA1 This model assumes independent assortment for ' + diPreset.t1name + ' (' + diPreset.domLabel1 + '/' + diPreset.recLabel1 + ') and ' + diPreset.t2name + ' (' + diPreset.domLabel2 + '/' + diPreset.recLabel2 + ').'
                       : '\uD83D\uDCA1 In this dihybrid model, each parent forms four equally frequent gamete types and the genes assort independently, producing 16 equally weighted combinations.'
@@ -2994,7 +2999,7 @@ window.StemLab = window.StemLab || {
 
               // Population visualization (dot field)
               h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
-                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDC65 Population Sample (n=' + Math.min(popSize, 100) + ')'),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83D\uDC65 Population Sample (n=' + Math.min(popSize, 100) + ')'),
                 h('svg', { viewBox: '0 0 300 60', className: 'w-full', role: 'img', 'aria-label': 'Illustrative sample of ' + Math.min(popSize, 100) + ' individuals at allele frequency p ' + displayedPopFreqA.toFixed(2) },
                   (function() {
                     var dots = [];
@@ -3021,7 +3026,7 @@ window.StemLab = window.StemLab || {
 
               // Allele frequency graph
               popHistory && popHistory.length > 1 && h('div', { className: 'bg-white rounded-xl border p-3' },
-                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Allele Frequency Over Generations'),
+                h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83D\uDCC8 Allele Frequency Over Generations'),
                 h('svg', { viewBox: '0 0 340 160', className: 'w-full', role: 'img', 'aria-label': 'Allele frequencies p and q across ' + (popHistory.length - 1) + ' simulated generations; current p is ' + displayedPopFreqA.toFixed(2) + ' and q is ' + (1 - displayedPopFreqA).toFixed(2) },
                   // Grid
                   h('line', { x1: 30, y1: 10, x2: 30, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
@@ -3223,7 +3228,7 @@ window.StemLab = window.StemLab || {
 
                   // Amino acid chain
                   h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
-                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA Protein (Amino Acid Chain)'),
+                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, '\uD83E\uDDEA Protein (Amino Acid Chain)'),
                     h('div', { className: 'flex flex-wrap gap-1' },
                       aminos.map(function(aa, i) {
                         var cat = AMINO_CAT[aa] || 'nonpolar';

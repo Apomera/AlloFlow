@@ -2117,7 +2117,7 @@ var d = (labToolData.probability) || {};
 
               ),
 
-              React.createElement("p", { className: "text-xs text-slate-600 mt-2 italic" }, activeSport.desc + ' \u2014 P(' + activeSport.outcomes[0] + ') = ' + (activeSport.probs[0] * 100).toFixed(0) + '%')
+              React.createElement("p", { className: "text-xs text-slate-600 mt-2 italic" + (isContrast ? " text-white" : "") }, activeSport.desc + ' \u2014 P(' + activeSport.outcomes[0] + ') = ' + (activeSport.probs[0] * 100).toFixed(0) + '%')
 
             ),
 
@@ -3026,7 +3026,9 @@ var d = (labToolData.probability) || {};
 
               var _bpct = (_bprob * 100).toFixed(1);
 
-              var _bColor = parseFloat(_bpct) >= 50 ? '#166534' : '#b45309';
+              // These two run 2.2-2.3:1 on the contrast theme's black host surface,
+              // which this readout sits directly on.
+              var _bColor = (isDark || isContrast) ? (parseFloat(_bpct) >= 50 ? '#86efac' : '#fbbf24') : (parseFloat(_bpct) >= 50 ? '#166534' : '#b45309');
 
               var _bTable = [2, 5, 10, 15, 20, 23, 30, 40, 50, 57].map(function(nb) {
 
@@ -3106,7 +3108,7 @@ var d = (labToolData.probability) || {};
 
                           React.createElement("td", { className: "px-3 py-1 font-bold font-mono", style:{color:_bn===row.n?'#b45309':_text} }, row.n + (_bn===row.n?' ◄':'')),
 
-                          React.createElement("td", { className: "px-3 py-1 text-right font-bold font-mono", style:{color:row.over50?'#166534':'#b45309'} }, row.pct + '%')
+                          React.createElement("td", { className: "px-3 py-1 text-right font-bold font-mono", style:{color:(isDark || isContrast) ? (row.over50?'#86efac':'#fbbf24') : (row.over50?'#166534':'#b45309')} }, row.pct + '%')
 
                         );
 
@@ -3148,7 +3150,15 @@ var d = (labToolData.probability) || {};
                   var matchGroups = Object.keys(groups).filter(function(k) { return groups[k].length >= 2; });
                   var anyMatch = matchGroups.length > 0;
                   // Color palette for match groups
-                  var matchColors = ['#991b1b', '#166534', '#6b21a8', '#9a3412', '#155e75', '#9d174d', '#3f6212', '#581c87'];
+                  // Eight deep hues chosen to separate match groups on the white
+                  // card. They land on the HOST ground, which is black in the
+                  // contrast theme - the darkest of them measured 2.03:1 there,
+                  // and only for the birthdays that happened to collide, so the
+                  // defect came and went with the random sample. Same eight hues,
+                  // lightened, when the ground is dark.
+                  var matchColors = (isDark || isContrast)
+                    ? ['#fca5a5', '#86efac', '#d8b4fe', '#fdba74', '#67e8f9', '#f9a8d4', '#bef264', '#c4b5fd']
+                    : ['#991b1b', '#166534', '#6b21a8', '#9a3412', '#155e75', '#9d174d', '#3f6212', '#581c87'];
                   function colorForBday(idx) {
                     var bday = sample[idx];
                     if (groups[bday].length < 2) return null;
@@ -3315,7 +3325,7 @@ var d = (labToolData.probability) || {};
 
               React.createElement("div", { className: "text-center" },
 
-                React.createElement("p", { className: "text-3xl font-black text-violet-700 mb-1" }, d.lastResult != null ? String(d.lastResult) : '?'),
+                React.createElement("p", { className: "text-3xl font-black text-violet-700 mb-1" + (isContrast ? " text-white" : "") }, d.lastResult != null ? String(d.lastResult) : '?'),
 
                 React.createElement("p", { className: (isDark || isContrast) ? "text-xs text-slate-300" : "text-xs text-slate-600" }, d.lastResult != null ? 'Last result' : 'Click to start!')
 
@@ -3653,7 +3663,7 @@ var d = (labToolData.probability) || {};
 
                     ),
 
-                    React.createElement("span", { className: "w-24 text-xs font-mono text-slate-600 text-right" }, count + " (" + pct.toFixed(1) + "%)"),
+                    React.createElement("span", { className: "w-24 text-xs font-mono text-slate-600 text-right" + (isContrast ? " text-white" : "") }, count + " (" + pct.toFixed(1) + "%)"),
 
                     React.createElement("span", { className: "w-16 text-[11px] font-bold", style: { color: Math.abs(pct - expPct) < 3 ? (isDark||isContrast?'#86efac':'#047857') : Math.abs(pct - expPct) < 8 ? (isDark||isContrast?'#fcd34d':'#b45309') : (isDark||isContrast?'#fca5a5':'#b91c1c') } }, (pct > expPct ? '+' : '') + (pct - expPct).toFixed(1) + '%')
 

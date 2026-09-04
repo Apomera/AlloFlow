@@ -188,3 +188,180 @@ describe('the transformation machine speaks through the translator', () => {
     expect(s).not.toContain("ctx.fillText('\u{1FAA8} Rock Cycle'");
   });
 });
+
+// ── The last two module-scope tables ──
+//
+// ROCKS_CHALLENGES (the badge names and descriptions, which are the chip
+// tooltip and the completion toast) and ROCKS_VOCAB (every Concept Focus
+// definition, rendered by BOTH quizzes) were the remaining bare-English data
+// tables. Same shape as RK_TEXTURE_GLOSS and RC_TRANSFORMS: module scope, above
+// __alloT, read raw at render.
+describe('the badge and vocabulary tables speak through the translator', () => {
+  const src = () => readFileSync('stem_lab/stem_tool_rocks.js', 'utf8');
+
+  function literalAt(marker, openChar) {
+    const s = src();
+    const at = s.indexOf(marker);
+    expect(at, marker).toBeGreaterThan(-1);
+    const open = s.indexOf(openChar, at);
+    const close = openChar === '{' ? '}' : ']';
+    const BS = String.fromCharCode(92);
+    let depth = 0, end = -1, inStr = null;
+    for (let i = open; i < s.length; i++) {
+      const ch = s[i];
+      if (inStr) {
+        if (ch === BS) { i++; continue; }
+        if (ch === inStr) inStr = null;
+        continue;
+      }
+      if (ch === "'" || ch === '"' || ch === '`') { inStr = ch; continue; }
+      if (ch === openChar) depth++;
+      else if (ch === close) { depth--; if (depth === 0) { end = i; break; } }
+    }
+    expect(end).toBeGreaterThan(open);
+    return new Function('return (' + s.slice(open, end + 1) + ')')();
+  }
+
+  const strings = () => JSON.parse(readFileSync('ui_strings.js', 'utf8')).stem.rocks;
+  const slug = (t) => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '_');
+
+  it('has a key for every challenge name and description', () => {
+    const rows = literalAt('var ROCKS_CHALLENGES = [', '[');
+    expect(rows.length).toBeGreaterThan(4);
+    const S = strings();
+    rows.forEach((ch) => {
+      ['name', 'desc'].forEach((k) => {
+        expect(S['challenge_' + ch.id + '_' + k], ch.id + '.' + k).toBe(ch[k]);
+      });
+    });
+  });
+
+  it('has a key for every vocabulary term and definition', () => {
+    const vocab = literalAt('var ROCKS_VOCAB = {', '{');
+    const terms = Object.keys(vocab);
+    expect(terms.length).toBeGreaterThan(8);
+    const S = strings();
+    terms.forEach((term) => {
+      expect(S['vocab_term_' + slug(term)], term).toBe(term);
+      expect(S['vocab_def_' + slug(term)], term + ' definition').toBe(vocab[term]);
+    });
+  });
+
+  it('translates only the DISPLAY, never the lookup key', () => {
+    const s = src();
+    // "already studied" is keyed on the English term, so the guards and the
+    // vocabLookedUp state must keep using ROCKS_VOCAB[concept] directly.
+    expect(s).toContain('quizQ.concept && ROCKS_VOCAB[quizQ.concept] &&');
+    expect(s).toContain('d.rcQuiz.concept && ROCKS_VOCAB[d.rcQuiz.concept] &&');
+    // ...while both cards render through the helpers.
+    expect((s.match(/rkVocabDef\(__alloT,/g) || []).length).toBe(2);
+    expect((s.match(/rkVocabTerm\(__alloT,/g) || []).length).toBe(2);
+  });
+
+  it('leaves no raw challenge name or description at a render site', () => {
+    const s = src();
+    expect(s).not.toContain('ch.name + ": " + ch.desc');
+    expect(s).not.toContain('var name = fc ? fc.name : finishedId;');
+    expect((s.match(/rkChallengeText\(/g) || []).length).toBeGreaterThan(2);
+  });
+});
+// ── The quiz answer must be the SAME EXPRESSION as its first option ──
+//
+// Correctness is `opt === quizQ.a`, a string comparison between the rendered
+// option and the answer field. So the moment `options` renders through the
+// catalogue while `a` stays a raw English literal, no option can equal `a` in
+// any other language: the correct answer is scored WRONG and painted red, in
+// every pack, silently, because English still passes.
+//
+// That happened here. Localizing the 67 raw option strings broke 15 questions
+// until `a` was repointed at options[0]. The guard checks expression identity
+// rather than "is `a` localized", because identity is the invariant the
+// comparison actually needs.
+describe('quiz answer / option identity', () => {
+  const src = () => readFileSync('stem_lab/stem_tool_rocks.js', 'utf8');
+
+  // Split an array-literal body on TOP-LEVEL commas. The comma inside
+  // __alloT(key, English) is not an element boundary, and a naive split
+  // reports every fallback as a bare literal.
+  function topLevelParts(body) {
+    const parts = [];
+    let depth = 0;
+    let quote = null;
+    let cur = '';
+    for (let i = 0; i < body.length; i++) {
+      const c = body[i];
+      if (quote) {
+        cur += c;
+        if (c === '\\') { cur += body[i + 1] || ''; i++; continue; }
+        if (c === quote) quote = null;
+        continue;
+      }
+      if (c === "'" || c === '"') { quote = c; cur += c; continue; }
+      if (c === '(') depth++;
+      if (c === ')') depth--;
+      if (c === ',' && depth === 0) { parts.push(cur); cur = ''; continue; }
+      cur += c;
+    }
+    if (cur.trim()) parts.push(cur);
+    return parts.map((p) => p.trim());
+  }
+
+  function bank(marker) {
+    const s = src();
+    const start = s.indexOf(marker);
+    if (start < 0) return null;
+    const end = s.indexOf('\n          const ', start + 30);
+    return s.slice(start, end < 0 ? undefined : end);
+  }
+
+  it('QUIZ_BANK: every answer is byte-identical to its first option', () => {
+    const seg = bank('const QUIZ_BANK = [');
+    expect(seg, 'QUIZ_BANK not found').toBeTruthy();
+    const pairs = [...seg.matchAll(/\n\s+a:\s*(.+?),\s*\n\s+options:\s*\[([\s\S]*?)\]/g)];
+    expect(pairs.length, 'questions found to check').toBeGreaterThan(10);
+    const bad = pairs
+      .map((m) => [m[1].trim(), topLevelParts(m[2])[0]])
+      .filter(([a, first]) => a !== first);
+    expect(
+      bad,
+      'these answers differ from options[0], so `opt === quizQ.a` cannot match once either side is localized:\n  '
+      + bad.map(([a, f]) => a + '\n    vs ' + f).join('\n  ')
+    ).toEqual([]);
+  });
+
+  it('no quiz option is left as a bare English literal', () => {
+    const seg = bank('const QUIZ_BANK = [');
+    const arrays = [...seg.matchAll(/options:\s*\[([\s\S]*?)\]/g)].map((m) => m[1]);
+    expect(arrays.length).toBeGreaterThan(10);
+    const raw = [];
+    arrays.forEach((body) => {
+      topLevelParts(body).forEach((p) => {
+        if (/^(t|__alloT)\(/.test(p)) return;
+        if (/^['"]/.test(p)) raw.push(p);
+      });
+    });
+    expect(
+      raw,
+      'answer buttons a learner has to read in order to answer, left in English:\n  ' + raw.join('\n  ')
+    ).toEqual([]);
+  });
+  // The rock-cycle bank is the same shape under a different field name (`opts`)
+  // and it does NOT put the answer first — the correct choice sits at index 1
+  // or 2 — so this checks membership rather than position.
+  it('rock-cycle quiz: every answer is one of its own options, localized', () => {
+    const s = src();
+    const rows = [...s.matchAll(/\n\s+a:\s*(.+?),\s*\n\s+opts:\s*\[([^\]]*)\]/g)];
+    expect(rows.length, 'rock-cycle questions found').toBeGreaterThan(5);
+    const problems = [];
+    rows.forEach(([, aRaw, body]) => {
+      const a = aRaw.trim();
+      if (/^['"]/.test(a)) { problems.push('answer left in English: ' + a); return; }
+      if (!body.includes(a)) problems.push('answer is not among its options: ' + a);
+      topLevelParts(body).forEach((p) => {
+        if (/^(t|__alloT)\(/.test(p)) return;
+        if (/^['"]/.test(p)) problems.push('option left in English: ' + p);
+      });
+    });
+    expect(problems, problems.join('\n  ')).toEqual([]);
+  });
+});

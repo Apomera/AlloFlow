@@ -1,0 +1,26 @@
+{
+  "note": "Keys where ui_strings intentionally differs from the source fallback. Everything else must match: ui_strings is what ships.",
+  "allowed": {
+    "atctower.log_current_setup": "ui_strings carries the emoji variant",
+    "bikelab.reset": "ui_strings carries the emoji variant",
+    "bikelab.ring_cog": "reviewed: ui_strings value is intentional",
+    "coding.else": "ui_strings carries the emoji variant",
+    "echolocation.w_flap_wings_thrust_up": "reviewed: ui_strings value is intentional",
+    "fireecology.a_real_indigenous_approach_is_patchwor": "reviewed: ui_strings value is intentional",
+    "fireecology.camp_fire_2018_black_saturday_2009_car": "reviewed: ui_strings value is intentional",
+    "fireecology.fire_regime_discovery": "ui_strings carries the emoji variant",
+    "fireecology.fuel_load": "ui_strings carries the emoji variant",
+    "fireecology.biodiversity": "ui_strings carries the emoji variant",
+    "fireecology.forest_visualization_showing_current_f": "reviewed: ui_strings value is intentional",
+    "fireecology.forest_health_over_time": "ui_strings carries the emoji variant",
+    "fireecology.event_log": "ui_strings carries the emoji variant",
+    "geosandbox.open_immersive": "reviewed: ui_strings value is intentional",
+    "geosandbox.ai_tutor": "reviewed: ui_strings value is intentional",
+    "geosandbox.next_challenge": "reviewed: ui_strings value is intentional",
+    "geosandbox.delete_object": "reviewed: ui_strings value is intentional",
+    "numberline.integers_absolute_value_distance_from_": "ui_strings carries the emoji variant",
+    "spaceexplorer.tech_shop_2": "ui_strings carries the emoji variant",
+    "trajectorycomputing.revise_prediction": "reviewed: ui_strings value is intentional",
+    "watercycle.pilot_rainbow_receipt_paths_value": "reviewed: ui_strings value is intentional"
+  }
+}

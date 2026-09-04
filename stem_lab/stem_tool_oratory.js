@@ -2816,8 +2816,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         var cardClass = isDark
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
           : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
-        var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
-        var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
+        // ★ These two drive the whole tool chrome, which paints no ground and
+        // therefore sits on the HOST surface. That is a white card in light AND
+        // dark, but pure BLACK in the contrast theme - where the light branch
+        // put slate-900 on black at 1.18:1, the tool own name included.
+        var headingClass = (isDark || isContrast) ? 'text-white font-bold' : 'text-slate-900 font-bold';
+        var subTextClass = (isDark || isContrast) ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
           (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +

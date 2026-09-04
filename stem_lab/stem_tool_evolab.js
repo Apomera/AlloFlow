@@ -112,6 +112,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
     aliases: ['evolution', 'natural selection', 'Darwin', 'Hardy-Weinberg'],
     render: function(ctx) {
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      // The hub screen paints no ground, so its title, subtitle, section
+      // labels and footer sit on the HOST surface - white in light and dark,
+      // pure BLACK in the contrast theme, where 'EvoLab' measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React || window.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -752,8 +757,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
           h('div', { className: 'text-center mb-6' },
             h('div', { className: 'text-6xl mb-3' }, '🧬'),
-            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'EvoLab'),
-            h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' },
+            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' + onHostInk }, 'EvoLab'),
+            h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' + onHostInk },
               t('stem.evolab.evolution_and_natural_selection_see_po', 'Evolution and natural selection — see populations change, build the tree of life, and untangle the most common misconceptions.'))
           ),
           h('section', {
@@ -910,9 +915,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           // Teacher Resources section — distinguished by amber theming so students
           // know it's not for them and teachers can find it instantly. Currently
           // one card (5-Day Curriculum Guide) but designed to grow.
-          h('div', { className: 'mt-8 text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1 flex items-center gap-2' },
+          h('div', { className: 'mt-8 text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1 flex items-center gap-2' + onHostInk },
             h('span', null, t('stem.evolab.teacher_resources', 'Teacher Resources')),
-            h('span', { className: 'normal-case font-medium text-slate-600' }, t('stem.evolab.for_educators_planning_a_unit', '— for educators planning a unit'))
+            h('span', { className: 'normal-case font-medium text-slate-600' + onHostInk }, t('stem.evolab.for_educators_planning_a_unit', '— for educators planning a unit'))
           ),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
             h('button', {
@@ -970,7 +975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               )
             )
           ),
-          h('div', { className: 'mt-8 text-center text-xs text-slate-600' },
+          h('div', { className: 'mt-8 text-center text-xs text-slate-600' + onHostInk },
             t('stem.evolab.stem_lab_tool_evolution_natural_select', 'STEAM Lab tool · Evolution & natural selection · Maine examples sprinkled in')
           )
         );

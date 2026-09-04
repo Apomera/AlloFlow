@@ -720,6 +720,387 @@ function adminUpdateRewardsSettings(request) {
     return { ok: true, printLabEnabled: printLabEnabled };
   });
 }
+// ── Records requests (2026-09-03) ────────────────────────────────────────────
+// A district retention schedule can require one student's data to be exported
+// or removed. Deleting rows by hand is the obvious move and it is the wrong
+// one: the Audit sheet is a linked hash chain, so a removed row breaks
+// verification permanently and gives no clue why. The supported path redacts
+// identifying cells in place, keeping every id, amount and date so balances
+// and the chain still verify, and appends a REDACTION entry, which extends the
+// chain rather than breaking it.
+//
+// One residue is unavoidable and is reported rather than hidden: audit rows
+// that the student's own account generated carry that account's email, and
+// rewriting them would destroy the tamper-evidence the chain exists for. The
+// caller is told how many such rows there are so the district can decide.
+var SR_REDACTED_TEXT = 'Redacted at district request';
+var SR_REDACTION_PLAN = [
+  ['Students', 'Id', { FirstName: 'Redacted', LastInitial: '', Grade: '', Homeroom: '', Active: false }],
+  ['Ledger', 'StudentId', { Reason: SR_REDACTED_TEXT }],
+  ['Receipts', 'StudentId', { RecipientEmail: '' }],
+  ['Guardians', 'StudentId', { GuardianEmail: '', GuardianName: '', Relationship: '', Active: false }],
+  ['PrintModels', 'OwnerStudentId', { Title: SR_REDACTED_TEXT, Description: '', CatalogTitle: '', CatalogDescription: '', CreatorLabel: '' }],
+  ['PrintRequests', 'StudentId', { StudentNote: '', StaffReason: '' }],
+  ['PrintAssets', 'OwnerStudentId', { FileName: '' }],
+  ['PrintPublications', 'OwnerStudentId', { CatalogTitle: '', CatalogDescription: '', CreatorLabel: '' }],
+  ['MailOutbox', 'StudentId', { PayloadJson: '', ResolutionNote: '' }]
+];
+// Every sheet that holds anything about one student, for answering a records
+// request. Balances, orders and holds carry only ids, amounts and dates.
+var SR_STUDENT_SHEETS = [
+  ['Students', 'Id'], ['Balances', 'StudentId'], ['Ledger', 'StudentId'], ['Orders', 'StudentId'],
+  ['Receipts', 'StudentId'], ['Statements', 'StudentId'], ['Guardians', 'StudentId'],
+  ['GuardianDigests', 'StudentId'], ['PointHolds', 'StudentId'], ['PrintModels', 'OwnerStudentId'],
+  ['PrintRequests', 'StudentId'], ['PrintAssets', 'OwnerStudentId'], ['PrintPublications', 'OwnerStudentId'],
+  ['MailOutbox', 'StudentId']
+];
+
+function sheetRowsFor_(book, sheetName, columnName, value) {
+  var headers = SR_SHEETS[sheetName];
+  if (!headers) return [];
+  var column = headers.indexOf(columnName), sheet = book.getSheetByName(sheetName);
+  if (column < 0 || !sheet) return [];
+  return rows_(sheet, headers.length)
+    .filter(function(row) { return String(cell_(row[column])) === value; })
+    .map(function(row) {
+      var out = {};
+      headers.forEach(function(header, i) { out[header] = cell_(row[i]); });
+      return out;
+    });
+}
+
+function redactSheetRows_(book, sheetName, columnName, value, replacements) {
+  var headers = SR_SHEETS[sheetName];
+  if (!headers) return 0;
+  var column = headers.indexOf(columnName), sheet = book.getSheetByName(sheetName);
+  if (column < 0 || !sheet) return 0;
+  var data = rows_(sheet, headers.length);
+  if (!data.length) return 0;
+  // One write per column, not one per cell: a student with years of history has
+  // hundreds of ledger rows, and a write each would be hundreds of round trips.
+  var touchedRows = {};
+  for (var key in replacements) {
+    var target = headers.indexOf(key);
+    if (target < 0) continue;
+    var next = replacements[key], column_changed = false, values = [];
+    for (var i = 0; i < data.length; i++) {
+      var mine = String(cell_(data[i][column])) === value;
+      if (mine && String(cell_(data[i][target])) !== String(next)) {
+        values.push([next]);
+        column_changed = true;
+        touchedRows[i] = true;
+      } else {
+        values.push([data[i][target]]);
+      }
+    }
+    if (column_changed) sheet.getRange(2, target + 1, values.length, 1).setValues(values);
+  }
+  return Object.keys(touchedRows).length;
+}
+
+function auditRowsNamingEmail_(book, email) {
+  if (!email) return 0;
+  var headers = SR_SHEETS.Audit, column = headers.indexOf('ActorEmail');
+  return rows_(sheet_(book, 'Audit'), headers.length)
+    .filter(function(row) { return normalizeEmail_(cell_(row[column])) === email; }).length;
+}
+
+/** Everything the repository holds about one student, for a records request. */
+function exportSchoolRewardsStudentRecord(request) {
+  var actor = requireRole_(['admin']);
+  request = object_(request);
+  var studentId = id_(request.studentId, 'student');
+  return locked_(function() {
+    var book = book_(), student = requireStudentRecord_(book, studentId), sections = {};
+    SR_STUDENT_SHEETS.forEach(function(entry) {
+      var found = sheetRowsFor_(book, entry[0], entry[1], studentId);
+      if (found.length) sections[entry[0]] = found;
+    });
+    appendAudit_({ event: 'STUDENT_RECORD_EXPORTED', type: 'student', id: studentId, summary: 'Full student record exported for a records request' }, actor);
+    return {
+      ok: true,
+      studentId: studentId,
+      exportedAt: now_(),
+      school: configMap_(book).schoolName || '',
+      auditRowsNamingTheStudentAccount: auditRowsNamingEmail_(book, normalizeEmail_(student.email)),
+      sections: sections
+    };
+  });
+}
+
+/**
+ * Redact one student's identifying data in place. Ids, amounts and dates stay,
+ * so balances reconcile and verifySchoolRewardsAuditChain() still passes.
+ */
+function redactSchoolRewardsStudent(request) {
+  var actor = requireRole_(['admin']);
+  request = object_(request);
+  var studentId = id_(request.studentId, 'student');
+  var reason = text_(request.reason, 200, '');
+  if (reason.length < 8) throw srError_('reason_required', 'Record why this student is being redacted, for example the district records request reference.');
+  if (/[^\s@]+@[^\s@]+/.test(reason)) throw srError_('bad_reason', 'Leave email addresses out of the reason; name the request, not the person.');
+  if (request.confirm !== true) throw srError_('confirm_required', 'Redaction is permanent. Confirm it explicitly before it can run.');
+  return locked_(function() {
+    var book = book_(), student = requireStudentRecord_(book, studentId);
+    var held = sheetRowsFor_(book, 'PointHolds', 'StudentId', studentId)
+      .filter(function(row) { return String(row.Status) === 'ACTIVE'; });
+    if (held.length) throw srError_('points_reserved', 'This student has points reserved for an open request. Cancel or complete it before redacting.');
+    var email = normalizeEmail_(student.email), residue = auditRowsNamingEmail_(book, email);
+    var cleared = {}, rows = 0;
+    SR_REDACTION_PLAN.forEach(function(entry) {
+      var replacements = entry[2];
+      if (entry[0] === 'Students') {
+        replacements = {};
+        for (var key in entry[2]) replacements[key] = entry[2][key];
+        // A parked address keeps the row unique and stops the account signing in.
+        replacements.Email = 'redacted.' + studentId + '@invalid';
+      }
+      var touched = redactSheetRows_(book, entry[0], entry[1], studentId, replacements);
+      if (touched) { cleared[entry[0]] = touched; rows += touched; }
+    });
+    // Stamped only when something actually changed, so running this twice is a
+    // genuine no-op rather than a second audited edit.
+    if (rows) redactSheetRows_(book, 'Students', 'Id', studentId, { UpdatedAt: now_() });
+    appendAudit_({ event: 'STUDENT_REDACTED', type: 'student', id: studentId, summary: 'Identifying fields redacted across ' + rows + ' rows. Reason: ' + reason }, actor);
+    return {
+      ok: true,
+      studentId: studentId,
+      rowsRedacted: rows,
+      cleared: cleared,
+      auditRowsStillNamingTheStudentAccount: residue,
+      chain: auditChainStatus_()
+    };
+  });
+}
+
+// ── Academic year rollover (2026-09-03) ──────────────────────────────────────
+// Until now the academic year was only a label. Nothing closed a year, so a
+// student carried every point they had ever earned into the next one: growth
+// levels are lifetime thresholds, so they stopped meaning anything, and prize
+// costs stayed fixed against an ever-growing balance.
+//
+// Closing a year writes a per-student summary, then, if the school resets
+// balances, appends one reversal per student rather than editing any total.
+// The ledger stays append-only, the audit chain gains an entry rather than
+// losing one, and last year's activity is still readable in full.
+var SR_YEAR_SUMMARY_HEADERS = ['AcademicYear', 'StudentId', 'Earned', 'Spent', 'EndingBalance', 'CarriedOver', 'ClosedAt'];
+
+// Closing a year touches every student. Done one row at a time this is four
+// Sheets round trips each, which a six-hundred-student school cannot finish
+// inside the Apps Script execution limit. These write once per sheet instead.
+function appendRows_(sheet, rows) {
+  if (!rows.length) return;
+  sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+}
+function writeBalanceRows_(book, updates, at) {
+  var sheet = sheet_(book, 'Balances'), data = rows_(sheet, 5), changed = false;
+  for (var i = 0; i < data.length; i++) {
+    var id = String(cell_(data[i][0])), next = updates[id];
+    if (!next) continue;
+    data[i] = [id, next.earned, next.spent, next.balance, at];
+    changed = true;
+  }
+  if (changed) sheet.getRange(2, 1, data.length, 5).setValues(data.map(function(row) { return safeRow_(row); }));
+}
+function yearSummarySheet_(book) {
+  var sheet = book.getSheetByName('YearSummaries');
+  if (!sheet) {
+    sheet = book.insertSheet('YearSummaries');
+    sheet.getRange(1, 1, 1, SR_YEAR_SUMMARY_HEADERS.length).setValues([SR_YEAR_SUMMARY_HEADERS]);
+  }
+  return sheet;
+}
+
+function schoolRewardsYearSummaries_(book, studentId) {
+  var sheet = book.getSheetByName('YearSummaries');
+  if (!sheet) return [];
+  return rows_(sheet, SR_YEAR_SUMMARY_HEADERS.length)
+    .filter(function(row) { return !studentId || String(cell_(row[1])) === studentId; })
+    .map(function(row) {
+      var out = {};
+      SR_YEAR_SUMMARY_HEADERS.forEach(function(header, i) { out[header] = cell_(row[i]); });
+      return out;
+    });
+}
+
+/** Read-only preview of what closing the year would do. */
+function getSchoolRewardsYearPreview() {
+  requireRole_(['admin']);
+  return locked_(function() {
+    var book = book_(), config = configMap_(book), balances = balancesMap_(book);
+    var students = students_(book).filter(function(student) { return student.active !== false; });
+    var holds = rows_(sheet_(book, 'PointHolds'), SR_SHEETS.PointHolds.length)
+      .filter(function(row) { return String(cell_(row[5])) === 'ACTIVE'; }).length;
+    var open = windows_(book).filter(function(item) { return item.status === 'OPEN'; }).length;
+    var total = 0, withPoints = 0;
+    students.forEach(function(student) {
+      var value = balances[student.id];
+      var balance = value ? number_(value.balance) : 0;
+      total += balance;
+      if (balance > 0) withPoints += 1;
+    });
+    return {
+      ok: true,
+      academicYear: config.academicYear || '',
+      activeStudents: students.length,
+      studentsWithPoints: withPoints,
+      pointsInCirculation: total,
+      activeHolds: holds,
+      openWindows: open,
+      closedYears: schoolRewardsYearSummaries_(book).length ? true : false,
+      ready: holds === 0 && open === 0
+    };
+  });
+}
+
+/**
+ * Close the current academic year and open the next one. `carryOver` is 'none'
+ * (balances reset to zero) or 'all' (balances continue, the year is relabelled).
+ */
+function startSchoolRewardsAcademicYear(request) {
+  var actor = requireRole_(['admin']);
+  request = object_(request);
+  var nextYear = text_(request.academicYear, 20, '');
+  if (!/^[0-9A-Za-z][0-9A-Za-z \-\/]{2,19}$/.test(nextYear)) throw srError_('bad_config', 'Name the new academic year, for example 2027-28.');
+  var carryOver = request.carryOver === 'all' ? 'all' : 'none';
+  if (request.confirm !== true) throw srError_('confirm_required', 'Closing the year changes every balance. Confirm it explicitly before it can run.');
+  return locked_(function() {
+    var book = book_(), config = configMap_(book), closing = String(config.academicYear || '');
+    if (nextYear === closing) throw srError_('bad_config', 'The new academic year must be different from the one being closed.');
+    var openWindows = windows_(book).filter(function(item) { return item.status === 'OPEN'; });
+    if (openWindows.length) throw srError_('store_closed', 'Close the shopping window before closing the year, so no checkout is in progress.');
+    var heldRows = rows_(sheet_(book, 'PointHolds'), SR_SHEETS.PointHolds.length)
+      .filter(function(row) { return String(cell_(row[5])) === 'ACTIVE'; });
+    if (heldRows.length) throw srError_('points_reserved', 'Some students have points reserved for open print requests. Finish or cancel those before closing the year.');
+    var busyRuns = mailRuns_(book).filter(function(run) { return ['COMPLETED', 'FAILED'].indexOf(String(run.status)) < 0; });
+    if (busyRuns.length) throw srError_('mail_integrity', 'A mail run is still in progress or waiting for review. Finish it before closing the year.');
+
+    var summarySheet = yearSummarySheet_(book), balances = balancesMap_(book);
+    var students = students_(book), at = now_(), cleared = 0, carriedPoints = 0, closedPoints = 0;
+    var summaryRows = [], ledgerRows = [], balanceUpdates = {};
+    var closingReason = 'Balance closed at the end of ' + (closing || 'the academic year');
+    students.forEach(function(student) {
+      var value = balances[student.id] || { earned: 0, spent: 0, balance: 0 };
+      var earned = number_(value.earned), spent = number_(value.spent), balance = number_(value.balance);
+      var keep = carryOver === 'all' ? balance : 0;
+      summaryRows.push(safeRow_([closing, student.id, earned, spent, balance, keep, at]));
+      if (carryOver === 'all') { carriedPoints += balance; return; }
+      if (balance <= 0) return;
+      var nextEarned = earned - balance;
+      if (nextEarned < 0 || nextEarned - spent < 0) throw srError_('reconciliation', 'The ledger cannot produce a valid student balance.');
+      // A reversal, not an edit: the ledger stays append-only and every existing
+      // balance calculation already understands this kind.
+      ledgerRows.push(safeRow_([uuid_(), student.id, 'REVERSAL', -balance, closingReason, 'year_close', nextYear, '',
+        actor.email, actor.role, at, ('year_close:' + nextYear + ':' + student.id).slice(0, 120), '']));
+      balanceUpdates[student.id] = { earned: nextEarned, spent: spent, balance: 0 };
+      cleared += 1;
+      closedPoints += balance;
+    });
+    appendRows_(summarySheet, summaryRows);
+    appendRows_(sheet_(book, 'Ledger'), ledgerRows);
+    if (cleared) writeBalanceRows_(book, balanceUpdates, at);
+    putConfig_(book, { academicYear: nextYear, academicYearStartedAt: at });
+    appendAudit_({
+      event: 'ACADEMIC_YEAR_STARTED', type: 'repository', id: nextYear,
+      summary: 'Closed ' + (closing || 'the previous year') + ' and opened ' + nextYear + '. ' + (carryOver === 'all'
+        ? 'Balances carried over.'
+        : cleared + ' balances reset, ' + closedPoints + ' points closed.')
+    }, actor);
+    return {
+      ok: true, closed: closing, opened: nextYear, carryOver: carryOver,
+      studentsSummarised: students.length, balancesCleared: cleared,
+      pointsClosed: closedPoints, pointsCarried: carriedPoints
+    };
+  });
+}
+
+// ── Capacity (2026-09-04) ────────────────────────────────────────────────────
+// The ledger and the audit trail are append-only on purpose, so they only grow.
+// A Google spreadsheet stops at ten million cells, and every whole-sheet read
+// gets slower long before that. This reports where a school actually is, and
+// trims the one sheet that can be trimmed safely.
+var SR_SHEET_CELL_LIMIT = 10000000;
+// A completed journal older than this is only a replay guard, and a client
+// retry never arrives months later. Anything unresolved is kept regardless.
+var SR_MIN_PRUNE_DAYS = 180;
+
+function schoolRewardsSheetSizes_(book) {
+  var names = Object.keys(SR_SHEETS).concat(['Preferences', 'YearSummaries']);
+  var seen = {}, sizes = [], cells = 0;
+  names.forEach(function(name) {
+    if (seen[name]) return;
+    seen[name] = true;
+    var sheet = book.getSheetByName(name);
+    if (!sheet) return;
+    var headers = SR_SHEETS[name];
+    var width = headers ? headers.length : (name === 'YearSummaries' ? SR_YEAR_SUMMARY_HEADERS.length : 3);
+    var rows = Math.max(0, sheet.getLastRow() - 1);
+    sizes.push({ sheet: name, rows: rows, cells: rows * width });
+    cells += rows * width;
+  });
+  sizes.sort(function(a, b) { return b.cells - a.cells; });
+  return { sizes: sizes, cells: cells };
+}
+
+function prunableIdempotencyRows_(book, cutoff) {
+  var rows = rows_(sheet_(book, 'Idempotency'), 4), out = [];
+  for (var i = 0; i < rows.length; i++) {
+    var at = String(cell_(rows[i][3]));
+    if (!at || at >= cutoff) continue;
+    var raw = String(cell_(rows[i][2])), journal = null;
+    try { journal = JSON.parse(raw); } catch (_) { journal = null; }
+    // Keep anything still in flight: recovery needs it.
+    if (journal && journal.journalVersion && journal.state !== 'COMPLETED') continue;
+    out.push(i);
+  }
+  return out;
+}
+
+/** How much room is left, and what can safely be trimmed. */
+function getSchoolRewardsCapacity() {
+  requireRole_(['admin']);
+  return locked_(function() {
+    var book = book_(), measured = schoolRewardsSheetSizes_(book);
+    var cutoff = new Date(Date.now() - SR_MIN_PRUNE_DAYS * 86400000).toISOString();
+    var prunable = prunableIdempotencyRows_(book, cutoff).length;
+    var percent = Math.round((measured.cells / SR_SHEET_CELL_LIMIT) * 1000) / 10;
+    return {
+      ok: true,
+      cells: measured.cells,
+      limit: SR_SHEET_CELL_LIMIT,
+      percentUsed: percent,
+      largest: measured.sizes.slice(0, 5),
+      prunableRequestRecords: prunable,
+      pruneOlderThanDays: SR_MIN_PRUNE_DAYS,
+      // The ledger and audit trail are the record; they are never trimmed.
+      permanent: ['Ledger', 'Audit'],
+      comfortable: percent < 60
+    };
+  });
+}
+
+/** Remove settled request records older than the retention window. */
+function pruneSchoolRewardsRequestRecords(request) {
+  var actor = requireRole_(['admin']);
+  request = object_(request);
+  var days = integer_(request.olderThanDays == null ? SR_MIN_PRUNE_DAYS : request.olderThanDays, SR_MIN_PRUNE_DAYS, 3650, 'Retention days');
+  if (request.confirm !== true) throw srError_('confirm_required', 'Trimming request records is permanent. Confirm it explicitly before it can run.');
+  return locked_(function() {
+    var book = book_(), sheet = sheet_(book, 'Idempotency');
+    var cutoff = new Date(Date.now() - days * 86400000).toISOString();
+    var rows = rows_(sheet, 4), drop = {};
+    prunableIdempotencyRows_(book, cutoff).forEach(function(index) { drop[index] = true; });
+    var removed = Object.keys(drop).length;
+    if (!removed) return { ok: true, removed: 0, remaining: rows.length };
+    var keep = rows.filter(function(row, index) { return !drop[index]; }).map(function(row) { return safeRow_(row); });
+    sheet.clearContents();
+    sheet.getRange(1, 1, 1, 4).setValues([SR_SHEETS.Idempotency]);
+    if (keep.length) sheet.getRange(2, 1, keep.length, 4).setValues(keep);
+    appendAudit_({ event: 'REQUEST_RECORDS_TRIMMED', type: 'repository', id: 'idempotency', summary: 'Removed ' + removed + ' settled request records older than ' + days + ' days. The ledger and audit trail were not touched.' }, actor);
+    return { ok: true, removed: removed, remaining: keep.length };
+  });
+}
+
 function adminUpsertRewardsMember(value) {
   var actor = requireRole_(['admin']), member = normalizeMember_(value, allowedDomain_());
   return locked_(function() { assertAdminInvariant_(member); upsertMemberRow_(book_(), member); appendAudit_({ event: 'MEMBER_UPDATED', type: 'member', id: hash_(member.email).slice(0, 20), summary: 'Membership updated' }, actor); return { ok: true }; });
@@ -1306,7 +1687,7 @@ function retrySchoolRewardsMailDeliveryWithLease_(outboxId, key, operation, acto
     if (!source) throw srError_('not_found', 'Mail delivery was not found.');
     assertConfirmedFailedMailDelivery_(source);
     var existingRetries = mailOutbox_(book).filter(function(item) { return item.retryOfId === source.id; });
-    var retryKey = mailDeliveryKey_(source.kind, source.periodKey + '|retry|' + key, source.studentId, source.guardianId);
+    var retryKey = mailDeliveryKey_(source.kind, source.periodKey + '|retry|' + key, source.studentId, source.guardianId, academicYearStart_(book));
     var retryId = mailOutboxId_(retryKey, source.id), exact = existingRetries.filter(function(item) { return item.id === retryId; });
     if (existingRetries.length && !exact.length) throw srError_('mail_retry_exists', 'This failed attempt already has a retry. Retry the newer failed attempt if another attempt is appropriate.');
     if (exact.length) {
@@ -1621,7 +2002,7 @@ function upsertGuardianRow_(book, guardian) {
   upsert_(sheet_(book, 'Guardians'), 9, guardian.id, safeRow_([guardian.id, guardian.studentId, guardian.guardianEmail, guardian.guardianName, guardian.relationship, guardian.active, guardian.consentConfirmedAt, guardian.createdAt, guardian.updatedAt])); return guardian;
 }
 function guardianDto_(guardian) { return { id: guardian.id, studentId: guardian.studentId, guardianEmail: guardian.guardianEmail, guardianName: guardian.guardianName, relationship: guardian.relationship, active: guardian.active, consentConfirmedAt: guardian.consentConfirmedAt, updatedAt: guardian.updatedAt }; }
-function guardianDigestKeys_(book) { var map = {}; rows_(sheet_(book, 'GuardianDigests'), 7).forEach(function(row) { if (String(row[4]) === 'SENT') map[String(row[1]) + '|' + String(row[2]) + '|' + String(row[3])] = true; }); return map; }
+function guardianDigestKeys_(book) { var map = {}, since = academicYearStart_(book); rows_(sheet_(book, 'GuardianDigests'), 7).forEach(function(row) { if (String(row[4]) !== 'SENT') return; if (since && String(cell_(row[5])) < since) return; map[String(row[1]) + '|' + String(row[2]) + '|' + String(row[3])] = true; }); return map; }
 function guardianDigestBodies_(guardian, student, availability, earned, progress, config, at) {
   var greeting = guardian.guardianName ? 'Hello ' + guardian.guardianName + ',' : 'Hello,';
   var plain = [greeting, '', 'Here is a positive School Rewards update for ' + student.firstName + '.', 'Total points earned: ' + earned + '.', 'Current balance: ' + availability.balance + ' points.', 'Available after active reservations: ' + availability.availableBalance + ' points.'];
@@ -2140,7 +2521,16 @@ function reconcileInventoryMovements_(book, movements, faultPrefix) {
 }
 function spendForOrder_(book, orderId) { var list = ledger_(book); for (var i = 0; i < list.length; i++) if (list[i].kind === 'SPEND' && list[i].referenceType === 'order' && list[i].referenceId === orderId) return list[i]; return null; }
 function cart_(value) { if (!Array.isArray(value) || !value.length || value.length > 50) throw srError_('bad_cart', 'Add between 1 and 50 items to the cart.'); var map = {}; value.forEach(function(line) { var itemId = id_(line && line.catalogId, 'catalog item'), quantity = integer_(line && line.quantity, 1, 100, 'Quantity'); map[itemId] = (map[itemId] || 0) + quantity; }); return Object.keys(map).sort().map(function(itemId) { return { catalogId: itemId, quantity: map[itemId] }; }); }
-function statementKeys_(book) { var map = {}; rows_(sheet_(book, 'Statements'), 7).forEach(function(row) { if (String(row[4]) === 'SENT') map[String(row[1]) + '|' + String(row[2])] = true; }); return map; }
+function academicYearStart_(book) { var value = configMap_(book).academicYearStartedAt; return value ? String(value) : ''; }
+function statementKeys_(book) {
+  var map = {}, since = academicYearStart_(book);
+  rows_(sheet_(book, 'Statements'), 7).forEach(function(row) {
+    if (String(row[4]) !== 'SENT') return;
+    if (since && String(cell_(row[5])) < since) return;
+    map[String(row[1]) + '|' + String(row[2])] = true;
+  });
+  return map;
+}
 function emailSchedule_() { var props = PropertiesService.getScriptProperties(); return { enabled: props.getProperty('SR_EMAIL_ENABLED') === 'true', weekday: props.getProperty('SR_EMAIL_WEEKDAY') || 'FRIDAY', hour: number_(props.getProperty('SR_EMAIL_HOUR') || 16) }; }
 function mailQuota_() { try { return Math.max(0, Number(MailApp.getRemainingDailyQuota()) || 0); } catch (_) { return 0; } }
 function mailReceiptReserve_() {
@@ -2377,7 +2767,13 @@ function mailRunDto_(book, run) {
 }
 function mailRequestKey_(value, kind, period) {
   var supplied = text_(value, 120, '');
-  return supplied ? idemKey_(supplied) : 'mail_auto_' + hash_(kind + '|' + period).slice(0, 44);
+  if (supplied) return idemKey_(supplied);
+  // The academic year is part of the key. Without it, a school that reuses a
+  // period name every year ("week-1") would replay last year's completed run
+  // and silently send nothing at all.
+  var year = '';
+  try { year = String(configMap_(book_()).academicYear || ''); } catch (_) { year = ''; }
+  return 'mail_auto_' + hash_(kind + '|' + year + '|' + period).slice(0, 44);
 }
 function mailCandidates_(book, kind) {
   var out = [];
@@ -2423,8 +2819,12 @@ function advanceMailManifest_(run, manifest) {
   manifest.i++;
   run.cursorKey = stableJson_(manifest);
 }
-function mailDeliveryKey_(kind, periodKey, studentId, guardianId) {
-  return 'delivery_' + hash_(SR_SERVICE + '|mail|' + kind + '|' + periodKey + '|' + studentId + '|' + guardianId).slice(0, 48);
+function mailDeliveryKey_(kind, periodKey, studentId, guardianId, scope) {
+  // `scope` is the moment the current academic year opened. A repository that
+  // has never closed a year passes '' and keeps exactly the keys it has today,
+  // so this adds no migration; after a close, last year's delivery records stop
+  // colliding with a period name that is used again.
+  return 'delivery_' + hash_(SR_SERVICE + '|mail|' + kind + '|' + (scope ? scope + '|' : '') + periodKey + '|' + studentId + '|' + guardianId).slice(0, 48);
 }
 function mailOutboxId_(deliveryKey, retryOfId) {
   return 'outbox_' + hash_(SR_SERVICE + '|outbox|' + deliveryKey + '|' + String(retryOfId || '')).slice(0, 48);
@@ -2648,7 +3048,9 @@ function prepareNextMailDelivery_(runId) {
       advanceMailManifest_(run, manifest); run.skipped++; refreshMailRunCounters_(book, run, 'RUNNING', 'RECIPIENT_INVALID');
       return { action: 'SKIP' };
     }
-    var deliveryKey = mailDeliveryKey_(run.kind, run.periodKey, candidate.studentId, candidate.guardianId);
+    // Deliveries from a closed year are history, not a duplicate of this run.
+    var deliverySince = academicYearStart_(book);
+    var deliveryKey = mailDeliveryKey_(run.kind, run.periodKey, candidate.studentId, candidate.guardianId, deliverySince);
     var prior = mailOutbox_(book).filter(function(item) { return item.deliveryKey === deliveryKey; });
     var exactPrimary = null;
     for (var p = 0; p < prior.length; p++) {

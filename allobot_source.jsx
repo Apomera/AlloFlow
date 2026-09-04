@@ -928,7 +928,18 @@ const useAlloCoarsePointer = () => {
 // populated by registerTool at load), so new tools auto-inherit the right accessory;
 // a few known edge cases are pinned in the override table.
 // Ambient (not hovered) cursor glance strength, as a fraction of the hover turn.
-const ALLOBOT_AMBIENT_GAZE_SCALE = 0.55;
+// The gaze is clamped to 1.8 units on a 100-unit face. At 0.55 of a 1.35
+// radius the ambient glance travelled 0.74 units in total, under 1% of the
+// face, which no one can see. These reach the clamp at the screen edges.
+// AlloBot is drawn into a 100-unit viewBox at this many CSS pixels, so one
+// unit is 0.64px. Measured at that size, 29 of its 71 shapes are under three
+// pixels in a dimension: catchlights, nozzle glows and signal cores that can
+// only muddy the silhouette. They are kept in the artwork but hidden until the
+// bot is drawn large enough for them to be seen as anything.
+const ALLOBOT_RENDER_PX = 64;
+const ALLOBOT_FINE_DETAIL_MIN_PX = 96;
+const ALLOBOT_SHOWS_FINE_DETAIL = ALLOBOT_RENDER_PX >= ALLOBOT_FINE_DETAIL_MIN_PX;
+const ALLOBOT_AMBIENT_GAZE_SCALE = 0.8;
 const STEM_DISCIPLINE_ACCESSORY = { math: 'math-tools', engineering: 'gear', creative: 'artist', strategy: 'game-pad', applied: 'hard-hat', science: 'microscope' };
 const STEM_DISCIPLINE_OVERRIDE = { cellularLab: 'science', geoSandbox: 'science', lumen: 'science', dataPlot: 'math', dataStudio: 'math', alloBotSage: 'engineering', worldBuilder: 'creative', echoTrainer: 'science' };
 function alloStemDiscipline(toolId) {
@@ -1988,7 +1999,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
               x: Math.cos(angle) * visorOffset,
               y: Math.sin(angle) * visorOffset
           });
-          const maxFeatureRadius = 1.35;
+          const maxFeatureRadius = 2.2;
           const featureOffset = intensity * maxFeatureRadius;
           setEyePosition({
               x: Math.cos(angle) * featureOffset,
@@ -3805,16 +3816,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                               ? 'thinking'
                               : (isListening ? 'listening' : (isTalking ? 'talking' : 'ready'))))))));
   const bodyPoseByState = {
-      hiding: { leftHandX: 10, rightHandX: 90, handY: 65, glowOpacity: 0.12, shadowRx: 19, shadowRy: 4.2, contactRx: 10, contactRy: 1.6, shadowOpacityScale: 0.76, stabilizerSpread: 11, stabilizerDrop: -2, stabilizerOpacity: 0 },
-      sleeping: { leftHandX: 8.5, rightHandX: 91.5, handY: 69, glowOpacity: 0.08, shadowRx: 24, shadowRy: 5.3, contactRx: 14, contactRy: 2.1, shadowOpacityScale: 1.18, stabilizerSpread: 18, stabilizerDrop: 5, stabilizerOpacity: 1 },
-      dragging: { leftHandX: 10, rightHandX: 90, handY: 63, glowOpacity: 0.22, shadowRx: 18, shadowRy: 4, contactRx: 10, contactRy: 1.6, shadowOpacityScale: 0.82, stabilizerSpread: 11, stabilizerDrop: -2, stabilizerOpacity: 0 },
-      flying: { leftHandX: 10, rightHandX: 90, handY: 62, glowOpacity: 0.25, shadowRx: 16, shadowRy: 3.6, contactRx: 9, contactRy: 1.4, shadowOpacityScale: 0.72, stabilizerSpread: 10, stabilizerDrop: -3, stabilizerOpacity: 0 },
-      landing: { leftHandX: 10, rightHandX: 90, handY: 67, glowOpacity: 0.24, shadowRx: 25, shadowRy: 5.6, contactRx: 15, contactRy: 2.2, shadowOpacityScale: 1.25, stabilizerSpread: 19, stabilizerDrop: 6, stabilizerOpacity: 1 },
-      celebrating: { leftHandX: 8, rightHandX: 92, handY: 55.5, glowOpacity: 0.32, shadowRx: 18, shadowRy: 4, contactRx: 10, contactRy: 1.5, shadowOpacityScale: 0.82, stabilizerSpread: 15, stabilizerDrop: 3, stabilizerOpacity: 0.92 },
-      thinking: { leftHandX: 11.5, rightHandX: 88.5, handY: 61.5, glowOpacity: 0.27, shadowRx: 20, shadowRy: 4.5, contactRx: 11, contactRy: 1.7, shadowOpacityScale: 0.95, stabilizerSpread: 14, stabilizerDrop: 2, stabilizerOpacity: 0.82 },
-      listening: { leftHandX: 7.5, rightHandX: 92.5, handY: 62, glowOpacity: 0.28, shadowRx: 22, shadowRy: 4.9, contactRx: 12.5, contactRy: 1.9, shadowOpacityScale: 1.02, stabilizerSpread: 16, stabilizerDrop: 3, stabilizerOpacity: 0.92 },
-      talking: { leftHandX: 9, rightHandX: 91, handY: 63, glowOpacity: 0.24, shadowRx: 21, shadowRy: 4.7, contactRx: 12, contactRy: 1.8, shadowOpacityScale: 0.98, stabilizerSpread: 15, stabilizerDrop: 2.5, stabilizerOpacity: 0.88 },
-      ready: { leftHandX: 10, rightHandX: 90, handY: 65, glowOpacity: 0.2, shadowRx: 21, shadowRy: 4.8, contactRx: 12, contactRy: 1.8, shadowOpacityScale: 1, stabilizerSpread: 14, stabilizerDrop: 2, stabilizerOpacity: 0.84 },
+      hiding: { leftHandX: 6.43, rightHandX: 93.57, handY: 65, glowOpacity: 0.12, shadowRx: 19, shadowRy: 4.2, contactRx: 10, contactRy: 1.6, shadowOpacityScale: 0.76, stabilizerSpread: 11, stabilizerDrop: -2, stabilizerOpacity: 0 },
+      sleeping: { leftHandX: 7.55, rightHandX: 92.45, handY: 69, glowOpacity: 0.08, shadowRx: 24, shadowRy: 5.3, contactRx: 14, contactRy: 2.1, shadowOpacityScale: 1.18, stabilizerSpread: 18, stabilizerDrop: 5, stabilizerOpacity: 1 },
+      dragging: { leftHandX: 6.02, rightHandX: 93.98, handY: 63, glowOpacity: 0.22, shadowRx: 18, shadowRy: 4, contactRx: 10, contactRy: 1.6, shadowOpacityScale: 0.82, stabilizerSpread: 11, stabilizerDrop: -2, stabilizerOpacity: 0 },
+      flying: { leftHandX: 5.85, rightHandX: 94.15, handY: 62, glowOpacity: 0.25, shadowRx: 16, shadowRy: 3.6, contactRx: 9, contactRy: 1.4, shadowOpacityScale: 0.72, stabilizerSpread: 10, stabilizerDrop: -3, stabilizerOpacity: 0 },
+      landing: { leftHandX: 6.94, rightHandX: 93.06, handY: 67, glowOpacity: 0.24, shadowRx: 25, shadowRy: 5.6, contactRx: 15, contactRy: 2.2, shadowOpacityScale: 1.25, stabilizerSpread: 19, stabilizerDrop: 6, stabilizerOpacity: 1 },
+      celebrating: { leftHandX: 5.3, rightHandX: 94.7, handY: 55.5, glowOpacity: 0.32, shadowRx: 18, shadowRy: 4, contactRx: 10, contactRy: 1.5, shadowOpacityScale: 0.82, stabilizerSpread: 15, stabilizerDrop: 3, stabilizerOpacity: 0.92 },
+      thinking: { leftHandX: 5.78, rightHandX: 94.22, handY: 61.5, glowOpacity: 0.27, shadowRx: 20, shadowRy: 4.5, contactRx: 11, contactRy: 1.7, shadowOpacityScale: 0.95, stabilizerSpread: 14, stabilizerDrop: 2, stabilizerOpacity: 0.82 },
+      listening: { leftHandX: 5.85, rightHandX: 94.15, handY: 62, glowOpacity: 0.28, shadowRx: 22, shadowRy: 4.9, contactRx: 12.5, contactRy: 1.9, shadowOpacityScale: 1.02, stabilizerSpread: 16, stabilizerDrop: 3, stabilizerOpacity: 0.92 },
+      talking: { leftHandX: 6.02, rightHandX: 93.98, handY: 63, glowOpacity: 0.24, shadowRx: 21, shadowRy: 4.7, contactRx: 12, contactRy: 1.8, shadowOpacityScale: 0.98, stabilizerSpread: 15, stabilizerDrop: 2.5, stabilizerOpacity: 0.88 },
+      ready: { leftHandX: 6.43, rightHandX: 93.57, handY: 65, glowOpacity: 0.2, shadowRx: 21, shadowRy: 4.8, contactRx: 12, contactRy: 1.8, shadowOpacityScale: 1, stabilizerSpread: 14, stabilizerDrop: 2, stabilizerOpacity: 0.84 },
   };
   const bodyPose = bodyPoseByState[bodyVisualState] || bodyPoseByState.ready;
   const stabilizerFootY = 89 + bodyPose.stabilizerDrop;
@@ -4025,11 +4036,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       ? (heldItemRenderSide === 'right' ? 'primary' : 'support')
       : (heldItem && heldItemRenderSide === 'right' ? 'primary' : 'free');
   const leftArmPath = heldItemUsesSupportHand && heldItemSupportSide === 'left'
-      ? ['M', 19, 61, 'Q', 46, 78, leftHandX - 3.5, leftHandY - 1].join(' ')
-      : ['M', 19, 61, 'Q', leftHandX + 7, leftHandY - 5, leftHandX + 3.5, leftHandY - 1].join(' ');
+      ? ['M', 21.5, 59.5, 'Q', 46, 78, leftHandX - 3.5, leftHandY - 1].join(' ')
+      : ['M', 21.5, 59.5, 'Q', leftHandX + 7.5, leftHandY - 5.5, leftHandX + 3.5, leftHandY - 1].join(' ');
   const rightArmPath = heldItemUsesSupportHand && heldItemSupportSide === 'right'
-      ? ['M', 81, 61, 'Q', 54, 78, rightHandX + 3.5, rightHandY - 1].join(' ')
-      : ['M', 81, 61, 'Q', rightHandX - 7, rightHandY - 5, rightHandX - 3.5, rightHandY - 1].join(' ');
+      ? ['M', 78.5, 59.5, 'Q', 54, 78, rightHandX + 3.5, rightHandY - 1].join(' ')
+      : ['M', 78.5, 59.5, 'Q', rightHandX - 7.5, rightHandY - 5.5, rightHandX - 3.5, rightHandY - 1].join(' ');
   const heldItemBaseGripX = heldItemRenderSide === 'left' ? 10 : 90;
   const heldItemBaseGripY = 65;
   const heldItemGripOffsetX = heldItemGripX - heldItemBaseGripX;
@@ -4057,21 +4068,55 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const baseEyeDimensions = getEyeDimensions();
   const eyeRx = Math.min(9, baseEyeDimensions.rx + (voiceCueState === 'listening' ? 0.45 : 0));
   const eyeRy = Math.min(7, baseEyeDimensions.ry + (voiceCueState === 'listening' ? 0.35 : 0));
-  // Keep the eyes luminous and toy-like. The visor-dark pupils were what read
-  // as watchful at small sizes once the eyes followed the cursor; the glance
-  // itself is a useful cue and stays. These pastel cores carry gaze direction
-  // with a slightly firmer iris ring so the direction reads, and no black.
+  // A solid bead of the mood colour with one soft highlight: the eye AlloBot
+  // had before it grew a pupil. A dark pupil that follows the pointer reads as
+  // watchful, which is why it was made pastel, which then hid it completely.
+  // The bead moves with the glance instead, so direction reads without one.
   const eyeCoreVisual = theme === 'contrast'
-      ? { fill: '#FACC15', stroke: '#FFFFFF', opacity: 1 }
+      ? { glint: '#FFFFFF', highlightOpacity: 1, rim: '#000000', rimWidth: 0.5 }
       : (effectiveMood === 'happy'
-          ? { fill: '#A7F3D0', stroke: '#34D399', opacity: 0.94 }
-          : (effectiveMood === 'thinking'
-              ? { fill: '#FDE68A', stroke: '#FBBF24', opacity: 0.94 }
-              : (effectiveMood === 'sad'
-                  ? { fill: '#BAE6FD', stroke: '#60A5FA', opacity: 0.92 }
-                  : { fill: '#DBEAFE', stroke: '#818CF8', opacity: 0.96 })));
-  const eyeCoreRx = voiceCueState === 'listening' ? 2.15 : 1.85;
-  const eyeCoreRy = Math.min(2.25, Math.max(1.35, eyeRy * 0.34));
+          ? { glint: '#FFFFFF', highlightOpacity: 0.95, rim: '#34D399', rimWidth: 0.4 }
+          : (effectiveMood === 'sad'
+              ? { glint: '#FFFFFF', highlightOpacity: 0.8, rim: '#60A5FA', rimWidth: 0.35 }
+              : (effectiveMood === 'thinking'
+                  ? { glint: '#FFFFFF', highlightOpacity: 0.85, rim: '#B45309', rimWidth: 0.35 }
+                  : { glint: '#FFFFFF', highlightOpacity: 0.85, rim: '#0E7490', rimWidth: 0.35 })));
+  // Generous, as it was: about a third of the eye across, set up and inboard
+  // so both eyes catch the same imagined light.
+  // A real highlight belongs to the light in the room, not to the eye, so it
+  // holds still while the eye travels under it. Giving it a little under half
+  // the glance makes the bead read as a sphere rather than a flat disc. It is
+  // motion that is already happening, shaped better, so it adds no new noise.
+  // A highlight reads by being brighter than the bead. The happy mood and the
+  // high-contrast theme both use a white eye, so a white highlight measures
+  // 1.00:1 against it and cannot be seen at any size. Rather than draw a shape
+  // that does nothing, the highlight appears only on a bead with room above it.
+  // (Making the happy eye a tint instead of pure white would bring it back, but
+  // that changes the character's colour and is a call for a person to make.)
+  const eyeBeadLuminance = (() => {
+      const hex = String(colors.eye || '').trim();
+      if (!/^#[0-9a-f]{6}$/i.test(hex)) return 0.5;
+      const channel = (value) => { const c = value / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+      const n = parseInt(hex.slice(1), 16);
+      return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+  })();
+  // Only the idle eye is a mid tone; happy, thinking and sad are all pale, so
+  // a white catchlight measured 1.00:1 on them and could never be seen. A pale
+  // bead gets the opposite treatment instead: a soft shade in its own darker
+  // tone, low and outboard, where the light does not reach. Either way the eye
+  // reads as a sphere rather than a flat disc. High contrast gets neither,
+  // because a clean white bead at 21:1 is worth more there than any gloss.
+  const eyeGlossMode = theme === 'contrast' ? 'none' : (eyeBeadLuminance < 0.72 ? 'catchlight' : 'shade');
+  const eyeGlossFill = eyeGlossMode === 'shade' ? eyeCoreVisual.rim : eyeCoreVisual.glint;
+  const eyeGlossOpacity = eyeGlossMode === 'none' ? 0 : (eyeGlossMode === 'shade' ? 0.32 : eyeCoreVisual.highlightOpacity);
+  const eyeGlossDx = eyeGlossMode === 'shade' ? 2.4 : -3;
+  const eyeGlossDy = eyeGlossMode === 'shade' ? 2.2 : -2.2;
+  const eyeGlintDrift = {
+      transform: `translate(${-resolvedGazeX * 0.55}px, ${-resolvedGazeY * 0.55}px)`,
+      transition: motionDisabled ? 'none' : 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)',
+  };
+  const eyeHighlightRx = Math.min(2.9, Math.max(1.6, eyeRx * 0.33) + (voiceCueState === 'listening' ? 0.35 : 0));
+  const eyeHighlightRy = Math.min(2.0, Math.max(1.1, eyeRy * 0.26) + (voiceCueState === 'listening' ? 0.25 : 0));
   const faceLensesCoverEyes = effectiveAccessory === 'scholar-specs' || effectiveAccessory === 'librarian-kit';
   const eyeDetailsVisible = blinkScale >= 0.5;
   const cheekColor = theme === 'contrast' ? '#FACC15' : '#F9A8D4';
@@ -4733,9 +4778,28 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         .animate-bot-confetti { animation: bot-confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         @keyframes float-hands {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-3px); }
         }
-        .animate-float-hands { animation: float-hands 3.5s ease-in-out infinite; }
+        /* The arms must share the body's 3s period. At 3.5s they drifted a half
+           second per cycle and only realigned every 21s, so the arms rose while
+           the body settled and the shoulders looked unhinged — intermittently,
+           which is why it was hard to point at. The small negative delay keeps
+           them a beat behind the body rather than in lockstep, which is how a
+           limb follows a torso. */
+        .animate-float-hands { animation: float-hands 3s ease-in-out infinite; animation-delay: -0.25s; }
+        @keyframes allo-glow-breathe {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.74; }
+        }
+        .animate-glow-breathe { animation: allo-glow-breathe 3s ease-in-out infinite; }
+        /* Sub-pixel decoration, hidden while the bot is drawn small. Structural
+           parts (arms, hands, feet, cheeks, the eyes) are never hidden here. */
+        [data-allobot-detail="compact"] [data-allobot-eye-sparkle],
+        [data-allobot-detail="compact"] [data-allobot-jetpack-layer="nozzle-glow"],
+        [data-allobot-detail="compact"] [data-allobot-jetpack-layer="pod-signal-core"],
+        [data-allobot-detail="compact"] [data-allobot-jetpack-layer="reactor-halo"],
+        [data-allobot-detail="compact"] [data-allobot-antenna-layer="lamp-catchlight"],
+        [data-allobot-detail="compact"] [data-allobot-antenna-layer="socket-highlight"] { display: none; }
         @keyframes gesture-left {
             0%, 100% { transform: translate(0, 0); }
             50% { transform: translate(8px, -6px); }
@@ -5136,7 +5200,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     onClick={(e) => { e.stopPropagation(); summon(); }}
                    />
               )}
-              <svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="select-none overflow-visible" aria-hidden="true">
+              <svg width={ALLOBOT_RENDER_PX} height={ALLOBOT_RENDER_PX} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" data-allobot-detail={ALLOBOT_SHOWS_FINE_DETAIL ? 'full' : 'compact'} className="select-none overflow-visible" aria-hidden="true">
                 {activeView === 'image' && !isFlightActive && !isDragging && (
                    <g transform="translate(110, 30) scale(0.85) rotate(8)" className="animate-in fade-in zoom-in-95 duration-500" opacity="0.95">
                       <rect x="8" y="5" width="4" height="55" rx="2" fill="#92400E" stroke="#78350F" strokeWidth="0.5" />
@@ -5236,7 +5300,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                                 cy="46"
                                 r={jetpackPower.coreRadius}
                                 fill={jetpackPower.core}
-                                className={!motionDisabled && jetpackVisualState !== 'standby' ? "animate-pulse motion-reduce:animate-none" : undefined}
+                                className={!motionDisabled && (jetpackVisualState === 'thrust' || jetpackVisualState === 'braking') ? "animate-pulse motion-reduce:animate-none" : undefined}
                                 style={{ transition: motionDisabled ? 'none' : 'r 180ms ease, fill 180ms ease' }}
                             />
                         </g>
@@ -5494,7 +5558,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     cx="50" cy="50" r="45"
                     fill={colors.glow}
                     fillOpacity={bodyPose.glowOpacity}
-                    className={isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none"}
+                    className={isSleeping || motionDisabled ? "" : "animate-glow-breathe motion-reduce:animate-none"}
                     style={{ transition: motionDisabled ? 'none' : 'fill-opacity 220ms ease' }}
                 />
                 <g
@@ -5608,6 +5672,31 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         </path>
                     </g>
                 )}
+                {/* The arms sit behind the shell on purpose. Allobot's body is a
+                    sphere, and a limb drawn across the front of a sphere reads as a
+                    stripe painted on a ball. Behind it, the only run you see is the
+                    short bridge between the silhouette and the mitt, which is how a
+                    round character's arm joins its body. */}
+                <g data-allobot-arms="behind">
+                    <g
+                        className={!motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
+                        style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
+                    >
+                        <g data-allobot-arm="left" data-allobot-arm-role={leftHandRole}>
+                            <path d={leftArmPath} stroke={hardwareVisual.shadow} strokeWidth="7" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                            <path data-allobot-arm-layer="core" d={leftArmPath} stroke={colors.gradFrom} strokeWidth="4.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                        </g>
+                    </g>
+                    <g
+                        className={!motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
+                        style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
+                    >
+                        <g data-allobot-arm="right" data-allobot-arm-role={rightHandRole}>
+                            <path d={rightArmPath} stroke={hardwareVisual.shadow} strokeWidth="7" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                            <path data-allobot-arm-layer="core" d={rightArmPath} stroke={colors.gradFrom} strokeWidth="4.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                        </g>
+                    </g>
+                </g>
                 <circle
                     cx="50" cy="55" r="35"
                     fill={`url(#${svgPaintIds.body})`}
@@ -5776,11 +5865,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     className={!motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
                 >
-                    <g data-allobot-arm="left" data-allobot-arm-role={leftHandRole}>
-                        <path d={leftArmPath} stroke={hardwareVisual.shadow} strokeWidth="7.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
-                        <path data-allobot-arm-layer="core" d={leftArmPath} stroke={colors.gradFrom} strokeWidth="4.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
-                        <circle data-allobot-shoulder="left" cx="19" cy="61" r="3.2" fill={hardwareVisual.joint} stroke={hardwareVisual.shadow} strokeWidth="1.25" />
-                    </g>
                     <circle data-allobot-hand="left" data-allobot-hand-layer="palm" data-allobot-hand-role={leftHandRole} cx={leftHandX} cy={leftHandY} r="6.5" fill={`url(#${svgPaintIds.body})`} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
                     <path data-allobot-hand-layer="lower-shade" d={['M', leftHandX - 4.2, leftHandY + 2.1, 'Q', leftHandX, leftHandY + 5.2, leftHandX + 4.2, leftHandY + 2.1].join(' ')} stroke={colors.gradTo} strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.58" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
                     <circle data-allobot-hand-layer="highlight" cx={leftHandX - 2} cy={leftHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.62'} pointerEvents="none" />
@@ -5838,11 +5922,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     className={!motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
                 >
-                    <g data-allobot-arm="right" data-allobot-arm-role={rightHandRole}>
-                        <path d={rightArmPath} stroke={hardwareVisual.shadow} strokeWidth="7.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
-                        <path data-allobot-arm-layer="core" d={rightArmPath} stroke={colors.gradFrom} strokeWidth="4.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
-                        <circle data-allobot-shoulder="right" cx="81" cy="61" r="3.2" fill={hardwareVisual.joint} stroke={hardwareVisual.shadow} strokeWidth="1.25" />
-                    </g>
                     <circle data-allobot-hand="right" data-allobot-hand-layer="palm" data-allobot-hand-role={rightHandRole} cx={rightHandX} cy={rightHandY} r="6.5" fill={`url(#${svgPaintIds.body})`} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
                     <path data-allobot-hand-layer="lower-shade" d={['M', rightHandX - 4.2, rightHandY + 2.1, 'Q', rightHandX, rightHandY + 5.2, rightHandX + 4.2, rightHandY + 2.1].join(' ')} stroke={colors.gradTo} strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.58" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
                     <circle data-allobot-hand-layer="highlight" cx={rightHandX - 2} cy={rightHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.62'} pointerEvents="none" />
@@ -6036,27 +6115,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                     </g>
                 ) : (
                     <g>
-                        {/* Keep the eye sockets anchored in the visor; only the soft eye details
-                            track the pointer/prop so Allobot looks rather than sliding
-                            its whole face—including its mouth—around the screen. */}
-                        <ellipse
-                            data-allobot-eye="left"
-                            cx="38" cy="48"
-                            rx={eyeRx} ry={eyeRy * blinkScale}
-                            fill={colors.eye}
-                            stroke={visorVisual.eyeOutline}
-                            strokeWidth={theme === 'contrast' ? '1.5' : '1.1'}
-                            className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                        />
-                        <ellipse
-                            data-allobot-eye="right"
-                            cx="62" cy="48"
-                            rx={eyeRx} ry={eyeRy * blinkScale}
-                            fill={colors.eye}
-                            stroke={visorVisual.eyeOutline}
-                            strokeWidth={theme === 'contrast' ? '1.5' : '1.1'}
-                            className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                        />
+                        {/* The eyes themselves travel with the glance. Only the mouth and
+                            the visor stay put, so Allobot looks without sliding its whole
+                            face around the screen. Because the bead moves, the direction
+                            reads on its own and the eye needs no dark pupil inside it. */}
                         <g
                             data-allobot-prop-gaze={accessoryRenderSide || 'center'}
                             data-allobot-soft-gaze={hoverGazeEngaged ? 'engaged' : (accessoryRenderSide ? 'prop' : 'resting')}
@@ -6064,8 +6126,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             opacity={eyeDetailsVisible ? 1 : 0}
                             style={{ transform: `translate(${resolvedGazeX}px, ${resolvedGazeY}px)`, transition: motionDisabled ? 'none' : 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)' }}
                         >
-                            <ellipse data-allobot-eye-core="left" cx="38" cy="48" rx={eyeCoreRx} ry={eyeCoreRy * blinkScale} fill={eyeCoreVisual.fill} stroke={eyeCoreVisual.stroke} strokeWidth="0.7" opacity={eyeCoreVisual.opacity} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
-                            <ellipse data-allobot-eye-core="right" cx="62" cy="48" rx={eyeCoreRx} ry={eyeCoreRy * blinkScale} fill={eyeCoreVisual.fill} stroke={eyeCoreVisual.stroke} strokeWidth="0.7" opacity={eyeCoreVisual.opacity} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            <ellipse data-allobot-eye="left" cx="38" cy="48" rx={eyeRx} ry={eyeRy * blinkScale} fill={colors.eye} stroke={visorVisual.eyeOutline} strokeWidth={theme === 'contrast' ? '1.5' : '1.1'} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            <ellipse data-allobot-eye="right" cx="62" cy="48" rx={eyeRx} ry={eyeRy * blinkScale} fill={colors.eye} stroke={visorVisual.eyeOutline} strokeWidth={theme === 'contrast' ? '1.5' : '1.1'} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            <ellipse data-allobot-eye-core="left" cx={38 + eyeGlossDx} cy={48 + eyeGlossDy} rx={eyeHighlightRx} ry={eyeHighlightRy * blinkScale} fill={eyeGlossFill} stroke={eyeCoreVisual.rim} strokeWidth={eyeCoreVisual.rimWidth} opacity={eyeGlossOpacity} style={eyeGlintDrift} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            <ellipse data-allobot-eye-core="right" cx={62 + eyeGlossDx} cy={48 + eyeGlossDy} rx={eyeHighlightRx} ry={eyeHighlightRy * blinkScale} fill={eyeGlossFill} stroke={eyeCoreVisual.rim} strokeWidth={eyeCoreVisual.rimWidth} opacity={eyeGlossOpacity} style={eyeGlintDrift} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
                             {!faceLensesCoverEyes && (
                                 <>
                                     <circle data-allobot-eye-sparkle="left-primary" cx="37.35" cy="47.25" r={0.72 * blinkScale} fill="#FFFFFF" opacity="0.98" />

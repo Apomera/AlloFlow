@@ -22,9 +22,35 @@ describe('AlloBot reduced-motion accessibility', () => {
     expect(source.match(/animate-bounce motion-reduce:animate-none/g)).toHaveLength(1);
   });
 
+  // 2026-09-04. The arms floated on a 3.5s loop while the body breathed and
+  // floated on 3s. A half-second of drift per cycle meant they only realigned
+  // every 21 seconds, so the arms rose while the body settled and the shoulders
+  // looked unhinged, but only some of the time, which made it hard to name.
+  // Anything attached to the body has to share the body's period.
+  it('keeps every body-attached animation on one period so the limbs cannot drift', () => {
+    const durationOf = (name) => {
+      const match = source.match(new RegExp(String.raw`\.animate-${name}\s*\{\s*animation:\s*[\w-]+\s+([\d.]+)s`));
+      return match ? Number(match[1]) : null;
+    };
+    const body = durationOf('bot-breathe');
+    expect(body).toBeGreaterThan(0);
+    for (const attached of ['allo-float', 'shadow-pulse', 'float-hands']) {
+      expect(durationOf(attached), attached + ' must share the body period').toBe(body);
+    }
+    // A small fixed delay is follow-through, not drift: the arms trail the body.
+    expect(source).toMatch(/\.animate-float-hands \{[^}]*animation-delay:\s*-?0?\.\d+s/);
+    // The antenna is deliberately its own thing; it is not attached like a limb.
+    expect(durationOf('antenna-sway')).not.toBe(body);
+  });
+
   it('provides local reduced-motion fallbacks for broad transitions', () => {
-    expect(source.match(/(?<![\w-])transition-all(?![\w-])/g)).toHaveLength(7);
-    expect(source.match(/transition-all motion-reduce:transition-none/g)).toHaveLength(7);
+    // The rule is that every broad transition carries a reduced-motion
+    // fallback, not that there are exactly N of them; pinning the count made
+    // adding one guarded transition look like a failure.
+    const broad = source.match(/(?<![\w-])transition-all(?![\w-])/g) || [];
+    const guarded = source.match(/transition-all motion-reduce:transition-none/g) || [];
+    expect(broad.length).toBeGreaterThanOrEqual(7);
+    expect(guarded).toHaveLength(broad.length);
     expect(source.match(/(?<![\w-])transition-transform(?![\w-])/g)).toHaveLength(2);
     expect(source.match(/transition-transform motion-reduce:transition-none/g)).toHaveLength(2);
   });
@@ -103,10 +129,17 @@ describe('AlloBot reduced-motion accessibility', () => {
       expect(source).toContain('data-allobot-jetpack-layer="' + layer + '"');
       expect(moduleSource).toContain(layer);
     }
-    expect(source.match(/data-allobot-jetpack-layer="pod-signal-core"/g)).toHaveLength(2);
-    expect(source.match(/data-allobot-jetpack-layer="nozzle-glow"/g)).toHaveLength(2);
+    // Count the artwork, not the compact-mode CSS selector that names the
+    // same layer, hence the lookbehind for the opening bracket.
+    expect(source.match(/(?<!\[)data-allobot-jetpack-layer="pod-signal-core"/g)).toHaveLength(2);
+    expect(source.match(/(?<!\[)data-allobot-jetpack-layer="nozzle-glow"/g)).toHaveLength(2);
     expect(source).toContain("data-allobot-jetpack-motion={motionDisabled ? 'static' : 'animated'}");
-    expect(source).toContain("className={!motionDisabled && jetpackVisualState !== 'standby' ? \"animate-pulse motion-reduce:animate-none\" : undefined}");
+    // 2026-09-04: 'hover' is the state AlloBot is in whenever it is simply
+    // present, so pulsing on anything-but-standby meant the reactor blinked
+    // permanently in the corner of the screen. It is lit at rest and animates
+    // only while actually thrusting or braking.
+    expect(source).toContain("jetpackVisualState === 'thrust' || jetpackVisualState === 'braking'");
+    expect(source).not.toContain("jetpackVisualState !== 'standby' ? \"animate-pulse");
     expect(source).toContain("{jetpackVisualState === 'braking' && (");
     expect(source).toContain("{jetpackVisualState === 'thrust' && (");
   });

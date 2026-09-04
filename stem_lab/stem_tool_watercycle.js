@@ -223,9 +223,9 @@
       '.wc-view-segments button{min-width:86px;min-height:32px;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:800;color:#475569}',
       '.wc-view-segments button[aria-pressed="true"]{background:#0369a1;color:#fff;box-shadow:0 3px 10px rgba(3,105,161,.28)}',
       '.wc-journey-3d{position:absolute;inset:0;width:100%;height:100%;display:block;background:#041a2b}',
-      '.wc-3d-status{font-size:11px;font-weight:800;color:#0369a1}',
-      '.wc-view-status{display:flex;align-items:center;gap:6px}',
-      '.wc-camera-reset{width:32px;height:32px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:18px;font-weight:900}',
+      '.wc-3d-status{font-size:11px;font-weight:800;color:#0369a1;min-width:0}',
+      '.wc-view-status{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.wc-camera-reset{min-width:32px;height:32px;padding:0 8px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:18px;font-weight:900;white-space:nowrap}',
       '.wc-viewport-dock{position:absolute;z-index:5;left:10px;right:10px;bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 9px;border:1px solid rgba(125,211,252,.34);border-radius:12px;background:rgba(4,26,43,.88);box-shadow:0 10px 28px rgba(2,6,23,.34);backdrop-filter:blur(10px);color:#e0f2fe}',
       '.wc-viewport-state{min-width:0}.wc-viewport-state span{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}.wc-viewport-state strong{display:block;max-width:260px;margin-top:1px;font-size:12px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.wc-viewport-state-detail{display:block;margin-top:3px;color:#bae6fd;font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wc-scene-lens{position:absolute;z-index:4;top:76px;left:12px;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:2px 7px;max-width:230px;padding:6px 8px;border:1px solid rgba(125,211,252,.34);border-radius:9px;background:rgba(4,26,43,.78);box-shadow:0 8px 22px rgba(2,6,23,.22);backdrop-filter:blur(8px);color:#e0f2fe}.wc-scene-lens-kicker{font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#7dd3fc}.wc-scene-lens-main{min-width:0;font-size:11px;font-weight:900;line-height:1.2;color:#fff}.wc-scene-lens-mode{grid-column:2;font-size:11px;color:#bae6fd}.wc-scene-lens-axis{grid-column:1/-1;display:flex;align-items:center;gap:4px;margin-top:2px}.wc-scene-lens-axis span{flex:1 1 0;padding:2px 4px;border-radius:4px;background:rgba(15,23,42,.54);color:#94a3b8;font-size:11px;font-weight:900;text-align:center}.wc-scene-lens-axis span.is-active{background:rgba(14,165,233,.36);color:#e0f2fe;box-shadow:inset 0 0 0 1px rgba(125,211,252,.48)}@media(max-width:560px){.wc-scene-lens{top:70px;left:8px;right:8px;max-width:none}.wc-viewport-state-detail{white-space:normal}}@media(forced-colors:active){.wc-scene-lens{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.wc-scene-lens-kicker,.wc-scene-lens-main,.wc-scene-lens-mode,.wc-scene-lens-axis span{color:CanvasText}.wc-scene-lens-axis span.is-active{background:Highlight;color:HighlightText;box-shadow:none}.wc-viewport-state-detail{color:CanvasText}}',
@@ -537,11 +537,11 @@
       ,'.wc-pilot-journey-guide{padding:10px 12px;border:1px solid rgba(2,132,199,.3);border-radius:12px;background:rgba(240,249,255,.78)}.wc-pilot-journey-guide>h4{margin:0 0 7px;font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#075985}.wc-pilot-journey-steps{display:grid;grid-template-columns:minmax(128px,.9fr) minmax(128px,.9fr) minmax(210px,1.5fr);gap:7px;margin:0;padding:0;list-style:none}.wc-pilot-journey-step{display:grid;align-content:start;gap:2px;min-width:0;padding:8px 10px;border:1px solid rgba(148,163,184,.34);border-radius:9px;background:rgba(255,255,255,.76)}.wc-pilot-journey-step>span{font-size:9.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b}.wc-pilot-journey-step>strong{font-size:12.5px;line-height:1.35;color:#1e293b;overflow-wrap:anywhere}.wc-pilot-journey-step>small{font-size:10.5px;line-height:1.35;color:#475569}.wc-pilot-journey-step.is-last{border-color:rgba(16,185,129,.34)}.wc-pilot-journey-step.is-last>span{color:#047857}.wc-pilot-journey-step.is-now{border-color:rgba(2,132,199,.46);background:rgba(224,242,254,.76)}.wc-pilot-journey-step.is-now>span{color:#0369a1}.wc-pilot-journey-step.is-next{border-color:rgba(245,158,11,.42);background:rgba(255,247,237,.82)}.wc-pilot-journey-step.is-next>span{color:#b45309}.wc-pilot-journey-step.is-next>strong{font-size:13.5px;color:#7c2d12}.dark .wc-pilot-journey-guide{border-color:rgba(125,211,252,.26);background:rgba(8,47,73,.48)}.dark .wc-pilot-journey-guide>h4{color:#7dd3fc}.dark .wc-pilot-journey-step{border-color:rgba(71,85,105,.82);background:rgba(15,23,42,.7)}.dark .wc-pilot-journey-step>span{color:#94a3b8}.dark .wc-pilot-journey-step>strong{color:#f1f5f9}.dark .wc-pilot-journey-step>small{color:#cbd5e1}.dark .wc-pilot-journey-step.is-last{border-color:rgba(52,211,153,.38)}.dark .wc-pilot-journey-step.is-last>span{color:#6ee7b7}.dark .wc-pilot-journey-step.is-now{border-color:rgba(56,189,248,.44);background:rgba(8,47,73,.72)}.dark .wc-pilot-journey-step.is-now>span{color:#7dd3fc}.dark .wc-pilot-journey-step.is-next{border-color:rgba(251,191,36,.42);background:rgba(69,49,10,.48)}.dark .wc-pilot-journey-step.is-next>span{color:#fbbf24}.dark .wc-pilot-journey-step.is-next>strong{color:#fef3c7}@media(max-width:700px){.wc-pilot-journey-steps{grid-template-columns:1fr}.wc-pilot-journey-step{min-height:0}}'
       ,'.wc-pilot-transition{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 14px;padding:11px 13px;border:1px solid rgba(16,185,129,.28);border-left:4px solid #10b981;border-radius:11px;background:linear-gradient(135deg,rgba(236,253,245,.88),rgba(224,242,254,.62))}.wc-pilot-transition-copy{min-width:0}.wc-pilot-transition-kicker{display:block;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#047857}.wc-pilot-transition-flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px}.wc-pilot-transition-form{padding:3px 7px;border:1px solid rgba(5,150,105,.24);border-radius:999px;background:rgba(255,255,255,.72);color:#065f46;font-size:11px;font-weight:900}.wc-pilot-transition-arrow{color:#0284c7;font-size:14px;font-weight:900}.wc-pilot-transition p{grid-column:1/-1;margin:2px 0 0;font-size:12px;line-height:1.45;color:#334155}.wc-pilot-transition-evidence{align-self:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.7);color:#075985;font-size:10px;font-weight:900;line-height:1.35;text-align:right}.wc-pilot-transition-evidence strong,.wc-pilot-transition-evidence span{display:block}.wc-pilot-transition-evidence span{margin-top:2px;font-size:9px;font-weight:800;color:#0369a1}.dark .wc-pilot-transition{border-color:rgba(52,211,153,.28);border-left-color:#34d399;background:linear-gradient(135deg,rgba(6,78,59,.48),rgba(8,47,73,.5))}.dark .wc-pilot-transition-kicker{color:#6ee7b7}.dark .wc-pilot-transition-form,.dark .wc-pilot-transition-evidence{border-color:rgba(52,211,153,.22);background:rgba(15,23,42,.66);color:#d1fae5}.dark .wc-pilot-transition-evidence span{color:#a7f3d0}.dark .wc-pilot-transition p{color:#cbd5e1}@media(max-width:560px){.wc-pilot-transition{grid-template-columns:1fr}.wc-pilot-transition-evidence{justify-self:start;text-align:left}}'
       ,'.wc-pilot-transition-evidence .wc-pilot-transition-energy{margin-top:5px;padding-top:4px;border-top:1px solid rgba(180,83,9,.2);color:#92400e}.wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=released]{color:#9a3412}.wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=none]{color:#475569}.dark .wc-pilot-transition-evidence .wc-pilot-transition-energy{border-top-color:rgba(253,186,116,.24);color:#fde68a}.dark .wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=released]{color:#fed7aa}.dark .wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=none]{color:#cbd5e1}@media(forced-colors:active){.wc-pilot-transition-evidence .wc-pilot-transition-energy{border-color:CanvasText;color:CanvasText}}'
-      ,'.wc-pilot-science,.wc-pilot-ledger{padding:13px 15px;border:1px solid rgba(148,163,184,.4);border-radius:13px;background:rgba(255,255,255,.86)}.dark .wc-pilot-science,.dark .wc-pilot-ledger{border-color:rgba(51,65,85,.8);background:rgba(15,23,42,.66)}.wc-pilot-science h4,.wc-pilot-ledger h4{margin:0 0 6px;font-size:15px;font-weight:900;color:#0f172a}.dark .wc-pilot-science h4,.dark .wc-pilot-ledger h4{color:#f1f5f9}.wc-pilot-science p{margin:0 0 9px;font-size:14px;line-height:1.55;color:#334155}.dark .wc-pilot-science p{color:#cbd5e1}.wc-pilot-science-numbers{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:7px;margin-bottom:9px}.wc-pilot-science-numbers div{padding:7px 9px;border:1px solid rgba(2,132,199,.22);border-radius:9px;background:rgba(240,249,255,.8)}.dark .wc-pilot-science-numbers div{border-color:rgba(125,211,252,.2);background:rgba(8,47,73,.5)}.wc-pilot-science-numbers dt{font-size:10.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#0369a1}.dark .wc-pilot-science-numbers dt{color:#7dd3fc}.wc-pilot-science-numbers dd{margin:0;font-size:15px;font-weight:900;color:#0c4a6e}.dark .wc-pilot-science-numbers dd{color:#e0f2fe}.wc-pilot-model-note{margin:0!important;font-size:12px!important;line-height:1.45!important;color:#475569!important}.dark .wc-pilot-model-note{color:#94a3b8!important}'
+      ,'.wc-pilot-science,.wc-pilot-ledger{padding:13px 15px;border:1px solid rgba(148,163,184,.4);border-radius:13px;background:rgba(255,255,255,.86)}.dark .wc-pilot-science,.dark .wc-pilot-ledger{border-color:rgba(51,65,85,.8);background:rgba(15,23,42,.66)}.wc-pilot-science h4,.wc-pilot-ledger h4{margin:0 0 6px;font-size:15px;font-weight:900;color:#0f172a}.dark .wc-pilot-science h4,.dark .wc-pilot-ledger h4{color:#f1f5f9}.wc-pilot-science p{margin:0 0 9px;font-size:14px;line-height:1.55;color:#334155}.dark .wc-pilot-science p{color:#cbd5e1}.wc-pilot-science-numbers{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:7px;margin:0 0 9px}.wc-pilot-science-numbers div{padding:7px 9px;border:1px solid rgba(2,132,199,.22);border-radius:9px;background:rgba(240,249,255,.8)}.dark .wc-pilot-science-numbers div{border-color:rgba(125,211,252,.2);background:rgba(8,47,73,.5)}.wc-pilot-science-numbers dt{font-size:10.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#0369a1}.dark .wc-pilot-science-numbers dt{color:#7dd3fc}.wc-pilot-science-numbers dd{margin:0;font-size:15px;font-weight:900;color:#0c4a6e}.dark .wc-pilot-science-numbers dd{color:#e0f2fe}.wc-pilot-model-note{margin:0!important;font-size:12px!important;line-height:1.45!important;color:#475569!important}.dark .wc-pilot-model-note{color:#94a3b8!important}'
       ,'.wc-pilot-ledger-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}.wc-pilot-ledger-head span{font-size:13px;font-weight:900;color:#0369a1}.dark .wc-pilot-ledger-head span{color:#7dd3fc}.wc-pilot-ledger-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:6px;margin:8px 0 9px;padding:0;list-style:none}.wc-pilot-ledger-list li{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid rgba(148,163,184,.36);border-radius:9px;font-size:13px;font-weight:700;color:#475569}.wc-pilot-ledger-list li.is-done{border-color:rgba(16,185,129,.5);background:rgba(209,250,229,.6);color:#065f46}.dark .wc-pilot-ledger-list li{border-color:rgba(51,65,85,.9);color:#94a3b8}.dark .wc-pilot-ledger-list li.is-done{border-color:rgba(52,211,153,.44);background:rgba(6,78,59,.42);color:#a7f3d0}.wc-pilot-ledger-mark{font-weight:900}.wc-pilot-ledger-done,.wc-pilot-ledger-hint{margin:0;font-size:13px;line-height:1.5;color:#475569}.dark .wc-pilot-ledger-done,.dark .wc-pilot-ledger-hint{color:#cbd5e1}.wc-pilot-ledger-done{color:#065f46;font-weight:700}.dark .wc-pilot-ledger-done{color:#a7f3d0}'
       ,'.wc-pilot-route-history{margin:10px 0;padding-top:9px;border-top:1px solid rgba(148,163,184,.32)}.wc-pilot-route-history>strong{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#0369a1}.dark .wc-pilot-route-history>strong{color:#7dd3fc}.wc-pilot-route-history ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:5px;margin:6px 0;padding:0;list-style:none}.wc-pilot-route-history li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 6px;padding:6px 8px;border:1px solid rgba(148,163,184,.32);border-radius:8px;color:#475569}.wc-pilot-route-history li.is-tried{border-color:rgba(14,116,144,.45);background:rgba(224,242,254,.58);color:#0c4a6e}.dark .wc-pilot-route-history li{border-color:rgba(51,65,85,.9);color:#94a3b8}.dark .wc-pilot-route-history li.is-tried{border-color:rgba(34,211,238,.4);background:rgba(8,47,73,.5);color:#cffafe}.wc-pilot-route-history span{font-size:11px;font-weight:800}.wc-pilot-route-history small{grid-column:1;font-size:9px}.wc-pilot-route-history b{grid-column:2;grid-row:1/3;align-self:center;font-size:14px}.wc-pilot-route-history p{margin:6px 0 0;font-size:11px;font-weight:700;color:#0e7490}.dark .wc-pilot-route-history p{color:#67e8f9}'
       ,'.wc-pilot-alt{padding:9px 12px;border:1px solid rgba(148,163,184,.4);border-radius:10px;background:rgba(248,250,252,.8)}.wc-pilot-alt summary{font-size:13px;font-weight:800;color:#334155;cursor:pointer}.wc-pilot-alt p{margin:7px 0 0;font-size:13px;line-height:1.55;color:#475569}.dark .wc-pilot-alt{border-color:rgba(51,65,85,.8);background:rgba(15,23,42,.6)}.dark .wc-pilot-alt summary{color:#e2e8f0}.dark .wc-pilot-alt p{color:#cbd5e1}'
-      ,'@media(max-width:700px){.wc-pilot-canvas{height:520px;min-height:520px}.wc-pilot-hud-left{top:54px;right:8px;left:8px;min-width:0;padding:7px 8px;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:5px 7px}.wc-pilot-hud-left .wc-pilot-form-badge{grid-column:1;grid-row:1}.wc-pilot-hud-left .wc-pilot-readouts{grid-column:2;grid-row:1}.wc-pilot-hud-left .wc-pilot-buoy{grid-column:1/-1;grid-row:2}.wc-pilot-hud-left .wc-pilot-place{grid-column:1/-1;grid-row:3}.wc-pilot-readouts{grid-template-columns:1fr 1fr;gap:3px 7px}.wc-pilot-hud-right{top:auto;bottom:124px;right:8px;min-width:0;max-width:54%}.wc-pilot-ladder{bottom:106px;left:8px}.wc-pilot-ladder-track{height:clamp(76px,21vw,104px)}.wc-pilot-ladder-mark{font-size:9px;padding:1px 4px}.wc-pilot-pad{left:8px;right:8px;transform:none;bottom:8px}.wc-pilot-key{min-width:0;flex:1 1 40px}.wc-pilot-key.is-wide{flex:1 1 74px}.wc-pilot-buoy{font-size:10px}}'
+      ,'@media(max-width:700px){.wc-pilot-canvas{height:520px;min-height:520px}.wc-pilot-hud-left{top:54px;right:8px;left:8px;min-width:0;padding:7px 8px;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:5px 7px}.wc-pilot-hud-left .wc-pilot-form-badge{grid-column:1;grid-row:1}.wc-pilot-hud-left .wc-pilot-readouts{grid-column:2;grid-row:1}.wc-pilot-hud-left .wc-pilot-buoy{grid-column:1/-1;grid-row:2}.wc-pilot-hud-left .wc-pilot-place{grid-column:1/-1;grid-row:3}.wc-pilot-readouts{grid-template-columns:1fr 1fr;gap:3px 7px}.wc-pilot-hud-right{top:auto;bottom:124px;right:8px;min-width:0;max-width:54%}.wc-pilot-ladder{bottom:132px;left:8px}.wc-pilot-ladder-track{height:clamp(76px,21vw,104px)}.wc-pilot-ladder-mark{font-size:9px;padding:1px 4px}.wc-pilot-pad{left:8px;right:8px;transform:none;bottom:8px}.wc-pilot-key{min-width:0;flex:1 1 40px}.wc-pilot-key.is-wide{flex:1 1 74px}.wc-pilot-buoy{font-size:10px}}'
       // Reduced motion: the scene already skips its own animation, but the CSS
       // transitions that move the HUD ladder and gauges have to stop too, or the
       // page still animates for someone who asked it not to.
@@ -599,14 +599,14 @@
       ,'.wc-pilot-stage[data-camera-mode=water]::after{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 47%,transparent 42%,rgba(2,12,27,.08) 68%,rgba(2,12,27,.36) 100%),linear-gradient(115deg,rgba(125,211,252,.08),transparent 28%,transparent 72%,rgba(34,211,238,.07));box-shadow:inset 0 0 48px rgba(56,189,248,.15)}'
       ,'.wc-pilot-camera-switch{position:absolute;z-index:6;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:stretch;gap:2px;padding:3px;border:1px solid rgba(186,230,253,.3);border-radius:12px;background:rgba(3,18,31,.94);box-shadow:0 8px 24px rgba(2,12,27,.2)}.wc-pilot-camera-btn{min-height:34px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:#bae6fd;font-size:11px;font-weight:900;white-space:nowrap;cursor:pointer}.wc-pilot-camera-btn:hover{background:rgba(14,116,144,.55);color:#fff}.wc-pilot-camera-btn[aria-pressed=true]{background:#e0f2fe;color:#075985;box-shadow:0 2px 10px rgba(2,12,27,.24)}.wc-pilot-camera-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-camera-help{min-width:34px;padding-inline:8px;color:#fef3c7}'
       ,'.wc-pilot-route{position:absolute;z-index:5;left:50%;bottom:76px;transform:translateX(-50%);width:min(390px,calc(100% - 250px));padding:8px 10px;border:1px solid rgba(167,243,208,.38);border-radius:11px;background:rgba(3,18,31,.94);box-shadow:0 10px 26px rgba(2,12,27,.26);color:#e0f2fe;pointer-events:none}.wc-pilot-route-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#6ee7b7}.wc-pilot-route strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#fff}.wc-pilot-route small{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#bae6fd}'
-      ,'.wc-pilot-launch{position:absolute;z-index:9;inset:0;display:grid;place-items:center;padding:18px;overflow:auto;background:linear-gradient(145deg,rgba(2,12,27,.84),rgba(3,47,67,.7));backdrop-filter:blur(5px)}.wc-pilot-launch-card{width:min(660px,100%);padding:20px;border:1px solid rgba(186,230,253,.38);border-radius:18px;background:linear-gradient(145deg,rgba(3,18,31,.95),rgba(8,47,73,.94));box-shadow:0 24px 70px rgba(2,6,23,.48);color:#e0f2fe}.wc-pilot-launch-kicker{display:block;margin-bottom:5px;font-size:10px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch h3{margin:0;font-size:clamp(21px,3vw,30px);line-height:1.08;letter-spacing:-.025em;color:#fff}.wc-pilot-launch-intro{margin:7px 0 13px;font-size:13px;line-height:1.5;color:#bae6fd}.wc-pilot-launch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.wc-pilot-launch-step{padding:9px 10px;border:1px solid rgba(125,211,252,.2);border-radius:11px;background:rgba(15,23,42,.48)}.wc-pilot-launch-step span{display:block;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch-step strong{display:block;margin-top:3px;font-size:12px;line-height:1.3;color:#f8fafc}.wc-pilot-launch-science{margin:10px 0;padding:8px 10px;border-left:3px solid #34d399;border-radius:0 8px 8px 0;background:rgba(6,78,59,.3);font-size:11px;line-height:1.45;color:#d1fae5}.wc-pilot-launch-actions{display:flex;gap:7px;flex-wrap:wrap}.wc-pilot-launch-btn{flex:1 1 190px;min-height:42px;padding:9px 13px;border:1px solid #7dd3fc;border-radius:10px;background:#0284c7;color:#fff;font-size:12px;font-weight:900;cursor:pointer}.wc-pilot-launch-btn:hover{background:#0369a1}.wc-pilot-launch-btn.is-water{border-color:#67e8f9;background:rgba(14,116,144,.65)}.wc-pilot-launch-btn:focus-visible{outline:3px solid #facc15;outline-offset:3px}'
+      ,'.wc-pilot-launch{position:absolute;z-index:9;inset:0;display:grid;place-items:center;padding:18px;overflow:auto;background:linear-gradient(145deg,rgba(2,12,27,.84),rgba(3,47,67,.7));backdrop-filter:blur(5px)}.wc-pilot-launch-card{width:min(660px,100%);padding:20px;border:1px solid rgba(186,230,253,.38);border-radius:18px;background:linear-gradient(145deg,rgba(3,18,31,.95),rgba(8,47,73,.94));box-shadow:0 24px 70px rgba(2,6,23,.48);color:#e0f2fe}.wc-pilot-launch-kicker{display:block;margin-bottom:5px;font-size:10px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch h3{margin:0;font-size:clamp(21px,3vw,30px);line-height:1.08;letter-spacing:-.025em;color:#fff}.wc-pilot-launch-intro{margin:7px 0 13px;font-size:13px;line-height:1.5;color:#bae6fd}.wc-pilot-launch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.wc-pilot-launch-step{padding:9px 10px;border:1px solid rgba(125,211,252,.2);border-radius:11px;background:rgba(15,23,42,.48)}.wc-pilot-launch-step span{display:block;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch-step strong{display:block;margin-top:3px;font-size:12px;line-height:1.3;color:#f8fafc}.wc-pilot-launch-science{margin:10px 0;padding:8px 10px;border-left:3px solid #34d399;border-radius:0 8px 8px 0;background:rgba(6,78,59,.3);font-size:11px;line-height:1.45;color:#d1fae5}.wc-pilot-launch-actions{display:flex;gap:7px;flex-wrap:wrap}.wc-pilot-launch-btn{flex:1 1 190px;min-height:42px;padding:9px 13px;border:1px solid #7dd3fc;border-radius:10px;background:#0369a1;color:#fff;font-size:12px;font-weight:900;cursor:pointer}.wc-pilot-launch-btn:hover{background:#0369a1}.wc-pilot-launch-btn.is-water{border-color:#67e8f9;background:rgba(14,116,144,.65)}.wc-pilot-launch-btn:focus-visible{outline:3px solid #facc15;outline-offset:3px}'
       ,'@media(max-width:700px){.wc-pilot-camera-switch{top:8px;right:8px;left:8px;transform:none;justify-content:center}.wc-pilot-camera-btn{padding-inline:7px}.wc-pilot-route{top:200px;right:8px;bottom:auto;left:auto;width:min(58%,260px);transform:none}.wc-pilot-launch{place-items:start center;padding:10px}.wc-pilot-launch-card{padding:14px}.wc-pilot-launch-grid{grid-template-columns:1fr}.wc-pilot-launch-step{padding:6px 8px}.wc-pilot-launch-intro{margin-bottom:9px}.wc-pilot-launch-science{margin:8px 0}.wc-pilot-launch-btn{min-height:38px}}'
       ,'@media(max-width:700px){.wc-pilot-stage[data-onboarding=true]{min-height:620px}}'
       ,'@media(forced-colors:active){.wc-pilot-camera-switch,.wc-pilot-camera-btn,.wc-pilot-route,.wc-pilot-launch,.wc-pilot-launch-card,.wc-pilot-launch-step,.wc-pilot-launch-btn{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-pilot-camera-btn[aria-pressed=true],.wc-pilot-launch-btn{background:Highlight;color:HighlightText}.wc-pilot-stage[data-camera-mode=water]::after{display:none}}'
       ,'@media(forced-colors:active){.wc-pilot-transition,.wc-pilot-transition-form,.wc-pilot-transition-evidence{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-pilot-transition-kicker,.wc-pilot-transition p,.wc-pilot-transition-arrow,.wc-pilot-transition-evidence span{color:CanvasText}}'
       ,'.wc-pilot-key.is-move{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1}.wc-pilot-key-hint{font:800 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;color:#bae6fd;opacity:.9}.wc-pilot-cycle{z-index:6;bottom:98px;border-color:rgba(253,224,71,.55);pointer-events:auto}.wc-pilot-cycle-hint{color:#fde68a!important}.wc-pilot-cycle-btn{margin-top:7px;min-height:32px;padding:5px 12px;font-size:11px}@media(max-width:700px){.wc-pilot-cycle{top:64px;bottom:auto;left:8px;right:8px;width:auto}}@media(forced-colors:active){.wc-pilot-cycle{border-color:CanvasText}.wc-pilot-cycle-hint,.wc-pilot-key-hint{color:CanvasText!important}}'
       ,'.wc-pilot-hud-toggle{display:none}@keyframes wc-pilot-gauge-pop{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}.wc-pilot-gauge.is-pop{animation:wc-pilot-gauge-pop .32s ease;transform-origin:left center}@media(prefers-reduced-motion:reduce){.wc-pilot-gauge.is-pop{animation:none!important}}@media(max-width:700px){.wc-pilot-hud-toggle{display:inline-block}.wc-pilot-stage[data-hud=compact] .wc-pilot-readouts,.wc-pilot-stage[data-hud=compact] .wc-pilot-buoy,.wc-pilot-stage[data-hud=compact] .wc-pilot-place,.wc-pilot-stage[data-hud=compact] .wc-pilot-ladder,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right .wc-pilot-gauge,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right .wc-pilot-hud-kicker,.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left .wc-pilot-hud-kicker{display:none}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-left{grid-template-columns:1fr;right:auto;min-width:0;padding:5px 8px}.wc-pilot-stage[data-hud=compact] .wc-pilot-hud-right{bottom:auto;top:100px}}'
-      ,'.wc-pilot-hud-right{max-width:min(272px,34%)}.wc-pilot-goal{padding:7px 8px;border:1px solid rgba(110,231,183,.28);border-radius:8px;background:rgba(6,78,59,.34)}.wc-pilot-goal span{display:block;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a7f3d0}.wc-pilot-goal strong{display:block;margin-top:2px;font-size:11px;line-height:1.35;font-weight:700;color:#f0fdf4}@media(max-width:700px){.wc-pilot-hud-right{max-width:58%;gap:5px;padding:7px 8px}.wc-pilot-hud-right .wc-pilot-micro{display:none}.wc-pilot-goal{padding:5px 7px}.wc-pilot-goal strong{font-size:10px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}@media(forced-colors:active){.wc-pilot-goal{border:1px solid CanvasText;background:Canvas}.wc-pilot-goal span,.wc-pilot-goal strong{color:CanvasText}}'
+      ,'.wc-pilot-hud-right{max-width:min(272px,34%)}.wc-pilot-goal{padding:7px 8px;border:1px solid rgba(110,231,183,.28);border-radius:8px;background:rgba(6,78,59,.34)}.wc-pilot-goal span{display:block;font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#a7f3d0}.wc-pilot-goal strong{display:block;margin-top:2px;font-size:11px;line-height:1.35;font-weight:700;color:#f0fdf4}@media(max-width:700px){.wc-pilot-hud-right{max-width:60%;gap:4px;padding:6px 8px}.wc-pilot-hud-right .wc-pilot-micro{display:none}.wc-pilot-goal{padding:5px 7px}.wc-pilot-goal strong{font-size:10px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}}@media(forced-colors:active){.wc-pilot-goal{border:1px solid CanvasText;background:Canvas}.wc-pilot-goal span,.wc-pilot-goal strong{color:CanvasText}}'
       ,'.wc-pilot-buoy[data-state=pathway]{background:rgba(99,102,241,.2);color:#e0e7ff}.wc-pilot-readouts.is-pathway dd{font-size:11px;line-height:1.22}.wc-pilot-route.is-process{border-color:rgba(165,243,252,.5);background:linear-gradient(145deg,rgba(3,18,31,.96),rgba(30,41,59,.94))}.wc-pilot-route-progress{height:6px;margin-top:6px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-route-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#4ade80)}.wc-pilot-key-pathway{min-width:128px;background:#0f766e;border-color:#5eead4}.wc-pilot-key-pathway:hover{background:#0d9488}@media(forced-colors:active){.wc-pilot-route-progress{border:1px solid CanvasText;background:Canvas}.wc-pilot-route-progress i{background:Highlight}.wc-pilot-key-pathway{background:Highlight;color:HighlightText}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
@@ -2413,6 +2413,114 @@
   // column was only 150 world units tall while the coastline was 300 units
   // wide, so the vertical journey - the entire point of the mode - was the
   // SHORT axis of the scene and the cloud base label floated at sea level.
+  // Terrain lighting curve for the 2D scene, on the same breakpoints as the sky gradient.
+  // Above FULL_SUN the ground is lit for full day and takes no wash. NIGHT_AT is where the sky
+  // finishes turning night, so the ground reaches DUSK_WASH there rather than only at zero sun —
+  // that gap is what left a noon meadow under a midnight sky. Below it the wash deepens the last
+  // of the way to MAX_WASH. At the 20% sun the night preset uses this lands the meadow near half
+  // its noon luminance: unmistakably night beside a night sky, and still a scene for the fireflies
+  // and the process particles to sit in.
+  var WC_TERRAIN_LIGHT_FULL_SUN = 0.62;
+  var WC_TERRAIN_LIGHT_NIGHT_AT = 0.30;
+  var WC_TERRAIN_LIGHT_DUSK_WASH = 0.50;
+  var WC_TERRAIN_LIGHT_MAX_WASH = 0.64;
+
+  // ── Sun altitude and rainbow geometry for the 2D scene ──
+  // The pilot mode's rainbow lab already teaches the real rule — "bright sunlight with the Sun
+  // below 42 degrees", "face directly opposite the Sun", primary at 42 deg and secondary at 51 deg
+  // reversed — and the 2D canvas contradicted it: the Sun was pinned near the top of the sky at
+  // every solar setting, and the bow was a fixed arc drawn whenever solar > 0.7, i.e. only when the
+  // Sun was highest and a rainbow is impossible. A tool cannot teach a rule on one screen and break
+  // it on another, so the scene now derives both from one model.
+  //
+  // The solar slider doubles as the scene's time of day (it already drives night / dawn-dusk / day
+  // in the sky gradient), so it drives the Sun's altitude too: on the horizon as the dusk band ends,
+  // climbing to WC_SUN_MAX_ALTITUDE_DEG in full day. Full day is unchanged — at the default 100% sun
+  // the elevation term saturates and the Sun sits exactly where it always did.
+  var WC_SKY_HORIZON_FRAC = 0.62;      // where the land starts, as a fraction of canvas height
+  var WC_SUN_TOP_FRAC = 0.08;          // Sun height at full day
+  var WC_SUN_LOW_FRAC = 0.52;          // Sun height where it meets the dusk end of the band
+  var WC_SUN_MAX_ALTITUDE_DEG = 71;    // what the top of that travel represents
+  var WC_RAINBOW_PRIMARY_DEG = 42;     // angular radius of the primary bow
+  var WC_RAINBOW_SECONDARY_DEG = 51;   // secondary bow, colours reversed
+  var WC_SUN_ELEV_FLOOR = 0.32;        // below this the Moon takes the sky (nightScene2d)
+  var WC_SUN_ELEV_SPAN = 0.58;
+  var WC_SUN_X_FRAC = 0.82;            // where the Sun sits across the scene
+
+  function wcSunElevation(skyBright) {
+    var b = Number(skyBright);
+    if (!isFinite(b)) return 1;
+    return Math.min(1, Math.max(0, (Math.min(1, Math.max(0, b)) - WC_SUN_ELEV_FLOOR) / WC_SUN_ELEV_SPAN));
+  }
+  function wcSunAltitudeDeg(skyBright) { return wcSunElevation(skyBright) * WC_SUN_MAX_ALTITUDE_DEG; }
+  function wcSunYFrac(skyBright) {
+    return WC_SUN_LOW_FRAC - (WC_SUN_LOW_FRAC - WC_SUN_TOP_FRAC) * wcSunElevation(skyBright);
+  }
+  // The bow is centred on the ANTISOLAR point — the direction straight opposite the Sun — which sits
+  // as far below the horizon as the Sun sits above it. That single fact is what makes the rest work:
+  // as the Sun climbs, the centre sinks, and less and less of the circle clears the horizon.
+  function wcAntisolarYFrac(skyBright) { return 2 * WC_SKY_HORIZON_FRAC - wcSunYFrac(skyBright); }
+  function wcAntisolarXFrac(sunXFrac) { return 1 - sunXFrac; }
+  // Radius is fixed BY the 42-degree rule rather than chosen: it is the depth of the antisolar point
+  // at exactly 42 degrees of Sun altitude, so the primary bow's crown grazes the horizon there and
+  // is wholly below it above — the geometry enforces the rule instead of a separate cutoff repeating
+  // it. The secondary scales by its own angle, so it survives a little higher, as it really does.
+  function wcBowRadiusFrac(deg) {
+    var e42 = WC_RAINBOW_PRIMARY_DEG / WC_SUN_MAX_ALTITUDE_DEG;
+    // Depth of the antisolar point below the horizon = horizon - sunY, which grows as the Sun climbs.
+    var r42 = (WC_SKY_HORIZON_FRAC - WC_SUN_LOW_FRAC) + (WC_SUN_LOW_FRAC - WC_SUN_TOP_FRAC) * e42;
+    return r42 * (deg / WC_RAINBOW_PRIMARY_DEG);
+  }
+  // Angular sweep of the part of a bow that clears the horizon, as [start, end] in canvas radians
+  // (y grows downward, so the visible crown is the upper half). Null when nothing clears.
+  function wcBowArc(skyBright, deg) {
+    var depth = wcAntisolarYFrac(skyBright) - WC_SKY_HORIZON_FRAC;
+    var radius = wcBowRadiusFrac(deg);
+    if (!(radius > 0)) return null;
+    var ratio = depth / radius;
+    if (!(ratio < 1)) return null;
+    var half = Math.asin(Math.max(-1, Math.min(1, ratio)));
+    return [Math.PI + half, 2 * Math.PI - half];
+  }
+  function wcRainbowVisible(skyBright) {
+    // The Sun has to actually be in the sky: below the floor the scene renders a Moon, and moonbows
+    // are far too faint for this diagram to claim one.
+    var b = Number(skyBright);
+    if (!isFinite(b) || b < WC_SUN_ELEV_FLOOR) return false;
+    return wcBowArc(b, WC_RAINBOW_PRIMARY_DEG) !== null;
+  }
+  if (typeof window !== 'undefined') {
+    window.WaterCycleSkyGeometry = {
+      sunElevation: wcSunElevation, sunAltitudeDeg: wcSunAltitudeDeg, sunYFrac: wcSunYFrac,
+      antisolarYFrac: wcAntisolarYFrac, antisolarXFrac: wcAntisolarXFrac,
+      bowRadiusFrac: wcBowRadiusFrac, bowArc: wcBowArc, rainbowVisible: wcRainbowVisible,
+      PRIMARY_DEG: WC_RAINBOW_PRIMARY_DEG, SECONDARY_DEG: WC_RAINBOW_SECONDARY_DEG,
+      MAX_ALTITUDE_DEG: WC_SUN_MAX_ALTITUDE_DEG, HORIZON_FRAC: WC_SKY_HORIZON_FRAC
+    };
+  }
+
+  // Pure, so the lighting curve is pinned as behaviour rather than as a spelling inside a 28K-line
+  // render function — the same reason WaterCyclePilotKernel is a module-level export.
+  // Returns the wash alpha for a given sky brightness (0 = no sun, 1 = full day).
+  function wcTerrainWashAlpha(skyBright) {
+    var b = Math.min(1, Math.max(0, Number(skyBright)));
+    if (!isFinite(b) || b >= WC_TERRAIN_LIGHT_FULL_SUN) return 0;
+    var duskSpan = Math.min(1, Math.max(0, (WC_TERRAIN_LIGHT_FULL_SUN - b) / (WC_TERRAIN_LIGHT_FULL_SUN - WC_TERRAIN_LIGHT_NIGHT_AT)));
+    var nightDeep = Math.min(1, Math.max(0, (WC_TERRAIN_LIGHT_NIGHT_AT - b) / WC_TERRAIN_LIGHT_NIGHT_AT));
+    return WC_TERRAIN_LIGHT_DUSK_WASH * Math.pow(duskSpan, 1.4)
+      + (WC_TERRAIN_LIGHT_MAX_WASH - WC_TERRAIN_LIGHT_DUSK_WASH) * nightDeep;
+  }
+  // The wash colour tracks the light SOURCE: a low sun is warm, so dusk shadows are amber; once it
+  // has set only skylight and moonlight remain, which are blue.
+  function wcTerrainWashRgb(skyBright) {
+    var b = Math.min(1, Math.max(0, Number(skyBright)));
+    var duskMix = Math.min(1, Math.max(0, (b - 0.06) / 0.42));
+    return Math.round(6 + duskMix * 66) + ',' + Math.round(12 + duskMix * 26) + ',' + Math.round(34 - duskMix * 12);
+  }
+  if (typeof window !== 'undefined') {
+    window.WaterCycleTerrainLight = { alpha: wcTerrainWashAlpha, rgb: wcTerrainWashRgb };
+  }
+
   var WC_PILOT_UNIT_M = 12;
   var WC_PILOT_ENV_LAPSE = 6.5;      // deg C per km, ambient air
   var WC_PILOT_DRY_LAPSE = 9.8;      // deg C per km, unsaturated parcel
@@ -15768,7 +15876,7 @@ const d = labToolData.waterCycle || {};
                 },
                 h('h4', { id: 'wcPilotScienceTitle' }, t('stem.watercycle.pilot_what_you_are', 'What you are right now: {form}').replace('{form}', form.label)),
                 h('p', null, form.science),
-                h('div', { className: 'wc-pilot-science-numbers' },
+                h('dl', { className: 'wc-pilot-science-numbers' },
                   activeLandPathway && h('div', null, h('dt', null, activeLandPathway.progressLabel), h('dd', null, pathwayProgressPct + '%')),
                   activeLandPathway && h('div', null, h('dt', null, t('stem.watercycle.pilot_driver', 'Driver')), h('dd', null, activeLandPathway.driver)),
                   activeLandPathway && h('div', null, h('dt', null, t('stem.watercycle.pilot_storage', 'Storage')), h('dd', null, activeLandPathway.storage)),
@@ -17558,6 +17666,65 @@ const d = labToolData.waterCycle || {};
               return jState;
             }
 
+            // ── Keep canvas labels clear of each other and of the DOM chrome above them ──
+            // The stage words are positioned by fractions of the canvas tuned on a wide desktop
+            // scene. The topbar over the canvas (title block, weather chips) is a DOM overlay in
+            // CSS pixels, so the narrower the canvas the bigger the share it covers — at phone
+            // width it swallowed "Condensation" whole, and the long "INVISIBLE VAPOR — PATH SHOWN"
+            // callout ran straight through "Precipitation". Neither was visible at desktop width,
+            // which is the only width anything had ever been looked at.
+            //
+            // Evidence callouts have arrows drawn to them, so they may only RESERVE their space,
+            // never move. Stage labels carry no arrow, so they step down until clear.
+            var wcLabelRects2d = [];
+            var wcChromeCache2d = { key: '', rects: [] };
+            function wcCanvasChromeRects2d() {
+              // Re-measured about twice a second rather than per frame: it is a layout read, and
+              // the chrome only changes on resize, wrap, or a stage-name change.
+              var key = cW + 'x' + cH + ':' + Math.floor(tick / 30);
+              if (wcChromeCache2d.key === key) return wcChromeCache2d.rects;
+              var rects = [];
+              try {
+                var shell2d = canvasEl.parentElement;
+                var cRect2d = canvasEl.getBoundingClientRect();
+                if (shell2d && cRect2d.width > 0 && cRect2d.height > 0) {
+                  var sx2d = cW / cRect2d.width, sy2d = cH / cRect2d.height;
+                  var chrome2d = shell2d.querySelectorAll('.wc-canvas-title, .wc-chip-row');
+                  for (var ci2d = 0; ci2d < chrome2d.length; ci2d++) {
+                    var pr2d = chrome2d[ci2d].getBoundingClientRect();
+                    if (!(pr2d.width > 0)) continue;
+                    rects.push({
+                      x: (pr2d.left - cRect2d.left) * sx2d, y: (pr2d.top - cRect2d.top) * sy2d,
+                      w: pr2d.width * sx2d, h: pr2d.height * sy2d
+                    });
+                  }
+                }
+              } catch (e) { /* placement is an enhancement; never let it stop a frame */ }
+              wcChromeCache2d = { key: key, rects: rects };
+              return rects;
+            }
+            function wcRectsOverlap2d(a, b) {
+              return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+            }
+            function wcReserveLabelRect2d(x, y, w, h) { wcLabelRects2d.push({ x: x, y: y, w: w, h: h }); }
+            // Returns a y that clears the chrome and everything already placed; falls back to the
+            // requested y when nothing is free, so a label is never dropped.
+            function wcPlaceLabelY2d(x, y, w, h) {
+              var blockers2d = wcCanvasChromeRects2d().concat(wcLabelRects2d);
+              var step2d = 5 * dpr;
+              for (var att2d = 0; att2d < 14; att2d++) {
+                var cand2d = { x: x, y: y + att2d * step2d, w: w, h: h };
+                if (cand2d.y + h > cH - 6 * dpr) break;
+                var clash2d = false;
+                for (var bi2d = 0; bi2d < blockers2d.length; bi2d++) {
+                  if (wcRectsOverlap2d(cand2d, blockers2d[bi2d])) { clash2d = true; break; }
+                }
+                if (!clash2d) { wcReserveLabelRect2d(cand2d.x, cand2d.y, w, h); return cand2d.y; }
+              }
+              wcReserveLabelRect2d(x, y, w, h);
+              return y;
+            }
+
             function evidenceLabel2d(text, x, y, color) {
               ctx.save();
               ctx.font = 'bold ' + (11 * dpr) + 'px sans-serif';
@@ -17573,6 +17740,8 @@ const d = labToolData.waterCycle || {};
               ctx.fillStyle = '#f8fafc';
               ctx.fillText(text, x, y);
               ctx.restore();
+              // Reserved, not moved: an arrow is already drawn to this spot.
+              wcReserveLabelRect2d(x - paddingX, y - 9 * dpr, labelWidth, 18 * dpr);
             }
 
             function evidenceArrow2d(x1, y1, x2, y2, color, dashed) {
@@ -17996,9 +18165,14 @@ const d = labToolData.waterCycle || {};
                 ctx.arc(moonX - 6 * dpr, moonY - 2 * dpr, 13 * dpr, 0, Math.PI * 2);
                 ctx.fill();
               } else {
-                // Sun with animated rays
-                var sunX = cW * 0.82;
-                var sunY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.03;
+                // Sun with animated rays. Height tracks the solar slider (see wcSunYFrac): at the
+                // default 100% sun the elevation term saturates and this is the original cH * 0.08.
+                // The slow bob is damped as it descends so a low Sun rests on the ridge line instead
+                // of bobbing through it.
+                var sunX = cW * WC_SUN_X_FRAC;
+                var sunElevNow2d = wcSunElevation(skyBright);
+                var sunY = cH * wcSunYFrac(skyBright)
+                  + Math.sin(tick * 0.005) * cH * 0.03 * (0.35 + 0.65 * sunElevNow2d);
 
                 var sunGlow = ctx.createRadialGradient(sunX, sunY, 8 * dpr, sunX, sunY, 50 * dpr);
                 sunGlow.addColorStop(0, 'rgba(251,191,36,0.4)');
@@ -19161,18 +19335,30 @@ const d = labToolData.waterCycle || {};
                 drawTree(cW * 0.54 / dpr, cH * 0.63 / dpr, 0.7);
               }
 
-              // ── Night terrain wash (light theme) ──
-              // Same coherence class as the night moon fix: with the solar slider
-              // low, the sky renders night but the land kept full daylight colour.
-              // A cool wash fades in from the ridge line down; sky, moon, and the
-              // process particles (drawn later) stay untouched. The dark theme
-              // already carries night palettes, so it is exempt.
-              if (!isDark && skyBright < 0.32) {
-                var nightWash2d = Math.min(0.38, (0.32 - skyBright) / 0.32 * 0.38);
+              // ── Terrain lighting: the ground follows the sky (light theme) ──
+              // Same coherence class as the night moon fix. The sky already renders three
+              // regimes off the solar slider (night / dawn-dusk / day) but the land was lit
+              // for noon in all three. Measured before this pass, at climSolar 0.2: sky
+              // luminance 36, grass 156 — the meadow read four times brighter than the sky
+              // above it, and the dusk band did not darken the ground at all because the old
+              // wash only switched on below 0.32.
+              //
+              // So the wash now spans the whole sub-daylight range and reaches a real night
+              // level, and its COLOUR moves with the light source: a low sun is warm, so dusk
+              // shadows are amber; after it sets only skylight and moonlight remain, which are
+              // blue. Sky, moon, clouds, fireflies, the process particles and every teaching
+              // label are drawn outside this block and stay fully lit, so legibility of the
+              // instruction never depends on the time of day. The dark theme carries its own
+              // night palette and is exempt.
+              if (!isDark && skyBright < WC_TERRAIN_LIGHT_FULL_SUN) {
+                // The wash switches regimes on the SAME breakpoints the sky gradient above uses, so
+                // ground and sky always agree about the time of day.
+                var nightWash2d = wcTerrainWashAlpha(skyBright);
+                var washRgb2d = wcTerrainWashRgb(skyBright);
                 var washGrad2d = ctx.createLinearGradient(0, cH * 0.28, 0, cH);
-                washGrad2d.addColorStop(0, 'rgba(2,6,23,0)');
-                washGrad2d.addColorStop(0.514, 'rgba(2,6,23,' + nightWash2d.toFixed(3) + ')');
-                washGrad2d.addColorStop(1, 'rgba(2,6,23,' + nightWash2d.toFixed(3) + ')');
+                washGrad2d.addColorStop(0, 'rgba(' + washRgb2d + ',0)');
+                washGrad2d.addColorStop(0.514, 'rgba(' + washRgb2d + ',' + nightWash2d.toFixed(3) + ')');
+                washGrad2d.addColorStop(1, 'rgba(' + washRgb2d + ',' + nightWash2d.toFixed(3) + ')');
                 ctx.fillStyle = washGrad2d;
                 ctx.fillRect(0, cH * 0.28, cW, cH * 0.72);
               }
@@ -19380,6 +19566,7 @@ const d = labToolData.waterCycle || {};
 
               drawFlowChevrons2d(activeProcess2d, journeyStateForEvidence2d);
 
+              wcLabelRects2d.length = 0;
               drawMatterEnergyEvidence2d(activeProcess2d, journeyStateForEvidence2d, {
                 evaporation: evaporationPotential2d,
                 rain: rainActivity2d,
@@ -19413,14 +19600,41 @@ const d = labToolData.waterCycle || {};
                 var stageLabelWidth2d = ctx.measureText(lbl.text).width;
                 var stageLabelX2d = clampStageLabel2d(cW * lbl.xNorm, 6 * dpr, cW - stageLabelWidth2d - 8 * dpr);
                 var stageLabelY2d = clampStageLabel2d(cH * lbl.yNorm, 19 * dpr, cH - 24 * dpr);
-                ctx.fillStyle = isActive ? lblColor : (isDark ? (lbl.id === 'condensation' ? '#94a3b8' : lblColor + 'B8') : lblColor + 'A8');
+                stageLabelY2d = wcPlaceLabelY2d(stageLabelX2d - 4 * dpr, stageLabelY2d - 14 * dpr, stageLabelWidth2d + 8 * dpr, 19 * dpr) + 14 * dpr;
+                // ── The label needs a ground of its own ────────────────────────────────
+                // These six words were painted straight onto the scene at 0x A8 alpha, so their
+                // contrast was whatever happened to be behind them. Measured from a rendered
+                // light-theme frame before this change, every inactive label failed WCAG AA badly:
+                // evaporation 1.10:1, infiltration 1.14, transpiration 1.26, precipitation 1.28,
+                // condensation 1.71, collection 2.38 — against a 4.5 requirement, with the two
+                // worst effectively invisible.
+                //
+                // ★No gate could see it. axe never runs on canvas pixels, scan_theme_contrast reads
+                // hex literals in style objects, and wcReadableInk needs a KNOWN background — which
+                // a label floating over sky, rock, water or soil does not have. Giving it one is the
+                // fix: the same dark chip the scene's evidence callouts already use, so the ink is
+                // near-white on a known ground and clears 10:1 wherever the label lands. The hue
+                // stays as the border, which is what carried the identity anyway.
+                var stageChipX2d = stageLabelX2d - 4 * dpr;
+                var stageChipY2d = stageLabelY2d - 14 * dpr;
+                var stageChipW2d = stageLabelWidth2d + 8 * dpr;
+                var stageChipH2d = 19 * dpr;
+                ctx.fillStyle = isActive ? 'rgba(2,6,23,0.86)' : 'rgba(2,6,23,0.72)';
+                ctx.fillRect(stageChipX2d, stageChipY2d, stageChipW2d, stageChipH2d);
+                if (!isActive) {
+                  ctx.strokeStyle = lblColor + 'CC';
+                  ctx.lineWidth = 1 * dpr;
+                  ctx.setLineDash([]);
+                  ctx.strokeRect(stageChipX2d, stageChipY2d, stageChipW2d, stageChipH2d);
+                }
+                ctx.fillStyle = '#f8fafc';
                 if (isActive && isDark) {
                   ctx.shadowBlur = 8 * dpr;
                   ctx.shadowColor = lblColor;
                 }
                 ctx.fillText(lbl.text, stageLabelX2d, stageLabelY2d);
                 if (isActive) {
-                  ctx.strokeStyle = isDark ? lblColor : lblColor + '80';
+                  ctx.strokeStyle = lblColor;
                   ctx.lineWidth = 1.5 * dpr;
                   if (isDark) {
                     ctx.shadowBlur = 10 * dpr;
@@ -19428,7 +19642,7 @@ const d = labToolData.waterCycle || {};
                   } else {
                     ctx.setLineDash([4 * dpr, 3 * dpr]);
                   }
-                  ctx.strokeRect(stageLabelX2d - 4 * dpr, stageLabelY2d - 14 * dpr, stageLabelWidth2d + 8 * dpr, 19 * dpr);
+                  ctx.strokeRect(stageChipX2d, stageChipY2d, stageChipW2d, stageChipH2d);
                 }
                 ctx.restore();
               });
@@ -19581,21 +19795,56 @@ const d = labToolData.waterCycle || {};
                 }
               }
 
-              // ── Rainbow (after rain when sun is out  -  solar > 0.7 and temp > 10) ──
-              if (rainActivity2d > 0.15 && climSolar > 0.7 && climTemp > 10 && climTemp < 35) {
+              // ── Rainbow — sunlight refracted by liquid rain, on the real geometry ──
+              // Conditions are the ones the pilot lab states: liquid rain falling, the Sun up and
+              // BELOW 42 degrees, and the bow centred straight opposite the Sun. The old gate asked
+              // for solar > 0.7, which is precisely when the Sun is too high for a rainbow to exist,
+              // and drew it at a fixed spot unrelated to where the Sun was.
+              var bowArc2d = wcBowArc(skyBright, WC_RAINBOW_PRIMARY_DEG);
+              if (rainActivity2d > 0.15 && climTemp > 10 && climTemp < 35 && wcRainbowVisible(skyBright)) {
                 rainbow.alpha = Math.min(rainbow.alpha + 0.003, 0.25);
                 rainbow.visible = true;
               } else {
                 rainbow.alpha = Math.max(rainbow.alpha - 0.005, 0);
                 if (rainbow.alpha <= 0) rainbow.visible = false;
               }
-              if (rainbow.visible && rainbow.alpha > 0.01) {
+              if (rainbow.visible && rainbow.alpha > 0.01 && bowArc2d) {
+                // Red outermost on the primary; the secondary is fainter, wider and REVERSED, with
+                // Alexander's dark band between them — the same three facts the ray lab teaches.
                 var rbColors = ['rgba(255,0,0,A)','rgba(255,127,0,A)','rgba(255,255,0,A)','rgba(0,255,0,A)','rgba(0,0,255,A)','rgba(75,0,130,A)','rgba(148,0,211,A)'];
-                var rbCx = cW * 0.35, rbCy = cH * 0.55, rbR = cW * 0.3;
+                var rbCx = cW * wcAntisolarXFrac(WC_SUN_X_FRAC);
+                var rbCy = cH * wcAntisolarYFrac(skyBright);
+                var rbR = cH * wcBowRadiusFrac(WC_RAINBOW_PRIMARY_DEG);
+                var rbShimmer2d = function (i) { return rainbow.alpha * (0.6 + Math.sin(tick * 0.01 + i) * 0.1); };
+                ctx.save();
+                // Never paint over the land: a bow lives in the rain between viewer and horizon.
+                ctx.beginPath();
+                ctx.rect(0, 0, cW, cH * WC_SKY_HORIZON_FRAC);
+                ctx.clip();
                 for (var rbi = 0; rbi < rbColors.length; rbi++) {
-                  ctx.strokeStyle = rbColors[rbi].replace(/A/g, String(rainbow.alpha * (0.6 + Math.sin(tick * 0.01 + rbi) * 0.1)));
+                  ctx.strokeStyle = rbColors[rbi].replace(/A/g, String(rbShimmer2d(rbi)));
                   ctx.lineWidth = 3 * dpr;
-                  ctx.beginPath(); ctx.arc(rbCx, rbCy, rbR - rbi * 4 * dpr, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+                  ctx.beginPath(); ctx.arc(rbCx, rbCy, rbR - rbi * 4 * dpr, bowArc2d[0], bowArc2d[1]); ctx.stroke();
+                }
+                var bow2Arc2d = wcBowArc(skyBright, WC_RAINBOW_SECONDARY_DEG);
+                if (bow2Arc2d) {
+                  var rb2R = cH * wcBowRadiusFrac(WC_RAINBOW_SECONDARY_DEG);
+                  for (var rb2i = 0; rb2i < rbColors.length; rb2i++) {
+                    ctx.strokeStyle = rbColors[rbColors.length - 1 - rb2i].replace(/A/g, String(rbShimmer2d(rb2i) * 0.4));
+                    ctx.lineWidth = 2.4 * dpr;
+                    ctx.beginPath(); ctx.arc(rbCx, rbCy, rb2R - rb2i * 4 * dpr, bow2Arc2d[0], bow2Arc2d[1]); ctx.stroke();
+                  }
+                }
+                ctx.restore();
+                // Say why the bow is where it is, at the moment a learner can watch it move: drag
+                // the sunlight slider up and both the label and the bow leave together.
+                // Sits just INSIDE the crown, where the sky is open: above it the label collides
+                // with the fixed evaporation callouts at 0.28 and 0.35 of the canvas height.
+                var bowCrownY2d = cH * wcAntisolarYFrac(skyBright) - cH * wcBowRadiusFrac(WC_RAINBOW_PRIMARY_DEG);
+                var bowLabelY2d = bowCrownY2d + cH * 0.06;
+                if (bowCrownY2d > cH * 0.06 && bowLabelY2d < cH * (WC_SKY_HORIZON_FRAC - 0.04) && rainbow.alpha > 0.12) {
+                  evidenceLabel2d(t('stem.watercycle.scene_rainbow_rule', 'RAINBOW · 42° OPPOSITE THE SUN'),
+                    Math.max(cW * 0.02, rbCx - cW * 0.10), bowLabelY2d, '#a78bfa');
                 }
               }
 

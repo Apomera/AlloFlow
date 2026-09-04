@@ -5236,7 +5236,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 h('h3', { className: 'text-sm font-black text-purple-700 mb-1' }, __alloT('stem.music.harmonic_balance_discovery', '⚖️ Harmonic balance discovery')),
                 h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
                   __alloT('stem.music.adjust_fundamental_mid_and_high_harmon', 'Adjust fundamental, mid, and high harmonic levels. Widget classifies one of five discrete timbres. No score, no reveal — sweep and notice.')),
-                h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: timbreMeta.bg, border: '2px solid ' + timbreMeta.border } },
+                // ★ The tool's generated dark CSS rewrites `.text-slate-700`/`600`
+                // to light inks with !important, so the two lines inside this card
+                // cannot be re-inked from here. The card itself painted a fixed
+                // light tint (orange-50 and friends) in BOTH themes, which left
+                // slate-200 on orange-50 at 1.16:1. Darken the CARD in dark theme
+                // so the blanket light ink has the ground it assumes; the timbre
+                // hue stays as the label and border.
+                h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: isDark ? '#1f2937' : timbreMeta.bg, border: '2px solid ' + timbreMeta.border } },
                   h('div', { className: 'text-base font-black', style: { color: timbreMeta.color } }, timbreMeta.label),
                   h('div', { className: 'text-[11px] text-slate-700 mt-1' }, timbreMeta.desc),
                   h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'F=' + (f*100).toFixed(0) + '%  M=' + (m*100).toFixed(0) + '%  H=' + (hg*100).toFixed(0) + '%')

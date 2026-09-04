@@ -308,6 +308,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     aliases: ['welding', 'MIG TIG', 'weld defects', 'skilled trades'],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The hub screen paints no ground, so its title, subtitle, section
+      // label and footer sit on the HOST surface - white in light and dark,
+      // pure BLACK in the contrast theme, where 'WeldLab' measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React || window.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -835,8 +840,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             h('div', { className: 'text-6xl mb-3 relative' }, '🔥'),
-            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2 relative' }, 'WeldLab'),
-            h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto relative' },
+            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2 relative' + onHostInk }, 'WeldLab'),
+            h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto relative' + onHostInk },
               __alloT('stem.weldlab.welding_metal_joining_heat_input_physi', 'Welding & metal joining — heat-input physics, bead geometry, defect ID, AWS symbols, OSHA-aligned safety, and Maine welding careers (Bath Iron Works, EMCC, AWS).'))
           ),
           // ── Welder's journey progress card ──
@@ -1003,15 +1008,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               )
             );
           })(),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.weldlab.core_simulators', 'Core Simulators')),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' + onHostInk }, __alloT('stem.weldlab.core_simulators', 'Core Simulators')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.weldlab.quick_labs', 'Quick Labs')),
+          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' + onHostInk }, __alloT('stem.weldlab.quick_labs', 'Quick Labs')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
-          h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' },
+          h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' + onHostInk },
             __alloT('stem.weldlab.all_10_modules_live_from_heat_input_ph', 'All 10 modules live. From heat-input physics to AWS welding symbols to Maine welding careers, plus underwater specialty + timed Speed Challenge — explore in any order.'))
         );
       }

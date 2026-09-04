@@ -35,9 +35,9 @@
     var st = document.createElement('style');
     st.id = 'allo-graphcalc-contrast-css';
     st.textContent = [
-      '.graphcalc-shell{--gc-panel:var(--allo-stem-panel,#f8fafc);--gc-deeper:var(--allo-stem-deeper,#e2e8f0);--gc-card:#eef2ff;--gc-card-strong:#e0e7ff;--gc-text:var(--allo-stem-text,#0f172a);--gc-muted:#475569;--gc-border:var(--allo-stem-border,#cbd5e1);--gc-accent:#4338ca;--gc-accent-soft:#e0e7ff;--gc-accent-border:#818cf8;--gc-button-bg:#eef2ff;--gc-button-text:#3730a3;--gc-danger:#991b1b;}',
-      '.theme-dark .graphcalc-shell{--gc-card:rgba(99,102,241,.16);--gc-card-strong:rgba(99,102,241,.24);--gc-muted:#cbd5e1;--gc-accent:#c7d2fe;--gc-accent-soft:rgba(99,102,241,.22);--gc-accent-border:#818cf8;--gc-button-bg:rgba(99,102,241,.18);--gc-button-text:#c7d2fe;--gc-danger:#fca5a5;}',
-      '.theme-contrast .graphcalc-shell{--gc-card:var(--allo-stem-panel,#fff);--gc-card-strong:var(--allo-stem-panel,#fff);--gc-muted:var(--allo-stem-text,#000);--gc-accent:var(--allo-stem-text,#000);--gc-accent-soft:var(--allo-stem-button-bg,#fff);--gc-accent-border:var(--allo-stem-border,#000);--gc-button-bg:var(--allo-stem-button-bg,#fff);--gc-button-text:var(--allo-stem-button-text,#000);--gc-danger:var(--allo-stem-text,#000);}',
+      '.graphcalc-shell{--gc-panel:var(--allo-stem-panel,#f8fafc);--gc-deeper:var(--allo-stem-deeper,#e2e8f0);--gc-card:#eef2ff;--gc-card-strong:#e0e7ff;--gc-text:var(--allo-stem-text,#0f172a);--gc-muted:#475569;--gc-border:var(--allo-stem-border,#cbd5e1);--gc-accent:#4338ca;--gc-accent-soft:#e0e7ff;--gc-accent-border:#818cf8;--gc-button-bg:#eef2ff;--gc-button-text:#3730a3;--gc-danger:#991b1b;--gc-trace:#b45309;}',
+      '.theme-dark .graphcalc-shell{--gc-card:rgba(99,102,241,.16);--gc-card-strong:rgba(99,102,241,.24);--gc-muted:#cbd5e1;--gc-accent:#c7d2fe;--gc-accent-soft:rgba(99,102,241,.22);--gc-accent-border:#818cf8;--gc-button-bg:rgba(99,102,241,.18);--gc-button-text:#c7d2fe;--gc-danger:#fca5a5;--gc-trace:#fbbf24;}',
+      '.theme-contrast .graphcalc-shell{--gc-card:var(--allo-stem-panel,#fff);--gc-card-strong:var(--allo-stem-panel,#fff);--gc-muted:var(--allo-stem-text,#000);--gc-accent:var(--allo-stem-text,#000);--gc-accent-soft:var(--allo-stem-button-bg,#fff);--gc-accent-border:var(--allo-stem-border,#000);--gc-button-bg:var(--allo-stem-button-bg,#fff);--gc-button-text:var(--allo-stem-button-text,#000);--gc-danger:var(--allo-stem-text,#000);--gc-trace:var(--allo-stem-text,#000);}',
       '@media (max-width:640px){.graphcalc-shell{height:auto!important;min-height:100%;overflow:visible!important}.graphcalc-header{align-items:flex-start!important;flex-wrap:wrap}.graphcalc-header-actions{margin-left:0!important;flex-wrap:wrap}.graphcalc-layout{flex:none!important;flex-direction:column!important;overflow:visible!important;min-width:0}.graphcalc-left-sidebar,.graphcalc-main-panel,.graphcalc-right-sidebar{width:100%!important;min-width:0}.graphcalc-left-sidebar,.graphcalc-right-sidebar{display:block!important}.graphcalc-left-sidebar{border-right:0!important;border-bottom:1px solid var(--gc-border)}.graphcalc-main-panel{flex:none!important;min-height:360px}.graphcalc-right-sidebar{border-left:0!important;border-top:1px solid var(--gc-border)}.graphcalc-side-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.graphcalc-side-tabs button{min-width:0;min-height:44px}}'
     ].join('');
     document.head.appendChild(st);
@@ -896,9 +896,9 @@
                     'aria-label': __alloT('stem.graphcalc.trace_x_position', 'Trace x position'),
                     'aria-valuetext': traceSummary,
                     onChange: function(e) { upd('traceX', parseFloat(e.target.value)); },
-                    style: { flex: 1, accentColor: '#fbbf24' }
+                    style: { flex: 1, accentColor: 'var(--gc-trace, #b45309)' }
                   }),
-                  h('span', { style: { minWidth: '54px', textAlign: 'right', fontFamily: 'monospace', color: '#fbbf24' } }, Number(traceX.toPrecision(5)))
+                  h('span', { style: { minWidth: '54px', textAlign: 'right', fontFamily: 'monospace', color: 'var(--gc-trace, #b45309)' } }, Number(traceX.toPrecision(5)))
                 ),
                 h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '4px', fontSize: '10px', color: gcMuted } }, traceSummary)
               ) : null,

@@ -505,7 +505,12 @@ describe('Skate Lab physics-first workbench', () => {
     expect(source).toContain('@media(any-pointer:coarse)');
     expect(source).toContain('min-block-size:40px');
     expect(source).toContain('min-block-size:44px!important');
-    expect(source).toContain('html:not(.theme-contrast) .skatelab-shell');
+    // ★ Was `html:not(.theme-contrast) .skatelab-shell` — a guard that never
+    // fired, because the theme class lives on <main>, not <html>. The contrast
+    // theme got this dark card instead of its own black-and-yellow.
+    expect(source).toContain('.skatelab-shell{--sk-bg:#0f172a');
+    expect(source).toContain('.theme-contrast .skatelab-shell{--sk-bg:#000000');
+    expect(source).not.toContain('html:not(.theme-contrast) .skatelab-shell');
     expect(source).toContain('--sk-muted:#b6c3d5');
     expect(source).toContain('background:#0f172a');
     expect(source).toContain('.sk-timeline-control{position:relative');

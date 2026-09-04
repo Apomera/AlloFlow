@@ -6688,7 +6688,10 @@ var geographyGroup = new THREE.Group();
             h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-800') }, 'Fits now: ' + likely.name)
           ),
           h('svg', {
-            viewBox: '0 0 720 300', className: 'mt-3 h-auto w-full', role: 'img',
+            // 308, not 300: the cumulonimbus label is deliberately dropped to a
+            // second row at GROUND + 32 (= y 300) to clear its neighbours, which
+            // put its descenders past the old canvas edge and clipped it.
+            viewBox: '0 0 720 308', className: 'mt-3 h-auto w-full', role: 'img',
             'aria-label': 'Cloud families drawn on a height axis from the ground to 13 kilometres: ' + CLOUD_FAMILIES.map(function (item) { return item.name + ', ' + item.height; }).join('; ') + '. Conditions like the current model state most commonly produce ' + likely.name + '.'
           },
             h('rect', { x: 46, y: TOP - 10, width: 674, height: GROUND - TOP + 10, rx: 12, fill: sky }),

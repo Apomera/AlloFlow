@@ -3945,28 +3945,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         // ══════════════════════════════════════
 
         function renderAITutor() {
+          var aiAvailable = typeof callGemini === 'function';
+
           function askAI() {
             if (!aiQuestion.trim() || aiLoading) return;
+            if (!aiAvailable) {
+              upd('aiResponse', 'The AI tutor is not available in this session. The activities on the route above cover the same ground without it.');
+              return;
+            }
             upd('aiLoading', true);
             var prompt = 'You are a fire ecology educator who deeply respects Indigenous knowledge systems. The student (grade ' + (gradeLevel || '6') + ') asks: "' + aiQuestion + '". ' +
               'Answer in 2-3 paragraphs, emphasizing Indigenous fire stewardship knowledge where relevant. ' +
               'Be scientifically accurate but accessible. If appropriate, name specific Indigenous nations and their practices. ' +
               'Avoid romanticizing or generalizing \u2014 be specific about which peoples and which ecosystems.';
 
-            callGemini(prompt).then(function(response) {
+            // Promise.resolve so a synchronous throw or a non-promise return still lands
+            // in the catch rather than leaving the button stuck on "Thinking...".
+            new Promise(function (resolve) { resolve(callGemini(prompt)); }).then(function(response) {
               updMulti({ aiResponse: response, aiLoading: false });
               var newCount = aiUseCount + 1;
               upd('aiUseCount', newCount);
               awardStemXP('fire_ai_' + Date.now(), 10, 'AI consultation');
               if (newCount >= 3) checkBadge('aiScholar');
             }).catch(function() {
-              updMulti({ aiResponse: 'Sorry, the AI tutor is unavailable right now.', aiLoading: false });
+              updMulti({ aiResponse: 'Sorry, the AI tutor is unavailable right now. Try again in a moment.', aiLoading: false });
             });
           }
 
           return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16 } },
             h('div', { style: { fontWeight: 700, color: tint('#38bdf8'), marginBottom: 10, fontSize: 14 } }, t('stem.fireecology.ai_fire_ecology_tutor', '\uD83E\uDD16 AI Fire Ecology Tutor')),
-            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
+            aiAvailable ? null : h('p', { 'data-fe-no-ai': 'true', style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+              'The AI tutor is switched off in this session. Every idea it would explain is covered by the activities on the route above.'),
+            aiAvailable ? h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
               h('input', {
                 type: 'text',
                 value: aiQuestion,
@@ -3987,7 +3997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   background: aiLoading ? '#334155' : '#0369a1', color: '#fff', fontWeight: 700, fontSize: 14
                 }
               }, aiLoading ? 'Thinking...' : 'Ask')
-            ),
+            ) : null,
             aiResponse ? h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 14, fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, aiResponse) : null
           );
         }

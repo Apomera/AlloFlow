@@ -181,6 +181,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-scenario-rule{display:flex;align-items:flex-start;gap:8px;margin-bottom:7px;padding:7px 9px;border:1px dashed rgba(251,146,60,.5);border-radius:9px;background:rgba(251,146,60,.09);}',
       '.petslab-scenario-rule b{flex:0 0 auto;padding-top:1px;color:#fdba74;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}',
       '.petslab-scenario-rule span{min-width:0;color:#f5dcc4;font-size:12px;font-weight:700;line-height:1.45;}',
+      '.petslab-myth{position:relative;overflow:hidden;padding:13px 13px 13px 16px;border-radius:12px;margin-bottom:11px;}',
+      '.petslab-myth::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#fb923c,#b45309);}',
+      '.petslab-myth-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px;}',
+      '.petslab-myth-num{display:inline-grid;place-items:center;flex:0 0 26px;width:26px;height:26px;border:2px solid rgba(251,146,60,.55);border-radius:50%;color:#fdba74;font-size:12px;font-weight:900;line-height:1;}',
+      '.petslab-myth-tag{color:#fb923c;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;}',
+      '.petslab-myth-claim{margin-top:2px;color:#fef3e2;font-size:13px;font-weight:800;line-height:1.4;}',
       '.petslab-zoonosis{position:relative;overflow:hidden;padding:12px 12px 12px 15px;border-radius:11px;margin-bottom:8px;}',
       '.petslab-zoonosis::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#fbbf24,#b45309);}',
       '.petslab-zoonosis-agent{padding:2px 8px;border:1px solid;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;}',
@@ -3591,6 +3597,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _careInquiryOpenState = React.useState(false);
     var careInquiryOpen = _careInquiryOpenState[0];
     var setCareInquiryOpen = _careInquiryOpenState[1];
+    // Glossary filter. Declared beside the other view-local search state so the
+    // hook order never depends on which view happens to be rendering.
+    var _glossQueryState = React.useState('');
+    var glossQuery = _glossQueryState[0];
+    var setGlossQuery = _glossQueryState[1];
     var _menuQueryState = React.useState('');
     var menuQuery = _menuQueryState[0];
     var setMenuQuery = _menuQueryState[1];
@@ -9553,7 +9564,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               focusable: 'false'
             },
               h('title', null, timelineLabel),
-              h('rect', { x: x0, y: 24, width: usable, height: 22, rx: 11, fill: T.bg, stroke: T.border, strokeWidth: 2 }),
+              // rx AND ry: this svg is preserveAspectRatio="none", so a bare rx
+              // is in x-user-units only and the corner stretches with the
+              // viewport (harmless at desktop, visible on a narrow phone).
+              h('rect', { x: x0, y: 24, width: usable, height: 22, rx: 11, ry: 11, fill: T.bg, stroke: T.border, strokeWidth: 2 }),
               spans.map(function(span, spanIndex) {
                 var sx = xForYear(span.start);
                 var ex = xForYear(span.end);
@@ -9563,7 +9577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   y: 25,
                   width: Math.max(2, ex - sx),
                   height: 20,
-                  rx: 9,
+                  rx: 9, ry: 9,
                   fill: spanIndex % 2 === 0 ? '#0e7490' : '#7c3aed',
                   opacity: 0.82
                 });
@@ -9845,14 +9859,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         backBar('📖 Glossary'),
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
           'Ethology + animal-care terms used throughout this lab. Skim once to recognize them when they show up in source modules; come back when something\'s fuzzy.'),
-        h('div', { role: 'list',
-          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 10 } },
-          GLOSSARY.map(function(g, i) {
-            return h('div', { key: i, role: 'listitem',
-              style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, g.term),
-              h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, g.def));
-          })),
+        (function() {
+          // "Come back when something's fuzzy" is a lookup promise, and 18 terms
+          // in a two-column grid gave you no way to look anything up. Reuses the
+          // module finder's search row so the two behave identically.
+          var needle = String(glossQuery || '').trim().toLowerCase();
+          var shown = needle
+            ? GLOSSARY.filter(function(g) { return (g.term + ' ' + g.def).toLowerCase().indexOf(needle) >= 0; })
+            : GLOSSARY;
+          return h('div', null,
+            h('section', { className: 'petslab-menu-finder', 'aria-labelledby': 'petslab-gloss-finder-heading' },
+              h('div', { className: 'petslab-menu-finder-heading' },
+                h('div', null,
+                  h('h3', { id: 'petslab-gloss-finder-heading' }, 'Find a term'),
+                  h('p', null, 'Search the term or its definition.')),
+                h('span', { className: 'petslab-menu-result-count', role: 'status', 'aria-live': 'polite' },
+                  needle ? shown.length + ' of ' + GLOSSARY.length : GLOSSARY.length + ' terms')),
+              h('div', { className: 'petslab-menu-search-row' },
+                h('label', { htmlFor: 'petslab-gloss-search' }, 'Search glossary'),
+                h('input', {
+                  id: 'petslab-gloss-search', type: 'search', value: glossQuery, maxLength: 60,
+                  'data-pets-focusable': true,
+                  placeholder: 'Try “shaping”, “pheromone”, or “carnivore”…',
+                  onChange: function(e) { setGlossQuery(e.target.value); }
+                }),
+                glossQuery && h('button', {
+                  type: 'button', 'data-pets-focusable': true,
+                  onClick: function() { setGlossQuery(''); },
+                  style: btn({ padding: '8px 11px', fontSize: 12 })
+                }, 'Clear'))),
+            shown.length === 0
+              ? h('p', { className: 'petslab-menu-empty' },
+                  'No term matches “' + glossQuery + '”. Try a shorter word, or clear the search to see all ' + GLOSSARY.length + '.')
+              : h('div', { role: 'list',
+                  style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 10 } },
+                  shown.map(function(g, i) {
+                    return h('div', { key: g.term || i, role: 'listitem',
+                      style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, g.term),
+                      h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, g.def));
+                  }))
+          );
+        })(),
         footer());
     }
 
@@ -9865,9 +9913,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
           'Seven misconceptions that mislead pet owners. Every correction has a primary-source citation.'),
         MYTHS.map(function(m, i) {
-          return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
-            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.warm, marginBottom: 6 } },
-              '❌ Myth: ', h('span', { style: { color: T.text } }, m.myth)),
+          // Seven identical slabs read as one wall. The numbered badge and the
+          // rail give the list rhythm and a place for the eye to land, the same
+          // treatment the species pages and the zoonosis list already use.
+          return h('div', { key: i, className: 'petslab-myth', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'petslab-myth-head' },
+              h('span', { className: 'petslab-myth-num', 'aria-hidden': 'true' }, String(i + 1)),
+              h('div', { style: { minWidth: 0 } },
+                h('div', { className: 'petslab-myth-tag' }, '✖ Myth'),
+                h('div', { className: 'petslab-myth-claim' }, m.myth))),
             h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, marginBottom: 6 } },
               h('strong', { style: { color: T.accentHi } }, '✓ What\'s actually true: '), m.truth),
             h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Source: ', m.source));

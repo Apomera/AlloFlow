@@ -78,6 +78,17 @@ const CASES = [
   { name: 'astronomy dark theme', file: 'stem_lab/stem_tool_astronomy.js', id: 'astronomy', state: { astronomy: {} }, overrides: { isDark: true } },
   { name: 'rocks mineral workbench dark theme', file: 'stem_lab/stem_tool_rocks.js', id: 'rocks', state: { rocks: { mode: 'workbench', wb: {} } }, overrides: { isDark: true } },
   { name: 'water cycle dark theme', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: {} }, overrides: { isDark: true } },
+  { name: 'water cycle night scene', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { climSolar: 0.2, climateAdjusted: true } } },
+  { name: 'water cycle storm lab', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { wcMode: 'precipHunt' } } },
+  { name: 'water cycle storm lab dark theme', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { wcMode: 'precipHunt' } }, overrides: { isDark: true } },
+  { name: 'water cycle steward campaign', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { wcMode: 'steward' } } },
+  { name: 'water cycle steward campaign dark theme', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { wcMode: 'steward' } }, overrides: { isDark: true } },
+  { name: 'water cycle night scene dark theme', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { climSolar: 0.2, climateAdjusted: true } }, overrides: { isDark: true } },
+  { name: 'water cycle droplet journey 3D dark theme', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { journeyView: '3d', journeyActive: true, journeyState: 'evaporating' } }, overrides: { isDark: true } },
+  { name: 'water cycle droplet journey 3D', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { journeyView: '3d', journeyActive: true, journeyState: 'evaporating' } } },
+  { name: 'water cycle be the water launch', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { wcMode: 'pilot' } } },
+  { name: 'water cycle be the water in flight', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { wcMode: 'pilot', pilot: { onboardingComplete: true } } } },
+  { name: 'water cycle be the water in flight dark theme', file: 'stem_lab/stem_tool_watercycle.js', id: 'waterCycle', state: { waterCycle: { wcMode: 'pilot', pilot: { onboardingComplete: true } } }, overrides: { isDark: true } },
   { name: 'plate tectonics high contrast', file: 'stem_lab/stem_tool_platetectonics.js', id: 'plateTectonics', state: { plateTectonics: {} }, overrides: { isContrast: true } },
 ];
 
@@ -136,10 +147,18 @@ describe('Earth and space tools WCAG regression in a real browser', () => {
       const rendered = renderCase(testCase);
       expect(rendered.html.length, testCase.name + ' rendered an unexpectedly small surface').toBeGreaterThan(500);
 
+      // ★ Dark scenarios have to carry the class the APP sets, not just the wrapper label. The
+      // host toggles `dark` on the document element (see dev-tools/wc_scene_shots.cjs, which does
+      // `documentElement.classList.toggle('dark', ...)`), and tools ship their dark palettes behind
+      // `.dark .selector` — the Water Cycle alone has 743 of them. With only `theme-dark` on the
+      // wrapper every one of those rules missed, so each "dark theme" case here was auditing the
+      // tool's LIGHT colours inside a dark-labelled box and reporting a pass for a combination no
+      // student ever sees. Adding the class turned two Water Cycle dark failures back into passes
+      // (its `.dark` overrides do the right thing) and broke nothing else in this suite.
       const page = await browser.newPage({ viewport: { width: 320, height: 760 } });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.setContent(
-        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+        '<!doctype html><html lang="en" class="' + (normalizedOverrides(testCase).isDark ? 'dark' : '') + '"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
           '<body><main id="tool-root" class="' + themeClass(testCase) + '">' + rendered.html + '</main></body></html>',
         { waitUntil: 'domcontentloaded' },
       );

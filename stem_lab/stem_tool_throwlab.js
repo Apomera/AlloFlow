@@ -70,11 +70,20 @@ window.StemLab = window.StemLab || {
     if (document.getElementById('allo-throwlab-palette-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-throwlab-palette-css';
-    st.textContent = 'html:not(.theme-contrast) [data-throwlab-root]{'
+    // ★ The guard below used to read `html:not(.theme-contrast)`, which left
+    // NOTHING to the theme: `theme-${theme}` is stamped on <main>, never on
+    // <html>, so the negation matched in every theme. The .theme-contrast rule
+    // is the real hand-off, and it wins on specificity.
+    st.textContent = '[data-throwlab-root]{'
       + '--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#020617;'
       + '--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-border:#334155;'
       + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;'
-      + 'background:#0f172a;}';
+      + 'background:#0f172a;}'
+      + '.theme-contrast [data-throwlab-root]{'
+      + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
+      + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
+      + '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;'
+      + 'background:#000000;}';
     document.head.appendChild(st);
   })();
 

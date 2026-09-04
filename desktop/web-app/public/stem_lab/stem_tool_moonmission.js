@@ -464,6 +464,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       { id: 'commander_mode', label: 'Complete on Commander difficulty', icon: '\uD83D\uDE80', check: function(d) { return (d.missionPhase || 0) >= 10 && d.difficulty === 'commander'; }, progress: function(d) { return d.difficulty === 'commander' ? ((d.missionPhase || 0) >= 10 ? 'Done!' : 'In progress') : 'Wrong difficulty'; } }
     ],
     render: function(ctx) {
+      // The mission header strip paints no ground of its own, so it sits on
+      // the HOST surface - white in light and dark, pure BLACK in the contrast
+      // theme, where the tool's own title measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
@@ -1030,17 +1035,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h(ArrowLeft, { size: 18 })
             ),
             h('div', null,
-              h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' }, t('stem.moonmission.apollo_moon_mission', '\uD83D\uDE80 Apollo Moon Mission')),
-              h('p', { className: 'text-[11px] text-slate-600 -mt-0.5' }, t('stem.moonmission.full_mission_simulation_launch_to_spla', 'Full mission simulation \u2022 Launch to splashdown'))
+              h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' + onHostInk }, t('stem.moonmission.apollo_moon_mission', '\uD83D\uDE80 Apollo Moon Mission')),
+              h('p', { className: 'text-[11px] text-slate-600 -mt-0.5' + onHostInk }, t('stem.moonmission.full_mission_simulation_launch_to_spla', 'Full mission simulation \u2022 Launch to splashdown'))
             )
           ),
           h('div', { className: 'text-right' },
-            h('div', { className: 'text-[11px] text-slate-600 font-mono' }, 'MET ' + getMissionElapsed()),
+            h('div', { className: 'text-[11px] text-slate-600 font-mono' + onHostInk }, 'MET ' + getMissionElapsed()),
             h('div', { className: 'flex items-center justify-end gap-2 flex-wrap' },
               // Was missionStartTime && h(...): React renders the 0, so a literal "0" sat
               // in the header before launch. The label strings were also double-escaped
               // ('\\u23F8') and showed as the six characters "\u23F8" instead of a glyph.
-              missionStartTime ? h('button', { type: 'button', 'aria-label': missionPausedAt ? t('stem.moonmission.resume_mission_clock', 'Resume mission clock') : t('stem.moonmission.pause_mission_clock', 'Pause mission clock'), onClick: toggleMissionClock, className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' }, missionPausedAt ? t('stem.moonmission.resume_clock_label', '\u25B6 Resume clock') : t('stem.moonmission.pause_clock_label', '\u23F8 Pause clock')) : null,
+              missionStartTime ? h('button', { type: 'button', 'aria-label': missionPausedAt ? t('stem.moonmission.resume_mission_clock', 'Resume mission clock') : t('stem.moonmission.pause_mission_clock', 'Pause mission clock'), onClick: toggleMissionClock, className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' + onHostInk }, missionPausedAt ? t('stem.moonmission.resume_clock_label', '\u25B6 Resume clock') : t('stem.moonmission.pause_clock_label', '\u23F8 Pause clock')) : null,
               // WCAG 2.2.2: the passive phases animate on their own and loop. One control
               // freezes every 2D phase canvas; the hand-flown landing and the EVA are
               // user-driven and stay live. Defaults to the OS reduced-motion setting.
@@ -1048,7 +1053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 'aria-label': animPaused ? t('stem.moonmission.play_animations', 'Play the phase animations') : t('stem.moonmission.pause_animations', 'Pause the phase animations'),
                 title: t('stem.moonmission.anim_toggle_hint', 'Freezes the launch, orbit, coast and re-entry animations. The landing game and the moonwalk are not affected.'),
                 onClick: function() { upd('animPaused', !animPaused); },
-                className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' },
+                className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' + onHostInk },
                 animPaused ? t('stem.moonmission.play_animation_label', '\u25B6 Play animation') : t('stem.moonmission.pause_animation_label', '\u23F8 Pause animation')),
               h('button', { type: 'button', 'aria-pressed': soundOff ? 'true' : 'false', 'data-moonmission-sound-toggle': 'true',
                 'aria-label': soundOff ? t('stem.moonmission.unmute_mission_audio', 'Turn mission sound back on') : t('stem.moonmission.mute_mission_audio', 'Mute all mission sound'),
@@ -1065,10 +1070,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   }
                   if (typeof announceToSR === 'function') announceToSR(next ? 'Mission sound muted.' : 'Mission sound on.');
                 },
-                className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' },
+                className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' + onHostInk },
                 soundOff ? t('stem.moonmission.sound_off_label', '\uD83D\uDD07 Sound off') : t('stem.moonmission.sound_on_label', '\uD83D\uDD0A Sound on'))
             ),
-            h('div', { className: 'text-[11px] text-indigo-700 font-bold' }, '\u2B50 ' + missionXP + ' XP')
+            h('div', { className: 'text-[11px] text-indigo-700 font-bold' + onHostInk }, '\u2B50 ' + missionXP + ' XP')
           )
         ),
 

@@ -1309,10 +1309,21 @@
     if (document.getElementById('allo-arccity-palette-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-arccity-palette-css';
-    st.textContent = 'html:not(.theme-contrast) #allo-arccity-root{'
+    // ★ The `html:not(.theme-contrast)` guard this rule used to carry never
+    // excluded anything: stem_lab_module.js stamps `theme-${theme}` on <main>
+    // (see its comment at ~102), never on <html>, so the negation matched in
+    // EVERY theme and pinned this light ink over the contrast theme's black
+    // canvas — the whole tool at 1.05:1, title included. Scope the light pin
+    // plainly and let a higher-specificity rule hand contrast back its own
+    // tokens. Same failed guard as microbiology, nutritionLab, skatelab, throwlab.
+    st.textContent = '#allo-arccity-root{'
       + '--allo-stem-canvas:#ffffff;--allo-stem-panel:#f8fafc;--allo-stem-deeper:#e2e8f0;'
       + '--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#cbd5e1;'
-      + '--allo-stem-button-bg:#f1f5f9;--allo-stem-button-text:#0f172a;--allo-stem-button-border:#cbd5e1;}';
+      + '--allo-stem-button-bg:#f1f5f9;--allo-stem-button-text:#0f172a;--allo-stem-button-border:#cbd5e1;}'
+      + '.theme-contrast #allo-arccity-root{'
+      + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
+      + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
+      + '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;}';
     document.head.appendChild(st);
   })();
 
@@ -3531,7 +3542,14 @@
         return h('div', {
           id: 'allo-arccity-root', className: 'arc-city-root' + (calm ? ' arc-calm' : ''),
           onKeyDown: (view === 'play' && controls) ? onRootKey : null,
-          style: { padding: 16, maxWidth: view === 'play' ? 1180 : 760, margin: '0 auto', color: INK }
+          // ★ OWN GROUND. The root declared INK (which resolves LIGHT in dark
+          // theme) and painted no background, and stem_lab renders every tool on
+          // a WHITE card in BOTH themes — so any text not inside one of the
+          // painted panels was light ink on white. Uses the same stem token the
+          // rest of the file reads. Uses the tool's own THEME rather than
+          // var(--allo-stem-canvas) so the value is verifiable in the harness;
+          // the literals match app_styles' canvas token per theme.
+          style: { padding: 16, maxWidth: view === 'play' ? 1180 : 760, margin: '0 auto', color: INK, background: THEME === 'contrast' ? '#000000' : (THEME === 'dark' ? '#0f172a' : 'transparent'), borderRadius: 14 }
         }, header, viewToggle, body);
 
       } catch (e) {

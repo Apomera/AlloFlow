@@ -414,6 +414,54 @@ in the output folder and skips anything recorded there, carrying those rows into
 scoreboard so it stays a complete picture rather than one with holes where the skips were. Pass
 `skip_existing: false` to force a re-audit.
 
+## Getting the before/after documents and the report
+
+Every run writes its outputs **next to the input file**, or wherever you point `output_dir`:
+
+| Role | File |
+|---|---|
+| Before | your original document, untouched, at its original path |
+| After | `<name>-accessible.html` |
+| After (PDF) | `<name>-tagged.pdf` — only when the verdict allowed distribution |
+| Report | `<name>-remediation-report.json` |
+| Manifest | `<name>-remediation-completion.json` (role, size and sha256 of each artifact) |
+
+So a document remediated straight out of `Downloads` leaves its accessible version and report
+in `Downloads` alongside it. Nothing is uploaded and nothing is moved.
+
+Paths alone are awkward for a chat client, though, so the connector **also publishes each run's
+artifacts as MCP resources**. The tool result carries a `resources` array:
+
+```json
+"resources": [
+  { "role": "source",         "label": "Original document (before)",
+    "uri": "alloflow-remediation://artifact/rjob-.../source",
+    "path": "C:\\Users\\you\\Downloads\\lesson.pdf",          "mimeType": "application/pdf" },
+  { "role": "accessibleHtml", "label": "Accessible HTML (after)",
+    "uri": "alloflow-remediation://artifact/rjob-.../accessibleHtml",
+    "path": "C:\\Users\\you\\Downloads\\lesson-accessible.html", "mimeType": "text/html" },
+  { "role": "report",         "label": "Remediation report",
+    "uri": "alloflow-remediation://artifact/rjob-.../report",
+    "path": "C:\\Users\\you\\Downloads\\lesson-remediation-report.json", "mimeType": "application/json" }
+]
+```
+
+Any MCP client can fetch those with `resources/read` — text artifacts come back as text, the
+PDF as base64 — or list them with `resources/list`. The server emits
+`notifications/resources/list_changed` when a run finishes, so a client that listed earlier
+refreshes on its own. The server keeps its own artifact index in the state directory, so
+artifacts from previous sessions are republished after a restart whichever lane produced
+them — including the keyless agent bridge, which holds its run in memory and writes no job
+record. Files deleted or moved in the meantime are dropped from the listing rather than
+advertised and then failed.
+
+**This is not a general file-read channel.** A resource URI carries an opaque run id and a
+fixed role name, never a path, and `resources/read` serves only entries the server itself
+registered after writing them. Anything else — an unknown run, an invented role, a `file://`
+URI, a raw path — is refused with `-32602`, and an artifact deleted after the run is reported
+as gone rather than served from a stale cache. Reads over 12 MB are refused with the path, so
+one fetch cannot wedge the stdio transport.
+
 ## Jobs survive a restart
 
 Job records persist to `~/.alloflow-mcp/jobs` (override with `ALLOFLOW_MCP_STATE_DIR`) and are

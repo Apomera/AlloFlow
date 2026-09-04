@@ -35,6 +35,10 @@ const { zipFileMap } = require('./zip_writer.cjs'); // ePub/DAISY packaging, no 
 const crypto = require('crypto');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
+// Kept beside the renderer's own constant and asserted equal in
+// tests/mcp_page_image_format.test.js, so the encoder and the declared MIME
+// type can never drift apart.
+const PAGE_IMAGE_MIME = 'image/jpeg';
 const MODULE_FILES = [
   'verification_policy_module.js',
   'doc_builder_renderer_module.js',
@@ -867,6 +871,17 @@ function createDriver(options) {
   // The audit of the OUTPUT does not change at all.
   const PDFJS_WORKER_ASSET = 'pdf.worker.min.js';
   const RENDER_TARGET_WIDTH = Number(process.env.ALLOFLOW_MCP_PAGE_WIDTH) || 1600;
+  // Page images are photographs of a page, not line art, so PNG was the wrong
+  // codec: a scanned page cost ~3MB where JPEG q0.82 costs ~0.42MB for the same
+  // legibility (measured on an 8-page scan; body text and footnotes stayed
+  // readable, and even reverse-side bleed-through survived). It also matters for
+  // correctness here: an oversized part is dropped by the agent bridge, so the
+  // codec decides whether a page reaches the answering model at all. 0.82 is not
+  // a new guess — it is what the app's own page canvases already use, so both
+  // lanes now show the model the same fidelity and can be scored against
+  // each other.
+  const RENDER_IMAGE_MIME = 'image/jpeg';
+  const RENDER_IMAGE_QUALITY = 0.82;
   const RENDER_MAX_PAGES = Number(process.env.ALLOFLOW_MCP_MAX_PAGE_IMAGES) || 30;
 
   async function renderPdfToPageImages(b64, opts) {
@@ -891,7 +906,7 @@ function createDriver(options) {
         signal,
       );
       if (!loaded) throw new Error('Could not load pdf.js from any CDN — page rendering needs it.');
-      const out = await abortablePromise(page.evaluate(async ({ b64: data, workers, targetWidth, maxPages }) => {
+      const out = await abortablePromise(page.evaluate(async ({ b64: data, workers, targetWidth, maxPages, mimeType, quality }) => {
         for (const w of workers) { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = w; break; } catch (_) {} }
         const bin = atob(data);
         const bytes = new Uint8Array(bin.length);
@@ -907,15 +922,15 @@ function createDriver(options) {
           canvas.width = Math.round(viewport.width);
           canvas.height = Math.round(viewport.height);
           await pg.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-          pages.push(canvas.toDataURL('image/png').split(',')[1] || '');
+          pages.push(canvas.toDataURL(mimeType, quality).split(',')[1] || '');
           canvas.width = 0; canvas.height = 0; // release the backing store now, not at GC
         }
         return { pages, totalPages: total };
-      }, { b64, workers: [vendorAssetUrl(PDFJS_WORKER_ASSET)], targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES }), signal);
+      }, { b64, workers: [vendorAssetUrl(PDFJS_WORKER_ASSET)], targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES, mimeType: RENDER_IMAGE_MIME, quality: RENDER_IMAGE_QUALITY }), signal);
 
       const bytes = out.pages.reduce((n, p) => n + Math.round(p.length * 0.75), 0);
       const truncated = out.totalPages > out.pages.length;
-      rlog('rendered ' + out.pages.length + '/' + out.totalPages + ' page(s) to PNG (' + Math.round(bytes / 1024) + ' KB)'
+      rlog('rendered ' + out.pages.length + '/' + out.totalPages + ' page(s) to ' + RENDER_IMAGE_MIME.replace('image/', '').toUpperCase() + ' (' + Math.round(bytes / 1024) + ' KB)'
         + (truncated ? ' — TRUNCATED at the ' + RENDER_MAX_PAGES + '-page cap' : ''));
       return { pages: out.pages, totalPages: out.totalPages, renderedPages: out.pages.length, bytes, truncated };
     } finally {
@@ -971,7 +986,19 @@ function createDriver(options) {
     page.on('console', (msg) => {
       const t = msg.text();
       // The pipeline's own telemetry IS the diagnostic — forward the load-bearing lines.
-      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[Tesseract\]|\[Throttle\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
+      // [Auto-fix] carries the per-pass ACCEPT/REVERT verdicts and [Legend repair] the
+      // re-extraction fallbacks. Without them a fix that was applied, verified, and then
+      // reverted by the regression guard simply vanishes with no trace, and neither an
+      // operator nor an answering model can tell whether the output was rewritten, the
+      // pass was rolled back, or the edit never landed (2026-09-04: a forced-colors block
+      // disappeared between passes and this allowlist is why it could not be diagnosed).
+      // [PDF Det] reports what the DETERMINISTIC extractor found before any model saw
+      // the document — hyperlink and form-control counts, multi-column reading-order
+      // repairs, RTL detection. It is the ground truth every later stage inherits, and
+      // it was invisible too: the form-field count above had to be chased with a
+      // throwaway diagnostic because of it.
+      // All of these are low-volume, decision-bearing lines — not per-element chatter.
+      if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[PDF Det\]|\[Tesseract\]|\[Throttle\]|\[Auto-fix\]|\[WCAG Sanitizer\]|\[Legend repair\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
       else if (process.env.ALLOFLOW_MCP_VERBOSE === '1') rlog('console: ' + t.slice(0, 300));
     });
     // Web Crypto is unavailable in Chromium's opaque `about:blank` context. The canonical
@@ -1015,7 +1042,7 @@ function createDriver(options) {
       const pageImages = runOpts.pageImages;
       const parts = (pageImages && pageImages.length && mime === 'application/pdf')
         ? [{ text: String(prompt) }].concat(
-          pageImages.map((p) => ({ inline_data: { mime_type: 'image/png', data: p } }))
+          pageImages.map((p) => ({ inline_data: { mime_type: PAGE_IMAGE_MIME, data: p } }))
         )
         : [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }];
       if (modelBridge) return bridgeCall('vision', prompt, parts);

@@ -10467,11 +10467,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           return null;
         }
 
-        var ttsBtn = function(text) {
+        var ttsBtn = function(text, label) {
+          var spokenLabel = label || t('stem.anatomy.read_aloud_2', 'Read aloud');
           return h('button', {
+            type: 'button', 'data-anatomy-tts': 'true',
             onClick: function() { speakText(text, callTTS); },
-            className: 'ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-600 active:scale-[0.97]',
-            title: t('stem.anatomy.read_aloud', 'Read aloud'), 'aria-label': t('stem.anatomy.read_aloud_2', 'Read aloud')
+            className: 'ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all border border-indigo-300 active:scale-[0.97]',
+            title: spokenLabel, 'aria-label': spokenLabel
           }, '\uD83D\uDD0A');
         };
         // Anatomy names are hard to say (acetabulum, sphenoid). One tap speaks the name; the
@@ -10493,7 +10495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var pair = mythText(structure);
           if (!pair) return null;
           return h('div', { className: 'anatomy-myth-buster rounded-lg border border-fuchsia-200 bg-fuchsia-50/60 p-2.5', 'data-anatomy-myth-buster': structure.id },
-            h('p', { className: 'text-[11px] font-bold text-fuchsia-800 uppercase mb-1' }, t('stem.anatomy.myth_buster', '\uD83E\uDDE0 Myth buster'), ttsBtn(t('stem.anatomy.myth_spoken_prefix', 'Many people think ') + pair.myth + ' ' + t('stem.anatomy.fact_spoken_prefix', 'Actually, ') + pair.fact)),
+            h('p', { className: 'text-[11px] font-bold text-fuchsia-800 uppercase mb-1' }, t('stem.anatomy.myth_buster', '\uD83E\uDDE0 Myth buster'), ttsBtn(t('stem.anatomy.myth_spoken_prefix', 'Many people think ') + pair.myth + ' ' + t('stem.anatomy.fact_spoken_prefix', 'Actually, ') + pair.fact, t('stem.anatomy.read_myth_aloud', 'Read the myth buster aloud'))),
             h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, h('span', { className: 'font-bold text-rose-700' }, t('stem.anatomy.many_people_think', 'Many people think: ')), '\u201C' + pair.myth + '\u201D'),
             h('p', { className: 'text-xs text-slate-700 leading-relaxed mt-1' }, h('span', { className: 'font-bold text-green-800' }, t('stem.anatomy.actually', 'Actually: ')), pair.fact)
           );
@@ -12775,7 +12777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         (function() {
                           var adultBlocks = [
                             h('div', { key: 'fn' },
-                              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.function_2', 'Function'), ttsBtn(sel.fn)),
+                              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-0.5' }, t('stem.anatomy.function_2', 'Function'), ttsBtn(sel.fn, t('stem.anatomy.read_function_aloud', 'Read the function aloud'))),
                               h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, sel.fn)
                             ),
                             sel.origin ? h('div', { key: 'oi', className: 'grid grid-cols-2 gap-2' },
@@ -12801,11 +12803,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         // 6-8 / 9-12 (and unknown/teacher band) see the full clinical text.
                         (gradeBand === 'k2' ? null :
                           gradeBand === 'g35' ? (sel.clinicalKid ? h('div', null,
-                            h('p', { className: 'text-[11px] font-bold text-emerald-600 uppercase mb-0.5' }, t('stem.anatomy.staying_healthy', '\uD83D\uDC9A Staying Healthy'), ttsBtn(sel.clinicalKid)),
+                            h('p', { className: 'text-[11px] font-bold text-emerald-600 uppercase mb-0.5' }, t('stem.anatomy.staying_healthy', '\uD83D\uDC9A Staying Healthy'), ttsBtn(sel.clinicalKid, t('stem.anatomy.read_healthy_aloud', 'Read the staying healthy note aloud'))),
                             h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-emerald-50 rounded-lg p-2' }, sel.clinicalKid)
                           ) : null) :
                           h('div', null,
-                            h('p', { className: 'text-[11px] font-bold text-rose-700 uppercase mb-0.5' }, t('stem.anatomy.clinical_significance', '\u26A0 Clinical Significance'), ttsBtn(sel.clinical)),
+                            h('p', { className: 'text-[11px] font-bold text-rose-700 uppercase mb-0.5' }, t('stem.anatomy.clinical_significance', '\u26A0 Clinical Significance'), ttsBtn(sel.clinical, t('stem.anatomy.read_clinical_aloud', 'Read the clinical note aloud'))),
                             h('p', { className: 'text-xs text-slate-600 leading-relaxed bg-rose-50 rounded-lg p-2' }, sel.clinical)
                           )),
                         sel.detail && h('div', null,
@@ -13042,7 +13044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       return h('div', { key: idx, className: 'rounded-lg px-3 py-2 text-xs leading-relaxed ' + (msg.role === 'user' ? 'bg-violet-50 text-violet-800 ml-8' : 'bg-slate-50 text-slate-700 mr-8') },
                         h('span', { className: 'font-bold' }, msg.role === 'user' ? 'You: ' : 'AI: '),
                         msg.text,
-                        msg.role === 'ai' ? ttsBtn(msg.text) : null
+                        msg.role === 'ai' ? ttsBtn(msg.text, t('stem.anatomy.read_tutor_aloud', 'Read the tutor answer aloud')) : null
                       );
                     }),
                     aiLoading && h('div', { className: 'text-xs text-violet-500 italic text-center', role: 'status' }, 'Thinking...')
@@ -13097,7 +13099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         }, 'Focus diagram') : null
                       ),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, currentTourStep.narration),
-                      ttsBtn(currentTourStep.narration)
+                      ttsBtn(currentTourStep.narration, t('stem.anatomy.read_tour_aloud', 'Read this tour step aloud'))
                     ) : null,
                     tourRecapActive ? null : h('div', { className: 'flex gap-2 justify-between' },
                       h('button', { 'aria-label': t('stem.anatomy.previous', 'Previous'),
@@ -13108,7 +13110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         disabled: tourStepIdx === 0,
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (tourStepIdx === 0 ? 'bg-slate-100 text-slate-600' : 'transition-colors bg-emerald-100 text-emerald-800 hover:bg-emerald-200 active:scale-[0.97]')
                       }, t('stem.anatomy.previous_2', '\u2190 Previous')),
-                      tourStepIdx < tourSteps.length - 1 ? h('button', { 'aria-label': t('stem.anatomy.next_3', 'Next'),
+                      tourStepIdx < tourSteps.length - 1 ? h('button', { 'aria-label': t('stem.anatomy.next_tour_step', 'Next tour step'),
                         onClick: function() {
                           var next = tourStepIdx + 1;
                           updMulti(structureFocusPatch(tourSteps[next].structureId, { _tourStepIdx: next })); announceStructure(tourSteps[next].structureId); playSound('guidedStep');
@@ -13304,7 +13306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           }, 'Focus diagram') : null
                         ),
                         h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' }, step.detail),
-                        ttsBtn(step.detail)
+                        ttsBtn(step.detail, t('stem.anatomy.read_step_aloud', 'Read this step aloud'))
                       ) : null,
                       pathwayRecapActive ? null : h('div', { className: 'flex gap-2 justify-between' },
                         h('button', { 'aria-label': t('stem.anatomy.previous_3', 'Previous'),
@@ -13317,7 +13319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           disabled: pathwayStepIdx === 0,
                           className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (pathwayStepIdx === 0 ? 'bg-slate-100 text-slate-600' : 'transition-colors bg-rose-100 text-rose-800 hover:bg-rose-200 active:scale-[0.97]')
                         }, t('stem.anatomy.previous_4', '\u2190 Previous')),
-                        pathwayStepIdx < pw.steps.length - 1 ? h('button', { 'aria-label': t('stem.anatomy.next_5', 'Next'),
+                        pathwayStepIdx < pw.steps.length - 1 ? h('button', { 'aria-label': t('stem.anatomy.next_pathway_step', 'Next pathway step'),
                           onClick: function() {
                             var next = pathwayStepIdx + 1;
                             updMulti(structureFocusPatch(pw.steps[next].structure, { _pathwayStep: next })); announceStructure(pw.steps[next].structure); playSound('pathwayStep');
@@ -13456,7 +13458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         )
                       ),
                       h('div', { className: 'mt-4 pt-3 border-t border-slate-200 flex items-center justify-between gap-2 flex-wrap' },
-                        flashcardFlipped ? ttsBtn(learnerText(flashcardPool[flashcardIdx % flashcardPool.length])) : h('span', { className: 'text-[11px] text-slate-500' }, 'Say the function before revealing it.'),
+                        flashcardFlipped ? ttsBtn(learnerText(flashcardPool[flashcardIdx % flashcardPool.length]), t('stem.anatomy.read_answer_aloud', 'Read the card answer aloud')) : h('span', { className: 'text-[11px] text-slate-500' }, 'Say the function before revealing it.'),
                         h('button', {
                           'aria-expanded': flashcardFlipped,
                           'aria-controls': 'anatomy-flashcard-content',
@@ -13479,7 +13481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         },
                         className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.random_2', '\uD83C\uDFB2 Random')),
-                      h('button', { 'aria-label': t('stem.anatomy.next_7', 'Next'),
+                      h('button', { 'aria-label': t('stem.anatomy.next_flashcard', 'Next flashcard'),
                         onClick: function() { var ni = (flashcardIdx + 1) % flashcardPool.length; updMulti(structureFocusPatch(flashcardPool[ni].id, { _flashcardIdx: ni, _flashcardFlipped: false })); announceStructure(flashcardPool[ni].id); playSound('guidedStep'); },
                         className: 'px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-700 transition-all active:scale-[0.97]'
                       }, t('stem.anatomy.next_8', 'Next \u2192'))
@@ -13675,7 +13677,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   ),
                   h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-4 xl:grid-cols-7', 'aria-label': t('stem.anatomy.integrated_procedure_progress', 'Integrated procedure progress') }, procedureSteps.map(function(label, index) { var done = procedure.stage > index, active = procedure.stage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-[11px] font-bold', style: { borderColor: done || active ? '#be123c' : '#cbd5e1', background: done ? '#ffe4e6' : active ? '#fff1f2' : '#fff', color: done || active ? '#9f1239' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '\u2713 ' : (index + 1) + '. ') + label); })),
                   procedure.stage === 0 ? h('div', { className: 'mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.7fr)]' },
-                    h('div', null, h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950' }, h('canvas', { width: 640, height: 480, role: 'img', 'data-procedure-planning-scan': 'true', 'aria-label': t('stem.anatomy.synthetic_axial', 'Synthetic axial ') + procedureCase.region + ' CT planning slice ' + Math.round(procedure.planSlice) + ' for the ' + procedureCase.label + ', centered near slice ' + procedureCase.planSlice + '.', style: { display: 'block', width: '100%', height: 'auto' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, { modality: 'CT', region: procedureCase.region, plane: 'axial', slice: procedure.planSlice, windowWidth: 400, windowLevel: 40, showLabels: true, showCrosshair: true, annotations: [{ type: 'pin', x: procedureCase.targetX, y: procedureCase.targetY, note: procedureCase.pathology.label }] }); } })), h('label', { className: 'mt-2 block text-xs font-black text-slate-700', htmlFor: 'procedure-plan-slice' }, 'Planning slice ' + Math.round(procedure.planSlice) + ' / 100'), h('input', { id: 'procedure-plan-slice', type: 'range', min: 0, max: 100, step: 1, value: procedure.planSlice, onChange: function(event) { setProcedure({ planSlice: Number(event.target.value) }); }, className: 'mt-1 w-full accent-rose-700' })),
+                    h('div', null, h('div', { className: 'overflow-hidden rounded-xl border-2 border-slate-700 bg-slate-950' }, h('canvas', { width: 640, height: 480, role: 'img', 'data-procedure-planning-scan': 'true', 'aria-label': t('stem.anatomy.synthetic_axial', 'Synthetic axial ') + procedureCase.region + ' CT planning slice ' + Math.round(procedure.planSlice) + ' for the ' + procedureCase.label + ', centered near slice ' + procedureCase.planSlice + '.', style: { display: 'block', width: '100%', height: 'auto' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, { modality: 'CT', region: procedureCase.region, plane: 'axial', slice: procedure.planSlice, windowWidth: 400, windowLevel: 40, showLabels: true, showCrosshair: true, annotations: [{ type: 'pin', x: procedureCase.targetX, y: procedureCase.targetY, note: procedureCase.pathology.label }] }); } })), h('label', { className: 'mt-2 block text-xs font-black text-slate-700', htmlFor: 'procedure-plan-slice' }, t('stem.anatomy.planning_slice', 'Planning slice'), h('span', { 'aria-hidden': 'true' }, ' ' + Math.round(procedure.planSlice) + ' / 100')), h('input', { id: 'procedure-plan-slice', type: 'range', min: 0, max: 100, step: 1, value: procedure.planSlice,
+                        'aria-valuetext': t('stem.anatomy.slice_valuetext', 'Slice ') + Math.round(procedure.planSlice) + t('stem.anatomy.slice_valuetext_of', ' of 100'), onChange: function(event) { setProcedure({ planSlice: Number(event.target.value) }); }, className: 'mt-1 w-full accent-rose-700' })),
                     h('aside', { className: 'rounded-xl border border-rose-200 bg-rose-50/60 p-4' }, h('div', { className: 'mb-3', 'data-procedure-case-selector': 'true' }, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-rose-700' }, t('stem.anatomy.synthetic_case_variation', 'Synthetic case variation')), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2' }, procedureCases.map(function(item) { var itemScenario = getAnatomyProcedureScenario({ caseId: item.id, scenarioSeed: procedure.scenarioSeed, approach: procedure.approach, scenarioDifficulty: procedure.scenarioDifficulty, attempts: procedure.attempts }); var selected = item.id === procedure.caseId; return h('button', { key: item.id, type: 'button', 'aria-pressed': selected, onClick: function() { setProcedure({ caseId: item.id, planSlice: itemScenario.planSlice, feedback: item.pathology.label + ' selected for deterministic case ' + procedure.scenarioSeed + '. Review its shifted target and branching protected structures.' }); }, className: 'rounded-lg border px-2 py-2 text-left text-xs ' + (selected ? 'border-rose-700 bg-rose-800 text-white' : 'border-rose-200 bg-white text-rose-950') }, h('strong', null, item.label), h('span', { className: 'block text-[11px] opacity-80' }, item.difficulty + ' · ' + item.pathology.id + ' · slice ' + itemScenario.planSlice)); }))),
                       h('div', { className: 'mt-3 rounded-xl border border-indigo-200 bg-white p-3', 'data-procedure-scenario-builder': 'true' },
                         h('div', { className: 'flex items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[11px] font-black uppercase tracking-wide text-indigo-800' }, t('stem.anatomy.instructor_scenario_builder', 'Instructor scenario builder')), h('div', { className: 'text-[11px] text-indigo-950' }, 'Assignment ' + procedure.caseId.toUpperCase() + '-' + procedure.scenarioSeed + '-' + procedure.approach.toUpperCase())), h('button', { type: 'button', 'aria-pressed': procedure.instructorMode, onClick: function() { setProcedure({ instructorMode: !procedure.instructorMode, feedback: procedure.instructorMode ? t('stem.anatomy.instructor_configuration_collapsed', 'Instructor configuration collapsed.') : t('stem.anatomy.instructor_configuration_expanded', 'Instructor configuration expanded.') }); }, className: 'rounded-lg border border-indigo-300 px-2 py-1 text-[11px] font-black text-indigo-900' }, procedure.instructorMode ? t('stem.anatomy.hide_setup', 'Hide setup') : t('stem.anatomy.configure', 'Configure'))),
@@ -14200,8 +14203,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         h('canvas', { width: 640, height: 480, role: 'application', tabIndex: 0, 'data-anatomy-imaging-canvas': 'true', 'aria-label': modality + ' synthetic ' + region + ' phantom in the ' + plane + ' plane, slice ' + Math.round(sliceValue) + '. Visible teaching structures: ' + regionStructures.join(', ') + '. Depth focus: ' + bodyScopeDepth.targetLabel + '. ' + visibleImagingAnnotations.length + ' annotations on this slice.' + ' Arrow keys move a placement cursor, Enter places the current tool, Escape cancels a ruler.', onClick: handleImagingClick, onKeyDown: handleImagingKey, style: { display: 'block', width: '100%', height: 'auto', cursor: imagingTool === 'ruler' ? 'crosshair' : 'copy' }, ref: function(canvas) { if (!canvas) return; var context = canvas.getContext && canvas.getContext('2d'); if (context) drawAnatomyImagingSlice(context, canvas.width, canvas.height, drawingState); } })
                       ),
                       h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
-                        h('label', { htmlFor: 'anatomy-imaging-slice', className: 'text-xs font-black text-slate-700' }, 'Slice ' + Math.round(sliceValue) + ' / 100'),
-                        h('input', { id: 'anatomy-imaging-slice', type: 'range', min: 0, max: 100, step: 1, value: sliceValue, onChange: function(event) { setImaging({ slice: Number(event.target.value), rulerStart: null }); }, className: 'min-w-[220px] flex-1 accent-cyan-700', 'aria-label': t('stem.anatomy.imaging_slice_position', 'Imaging slice position') }),
+                        h('span', { className: 'text-xs font-black text-slate-700', 'aria-hidden': 'true' }, 'Slice ' + Math.round(sliceValue) + ' / 100'),
+                        h('input', { id: 'anatomy-imaging-slice', type: 'range', min: 0, max: 100, step: 1, value: sliceValue,
+                          'aria-valuetext': t('stem.anatomy.slice_valuetext', 'Slice ') + Math.round(sliceValue) + t('stem.anatomy.slice_valuetext_of', ' of 100'), onChange: function(event) { setImaging({ slice: Number(event.target.value), rulerStart: null }); }, className: 'min-w-[220px] flex-1 accent-cyan-700', 'aria-label': t('stem.anatomy.imaging_slice_position', 'Imaging slice position') }),
                         h('button', { type: 'button', onClick: function() { setImaging({ showCrosshair: !showCrosshair }); }, 'aria-pressed': showCrosshair, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showCrosshair ? t('stem.anatomy.hide_crosshair', 'Hide crosshair') : t('stem.anatomy.show_crosshair', 'Show crosshair')),
                         h('button', { type: 'button', onClick: function() { setImaging({ showLabels: !showLabels }); }, 'aria-pressed': showLabels, className: 'rounded-lg border border-cyan-200 px-2 py-1 text-xs font-bold text-cyan-900' }, showLabels ? t('stem.anatomy.hide_labels', 'Hide labels') : t('stem.anatomy.show_labels', 'Show labels'))
                       ),
@@ -14211,9 +14215,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                       h('div', { className: 'rounded-xl border border-cyan-200 bg-cyan-50/60 p-3' },
                         h('h5', { className: 'text-xs font-black uppercase tracking-wide text-cyan-900' }, modality === 'CT' ? t('stem.anatomy.ct_window_level', 'CT window / level') : t('stem.anatomy.mri_display_contrast', 'MRI display contrast')),
                         modality === 'MRI' ? h('div', { className: 'mt-2 flex gap-2', role: 'group', 'aria-label': t('stem.anatomy.mri_sequence', 'MRI sequence') }, ['T1', 'T2'].map(function(item) { return h('button', { key: item, type: 'button', 'aria-pressed': sequence === item, onClick: function() { setImaging({ sequence: item }); }, className: 'flex-1 rounded-lg border px-3 py-2 text-xs font-bold ' + (sequence === item ? 'border-cyan-800 bg-cyan-800 text-white' : 'border-cyan-200 bg-white text-cyan-900') }, item); })) : h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': t('stem.anatomy.ct_window_presets', 'CT window presets') }, [['soft', t('stem.anatomy.soft_tissue', 'Soft tissue')], ['lung', t('stem.anatomy.lung', 'Lung')], ['bone', t('stem.anatomy.bone', 'Bone')], ['brain', t('stem.anatomy.brain', 'Brain')]].map(function(item) { return h('button', { key: item[0], type: 'button', onClick: function() { applyWindowPreset(item[0]); }, className: 'rounded-lg border border-cyan-200 bg-white px-2 py-1.5 text-xs font-bold text-cyan-900 hover:bg-cyan-100' }, item[1]); })),
-                        h('label', { className: 'mt-3 block text-[11px] font-bold text-slate-700', htmlFor: 'imaging-window-width' }, 'Window width ' + Math.round(windowWidth)),
+                        h('div', { className: 'mt-3 block text-[11px] font-bold text-slate-700' },
+                          h('label', { htmlFor: 'imaging-window-width' }, t('stem.anatomy.window_width', 'Window width')),
+                          h('span', { 'aria-hidden': 'true' }, ' ' + Math.round(windowWidth))),
                         h('input', { id: 'imaging-window-width', type: 'range', min: 50, max: 2500, step: 10, value: windowWidth, onChange: function(event) { setImaging({ windowWidth: Number(event.target.value) }); }, className: 'w-full accent-cyan-700' }),
-                        h('label', { className: 'mt-2 block text-[11px] font-bold text-slate-700', htmlFor: 'imaging-window-level' }, 'Window level ' + Math.round(windowLevel)),
+                        h('div', { className: 'mt-2 block text-[11px] font-bold text-slate-700' },
+                          h('label', { htmlFor: 'imaging-window-level' }, t('stem.anatomy.window_level', 'Window level')),
+                          h('span', { 'aria-hidden': 'true' }, ' ' + Math.round(windowLevel))),
                         h('input', { id: 'imaging-window-level', type: 'range', min: -1000, max: 1200, step: 10, value: windowLevel, onChange: function(event) { setImaging({ windowLevel: Number(event.target.value) }); }, className: 'w-full accent-cyan-700' }),
                         h('p', { className: 'mt-2 text-[11px] leading-relaxed text-slate-600' }, modality === 'CT' ? t('stem.anatomy.width_controls_the_displayed_hu_range', 'Width controls the displayed HU range; level sets its midpoint. Narrow windows increase contrast for a smaller tissue range.') : t('stem.anatomy.mri_signal_intensity_is_sequence_and_s', 'MRI signal intensity is sequence- and scanner-dependent; this display window is not a calibrated Hounsfield scale.'))
                       ),
@@ -14420,7 +14428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.anatomy.did_you_know', 'Did you know?')),
               h('p', { className: 'text-xs text-amber-900 leading-relaxed' }, currentFact)
             ),
-            h('button', { 'aria-label': t('stem.anatomy.next', 'Next'),
+            h('button', { 'aria-label': t('stem.anatomy.next_fact', 'Show the next fact'),
               onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
               className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all flex-shrink-0 active:scale-[0.97]', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: 'var(--allo-stem-button-text, #0f172a)', border: '1px solid var(--allo-stem-button-border, #cbd5e1)' }
             }, t('stem.anatomy.next_2', 'Next \u2192'))
@@ -14446,7 +14454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('p', { className: 'text-xs font-black text-purple-600 mb-1 italic' }, '"' + mn.phrase + '"'),
                   isRevealed ? h('div', null,
                     h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, mn.meaning),
-                    ttsBtn(mn.phrase + '. ' + mn.meaning)
+                    ttsBtn(mn.phrase + '. ' + mn.meaning, t('stem.anatomy.read_mnemonic_aloud', 'Read this mnemonic aloud'))
                   ) : h('button', { 'aria-label': t('stem.anatomy.reveal_meaning', 'Reveal meaning'),
                     onClick: function() {
                       var newMV = Object.assign({}, mnemonicsViewed);

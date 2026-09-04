@@ -302,3 +302,46 @@ describe('i18n — a missing key must not render as nothing', () => {
     expect(oneArg, '__alloT calls with no fallback').toEqual([]);
   });
 });
+
+// ── Dark theme: the white-card substrate ──
+//
+// The STEM host renders the themed backdrop and then wraps every tool in an
+// inner div painted #ffffff, because tools are authored for a light substrate.
+// It does NOT redefine --allo-stem-* inside that card, so a tool that reads a
+// themed ink without painting its own themed ground draws light text on white.
+// This tool's hero-band hint did exactly that: var(--allo-stem-text-soft)
+// resolves to #94a3b8 in dark theme, 2.56:1 on the card, on a line that shows
+// on all seven tabs. The contrast gate could not see it, because a var() read
+// has no resolvable colour to check.
+describe('WCAG 1.4.3 — the tool paints no themed ground, so it must not read themed ink', () => {
+  const PATHS = [
+    'stem_lab/stem_tool_rocks.js',
+    'desktop/web-app/public/stem_lab/stem_tool_rocks.js',
+  ];
+
+  it('reads no --allo-stem-* colour token anywhere', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      const reads = [...src.matchAll(/var\(--allo-stem-[\w-]+/g)].map((m) => m[0]);
+      expect(reads, `${p} reads themed tokens: ${reads.join(', ')}`).toEqual([]);
+      // The two remaining mentions are the id of the reduced-motion <style>
+      // element, which is not a colour.
+      expect((src.match(/allo-stem-/g) || []).length).toBe(3);
+    });
+  });
+
+  it('keeps the hero hint as a fixed dark utility at the same colour', () => {
+    PATHS.forEach((p) => {
+      const src = readFileSync(p, 'utf8');
+      expect(src).toContain("React.createElement('p', { className: 'text-slate-600', style: { margin: '3px 0 0', fontSize: 11");
+    });
+  });
+
+  it('would still catch a themed read added later', () => {
+    // Calibration: the detector must actually match the shape it forbids.
+    const bad = "color: 'var(--allo-stem-text-soft, #475569)'";
+    expect([...bad.matchAll(/var\(--allo-stem-[\w-]+/g)]).toHaveLength(1);
+    const good = "className: 'text-slate-600'";
+    expect([...good.matchAll(/var\(--allo-stem-[\w-]+/g)]).toHaveLength(0);
+  });
+});

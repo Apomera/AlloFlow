@@ -93,14 +93,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // --allo-stem-* keep resolving dark, so themed ink lands light-on-light.
       // This tool is authored for a light substrate throughout (it paints its own
       // white cards and pale tints), so its root pins the palette light for its
-      // whole subtree. .theme-contrast is excluded: high-contrast mode still wins.
-      'html:not(.theme-contrast) [data-nutritionlab-root] {',
+      // whole subtree. ★ The exclusion used to read `html:not(.theme-contrast)`,
+      // which excluded NOTHING — stem_lab_module.js stamps `theme-${theme}` on
+      // <main>, never on <html>, so the light pin also overrode the contrast
+      // theme's black canvas. The .theme-contrast rule below is the real
+      // exclusion, and it wins on specificity.
+      '[data-nutritionlab-root] {',
       '  --allo-stem-text: #0f172a;',
       '  --allo-stem-text-soft: #475569;',
       '  --allo-stem-border: #cbd5e1;',
       '  --allo-stem-panel: #ffffff;',
       '  --allo-stem-canvas: #ffffff;',
       '  --allo-stem-deeper: #f1f5f9;',
+      '}',
+      // The five texts below sit on the HOST ground, not on one of this
+      // tool's own pale cards. The host ground is black in the contrast
+      // theme, where slate-700/800 measured 1.4-2.0:1 — the tool's own
+      // title among them. Everything else stays light by design.
+      '.theme-contrast [data-nutritionlab-root] .nutritionlab-onhost { color: #ffff00; }',
+      '.theme-contrast [data-nutritionlab-root] {',
+      '  --allo-stem-text: #ffff00;',
+      '  --allo-stem-text-soft: #ffff00;',
+      '  --allo-stem-border: #ffff00;',
+      '  --allo-stem-panel: #000000;',
+      '  --allo-stem-canvas: #000000;',
+      '  --allo-stem-deeper: #000000;',
       '}'
     ].join('\n');
     document.head.appendChild(st);
@@ -16852,8 +16869,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           h('div', { className: 'text-center mb-6' },
             h('div', { className: 'text-6xl mb-3' },
               h('span', { className: 'nutritionlab-leaf-sway inline-block', 'aria-hidden': true }, '🥗')),
-            h('h1', { className: 'text-3xl sm:text-4xl font-black text-slate-800 mb-2' }, 'NutritionLab'),
-            h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto' },
+            h('h1', { className: 'nutritionlab-onhost text-3xl sm:text-4xl font-black text-slate-800 mb-2' }, 'NutritionLab'),
+            h('p', { className: 'nutritionlab-onhost text-lg text-slate-700 max-w-2xl mx-auto' },
               __alloT('stem.nutritionlab.nutrition_science_from_a_physiology_fi', 'Nutrition science from a physiology-first lens. What your body uses food for, why micronutrients matter, how to read a label, and the careers built on this knowledge. No calorie targets, no good/bad food binaries — just real biology.'))
           ),
           // Framing banner — sets tone immediately, especially for adolescent users
@@ -16964,11 +16981,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               )
             )
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.core_simulators', 'Core Simulators')),
+          h('div', { className: 'nutritionlab-onhost text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.core_simulators', 'Core Simulators')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
           ),
-          h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.quick_labs', 'Quick Labs')),
+          h('div', { className: 'nutritionlab-onhost text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.quick_labs', 'Quick Labs')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
@@ -17000,7 +17017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               })
             )
           ),
-          h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' },
+          h('div', { className: 'nutritionlab-onhost mt-8 text-center text-xs text-slate-700 italic' },
             __alloT('stem.nutritionlab.all_10_modules_live_physiology_first_n', 'All 10 modules live — physiology-first nutrition science from a school-psych lens. Explore in any order.'))
         );
       }

@@ -25529,7 +25529,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         React.createElement('div', { className: 'flex items-center gap-1 mb-2 flex-wrap' },
                           STAGES.map(function (s, i) {
                             return React.createElement(React.Fragment, { key: s.k },
-                              i > 0 && React.createElement('span', { className: 'text-slate-300 text-[10px]' }, '→'),
+                              i > 0 && React.createElement('span', { className: 'text-slate-500 text-[10px]' }, '→'),
                               React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-600 bg-slate-100'), style: i === stageIdx ? { background: ({ '#16a34a': '#166534', '#22c55e': '#15803d', '#0ea5e9': '#0369a1', '#f59e0b': '#b45309', '#ef4444': '#b91c1c', '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#06b6d4': '#0e7490' })[s.color] || s.color } : {} }, s.k));
                           })
                         ),

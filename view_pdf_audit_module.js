@@ -4417,7 +4417,16 @@ function PdfAuditView(props) {
   const _beginVisibleAuditRun = (event, detail) => {
     _auditGateLog(event, detail);
     if (typeof setPdfAuditLoading === "function") setPdfAuditLoading(true);
-    setPdfAuditResult(null);
+    // Do NOT null the result here. Nulling left pdfAuditLoading as the modal's ONLY owner for
+    // the whole run, and invalidatePdfAuditRun (reached from any startNewPdfAudit /
+    // _closePdfAuditModal) clears exactly that flag - so an invalidation landing mid-audit
+    // closed the modal outright, dropped the user on the main screen, and threw the finished
+    // audit away with no toast and no trace (field report 2026-09-04, one-click path; same
+    // class as the 2026-08-15/16/18/23 epoch-desync recurrences). Keeping the chooser/result
+    // as the owner makes the worst case landing back on the chooser card with the document
+    // still attached. The render gate skips _choosing while pdfAuditLoading is true, so a
+    // healthy run still shows the spinner exactly as before.
+    setPdfAuditResult((previous) => _viewAuditFallbackResult(previous, pendingPdfFile));
   };
   const _restoreVisibleAuditAfterFailure = (snapshot) => {
     if (typeof setPdfAuditLoading === "function") setPdfAuditLoading(false);
@@ -7801,6 +7810,11 @@ function PdfAuditView(props) {
     };
   }, []);
   const _modalWorkBusy = oneClickRemediationBusy || _remediationBusy || pdfAutoContinueRunning || pdfBatchProcessing || batchIngesting || mediaDigesting || applyingRemarkup || !!webJobBusy;
+  // A stray Escape or backdrop click during an audit used to close the modal with NO
+  // confirmation (safeCloseAudit only guards work that already produced a pdfFixResult),
+  // silently aborting the run. The explicit close button stays on _modalWorkBusy so there
+  // is always a deliberate way out even if a loading flag ever strands true.
+  const _modalDismissBusy = _modalWorkBusy || pdfAuditLoading;
   const _batchSummaryPending = pdfBatchSummary ? Number.isFinite(pdfBatchSummary.pending) ? pdfBatchSummary.pending : pdfBatchQueue.filter((item) => !item.status || item.status === "pending" || item.status === "processing").length : 0;
   const _batchSummaryIncomplete = !!(pdfBatchSummary && (pdfBatchSummary.status !== "complete" || _batchSummaryPending > 0));
   const _batchSummaryNeedsAttention = !!(pdfBatchSummary && (_batchSummaryIncomplete || pdfBatchSummary.reviewRequired > 0 || pdfBatchSummary.failed > 0));
@@ -7817,12 +7831,12 @@ function PdfAuditView(props) {
       "aria-label": t("pdf_audit.modal_aria") || "PDF Accessibility Audit",
       tabIndex: -1,
       onClick: (e) => {
-        if (e.target === e.currentTarget && !_modalWorkBusy) {
+        if (e.target === e.currentTarget && !_modalDismissBusy) {
           safeCloseAudit();
         }
       },
       onKeyDown: (e) => {
-        if (e.key === "Escape" && !_modalWorkBusy) {
+        if (e.key === "Escape" && !_modalDismissBusy) {
           safeCloseAudit();
         }
       },
@@ -7867,7 +7881,7 @@ function PdfAuditView(props) {
         className: "pointer-events-auto w-9 h-9 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 rounded-full shadow-md border border-slate-400 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-600"
       },
       /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })
-    )), pdfAuditResult?._choosing ? /* @__PURE__ */ React.createElement("div", { className: "p-8 text-center" }, !_remediationMode && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex bg-slate-100 rounded-xl p-1 gap-1" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_single_btn", onClick: () => {
+    )), pdfAuditResult?._choosing && !pdfAuditLoading ? /* @__PURE__ */ React.createElement("div", { className: "p-8 text-center" }, !_remediationMode && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex bg-slate-100 rounded-xl p-1 gap-1" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_single_btn", onClick: () => {
       setPdfBatchMode(false);
       setPdfWebMode && setPdfWebMode(false);
     }, className: `px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!pdfBatchMode && !pdfWebMode ? "bg-white shadow text-indigo-700" : "text-slate-600 hover:text-slate-700"}` }, "\u{1F4C4} Single PDF"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_mode_batch_btn", onClick: () => {

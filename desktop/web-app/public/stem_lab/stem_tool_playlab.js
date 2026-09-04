@@ -4361,7 +4361,10 @@ window.StemLab = window.StemLab || {
                       key: 'col-h-' + c.id, role: 'columnheader',
                       style: {
                         width: 38, flexShrink: 0, textAlign: 'center', fontSize: 9,
-                        color: c.id === activeColId ? '#fbbf24' : '#94a3b8',
+                        // The matchup matrix lives in a WHITE <details> panel, so
+                        // its headers need light-ground inks: slate-300 row labels
+                        // measured 1.48:1 and amber-400 about 1.9:1 on white.
+                        color: c.id === activeColId ? '#b45309' : '#475569',
                         fontWeight: c.id === activeColId ? 700 : 500,
                         padding: '2px 0'
                       }
@@ -4378,7 +4381,7 @@ window.StemLab = window.StemLab || {
                       key: 'row-h-' + r.id, role: 'rowheader',
                       style: {
                         width: 90, flexShrink: 0, textAlign: 'right', fontSize: 10,
-                        color: r.id === activeRowId ? '#fbbf24' : '#cbd5e1',
+                        color: r.id === activeRowId ? '#b45309' : '#475569',
                         fontWeight: r.id === activeRowId ? 700 : 500,
                         paddingRight: 4
                       }

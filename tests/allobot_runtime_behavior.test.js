@@ -313,17 +313,17 @@ describe('AlloBot runtime motion behavior', () => {
       return { x: Number(x), y: Number(y) };
     };
 
-    // Ambient: not hovered, the pointer far to the right → a partial (0.55×) glance.
+    // Ambient: not hovered, the pointer far to the right → a partial (0.8×) glance.
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('resting');
     await dispatch(window, new MouseEvent('mousemove', { clientX: 50, clientY: 50 }));
     expect(parse().x).toBeCloseTo(0);
     expect(parse().y).toBeCloseTo(0);
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(1.35 * 0.55);
+    expect(parse().x).toBeCloseTo(2.2 * 0.8);
     expect(Math.abs(parse().y)).toBeLessThan(1e-10);
     // Ambient sensitivity is wider (320px), so a nearby pointer barely moves the eyes.
     await dispatch(window, new MouseEvent('mousemove', { clientX: 130, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(1.35 * 0.55 * (80 / 320));
+    expect(parse().x).toBeCloseTo(2.2 * 0.8 * (80 / 320));
 
     const addSpy = vi.spyOn(window, 'addEventListener');
     const removeSpy = vi.spyOn(window, 'removeEventListener');
@@ -333,7 +333,8 @@ describe('AlloBot runtime motion behavior', () => {
     expect(gazeRegistration).toBeTruthy();
 
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
-    expect(gaze().style.transform).toBe('translate(1.35px, 0px)');
+    // Hovered, the full radius runs into the horizontal clamp.
+    expect(gaze().style.transform).toBe('translate(1.8px, 0px)');
     await dispatch(window, new MouseEvent('mousemove', { clientX: 50, clientY: 1000 }));
     expect(Math.abs(parse().x)).toBeLessThan(1e-10);
     expect(parse().y).toBeCloseTo(1.15);
@@ -343,11 +344,11 @@ describe('AlloBot runtime motion behavior', () => {
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('resting');
     expect(removeSpy).toHaveBeenCalledWith('mousemove', gazeRegistration[1]);
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(1.35 * 0.55);
+    expect(parse().x).toBeCloseTo(2.2 * 0.8);
 
     // Still ambient after leaving: a far-left pointer gives the mirrored partial glance.
     await dispatch(window, new MouseEvent('mousemove', { clientX: -1000, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(-1.35 * 0.55);
+    expect(parse().x).toBeCloseTo(-2.2 * 0.8);
   });
 
   it.each([
@@ -443,9 +444,10 @@ describe('AlloBot runtime motion behavior', () => {
 
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 1000 }));
     const [, x, y] = gaze().style.transform.match(/^translate\(([-+\de.]+)px, ([-+\de.]+)px\)$/) || [];
-    const ambient = 1.35 * 0.55 * Math.SQRT1_2;
+    const ambient = 2.2 * 0.8 * Math.SQRT1_2;
     expect(Number(x)).toBeCloseTo(-0.85 + ambient);
-    expect(Number(y)).toBeCloseTo(0.2 + ambient);
+    // The prop glance plus the ambient glance runs into the vertical clamp.
+    expect(Number(y)).toBeCloseTo(Math.min(1.15, 0.2 + ambient));
   });
 
   it.each([
@@ -483,7 +485,7 @@ describe('AlloBot runtime motion behavior', () => {
     await dispatch(surface, pointerEvent('pointerover'));
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('engaged');
-    expect(gaze().style.transform).toBe('translate(1.35px, 0px)');
+    expect(gaze().style.transform).toBe('translate(1.8px, 0px)');
     await advance(3000);
     expect(Number(leftEye().getAttribute('ry'))).toBeCloseTo(0.62);
 

@@ -19,16 +19,37 @@ describe('PDF audit modal first-start visibility', () => {
     expect(view).toMatch(/setLiveChunkStream,\s*setPdfAuditLoading,\s*setPdfAuditResult/);
   });
 
-  it('asserts loading before clearing the chooser that currently owns the modal', () => {
+  it('asserts loading first and never leaves the modal without a result owner', () => {
     const handoff = between(
       view,
       'const _beginVisibleAuditRun = (event, detail) => {',
       'const _restoreVisibleAuditAfterFailure = (snapshot) => {',
     );
     const loading = handoff.indexOf('setPdfAuditLoading(true)');
-    const clear = handoff.indexOf('setPdfAuditResult(null)');
+    const retain = handoff.indexOf('setPdfAuditResult((previous) => _viewAuditFallbackResult(previous, pendingPdfFile))');
     expect(loading).toBeGreaterThanOrEqual(0);
-    expect(clear).toBeGreaterThan(loading);
+    expect(retain).toBeGreaterThan(loading);
+    // The old shape nulled the result, leaving pdfAuditLoading as the modal's ONLY owner for
+    // the whole run. invalidatePdfAuditRun clears exactly that flag, so any invalidation
+    // landing mid-audit closed the modal outright and discarded the finished audit with no
+    // toast (field report 2026-09-04). The run must always stand on a result it can fall back to.
+    expect(handoff).not.toContain('setPdfAuditResult(null)');
+  });
+
+  it('hides the chooser while an audit is loading instead of unmounting the modal', () => {
+    // The chooser branch wins over the loading branch in the render chain, so suppressing it
+    // has to be a render condition - not a nulled result.
+    expect(view).toContain('{pdfAuditResult?._choosing && !pdfAuditLoading ? (');
+    expect(view).not.toContain('{pdfAuditResult?._choosing ? (');
+  });
+
+  it('will not let Escape or a backdrop click silently abort an in-flight audit', () => {
+    expect(view).toContain('const _modalDismissBusy = _modalWorkBusy || pdfAuditLoading;');
+    expect(view).toContain('if (e.target === e.currentTarget && !_modalDismissBusy) {');
+    expect(view).toContain("if (e.key === 'Escape' && !_modalDismissBusy) {");
+    // The explicit close button deliberately stays on _modalWorkBusy so a stranded loading
+    // flag can never trap the user inside the modal.
+    expect(view).toContain('disabled={_modalWorkBusy}');
   });
 
   it('uses the continuous handoff for Run Audit, Retry Audit, and Make Accessible', () => {

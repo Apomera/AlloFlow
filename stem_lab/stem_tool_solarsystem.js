@@ -124,6 +124,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
     slot.impl = impl;
     return slot.Type;
   }
+// Painted world portraits are cached HERE, at module scope, not inside the tool's
+// render function. A cache declared per render is thrown away on every render, so
+// each one re-encoded nine 256px canvases with toDataURL: measured at 21 PNG
+// encodes and ~160 ms of main-thread time for a single change of selected world.
+  var SOLAR_PORTRAIT_CACHE = {};
   window.StemLab.registerTool('solarSystem', {
     icon: "🪐",
     label: "Solar System Explorer",
@@ -236,6 +241,15 @@ const d = labToolData.solarSystem || {};
           // WCAG 2.1.1 / 2.4.3: the first-visit tutorial is a real modal with
           // render-synchronized initial focus, containment, Escape, and focus return.
           const solarBackButtonRef = React.useRef(null);
+          const solarChallengeTimerRef = React.useRef(null);
+          React.useEffect(function() {
+            return function() {
+              if (solarChallengeTimerRef.current) {
+                clearTimeout(solarChallengeTimerRef.current);
+                solarChallengeTimerRef.current = null;
+              }
+            };
+          }, []);
           const tutorialDialogRef = React.useRef(null);
           const tutorialTitleRef = React.useRef(null);
           const tutorialReturnFocusRef = React.useRef(null);
@@ -670,6 +684,13 @@ const d = labToolData.solarSystem || {};
           // One evidence-based anatomy model feeds both the canvas and the detail cards.
           // Radii are visual boundaries only; displayed depths are approximate and the
           // cutaway explicitly discloses that it is not to scale.
+          // Each layer's `r` is its OUTER radius as a fraction of the planet's, so the
+          // band drawn for it is r[i] - r[i+1] and the innermost `r` is the core radius.
+          // Those fractions have to agree with the `thick` label printed beside them:
+          // a cutaway that says "~850 km core" while drawing half the radius teaches the
+          // number and shows the opposite. The one deliberate exception is a skin too
+          // thin to see - Jupiter's 50 km of cloud tops is 0.07% of its radius - which is
+          // floored to a visible band and covered by the "not to scale" disclosure above.
           function getSolarInteriorLayers(planetKey) {
             if (planetKey === 'Mercury') return [
               { r: 1.0, color: '#8a7060', label: __alloT('stem.solarsystem.crust_5', 'Crust'), thick: '~35 km', desc: __alloT('stem.solarsystem.thin_silicate_crust_heavily_cratered_f', 'Thin silicate crust, heavily cratered from billions of years of impacts'), icon: '\uD83E\uDEA8' },
@@ -678,7 +699,7 @@ const d = labToolData.solarSystem || {};
             ];
             if (planetKey === 'Venus') return [
               { r: 1.0, color: '#c9a050', label: __alloT('stem.solarsystem.volcanic_crust', 'Volcanic Crust'), thick: '~30 km', desc: __alloT('stem.solarsystem.basaltic_surface_1_600_volcanoes_but_n', 'Basaltic surface with abundant volcanoes but no Earth-like plate system'), icon: '\uD83C\uDF0B' },
-              { r: 0.985, color: '#a07030', label: __alloT('stem.solarsystem.mantle_4', 'Mantle'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.hot_silicate_rock_may_have_periodic_gl', 'Hot silicate rock; interior structure is inferred from gravity and planetary models'), icon: '\uD83D\uDD25', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
+              { r: 0.995, color: '#a07030', label: __alloT('stem.solarsystem.mantle_4', 'Mantle'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.hot_silicate_rock_may_have_periodic_gl', 'Hot silicate rock; interior structure is inferred from gravity and planetary models'), icon: '\uD83D\uDD25', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
               { r: 0.50, color: '#e0b040', label: __alloT('stem.solarsystem.core_3', 'Core'), thick: '~3,000 km radius', desc: __alloT('stem.solarsystem.iron_nickel_core_possibly_liquid_but_n', 'Iron-nickel core, probably at least partly liquid; Venus has no internally generated global magnetic field'), icon: '\uD83E\uDDF2', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
             ];
             if (planetKey === 'Earth') return [
@@ -697,19 +718,19 @@ const d = labToolData.solarSystem || {};
               { r: 1.0, color: '#d4924f', label: __alloT('stem.solarsystem.cloud_tops_3', 'Cloud Tops'), thick: '~50 km', desc: __alloT('stem.solarsystem.ammonia_ice_crystals_form_the_colored_', 'Ammonia-rich clouds form colored bands and storms'), icon: '\u2601\uFE0F' },
               { r: 0.985, color: '#b07030', label: __alloT('stem.solarsystem.gaseous_h_3', 'Molecular Hydrogen'), thick: '~21,000 km', desc: __alloT('stem.solarsystem.molecular_hydrogen_gas_deepening_with_', 'Molecular hydrogen becomes denser with depth and pressure'), icon: '\uD83D\uDCA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
               { r: 0.68, color: '#a070c0', label: __alloT('stem.solarsystem.metallic_hydrogen', 'Metallic Hydrogen'), thick: '~39,000 km', desc: __alloT('stem.solarsystem.hydrogen_compressed_so_densely_it_cond', 'Hydrogen compressed until it conducts electricity, helping generate Jupiter\'s magnetic field'), icon: '\u26A1', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
-              { r: 0.18, color: '#e0c040', label: __alloT('stem.solarsystem.rocky_core_6', 'Diffuse Core'), thick: '~10,000 km', desc: __alloT('stem.solarsystem.diffuse_core_of_rock_and_exotic_ices_1', 'A diffuse central region rich in heavier elements, represented schematically'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+              { r: 0.143, color: '#e0c040', label: __alloT('stem.solarsystem.rocky_core_6', 'Diffuse Core'), thick: '~10,000 km', desc: __alloT('stem.solarsystem.diffuse_core_of_rock_and_exotic_ices_1', 'A diffuse central region rich in heavier elements, represented schematically'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
             ];
             if (planetKey === 'Saturn') return [
               { r: 1.0, color: '#c9a04a', label: __alloT('stem.solarsystem.cloud_tops_4', 'Cloud Tops'), thick: '~50 km', desc: __alloT('stem.solarsystem.golden_ammonia_crystal_clouds_less_tur', 'Golden ammonia-rich cloud bands and storms'), icon: '\u2601\uFE0F' },
               { r: 0.985, color: '#a08030', label: __alloT('stem.solarsystem.gaseous_h_4', 'Molecular Hydrogen'), thick: '~30,000 km', desc: __alloT('stem.solarsystem.molecular_hydrogen_deepening_under_pre', 'Molecular hydrogen becomes denser under pressure'), icon: '\uD83D\uDCA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
               { r: 0.52, color: '#8060b0', label: __alloT('stem.solarsystem.metallic_hydrogen_2', 'Metallic Hydrogen'), thick: '~22,000 km', desc: __alloT('stem.solarsystem.metallic_hydrogen_ocean_saturn_is_so_l', 'Conductive metallic hydrogen helps sustain Saturn\'s magnetic field'), icon: '\u26A1', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
-              { r: 0.16, color: '#e0b040', label: __alloT('stem.solarsystem.rocky_core_7', 'Diffuse Core'), thick: '~8,000 km', desc: __alloT('stem.solarsystem.dense_ice_rock_core_9_22x_earth_mass', 'A modeled ice-and-rock-rich central region'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+              { r: 0.137, color: '#e0b040', label: __alloT('stem.solarsystem.rocky_core_7', 'Diffuse Core'), thick: '~8,000 km', desc: __alloT('stem.solarsystem.dense_ice_rock_core_9_22x_earth_mass', 'A modeled ice-and-rock-rich central region'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
             ];
             if (planetKey === 'Uranus') return [
               { r: 1.0, color: '#80d0d0', label: __alloT('stem.solarsystem.methane_atmosphere', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.methane_absorbs_red_light_giving_uranu', 'Methane absorbs red light and contributes to Uranus\'s cyan color'), icon: '\uD83D\uDCA0' },
               { r: 0.82, color: '#50a0a0', label: __alloT('stem.solarsystem.h_he_envelope_3', 'H\u2082/He Envelope'), thick: '~7,000 km', desc: __alloT('stem.solarsystem.hydrogen_helium_gas_transitioning_to_l', 'Hydrogen-helium envelope transitioning to denser fluid'), icon: '\uD83D\uDCA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
               { r: 0.58, color: '#2a5a7a', label: __alloT('stem.solarsystem.superionic_water_ice', 'Hot Ice Mantle'), thick: '~10,000 km', desc: __alloT('stem.solarsystem.uranus_hot_ice_model', 'Models include a hot water-ammonia-rich mantle; experiments suggest carbon may form sinking diamonds at depth'), icon: '\uD83D\uDC8E', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') },
-              { r: 0.14, color: '#808060', label: __alloT('stem.solarsystem.rocky_core_8', 'Rocky Core'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.small_silicate_iron_core_about_1x_eart', 'Small silicate-and-iron-rich core represented by interior models'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+              { r: 0.118, color: '#808060', label: __alloT('stem.solarsystem.rocky_core_8', 'Rocky Core'), thick: '~3,000 km', desc: __alloT('stem.solarsystem.small_silicate_iron_core_about_1x_eart', 'Small silicate-and-iron-rich core represented by interior models'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
             ];
             if (planetKey === 'Neptune') return [
               { r: 1.0, color: '#4060c0', label: __alloT('stem.solarsystem.methane_atmosphere_2', 'Methane Atmosphere'), thick: '~5,000 km', desc: __alloT('stem.solarsystem.deepest_blue_in_the_solar_system_winds', 'Methane-rich atmosphere with the solar system\'s fastest measured planetary winds'), icon: '\uD83C\uDF0A' },
@@ -719,9 +740,9 @@ const d = labToolData.solarSystem || {};
             ];
             return [
               { r: 1.0, color: '#d0c8b0', label: __alloT('stem.solarsystem.nitrogen_ice_2', 'Nitrogen Ice'), thick: '~10 km', desc: __alloT('stem.solarsystem.frozen_n_co_ch_on_the_surface_the_famo', 'Frozen nitrogen, carbon monoxide, and methane cover parts of the surface'), icon: '\u2744\uFE0F' },
-              { r: 0.92, color: '#8090a0', label: __alloT('stem.solarsystem.water_ice_crust_2', 'Water-Ice Crust'), thick: '~300 km', desc: __alloT('stem.solarsystem.rigid_water_ice_bedrock_at_230_c_ice_i', 'Rigid water ice acts as bedrock at Pluto\'s temperatures'), icon: '\uD83E\uDDCA' },
-              { r: 0.65, color: '#4060a0', label: __alloT('stem.solarsystem.subsurface_ocean_2', 'Subsurface Ocean?'), thick: '~100 km', desc: __alloT('stem.solarsystem.scientists_believe_liquid_water_may_ex', 'A buried liquid-water ocean is a plausible but unconfirmed interior model'), icon: '\uD83D\uDCA7', modelTag: __alloT('stem.solarsystem.hypothesis', 'HYPOTHESIS') },
-              { r: 0.50, color: '#605040', label: __alloT('stem.solarsystem.rocky_core_10', 'Rocky Core'), thick: '~850 km', desc: __alloT('stem.solarsystem.silicate_rock_core_makes_up_70_of_plut', 'Silicate-rock-rich core represented by interior models'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
+              { r: 0.985, color: '#8090a0', label: __alloT('stem.solarsystem.water_ice_crust_2', 'Water-Ice Crust'), thick: '~220 km', desc: __alloT('stem.solarsystem.rigid_water_ice_bedrock_at_230_c_ice_i', 'Rigid water ice acts as bedrock at Pluto\'s temperatures'), icon: '\uD83E\uDDCA' },
+              { r: 0.7996, color: '#4060a0', label: __alloT('stem.solarsystem.subsurface_ocean_2', 'Subsurface Ocean?'), thick: '~100 km', desc: __alloT('stem.solarsystem.scientists_believe_liquid_water_may_ex', 'A buried liquid-water ocean is a plausible but unconfirmed interior model'), icon: '\uD83D\uDCA7', modelTag: __alloT('stem.solarsystem.hypothesis', 'HYPOTHESIS') },
+              { r: 0.7155, color: '#605040', label: __alloT('stem.solarsystem.rocky_core_10', 'Rocky Core'), thick: '~850 km radius', desc: __alloT('stem.solarsystem.silicate_rock_core_makes_up_70_of_plut', 'Silicate-rock-rich core represented by interior models'), icon: '\uD83E\uDEA8', modelTag: __alloT('stem.solarsystem.modeled', 'MODELED') }
             ];
           }
 
@@ -1218,28 +1239,36 @@ const d = labToolData.solarSystem || {};
 
           var PLANETS = [
 
-            { key: 'Mercury', name: t('stem.solar_sys.mercury'), emoji: '\u2638', color: 'var(--allo-stem-text-soft, #94a3b8)', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, orbitE: 0.20564, orbitI: 7.005, orbitNode: 48.331, orbitPeri: 77.458, tilt: 0.0006, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: __alloT('stem.solarsystem.smallest_planet_no_atmosphere_to_retai', 'Smallest planet; no atmosphere to retain heat.'), gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
+            { key: 'Mercury', name: t('stem.solar_sys.mercury'), emoji: '\u2638', color: 'var(--allo-stem-text-soft, #94a3b8)', rgb: [0.58, 0.64, 0.72], size: 0.2, dist: 8, speed: 4.15, orbitE: 0.20564, orbitI: 7.005, orbitNode: 48.331, orbitPeri: 77.458, tiltDeg: 0.034, moons: 0, diameter: '4,879 km', dayLen: '59 Earth days', yearLen: '88 days', temp: '\u2212180 to 430\u00B0C', fact: __alloT('stem.solarsystem.smallest_planet_no_atmosphere_to_retai', 'Smallest planet; no atmosphere to retain heat.'), gravity: '0.38g', atmosphere: 'Virtually none \u2014 exosphere of O\u2082, Na, H\u2082, He', surface: 'Cratered surface similar to the Moon', notableFeatures: ['Caloris Basin (1,550 km impact crater)', 'Water ice in permanently shadowed polar craters', 'Most cratered planet in the solar system'], skyColor: '#000000', terrainColor: '#8a8278', terrainType: 'cratered', surfaceDesc: 'Dark airless surface pocked with ancient craters beneath a pitch-black sky. The Sun blazes 3\u00D7 larger than on Earth.' },
 
-            { key: 'Venus', name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, orbitE: 0.00678, orbitI: 3.395, orbitNode: 76.680, orbitPeri: 131.602, tilt: 3.097, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: __alloT('stem.solarsystem.hottest_planet_due_to_runaway_greenhou', 'Hottest planet due to runaway greenhouse effect. Rotates backwards!'), gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
+            { key: 'Venus', name: t('stem.solar_sys.venus'), emoji: '\u2640', color: '#fbbf24', rgb: [0.98, 0.75, 0.14], size: 0.55, dist: 11, speed: 1.62, orbitE: 0.00678, orbitI: 3.395, orbitNode: 76.680, orbitPeri: 131.602, tiltDeg: 177.36, moons: 0, diameter: '12,104 km', dayLen: '243 Earth days', yearLen: '225 days', temp: '462\u00B0C avg.', fact: __alloT('stem.solarsystem.hottest_planet_due_to_runaway_greenhou', 'Hottest planet due to runaway greenhouse effect. Rotates backwards!'), gravity: '0.91g', atmosphere: '96.5% CO\u2082 \u2014 crushingly thick (90x Earth pressure)', surface: 'Volcanic plains with lava flows and pancake domes', notableFeatures: ['Maxwell Montes (11 km high)', 'Thousand+ volcanoes', 'Surface hot enough to melt lead'], skyColor: '#c9803a', terrainColor: '#d4723a', terrainType: 'volcanic', surfaceDesc: 'Orange volcanic hellscape with dense sulfuric acid clouds. Surface pressure would crush a submarine.' },
 
-            { key: 'Earth', name: t('stem.solar_sys.earth'), emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 14, speed: 1.0, orbitE: 0.01671, orbitI: 0, orbitNode: 0, orbitPeri: 102.938, tilt: 0.409, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: __alloT('stem.solarsystem.only_known_planet_with_liquid_water_an', 'Only known planet with liquid water and life.'), gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
+            { key: 'Earth', name: t('stem.solar_sys.earth'), emoji: '\uD83C\uDF0D', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], size: 0.6, dist: 14, speed: 1.0, orbitE: 0.01671, orbitI: 0, orbitNode: 0, orbitPeri: 102.938, tiltDeg: 23.44, moons: 1, diameter: '12,742 km', dayLen: '24 hours', yearLen: '365.25 days', temp: '15\u00B0C avg.', fact: __alloT('stem.solarsystem.only_known_planet_with_liquid_water_an', 'Only known planet with liquid water and life.'), gravity: '1.0g', atmosphere: '78% N\u2082, 21% O\u2082 \u2014 the only breathable atmosphere', surface: 'Oceans, continents, ice caps, forests', notableFeatures: ['71% covered in water', 'Magnetic field protecting from solar wind', 'Only known planet with plate tectonics'], skyColor: '#5ba3d9', terrainColor: '#3a8c3a', terrainType: 'earthlike', surfaceDesc: 'Blue skies, green hills, flowing water. The only known world with life.' },
 
-            { key: 'Mars', name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, orbitE: 0.09339, orbitI: 1.850, orbitNode: 49.560, orbitPeri: -23.944, tilt: 0.440, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: __alloT('stem.solarsystem.has_the_tallest_volcano_in_the_solar_s', 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).'), gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
+            { key: 'Mars', name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, orbitE: 0.09339, orbitI: 1.850, orbitNode: 49.560, orbitPeri: -23.944, tiltDeg: 25.19, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: __alloT('stem.solarsystem.has_the_tallest_volcano_in_the_solar_s', 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).'), gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
 
-            { key: 'Jupiter', name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, orbitE: 0.04839, orbitI: 1.304, orbitNode: 100.474, orbitPeri: 14.728, tilt: 0.054, moons: 115, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: __alloT('stem.solarsystem.largest_planet_the_great_red_spot_is_a', 'Largest planet. The Great Red Spot is a storm larger than Earth!'), gravity: '2.53g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
+            { key: 'Jupiter', name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, orbitE: 0.04839, orbitI: 1.304, orbitNode: 100.474, orbitPeri: 14.728, tiltDeg: 3.13, moons: 115, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: __alloT('stem.solarsystem.largest_planet_the_great_red_spot_is_a', 'Largest planet. The Great Red Spot is a storm larger than Earth!'), gravity: '2.53g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
 
-            { key: 'Saturn', name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, orbitE: 0.05386, orbitI: 2.486, orbitNode: 113.662, orbitPeri: 92.599, tilt: 0.467, moons: 293, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: __alloT('stem.solarsystem.its_rings_are_made_of_ice_and_rock_cou', 'Its rings are made of ice and rock. Could float in a giant bathtub!'), hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
+            { key: 'Saturn', name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, orbitE: 0.05386, orbitI: 2.486, orbitNode: 113.662, orbitPeri: 92.599, tiltDeg: 26.73, moons: 293, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: __alloT('stem.solarsystem.its_rings_are_made_of_ice_and_rock_cou', 'Its rings are made of ice and rock. Could float in a giant bathtub!'), hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
 
-            { key: 'Uranus', name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, orbitE: 0.04726, orbitI: 0.773, orbitNode: 74.017, orbitPeri: 170.954, tilt: 1.706, moons: 29, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: __alloT('stem.solarsystem.rotates_on_its_side_an_ice_giant_with_', 'Rotates on its side! An ice giant with methane atmosphere.'), gravity: '0.89g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Lab-modeled diamond formation at depth'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, experiments suggest extreme pressure may form sinking diamonds.' },
+            { key: 'Uranus', name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, orbitE: 0.04726, orbitI: 0.773, orbitNode: 74.017, orbitPeri: 170.954, tiltDeg: 97.77, moons: 29, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: __alloT('stem.solarsystem.rotates_on_its_side_an_ice_giant_with_', 'Rotates on its side! An ice giant with methane atmosphere.'), gravity: '0.89g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Lab-modeled diamond formation at depth'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, experiments suggest extreme pressure may form sinking diamonds.' },
 
-            { key: 'Neptune', name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, orbitE: 0.00859, orbitI: 1.770, orbitNode: 131.784, orbitPeri: 44.965, tilt: 0.494, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: __alloT('stem.solarsystem.windiest_planet_winds_up_to_2_100_km_h', 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.'), gravity: '1.14g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
+            { key: 'Neptune', name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, orbitE: 0.00859, orbitI: 1.770, orbitNode: 131.784, orbitPeri: 44.965, tiltDeg: 28.32, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: __alloT('stem.solarsystem.windiest_planet_winds_up_to_2_100_km_h', 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.'), gravity: '1.14g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
 
-            { key: 'Pluto', name: t('stem.solar_sys.pluto'), emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, orbitE: 0.2488, orbitI: 17.16, orbitNode: 110.299, orbitPeri: 224.068, tilt: 2.04, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: __alloT('stem.solarsystem.dwarf_planet_since_2006_has_a_heart_sh', 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.'), gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
+            { key: 'Pluto', name: t('stem.solar_sys.pluto'), emoji: '\u2B50', color: '#a78bfa', rgb: [0.66, 0.55, 0.98], size: 0.14, dist: 60, speed: 0.004, orbitE: 0.2488, orbitI: 17.16, orbitNode: 110.299, orbitPeri: 224.068, tiltDeg: 122.53, moons: 5, diameter: '2,377 km', dayLen: '6.4 Earth days', yearLen: '248 years', temp: '\u2212230\u00B0C', fact: __alloT('stem.solarsystem.dwarf_planet_since_2006_has_a_heart_sh', 'Dwarf planet since 2006. Has a heart-shaped glacier named Tombaugh Regio.'), gravity: '0.06g', atmosphere: 'Thin N\u2082 \u2014 freezes and falls as snow', surface: 'Nitrogen ice plains and water-ice mountains', notableFeatures: ['Tombaugh Regio (heart-shaped glacier)', 'Mountains of water ice', 'Charon is half its size'], skyColor: '#1a1a2a', terrainColor: '#8a7a6a', terrainType: 'iceworld', surfaceDesc: 'Pale nitrogen ice plains under a near-black sky. The Sun is just a bright star. The heart-shaped Tombaugh Regio gleams.' },
 
           ];
 
           // Compact portraits make the world chooser visually scannable without
           // pretending that the thumbnail diameters are on a common scale.
+          // Axial tilt has ONE source of truth: `tiltDeg`, in the IAU convention.
+          // The radian form the 3D meshes and the 2D cards use is derived from it, so
+          // the two can never drift apart the way the orbital-distance tables did.
+          PLANETS.forEach(function (planetRow) { planetRow.tilt = planetRow.tiltDeg * Math.PI / 180; });
+          function solarTiltDeg(key) {
+            for (var ti = 0; ti < PLANETS.length; ti++) { if (PLANETS[ti].key === key) return PLANETS[ti].tiltDeg; }
+            return 0;
+          }
           var PLANET_PORTRAITS = {
             Mercury: 'radial-gradient(circle at 34% 30%,#d8d1c7 0 8%,#827a72 10% 17%,#aaa198 19% 45%,#5b5552 72%,#2f3035 100%)',
             Venus: 'repeating-linear-gradient(8deg,rgba(255,244,190,.30) 0 3px,transparent 3px 6px),radial-gradient(circle at 34% 28%,#fff0a8,#d89b32 58%,#7c431d 100%)',
@@ -1279,7 +1308,25 @@ const d = labToolData.solarSystem || {};
           // not blur: Earth = 1 turn per ~35 s at 60 fps.
           function solarCardSpinRate(key) {
             var rel = SOLAR_SPIN_RATE[key] || 1;
-            return 0.003 * Math.max(0.2, Math.min(2.4, rel));
+            // In the IAU convention an axial tilt past 90 degrees IS retrograde
+            // rotation, which is how Venus (177.4), Uranus (97.8) and Pluto (122.5) are
+            // recorded in the table above. Their globes used to turn the same way as
+            // everyone else's while Venus' own fact line said "Rotates backwards!".
+            var spinDir = solarTiltDeg(key) > 90 ? -1 : 1;
+            return spinDir * 0.003 * Math.max(0.2, Math.min(2.4, rel));
+          }
+          // Strokes a path given in longitude and latitude across the orthographic
+          // globe, lifting the pen wherever the line passes behind the limb.
+          function solarOrthoStroke(ctx, pts, cx, cy, R, lambda0, phi0) {
+            var pen = false, drew = false, i, q;
+            ctx.beginPath();
+            for (i = 0; i < pts.length; i++) {
+              q = solarOrtho(pts[i][0], pts[i][1], lambda0, phi0, R);
+              if (q.z <= 0.03) { pen = false; continue; }
+              if (!pen) { ctx.moveTo(cx + q.x, cy + q.y); pen = true; }
+              else { ctx.lineTo(cx + q.x, cy + q.y); drew = true; }
+            }
+            return drew;
           }
           // Real cloud-band structure, [north edge, south edge, colour, alpha].
           // Jupiter's belts (dark, sinking) and zones (light, rising) are named
@@ -1310,7 +1357,9 @@ const d = labToolData.solarSystem || {};
           // with the planet instead of sliding across the face.
           var SOLAR_STORMS = {
             Jupiter: { lat: -22, lonW: 15, latH: 10, core: '#bd6b4e', halo: 'rgba(232,206,178,0.62)', eye: 'rgba(150,66,42,0.85)' },
-            Neptune: { lat: -22, lonW: 22, latH: 11, core: 'rgba(14,24,86,0.8)', halo: 'rgba(120,155,235,0.35)' }
+            // The bright methane companion rides just poleward of the dark spot, in
+            // planet radii from its centre.
+            Neptune: { lat: -22, lonW: 22, latH: 11, core: 'rgba(14,24,86,0.8)', halo: 'rgba(120,155,235,0.35)', companion: { dx: 0.13, dy: -0.09, w: 0.06, h: 0.025, tint: 'rgba(170,204,255,0.55)' } }
           };
           // Orthographic point from a longitude already expressed in radians
           // relative to the sub-viewer meridian.
@@ -1331,6 +1380,11 @@ const d = labToolData.solarSystem || {};
             if (k >= 1) return 0;
             return Math.acos(k);
           }
+          // True when a pole is turned away from the viewer, so its parallel is not
+          // merely small on screen but entirely behind the planet.
+          function solarPoleHidden(latDeg, phi0) {
+            return Math.sin(phi0) * Math.sin(latDeg * Math.PI / 180) < 0;
+          }
           function solarLatBandPath(ctx, latHigh, latLow, cx, cy, R, phi0) {
             var hiSpan = solarParallelSpan(latHigh, phi0), loSpan = solarParallelSpan(latLow, phi0);
             if (hiSpan <= 0 && loSpan <= 0) return false;
@@ -1339,6 +1393,28 @@ const d = labToolData.solarSystem || {};
             for (i = 0; i <= STEPS; i++) {
               q = solarOrthoRel(-hiSpan + 2 * hiSpan * i / STEPS, latHigh, phi0, R);
               if (i === 0) ctx.moveTo(cx + q.x, cy + q.y); else ctx.lineTo(cx + q.x, cy + q.y);
+            }
+            // A parallel with no visible span is either the pole facing us, which
+            // legitimately projects to a single point, or the pole turned away, whose
+            // parallel is hidden entirely. Treating the second case as a point drew the
+            // band as a wedge converging on the middle of the limb: the dark V that
+            // appeared at the bottom of every giant. There the band is bounded by the
+            // limb, so close it along the edge of the disc instead.
+            if (loSpan <= 0 && solarPoleHidden(latLow, phi0)) {
+              var pStart = solarOrthoRel(-hiSpan, latHigh, phi0, R);
+              var pEnd = solarOrthoRel(hiSpan, latHigh, phi0, R);
+              var aStart = Math.atan2(pStart.y, pStart.x);
+              var aEnd = Math.atan2(pEnd.y, pEnd.x);
+              // Sweep the way that passes the hidden pole: down the screen for a
+              // southern pole (canvas y grows downward), up for a northern one.
+              var target = latLow < 0 ? Math.PI / 2 : -Math.PI / 2;
+              var twoPi = Math.PI * 2;
+              var norm = function (a) { return ((a % twoPi) + twoPi) % twoPi; };
+              var forwardArc = norm(aStart - aEnd);
+              var toTarget = norm(target - aEnd);
+              ctx.arc(cx, cy, R, aEnd, aStart, toTarget > forwardArc);
+              ctx.closePath();
+              return true;
             }
             for (i = STEPS; i >= 0; i--) {
               q = solarOrthoRel(-loSpan + 2 * loSpan * i / STEPS, latLow, phi0, R);
@@ -2020,7 +2096,6 @@ const d = labToolData.solarSystem || {};
           // They project the SAME geography the cards and globes use, so a world is
           // recognisable at 48 px in the chooser and identical to the one the learner
           // opens. The old table was CSS gradients, which cannot draw a coastline.
-          var SOLAR_PORTRAIT_CACHE = {};
           function solarWorldPortrait(key) {
             if (SOLAR_PORTRAIT_CACHE[key] !== undefined) return SOLAR_PORTRAIT_CACHE[key];
             var result = null;
@@ -2126,6 +2201,211 @@ const d = labToolData.solarSystem || {};
           function solarPortraitFor(key) {
             return solarWorldPortrait(key) || PLANET_PORTRAITS[key];
           }
+          // Moon tints, keyed by planet and by POSITION in NOTABLE_MOONS rather than
+          // by name: the names run through the translator, so an English-keyed lookup
+          // would silently fall back to grey in every other language.
+          var SOLAR_MOON_TINTS = {
+            Earth: ['#b9b6b0'],
+            Mars: ['#7d736a', '#8b8177'],
+            Jupiter: ['#d9c56a', '#e8e4dc', '#a89a86', '#6f665e'],
+            Saturn: ['#d8a052', '#f4f7f8', '#dcd8d0', '#9c9184'],
+            Uranus: ['#9aa0a2', '#b4bbbd', '#a7aeb0'],
+            Neptune: ['#e6dcd6'],
+            Pluto: ['#b9aca0']
+          };
+          function solarMoonTint(planetKey, index) {
+            var list = SOLAR_MOON_TINTS[planetKey];
+            return (list && list[index]) || '#e2e8f0';
+          }
+          // Darken a hex toward its own night side, so a moon's shaded limb stays the
+          // same colour it is lit. Falling back to one grey for every moon threw the
+          // tint away at the terminator.
+          function solarShadeHex(hex, factor) {
+            if (typeof hex !== 'string' || hex.charAt(0) !== '#' || hex.length < 7) return hex;
+            var r = Math.round(parseInt(hex.slice(1, 3), 16) * factor);
+            var g = Math.round(parseInt(hex.slice(3, 5), 16) * factor);
+            var b = Math.round(parseInt(hex.slice(5, 7), 16) * factor);
+            function two(v) { var h = Math.max(0, Math.min(255, v)).toString(16); return h.length < 2 ? '0' + h : h; }
+            return '#' + two(r) + two(g) + two(b);
+          }
+          // A miniature Earth for the "for scale" insets. It is the same globe as
+          // everywhere else, just small: a flat blue dot next to a painted planet
+          // reads as a placeholder rather than as the world being compared.
+          function solarDrawMiniEarth(ctx, x, y, r) {
+            ctx.save();
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.clip();
+            var mini = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+            mini.addColorStop(0, '#3b7fc4');
+            mini.addColorStop(0.7, SOLAR_EARTH_PAINT.oceanShallow);
+            mini.addColorStop(1, SOLAR_EARTH_PAINT.oceanDeep);
+            ctx.fillStyle = mini;
+            ctx.fillRect(x - r, y - r, r * 2, r * 2);
+            if (r >= 5) {
+              for (var i = 0; i < SOLAR_EARTH_LAND.length; i++) {
+                if (SOLAR_EARTH_LAND[i].water) continue;
+                if (solarDrawOrthoPoly(ctx, SOLAR_EARTH_LAND[i].pts, x, y, r, 0.35, 0.2)) {
+                  ctx.fillStyle = SOLAR_EARTH_PAINT.land;
+                  ctx.fill();
+                }
+              }
+            }
+            var miniShade = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x - r * 0.35, y - r * 0.35, r * 1.9);
+            miniShade.addColorStop(0, 'rgba(255,255,255,0.12)');
+            miniShade.addColorStop(0.5, 'rgba(0,0,0,0)');
+            miniShade.addColorStop(1, 'rgba(0,0,0,0.6)');
+            ctx.fillStyle = miniShade;
+            ctx.fillRect(x - r, y - r, r * 2, r * 2);
+            ctx.restore();
+          }
+          // What a world's air looks like at the limb, which is not what its UI chip
+          // looks like. Earth scatters blue, Mars' dust glows butterscotch, Venus is a
+          // cream sulfuric haze, and Pluto's thin nitrogen shows the blue haze layers
+          // New Horizons photographed on its way past.
+          var SOLAR_ATMOSPHERE_TINT = {
+            Venus: '#f6e2b0', Earth: '#7cc4ff', Mars: '#e5b48c', Jupiter: '#f0dcb8',
+            Saturn: '#f2e5c0', Uranus: '#a7e6ee', Neptune: '#6f9bff', Pluto: '#9fc4e8'
+          };
+          // Mercury's entry reads "Virtually none - exosphere of O2, Na, H2, He", so an
+          // equality test against "Virtually none" missed it and drew an airless world
+          // a halo. Match the word instead, and never give the cratered world air.
+          function solarHasAtmosphere(planet) {
+            if (!planet || !planet.atmosphere) return false;
+            if (planet.terrainType === 'cratered') return false;
+            return !/\bnone\b/i.test(planet.atmosphere);
+          }
+          // One sun lights every 2D card, from the upper left. Anything that implies
+          // a light direction reads its sub-solar point from here, as an offset from
+          // the disc centre in planet radii.
+          var SOLAR_CARD_SUN = { x: -0.7, y: -0.3 };
+          // A sphere lit by a distant source darkens with the angle between its normal
+          // and the light, which on screen is a radial falloff away from the sub-solar
+          // point. The shared pass used a horizontal linear ramp instead, so its light
+          // sat due left on the equator while the highlight drawn ten lines below it sat
+          // up and to the left: two suns on one planet. A ramp also gives a sphere a
+          // full-moon face with a thin dark rim, which is why Venus read as a sticker.
+          // Sunlight thins with the square of the distance, so one card cannot light
+          // Mercury and Pluto alike: Pluto receives about 1/1560 of what Earth does,
+          // and drawing it as brightly as Mercury quietly contradicts the inverse-square
+          // law the tool teaches. Rendered at full strength the outer worlds would be
+          // black, so this is compressed the way the orrery compresses distance, and the
+          // card's badge prints the Sun's true apparent size beside it.
+          // How much air there is to glow, on a compressed scale anchored at Earth.
+          // Surface pressure spans seven orders of magnitude across these worlds - Venus
+          // 92 bar, Earth 1, Mars 0.006, Pluto about 0.00001 - so a card that draws every
+          // halo the same width tells Mars and Pluto they have Venus' sky.
+          var SOLAR_ATMOSPHERE_DEPTH = {
+            Venus: 1, Earth: 0.6, Mars: 0.17, Jupiter: 0.85, Saturn: 0.85,
+            Uranus: 0.78, Neptune: 0.78, Pluto: 0.12
+          };
+          function solarAtmosphereDepth(planet) {
+            if (!solarHasAtmosphere(planet)) return 0;
+            var d = SOLAR_ATMOSPHERE_DEPTH[planet.key];
+            return d == null ? 0.5 : d;
+          }
+          // NOTABLE_MOONS already carries every moon's real diameter and orbital
+          // distance as display strings. Reading the number back out of them means the
+          // picture and the tooltip cannot disagree.
+          function solarParseKm(text) {
+            if (!text) return 0;
+            var m = String(text).replace(/,/g, '').match(/([\d.]+)/);
+            return m ? parseFloat(m[1]) : 0;
+          }
+          function solarCardIllum(planetKey) {
+            var au = SOLAR_SEMI_MAJOR_AU[planetKey];
+            if (!au) return 1;
+            return Math.max(0.26, Math.min(1.45, Math.pow(au, -0.36)));
+          }
+          function solarSunShade(ctx, cx, cy, R, maxDark) {
+            var sx = cx + SOLAR_CARD_SUN.x * R, sy = cy + SOLAR_CARD_SUN.y * R;
+            var g = ctx.createRadialGradient(sx, sy, R * 0.25, sx, sy, R * 2.05);
+            g.addColorStop(0, 'rgba(255,255,255,0.10)');
+            g.addColorStop(0.45, 'rgba(0,0,0,0)');
+            g.addColorStop(0.72, 'rgba(0,0,0,' + (maxDark * 0.62).toFixed(3) + ')');
+            g.addColorStop(1, 'rgba(0,0,0,' + maxDark.toFixed(3) + ')');
+            return g;
+          }
+          function solarAtmosphereRgb(planet) {
+            var hex = solarAtmosphereTint(planet);
+            return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+          }
+          function solarAtmosphereTint(planet) {
+            return (planet && SOLAR_ATMOSPHERE_TINT[planet.key]) || '#bcd8ff';
+          }
+          // Faint ring systems for the giants whose rings are real but dim. Radii are
+          // in planet radii, matching the 3D ring tables. Saturn is excluded: its card
+          // already draws the full banded system with the Cassini Division.
+          var SOLAR_FAINT_RINGS = {
+            Jupiter: { tint: '#d9c3a4', aspect: 0.16, rot: -0.15, bands: [
+              { r: 1.55, a: 0.05, w: 1.4 },   // halo, a torus of dust rather than a sheet
+              { r: 1.77, a: 0.16, w: 1.1 },   // main ring, shepherded by Metis and Adrastea
+              { r: 2.45, a: 0.045, w: 2.6 }   // gossamer rings, fed by Amalthea and Thebe
+            ] },
+            Uranus: { tint: '#9fe3ea', aspect: 0.62, rot: null, bands: [
+              { r: 1.58, a: 0.14, w: 1 }, { r: 1.69, a: 0.14, w: 1 },
+              { r: 1.82, a: 0.14, w: 1 }, { r: 2.0, a: 0.34, w: 1.6 }   // epsilon, the bright one
+            ] },
+            Neptune: { tint: '#a8c4f0', aspect: 0.22, rot: -0.15, bands: [
+              { r: 1.69, a: 0.09, w: 1 },     // Galle
+              { r: 2.15, a: 0.12, w: 1 },     // Le Verrier
+              { r: 2.31, a: 0.06, w: 1.8 },   // Lassell sheet
+              { r: 2.54, a: 0.14, w: 1.2, arcs: [[0.15, 0.22], [0.52, 0.16], [0.8, 0.28]] }  // Adams, whose arcs are its signature
+            ] }
+          };
+          // Rings and regular moons share one plane: the planet's equator. Reading the
+          // presentation angle from a single place stops a card drawing Uranus' rings
+          // steeply tilted while its moons circle flat, which is what it used to do.
+          function solarEquatorialView(planetKey, tiltRad) {
+            var spec = SOLAR_FAINT_RINGS[planetKey];
+            // `rot: null` derives the plane from the axis: a ring is perpendicular to
+            // the spin axis, so its projected major axis sits 90 degrees from the
+            // projected axis, which works out to -tiltRad. Everything else carries a
+            // chosen camera angle, since a card with no orbital reference drawn is
+            // free to pick one.
+            if (spec) return { rot: spec.rot == null ? -tiltRad : spec.rot, aspect: spec.aspect };
+            if (planetKey === 'Saturn') return { rot: -0.15, aspect: 0.18 };
+            return { rot: -0.15, aspect: 0.35 };
+          }
+          // Draws them in two passes so the far half passes behind the planet.
+          function solarDrawFaintRings(ctx, planetKey, cx, cy, planetR, tiltRad, W, H, lit) {
+            var spec = SOLAR_FAINT_RINGS[planetKey];
+            if (!spec) return false;
+            var litScale = lit == null ? 1 : lit;
+            var rot = solarEquatorialView(planetKey, tiltRad).rot;
+            for (var pass = 0; pass < 2; pass++) {
+              ctx.save();
+              if (pass === 0) {
+                ctx.beginPath();
+                ctx.rect(0, 0, W, H);
+                ctx.arc(cx, cy, planetR * 0.995, 0, Math.PI * 2, true);
+                ctx.clip('evenodd');
+              }
+              for (var bi = 0; bi < spec.bands.length; bi++) {
+                var band = spec.bands[bi];
+                var rr = planetR * band.r;
+                ctx.globalAlpha = band.a * litScale;
+                ctx.strokeStyle = spec.tint;
+                ctx.lineWidth = band.w;
+                if (band.arcs) {
+                  // An arc ring is not a complete circle: draw only its clumps.
+                  for (var ai = 0; ai < band.arcs.length; ai++) {
+                    var from = band.arcs[ai][0] * Math.PI * 2;
+                    var span = band.arcs[ai][1] * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, rr, rr * spec.aspect, rot, from, from + span);
+                    ctx.stroke();
+                  }
+                } else {
+                  ctx.beginPath();
+                  ctx.ellipse(cx, cy, rr, rr * spec.aspect, rot,
+                    pass === 0 ? Math.PI : 0, pass === 0 ? Math.PI * 2 : Math.PI);
+                  ctx.stroke();
+                }
+              }
+              ctx.restore();
+            }
+            ctx.globalAlpha = 1;
+            return true;
+          }
           var PLANET_KINDS = {
             Mercury: 'Rocky', Venus: 'Rocky', Earth: 'Rocky', Mars: 'Rocky',
             Jupiter: 'Gas giant', Saturn: 'Gas giant', Uranus: 'Ice giant', Neptune: 'Ice giant', Pluto: 'Dwarf world'
@@ -2164,9 +2444,9 @@ const d = labToolData.solarSystem || {};
             Uranus: 'https://science.nasa.gov/uranus/facts/'
           };
           var SEASONS_LAB_WORLDS = {
-            Earth: { key: 'Earth', tiltDeg: 23.44, eccentricity: 0.01671, semiMajorAU: 1, yearLabel: '365.25 days', context: 'A modest tilt drives familiar seasons; its nearly circular orbit only slightly changes total sunlight.' },
-            Mars: { key: 'Mars', tiltDeg: 25.19, eccentricity: 0.09339, semiMajorAU: 1.524, yearLabel: '687 Earth days', context: 'A tilt like Earth\'s creates seasons, while a more eccentric orbit changes their intensity and length.' },
-            Uranus: { key: 'Uranus', tiltDeg: 97.77, eccentricity: 0.04726, semiMajorAU: 19.19, yearLabel: '84 Earth years', context: 'Its sideways, retrograde rotation produces extreme polar illumination and seasons lasting about 21 Earth years.' }
+            Earth: { key: 'Earth', tiltDeg: solarTiltDeg('Earth'), eccentricity: 0.01671, semiMajorAU: 1, yearLabel: '365.25 days', context: 'A modest tilt drives familiar seasons; its nearly circular orbit only slightly changes total sunlight.' },
+            Mars: { key: 'Mars', tiltDeg: solarTiltDeg('Mars'), eccentricity: 0.09339, semiMajorAU: 1.524, yearLabel: '687 Earth days', context: 'A tilt like Earth\'s creates seasons, while a more eccentric orbit changes their intensity and length.' },
+            Uranus: { key: 'Uranus', tiltDeg: solarTiltDeg('Uranus'), eccentricity: 0.04726, semiMajorAU: 19.19, yearLabel: '84 Earth years', context: 'Its sideways, retrograde rotation produces extreme polar illumination and seasons lasting about 21 Earth years.' }
           };
           var SEASON_CHECKPOINTS = [
             { phase: 0, short: 'Equinox', label: 'Northern spring equinox' },
@@ -2924,10 +3204,14 @@ const d = labToolData.solarSystem || {};
             planetsVisited = newVisited;
             setTimeout(function() { upd('planetsVisited', newVisited); }, 0);
           }
-          // Debounced challenge check — avoid scheduling on every render
-          if (!window._solarChalTimer) {
-            window._solarChalTimer = setTimeout(function() {
-              window._solarChalTimer = null;
+          // Debounced challenge check — avoid scheduling on every render.
+          // The handle is per-instance and cleared on unmount: on `window` it both
+          // outlived the component (firing into a dead render scope and keeping it
+          // alive) and was shared, so a remount within the debounce window saw a
+          // non-null handle and skipped its own check entirely.
+          if (!solarChallengeTimerRef.current) {
+            solarChallengeTimerRef.current = setTimeout(function() {
+              solarChallengeTimerRef.current = null;
               checkChallenges();
             }, 500);
           }
@@ -3212,37 +3496,71 @@ const d = labToolData.solarSystem || {};
 
               // â"€â"€ Starfield â"€â"€
 
+              // Background stars sit on a SPHERICAL SHELL, not inside a cube. The old
+              // distribution filled a 400-unit box, so a sightline toward a corner of
+              // that box passed through noticeably more stars than one toward a face:
+              // the sky had eight faint dense patches in it, arranged like a die.
+              const STAR_COUNT = 1400;
               const starGeo = new THREE.BufferGeometry();
-
-              const starPos = new Float32Array(3000);
-
-              const starCol = new Float32Array(3000);
-
-              for (let i = 0; i < 1000; i++) {
-                starPos[i * 3] = (Math.random() - 0.5) * 400;
-                starPos[i * 3 + 1] = (Math.random() - 0.5) * 400;
-                starPos[i * 3 + 2] = (Math.random() - 0.5) * 400;
+              const starPos = new Float32Array(STAR_COUNT * 3);
+              const starCol = new Float32Array(STAR_COUNT * 3);
+              // A quarter of the stars are pushed toward one great circle to stand in
+              // for the Milky Way: we live inside a flattened disc, so most of the
+              // galaxy's stars appear in a band rather than spread evenly. The 2D
+              // orbit lens already drew this band; the 3D sky did not.
+              const GALACTIC_TILT = 1.05;
+              const cosTilt = Math.cos(GALACTIC_TILT), sinTilt = Math.sin(GALACTIC_TILT);
+              for (let i = 0; i < STAR_COUNT; i++) {
+                const inBand = i % 4 !== 0;
+                // Uniform on the sphere: z must be uniform in [-1,1], not the angle,
+                // or the stars bunch at the poles.
+                let z = Math.random() * 2 - 1;
+                if (inBand) {
+                  // Squash toward the galactic plane, with a few stragglers above it.
+                  z = (Math.random() + Math.random() + Math.random() - 1.5) * 0.16;
+                }
+                const theta = Math.random() * Math.PI * 2;
+                const rxy = Math.sqrt(Math.max(0, 1 - z * z));
+                const radius = 175 + Math.random() * 35;
+                const bx = Math.cos(theta) * rxy * radius;
+                const by = z * radius;
+                const bz = Math.sin(theta) * rxy * radius;
+                // Tilt the whole band so it crosses the ecliptic, as the real one does.
+                starPos[i * 3] = bx;
+                starPos[i * 3 + 1] = by * cosTilt - bz * sinTilt;
+                starPos[i * 3 + 2] = by * sinTilt + bz * cosTilt;
                 // Spectral tints: mostly white, some blue-white giants, amber + red dwarfs
                 const specRoll = Math.random();
                 let sr = 1, sg = 1, sb = 1;
                 if (specRoll < 0.14) { sr = 0.72; sg = 0.84; sb = 1; }
                 else if (specRoll < 0.24) { sr = 1; sg = 0.88; sb = 0.60; }
                 else if (specRoll < 0.30) { sr = 1; sg = 0.68; sb = 0.62; }
-                starCol[i * 3] = sr; starCol[i * 3 + 1] = sg; starCol[i * 3 + 2] = sb;
+                // Band members are the unresolved crowd: dimmer and slightly warmer
+                // for the dust reddening the real band shows.
+                const dim = inBand ? 0.45 + Math.random() * 0.3 : 1;
+                starCol[i * 3] = sr * dim;
+                starCol[i * 3 + 1] = sg * dim * (inBand ? 0.97 : 1);
+                starCol[i * 3 + 2] = sb * dim * (inBand ? 0.92 : 1);
               }
-
               starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-
               starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
-
-              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.18, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false }))); // full-brightness + additive: stars clear the bloom threshold and glitter
+              scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.18, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: false })));
 
               // Sparse foreground layer — bigger, brighter stars for parallax depth
               const starGeoNear = new THREE.BufferGeometry();
-              const starPosNear = new Float32Array(360);
-              for (let i = 0; i < 360; i++) { starPosNear[i] = (Math.random() - 0.5) * 400; }
+              const NEAR_COUNT = 120;
+              const starPosNear = new Float32Array(NEAR_COUNT * 3);
+              for (let i = 0; i < NEAR_COUNT; i++) {
+                const nz = Math.random() * 2 - 1;
+                const nTheta = Math.random() * Math.PI * 2;
+                const nRxy = Math.sqrt(Math.max(0, 1 - nz * nz));
+                const nRadius = 120 + Math.random() * 30;
+                starPosNear[i * 3] = Math.cos(nTheta) * nRxy * nRadius;
+                starPosNear[i * 3 + 1] = nz * nRadius;
+                starPosNear[i * 3 + 2] = Math.sin(nTheta) * nRxy * nRadius;
+              }
               starGeoNear.setAttribute('position', new THREE.BufferAttribute(starPosNear, 3));
-              scene.add(new THREE.Points(starGeoNear, new THREE.PointsMaterial({ color: 0xffffff, size: 0.34, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })));
+              scene.add(new THREE.Points(starGeoNear, new THREE.PointsMaterial({ color: 0xffffff, size: 0.34, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: false })));
 
               // Layered deep-space backdrop. This is decorative context rather than
               // a live sky for a particular observing date or location.
@@ -3443,10 +3761,6 @@ const d = labToolData.solarSystem || {};
                 const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true');
                 c.width = W; c.height = H;
                 const g = c.getContext('2d');
-                const R0 = Math.round(p.rgb[0] * 255), G0 = Math.round(p.rgb[1] * 255), B0 = Math.round(p.rgb[2] * 255);
-                function tint(f, a) {
-                  return 'rgba(' + Math.min(255, Math.round(R0 * f)) + ',' + Math.min(255, Math.round(G0 * f)) + ',' + Math.min(255, Math.round(B0 * f)) + ',' + (a == null ? 1 : a) + ')';
-                }
                 if (p.terrainType === 'cratered') {
                   // Mercury: Caloris, the rayed craters, and a seeded crater field
                   // from the shared table.
@@ -3770,8 +4084,9 @@ const d = labToolData.solarSystem || {};
                   var glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 128; glowCanvas.height = 128;
                   var gctx = glowCanvas.getContext('2d');
                   var glowGrad = gctx.createRadialGradient(64, 64, 20, 64, 64, 64);
-                  glowGrad.addColorStop(0, 'rgba(' + Math.round(p.rgb[0]*255) + ',' + Math.round(p.rgb[1]*255) + ',' + Math.round(p.rgb[2]*255) + ',0.3)');
-                  glowGrad.addColorStop(0.5, 'rgba(' + Math.round(p.rgb[0]*255) + ',' + Math.round(p.rgb[1]*255) + ',' + Math.round(p.rgb[2]*255) + ',0.1)');
+                  var atmoRgb = solarAtmosphereRgb(p);
+                  glowGrad.addColorStop(0, 'rgba(' + atmoRgb[0] + ',' + atmoRgb[1] + ',' + atmoRgb[2] + ',0.3)');
+                  glowGrad.addColorStop(0.5, 'rgba(' + atmoRgb[0] + ',' + atmoRgb[1] + ',' + atmoRgb[2] + ',0.1)');
                   glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
                   gctx.fillStyle = glowGrad; gctx.fillRect(0, 0, 128, 128);
                   var glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
@@ -4082,6 +4397,17 @@ const d = labToolData.solarSystem || {};
               const tailPoints = new THREE.Points(tailGeo, new THREE.PointsMaterial({ color: 0x88ffff, size: 0.1, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); // glowing ion tail
               scene.add(tailPoints);
               cometMesh._tail = tailPoints;
+              // Dust tail: broader, warmer, and curved back along the orbit.
+              const dustGeo = new THREE.BufferGeometry();
+              const dustPos = new Float32Array(70 * 3);
+              dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+              const dustPoints = new THREE.Points(dustGeo, new THREE.PointsMaterial({
+                color: 0xffe2ae, size: 0.16, transparent: true, opacity: 0.5,
+                blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+              }));
+              scene.add(dustPoints);
+              cometMesh._dustTail = dustPoints;
+              cometMesh._prevPos = cometMesh.position.clone();
 
               scene.add(cometMesh);
               planetMeshes.push(cometMesh);
@@ -4485,6 +4811,36 @@ const d = labToolData.solarSystem || {};
                        }
                        mesh._tail.material.opacity = 0.18 + tailStrength * 0.62;
                        mesh._tail.geometry.attributes.position.needsUpdate = true;
+                       if (mesh._dustTail && mesh._prevPos) {
+                         // Direction of travel, taken from the step just completed.
+                         let velX = mesh.position.x - mesh._prevPos.x;
+                         let velY = mesh.position.y - mesh._prevPos.y;
+                         let velZ = mesh.position.z - mesh._prevPos.z;
+                         const velLen = Math.sqrt(velX * velX + velY * velY + velZ * velZ) || 1;
+                         velX /= velLen; velY /= velLen; velZ /= velLen;
+                         const dArr = mesh._dustTail.geometry.attributes.position.array;
+                         for (let dustIndex = 0; dustIndex < 70; dustIndex++) {
+                           const f = dustIndex / 69;
+                           // Near the nucleus the dust is still heading anti-sunward;
+                           // further out it has fallen behind onto its own orbit, so it
+                           // bends toward the direction the comet came from.
+                           const lag = 0.72 * f;
+                           let dx = awayX * (1 - lag) - velX * lag;
+                           let dy = awayY * (1 - lag) - velY * lag;
+                           let dz = awayZ * (1 - lag) - velZ * lag;
+                           const dLen = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+                           const reach = (0.3 + f * 7.2) * (0.5 + tailStrength);
+                           // The dust tail is a fan, not a line: grains released at
+                           // different times spread it sideways.
+                           const spread = Math.sin(dustIndex * 2.399963) * 0.16 * f * (0.5 + tailStrength);
+                           dArr[dustIndex * 3] = mesh.position.x + (dx / dLen) * reach + velZ * spread;
+                           dArr[dustIndex * 3 + 1] = mesh.position.y + (dy / dLen) * reach + spread * 0.3;
+                           dArr[dustIndex * 3 + 2] = mesh.position.z + (dz / dLen) * reach - velX * spread;
+                         }
+                         mesh._dustTail.material.opacity = 0.1 + tailStrength * 0.45;
+                         mesh._dustTail.geometry.attributes.position.needsUpdate = true;
+                       }
+                       if (mesh._prevPos) mesh._prevPos.copy(mesh.position);
                     }
                     return;
                   }
@@ -5451,14 +5807,18 @@ const d = labToolData.solarSystem || {};
    *  0. BODY DATA — 14 solar-system objects
    * ==================================================================== */
   var OB = [
-    { id: "mercury",  name: __alloT('stem.solarsystem.mercury', "Mercury"),        emoji: "\u263f", color: "#b0b0b0", a: 0.387,   e: 0.2056, T: 0.241,    i: 7.0,   m: 0.0553,  R: 2439.7, type: "planet", desc: __alloT('stem.solarsystem.smallest_planet_closest_to_the_sun_no_', "Smallest planet, closest to the Sun, no atmosphere to speak of.") },
-    { id: "venus",    name: __alloT('stem.solarsystem.venus', "Venus"),          emoji: "\u2640", color: "#e8c36a", a: 0.723,   e: 0.0068, T: 0.615,    i: 3.4,   m: 0.815,   R: 6051.8, type: "planet", desc: __alloT('stem.solarsystem.thick_co_atmosphere_runaway_greenhouse', "Thick CO\u2082 atmosphere, runaway greenhouse, rotates retrograde.") },
-    { id: "earth",    name: __alloT('stem.solarsystem.earth', "Earth"),          emoji: "\ud83c\udf0d", color: "#4a90d9", a: 1.000,   e: 0.0167, T: 1.000,    i: 0.0,   m: 1.000,   R: 6371.0, type: "planet", desc: __alloT('stem.solarsystem.our_home_liquid_water_magnetosphere_li', "Our home \u2014 liquid water, magnetosphere, life.") },
-    { id: "mars",     name: __alloT('stem.solarsystem.mars', "Mars"),           emoji: "\u2642", color: "#c1440e", a: 1.524,   e: 0.0934, T: 1.881,    i: 1.85,  m: 0.107,   R: 3389.5, type: "planet", desc: __alloT('stem.solarsystem.thin_atmosphere_iron_oxide_surface_two', "Thin atmosphere, iron oxide surface, two small moons.") },
-    { id: "jupiter",  name: __alloT('stem.solarsystem.jupiter', "Jupiter"),        emoji: "\u2643", color: "#c88b3a", a: 5.203,   e: 0.0489, T: 11.86,    i: 1.3,   m: 317.8,   R: 69911,  type: "planet", desc: __alloT('stem.solarsystem.gas_giant_great_red_spot_95_known_moon', "Gas giant, Great Red Spot, 115 known moons.") },
-    { id: "saturn",   name: __alloT('stem.solarsystem.saturn', "Saturn"),         emoji: "\u2644", color: "#e0c068", a: 9.537,   e: 0.0565, T: 29.46,    i: 2.49,  m: 95.16,   R: 58232,  type: "planet", desc: __alloT('stem.solarsystem.magnificent_ring_system_density_less_t', "Magnificent ring system, density less than water.") },
-    { id: "uranus",   name: __alloT('stem.solarsystem.uranus', "Uranus"),         emoji: "\u26e2", color: "#73c2d0", a: 19.19,   e: 0.0457, T: 84.01,    i: 0.77,  m: 14.54,   R: 25362,  type: "planet", desc: __alloT('stem.solarsystem.ice_giant_tilted_98_faint_rings_27_kno', "Ice giant tilted 98\u00b0, faint rings, 29 known moons.") },
-    { id: "neptune",  name: __alloT('stem.solarsystem.neptune', "Neptune"),        emoji: "\u2646", color: "#3f5fc4", a: 30.07,   e: 0.0113, T: 164.8,    i: 1.77,  m: 17.15,   R: 24622,  type: "planet", desc: __alloT('stem.solarsystem.strongest_winds_in_the_solar_system_vi', "Strongest winds in the solar system, pale greenish-blue colour.") },
+    // Orbital elements below come from JPL's approximate-positions table, the same
+    // source as the planet table's orbitE and SOLAR_SEMI_MAJOR_AU. Earlier the
+    // eccentricities here were NASA fact-sheet current-epoch values, so this lens
+    // drew Neptune a third more elliptical than the 3D orrery did.
+    { id: "mercury",  name: __alloT('stem.solarsystem.mercury', "Mercury"),        emoji: "\u263f", color: "#b0b0b0", a: 0.387,   e: 0.20564, T: 0.241,    i: 7.0,   m: 0.0553,  R: 2439.7, type: "planet", desc: __alloT('stem.solarsystem.smallest_planet_closest_to_the_sun_no_', "Smallest planet, closest to the Sun, no atmosphere to speak of.") },
+    { id: "venus",    name: __alloT('stem.solarsystem.venus', "Venus"),          emoji: "\u2640", color: "#e8c36a", a: 0.723,   e: 0.00678, T: 0.615,    i: 3.4,   m: 0.815,   R: 6051.8, type: "planet", desc: __alloT('stem.solarsystem.thick_co_atmosphere_runaway_greenhouse', "Thick CO\u2082 atmosphere, runaway greenhouse, rotates retrograde.") },
+    { id: "earth",    name: __alloT('stem.solarsystem.earth', "Earth"),          emoji: "\ud83c\udf0d", color: "#4a90d9", a: 1.000,   e: 0.01671, T: 1.000,    i: 0.0,   m: 1.000,   R: 6371.0, type: "planet", desc: __alloT('stem.solarsystem.our_home_liquid_water_magnetosphere_li', "Our home \u2014 liquid water, magnetosphere, life.") },
+    { id: "mars",     name: __alloT('stem.solarsystem.mars', "Mars"),           emoji: "\u2642", color: "#c1440e", a: 1.524,   e: 0.09339, T: 1.881,    i: 1.85,  m: 0.107,   R: 3389.5, type: "planet", desc: __alloT('stem.solarsystem.thin_atmosphere_iron_oxide_surface_two', "Thin atmosphere, iron oxide surface, two small moons.") },
+    { id: "jupiter",  name: __alloT('stem.solarsystem.jupiter', "Jupiter"),        emoji: "\u2643", color: "#c88b3a", a: 5.203,   e: 0.04839, T: 11.86,    i: 1.3,   m: 317.8,   R: 69911,  type: "planet", desc: __alloT('stem.solarsystem.gas_giant_great_red_spot_95_known_moon', "Gas giant, Great Red Spot, 115 known moons.") },
+    { id: "saturn",   name: __alloT('stem.solarsystem.saturn', "Saturn"),         emoji: "\u2644", color: "#e0c068", a: 9.537,   e: 0.05386, T: 29.46,    i: 2.49,  m: 95.16,   R: 58232,  type: "planet", desc: __alloT('stem.solarsystem.magnificent_ring_system_density_less_t', "Magnificent ring system, density less than water.") },
+    { id: "uranus",   name: __alloT('stem.solarsystem.uranus', "Uranus"),         emoji: "\u26e2", color: "#73c2d0", a: 19.19,   e: 0.04726, T: 84.01,    i: 0.77,  m: 14.54,   R: 25362,  type: "planet", desc: __alloT('stem.solarsystem.ice_giant_tilted_98_faint_rings_27_kno', "Ice giant tilted 98\u00b0, faint rings, 29 known moons.") },
+    { id: "neptune",  name: __alloT('stem.solarsystem.neptune', "Neptune"),        emoji: "\u2646", color: "#3f5fc4", a: 30.07,   e: 0.00859, T: 164.8,    i: 1.77,  m: 17.15,   R: 24622,  type: "planet", desc: __alloT('stem.solarsystem.strongest_winds_in_the_solar_system_vi', "Strongest winds in the solar system, pale greenish-blue colour.") },
     { id: "pluto",    name: __alloT('stem.solarsystem.pluto', "Pluto"),          emoji: "\u2647", color: "#c9a76c", a: 39.48,   e: 0.2488, T: 247.9,    i: 17.16, m: 0.0022,  R: 1188.3, type: "dwarf",  desc: __alloT('stem.solarsystem.heart_shaped_n_glacier_5_moons_kuiper_', "Heart-shaped N\u2082 glacier, 5 moons, Kuiper Belt king.") },
     { id: "ceres",    name: __alloT('stem.solarsystem.ceres', "Ceres"),          emoji: "\u26b3", color: "#8a8a8a", a: 2.769,   e: 0.0758, T: 4.60,     i: 10.59, m: 0.000157,R: 473,    type: "dwarf",  desc: __alloT('stem.solarsystem.largest_asteroid_belt_object_bright_sa', "Largest asteroid-belt object, bright salt deposits.") },
     { id: "haumea",   name: __alloT('stem.solarsystem.haumea', "Haumea"),         emoji: "\u2b2d", color: "#d0d0d0", a: 43.13,   e: 0.1912, T: 283.3,    i: 28.19, m: 0.00066, R: 816,    type: "dwarf",  desc: __alloT('stem.solarsystem.egg_shaped_fastest_rotating_dwarf_plan', "Egg-shaped, fastest-rotating dwarf planet, has a ring.") },
@@ -11944,25 +12304,40 @@ const d = labToolData.solarSystem || {};
                         ctx.globalAlpha = 1;
 
                         // Rich starfield with colored stars and varied sizes
-                        var starColors = ['#ffffff', '#ffffff', '#ffffff', '#ffe8c0', '#c0d0ff', '#ffd0d0', '#d0ffd0'];
-                        for (var si = 0; si < 200; si++) {
-                          var sx = ((si * 137 + 29) % W);
-                          var sy = ((si * 211 + 17) % H);
-                          var sb = 0.1 + 0.3 * Math.sin(tick * 0.012 + si * 0.9);
-                          var starSize = si % 7 === 0 ? 1.8 : si % 4 === 0 ? 1.2 : 0.6;
-                          ctx.globalAlpha = sb * (starSize > 1 ? 1.2 : 0.8);
-                          ctx.fillStyle = starColors[si % starColors.length];
+                        // Star colours follow the spectral classes the eye actually sees:
+                        // blue-white through white and yellow to orange and red. There is
+                        // no green star in the list because there is no green star in the
+                        // sky - a blackbody peaking in the green still emits across the
+                        // whole visible range, so the eye reads it as white.
+                        var starColors = ['#cad7ff', '#dce6ff', '#ffffff', '#ffffff', '#fff4e8', '#ffe8c0', '#ffd2a1', '#ffb98a'];
+                        // Positions come from the seeded generator rather than modular
+                        // arithmetic on the index: `(si * 137) % W` lays stars on a
+                        // diagonal lattice, which reads as wallpaper once you notice it.
+                        var starRnd = solarSeededRandom(20260903);
+                        for (var si = 0; si < 220; si++) {
+                          var sx = starRnd() * W;
+                          var sy = starRnd() * H;
+                          // Brightness follows a steep power law: a real sky is mostly
+                          // faint stars with a handful of obvious ones.
+                          var mag = Math.pow(starRnd(), 3);
+                          var starSize = 0.5 + mag * 1.9;
+                          var starTint = starColors[Math.floor(starRnd() * starColors.length)];
+                          // Only the brighter stars visibly twinkle, and each on its own phase.
+                          var twinklePhase = starRnd() * Math.PI * 2;
+                          var sb = (0.32 + 0.62 * mag) * (0.82 + 0.18 * Math.sin(tick * 0.012 + twinklePhase));
+                          ctx.globalAlpha = Math.max(0, Math.min(1, sb));
+                          ctx.fillStyle = starTint;
                           ctx.beginPath();
                           ctx.arc(sx, sy, starSize, 0, Math.PI * 2);
                           ctx.fill();
-                          // Star cross-flare for bright stars
-                          if (starSize > 1.5 && sb > 0.3) {
-                            ctx.globalAlpha = sb * 0.3;
-                            ctx.strokeStyle = ctx.fillStyle;
-                            ctx.lineWidth = 0.3;
+                          if (mag > 0.55) {
+                            ctx.globalAlpha = Math.min(0.5, sb * 0.42);
+                            ctx.strokeStyle = starTint;
+                            ctx.lineWidth = 0.35;
+                            var flare = 3 + mag * 4;
                             ctx.beginPath();
-                            ctx.moveTo(sx - 4, sy); ctx.lineTo(sx + 4, sy);
-                            ctx.moveTo(sx, sy - 4); ctx.lineTo(sx, sy + 4);
+                            ctx.moveTo(sx - flare, sy); ctx.lineTo(sx + flare, sy);
+                            ctx.moveTo(sx, sy - flare); ctx.lineTo(sx, sy + flare);
                             ctx.stroke();
                           }
                         }
@@ -11993,9 +12368,15 @@ const d = labToolData.solarSystem || {};
 
                         // Atmosphere glow
 
+                        var haloTint = solarHasAtmosphere(sel) ? solarAtmosphereTint(sel) : ((SOLAR_BODY_PALETTE[sel.key] || [selectedAccent])[0]);
                         var glowGrad = ctx.createRadialGradient(cx, cy, planetR * 0.9, cx, cy, planetR * 1.4);
-
-                        glowGrad.addColorStop(0, selectedAccent + '40');
+                        // Scaled by how much air there is and how much sunlight reaches it.
+                        // An airless world keeps a hint of a rim so it separates from the
+                        // sky, but it is the body's own colour, not an atmosphere.
+                        var haloA = solarHasAtmosphere(sel)
+                          ? Math.round(255 * Math.min(0.30, 0.10 + 0.20 * solarAtmosphereDepth(sel)) * solarCardIllum(sel.key))
+                          : 0x1a;
+                        glowGrad.addColorStop(0, haloTint + ('0' + Math.max(8, haloA).toString(16)).slice(-2));
 
                         glowGrad.addColorStop(1, 'transparent');
 
@@ -12029,17 +12410,33 @@ const d = labToolData.solarSystem || {};
                         ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
 
                         // Surface features — planet-specific rich detail
+                        var cardIllum = solarCardIllum(sel.key);
+                        var litAlpha = 0.4 + 0.6 * cardIllum;
+                        var bodyShaded = false;
                         if (isGas) {
                           // Bands follow lines of latitude on the sphere: each one is
                           // clipped to the disc, curved by the sub-viewer latitude, and
                           // given its real width, so belts and zones read as the
                           // unequal features they are.
                           var latBands = SOLAR_LAT_BANDS[sel.key] || SOLAR_LAT_BANDS.Jupiter;
-                          var gasPhi0 = 10 * Math.PI / 180;
+                          // The bands must be seen from the same place as the rings. A ring
+                          // circle projects with minor/major = sin(latitude), so the aspect the
+                          // ring table already carries IS the viewing latitude. Deriving it here
+                          // keeps one viewpoint per planet: Uranus' open rings imply looking down
+                          // at 38 degrees, where a fixed 10 drew its bands as if from the equator.
+                          var gasPlane = solarEquatorialView(sel.key, sel.tiltDeg * Math.PI / 180);
+                          var gasPhi0 = Math.asin(Math.max(0.02, Math.min(0.98, gasPlane.aspect)));
                           var gasSpin = tick * solarCardSpinRate(sel.key) + _dragRotation;
                           ctx.save();
                           ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2); ctx.clip();
-                          if (sel.key === 'Uranus') { ctx.translate(cx, cy); ctx.rotate(97.8 * Math.PI / 180 - Math.PI / 2); ctx.translate(-cx, -cy); }
+                          var gasRot = -gasPlane.rot;
+                          var gasCos = Math.cos(gasRot), gasSin = Math.sin(gasRot);
+                          // Feature labels live in unrotated canvas space, so anything
+                          // placed by latitude has to be mapped back out of the frame.
+                          var gasScreen = function (q) {
+                            return { x: cx + q.x * gasCos - q.y * gasSin, y: cy + q.x * gasSin + q.y * gasCos };
+                          };
+                          ctx.translate(cx, cy); ctx.rotate(gasRot); ctx.translate(-cx, -cy);
                           for (var bi = 0; bi < latBands.length; bi++) {
                             var lb = latBands[bi];
                             // A slow shear on the band edges stands in for the jet
@@ -12089,9 +12486,18 @@ const d = labToolData.solarSystem || {};
                               ctx.globalAlpha = 0.5;
                               ctx.strokeStyle = 'rgba(255,235,215,0.6)'; ctx.lineWidth = 1;
                               ctx.beginPath(); ctx.ellipse(0, 0, sw * 1.18, sh * 1.25, 0, 0, Math.PI * 2); ctx.stroke();
+                              if (storm.companion) {
+                                ctx.globalAlpha = 0.8;
+                                ctx.fillStyle = storm.companion.tint;
+                                ctx.beginPath();
+                                ctx.ellipse(planetR * storm.companion.dx * sq.z, planetR * storm.companion.dy,
+                                  planetR * storm.companion.w * sq.z, planetR * storm.companion.h, 0, 0, Math.PI * 2);
+                                ctx.fill();
+                              }
                               ctx.restore();
                               if (sel.key === 'Jupiter') {
-                                _featureLabels.push({ x: cx + sq.x, y: cy + sq.y, r: Math.max(sw, sh) * 1.4, name: __alloT('stem.solarsystem.great_red_spot', 'Great Red Spot'), desc: __alloT('stem.solarsystem.great_red_spot_desc', 'A high-pressure storm at 22 degrees south, wider than Earth and shrinking for a century.') });
+                                var sqScreen = gasScreen(sq);
+                                _featureLabels.push({ x: sqScreen.x, y: sqScreen.y, r: Math.max(sw, sh) * 1.4, name: __alloT('stem.solarsystem.great_red_spot', 'Great Red Spot'), desc: __alloT('stem.solarsystem.great_red_spot_desc', 'A high-pressure storm at 22 degrees south, wider than Earth and shrinking for a century.') });
                               }
                             }
                           }
@@ -12112,7 +12518,8 @@ const d = labToolData.solarSystem || {};
                               }
                               ctx.closePath(); ctx.stroke();
                               ctx.restore();
-                              _featureLabels.push({ x: cx + hq.x, y: cy + hq.y, r: planetR * 0.16, name: __alloT('stem.solarsystem.hexagonal_vortex', 'Hexagonal Vortex'), desc: __alloT('stem.solarsystem.hexagonal_vortex_desc', 'A six-sided jet stream around the north pole, wider than two Earths.') });
+                              var hqScreen = gasScreen(hq);
+                              _featureLabels.push({ x: hqScreen.x, y: hqScreen.y, r: planetR * 0.16, name: __alloT('stem.solarsystem.hexagonal_vortex', 'Hexagonal Vortex'), desc: __alloT('stem.solarsystem.hexagonal_vortex_desc', 'A six-sided jet stream around the north pole, wider than two Earths.') });
                             }
                           }
                           // Limb darkening: a gas giant has no sharp edge, and the
@@ -12170,13 +12577,9 @@ const d = labToolData.solarSystem || {};
                             ctx.fill();
                           }
                           ctx.globalAlpha = 1;
-                          // Day/night terminator: the Sun sits to the upper left.
-                          var termGrad = ctx.createRadialGradient(cx - earthR * 0.7, cy - earthR * 0.3, earthR * 0.25, cx - earthR * 0.7, cy - earthR * 0.3, earthR * 2.05);
-                          termGrad.addColorStop(0, 'rgba(255,255,255,0.10)');
-                          termGrad.addColorStop(0.45, 'rgba(0,0,0,0)');
-                          termGrad.addColorStop(0.72, 'rgba(0,0,0,0.55)');
-                          termGrad.addColorStop(1, 'rgba(0,0,0,0.88)');
-                          ctx.fillStyle = termGrad;
+                          // Day/night terminator, from the one sun the card declares.
+                          bodyShaded = true;
+                          ctx.fillStyle = solarSunShade(ctx, cx, cy, earthR, 0.88);
                           ctx.fillRect(cx - earthR, cy - earthR, earthR * 2, earthR * 2);
                           ctx.restore();
                           ctx.save(); ctx.globalAlpha = 0.35;
@@ -12248,32 +12651,71 @@ const d = labToolData.solarSystem || {};
                             if (mq.z > 0.2) _featureLabels.push({ x: cx + mq.x, y: cy + mq.y, r: planetR * mf.r, name: mf.name, desc: mf.desc });
                           }
                         } else if (sel.terrainType === 'volcanic') {
-                          // Venus: lava flows + volcanic calderas
-                          _featureLabels.push({ x: cx - planetR * 0.2, y: cy - planetR * 0.25, r: planetR * 0.12, name: __alloT('stem.solarsystem.maxwell_montes', 'Maxwell Montes'), desc: __alloT('stem.solarsystem.highest_point_on_venus_at_11_km_coated', 'Highest point on Venus at 11 km \u2014 coated in metallic "snow" of lead and bismuth sulfide') });
-                          _featureLabels.push({ x: cx + planetR * 0.25, y: cy - planetR * 0.3, r: planetR * 0.15, name: __alloT('stem.solarsystem.ishtar_terra', 'Ishtar Terra'), desc: __alloT('stem.solarsystem.highland_continent_australia_sized_con', 'Highland continent (Australia-sized) containing Maxwell Montes \u2014 one of two main "continents"') });
-                          _featureLabels.push({ x: cx + planetR * 0.1, y: cy + planetR * 0.2, r: planetR * 0.12, name: __alloT('stem.solarsystem.aphrodite_terra', 'Aphrodite Terra'), desc: __alloT('stem.solarsystem.largest_highland_region_stretches_alon', 'Largest highland region \u2014 stretches along the equator like a vast volcanic plateau') });
-                          // Venus from space is a near-featureless pale cloud deck. The
-                          // only structure a camera sees is the faint horizontal "Y"
-                          // chevron pattern in the upper clouds, drifting with the
-                          // four-day super-rotation of the atmosphere.
+                          // Venus on the same orthographic globe as the rest. It was the
+                          // last world drawn as straight chords across the disc: bands
+                          // that never curved, never foreshortened toward the poles and
+                          // never wrapped over the limb.
+                          var venusPhi0 = 8 * Math.PI / 180;
+                          var venusR = planetR * 0.985;
+                          // Two clocks, because Venus has two. The cloud deck
+                          // super-rotates once in about four days; the surface under it
+                          // takes 243, the slowest spin of any planet. Both turn
+                          // retrograde, which solarCardSpinRate now carries as a sign.
+                          var venusCloudLambda0 = tick * 0.0075 * (solarTiltDeg('Venus') > 90 ? -1 : 1) + _dragRotation;
+                          var venusSurfLambda0 = tick * solarCardSpinRate('Venus') + _dragRotation;
                           ctx.save();
-                          ctx.beginPath(); ctx.arc(cx, cy, planetR * 0.985, 0, Math.PI * 2); ctx.clip();
-                          var venusPhase = tick * 0.006 + _dragRotation; // cloud-deck super-rotation, not the 243-day surface spin
-                          for (var vci = 0; vci < 7; vci++) {
-                            var bandY = cy + (vci - 3) * planetR * 0.24;
-                            ctx.globalAlpha = 0.07 + 0.03 * Math.sin(vci * 1.3);
-                            ctx.strokeStyle = vci % 2 ? '#fff7dc' : '#b9852f';
-                            ctx.lineWidth = planetR * 0.05;
-                            ctx.beginPath();
-                            for (var vx = -planetR; vx <= planetR; vx += planetR * 0.1) {
-                              var chevron = Math.abs(Math.sin((vx / planetR) * 1.6 + venusPhase + vci)) * planetR * 0.09;
-                              var vy = bandY + chevron * (vci < 3 ? 1 : -1) * Math.abs(vci - 3) * 0.35;
-                              if (vx === -planetR) ctx.moveTo(cx + vx, vy); else ctx.lineTo(cx + vx, vy);
+                          ctx.beginPath(); ctx.arc(cx, cy, venusR, 0, Math.PI * 2); ctx.clip();
+                          // In visible light Venus is close to featureless: banding this
+                          // faint is the point, not a shortcut.
+                          var venusBands = [
+                            [90, 62, '#e8d2a0', 0.20], [62, 32, '#f4e5be', 0.13],
+                            [32, -32, '#f9f0cd', 0.09], [-32, -62, '#f3e3ba', 0.13],
+                            [-62, -90, '#e8d2a0', 0.20]
+                          ];
+                          for (var vbi = 0; vbi < venusBands.length; vbi++) {
+                            var vb = venusBands[vbi];
+                            if (solarLatBandPath(ctx, vb[0], vb[1], cx, cy, venusR * 1.002, venusPhi0)) {
+                              ctx.globalAlpha = vb[3];
+                              ctx.fillStyle = vb[2];
+                              ctx.fill();
                             }
-                            ctx.stroke();
                           }
+                          ctx.globalAlpha = 1;
+                          // The dark "Y": two arms sweeping out of the mid-latitudes into
+                          // an equatorial bar, the one structure ultraviolet cameras see.
+                          var venusYArms = [
+                            [[-58, 46], [-45, 35], [-32, 24], [-20, 13], [-9, 5], [0, 0]],
+                            [[-58, -46], [-45, -35], [-32, -24], [-20, -13], [-9, -5], [0, 0]],
+                            [[0, 0], [16, 2], [34, 2], [52, 1], [70, -1], [86, -3]]
+                          ];
+                          // Laid down in three widths so the edges fade: the Y is a
+                          // diffuse shading in the cloud tops, not a drawn line.
+                          ctx.strokeStyle = 'rgba(150,108,48,0.07)';
+                          ctx.lineCap = 'round';
+                          var venusYWidths = [0.19, 0.115, 0.06];
+                          for (var vwi = 0; vwi < venusYWidths.length; vwi++) {
+                            ctx.lineWidth = planetR * venusYWidths[vwi];
+                            for (var vyi = 0; vyi < venusYArms.length; vyi++) {
+                              if (solarOrthoStroke(ctx, venusYArms[vyi], cx, cy, venusR, venusCloudLambda0, venusPhi0)) ctx.stroke();
+                            }
+                          }
+                          ctx.lineCap = 'butt';
                           ctx.restore();
                           ctx.globalAlpha = 1;
+                          // Highlands mapped by radar THROUGH the cloud deck, so they ride
+                          // the 243-day surface rather than the four-day clouds, and they
+                          // turn over the limb like every other world's features. They
+                          // used to be pinned to fixed screen positions above a moving sky.
+                          var venusFeatures = [
+                            { lon: 3, lat: 65, r: 0.10, name: __alloT('stem.solarsystem.maxwell_montes', 'Maxwell Montes'), desc: __alloT('stem.solarsystem.highest_point_on_venus_at_11_km_coated', 'Highest point on Venus at 11 km \u2014 coated in metallic "snow" of lead and bismuth sulfide') },
+                            { lon: 25, lat: 70, r: 0.13, name: __alloT('stem.solarsystem.ishtar_terra', 'Ishtar Terra'), desc: __alloT('stem.solarsystem.highland_continent_australia_sized_con', 'Highland continent (Australia-sized) containing Maxwell Montes \u2014 one of two main "continents"') },
+                            { lon: 105, lat: -10, r: 0.15, name: __alloT('stem.solarsystem.aphrodite_terra', 'Aphrodite Terra'), desc: __alloT('stem.solarsystem.largest_highland_region_stretches_alon', 'Largest highland region \u2014 stretches along the equator like a vast volcanic plateau') }
+                          ];
+                          for (var vfi = 0; vfi < venusFeatures.length; vfi++) {
+                            var vf = venusFeatures[vfi];
+                            var vfq = solarOrtho(vf.lon, vf.lat, venusSurfLambda0, venusPhi0, venusR);
+                            if (vfq.z > 0.2) _featureLabels.push({ x: cx + vfq.x, y: cy + vfq.y, r: planetR * vf.r, name: vf.name, desc: vf.desc });
+                          }
                         } else if (sel.terrainType === 'iceworld') {
                           // Pluto on the orthographic globe: the heart's two lobes,
                           // Cthulhu Macula, and the bright methane north, each at
@@ -12350,32 +12792,21 @@ const d = labToolData.solarSystem || {};
                             if (mfeq.z > 0.2) _featureLabels.push({ x: cx + mfeq.x, y: cy + mfeq.y, r: planetR * mfe.r, name: mfe.name, desc: mfe.desc });
                           }
                         }
-                        // Lighting: shadow on right side
-                        // Lighting: shadow on right side
-
-                        var shadowGrad = ctx.createLinearGradient(cx - planetR, cy, cx + planetR, cy);
-
-                        shadowGrad.addColorStop(0, 'rgba(0,0,0,0)');
-
-                        shadowGrad.addColorStop(0.6, 'rgba(0,0,0,0)');
-
-                        shadowGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
-
-                        ctx.fillStyle = shadowGrad;
-
-                        ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
-
-                        // Specular highlight
-
-                        var specGrad = ctx.createRadialGradient(cx - planetR * 0.3, cy - planetR * 0.3, 0, cx - planetR * 0.3, cy - planetR * 0.3, planetR * 0.8);
-
-                        specGrad.addColorStop(0, 'rgba(255,255,255,0.15)');
-
-                        specGrad.addColorStop(1, 'rgba(255,255,255,0)');
-
-                        ctx.fillStyle = specGrad;
-
-                        ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                        // Terminator and sub-solar brightening in one falloff, from the
+                        // card's single sun. Giants already carry their own limb
+                        // darkening, so they take a gentler one than the rocky worlds.
+                        if (!bodyShaded) {
+                          ctx.fillStyle = solarSunShade(ctx, cx, cy, planetR, isGas ? 0.5 : 0.78);
+                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                        }
+                        // How much sunlight there is to shade in the first place.
+                        if (cardIllum < 0.995) {
+                          ctx.fillStyle = 'rgba(3,7,20,' + ((1 - cardIllum) * 0.5).toFixed(3) + ')';
+                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                        } else if (cardIllum > 1.005) {
+                          ctx.fillStyle = 'rgba(255,250,235,' + ((cardIllum - 1) * 0.32).toFixed(3) + ')';
+                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                        }
 
                         ctx.restore();
 
@@ -12465,24 +12896,61 @@ const d = labToolData.solarSystem || {};
 
                         // === ENHANCED: Orbiting moons (clickable) ===
                         var moonCount = Math.min(sel.moons, 6); // show up to 6 moons
-                        var notableMoonNames = (NOTABLE_MOONS[sel.key] || []).map(function(m) { return m.name; });
+                        var moonRows = NOTABLE_MOONS[sel.key] || [];
+                        var notableMoonNames = moonRows.map(function(m) { return m.name; });
+                        // The moons were laid out and sized by their position in the list.
+                        // That put Titan inside Mimas and drew Miranda, the smallest of
+                        // Uranus' three, as the biggest dot - beside a tooltip calling
+                        // Titania the largest moon of Uranus. Rank, size and speed all
+                        // come from the real figures in the table instead.
+                        var moonKm = moonRows.map(function (m) { return solarParseKm(m.dist); });
+                        var moonWidthKm = moonRows.map(function (m) { return solarParseKm(m.diameter); });
+                        var moonRank = [], moonInnerKm = 0, moonWidestKm = 1;
+                        (function () {
+                          var order = [], k;
+                          for (k = 0; k < moonRows.length; k++) order.push(k);
+                          order.sort(function (a, b) { return (moonKm[a] || 0) - (moonKm[b] || 0); });
+                          for (k = 0; k < order.length; k++) moonRank[order[k]] = k;
+                          moonInnerKm = moonKm[order[0]] || 0;
+                          for (k = 0; k < moonWidthKm.length; k++) moonWidestKm = Math.max(moonWidestKm, moonWidthKm[k]);
+                        })();
                         if (moonCount > 0) {
                           for (var mi = 0; mi < moonCount; mi++) {
-                            var rawMoonOrbitR = planetR * 1.3 + mi * 18;
+                            var moonOrder = moonRank[mi] == null ? mi : moonRank[mi];
+                            var rawMoonOrbitR = planetR * 1.3 + moonOrder * 18;
                             var moonOrbitLimit = Math.max(planetR * 1.12, Math.min(cx - 12, W - cx - 12));
-                            var compactOrbitStep = moonCount > 1 ? mi / (moonCount - 1) : 0.55;
+                            var compactOrbitStep = moonCount > 1 ? moonOrder / (moonCount - 1) : 0.55;
                             var compactMoonOrbitR = planetR * 1.12 + (moonOrbitLimit - planetR * 1.12) * compactOrbitStep;
                             var moonOrbitR = compactSurface ? compactMoonOrbitR : Math.min(rawMoonOrbitR, moonOrbitLimit);
-                            var moonAngle = tick * (0.008 + mi * 0.003) + mi * (Math.PI * 2 / moonCount);
-                            var mx = cx + Math.cos(moonAngle) * moonOrbitR;
-                            var my = cy + Math.sin(moonAngle) * moonOrbitR * 0.35; // elliptical
-                            var moonR = 2.5 + (mi === 0 ? 2 : 0); // largest moon is bigger
+                            // Kepler: an inner moon goes round faster. The ordering here is
+                            // exact; the exponent is softened from 1.5 so that Iapetus,
+                            // nineteen times farther out than Mimas, still visibly moves.
+                            var moonSpeed = moonInnerKm && moonKm[mi]
+                              ? Math.max(0.002, 0.013 * Math.pow(moonInnerKm / moonKm[mi], 0.9))
+                              : 0.008 + moonOrder * 0.003;
+                            var moonAngle = tick * moonSpeed + mi * (Math.PI * 2 / moonCount);
+                            // A regular moon orbits over its planet's equator, so its path
+                            // is the same tilted ellipse the rings lie in. Drawing every
+                            // system as a flat horizontal ellipse made Uranus' moons
+                            // contradict both its rings and its own axis line.
+                            var moonPlane = solarEquatorialView(sel.key, sel.tiltDeg * Math.PI / 180);
+                            var moonLocalX = Math.cos(moonAngle) * moonOrbitR;
+                            var moonLocalY = Math.sin(moonAngle) * moonOrbitR * moonPlane.aspect;
+                            var moonCosRot = Math.cos(moonPlane.rot), moonSinRot = Math.sin(moonPlane.rot);
+                            var mx = cx + moonLocalX * moonCosRot - moonLocalY * moonSinRot;
+                            var my = cy + moonLocalX * moonSinRot + moonLocalY * moonCosRot;
+                            // Sized by real diameter, on a square-root scale so Saturn's
+                            // thirteen-to-one spread between Titan and Mimas reads without
+                            // shrinking Mimas to nothing.
+                            var moonR = moonWidthKm[mi]
+                              ? 2 + 2.7 * Math.sqrt(moonWidthKm[mi] / moonWidestKm)
+                              : 2.6;
                             var isHovered = _hoveredMoon === mi;
                             // orbit path
                             ctx.strokeStyle = isHovered ? 'rgba(129,140,248,0.25)' : 'rgba(255,255,255,0.06)';
                             ctx.lineWidth = isHovered ? 1 : 0.5;
                             ctx.beginPath();
-                            ctx.ellipse(cx, cy, moonOrbitR, moonOrbitR * 0.35, 0, 0, Math.PI * 2);
+                            ctx.ellipse(cx, cy, moonOrbitR, moonOrbitR * moonPlane.aspect, moonPlane.rot, 0, Math.PI * 2);
                             ctx.stroke();
                             // hover glow ring
                             if (isHovered) {
@@ -12497,13 +12965,16 @@ const d = labToolData.solarSystem || {};
                               ctx.restore();
                             }
                             // moon body
+                            var moonTint = solarMoonTint(sel.key, mi);
                             var moonGrad = ctx.createRadialGradient(mx - 1, my - 1, 0, mx, my, moonR);
-                            moonGrad.addColorStop(0, isHovered ? '#c7d2fe' : '#e2e8f0');
-                            moonGrad.addColorStop(1, isHovered ? '#818cf8' : '#94a3b8');
+                            moonGrad.addColorStop(0, isHovered ? '#c7d2fe' : moonTint);
+                            moonGrad.addColorStop(1, isHovered ? '#818cf8' : solarShadeHex(moonTint, 0.55));
                             ctx.fillStyle = moonGrad;
+                            ctx.globalAlpha = isHovered ? 1 : litAlpha;
                             ctx.beginPath();
                             ctx.arc(mx, my, isHovered ? moonR + 1 : moonR, 0, Math.PI * 2);
                             ctx.fill();
+                            ctx.globalAlpha = 1;
                             // Moon name label on hover
                             if (isHovered && notableMoonNames[mi]) {
                               ctx.save();
@@ -12521,7 +12992,8 @@ const d = labToolData.solarSystem || {};
                         // === ENHANCED: Saturn rings in surface view (detailed multi-band) ===
                         if (sel.hasRings) {
                           ctx.save();
-                          var ringTilt = -0.15;
+                          var ringPlane = solarEquatorialView(sel.key, sel.tiltDeg * Math.PI / 180);
+                          var ringTilt = ringPlane.rot, ringAspect = ringPlane.aspect;
                           var ringBands = [
                             // [innerR multiplier, width, alpha, color, name]
                             [1.12, 4, 0.08, '#d4c090', 'D Ring'],
@@ -12547,11 +13019,11 @@ const d = labToolData.solarSystem || {};
                           ringBands.forEach(function(rb) {
                             var rInner = planetR * rb[0];
                             var rOuter = rInner + rb[1];
-                            ctx.globalAlpha = rb[2] * 0.7;
+                            ctx.globalAlpha = rb[2] * 0.7 * litAlpha;
                             ctx.fillStyle = rb[3];
                             ctx.beginPath();
-                            ctx.ellipse(cx, cy, rOuter, rOuter * 0.18, ringTilt, Math.PI * 1.05, Math.PI * 1.95);
-                            ctx.ellipse(cx, cy, rInner, rInner * 0.18, ringTilt, Math.PI * 1.95, Math.PI * 1.05, true);
+                            ctx.ellipse(cx, cy, rOuter, rOuter * ringAspect, ringTilt, Math.PI * 1.05, Math.PI * 1.95);
+                            ctx.ellipse(cx, cy, rInner, rInner * ringAspect, ringTilt, Math.PI * 1.95, Math.PI * 1.05, true);
                             ctx.closePath();
                             ctx.fill();
                           });
@@ -12571,11 +13043,11 @@ const d = labToolData.solarSystem || {};
                           ringBands.forEach(function(rb) {
                             var rInner = planetR * rb[0];
                             var rOuter = rInner + rb[1];
-                            ctx.globalAlpha = rb[2];
+                            ctx.globalAlpha = rb[2] * litAlpha;
                             ctx.fillStyle = rb[3];
                             ctx.beginPath();
-                            ctx.ellipse(cx, cy, rOuter, rOuter * 0.18, ringTilt, Math.PI * 0.05, Math.PI * 0.95);
-                            ctx.ellipse(cx, cy, rInner, rInner * 0.18, ringTilt, Math.PI * 0.95, Math.PI * 0.05, true);
+                            ctx.ellipse(cx, cy, rOuter, rOuter * ringAspect, ringTilt, Math.PI * 0.05, Math.PI * 0.95);
+                            ctx.ellipse(cx, cy, rInner, rInner * ringAspect, ringTilt, Math.PI * 0.95, Math.PI * 0.05, true);
                             ctx.closePath();
                             ctx.fill();
                           });
@@ -12585,8 +13057,8 @@ const d = labToolData.solarSystem || {};
                           var ringOuter = planetR * 1.74 + 3;
                           ctx.save();
                           ctx.beginPath();
-                          ctx.ellipse(cx, cy, ringOuter, ringOuter * 0.18, ringTilt, 0, Math.PI * 2);
-                          ctx.ellipse(cx, cy, planetR * 1.12, planetR * 1.12 * 0.18, ringTilt, 0, Math.PI * 2, true);
+                          ctx.ellipse(cx, cy, ringOuter, ringOuter * ringAspect, ringTilt, 0, Math.PI * 2);
+                          ctx.ellipse(cx, cy, planetR * 1.12, planetR * 1.12 * ringAspect, ringTilt, 0, Math.PI * 2, true);
                           ctx.clip('evenodd');
                           var ringShadow = ctx.createLinearGradient(cx, cy, cx + ringOuter, cy + ringOuter * 0.28);
                           ringShadow.addColorStop(0, 'rgba(2,4,14,0.92)');
@@ -12609,7 +13081,7 @@ const d = labToolData.solarSystem || {};
                             var spAngle = Math.PI + (sp * 137.5 * Math.PI / 180) % Math.PI; // golden angle spread on front
                             var spR = planetR * (1.15 + (sp * 73 % 55) / 55 * 0.55);
                             var spx = cx + Math.cos(spAngle + ringTilt * 0.1) * spR;
-                            var spy = cy + Math.sin(spAngle) * spR * 0.18;
+                            var spy = cy + Math.sin(spAngle) * spR * ringAspect;
                             var spBright = 0.2 + Math.sin(tick * 0.05 + sp * 2.7) * 0.3;
                             if (spBright > 0.3) {
                               ctx.globalAlpha = spBright;
@@ -12704,32 +13176,84 @@ const d = labToolData.solarSystem || {};
                           ctx.restore();
                         }
 
-                        // === ENHANCED: Atmosphere layers glow ===
-                        if (sel.atmosphere && sel.atmosphere !== 'Virtually none') {
-                          for (var ai = 0; ai < 3; ai++) {
-                            var atmoR = planetR * (1.05 + ai * 0.06);
-                            var atmoGrad2 = ctx.createRadialGradient(cx, cy, atmoR * 0.95, cx, cy, atmoR);
-                            atmoGrad2.addColorStop(0, 'transparent');
-                            atmoGrad2.addColorStop(0.5, selectedAccent + (ai === 0 ? '18' : '0a'));
-                            atmoGrad2.addColorStop(1, 'transparent');
-                            ctx.fillStyle = atmoGrad2;
-                            ctx.beginPath();
-                            ctx.arc(cx, cy, atmoR, 0, Math.PI * 2);
-                            ctx.fill();
-                          }
+                        // A limb glow is sunlight scattered by air, so it is brightest
+                        // where the air is lit and nearly absent on the night limb. Three
+                        // evenly bright concentric shells drew Venus a set of contour
+                        // rings that stayed just as bright behind the terminator, which
+                        // is the one place an atmosphere cannot glow.
+                        if (solarHasAtmosphere(sel)) {
+                          var atmoTint = solarAtmosphereTint(sel);
+                          // Thin air makes a thin, faint limb; thick air a deep bright one.
+                          var atmoDepth = solarAtmosphereDepth(sel);
+                          var atmoStrength = atmoDepth * litAlpha;
+                          var atmoHex = function (a) {
+                            return ('0' + Math.max(0, Math.min(255, Math.round(255 * a * atmoStrength))).toString(16)).slice(-2);
+                          };
+                          var atmoInner = planetR * 0.99, atmoOuter = planetR * (1.04 + 0.15 * atmoDepth);
+                          ctx.save();
+                          ctx.beginPath();
+                          ctx.arc(cx, cy, atmoOuter, 0, Math.PI * 2);
+                          ctx.arc(cx, cy, atmoInner, 0, Math.PI * 2, true);
+                          ctx.clip('evenodd');
+                          // A faint ring all the way round: light forward-scattered
+                          // through the limb carries a little way past the terminator.
+                          var atmoBase = ctx.createRadialGradient(cx, cy, atmoInner, cx, cy, atmoOuter);
+                          atmoBase.addColorStop(0, atmoTint + atmoHex(0.20));
+                          atmoBase.addColorStop(1, 'transparent');
+                          ctx.fillStyle = atmoBase;
+                          ctx.fillRect(cx - atmoOuter, cy - atmoOuter, atmoOuter * 2, atmoOuter * 2);
+                          // Brightening toward the sub-solar point, which sits inside the
+                          // disc, so the near limb is close to it and the far limb far:
+                          // the falloff comes out of the geometry rather than a guess.
+                          var atmoSx = cx + SOLAR_CARD_SUN.x * planetR, atmoSy = cy + SOLAR_CARD_SUN.y * planetR;
+                          var atmoLit = ctx.createRadialGradient(atmoSx, atmoSy, planetR * 0.2, atmoSx, atmoSy, planetR * 1.95);
+                          atmoLit.addColorStop(0, atmoTint + atmoHex(0.62));
+                          atmoLit.addColorStop(0.55, atmoTint + atmoHex(0.28));
+                          atmoLit.addColorStop(1, 'transparent');
+                          ctx.fillStyle = atmoLit;
+                          ctx.fillRect(cx - atmoOuter, cy - atmoOuter, atmoOuter * 2, atmoOuter * 2);
+                          ctx.restore();
                         }
 
+                        // Jupiter and Neptune have real ring systems too - dark and
+                        // dusty rather than icy, which is why they are faint rather than
+                        // absent. Showing them keeps the card honest with the chooser
+                        // thumbnail, the spotlight and the 3D scene, all of which already
+                        // draw rings on all four giants.
+                        if (sel.key === 'Jupiter' || sel.key === 'Neptune') {
+                          solarDrawFaintRings(ctx, sel.key, cx, cy, planetR, sel.tiltDeg * Math.PI / 180, W, H, litAlpha);
+                        }
                         // === Uranus: tilted axis line + faint ring system ===
                         if (sel.key === 'Uranus') {
                           ctx.save();
-                          // Axis tilt indicator (97.8 degrees — nearly horizontal)
-                          ctx.strokeStyle = 'rgba(103,232,249,0.25)';
+                          var axisTilt = sel.tiltDeg * Math.PI / 180;
+                          // Axial tilt is measured from the orbital POLE, so the axis
+                          // leans tiltDeg away from VERTICAL, not up from the horizon.
+                          // Taking the angle off the horizontal stood Uranus' 97.8
+                          // degree axis almost upright, the opposite of the sideways
+                          // world the label beside it was describing.
+                          var axLen = planetR * 1.4;
+                          var axDx = Math.sin(axisTilt), axDy = -Math.cos(axisTilt);
+                          // A tilt is an angle between two things, so draw the plane it
+                          // is measured against; on its own the axis line says nothing.
+                          ctx.strokeStyle = 'rgba(148,163,184,0.20)';
                           ctx.lineWidth = 0.8;
-                          ctx.setLineDash([4, 4]);
-                          var axisTilt = 97.8 * Math.PI / 180;
+                          ctx.setLineDash([2, 5]);
                           ctx.beginPath();
-                          ctx.moveTo(cx + Math.cos(axisTilt) * planetR * 1.4, cy - Math.sin(axisTilt) * planetR * 1.4);
-                          ctx.lineTo(cx - Math.cos(axisTilt) * planetR * 1.4, cy + Math.sin(axisTilt) * planetR * 1.4);
+                          ctx.moveTo(cx - axLen, cy);
+                          ctx.lineTo(cx + axLen, cy);
+                          ctx.stroke();
+                          ctx.globalAlpha = 0.4;
+                          ctx.font = '9px system-ui';
+                          ctx.fillStyle = '#94a3b8';
+                          ctx.textAlign = 'right';
+                          ctx.fillText(__alloT('stem.solarsystem.orbit_plane', 'orbit plane'), cx - axLen - 4, cy + 3);
+                          ctx.globalAlpha = 1;
+                          ctx.strokeStyle = 'rgba(103,232,249,0.25)';
+                          ctx.setLineDash([4, 4]);
+                          ctx.beginPath();
+                          ctx.moveTo(cx + axDx * axLen, cy + axDy * axLen);
+                          ctx.lineTo(cx - axDx * axLen, cy - axDy * axLen);
                           ctx.stroke();
                           ctx.setLineDash([]);
                           // Axis label
@@ -12737,40 +13261,11 @@ const d = labToolData.solarSystem || {};
                           ctx.font = '10px system-ui';
                           ctx.fillStyle = '#67e8f9';
                           ctx.textAlign = 'left';
-                          ctx.fillText('97.8\u00B0 tilt', cx + Math.cos(axisTilt) * planetR * 1.15 + 4, cy - Math.sin(axisTilt) * planetR * 1.15);
+                          ctx.fillText(sel.tiltDeg.toFixed(1) + '\u00B0 tilt', cx + axDx * planetR * 1.18 + 4, cy + axDy * planetR * 1.18);
                           ctx.globalAlpha = 1;
-                          // Faint ring system (Uranus has rings too — very faint)
-                          ctx.globalAlpha = 0.12;
-                          ctx.strokeStyle = '#67e8f9';
-                          ctx.lineWidth = 1;
-                          // Uranus' rings lie in its equatorial plane, so with the axis
-                          // nearly in the sky plane they present nearly face-on from
-                          // the Sun in the late 2020s (equinox was 2007). Radii follow
-                          // the ring table (1.55-2.0 planet radii; epsilon brightest).
-                          var uranusRingRadii = [1.58, 1.69, 1.82, 2.0];
-                          // Two passes: the far half of each ring is clipped to the
-                          // region outside the disc (it is behind the planet), the near
-                          // half is drawn over it.
-                          for (var uPass = 0; uPass < 2; uPass++) {
-                            ctx.save();
-                            if (uPass === 0) {
-                              ctx.beginPath();
-                              ctx.rect(0, 0, W, H);
-                              ctx.arc(cx, cy, planetR, 0, Math.PI * 2, true);
-                              ctx.clip('evenodd');
-                            }
-                            for (var uri = 0; uri < uranusRingRadii.length; uri++) {
-                              var urR = planetR * uranusRingRadii[uri];
-                              ctx.globalAlpha = uri === 3 ? 0.34 : 0.14;
-                              ctx.lineWidth = uri === 3 ? 1.6 : 1;
-                              ctx.strokeStyle = '#9fe3ea';
-                              ctx.beginPath();
-                              ctx.ellipse(cx, cy, urR, urR * 0.62, axisTilt - Math.PI / 2, uPass === 0 ? Math.PI : 0, uPass === 0 ? Math.PI * 2 : Math.PI);
-                              ctx.stroke();
-                            }
-                            ctx.restore();
-                          }
-                          ctx.globalAlpha = 1;
+                          // Rings come from the shared faint-ring table now, so Jupiter
+                          // and Neptune get theirs too and all four giants agree.
+                          solarDrawFaintRings(ctx, 'Uranus', cx, cy, planetR, axisTilt, W, H, litAlpha);
                           _featureLabels.push({ x: cx + planetR * 0.8, y: cy - planetR * 0.9, r: 15, name: __alloT('stem.solarsystem.97_8_axial_tilt', '97.8\u00B0 Axial Tilt'), desc: __alloT('stem.solarsystem.knocked_sideways_by_an_ancient_collisi', 'Likely knocked sideways long ago, perhaps by a collision with a world at least as big as Earth') });
                           ctx.restore();
                         }
@@ -12779,14 +13274,21 @@ const d = labToolData.solarSystem || {};
                         if (sel.key === 'Mercury') {
                           // Solar glare on the sunward (left) side
                           ctx.save();
-                          var glareGrad = ctx.createRadialGradient(cx - planetR * 0.8, cy, 0, cx - planetR * 0.8, cy, planetR * 0.8);
+                          var glareX = cx + SOLAR_CARD_SUN.x * planetR * 1.14, glareY = cy + SOLAR_CARD_SUN.y * planetR * 1.14;
+                          var glareGrad = ctx.createRadialGradient(glareX, glareY, 0, glareX, glareY, planetR * 0.8);
                           glareGrad.addColorStop(0, 'rgba(255,248,220,0.15)');
                           glareGrad.addColorStop(0.5, 'rgba(255,240,200,0.05)');
                           glareGrad.addColorStop(1, 'transparent');
                           ctx.fillStyle = glareGrad;
+                          // Clipped to the disc: this is the blinding sunward FACE, not a
+                          // glow in the space around it. Mercury has no air to scatter
+                          // light, which is the whole point of the world.
+                          ctx.save();
                           ctx.beginPath();
-                          ctx.arc(cx - planetR * 0.8, cy, planetR * 0.8, 0, Math.PI * 2);
-                          ctx.fill();
+                          ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
+                          ctx.clip();
+                          ctx.fillRect(cx - planetR, cy - planetR, planetR * 2, planetR * 2);
+                          ctx.restore();
                           // Temperature gradient indicator
                           ctx.globalAlpha = 0.55;
                           ctx.font = '10px system-ui';
@@ -12796,22 +13298,22 @@ const d = labToolData.solarSystem || {};
                           ctx.fillStyle = '#93c5fd';
                           ctx.fillText('-180\u00B0C', cx + planetR * 0.6, cy + planetR * 0.6);
                           ctx.globalAlpha = 1;
-                          // Caloris Basin (large impact crater)
-                          ctx.save();
-                          ctx.beginPath(); ctx.arc(cx, cy, planetR, 0, Math.PI * 2); ctx.clip();
-                          var calX = cx - planetR * 0.15 + Math.sin(_dragRotation + tick * 0.003) * planetR * 0.1;
-                          var calY = cy - planetR * 0.1;
-                          ctx.globalAlpha = 0.1;
-                          ctx.strokeStyle = '#aaa';
-                          ctx.lineWidth = 1;
-                          ctx.beginPath(); ctx.arc(calX, calY, planetR * 0.22, 0, Math.PI * 2); ctx.stroke();
-                          ctx.fillStyle = 'rgba(0,0,0,0.04)';
-                          ctx.beginPath(); ctx.arc(calX, calY, planetR * 0.2, 0, Math.PI * 2); ctx.fill();
-                          ctx.globalAlpha = 1;
-                          ctx.restore();
-                          _featureLabels.push({ x: calX, y: calY, r: planetR * 0.18, name: __alloT('stem.solarsystem.caloris_basin', 'Caloris Basin'), desc: __alloT('stem.solarsystem.1_550_km_impact_crater_one_of_the_larg', '1,550 km impact crater \u2014 one of the largest in the solar system') });
-                          // Polar ice indicator
-                          _featureLabels.push({ x: cx, y: cy - planetR * 0.85, r: 10, name: __alloT('stem.solarsystem.polar_ice_deposits', 'Polar Ice Deposits'), desc: __alloT('stem.solarsystem.water_ice_in_permanently_shadowed_crat', 'Water ice in permanently shadowed craters, despite being closest to the Sun') });
+                          // Caloris is already painted by the globe above, from
+                          // SOLAR_MERCURY_FEATURES at its real 163 E / 30 N. A second
+                          // ring used to be drawn near the middle of the disc, sliding
+                          // side to side on a sine wave, and the clickable label pointed
+                          // at THAT one - so clicking "Caloris Basin" highlighted a place
+                          // that was not Caloris and did not turn with the planet.
+                          var calQ = solarOrtho(163, 30, mercLambda0, mercPhi0, mercR);
+                          if (calQ.z > 0.15) {
+                            _featureLabels.push({ x: cx + calQ.x, y: cy + calQ.y, r: planetR * 0.18, name: __alloT('stem.solarsystem.caloris_basin', 'Caloris Basin'), desc: __alloT('stem.solarsystem.1_550_km_impact_crater_one_of_the_larg', '1,550 km impact crater \u2014 one of the largest in the solar system') });
+                          }
+                          // The ice sits in craters at the pole, wherever the pole
+                          // happens to project, not at a fixed point above the disc.
+                          var mercPoleQ = solarOrtho(0, 88, mercLambda0, mercPhi0, mercR);
+                          if (mercPoleQ.z > 0) {
+                            _featureLabels.push({ x: cx + mercPoleQ.x, y: cy + mercPoleQ.y, r: 10, name: __alloT('stem.solarsystem.polar_ice_deposits', 'Polar Ice Deposits'), desc: __alloT('stem.solarsystem.water_ice_in_permanently_shadowed_crat', 'Water ice in permanently shadowed craters, despite being closest to the Sun') });
+                          }
                           ctx.restore();
                         }
 
@@ -12821,38 +13323,62 @@ const d = labToolData.solarSystem || {};
                           ctx.beginPath();
                           ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
                           ctx.clip();
-                          // Scrolling turbulent eddies (move with rotation + drag)
-                          var scrollX = tick * 0.4 + _dragRotation * planetR * 0.5;
-                          ctx.globalAlpha = 0.07;
+                          // Eddies are features IN the cloud deck, so they ride the
+                          // sphere: seeded at fixed latitudes, carried round by the
+                          // planet's own rotation, squashed toward the limb and gone
+                          // once they pass over it. They used to slide across the disc
+                          // in straight lines and reappear on the other side by modulo
+                          // arithmetic on screen coordinates - the one motion a turning
+                          // globe cannot produce. gasPhi0, gasSpin and gasRot come from
+                          // the band pass above, so the eddies share its viewpoint.
+                          ctx.translate(cx, cy); ctx.rotate(gasRot); ctx.translate(-cx, -cy);
+                          var eddyRnd = solarSeededRandom(9137);
                           for (var ei = 0; ei < 16; ei++) {
-                            var ex = cx + ((ei * 67 + 13 + Math.floor(scrollX)) % Math.floor(planetR * 1.8)) - planetR * 0.9;
-                            var ey = cy + ((ei * 43 + 7) % Math.floor(planetR * 1.4)) - planetR * 0.7;
-                            var eAngle = tick * 0.003 + _dragRotation + ei * 0.5;
-                            var eddySize = 6 + ei % 5 * 3;
-                            ctx.fillStyle = ei % 3 === 0 ? '#ffffff' : ei % 3 === 1 ? selectedAccent : '#000000';
+                            // Every draw happens before the visibility test, or a skipped
+                            // eddy would shift the sequence and the whole field would
+                            // jitter from frame to frame.
+                            var eLat = (eddyRnd() * 2 - 1) * 58;
+                            var eLon0 = eddyRnd() * Math.PI * 2;
+                            var eddySize = planetR * (0.035 + eddyRnd() * 0.055);
+                            var eKind = Math.floor(eddyRnd() * 3);
+                            var eLam = (eLon0 + gasSpin * 0.97) % (Math.PI * 2);
+                            if (eLam > Math.PI) eLam -= Math.PI * 2;
+                            var eq = solarOrthoRel(eLam, eLat, gasPhi0, planetR);
+                            if (eq.z <= 0.12) continue;
+                            var ex = cx + eq.x, ey = cy + eq.y;
+                            var eAngle = tick * 0.003 + ei * 0.5;
+                            ctx.globalAlpha = 0.09 * eq.z;
+                            ctx.fillStyle = eKind === 0 ? '#ffffff' : eKind === 1 ? selectedAccent : '#000000';
                             ctx.beginPath();
-                            ctx.ellipse(ex, ey, eddySize, eddySize * 0.55, eAngle, 0, Math.PI * 2);
+                            // Foreshortened along the line of sight, like everything else
+                            // near the limb.
+                            ctx.ellipse(ex, ey, eddySize * eq.z, eddySize * 0.55, eAngle, 0, Math.PI * 2);
                             ctx.fill();
                             // Spiral arm inside larger eddies
-                            if (eddySize > 12) {
-                              ctx.globalAlpha = 0.04;
+                            if (eddySize > planetR * 0.07) {
+                              ctx.globalAlpha = 0.05 * eq.z;
                               ctx.strokeStyle = '#ffffff';
                               ctx.lineWidth = 0.5;
                               ctx.beginPath();
                               for (var sa = 0; sa < Math.PI * 3; sa += 0.3) {
-                                var sr = sa * 1.2;
-                                var spx2 = ex + Math.cos(sa + eAngle) * sr;
+                                var sr = sa * eddySize * 0.16;
+                                var spx2 = ex + Math.cos(sa + eAngle) * sr * eq.z;
                                 var spy2 = ey + Math.sin(sa + eAngle) * sr * 0.5;
                                 sa === 0 ? ctx.moveTo(spx2, spy2) : ctx.lineTo(spx2, spy2);
                               }
                               ctx.stroke();
-                              ctx.globalAlpha = 0.07;
                             }
                           }
-                          // Lightning flashes between cloud bands
+                          ctx.globalAlpha = 1;
+                          // Lightning strikes somewhere on the cloud deck, so it too has
+                          // a latitude and a longitude that turn with the planet.
                           if (tick % 100 < 3) {
-                            var lx = cx + (Math.sin(tick * 0.1) * planetR * 0.5);
-                            var ly = cy + (Math.cos(tick * 0.07) * planetR * 0.3);
+                            var boltRnd = solarSeededRandom(4400 + Math.floor(tick / 100));
+                            var boltLam = (boltRnd() * Math.PI * 2 + gasSpin) % (Math.PI * 2);
+                            if (boltLam > Math.PI) boltLam -= Math.PI * 2;
+                            var boltQ = solarOrthoRel(boltLam, (boltRnd() * 2 - 1) * 45, gasPhi0, planetR);
+                            var lx = cx + boltQ.x, ly = cy + boltQ.y;
+                            if (boltQ.z <= 0.15) { lx = cx; ly = cy; }
                             ctx.globalAlpha = 0.5 - (tick % 100) * 0.15;
                             var flashGrad = ctx.createRadialGradient(lx, ly, 0, lx, ly, planetR * 0.12);
                             flashGrad.addColorStop(0, '#ffffff');
@@ -12883,44 +13409,29 @@ const d = labToolData.solarSystem || {};
                             ctx.globalAlpha = 0.1 + Math.sin(tick * 0.025) * 0.05;
                             var jupAuroraColors = ['#8b5cf6', '#6366f1', '#a78bfa', '#818cf8'];
                             for (var jai = 0; jai < 5; jai++) {
-                              var jaX = cx + Math.cos(tick * 0.004 + jai * 1.3 + _dragRotation) * planetR * (0.2 + jai * 0.06);
-                              var jaY = cy - planetR * 0.82 + jai * 2;
+                              var jaQ = solarOrthoRel(Math.cos(tick * 0.004 + jai * 1.3 + _dragRotation) * 0.5, 82 - jai * 1.5, gasPhi0, planetR);
+                              var jaScreen = gasScreen(jaQ);
+                              var jaX = jaScreen.x, jaY = jaScreen.y;
                               ctx.fillStyle = jupAuroraColors[jai % jupAuroraColors.length];
                               ctx.beginPath();
                               ctx.ellipse(jaX, jaY, planetR * 0.15 + Math.sin(tick * 0.04 + jai) * 4, 2.5, tick * 0.002 + jai * 0.4, 0, Math.PI * 2);
                               ctx.fill();
                             }
-                            // South pole aurora too
+                            // The southern oval sits at the south pole, which from this
+                            // viewpoint - a few degrees NORTH of the equator - is over the
+                            // horizon. It used to be pinned to the bottom of the disc and
+                            // shown in full, which is why Jupiter wore a blue arc across
+                            // its southern limb.
                             for (var jai2 = 0; jai2 < 4; jai2++) {
-                              var jaX2 = cx + Math.cos(tick * 0.003 + jai2 * 1.1 + _dragRotation + 2) * planetR * (0.15 + jai2 * 0.05);
-                              var jaY2 = cy + planetR * 0.82 - jai2 * 2;
+                              var jaQ2 = solarOrthoRel(Math.cos(tick * 0.003 + jai2 * 1.1 + _dragRotation + 2) * 0.5, -82 + jai2 * 1.5, gasPhi0, planetR);
+                              if (jaQ2.z <= 0.12) continue;
+                              var jaScreen2 = gasScreen(jaQ2);
+                              var jaX2 = jaScreen2.x, jaY2 = jaScreen2.y;
                               ctx.fillStyle = jupAuroraColors[(jai2 + 2) % jupAuroraColors.length];
                               ctx.beginPath();
                               ctx.ellipse(jaX2, jaY2, planetR * 0.12 + Math.sin(tick * 0.035 + jai2) * 3, 2, tick * 0.002 + jai2 * 0.5, 0, Math.PI * 2);
                               ctx.fill();
                             }
-                            ctx.globalAlpha = 1;
-                            ctx.restore();
-                          }
-                          // === Neptune: Great Dark Spot ===
-                          if (sel.key === 'Neptune') {
-                            ctx.save();
-                            ctx.beginPath();
-                            ctx.arc(cx, cy, planetR, 0, Math.PI * 2);
-                            ctx.clip();
-                            var gdsX = cx + Math.cos(tick * 0.003 + _dragRotation) * planetR * 0.2;
-                            var gdsY = cy - planetR * 0.15;
-                            ctx.globalAlpha = 0.2;
-                            ctx.fillStyle = '#1a1a4a';
-                            ctx.beginPath();
-                            ctx.ellipse(gdsX, gdsY, planetR * 0.16, planetR * 0.09, 0.1 + tick * 0.001, 0, Math.PI * 2);
-                            ctx.fill();
-                            // Bright companion cloud
-                            ctx.globalAlpha = 0.15;
-                            ctx.fillStyle = '#aaccff';
-                            ctx.beginPath();
-                            ctx.ellipse(gdsX + planetR * 0.12, gdsY - planetR * 0.08, planetR * 0.06, planetR * 0.025, 0, 0, Math.PI * 2);
-                            ctx.fill();
                             ctx.globalAlpha = 1;
                             ctx.restore();
                           }
@@ -12986,7 +13497,7 @@ const d = labToolData.solarSystem || {};
                         }
 
                         // === ENHANCED: Shooting stars / meteorites on airless worlds ===
-                        if (sel.atmosphere === 'Virtually none' || sel.terrainType === 'iceworld' || sel.terrainType === 'cratered') {
+                        if (!solarHasAtmosphere(sel) || sel.terrainType === 'iceworld') {
                           if (tick % 90 < 5) {
                             var metX = W * 0.2 + (tick * 7 % (W * 0.6));
                             var metY = H * 0.05 + (tick * 3 % (H * 0.15));
@@ -13057,13 +13568,12 @@ const d = labToolData.solarSystem || {};
                           if (earthR > 1.5 && earthR < planetR * 0.9) { // only show if meaningfully different
                             var ecx = W - 30, ecy = 30;
                             // Earth reference circle
-                            ctx.globalAlpha = 0.5;
-                            ctx.fillStyle = '#3b82f6';
+                            ctx.globalAlpha = 0.92;
+                            solarDrawMiniEarth(ctx, ecx, ecy, earthR);
+                            ctx.strokeStyle = 'rgba(147,197,253,0.7)';
+                            ctx.lineWidth = 0.6;
                             ctx.beginPath();
                             ctx.arc(ecx, ecy, earthR, 0, Math.PI * 2);
-                            ctx.fill();
-                            ctx.strokeStyle = 'rgba(59,130,246,0.6)';
-                            ctx.lineWidth = 0.5;
                             ctx.stroke();
                             ctx.globalAlpha = 0.7;
                             ctx.font = '10px system-ui';
@@ -13083,20 +13593,41 @@ const d = labToolData.solarSystem || {};
                           }
                         }
 
-                        // === Sun direction indicator (top-left) ===
+                        // === Sun as this world actually sees it (top-left) ===
+                        // Apparent diameter falls off as 1/distance, so the marker is
+                        // scaled from the world's own orbit: Mercury's Sun is about 2.6x
+                        // the width Earth sees, and from Pluto it is a bright point. A
+                        // fixed disc on every card quietly contradicted the tool's own
+                        // text ("The Sun blazes 3x larger than on Earth").
+                        var sunAU = SOLAR_SEMI_MAJOR_AU[sel.key] || 1;
+                        var sunApparent = 1 / sunAU;
+                        var sunMarkerR = Math.max(1.1, Math.min(11, 5 * sunApparent));
+                        var sunIsPoint = sunMarkerR < 2.2;
                         ctx.globalAlpha = 0.65;
                         ctx.fillStyle = '#fef3c7';
                         ctx.beginPath();
-                        ctx.arc(16, 16, 5, 0, Math.PI * 2);
+                        ctx.arc(16, 16, sunMarkerR, 0, Math.PI * 2);
                         ctx.fill();
-                        // Sun rays
+                        if (sunIsPoint) {
+                          // Too far to show a disc: draw the star glint the surface
+                          // descriptions promise instead of a shrunken ball.
+                          ctx.globalAlpha = 0.5;
+                          ctx.strokeStyle = '#fef3c7';
+                          ctx.lineWidth = 0.6;
+                          ctx.beginPath();
+                          ctx.moveTo(16 - 4, 16); ctx.lineTo(16 + 4, 16);
+                          ctx.moveTo(16, 16 - 4); ctx.lineTo(16, 16 + 4);
+                          ctx.stroke();
+                        }
+                        // Sun rays, scaled with the disc so they never outrun it.
+                        ctx.globalAlpha = 0.65;
                         ctx.strokeStyle = '#fef3c7';
                         ctx.lineWidth = 0.5;
-                        for (var ray2 = 0; ray2 < 8; ray2++) {
+                        for (var ray2 = 0; ray2 < 8 && !sunIsPoint; ray2++) {
                           var ra = ray2 * Math.PI / 4;
                           ctx.beginPath();
-                          ctx.moveTo(16 + Math.cos(ra) * 7, 16 + Math.sin(ra) * 7);
-                          ctx.lineTo(16 + Math.cos(ra) * 10, 16 + Math.sin(ra) * 10);
+                          ctx.moveTo(16 + Math.cos(ra) * (sunMarkerR + 2), 16 + Math.sin(ra) * (sunMarkerR + 2));
+                          ctx.lineTo(16 + Math.cos(ra) * (sunMarkerR + 5), 16 + Math.sin(ra) * (sunMarkerR + 5));
                           ctx.stroke();
                         }
                         ctx.font = 'bold 10px system-ui';
@@ -13105,7 +13636,13 @@ const d = labToolData.solarSystem || {};
                         // Real semi-major axis. `sel.dist` is the compressed display
                         // radius of the 3D orrery (Earth = 14), which an earlier build
                         // printed here as if it were astronomical units.
-                        ctx.fillText(SOLAR_SEMI_MAJOR_AU[sel.key] != null ? (SOLAR_SEMI_MAJOR_AU[sel.key] < 10 ? SOLAR_SEMI_MAJOR_AU[sel.key].toFixed(2) : SOLAR_SEMI_MAJOR_AU[sel.key].toFixed(1)) + ' AU' : '', 28, 18);
+                        var sunLabelX = 16 + (sunIsPoint ? 8 : sunMarkerR + 7) + 4;
+                        var sunRatioText = sunApparent >= 1.05 ? ' \u00b7 Sun ' + sunApparent.toFixed(1) + '\u00d7 Earth\u2019s'
+                          : sunApparent <= 0.5 ? ' \u00b7 Sun 1/' + Math.round(1 / sunApparent) + ' Earth\u2019s'
+                          : '';
+                        ctx.fillText(SOLAR_SEMI_MAJOR_AU[sel.key] != null
+                          ? (SOLAR_SEMI_MAJOR_AU[sel.key] < 10 ? SOLAR_SEMI_MAJOR_AU[sel.key].toFixed(2) : SOLAR_SEMI_MAJOR_AU[sel.key].toFixed(1)) + ' AU' + sunRatioText
+                          : '', sunLabelX, 18);
                         ctx.globalAlpha = 1;
 
                         if (!surfaceReducedMotion && surfacePageVisible) {
@@ -14403,7 +14940,7 @@ const d = labToolData.solarSystem || {};
                         scene.add(coronaMesh);
 
                         // ── Horizon Haze (ground fog/dust for atmosphere) ──
-                        if (sel.atmosphere && sel.atmosphere !== 'Virtually none' && !isFluid) {
+                        if (solarHasAtmosphere(sel) && !isFluid) {
                           var hazeGeo = new THREE.PlaneGeometry(400, 400);
                           var hazeCv = document.createElement('canvas'); hazeCv.setAttribute('aria-hidden', 'true'); hazeCv.width = 64; hazeCv.height = 64;
                           var hazeCtx = hazeCv.getContext('2d');
@@ -23694,7 +24231,6 @@ const d = labToolData.solarSystem || {};
                                       var phaseIdx = Math.round(((pos + 360) % 360) / 45) % 8;
                                       var phaseName = phaseNames[phaseIdx];
                                       var illum = (1 - Math.cos(rad)) / 2;
-                                      var visibleSide = Math.cos(rad) > 0 ? 'far' : 'near';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700 bg-slate-900' : 'border-slate-300 bg-slate-900') },
                                           React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.moon_phase_dial', "🌙 Moon Phase Dial"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
@@ -23717,7 +24253,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('circle', { cx: earthX + 5, cy: earthY + 4, r: 4, fill: '#22c55e' }),
                                             React.createElement('text', { x: earthX, y: earthY + 30, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10 }, __alloT('stem.solarsystem.earth_3', 'Earth')),
                                             React.createElement('circle', { cx: moonX, cy: moonY, r: 9, fill: '#e2e8f0' }),
-                                            React.createElement('path', { d: 'M ' + moonX + ' ' + (moonY - 9) + ' A 9 9 0 0 1 ' + moonX + ' ' + (moonY + 9) + ' A 9 ' + (9 * (1 - 2 * illum)) + ' 0 0 ' + (illum < 0.5 ? '0' : '1') + ' ' + moonX + ' ' + (moonY - 9) + ' Z', fill: '#0a0a18' }),
+                                            React.createElement('path', { d: 'M ' + moonX + ' ' + (moonY - 9) + ' A 9 9 0 0 1 ' + moonX + ' ' + (moonY + 9) + ' A ' + (9 * (1 - 2 * illum)) + ' 9 0 0 ' + (illum < 0.5 ? '0' : '1') + ' ' + moonX + ' ' + (moonY - 9) + ' Z', fill: '#0a0a18' }),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 'bold' }, phaseName),
                                             React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10 }, Math.round(illum * 100) + '% illuminated')
                                           )
@@ -24245,14 +24781,29 @@ const d = labToolData.solarSystem || {};
                   (function() {
                                       var Lstar = d.hzLum != null ? d.hzLum : 1.0;
                                       var planetDist = d.hzDist != null ? d.hzDist : 1.0;
+                                      // Kasting, Whitmire & Reynolds (1993) conservative limits:
+                                      // water loss at S = 1.1 and CO2 condensation at S = 0.53,
+                                      // which put the Sun's zone at 0.95 to 1.37 AU. Worth naming,
+                                      // because bare constants like these are exactly what gets
+                                      // copied without their units or their assumptions.
                                       var innerEdge = Math.sqrt(Lstar / 1.1);
                                       var outerEdge = Math.sqrt(Lstar / 0.53);
                                       var inZone = planetDist >= innerEdge && planetDist <= outerEdge;
                                       var tooHot = planetDist < innerEdge;
                                       var verdict = inZone ? 'HABITABLE ZONE — liquid water possible' : tooHot ? 'Too hot — water boils off (Venus-like)' : 'Too cold — water freezes (Mars-like)';
                                       var W = 400, H = 220;
-                                      var maxDist = 5;
+                                      // The frame follows the system instead of a fixed 5 AU. Half
+                                      // the presets are M dwarfs whose entire habitable zone is a
+                                      // few hundredths of an AU across: on a 5 AU axis TRAPPIST-1 e
+                                      // put its star, its zone and its planet inside one pixel.
+                                      // Because the zone's inner and outer edges keep a fixed ratio,
+                                      // the green band lands in the same place every time and the
+                                      // planet visibly moves in and out of it.
+                                      var maxDist = Math.max(planetDist, outerEdge, 0.01) * 1.28;
                                       var scale = (W - 80) / maxDist;
+                                      // Values here span four orders of magnitude, so two decimals
+                                      // printed "0.00 L" for a red dwarf.
+                                      var hzFmt = function (v) { return v < 0.01 ? v.toFixed(4) : v < 1 ? v.toFixed(3) : v.toFixed(2); };
                                       var starX = 50;
                                       var innerX = starX + innerEdge * scale;
                                       var outerX = starX + outerEdge * scale;
@@ -24271,26 +24822,33 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('rect', { x: outerX, y: 80, width: W - outerX, height: 60, fill: '#60a5fa', opacity: 0.15 }),
                                             React.createElement('line', { x1: innerX, y1: 70, x2: innerX, y2: 150, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3,2' }),
                                             React.createElement('line', { x1: outerX, y1: 70, x2: outerX, y2: 150, stroke: '#22c55e', strokeWidth: 1, strokeDasharray: '3,2' }),
-                                            React.createElement('text', { x: innerX, y: 65, textAnchor: 'middle', fill: '#22c55e', fontSize: 9 }, innerEdge.toFixed(2) + ' AU'),
-                                            React.createElement('text', { x: outerX, y: 65, textAnchor: 'middle', fill: '#22c55e', fontSize: 9 }, outerEdge.toFixed(2) + ' AU'),
+                                            React.createElement('text', { x: innerX, y: 65, textAnchor: 'middle', fill: '#22c55e', fontSize: 9 }, hzFmt(innerEdge) + ' AU'),
+                                            React.createElement('text', { x: outerX, y: 65, textAnchor: 'middle', fill: '#22c55e', fontSize: 9 }, hzFmt(outerEdge) + ' AU'),
                                             React.createElement('circle', { cx: starX, cy: 110, r: starR * 1.4, fill: starColor, opacity: 0.3 }),
                                             React.createElement('circle', { cx: starX, cy: 110, r: starR, fill: starColor }),
-                                            React.createElement('text', { x: starX, y: 135, textAnchor: 'middle', fill: starColor, fontSize: 9 }, Lstar.toFixed(2) + 'L☉'),
+                                            React.createElement('text', { x: starX, y: 135, textAnchor: 'middle', fill: starColor, fontSize: 9 }, hzFmt(Lstar) + 'L☉'),
                                             React.createElement('circle', { cx: planetX, cy: 110, r: 5, fill: inZone ? '#22c55e' : tooHot ? '#dc2626' : '#60a5fa' }),
                                             React.createElement('text', { x: planetX, y: 100, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, __alloT('stem.solarsystem.planet', 'Planet')),
-                                            React.createElement('text', { x: planetX, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, planetDist.toFixed(2) + ' AU'),
+                                            React.createElement('text', { x: planetX, y: 165, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, hzFmt(planetDist) + ' AU'),
                                             React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, verdict)
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
                                           [
-                                            { label: __alloT('stem.solarsystem.star_luminosity_l', 'Star luminosity (L☉)'), val: Lstar, key: 'hzLum', max: 10, step: 0.05 },
-                                            { label: __alloT('stem.solarsystem.planet_distance_au', 'Planet distance (AU)'), val: planetDist, key: 'hzDist', max: 5, step: 0.05 }
+                                            { label: __alloT('stem.solarsystem.star_luminosity_l', 'Star luminosity (L☉)'), val: Lstar, key: 'hzLum', min: 0.0004, max: 10, unit: 'L☉' },
+                                            { label: __alloT('stem.solarsystem.planet_distance_au', 'Planet distance (AU)'), val: planetDist, key: 'hzDist', min: 0.005, max: 5, unit: 'AU' }
                                           ].map(function(s) {
+                                            // Logarithmic: a linear 0.05 minimum could not reach a
+                                            // red dwarf at all, and the presets set values below it,
+                                            // so the thumb pinned left and the next drag silently
+                                            // discarded the preset. aria-valuetext carries the real
+                                            // number, since the slider now reports its logarithm.
+                                            var lo = Math.log10(s.min), hi = Math.log10(s.max);
+                                            var pos = Math.log10(Math.max(s.min, Math.min(s.max, s.val)));
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-32 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: 0.05, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
-                                              React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val.toFixed(2))
+                                              React.createElement('input', { 'aria-label': s.label, 'aria-valuetext': hzFmt(s.val) + ' ' + s.unit, type: 'range', min: lo, max: hi, step: (hi - lo) / 400, value: pos, onChange: function(e) { upd(s.key, Math.pow(10, parseFloat(e.target.value))); }, className: 'flex-1' }),
+                                              React.createElement('span', { className: 'font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, hzFmt(s.val))
                                             );
                                           })
                                         ),
@@ -24940,8 +25498,8 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 20 + ((lambdaObs - 380) / 400) * 360, y: 95, textAnchor: 'middle', fill: wColor(lambdaObs), fontSize: 9 }, 'observed ' + lambdaObs.toFixed(0) + 'nm'),
                                             React.createElement('circle', { cx: 70, cy: 175, r: 12, fill: '#94a3b8' }),
                                             React.createElement('text', { x: 70, y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.observer', 'Observer')),
-                                            React.createElement('circle', { cx: 330 - Math.min(Math.abs(vel) / 5, 100), cy: 175, r: 10, fill: vel > 0 ? '#dc2626' : vel < 0 ? '#2563eb' : '#facc15' }),
-                                            React.createElement('text', { x: 330 - Math.min(Math.abs(vel) / 5, 100), y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.galaxy', 'Galaxy')),
+                                            React.createElement('circle', { cx: 330 - Math.min(Math.abs(vel) / 500, 100), cy: 175, r: 10, fill: vel > 0 ? '#dc2626' : vel < 0 ? '#2563eb' : '#facc15' }),
+                                            React.createElement('text', { x: 330 - Math.min(Math.abs(vel) / 500, 100), y: 200, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.galaxy', 'Galaxy')),
                                             vel !== 0 && React.createElement('line', { x1: 290, y1: 175, x2: 290 + Math.max(-80, Math.min(80, -vel / 1000)), y2: 175, stroke: vel > 0 ? '#dc2626' : '#2563eb', strokeWidth: 2, markerEnd: '' }),
                                             React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, vel > 1000 ? 'REDSHIFT (receding)' : vel < -1000 ? 'BLUESHIFT (approaching)' : 'At rest'),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, __alloT('stem.solarsystem.hydrogen_alpha_line_656nm', 'Hydrogen-alpha line (656nm)'))
@@ -25289,7 +25847,21 @@ const d = labToolData.solarSystem || {};
                                       if (magnif > maxMag) magnif = maxMag;
                                       var resolveArcsec = 11.6 / aperture;
                                       var limitMag = 7.5 + 5 * Math.log10(aperture);
-                                      var apXp = 20 + aperture * 1.5;
+                                      // Aperture runs from 2 cm binoculars to JWST's 650 cm, so the
+                                      // tube and the eyepiece view are sized by its logarithm. At
+                                      // the old 1.5 px per cm a 650 cm mirror drew a tube 995 px
+                                      // long on a 400 px canvas - and the slider stopped at 100, so
+                                      // its own Hubble and JWST presets could not be reached at all.
+                                      var apFrac = (Math.log10(Math.max(2, aperture)) - Math.log10(2)) / (Math.log10(700) - Math.log10(2));
+                                      var apXp = 20 + 150 * apFrac;
+                                      // Magnification is what makes the image bigger, so it sizes
+                                      // the disc. Aperture was doing that job while this slider
+                                      // moved nothing but its own label; aperture's real effect is
+                                      // resolution and light grasp, which the detail thresholds
+                                      // below already read it for. maxMag caps this: a small scope
+                                      // cannot usefully magnify, so its disc stays small no matter
+                                      // where the magnification slider is dragged.
+                                      var apDiscR = 4 + 41 * (magnif - 10) / 490;
                                       var detail = aperture < 5 ? 'fuzzy blob' : aperture < 12 ? 'cloud bands visible' : aperture < 30 ? 'storm details + moons' : 'fine cloud detail';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
@@ -25307,11 +25879,17 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 30 + apXp/2, y: 195, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, magnif + '× magnification'),
                                             React.createElement('circle', { cx: 300, cy: 130, r: 60, fill: '#fde047', opacity: 0.05 }),
                                             React.createElement('circle', { cx: 300, cy: 130, r: 50, fill: '#000' }),
-                                            React.createElement('circle', { cx: 300, cy: 130, r: 4 + aperture * 0.4, fill: '#f97316' }),
-                                            aperture > 5 && React.createElement('line', { x1: 300 - (4 + aperture * 0.4), y1: 130, x2: 300 + (4 + aperture * 0.4), y2: 130, stroke: '#7c2d12', strokeWidth: 1 }),
-                                            aperture > 12 && React.createElement('circle', { cx: 305, cy: 128, r: 1.5, fill: '#dc2626' }),
-                                            aperture > 18 && [285, 290, 295, 312, 318].map(function(mx, i) {
-                                              return React.createElement('circle', { key: 'mn' + i, cx: mx, cy: 130 + (i - 2) * 2, r: 0.6, fill: '#fff' });
+                                            React.createElement('circle', { cx: 300, cy: 130, r: apDiscR, fill: '#f97316' }),
+                                            aperture > 5 && React.createElement('line', { x1: 300 - apDiscR, y1: 130, x2: 300 + apDiscR, y2: 130, stroke: '#7c2d12', strokeWidth: 1 }),
+                                            aperture > 12 && React.createElement('circle', { cx: 300 + apDiscR * 0.35, cy: 130 - apDiscR * 0.2, r: Math.max(1, apDiscR * 0.16), fill: '#dc2626' }),
+                                            aperture > 18 && apDiscR < 26 && [-3, -2, 2, 3].map(function(mk, i) {
+                                              // The Galilean moons orbit outside the disc; they were
+                                              // drawn at fixed x, which put them on top of the
+                                              // planet as soon as the disc grew. Above about 300x
+                                              // they fall outside the eyepiece altogether, which is
+                                              // exactly what high magnification costs you.
+                                              var mOff = (apDiscR + 4 + Math.abs(mk) * 3) * (mk < 0 ? -1 : 1);
+                                              return React.createElement('circle', { key: 'mn' + i, cx: 300 + mOff, cy: 130 + (i - 1.5) * 2, r: 0.7, fill: '#fff' });
                                             }),
                                             React.createElement('text', { x: 300, y: 200, textAnchor: 'middle', fill: '#fff', fontSize: 10, fontWeight: 'bold' }, 'Jupiter: ' + detail),
                                             React.createElement('text', { x: 300, y: 220, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'Resolves ' + resolveArcsec.toFixed(1) + '" • Mag ' + limitMag.toFixed(1) + ' faintest')
@@ -25319,12 +25897,17 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'mt-2 space-y-1 text-[10px]' },
                                           [
-                                            { label: __alloT('stem.solarsystem.aperture_cm', 'Aperture (cm)'), val: aperture, key: 'scopeAp', min: 2, max: 100, step: 1 },
+                                            { label: __alloT('stem.solarsystem.aperture_cm', 'Aperture (cm)'), val: aperture, key: 'scopeAp', min: 2, max: 700, log: true, unit: ' cm' },
                                             { label: __alloT('stem.solarsystem.magnification', 'Magnification'), val: magnif, key: 'scopeMag', min: 10, max: 500, step: 5 }
                                           ].map(function(s) {
+                                            // A log row reports its logarithm, so aria-valuetext has
+                                            // to carry the real number for assistive tech.
+                                            var lo = s.log ? Math.log10(s.min) : s.min;
+                                            var hi = s.log ? Math.log10(s.max) : s.max;
+                                            var pos = s.log ? Math.log10(Math.max(s.min, Math.min(s.max, s.val))) : s.val;
                                             return React.createElement('div', { key: s.key, className: 'flex items-center gap-2' },
                                               React.createElement('span', { className: 'font-bold w-24 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.label),
-                                              React.createElement('input', { 'aria-label': s.label, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val, onChange: function(e) { upd(s.key, parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                              React.createElement('input', { 'aria-label': s.label, 'aria-valuetext': s.val + (s.unit || ''), type: 'range', min: lo, max: hi, step: s.log ? (hi - lo) / 300 : s.step, value: pos, onChange: function(e) { var raw = parseFloat(e.target.value); upd(s.key, s.log ? Math.round(Math.pow(10, raw)) : raw); }, className: 'flex-1' }),
                                               React.createElement('span', { className: 'font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
@@ -25449,6 +26032,16 @@ const d = labToolData.solarSystem || {};
                                       var earthAng = Math.atan2(sunY - venusY, earthX - venusX);
                                       var phaseAngle = ((earthAng - sunAng) * 180 / Math.PI + 540) % 360;
                                       var illum = (1 + Math.cos(phaseAngle * Math.PI / 180)) / 2;
+                                      // Venus' night side is the hemisphere facing away from the
+                                      // Sun, so its flat edge runs perpendicular to the direction of
+                                      // the Sun and the arc sweeps round the far side. Drawn as a
+                                      // half-disc rather than a clipped circle: the clip this used
+                                      // to reference, a clip path named vClip, was never defined,
+                                      // and a missing clipPath draws UNCLIPPED rather than erroring, so
+                                      // the dark disc covered Venus completely.
+                                      var vEdgeA = sunAng + Math.PI / 2, vEdgeB = sunAng + Math.PI * 1.5;
+                                      var venusNightPath = 'M ' + (venusX + Math.cos(vEdgeA) * 8) + ' ' + (venusY + Math.sin(vEdgeA) * 8) +
+                                        ' A 8 8 0 0 1 ' + (venusX + Math.cos(vEdgeB) * 8) + ' ' + (venusY + Math.sin(vEdgeB) * 8) + ' Z';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.phases_of_venus_galileo', "♀ Phases of Venus (Galileo)"), viewBox: '0 0 400 260', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
@@ -25469,7 +26062,7 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('circle', { cx: earthX, cy: sunY, r: 10, fill: '#3b82f6' }),
                                             React.createElement('text', { x: earthX, y: sunY + 22, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, __alloT('stem.solarsystem.earth_9', 'Earth')),
                                             React.createElement('circle', { cx: venusX, cy: venusY, r: 8, fill: '#fde047' }),
-                                            React.createElement('circle', { cx: venusX, cy: venusY, r: 8, fill: '#0a0a18', clipPath: 'url(#vClip)' }),
+                                            React.createElement('path', { d: venusNightPath, fill: '#0a0a18' }),
                                             React.createElement('text', { x: venusX, y: venusY - 14, textAnchor: 'middle', fill: '#fde047', fontSize: 9 }, __alloT('stem.solarsystem.venus_3', 'Venus')),
                                             React.createElement('rect', { x: 280, y: 30, width: 110, height: 60, fill: '#1e293b' }),
                                             React.createElement('circle', { cx: 335, cy: 60, r: apparentSize, fill: '#fde047' }),
@@ -26780,6 +27373,16 @@ const d = labToolData.solarSystem || {};
                                       var v1AU = 0.058 + (year - 1977) * 3.6;
                                       var v2AU = 0.062 + (year - 1977) * 3.3;
                                       var hpAU = 120;
+                                      // One scale for the whole chart, fixed to the farthest point
+                                      // the slider can reach (Voyager 1 in 2050), so nothing pins
+                                      // to the edge. At the old 1.5 px per AU the axis ended at
+                                      // 133 AU, which Voyager 1 passed in 2014: from 2016 both
+                                      // probes sat stacked at the same x for every remaining year
+                                      // on the slider, under a caption printing two distances. On
+                                      // one true linear scale the planets crowd into the middle,
+                                      // which is the picture's whole point.
+                                      var voyMaxAU = 0.058 + (2050 - 1977) * 3.6;
+                                      var auPx = 195 / voyMaxAU;
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.voyager_position_tracker', "🚀 Voyager Position Tracker"), viewBox: '0 0 400 270', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
@@ -26788,21 +27391,30 @@ const d = labToolData.solarSystem || {};
                                               var sy = (i * 29) % 260;
                                               return React.createElement('circle', { key: 'vyst' + i, cx: sx, cy: sy, r: 0.5, fill: '#fff', opacity: 0.4 });
                                             }),
-                                            React.createElement('circle', { cx: 200, cy: 140, r: 200, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '5,3', opacity: 0.3 }),
-                                            React.createElement('circle', { cx: 200, cy: 140, r: 180, fill: 'none', stroke: '#a78bfa', strokeWidth: 1, strokeDasharray: '4,2', opacity: 0.5 }),
-                                            [['Jupiter', 5.2, '#f97316'], ['Saturn', 9.6, '#eab308'], ['Uranus', 19, '#67e8f9'], ['Neptune', 30, '#3b82f6'], ['Pluto', 39, '#a78bfa'], ['Heliopause', 120, '#a78bfa']].map(function(p, pi) {
-                                              var r = Math.min(195, p[1] * 1.5);
+                                            [['Jupiter', 5.2, '#f97316'], ['Saturn', 9.6, '#eab308'], ['Uranus', 19, '#67e8f9'], ['Neptune', 30, '#3b82f6'], ['Pluto', 39, '#a78bfa'], ['Heliopause', hpAU, '#a78bfa']].map(function(p, pi) {
+                                              var r = p[1] * auPx;
+                                              // The heliopause used to be drawn twice - once from
+                                              // this list and once as a loose circle at r=180,
+                                              // which coincided with it only because both used
+                                              // 1.5 px per AU.
+                                              var labelY = 132 - pi * 13;
                                               return React.createElement('g', { key: p[0] },
                                                 React.createElement('circle', { cx: 200, cy: 140, r: r, fill: 'none', stroke: p[2], strokeWidth: 0.6, strokeDasharray: '2,4', opacity: 0.4 }),
                                                 React.createElement('circle', { cx: 200 + r, cy: 140, r: 3, fill: p[2] }),
-                                                React.createElement('text', { x: 200 + r + 8, y: 142, fill: p[2], fontSize: 8 }, p[0])
+                                                // A leader up to its own row: on one honest linear
+                                                // scale out to 263 AU the inner markers sit within
+                                                // a few pixels of each other, so inline labels
+                                                // would be unreadable exactly where the dots are
+                                                // telling the truth.
+                                                React.createElement('line', { x1: 200 + r, y1: 137, x2: 200 + r, y2: labelY + 2, stroke: p[2], strokeWidth: 0.5, opacity: 0.5 }),
+                                                React.createElement('text', { x: 200 + r + 3, y: labelY, fill: p[2], fontSize: 8 }, p[0])
                                               );
                                             }),
                                             React.createElement('circle', { cx: 200, cy: 140, r: 8, fill: '#fde047' }),
-                                            React.createElement('circle', { cx: 200 - Math.min(195, v1AU * 1.5), cy: 140 - 5, r: 4, fill: '#dc2626' }),
-                                            React.createElement('text', { x: 200 - Math.min(195, v1AU * 1.5), y: 130, textAnchor: 'middle', fill: '#fca5a5', fontSize: 9 }, 'V1'),
-                                            React.createElement('circle', { cx: 200 - Math.min(195, v2AU * 1.5), cy: 140 + 15, r: 4, fill: '#dc2626' }),
-                                            React.createElement('text', { x: 200 - Math.min(195, v2AU * 1.5), y: 165, textAnchor: 'middle', fill: '#fca5a5', fontSize: 9 }, 'V2'),
+                                            React.createElement('circle', { cx: 200 - v1AU * auPx, cy: 140 - 5, r: 4, fill: '#dc2626' }),
+                                            React.createElement('text', { x: 200 - v1AU * auPx, y: 130, textAnchor: 'middle', fill: '#fca5a5', fontSize: 9 }, 'V1'),
+                                            React.createElement('circle', { cx: 200 - v2AU * auPx, cy: 140 + 15, r: 4, fill: '#dc2626' }),
+                                            React.createElement('text', { x: 200 - v2AU * auPx, y: 165, textAnchor: 'middle', fill: '#fca5a5', fontSize: 9 }, 'V2'),
                                             React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, 'Voyager 1 + 2 positions in ' + year),
                                             React.createElement('text', { x: 200, y: 250, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, 'V1: ' + v1AU.toFixed(0) + ' AU' + (v1AU > 120 ? ' (interstellar)' : '') + ' • V2: ' + v2AU.toFixed(0) + ' AU' + (v2AU > 120 ? ' (interstellar)' : ''))
                                           )
@@ -27088,28 +27700,68 @@ const d = labToolData.solarSystem || {};
                 d.showImpact && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var size = d.impSize != null ? d.impSize : 10;
-                                      var energy = Math.pow(size, 3.5) * 0.4;
-                                      var craterKm = Math.pow(size, 0.78) * 1.16;
-                                      var consequence = size < 1 ? 'Burns up in atmosphere' : size < 5 ? 'Local damage; broken windows' : size < 50 ? 'City destroyed; tsunamis' : size < 500 ? 'Continental devastation' : size < 2000 ? 'Mass extinction' : 'Sterilizing impact';
+                                      // Impact scaling, so the numbers match real events. The old
+                                      // model used energy = size^3.5 * 0.4 MT and crater =
+                                      // size^0.78 * 1.16 KM. That put Chelyabinsk (20 m) at 28,600
+                                      // megatons against a measured half a megaton, and gave
+                                      // Barringer's ~50 m impactor a 25 km crater against a real
+                                      // 1.2 km. The 0.78 exponent and 1.16 coefficient come from
+                                      // Collins, Melosh & Marcus (2005), where they describe a
+                                      // TRANSIENT crater in METRES - the velocity and gravity terms
+                                      // beside them had been dropped and the unit quietly became km.
+                                      // Kinetic energy of a stony body (3,000 kg/m3) at 17 km/s,
+                                      // expressed in megatons of TNT.
+                                      var energy = 5.43e-5 * Math.pow(size, 3);
+                                      // Transient crater in km, then its collapse into the final
+                                      // one: simple bowls widen by about a quarter, complex craters
+                                      // (past roughly 3.2 km on Earth) slump out further.
+                                      var transientKm = 0.0484 * Math.pow(size, 0.78);
+                                      var craterKm = transientKm < 2.56
+                                        ? transientKm * 1.25
+                                        : 1.17 * Math.pow(transientKm, 1.13) / Math.pow(3.2, 0.13);
+                                      // Megatons span ten orders of magnitude across this slider, so
+                                      // the readout changes unit rather than printing "0" for
+                                      // anything smaller than a city-killer.
+                                      var energyStr = energy >= 1000 ? (energy / 1000).toFixed(0) + ' Gt TNT'
+                                        : energy >= 1 ? energy.toFixed(1) + ' Mt TNT'
+                                        : (energy * 1000).toFixed(energy * 1000 < 1 ? 3 : 1) + ' kt TNT';
+                                      // Crater width runs 0.7 km to 891 km across this slider. At
+                                      // the old 5 px per km every ring pinned to its limit above a
+                                      // 65 m rock - 99% of the slider - so the caption climbed to
+                                      // 891 km while the picture stayed the one drawn for a rock
+                                      // the size of a house. Drawn on a log scale, stated below.
+                                      var craterMin = 0.0484 * Math.pow(0.5, 0.78) * 1.25;
+                                      var craterMax = 1.17 * Math.pow(0.0484 * Math.pow(15000, 0.78), 1.13) / Math.pow(3.2, 0.13);
+                                      var craterFrac = (Math.log10(craterKm) - Math.log10(craterMin)) / (Math.log10(craterMax) - Math.log10(craterMin));
+                                      var craterR = 12 + craterFrac * 138;
+                                      var impactorR = 3 + 17 * (Math.log10(size) - Math.log10(0.5)) / (Math.log10(15000) - Math.log10(0.5));
+                                      // Anchored on measured events: Chelyabinsk 20 m, Tunguska
+                                      // ~60 m, Barringer ~50 m, Chicxulub 10-15 km.
+                                      var consequence = size < 4 ? 'Burns up as a bright fireball'
+                                        : size < 25 ? 'Airburst \u2014 shock wave, broken windows'
+                                        : size < 140 ? 'Airburst, or a crater one to three kilometres wide, flattening a city'
+                                        : size < 1000 ? 'Regional devastation; tsunamis if it lands at sea'
+                                        : size < 2000 ? 'Continental devastation; global climate disruption'
+                                        : 'Global catastrophe; mass extinction';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.asteroid_impact_outcomes', "☄ Asteroid Impact Outcomes"), viewBox: '0 0 400 240', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             React.createElement('rect', { x: 0, y: 160, width: 400, height: 80, fill: '#22c55e' }),
                                             React.createElement('rect', { x: 0, y: 155, width: 400, height: 5, fill: '#16a34a' }),
-                                            React.createElement('circle', { cx: 200, cy: 160, r: Math.min(150, craterKm * 5), fill: 'none', stroke: '#dc2626', strokeWidth: 2, strokeDasharray: '5,3' }),
-                                            React.createElement('ellipse', { cx: 200, cy: 165, rx: Math.min(100, craterKm * 3), ry: Math.min(30, craterKm), fill: '#7c2d12' }),
-                                            React.createElement('circle', { cx: 200, cy: 70, r: Math.min(20, size / 2), fill: '#92400e' }),
+                                            React.createElement('circle', { cx: 200, cy: 160, r: craterR, fill: 'none', stroke: '#dc2626', strokeWidth: 2, strokeDasharray: '5,3' }),
+                                            React.createElement('ellipse', { cx: 200, cy: 165, rx: craterR * 0.66, ry: craterR * 0.2, fill: '#7c2d12' }),
+                                            React.createElement('circle', { cx: 200, cy: 70, r: impactorR, fill: '#92400e' }),
                                             React.createElement('line', { x1: 200, y1: 100, x2: 200, y2: 160, stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '4,2' }),
                                             size > 100 && [70, 130, 270, 330].map(function(fx, i) {
                                               return React.createElement('polygon', { key: 'fr' + i, points: fx + ',160 ' + (fx - 5) + ',140 ' + (fx + 5) + ',140', fill: '#dc2626' });
                                             }),
                                             React.createElement('text', { x: 200, y: 25, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 'bold' }, consequence),
-                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#fde047', fontSize: 10 }, 'Crater: ' + craterKm.toFixed(1) + ' km • Energy: ' + energy.toFixed(0) + ' MT TNT')
+                                            React.createElement('text', { x: 200, y: 230, textAnchor: 'middle', fill: '#fde047', fontSize: 10 }, 'Crater: ' + (craterKm < 10 ? craterKm.toFixed(2) : craterKm.toFixed(0)) + ' km • Energy: ' + energyStr + ' • rings on a log scale')
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-12 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.size_m', 'Size (m)')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.size_m', 'Size (m)'), type: 'range', min: 0.5, max: 5000, step: 0.5, value: size, onChange: function(e) { upd('impSize', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.size_m', 'Size (m)'), type: 'range', min: 0.5, max: 15000, step: 0.5, value: size, onChange: function(e) { upd('impSize', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-14 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, size + 'm')
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
@@ -27288,7 +27940,7 @@ const d = labToolData.solarSystem || {};
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                                           React.createElement('span', { className: 'text-[10px] font-bold w-16 ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity')),
-                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity'), type: 'range', min: 0, max: 0.99, step: 0.01, value: ecc, onChange: function(e) { upd('cobEcc', parseFloat(e.target.value)); }, className: 'flex-1' }),
+                                          React.createElement('input', { 'aria-label': __alloT('stem.solarsystem.eccentricity_2', 'Eccentricity'), type: 'range', min: 0, max: 0.995, step: 0.001, value: ecc, onChange: function(e) { upd('cobEcc', parseFloat(e.target.value)); }, className: 'flex-1' }),
                                           React.createElement('span', { className: 'text-[10px] font-mono w-12 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, ecc.toFixed(2))
                                         ),
                                         React.createElement('div', { className: 'mt-1 grid grid-cols-4 gap-1' },
@@ -27690,13 +28342,20 @@ const d = labToolData.solarSystem || {};
                                         { name: __alloT('stem.solarsystem.earth_17', 'Earth'), hr: 24, color: '#22c55e' }, { name: __alloT('stem.solarsystem.mars_6', 'Mars'), hr: 24.6, color: '#dc2626' },
                                         { name: __alloT('stem.solarsystem.mercury_5', 'Mercury'), hr: 1408, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { name: __alloT('stem.solarsystem.venus_5', 'Venus'), hr: 5832, color: '#fbbf24' }
                                       ];
-                                      var maxHr = 80;
+                                      // Scaled so the slowest rotator reaches the end of the
+                                      // track instead of being clamped to it. The bars used to
+                                      // stop at 280px, which both Mercury (1,408 h) and Venus
+                                      // (5,832 h) overran, drawing the chart's two headline
+                                      // values as the same length.
+                                      var dayBarMax = 240;
+                                      var maxHr = planets.reduce(function (acc, q) { return Math.max(acc, q.hr); }, 1);
+                                      var dayLogMax = Math.log10(maxHr);
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.day_length_comparison', "⏰ Day Length Comparison"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
                                             planets.map(function(p, pi) {
                                               var y = 35 + pi * 25;
-                                              var w = Math.min(280, Math.log10(p.hr) * 100);
+                                              var w = Math.max(2, Math.log10(p.hr) / dayLogMax * dayBarMax);
                                               return React.createElement('g', { key: p.name },
                                                 React.createElement('text', { x: 90, y: y + 4, textAnchor: 'end', fill: p.color, fontSize: 10, fontWeight: 'bold' }, p.name),
                                                 React.createElement('rect', { x: 100, y: y - 6, width: w, height: 12, fill: p.color, opacity: 0.8 }),
@@ -27925,6 +28584,13 @@ const d = labToolData.solarSystem || {};
                   (function() {
                                       var mass = d.sltMass != null ? d.sltMass : 1;
                                       var lifespan = 10 * Math.pow(mass, -2.5);
+                                      // 3.2 Tyr at 0.1 solar masses down to 0.6 Myr at 50 - nearly seven
+                                      // orders of magnitude - so the track is logarithmic, and
+                                      // says so underneath rather than leaving the reader to
+                                      // assume a linear one.
+                                      var lifeMin = 10 * Math.pow(50, -2.5), lifeMax = 10 * Math.pow(0.1, -2.5);
+                                      var lifeFrac = (Math.log10(lifespan) - Math.log10(lifeMin)) / (Math.log10(lifeMax) - Math.log10(lifeMin));
+                                      var lifeW = Math.max(2, Math.min(300, lifeFrac * 300));
                                       var lifeStr = lifespan > 1000 ? (lifespan / 1000).toFixed(0) + ' Gyr' : lifespan > 1 ? lifespan.toFixed(2) + ' Gyr' : (lifespan * 1000).toFixed(0) + ' Myr';
                                       var category = mass < 0.5 ? 'M dwarf (cool, long-lived)' : mass < 1.4 ? 'Sun-like or slightly larger' : mass < 8 ? 'A/B star (massive, hot)' : 'O/B supergiant (very brief)';
                                       return React.createElement('div', null,
@@ -27934,7 +28600,8 @@ const d = labToolData.solarSystem || {};
                                             React.createElement('text', { x: 200, y: 100, textAnchor: 'middle', fill: '#fde047', fontSize: 28, fontWeight: 'bold' }, lifeStr),
                                             React.createElement('text', { x: 200, y: 130, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 11 }, mass + ' solar masses'),
                                             React.createElement('rect', { x: 50, y: 145, width: 300, height: 6, fill: '#1f2937' }),
-                                            React.createElement('rect', { x: 50, y: 145, width: Math.min(300, lifespan * 20), height: 6, fill: '#22c55e' })
+                                            React.createElement('rect', { x: 50, y: 145, width: lifeW, height: 6, fill: '#22c55e' }),
+                                            React.createElement('text', { x: 200, y: 166, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, __alloT('stem.solarsystem.lifespan_log_axis', 'log scale \u00b7 0.6 Myr (50 M\u2609) to 3.2 Tyr (0.1 M\u2609)'))
                                           )
                                         ),
                                         React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
@@ -28431,17 +29098,45 @@ const d = labToolData.solarSystem || {};
                   (function() {
                                       var alt = d.junkAlt != null ? d.junkAlt : 600;
                                       var density = alt < 400 ? 'Very dense' : alt < 800 ? 'Dense (LEO)' : alt < 2000 ? 'Moderate' : alt < 35000 ? 'Light' : 'GEO ring';
+                                      // Altitude is this tool's only control, and it used to change
+                                      // nothing but the caption and the number of dots: the debris
+                                      // was scattered across the whole frame by `50 + (ji*71)%300`,
+                                      // sitting at no altitude at all. Earth is 60 px here, so a
+                                      // linear scale would put low orbit 6 px off the surface and
+                                      // geostationary 337 px off the canvas - which is presumably
+                                      // why the picture gave up. A logarithmic shell holds both.
+                                      var JUNK_CX = 200, JUNK_CY = 220, JUNK_EARTH_R = 60;
+                                      var junkLo = Math.log10(300), junkHi = Math.log10(36000);
+                                      var junkShell = function (km) {
+                                        return JUNK_EARTH_R + 120 * (Math.log10(Math.max(300, Math.min(36000, km))) - junkLo) / (junkHi - junkLo);
+                                      };
+                                      var ringR = junkShell(alt);
                                       var points = [];
                                       var num = alt < 800 ? 80 : alt < 2000 ? 40 : 15;
                                       for (var ji = 0; ji < num; ji++) {
-                                        points.push({ x: 50 + (ji * 71) % 300, y: 30 + (ji * 41) % 180, size: 1 + (ji % 3) });
+                                        // Spread over the arc above the horizon, with a little
+                                        // scatter in altitude so a shell reads as a band of traffic
+                                        // rather than a wire.
+                                        var jAng = Math.PI + ((ji * 137.5) % 180) * Math.PI / 180;
+                                        var jR = ringR * (0.985 + ((ji * 37) % 30) / 1000);
+                                        points.push({ x: JUNK_CX + Math.cos(jAng) * jR, y: JUNK_CY + Math.sin(jAng) * jR, size: 1 + (ji % 3) });
                                       }
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
                                           React.createElement('svg', { role: 'group', 'aria-label': __alloT('stem.solarsystem.space_debris_tracker', "🛰 Space Debris Tracker"), viewBox: '0 0 400 250', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            React.createElement('circle', { cx: 200, cy: 220, r: 60, fill: '#1e40af' }),
+                                            React.createElement('circle', { cx: JUNK_CX, cy: JUNK_CY, r: JUNK_EARTH_R, fill: '#1e40af' }),
                                             React.createElement('ellipse', { cx: 195, cy: 215, rx: 15, ry: 8, fill: '#22c55e' }),
                                             React.createElement('ellipse', { cx: 210, cy: 225, rx: 12, ry: 6, fill: '#22c55e' }),
+                                            // Named shells for scale, so the altitude number has
+                                            // something to be read against.
+                                            [[600, 'LEO'], [20200, 'GPS'], [35786, 'GEO']].map(function(ref) {
+                                              var rr = junkShell(ref[0]);
+                                              return React.createElement('g', { key: 'jref' + ref[0] },
+                                                React.createElement('circle', { cx: JUNK_CX, cy: JUNK_CY, r: rr, fill: 'none', stroke: '#64748b', strokeWidth: 0.5, strokeDasharray: '2,4', opacity: 0.55 }),
+                                                React.createElement('text', { x: JUNK_CX + rr * 0.72, y: JUNK_CY - rr * 0.72 + 3, fill: '#94a3b8', fontSize: 7 }, ref[1])
+                                              );
+                                            }),
+                                            React.createElement('circle', { cx: JUNK_CX, cy: JUNK_CY, r: ringR, fill: 'none', stroke: '#f87171', strokeWidth: 1, strokeDasharray: '4,3', opacity: 0.7 }),
                                             points.map(function(p, pi) {
                                               return React.createElement('circle', { key: 'j' + pi, cx: p.x, cy: p.y, r: p.size, fill: '#fff', opacity: 0.7 });
                                             }),

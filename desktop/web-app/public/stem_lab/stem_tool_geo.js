@@ -3646,6 +3646,12 @@ var d = labToolData || {};
     color: 'violet',
     category: 'math',
     render: function(ctx) {
+      // geometryProver paints no ground, so its chrome sits on the HOST surface -
+      // a white card in light AND dark, pure BLACK in the contrast theme. This is
+      // the SECOND registerTool in this file and the layout gate used to read only
+      // the first, so these sites had never been rendered by it.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       const React = ctx.React;
       const labToolData = ctx.toolData;
       const setLabToolData = ctx.setToolData;
@@ -4308,8 +4314,8 @@ var d = labToolData || {};
         // Discover tab
         const renderDiscover = () => {
           if (!gpMission) return React.createElement('div',{className:'space-y-3'},
-            React.createElement('p',{className:'text-sm font-bold text-violet-800'},'🧭 Choose a Discovery Mission'),
-            React.createElement('p',{className:'text-xs text-slate-600 mb-2'},'Each mission guides you to discover a theorem through measurement and prediction — no formulas given away!'),
+            React.createElement('p',{className:'text-sm font-bold text-violet-800' + onHostInk},'🧭 Choose a Discovery Mission'),
+            React.createElement('p',{className:'text-xs text-slate-600 mb-2' + onHostInk},'Each mission guides you to discover a theorem through measurement and prediction — no formulas given away!'),
             React.createElement('div',{className:'space-y-2'}, MISSIONS.map(m=>React.createElement('button',{key:m.id,onClick:()=>startMission(m.id),className:'w-full flex items-center gap-3 p-3 bg-white border-2 border-violet-100 rounded-xl hover:border-violet-400 hover:bg-violet-50 text-left transition-all'},
               React.createElement('span',{className:'text-2xl w-10 text-center shrink-0'},m.icon),
               React.createElement('div',null, React.createElement('p',{className:'text-sm font-bold text-violet-800'},m.title), React.createElement('p',{className:'text-[11px] text-slate-600'},'Discover the rule yourself through measurement & prediction'))
@@ -4374,7 +4380,7 @@ var d = labToolData || {};
           // Header
           React.createElement('div',{className:'flex items-center gap-3'},
             React.createElement('button',{onClick:()=>setStemLabTool(null),className:'p-1.5 hover:bg-slate-100 rounded-lg transition-colors','aria-label':'Back'},React.createElement(ArrowLeft,{size:18,className:'text-slate-600'})),
-            React.createElement('h3',{className:'text-lg font-bold text-violet-800'},'📐 Geometry Prover'),
+            React.createElement('h3',{className:'text-lg font-bold text-violet-800' + onHostInk},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-700'},exploreScore.correct+'/'+exploreScore.total),
               React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5'},'📸 Snapshot')
@@ -4398,7 +4404,7 @@ var d = labToolData || {};
           gpTab==='build'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-build',tabIndex:0,className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
               React.createElement('button',{'aria-pressed':gpInvestigate?'true':'false',onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all focus:ring-2 focus:ring-amber-400 focus:outline-none ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
-              React.createElement('span',{className:'text-[11px] text-slate-600 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
+              React.createElement('span',{className:'text-[11px] text-slate-600 italic' + onHostInk},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
               [{id:'freeform',label:'✏️ Freeform',color:'violet',action:()=>{gpUpd('mode','freeform');gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('guided',null);}},
@@ -4428,7 +4434,7 @@ var d = labToolData || {};
           gpTab==='discover'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-discover',tabIndex:0},renderDiscover()),
           // CHALLENGE TAB
           gpTab==='challenge'&&React.createElement('div',{id:'geometry-prover-panel',role:'tabpanel','aria-labelledby':'geometry-prover-tab-challenge',tabIndex:0,className:'space-y-3'},
-            React.createElement('p',{className:'text-xs text-slate-600'},'Answer without looking up the formula — use what you know from exploring!'),
+            React.createElement('p',{className:'text-xs text-slate-600' + onHostInk},'Answer without looking up the formula — use what you know from exploring!'),
             React.createElement('div',{className:'flex gap-2'},
               React.createElement('button',{onClick:generateChallenge,className:'flex-1 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'},'🎯 New Challenge'),
               React.createElement('button',{onClick:startMatchGame,className:'flex-1 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-lg text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'},'🧩 Theorem Match'),

@@ -26,9 +26,14 @@ describe('Solar System axial-tilt and seasons lab', () => {
   });
 
   it('uses reviewed tilt, eccentricity, distance, and year inputs for three contrasting worlds', () => {
-    expect(source).toContain("Earth: { key: 'Earth', tiltDeg: 23.44, eccentricity: 0.01671, semiMajorAU: 1, yearLabel: '365.25 days'");
-    expect(source).toContain("Mars: { key: 'Mars', tiltDeg: 25.19, eccentricity: 0.09339, semiMajorAU: 1.524, yearLabel: '687 Earth days'");
-    expect(source).toContain("Uranus: { key: 'Uranus', tiltDeg: 97.77, eccentricity: 0.04726, semiMajorAU: 19.19, yearLabel: '84 Earth years'");
+    expect(source).toContain("Earth: { key: 'Earth', tiltDeg: solarTiltDeg('Earth'), eccentricity: 0.01671, semiMajorAU: 1, yearLabel: '365.25 days'");
+    expect(source).toContain("Mars: { key: 'Mars', tiltDeg: solarTiltDeg('Mars'), eccentricity: 0.09339, semiMajorAU: 1.524, yearLabel: '687 Earth days'");
+    expect(source).toContain("Uranus: { key: 'Uranus', tiltDeg: solarTiltDeg('Uranus'), eccentricity: 0.04726, semiMajorAU: 19.19, yearLabel: '84 Earth years'");
+    // Tilt is single-sourced: the seasons lab reads the planet table rather than
+    // keeping its own copy, and the table holds IAU-convention obliquity.
+    expect(source).toContain("planetRow.tilt = planetRow.tiltDeg * Math.PI / 180;");
+    expect(source).toContain("tiltDeg: 23.44");
+    expect(source).toContain("tiltDeg: 97.77");
     expect(source).toContain('https://science.nasa.gov/helio-and-you-seasons-on-earth-mars-and-beyond/');
     expect(source).toContain('https://science.nasa.gov/mars/facts/');
     expect(source).toContain('https://science.nasa.gov/uranus/facts/');

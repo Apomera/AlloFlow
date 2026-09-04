@@ -186,6 +186,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The accessibility lab was itself unreadable in the accessibility
+      // theme: this tool paints no ground, so its header sat on the host
+      // surface — a white card in light and dark, pure BLACK in contrast,
+      // where the title measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData['a11yAuditor']) || {};
@@ -516,8 +522,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h(ArrowLeft, { size: 20 })
           ),
           h('div', { className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-800' }, t('stem.a11yauditor.digital_accessibility_lab', '\u267F Digital Accessibility Lab')),
-            h('p', { className: 'text-xs text-slate-600' }, t('stem.a11yauditor.be_an_accessibility_change_agent_audit', 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate'))
+            h('h2', { className: 'text-xl font-black text-slate-800' + onHostInk }, t('stem.a11yauditor.digital_accessibility_lab', '\u267F Digital Accessibility Lab')),
+            h('p', { className: 'text-xs text-slate-600' + onHostInk }, t('stem.a11yauditor.be_an_accessibility_change_agent_audit', 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate'))
           ),
           auditsCompleted > 0 && h('span', { className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
         ),
@@ -893,7 +899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // ═══ LEARN WCAG TAB ═══
         tab === 'learn' && h('div', { className: 'space-y-3' },
-          h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, t('stem.a11yauditor.wcag_2_1_aa_has', 'WCAG 2.1 AA has '), WCAG_CRITERIA.length, t('stem.a11yauditor.core_criteria_click_any_to_learn_more', ' core criteria. Click any to learn more.')),
+          h('p', { className: 'text-sm text-slate-600 text-center mb-2' + onHostInk }, t('stem.a11yauditor.wcag_2_1_aa_has', 'WCAG 2.1 AA has '), WCAG_CRITERIA.length, t('stem.a11yauditor.core_criteria_click_any_to_learn_more', ' core criteria. Click any to learn more.')),
 
           // ── Live contrast checker (real WCAG math, client-side) ──
           // The tool's #1 taught concept (1.4.3) was prose-only, and the AI
@@ -1019,7 +1025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           ),
           // Programs
           h('div', { className: 'space-y-3' },
-            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, t('stem.a11yauditor.key_programs', 'Key Programs')),
+            h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' + onHostInk }, t('stem.a11yauditor.key_programs', 'Key Programs')),
             // AccessU
             h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-purple-600 p-4 hover:border-purple-400 transition-all' },
               h('div', { className: 'flex items-start gap-3' },
@@ -1180,8 +1186,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // ═══ HISTORY TAB ═══
         tab === 'history' && h('div', { className: 'space-y-3' },
-          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' }, t('stem.a11yauditor.audit_history', 'Audit History')),
-          auditHistory.length === 0 && h('p', { className: 'text-sm text-slate-600 text-center py-8' }, t('stem.a11yauditor.no_audits_yet_run_your_first_audit_to_', 'No audits yet. Run your first audit to see results here.')),
+          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' + onHostInk }, t('stem.a11yauditor.audit_history', 'Audit History')),
+          auditHistory.length === 0 && h('p', { className: 'text-sm text-slate-600 text-center py-8' + onHostInk }, t('stem.a11yauditor.no_audits_yet_run_your_first_audit_to_', 'No audits yet. Run your first audit to see results here.')),
           auditHistory.slice().reverse().map(function(entry, i) {
             var color = entry.score >= 80 ? 'border-green-200 bg-green-50' : entry.score >= 60 ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50';
             return h('div', { key: i, className: 'flex items-center gap-3 p-3 rounded-xl border ' + color },
@@ -1196,7 +1202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
         // ═══ BADGES TAB ═══
         tab === 'badges' && h('div', { className: 'space-y-3' },
-          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' }, t('stem.a11yauditor.badges_2', 'Badges ('), badges.length, '/', AUDIT_BADGES.length, ')'),
+          h('h3', { className: 'text-sm font-bold text-slate-700 text-center' + onHostInk }, t('stem.a11yauditor.badges_2', 'Badges ('), badges.length, '/', AUDIT_BADGES.length, ')'),
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
             AUDIT_BADGES.map(function(badge) {
               var earned = badges.indexOf(badge.id) >= 0;

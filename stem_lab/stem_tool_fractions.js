@@ -1803,6 +1803,11 @@ window.StemLab = window.StemLab || {
     var announceToSR = ctx.announceToSR;
     var a11yClick = ctx.a11yClick;
     var t = ctx.t;
+    // No ground of its own: the title, the shortcut hint, the preset label
+    // and the planning blurb sit on the HOST surface - white in light and
+    // dark, pure BLACK in the contrast theme, where they ran 2.6-2.8:1.
+    var isContrast = !!ctx.isContrast;
+    var onHostInk = isContrast ? ' text-white' : '';
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
     // ── State via labToolData._fractions ──
@@ -3059,7 +3064,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-3' },
         // Quick presets
         h('div', { className: 'flex flex-wrap gap-1.5' },
-          h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Presets:'),
+          h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' + onHostInk }, 'Presets:'),
           [[1,2,1,3],[2,5,3,8],[3,4,5,6],[1,4,2,8],[7,10,3,5],[5,12,1,3]].map(function(pr) {
             return h('button', { key: pr.join('-'),
               onClick: function() { sfxClick(); upd({ num1: pr[0], den1: pr[1], num2: pr[2], den2: pr[3] }); },
@@ -3834,7 +3839,7 @@ window.StemLab = window.StemLab || {
         // Reset
         h('button', { 'aria-label': __alloT('stem.fractions.clear_highlights', 'Clear Highlights'),
           onClick: function() { upd({ wallHighlight: null, wallCompareA: null, wallCompareB: null }); },
-          className: 'text-xs font-bold text-slate-600 hover:text-slate-600 transition-colors'
+          className: 'text-xs font-bold text-slate-600 hover:text-slate-600 transition-colors' + onHostInk
         }, __alloT('stem.fractions.clear_highlights_2', '\uD83D\uDD04 Clear Highlights'))
       );
     };
@@ -10807,7 +10812,7 @@ window.StemLab = window.StemLab || {
         { id: 'thanks', icon: '🙏', label: __alloT('stem.fractions.thanks', 'Thanks') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-slate-700 mb-2 italic' }, __alloT('stem.fractions.information_about_fraction_lab_itself', 'Information about Fraction Lab itself.')),
+        h('p', { className: 'text-[11px] text-slate-700 mb-2 italic' + onHostInk }, __alloT('stem.fractions.information_about_fraction_lab_itself', 'Information about Fraction Lab itself.')),
         renderSubTabStrip(items, sub, function(id) { upd({ aboutSub: id }); }, 'slate'),
         sub === 'help' && renderHelpTab(),
         sub === 'about' && renderAboutTab(),
@@ -10861,7 +10866,7 @@ window.StemLab = window.StemLab || {
         { id: 'checklist', icon: '☑', label: __alloT('stem.fractions.assessment_checklist_2', 'Assessment checklist') }
       ];
       return h('div', null,
-        h('p', { className: 'text-[11px] text-indigo-700 mb-2 italic' }, __alloT('stem.fractions.curriculum_planning_standards_alignmen', 'Curriculum planning, standards alignment, and student goal-setting.')),
+        h('p', { className: 'text-[11px] text-indigo-700 mb-2 italic' + onHostInk }, __alloT('stem.fractions.curriculum_planning_standards_alignmen', 'Curriculum planning, standards alignment, and student goal-setting.')),
         renderSubTabStrip(items, sub, function(id) { upd({ spSub: id }); }, 'indigo'),
         sub === 'standards' && renderStandardsTab(),
         sub === 'scope' && renderScopeSequenceTab(),
@@ -11272,7 +11277,7 @@ window.StemLab = window.StemLab || {
       h('div', { className: 'flex items-center gap-3 mb-2' },
         h('button', { onClick: function() { if (window._fracKbHandler) { window.removeEventListener('keydown', window._fracKbHandler); window._fracKbHandler = null; } setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.fractions.back', 'Back') },
           h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-        h('h3', { className: 'text-lg font-bold text-rose-800' }, __alloT('stem.fractions.fraction_lab', '\uD83C\uDF55 Fraction Lab')),
+        h('h3', { className: 'text-lg font-bold text-rose-800' + onHostInk }, __alloT('stem.fractions.fraction_lab', '\uD83C\uDF55 Fraction Lab')),
         // Stats
         h('div', { className: 'ml-auto flex items-center gap-3' },
           streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
@@ -11601,7 +11606,7 @@ window.StemLab = window.StemLab || {
       ),
 
       // Keyboard shortcuts hint
-      h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
+      h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' + onHostInk },
         __alloT('stem.fractions.1_6_tabs_n_new_challenge_b_benchmarks_', '\u2328\uFE0F 1-6: tabs | N: new challenge | B: benchmarks | P: pie/bar | ?: AI tutor')
       ),
 

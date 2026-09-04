@@ -480,6 +480,14 @@ function __alloBrainAtlasInk(color) {
     '.theme-dark .brainatlas-tool-shell .text-green-800,.theme-dark .brainatlas-tool-shell .text-green-700,.theme-dark .brainatlas-tool-shell .text-green-600{color:#86efac!important;}',
     '.theme-dark .brainatlas-tool-shell .text-amber-800,.theme-dark .brainatlas-tool-shell .text-amber-700,.theme-dark .brainatlas-tool-shell .text-amber-600{color:#fcd34d!important;}',
     '.theme-dark .brainatlas-tool-shell .text-red-700,.theme-dark .brainatlas-tool-shell .text-red-600,.theme-dark .brainatlas-tool-shell .text-rose-600,.theme-dark .brainatlas-tool-shell .text-rose-500{color:#fda4af!important;}',
+    // ★ The dark ink overrides above rewrite .text-amber-700 / .text-sky-700 /
+    // .text-green-700 with !important, which is right on this tool's dark
+    // panels but wrong on the three score chips, whose bg-*-100 stays a fixed
+    // light tint in BOTH themes (amber-300 on amber-100 measured 1.29:1).
+    // Darken the chips so the already-flipped ink has the ground it assumes.
+    '.theme-dark .brainatlas-tool-shell .bg-amber-100{background:rgba(245,158,11,.20)!important;}',
+    '.theme-dark .brainatlas-tool-shell .bg-sky-100{background:rgba(14,165,233,.20)!important;}',
+    '.theme-dark .brainatlas-tool-shell .bg-green-100{background:rgba(34,197,94,.20)!important;}',
     '.theme-dark .brainatlas-tool-shell{--ba-focus:#7dd3fc;--ba-purple-ink:#c4b5fd;--ba-sky-ink:#7dd3fc;--ba-teal-ink:#5eead4;--ba-amber-ink:#fcd34d;}',
     '.theme-dark .brainatlas-tool-shell .brainatlas-zoom-readout{color:#c4b5fd;}',
     '.theme-dark .brainatlas-tool-shell .brainatlas-detail-close{border-color:#64748b!important;background:#334155!important;color:#f8fafc!important;}',

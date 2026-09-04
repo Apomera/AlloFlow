@@ -427,6 +427,8 @@
       /* ── Aliases ── */
       var React = ctx.React;
       var h = React.createElement;
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
@@ -1384,7 +1386,7 @@
               className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]',
               'aria-label': 'Back to tools'
             }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-            h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, '\u2697\uFE0F Material Decomposer'),
+            h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' + onHostInk }, '\u2697\uFE0F Material Decomposer'),
             h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' },
               totalAtoms + ' ATOMS'
             ),
@@ -2419,8 +2421,8 @@
              ═══════════════════════════════════════════════════ */
           tab === 'reactions' && h('div', null,
             h('div', { className: 'text-center mb-4' },
-              h('h4', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, '\uD83C\uDF0B Reaction Lab'),
-              h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Pick two materials and see what happens when they react!')
+              h('h4', { className: 'text-lg font-bold text-slate-800 tracking-tight' + onHostInk }, '\uD83C\uDF0B Reaction Lab'),
+              h('p', { className: 'text-xs text-slate-600 mt-1' + onHostInk }, 'Pick two materials and see what happens when they react!')
             ),
 
             // Material picker — two slots
@@ -2552,7 +2554,7 @@
              ═══════════════════════════════════════════════════ */
           tab === 'states' && h('div', null,
             h('div', { className: 'text-center mb-3' },
-              h('h4', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, '\uD83C\uDF21\uFE0F States of Matter'),
+              h('h4', { className: 'text-lg font-bold text-slate-800 tracking-tight' + onHostInk }, '\uD83C\uDF21\uFE0F States of Matter'),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, 'See how ' + sel.name + ' particles behave as a solid, liquid, or gas. Drag the temperature slider!')
             ),
 
@@ -2860,7 +2862,7 @@
             /* Quiz header / stats */
             h('div', { className: 'flex items-center gap-3 mb-3' },
               h('div', { className: 'flex-1' },
-                h('h4', { className: 'font-bold text-slate-800' }, '\uD83E\uDDE0 Chemistry Quiz'),
+                h('h4', { className: 'font-bold text-slate-800' + onHostInk }, '\uD83E\uDDE0 Chemistry Quiz'),
                 h('p', { className: 'text-xs text-slate-600' }, 'Test your knowledge of chemical formulas, elements, and bonds')
               ),
               quizScore > 0 && h('div', { className: 'text-right' },
@@ -2874,7 +2876,7 @@
             /* Start quiz / next question button */
             (!quizMode || !quizQ) && h('div', { className: 'text-center py-8' },
               h('div', { className: 'text-5xl mb-3' }, '\uD83E\uDDEA'),
-              h('p', { className: 'text-sm text-slate-600 mb-4' }, 'Ready to test your chemistry knowledge?'),
+              h('p', { className: 'text-sm text-slate-600 mb-4' + onHostInk }, 'Ready to test your chemistry knowledge?'),
               h('button', { 'aria-label': 'Start Quiz',
                 onClick: function() {
                   updMulti({ quizMode: true, quizQ: makeQuiz() });
@@ -3012,7 +3014,7 @@
           tab === 'tutor' && h('div', null,
 
             h('div', { className: 'flex items-center gap-2 mb-3' },
-              h('h4', { className: 'font-bold text-slate-800' }, '\uD83E\uDD16 Chemistry AI Tutor'),
+              h('h4', { className: 'font-bold text-slate-800' + onHostInk }, '\uD83E\uDD16 Chemistry AI Tutor'),
               h('span', { className: 'text-xs text-slate-600' }, 'Ask me anything about ' + sel.name + '!')
             ),
 
@@ -3151,8 +3153,8 @@
              ═══════════════════════════════════════════════════ */
           h('div', { className: 'border-t border-slate-200 pt-3 mt-4 mb-3' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
-              h('span', { className: 'text-sm font-bold text-slate-700' }, '\uD83C\uDFC5 Badges'),
-              h('span', { className: 'text-xs text-slate-600' },
+              h('span', { className: 'text-sm font-bold text-slate-700' + onHostInk }, '\uD83C\uDFC5 Badges'),
+              h('span', { className: 'text-xs text-slate-600' + onHostInk },
                 badges.length + ' / ' + BADGES.length + ' earned'
               )
             ),

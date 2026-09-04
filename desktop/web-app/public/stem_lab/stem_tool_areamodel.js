@@ -70,6 +70,11 @@ window.StemLab = window.StemLab || {
       { id: 'word_3', label: 'Solve 3 word problems', icon: '📝', check: function(d) { return (d.wordSolved || 0) >= 3; }, progress: function(d) { return (d.wordSolved || 0) + '/3 word problems'; } }
     ],
     render: function(ctx) {
+      // The header row and the keyboard hint sit on the HOST surface - white
+      // in light and dark, pure BLACK in the contrast theme, where they ran
+      // 2.8-3.0:1. Text on the tool own tinted cards reads as authored.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
       var ArrowLeft = ctx.icons.ArrowLeft;
@@ -861,11 +866,11 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': t('stem.areamodel.back', 'Back') },
             h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-amber-800' }, t('stem.areamodel.area_model', '\uD83D\uDFE7 Area Model')),
+          h('h3', { className: 'text-lg font-bold text-amber-800' + onHostInk }, t('stem.areamodel.area_model', '\uD83D\uDFE7 Area Model')),
           h('div', { className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-            bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
-            h('span', { className: 'text-xs font-bold text-amber-800' }, score.correct + '/' + score.total),
+            bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' + onHostInk }, 'Best: ' + bestStreak),
+            h('span', { className: 'text-xs font-bold text-amber-800' + onHostInk }, score.correct + '/' + score.total),
             h('button', {
               onClick: function() {
                 var next = !muted;
@@ -1062,7 +1067,7 @@ window.StemLab = window.StemLab || {
         viewMode === 'basic' && h('div', { className: 'flex items-center gap-3' },
           h('button', { 'aria-label': t('stem.areamodel.clear_highlight', 'Clear highlight'),
             onClick: function() { upd({ highlight: { rows: 0, cols: 0 } }); },
-            className: 'text-xs text-slate-600 hover:text-amber-600'
+            className: 'text-xs text-slate-600 hover:text-amber-600' + onHostInk
           }, t('stem.areamodel.clear_highlight_2', 'Clear highlight')),
           h('button', { 'aria-label': 'Commutative:',
             onClick: function() {
@@ -1169,7 +1174,7 @@ window.StemLab = window.StemLab || {
         renderAITutor(),
 
         // Keyboard hints
-        h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
+        h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' + onHostInk },
           t('stem.areamodel.b_d_p_w_switch_mode_n_new_challenge_c_', '\u2328\uFE0F B/D/P/W: switch mode | N: new challenge | C: commutative | ?: AI tutor')
         ),
 

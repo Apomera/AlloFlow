@@ -74,9 +74,11 @@
   background: #fff;
   color: #003c99;
   font-weight: 900;
+  opacity: 0;
+  pointer-events: none;
   transform: translateY(-180%);
 }
-.diss-skip-link:focus { transform: translateY(0); }
+.diss-skip-link:focus { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .diss-skip-return { display: inline-flex; width: max-content; min-height: 2.75rem; align-items: center; padding: .55rem .7rem; border: 1px solid #1d4ed8; border-radius: .55rem; background: #eff6ff; color: #1e3a8a; font-size: .75rem; font-weight: 900; }
 .diss-save-status { display: flex; align-items: center; gap: .45rem; min-height: 2.5rem; padding: .55rem .75rem; border: 1px solid #6ee7b7; border-radius: .7rem; background: #ecfdf5; color: #065f46; font-size: .73rem; font-weight: 850; line-height: 1.35; }
 .diss-save-status[data-state="warning"] { border-color: #f59e0b; background: #fffbeb; color: #78350f; }
@@ -114,7 +116,7 @@
 }
 .diss-mission {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   padding: 1.15rem;
   overflow: hidden;
@@ -176,27 +178,14 @@
 .diss-stat { min-width: 0; padding: .58rem .68rem; border: 1px solid rgba(255,255,255,.18); border-radius: .8rem; background: rgba(15,23,42,.25); }
 .diss-stat__label { display: block; color: #a5f3fc; font-size: .62rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .diss-stat__value { display: block; margin-top: .15rem; overflow: hidden; color: #fff; font-size: .78rem; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
-.diss-workspace-mode {
-  display: flex;
-  min-width: 0;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: .65rem;
-  padding: .65rem .75rem;
-  border: 1px solid #bfdbfe;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, #eff6ff, #f0fdfa);
-}
-.diss-workspace-mode__copy { min-width: min(100%, 18rem); flex: 1 1 28rem; }
-.diss-workspace-mode__copy strong { display: block; color: #143b65; font-size: .78rem; }
-.diss-workspace-mode__copy span { display: block; margin-top: .16rem; color: #48647f; font-size: .68rem; line-height: 1.4; }
-.diss-workspace-mode__choices { display: inline-flex; gap: .25rem; padding: .25rem; border: 1px solid #a9c9ee; border-radius: .75rem; background: #fff; }
+.diss-workspace-mode__choices { display: inline-flex; gap: .25rem; margin-left: auto; padding: .25rem; border: 1px solid #a9c9ee; border-radius: .75rem; background: #fff; }
+.diss-mode-rail .diss-route-button { flex: 1 1 auto; }
 .diss-workspace-mode__choices button { min-height: 2.5rem; padding: .48rem .72rem; border: 1px solid transparent; border-radius: .55rem; background: transparent; color: #36506f; font-size: .72rem; font-weight: 900; cursor: pointer; }
 .diss-workspace-mode__choices button[aria-pressed="true"] { border-color: #1766d2; background: #1766d2; color: #fff; }
 .diss-mode-rail {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: .5rem;
   padding: .45rem;
   border: 1px solid var(--diss-line);
@@ -291,6 +280,9 @@
 .diss-layer-name { overflow: hidden; font-size: .7rem; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
 .diss-layer-state { color: #078174; font-size: .7rem; font-weight: 900; }
 .diss-toolbar { gap: .45rem !important; padding: .5rem !important; border-radius: 1rem !important; background: #f8fafc !important; }
+.diss-quiz-option:hover:not(:disabled) { border-color: #b45309; background: #fffbeb; }
+.diss-quiz-option:focus-visible { outline: 3px solid #b45309; outline-offset: 2px; }
+.diss-toolbar__label { padding-left: .35rem; color: #475569; font-size: .68rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .diss-toolbar > button, .diss-tool-panel > button { min-height: 2.75rem !important; }
 .diss-tool-panel { gap: .45rem !important; padding: .65rem !important; }
 .diss-light-intensity { display: grid; min-width: min(100%, 15rem); min-height: 2.75rem; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .18rem .55rem; padding: .38rem .55rem; border: 1px solid #bfdbfe; border-radius: .55rem; background: #fff; color: #1e3a8a; font-size: .75rem; font-weight: 800; }
@@ -939,10 +931,11 @@
   .diss-mission { padding: .9rem; border-radius: 1rem; }
   .diss-mission__stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; }
   .diss-stat { padding: .48rem .45rem; }
-  .diss-mode-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; }
+  .diss-mode-rail { gap: .35rem; }
+.diss-mode-rail .diss-route-button { flex: 1 1 45%; }
   .diss-section-heading { align-items: start; flex-direction: column; }
   .diss-layer-list { display: flex; overflow-x: auto; padding-bottom: .25rem; scroll-snap-type: x proximity; }
-  .diss-layer-button { min-width: 8.6rem; scroll-snap-align: start; }
+  .diss-layer-button { flex: 0 0 auto; min-width: 8.6rem; width: max-content; max-width: 100%; scroll-snap-align: start; }
   .diss-stage { padding: .55rem; }
   .diss-stage__header { align-items: flex-start; flex-direction: column; }
   .diss-stage__status { max-width: 100%; text-align: left; }
@@ -3555,8 +3548,8 @@ var d = labToolData.dissection || {};
                 predictionCorrectId: 'confirm-route',
                 predictionOptions: [
                   { id: 'confirm-route', label: 'Confirm the ' + procedureProtocol.recommendedView + ' view, center the ' + route + ', and account for ' + protectedText + '.' },
-                  { id: 'deep-view', label: 'Choose the deepest-looking region first; orientation can be corrected after opening.' },
-                  { id: 'tool-first', label: 'Select a cutting tool first, then use the incision to determine orientation.' }
+                  { id: 'deep-view', label: 'Open at the deepest-looking region first; the ' + route + ' can be re-established once the first opening is made.' },
+                  { id: 'tool-first', label: 'Select a cutting instrument first and let the opening incision reveal where ' + protectedText + ' sit.' }
                 ],
                 predictionCoaching: 'Look for the recommended view, planned route, and protected landmarks before contact.',
                 reflectionPrompt: 'Which observation shows that orientation was recorded successfully?',
@@ -3564,7 +3557,7 @@ var d = labToolData.dissection || {};
                 reflectionOptions: [
                   { id: 'largest-area', label: 'The largest possible surface area is visible, even if the access route is off-center.' },
                   { id: 'aligned-landmarks', label: 'The recommended view and access route are centered, with protected landmarks accounted for.' },
-                  { id: 'tool-selected', label: 'A cutting instrument is selected and visible above the tray.' }
+                  { id: 'tool-selected', label: 'A cutting instrument is selected and staged above the tray, ready for first contact.' }
                 ],
                 reflectionCoaching: 'Base the conclusion on view alignment and identifiable landmarks, not tool selection.'
               },
@@ -3573,17 +3566,17 @@ var d = labToolData.dissection || {};
                 predictionPrompt: 'Which plan best protects anatomy during the initial entry?',
                 predictionCorrectId: 'shallow-corridor',
                 predictionOptions: [
-                  { id: 'wide-entry', label: 'Open the widest area in one stroke so every structure becomes visible immediately.' },
+                  { id: 'wide-entry', label: 'Open the widest area in one stroke, crossing the ' + route + ', so every structure becomes visible at once.' },
                   { id: 'shallow-corridor', label: 'Use shallow depth and follow the ' + route + '; stop if alignment or resistance changes.' },
-                  { id: 'deep-shortcut', label: 'Use a deeper short stroke so the scissors have less tissue to extend.' }
+                  { id: 'deep-shortcut', label: 'Use a deeper short stroke through the ' + route + ' so the scissors have less tissue to extend.' }
                 ],
                 predictionCoaching: 'The first entry should be shallow, corridor-aligned, and reversible before it is wide.',
                 reflectionPrompt: 'What outcome is evidence of a controlled initial incision?',
                 reflectionCorrectId: 'aligned-entry',
                 reflectionOptions: [
                   { id: 'aligned-entry', label: 'A shallow entry follows the planned corridor while underlying landmarks remain protected.' },
-                  { id: 'maximum-exposure', label: 'Maximum exposure is achieved even if the stroke leaves the corridor.' },
-                  { id: 'high-resistance', label: 'Resistance rises sharply, showing the tool reached deeper tissue.' }
+                  { id: 'maximum-exposure', label: 'Maximum exposure is achieved in one stroke, even where the cut leaves the corridor.' },
+                  { id: 'high-resistance', label: 'Resistance rises sharply through the stroke, showing the blade reached deeper tissue.' }
                 ],
                 reflectionCoaching: 'Use alignment, depth, and tissue preservation as evidence.'
               },
@@ -3601,8 +3594,8 @@ var d = labToolData.dissection || {};
                 reflectionCorrectId: 'longer-controlled',
                 reflectionOptions: [
                   { id: 'longer-controlled', label: 'The established opening is longer and usable without a new tear or corridor deviation.' },
-                  { id: 'more-pressure', label: 'More pressure was required than before, regardless of the tissue response.' },
-                  { id: 'new-window', label: 'A second window appeared away from the initial entry.' }
+                  { id: 'more-pressure', label: 'More pressure was needed than on the first pass, whatever the tissue response was.' },
+                  { id: 'new-window', label: 'A second window opens away from the initial entry, adding exposure on its own path.' }
                 ],
                 reflectionCoaching: 'Look for controlled coverage of the same opening and no new tissue damage.'
               },
@@ -3619,9 +3612,9 @@ var d = labToolData.dissection || {};
                 reflectionPrompt: 'What change indicates that retraction helped rather than harmed the field?',
                 reflectionCorrectId: 'exposure-stable',
                 reflectionOptions: [
-                  { id: 'trauma-rise', label: 'The edge becomes more irregular and tissue risk rises.' },
+                  { id: 'trauma-rise', label: 'The opened edge becomes more irregular and the recorded tissue risk climbs steadily.' },
                   { id: 'exposure-stable', label: 'Exposure and stability improve without a sharp increase in trauma or risk.' },
-                  { id: 'field-covered', label: 'The lifted layer crosses the observation field.' }
+                  { id: 'field-covered', label: 'The lifted layer folds across the observation field and hides part of the anatomy.' }
                 ],
                 reflectionCoaching: 'Compare exposure and stability with trauma and risk.'
               },
@@ -3638,8 +3631,8 @@ var d = labToolData.dissection || {};
                 reflectionPrompt: 'What evidence shows that the anchoring step is complete?',
                 reflectionCorrectId: 'stable-open-field',
                 reflectionOptions: [
-                  { id: 'single-anchor', label: 'One anchor is present anywhere on the specimen.' },
-                  { id: 'pins-near-target', label: 'Both anchors are close to the structure that will be probed.' },
+                  { id: 'single-anchor', label: 'One anchor is placed anywhere on the specimen and the opening holds itself open.' },
+                  { id: 'pins-near-target', label: 'Both anchors sit close together beside the structure that will be probed next.' },
                   { id: 'stable-open-field', label: 'Two separated anchors hold the opening stable without obstructing visible anatomy.' }
                 ],
                 reflectionCoaching: 'Check anchor count, spacing, field stability, and obstruction.'
@@ -3658,8 +3651,8 @@ var d = labToolData.dissection || {};
                 reflectionCorrectId: 'boundary-preserved',
                 reflectionOptions: [
                   { id: 'boundary-preserved', label: 'The visible boundary is traced and identified without increasing tissue stress.' },
-                  { id: 'deep-displacement', label: 'The structure shifts deeply under pressure during the trace.' },
-                  { id: 'name-only', label: 'The structure name appears, even though no boundary was followed.' }
+                  { id: 'deep-displacement', label: 'The structure shifts deeply under probe pressure while its outline is traced.' },
+                  { id: 'name-only', label: 'The structure name is displayed, even though no boundary was followed to reach it.' }
                 ],
                 reflectionCoaching: 'Use boundary contact, identification, and preserved tissue condition as evidence.'
               }
@@ -6622,19 +6615,51 @@ var d = labToolData.dissection || {};
                   ctx.closePath();
                 }
 
-                function drawFrogLimbSegment(x1, y1, x2, y2, r1, r2, alpha) {
-                  var dx = x2 - x1; var dy = y2 - y1;
-                  var length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-                  var nx = -dy / length; var ny = dx / length;
+                function drawFrogLimbChain(points, radii, alpha) {
+                  var normals = [];
+                  for (var ni = 0; ni < points.length; ni++) {
+                    var ax, ay;
+                    if (ni === 0) { ax = points[1].x - points[0].x; ay = points[1].y - points[0].y; }
+                    else if (ni === points.length - 1) { ax = points[ni].x - points[ni - 1].x; ay = points[ni].y - points[ni - 1].y; }
+                    else {
+                      var b1x = points[ni].x - points[ni - 1].x, b1y = points[ni].y - points[ni - 1].y;
+                      var b2x = points[ni + 1].x - points[ni].x, b2y = points[ni + 1].y - points[ni].y;
+                      var bl1 = Math.max(0.001, Math.sqrt(b1x * b1x + b1y * b1y));
+                      var bl2 = Math.max(0.001, Math.sqrt(b2x * b2x + b2y * b2y));
+                      ax = b1x / bl1 + b2x / bl2; ay = b1y / bl1 + b2y / bl2;
+                    }
+                    var nl = Math.max(0.001, Math.sqrt(ax * ax + ay * ay));
+                    normals.push({ x: -ay / nl, y: ax / nl, tx: ax / nl, ty: ay / nl });
+                  }
+                  function limbSide(sign) {
+                    return points.map(function (pt, si) {
+                      return { x: pt.x + normals[si].x * radii[si] * sign, y: pt.y + normals[si].y * radii[si] * sign };
+                    });
+                  }
+                  // Quadratic segments through midpoints: the vertex becomes a control point, so
+                  // the silhouette bends instead of breaking.
+                  function traceSide(side) {
+                    for (var ti = 1; ti < side.length - 1; ti++) {
+                      ctx.quadraticCurveTo(side[ti].x, side[ti].y, (side[ti].x + side[ti + 1].x) / 2, (side[ti].y + side[ti + 1].y) / 2);
+                    }
+                    ctx.lineTo(side[side.length - 1].x, side[side.length - 1].y);
+                  }
+                  var sideA = limbSide(1), sideB = limbSide(-1);
+                  var last = points.length - 1;
                   ctx.save(); ctx.globalAlpha = alpha;
                   ctx.beginPath();
-                  ctx.moveTo(x1 + nx * r1, y1 + ny * r1);
-                  ctx.bezierCurveTo(x1 + dx * 0.34 + nx * r1, y1 + dy * 0.34 + ny * r1, x1 + dx * 0.72 + nx * r2, y1 + dy * 0.72 + ny * r2, x2 + nx * r2, y2 + ny * r2);
-                  ctx.quadraticCurveTo(x2 + dx / length * r2, y2 + dy / length * r2, x2 - nx * r2, y2 - ny * r2);
-                  ctx.bezierCurveTo(x1 + dx * 0.72 - nx * r2, y1 + dy * 0.72 - ny * r2, x1 + dx * 0.34 - nx * r1, y1 + dy * 0.34 - ny * r1, x1 - nx * r1, y1 - ny * r1);
-                  ctx.quadraticCurveTo(x1 - dx / length * r1, y1 - dy / length * r1, x1 + nx * r1, y1 + ny * r1);
-                  ctx.closePath(); ctx.fillStyle = frogSkinGradient(x1 + nx * r1, y1 + ny * r1, x1 - nx * r1, y1 - ny * r1); ctx.fill();
-                  ctx.strokeStyle = frogOutline; ctx.lineWidth = frogAccessible ? 1.45 : 0.85; ctx.stroke();
+                  ctx.moveTo(sideA[0].x, sideA[0].y);
+                  traceSide(sideA);
+                  ctx.quadraticCurveTo(points[last].x + normals[last].tx * radii[last] * 1.35, points[last].y + normals[last].ty * radii[last] * 1.35, sideB[last].x, sideB[last].y);
+                  // No moveTo here: that would split the outline into two subpaths and the
+                  // stroke would draw an open edge down the middle of the limb.
+                  traceSide(sideB.slice().reverse());
+                  ctx.quadraticCurveTo(points[0].x - normals[0].tx * radii[0] * 1.35, points[0].y - normals[0].ty * radii[0] * 1.35, sideA[0].x, sideA[0].y);
+                  ctx.closePath();
+                  ctx.fillStyle = frogSkinGradient(sideA[0].x, sideA[0].y, sideB[0].x, sideB[0].y);
+                  ctx.fill();
+                  ctx.strokeStyle = frogOutline; ctx.lineWidth = frogAccessible ? 1.45 : 0.85;
+                  ctx.lineJoin = 'round'; ctx.stroke();
                   ctx.restore();
                 }
 
@@ -6661,14 +6686,26 @@ var d = labToolData.dissection || {};
                   ctx.restore();
                 }
 
+                // A limb root is not a separate shape: the mass swells out of the body wall.
+                // Same gradient and alpha as the torso, so the cap adds volume, not a patch.
+                function drawFrogJointCap(jointX, jointY, capRadius) {
+                  ctx.save();
+                  ctx.shadowBlur = 0;
+                  ctx.beginPath();
+                  ctx.ellipse(jointX, jointY, capRadius, capRadius * 0.88, 0, 0, Math.PI * 2);
+                  ctx.fillStyle = frogBodyGradient;
+                  ctx.fill();
+                  ctx.restore();
+                }
+
                 function drawFrogHindLimb(side, alpha) {
                   var hipX = cx + side * W * 0.115; var hipY = cy + H * 0.13;
                   var kneeX = cx + side * W * 0.275; var kneeY = cy + H * 0.105;
                   var ankleX = cx + side * W * 0.315; var ankleY = cy + H * 0.245;
                   var footX = cx + side * W * 0.265; var footY = cy + H * 0.355;
-                  drawFrogLimbSegment(hipX, hipY, kneeX, kneeY, W * 0.036, W * 0.028, alpha);
-                  drawFrogLimbSegment(kneeX, kneeY, ankleX, ankleY, W * 0.026, W * 0.017, alpha);
-                  drawFrogLimbSegment(ankleX, ankleY, footX, footY, W * 0.015, W * 0.008, alpha);
+                  drawFrogLimbChain([
+                    { x: hipX, y: hipY }, { x: kneeX, y: kneeY }, { x: ankleX, y: ankleY }, { x: footX, y: footY }
+                  ], [W * 0.036, W * 0.027, W * 0.016, W * 0.008], alpha);
                   drawFrogHindFoot(side, footX, footY, alpha);
                   ctx.save(); ctx.globalAlpha = alpha * 0.22; ctx.strokeStyle = 'rgba(248,250,252,0.65)'; ctx.lineWidth = 0.55;
                   ctx.beginPath(); ctx.moveTo(hipX + side * 2, hipY - 2); ctx.quadraticCurveTo(kneeX, kneeY - 3, ankleX, ankleY - 2); ctx.stroke(); ctx.restore();
@@ -6678,8 +6715,9 @@ var d = labToolData.dissection || {};
                   var shoulderX = cx + side * W * 0.145; var shoulderY = cy - H * 0.12;
                   var elbowX = cx + side * W * 0.225; var elbowY = cy - H * 0.045;
                   var wristX = cx + side * W * 0.205; var wristY = cy + H * 0.065;
-                  drawFrogLimbSegment(shoulderX, shoulderY, elbowX, elbowY, W * 0.021, W * 0.015, alpha);
-                  drawFrogLimbSegment(elbowX, elbowY, wristX, wristY, W * 0.015, W * 0.008, alpha);
+                  drawFrogLimbChain([
+                    { x: shoulderX, y: shoulderY }, { x: elbowX, y: elbowY }, { x: wristX, y: wristY }
+                  ], [W * 0.021, W * 0.015, W * 0.008], alpha);
                   ctx.save(); ctx.globalAlpha = alpha; ctx.strokeStyle = frogOutline; ctx.lineCap = 'round';
                   var fingerOffsets = [-0.035,-0.014,0.013,0.032];
                   var fingerLengths = [0.041,0.052,0.049,0.036];
@@ -6702,6 +6740,12 @@ var d = labToolData.dissection || {};
                 var frogBodyGradient = frogSkinGradient(cx - W * 0.13, cy - H * 0.25, cx + W * 0.15, cy + H * 0.22);
                 ctx.save(); ctx.globalAlpha = frogDeepLayer ? (frogAccessible ? 0.28 : 0.36) : 1;
                 traceFrogTorso(); ctx.fillStyle = frogBodyGradient; ctx.fill(); ctx.strokeStyle = frogOutline; ctx.lineWidth = frogAccessible ? 2 : 1.15; ctx.stroke();
+                // Hips and shoulders, in the torso's own pass, so the seam and the outline that
+                // crossed it disappear under continuous body tone.
+                [-1, 1].forEach(function (jointSide) {
+                  drawFrogJointCap(cx + jointSide * W * 0.115, cy + H * 0.13, W * 0.055);
+                  drawFrogJointCap(cx + jointSide * W * 0.145, cy - H * 0.12, W * 0.041);
+                });
                 ctx.restore(); ctx.shadowBlur = 0;
 
                 // Dorsolateral folds, chromatophores, and moisture all conform to the unified torso.
@@ -7183,9 +7227,18 @@ var d = labToolData.dissection || {};
                 ctx.quadraticCurveTo(cx - W * 0.198, cy - H * 0.143, cx - W * 0.169, cy - H * 0.127);
                 ctx.strokeStyle = 'rgba(70,39,45,0.28)'; ctx.lineWidth = 0.9; ctx.stroke();
 
-                // Near-side limbs show different flexion at elbow/knee and hock.
+                // Near-side limbs show different flexion at elbow/knee and hock. They are drawn
+                // after the torso so they read as the near side, which used to leave each rounded
+                // limb end sitting ON the flank as a separate tube with its own dark outline.
+                // Clipping to everything OUTSIDE the torso keeps them in front where they emerge
+                // and hides the root behind the body wall, so the leg grows out of the silhouette.
+                ctx.save();
+                tracePigBody();
+                ctx.rect(0, 0, W, H);
+                ctx.clip('evenodd');
                 drawPigLimb(cx - W * 0.125, cy + H * 0.065, cx - W * 0.175, cy + H * 0.16, cx - W * 0.118, cy + H * 0.245, false);
                 drawPigLimb(cx + W * 0.125, cy + H * 0.07, cx + W * 0.19, cy + H * 0.165, cx + W * 0.105, cy + H * 0.255, false);
+                ctx.restore();
 
                 // Shoulder, flank, jaw, and hock contours add anatomical structure.
                 ctx.strokeStyle = 'rgba(75,45,49,' + (pigAccessible ? '0.48' : '0.24') + ')'; ctx.lineWidth = pigAccessible ? 1.4 : 0.8;
@@ -8115,8 +8168,8 @@ var d = labToolData.dissection || {};
                   var elbowX = cx - W * 0.22; var elbowY = cy + side * H * 0.145;
                   var wristX = cx - W * 0.285; var wristY = cy + side * H * 0.205;
                   var palmX = cx - W * 0.325; var palmY = cy + side * H * 0.225;
-                  drawCraySegment(shoulderX, shoulderY, elbowX, elbowY, 5.5, 4.5, side < 0 ? 0.78 : 0.96);
-                  drawCraySegment(elbowX, elbowY, wristX, wristY, 4.2, 3.4, side < 0 ? 0.82 : 1);
+                  drawCraySegment(shoulderX, shoulderY, elbowX, elbowY, W * 0.016, W * 0.0125, side < 0 ? 0.78 : 0.96);
+                  drawCraySegment(elbowX, elbowY, wristX, wristY, W * 0.0115, W * 0.0092, side < 0 ? 0.82 : 1);
                   ctx.save(); ctx.globalAlpha = side < 0 ? 0.84 : 1;
                   ctx.beginPath(); ctx.ellipse(palmX, palmY, W * 0.043, H * 0.027, side * 0.13, 0, Math.PI * 2);
                   var clawPalm = ctx.createLinearGradient(palmX, palmY - H * 0.03, palmX, palmY + H * 0.03);
@@ -9802,7 +9855,12 @@ var d = labToolData.dissection || {};
                 ctx.fill();
                 ctx.strokeStyle = corridorDeep ? '#fb7185' : '#5eead4'; ctx.lineWidth = corridorAccessible ? 1.6 : 0.8; ctx.stroke();
                 ctx.fillStyle = corridorDeep ? (corridorAccessible ? '#9f1239' : '#fecdd3') : (corridorAccessible ? '#134e4a' : '#99f6e4');
-                ctx.fillText(corridorDepthLabel, corridorLabelX + 6, corridorLabelY + 12);
+                // The ventral view mirrors the specimen (specimenScale.x = -1) and this label is
+                // drawn inside that transform, so it rendered back to front -- in the one view
+                // where a ventral-midline safety corridor matters most. Anchor from the far end
+                // when mirrored, then let fillReadableSpecimenText flip the glyphs back.
+                var corridorTextX = specimenScale.x < 0 ? corridorLabelX + corridorLabelWidth - 6 : corridorLabelX + 6;
+                fillReadableSpecimenText(corridorDepthLabel, corridorTextX, corridorLabelY + 12);
                 ctx.restore();
               }
               function drawProcedureOpening(points, extended) {
@@ -10341,7 +10399,12 @@ var d = labToolData.dissection || {};
                 var handoffAccent = handoffAccessible ? '#ffffff' : (handoffSelected ? '#5eead4' : '#facc15');
                 var handoffPulse = dissMotionReduced ? 0 : Math.sin(dissTick * 0.045) * 2;
                 var handoffLabelWidth = 184, handoffLabelHeight = 44;
-                var handoffLabelX = Math.max(8, W - handoffLabelWidth - 10), handoffLabelY = 10;
+                // This card is screen-fixed but is drawn inside the specimen transform, because
+                // its leader line has to reach a point on the specimen. In the ventral view that
+                // transform mirrors x about cx = W/2, so a right-edge anchor flipped the whole
+                // card to the left, on top of the specimen chip. Mirroring 10 puts it back at the
+                // right edge and keeps the leader line anchored to the card.
+                var handoffLabelX = specimenScale.x < 0 ? 10 : Math.max(8, W - handoffLabelWidth - 10), handoffLabelY = 10;
                 var handoffTitle = nextInfo.action === 'complete'
                   ? 'SEQUENCE 6/6 \u00B7 COMPLETE'
                   : 'NEXT ' + (handoffStep + 1) + '/6 \u00B7 ' + (handoffSelected ? 'READY ' : 'SELECT ') + String(nextInfo.instrument || '').toUpperCase();
@@ -10387,8 +10450,8 @@ var d = labToolData.dissection || {};
                 ctx.save(); ctx.fillStyle = handoffAccessible ? '#000000' : 'rgba(15,23,42,0.94)'; ctx.strokeStyle = handoffAccent; ctx.lineWidth = 1.2; ctx.beginPath();
                 if (ctx.roundRect) ctx.roundRect(handoffLabelX, handoffLabelY, handoffLabelWidth, handoffLabelHeight, 6); else ctx.rect(handoffLabelX, handoffLabelY, handoffLabelWidth, handoffLabelHeight);
                 ctx.fill(); ctx.stroke();
-                ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : handoffAccent; ctx.fillText(handoffTitle.slice(0, 34), handoffLabelX + 7, handoffLabelY + 11);
-                ctx.font = '7px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : '#e2e8f0'; ctx.fillText(String(nextInfo.label || '').slice(0, 38), handoffLabelX + 7, handoffLabelY + 23);
+                ctx.font = 'bold 8px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : handoffAccent; fillReadableSpecimenText(handoffTitle.slice(0, 34), handoffLabelX + (specimenScale.x < 0 ? handoffLabelWidth - 7 : 7), handoffLabelY + 11);
+                ctx.font = '7px Inter, system-ui'; ctx.fillStyle = handoffAccessible ? '#ffffff' : '#e2e8f0'; fillReadableSpecimenText(String(nextInfo.label || '').slice(0, 38), handoffLabelX + (specimenScale.x < 0 ? handoffLabelWidth - 7 : 7), handoffLabelY + 23);
                 var handoffSegmentWidth = 24, handoffSegmentGap = 4, handoffRailX = handoffLabelX + 7, handoffRailY = handoffLabelY + 31;
                 for (var handoffSegment = 0; handoffSegment < 6; handoffSegment++) {
                   var handoffSegmentX = handoffRailX + handoffSegment * (handoffSegmentWidth + handoffSegmentGap);
@@ -12102,30 +12165,6 @@ var d = labToolData.dissection || {};
 
               }
 
-              // System color legend (top-right)
-
-              var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
-
-              var sysColors = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#e2e8f0', muscular: '#f87171', excretory: '#a78bfa', reproductive: '#ec4899' };
-
-              var legendLabels = ['Circulatory', 'Digestive', 'Respiratory', 'Nervous', 'Skeletal', 'Muscular', 'Excretory', 'Reproductive'];
-
-              ctx.font = '7px Inter, system-ui';
-
-              for (var li = 0; li < legendSys.length; li++) {
-
-                var lx = W - 58, ly = 50 + li * 12;
-
-                ctx.beginPath(); ctx.arc(lx, ly, 3, 0, Math.PI * 2);
-
-                ctx.fillStyle = sysColors[legendSys[li]] || '#94a3b8'; ctx.fill();
-
-                ctx.fillStyle = 'rgba(255,255,255,0.4)';
-
-                ctx.fillText(legendLabels[li], lx + 6, ly + 3);
-
-              }
-
               // Progress bar at top
 
               if (totalOrgansInSpecimen > 0) {
@@ -12235,6 +12274,56 @@ var d = labToolData.dissection || {};
 
 
               ctx.restore(); // End deterministic specimen-proportion transform
+              // The colour key is a screen-fixed HUD, so it belongs AFTER the specimen
+              // transform is restored. Drawn before it, the ventral view (specimenScale.x = -1)
+              // mirrored every label. That went unnoticed while the text was 40%-opaque 7px;
+              // making it legible in round 10 made the mirroring obvious.
+              // System color legend (top-right)
+
+              var legendSys = ['circulatory', 'digestive', 'respiratory', 'nervous', 'skeletal', 'muscular', 'excretory', 'reproductive'];
+
+              var sysColors = { circulatory: '#ef4444', digestive: '#f59e0b', respiratory: '#3b82f6', nervous: '#8b5cf6', skeletal: '#e2e8f0', muscular: '#f87171', excretory: '#a78bfa', reproductive: '#ec4899' };
+
+              var legendLabels = ['Circulatory', 'Digestive', 'Respiratory', 'Nervous', 'Skeletal', 'Muscular', 'Excretory', 'Reproductive'];
+
+              ctx.save();
+
+              ctx.font = 'bold 9px Inter, system-ui';
+
+              var legendTextWidth = 0;
+
+              for (var lm = 0; lm < legendLabels.length; lm++) legendTextWidth = Math.max(legendTextWidth, ctx.measureText(legendLabels[lm]).width);
+
+              var legendRowHeight = 13;
+
+              var legendPanelW = Math.min(W - 28, legendTextWidth + 30);
+
+              var legendPanelH = legendSys.length * legendRowHeight + 12;
+
+              var legendPanelX = W - legendPanelW - 14, legendPanelY = 74;
+
+              ctx.fillStyle = 'rgba(15,23,42,0.88)'; ctx.strokeStyle = 'rgba(148,163,184,0.38)'; ctx.lineWidth = 1;
+
+              if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(legendPanelX, legendPanelY, legendPanelW, legendPanelH, 8); ctx.fill(); ctx.stroke(); }
+
+              else { ctx.fillRect(legendPanelX, legendPanelY, legendPanelW, legendPanelH); ctx.strokeRect(legendPanelX, legendPanelY, legendPanelW, legendPanelH); }
+
+              for (var li = 0; li < legendSys.length; li++) {
+
+                var lx = legendPanelX + 13, ly = legendPanelY + 13 + li * legendRowHeight;
+
+                ctx.beginPath(); ctx.arc(lx, ly, 3.2, 0, Math.PI * 2);
+
+                ctx.fillStyle = sysColors[legendSys[li]] || '#94a3b8'; ctx.fill();
+
+                ctx.fillStyle = '#e2e8f0';
+
+                ctx.fillText(legendLabels[li], lx + 9, ly + 3);
+
+              }
+
+              ctx.restore();
+
 
               // Advanced view, condition, and cross-section overlays stay screen-aligned.
               ctx.save();
@@ -12808,6 +12897,8 @@ var d = labToolData.dissection || {};
                 var compassAccessible = highContrastEnabled || liveVisualMode === 'accessible';
                 var compassAccent = compassAccessible ? '#ffffff' : (compass.aligned ? '#2dd4bf' : '#fbbf24');
                 var compassX = 14, compassY = 14;
+                // The specimen chip owns the corner when it is on the left; sit under it.
+                if (specimenHudX < 20) compassY = 13 + 30 * canvasHudScale + 8;
                 var compassW = compass.axis === 'horizontal' ? 188 : 126;
                 var compassH = compass.axis === 'horizontal' ? 55 : 91;
                 var compassStatus = compass.view.toUpperCase() + (compass.aligned ? ' · ALIGNED' : ' · TARGET ' + compass.targetView.toUpperCase());
@@ -14280,7 +14371,7 @@ var d = labToolData.dissection || {};
             if (canvas._cameraTransition) return { mode: 'wait', cursor: 'wait', tone: 'caution', icon: '?', label: 'Camera moving', instruction: 'Wait for the specimen view to settle before contact.' };
             if (d.quizMode) {
               if (d.quizFeedback) return { mode: 'answered', cursor: 'not-allowed', tone: 'blocked', icon: '?', label: 'Answer recorded', instruction: 'Use Next question before selecting another candidate.' };
-              return { mode: 'identify', cursor: 'crosshair', tone: 'assessment', icon: '?', label: 'Identify a structure', instruction: effectiveQuizAnswerMode === 'hotspot' ? 'Select an unlabeled visible candidate; Arrow keys preview and Enter submits.' : 'Use the answer choices below the specimen.' };
+              return { mode: 'identify', cursor: 'crosshair', tone: 'assessment', icon: '?', label: 'Identify a structure', instruction: effectiveQuizAnswerMode === 'hotspot' ? 'Select an unlabeled visible candidate; Arrow keys preview and Enter submits.' : 'Choose an answer in the assessment panel.' };
             }
             if (d.annotateMode) return { mode: 'annotate', cursor: 'crosshair', tone: 'ready', icon: '?', label: 'Add observation mark', instruction: 'Select the specimen to place a visible observation mark.' };
             if (d.rulerMode) return { mode: 'measure', cursor: 'crosshair', tone: 'ready', icon: '?', label: 'Measure', instruction: d.rulerStart ? 'Select the second endpoint to complete the measurement.' : 'Select the first measurement endpoint.' };
@@ -14994,6 +15085,10 @@ var d = labToolData.dissection || {};
           var stageHandoffDetail = stageHandoffUsesTool && nextToolReadiness
             ? nextToolDefinition.label + ' \u00B7 ' + nextToolReadiness.label
             : nextActionModel.phase;
+          // With the checkpoint panel now opening the same column, the headline names the phase
+          // rather than repeating the whole question. stageHandoffDetail falls back to the same
+          // phase when no instrument is involved, so the detail is dropped when it would match.
+          var stageHandoffHeadline = procedureLearningCheckpointVisible() ? nextActionModel.phase : stageHandoffLabel;
           stageHandoffGlyph = stageHandoffTone === 'ready' ? '\u2713' : (stageHandoffTone === 'caution' ? '!' : '\u2192');
           var pointerGuideData = canvasPointerModeData(null, null);
           var workflowSteps = [
@@ -15090,7 +15185,12 @@ var d = labToolData.dissection || {};
             }
           }
 
+          // The checkpoint below renders under exactly these conditions; keep the two in step.
+          function procedureLearningCheckpointVisible() {
+            return studyRoute === 'explore' && !d.quizMode && !guidedMode && !currentLayerDone && !!currentLearningGate.definition;
+          }
           function renderNextActionCard() {
+            if (nextActionModel.action === 'learning' && procedureLearningCheckpointVisible()) return null;
             return React.createElement("section", {
               className: "diss-next-action",
               "data-tone": nextActionModel.tone,
@@ -15118,7 +15218,7 @@ var d = labToolData.dissection || {};
           }
 
           function renderProcedureLearningCheckpoint() {
-            if (studyRoute !== 'explore' || d.quizMode || guidedMode || currentLayerDone || !currentLearningGate.definition) return null;
+            if (!procedureLearningCheckpointVisible()) return null;
             var learningAction = currentLearningGate.action;
             var definition = currentLearningGate.definition;
             var entry = procedureLearningEntry(learningAction, currentProcedure);
@@ -15991,11 +16091,6 @@ var d = labToolData.dissection || {};
                 ),
                 React.createElement("p", { className: "diss-mission__copy" }, __alloT('stem.dissection.virtual_practice_notice', 'Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.'))
               ),
-              React.createElement("aside", { className: "diss-mission__action", "aria-label": "Current workflow position" },
-                React.createElement("span", { className: "diss-mission__action-label" }, 'Current workflow position'),
-                React.createElement("h3", null, nextActionModel.phase),
-                React.createElement("p", null, 'Step ' + nextActionModel.step + ' of ' + workflowSteps.length)
-              ),
               React.createElement("div", { className: "diss-mission__stats", "aria-label": "Current lab status" },
                 [
                   { label: 'Specimen', value: spec.icon + ' ' + spec.name },
@@ -16011,23 +16106,8 @@ var d = labToolData.dissection || {};
             ),
 
             renderNextActionCard(),
-            renderProcedureLearningCheckpoint(),
-            renderGuidedObservationCheck(),
 
-            React.createElement("section", { className: "diss-workspace-mode", "data-dissection-workspace-mode": true, "aria-labelledby": "diss-workspace-mode-title" },
-              React.createElement("div", { className: "diss-workspace-mode__copy" },
-                React.createElement("strong", { id: "diss-workspace-mode-title" }, workspaceMode === 'advanced' ? 'Advanced workspace' : 'Essentials workspace'),
-                React.createElement("span", null, workspaceMode === 'advanced'
-                  ? 'Adds scenarios, detailed telemetry, technique comparison, instructor settings, and extended visualization tools.'
-                  : 'Keeps the procedure, instruments, observation, evidence, assessment, and accessibility controls in focus.')
-              ),
-              React.createElement("div", { className: "diss-workspace-mode__choices", role: "group", "aria-label": "Workspace detail" },
-                React.createElement("button", { type: "button", "aria-pressed": workspaceMode === 'essentials', onClick: function () { setDissectionWorkspaceMode('essentials'); } }, 'Essentials'),
-                React.createElement("button", { type: "button", "aria-pressed": workspaceMode === 'advanced', onClick: function () { setDissectionWorkspaceMode('advanced'); } }, 'Advanced')
-              )
-            ),
-
-            React.createElement("div", { className: "diss-mode-rail", role: "toolbar", "aria-label": "Learning route", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
+            React.createElement("div", { className: "diss-mode-rail", "data-dissection-workspace-mode": true, role: "toolbar", "aria-label": "Learning route", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
               [
                 { id: 'explore', icon: '🔎', label: advancedWorkspace ? __alloT('stem.dissection.free_explore', 'Free explore') : 'Procedure practice' },
                 { id: 'guided', icon: '🧭', label: __alloT('stem.dissection.guided_investigation', 'Guided investigation') },
@@ -16047,7 +16127,21 @@ var d = labToolData.dissection || {};
                   tabIndex: active && !routeLocked ? 0 : -1,
                   onClick: function () { setStudyRoute(route.id); }
                 }, route.icon + ' ' + route.label);
-              })
+              }),
+              React.createElement("div", { className: "diss-workspace-mode__choices", role: "group", "aria-label": "Workspace detail" },
+                React.createElement("button", {
+                  type: "button", "aria-pressed": workspaceMode === 'essentials',
+                  "aria-label": 'Essentials workspace',
+                  title: 'Essentials workspace: keeps the procedure, instruments, observation, evidence, assessment, and accessibility controls in focus.',
+                  onClick: function () { setDissectionWorkspaceMode('essentials'); }
+                }, 'Essentials'),
+                React.createElement("button", {
+                  type: "button", "aria-pressed": workspaceMode === 'advanced',
+                  "aria-label": 'Advanced workspace',
+                  title: 'Advanced workspace: adds scenarios, detailed telemetry, technique comparison, instructor settings, and extended visualization tools.',
+                  onClick: function () { setDissectionWorkspaceMode('advanced'); }
+                }, 'Advanced')
+              )
             ),
 
             React.createElement("section", { className: "diss-picker", "data-dissection-specimens": true, "aria-labelledby": "diss-specimen-heading" },
@@ -16107,16 +16201,18 @@ var d = labToolData.dissection || {};
             ),
 
             // Toolbar: compact secondary controls
-            React.createElement("div", { className: "diss-toolbar flex flex-wrap items-center bg-slate-50 border border-slate-400", role: "toolbar", "aria-label": "Secondary lab controls", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
+            React.createElement("div", { className: "diss-toolbar flex flex-wrap items-center bg-slate-50 border border-slate-400", role: "toolbar", "aria-label": "Specimen display and lab tool controls", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
+
+              React.createElement("span", { className: "diss-toolbar__label", "aria-hidden": "true" }, 'Controls'),
 
               // ── View toggle ──
-              React.createElement("button", { type: "button", tabIndex: !d.toolbarToolsOpen ? 0 : -1, "aria-label": d.quizMode ? "Toggle accessibility toolbar" : "Toggle View toolbar", "aria-expanded": !!d.toolbarViewOpen, "aria-controls": "diss-view-tools",
+              React.createElement("button", { type: "button", tabIndex: !d.toolbarToolsOpen ? 0 : -1, "aria-label": d.quizMode ? "Accessibility options" : "View and accessibility options", "aria-expanded": !!d.toolbarViewOpen, "aria-controls": "diss-view-tools",
                 onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
                 className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-blue-50 active:scale-[0.97]')
-              }, (d.quizMode ? '\u267F Accessibility ' : '\uD83D\uDC41 View ') + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
+              }, (d.quizMode ? '\u267F Accessibility ' : '\uD83D\uDC41 View & access ') + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
               // ── Tools toggle ──
-              !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": "Toggle Tools toolbar", "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
+              !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": "Lab tool options", "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
                 className: "diss-advanced-only flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
@@ -16127,8 +16223,8 @@ var d = labToolData.dissection || {};
 
             // ── View group expanded ──
             d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", tabIndex: -1, "aria-label": "View and accessibility controls" },
-              React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? "Organ name labels hidden during assessment" : "Toggle organ name labels", "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'show' ? 'hidden' : 'show'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels'),
-              React.createElement("button", { "aria-label": "Toggle high contrast mode", "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast'),
+              React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? "Organ name labels hidden during assessment" : "Toggle organ name labels", "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'show' ? 'hidden' : 'show'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels ' + (!d.quizMode && d.labelMode !== 'hidden' ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": "Toggle high contrast mode", "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast ' + (highContrastEnabled ? 'on' : 'off')),
               React.createElement("button", { "aria-label": "Toggle additional reduced motion; operating system reduced motion settings are always honored", "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
               React.createElement("button", { "aria-label": "Toggle larger interface text", "aria-pressed": largeTextEnabled, onClick: function () { setAccessibilityPreference('largeText', !largeTextEnabled, 'Larger interface text'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (largeTextEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, largeTextEnabled ? 'A+ Larger text on' : 'A Larger text off'),
               React.createElement("button", { "aria-label": "Toggle simplified step instructions", "aria-pressed": simplifiedInstructions, onClick: function () { setAccessibilityPreference('simplifiedInstructions', !simplifiedInstructions, 'Simplified instructions'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (simplifiedInstructions ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, simplifiedInstructions ? 'Simple steps on' : 'Simple steps off'),
@@ -16167,7 +16263,7 @@ var d = labToolData.dissection || {};
               ),
               React.createElement("button", { "aria-label": "Laboratory light direction: cycle overhead, left, right, and raking", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection),
               React.createElement("button", { "aria-label": "Generate another deterministic specimen variation", onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
-              React.createElement("button", { "aria-label": "Toggle before and after technique view", "aria-pressed": !!d.beforeTechniqueView, onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Before view' : '\u25B6 After view')
+              React.createElement("button", { "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Tissue: before' : '\u25B6 Tissue: after')
               ),
               React.createElement("button", { "aria-label": "Enter fullscreen specimen mode with view and tool controls", "aria-controls": "diss-fullscreen-dock", onClick: function (event) { enterDissectionFullscreen(event.currentTarget); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
               React.createElement("button", { "aria-label": "Animation speed: cycle normal, slow, and fast", onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
@@ -16347,6 +16443,9 @@ var d = labToolData.dissection || {};
 
               React.createElement("div", { className: "diss-primary-column" },
 
+                renderProcedureLearningCheckpoint(),
+                renderGuidedObservationCheck(),
+
                 React.createElement("section", { className: "diss-stage", "data-dissection-stage": true, "aria-labelledby": "diss-stage-title" },
                   React.createElement("div", { className: "diss-stage__header" },
                     React.createElement("div", null,
@@ -16362,8 +16461,10 @@ var d = labToolData.dissection || {};
                     "aria-label": "Current action: " + stageHandoffLabel + ". " + stageHandoffDetail + ". Workflow step " + nextActionModel.step + " of " + workflowSteps.length
                   },
                     React.createElement("span", { className: "diss-stage__handoff-glyph", "aria-hidden": "true" }, stageHandoffGlyph),
-                    React.createElement("strong", null, 'Next \u00B7 ' + stageHandoffLabel),
-                    React.createElement("span", { className: "diss-stage__handoff-tool" }, stageHandoffDetail),
+                    React.createElement("strong", null, 'Next \u00B7 ' + stageHandoffHeadline),
+                    stageHandoffDetail !== stageHandoffHeadline
+                      ? React.createElement("span", { className: "diss-stage__handoff-tool" }, stageHandoffDetail)
+                      : null,
                     React.createElement("span", { className: "diss-stage__handoff-progress" }, 'Workflow ' + nextActionModel.step + '/' + workflowSteps.length)
                   ),
 
@@ -16385,7 +16486,7 @@ var d = labToolData.dissection || {};
                         React.createElement("span", { className: "diss-stage__telemetry-kicker" }, 'Live specimen monitor'),
                         React.createElement("strong", null, currentTissueStatus.label + ' · ' + currentTissueStatus.preservation + '% preservation')
                       ),
-                      React.createElement("span", { className: "diss-stage__telemetry-phase" }, 'Phase · ' + stageHandoffLabel)
+                      React.createElement("span", { className: "diss-stage__telemetry-phase" }, 'Phase · ' + nextActionModel.phase)
                     ),
                     React.createElement("div", { className: "diss-stage__telemetry-grid" },
                       stageTelemetryMetrics.map(function (metric) {
@@ -16473,7 +16574,7 @@ var d = labToolData.dissection || {};
                           React.createElement("input", { type: "range", min: 20, max: 100, step: 2, value: lightIntensity, disabled: !!d.practicalMode, onChange: function (event) { upd('lightIntensity', Number(event.target.value)); }, "aria-label": d.practicalMode ? "Fullscreen illumination locked during timed practical" : "Fullscreen illumination intensity", "aria-valuetext": lightIntensity + ' percent, ' + currentIllumination.label })
                         ),
                         React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, "aria-label": "Fullscreen light direction: cycle overhead, left, right, and raking" }, 'Angle: ' + lightDirection),
-                        React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": !!d.beforeTechniqueView, onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); } }, d.beforeTechniqueView ? 'Before view' : 'After view'),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); } }, d.beforeTechniqueView ? 'Tissue: before' : 'Tissue: after'),
                         React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var speed = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', speed); }, "aria-label": "Fullscreen animation speed: cycle normal, slow, and fast" }, 'Speed: ' + (d.animSpeed === 'slow' ? 'slow' : d.animSpeed === 'fast' ? 'fast' : 'normal')),
                         !d.quizMode && React.createElement("label", null,
                           React.createElement("span", null, 'Tool'),
@@ -16739,7 +16840,10 @@ var d = labToolData.dissection || {};
                       : (stageHandoffUsesTool ? ('Tool ' + nextToolDefinition.label + ' · ' + (nextToolReadiness ? nextToolReadiness.label + '. ' + nextToolReadiness.cue : nextActionModel.description) + ' ' + (sel
                         ? ('Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer. ' + sel.fn.split('.')[0] + '.')
                         : 'Select a structure on the specimen or use the accessible structure directory. Arrow keys move between structures when the canvas is focused.'))
-                        : (nextActionModel.phase + ': ' + nextActionModel.title + '. ' + nextActionModel.description
+                        : (nextActionModel.phase + ': '
+                          + (procedureLearningCheckpointVisible()
+                            ? nextActionModel.description + ' Answer it in the planning checkpoint above the specimen.'
+                            : nextActionModel.title + '. ' + nextActionModel.description)
                           + (sel ? ' Selected ' + sel.name + ' in the ' + currentLayerDef.name + ' layer.' : '')))
                   ),
 
@@ -17228,7 +17332,7 @@ var d = labToolData.dissection || {};
               },
                 React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3" },
                   React.createElement("h3", { id: "diss-flashcard-title", className: "text-sm font-black text-indigo-800" }, '🃏 Structure flashcards'),
-                  React.createElement("span", { className: "text-xs font-bold text-indigo-500" }, ((d.flashcardIdx || 0) + 1) + ' / ' + organs.length)
+                  React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, ((d.flashcardIdx || 0) + 1) + ' / ' + organs.length)
                 ),
                 React.createElement("button", {
                   type: "button",
@@ -17240,7 +17344,7 @@ var d = labToolData.dissection || {};
                   !d.flashcardFlipped
                     ? React.createElement("span", { className: "block text-center" },
                         React.createElement("span", { className: "block text-base font-black text-indigo-800" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].name : 'No structures found'),
-                        React.createElement("span", { className: "block text-xs text-indigo-500 mt-2" }, 'Tap or press Enter to reveal its function')
+                        React.createElement("span", { className: "block text-xs text-indigo-600 mt-2" }, 'Tap or press Enter to reveal its function')
                       )
                     : React.createElement("span", { className: "block text-left" },
                         React.createElement("span", { className: "block text-sm font-bold text-slate-700 leading-relaxed" }, organs[d.flashcardIdx || 0] ? organs[d.flashcardIdx || 0].fn : ''),
@@ -17918,7 +18022,7 @@ var d = labToolData.dissection || {};
                         onClick: function () { submitQuizAnswer(opt.id); },
 
 
-                        className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-700' : fb ? 'border-slate-200 bg-slate-50 text-slate-600' : 'transition-colors border-amber-200 bg-white text-slate-700 hover:border-amber-400')
+                        className: "min-h-11 px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-700' : fb ? 'border-slate-200 bg-slate-50 text-slate-600' : 'diss-quiz-option transition-colors border-amber-600 bg-white text-slate-800')
 
                       }, opt.name);
 

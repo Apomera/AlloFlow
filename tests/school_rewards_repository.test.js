@@ -2382,3 +2382,266 @@ describe('statement language (2026-09-02)', () => {
     expect(h.call('getSchoolRewardsBootstrap').students[0].language).toBe('es');
   });
 });
+
+describe('records requests (2026-09-03)', () => {
+  function seeded() {
+    const h = harness();
+    const student = setup(h);
+    const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 9, categoryId: category.id, reason: 'Helped Sam find the library', idempotencyKey: 'records_award_0001' });
+    h.setActive(ADMIN);
+    return { h, student, category };
+  }
+
+  it('exports everything the repository holds about one student, and audits the export', () => {
+    const { h, student } = seeded();
+    const out = h.call('exportSchoolRewardsStudentRecord', { studentId: student.id });
+    expect(out.ok).toBe(true);
+    expect(out.sections.Students[0].Email).toBe(STUDENT);
+    expect(out.sections.Ledger).toHaveLength(1);
+    expect(out.sections.Ledger[0].Reason).toBe('Helped Sam find the library');
+    expect(out.sections.Balances[0].Balance).toBe('9');
+    expect(typeof out.auditRowsNamingTheStudentAccount).toBe('number');
+    expect(h.rows('Audit').filter(row => row[1] === 'STUDENT_RECORD_EXPORTED')).toHaveLength(1);
+    h.setActive(STAFF);
+    expect(() => h.call('exportSchoolRewardsStudentRecord', { studentId: student.id })).toThrow(/role cannot/);
+  });
+
+  it('redacts identifying fields in place, and the audit chain still verifies', () => {
+    const { h, student } = seeded();
+    const before = h.call('verifySchoolRewardsAuditChain');
+    expect(before.ok).toBe(true);
+    const out = h.call('redactSchoolRewardsStudent', { studentId: student.id, reason: 'District records request 2026-114', confirm: true });
+    expect(out.ok).toBe(true);
+    expect(out.rowsRedacted).toBeGreaterThan(1);
+    // The whole point: redaction extends the chain instead of breaking it.
+    expect(out.chain.ok).toBe(true);
+    expect(h.call('verifySchoolRewardsAuditChain').ok).toBe(true);
+    const row = h.rows('Students').slice(1).find(r => r[0] === student.id);
+    expect(row[1]).toBe('Redacted');
+    expect(row[5]).toBe(`redacted.${student.id}@invalid`);
+    expect(row[6]).toBe(false);
+    expect(h.rows('Ledger').slice(1).filter(r => r[1] === student.id).every(r => r[4] === 'Redacted at district request')).toBe(true);
+    // Amounts and ids survive, so the ledger still reconciles.
+    expect(h.rows('Ledger').slice(1).find(r => r[1] === student.id)[3]).toBe(9);
+    expect(h.rows('Audit').filter(r => r[1] === 'STUDENT_REDACTED')).toHaveLength(1);
+    // The residue is reported rather than hidden.
+    expect(out).toHaveProperty('auditRowsStillNamingTheStudentAccount');
+  });
+
+  it('refuses without an explicit confirmation, a real reason, or the right role', () => {
+    const { h, student } = seeded();
+    expect(() => h.call('redactSchoolRewardsStudent', { studentId: student.id, reason: 'District records request 2026-114' })).toThrow(/Confirm it explicitly/);
+    expect(() => h.call('redactSchoolRewardsStudent', { studentId: student.id, reason: 'nope', confirm: true })).toThrow(/Record why/);
+    expect(() => h.call('redactSchoolRewardsStudent', { studentId: student.id, reason: 'ask parent@school.example', confirm: true })).toThrow(/Leave email addresses out/);
+    h.setActive(STAFF);
+    expect(() => h.call('redactSchoolRewardsStudent', { studentId: student.id, reason: 'District records request 2026-114', confirm: true })).toThrow(/role cannot/);
+    h.setActive(ADMIN);
+    expect(h.rows('Students').slice(1).find(r => r[0] === student.id)[1]).not.toBe('Redacted');
+  });
+
+  it('leaves a redacted account unable to sign in, and is safe to run twice', () => {
+    const { h, student } = seeded();
+    h.call('redactSchoolRewardsStudent', { studentId: student.id, reason: 'District records request 2026-114', confirm: true });
+    h.setActive(STUDENT);
+    expect(() => h.call('getSchoolRewardsBootstrap')).toThrow(/not on the School Rewards member list|not an active/i);
+    h.setActive(ADMIN);
+    const again = h.call('redactSchoolRewardsStudent', { studentId: student.id, reason: 'District records request 2026-114', confirm: true });
+    expect(again.ok).toBe(true);
+    expect(again.rowsRedacted).toBe(0);
+    expect(h.call('verifySchoolRewardsAuditChain').ok).toBe(true);
+  });
+});
+
+describe('academic year rollover (2026-09-03)', () => {
+  function withPoints() {
+    const h = harness();
+    const student = setup(h);
+    const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 14, categoryId: category.id, reason: 'Whole-year effort', idempotencyKey: 'year_award_0001' });
+    h.setActive(ADMIN);
+    return { h, student, category };
+  }
+
+  it('previews the year before anything changes', () => {
+    const { h } = withPoints();
+    const preview = h.call('getSchoolRewardsYearPreview');
+    expect(preview.pointsInCirculation).toBe(14);
+    expect(preview.studentsWithPoints).toBe(1);
+    expect(preview.activeHolds).toBe(0);
+    expect(preview.ready).toBe(true);
+    // A preview writes nothing.
+    expect(h.rows('Ledger').slice(1)).toHaveLength(1);
+  });
+
+  it('closes the year, resets balances through the ledger, and keeps the audit chain valid', () => {
+    const { h, student } = withPoints();
+    const out = h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'none', confirm: true });
+    expect(out.ok).toBe(true);
+    expect(out.balancesCleared).toBe(1);
+    expect(out.pointsClosed).toBe(14);
+    // Balance is zero, and it got there by an appended entry rather than an edit.
+    expect(h.call('getSchoolRewardsBootstrap').students.find(s => s.id === student.id).balance).toBe(0);
+    const closing = h.rows('Ledger').slice(1).filter(row => row[5] === 'year_close');
+    expect(closing).toHaveLength(1);
+    expect(closing[0][3]).toBe(-14);
+    // Last year's award is still there to read.
+    expect(h.rows('Ledger').slice(1).filter(row => row[2] === 'EARN')).toHaveLength(1);
+    expect(h.call('verifySchoolRewardsAuditChain').ok).toBe(true);
+    // A per-student summary was archived, and the new year is live.
+    const summary = h.rows('YearSummaries').slice(1);
+    expect(summary).toHaveLength(1);
+    expect(summary[0][4]).toBe(14);
+    expect(summary[0][5]).toBe(0);
+    expect(h.call('getSchoolRewardsBootstrap').config.academicYear).toBe('2027-28');
+    expect(h.rows('Audit').filter(row => row[1] === 'ACADEMIC_YEAR_STARTED')).toHaveLength(1);
+  });
+
+  it('can carry balances instead, which only relabels the year', () => {
+    const { h, student } = withPoints();
+    const out = h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'all', confirm: true });
+    expect(out.balancesCleared).toBe(0);
+    expect(out.pointsCarried).toBe(14);
+    expect(h.call('getSchoolRewardsBootstrap').students.find(s => s.id === student.id).balance).toBe(14);
+    expect(h.rows('YearSummaries').slice(1)[0][5]).toBe(14);
+    expect(h.rows('Ledger').slice(1).filter(row => row[5] === 'year_close')).toHaveLength(0);
+  });
+
+  it('refuses without confirmation, with a bad or unchanged year, from the wrong role, or mid-shopping', () => {
+    const { h } = withPoints();
+    expect(() => h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'none' })).toThrow(/Confirm it explicitly/);
+    expect(() => h.call('startSchoolRewardsAcademicYear', { academicYear: '!!', carryOver: 'none', confirm: true })).toThrow(/Name the new academic year/);
+    h.setActive(STAFF);
+    expect(() => h.call('getSchoolRewardsYearPreview')).toThrow(/role cannot/);
+    expect(() => h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'none', confirm: true })).toThrow(/role cannot/);
+    h.setActive(ADMIN);
+    h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'none', confirm: true });
+    expect(() => h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'none', confirm: true })).toThrow(/must be different/);
+    h.call('adminUpsertRewardsWindow', { name: 'Trimester 3', status: 'OPEN', startsAt: '2026-01-01T00:00:00.000Z', endsAt: '2030-01-01T00:00:00.000Z' });
+    expect(() => h.call('startSchoolRewardsAcademicYear', { academicYear: '2028-29', carryOver: 'none', confirm: true })).toThrow(/Close the shopping window/);
+    expect(h.call('getSchoolRewardsYearPreview').ready).toBe(false);
+  });
+
+  it('leaves the school able to award again straight away in the new year', () => {
+    const { h, student, category } = withPoints();
+    h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'none', confirm: true });
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 3, categoryId: category.id, reason: 'First award of the new year', idempotencyKey: 'year_award_0002' });
+    h.setActive(ADMIN);
+    expect(h.call('getSchoolRewardsBootstrap').students.find(s => s.id === student.id).balance).toBe(3);
+    expect(h.call('verifySchoolRewardsAuditChain').ok).toBe(true);
+  });
+});
+
+describe('closing a year at school scale (2026-09-04)', () => {
+  it('writes once per sheet rather than four times per student, and still zeroes every balance', () => {
+    const h = harness();
+    setup(h);
+    const category = seededCategory(h);
+    h.setActive(ADMIN);
+    const students = [h.call('getSchoolRewardsBootstrap').students[0].id];
+    for (let i = 0; i < 11; i += 1) {
+      const saved = h.call('adminUpsertRewardsStudent', { firstName: `Student${i}`, lastInitial: 'X', grade: '4', homeroom: '4A', email: `student${i}@${DOMAIN}`, active: true });
+      students.push(saved.student ? saved.student.id : saved.id);
+    }
+    h.setActive(STAFF);
+    students.forEach((id, i) => h.call('awardSchoolRewardsPoints', { studentId: id, amount: 5 + i, categoryId: category.id, reason: 'Steady effort all year', idempotencyKey: `scale_award_${i}` }));
+    h.setActive(ADMIN);
+
+    h.resetRangeReads();
+    const out = h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'none', confirm: true });
+    expect(out.balancesCleared).toBe(12);
+    expect(out.studentsSummarised).toBe(12);
+
+    // The cost of closing must not scale with the roster. Before batching this
+    // was roughly four spreadsheet round trips per student.
+    expect(h.rangeReads('Ledger')).toBeLessThanOrEqual(4);
+    expect(h.rangeReads('Balances')).toBeLessThanOrEqual(4);
+    expect(h.rangeReads('YearSummaries')).toBeLessThanOrEqual(4);
+
+    const bootstrap = h.call('getSchoolRewardsBootstrap');
+    expect(bootstrap.students.every(student => student.balance === 0)).toBe(true);
+    expect(h.rows('Ledger').slice(1).filter(row => row[5] === 'year_close')).toHaveLength(12);
+    expect(h.rows('YearSummaries').slice(1)).toHaveLength(12);
+    // Every closing entry is a real reversal of that student's own balance.
+    const byStudent = {};
+    h.rows('Ledger').slice(1).filter(row => row[5] === 'year_close').forEach(row => { byStudent[row[1]] = row[3]; });
+    expect(Object.values(byStudent).map(Number).sort((a, b) => a - b)[0]).toBe(-16);
+    expect(h.call('verifySchoolRewardsAuditChain').ok).toBe(true);
+  });
+});
+
+describe('capacity and retention (2026-09-04)', () => {
+  it('reports how full the repository is and what may be trimmed, without touching the record', () => {
+    const h = harness();
+    const student = setup(h);
+    const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 6, categoryId: category.id, reason: 'Kept at it', idempotencyKey: 'capacity_award_01' });
+    h.setActive(ADMIN);
+    const out = h.call('getSchoolRewardsCapacity');
+    expect(out.ok).toBe(true);
+    expect(out.limit).toBe(10000000);
+    expect(out.cells).toBeGreaterThan(0);
+    expect(out.comfortable).toBe(true);
+    expect(out.permanent).toEqual(['Ledger', 'Audit']);
+    expect(out.largest[0]).toHaveProperty('sheet');
+    // Nothing recent is prunable.
+    expect(out.prunableRequestRecords).toBe(0);
+    h.setActive(STAFF);
+    expect(() => h.call('getSchoolRewardsCapacity')).toThrow(/role cannot/);
+  });
+
+  it('trims only settled request records past the retention window, and never the ledger', () => {
+    const h = harness();
+    const student = setup(h);
+    const category = seededCategory(h);
+    h.setNow(new Date(Date.now() - 400 * 86400000).toISOString());
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 4, categoryId: category.id, reason: 'Long ago', idempotencyKey: 'capacity_old_01' });
+    h.setNow(new Date().toISOString());
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 2, categoryId: category.id, reason: 'Recent', idempotencyKey: 'capacity_new_01' });
+    h.setActive(ADMIN);
+
+    const ledgerBefore = h.rows('Ledger').length;
+    expect(h.call('getSchoolRewardsCapacity').prunableRequestRecords).toBeGreaterThan(0);
+    expect(() => h.call('pruneSchoolRewardsRequestRecords', { olderThanDays: 180 })).toThrow(/Confirm it explicitly/);
+    expect(() => h.call('pruneSchoolRewardsRequestRecords', { olderThanDays: 10, confirm: true })).toThrow(/Retention days/);
+    const out = h.call('pruneSchoolRewardsRequestRecords', { olderThanDays: 180, confirm: true });
+    expect(out.removed).toBeGreaterThan(0);
+    // The record itself is untouched, and the trim is audited.
+    expect(h.rows('Ledger').length).toBe(ledgerBefore);
+    expect(h.call('verifySchoolRewardsAuditChain').ok).toBe(true);
+    expect(h.rows('Audit').filter(row => row[1] === 'REQUEST_RECORDS_TRIMMED')).toHaveLength(1);
+    // The recent request record survived, so a retry is still protected.
+    expect(h.rows('Idempotency').slice(1).some(row => String(row[0]).includes('capacity_new_01'))).toBe(true);
+    h.setActive(STAFF);
+    expect(() => h.call('pruneSchoolRewardsRequestRecords', { olderThanDays: 180, confirm: true })).toThrow(/role cannot/);
+  });
+
+  it('lets a school reuse a period key in a new academic year', () => {
+    const h = harness();
+    const student = setup(h);
+    const category = seededCategory(h);
+    h.setActive(STAFF);
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, amount: 8, categoryId: category.id, reason: 'Before the close', idempotencyKey: 'period_award_01' });
+    h.setActive(ADMIN);
+    const first = h.call('sendSchoolRewardsBalanceStatements', { periodKey: 'week-1', limit: 50 });
+    expect(first.sent).toBe(1);
+    // Asking again in the same year replays the same run rather than sending twice.
+    const repeat = h.call('sendSchoolRewardsBalanceStatements', { periodKey: 'week-1', limit: 50 });
+    expect(repeat.runId).toBe(first.runId);
+    expect(h.rows('MailOutbox').slice(1)).toHaveLength(1);
+    h.call('startSchoolRewardsAcademicYear', { academicYear: '2027-28', carryOver: 'all', confirm: true });
+    // A new year makes the same period name usable again instead of silently
+    // replaying last year's run and sending nothing.
+    const nextYear = h.call('sendSchoolRewardsBalanceStatements', { periodKey: 'week-1', limit: 50 });
+    expect(nextYear.runId).not.toBe(first.runId);
+    expect(nextYear.sent).toBe(1);
+    expect(h.rows('MailOutbox').slice(1)).toHaveLength(2);
+  });
+});
+
+

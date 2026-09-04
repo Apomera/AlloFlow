@@ -10305,7 +10305,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           'aria-label': __alloT('stem.autorepair.auto_repair_shop_main_menu', 'Auto Repair Shop main menu'),
           'data-ar-menu-dashboard': 'true',
           className: 'ar-menu-shell',
-          style: { color: T.text }
+          // ★ OWN GROUND. The shell declared T.text and painted no background,
+          // and stem_lab renders every tool on a WHITE card in BOTH themes — so
+          // in dark theme the section headings that organise 35 modules ("What
+          // brings you into the garage?", "Explore the full shop", and both
+          // sub-lines) were light ink on white. The cards inside paint their own
+          // grounds, which is why only the chrome between them disappeared.
+          style: { color: T.text, background: T.bg, borderRadius: 14 }
         },
           h('a', { href: '#ar-menu-categories', 'data-ar-focusable': true,
             style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
@@ -11492,7 +11498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('div', {
             'data-ar-repair-workflow': pickedRepair.id,
             className: 'ar-workflow-shell',
-            style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text }
+            style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
               h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_repair_list', 'Back to repair list'),
@@ -11692,7 +11698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🔧 Repair scenarios'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
             __alloT('stem.autorepair.pick_a_job_each_scenario_shows_tools_s', 'Pick a job. Each scenario shows tools, safety, step-by-step, gotchas, and a clear DIY-vs-shop verdict.')),
@@ -12214,7 +12220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         if (!question) {
           var pct = Math.round((score / QUIZ.length) * 100);
           if (pct >= 80) awardBadge('quiz-passed', 'Passed Auto Repair Quiz');
-          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
             backBar('🧪 Quiz complete'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
               h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, '🎉 Quiz complete: ' + score + ' / ' + QUIZ.length + ' (' + pct + '%)'),
@@ -12229,7 +12235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🧪 Quiz'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
@@ -12299,7 +12305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             })
           );
         }
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('📚 Resources'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
             __alloT('stem.autorepair.every_org_cited_in_this_tool', 'Every org cited in this tool. '),
@@ -12351,7 +12357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
 
         if (!tree) {
-          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
             backBar('🌳 Decision tree'),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.symptom_likely_cause', '🌳 Symptom → likely cause')),
@@ -12381,7 +12387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('button', { onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.restart', '↺ Restart')));
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
             h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_tree_list', 'Back to tree list'),
               onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.trees', '← Trees')),
@@ -12958,7 +12964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🛒 Used car buying'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.used_car_sub_modes', 'Used-car sub-modes'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -13531,7 +13537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (!query) return true;
           return g.term.toLowerCase().indexOf(query) >= 0 || g.def.toLowerCase().indexOf(query) >= 0;
         });
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('📖 Glossary'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.50_essential_auto_terms_2', '📖 50+ essential auto terms')),
@@ -14133,7 +14139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('\uD83D\uDEA8 Roadside emergency'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.roadside_sub_modes', 'Roadside sub-modes'),
             className: 'ar-workflow-tabs',
@@ -14301,7 +14307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🏪 Shop business'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.shop_business_sections', 'Shop business sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -15496,7 +15502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return '🟢 OK';
         };
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('📅 Maintenance schedule'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.personalized_maintenance_schedule', '📅 Personalized maintenance schedule')),
@@ -17504,7 +17510,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🏁 Race mechanic'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.race_mechanic_sections', 'Race mechanic sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -17629,7 +17635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🚗 Project car build'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.project_car_sections', 'Project car sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -17801,7 +17807,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🚜 Diesel & heavy equipment'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.diesel_sections', 'Diesel sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -17946,7 +17952,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🛷 Powersports + small engine'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.powersports_sections', 'Powersports sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -18237,7 +18243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🛞 Tire deep dive'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.tire_sections', 'Tire sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
@@ -19207,7 +19213,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           : st === 'loading' ? __alloT('stem.autorepair.uh_3d_loading', 'Loading the 3D engine bay…')
           : null;
 
-        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.under_hood_tour', 'Under-hood tour'), style: { padding: 20, maxWidth: 1040, margin: '0 auto', color: T.text } },
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.under_hood_tour', 'Under-hood tour'), style: { padding: 20, maxWidth: 1040, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar(__alloT('stem.autorepair.under_hood_tour_title', '🔎 Under-hood tour')),
 
           // Arrived here from a live Repair Bay case? Offer the way back.
@@ -19386,7 +19392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               if (done[c.id].verified === true) verifiedSolved++;
             }
           });
-          return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.repair_bay', 'Repair Bay'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+          return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.repair_bay', 'Repair Bay'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
             backBar(__alloT('stem.autorepair.repair_bay_title', '🔧 Repair Bay — diagnose, repair & verify')),
             h('p', { style: { margin: '0 0 6px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
               __alloT('stem.autorepair.rb_intro', 'A car comes in with a complaint. Inspect it, run tests that separate the possibilities, commit to one repair, then prove the result before release. You are graded on evidence, verification, and safety—not just the right answer.')),
@@ -19866,7 +19872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.6 } }, body));
         }
 
-        return h('div', { role: 'main', 'aria-label': 'Repair Bay case: ' + kase.title, style: { padding: 20, maxWidth: 1060, margin: '0 auto', color: T.text } },
+        return h('div', { role: 'main', 'aria-label': 'Repair Bay case: ' + kase.title, style: { padding: 20, maxWidth: 1060, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
             h('button', { 'data-ar-focusable': true, 'aria-label': 'Back to case list',
               onClick: function () {
@@ -20633,7 +20639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.tc_title_aria', 'Roadside tyre change'), style: { padding: 20, maxWidth: 1040, margin: '0 auto', color: T.text } },
+        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.tc_title_aria', 'Roadside tyre change'), style: { padding: 20, maxWidth: 1040, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar(__alloT('stem.autorepair.tc_title', '🛞 Change a tyre')),
 
           h('p', { style: { margin: '0 0 6px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
@@ -20807,7 +20813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var pct = totalBadges > 0 ? Math.round((earnedBadges / totalBadges) * 100) : 0;
         var pctColor = pct >= 80 ? T.good : pct >= 50 ? T.accentHi : pct >= 25 ? T.warn : T.dim;
 
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           backBar('🏆 Badge gallery'),
           h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + pctColor, marginBottom: 14, textAlign: 'center' } },
             h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, __alloT('stem.autorepair.curriculum_mastery', 'Curriculum mastery')),
@@ -20851,6 +20857,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
+      // ★ ONE GROUND FOR EVERY VIEW. stem_lab renders each tool on a WHITE
+      // card in BOTH themes, and these views declare T.text but paint no
+      // background, so in dark theme every back bar, <h1> and intro sat as
+      // light ink on white. Wrapping the router is one fix for all 18
+      // remaining views, and it covers any view added later.
+      var __arView = (function () {
       switch (view) {
         case 'diagnose':   return renderDiagnose();
         case 'tree':       return renderTree();
@@ -20944,6 +20956,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'menu':
         default:           return renderMenu();
       }
+      })();
+      return h('div', { 'data-autorepair-root': 'true', style: { background: T.bg, color: T.text, borderRadius: 14 } }, __arView);
       } catch(e) {
         console.error('[AutoRepair] render error', e);
         return ctx.React.createElement('div', { style: { padding: 16, color: '#fde2e2', background: '#7f1d1d', borderRadius: 8 } },

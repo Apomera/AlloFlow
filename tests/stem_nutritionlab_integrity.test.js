@@ -438,8 +438,16 @@ describe('kit legibility: darkened accents and a light-pinned substrate', () => 
   it('the tool pins the themed palette light on its own root', () => {
     // The STEM host renders tools on a WHITE card even in dark theme, so themed
     // ink with no self-painted ground is light-on-light.
-    expect(nut).toContain("'html:not(.theme-contrast) [data-nutritionlab-root] {'");
+    expect(nut).toContain("'[data-nutritionlab-root] {'");
     expect(nut).toContain("'  --allo-stem-text-soft: #475569;'");
+    // ★ The pin used to be written `html:not(.theme-contrast) [data-...]`, which
+    // excluded nothing: `theme-${theme}` is stamped on <main>, never on <html>,
+    // so the light pin also covered the contrast theme's black canvas and the
+    // tool's own title measured 1.4:1 there. The real exclusion is a
+    // .theme-contrast rule that wins on specificity — assert THAT.
+    expect(nut).toContain("'.theme-contrast [data-nutritionlab-root] {'");
+    expect(nut).toContain("'  --allo-stem-text: #ffff00;'");
+    expect(nut).not.toContain("'html:not(.theme-contrast) [data-nutritionlab-root] {'");
     // Every view has to sit inside that root, or the pin covers only some of them.
     expect(nut).toContain("return h('div', { 'data-nutritionlab-root': 'true' }, __nlBody);");
     expect(nut).toContain('var __nlBody = (function () {');

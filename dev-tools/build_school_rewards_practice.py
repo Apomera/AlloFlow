@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+"""Build school-rewards-practice.html from the real Portal.html.
+
+The practice page is the shipped portal with an in-browser fictional ledger
+in place of google.script.run, plus a role and scenario bar and an editable
+tour. Because it embeds Portal.html verbatim, it MUST be rebuilt after any
+change to the portal, or the page silently drifts from the tool it teaches.
+
+    python dev-tools/build_school_rewards_practice.py
+
+Writes both trees: the repo root and desktop/web-app/public.
+"""
+import io, os
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CR, LF = chr(13), chr(10)
+portal = io.open('apps_script/school_rewards/Portal.html', encoding='utf-8', newline='').read().replace(CR + LF, LF)
+
+toolbar_css = r'''
+<style>
+  .practice-bar{position:sticky;top:0;z-index:30;background:#1e1b4b;color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;border-bottom:3px solid #fbbf24}
+  .practice-bar strong{font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+  .practice-bar label{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#e0e7ff;margin:0}
+  .practice-bar select,.practice-bar button,.practice-bar a{min-height:36px;margin:0;width:auto;border-radius:8px;border:1px solid #6d64c8;background:#2e2a6e;color:#fff;font-weight:800;font-size:12px;padding:6px 10px;text-decoration:none}
+  .practice-bar button.primary{background:#fbbf24;color:#000;border-color:#fbbf24}
+  .practice-bar .spacer{flex:1 1 auto}
+  .practice-bar label{max-width:100%;flex-wrap:wrap}
+  .practice-bar select{max-width:100%;min-width:0}
+  @media (max-width:420px){.practice-bar label{width:100%}.practice-bar select{flex:1 1 auto;width:auto}}
+  .practice-panel{background:#fff;border-bottom:1px solid #ccd4e2;padding:12px 14px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));font-size:13px}
+  .practice-panel label{display:block;font-size:12px;font-weight:850;color:#455269}
+  .practice-panel textarea{min-height:110px;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+  .practice-panel .full{grid-column:1/-1}
+  .practice-note{grid-column:1/-1;font-size:12px;color:#5c6980;margin:0}
+  .practice-rows{border:1px solid #ccd4e2;border-radius:12px;padding:10px 12px;margin:0;min-width:0}
+  .practice-rows legend{font-size:13px;font-weight:900;padding:0 6px}
+  .practice-rows button{min-height:40px;border-radius:9px;border:1px solid #8e9aaf;background:#fff;color:#1e1b4b;font-weight:800;padding:6px 12px;width:auto;margin:0}
+  .practice-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .practice-rowlist{display:grid;gap:6px}
+  .practice-rowline{display:grid;gap:6px;grid-template-columns:minmax(120px,1.2fr) minmax(140px,2fr) auto;align-items:end}
+  .practice-rowline.prize-row{grid-template-columns:minmax(120px,2fr) 90px 150px auto}
+  .practice-rowline label{font-size:11px}
+  .practice-rowline input{margin:0;min-height:40px}
+  .practice-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  .practice-step{border:1px solid #ccd4e2;border-radius:12px;padding:10px 12px;display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));background:#f7f8fb}
+  .practice-step .head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-weight:900}
+  .practice-step .head .practice-row{margin:0}
+  .practice-step .head button{min-height:36px;padding:4px 10px}
+  .practice-step select,.practice-step input,.practice-step textarea{margin:0;min-height:40px;font-size:13px}
+  .practice-step textarea{min-height:64px;font-family:inherit}
+  .practice-step .wide{grid-column:1/-1}
+  @media (max-width:640px){.practice-rowline,.practice-rowline.prize-row{grid-template-columns:1fr 1fr}.practice-rowline .remove{grid-column:1/-1}}
+  @media (prefers-color-scheme: dark){.practice-rows,.practice-step{border-color:#3a4760}.practice-step{background:#1c2536}.practice-rows button{background:#161e2e;color:#e6ebf5;border-color:#55627a}}
+  @media (prefers-contrast: more){.practice-rows,.practice-step{border:2px solid currentColor}.practice-rows button{border:2px solid currentColor}}
+  .tour-box{position:fixed;left:12px;right:12px;bottom:12px;z-index:40;max-width:520px;margin:0 auto;background:#1e1b4b;color:#fff;border:2px solid #fbbf24;border-radius:14px;padding:14px 16px;box-shadow:0 18px 40px rgba(0,0,0,.4)}
+  .tour-box h2{margin:0 0 4px;font-size:16px}.tour-box p{margin:0 0 10px;font-size:13px;line-height:1.45;color:#e0e7ff}
+  .tour-box .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tour-box .kicker{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#fbbf24}
+  .tour-box button{min-height:40px;border-radius:9px;border:1px solid #6d64c8;background:#2e2a6e;color:#fff;font-weight:800;padding:6px 12px}.tour-box button.primary{background:#fbbf24;color:#000;border-color:#fbbf24}
+  .tour-target{outline:4px solid #fbbf24!important;outline-offset:3px;border-radius:10px}
+  @media (prefers-color-scheme: dark){.practice-panel{background:#161e2e;border-bottom-color:#3a4760}.practice-panel label{color:#c7d0e0}.practice-note{color:#b3bdd0}}
+  @media (prefers-contrast: more){.practice-bar,.tour-box{background:#000;border-color:#fbbf24}.practice-bar select,.practice-bar button,.practice-bar a,.tour-box button{background:#000;border:2px solid #fff;color:#fff}.practice-bar button.primary,.tour-box button.primary{background:#fbbf24;color:#000;border-color:#fbbf24}}
+</style>
+'''
+
+toolbar_html = r'''
+<div class="practice-bar" role="region" aria-label="Practice mode controls">
+  <strong>Practice mode</strong><span>Fictional data in this browser only. Nothing here reaches a real ledger.</span>
+  <label>Role <select id="practice-role"><option value="staff">Staff</option><option value="cashier">Cashier</option><option value="admin">Administrator</option><option value="student">Student</option></select></label>
+  <label>Scenario <select id="practice-scenario"></select></label>
+  <button type="button" id="practice-customize" aria-expanded="false" aria-controls="practice-panel">Customize</button>
+  <button type="button" id="practice-tour" class="primary">Start the tour</button>
+  <button type="button" id="practice-reset">Reset data</button>
+  <span class="spacer"></span>
+  <a href="https://alloflow-cdn.pages.dev/school-rewards-manual" target="_blank" rel="noopener noreferrer">Manual</a>
+</div>
+<div id="practice-panel" class="practice-panel" hidden>
+  <p class="practice-note full"><strong>You do not need this panel to practise.</strong> Pick a scenario in the bar above and press Start the tour. Open this panel only to make the practice school look like yours: its name, size, prizes, and the words the tour uses.</p>
+  <label>School name<input id="practice-school" value="Practice Elementary"></label>
+  <label>Students<input id="practice-students" type="number" min="3" max="200" value="12"></label>
+  <label>Store status<select id="practice-window"><option value="PREVIEW">Preview (prizes visible, no checkout)</option><option value="OPEN">Open (checkout allowed)</option><option value="DRAFT">Draft (store hidden)</option></select></label>
+  <label>Starting points per student (max)<input id="practice-points" type="number" min="0" max="500" value="40"></label>
+  <fieldset class="full practice-rows"><legend>Recognition categories</legend><div id="practice-categories-rows" class="practice-rowlist"></div><button type="button" id="practice-add-category">Add a category</button></fieldset>
+  <fieldset class="full practice-rows"><legend>Prizes</legend><div id="practice-prizes-rows" class="practice-rowlist"></div><button type="button" id="practice-add-prize">Add a prize</button></fieldset>
+  <fieldset class="full practice-rows"><legend>Tour steps</legend><p class="practice-note">Each step opens a tab, highlights one control, and shows a title with one sentence. A step runs only for the role it belongs to, so the staff tour and the cashier tour can differ.</p><ol id="practice-tour-list" class="practice-steps"></ol><div class="practice-row"><button type="button" id="practice-add-step">Add a step</button><button type="button" id="practice-tour-restore">Use the built-in tour</button></div></fieldset>
+  <p class="practice-note full">Apply builds a fresh fictional ledger from these settings for the selected role. Your settings and tour are remembered in this browser; Reset returns to the built-in scenario. Export/import lets a district hand every school the same practice set.</p>
+  <p id="practice-panel-status" class="practice-note full" role="status" aria-live="polite"></p>
+  <div class="full practice-row"><button type="button" id="practice-apply" class="primary">Apply and reload</button><button type="button" id="practice-export" class="secondary">Export settings</button><label class="secondary" style="display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border:1px solid #8e9aaf;border-radius:10px;cursor:pointer">Import settings<input id="practice-import" type="file" accept="application/json,.json" hidden></label></div>
+</div>
+'''
+
+stub_js = r'''
+<script>
+/* SR_PRACTICE_START */
+// Practice portal (2026-09-02). The real Portal.html above is served with a
+// fictional repository in place of google.script.run. It honours the rules a
+// teacher or cashier would meet on a real day: one award per student, undo,
+// window state at checkout, live inventory, receipts, admin edits. Everything
+// lives in this browser under one localStorage key; Reset rebuilds it.
+(function(){
+  var STORAGE='alloflow_school_rewards_practice_v1',SETTINGS='alloflow_school_rewards_practice_settings_v1',TOUR='alloflow_school_rewards_practice_tour_v1';
+  var FIRST=['Avery','Blake','Casey','Dana','Eli','Finley','Gray','Harper','Indy','Jules','Kai','Lane','Morgan','Noor','Oak','Parker','Quinn','Reese','Sage','Tatum','Uma','Vale','Wren','Xen','Yael','Zion'];
+  var LAST='RTUMBSKLPWHDGNVJ';
+  var COLORS=['#2f855a','#2b6cb0','#b7791f','#6b46c1','#c53030','#0f766e'];
+  var SCENARIOS={
+    small:{label:'Small school (12 students, store preview)',school:'Practice Elementary',students:12,window:'PREVIEW',points:40},
+    shopping:{label:'Shopping day (24 students, store open)',school:'Practice Middle School',students:24,window:'OPEN',points:90},
+    large:{label:'Large school (120 students, store preview)',school:'Practice K-8',students:120,window:'PREVIEW',points:60}
+  };
+  var DEFAULT_CATEGORIES='Helpful | Helping others learn.\nOrganized | Ready with what the lesson needs.\nWorking hard | Sticking with a challenge.\nLearning | Trying a new strategy.';
+  var DEFAULT_PRIZES='Library lunch pass | 30 |\nRobotics kit hour | 80 | 3\nFront-of-line pass | 15 | 20\nClass DJ for a day | 60 | 5';
+  var DEFAULT_TOUR=[
+    {role:'staff',tab:'award',target:'#award-student-tiles',title:'Choose the student',text:'Tap a tile. The confirmation panel repeats who you chose so the wrong student is caught before points move.'},
+    {role:'staff',tab:'award',target:'#award-group-mode',title:'Award a group',text:'Tick this to give the same recognition to several students; tiles become checkboxes and the counter shows how many will receive it.'},
+    {role:'staff',tab:'award',target:'#award-reason',title:'Write to the student',text:'The explanation is required and is the sentence the student will read on their overview.'},
+    {role:'staff',tab:'award',target:'#award-submit',title:'Record, then undo if needed',text:'After recording, the notice offers Undo for fifteen minutes. Try it now in practice.'},
+    {role:'cashier',tab:'store',target:'#checkout-student',title:'Verify the student at the register',text:'Choose the student and read the confirmation aloud or through your school routine before adding prizes.'},
+    {role:'cashier',tab:'store',target:'#refresh-store-live',title:'Live availability',text:'Checkout refreshes balances and inventory before the final confirmation. If something changed, the cart is kept and the item is highlighted.'},
+    {role:'student',tab:'dashboard',target:'#preview-catalog',title:'Save for a prize',text:'A student can mark one prize as a goal; the line above the catalog shows the points still needed.'},
+    {role:'admin',tab:'admin',target:'#settings-card',title:'Admin sections',text:'Use the section index to jump around; each card collapses. School settings hides the Print Lab until you are ready.'}
+  ];
+  function now(){return new Date().toISOString()}
+  function id(prefix){return prefix+'_'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6)}
+  function num(v,d){var n=Number(v);return isFinite(n)?n:d}
+  function readJson(key,fallback){try{var v=JSON.parse(localStorage.getItem(key)||'null');return v==null?fallback:v}catch(e){return fallback}}
+  function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(e){}}
+  function parseLines(text,build){return String(text||'').split(/\r?\n/).map(function(line){return line.split('|').map(function(s){return s.trim()})}).filter(function(p){return p[0]}).map(build)}
+  function settings(){var s=readJson(SETTINGS,null);if(!s||typeof s!=='object')s={};if(!SCENARIOS[s.scenario])s.scenario='small';return s}
+  function build(cfg){
+    var students=[],count=Math.max(3,Math.min(200,num(cfg.students,12)));
+    for(var i=0;i<count;i++){var first=FIRST[i%FIRST.length]+(i>=FIRST.length?' '+(Math.floor(i/FIRST.length)+1):''),grade=String(3+(i%4)),room=grade+String.fromCharCode(65+Math.floor(i/8)%3);students.push({id:'student_'+String(i+1).padStart(8,'0'),firstName:first,lastInitial:LAST[i%LAST.length],grade:grade,homeroom:room,email:first.toLowerCase().replace(/[^a-z]/g,'')+(i+1)+'@practice.example',active:true})}
+    var categories=parseLines(cfg.categories||DEFAULT_CATEGORIES,function(p,i){return {id:'category_'+String(i+1).padStart(7,'0'),name:p[0],framework:'HOWL',description:p[1]||'',active:true,color:COLORS[i%COLORS.length]}});
+    if(!categories.length)categories=[{id:'category_0000001',name:'Helpful',framework:'HOWL',description:'Helping others learn.',active:true,color:COLORS[0]}];
+    var catalog=parseLines(cfg.prizes||DEFAULT_PRIZES,function(p,i){var limit=p[2]===''||p[2]==null?-1:Math.max(0,num(p[2],-1));return {id:'prize_'+String(i+1).padStart(9,'0'),name:p[0],description:p[3]||'',cost:Math.max(1,num(p[1],10)),active:true,imageUrl:'',inventoryLimit:limit,remaining:limit<0?-1:limit,inventoryVersion:1}});
+    var windows=[{id:'window_0000001',name:'Trimester 1',status:cfg.window||'PREVIEW',startsAt:'',endsAt:''}];
+    var ledger=[],maxPoints=Math.max(0,num(cfg.points,40)),seed=0;
+    students.forEach(function(s,i){var earned=Math.round(maxPoints*((i*7)%10+1)/10);var slices=Math.max(1,Math.min(3,Math.floor(earned/10)));for(var k=0;k<slices;k++){var cat=categories[(i+k)%categories.length],amt=k===slices-1?earned-Math.floor(earned/slices)*(slices-1):Math.floor(earned/slices);if(amt>0)ledger.push({id:'ledger_seed_'+String(++seed).padStart(6,'0'),studentId:s.id,kind:'EARN',amount:amt,reason:['Helped a partner without giving the answer','Cleaned up the lab table before being asked','Kept going after a tough first draft','Tried the new strategy and explained it'][(i+k)%4],referenceType:'award',referenceId:'',reversesId:'',at:new Date(Date.now()-(10-k)*86400000).toISOString(),categoryId:cat.id,actorEmail:'teacher@practice.example'})}});
+    return {config:{schoolName:cfg.school||'Practice School',academicYear:'2026-27',levelThresholds:[0,25,75,150,300],printLabEnabled:false},students:students,members:[{email:'teacher@practice.example',displayName:'Practice Teacher',role:'staff',active:true},{email:'store@practice.example',displayName:'Practice Cashier',role:'cashier',active:true},{email:'admin@practice.example',displayName:'Practice Administrator',role:'admin',active:true}],categories:categories,catalog:catalog,windows:windows,ledger:ledger,orders:[],receipts:[],audit:[]};
+  }
+  function repoFromSettings(){var s=settings(),base=SCENARIOS[s.scenario];var cfg={school:s.school||base.school,students:s.students||base.students,window:s.window||base.window,points:s.points!=null?s.points:base.points,categories:s.categories,prizes:s.prizes};return build(cfg)}
+  var repo=readJson(STORAGE,null);if(!repo||!repo.students){repo=repoFromSettings();writeJson(STORAGE,repo)}
+  function save(){writeJson(STORAGE,repo)}
+  var role=(function(){try{return localStorage.getItem('alloflow_school_rewards_practice_role')||'staff'}catch(e){return 'staff'}})();
+  function actor(){var email=role==='student'?repo.students[0].email:role+'@practice.example';return {role:role,email:email,studentId:role==='student'?repo.students[0].id:''}}
+  function balanceOf(studentId){return repo.ledger.filter(function(e){return e.studentId===studentId}).reduce(function(sum,e){return sum+(e.kind==='EARN'?e.amount:e.kind==='REVERSAL'?-e.amount:e.kind==='SPEND'?-e.amount:e.kind==='REFUND'?e.amount:0)},0)}
+  function studentDto(s){var b=balanceOf(s.id);return Object.assign({},s,{balance:b,reservedPoints:0,availableBalance:b})}
+  function progress(studentId){var t=repo.config.levelThresholds;return repo.categories.map(function(c){var pts=repo.ledger.filter(function(e){return e.studentId===studentId&&e.categoryId===c.id}).reduce(function(sum,e){return sum+(e.kind==='EARN'?e.amount:e.kind==='REVERSAL'?-e.amount:0)},0);var level=0;for(var i=0;i<t.length;i++)if(pts>=t[i])level=i;var next=level+1<t.length?t[level+1]:null;return {name:c.name,points:pts,levelName:'Level '+(level+1),currentThreshold:t[level],nextThreshold:next,pointsToNext:next==null?null:next-pts,color:c.color,framework:c.framework,description:c.description}})}
+  function fail(code,message){var err=new Error(message);err.code=code;throw err}
+  function findStudent(idv){var s=repo.students.find(function(x){return x.id===idv});if(!s||s.active===false)fail('not_found','Student was not found or is inactive.');return s}
+  function orderDto(o){return {id:o.id,studentId:o.studentId,windowId:o.windowId,total:o.total,status:o.status,at:o.at,lines:o.lines}}
+  function bootstrap(){var a=actor();var students=repo.students.filter(function(s){return a.role==='admin'||s.active!==false}).map(studentDto);var visible=repo.windows.find(function(w){return w.status==='OPEN'||w.status==='PREVIEW'});
+    if(a.role==='student'){var own=studentDto(findStudent(a.studentId));own.language=(repo.config.languages||{})[a.studentId]||'en';var ownLedger=repo.ledger.filter(function(e){return e.studentId===a.studentId}).slice(-200).reverse();var ownOrders=repo.orders.filter(function(o){return o.studentId===a.studentId}).slice(-50).reverse();return {ok:true,service:'alloflow-school-rewards-practice',version:6,actor:a,config:{schoolName:repo.config.schoolName,academicYear:repo.config.academicYear,levelThresholds:repo.config.levelThresholds,printLabEnabled:repo.config.printLabEnabled},students:[own],categories:repo.categories,progress:progress(a.studentId),catalog:visible?repo.catalog.filter(function(i){return i.active}):[],windows:visible?[visible]:[],recentLedger:ownLedger,recentOrders:ownOrders.map(orderDto),recentReceipts:repo.receipts.filter(function(r){return r.studentId===a.studentId})}}
+    return {ok:true,service:'alloflow-school-rewards-practice',version:6,actor:a,config:{schoolName:repo.config.schoolName,academicYear:repo.config.academicYear,webAppUrl:'',levelThresholds:repo.config.levelThresholds,printLabEnabled:repo.config.printLabEnabled},students:students,members:repo.members,categories:repo.categories,catalog:a.role==='admin'?repo.catalog:repo.catalog.filter(function(i){return i.active}),windows:repo.windows.filter(function(w){return w.status!=='ARCHIVED'}),recentLedger:repo.ledger.slice(-100).reverse(),recentOrders:repo.orders.slice(-50).reverse().map(orderDto),recentReceipts:a.role==='staff'?[]:repo.receipts.slice(-50).reverse(),recentMailRuns:[],unresolvedMailDeliveries:[],emailSchedule:{enabled:false},mailQuota:100,integrity:{ready:true,issues:[]}}}
+  var idem={};
+  function once(key,fn){if(key&&idem[key])return idem[key];var out=fn();if(key)idem[key]=out;return out}
+  function requireRole(roles){var a=actor();if(roles.indexOf(a.role)<0)fail('denied','Your role cannot perform this action.');return a}
+  function award(req){var a=requireRole(['admin','staff']);return once(req.idempotencyKey,function(){var s=findStudent(req.studentId);var amount=Math.floor(num(req.amount,0));if(!(amount>=1&&amount<=1000))fail('bad_number','Points must be a whole number from 1 to 1000.');var reason=String(req.reason||'').trim();if(!reason)fail('bad_award','Describe what the student did to earn these points.');var cat=repo.categories.find(function(c){return c.id===req.categoryId&&c.active!==false});if(!cat)fail('bad_category','Choose an active recognition category.');var entry={id:id('ledger'),studentId:s.id,kind:'EARN',amount:amount,reason:reason.slice(0,180),referenceType:'award',referenceId:'',reversesId:'',at:now(),categoryId:cat.id,actorEmail:a.email};repo.ledger.push(entry);repo.audit.push({event:'POINTS_AWARDED',at:entry.at,actor:a.email});save();return {ok:true,entry:entry,balance:balanceOf(s.id)}})}
+  var handlers={
+    getSchoolRewardsBootstrap:function(){return bootstrap()},
+    getSchoolRewardsPrintBootstrap:function(){return {ok:true,models:[],requests:[],assets:[],publications:[],holds:[],catalog:[],communityModels:[],materials:[],limits:{}}},
+    awardSchoolRewardsPoints:award,
+    awardSchoolRewardsPointsBatch:function(req){requireRole(['admin','staff']);var ids=Array.isArray(req.studentIds)?req.studentIds:[];if(!ids.length)fail('bad_award','Choose at least one student.');if(ids.length>60)fail('bad_award','Award to 60 students or fewer at a time.');var results=[],recorded=0,failed=0,seen={};ids.forEach(function(sid){if(seen[sid])return;seen[sid]=true;try{award({studentId:sid,amount:req.amount,reason:req.reason,categoryId:req.categoryId,idempotencyKey:(req.idempotencyKey||'')+':'+sid});results.push({studentId:sid,ok:true});recorded++}catch(e){results.push({studentId:sid,ok:false,code:e.code||'error',error:e.message});failed++}});return {ok:failed===0,recorded:recorded,failed:failed,results:results}},
+    reverseSchoolRewardsEntry:function(req){var a=requireRole(['admin','staff']);return once(req.idempotencyKey,function(){var original=repo.ledger.find(function(e){return e.id===req.entryId});if(!original)fail('not_found','Ledger entry was not found.');if(a.role==='staff'){if(original.actorEmail!==a.email)fail('denied','Staff can undo only their own awards.');if(Date.now()-Date.parse(original.at)>15*60*1000)fail('undo_expired','The undo window has passed. Ask an administrator to correct this award.')}if(original.kind!=='EARN')fail('order_refund_required','This pilot reverses award entries only.');if(repo.ledger.some(function(e){return e.reversesId===original.id}))fail('already_reversed','That entry has already been reversed.');var entry={id:id('ledger'),studentId:original.studentId,kind:'REVERSAL',amount:original.amount,reason:String(req.reason||'Administrative correction').slice(0,180),referenceType:'reversal',referenceId:original.id,reversesId:original.id,at:now(),categoryId:original.categoryId,actorEmail:a.email};repo.ledger.push(entry);save();return {ok:true,entry:entry,balance:balanceOf(original.studentId)}})},
+    checkoutSchoolRewardsOrder:function(req){var a=requireRole(['admin','cashier']);return once(req.idempotencyKey,function(){var s=findStudent(req.studentId);var w=repo.windows.find(function(x){return x.id===req.windowId});if(!w||w.status!=='OPEN')fail('window_closed','No shopping window is open.');var lines=(req.lines||[]).map(function(l){var item=repo.catalog.find(function(i){return i.id===l.catalogId&&i.active});if(!item)fail('not_found','A prize in the cart is no longer available.');var q=Math.max(1,Math.floor(num(l.quantity,1)));if(item.inventoryLimit>=0&&item.remaining<q)fail('inventory','Not enough '+item.name+' left. Refresh availability.');return {catalogId:item.id,itemName:item.name,quantity:q,cost:item.cost,lineTotal:item.cost*q,item:item}});var total=lines.reduce(function(sum,l){return sum+l.lineTotal},0);if(!lines.length)fail('bad_cart','Add at least one prize.');if(balanceOf(s.id)<total)fail('insufficient_balance','The student does not have enough points available.');lines.forEach(function(l){if(l.item.inventoryLimit>=0){l.item.remaining-=l.quantity;l.item.inventoryVersion++}delete l.item});var order={id:id('order'),studentId:s.id,windowId:w.id,total:total,status:'COMPLETED',at:now(),lines:lines};repo.orders.push(order);var entry={id:id('ledger'),studentId:s.id,kind:'SPEND',amount:total,reason:'Store purchase '+order.id,referenceType:'order',referenceId:order.id,reversesId:'',at:order.at,categoryId:'',actorEmail:a.email};repo.ledger.push(entry);var receipt={id:id('receipt'),orderId:order.id,studentId:s.id,kind:'PURCHASE',status:'SENT',sentAt:order.at};repo.receipts.push(receipt);save();var b=balanceOf(s.id);return {ok:true,order:orderDto(order),ledgerId:entry.id,balance:b,reservedPoints:0,availableBalance:b,receipt:receipt}})},
+    refundSchoolRewardsOrder:function(req){var a=requireRole(['admin']);return once(req.idempotencyKey,function(){var o=repo.orders.find(function(x){return x.id===req.orderId});if(!o||o.status!=='COMPLETED')fail('not_found','Order was not found or is not refundable.');o.status='REFUNDED';o.lines.forEach(function(l){var item=repo.catalog.find(function(i){return i.id===l.catalogId});if(item&&item.inventoryLimit>=0){item.remaining+=l.quantity;item.inventoryVersion++}});var entry={id:id('ledger'),studentId:o.studentId,kind:'REFUND',amount:o.total,reason:'Refund '+o.id,referenceType:'order_refund',referenceId:o.id,reversesId:'',at:now(),categoryId:'',actorEmail:a.email};repo.ledger.push(entry);var receipt={id:id('receipt'),orderId:o.id,studentId:o.studentId,kind:'REFUND',status:'SENT',sentAt:entry.at};repo.receipts.push(receipt);save();return {ok:true,order:orderDto(o),receipt:receipt,balance:balanceOf(o.studentId)}})},
+    resendSchoolRewardsOrderReceipt:function(req){requireRole(['admin','cashier']);var r=repo.receipts.filter(function(x){return x.orderId===req.orderId}).slice(-1)[0];return {ok:true,orderId:req.orderId,receipt:r,alreadySent:true}},
+    adminUpsertRewardsStudent:function(v){requireRole(['admin']);var existing=v.id?repo.students.find(function(s){return s.id===v.id}):null;var rec={id:existing?existing.id:id('student'),firstName:String(v.firstName||'').trim(),lastInitial:String(v.lastInitial||'').trim().slice(0,1),grade:String(v.grade||''),homeroom:String(v.homeroom||''),email:String(v.email||'').trim().toLowerCase(),active:v.active!==false};if(!rec.firstName||!rec.email)fail('bad_student','First name and managed email are required.');if(existing)Object.assign(existing,rec);else repo.students.push(rec);save();return {ok:true,student:studentDto(existing||rec)}},
+    adminBulkUpsertRewardsStudents:function(list){requireRole(['admin']);var n=0;(list||[]).forEach(function(v){var existing=repo.students.find(function(s){return s.email===String(v.email||'').toLowerCase()});var rec={id:existing?existing.id:id('student'),firstName:String(v.firstName||'').trim(),lastInitial:String(v.lastInitial||'').trim().slice(0,1),grade:String(v.grade||''),homeroom:String(v.homeroom||''),email:String(v.email||'').trim().toLowerCase(),active:true};if(!rec.firstName||!rec.email)fail('bad_student','Every row needs firstName and email.');if(existing)Object.assign(existing,rec);else repo.students.push(rec);n++});save();return {ok:true,imported:n}},
+    adminUpsertRewardsMember:function(v){requireRole(['admin']);var email=String(v.email||'').trim().toLowerCase();var existing=repo.members.find(function(m){return m.email===email});var rec={email:email,displayName:String(v.displayName||email),role:['admin','staff','cashier'].indexOf(v.role)>=0?v.role:'staff',active:v.active!==false};if(existing)Object.assign(existing,rec);else repo.members.push(rec);if(!repo.members.some(function(m){return m.role==='admin'&&m.active}))fail('last_admin','At least one active administrator must remain.');save();return {ok:true,member:rec}},
+    adminUpsertRewardsCatalogItem:function(v){requireRole(['admin']);var existing=v.id?repo.catalog.find(function(i){return i.id===v.id}):null;var rec={id:existing?existing.id:id('prize'),name:String(v.name||'').trim(),description:String(v.description||''),cost:Math.max(1,Math.floor(num(v.cost,1))),active:v.active!==false,imageUrl:String(v.imageUrl||'')};if(!rec.name)fail('bad_item','A prize needs a name.');if(existing){Object.assign(existing,rec)}else{var limit=v.inventoryLimit==null||v.inventoryLimit===''||num(v.inventoryLimit,-1)<0?-1:Math.floor(num(v.inventoryLimit,0));rec.inventoryLimit=limit;rec.remaining=limit<0?-1:(v.remaining==null||v.remaining===''?limit:Math.floor(num(v.remaining,limit)));rec.inventoryVersion=1;repo.catalog.push(rec)}save();return {ok:true,item:existing||rec}},
+    adminUpsertRewardsCategory:function(v){requireRole(['admin']);var existing=v.id?repo.categories.find(function(c){return c.id===v.id}):null;var rec={id:existing?existing.id:id('category'),name:String(v.name||'').trim(),framework:String(v.framework||'CUSTOM').toUpperCase()==='HOWL'?'HOWL':'CUSTOM',description:String(v.description||''),active:v.active!==false,color:/^#[0-9a-f]{6}$/i.test(String(v.color||''))?v.color:COLORS[repo.categories.length%COLORS.length]};if(!rec.name)fail('bad_category','A category needs a name.');if(existing)Object.assign(existing,rec);else repo.categories.push(rec);save();return {ok:true,category:rec}},
+    adminSetRewardsLevelThresholds:function(v){requireRole(['admin']);var list=(Array.isArray(v)?v:(v&&v.levelThresholds)||[]).map(function(x){return Math.floor(num(x,0))}).filter(function(x){return x>=0});list=Array.from(new Set(list)).sort(function(a,b){return a-b});if(!list.length||list[0]!==0)list.unshift(0);repo.config.levelThresholds=list;save();return {ok:true,levelThresholds:list}},
+    adminUpsertRewardsWindow:function(v){requireRole(['admin']);var existing=v.id?repo.windows.find(function(w){return w.id===v.id}):null;var status=String(v.status||'DRAFT').toUpperCase();if(['DRAFT','PREVIEW','OPEN','CLOSED','ARCHIVED'].indexOf(status)<0)fail('bad_window','Store status is not valid.');var rec={id:existing?existing.id:id('window'),name:String(v.name||'Trimester store'),status:status,startsAt:String(v.startsAt||''),endsAt:String(v.endsAt||'')};if(status==='OPEN'||status==='PREVIEW')repo.windows.forEach(function(w){if(w.id!==rec.id&&(w.status==='OPEN'||w.status==='PREVIEW'))w.status='CLOSED'});if(existing)Object.assign(existing,rec);else repo.windows.push(rec);save();return {ok:true,window:rec}},
+    adminUpdateRewardsSettings:function(v){requireRole(['admin']);repo.config.printLabEnabled=v.printLabEnabled!==false&&String(v.printLabEnabled)!=='false';save();return {ok:true,printLabEnabled:repo.config.printLabEnabled}},
+    setSchoolRewardsLanguage:function(v){var a=actor();var lang=String(v.language||'').toLowerCase();if(['en','es'].indexOf(lang)<0)fail('bad_language','Choose a supported language (en or es).');if(a.role!=='student'&&a.role!=='admin')fail('denied','Your role cannot perform this action.');repo.config.languages=repo.config.languages||{};repo.config.languages[a.role==='student'?a.studentId:String(v.studentId||'')]=lang;save();return {ok:true,language:lang}},
+    getSchoolRewardsReconciliation:function(){requireRole(['admin']);var earned=0,spent=0;repo.ledger.forEach(function(e){if(e.kind==='EARN')earned+=e.amount;if(e.kind==='REVERSAL')earned-=e.amount;if(e.kind==='SPEND')spent+=e.amount;if(e.kind==='REFUND')spent-=e.amount});return {ok:true,totalEarned:earned,totalSpent:spent,totalBalance:earned-spent,orders:repo.orders.length,students:repo.students.length,consistent:true}},
+    getSchoolRewardsIntegrityReport:function(){requireRole(['admin']);return {ok:true,ready:true,issues:[],checkedAt:now()}},
+    verifySchoolRewardsAuditChain:function(){requireRole(['admin']);return {ok:true,entries:repo.audit.length,verified:true}},
+    getSchoolRewardsDistrictSummary:function(){requireRole(['admin']);var earned=0;repo.ledger.forEach(function(e){if(e.kind==='EARN')earned+=e.amount});return {ok:true,activeStudents:repo.students.filter(function(s){return s.active}).length,totalEarned:earned,orders:repo.orders.length,suppressed:false}}
+  };
+  function respond(name,arg){var fn=handlers[name];if(!fn)fail('practice_unavailable','That action is not available in practice mode. It works in a real deployment.');return fn(arg||{})}
+  window.google={script:{}};
+  Object.defineProperty(window.google.script,'run',{get:function(){var success=function(){},failure=function(){};var proxy=new Proxy({},{get:function(_t,prop){if(prop==='withSuccessHandler')return function(h){success=h;return proxy};if(prop==='withFailureHandler')return function(h){failure=h;return proxy};return function(arg){setTimeout(function(){try{success(JSON.parse(JSON.stringify(respond(prop,arg))))}catch(e){failure(e)}},60)}}});return proxy}});
+  window.srPractice={defaultCategories:DEFAULT_CATEGORIES,defaultPrizes:DEFAULT_PRIZES,call:respond,reset:function(){repo=repoFromSettings();save();idem={}},role:function(){return role},setRole:function(next){try{localStorage.setItem('alloflow_school_rewards_practice_role',next)}catch(e){}},settings:settings,saveSettings:function(s){writeJson(SETTINGS,s)},scenarios:SCENARIOS,defaultTour:DEFAULT_TOUR,tourKey:TOUR,storageKey:STORAGE,settingsKey:SETTINGS,repo:function(){return repo}};
+})();
+/* SR_PRACTICE_END */
+</script>
+'''
+
+tour_js = r'''
+<script>
+/* SR_PRACTICE_UI_START */
+(function(){
+  var P=window.srPractice;if(!P)return;
+  function $(id){return document.getElementById(id)}
+  function readTour(){try{var t=JSON.parse(localStorage.getItem(P.tourKey)||'null');if(Array.isArray(t)&&t.length)return t}catch(e){}return P.defaultTour}
+  var roleSel=$('practice-role'),scnSel=$('practice-scenario'),s=P.settings();
+  Object.keys(P.scenarios).forEach(function(key){var o=document.createElement('option');o.value=key;o.textContent=P.scenarios[key].label;scnSel.appendChild(o)});
+  var custom=document.createElement('option');custom.value='custom';custom.textContent='Custom (from the panel below)';scnSel.appendChild(custom);
+  scnSel.value=s.custom?'custom':(P.scenarios[s.scenario]?s.scenario:'small');
+  roleSel.value=P.role();
+  roleSel.onchange=function(){P.setRole(roleSel.value);location.reload()};
+  scnSel.onchange=function(){if(scnSel.value==='custom'){$('practice-panel').hidden=false;$('practice-customize').setAttribute('aria-expanded','true');return}var next=P.settings();next.scenario=scnSel.value;next.custom=false;delete next.school;delete next.students;delete next.window;delete next.points;delete next.categories;delete next.prizes;P.saveSettings(next);P.reset();location.reload()};
+  $('practice-customize').onclick=function(){var panel=$('practice-panel');panel.hidden=!panel.hidden;this.setAttribute('aria-expanded',panel.hidden?'false':'true')};
+  $('practice-reset').onclick=function(){if(!window.confirm('Rebuild the fictional data from the current scenario? Awards and orders made in practice will be discarded.'))return;P.reset();location.reload()};
+  // Customize panel (2026-09-02, form-based). No JSON anywhere a person types:
+  // categories and prizes are rows, the tour is a list of step cards. The
+  // stored shapes are unchanged (pipe lines and the step array), so exports
+  // made before this change still import.
+  var TABS=[['dashboard','Overview'],['award','Award points'],['store','Store'],['activity','Progress & activity'],['print','3D Print Lab'],['admin','Admin setup']];
+  var ROLES=[['staff','Staff'],['cashier','Cashier'],['admin','Administrator'],['student','Student']];
+  var TARGETS=[['','Nothing in particular'],['#award-student-tiles','Student tiles (Award points)'],['#award-group-mode','Group award checkbox (Award points)'],['#award-reason','Reason box (Award points)'],['#award-submit','Record button (Award points)'],['#checkout-student','Student picker at checkout (Store)'],['#refresh-store-live','Refresh availability button (Store)'],['#preview-catalog','Prize preview (Overview)'],['#prize-goal','Prize goal line (Overview)'],['#recognition-card','Latest recognition card (Overview)'],['#settings-card','School settings card (Admin setup)']];
+  function parseLines(text){return String(text||'').split(/\r?\n/).map(function(line){return line.split('|').map(function(p){return p.trim()})}).filter(function(p){return p[0]})}
+  function el(tag,attrs,children){var n=document.createElement(tag);Object.keys(attrs||{}).forEach(function(k){if(k==='text')n.textContent=attrs[k];else if(k==='value')n.value=attrs[k];else n.setAttribute(k,attrs[k])});(children||[]).forEach(function(c){n.appendChild(c)});return n}
+  function field(label,input){var l=el('label');l.appendChild(document.createTextNode(label));l.appendChild(input);return l}
+  function select(options,value){var s=el('select');options.forEach(function(o){var op=el('option',{value:o[0],text:o[1]});s.appendChild(op)});s.value=value;if(s.value!==value)s.value=options[0][0];return s}
+  function status(msg){var p=$('practice-panel-status');if(p)p.textContent=msg||''}
+  function renderCategories(list){var box=$('practice-categories-rows');box.innerHTML='';list.forEach(function(p){var row=el('div',{'class':'practice-rowline'});row.appendChild(field('Name',el('input',{value:p[0]||'','data-f':'name',maxlength:'40'})));row.appendChild(field('What it recognises',el('input',{value:p[1]||'','data-f':'desc',maxlength:'120'})));var rm=el('button',{type:'button','class':'remove',text:'Remove','aria-label':'Remove category '+(p[0]||'')});rm.onclick=function(){row.remove()};row.appendChild(rm);box.appendChild(row)})}
+  function renderPrizes(list){var box=$('practice-prizes-rows');box.innerHTML='';list.forEach(function(p){var row=el('div',{'class':'practice-rowline prize-row'});row.appendChild(field('Prize',el('input',{value:p[0]||'','data-f':'name',maxlength:'60'})));row.appendChild(field('Cost',el('input',{value:p[1]||'',type:'number',min:'1',max:'999','data-f':'cost'})));row.appendChild(field('Stock (blank = no limit)',el('input',{value:p[2]||'',type:'number',min:'0',max:'999','data-f':'stock'})));var rm=el('button',{type:'button','class':'remove',text:'Remove','aria-label':'Remove prize '+(p[0]||'')});rm.onclick=function(){row.remove()};row.appendChild(rm);box.appendChild(row)})}
+  var tourDraft=[],tourCustom=!!localStorage.getItem(P.tourKey);
+  function renderTour(){var list=$('practice-tour-list');list.innerHTML='';tourDraft.forEach(function(st,i){var card=el('li',{'class':'practice-step'});var head=el('div',{'class':'head'});head.appendChild(el('span',{text:'Step '+(i+1)}));var ctl=el('div',{'class':'practice-row'});var up=el('button',{type:'button',text:'Move up','aria-label':'Move step '+(i+1)+' up'});up.disabled=i===0;up.onclick=function(){var t=tourDraft[i-1];tourDraft[i-1]=tourDraft[i];tourDraft[i]=t;renderTour()};var down=el('button',{type:'button',text:'Move down','aria-label':'Move step '+(i+1)+' down'});down.disabled=i===tourDraft.length-1;down.onclick=function(){var t=tourDraft[i+1];tourDraft[i+1]=tourDraft[i];tourDraft[i]=t;renderTour()};var rm=el('button',{type:'button',text:'Remove','aria-label':'Remove step '+(i+1)});rm.onclick=function(){tourDraft.splice(i,1);renderTour()};ctl.appendChild(up);ctl.appendChild(down);ctl.appendChild(rm);head.appendChild(ctl);card.appendChild(head);
+      var role=select(ROLES,st.role||'staff');role.onchange=function(){st.role=role.value};card.appendChild(field('Who this step is for',role));
+      var tab=select(TABS,st.tab||'dashboard');tab.onchange=function(){st.tab=tab.value};card.appendChild(field('Tab to open',tab));
+      var target=select(TARGETS,st.target||'');target.onchange=function(){st.target=target.value};card.appendChild(field('Control to highlight',target));
+      var title=el('input',{value:st.title||'',maxlength:'80',placeholder:'Short title'});title.oninput=function(){st.title=title.value};var tl=field('Title',title);tl.className='wide';card.appendChild(tl);
+      var txt=el('textarea',{maxlength:'400',placeholder:'One or two sentences the trainee reads at this step.'});txt.value=st.text||'';txt.oninput=function(){st.text=txt.value};var xl=field('What to say',txt);xl.className='wide';card.appendChild(xl);
+      list.appendChild(card)});$('practice-add-step').disabled=tourDraft.length>=30}
+  function loadTour(steps){tourDraft=steps.map(function(st){return {role:st.role||'staff',tab:st.tab||'dashboard',target:st.target||'',title:st.title||'',text:st.text||''}});renderTour()}
+  if(s.custom){$('practice-school').value=s.school||'';$('practice-students').value=s.students||12;$('practice-window').value=s.window||'PREVIEW';$('practice-points').value=s.points!=null?s.points:40}
+  renderCategories(parseLines(s.custom&&s.categories?s.categories:P.defaultCategories));
+  renderPrizes(parseLines(s.custom&&s.prizes?s.prizes:P.defaultPrizes));
+  loadTour(readTour());
+  $('practice-add-category').onclick=function(){var box=$('practice-categories-rows'),rows=Array.prototype.map.call(box.children,rowValues);rows.push(['','']);renderCategories(rows);var last=box.lastElementChild;if(last)last.querySelector('input').focus()};
+  $('practice-add-prize').onclick=function(){var box=$('practice-prizes-rows'),rows=Array.prototype.map.call(box.children,rowValues);rows.push(['','','']);renderPrizes(rows);var last=box.lastElementChild;if(last)last.querySelector('input').focus()};
+  $('practice-add-step').onclick=function(){tourDraft.push({role:roleSel.value||'staff',tab:'dashboard',target:'',title:'',text:''});renderTour();var cards=$('practice-tour-list').children;var last=cards[cards.length-1];if(last)last.querySelector('input').focus();status('Step '+tourDraft.length+' added. Give it a title and a sentence, then Apply.')};
+  $('practice-tour-restore').onclick=function(){loadTour(P.defaultTour);tourCustom=false;status('The built-in tour is back. Apply and reload to use it.')};
+  function rowValues(row){return Array.prototype.map.call(row.querySelectorAll('input'),function(i){return String(i.value||'').replace(/\|/g,'/').trim()})}
+  function collect(){var cats=Array.prototype.map.call($('practice-categories-rows').children,rowValues).filter(function(r){return r[0]}).map(function(r){return r[0]+' | '+(r[1]||'')});var prizes=Array.prototype.map.call($('practice-prizes-rows').children,rowValues).filter(function(r){return r[0]&&Number(r[1])>0}).map(function(r){return r[0]+' | '+Math.round(Number(r[1]))+' | '+(r[2]===''?'':Math.round(Number(r[2])))});return {scenario:'small',custom:true,school:$('practice-school').value,students:Number($('practice-students').value)||12,window:$('practice-window').value,points:Number($('practice-points').value)||0,categories:cats.join('\n'),prizes:prizes.join('\n')}}
+  function collectTour(){var kept=[],skipped=0;tourDraft.forEach(function(st){var title=String(st.title||'').trim(),text=String(st.text||'').trim();if(!title||!text){skipped++;return}kept.push({role:st.role,tab:st.tab,target:st.target||undefined,title:title.slice(0,80),text:text.slice(0,400)})});return {steps:kept,skipped:skipped}}
+  $('practice-apply').onclick=function(){var tour=collectTour(),settings=collect(),notes=[];if(!settings.categories)notes.push('no categories were given, so the built-in ones are used');if(!settings.prizes)notes.push('no prizes were given, so the built-in ones are used');if(tour.skipped)notes.push(tour.skipped+' tour step'+(tour.skipped>1?'s':'')+' without a title or sentence '+(tour.skipped>1?'were':'was')+' left out');if(!tour.steps.length||(!tourCustom&&JSON.stringify(tour.steps)===JSON.stringify(P.defaultTour))){localStorage.removeItem(P.tourKey)}else{localStorage.setItem(P.tourKey,JSON.stringify(tour.steps))}if(!settings.categories)delete settings.categories;if(!settings.prizes)delete settings.prizes;P.saveSettings(settings);P.reset();if(notes.length){try{sessionStorage.setItem('alloflow_school_rewards_practice_note','Applied. Note: '+notes.join('; ')+'.')}catch(e){}}location.reload()};
+  try{var pending=sessionStorage.getItem('alloflow_school_rewards_practice_note');if(pending){sessionStorage.removeItem('alloflow_school_rewards_practice_note');$('practice-panel').hidden=false;$('practice-customize').setAttribute('aria-expanded','true');status(pending)}}catch(e){}
+  $('practice-export').onclick=function(){var blob=new Blob([JSON.stringify({kind:'alloflow-school-rewards-practice',version:1,settings:collect(),tour:readTour()},null,2)],{type:'application/json'});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='school-rewards-practice-settings.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1000)};
+  $('practice-import').onchange=function(){var file=this.files&&this.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(){try{var data=JSON.parse(String(reader.result||''));if(data&&data.settings)P.saveSettings(Object.assign({},data.settings,{custom:true}));if(data&&Array.isArray(data.tour))localStorage.setItem(P.tourKey,JSON.stringify(data.tour));P.reset();location.reload()}catch(e){status('That file could not be read as practice settings. Export a file from this panel to see the expected shape.')}};reader.readAsText(file)};
+  // Tour: steps carry a role; the tour for the current role runs, in order.
+  var steps=readTour().filter(function(st){return !st.role||st.role===P.role()}),index=-1,box=null,target=null;
+  function clearTarget(){if(target){target.classList.remove('tour-target');target=null}}
+  function showStep(i){clearTarget();if(i<0||i>=steps.length){endTour();return}index=i;var st=steps[i];var tab=document.querySelector('[data-tab="'+st.tab+'"]');if(tab&&!tab.hidden)tab.click();setTimeout(function(){var el=st.target?document.querySelector(st.target):null;if(el){target=el;el.classList.add('tour-target');try{el.scrollIntoView({block:'center'})}catch(e){}}if(!box){box=document.createElement('div');box.className='tour-box';box.setAttribute('role','dialog');box.setAttribute('aria-live','polite');box.setAttribute('aria-label','Practice tour');document.body.appendChild(box)}box.innerHTML='<div class="kicker">Practice tour · '+(i+1)+' of '+steps.length+'</div><h2></h2><p></p><div class="row"><button type="button" data-tour="back"'+(i===0?' disabled':'')+'>Back</button><button type="button" class="primary" data-tour="next">'+(i===steps.length-1?'Finish':'Next')+'</button><button type="button" data-tour="exit">Exit tour</button></div>';box.querySelector('h2').textContent=st.title||'';box.querySelector('p').textContent=st.text||'';box.querySelector('[data-tour="back"]').onclick=function(){showStep(index-1)};box.querySelector('[data-tour="next"]').onclick=function(){showStep(index+1)};box.querySelector('[data-tour="exit"]').onclick=endTour;box.querySelector('[data-tour="next"]').focus()},350)}
+  function endTour(){clearTarget();if(box){box.remove();box=null}index=-1;$('practice-tour').focus()}
+  $('practice-tour').onclick=function(){if(!steps.length){$('practice-panel').hidden=false;$('practice-customize').setAttribute('aria-expanded','true');status('The tour has no steps for the '+P.role()+' role yet. Add a step below and choose that role, or use the built-in tour.');$('practice-add-step').focus();return}showStep(0)};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&box)endTour()});
+  window.srPracticeTour={steps:function(){return steps},show:showStep,end:endTour};
+  // First visit: the tour starts by itself once, so nobody has to find the button.
+  try{if(steps.length&&!localStorage.getItem('alloflow_school_rewards_practice_toured')){localStorage.setItem('alloflow_school_rewards_practice_toured','1');setTimeout(function(){if(!box)showStep(0)},900)}}catch(e){}
+})();
+/* SR_PRACTICE_UI_END */
+</script>
+'''
+
+head = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="robots" content="noindex">\n<title>School Rewards &amp; Store: Practice portal | AlloFlow</title>\n<meta name="description" content="Try the AlloFlow School Rewards portal with fictional data in your browser. Nothing here reaches a real ledger.">\n</head>\n<body>\n'
+page = head + portal.replace('<main class="shell">', toolbar_css + toolbar_html + stub_js + '<main class="shell">', 1)
+if page.count('</script>') != 2: raise SystemExit('unexpected script count %d' % page.count('</script>'))
+last = page.rfind('</script>') + len('</script>')
+page = page[:last] + tour_js + page[last:]
+page += '\n</body>\n</html>\n'
+for p in ['school-rewards-practice.html', 'desktop/web-app/public/school-rewards-practice.html']:
+    io.open(p, 'w', encoding='utf-8', newline='').write(page)
+    print('wrote', p, len(page))

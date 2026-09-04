@@ -7221,6 +7221,23 @@
             { label: roomDone ? 'PRESSURE DROP // RECOVERING' : 'PRESSURE DROP // HIGH', color: '#fbbf24', path: roomDone ? 'M74 91 L145 88 L216 82 L287 76 L358 70 L429 66 L500 63' : 'M74 91 L145 87 L216 80 L287 72 L358 62 L429 50 L500 39', endY: roomDone ? 63 : 39 },
             { label: roomDone ? 'CABIN CO₂ // STABILIZING' : 'CABIN CO₂ // RISING', color: '#f87171', path: roomDone ? 'M74 124 L145 118 L216 110 L287 101 L358 95 L429 91 L500 89' : 'M74 124 L145 120 L216 112 L287 100 L358 86 L429 70 L500 51', endY: roomDone ? 89 : 51 }
           ];
+          // Direct labels anchored to where each trace ENDS collide as soon as the
+          // traces converge: the default state ends at 39/51/58 and the serviced
+          // state at 58/63/89, i.e. gaps of 7 and 5 for 7.5px text. Push them to a
+          // legible pitch and reach each one with a short elbow.
+          var labelY = (function () {
+            var order = traces.map(function (t, i) { return { i: i, y: t.endY }; })
+              .sort(function (a, b) { return a.y - b.y; });
+            var out = [], prev = -Infinity;
+            order.forEach(function (row) {
+              var y = Math.max(row.y, prev + 11);
+              out[row.i] = y;
+              prev = y;
+            });
+            var overflow = prev - 138;
+            if (overflow > 0) for (var k = 0; k < out.length; k++) out[k] -= overflow;
+            return out;
+          })();
           function inspectSensor(index) {
             var next = Object.assign({}, checks); next[index] = true;
             upd({ maintenanceChecks: next, maintenanceReading: index });
@@ -7234,7 +7251,13 @@
                 h('text', { x: 622, y: 18, textAnchor: 'end', fill: roomDone ? '#86efac' : checkedCount >= 2 ? '#fde68a' : '#94a3b8', fontSize: 8.5, fontWeight: 850 }, telemetryLabel),
                 [40,68,96,124].map(function (y, i) { return h('line', { key: i, x1: 62, y1: y, x2: 508, y2: y, stroke: '#263449', strokeWidth: 1 }); }),
                 [74,180,286,392,500].map(function (x, i) { return h('line', { key: i, x1: x, y1: 34, x2: x, y2: 132, stroke: '#172033', strokeWidth: 1 }); }),
-                traces.map(function (trace, i) { var focused = reading < 0 || reading === i || roomDone; return h('g', { key: trace.label, opacity: focused ? 1 : .23 }, h('path', { d: trace.path, fill: 'none', stroke: trace.color, strokeWidth: focused ? 2.7 : 1.3, strokeLinecap: 'round', strokeLinejoin: 'round' }), h('circle', { cx: 500, cy: trace.endY, r: focused ? 4 : 2.5, fill: trace.color, stroke: '#050b18', strokeWidth: 1.5 }), h('line', { x1: 507, y1: trace.endY, x2: 523, y2: trace.endY, stroke: trace.color, strokeWidth: 1.4 }), h('text', { x: 530, y: trace.endY + 3, fill: focused ? '#e2e8f0' : '#64748b', fontSize: 7.5, fontWeight: 850 }, trace.label)); }),
+                // Direct labels are anchored to where each trace ENDS, so when the
+                // traces converge the labels collide: the default state ends at
+                // 39/51/58 and the serviced state at 58/63/89, i.e. gaps of 7 and 5
+                // for 7.5px text. Push them apart to a legible pitch and reach each
+                // one with a short elbow, which is what direct labelling needs to
+                // survive its own data.
+                traces.map(function (trace, i) { var focused = reading < 0 || reading === i || roomDone; return h('g', { key: trace.label, opacity: focused ? 1 : .23 }, h('path', { d: trace.path, fill: 'none', stroke: trace.color, strokeWidth: focused ? 2.7 : 1.3, strokeLinecap: 'round', strokeLinejoin: 'round' }), h('circle', { cx: 500, cy: trace.endY, r: focused ? 4 : 2.5, fill: trace.color, stroke: '#050b18', strokeWidth: 1.5 }), h('path', { d: 'M507 ' + trace.endY + ' L516 ' + trace.endY + ' L521 ' + labelY[i] + ' L527 ' + labelY[i], fill: 'none', stroke: trace.color, strokeWidth: 1.4 }), h('text', { x: 532, y: labelY[i] + 3, fill: focused ? '#e2e8f0' : '#64748b', fontSize: 7.5, fontWeight: 850 }, trace.label)); }),
                 h('text', { x: 74, y: 147, fill: '#94a3b8', fontSize: 8 }, 'EARLIER'),
                 h('text', { x: 500, y: 147, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, 'NOW →'),
                 reading >= 0 ? h('path', { d: 'M60 31H510V134H60Z', fill: 'none', stroke: traces[reading].color, strokeWidth: 1, strokeDasharray: '5 5', opacity: .5 }) : null)),
@@ -7350,17 +7373,22 @@
                   h('radialGradient', { id: 'iss-cupola-frame-glow' }, h('stop', { offset: '0%', stopColor: target.color, stopOpacity: .18 }), h('stop', { offset: '100%', stopColor: target.color, stopOpacity: 0 })),
                   h('filter', { id: 'iss-cupola-target-glow', x: '-100%', y: '-100%', width: '300%', height: '300%' }, h('feGaussianBlur', { stdDeviation: 4, result: 'cg' }), h('feMerge', null, h('feMergeNode', { in: 'cg' }), h('feMergeNode', { in: 'SourceGraphic' })))),
                 h('rect', { width: 640, height: 190, fill: '#050b18' }),
-                h('text', { x: 18, y: 18, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 850, letterSpacing: 1.2 }, 'CUPOLA EARTH OBSERVATION // ' + target.label.toUpperCase()),
+                // The reticle is r=113 at cy=100, so it reaches x=242 at this baseline while
+                // the one-line title ran to about 302 and lost its last word behind the
+                // arc. Two lines: the heading clears the arc at y=18, and the target sits
+                // at y=30 where the arc has pulled back to x=231.
+                h('text', { x: 18, y: 18, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 850, letterSpacing: 1.2 }, 'CUPOLA EARTH OBSERVATION'),
+                h('text', { x: 18, y: 30, fill: '#bae6fd', fontSize: 8, fontWeight: 800, letterSpacing: 1 }, target.label.toUpperCase()),
                 h('text', { x: 622, y: 18, textAnchor: 'end', fill: shutters ? '#cbd5e1' : captured ? '#86efac' : target.color, fontSize: 8.5, fontWeight: 850 }, stateLabel),
                 h('circle', { cx: 320, cy: 100, r: 113, fill: 'url(#iss-cupola-frame-glow)' }),
                 h('circle', { cx: 320, cy: 100, r: 82, fill: 'url(#iss-cupola-earth-view)', stroke: '#cbd5e1', strokeWidth: 5 }),
-                targetId === 'day' ? h('g', null, h('path', { d: 'M258 102Q285 67 329 82T383 91Q368 111 340 109T291 128', fill: 'none', stroke: '#f8fafc', strokeWidth: 9, opacity: .72 }), h('path', { d: 'M286 92Q320 64 355 90Q324 118 296 105Q313 88 337 90', fill: 'none', stroke: '#bae6fd', strokeWidth: 3 })) : targetId === 'aurora' ? h('g', null, [0,1,2,3].map(function (i) { return h('path', { key: i, className: 'iss-aurora-curtain', d: 'M' + (267 + i * 18) + ' 62Q' + (294 + i * 10) + ' 88 ' + (281 + i * 22) + ' 136', fill: 'none', stroke: i % 2 ? '#86efac' : '#4ade80', strokeWidth: 7 - i, opacity: .52 + i * .08 }); })) : h('g', null, [[278,81],[296,95],[309,75],[329,107],[347,88],[365,119],[286,124],[337,67],[373,98],[316,129]].map(function (p, i) { return h('circle', { key: i, cx: p[0], cy: p[1], r: i % 3 ? 2.4 : 3.8, fill: '#fbbf24', filter: 'url(#iss-cupola-target-glow)' }); }), h('path', { d: 'M266 119Q309 92 379 125', fill: 'none', stroke: '#64748b', strokeWidth: 2, opacity: .65 })),
+                targetId === 'day' ? h('g', { transform: 'translate(320,100)' }, h('path', { d: 'M0 -46 Q44 -36 40 6 Q35 42 -6 42 Q-36 39 -36 12', fill: 'none', stroke: '#f8fafc', strokeWidth: 11, opacity: .72, strokeLinecap: 'round' }), h('path', { d: 'M0 46 Q-44 36 -40 -6 Q-35 -42 6 -42 Q36 -39 36 -12', fill: 'none', stroke: '#f8fafc', strokeWidth: 11, opacity: .72, strokeLinecap: 'round' }), h('path', { d: 'M0 -28 Q26 -21 24 4 Q21 25 -4 25', fill: 'none', stroke: '#bae6fd', strokeWidth: 4, opacity: .8, strokeLinecap: 'round' }), h('path', { d: 'M0 28 Q-26 21 -24 -4 Q-21 -25 4 -25', fill: 'none', stroke: '#bae6fd', strokeWidth: 4, opacity: .8, strokeLinecap: 'round' }), h('circle', { r: 7, fill: '#0f3f6b', opacity: .62 })) : targetId === 'aurora' ? h('g', null, [0,1,2,3].map(function (i) { return h('path', { key: i, className: 'iss-aurora-curtain', d: 'M' + (267 + i * 18) + ' 62Q' + (294 + i * 10) + ' 88 ' + (281 + i * 22) + ' 136', fill: 'none', stroke: i % 2 ? '#86efac' : '#4ade80', strokeWidth: 7 - i, opacity: .52 + i * .08 }); })) : h('g', null, [[278,81],[296,95],[309,75],[329,107],[347,88],[365,119],[286,124],[337,67],[373,98],[316,129]].map(function (p, i) { return h('circle', { key: i, cx: p[0], cy: p[1], r: i % 3 ? 2.4 : 3.8, fill: '#fbbf24', filter: 'url(#iss-cupola-target-glow)' }); }), h('path', { d: 'M266 119Q309 92 379 125', fill: 'none', stroke: '#64748b', strokeWidth: 2, opacity: .65 })),
                 !shutters ? h('g', { opacity: captured ? 1 : .72 }, h('circle', { cx: 320, cy: 100, r: 26, fill: 'none', stroke: captured ? '#4ade80' : target.color, strokeWidth: 1.5, strokeDasharray: captured ? undefined : '5 4' }), h('line', { x1: 320, y1: 64, x2: 320, y2: 84, stroke: captured ? '#4ade80' : target.color }), h('line', { x1: 320, y1: 116, x2: 320, y2: 136, stroke: captured ? '#4ade80' : target.color }), h('line', { x1: 284, y1: 100, x2: 304, y2: 100, stroke: captured ? '#4ade80' : target.color }), h('line', { x1: 336, y1: 100, x2: 356, y2: 100, stroke: captured ? '#4ade80' : target.color })) : null,
                 captured && !shutters ? h('g', { stroke: '#4ade80', strokeWidth: 2.5, fill: 'none' }, h('path', { d: 'M230 59V43H246M394 43H410V59M230 141V157H246M394 157H410V141' }), h('text', { x: 320, y: 151, textAnchor: 'middle', fill: '#86efac', stroke: 'none', fontSize: 8, fontWeight: 850 }, 'FRAME LOCKED')) : null,
                 h('circle', { cx: 320, cy: 100, r: 94, fill: 'none', stroke: '#7f8a98', strokeWidth: 12 }),
                 [0,60,120,180,240,300].map(function (angle) { var a = angle * Math.PI / 180; return h('line', { key: angle, x1: 320 + Math.cos(a) * 82, y1: 100 + Math.sin(a) * 82, x2: 320 + Math.cos(a) * 100, y2: 100 + Math.sin(a) * 100, stroke: '#cbd5e1', strokeWidth: 5 }); }),
                 shutters ? h('g', null, h('circle', { cx: 320, cy: 100, r: 82, fill: '#334155', stroke: '#64748b', strokeWidth: 4 }), [-54,-36,-18,0,18,36,54].map(function (offset) { return h('line', { key: offset, x1: 242, y1: 100 + offset, x2: 398, y2: 100 + offset, stroke: '#475569', strokeWidth: 8 }); }), h('path', { d: 'M290 100L310 120L350 78', fill: 'none', stroke: '#86efac', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }), h('text', { x: 320, y: 144, textAnchor: 'middle', fill: '#dcfce7', fontSize: 8.5, fontWeight: 850 }, 'SHUTTERS CLOSED')) : null,
-                h('g', { transform: 'translate(18,154)' }, h('rect', { width: 188, height: 23, rx: 6, fill: 'rgba(2,6,23,.76)', stroke: target.color, strokeWidth: 1 }), h('text', { x: 9, y: 15, fill: '#94a3b8', fontSize: 7.5, fontWeight: 850 }, 'CAMERA PLAN'), h('text', { x: 179, y: 15, textAnchor: 'end', fill: '#f8fafc', fontSize: 8, fontWeight: 850 }, target.mode.toUpperCase())),
+                h('g', { transform: 'translate(18,147)' }, h('rect', { width: 188, height: 31, rx: 6, fill: 'rgba(2,6,23,.76)', stroke: target.color, strokeWidth: 1 }), h('text', { x: 9, y: 13, fill: '#94a3b8', fontSize: 7.5, fontWeight: 850, letterSpacing: .6 }, 'CAMERA PLAN'), h('text', { x: 9, y: 25, fill: '#f8fafc', fontSize: 8, fontWeight: 850 }, target.mode.toUpperCase())),
                 h('text', { x: 622, y: 171, textAnchor: 'end', fill: '#94a3b8', fontSize: 8 }, '7 PRESSURE WINDOWS // EXTERNAL IMPACT SHUTTERS'))),
             h('div', { role: 'group', 'aria-label': 'Earth observation targets', style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginTop: 7 } }, Object.keys(targets).map(function (id) { var t = targets[id], active = id === targetId; return h('button', { key: id, type: 'button', disabled: roomDone, 'aria-pressed': active, onClick: function () { selectTarget(id); }, style: { minWidth: 0, padding: 6, borderRadius: 7, border: '1px solid ' + (active ? t.color : '#475569'), background: active ? t.color + '18' : 'rgba(2,6,23,.35)', color: active ? '#f8fafc' : SOFT, fontSize: 9.5, fontWeight: 800, cursor: roomDone ? 'default' : 'pointer' } }, t.icon + ' ' + t.label); })),
             h('div', { style: { marginTop: 6, padding: 7, borderRadius: 7, background: 'rgba(2,6,23,.4)', border: '1px solid #334155', color: TEXT, fontSize: 10 } }, h('strong', { style: { color: target.color } }, 'Camera plan: '), target.mode),
@@ -7736,7 +7764,7 @@
         }
         function renderPower() {
           return h('div', null,
-            h('div', { className: 'iss-learning-visual', style: { padding: 12 } }, h('div', { style: { display: 'grid', gridTemplateColumns: (92 - eclipse) + 'fr ' + eclipse + 'fr', height: 44, overflow: 'hidden', borderRadius: 10 } }, h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#78350f,#92400e)', color: '#fff7ed', fontSize: 10, fontWeight: 900 } }, 'SUNLIGHT ' + (92 - eclipse).toFixed(0) + ' MIN'), h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#172554,#020617)', color: '#bfdbfe', fontSize: 10, fontWeight: 900 } }, 'ECLIPSE ' + eclipse.toFixed(0) + ' MIN'))),
+            h('div', { className: 'iss-learning-visual', style: { padding: 12 } }, h('div', { style: { display: 'grid', gridTemplateColumns: (92 - eclipse) + 'fr ' + eclipse + 'fr', height: 44, overflow: 'hidden', borderRadius: 10 } }, h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#7c2d12,#9a3412)', color: '#fff7ed', fontSize: 10, fontWeight: 900 } }, 'SUNLIGHT ' + (92 - eclipse).toFixed(0) + ' MIN'), h('div', { style: { display: 'grid', placeItems: 'center', background: 'linear-gradient(90deg,#172554,#020617)', color: '#bfdbfe', fontSize: 10, fontWeight: 900 } }, 'ECLIPSE ' + eclipse.toFixed(0) + ' MIN'))),
             h('div', { className: 'iss-ops-grid' }, opsControl('iss-power-angle','Array face-on angle',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), opsControl('iss-power-eclipse','Eclipse duration',eclipse,20,45,1,' min','#818cf8','opsEclipse'), opsControl('iss-power-load','Research utilization',research,0,100,5,'%','#a78bfa','opsResearch'), opsControl('iss-power-battery','Starting battery',battery,0,100,1,'%','#4ade80','opsBattery'), statusBox('Solar generation',generation.toFixed(1) + ' kW','Face-on arrays maximize incident sunlight.','#fbbf24'), statusBox('Station demand',load.toFixed(1) + ' kW','Life support is the non-negotiable base load.','#7dd3fc')),
             opsMeter('Battery after one orbit',projectedBattery,projectedBattery > 25 ? '#4ade80' : '#f87171',orbitDelta >= 0 ? 'Net charge +' + orbitDelta.toFixed(1) + '%' : 'Net discharge ' + orbitDelta.toFixed(1) + '%'), opsOrbitCurve('Battery over the next orbit', orbitForecast, 'battery', sunlightMinutes, projectedBattery > 25 ? '#4ade80' : '#f87171', '%'));
         }
@@ -7750,7 +7778,7 @@
         function renderAttitude() {
           var wheelColor = nextCmg < 80 ? '#a78bfa' : '#f87171';
           return h('div', null,
-            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Control Moment Gyroscope cluster, projected saturation ' + nextCmg.toFixed(0) + ' percent.' }, h('rect', { width: 640, height: 190, fill: '#050b18' }), [220,290,360,430].map(function (x,i) { return h('g', { key:i, transform:'translate('+x+',96) rotate('+(i%2?18:-18)+')' }, h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:34,fill:'none',stroke:'#1e1b4b',strokeWidth:5}),h('circle',{r:34,fill:'none',stroke:wheelColor,strokeWidth:5,strokeLinecap:'round',strokeDasharray:(nextCmg/100*213.6).toFixed(1)+' 213.6',transform:'rotate(-90)'}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4}),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1))); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'))),
+            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Control Moment Gyroscope cluster, projected saturation ' + nextCmg.toFixed(0) + ' percent.' }, h('rect', { width: 640, height: 190, fill: '#050b18' }), [125,255,385,515].map(function (x,i) { var tilt = i % 2 ? 18 : -18; return h('g', { key:i, transform:'translate('+x+',92)' }, h('g',{transform:'rotate('+tilt+')'},h('circle',{r:42,fill:'#111827',stroke:wheelColor,strokeWidth:3}),h('circle',{r:34,fill:'none',stroke:'#1e1b4b',strokeWidth:5}),h('circle',{r:34,fill:'none',stroke:wheelColor,strokeWidth:5,strokeLinecap:'round',strokeDasharray:(nextCmg/100*213.6).toFixed(1)+' 213.6',transform:'rotate(-90)'}),h('circle',{r:26,fill:'none',stroke:'#64748b',strokeWidth:8}),h('path',{d:'M-18 0A18 18 0 0 1 18 0',fill:'none',stroke:wheelColor,strokeWidth:4})),h('text',{y:4,textAnchor:'middle',fill:'#e9d5ff',fontSize:10,fontWeight:900},'CMG '+(i+1)),h('text',{y:60,textAnchor:'middle',fill:'#a5b4fc',fontSize:8,fontWeight:800,letterSpacing:.6},'GIMBAL '+(tilt>0?'+':'')+tilt+'°')); }), h('text',{x:20,y:24,fill:'#c4b5fd',fontSize:10,fontWeight:850,letterSpacing:1.4},'ATTITUDE CONTROL // MOMENTUM STORAGE'),h('text',{x:620,y:24,textAnchor:'end',fill:wheelColor,fontSize:13,fontWeight:900},nextCmg.toFixed(0)+'%'),h('text',{x:620,y:36,textAnchor:'end',fill:'#94a3b8',fontSize:7.5,fontWeight:800,letterSpacing:.7},'CLUSTER SATURATION · RULE < 80%'),h('text',{x:320,y:176,textAnchor:'middle',fill:'#94a3b8',fontSize:8.5},'Drag torque spins the wheels up; at saturation the wheels can absorb no more and thrusters must desaturate them.'))),
             h('div', { className: 'iss-ops-grid' }, opsControl('iss-cmg-load','Current CMG saturation',cmg,0,100,1,'%','#a78bfa','opsCmg'), opsControl('iss-cmg-research','Disturbance / operations load',research,0,100,5,'%','#38bdf8','opsResearch'), opsControl('iss-cmg-angle','Array tracking demand',arrayAngle,0,90,1,'°','#fbbf24','opsArrayAngle'), statusBox('Next-orbit saturation',nextCmg.toFixed(0) + '%','Above 80%: plan a propulsive desaturation.',wheelColor)),
             opsMeter('Momentum storage',nextCmg,wheelColor,'CMGs save fuel until their stored momentum must be dumped'),
             h('button',{type:'button',onClick:function(){opsLogEntry('CMG desaturation burn completed; momentum reset to 8%.',{opsCmg:8,opsRuns:(d.opsRuns||0)+1});},style:{marginTop:9,padding:'8px 12px',borderRadius:9,border:'1px solid #a78bfa',background:'rgba(167,139,250,.14)',color:'#ddd6fe',fontWeight:850,cursor:'pointer'}},'🔥 Perform thruster desaturation'));
@@ -7780,12 +7808,12 @@
           var incidentState = !d.opsEmergencyResult ? 'active' : d.opsEmergencyCorrect ? 'contained' : 'hold';
           var stateLabel = incidentState === 'contained' ? 'CONTAINED' : incidentState === 'hold' ? 'HOLD // HAZARD ACTIVE' : 'ACTIVE INCIDENT';
           var stateColor = incidentState === 'contained' ? '#4ade80' : incidentState === 'hold' ? '#fbbf24' : '#f87171';
-          function moduleBody(x, width, label) {
+          function moduleBody(x, width, label, labelPos) {
             return h('g', null,
               h('rect', { x: x, y: 67, width: width, height: 62, rx: 30, fill: '#273548', stroke: '#94a3b8', strokeWidth: 2 }),
               h('line', { x1: x + 27, y1: 69, x2: x + 27, y2: 127, stroke: '#64748b', strokeWidth: 4 }),
               h('line', { x1: x + width - 27, y1: 69, x2: x + width - 27, y2: 127, stroke: '#64748b', strokeWidth: 4 }),
-              h('text', { x: x + width / 2, y: 102, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 8, fontWeight: 850 }, label));
+              h('text', { x: labelPos ? labelPos.x : x + width / 2, y: labelPos ? labelPos.y : 102, textAnchor: labelPos ? 'start' : 'middle', fill: '#cbd5e1', fontSize: 8, fontWeight: 850 }, label));
           }
           function incidentArt() {
             if (sid === 'fire') return h('g', null,
@@ -7807,11 +7835,11 @@
               h('path', { d: 'M472 120 H333 M279 120 H194', fill: 'none', stroke: '#38bdf8', strokeWidth: 4, opacity: incidentState === 'contained' ? .8 : .42 }),
               h('text', { x: 518, y: 164, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 7.5, fontWeight: 850 }, 'RADIATOR'));
             if (sid === 'co2') return h('g', null,
-              moduleBody(50, 540, 'CABIN AIR VOLUME'),
+              moduleBody(50, 540, 'CABIN AIR VOLUME', { x: 52, y: 60 }),
               h('g', { transform: 'translate(140,94)' }, h('circle', { cy: -11, r: 9, fill: '#e2e8f0' }), h('rect', { x: -9, y: 0, width: 18, height: 28, rx: 7, fill: '#94a3b8' })),
               [0,1,2,3].map(function (i) { return h('circle', { key: i, cx: 176 + (i % 2) * 16, cy: 76 + Math.floor(i / 2) * 18, r: incidentState === 'contained' ? 3 : 6, fill: '#a78bfa', opacity: incidentState === 'contained' ? .24 : .58 }); }),
               h('rect', { x: 315, y: 76, width: 62, height: 46, rx: 7, fill: incidentState === 'contained' ? '#164e63' : '#3f2733', stroke: incidentState === 'contained' ? '#67e8f9' : '#f87171', strokeWidth: 2 }),
-              h('text', { x: 346, y: 103, textAnchor: 'middle', fill: '#f8fafc', fontSize: 8, fontWeight: 900 }, 'INLET'),
+              h('text', { x: 346, y: 137, textAnchor: 'middle', fill: '#f8fafc', fontSize: 8, fontWeight: 900 }, 'INLET'),
               h('rect', { x: 457, y: 65, width: 82, height: 68, rx: 8, fill: '#183c31', stroke: '#4ade80', strokeWidth: 2 }),
               h('text', { x: 498, y: 96, textAnchor: 'middle', fill: '#bbf7d0', fontSize: 8, fontWeight: 900 }, 'SCRUBBER'),
               h('text', { x: 498, y: 111, textAnchor: 'middle', fill: '#86efac', fontSize: 7 }, 'RUNNING'),
@@ -7932,8 +7960,20 @@
         var moduleColor = '#' + Number(module.color || 0x38bdf8).toString(16).padStart(6, '0');
         var isTruss = module.id === 'truss';
         var isCupola = module.id === 'cupola';
+        // 86 px per scene unit puts the eleven cylinders in a 103-292 px spread,
+        // none of them clamped; the truss and cupola keep their bespoke art and
+        // are excluded from the shared-scale claim in the caption below.
+        var envLen = Number(module.size[1]) || 1.6;
+        var envDia = Number(module.size[0]) || 0.55;
+        var bodyW = Math.max(96, Math.min(352, envLen * 86));
+        var bodyH = Math.max(30, Math.min(66, envDia * 86));
+        var bodyX = 320 - bodyW / 2, bodyY = 86 - bodyH / 2;
+        var bulkInset = Math.min(29, bodyW * 0.22);
+        var portCount = bodyW > 200 ? 5 : bodyW > 130 ? 4 : 3;
+        var dimX1 = isTruss ? 105 : isCupola ? 252 : bodyX;
+        var dimX2 = isTruss ? 535 : isCupola ? 388 : bodyX + bodyW;
         return h('div', { className: 'iss-learning-visual iss-blueprint' },
-          h('svg', { viewBox: '0 0 640 164', role: 'img', 'aria-label': 'Engineering silhouette of ' + module.name + '. Scene axis ' + module.axis + '. Relative envelope ' + module.size[1] + ' by ' + module.size[0] + ' scene units. Not to scale.' },
+          h('svg', { viewBox: '0 0 640 164', role: 'img', 'aria-label': 'Engineering silhouette of ' + module.name + '. Scene axis ' + module.axis + '. Relative envelope ' + module.size[1] + ' by ' + module.size[0] + ' scene units. ' + ((isTruss || isCupola) ? 'Not to scale.' : 'Pressurized modules are drawn to one shared scale, so their silhouettes can be compared.') },
             h('defs', null, h('pattern', { id: 'iss-blueprint-grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M20 0H0V20', fill: 'none', stroke: '#38bdf8', strokeWidth: .5, opacity: .22 })), h('linearGradient', { id: 'iss-module-metal', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '52%', stopColor: moduleColor }), h('stop', { offset: '100%', stopColor: '#475569' }))),
             h('rect', { width: 640, height: 164, fill: '#06101e' }), h('rect', { width: 640, height: 164, fill: 'url(#iss-blueprint-grid)' }),
             h('text', { x: 20, y: 23, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.5 }, 'MODULE BLUEPRINT // ' + module.id.toUpperCase()),
@@ -7946,14 +7986,17 @@
               [-42,-21,0,21,42].map(function (dx, i) { return h('circle', { key: i, cx: 320 + dx, cy: 78 - Math.abs(dx) * .25, r: i === 2 ? 11 : 7, fill: '#12324c', stroke: '#7dd3fc' }); }),
               h('rect', { x: 252, y: 106, width: 136, height: 13, rx: 5, fill: '#94a3b8' })) :
             h('g', null,
-              h('rect', { x: 176, y: 57, width: 288, height: 58, rx: 28, fill: 'url(#iss-module-metal)', stroke: '#e2e8f0', strokeWidth: 2 }),
-              h('line', { x1: 205, y1: 58, x2: 205, y2: 114, stroke: '#64748b', strokeWidth: 5 }), h('line', { x1: 435, y1: 58, x2: 435, y2: 114, stroke: '#64748b', strokeWidth: 5 }),
-              [250,285,320,355,390].map(function (x, i) { return h('circle', { key: i, cx: x, cy: 78, r: 4, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 }); }),
-              h('circle', { cx: 176, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 }), h('circle', { cx: 464, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 })),
-            h('line', { x1: 100, y1: 132, x2: 540, y2: 132, stroke: moduleColor, strokeWidth: 1.3 }), h('line', { x1: 100, y1: 127, x2: 100, y2: 137, stroke: moduleColor }), h('line', { x1: 540, y1: 127, x2: 540, y2: 137, stroke: moduleColor }),
+              h('rect', { x: bodyX, y: bodyY, width: bodyW, height: bodyH, rx: Math.min(28, bodyH / 2), fill: 'url(#iss-module-metal)', stroke: '#e2e8f0', strokeWidth: 2 }),
+              h('line', { x1: bodyX + bulkInset, y1: bodyY + 1, x2: bodyX + bulkInset, y2: bodyY + bodyH - 1, stroke: '#64748b', strokeWidth: 5 }),
+              h('line', { x1: bodyX + bodyW - bulkInset, y1: bodyY + 1, x2: bodyX + bodyW - bulkInset, y2: bodyY + bodyH - 1, stroke: '#64748b', strokeWidth: 5 }),
+              Array.apply(null, { length: portCount }).map(function (_, i) {
+                return h('circle', { key: i, cx: bodyX + bodyW * (0.5 + (i - (portCount - 1) / 2) * 0.13), cy: 86 - bodyH * 0.14, r: 4, fill: '#7dd3fc', stroke: '#e0f2fe', strokeWidth: 1 });
+              }),
+              h('circle', { cx: bodyX, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 }), h('circle', { cx: bodyX + bodyW, cy: 86, r: 16, fill: '#263449', stroke: '#cbd5e1', strokeWidth: 3 })),
+            h('line', { x1: dimX1, y1: 132, x2: dimX2, y2: 132, stroke: moduleColor, strokeWidth: 1.3 }), h('line', { x1: dimX1, y1: 127, x2: dimX1, y2: 137, stroke: moduleColor }), h('line', { x1: dimX2, y1: 127, x2: dimX2, y2: 137, stroke: moduleColor }),
             h('text', { x: 320, y: 148, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 750, letterSpacing: .8 }, 'RELATIVE ENVELOPE ' + module.size[1] + ' × ' + module.size[0] + '  /  AXIS ' + module.axis.toUpperCase()),
             null),
-          h('div', { className: 'iss-visual-caption' }, h('span', null, __alloT('stem.spacestation.blueprint_caption', 'Envelope taken from the 3-D model; hatches and ports are schematic.')), h('span', null, 'SCHEMATIC · NOT TO SCALE')));
+          h('div', { className: 'iss-visual-caption' }, h('span', null, __alloT('stem.spacestation.blueprint_caption', 'Envelope taken from the 3-D model; hatches and ports are schematic.')), h('span', null, (isTruss || isCupola) ? 'SCHEMATIC · NOT TO SCALE' : 'SCHEMATIC · MODULES SHARE ONE SCALE')));
       }
       function renderMap() {
         return h('div', null,
@@ -8028,7 +8071,9 @@
         function minuteOf(time) { var parts = String(time).split(':'); return Number(parts[0]) * 60 + Number(parts[1] || 0); }
         var selectedMinute = minuteOf(slot.h);
         var selectedX = 40 + selectedMinute / 1440 * 560;
-        var labelX = Math.max(112, Math.min(528, selectedX));
+        var calloutText = slot.h + '  ' + slot.label.toUpperCase();
+        var calloutW = Math.max(132, Math.min(320, calloutText.length * 5.15 + 24));
+        var labelX = Math.max(calloutW / 2 + 6, Math.min(640 - calloutW / 2 - 6, selectedX));
         var phases = [
           { start: 0, end: 360, label: 'SLEEP', color: '#4338ca' },
           { start: 360, end: 450, label: 'PREP', color: '#0ea5e9' },
@@ -8074,7 +8119,7 @@
                 h('rect', { x: x, y: 130, width: width, height: 14, rx: allocationIndex === 0 || allocationIndex === allocations.length - 1 ? 4 : 0, fill: allocation.color, opacity: selected ? .95 : .58, stroke: selected ? '#f8fafc' : 'none', strokeWidth: selected ? 1.5 : 0 }),
                 h('text', { x: x + width / 2, y: 140, textAnchor: 'middle', fill: '#f8fafc', fontSize: 7.2, fontWeight: selected ? 900 : 750 }, allocation.short));
             }),
-            h('g', { className: 'iss-day-timeline-marker' }, h('line', { x1: selectedX, y1: 40, x2: selectedX, y2: 92, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '3 3' }), h('rect', { x: labelX - 72, y: 21, width: 144, height: 18, rx: 8, fill: '#2b1d0d', stroke: '#fbbf24' }), h('text', { x: labelX, y: 33, textAnchor: 'middle', fill: '#fef3c7', fontSize: 8.5, fontWeight: 850 }, slot.h + '  ' + slot.label.toUpperCase()))));
+            h('g', { className: 'iss-day-timeline-marker' }, h('line', { x1: selectedX, y1: 40, x2: selectedX, y2: 92, stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '3 3' }), h('rect', { x: labelX - calloutW / 2, y: 21, width: calloutW, height: 18, rx: 9, fill: '#2b1d0d', stroke: '#fbbf24' }), h('text', { x: labelX, y: 33, textAnchor: 'middle', fill: '#fef3c7', fontSize: 8.5, fontWeight: 850 }, calloutText))));
       }
       function renderDayOrbitVisual(slot, index) {
         function minuteOfDay(time) { var parts = String(time).split(':'); return Number(parts[0]) * 60 + Number(parts[1] || 0); }
@@ -8203,10 +8248,10 @@
           air: { nodes: [['WATER', 'recycled supply'], ['SPLIT', 'electrolysis'], ['CREW', 'O₂ in / CO₂ out'], ['RECOVER', 'scrub + Sabatier']], loop: true, caption: 'Electricity closes part of the oxygen-water loop.' },
           power: { nodes: [['SUN', 'radiant energy'], ['ARRAYS', 'direct current'], ['BATTERIES', 'store for eclipse'], ['LOADS', 'labs + life support']], loop: false, caption: 'Generation and storage must survive sixteen daily eclipses.' },
           thermal: { nodes: [['CABIN', 'collect heat'], ['WATER', 'internal loop'], ['AMMONIA', 'external loop'], ['RADIATORS', 'infrared to space']], loop: false, caption: 'In vacuum, the final heat-transfer step must be radiation.' },
-          attitude: { nodes: [['SENSORS', 'measure pose'], ['COMPUTER', 'calculate torque'], ['CMGs', 'exchange momentum'], ['STATION', 'hold orientation']], loop: true, caption: 'A feedback loop continually senses, corrects, and verifies.' },
+          attitude: { nodes: [['SENSORS', 'measure pose'], ['COMPUTER', 'calculate torque'], ['CMGs', 'exchange momentum'], ['STATION', 'hold orientation']], loop: true, loopLabel: 'FEEDBACK / CONTROL LOOP', caption: 'A feedback loop continually senses, corrects, and verifies.' },
           debris: { nodes: [['TRACK', 'ground radar'], ['ASSESS', 'predict miss distance'], ['MANEUVER', 'burn if needed'], ['SHIELD', 'stop small debris']], loop: false, caption: 'Risk is managed differently depending on particle size.' },
           comms: { nodes: [['STATION', 'transmit upward'], ['RELAY', 'geostationary satellite'], ['TERMINAL', 'New Mexico dish'], ['CONTROL', 'Houston']], loop: false, caption: 'Up 35,800 km and back down — the long way round to a room in Texas' },
-          body: { nodes: [['MICRO-G', 'remove loading'], ['CHANGE', 'bone + muscle loss'], ['COUNTER', 'exercise + diet'], ['MEASURE', 'adapt the plan']], loop: true, caption: 'Each astronaut is both crew member and longitudinal study.' }
+          body: { nodes: [['MICRO-G', 'remove loading'], ['CHANGE', 'bone + muscle loss'], ['COUNTER', 'exercise + diet'], ['MEASURE', 'adapt the plan']], loop: true, loopLabel: 'FEEDBACK / COUNTERMEASURE LOOP', caption: 'Each astronaut is both crew member and longitudinal study.' }
         };
         var flow = flows[sys.id] || flows.water;
         var selectedStep = Math.max(0, Math.min(flow.nodes.length, Number(d.sysStep || 0)));
@@ -8232,7 +8277,7 @@
                 h('text', { x: 12, y: 38, fill: '#f8fafc', fontSize: 10.5, fontWeight: 850, letterSpacing: .5 }, node[0]),
                 h('text', { x: 12, y: 53, fill: '#94a3b8', fontSize: 8.5 }, node[1]));
             }),
-            flow.loop ? h('text', { x: 320, y: 166, textAnchor: 'middle', fill: sys.color, fontSize: 8.5, fontWeight: 800, letterSpacing: 1.2 }, 'FEEDBACK / RECOVERY LOOP') : h('text', { x: 320, y: 132, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700, letterSpacing: 1.1 }, 'ENERGY AND MASS MOVE ONE WAY THROUGH THIS VIEW')),
+            flow.loop ? h('text', { x: 320, y: 166, textAnchor: 'middle', fill: sys.color, fontSize: 8.5, fontWeight: 800, letterSpacing: 1.2 }, flow.loopLabel || 'FEEDBACK / RECOVERY LOOP') : h('text', { x: 320, y: 132, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700, letterSpacing: 1.1 }, 'ENERGY AND MASS MOVE ONE WAY THROUGH THIS VIEW')),
           h('div', { className: 'iss-system-steps', role: 'group', 'aria-label': 'Inspect ' + sys.name + ' process stages' }, [{ label: 'All stages', step: 0 }].concat(flow.nodes.map(function (node, nodeIndex) { return { label: (nodeIndex + 1) + ' ' + node[0], step: nodeIndex + 1 }; })).map(function (item) { var on = selectedStep === item.step; return h('button', { key: item.step, type: 'button', 'data-iss-system-step': item.step, 'aria-pressed': on, onClick: function () { upd({ sysStep: item.step }); } }, item.label); })),
           h('div', { className: 'iss-visual-caption' }, h('span', null, selectedStep ? flow.nodes[selectedStep - 1][0] + ': ' + flow.nodes[selectedStep - 1][1] : flow.caption), h('span', null, selectedStep ? 'STAGE ' + selectedStep + ' / ' + flow.nodes.length : 'SELECTED: ' + sys.name.toUpperCase())));
       }

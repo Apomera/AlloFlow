@@ -580,9 +580,17 @@ window.StemLab = window.StemLab || {
           h('line', { key: 'hl' + gi, x1: 0, y1: py, x2: gridW, y2: py, stroke: v === 0 ? '#334155' : '#e2e8f0', strokeWidth: v === 0 ? 2 : 0.5 })
         );
         if (v !== 0 && v % 2 === 0) {
+          // ★ Clamp the EDGE tick labels inside the canvas. At v = ±10 the tick
+          // sits exactly on the boundary, so a centre-anchored "-10" was half
+          // outside and rendered as "0" — every extreme of the axis range, the
+          // one thing a coordinate grid has to state, was unreadable. The SVG
+          // has no viewBox and its pointer math uses raw pixel offsets, so the
+          // labels move rather than the geometry.
+          var xLabelX = Math.max(14, Math.min(gridW - 14, toSvg(v, 'x')));
+          var yLabelY = Math.max(11, Math.min(gridH - 4, toSvg(v, 'y') + 3));
           gridElements.push(
-            h('text', { key: 'xl' + gi, x: toSvg(v, 'x'), y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[11px] fill-slate-600' }, v),
-            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: toSvg(v, 'y') + 3, textAnchor: 'end', className: 'text-[11px] fill-slate-600' }, v)
+            h('text', { key: 'xl' + gi, x: xLabelX, y: toSvg(0, 'y') + 14, textAnchor: 'middle', className: 'text-[11px] fill-slate-600' }, v),
+            h('text', { key: 'yl' + gi, x: toSvg(0, 'x') - 8, y: yLabelY, textAnchor: 'end', className: 'text-[11px] fill-slate-600' }, v)
           );
         }
       }
@@ -1197,7 +1205,10 @@ window.StemLab = window.StemLab || {
               t('stem.coordgrid.columns_files_are_letters_a_h_rows_ran', 'Columns (files) are letters a-h. Rows (ranks) are numbers 1-8. Every square has a letter+number coordinate. The white queen starts at d1, the black king at e8.')
             ),
             h('div', { className: 'flex justify-center bg-white rounded-xl border-2 border-emerald-200 p-4' },
-              h('svg', { width: sz + 30, height: sz + 30, viewBox: '-15 -5 ' + (sz + 30) + ' ' + (sz + 30),
+              // Left margin 22, not 15: the rank numbers sit outside the board and
+              // were being shaved by ~2px on their left edge. Nothing is drawn
+              // at the right edge, so the extra room comes from there.
+              h('svg', { width: sz + 30, height: sz + 30, viewBox: '-22 -5 ' + (sz + 30) + ' ' + (sz + 30),
                 style: { background: 'transparent' }, role: 'img',
                 'aria-label': 'Chess board, currently selected square ' + chessSelected
               }, squares, labels)

@@ -1304,7 +1304,12 @@ window.StemLab = window.StemLab || {
     render: function(ctx) {
       // Demographic/outbreak hues are painted as TEXT on theme grounds; walk to the
       // readable partner per theme (fails 3.2-4.2:1 raw in both).
-      var epDark = !!ctx.isDark || ctx.theme === 'dark';
+      // ★ Contrast counts as dark HERE. Every consumer of this flag picks an ink
+      // for text that lands on the host ground, and that ground is black in the
+      // contrast theme - the light branch put these hues on black at 2.1-2.7:1.
+      // (The flag is read only by epInk and the two difficulty rows below; it
+      // never selects a canvas colour, so widening it is safe.)
+      var epDark = !!ctx.isDark || ctx.theme === 'dark' || !!ctx.isContrast;
       var EP_INK_LIGHT = { '#a21caf': '#86198f', '#ef4444': '#b91c1c', '#dc2626': '#b91c1c', '#a855f7': '#7e22ce', '#16a34a': '#166534', '#22c55e': '#166534', '#3b82f6': '#1d4ed8', '#4f46e5': '#4338ca', '#f59e0b': '#92400e', '#b45309': '#92400e', '#0ea5e9': '#0369a1', '#ec4899': '#be185d', '#8b5cf6': '#6d28d9', '#06b6d4': '#0e7490', '#10b981': '#047857' };
       var EP_INK_DARK = { '#a21caf': '#e879f9', '#ef4444': '#fca5a5', '#dc2626': '#fca5a5', '#a855f7': '#c4b5fd', '#16a34a': '#86efac', '#22c55e': '#86efac', '#3b82f6': '#93c5fd', '#4f46e5': '#a5b4fc', '#f59e0b': '#fcd34d', '#b45309': '#fcd34d', '#0ea5e9': '#7dd3fc', '#ec4899': '#f9a8d4', '#8b5cf6': '#c4b5fd', '#06b6d4': '#67e8f9', '#10b981': '#6ee7b7' };
       // Chips and the herd-immunity readout sit on panels that stay WHITE in dark
@@ -2585,7 +2590,7 @@ window.StemLab = window.StemLab || {
             h('strong', { style: { color: '#0369a1' } }, 'Goal: '),
             __alloT('stem.epidemic.find_vaccination_and_behavior_settings', 'find settings that keep the peak Infected curve below the hospital threshold, or drive the initial R-effective below 1. Disease presets load illustrative parameter estimates; real values vary across settings, variants, immunity, and time. Raise immunity until the Herd Threshold readout flips to Achieved.')
           ),
-          h('div', { role: 'note', style: { padding: '10px 12px', borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(217,119,6,0.35)', color: '#78350f', fontSize: 11.5, lineHeight: 1.5 } },
+          h('div', { role: 'note', style: { padding: '10px 12px', borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(217,119,6,0.35)', color: ctx.isContrast ? '#fde68a' : '#78350f', fontSize: 11.5, lineHeight: 1.5 } },
             h('strong', null, 'Model boundary: '),
             'This deterministic, closed-population SIR model assumes homogeneous mixing, lasting recovery, no births or deaths, and immediate complete immunity for the vaccinated percentage. Presets are teaching estimates, not forecasts or medical guidance.'
           ),

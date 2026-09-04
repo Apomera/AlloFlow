@@ -7,12 +7,14 @@
 //
 //   node dev-tools/insert_pack_keys.cjs <slug> <translations.json> [--section a11y]
 //
+// --section takes a dotted path for nested banks, e.g. --section stem.anatomy.
+//
 // Guarantees, in this order:
 //   1. every key exists in ui_strings.js's section  (no invented keys)
 //   2. every {n} placeholder in English also appears in the translation
 //   3. DNT brand terms present in English survive verbatim
 //   4. a .bak of the pack is written before any change
-//   5. pack + desktop/web-app/public mirror both stay valid JSON
+//   5. every pack copy (lang/ plus the three desktop mirrors) stays valid JSON
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -34,7 +36,24 @@ const DNT = ['AlloFlow', 'AlloBot', 'AlloHaven', 'StoryForge', 'LitLab', 'PoetTr
 
 const uiPath = path.join(ROOT, 'ui_strings.js');
 const ui = JSON.parse(fs.readFileSync(uiPath, 'utf8'));
-if (!ui[SECTION]) { console.error('no such section in ui_strings.js: ' + SECTION); process.exit(1); }
+
+// A section may be nested: "stem.anatomy" addresses ui.stem.anatomy.
+const SECTION_PATH = SECTION.split('.');
+function dig(root, create) {
+  let node = root;
+  for (const part of SECTION_PATH) {
+    if (node == null || typeof node !== 'object') return null;
+    if (node[part] === undefined) {
+      if (!create) return null;
+      node[part] = {};
+    }
+    node = node[part];
+  }
+  return node;
+}
+
+const uiSection = dig(ui, false);
+if (!uiSection) { console.error('no such section in ui_strings.js: ' + SECTION); process.exit(1); }
 
 const incoming = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 const packPath = path.join(ROOT, 'lang', slug + '.js');
@@ -42,7 +61,7 @@ if (!fs.existsSync(packPath)) { console.error('no pack: lang/' + slug + '.js'); 
 
 const problems = [];
 for (const [k, v] of Object.entries(incoming)) {
-  const en = ui[SECTION][k];
+  const en = uiSection[k];
   if (en === undefined) { problems.push(k + ': NOT in ui_strings.' + SECTION); continue; }
   if (typeof v !== 'string' || !v.trim()) { problems.push(k + ': empty translation'); continue; }
   for (const tok of en.match(/\{\d+\}/g) || []) {
@@ -60,16 +79,28 @@ if (problems.length) {
 
 const pack = JSON.parse(fs.readFileSync(packPath, 'utf8'));
 fs.writeFileSync(packPath + '.bak', JSON.stringify(pack, null, 2) + '\n', 'utf8');
-pack[SECTION] = Object.assign({}, pack[SECTION] || {}, incoming);
+const packSection = dig(pack, true);
+Object.assign(packSection, incoming);
 
 // Preserve the pack's existing formatting convention (2-space, trailing newline).
 const out = JSON.stringify(pack, null, 2) + '\n';
 JSON.parse(out); // paranoia
-fs.writeFileSync(packPath, out, 'utf8');
 
-const mirror = path.join(ROOT, 'desktop', 'web-app', 'public', 'lang', slug + '.js');
-if (fs.existsSync(path.dirname(mirror))) fs.writeFileSync(mirror, out, 'utf8');
+// All four copies: lang/ is the source, and the three desktop trees are what the packaged
+// app loads. Writing only some of them is how stale text survives a correction.
+const COPIES = [
+  packPath,
+  path.join(ROOT, 'desktop', 'web-app', 'public', 'lang', slug + '.js'),
+  path.join(ROOT, 'desktop', 'app-build', 'lang', slug + '.js'),
+  path.join(ROOT, 'desktop', 'web-app', 'build', 'lang', slug + '.js')
+];
+const written = [];
+for (const target of COPIES) {
+  if (target !== packPath && !fs.existsSync(path.dirname(target))) continue;
+  fs.writeFileSync(target, out, 'utf8');
+  written.push(path.relative(ROOT, target).split(path.sep).join('/'));
+}
 
-const total = Object.keys(pack[SECTION]).length;
+const total = Object.keys(packSection).length;
 console.log('lang/' + slug + '.js  +' + Object.keys(incoming).length + ' keys into ' + SECTION +
-  '  (section now ' + total + ')' + (fs.existsSync(mirror) ? '  [mirror synced]' : '  [no mirror]'));
+  '  (section now ' + total + ')  [' + written.length + ' copies written]');

@@ -6707,10 +6707,20 @@ window.StemLab = window.StemLab || {
         var mapBox = el('div', { className: 'dinolab-world-map', role: 'group', 'aria-label': t('stem.dinolab.map_of_where_dinosaur_fossils_are_foun', 'Map of where dinosaur fossils are found today, by continent'), style: { position: 'relative', width: '100%', height: 0, paddingBottom: '52%', overflow: 'hidden', borderRadius: 12, backgroundColor: '#0c2940', backgroundImage: 'linear-gradient(rgba(125,211,252,0.10) 1px, transparent 1px),linear-gradient(90deg, rgba(125,211,252,0.10) 1px, transparent 1px),radial-gradient(circle at 50% 42%, rgba(56,189,248,0.18), rgba(2,6,23,0.18))', backgroundSize: '12.5% 25%, 12.5% 25%, 100% 100%', border: '1px solid ' + T.border, marginBottom: 8 } },
           el('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: 9, bottom: 7, color: '#bae6fd', fontSize: 10, fontWeight: 800, letterSpacing: '0.05em' } }, 'PRESENT-DAY CONTINENTS'),
           el('div', { style: { position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 } }, tileEls));
+        // ★ The three headline stat values were dark-theme inks (teal-300,
+        // sky-300, amber-200) on near-white cards: 1.19-1.59:1, so the most
+        // important number on each card was the least readable while its label
+        // below it was dark and crisp. Same render-time DOM sniff the file
+        // already uses for dinoCueInk, re-evaluated every render so a theme
+        // toggle stays honest.
+        var mapStatDark = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]'));
+        var statTeal = mapStatDark ? '#5eead4' : '#115e59';
+        var statSky = mapStatDark ? '#7dd3fc' : '#075985';
+        var statAmber = mapStatDark ? '#fde68a' : '#92400e';
         var stats = el('div', { className: 'dinolab-map-stats', 'aria-label': 'Map catalog summary', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '8px 0 10px' } },
-          panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: '#5eead4' } }, String(totalMapped)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'dinosaurs plotted')]),
-          panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: '#7dd3fc' } }, String(TILES.length)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'continents represented')]),
-          panel([el('div', { key: 'v', style: { fontSize: 14, fontWeight: 900, color: '#fde68a' } }, richest.c), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'largest catalog sample')])
+          panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: statTeal } }, String(totalMapped)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'dinosaurs plotted')]),
+          panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: statSky } }, String(TILES.length)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'continents represented')]),
+          panel([el('div', { key: 'v', style: { fontSize: 14, fontWeight: 900, color: statAmber } }, richest.c), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'largest catalog sample')])
         );
         var detail;
         if (sel && byCont[sel]) {
@@ -10242,6 +10252,9 @@ var evidenceRoute = [
                 )
               ),
               el('div', { className: 'dinolab-field-workflow', hidden: focusMode, role: 'list', 'aria-label': 'Field Station workflow', style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, workflowOrder.map(function (step, index) {
+                // teal-300 sits at 1.33:1 on the light "current" card; same
+                // render-time theme sniff the file uses for dinoCueInk.
+                var stepCurrentInk = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]')) ? '#5eead4' : '#115e59';
                 var currentIndex = workflowOrder.indexOf(activeWorkflowStep);
                 var current = step === activeWorkflowStep;
                 var complete = index < currentIndex;
@@ -10249,10 +10262,10 @@ var evidenceRoute = [
                 var state = complete ? 'Complete' : (current ? 'Current' : (available ? 'Ready' : 'Locked'));
                 return el('div', { key: step, role: 'listitem', style: { minWidth: 0 } },
                   el('button', { id: 'dinolab-field-step-' + step, type: 'button', onClick: function () { openWorkflowStep(step); }, disabled: !available, 'aria-current': current ? 'step' : null, 'aria-label': 'Step ' + (index + 1) + ' ' + cap(step) + ', ' + state, style: { width: '100%', minHeight: 50, display: 'grid', gridTemplateColumns: '26px minmax(0, 1fr)', gap: 8, alignItems: 'center', textAlign: 'left', padding: '7px 9px', borderRadius: 8, border: '1px solid ' + (current ? '#14b8a6' : (complete ? 'rgba(34,197,94,0.58)' : T.border)), background: current ? 'rgba(20,184,166,0.12)' : (complete ? 'rgba(34,197,94,0.08)' : T.deeper), color: T.text, cursor: available ? 'pointer' : 'not-allowed', opacity: available ? 1 : 0.62 } },
-                    el('span', { 'aria-hidden': 'true', style: { width: 24, height: 24, display: 'grid', placeItems: 'center', borderRadius: 999, background: current ? '#0f766e' : (complete ? '#166534' : T.panel), border: '1px solid ' + (current ? '#5eead4' : (complete ? '#4ade80' : T.border)), color: '#f8fafc', fontSize: 11, fontWeight: 900 } }, String(index + 1)),
+                    el('span', { 'aria-hidden': 'true', style: { width: 24, height: 24, display: 'grid', placeItems: 'center', borderRadius: 999, background: current ? '#0f766e' : (complete ? '#166534' : T.panel), border: '1px solid ' + (current ? '#5eead4' : (complete ? '#4ade80' : T.border)), color: (current || complete) ? '#f8fafc' : T.text, fontSize: 11, fontWeight: 900 } }, String(index + 1)),
                     el('span', null,
                       el('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 900, color: T.text } }, cap(step)),
-                      el('span', { style: { display: 'block', marginTop: 1, fontSize: 10.5, color: current ? '#5eead4' : T.soft } }, available ? state : (step === 'assemble' ? 'Finish scan' : 'Finish assembly'))
+                      el('span', { style: { display: 'block', marginTop: 1, fontSize: 10.5, color: current ? stepCurrentInk : T.soft } }, available ? state : (step === 'assemble' ? 'Finish scan' : 'Finish assembly'))
                     )
                   )
                 );

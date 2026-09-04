@@ -137,7 +137,7 @@ describe('Gradient and exported-card contrast sweep', () => {
     ['Nutrition teal stop', '#ffffff', '#0f766e'],
     ['Space Colony achievement', '#fecdd3', '#9f1239'],
     ['Space Colony challenge', '#fef3c7', '#92400e'],
-    ['Space Station sunlight', '#fff7ed', '#92400e'],
+    ['Space Station sunlight', '#fff7ed', '#9a3412'],
   ])('%s remains at or above 4.5:1', (_label, foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
@@ -148,7 +148,7 @@ describe('Gradient and exported-card contrast sweep', () => {
     ['stem_lab/stem_tool_alphafold.js', 'linear-gradient(135deg,#0f766e,#0369a1)'],
     ['stem_lab/stem_tool_swimlab.js', 'linear-gradient(135deg,#0369a1,#075985)'],
     ['stem_lab/stem_tool_nutritionlab.js', 'linear-gradient(135deg, #047857, #0f766e)'],
-    ['stem_lab/stem_tool_spacestation.js', 'linear-gradient(90deg,#78350f,#92400e)'],
+    ['stem_lab/stem_tool_spacestation.js', 'linear-gradient(90deg,#7c2d12,#9a3412)'],
     ['stem_lab/stem_tool_learning_lab.js', 'linear-gradient(145deg, #047857, #065f46)'],
   ])('%s pins its accessible gradient', (fileName, gradient) => {
     expect(source(fileName)).toContain(gradient);

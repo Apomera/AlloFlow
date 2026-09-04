@@ -277,6 +277,120 @@ describe('galaxy visuals', () => {
     expect(html).toContain('many orbital planes');
   });
 
+  it.each(GALAXY_PATHS)('%s reads out the stage on screen, not the main-sequence one', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The star canvas printed L = M^3.5, the mass-temperature ladder and
+    // mainSequenceRadius whatever stage was drawn, so nine of thirteen stages
+    // contradicted their own heading: "Red Supergiant" over T 40,000 K, a neutron
+    // star at R 10.35 R-sun, a black dwarf at 5,778 K. Those are main-sequence
+    // relations and mean nothing off the main sequence.
+    expect(source).toContain('function starStageFacts(stageId, mass)');
+    expect(source).toContain("var statsLine = stageFacts || ('T: '");
+    for (const stage of ['red_giant', 'red_supergiant', 'blue_supergiant', 'planetary_nebula',
+      'white_dwarf', 'black_dwarf', 'blue_dwarf', 'supernova', 'neutron_star', 'black_hole',
+      'nebula', 'protostar']) {
+      expect(source, stage).toContain("case '" + stage + "': return __alloT('stem.galaxy.stagefact_" + stage + "'");
+    }
+  });
+
+  it.each(GALAXY_PATHS)('%s keeps one stage-duration table', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The lifecycle list and the star canvas both need this; two copies is how the
+    // picture and the list drift apart.
+    expect(source).toContain('function starStageDuration(stageId, mass)');
+    expect(source).toContain('starStageDuration(s.id, lifecycleMass)');
+    expect(source.split("'~10,000 yr'").length + source.split('"~10,000 yr"').length - 2).toBe(1);
+  });
+
+  it.each(GALAXY_PATHS)('%s keeps every star stage inside its canvas', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // baseR is already clamped at 0.40 * dim and the giant stages then multiply it by
+    // 2.5-3.5, so a 20-solar-mass red supergiant was drawn with a ~490px radius on a
+    // 348px-tall canvas: an orange wash with no disc, no edge and no sky.
+    expect(source).toContain('rsR = Math.min(rsR * rsPulse, dim * 0.40)');
+    expect(source).toContain('var bsR = Math.min(baseR * 2.5, dim * 0.38)');
+    expect(source).toContain('var rgR = Math.min(baseR * 2.5, dim * 0.38)');
+  });
+
+  it.each(GALAXY_PATHS)('%s states a massive star lifespan in units it fits in', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // 10 / 20^2.5 Gyr fixed to one decimal printed "Lifespan: 0.0 billion years",
+    // which reads as no lifespan at all across the whole upper mass range.
+    expect(source).toContain("lifetimeText = 'Lifespan: ' + (lifetimeGyr * 1000).toFixed");
+    expect(source).not.toContain("'Lifespan: ' + lifetime + ' billion years'");
+  });
+
+  it.each(GALAXY_PATHS)('%s resets the camera to the fitted overview, not a fixed number', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // r = 1.2 was the old hardcoded home. Four places were corrected when the overview
+    // became fitted to the morphology and canvas; the keydown fallback was a fifth,
+    // and would have reset to a framing that crops the galaxy.
+    expect(source.split('canvasEl._galaxyOverviewRadius = galaxyOverviewRadius;')).toHaveLength(3);
+    expect(source).toContain("orb.r = cv._galaxyOverviewRadius || orb.r;");
+    expect(source).not.toContain('orb.r = 1.2;');
+  });
+
+  it.each(GALAXY_PATHS)('%s keeps the black-hole canvas sized to its own box', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // resize() ran once from init(), while the canvas still spanned the full width.
+    // The control column then laid out and shrank it, with no window resize to
+    // notice, so the camera kept the aspect it was born with and the scene rendered
+    // ~1.35x too wide with the accretion disk off all four edges.
+    expect(source).toContain('blackHoleResizeObserver = new ResizeObserver');
+    expect(source).toContain('blackHoleResizeObserver.observe(canvas)');
+    expect(source).toContain('if(blackHoleResizeObserver)blackHoleResizeObserver.disconnect()');
+    // A zero measurement must not be allowed to pin the backing store.
+    expect(source).toContain('if (w < 2 || h < 2) return;');
+  });
+
+  it.each(GALAXY_PATHS)('%s survives a saved session holding stale values', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // A retired or misspelled shape name reached the scene builder, which read
+    // .armCount off null and failed with the generic "3-D unavailable" card.
+    expect(source).toContain("if (!GALAXY_TYPES[galaxyType]) galaxyType = 'barredSpiral';");
+    // ★ And it must be validated where GALAXY_TYPES actually EXISTS. It is a var
+    // declared below the point galaxyType is read: the name hoists, the object does
+    // not, so consulting it at the declaration throws and renders a blank tool.
+    expect(source.indexOf('var GALAXY_TYPES = {'))
+      .toBeLessThan(source.indexOf("if (!GALAXY_TYPES[galaxyType]) galaxyType = 'barredSpiral';"));
+    expect(source).not.toContain("var galaxyType = (d.galaxyType && GALAXY_TYPES[d.galaxyType])");
+
+    // null threw on the first .toFixed(); a negative value produced NaN SVG
+    // coordinates. Both rendered NOTHING, not a degraded view.
+    expect(source).toContain('var lifecycleMass = Number.isFinite(d.lifecycleMass)');
+    expect(source).toContain('Math.min(50, Math.max(0.03, d.lifecycleMass))');
+    expect(source).not.toContain('var lifecycleMass = d.lifecycleMass !== undefined');
+  });
+
+  it.each(GALAXY_PATHS)('%s falls back to the galaxy for an unrecognised sim mode', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The one-shot first-load guard let a saved session carrying a retired mode
+    // through on every later mount, and the whole tool rendered as a blank page.
+    expect(source).toContain('var ALLOWED_GALAXY_MODES = {');
+    expect(source).toContain("var simMode = ALLOWED_GALAXY_MODES[d.simMode] ? d.simMode : 'galaxy';");
+    expect(source).not.toContain("var simMode = d.simMode || 'galaxy';");
+  });
+
+  it.each(GALAXY_PATHS)('%s never lets a sprite write depth', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // A sprite writes depth across its whole QUAD, transparent corners included, so
+    // one missing depthWrite:false punched a hard rectangular hole over the bulge
+    // and every star behind it was rejected. Every SpriteMaterial must opt out.
+    const spriteMaterials = source.match(/new THREE\.SpriteMaterial\(\{[^}]*\}/g) || [];
+    expect(spriteMaterials.length).toBeGreaterThan(5);
+    const writingDepth = spriteMaterials.filter((m) => !/depthWrite\s*:\s*false/.test(m));
+    expect(writingDepth).toEqual([]);
+  });
+
+  it.each(GALAXY_PATHS)('%s keeps optical views free of the nuclear jet', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // Jets are a radio and X-ray signature. The old table had radio as the FAINTEST
+    // setting and optical permanently on, which painted a translucent grey column
+    // down the middle of every morphology in Visible light.
+    expect(source).toMatch(/blackHoleDrama\.jet = currentObserveMode === 'radio' \? 0\.\d+ : currentObserveMode === 'xray' \? 0\.\d+ : currentObserveMode === 'gravity' \? 0\.\d+ : 0;/);
+    expect(source).toContain('coreJets.forEach(function (j, idx) { j.visible = blackHoleDrama.jet > 0.001;');
+  });
+
   it.each(GALAXY_PATHS)('%s compresses particles and bloom as the camera zooms out', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
     expect(source).toContain('uZoomPointScale: { value: 1 }');
@@ -284,7 +398,11 @@ describe('galaxy visuals', () => {
     expect(source).toContain('outerContextCompression');
     expect(source).toContain('zoomPointTarget = 1 - outerContextCompression * 0.46');
     expect(source).toContain('zoomOpacityTarget = 1 - outerContextCompression * 0.4');
-    expect(source).toContain('(spherical.r - 1.16) / 1.84');
+    // Was the literal '(spherical.r - 1.16) / 1.84'. 1.16/1.84 encoded the old
+    // fixed r = 1.2 overview; the overview is now fitted to the morphology and
+    // the canvas, so the ramp runs from that overview to the r = 3 zoom clamp.
+    expect(source).toContain('var outerContextCompressionStart = galaxyOverviewRadius;');
+    expect(source).toContain('(spherical.r - outerContextCompressionStart) / Math.max(0.001, 3 - outerContextCompressionStart)');
     expect(source).toContain('adaptiveDensePointMaterials.forEach(function (denseMaterial)');
     expect(source).not.toContain('outerDiskLift * 0.07');
   });

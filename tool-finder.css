@@ -11,3 +11,61 @@
     outline: 2px solid var(--indigo);
     outline-offset: 2px;
 }
+
+/* ── Tool directory (generated block in tools.html) ───────────────────────────
+   The complete deep-link index. Every entry is a link that opens a tool, so the
+   list is dense by design: a visitor scanning for one tool name should see many
+   at once rather than paging through cards. Constraints held here:
+     - 44px minimum height per row, so a link is a comfortable touch target even
+       though the text itself is short (WCAG 2.5.8, and the same 44px the tool
+       cards already use).
+     - a keyboard focus ring that is defined here rather than inherited, because
+       tool-finder.css loads after shared.css and has beaten it before.
+     - #3730a3 on #fff for link text (10.4:1) and #475569 for the count line
+       (7.5:1), both comfortably past AA. */
+.tool-directory-section {
+    padding: 80px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+.tool-directory-count {
+    color: #475569;
+    font-size: .95rem;
+    margin: -8px 0 28px;
+}
+.tool-directory-group {
+    margin-bottom: 28px;
+}
+.tool-directory-group h3 {
+    font-size: 1rem;
+    color: #0f172a;
+    margin: 0 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.tool-directory-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2px 16px;
+}
+.tool-directory-list a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 4px 8px;
+    color: #3730a3;
+    text-decoration: none;
+    font-size: .95rem;
+    border-radius: 6px;
+}
+.tool-directory-list a:hover {
+    background: #eef2ff;
+    text-decoration: underline;
+}
+.tool-directory-list a:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+}

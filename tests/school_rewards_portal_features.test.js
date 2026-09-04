@@ -33,7 +33,9 @@ describe('group award', () => {
   });
 
   it('asks for confirmation before recording a group and reports partial failures without hiding successes', () => {
-    expect(SCRIPT).toContain("window.confirm('Record '+Number($('award-amount').value)+' points for '+ids.length+' students");
+    // The message is one translatable sentence with numbered slots, filled by
+    // fmt(), and shown through confirmT so it is translated before the dialog.
+    expect(SCRIPT).toContain("confirmT(fmt('Record {1} points for {2} students with the same explanation?',Number($('award-amount').value),ids.length))");
     expect(SCRIPT).toContain('retry only the rest');
   });
 });
@@ -158,5 +160,71 @@ describe('escaping guard', () => {
   it('still parses as a script after the edits', () => {
     expect(() => new Function(SCRIPT)).not.toThrow();
     expect(() => new Function(CODE)).not.toThrow();
+  });
+});
+
+describe('records requests (2026-09-03)', () => {
+  it('gives an administrator an export and a redaction path, and warns against editing the sheet', () => {
+    expect(PORTAL).toContain('id="records-card"');
+    expect(PORTAL).toContain('id="records-export"');
+    expect(PORTAL).toContain('id="records-redact"');
+    expect(PORTAL).toContain('Do not delete rows in the spreadsheet');
+    // The card sits on the admin tab, after that panel opens.
+    expect(PORTAL.indexOf('id="records-card"')).toBeGreaterThan(PORTAL.indexOf('id="panel-admin"'));
+    // Redaction is confirmed, reasoned, and reports what necessarily remains.
+    expect(SCRIPT).toContain("rpc('redactSchoolRewardsStudent'");
+    expect(SCRIPT).toContain('confirm:true');
+    expect(SCRIPT).toContain('records-residue');
+    expect(SCRIPT).toContain("rpc('exportSchoolRewardsStudentRecord'");
+  });
+});
+
+describe('academic year rollover (2026-09-03)', () => {
+  it('offers a preview before anything changes, and a close that names the carry-over choice', () => {
+    expect(PORTAL).toContain('id="year-card"');
+    expect(PORTAL).toContain('id="year-check"');
+    expect(PORTAL).toContain('id="year-carry"');
+    expect(PORTAL).toContain('value="none"');
+    expect(PORTAL).toContain('value="all"');
+    expect(SCRIPT).toContain("rpc('getSchoolRewardsYearPreview')");
+    expect(SCRIPT).toContain("rpc('startSchoolRewardsAcademicYear'");
+    expect(SCRIPT).toContain('confirm:true');
+    // Closing is confirmed and the preview writes nothing.
+    expect(SCRIPT).toContain("notice('Year checked. Nothing has changed.','ok')");
+  });
+
+  it('closes the year by appending, never by editing a balance', () => {
+    expect(CODE).toContain('function startSchoolRewardsAcademicYear(request)');
+    expect(CODE).toContain("'year_close'");
+    expect(CODE).toContain("'REVERSAL', -balance");
+    // Batched: one write per sheet, so closing does not scale with the roster.
+    expect(CODE).toContain('function appendRows_(sheet, rows)');
+    expect(CODE).toContain("appendRows_(sheet_(book, 'Ledger'), ledgerRows)");
+    // Guards: nothing in flight, explicit confirmation, and a per-student archive.
+    expect(CODE).toContain('Close the shopping window before closing the year');
+    expect(CODE).toContain('Some students have points reserved for open print requests');
+    expect(CODE).toContain('function yearSummarySheet_(book)');
+    expect(CODE).toContain("event: 'ACADEMIC_YEAR_STARTED'");
+  });
+});
+
+describe('storage and retention (2026-09-04)', () => {
+  it('reports capacity and trims only settled request records', () => {
+    expect(PORTAL).toContain('id="capacity-card"');
+    expect(SCRIPT).toContain("rpc('getSchoolRewardsCapacity')");
+    expect(SCRIPT).toContain("rpc('pruneSchoolRewardsRequestRecords',{confirm:true})");
+    expect(CODE).toContain('var SR_SHEET_CELL_LIMIT = 10000000;');
+    expect(CODE).toContain('var SR_MIN_PRUNE_DAYS = 180;');
+    // Anything unresolved is kept, and the record itself is never trimmed.
+    expect(CODE).toContain("journal.state !== 'COMPLETED'");
+    expect(CODE).toContain("permanent: ['Ledger', 'Audit']");
+  });
+
+  it('scopes mail period keys to the academic year so a reused name still sends', () => {
+    expect(CODE).toContain("hash_(kind + '|' + year + '|' + period)");
+    expect(CODE).toContain('function academicYearStart_(book)');
+    expect(CODE).toContain('academicYearStartedAt: at');
+    // An in-flight mail run blocks the close, so no run spans a key change.
+    expect(CODE).toContain('A mail run is still in progress or waiting for review');
   });
 });

@@ -113,11 +113,14 @@ describe('weathering outcrop illustration', () => {
     expect(svgA).toEqual(svgB);
   });
 
-  it('takes only the state as input', () => {
+  it('takes only the discrete state and a translator as input', () => {
+    // `T` is the render's __alloT, threaded in so the captions drawn INTO the
+    // outcrop and its screen-reader description travel with the language. It is
+    // a translator, not data: the guard below is what keeps slider values out.
     PATHS.forEach((p) => {
       const src = readFileSync(p, 'utf8');
-      expect(src).toContain('function rkWeatheringSvg(h, state)');
-      expect(src).toContain('rkWeatheringSvg(h, state)');
+      expect(src).toContain('function rkWeatheringSvg(h, state, T)');
+      expect(src).toContain('rkWeatheringSvg(h, state, __alloT)');
       const fn = src.slice(src.indexOf('function rkWeatheringSvg'), src.indexOf('// ═══ 🔬 rocks'));
       // No slider names reachable inside the renderer.
       expect(fn).not.toContain('tempSwing');

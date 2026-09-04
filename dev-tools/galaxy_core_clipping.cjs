@@ -24,6 +24,10 @@ const SHAPES = ((process.argv.find((a) => a.startsWith('--shapes=')) || '--shape
 // --hide=arms,nebulae turns those layer groups off before measuring, which
 // attributes the clipping: whichever hidden layer moves the number owns it.
 const HIDE = ((process.argv.find((a) => a.startsWith('--hide=')) || '--hide=').split('=')[1] || '').split(',').filter(Boolean);
+// --observe=visible,radio,xray renders each shape once per observing mode. The
+// mode changes which layers are lit, so a change that reads well in optical can
+// still be wrong in radio; this is how you look at all five without guessing.
+const OBSERVE = ((process.argv.find((a) => a.startsWith('--observe=')) || '--observe=visible').split('=')[1] || 'visible').split(',').filter(Boolean);
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
@@ -93,28 +97,38 @@ window.__mount = function (state) {
   const lines = [];
   lines.push('Galaxy canvas clipping - fraction of pixels blown to (near-)white');
   lines.push('clip = min(R,G,B) >= 250; near = min(R,G,B) >= 235. Core box = central 34% of each side.');
+  lines.push('lit = max(R,G,B) >= 40; chroma = share of LIT pixels with saturation >= 0.18 (higher is better).');
   lines.push('');
-  for (const shape of SHAPES) {
-    await pg.evaluate(({ s, hide }) => {
+  const runs = [];
+  for (const shape of SHAPES) for (const observe of OBSERVE) runs.push({ shape, observe });
+  for (const { shape, observe } of runs) {
+    await pg.evaluate(({ s, hide, obs }) => {
       const layers = { arms: true, bulge: true, blackHole: true, nebulae: true, bgStars: true, grid: false, labels: false };
       for (const h of hide) layers[h] = false;
-      return window.__mount({ simMode: 'galaxy', galaxyControlPanel: 'view', galaxyType: s, layers });
-    }, { s: shape, hide: HIDE });
+      return window.__mount({ simMode: 'galaxy', galaxyControlPanel: 'view', galaxyType: s, observeMode: obs, layers });
+    }, { s: shape, hide: HIDE, obs: observe });
     await pg.waitForTimeout(6000);
     await pg.evaluate(() => {
       const cv = document.querySelector('[data-galaxy-canvas]');
       if (cv && cv._galaxySetAutoRotate) cv._galaxySetAutoRotate(false);
     });
     await pg.waitForTimeout(1500);
+    // A continuous rAF loop means Playwright's screenshot never reaches a stable
+    // frame and times out (animations:'disabled' does not touch rAF). Neutralise
+    // rAF only AFTER the scene has built and settled; the last painted frame
+    // stays on screen, which is exactly what we want to measure.
+    await pg.evaluate(() => { window.requestAnimationFrame = function () { return 0; }; });
+    await pg.waitForTimeout(300);
     const box = await pg.evaluate(() => {
       const cv = document.querySelector('[data-galaxy-canvas]');
       if (!cv) return null;
       const r = cv.getBoundingClientRect();
       return { x: Math.max(0, r.left), y: Math.max(0, r.top), width: r.width, height: r.height };
     });
-    if (!box) { lines.push(shape + ': no canvas found'); continue; }
+    if (!box) { lines.push(shape + '/' + observe + ': no canvas found'); continue; }
     const shotB64 = (await pg.screenshot({ clip: box, animations: 'disabled', timeout: 15000 })).toString('base64');
-    fs.writeFileSync(path.join(OUT, 'galaxy-core-' + shape + '.png'), Buffer.from(shotB64, 'base64'));
+    const stem = OBSERVE.length > 1 ? shape + '-' + observe : shape;
+    fs.writeFileSync(path.join(OUT, 'galaxy-core-' + stem + '.png'), Buffer.from(shotB64, 'base64'));
     const stats = await pg.evaluate(async (b64) => {
       const img = new Image();
       await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/png;base64,' + b64; });
@@ -127,6 +141,11 @@ window.__mount = function (state) {
       const cx0 = Math.floor(W * 0.33), cx1 = Math.ceil(W * 0.67);
       const cy0 = Math.floor(H * 0.33), cy1 = Math.ceil(H * 0.67);
       let clip = 0, near = 0, coreClip = 0, coreNear = 0, coreN = 0;
+      // Clipping alone does not say whether the arms kept their colour: a pixel at
+      // 244,244,250 is not "clipped" and is still white foam. Chroma over the LIT
+      // pixels is the honest companion measure - what fraction of the visible
+      // galaxy still carries a hue a learner could read as blue vs red.
+      let lit = 0, chroma = 0, chromaSum = 0;
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
           const p = (y * W + x) * 4;
@@ -135,14 +154,18 @@ window.__mount = function (state) {
           if (inCore) coreN++;
           if (mn >= 250) { clip++; if (inCore) coreClip++; }
           if (mn >= 235) { near++; if (inCore) coreNear++; }
+          const mx = Math.max(d[p], d[p + 1], d[p + 2]);
+          if (mx >= 40) { lit++; const sat = (mx - mn) / mx; chromaSum += sat; if (sat >= 0.18) chroma++; }
         }
       }
       const n = W * H;
-      return { W, H, clipPct: 100 * clip / n, nearPct: 100 * near / n, coreClipPct: 100 * coreClip / coreN, coreNearPct: 100 * coreNear / coreN };
+      return { W, H, clipPct: 100 * clip / n, nearPct: 100 * near / n, coreClipPct: 100 * coreClip / coreN, coreNearPct: 100 * coreNear / coreN,
+        chromaPct: lit ? 100 * chroma / lit : 0, meanSat: lit ? chromaSum / lit : 0, litPct: 100 * lit / n };
     }, shotB64);
-    lines.push(shape.padEnd(14) + ' canvas ' + stats.W + 'x' + stats.H +
+    lines.push((shape + '/' + observe).padEnd(24) + ' canvas ' + stats.W + 'x' + stats.H +
       '  clip ' + stats.clipPct.toFixed(2) + '%  near ' + stats.nearPct.toFixed(2) + '%' +
-      '  | core box: clip ' + stats.coreClipPct.toFixed(2) + '%  near ' + stats.coreNearPct.toFixed(2) + '%');
+      '  | core box: clip ' + stats.coreClipPct.toFixed(2) + '%  near ' + stats.coreNearPct.toFixed(2) + '%' +
+      '  | lit ' + stats.litPct.toFixed(1) + '%  chroma ' + stats.chromaPct.toFixed(1) + '%  meanSat ' + stats.meanSat.toFixed(3));
   }
   const outFile = path.join(OUT, 'galaxy-core-clipping.txt');
   fs.writeFileSync(outFile, lines.join('\n'), 'utf8');

@@ -2354,7 +2354,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.molecule.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, __alloT('stem.molecule.molecule_lab', "\uD83D\uDD2C Molecule Lab")),
+              // \u2605 The header row sits on the tool root, which paints nothing. In
+              // light and dark that is stem_lab's white card, so slate-800 is
+              // right \u2014 but `contrast` deliberately keeps a pure-BLACK surface
+              // (no white card), where the tool's own name measured 1.44:1.
+              React.createElement("h3", { className: "text-lg font-bold tracking-tight " + (isContrast ? "text-white" : "text-slate-800") }, __alloT('stem.molecule.molecule_lab', "\uD83D\uDD2C Molecule Lab")),
 
               discovered.length > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full" }, "\uD83E\uDDEA " + discovered.length + "/" + COMPOUNDS.length + " discovered"),
 
@@ -2433,7 +2437,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   summaryStats.map(function(stat) {
                     return React.createElement("span", { key: stat[0], className: "inline-flex min-h-7 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] text-slate-600 shadow-sm" },
                       React.createElement("span", { className: "font-bold" }, stat[0]),
-                      React.createElement("strong", { style: { color: isContrast ? '#ffff00' : (isDark ? stat[3] : stat[2]), wordBreak: 'break-word' } }, stat[1])
+                      React.createElement("strong", { style: { color: isContrast ? '#ffff00' : stat[2], wordBreak: 'break-word' } }, stat[1])
                     );
                   })
                 ),
@@ -2454,7 +2458,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       routes.map(function(route) {
                         var active = mode === route.id;
                         var launchesShelf = typeof route.action === 'function';
-                        var routeTone = isContrast ? '#ffff00' : (isDark ? route.darkTone : route.tone);
+                        // ★ These pathway cards are `bg-white` UNCONDITIONALLY — the
+                        // className is a fixed string with no theme branch — so the
+                        // dark-ground tone never had a dark ground to sit on. In dark
+                        // theme the card title and its Launch/Selected/Open label were
+                        // 300-level inks on white at 1.4-1.5:1. The ink follows the
+                        // card, not the theme.
+                        var routeTone = isContrast ? '#ffff00' : route.tone;
                         return React.createElement("button", {
                           key: route.id,
                           type: "button",
@@ -2631,7 +2641,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ),
 
               React.createElement("div", { className: "mt-2 text-center rounded-lg py-1", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
-                React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "Formula: "),
+                // These panels paint var(--allo-stem-panel), which is #000000 in
+                // the contrast theme — so slate-600 on them measured 2.77:1 in
+                // the one theme built for maximum separation. Fall back to the
+                // theme's own ink token there.
+                React.createElement("span", { className: "text-sm font-bold text-slate-600", style: isContrast ? { color: 'var(--allo-stem-text)' } : undefined }, "Formula: "),
                 React.createElement("span", { className: "text-lg font-bold text-slate-800 tracking-tight" }, d.formula || '-'),
                 d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
                   calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
@@ -2679,7 +2693,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             mode === 'creator' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, __alloT('stem.molecule.select_elements_to_craft_compounds_dis', "Select elements to craft compounds - discover real-world chemistry by combining atoms!")),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3" + (isContrast ? " text-white" : "") }, __alloT('stem.molecule.select_elements_to_craft_compounds_dis', "Select elements to craft compounds - discover real-world chemistry by combining atoms!")),
 
               // Element selector grid (common elements)
 
@@ -2779,7 +2793,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             mode === 'build' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, __alloT('stem.molecule.drag_atoms_onto_the_canvas_and_draw_bo', "Drag atoms or use arrow keys to move them. Select two atoms to connect them; keyboard bond and remove controls follow the workspace.")),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-2" + (isContrast ? " text-white" : "") }, __alloT('stem.molecule.drag_atoms_onto_the_canvas_and_draw_bo', "Drag atoms or use arrow keys to move them. Select two atoms to connect them; keyboard bond and remove controls follow the workspace.")),
 
               // Atom palette
 
@@ -2833,7 +2847,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 transition-all hover:scale-105 hover:shadow-md active:scale-95",
 
-                  style: { borderColor: a.color, color: '#0f172a', backgroundColor: a.color + '18' },
+                  // The tint is only 9% alpha, so on the contrast theme's black host these
+                  // element chips were near-black ink on near-black ground - 1.07:1.
+                  style: { borderColor: a.color, color: isContrast ? '#ffffff' : '#0f172a', backgroundColor: a.color + (isContrast ? '40' : '18') },
 
                   title: 'Add ' + a.label
 
@@ -4758,7 +4774,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             // ═══ Reactions Mode ═══
             mode === 'reactions' && React.createElement("div", null,
 
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, __alloT('stem.molecule.balance_chemical_equations_by_adjustin', "Balance chemical equations by adjusting coefficients. Make atoms equal on both sides!")),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3" + (isContrast ? " text-white" : "") }, __alloT('stem.molecule.balance_chemical_equations_by_adjustin', "Balance chemical equations by adjusting coefficients. Make atoms equal on both sides!")),
 
               // Reaction selector
               React.createElement("div", { className: "flex gap-1 mb-4 flex-wrap" },
@@ -4816,7 +4832,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                               tabIndex: -1,
                               className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "−"),
-                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" }, coeffs[i]),
+                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" + (isContrast ? " text-white" : "") }, coeffs[i]),
                             React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(i, 1),
                               tabIndex: -1,
@@ -4853,7 +4869,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                               tabIndex: -1,
                               className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "−"),
-                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" }, coeffs[r.left.length + i]),
+                            React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" + (isContrast ? " text-white" : "") }, coeffs[r.left.length + i]),
                             React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, 1),
                               tabIndex: -1,
@@ -4911,7 +4927,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   ),
 
                   // Progress
-                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[11px] text-slate-600" },
+                  React.createElement("div", { className: "mt-3 flex items-center justify-between text-[11px] text-slate-600" + (isContrast ? " text-white" : "") },
                     React.createElement("span", null, "⚖️ " + reactionsBalanced + " balanced"),
                     React.createElement("span", null, "Reaction " + (currentReactionIdx + 1) + "/" + REACTIONS.length)
                   )
@@ -4922,7 +4938,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             // ═══ Challenges Panel ═══
             React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3 rounded-lg px-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("details", { open: completedChallenges.length > 0 && completedChallenges.length < MOLECULE_CHALLENGES.length },
-                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
+                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none", style: isContrast ? { color: 'var(--allo-stem-text)' } : undefined },
                   "🏆 Challenges (" + completedChallenges.length + "/" + MOLECULE_CHALLENGES.length + ")"
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" },
@@ -4948,7 +4964,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             // ═══ AI Chemistry Tutor ═══
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3 rounded-lg px-2 pb-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("details", null,
-                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
+                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none", style: isContrast ? { color: 'var(--allo-stem-text)' } : undefined },
                   __alloT('stem.molecule.ask_the_chemistry_tutor', "🧑‍🔬 Ask the Chemistry Tutor")
                 ),
                 React.createElement("div", { className: "mt-2" },

@@ -37,7 +37,8 @@ const STATES = [
   ['realSky', { simMode: 'realSky' }],
   ['metalHunt', { simMode: 'metalHunt' }],
   ['star', { simMode: 'star' }],
-  ['quiz', { simMode: 'quiz' }],
+  ['unknown-mode', { simMode: 'quiz' }],
+  ['quiz', { simMode: 'galaxy', quizMode: true }],
 ];
 
 const SHELL = `
@@ -248,7 +249,11 @@ const PROBE = function () {
 
   for (const [name, state] of STATES) {
     await pg.evaluate((s) => window.__mount(s), state);
-    await pg.waitForTimeout(1400);
+    // The Tailwind play CDN generates classes lazily off a MutationObserver, so a
+    // short settle screenshots the page BEFORE any newly-used utility exists -
+    // a fresh w-6 rendered as an 8px sliver here and looked like a real layout
+    // bug until it was measured in a slower harness. Give the JIT time to land.
+    await pg.waitForTimeout(2800);
 
     // Accessible names straight from Chromium's accessibility tree. ariaSnapshot
     // yields one line per node: `- button "Back to tools"`, and a bare `- button`

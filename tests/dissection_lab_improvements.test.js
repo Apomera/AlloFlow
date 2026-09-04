@@ -1325,7 +1325,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('function traceFrogTorso()');
-      expect(source).toContain('function drawFrogLimbSegment(x1, y1, x2, y2, r1, r2, alpha)');
+      expect(source).toContain('function drawFrogLimbChain(points, radii, alpha)');
       expect(source).toContain('function drawFrogHindFoot(side, footX, footY, alpha)');
       expect(source).toContain('function drawFrogHindLimb(side, alpha)');
       expect(source).toContain('function drawFrogForelimb(side, alpha)');
@@ -3103,7 +3103,7 @@ describe('dissection improved UI render', () => {
 
     document.body.innerHTML = essentialsHtml;
     expect(getComputedStyle(document.querySelector('.diss-scenario-console')).display).toBe('none');
-    expect(getComputedStyle(document.querySelector('button[aria-label="Toggle Tools toolbar"]')).display).toBe('none');
+    expect(getComputedStyle(document.querySelector('button[aria-label="Lab tool options"]')).display).toBe('none');
     expect(document.querySelector('[aria-label="Dissection instruments"]')).not.toBeNull();
     document.body.innerHTML = advancedHtml;
     expect(getComputedStyle(document.querySelector('.diss-scenario-console')).display).not.toBe('none');
@@ -3938,7 +3938,7 @@ describe('dissection improved UI render', () => {
     const assessmentCanvas = document.querySelector('#diss-canvas');
     expect(document.querySelector('[data-dissection-directory]')).toBeNull();
     expect(document.querySelector('.diss-optics')).toBeNull();
-    expect(document.querySelector('button[aria-label="Toggle Tools toolbar"]')).toBeNull();
+    expect(document.querySelector('button[aria-label="Lab tool options"]')).toBeNull();
     expect(document.querySelector('button[aria-label="Toggle detailed pointer-following instrument visuals and contact response"]')).toBeNull();
     expect(assessmentCanvas?.style.touchAction).toBe('pan-y');
 
@@ -3997,7 +3997,11 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('diss-procedure__timeline-entry');
     expect(html).toContain('aria-label="Review Inspected: RECORDED"');
     expect(html).toContain('data-selected="true"');
-    expect(html).toContain('data-next-action="learning"');
+    // 2026-09-03: when the learning checkpoint is on screen, the Next-best-action card is not
+    // rendered. Its primary button only scrolled to that panel, and every line it carried is
+    // already on the page: the phase in the mission copy, the specimen and layer in the stat
+    // row, the step in the workflow rail. The prompt was appearing six times on one screen.
+    expect(html).not.toContain('data-next-action="learning"');
     expect(html).toContain('Pause before contact');
     expect(html).toContain('Which plan best protects anatomy during the initial entry?');
     expect(html).toContain('1 Predict');
@@ -4006,7 +4010,10 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Choose the safest plan');
     expect(html).not.toContain('Pre-contact check');
     expect(html).toContain('Prepare next');
-    expect(html).toContain('Next · Which plan best protects anatomy during the initial entry?');
+    // 2026-09-03: the checkpoint panel now opens the same column, a couple of hundred pixels
+    // above the stage, so the handoff names the phase instead of repeating the whole question.
+    expect(html).not.toContain('Next · Which plan best protects anatomy during the initial entry?');
+    expect(html).toContain('Which plan best protects anatomy during the initial entry?');
     const guidedDocument = new DOMParser().parseFromString(html, 'text/html');
     const guidedHandoff = guidedDocument.querySelector('.diss-stage__handoff');
     const guidedProgress = guidedHandoff.querySelector('.diss-stage__handoff-progress').textContent;
@@ -4238,7 +4245,7 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Focus isolation on');
     expect(html).toContain('neutral light');
     expect(html).toContain('Variation 3');
-    expect(html).toContain('After view');
+    expect(html).toContain('Tissue: after');
     expect(html).toContain('Dropper');
     expect(html).toContain('Apply controlled drop');
     expect(html).toContain('Eye tray');

@@ -25,7 +25,14 @@
       !document.getElementById('microbiology-dark-surface-vars')) {
     var _mbVars = document.createElement('style');
     _mbVars.id = 'microbiology-dark-surface-vars';
-    _mbVars.textContent = 'html:not(.theme-contrast) .selh-microbiology{' +
+    // ★ `html:not(.theme-contrast)` never excluded contrast: the theme class is
+    // stamped on <main>, never on <html>, so this pin applied in every theme.
+    // Scope it plainly and give contrast its own tokens back below.
+    _mbVars.textContent = '.theme-contrast .selh-microbiology{' +
+      '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;' +
+      '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;' +
+      '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;}' +
+      '.selh-microbiology{' +
       '--allo-stem-canvas:#0f172a;' +
       '--allo-stem-panel:#1e293b;' +
       '--allo-stem-deeper:#020617;' +

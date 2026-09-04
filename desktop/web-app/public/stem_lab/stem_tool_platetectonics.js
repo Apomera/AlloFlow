@@ -10630,7 +10630,12 @@ var d = labToolData.plateTectonics || {};
                     // The causal chain in words, next to the model that shows it.
                     // Without this the student sees three different mountains and
                     // has no reason to connect them to the composition.
-                    React.createElement("span", { className: "text-[11px] leading-snug " + (isDark ? "text-slate-300" : "text-slate-600") },
+                    // No isDark flip here: unlike the themed buttons above it,
+                    // this sentence is a SIBLING of them and sits on an unpainted
+                    // chain, which means the host card — white in BOTH themes. The
+                    // dark branch put slate-300 on white at 1.48:1 and lost the one
+                    // line that connects the three mountains to their composition.
+                    React.createElement("span", { className: "text-[11px] leading-snug text-slate-600" },
                       cur.silica + ' → ' + cur.visc.toLowerCase() + ', ' + cur.gas.toLowerCase() +
                       ' → ' + cur.landform.toLowerCase() + '. e.g. ' + cur.example + '.')
                   );

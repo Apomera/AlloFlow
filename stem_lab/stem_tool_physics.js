@@ -2664,7 +2664,9 @@ const d = labToolData.physics;
                 var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
                 var trails = cv && cv._trails ? cv._trails : [];
                 var lastTrail = trails.length > 0 ? trails[trails.length - 1] : [];
-                if (lastTrail.length === 0) return React.createElement("p", { className: "text-xs text-cyan-400 italic" }, __alloT('stem.physics.launch_to_see_flight_data', 'Launch a projectile to see flight data'));
+                if (lastTrail.length === 0) return // cyan-700: this sits on a fixed bg-cyan-50 panel, and cyan-400 measured
+                // 1.74:1 there. The file's other cyan inks are already 700/800.
+                React.createElement("p", { className: "text-xs text-cyan-700 italic" }, __alloT('stem.physics.launch_to_see_flight_data', 'Launch a projectile to see flight data'));
                 // Sample ~10 evenly spaced points
                 var step = Math.max(1, Math.floor(lastTrail.length / 10));
                 var rows = [];
@@ -3116,7 +3118,11 @@ const d = labToolData.physics;
                   __alloT('stem.physics.iq_intro', 'Three sliders control gravity (any planet), launch angle, and velocity. The simulator tells you whether your projectile range is near-optimal, reasonable, or far-off \u2014 a discrete 3-state outcome (no numeric score). Sweep the sliders. Log observations. Type what you discover.')),
                 h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
                   h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
-                  h('div', { className: 'text-[11px] text-slate-700 mt-1' }, __alloT('stem.physics.iq_range_prefix', 'Range ') + range.toFixed(1) + __alloT('stem.physics.iq_range_mid', ' m (max possible at this v + g: ') + maxRange.toFixed(1) + __alloT('stem.physics.iq_range_end', ' m)'))
+                  // ★ The box above is deliberately BLACK in the contrast theme
+                  // (stateMeta.bg is forced to #000000 there), so this readout's
+                  // slate-700 landed at 2.03:1 on it — the label got the yellow
+                  // treatment and its sub-line was missed.
+                  h('div', { className: 'text-[11px] text-slate-700 mt-1', style: isContrast ? { color: '#ffff00' } : undefined }, __alloT('stem.physics.iq_range_prefix', 'Range ') + range.toFixed(1) + __alloT('stem.physics.iq_range_mid', ' m (max possible at this v + g: ') + maxRange.toFixed(1) + __alloT('stem.physics.iq_range_end', ' m)'))
                 ),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
                   [

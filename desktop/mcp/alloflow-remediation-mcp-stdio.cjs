@@ -1449,9 +1449,20 @@ function startAgentRun(filePath, outDir, opts) {
   run.settled = (async () => {
     try {
       rlog('agent-bridge run started: ' + path.basename(filePath) + ' — the client model answers all pipeline calls');
+      // Render PDF pages to images for this lane. The pipeline's default is to
+      // attach the whole PDF to a vision call — correct for Gemini, which takes
+      // PDFs natively, but unusable here: a single inline part over
+      // AGENT_IMAGE_BYTES_CAP is dropped with no chunked-fetch path, so any PDF
+      // over 4MB reached the client as an audit prompt with NO document
+      // attached. That does not fail the run; it invites the answering model to
+      // invent findings, which is the exact fabrication the honesty gate exists
+      // to catch. Per-page images are each small enough to survive the cap, and
+      // ones beyond a single response's budget stay individually fetchable by
+      // image_index. visionMode is a complete driver feature that until now
+      // nothing ever switched on.
       const summary = await remediateOneFile(
         filePath, outDir,
-        Object.assign({}, opts, { modelBridge }),
+        Object.assign({}, opts, { modelBridge, visionMode: 'images' }),
         rlog,
         { signal: run.abortController.signal },
       );
@@ -1858,6 +1869,237 @@ async function writeCompletionManifest(filePath, outDir, summary, compatibility,
   };
   atomicWriteJson(summary.files.completionManifest, manifest);
   return manifest;
+}
+
+// ---------------------------------------------------------------------------
+// Artifact resources. A completed run leaves its before/after documents and
+// report on disk and reports their absolute paths, but a path in a tool result
+// is not something an MCP client can open, render or offer as a download — the
+// operator has to go find the files by hand. Publishing each run's artifacts as
+// MCP resources closes that gap: the client can list what a run produced and
+// fetch the bytes over the same transport it already trusts.
+//
+// This is deliberately NOT a filesystem read primitive. A resource URI carries
+// an opaque run id plus a fixed role name, never a caller-supplied path, and
+// resources/read serves only entries this server itself registered after
+// writing them. An unregistered URI is rejected exactly like an unknown skill.
+const ARTIFACT_URI_PREFIX = 'alloflow-remediation://artifact/';
+const ARTIFACT_ROLE_META = {
+  source: { label: 'Original document (before)', description: 'The untouched input document the remediation started from.' },
+  accessibleHtml: { label: 'Accessible HTML (after)', description: 'The remediated, accessible version of the document.' },
+  taggedPdf: { label: 'Tagged PDF (after)', description: 'The tagged PDF export, present only when the verdict allowed distribution.' },
+  report: { label: 'Remediation report', description: 'Scores, distribution verdict and every fidelity/honesty disclosure.' },
+  completionManifest: { label: 'Completion manifest', description: 'Role, size and sha256 of each artifact, bound to the source hash.' },
+};
+const ARTIFACT_ROLE_ORDER = ['source', 'accessibleHtml', 'taggedPdf', 'report', 'completionManifest'];
+// Big enough for real remediated documents, small enough that one read cannot
+// wedge a stdio transport. Oversized artifacts still list, and the error names
+// the path so the caller can open it directly.
+const ARTIFACT_MAX_READ_BYTES = 12 * 1024 * 1024;
+const ARTIFACT_MIME_BY_EXT = {
+  '.html': 'text/html', '.htm': 'text/html', '.json': 'application/json',
+  '.pdf': 'application/pdf', '.md': 'text/markdown', '.txt': 'text/plain',
+};
+const ARTIFACT_TEXT_MIMES = new Set(['text/html', 'application/json', 'text/markdown', 'text/plain']);
+const MAX_ARTIFACT_RUNS = 100;
+const ARTIFACT_INDEX_SCHEMA = 1;
+const ARTIFACT_INDEX_FILE = 'artifact-index.json';
+function artifactIndexPath() { return path.join(STATE_DIR, ARTIFACT_INDEX_FILE); }
+
+// runId -> { runId, sourcePath, outDir, completedAt, entries: Map(role -> absolute path) }
+const artifactRuns = new Map();
+let artifactRunsRehydrated = false;
+
+function artifactUri(runId, role) { return ARTIFACT_URI_PREFIX + encodeURIComponent(runId) + '/' + role; }
+
+function parseArtifactUri(uri) {
+  if (typeof uri !== 'string' || !uri.startsWith(ARTIFACT_URI_PREFIX)) return null;
+  const rest = uri.slice(ARTIFACT_URI_PREFIX.length);
+  const slash = rest.lastIndexOf('/');
+  if (slash <= 0) return null;
+  const role = rest.slice(slash + 1);
+  if (!Object.prototype.hasOwnProperty.call(ARTIFACT_ROLE_META, role)) return null;
+  let runId;
+  try { runId = decodeURIComponent(rest.slice(0, slash)); } catch (_) { return null; }
+  if (!runId || runId.length > 200) return null;
+  return { runId, role };
+}
+
+// Registration happens only after the artifact is written, so a listed resource
+// is one that existed at least once. Reads re-stat before serving.
+function registerRunArtifacts(runId, sourcePath, outDir, files, completedAt) {
+  if (!runId || !files) return null;
+  const entries = new Map();
+  try {
+    if (sourcePath && fs.statSync(sourcePath).isFile()) entries.set('source', path.resolve(sourcePath));
+  } catch (_) {}
+  for (const role of ARTIFACT_ROLE_ORDER) {
+    if (role === 'source') continue;
+    const candidate = files[role];
+    if (!candidate || typeof candidate !== 'string') continue;
+    try { if (fs.statSync(candidate).isFile()) entries.set(role, path.resolve(candidate)); } catch (_) {}
+  }
+  if (!entries.size) return null;
+  artifactRuns.delete(runId);
+  artifactRuns.set(runId, {
+    runId,
+    sourcePath: sourcePath ? path.resolve(sourcePath) : null,
+    outDir: outDir ? path.resolve(outDir) : null,
+    completedAt: completedAt || new Date().toISOString(),
+    entries,
+  });
+  // Insertion-ordered Map: the oldest registration is the first key.
+  while (artifactRuns.size > MAX_ARTIFACT_RUNS) {
+    const oldest = artifactRuns.keys().next().value;
+    if (oldest === undefined) break;
+    artifactRuns.delete(oldest);
+  }
+  return artifactRuns.get(runId);
+}
+
+function persistArtifactIndex() {
+  try {
+    const runs = [];
+    for (const run of artifactRuns.values()) {
+      runs.push({
+        runId: run.runId,
+        sourcePath: run.sourcePath,
+        outDir: run.outDir,
+        completedAt: run.completedAt,
+        entries: [...run.entries.entries()].map(([role, filePath]) => ({ role, path: filePath })),
+      });
+    }
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    atomicWriteJson(artifactIndexPath(), { schema: ARTIFACT_INDEX_SCHEMA, runs });
+  } catch (e) {
+    if (!persistArtifactIndex._warned) {
+      persistArtifactIndex._warned = true;
+      log('artifact index is not persisting (' + ((e && e.message) || e) + ') — published resources will not survive a restart');
+    }
+  }
+}
+
+// Entries are read back as data, never trusted as paths to serve blindly:
+// registerRunArtifacts re-stats every one, so an index naming a file that has
+// since been deleted, replaced by a directory, or hand-edited to point
+// somewhere else still only republishes what actually exists — and a read
+// re-stats again before serving a byte.
+function loadPersistedArtifactIndex() {
+  let raw;
+  try { raw = fs.readFileSync(artifactIndexPath(), 'utf8'); } catch (_) { return; }
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch (_) { return; }
+  if (!parsed || parsed.schema !== ARTIFACT_INDEX_SCHEMA || !Array.isArray(parsed.runs)) return;
+  const ordered = parsed.runs
+    .filter((run) => run && typeof run.runId === 'string' && Array.isArray(run.entries))
+    .sort((a, b) => Date.parse(a.completedAt || 0) - Date.parse(b.completedAt || 0));
+  for (const run of ordered) {
+    const files = {};
+    for (const entry of run.entries) {
+      if (!entry || typeof entry.role !== 'string' || typeof entry.path !== 'string') continue;
+      if (entry.role === 'source') continue;
+      if (!Object.prototype.hasOwnProperty.call(ARTIFACT_ROLE_META, entry.role)) continue;
+      files[entry.role] = entry.path;
+    }
+    registerRunArtifacts(run.runId, run.sourcePath, run.outDir, files, run.completedAt);
+  }
+}
+
+// Register, then tell the client its resource list grew. Without the
+// notification a client that listed resources before the run finished would
+// keep showing an empty shelf until someone re-listed by hand.
+function publishRunArtifacts(runId, sourcePath, outDir, files) {
+  try {
+    rehydrateArtifactRuns();
+    const run = registerRunArtifacts(runId, sourcePath, outDir, files);
+    if (!run) return null;
+    persistArtifactIndex();
+    if (initialized) send({ jsonrpc: '2.0', method: 'notifications/resources/list_changed' });
+    const published = [];
+    for (const role of ARTIFACT_ROLE_ORDER) {
+      const filePath = run.entries.get(role);
+      if (!filePath) continue;
+      published.push({
+        role,
+        label: ARTIFACT_ROLE_META[role].label,
+        uri: artifactUri(run.runId, role),
+        path: filePath,
+        mimeType: ARTIFACT_MIME_BY_EXT[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
+      });
+    }
+    return published;
+  } catch (e) {
+    // Publishing is a convenience over artifacts that are already safely on
+    // disk and already named in the tool result. It must never fail a run.
+    log('artifact resources not published (' + ((e && e.message) || e) + ')');
+    return null;
+  }
+}
+
+// Persisted job records already carry result.files and result.input, so a
+// server restart can republish everything it produced without new state.
+function rehydrateArtifactRuns() {
+  if (artifactRunsRehydrated) return;
+  artifactRunsRehydrated = true;
+  loadPersistedArtifactIndex();
+  let names;
+  try { names = fs.readdirSync(STATE_DIR); } catch (_) { return; }
+  const records = [];
+  for (const n of names) {
+    if (!/^rjob-.*\.json$/.test(n)) continue;
+    try {
+      const rec = JSON.parse(fs.readFileSync(path.join(STATE_DIR, n), 'utf8'));
+      if (rec && rec.result && rec.result.files) records.push(rec);
+    } catch (_) {}
+  }
+  records.sort((a, b) => Date.parse(a.finishedAt || a.createdAt || 0) - Date.parse(b.finishedAt || b.createdAt || 0));
+  for (const rec of records) {
+    registerRunArtifacts(rec.jobId, rec.result.input || rec.input, null, rec.result.files, rec.finishedAt);
+  }
+}
+
+function listArtifactResources() {
+  rehydrateArtifactRuns();
+  const out = [];
+  for (const run of artifactRuns.values()) {
+    for (const role of ARTIFACT_ROLE_ORDER) {
+      const filePath = run.entries.get(role);
+      if (!filePath) continue;
+      const meta = ARTIFACT_ROLE_META[role];
+      let sizeBytes = null;
+      try { sizeBytes = fs.statSync(filePath).size; } catch (_) { continue; }
+      out.push({
+        uri: artifactUri(run.runId, role),
+        name: run.runId + '/' + role,
+        title: meta.label + ' — ' + path.basename(filePath),
+        description: meta.description + ' Local path: ' + filePath,
+        mimeType: ARTIFACT_MIME_BY_EXT[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
+        size: sizeBytes,
+      });
+    }
+  }
+  return out;
+}
+
+function readArtifactResource(parsed) {
+  rehydrateArtifactRuns();
+  const run = artifactRuns.get(parsed.runId);
+  const filePath = run && run.entries.get(parsed.role);
+  if (!filePath) return null;
+  let stat;
+  try { stat = fs.statSync(filePath); } catch (_) {
+    throw new Error('That artifact is no longer on disk (' + filePath + '). It was moved or deleted after the run finished.');
+  }
+  if (!stat.isFile()) throw new Error('That artifact is no longer a file: ' + filePath);
+  if (stat.size > ARTIFACT_MAX_READ_BYTES) {
+    throw new Error('Artifact is ' + stat.size + ' bytes, over the ' + ARTIFACT_MAX_READ_BYTES
+      + '-byte inline limit. Open it directly: ' + filePath);
+  }
+  const mimeType = ARTIFACT_MIME_BY_EXT[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+  if (ARTIFACT_TEXT_MIMES.has(mimeType)) {
+    return { uri: artifactUri(parsed.runId, parsed.role), mimeType, text: fs.readFileSync(filePath, 'utf8') };
+  }
+  return { uri: artifactUri(parsed.runId, parsed.role), mimeType, blob: fs.readFileSync(filePath).toString('base64') };
 }
 
 async function validateCompletionManifest(manifestPath, filePath, outDir, compatibility) {
@@ -2345,6 +2587,8 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
   files.completionManifest = completionManifestPath(outDir, files.report);
   atomicWriteJson(files.report, summary);
   await writeCompletionManifest(filePath, outDir, summary, compatibility, job);
+  const publishedResources = publishRunArtifacts((job && job.jobId) || out.runId, filePath, outDir, files);
+  if (publishedResources && publishedResources.length) summary.resources = publishedResources;
   if (job) clearLocalCheckpoint(job, true);
   return summary;
 }
@@ -3022,7 +3266,8 @@ const S_AUDIT = obj({
 });
 const S_REMEDIATE = obj({
   input: S_STR,
-  files: obj({ accessibleHtml: S_STR, taggedPdf: S_STR, report: S_STR }),
+  files: obj({ accessibleHtml: S_STR, taggedPdf: S_STR, report: S_STR, completionManifest: S_STR }),
+  resources: { type: 'array', items: obj({ role: S_STR, label: S_STR, uri: S_STR, path: S_STR, mimeType: S_STR }, ['role', 'uri']) },
   verdict: strictObj({
     level: { type: 'string', enum: ['ready', 'caution', 'review'] },
     reviewCount: S_NUM,
@@ -4320,8 +4565,8 @@ async function handleRequest(msg) {
       const protocolVersion = SUPPORTED_PROTOCOL_VERSIONS.indexOf(requested) !== -1 ? requested : SUPPORTED_PROTOCOL_VERSIONS[0];
       initialized = true;
       const capabilities = { tools: { listChanged: false } };
+      capabilities.resources = { subscribe: false, listChanged: true };
       if (BUNDLED_SKILL) {
-        capabilities.resources = { subscribe: false, listChanged: false };
         capabilities.prompts = { listChanged: false };
         capabilities.extensions = { 'io.modelcontextprotocol/skills': {} };
       }
@@ -4378,16 +4623,29 @@ async function handleRequest(msg) {
       return;
     }
     case 'resources/list': {
-      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled resources are unavailable in this installation'); return; }
       const p = params || {};
       if (typeof p !== 'object' || Array.isArray(p) || Object.keys(p).some((key) => key !== 'cursor')) { sendError(id, -32602, 'resources/list accepts only an optional cursor'); return; }
       if (p.cursor !== undefined && typeof p.cursor !== 'string') { sendError(id, -32602, 'resources/list cursor must be a string'); return; }
-      sendResult(id, { resources: p.cursor ? [] : [{ uri: SKILL_URI, name: SKILL_NAME, title: 'AlloFlow PDF Remediation Skill', description: BUNDLED_SKILL.entry.frontmatter.description, mimeType: 'text/markdown' }] });
+      if (p.cursor) { sendResult(id, { resources: [] }); return; }
+      const listed = [];
+      if (BUNDLED_SKILL) listed.push({ uri: SKILL_URI, name: SKILL_NAME, title: 'AlloFlow PDF Remediation Skill', description: BUNDLED_SKILL.entry.frontmatter.description, mimeType: 'text/markdown' });
+      for (const artifact of listArtifactResources()) listed.push(artifact);
+      sendResult(id, { resources: listed });
       return;
     }
     case 'resources/read': {
-      if (!BUNDLED_SKILL) { sendError(id, -32601, 'Bundled resources are unavailable in this installation'); return; }
-      if (!params || params.uri !== SKILL_URI || Object.keys(params).some((key) => key !== 'uri')) { sendError(id, -32602, 'Unknown or invalid resource URI'); return; }
+      if (!params || typeof params !== 'object' || Array.isArray(params)
+        || Object.keys(params).some((key) => key !== 'uri')) { sendError(id, -32602, 'Unknown or invalid resource URI'); return; }
+      const parsedArtifact = parseArtifactUri(params.uri);
+      if (parsedArtifact) {
+        let content;
+        try { content = readArtifactResource(parsedArtifact); }
+        catch (e) { sendError(id, -32002, (e && e.message) || 'Artifact could not be read'); return; }
+        if (!content) { sendError(id, -32602, 'Unknown or invalid resource URI'); return; }
+        sendResult(id, { contents: [content] });
+        return;
+      }
+      if (!BUNDLED_SKILL || params.uri !== SKILL_URI) { sendError(id, -32602, 'Unknown or invalid resource URI'); return; }
       sendResult(id, { contents: [{ uri: SKILL_URI, mimeType: 'text/markdown', text: BUNDLED_SKILL.text }] });
       return;
     }

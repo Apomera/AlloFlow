@@ -148,6 +148,73 @@ describe('Fire Ecology cross-screen number agreement', () => {
     expect(html).toContain('3D landscape, unavailable on this device');
   });
 
+  it('ships the reviewed wording in ui_strings, which overrides the fallbacks', () => {
+    // The tool renders t('key', 'fallback'), and ui_strings.js wins wherever it has the key.
+    // The vitest harness renders with fallbacks only, so every assertion about the source
+    // text is blind to what a student actually reads. These check the shipped bank.
+    const bank = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8')).stem.fireecology;
+    const all = Object.values(bank).join('\n');
+
+    // Retired by the burn-safety rework: the planner must never read as authorization.
+    expect(all).not.toContain('GO — Excellent conditions for cultural burning');
+    expect(all).not.toContain('NO-GO — Conditions unsafe for burning');
+    expect(all).not.toContain('Score ≥ 85 = GO');
+    expect(bank.evaluate_burn_plan).toBe('Compare Classroom Conditions');
+
+    // Retired by the science-integrity rework of the fire regime labels.
+    expect(all).not.toContain('Decades of fire-suppression. Next ignition is bad.');
+    expect(all).not.toContain('High fuel + drought + suppression = catastrophic event.');
+    expect(all).not.toContain('Frequent low-fuel burns convert forest permanently.');
+    expect(bank.high_fuel_drought_suppression_catastro).toContain('not a forecast');
+  });
+
+  it('keeps ui_strings and the source fallbacks in step', () => {
+    // Nine keys are deliberately richer in ui_strings (emoji markers, fuller aria text, and
+    // two corrected during this work). Everything else must match, or the tool says one
+    // thing in test and another in the browser.
+    const RICHER = new Set([
+      'a_real_indigenous_approach_is_patchwor', 'camp_fire_2018_black_saturday_2009_car',
+      'fire_regime_discovery', 'fuel_load', 'biodiversity', 'fireecology_visualization',
+      'forest_visualization_showing_current_f', 'forest_health_over_time', 'event_log'
+    ]);
+    const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
+    const bank = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8')).stem.fireecology;
+    const norm = (x) => x
+      .replace(/[‘’]/g, "'").replace(/[“”]/g, '"')
+      .replace(/[—–]/g, '-').replace(/ /g, ' ')
+      .replace(/\s+/g, ' ').trim().toLowerCase()
+      .replace(/[^a-z0-9 %$.,+/()-]/g, '');
+    const re = /t\(\s*'stem\.fireecology\.([A-Za-z0-9_]+)'\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)/g;
+    const drifted = [];
+    const seen = new Set();
+    for (const m of source.matchAll(re)) {
+      const key = m[1];
+      if (seen.has(key) || RICHER.has(key) || !(key in bank)) continue;
+      seen.add(key);
+      const fallback = m[2]
+        .replace(/\\'/g, "'").replace(/\\"/g, '"')
+        .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+      if (norm(bank[key]) !== norm(fallback)) drifted.push(key);
+    }
+    expect(seen.size).toBeGreaterThan(300);
+    expect(drifted).toEqual([]);
+  });
+
+  it('explains itself instead of hanging when no AI backend is present', () => {
+    // The harness passes callGemini: null, which is what a host without AI passes. Asking
+    // used to throw synchronously, before any promise existed, so the .catch never ran and
+    // the button sat on "Thinking..." for good.
+    const html = renderFireEcology({ tab: 'science' });
+    expect(html).toContain('data-fe-no-ai');
+    expect(html).toContain('The AI tutor is switched off in this session');
+    expect(html).not.toContain('placeholder="Ask about fire ecology');
+
+    const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
+    // A synchronous throw or a non-promise return must still reach the catch.
+    expect(source).toContain('new Promise(function (resolve) { resolve(callGemini(prompt)); })');
+    expect(source).not.toContain('callGemini(prompt).then(');
+  });
+
   it('awards every badge it advertises, and never from inside render', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fireecology.js', 'utf8');
     const declared = [...source.matchAll(/\{ id: '([A-Za-z0-9]+)', icon: '[^']*', label: '/g)].map((m) => m[1]);

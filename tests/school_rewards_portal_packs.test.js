@@ -114,6 +114,136 @@ describe('published packs', () => {
   });
 });
 
+describe('text that only appears after an action (2026-09-03)', () => {
+  const SCRIPT = PORTAL.slice(PORTAL.indexOf('<script>'));
+  const SCRIPT_ALL = SCRIPT;
+  const literals = (source, re) => [...new Set([...source.matchAll(re)]
+    .map((m) => m[m.length - 1].replace(/\\'/g, "'")).filter((t) => /[A-Za-z]{3}/.test(t)))];
+  const fragment = (t) => /\s$/.test(t)
+    || (!/[.!?:)\]]$/.test(t.trim()) && /\b(and|to|of|than|the|a|in|for|with|is|are|up|item)\s*$/i.test(t));
+  const covered = (t) => CATALOGUE.strings && Object.values(CATALOGUE.strings).includes(t);
+
+  it('sends every browser dialog through the translator, since dialogs never touch the page', () => {
+    // Only the two helpers may call the browser directly.
+    expect([...SCRIPT.matchAll(/window\.(?:confirm|prompt)\(/g)].length).toBe(2);
+    expect(SCRIPT).toContain('function confirmT(text){return window.confirm(srT(text))}');
+    expect(SCRIPT).toContain('function promptT(text,fallback){return window.prompt(srT(text),fallback)}');
+    expect([...SCRIPT.matchAll(/\b(?:confirmT|promptT)\(/g)].length).toBeGreaterThan(20);
+  });
+
+  it('has a catalogue entry for every status notice and dialog the portal can show', () => {
+    const notices = literals(SCRIPT, /notice\('((?:[^'\\]|\\.)*)'/g);
+    const dialogs = literals(SCRIPT, /(?:confirmT|promptT)\('((?:[^'\\]|\\.)*)'/g);
+    const missing = [...notices, ...dialogs].filter((t) => !covered(t) && !fragment(t));
+    expect(missing).toEqual([]);
+    expect(notices.length).toBeGreaterThan(80);
+  });
+
+  it('translates those strings, not just lists them', () => {
+    const es = json('apps_script', 'school_rewards', 'i18n', 'es.json');
+    for (const sample of ['Roster import cancelled.', 'Recording award…', 'Refund this entire order and restore its inventory?', 'Reason for this award correction:']) {
+      expect(es.strings[sample], sample).toBeTruthy();
+      expect(es.strings[sample]).not.toBe(sample);
+    }
+  });
+
+  it('stores strings as they render, not as the source escapes them', () => {
+    // A catalogue entry holding a raw \u escape can never match the rendered
+    // text, so its translation would be silently dead.
+    const rawEscape = String.fromCharCode(92) + 'u';
+    for (const value of Object.values(CATALOGUE.strings)) expect(value, value).not.toContain(rawEscape);
+    const tool = read('dev-tools', 'school_rewards_portal_catalogue.cjs');
+    expect(tool).toContain('function decode(raw)');
+    expect(tool).toContain('String.fromCharCode(parseInt(hex, 16))');
+  });
+
+  it('fills value-carrying messages from one translatable sentence', () => {
+    expect(SCRIPT_ALL).toContain('function fmt(template)');
+    const templates = Object.values(CATALOGUE.strings).filter((t) => /\{\d\}/.test(t));
+    expect(templates.length).toBeGreaterThan(5);
+    const es = json('apps_script', 'school_rewards', 'i18n', 'es.json');
+    for (const t of templates) {
+      const translated = es.strings[t];
+      if (!translated) continue;
+      const want = (t.match(/\{\d\}/g) || []).sort().join(',');
+      const got = (translated.match(/\{\d\}/g) || []).sort().join(',');
+      expect(got, t).toBe(want);
+    }
+  });
+
+  it('reads static markup too, so a card added by hand cannot ship untranslated', () => {
+    const tool = read('dev-tools', 'school_rewards_portal_catalogue.cjs');
+    expect(tool).toContain('const markupText');
+    expect(tool).toContain("replace(/<select id=\"lang-select\"");
+    expect(tool).toContain('const DENY = new Set([');
+    // The roster importer matches these column names literally.
+    for (const header of ['firstName', 'lastInitial', 'homeroom']) expect(tool).toContain(`'${header}'`);
+    // And the catalogue really does hold the newest card's text.
+    const values = Object.values(CATALOGUE.strings);
+    expect(values).toContain('Records requests');
+    expect(values).toContain('Redact permanently');
+    expect(values).not.toContain('firstName');
+  });
+
+  it('ships the practice page builder in the repo, so the page can be rebuilt by anyone', () => {
+    const builder = read('dev-tools', 'build_school_rewards_practice.py');
+    expect(builder).toContain('os.path.dirname(os.path.dirname(os.path.abspath(__file__)))');
+    expect(builder).not.toMatch(/C:\\\\Users/);
+    expect(builder).toContain('MUST be rebuilt after any');
+    // The checked-in page really is the portal it teaches.
+    const practice = read('school-rewards-practice.html');
+    const portalBody = PORTAL.replace(/\r\n/g, '\n');
+    const marker = portalBody.slice(portalBody.indexOf('<main class="shell">'), portalBody.indexOf('<script>'));
+    expect(practice.replace(/\r\n/g, '\n')).toContain(marker);
+  });
+
+  it('ships a re-runnable harvester, so editing the source cannot silently drop text again', () => {
+    const tool = read('dev-tools', 'school_rewards_portal_catalogue.cjs');
+    expect(tool).toContain("literals(script, /notice\\(");
+    expect(tool).toContain('--include=server');
+    expect(tool).toContain('concatenated fragments');
+  });
+});
+
+describe('the generator', () => {
+  const GEN = read('_build_school_rewards_portal_packs.js');
+  const SHARED = read('dev-tools', 'build_language_pack.cjs');
+  const numbered = (src) => (src.match(/^\s*' {2}\d\. .*$/gm) || []).map((l) => l.trim().replace(/^'/, '').replace(/',?$/, ''));
+
+  it('asks for exactly what the shared pack builder asks for, so the two cannot drift', () => {
+    const mine = numbered(GEN).map((r) => r.replace('{LANG}', 'LANG'));
+    const theirs = numbered(SHARED).map((r) => r.replace("' + TARGET_LANG + '", 'LANG'));
+    expect(mine.length).toBe(7);
+    expect(mine).toEqual(theirs);
+  });
+
+  it('has a language tag for every language the app offers, and no duplicates', () => {
+    const selector = read('ui_language_selector_source.jsx');
+    const table = selector.slice(selector.indexOf('const FALLBACK_LANGUAGE_OPTIONS = ['), selector.indexOf('];', selector.indexOf('const FALLBACK_LANGUAGE_OPTIONS = [')) + 2);
+    const names = Array.from(table.matchAll(/\{ value: "([^"]+)"/g), (m) => m[1]).filter((n) => n !== 'English');
+    const tags = GEN.slice(GEN.indexOf('const BCP47 = {'), GEN.indexOf('};', GEN.indexOf('const BCP47 = {')));
+    for (const name of names) expect(tags, name).toContain(`'${name}':`);
+    const codes = Array.from(tags.matchAll(/: '([a-zA-Z-]+)'/g), (m) => m[1]);
+    expect(codes.length).toBe(names.length);
+    expect(new Set(codes).size).toBe(codes.length);
+    // Spanish keeps the code it already shipped with, so saved preferences survive.
+    expect(tags).toContain("'Spanish (Latin America)': 'es'");
+  });
+
+  it('refuses to invent a pack for a language the product has no translation for', () => {
+    expect(GEN).toContain("l.provenance !== 'english-passthrough'");
+    expect(GEN).toContain('english-passthrough, no usable translation exists');
+    // Provenance travels with the pack rather than being asserted in prose.
+    expect(GEN).toContain('provenance: language.provenance');
+  });
+
+  it('validates each language before writing it', () => {
+    expect(GEN).toContain('placeholder drift in ');
+    expect(GEN).toContain('the model may have returned English');
+    expect(GEN).toContain('came back identical to English');
+  });
+});
+
 describe('runtime', () => {
   const BLOCK = PORTAL.slice(PORTAL.indexOf('/* SR_I18N_START */'), PORTAL.indexOf('/* SR_I18N_END */'));
   // A language that is published but not embedded: the mechanism this pass

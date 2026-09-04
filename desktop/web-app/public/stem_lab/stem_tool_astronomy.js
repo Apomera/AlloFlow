@@ -2869,7 +2869,13 @@
           h('div', { id: 'astronomy-sky-layout', style: { display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'flex-start', width: '100%', maxWidth: '100%', minWidth: 0 } },
             h('div', { style: { flex: '1 1 380px', minWidth: 0, maxWidth: 480, width: '100%' } },
               h('svg', {
-                id: 'astronomy-sky-map-diagram', viewBox: '0 0 380 410',
+                id: 'astronomy-sky-map-diagram',
+                // Margin on three sides: the horizon circle fills x 12..368 /
+                // y 12..368, and the cardinal labels are placed OUTSIDE it, so
+                // N, E and W were clipped by the canvas edge — the three
+                // orientation marks a sky chart exists to give you. The bottom
+                // stays at 410, where S and the location caption already fit.
+                viewBox: '-14 -16 408 426',
                 role: 'img', 'aria-label': skyAria(sky, loc, localShown, targetStatus, skyLayers, targetTrackSummary, bortlePreview, referenceStarCount),
                 'aria-describedby': 'astronomy-sky-map-help',
                 'data-bortle-class': bortlePreview.class, 'data-sky-preview-mode': bortlePreview.mode,
@@ -5131,7 +5137,7 @@
                   );
                 }),
                 h('text', { x: (solarPlot.left + solarPlot.right) / 2, y: 184, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 16, fontWeight: 700 }, 'Local solar time (hours)'),
-                h('text', { x: 16, y: (solarPlot.top + solarPlot.bottom) / 2, transform: 'rotate(-90 16 ' + ((solarPlot.top + solarPlot.bottom) / 2) + ')', textAnchor: 'middle', fill: '#e2e8f0', fontSize: 16, fontWeight: 700 }, 'Sun altitude'),
+                h('text', { x: 20, y: (solarPlot.top + solarPlot.bottom) / 2, transform: 'rotate(-90 20 ' + ((solarPlot.top + solarPlot.bottom) / 2) + ')', textAnchor: 'middle', fill: '#e2e8f0', fontSize: 16, fontWeight: 700 }, 'Sun altitude'),
                 h('path', { d: solarAltitudePath, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round', 'data-solar-altitude-path': 'true' }),
                 solarProfile.samples.map(function(sample, index) {
                   return h('circle', {

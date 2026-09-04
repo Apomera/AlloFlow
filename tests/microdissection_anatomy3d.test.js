@@ -197,8 +197,10 @@ describe('Anatomy CT/MRI Imaging Lab', () => {
     expect(html).toContain('Educational · non-diagnostic');
     expect(html).toContain('generated diagrams, not scans');
     expect(html).toContain('Slice 0 / 100');
-    expect(html).toContain('Window width 1500');
-    expect(html).toContain('Window level 0');
+    // 2026-09-03: the live number moved out of the <label> so the slider's accessible name
+    // stops changing as it is dragged. The visible caption is unchanged.
+    expect(html).toContain('>Window width</label><span aria-hidden="true"> 1500</span>');
+    expect(html).toContain('>Window level</label><span aria-hidden="true"> 0</span>');
     expect(html).toContain('R/L refer to the patient');
     expect(html).not.toContain('data-anatomy-model-shell="true"');
     expect(html).not.toContain('data-anatomy-system-rail="true"');
@@ -401,7 +403,8 @@ describe('Integrated scan-to-cell procedure', () => {
     loadTool(ANATOMY_PATHS[0], 'anatomy');
     const planning = renderTool('anatomy', { anatomy: { _activeTab: 'procedure', procedure: { stage: 0, planSlice: 58 } } });
     expect(planning).toContain('data-procedure-planning-scan="true"');
-    expect(planning).toContain('Planning slice 58 / 100');
+    expect(planning).toContain('>Planning slice<span aria-hidden="true"> 58 / 100</span>');
+    expect(planning).toContain('aria-valuetext="Slice 58 of 100"');
     expect(planning).toContain('Lock scan plan');
     expect(planning).toContain('Case: Central target');
 

@@ -153,6 +153,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The header and the world-picker heading paint no ground of their
+      // own, so they sit on the HOST surface - white in light and dark, pure
+      // BLACK in the contrast theme, where both titles measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? ' text-white' : '';
       var React = ctx.React;
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData['worldBuilder']) || {};
@@ -1004,8 +1009,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             h(ArrowLeft, { size: 20 })
           ),
           h('div', { className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.worldbuilder.writecraft', '✍️ WriteCraft')),
-            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.worldbuilder.your_writing_is_your_superpower', 'Your writing IS your superpower'))
+            h('h2', { className: 'text-xl font-black text-slate-800' + onHostInk }, __alloT('stem.worldbuilder.writecraft', '✍️ WriteCraft')),
+            h('p', { className: 'text-xs text-slate-600' + onHostInk }, __alloT('stem.worldbuilder.your_writing_is_your_superpower', 'Your writing IS your superpower'))
           ),
           writingPower > 0 && h('div', { className: 'flex items-center gap-2' },
             h('div', { className: 'text-center' },
@@ -1162,8 +1167,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
         // ═══ WORLD SELECTION ═══
         !selectedWorld && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-4' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, __alloT('stem.worldbuilder.choose_your_world', 'Choose Your World')),
-            h('p', { className: 'text-sm text-slate-600' }, __alloT('stem.worldbuilder.each_world_is_a_living_story_your_writ', 'Each world is a living story. Your writing determines what happens.'))
+            h('h3', { className: 'text-lg font-black text-slate-800' + onHostInk }, __alloT('stem.worldbuilder.choose_your_world', 'Choose Your World')),
+            h('p', { className: 'text-sm text-slate-600' + onHostInk }, __alloT('stem.worldbuilder.each_world_is_a_living_story_your_writ', 'Each world is a living story. Your writing determines what happens.'))
           ),
 
           // Character creation

@@ -55,6 +55,11 @@ window.StemLab = window.StemLab || {
     ],
 
     render: function(ctx) {
+      // These four sit on the HOST surface, not on one of this tool own
+      // panels - white in light and dark, pure BLACK in the contrast theme,
+      // where the tool own title measured 1.44:1.
+      var isContrast = !!ctx.isContrast;
+      var onHostInk = isContrast ? " text-white" : "";
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -1858,7 +1863,7 @@ const d = labToolData.wave;
 
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': __alloT('stem.wave.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
+              React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" + onHostInk }, "\uD83C\uDF0A " + __alloT('stem.wave.title', 'Wave Simulator')),
 
               React.createElement("span", { className: "px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full" }, __alloT('stem.wave.badge_animated', 'ANIMATED'))
 
@@ -2506,7 +2511,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "mb-3 p-3 rounded-xl border-2 border-indigo-200 flex items-center gap-3 flex-wrap", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🔬'),
-              React.createElement("p", { className: "text-xs text-indigo-900 font-semibold flex-1 min-w-[220px] m-0" }, __alloT('stem.wave.investigate_intro', 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.')),
+              React.createElement("p", { className: "text-xs text-indigo-900 font-semibold flex-1 min-w-[220px] m-0" + onHostInk }, __alloT('stem.wave.investigate_intro', 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.')),
               React.createElement("button", { onClick: function () { upd('expSection', 'discoverWave'); if (typeof addToast === 'function') addToast('🔬 ' + __alloT('stem.wave.toast_opened_below', 'Opened below — scroll down to the Reference Library'), 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🔬 ' + __alloT('stem.wave.btn_discover', 'Discover') + ' f·λ = v'),
               React.createElement("button", { onClick: function () { upd('expSection', 'standingHunt'); if (typeof addToast === 'function') addToast('🎯 ' + __alloT('stem.wave.toast_opened_below', 'Opened below — scroll down to the Reference Library'), 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🎯 ' + __alloT('stem.wave.btn_standing_hunt', 'Standing-wave hunt'))
             ),
@@ -2534,7 +2539,7 @@ const d = labToolData.wave;
                   className: "transition-colors w-full flex items-center gap-2 p-3 text-left hover:bg-fuchsia-100/60"
                 },
                   React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🧠'),
-                  React.createElement("span", { className: "text-sm font-black text-fuchsia-900 flex-1" }, __alloT('stem.wave.myths_header', 'Wave myths — test your intuition')),
+                  React.createElement("span", { className: "text-sm font-black text-fuchsia-900 flex-1" + onHostInk }, __alloT('stem.wave.myths_header', 'Wave myths — test your intuition')),
                   React.createElement("span", { className: "text-xs font-bold text-fuchsia-700" }, mythsOpen ? '▲ ' + __alloT('stem.wave.hide', 'Hide') : '▼ ' + __alloT('stem.wave.show', 'Show'))
                 ),
                 mythsOpen && React.createElement("div", { className: "px-3 pb-3 grid gap-2 grid-cols-1 md:grid-cols-2" },
@@ -2771,7 +2776,7 @@ const d = labToolData.wave;
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-600" }, __alloT('stem.wave.ai_placeholder', 'Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.'))
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-600" + onHostInk }, __alloT('stem.wave.ai_placeholder', 'Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.'))
               );
             })()
 

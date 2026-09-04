@@ -123,7 +123,7 @@ describe('AlloBot accessory integrity', () => {
       expect(source).toContain('rightArmPath');
       expect(source).toContain('data-allobot-arm');
       expect(source).toContain('data-allobot-arm-layer');
-      expect(source).toContain('data-allobot-shoulder');
+      expect(source).toContain('data-allobot-arms');
       expect(source).toContain('data-allobot-hand-layer');
       expect(source).toContain('data-allobot-jetpack-layer');
       expect(source).toContain('data-allobot-hardware-theme');
@@ -139,6 +139,39 @@ describe('AlloBot accessory integrity', () => {
     }
     expect(SRC).toContain('data-allobot-hand="left" data-allobot-hand-layer="palm"');
     expect(SRC).toContain('fill={`url(#${svgPaintIds.body})`}');
+  });
+
+  it('joins the arms behind the shell and keeps every mitt clear of the silhouette', () => {
+    // Allobot's body is a sphere. A limb drawn across the front of a sphere
+    // reads as a stripe painted on a ball rather than an arm, so both arms are
+    // emitted before the shell body circle and the shell hides the join. That
+    // only works if the mitt actually hovers outside the silhouette: the old
+    // resting pose put the mitt's inner edge 0.27 units INSIDE the body and the
+    // thinking pose 2.46 inside, which left no visible arm at all.
+    // esbuild turns the JSX attribute into an object key, so match either form.
+    const markerAt = (source, attr, value) => {
+      const jsx = source.indexOf(`${attr}="${value}"`);
+      return jsx > -1 ? jsx : source.indexOf(`"${attr}": "${value}"`);
+    };
+    for (const source of [SRC, MOD]) {
+      const armsAt = markerAt(source, 'data-allobot-arms', 'behind');
+      const shellAt = markerAt(source, 'data-allobot-shell-layer', 'body');
+      expect(armsAt).toBeGreaterThan(-1);
+      expect(shellAt).toBeGreaterThan(-1);
+      expect(armsAt, 'arms must be painted before the shell').toBeLessThan(shellAt);
+      // The shoulder disc sat 6.15 units inside the silhouette, so behind the
+      // shell it is fully occluded. Dead geometry, and it must stay gone.
+      expect(source).not.toContain('data-allobot-shoulder');
+    }
+    const BODY_R = 35;
+    const HAND_R = 6.5;
+    const poses = [...SRC.matchAll(/(\w+): \{ leftHandX: ([-\d.]+), rightHandX: ([-\d.]+), handY: ([-\d.]+)/g)];
+    expect(poses.length).toBeGreaterThanOrEqual(10);
+    for (const [, name, leftX, rightX, handY] of poses) {
+      expect(Number(leftX) + Number(rightX), `${name} is not symmetric`).toBeCloseTo(100, 6);
+      const gap = Math.hypot(Number(leftX) - 50, Number(handY) - 55) - BODY_R - HAND_R;
+      expect(gap, `${name} mitt leaves no visible arm`).toBeGreaterThan(1.5);
+    }
   });
 
   it('reduce-motion gating is intact (idle CSS, SMIL pause, blink self-gate)', () => {
@@ -404,7 +437,10 @@ describe('AlloBot accessory integrity', () => {
     expect(SRC).toContain("isListening ? 'listening' : (isTalking ? 'talking' : effectiveMood)");
     expect(SRC).toContain("voiceCueState === 'listening' ? 'inbound'");
     expect(SRC).toContain("voiceCueState === 'talking' ? 'outbound'");
-    expect(SRC).toContain("const eyeCoreRx = voiceCueState === 'listening' ? 2.15 : 1.85;");
+    // The pupil was replaced by a bead-and-highlight eye on 2026-09-04, so
+    // the listening cue widens the highlight instead of a pupil.
+    expect(SRC).toContain("voiceCueState === 'listening' ? 0.35 : 0");
+    expect(SRC).toContain('const eyeHighlightRx');
     expect(SRC).toContain('M 46 58 Q 50 55 54 58 Q 50 62 46 58');
     expect(SRC).toContain('className={!motionDisabled ? "animate-pulse motion-reduce:animate-none" : undefined}');
   });
@@ -472,8 +508,11 @@ describe('AlloBot accessory integrity', () => {
     expect(SRC).toContain('&& !accessoryRenderSide');
     expect(SRC).toContain("heldItemSupportSide === 'left'");
     expect(SRC).toContain("heldItemSupportSide === 'right'");
-    expect(SRC).toContain("['M', 19, 61, 'Q', 46, 78");
-    expect(SRC).toContain("['M', 81, 61, 'Q', 54, 78");
+    // Shoulders moved onto the torso on 2026-09-04 so the arm is visible
+    // between the shoulder ball and the hand ball; the support curve is
+    // otherwise unchanged.
+    expect(SRC).toContain("['M', 21.5, 59.5, 'Q', 46, 78");
+    expect(SRC).toContain("['M', 78.5, 59.5, 'Q', 54, 78");
     expect(SRC).toContain("transform: !heldItemUsesSupportHand && isMoving");
     expect(SRC.match(/data-allobot-held-item-support-grip=/g)).toHaveLength(1);
   });
@@ -491,38 +530,71 @@ describe('AlloBot accessory integrity', () => {
     }
   });
 
-  it('uses a soft opt-in gaze and pastel sparkle eyes instead of visor-dark pupils', () => {
+  // Rewritten 2026-09-04, second time in a day, because the design changed
+  // under it twice. History, so the next person does not re-run the loop:
+  // pupils were made pastel to stop the tracking eye looking watchful, which
+  // dropped them to 1.1:1 against their own eye and hid the glance entirely;
+  // they were then darkened to 6:1 so the glance could be seen; and finally
+  // the pupil was removed altogether. The eye is a solid bead of the mood
+  // colour with one soft highlight, as it was before it grew a pupil, and the
+  // BEAD moves with the glance. Direction reads from where the bead sits in
+  // the visor, so nothing dark has to follow the pointer.
+  it('carries the glance with the whole eye, so a bead and a highlight are enough', () => {
     for (const source of [SRC, MOD]) {
       expect(source).toContain('data-allobot-eye-core');
-      expect(source).toContain('data-allobot-eye-sparkle');
       expect(source).toContain('data-allobot-soft-gaze');
       expect(source).toContain('data-allobot-eye-details');
       expect(source).toContain('data-allobot-face-cue');
-      expect(source).toContain('soft-cheeks');
       expect(source).toContain('eyeCoreVisual');
       expect(source).toContain('faceLensesCoverEyes');
       expect(source).toContain('eyeDetailsVisible');
       expect(source).toContain('cheekOpacity');
       expect(source).toContain('isHovered');
     }
-    expect(SRC).toContain("if (motionDisabled || coarsePointer)");
-    expect(SRC).toContain("const ALLOBOT_AMBIENT_GAZE_SCALE = 0.55;");
-    expect(SRC).toContain('const maxFeatureRadius = 1.35;');
+    expect(SRC).toContain('if (motionDisabled || coarsePointer)');
+    expect(SRC).toContain("const ALLOBOT_AMBIENT_GAZE_SCALE = 0.8;");
+    expect(SRC).toContain('const maxFeatureRadius = 2.2;');
     expect(SRC).toContain('const maxVisorRadius = 0.35;');
-    expect(SRC).toContain("fill={eyeCoreVisual.fill}");
     expect(SRC).toContain("const eyeDetailsVisible = blinkScale >= 0.5;");
-    expect(SRC).toContain("!faceLensesCoverEyes &&");
-    expect(SRC).not.toMatch(/data-allobot-eye-core=[\s\S]{0,220}?fill=\{colors\.screenBg\}/);
-    const eyeCorePalette = SRC.match(/const eyeCoreVisual =[\s\S]*?const eyeCoreRx/)?.[0] || '';
-    const eyeCoreFills = [...eyeCorePalette.matchAll(/fill: '(#[0-9A-F]{6})'/gi)].map((match) => match[1]);
-    expect(eyeCoreFills.length).toBeGreaterThanOrEqual(5);
-    for (const hex of eyeCoreFills) {
-      const red = Number.parseInt(hex.slice(1, 3), 16);
-      const green = Number.parseInt(hex.slice(3, 5), 16);
-      const blue = Number.parseInt(hex.slice(5, 7), 16);
-      const perceivedLightness = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255;
-      expect(perceivedLightness).toBeGreaterThan(0.68);
+    expect(SRC).toContain('!faceLensesCoverEyes &&');
+
+    // The eye itself must live inside the group that carries the gaze
+    // transform. If it drifts back outside, the eye is pinned again and a
+    // pupil becomes necessary, which is how this regressed the first time.
+    const gazeGroup = SRC.slice(SRC.indexOf('data-allobot-eye-details={'), SRC.indexOf('</g>', SRC.indexOf('data-allobot-eye-details={')));
+    expect(gazeGroup).toContain('data-allobot-eye="left"');
+    expect(gazeGroup).toContain('data-allobot-eye="right"');
+    expect(gazeGroup).toContain('data-allobot-eye-core="left"');
+
+    // A generous highlight, and no dark pupil hiding inside the bead.
+    expect(SRC).toContain('const eyeHighlightRx');
+    expect(SRC).toContain('const eyeHighlightRy');
+    // The gloss is a white catchlight on a mid-tone bead and a soft shade in the
+    // mood's own darker tone on a pale one, because a white catchlight measures
+    // 1.00:1 on the pale eyes and cannot be seen. High contrast gets neither.
+    expect(SRC).toContain('const eyeGlossMode');
+    expect(SRC).toContain("eyeGlossMode === 'shade' ? eyeCoreVisual.rim : eyeCoreVisual.glint");
+    expect(SRC).toContain('fill={eyeGlossFill}');
+    expect(SRC).toContain("theme === 'contrast' ? 'none'");
+    expect(SRC).not.toContain("fill={eyeCoreVisual.fill}");
+    expect(SRC).not.toMatch(/const eyeCoreVisual[\s\S]{0,400}?fill: '#0/);
+
+    // The bead has to stand out from the visor it sits on, in every mood.
+    const luminance = (hex) => {
+      const channel = (value) => { const c = value / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+      const n = Number.parseInt(hex.slice(1), 16);
+      return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+    };
+    const contrast = (a, b) => { const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (hi + 0.05) / (lo + 0.05); };
+    const visorInterior = '#1E1B4B';
+    const eyes = { idle: '#22D3EE', happy: '#FFFFFF', thinking: '#FEF3C7', sad: '#E2E8F0' };
+    for (const [mood, eye] of Object.entries(eyes)) {
+      expect(SRC, mood).toContain(`eye: '${eye}'`);
+      expect(contrast(eye, visorInterior), `${mood} eye against the visor`).toBeGreaterThanOrEqual(4.5);
     }
+
+    // Listening still widens the eye's catchlight, which used to widen a pupil.
+    expect(SRC).toContain("voiceCueState === 'listening' ? 0.35 : 0");
     expect(SRC).toContain('M 43 58.5 Q 50 63.5 57 58.5');
     expect(SRC).not.toContain('M 45 58.5 Q 50 63 55 58.5');
   });

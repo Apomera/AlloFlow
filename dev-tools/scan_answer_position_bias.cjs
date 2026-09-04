@@ -31,7 +31,67 @@ if (files.length === 0) {
   process.exit(2);
 }
 
+// One entry per option. A LOCALIZED bank writes each option as `t('key')` or
+// `__alloT('key', 'English')`, so the naive "every quoted run is an option"
+// split returns two entries per element, blows past the arity ceiling, and the
+// tool silently vanishes from this report — a gate going blind exactly when a
+// bank is improved. Reduce each element to one identifying string instead:
+// the English fallback when there is one, otherwise the key.
+// Split an array-literal body on TOP-LEVEL commas, respecting quotes and
+// nested parens. `__alloT('k', 'Hematite (iron oxide)')` contains both, and a
+// regex that stops at the first `)` loses the element.
+function topLevelParts(raw) {
+  const parts = [];
+  let depth = 0, quote = null, cur = '';
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (quote) {
+      cur += c;
+      if (c === '\\') { cur += raw[i + 1] || ''; i++; continue; }
+      if (c === quote) quote = null;
+      continue;
+    }
+    if (c === "'" || c === '"') { quote = c; cur += c; continue; }
+    if (c === '(' || c === '[') depth++;
+    if (c === ')' || c === ']') depth--;
+    if (c === ',' && depth === 0) { parts.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  if (cur.trim()) parts.push(cur);
+  return parts.map((p) => p.trim());
+}
+
+// `t('key')` / `__alloT('key', 'English')` → the identifying string (the
+// English fallback when present, else the key). Null for anything else.
+function localizedText(expr) {
+  const e = String(expr).trim();
+  if (!/^(?:t|__alloT)\s*\(/.test(e)) return null;
+  const inner = topLevelParts(e.slice(e.indexOf('(') + 1, e.lastIndexOf(')')));
+  if (!inner.length) return null;
+  const lit = (s) => {
+    const m = String(s).match(/^'((?:[^'\\]|\\.)*)'$/) || String(s).match(/^"((?:[^"\\]|\\.)*)"$/);
+    return m ? m[1].replace(/\\'/g, "'") : null;
+  };
+  const key = lit(inner[0]);
+  if (key === null) return null;
+  const english = inner.length > 1 ? lit(inner[1]) : null;
+  return english !== null ? english : key;
+}
+
 function splitOptions(raw) {
+  // A LOCALIZED bank writes each option as t('key') or __alloT('key','English').
+  // The naive "every quoted run is an option" split then returns two entries per
+  // element, blows past the arity ceiling, and the tool silently vanishes from
+  // this report — a gate going blind exactly when a bank is improved.
+  //
+  // Only take this path when EVERY element parses as such a call. A partial
+  // match means the array is something else, and guessing there changed two
+  // unrelated tools' numbers when this was first attempted.
+  const parts = topLevelParts(raw);
+  if (parts.length >= 2) {
+    const mapped = parts.map(localizedText);
+    if (mapped.every((x) => x !== null)) return mapped;
+  }
   // raw is the inside of [...] — split on quote boundaries, tolerate escapes
   const out = [];
   const re = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
@@ -39,6 +99,9 @@ function splitOptions(raw) {
   while ((m = re.exec(raw))) out.push((m[1] !== undefined ? m[1] : m[2]).replace(/\\'/g, "'"));
   return out;
 }
+
+// The answer side of the same change: `a: __alloT('key', 'English')`.
+function answerText(expr) { return localizedText(expr); }
 
 // Schema C: bracket walk. For every `correct: true`, find the object it lives
 // in and that object's index among its parent array's direct object children.
@@ -121,6 +184,20 @@ for (const f of files) {
   const reB = /a:\s*'((?:[^'\\]|\\.)*)'\s*,\s*[\r\n]*\s*(?:opts|options):\s*\[([^\]]{4,600})\]/g;
   while ((m = reB.exec(src))) {
     const ans = m[1].replace(/\\'/g, "'");
+    const opts = splitOptions(m[2]);
+    const idx = opts.indexOf(ans);
+    if (idx < 0 || opts.length < 2 || opts.length > 6) continue;
+    counts[opts.length] = counts[opts.length] || new Array(opts.length).fill(0);
+    counts[opts.length][idx]++; total++;
+  }
+  // Schema B': the same bank once its answer and options are localized —
+  // `a: __alloT('key', 'English'),` then the array. Rocks disappeared from this
+  // report entirely the day its quiz was localized, which is the failure mode
+  // this branch exists to prevent.
+  const reB2 = /a:\s*((?:t|__alloT)\s*\((?:[^()']|'(?:[^'\\]|\\.)*'|\([^)]*\))*\))\s*,\s*[\r\n]*\s*(?:opts|options):\s*\[((?:[^\][']|'(?:[^'\\]|\\.)*')*)\]/g;
+  while ((m = reB2.exec(src))) {
+    const ans = answerText(m[1]);
+    if (ans === null) continue;
     const opts = splitOptions(m[2]);
     const idx = opts.indexOf(ans);
     if (idx < 0 || opts.length < 2 || opts.length > 6) continue;

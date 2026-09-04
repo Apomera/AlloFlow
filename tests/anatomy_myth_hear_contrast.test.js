@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
@@ -82,6 +83,36 @@ describe('Anatomy myth or fact', () => {
 
     const none = render(filePath, { _activeTab: 'explore', selectedStructure: 'aorta' }, OLDER);
     expect(none.querySelector('[data-anatomy-myth-buster]')).toBeNull();
+  }, 60_000);
+});
+
+describe('Anatomy read-aloud controls', () => {
+  // Round 28 (2026-09-03): nine read-aloud buttons all announced themselves as "Read aloud",
+  // four of them inside the structure card, so a screen-reader user could not tell which one
+  // read which section. They also used a different pill shape from the Hear it control.
+  it.each(ANATOMY_PATHS)('names every read-aloud control by what it reads in %s', (filePath) => {
+    const root = render(filePath, { _activeTab: 'explore', system: 'skeletal', selectedStructure: 'femur' }, OLDER);
+    const card = root.querySelector('[data-anatomy-structure-detail]');
+    const names = [...card.querySelectorAll('[data-anatomy-tts], [data-anatomy-hear-name]')]
+      .map((b) => b.getAttribute('aria-label'));
+    expect(names.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(names).size).toBe(names.length);
+    expect(names).toContain('Read the function aloud');
+    expect(names).toContain('Read the clinical note aloud');
+    expect(names.every((n) => n && n !== 'Read aloud')).toBe(true);
+  }, 60_000);
+
+  it.each(ANATOMY_PATHS)('shares one pill shape with the Hear it control in %s', (filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    expect(source).toContain('var ttsBtn = function(text, label) {');
+    expect(source).toContain("var spokenLabel = label || t('stem.anatomy.read_aloud_2', 'Read aloud');");
+    // Both controls are rounded-full indigo pills.
+    expect(source).toMatch(/data-anatomy-tts[\s\S]{0,320}rounded-full/);
+    const root = render(filePath, { _activeTab: 'explore', system: 'skeletal', selectedStructure: 'femur' }, OLDER);
+    for (const btn of root.querySelectorAll('[data-anatomy-tts]')) {
+      expect(btn.className).toMatch(/rounded-full/);
+      expect(btn.className).toMatch(/border-indigo-300/);
+    }
   }, 60_000);
 });
 
