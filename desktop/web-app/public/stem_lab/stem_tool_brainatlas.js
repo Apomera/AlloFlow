@@ -431,7 +431,8 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-study-step strong{display:block;font-size:10px;color:var(--ba-text);}',
     '.brainatlas-study-step span{display:block;font-size:9px;line-height:1.25;color:var(--ba-muted);margin-top:2px;}',
     '.brainatlas-region-list{display:grid;gap:8px;max-height:460px;overflow:auto;padding:2px 6px 3px 2px;}',
-    '.brainatlas-region-item{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:64px;overflow:visible;overflow-wrap:anywhere;}',
+    '.brainatlas-region-item{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:64px;scroll-margin-block:6px;overflow:visible;overflow-wrap:anywhere;}',
+    '.brainatlas-region-item:focus{outline:3px solid var(--ba-focus);outline-offset:-3px;}',
     '.brainatlas-region-item[aria-pressed="true"]{border-color:var(--ba-purple)!important;background:linear-gradient(100deg,rgba(124,58,237,.12),rgba(14,165,233,.06)),var(--ba-surface)!important;box-shadow:inset 4px 0 0 var(--ba-purple),0 8px 20px rgba(124,58,237,.12)!important;}',
     '.brainatlas-region-item[aria-pressed="true"] .brainatlas-region-index{border-color:var(--ba-purple);background:var(--ba-purple);color:#fff;}',
     '.brainatlas-region-item[aria-pressed="true"] .brainatlas-region-item-cue{transform:translateX(2px);}',
@@ -451,7 +452,7 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-detail-focus-dot{width:8px;height:8px;flex:0 0 auto;border-radius:999px;background:var(--ba-purple);box-shadow:0 0 0 4px rgba(124,58,237,.13);}',
     '.brainatlas-detail-focus-title{margin:0;color:var(--ba-text);font-size:18px;line-height:1.2;font-weight:950;letter-spacing:-.01em;overflow-wrap:anywhere;}',
     '.brainatlas-detail-context{margin:4px 0 0;color:var(--ba-muted);font-size:10px;line-height:1.35;overflow-wrap:anywhere;}',
-    '.brainatlas-detail-close{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 10px;font-size:10px;font-weight:950;white-space:nowrap;transition:transform .14s ease,border-color .14s ease;}',
+    '.brainatlas-detail-close{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 10px;font-size:13px;font-weight:950;white-space:nowrap;transition:transform .14s ease,border-color .14s ease;}',
     '.brainatlas-detail-close:hover{border-color:var(--ba-purple);background:var(--ba-panel);}',
     '.brainatlas-detail-close:focus-visible{outline:3px solid var(--ba-focus);outline-offset:2px;}',
     '.brainatlas-detail-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1px solid var(--ba-border);border-radius:8px;background:var(--ba-panel);padding:8px;}',
@@ -6441,14 +6442,16 @@ var d = labToolData.brainAtlas || {};
             }
             setBrainAtlasFallbackFullscreen(el, true);
           }
-          function scrollToBrainAtlasSection(targetId, announcement) {
+          function scrollToBrainAtlasSection(targetId, announcement, block) {
             if (typeof document === 'undefined') return;
             var el = document.getElementById(targetId);
-            if (!el || typeof el.scrollIntoView !== 'function') return;
-            try {
-              el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
-            } catch (e) {
-              el.scrollIntoView();
+            if (!el) return;
+            if (typeof el.scrollIntoView === 'function') {
+              try {
+                el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: block || 'start' });
+              } catch (e) {
+                el.scrollIntoView();
+              }
             }
             try { if (typeof el.focus === 'function') el.focus({ preventScroll: true }); } catch (e) { try { el.focus(); } catch (ignore) {} }
             if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
@@ -6456,16 +6459,39 @@ var d = labToolData.brainAtlas || {};
           function scrollToBrainAtlasDiagram() {
             scrollToBrainAtlasSection('brainatlas-canvas-fullscreen', t('stem.brainatlas.diagram_in_view', 'Brain Atlas diagram is now in view.') || 'Brain Atlas diagram is now in view.');
           }
+          function brainAtlasRegionButtonId(regionId) {
+            return 'brainatlas-region-' + viewKey + '-' + regionId;
+          }
+          function openBrainAtlasRegion(region) {
+            if (!region) return;
+            upd('selected3DStructure', '');
+            if (currentView.isPrenatal) upd('prenatalWeek', region.week);
+            upd('selectedRegion', region.id);
+            setTimeout(function () {
+              var panel = document.getElementById('brainatlas-region-detail');
+              // Ignore an obsolete request if another region or view was opened meanwhile.
+              if (!panel || panel.getAttribute('data-brainatlas-view') !== viewKey || panel.getAttribute('data-brainatlas-region') !== region.id) return;
+              scrollToBrainAtlasSection('brainatlas-region-detail', (t('stem.brainatlas.region_detail_in_view', 'Selected region detail is now in view.') || 'Selected region detail is now in view.') + ' ' + region.name + '.');
+            }, 40);
+          }
           function scrollToBrainAtlasRegions() {
             var announcement = t('stem.brainatlas.region_directory_in_view', 'Brain Atlas region directory is now in view.') || 'Brain Atlas region directory is now in view.';
-            if (sel || d.quizMode) {
+            var returnId = sel ? brainAtlasRegionButtonId(sel.id) : '';
+            function focusDirectory() {
+              var directory = document.getElementById('brainatlas-region-directory');
+              if (!directory || directory.getAttribute('data-brainatlas-view') !== viewKey) return;
+              var regionButton = returnId && document.getElementById(returnId);
+              // Keep the search intact; a diagram selection may be outside the filtered list.
+              scrollToBrainAtlasSection(regionButton ? returnId : 'brainatlas-region-directory', announcement, regionButton ? 'nearest' : 'start');
+            }
+            if (d.selectedRegion || d.selected3DStructure || d.quizMode) {
               upd('selected3DStructure', '');
               upd('selectedRegion', null);
               upd('quizMode', false);
-              setTimeout(function () { scrollToBrainAtlasSection('brainatlas-region-directory', announcement); }, 40);
+              setTimeout(focusDirectory, 40);
               return;
             }
-            scrollToBrainAtlasSection('brainatlas-region-directory', announcement);
+            focusDirectory();
           }
           function scrollToBrainAtlasDetail() {
             if (!sel) return;
@@ -8955,8 +8981,7 @@ var d = labToolData.brainAtlas || {};
               upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null);
               if (typeof announceToSR === 'function') announceToSR(d.quizMode ? 'Quiz off.' : 'Quiz on.');
             } else if (k === 'Escape') {
-              if (d.selectedRegion) { e.preventDefault(); upd('selectedRegion', null); if (typeof announceToSR === 'function') announceToSR('Region deselected.'); }
-              else if (d.quizMode) { e.preventDefault(); upd('quizMode', false); if (typeof announceToSR === 'function') announceToSR('Quiz closed.'); }
+              if (d.selectedRegion || d.quizMode) { e.preventDefault(); scrollToBrainAtlasRegions(); }
             } else if (k === '/') {
               e.preventDefault();
               var searchInput = document.querySelector('input[placeholder*="Search regions"]');
@@ -11617,7 +11642,11 @@ var d = labToolData.brainAtlas || {};
                     className: "brainatlas-detail-panel brainatlas-section-target bg-white rounded-xl border-2 border-purple-200 p-4 space-y-3",
                     tabIndex: -1,
                     "data-brainatlas-detail-panel": "true",
-                    "data-brainatlas-detail-mode": detailMode
+                    "data-brainatlas-detail-mode": detailMode,
+                    "data-brainatlas-view": viewKey,
+                    "data-brainatlas-region": sel.id,
+                    role: "region",
+                    "aria-labelledby": "brainatlas-region-detail-title"
                   },
 
                     React.createElement("div", {
@@ -11629,14 +11658,14 @@ var d = labToolData.brainAtlas || {};
                           React.createElement("span", { className: "brainatlas-detail-focus-dot", "aria-hidden": "true" }),
                           t('stem.brainatlas.selected_region', 'Selected region') || 'Selected region'
                         ),
-                        React.createElement("h4", { className: "brainatlas-detail-focus-title" }, sel.name),
+                        React.createElement("h4", { id: "brainatlas-region-detail-title", className: "brainatlas-detail-focus-title" }, sel.name),
                         React.createElement("p", { className: "brainatlas-detail-context" }, currentView.name + ' \u00B7 ' + activeViewGroup.label)
                       ),
                       React.createElement("button", {
                         type: "button",
                         "aria-label": t('stem.brainatlas.back_to_region_directory', "Back to region directory") || "Back to region directory",
                         title: t('stem.brainatlas.back_to_region_directory', "Back to region directory") || "Back to region directory",
-                        onClick: function () { upd('selectedRegion', null); },
+                        onClick: scrollToBrainAtlasRegions,
                         className: "brainatlas-detail-close active:scale-[0.97]"
                       },
                         React.createElement(ArrowLeft, { size: 15, "aria-hidden": "true" }),
@@ -11990,6 +12019,7 @@ var d = labToolData.brainAtlas || {};
                     className: "brainatlas-region-list-card brainatlas-section-target",
                     tabIndex: -1,
                     "data-brainatlas-region-list": "true",
+                    "data-brainatlas-view": viewKey,
                     role: "region",
                     "aria-labelledby": "brainatlas-region-directory-title"
                   },
@@ -12044,10 +12074,11 @@ var d = labToolData.brainAtlas || {};
                         return React.createElement("button", { key: r.id,
                           type: "button",
                           "data-brainatlas-region-button": "true",
+                          id: brainAtlasRegionButtonId(r.id),
                           "aria-label": (t('stem.brainatlas.open_region_details', 'Open region details for') || 'Open region details for') + ' ' + r.name,
                           "aria-pressed": d.selectedRegion === r.id ? "true" : "false",
                           "data-brainatlas-active": d.selectedRegion === r.id ? "true" : "false",
-                          onClick: function () { if (currentView.isPrenatal) selectPrenatalStage(r); else { upd('selected3DStructure', ''); upd('selectedRegion', r.id); } },
+                          onClick: function () { openBrainAtlasRegion(r); },
                           className: "brainatlas-region-item w-full text-left px-3 py-2 rounded-xl text-xs transition-all hover:shadow-sm " +
                             (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'transition-colors bg-slate-50 hover:bg-white border border-slate-400 active:scale-[0.97]')
                         },

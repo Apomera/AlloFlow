@@ -59,3 +59,9 @@ Factual scope and sources reviewed September 4, 2026:
 - Ventricles: CSF-containing spaces, explicitly distinguished from nerve tissue; CSF has supporting and cushioning roles. The card does not teach clinical assessment or prevention of head injury. [NCBI: Cerebrospinal Fluid](https://www.ncbi.nlm.nih.gov/books/NBK470578/).
 
 Added vocabulary: hemisphere, relay, homeostasis, hormone, event memory, emotional significance, and cerebrospinal fluid. Existing advanced fields and the other medial regions are outside this content pass.
+
+## Moving between regions and learning cards
+
+Opening a directory item moves focus to the named detail panel. Region list, the mobile Regions shortcut, and Escape return to that region's button, revealing it inside the scrollable directory. A visible focus outline and a 44px Back control make the return easier to find. Related-card navigation returns to the most recently read region.
+
+Search text and learning preferences remain intact. If a region selected on the diagram is outside the current search results, returning focuses the directory instead of clearing the search. Prenatal directory choices continue to update the timeline week. Returning clears the corresponding 3D selection and leaves quiz mode so the directory is available. Diagram clicks keep their existing focus behavior; opening a card from the directory is the explicit reading transition. Delayed focus requests are ignored when the intended view or region has changed.
