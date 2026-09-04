@@ -5,8 +5,8 @@ exports[`brainAtlas render goldens > detail panel: cerebellum (ACCURACY LOCK —
   "buttons": 59,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 150,
-  "sha": "b193e621cbe28996",
+  "lengthBucket": 152,
+  "sha": "6d0bab84166e4f23",
   "svgs": 0,
 }
 `;

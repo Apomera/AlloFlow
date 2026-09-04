@@ -51,7 +51,7 @@ describe('brainAtlas render goldens', () => {
 
   it('detail panel: cerebellum (ACCURACY LOCK — ~80%, not 50%)', () => {
     loadTool(FILE, 'brainAtlas');
-    const html = render({ view: 'lateral', selectedRegion: 'cerebellum' });
+    const html = render({ view: 'lateral', selectedRegion: 'cerebellum', detailMode: 'advanced' });
     expect(html).toMatch(/Motor coordination/);
     expect(html).toMatch(/Student takeaway/);
     expect(html).toMatch(/Plain view/);
@@ -154,7 +154,8 @@ describe('brainAtlas render goldens', () => {
     loadTool(FILE, 'brainAtlas');
     const plain = render({ view: 'lateral', selectedRegion: 'cerebellum' });
     expect(plain).toMatch(/data-brainatlas-detail-mode="plain"/);
-    expect(plain).toMatch(/Student takeaway/);
+    expect(plain).toMatch(/Big idea/);
+    expect(plain).toMatch(/Think it through/);
     expect(plain).not.toMatch(/Brodmann Areas/);
     expect(plain).not.toMatch(/Blood Supply/);
 
