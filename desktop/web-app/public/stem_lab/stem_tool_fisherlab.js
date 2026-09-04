@@ -5801,6 +5801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     summarizeCoreQuizRound: summarizeCoreQuizRound,
     retryCoreQuizRound: retryCoreQuizRound,
     getCoreQuizQuestion: getCoreQuizQuestion,
+    getCoreQuizLearningSupport: getCoreQuizLearningSupport,
     filterCoreSpeciesProfiles: filterCoreSpeciesProfiles,
     getCoreSpeciesComparison: getCoreSpeciesComparison,
     normalizeCoreLearningNotes: normalizeCoreLearningNotes,
@@ -12981,6 +12982,278 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       explain: 'Tide rips form at strong-current locations meeting opposing wind or bottom features. Rough water + good fishing simultaneously (predators feed on disoriented prey). Examples: Reversing Falls + Pemaquid Point.' }
   ];
 
+  // Explicit learning destinations avoid guessing a question's topic at runtime.
+  [
+  {
+    "indices": [
+      0,
+      8,
+      13,
+      25,
+      37
+    ],
+    "tab": "buoyage",
+    "label": "Buoyage",
+    "prompt": "Compare the mark’s color and shape. Identify the travel direction before deciding which side of the boat or mark matters."
+  },
+  {
+    "indices": [
+      1,
+      9,
+      11,
+      26,
+      39,
+      43,
+      48,
+      55,
+      61,
+      66
+    ],
+    "tab": "colregs",
+    "label": "Rules of the road",
+    "prompt": "Identify the encounter and each vessel’s status. Explain which rule applies before choosing an action."
+  },
+  {
+    "indices": [
+      2,
+      3,
+      21,
+      36,
+      53,
+      58
+    ],
+    "tab": "regs",
+    "label": "Regulations",
+    "prompt": "Check the species, region, and rule source. Explain which measurement or visible evidence determines the decision."
+  },
+  {
+    "indices": [
+      4,
+      23,
+      44,
+      62,
+      71
+    ],
+    "tab": "tides",
+    "label": "Tides & currents",
+    "prompt": "Separate water height from water movement. Identify which observation the question asks about."
+  },
+  {
+    "indices": [
+      5,
+      28,
+      47,
+      59
+    ],
+    "tab": "navmath",
+    "label": "Navigation math",
+    "prompt": "Identify what is known, what is estimated, and the quantities or units needed. Explain one assumption behind the estimate."
+  },
+  {
+    "indices": [
+      6,
+      16,
+      42,
+      56
+    ],
+    "tab": "vhf",
+    "label": "VHF radio",
+    "prompt": "Compare the situation, urgency, and message structure. Explain which detail determines the call."
+  },
+  {
+    "indices": [
+      7,
+      14,
+      24,
+      63,
+      67
+    ],
+    "tab": "conservation",
+    "label": "Conservation",
+    "prompt": "Connect a fishing method to its effect on the catch or other species. Explain the mechanism, not just the name."
+  },
+  {
+    "indices": [
+      10,
+      18,
+      60
+    ],
+    "tab": "license",
+    "label": "Licensing",
+    "prompt": "Find the entry pathway and its official source. Distinguish the study scenario from requirements needing current verification."
+  },
+  {
+    "indices": [
+      12,
+      35
+    ],
+    "tab": "coddeep",
+    "label": "Atlantic cod",
+    "prompt": "Connect the pressures described with population change. Look for more than one contributing factor."
+  },
+  {
+    "indices": [
+      15,
+      34
+    ],
+    "tab": "nightnav",
+    "label": "Navigation signals",
+    "prompt": "Compare the signal pattern and vessel’s operating condition. Explain which detail changes the meaning."
+  },
+  {
+    "indices": [
+      17,
+      41,
+      46,
+      54
+    ],
+    "tab": "climate",
+    "label": "Climate",
+    "prompt": "Identify the place, time period, and evidence behind the claim. Explain what the comparison establishes."
+  },
+  {
+    "indices": [
+      19,
+      27,
+      51
+    ],
+    "tab": "species",
+    "label": "Species explorer",
+    "prompt": "Use the relevant species profile to identify a distinguishing feature or status. Name the evidence supporting your answer."
+  },
+  {
+    "indices": [
+      20
+    ],
+    "tab": "invasives",
+    "label": "Invasive species",
+    "prompt": "Trace a connection between the organism, its habitat, and its effects on other species."
+  },
+  {
+    "indices": [
+      22
+    ],
+    "tab": "ports",
+    "label": "Working ports",
+    "prompt": "Compare the ports and their fisheries. Check the time period and evidence behind a ranking."
+  },
+  {
+    "indices": [
+      33
+    ],
+    "tab": "gear",
+    "label": "Fishing gear",
+    "prompt": "Follow how the gear works. Connect each named part to its function."
+  },
+  {
+    "indices": [
+      29
+    ],
+    "tab": "regional",
+    "label": "Regional fisheries",
+    "prompt": "Find the fishery’s distinguishing features. Separate its biology, economics, and management."
+  },
+  {
+    "indices": [
+      30,
+      68
+    ],
+    "tab": "rightwhale",
+    "label": "Right whales",
+    "prompt": "Connect conservation concerns to evidence and official sources. Check the date and species before applying a number or rule."
+  },
+  {
+    "indices": [
+      31,
+      70
+    ],
+    "tab": "wabanaki",
+    "label": "Wabanaki context",
+    "prompt": "Identify the nation, place, or historical context. Consult the cited sources for further detail."
+  },
+  {
+    "indices": [
+      32,
+      45,
+      49
+    ],
+    "tab": "seamanship",
+    "label": "Seamanship",
+    "prompt": "Identify the conditions and assumptions. Explain why changing those conditions could change a decision."
+  },
+  {
+    "indices": [
+      38,
+      50
+    ],
+    "tab": "alewifedeep",
+    "label": "Alewife migration",
+    "prompt": "Trace the life cycle between habitats. Connect the movement to its purpose or season."
+  },
+  {
+    "indices": [
+      40
+    ],
+    "tab": "knots",
+    "label": "Knots",
+    "prompt": "Match the knot’s purpose to the task, then follow how it is tied."
+  },
+  {
+    "indices": [
+      52
+    ],
+    "tab": "boats",
+    "label": "Boats",
+    "prompt": "Connect the term to a boat’s physical behavior. Explain it in your own words."
+  },
+  {
+    "indices": [
+      57
+    ],
+    "tab": "ecosystem",
+    "label": "Food webs",
+    "prompt": "Trace who eats whom. Explain how a change in one group could affect another."
+  },
+  {
+    "indices": [
+      64,
+      65
+    ],
+    "tab": "law",
+    "label": "Marine law",
+    "prompt": "Distinguish state and federal responsibilities. Follow the official sources for legal details."
+  },
+  {
+    "indices": [
+      69
+    ],
+    "tab": "history",
+    "label": "Maritime history",
+    "prompt": "Place the event in its historical context. Identify what changed and the evidence for its timing."
+  }
+].forEach(function(group) {
+    group.indices.forEach(function(index) { QUIZ_QUESTIONS[index].study = { tab: group.tab, label: group.label, prompt: group.prompt }; });
+  });
+  // Rotate targeted feedback together with its authored answer.
+  QUIZ_QUESTIONS[0].misconceptions = [
+    'Port is the boat’s left side. In the stated return direction under Region B, the red marks remain on its right side.', null,
+    'A lateral mark identifies a channel side. The stated direction matters, so either side is not the convention being asked about.',
+    'A red lateral mark identifies a channel side; the color alone is not an instruction to stop.'
+  ];
+  QUIZ_QUESTIONS[4].misconceptions = [
+    'Highest water level describes high tide. Slack water describes weak tidal current; height and movement are different observations.', null,
+    'Slack water is a period of weak current between flood and ebb. It does not mean water level stays unchanged for a whole day.',
+    'Lowest water level describes low tide. A water-height observation does not, by itself, identify slack current at every location.'
+  ];
+  QUIZ_QUESTIONS[8].misconceptions = [
+    'A nun has a conical top. Look for the flat-topped cylindrical shape described in this question.', null,
+    'A sphere is round. The distinguishing shape here is a flat-topped cylinder.',
+    'Use the specific shape named in the question: a flat-topped cylinder is a can.'
+  ];
+  QUIZ_QUESTIONS[8].sourceLabel = 'US Coast Guard: buoy shapes';
+  QUIZ_QUESTIONS[8].sourceUrl = 'https://www.uscgboating.org/images/486.PDF';
+  QUIZ_QUESTIONS[8].explain = 'A can buoy is cylindrical with a flat top; a nun has a conical top. In the lateral system shown here, green cans and red nuns provide shape as well as color clues.';
+
   // The authored bank put 66% of correct answers in slot 2 (measured
   // 2/46/22/0, slot 4 never) — passable by position. Rotate each question
   // ONCE here: the quiz re-reads QUIZ_QUESTIONS[quizState.idx] on every
@@ -12998,6 +13271,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var moved = new Array(n);
       for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.a[i];
       q.a = moved;
+      if (q.misconceptions) {
+        var feedback = new Array(n);
+        for (var mi = 0; mi < n; mi++) feedback[(mi + shift) % n] = q.misconceptions[mi];
+        q.misconceptions = feedback;
+      }
       q.correct = (q.correct + shift) % n;
     }
   })();
@@ -13009,6 +13287,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (!Number.isInteger(index) || index < 0 || index >= QUIZ_QUESTIONS.length) return null;
     var question = QUIZ_QUESTIONS[index];
     return { q: question.q, a: question.a.slice(), correct: question.correct, explain: question.explain, sourceLabel: question.sourceLabel, sourceUrl: question.sourceUrl };
+  }
+  function getCoreQuizLearningSupport(index, option) {
+    if (!Number.isInteger(index) || index < 0 || index >= QUIZ_QUESTIONS.length) return null;
+    var question = QUIZ_QUESTIONS[index], study = question.study;
+    if (!study) return null;
+    var validChoice = Number.isInteger(option) && option >= 0 && option < question.a.length;
+    return { tab: study.tab, label: study.label, prompt: study.prompt,
+      misconception: validChoice && option !== question.correct && question.misconceptions ? question.misconceptions[option] || null : null };
   }
   function createCoreQuizRound(size, offset) {
     var total = QUIZ_QUESTIONS.length;
@@ -21763,13 +22049,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── QUIZ tab: first attempts and retrieval retries remain separate.
+    var quizDetourHook = useState(null);
+    var quizDetour = quizDetourHook[0], setQuizDetour = quizDetourHook[1];
+    var quizReviewIndexHook = useState(null);
+    var quizReviewIndex = quizReviewIndexHook[0], setQuizReviewIndex = quizReviewIndexHook[1];
+    var quizDetourFocusRef = useRef(false);
+    useEffect(function() {
+      if (tab === 'quiz') { quizDetourFocusRef.current = false; if (quizDetour) setQuizDetour(null); return; }
+      if (!quizDetourFocusRef.current || !quizDetour) return;
+      quizDetourFocusRef.current = false;
+      var target = document.getElementById('fl-quiz-study-title');
+      focusCoreElement(target);
+      if (target) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }, [tab, quizDetour]);
+    function quizLearningReturnCard() {
+      if (!quizDetour || tab === 'quiz') return null;
+      var atDestination = tab === quizDetour.tab;
+      return h('aside', { 'data-fisherlab-quiz-study': quizDetour.index, 'aria-labelledby': 'fl-quiz-study-title', style: Object.assign({}, cardStyle, { padding: 18, borderLeft: '4px solid #c4b5fd', background: 'linear-gradient(120deg,#23254a,#0b2c3e)' }) },
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
+          h('h3', { id: 'fl-quiz-study-title', tabIndex: -1, style: { color: '#e9d5ff', fontSize: 18, margin: 0 } }, atDestination ? 'Explore the idea · ' + quizDetour.label : 'Your quiz is paused here'),
+          h('button', { type: 'button', className: 'fl-btn', onClick: function() { setTabSearch(''); setTab('quiz'); setQuizDetour(null); }, style: { minHeight: 44, padding: '10px 14px', border: '1px solid #c4b5fd', borderRadius: 8, background: '#3b3261', color: '#faf5ff', fontSize: 14, fontWeight: 800, cursor: 'pointer' } }, 'Return to quiz')),
+        atDestination ? h('p', { style: { fontSize: 14, lineHeight: 1.6, color: '#e0f2fe', margin: '12px 0 8px' } }, quizDetour.prompt) : null,
+        atDestination ? h('details', { style: { color: '#dbeafe', fontSize: 13, lineHeight: 1.6 } }, h('summary', null, 'The question I am exploring'), h('p', null, QUIZ_QUESTIONS[quizDetour.index].q)) : null,
+        h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 0 } }, 'Your answer and place in this round stay unchanged while this lab is open. Return when you are ready.'));
+    }
     var quizStateHook = useState(null);
     var quizState = quizStateHook[0], setQuizState = quizStateHook[1];
     var quizLengthHook = useState('quick');
     var quizLength = quizLengthHook[0], setQuizLength = quizLengthHook[1];
     useEffect(function() {
       if (tab !== 'quiz' || !quizState) return;
-      var target = document.getElementById(quizState.phase === 'results' ? 'fl-quiz-results-title' : 'fl-quiz-question-title');
+      var target = document.getElementById(quizState.phase === 'results' ? (quizReviewIndex !== null ? 'fl-quiz-review-' + quizReviewIndex : 'fl-quiz-results-title') : 'fl-quiz-question-title');
       focusCoreElement(target);
       if (target) target.scrollIntoView({ block: 'nearest', behavior: 'auto' });
     }, [tab, quizState && quizState.cursor, quizState && quizState.phase]);
@@ -21777,7 +22087,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function quizTab() {
       var buttonStyle = { minHeight: 44, padding: '10px 14px', border: '1px solid #557789', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14, lineHeight: 1.5, cursor: 'pointer', textAlign: 'left' };
       var primaryStyle = Object.assign({}, buttonStyle, { background: '#115e59', borderColor: '#5eead4', color: '#f0fdfa', fontWeight: 800 });
-      function startRound() { setQuizState(createCoreQuizRound(quizLength, quizState ? quizState.nextStart : 0)); }
+      function startRound() { setQuizReviewIndex(null); setQuizDetour(null); setQuizState(createCoreQuizRound(quizLength, quizState ? quizState.nextStart : 0)); }
+      function quizLearningAction(index) {
+        var support = getCoreQuizLearningSupport(index, quizState.answers[index]);
+        if (!support) return null;
+        return h('button', { type: 'button', className: 'fl-btn', 'data-quiz-explore': index, onClick: function() {
+          setQuizReviewIndex(quizState.phase === 'results' ? index : null);
+          setQuizDetour(Object.assign({ index: index }, support));
+          quizDetourFocusRef.current = true;
+          setTabSearch(''); setTab(support.tab);
+        }, style: Object.assign({}, buttonStyle, { marginTop: 12, borderColor: '#a78bfa', color: '#e9d5ff', background: '#252540' }) }, 'Explore ' + support.label + ' →');
+      }
+      function misconceptionFeedback(index, picked) {
+        var support = getCoreQuizLearningSupport(index, picked);
+        return support && support.misconception ? h('p', { 'data-quiz-misconception': index, style: { margin: '10px 0', padding: '8px 12px', borderLeft: '3px solid #fbbf24', color: '#fef3c7', background: '#29313a', borderRadius: 5 } },
+          h('strong', null, 'Consider your choice: '), support.misconception) : null;
+      }
       function quizSource(q) { return q.sourceUrl ? h('a', { href: q.sourceUrl, target: '_blank', rel: 'noopener noreferrer', style: { color: '#bae6fd', display: 'inline-block', marginTop: 8, textDecoration: 'underline', fontSize: 13 } }, q.sourceLabel + ' (opens in a new tab)') : null; }
       function roundLengthControl() {
         return h('div', { style: { display: 'grid', gap: 6, maxWidth: 320 } },
@@ -21805,14 +22130,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             quizState.firstPass ? h('div', { 'data-quiz-retry-score': summary.correct + '/' + summary.total, style: { padding: 16, borderRadius: 10, border: '1px solid #736539', background: '#26313a' } },
               h('div', { style: { color: '#fde68a', fontSize: 13 } }, 'This retry round'), h('strong', { style: { color: '#fde68a', fontSize: 30 } }, summary.correct + ' / ' + summary.total)) : null),
           h('p', { style: { color: '#dbeafe', fontSize: 14, lineHeight: 1.6 } }, summary.missed.length ? summary.missed.length + ' question' + (summary.missed.length === 1 ? '' : 's') + ' to revisit. Read the reasoning, then try recalling it without the explanation.' : 'Every answer in this round is correct. Explain one decision in your own words before moving on.'),
-          summary.missed.length ? h('button', { type: 'button', className: 'fl-btn', onClick: function() { setQuizState(retryCoreQuizRound(quizState)); }, style: primaryStyle }, 'Retry missed questions (' + summary.missed.length + ')') : null,
-          h('details', { style: { marginTop: 16, border: '1px solid #35586c', borderRadius: 8, padding: '0 12px 12px' } },
+          summary.missed.length ? h('button', { type: 'button', className: 'fl-btn', onClick: function() { setQuizReviewIndex(null); setQuizDetour(null); setQuizState(retryCoreQuizRound(quizState)); }, style: primaryStyle }, 'Retry missed questions (' + summary.missed.length + ')') : null,
+          h('details', { open: quizReviewIndex !== null || undefined, style: { marginTop: 16, border: '1px solid #35586c', borderRadius: 8, padding: '0 12px 12px' } },
             h('summary', { style: { color: '#e0f2fe', fontSize: 14, fontWeight: 800 } }, 'Review answers & explanations'),
             quizState.indices.map(function(index) {
               var q = QUIZ_QUESTIONS[index], picked = quizState.answers[index], correct = picked === q.correct;
-              return h('article', { key: index, style: { padding: 12, marginTop: 10, background: '#0c2638', borderLeft: '3px solid ' + (correct ? '#5eead4' : '#fbbf24'), borderRadius: 6, color: '#e0f2fe', fontSize: 13, lineHeight: 1.6 } },
+              return h('article', { key: index, id: 'fl-quiz-review-' + index, tabIndex: -1, style: { padding: 12, marginTop: 10, background: '#0c2638', borderLeft: '3px solid ' + (correct ? '#5eead4' : '#fbbf24'), borderRadius: 6, color: '#e0f2fe', fontSize: 13, lineHeight: 1.6 } },
                 h('strong', { style: { color: correct ? '#99f6e4' : '#fde68a' } }, (correct ? 'Correct · ' : 'Revisit · ') + q.q),
-                h('p', null, 'Your answer: ' + q.a[picked]), !correct ? h('p', null, 'Correct answer: ' + q.a[q.correct]) : null, h('p', null, q.explain), quizSource(q));
+                h('p', null, 'Your answer: ' + q.a[picked]), !correct ? h('p', null, 'Correct answer: ' + q.a[q.correct]) : null, h('p', null, q.explain), misconceptionFeedback(index, picked), quizSource(q), quizLearningAction(index));
             })),
           h('div', { style: { marginTop: 18, paddingTop: 16, borderTop: '1px solid #35586c' } }, roundLengthControl(),
             h('button', { type: 'button', className: 'fl-btn', onClick: startRound, style: Object.assign({}, buttonStyle, { marginTop: 10 }) }, 'Start another round')));
@@ -21836,8 +22161,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: { marginTop: 16, padding: 16, borderRadius: 9, borderLeft: '4px solid ' + (correct ? '#5eead4' : '#fbbf24'), background: '#0e3040', color: '#e0f2fe', fontSize: 14, lineHeight: 1.6 } },
             h('strong', { style: { color: correct ? '#99f6e4' : '#fde68a' } }, correct ? 'Correct — here is why' : 'A useful point to revisit'),
             !correct ? h('p', null, 'Correct answer: ' + q.a[q.correct]) : null,
-            h('p', { style: { margin: '8px 0 0' } }, q.explain), quizSource(q)) : null),
-        answered ? h('button', { type: 'button', className: 'fl-btn', onClick: function() { setQuizState(function(current) { return advanceCoreQuizRound(current); }); }, style: Object.assign({}, primaryStyle, { marginTop: 16 }) }, quizState.cursor + 1 === quizState.indices.length ? 'See round results' : 'Next question') :
+            h('p', { style: { margin: '8px 0 0' } }, q.explain), misconceptionFeedback(index, picked), quizSource(q)) : null),
+        answered ? h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 } }, h('button', { type: 'button', className: 'fl-btn', onClick: function() { setQuizState(function(current) { return advanceCoreQuizRound(current); }); }, style: Object.assign({}, primaryStyle, { marginTop: 16 }) }, quizState.cursor + 1 === quizState.indices.length ? 'See round results' : 'Next question'), quizLearningAction(index)) :
           h('p', { style: { color: '#b8cedf', fontSize: 12, margin: '12px 0 0' } }, 'Choose one answer. You can read the explanation before moving on.'));
     }
 
@@ -23519,6 +23844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('strong', { id: 'fl-section-scope-title', style: { color: activeSectionScope.scope === 'maine-curriculum' ? '#fde68a' : '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' } }, activeSectionScope.title),
         h('span', { style: { fontSize: 11, lineHeight: 1.45 } }, activeSectionScope.message)
       ) : null,
+      quizLearningReturnCard(),
       tab !== 'home' ? guidedJourneyCard() : null,
       learningFocusCard(),
       tab === 'home' ? homeTab() :
