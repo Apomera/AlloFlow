@@ -99,6 +99,8 @@ Recent validation from the desktop work:
 
 ## Work Log
 
+Brain Atlas continuation (2026-09-04, Codex): done locally in stem_lab/stem_tool_brainatlas.js, its desktop public mirror, and tests/brain_atlas_saved_quiz.test.js. Added finite saved-study rounds, first-try completion summaries, targeted retries, answer locking, and keyboard focus handoff. Existing contrast-theme edit preserved. Validation: 109 tests across five Brain Atlas suites passed; source/public syntax, mirror parity, and scoped diff check passed. No deployment.
+
 | Date | Agent | Files | Status | Notes |
 | --- | --- | --- | --- | --- |
 | 2026-08-13 | Codex | AlloFlow shell plus Header, Launch Pad, History, SidebarPanels, MiscPanels, ContentEngine modules/mirrors and focused tests | Done locally (not deployed) | Refined the premium UI hierarchy; fixed expanded-header utilities, stale Launch Pad badges/icons, theme-aware Resource Pack, source-generation state ownership, Surprise Me JSON resilience, and collapsible Create-a-resource discovery. Extracted the catalog presentation into the existing eager SidebarPanels CDN with a fail-open fallback, trimming the canonical shell by 2,828 bytes/30 lines without changing Guided Mode ownership. Focused extraction/shell/Guided checks 42/42, view-props clean, source/generated parse clean, and 435 deploy mirrors match. |

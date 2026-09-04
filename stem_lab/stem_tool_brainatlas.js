@@ -1261,6 +1261,9 @@ var d = labToolData.brainAtlas || {};
           var brain3DSearchOpen = !!d.brain3DSearchOpen;
           var brain3DSearchActiveIndex = Math.max(0, parseInt(d.brain3DSearchActiveIndex, 10) || 0);
           var brain3DChallengeActive = !!d.brain3DChallengeActive;
+          var brain3DSavedQuizComplete = !!d.brain3DSavedQuizComplete;
+          var brain3DSavedQuizResults = Array.isArray(d.brain3DSavedQuizResults) ? d.brain3DSavedQuizResults.filter(function (result) { return result && typeof result.key === 'string'; }).slice(0, 24) : [];
+          var brain3DSavedQuizNeedsRetry = !!d.brain3DSavedQuizNeedsRetry;
           var brain3DChallengeDifficulty = ['learn', 'explore', 'challenge'].indexOf(d.brain3DChallengeDifficulty) >= 0 ? d.brain3DChallengeDifficulty : 'learn';
           var brain3DChallengeRound = Math.max(0, parseInt(d.brain3DChallengeRound, 10) || 0);
           var brain3DChallengeHintLevel = Math.max(0, Math.min(2, parseInt(d.brain3DChallengeHintLevel, 10) || 0));
@@ -7810,11 +7813,14 @@ var d = labToolData.brainAtlas || {};
           function clearBrainAtlas3DStudySet() {
             upd('brain3DSavedStructures', []);
             upd('brain3DSavedQuizActive', false);
+            // Editing the collection ends the current round so its target cannot shift.
+            if (brain3DSavedQuizActive) setBrainAtlas3DSavedQuizActive(false);
             if (typeof announceToSR === 'function') announceToSR('Saved study set cleared.');
           }
 
-          function startBrainAtlas3DSavedQuiz() {
-            if (!brain3DSavedItems.length) {
+          function startBrainAtlas3DSavedQuiz(retryOnly) {
+            var roundItems = retryOnly === true ? brain3DSavedQuizRetryItems : brain3DSavedItems;
+            if (!roundItems.length) {
               if (typeof announceToSR === 'function') announceToSR('Save at least one structure before starting a study-set quiz.');
               return;
             }
@@ -7826,16 +7832,21 @@ var d = labToolData.brainAtlas || {};
             upd('brain3DClinicalActive', false);
             upd('brain3DCompareActive', false);
             upd('brain3DPathway', 'off');
+            upd('brain3DChallengeActive', false);
+            upd('brain3DSavedQuizQueue', roundItems.map(function (item) { return item.key; }));
+            upd('brain3DSavedQuizResults', []);
+            upd('brain3DSavedQuizComplete', false);
+            upd('brain3DSavedQuizNeedsRetry', false);
             upd('brain3DSliceAxis', 'off');
             upd('brain3DLayer', 'all');
             upd('brain3DFocus', 'all');
             upd('selected3DStructure', '');
             upd('selectedRegion', null);
-            if (typeof announceToSR === 'function') announceToSR('Saved structure quiz started. Find ' + brain3DSavedItems[0].label + ' in the model.');
+            if (typeof announceToSR === 'function') announceToSR('Saved structure quiz started. Find ' + roundItems[0].label + ' in the model.');
           }
 
           function submitBrainAtlas3DSavedQuiz(structureKey) {
-            if (!brain3DSavedQuizActive || !brain3DSavedQuizTarget || !structureKey) return;
+            if (!brain3DSavedQuizActive || brain3DSavedQuizComplete || !brain3DSavedQuizTarget || !structureKey || (brain3DSavedQuizFeedback && brain3DSavedQuizFeedback.correct)) return;
             var correct = structureKey === brain3DSavedQuizTarget.key;
             upd('brain3DSavedQuizFeedback', { correct: correct, picked: brainAtlasHumanize3DName(structureKey) });
             if (correct) {
@@ -7843,18 +7854,36 @@ var d = labToolData.brainAtlas || {};
               upd('selectedRegion', brainAtlasMap3DRegion(structureKey, viewKey) || null);
               upd('brain3DFocus', 'fade');
             }
+            if (!correct) upd('brain3DSavedQuizNeedsRetry', true);
             if (typeof announceToSR === 'function') announceToSR(correct ? ('Correct. ' + brain3DSavedQuizTarget.label + ' identified.') : ('That was ' + brainAtlasHumanize3DName(structureKey) + '. Try again.'));
           }
+              focusBrainAtlas3DQuizHeading('brainatlas-3d-saved-quiz-next');
+              upd('brain3DSavedQuizResults', brain3DSavedQuizResults.filter(function (result) { return result.key !== structureKey; }).concat([{ key: structureKey, firstTry: !brain3DSavedQuizNeedsRetry }]));
 
           function advanceBrainAtlas3DSavedQuiz() {
-            if (!brain3DSavedItems.length) return;
-            var nextIndex = (brain3DSavedQuizIndex + 1) % brain3DSavedItems.length;
+            if (brain3DSavedQuizComplete || !brain3DSavedQuizFeedback || !brain3DSavedQuizFeedback.correct) return;
+            if (brain3DSavedQuizIndex + 1 >= brain3DSavedQuizItems.length) {
+              upd('brain3DSavedQuizComplete', true);
+              if (typeof announceToSR === 'function') announceToSR('Study round complete. ' + brain3DSavedQuizFirstTry + ' of ' + brain3DSavedQuizItems.length + ' identified on the first try.');
+              focusBrainAtlas3DQuizHeading();
+              return;
+            }
+            var nextIndex = brain3DSavedQuizIndex + 1;
+            upd('brain3DSavedQuizNeedsRetry', false);
             upd('brain3DSavedQuizIndex', nextIndex);
             upd('brain3DSavedQuizFeedback', null);
             upd('brain3DFocus', 'all');
             upd('selected3DStructure', '');
             upd('selectedRegion', null);
-            if (typeof announceToSR === 'function') announceToSR('Next saved structure: ' + brain3DSavedItems[nextIndex].label + '.');
+            if (typeof announceToSR === 'function') announceToSR('Next saved structure: ' + brain3DSavedQuizItems[nextIndex].label + '.');
+            focusBrainAtlas3DQuizHeading();
+          }
+
+          function focusBrainAtlas3DQuizHeading(targetId) {
+            window.setTimeout(function () {
+              var heading = document.getElementById(targetId || 'brainatlas-3d-saved-quiz-title');
+              if (heading) heading.focus();
+            }, 0);
           }
 
           function setBrainAtlas3DSavedQuizActive(active) {
@@ -8210,7 +8239,11 @@ var d = labToolData.brainAtlas || {};
           var brain3DCompareGuides = brain3DCompareStructures.map(brainAtlas3DTeachingForKey);
           var brain3DClinicalScenarioInfo = BRAIN_3D_CLINICAL_SCENARIOS.filter(function (scenario) { return scenario.id === brain3DClinicalScenario; })[0] || BRAIN_3D_CLINICAL_SCENARIOS[0];
           var brain3DSavedItems = brain3DSavedStructures.map(brainAtlas3DIndexItem).filter(Boolean);
-          var brain3DSavedQuizTarget = brain3DSavedItems.length ? brain3DSavedItems[brain3DSavedQuizIndex % brain3DSavedItems.length] : null;
+          // A round snapshots the saved keys; legacy sessions fall back to their saved set.
+          var brain3DSavedQuizItems = (Array.isArray(d.brain3DSavedQuizQueue) ? d.brain3DSavedQuizQueue : brain3DSavedStructures).filter(function (key, index, list) { return typeof key === 'string' && list.indexOf(key) === index; }).slice(0, 24).map(brainAtlas3DIndexItem).filter(Boolean);
+          var brain3DSavedQuizTarget = brain3DSavedQuizItems[brain3DSavedQuizIndex] || null;
+          var brain3DSavedQuizRetryItems = brain3DSavedQuizItems.filter(function (item) { return brain3DSavedQuizResults.some(function (result) { return result.key === item.key && !result.firstTry; }); });
+          var brain3DSavedQuizFirstTry = brain3DSavedQuizItems.filter(function (item) { return brain3DSavedQuizResults.some(function (result) { return result.key === item.key && result.firstTry === true; }); }).length;
 
           var BRAIN_3D_CHALLENGE_POOL = [
             { id: 'hippocampus', label: 'Hippocampus', pattern: /(?:^|_)(?:body|head|tail)_of_hippocampus(?:_|$)|(?:^|_)hippocampus(?:_|$)/i, representative: /body_of_hippocampus/i, view: 'medial', layer: 'deep', learn: 'Find and select the hippocampus.', explore: 'Find the structure that helps form new declarative memories and supports spatial context.', challenge: 'A patient can hold a short conversation but cannot form lasting new memories. Find the structure most directly associated with this pattern.', hint1: 'Look deep in the medial temporal region rather than on the outer cortex.', hint2: 'Use the medial view and Deep structures layer. Its curved formation sits near the temporal horn.', why: 'The hippocampal formation is central to memory consolidation and spatial context, while long-term memory storage remains distributed.' },
@@ -10149,21 +10182,35 @@ var d = labToolData.brainAtlas || {};
                     })
                   ) : React.createElement("div", { className: "brainatlas-3d-study-empty" }, "No structures saved yet. Select anatomy in the model, then choose Save to study set in its learning card.")
                 ),
-                useBrain3D && brain3DSavedQuizActive && brain3DSavedQuizTarget && React.createElement("section", { className: "brainatlas-3d-saved-quiz", "data-brainatlas-3d-saved-quiz": "true", role: "region", "aria-labelledby": "brainatlas-3d-saved-quiz-title" },
+                useBrain3D && brain3DSavedQuizActive && brain3DSavedQuizComplete && React.createElement("section", { className: "brainatlas-3d-saved-quiz", "data-brainatlas-3d-quiz-summary": "true", "aria-labelledby": "brainatlas-3d-saved-quiz-title" },
                   React.createElement("div", { className: "brainatlas-3d-learning-head" },
                     React.createElement("div", { className: "brainatlas-3d-learning-head-copy" },
-                      React.createElement("span", { className: "brainatlas-3d-learning-kicker" }, "Custom quiz · " + (brain3DSavedQuizIndex + 1) + " of " + brain3DSavedItems.length),
-                      React.createElement("strong", { id: "brainatlas-3d-saved-quiz-title" }, "Find a saved structure"),
+                      React.createElement("strong", { id: "brainatlas-3d-saved-quiz-title", tabIndex: -1 }, "Study round complete"),
+                      React.createElement("p", null, brain3DSavedQuizFirstTry + " of " + brain3DSavedQuizItems.length + " identified on the first try."),
+                      React.createElement("p", null, brain3DSavedQuizRetryItems.length ? "Practice again: " + brain3DSavedQuizRetryItems.map(function (item) { return item.label; }).join(', ') : "Round finished. Repeat the set whenever you want more practice.")
+                    ),
+                    React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DSavedQuizActive(false); } }, "Back to atlas")
+                  ),
+                  React.createElement("div", { className: "brainatlas-3d-study-actions" },
+                    brain3DSavedQuizRetryItems.length > 0 && React.createElement("button", { type: "button", onClick: function () { startBrainAtlas3DSavedQuiz(true); focusBrainAtlas3DQuizHeading(); } }, "Retry structures needing practice"),
+                    React.createElement("button", { type: "button", onClick: function () { startBrainAtlas3DSavedQuiz(); focusBrainAtlas3DQuizHeading(); } }, "Practice whole set again")
+                  )
+                ),
+                useBrain3D && brain3DSavedQuizActive && !brain3DSavedQuizComplete && brain3DSavedQuizTarget && React.createElement("section", { className: "brainatlas-3d-saved-quiz", "data-brainatlas-3d-saved-quiz": "true", role: "region", "aria-labelledby": "brainatlas-3d-saved-quiz-title" },
+                  React.createElement("div", { className: "brainatlas-3d-learning-head" },
+                    React.createElement("div", { className: "brainatlas-3d-learning-head-copy" },
+                      React.createElement("span", { className: "brainatlas-3d-learning-kicker" }, "Custom quiz · " + (brain3DSavedQuizIndex + 1) + " of " + brain3DSavedQuizItems.length),
+                      React.createElement("strong", { id: "brainatlas-3d-saved-quiz-title", tabIndex: -1 }, "Find a saved structure"),
                       React.createElement("p", null, "Choose it directly in the model or use the accessible answer list.")
                     ),
                     React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: function () { setBrainAtlas3DSavedQuizActive(false); } }, "End quiz")
                   ),
                   React.createElement("div", { className: "brainatlas-3d-saved-quiz-main" },
                     React.createElement("div", { className: "brainatlas-3d-saved-quiz-target" }, React.createElement("span", null, "Find in the 3D model"), React.createElement("strong", null, brain3DSavedQuizTarget.label)),
-                    brain3DSavedQuizFeedback && brain3DSavedQuizFeedback.correct && React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", onClick: advanceBrainAtlas3DSavedQuiz }, "Next structure")
+                    brain3DSavedQuizFeedback && brain3DSavedQuizFeedback.correct && React.createElement("button", { type: "button", className: "brainatlas-3d-learning-close", id: "brainatlas-3d-saved-quiz-next", onClick: advanceBrainAtlas3DSavedQuiz }, brain3DSavedQuizIndex + 1 === brain3DSavedQuizItems.length ? "Finish round" : "Next structure")
                   ),
                   React.createElement("div", { className: "brainatlas-3d-saved-quiz-options", role: "group", "aria-label": "Accessible saved structure answers" },
-                    brain3DSavedItems.map(function (item) { return React.createElement("button", { key: item.key, type: "button", "data-brainatlas-saved-answer": item.key, onClick: function () { submitBrainAtlas3DSavedQuiz(item.key); } }, item.label); })
+                    brain3DSavedItems.map(function (item) { return React.createElement("button", { key: item.key, type: "button", "data-brainatlas-saved-answer": item.key, disabled: !!(brain3DSavedQuizFeedback && brain3DSavedQuizFeedback.correct), onClick: function () { submitBrainAtlas3DSavedQuiz(item.key); } }, item.label); })
                   ),
                   brain3DSavedQuizFeedback && React.createElement("div", { className: "brainatlas-3d-saved-quiz-feedback", "data-correct": brain3DSavedQuizFeedback.correct ? "true" : "false", role: "status" }, brain3DSavedQuizFeedback.correct ? ("Correct—" + brain3DSavedQuizTarget.label + " is highlighted. Continue when ready.") : ("That was " + brain3DSavedQuizFeedback.picked + ". Try again in the model or answer list."))
                 ),                useBrain3D && brain3DCompareActive && React.createElement("section", { className: "brainatlas-3d-compare-tray", "data-brainatlas-3d-compare-tray": "true", "aria-label": "3D anatomy comparison selection" },
