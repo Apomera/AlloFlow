@@ -16934,6 +16934,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var warmupTopic = warmupTopicHook[0], setWarmupTopic = warmupTopicHook[1];
     var warmupAnswersHook = useState({});
     var warmupAnswers = warmupAnswersHook[0], setWarmupAnswers = warmupAnswersHook[1];
+    var warmupExperimentHook = useState({ distance: 2, speed: 4, secondSample: false, aligned: false });
+    var warmupExperiment = warmupExperimentHook[0], setWarmupExperiment = warmupExperimentHook[1];
     var tabSearchHook = useState('');
     var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
@@ -18669,6 +18671,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── HOME tab
     // Optional retrieval practice: answers stay in this mounted session and never
     // count as voyage completion or field observations.
+    function warmupInvestigation(topic) {
+      var model = warmupExperiment;
+      var textStyle = { fontSize: 13, lineHeight: 1.6, color: '#dbeafe', margin: '8px 0 12px' };
+      function updateModel(key, value) {
+        setWarmupExperiment(function(previous) { var next = Object.assign({}, previous); next[key] = value; return next; });
+      }
+      function meter(label, amount, total, color) {
+        return h('div', { key: label, style: { marginTop: 12 } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, color: '#e0f2fe', fontSize: 13 } }, h('span', null, label), h('strong', null, amount + ' / ' + total)),
+          h('div', { 'aria-hidden': 'true', style: { height: 12, background: '#233d50', borderRadius: 4, marginTop: 6, overflow: 'hidden' } },
+            h('div', { style: { width: (amount / total * 100) + '%', height: '100%', background: color } })));
+      }
+      var content;
+      if (topic === 'navigation') {
+        var minutes = model.distance / model.speed * 60;
+        var baseline = model.distance / 4 * 60;
+        var scale = Math.max(minutes, baseline);
+        function travelBar(label, value, color) {
+          return h('div', { key: label, style: { marginTop: 14 } },
+            h('div', { style: { color: '#e0f2fe', fontSize: 13, marginBottom: 5 } }, label + ' · ' + Number(value.toFixed(1)) + ' min'),
+            h('div', { 'aria-hidden': 'true', style: { height: 14, width: value / scale * 100 + '%', borderRadius: 4, background: color } }));
+        }
+        content = h('div', { className: 'fl-warmup-grid' },
+          h('div', null,
+            h('p', { style: textStyle }, 'Predict first: what happens if you double speed but keep the route the same? Move one slider at a time to isolate its effect.'),
+            h('label', { style: { display: 'grid', gap: 5, color: '#e0f2fe', fontSize: 13 } }, 'Route length',
+              h('span', null, model.distance + ' nautical miles'),
+              h('input', { type: 'range', min: 0.5, max: 6, step: 0.5, value: model.distance, 'aria-valuetext': model.distance + ' nautical miles', onChange: function(e) { updateModel('distance', Number(e.target.value)); }, style: { width: '100%', minWidth: 0, minHeight: 44, accentColor: '#5eead4' } })),
+            h('label', { style: { display: 'grid', gap: 5, color: '#e0f2fe', fontSize: 13 } }, 'Boat speed',
+              h('span', null, model.speed + ' knots'),
+              h('input', { type: 'range', min: 1, max: 8, step: 1, value: model.speed, 'aria-valuetext': model.speed + ' knots', onChange: function(e) { updateModel('speed', Number(e.target.value)); }, style: { width: '100%', minWidth: 0, minHeight: 44, accentColor: '#fbbf24' } }))),
+          h('div', { style: { background: '#061c2b', borderRadius: 10, padding: 16, border: '1px solid #355064' } },
+            h('p', { 'data-investigation-result': 'navigation', 'aria-live': 'polite', style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#5eead4' } }, Number(minutes.toFixed(1)) + ' minutes'),
+            h('p', { style: textStyle }, model.distance + ' nautical miles ÷ ' + model.speed + ' knots × 60'),
+            travelBar('Reference: 4 knots', baseline, '#38bdf8'),
+            travelBar('Your boat: ' + model.speed + ' knots', minutes, '#fbbf24'),
+            h('p', { style: Object.assign({}, textStyle, { marginBottom: 0 }) }, 'Bars compare travel time over the same distance. This model holds current and stops at zero.')));
+      } else if (topic === 'sampling') {
+        var count = model.secondSample ? 10 : 8;
+        var total = model.secondSample ? 20 : 10;
+        content = h('div', { className: 'fl-warmup-grid' },
+          h('div', null,
+            h('p', { style: textStyle }, 'Spot A produced 8 fish of the target species out of 10. Predict how the combined percentage changes if spot B contributes 2 of the same species out of 10.'),
+            h('label', { style: { display: 'flex', gap: 10, alignItems: 'center', minHeight: 44, color: '#e0f2fe', fontSize: 13, cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: model.secondSample, onChange: function(e) { updateModel('secondSample', e.target.checked); }, style: { width: 20, height: 20, accentColor: '#5eead4', flexShrink: 0 } }), 'Include spot B'),
+            meter('Spot A · target species', 8, 10, '#5eead4'),
+            model.secondSample ? meter('Spot B · target species', 2, 10, '#fbbf24') : null),
+          h('div', { style: { background: '#061c2b', borderRadius: 10, padding: 16, border: '1px solid #355064' } },
+            h('p', { 'data-investigation-result': 'sampling', 'aria-live': 'polite', style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#5eead4' } }, Math.round(count / total * 100) + '% of the combined sample'),
+            h('p', { style: textStyle }, count + ' target-species fish ÷ ' + total + ' sampled fish × 100'),
+            meter('Combined catch', count, total, '#38bdf8'),
+            h('p', { style: textStyle }, 'Explain what changed: the original catch did not change; the evidence you included did. Even two spots cannot establish the population across a whole region.')));
+      } else {
+        var offset = model.aligned ? 0 : 0.5;
+        var readings = [11.9, 12.0, 12.1].map(function(value) { return (value + offset).toFixed(1); });
+        content = h('div', { className: 'fl-warmup-grid' },
+          h('div', null,
+            h('p', { style: textStyle }, 'New model: measure a reference object known to be 12.0 units long. A misplaced zero adds 0.5 units to every reading. Predict whether averaging three readings removes that offset.'),
+            h('label', { style: { display: 'flex', gap: 10, alignItems: 'center', minHeight: 44, color: '#e0f2fe', fontSize: 13, cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: model.aligned, onChange: function(e) { updateModel('aligned', e.target.checked); }, style: { width: 20, height: 20, accentColor: '#5eead4', flexShrink: 0 } }), 'Align the ruler with zero'),
+            h('ol', { 'aria-label': 'Repeated measurements', style: { display: 'flex', flexWrap: 'wrap', gap: 8, padding: 0, listStyle: 'none' } }, readings.map(function(value, index) {
+              return h('li', { key: index, style: { flex: '1 1 65px', background: '#0b2637', border: '1px solid #355064', padding: 10, borderRadius: 8, color: '#e0f2fe', fontSize: 13 } },
+                h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 11 } }, 'Reading ' + (index + 1)), h('strong', { style: { fontSize: 20 } }, value));
+            }))),
+          h('div', { style: { background: '#061c2b', borderRadius: 10, padding: 16, border: '1px solid #355064' } },
+            h('p', { 'data-investigation-result': 'measurement', 'aria-live': 'polite', style: { margin: 0, fontSize: 26, fontWeight: 900, color: '#5eead4' } }, 'Mean: ' + (12 + offset).toFixed(1) + ' units'),
+            h('p', { style: textStyle }, 'Known length: 12.0 units · Mean error: +' + offset.toFixed(1) + ' units'),
+            h('p', { style: textStyle }, 'The spread stays 0.2 units in both sets. Alignment changes accuracy here, while the repeatability stays the same.'),
+            h('p', { style: textStyle }, 'Explain why: repeated readings can agree closely and still share the same error. These illustrative values do not come from your catch.')));
+      }
+      return h('details', { key: topic, 'data-fisherlab-investigation': topic, style: { marginTop: 16, border: '1px solid #3c6874', borderRadius: 10, background: '#0b2432', padding: '0 14px 14px' } },
+        h('summary', { style: { color: '#99f6e4', fontSize: 14, fontWeight: 800 } }, 'Try a mini-investigation'),
+        h('p', { style: { margin: '0 0 10px', fontSize: 11, color: '#bae6fd', letterSpacing: '0.05em', textTransform: 'uppercase' } }, 'Model data · change one factor, explain the result'), content);
+    }
+
     function learningWarmup() {
       var lessons = [
         { id: 'navigation', label: 'Navigation math', title: 'Same route. Different speed.',
@@ -18711,7 +18788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('div', { 'aria-hidden': 'true', style: { borderRadius: 10, background: '#061c2b', border: '1px solid #26485e', padding: 16 } },
               lesson.visual === 'time' ? h('div', { style: { display: 'grid', gap: 10, fontSize: 13, color: '#e0f2fe' } },
                 ['4 kn · 30 min', '2 kn · ' + (answered ? '60 min' : '? min')].map(function(label, index) { return h('div', { key: label },
-                  h('span', null, label), h('div', { style: { marginTop: 6, width: index ? '100%' : '50%', height: 10, borderRadius: 3, background: index ? '#fbbf24' : '#38bdf8' } })); })) :
+                  h('span', null, label), h('div', { style: { marginTop: 6, width: index ? '100%' : '50%', height: 10, borderRadius: 3, background: index && !answered ? 'repeating-linear-gradient(90deg,#355064 0px,#355064 8px,transparent 8px,transparent 16px)' : index ? '#fbbf24' : '#38bdf8' } })); })) :
               lesson.visual === 'sample' ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(10,minmax(0,1fr))', gap: 5 } }, Array.from({ length: 10 }, function(_, i) { return h('span', { key: i, style: { height: 25, borderRadius: '50% 50% 30% 30%', background: i < 8 ? '#5eead4' : '#64748b' } }); })) :
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, color: '#fbbf24', fontFamily: 'monospace', fontSize: 20 } }, h('span', null, '11.8'), h('span', { style: { color: '#94a3b8' } }, '↔'), h('span', null, '12.2')))),
           h('div', null,
@@ -18726,6 +18803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { padding: 12, borderRadius: 8, background: '#102d3d', borderLeft: '3px solid ' + (correct ? '#5eead4' : '#fbbf24') } },
                 h('strong', { style: { color: correct ? '#99f6e4' : '#fde68a', fontSize: 13 } }, correct ? 'Supported by the evidence' : 'Reconsider your claim'),
                 h('p', { style: { margin: '6px 0 0', fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, lesson.explanation)) : null))),
+        answered ? warmupInvestigation(lesson.id) : null,
         answered ? h('div', { style: { borderTop: '1px solid #294455', marginTop: 16, paddingTop: 14 } },
           h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.6, color: '#e2e8f0' } }, h('strong', { style: { color: '#5eead4' } }, 'Take it into the lab. '), lesson.transfer),
           h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setTab(lesson.tab); flAnnounce(lesson.action); } }, lesson.action + ' →'),

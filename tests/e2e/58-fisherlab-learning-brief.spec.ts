@@ -60,3 +60,88 @@ test('briefing and warmup fit a phone with large text and keyboard controls', as
   await page.getByRole('button', { name: 'Large text', exact: true }).click();
   await page.screenshot({ path: 'scratch/fisherlab-learning-desktop.png', fullPage: true });
 });
+
+test('mini-investigations compute changing models and keep them separate from voyage evidence', async ({ page }) => {
+  await harness.mount(page, {}, undefined, { expectCanvas: false });
+  const warmup = page.locator('[data-fisherlab-warmup]');
+  const before = await page.evaluate(() => localStorage.getItem('fisherLab.state.v1'));
+  await expect(page.locator('[data-fisherlab-investigation]')).toHaveCount(0);
+  await warmup.getByRole('button', { name: 'It doubles: 30 to 60 minutes' }).click();
+  let investigation = page.locator('[data-fisherlab-investigation]');
+  await expect(investigation.getByRole('slider')).toHaveCount(0);
+  await investigation.getByText('Try a mini-investigation', { exact: true }).click();
+  const speed = investigation.getByRole('slider', { name: /Boat speed/ });
+  const distance = investigation.getByRole('slider', { name: /Route length/ });
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('30 minutes');
+  await speed.focus();
+  await page.keyboard.press('End');
+  await expect(speed).toHaveValue('8');
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('15 minutes');
+  await distance.focus();
+  await page.keyboard.press('End');
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('45 minutes');
+  await speed.focus();
+  await page.keyboard.press('Home');
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('360 minutes');
+  await distance.focus();
+  await page.keyboard.press('Home');
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('30 minutes');
+  await speed.focus();
+  await page.keyboard.press('End');
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('3.8 minutes');
+
+  await warmup.getByLabel('Warmup topic').selectOption('sampling');
+  await warmup.getByRole('button', { name: '80% of this catch sample are this species', exact: true }).click();
+  await expect(investigation.getByRole('checkbox')).toHaveCount(0);
+  await investigation.getByText('Try a mini-investigation', { exact: true }).click();
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('80% of the combined sample');
+  await investigation.getByRole('checkbox', { name: 'Include spot B' }).check();
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('50% of the combined sample');
+  await expect(investigation).toContainText('10 target-species fish ÷ 20 sampled fish');
+  await investigation.getByRole('checkbox', { name: 'Include spot B' }).uncheck();
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('80% of the combined sample');
+
+  await warmup.getByLabel('Warmup topic').selectOption('measurement');
+  await warmup.getByRole('button', { name: 'Check alignment and repeat the measurement' }).click();
+  await investigation.getByText('Try a mini-investigation', { exact: true }).click();
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('Mean: 12.5 units');
+  await expect(investigation.getByRole('list', { name: 'Repeated measurements' })).toContainText('12.4');
+  await investigation.getByRole('checkbox', { name: 'Align the ruler with zero' }).check();
+  await expect(investigation.locator('[data-investigation-result]')).toHaveText('Mean: 12.0 units');
+  await expect(investigation.getByRole('list', { name: 'Repeated measurements' })).toContainText('11.9');
+  await expect(investigation).toContainText('Mean error: +0.0 units');
+  await warmup.getByLabel('Warmup topic').selectOption('navigation');
+  await investigation.getByText('Try a mini-investigation', { exact: true }).click();
+  await expect(investigation.getByRole('slider', { name: /Boat speed/ })).toHaveValue('8');
+  await expect(investigation.getByRole('slider', { name: /Route length/ })).toHaveValue('0.5');
+  expect(await page.evaluate(() => localStorage.getItem('fisherLab.state.v1'))).toEqual(before);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('expanded experiments remain readable and accessible on a small phone', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 850 });
+  await harness.mount(page, {}, undefined, { expectCanvas: false });
+  await page.evaluate(() => { document.getElementById('wrap')!.style.width = '360px'; });
+  await page.getByRole('button', { name: 'Large text', exact: true }).click();
+  const warmup = page.locator('[data-fisherlab-warmup]');
+  for (const [topic, answer] of [
+    ['navigation', 'It doubles: 30 to 60 minutes'],
+    ['sampling', '80% of this catch sample are this species'],
+    ['measurement', 'Check alignment and repeat the measurement']
+  ]) {
+    await warmup.getByLabel('Warmup topic').selectOption(topic);
+    await warmup.getByRole('button', { name: answer, exact: true }).click();
+    const experiment = page.locator('[data-fisherlab-investigation]');
+    await experiment.getByText('Try a mini-investigation', { exact: true }).click();
+    const metrics = await experiment.evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth, right: el.getBoundingClientRect().right }));
+    expect(metrics.scroll).toBeLessThanOrEqual(metrics.client + 1);
+    expect(metrics.right).toBeLessThanOrEqual(360);
+    const violations = await page.evaluate(async () => (await (window as any).axe.run('[data-fisherlab-investigation]', { runOnly: { type: 'rule', values: ['color-contrast', 'button-name', 'label', 'aria-valid-attr-value', 'aria-allowed-attr'] } })).violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => n.target) })));
+    expect(violations).toEqual([]);
+    await experiment.screenshot({ path: 'scratch/fisherlab-investigation-' + topic + '-mobile.png' });
+  }
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.evaluate(() => { document.getElementById('wrap')!.style.width = '1180px'; });
+  await page.getByRole('button', { name: 'Large text', exact: true }).click();
+  await warmup.screenshot({ path: 'scratch/fisherlab-investigation-desktop.png' });
+});
