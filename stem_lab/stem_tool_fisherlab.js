@@ -5807,6 +5807,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     filterCoreSpeciesProfiles: filterCoreSpeciesProfiles,
     getCoreSpeciesComparison: getCoreSpeciesComparison,
     normalizeCoreLearningNotes: normalizeCoreLearningNotes,
+    getCoreLearningNoteReview: getCoreLearningNoteReview,
+    buildCoreLearningNotebookText: buildCoreLearningNotebookText,
     writeCoreLearningNote: writeCoreLearningNote,
     buildCoreLearningNoteText: buildCoreLearningNoteText,
     getCoreQuizAnswerDistribution: getCoreQuizAnswerDistribution,
@@ -14038,6 +14040,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     });
     return result;
   }
+  function getCoreLearningNoteReview(topic, draft, saved) {
+    if (['navigation', 'sampling', 'measurement'].indexOf(topic) < 0) return null;
+    var input = {}, baseline = {}; input[topic] = draft; baseline[topic] = saved;
+    var note = normalizeCoreLearningNotes(input)[topic], prior = normalizeCoreLearningNotes(baseline)[topic];
+    var fields = ['claim', 'evidence', 'next'];
+    var missing = fields.filter(function(field) { return !note[field].trim(); });
+    var dirty = fields.some(function(field) { return note[field] !== prior[field]; });
+    var filled = fields.length - missing.length;
+    return { filled: filled, missing: missing, dirty: dirty, hasText: filled > 0,
+      started: filled > 0 || dirty || fields.some(function(field) { return !!prior[field].trim(); }),
+      label: dirty ? 'Unsaved changes' : filled ? 'Saved copy matches' : 'No note yet',
+      nextField: missing[0] || 'claim' };
+  }
+  function buildCoreLearningNotebookText(value) {
+    var notes = normalizeCoreLearningNotes(value);
+    var topics = ['navigation', 'sampling', 'measurement'].filter(function(topic) {
+      return ['claim', 'evidence', 'next'].some(function(field) { return notes[topic][field].trim(); });
+    });
+    if (!topics.length) return '';
+    return ['FISHER LAB · LEARNING NOTEBOOK', 'Current drafts; downloading does not save changes in this browser.',
+      'Writing in every field does not by itself demonstrate understanding.', '',
+      topics.map(function(topic) { return buildCoreLearningNoteText(topic, notes[topic]); }).join('\n----------------------------------------\n\n')].join('\n');
+  }
   function loadCoreLearningNotes() {
     try { return normalizeCoreLearningNotes(JSON.parse(window.localStorage.getItem('fisherLab.learningNotes.v1') || '{}')); }
     catch (_) { return normalizeCoreLearningNotes(null); }
@@ -17502,6 +17527,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var warmupExperiment = warmupExperimentHook[0], setWarmupExperiment = warmupExperimentHook[1];
     var learningNotesHook = useState(loadCoreLearningNotes);
     var learningNotes = learningNotesHook[0], setLearningNotes = learningNotesHook[1];
+    var savedLearningNotesHook = useState(function() { return normalizeCoreLearningNotes(learningNotes); });
+    var savedLearningNotes = savedLearningNotesHook[0], setSavedLearningNotes = savedLearningNotesHook[1];
+    var openLearningNoteHook = useState(null);
+    var openLearningNote = openLearningNoteHook[0], setOpenLearningNote = openLearningNoteHook[1];
+    var noteFocusTickHook = useState(0);
+    var noteFocusTick = noteFocusTickHook[0], setNoteFocusTick = noteFocusTickHook[1];
+    var notebookDownloadHook = useState('');
+    var notebookDownloadStatus = notebookDownloadHook[0], setNotebookDownloadStatus = notebookDownloadHook[1];
     var learningNoteStatusHook = useState({});
     var learningNoteStatus = learningNoteStatusHook[0], setLearningNoteStatus = learningNoteStatusHook[1];
     var learningFocusHook = useState(null);
@@ -17529,7 +17562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       learningFocusTargetRef.current = null;
       var target = document.getElementById(targetId);
       if (target) { focusCoreElement(target); target.scrollIntoView({ block: 'start', behavior: 'auto' }); }
-    }, [tab, guidedJourney && guidedJourney.step, journeyActive, journeyTopic]);
+    }, [tab, guidedJourney && guidedJourney.step, journeyActive, journeyTopic, warmupTopic, noteFocusTick]);
     var tabSearchHook = useState('');
     var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
@@ -19272,15 +19305,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── HOME tab
     // Optional retrieval practice: answers stay in this mounted session and never
     // count as voyage completion or field observations.
+    function learningNoteOverview() {
+      var topics = [{ id: 'navigation', title: 'Navigation math' }, { id: 'sampling', title: 'Evidence & sampling' }, { id: 'measurement', title: 'Measurement & uncertainty' }];
+      var reviews = topics.map(function(topic) { return getCoreLearningNoteReview(topic.id, learningNotes[topic.id], savedLearningNotes[topic.id]); });
+      var started = reviews.filter(function(review) { return review.started; }).length;
+      var unsaved = reviews.filter(function(review) { return review.dirty; }).length;
+      var text = buildCoreLearningNotebookText(learningNotes);
+      var buttonStyle = { minHeight: 44, padding: '10px 14px', border: '1px solid #64879b', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14, lineHeight: 1.5, cursor: 'pointer' };
+      function downloadNotebook() {
+        var url = null, anchor = null;
+        try {
+          url = window.URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+          anchor = document.createElement('a'); anchor.href = url; anchor.download = 'fisherlab-learning-notebook.txt';
+          document.body.appendChild(anchor); anchor.click(); anchor.remove();
+          var completedUrl = url; setTimeout(function() { window.URL.revokeObjectURL(completedUrl); }, 0);
+          setNotebookDownloadStatus('Download prepared from current notes. Unsaved edits still need Save note to stay in this browser.');
+        } catch (_) {
+          if (anchor && anchor.parentNode) anchor.remove();
+          if (url) window.URL.revokeObjectURL(url);
+          setNotebookDownloadStatus('The download could not start. Your notes are still here; open a topic to save or download it.');
+        }
+      }
+      return h('details', { 'data-fisherlab-notebook-overview': 'true', style: Object.assign({}, cardStyle, { padding: '0 16px 16px', borderLeft: '4px solid #c4b5fd' }) },
+        h('summary', { style: { color: '#e9d5ff', fontSize: 15, fontWeight: 800 } }, 'Review learning notes · ' + started + (started === 1 ? ' topic started' : ' topics started') + (unsaved ? ' · ' + unsaved + ' unsaved' : '')),
+        h('p', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.6 } }, 'Revisit your claim, evidence, and next check. These indicators show where you have written; review the reasoning with a partner or teacher.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: 12 } }, topics.map(function(topic, index) {
+          var review = reviews[index];
+          return h('article', { key: topic.id, 'data-notebook-topic': topic.id, style: { minWidth: 0, padding: 14, background: '#0b2638', border: '1px solid #426579', borderRadius: 9, color: '#dbeafe', fontSize: 13, lineHeight: 1.6 } },
+            h('h3', { style: { color: '#f8fafc', fontSize: 17, margin: '0 0 6px' } }, topic.title),
+            h('strong', { 'data-notebook-save-state': review.dirty ? 'dirty' : review.hasText ? 'saved' : 'empty', style: { color: review.dirty ? '#fde68a' : '#99f6e4' } }, review.label),
+            h('p', { style: { margin: '6px 0' } }, review.filled + ' of 3 parts have writing'),
+            h('ul', { style: { paddingLeft: 18, margin: '8px 0 12px' } }, [{ id: 'claim', label: 'Claim' }, { id: 'evidence', label: 'Evidence & reasoning' }, { id: 'next', label: 'Limit or next check' }].map(function(field) {
+              return h('li', { key: field.id }, field.label + ': ' + (review.missing.indexOf(field.id) >= 0 ? 'not written yet' : 'drafted'));
+            })),
+            h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() {
+              setJourneyActive(false); setLearningFocus(null); setWarmupTopic(topic.id); setOpenLearningNote(topic.id);
+              setTabSearch(''); setTab('home'); learningFocusTargetRef.current = 'fl-learning-' + topic.id + '-' + review.nextField;
+              setNoteFocusTick(function(value) { return value + 1; });
+            } }, 'Open ' + topic.title + ' note'));
+        })),
+        h('button', { type: 'button', className: 'fl-btn', disabled: !text, onClick: downloadNotebook, style: Object.assign({}, buttonStyle, { marginTop: 14, borderColor: '#c4b5fd', color: '#e9d5ff', background: '#252540', opacity: text ? 1 : 0.6 }) }, 'Download all current notes'),
+        h('p', { role: 'status', style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 } }, notebookDownloadStatus || 'Downloads include current writing, including unsaved edits. They do not change saved notes.'));
+    }
     function learningNotebook(topic, expanded) {
       var note = learningNotes[topic];
       var status = learningNoteStatus[topic];
+      var review = getCoreLearningNoteReview(topic, note, savedLearningNotes[topic]);
       var hasText = !!(note.claim.trim() || note.evidence.trim() || note.next.trim());
       var messages = { dirty: 'Unsaved changes — save or download your note.', saved: 'Saved in this browser.', error: 'Could not save in this browser. Your draft is still here; try saving again or download it.', downloaded: 'Download prepared from your current draft. Use Save note to keep changes in this browser.', downloadError: 'Download could not start. Your draft is still here.' };
       function setNoteStatus(value) { setLearningNoteStatus(function(previous) { var next = Object.assign({}, previous); next[topic] = value; return next; }); }
       function saveNote() {
         var result;
         try { result = writeCoreLearningNote(window.localStorage, topic, note); } catch (_) { result = { ok: false }; }
+        if (result.ok) setSavedLearningNotes(function(previous) { var next = Object.assign({}, previous); var input = {}; input[topic] = note; next[topic] = normalizeCoreLearningNotes(input)[topic]; return next; });
         setNoteStatus(result.ok ? 'saved' : 'error');
       }
       function downloadNote() {
@@ -19299,9 +19376,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           setNoteStatus('downloadError');
         }
       }
-      return h('details', { key: 'note-' + topic, 'data-fisherlab-learning-note': topic, open: expanded || undefined, style: { marginTop: 14, padding: '0 14px 14px', borderRadius: 10, border: '1px solid #466078', background: '#0c2334' } },
-        h('summary', { style: { color: '#e0f2fe', fontWeight: 800, fontSize: 14 } }, 'Keep a learning note' + (hasText ? ' · Draft available' : '')),
+      return h('details', { key: 'note-' + topic, 'data-fisherlab-learning-note': topic, open: expanded || openLearningNote === topic || undefined, style: { marginTop: 14, padding: '0 14px 14px', borderRadius: 10, border: '1px solid #466078', background: '#0c2334' } },
+        h('summary', { style: { color: '#e0f2fe', fontWeight: 800, fontSize: 14 } }, 'Keep a learning note · ' + review.label),
         h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 12px' } }, 'Turn your observations into an explanation. Save keeps this topic’s note in this browser; download gives you a text file to keep or share.'),
+        h('p', { 'data-learning-note-review': review.filled, style: { color: '#bae6fd', fontSize: 13, lineHeight: 1.6, padding: 10, background: '#102e42', borderRadius: 7 } },
+          review.filled + ' of 3 parts have writing. ' + (review.filled === 3 ? 'Check that the evidence supports your claim and names a limit; filled fields are not a grade.' : 'Next: add ' + ({ claim: 'your claim', evidence: 'evidence and reasoning', next: 'a limit or next check' })[review.nextField] + '.')),
         h('div', { style: { display: 'grid', gap: 12 } }, [
           { field: 'claim', label: 'My claim', hint: 'What do you think the evidence shows?' },
           { field: 'evidence', label: 'Evidence & reasoning', hint: 'Name a value or observation, say whether it came from the model or the voyage, and explain how it supports your claim.' },
@@ -19318,7 +19397,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
           h('button', { type: 'button', className: 'fl-btn', onClick: saveNote, style: { minHeight: 44, padding: '8px 14px', border: '1px solid #5eead4', borderRadius: 7, background: '#115e59', color: '#f0fdfa', cursor: 'pointer', fontSize: 13, fontWeight: 800 } }, 'Save note'),
           h('button', { type: 'button', className: 'fl-btn', onClick: downloadNote, style: { minHeight: 44, padding: '8px 14px', border: '1px solid #627d91', borderRadius: 7, background: '#0c2638', color: '#e0f2fe', cursor: 'pointer', fontSize: 13 } }, 'Download note')),
-        h('p', { 'aria-live': 'polite', 'data-learning-note-status': status || 'initial', style: { margin: '10px 0 0', color: status === 'error' || status === 'downloadError' ? '#fde68a' : '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, messages[status] || (hasText ? 'Saved note loaded from this browser.' : 'No saved note for this topic yet.')));
+        h('p', { 'aria-live': 'polite', 'data-learning-note-status': status || 'initial', style: { margin: '10px 0 0', color: status === 'error' || status === 'downloadError' ? '#fde68a' : '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, status === 'dirty' && !review.dirty ? (hasText ? 'Your draft matches the last saved copy.' : 'No saved note for this topic yet.') : status === 'downloaded' ? 'Download prepared from your current draft. ' + (review.dirty ? 'Use Save note to keep changes in this browser.' : 'Your saved copy is unchanged.') : messages[status] || (hasText ? 'Saved note loaded from this browser.' : 'No saved note for this topic yet.')));
     }
     function learningFocusCard() {
       if (journeyActive || !learningFocus || tab !== learningFocus.tab) return null;
@@ -19733,6 +19812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             })
           )
         ),
+        learningNoteOverview(),
         journeyActive ? guidedJourneyCard() : h(React.Fragment, null, guidedJourneyLauncher(), learningWarmup()),
         h('details', { style: cardStyle },
           h('summary', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'Voyage context & learning progress'),
