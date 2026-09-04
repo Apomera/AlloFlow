@@ -16,7 +16,7 @@ const outputCode =
 if (window.AlloModules && window.AlloModules.PureHelpersModule) { console.log('[CDN] PureHelpersModule already loaded, skipping'); return; }
 ${source}
 window.AlloModules.PureHelpersModule = true;
-console.log('[PureHelpers] 4 helpers registered');
+console.log('[PureHelpers] 7 helpers registered');
 })();
 `;
 

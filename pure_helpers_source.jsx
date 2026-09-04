@@ -363,6 +363,211 @@ const _applyTextSurgery = (prevHtml, effectiveText) => {
     return { html, coverage, reason: null };
 };
 
+
+// ── Compact run records for storage (extracted from AlloFlowANTI.txt 2026-09-04) ──
+// Both functions are closure-free: they read no component state and set nothing.
+// They shrink a Blueprint / Full Pack run record before it is persisted (or, with
+// diagnosticsOnly, before it goes into an error report), dropping sensitive
+// fields and bounding sizes.
+const _compactBlueprintRunForStorage = (run, diagnosticsOnly = false, deps = {}) => {
+  // Host-owned diagnostic helpers arrive in `deps` (built by _alloCompactRunDeps() in
+  // AlloFlowANTI.txt). They stay in the host because ALLO_GENERATION_METRICS and the
+  // error reporter use them too; this function only needs to call them.
+  const { _alloDiagnosticReason, _alloDiagnosticResourceType, _alloDiagnosticBoundedInt, _alloDiagnosticTimestamp, _alloDiagnosticRunId, ALLO_GENERATION_MAX_RESOURCES } = deps;
+  const _missing = ['_alloDiagnosticReason', '_alloDiagnosticResourceType', '_alloDiagnosticBoundedInt', '_alloDiagnosticTimestamp', '_alloDiagnosticRunId', 'ALLO_GENERATION_MAX_RESOURCES'].filter((key) => deps[key] === undefined);
+  if (_missing.length) throw new Error('[_compactBlueprintRunForStorage] missing deps: ' + _missing.join(', '));
+  if (!run || typeof run !== 'object') return run;
+  const statuses = new Set(['planned', 'queued', 'running', 'retrying', 'landed', 'completed', 'partial', 'failed', 'interrupted', 'stopped', 'skipped', 'ready']);
+  const failureCodes = new Set(['safety', 'authentication', 'quota', 'rate-limit', 'timeout', 'network', 'capacity', 'empty-output', 'configuration', 'malformed-output', 'stopped', 'generation-failure']);
+  const sensitiveFields = new Set(['error', 'errormessage', 'stack', 'rawresponse', 'responsebody', 'requestbody', 'generatedcontent', 'prompt', 'prompttext', 'sourcetext', 'apikey', 'accesstoken', 'authorization', 'credential', 'secret', 'password']);
+  const isSensitiveField = field => sensitiveFields.has(String(field || '').replace(/[_-]/g, '').toLowerCase());
+  const safeStatus = status => statuses.has(status) ? status : 'unknown';
+  const assignFailure = (target, field, value, existingCode) => {
+    if (value) {
+      const safeReason = _alloDiagnosticReason(value);
+      target[field] = safeReason.summary;
+      target.failureCode = safeReason.code;
+    } else if (failureCodes.has(existingCode)) {
+      target.failureCode = existingCode;
+    }
+  };
+  const rowEntries = Object.entries(run.rows || {});
+  const rows = Object.fromEntries(rowEntries.slice(0, ALLO_GENERATION_MAX_RESOURCES).map(([key, row], index) => {
+    const storageKey = diagnosticsOnly ? 'row-' + (index + 1) : key;
+    if (!row || typeof row !== 'object') return [storageKey, { status: 'unknown' }];
+    if (diagnosticsOnly) {
+      const compact = {
+        tool: _alloDiagnosticResourceType(row.tool),
+        index: _alloDiagnosticBoundedInt(row.index, 100000),
+        status: safeStatus(row.status),
+        elapsedMs: _alloDiagnosticBoundedInt(row.elapsedMs, 24 * 60 * 60 * 1000),
+        attempts: _alloDiagnosticBoundedInt(row.attempts, 100),
+        startedAt: _alloDiagnosticTimestamp(row.startedAt),
+        finishedAt: _alloDiagnosticTimestamp(row.finishedAt),
+      };
+      assignFailure(compact, 'failReason', row.failReason, row.failureCode);
+      return [storageKey, compact];
+    }
+    const allowed = Object.keys(row).filter(field => field !== 'failureCode' && !isSensitiveField(field));
+    const compact = {};
+    allowed.forEach(field => {
+      if (row[field] === undefined) return;
+      if (field === 'failReason' || field === 'reason') {
+        assignFailure(compact, field, row[field], row.failureCode);
+      } else {
+        compact[field] = row[field];
+      }
+    });
+    if (!compact.failureCode) assignFailure(compact, 'failReason', null, row.failureCode);
+    return [storageKey, compact];
+  }));
+  if (diagnosticsOnly) {
+    const compact = {
+      runId: _alloDiagnosticRunId(run.runId, 'blueprint'),
+      status: safeStatus(run.status),
+      startedAt: _alloDiagnosticTimestamp(run.startedAt),
+      finishedAt: _alloDiagnosticTimestamp(run.finishedAt),
+      elapsedMs: _alloDiagnosticBoundedInt(run.elapsedMs, 24 * 60 * 60 * 1000),
+      failureCount: _alloDiagnosticBoundedInt(run.failureCount, 100000),
+      done: run.done === true,
+      stopped: run.stopped === true,
+      restored: run.restored === true,
+      persistenceWarning: run.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+      rows,
+    };
+    if (run.failReason) assignFailure(compact, 'failReason', run.failReason, run.failureCode);
+    else assignFailure(compact, 'reason', run.reason, run.failureCode);
+    return compact;
+  }
+  const compact = {};
+  Object.keys(run).forEach(field => {
+    if (field === 'rows' || field === 'failureCode' || isSensitiveField(field) || run[field] === undefined) return;
+    if (field === 'failReason' || field === 'reason') assignFailure(compact, field, run[field], run.failureCode);
+    else compact[field] = run[field];
+  });
+  if (!compact.failureCode) assignFailure(compact, 'reason', null, run.failureCode);
+  compact.rows = rows;
+  return compact;
+};
+
+const _compactFullPackRunForStorage = (run, diagnosticsOnly = false, deps = {}) => {
+  // Host-owned diagnostic helpers arrive in `deps` (built by _alloCompactRunDeps() in
+  // AlloFlowANTI.txt). They stay in the host because ALLO_GENERATION_METRICS and the
+  // error reporter use them too; this function only needs to call them.
+  const { _alloDiagnosticReason, _alloDiagnosticResourceType, _alloDiagnosticBoundedInt, _alloDiagnosticTimestamp, _alloDiagnosticRunId, ALLO_GENERATION_MAX_RESOURCES, _alloSanitizeFullPackPreflight, ALLO_GENERATION_MAX_GROUPS } = deps;
+  const _missing = ['_alloDiagnosticReason', '_alloDiagnosticResourceType', '_alloDiagnosticBoundedInt', '_alloDiagnosticTimestamp', '_alloDiagnosticRunId', 'ALLO_GENERATION_MAX_RESOURCES', '_alloSanitizeFullPackPreflight', 'ALLO_GENERATION_MAX_GROUPS'].filter((key) => deps[key] === undefined);
+  if (_missing.length) throw new Error('[_compactFullPackRunForStorage] missing deps: ' + _missing.join(', '));
+  if (!run || typeof run !== 'object') return run;
+  const statuses = new Set(['planned', 'queued', 'planning', 'ready', 'running', 'retrying', 'landed', 'completed', 'partial', 'failed', 'interrupted', 'stopped', 'skipped']);
+  const failureCodes = new Set(['safety', 'authentication', 'quota', 'rate-limit', 'timeout', 'network', 'capacity', 'empty-output', 'configuration', 'malformed-output', 'stopped', 'generation-failure']);
+  const sensitiveFields = new Set(['error', 'errormessage', 'stack', 'rawresponse', 'responsebody', 'requestbody', 'generatedcontent', 'prompt', 'prompttext', 'sourcetext', 'apikey', 'accesstoken', 'authorization', 'credential', 'secret', 'password']);
+  const isSensitiveField = field => sensitiveFields.has(String(field || '').replace(/[_-]/g, '').toLowerCase());
+  const safeStatus = status => statuses.has(status) ? status : 'unknown';
+  const stripFields = (value, omitted = []) => {
+    if (!value || typeof value !== 'object') return {};
+    const omit = new Set(omitted);
+    const out = {};
+    Object.keys(value).forEach(field => {
+      if (field === 'failureCode' || omit.has(field) || isSensitiveField(field) || value[field] === undefined) return;
+      out[field] = value[field];
+    });
+    return out;
+  };
+  const compactFailureFields = (reason, existingCode) => {
+    if (!reason) return failureCodes.has(existingCode) ? { failureCode: existingCode } : {};
+    const safeReason = _alloDiagnosticReason(reason);
+    return { reason: safeReason.summary, failureCode: safeReason.code };
+  };
+  const compactPreflight = preflight => {
+    if (!preflight || typeof preflight !== 'object') return diagnosticsOnly ? null : preflight;
+    if (diagnosticsOnly) return _alloSanitizeFullPackPreflight(preflight);
+    const out = stripFields(preflight, ['reason', 'selected', 'skipped']);
+    Object.assign(out, compactFailureFields(preflight.reason, preflight.failureCode));
+    out.selected = Array.isArray(preflight.selected)
+      ? preflight.selected.map(item => item && typeof item === 'object' ? stripFields(item) : null).filter(Boolean)
+      : [];
+    out.skipped = Array.isArray(preflight.skipped)
+      ? preflight.skipped.map(item => {
+          if (!item || typeof item !== 'object') return null;
+          return Object.assign(stripFields(item, ['reason']), compactFailureFields(item.reason, item.failureCode));
+        }).filter(Boolean)
+      : [];
+    return out;
+  };
+  const compactResource = resource => {
+    if (!resource || typeof resource !== 'object') return diagnosticsOnly ? { type: 'unknown', status: 'unknown' } : null;
+    if (diagnosticsOnly) {
+      return Object.assign({
+        type: _alloDiagnosticResourceType(resource.type),
+        index: _alloDiagnosticBoundedInt(resource.index, 100000),
+        status: safeStatus(resource.status),
+        elapsedMs: _alloDiagnosticBoundedInt(resource.elapsedMs, 24 * 60 * 60 * 1000),
+        attempts: _alloDiagnosticBoundedInt(resource.attempts, 100),
+        startedAt: _alloDiagnosticTimestamp(resource.startedAt),
+        finishedAt: _alloDiagnosticTimestamp(resource.finishedAt),
+        retryable: resource.retryable === true,
+      }, compactFailureFields(resource.reason, resource.failureCode));
+    }
+    return Object.assign(
+      stripFields(resource, ['reason']),
+      compactFailureFields(resource.reason, resource.failureCode)
+    );
+  };
+  const compactResources = resources => {
+    const allEntries = Object.entries(resources || {});
+    const entries = allEntries.slice(0, ALLO_GENERATION_MAX_RESOURCES);
+    return Object.fromEntries(entries.map(([key, resource], index) => [diagnosticsOnly ? 'resource-' + (index + 1) : key, compactResource(resource)]));
+  };
+  const compactGroup = group => {
+    if (!group || typeof group !== 'object') return diagnosticsOnly ? { status: 'unknown', resources: {} } : null;
+    if (diagnosticsOnly) {
+      return Object.assign({
+        status: safeStatus(group.status),
+        startedAt: _alloDiagnosticTimestamp(group.startedAt),
+        finishedAt: _alloDiagnosticTimestamp(group.finishedAt),
+        elapsedMs: _alloDiagnosticBoundedInt(group.elapsedMs, 24 * 60 * 60 * 1000),
+        failureCount: _alloDiagnosticBoundedInt(group.failureCount, 100000),
+        persistenceWarning: group.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+        preflight: compactPreflight(group.preflight),
+        planPayload: null,
+        resources: compactResources(group.resources),
+      }, compactFailureFields(group.reason, group.failureCode));
+    }
+    return Object.assign(
+      stripFields(group, ['reason', 'resources', 'groups', 'preflight', 'planPayload']),
+      compactFailureFields(group.reason, group.failureCode),
+      { preflight: compactPreflight(group.preflight), planPayload: group.planPayload, resources: compactResources(group.resources) }
+    );
+  };
+  if (diagnosticsOnly) {
+    return Object.assign({
+      runId: _alloDiagnosticRunId(run.runId, 'full-pack'),
+      targetMode: ['all-groups', 'current-settings'].includes(run.targetMode) ? run.targetMode : null,
+      status: safeStatus(run.status),
+      startedAt: _alloDiagnosticTimestamp(run.startedAt),
+      finishedAt: _alloDiagnosticTimestamp(run.finishedAt),
+      elapsedMs: _alloDiagnosticBoundedInt(run.elapsedMs, 24 * 60 * 60 * 1000),
+      failureCount: _alloDiagnosticBoundedInt(run.failureCount, 100000),
+      restored: run.restored === true,
+      persistenceWarning: run.persistenceWarning ? 'Compact persistence fallback was used.' : null,
+      preflight: compactPreflight(run.preflight),
+      planPayload: null,
+      resources: compactResources(run.resources),
+      groups: Object.fromEntries(Object.values(run.groups || {}).slice(0, ALLO_GENERATION_MAX_GROUPS).map((group, index) => ['group-' + (index + 1), compactGroup(group)])),
+    }, compactFailureFields(run.reason, run.failureCode));
+  }
+  return Object.assign(
+    stripFields(run, ['reason', 'resources', 'groups', 'preflight', 'planPayload']),
+    compactFailureFields(run.reason, run.failureCode),
+    {
+      preflight: compactPreflight(run.preflight),
+      planPayload: run.planPayload,
+      resources: compactResources(run.resources),
+      groups: Object.fromEntries(Object.entries(run.groups || {}).slice(0, ALLO_GENERATION_MAX_GROUPS).map(([key, group]) => [key, compactGroup(group)])),
+    }
+  );
+};
+
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.PureHelpers = {
   repairSourceMarkdown,
@@ -370,4 +575,6 @@ window.AlloModules.PureHelpers = {
   diffWords,
   generateBingoCards,
   _applyTextSurgery,
+  _compactBlueprintRunForStorage,
+  _compactFullPackRunForStorage,
 };
