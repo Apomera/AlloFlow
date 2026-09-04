@@ -535,6 +535,8 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-label-disclosure{border-bottom:1px solid var(--ba-border);background:var(--ba-panel);}.brainatlas-label-disclosure>summary{min-height:44px;box-sizing:border-box;padding:11px 14px;cursor:pointer;color:var(--ba-text);font-size:13px;font-weight:800;line-height:1.5;}.brainatlas-label-disclosure>summary>span{margin-left:8px;font-size:12px;font-weight:400;color:var(--ba-muted);}.brainatlas-label-disclosure[open]>summary{border-bottom:1px solid var(--ba-border);}.brainatlas-label-disclosure .brainatlas-label-toolbar{border-bottom:0;}@media(max-width:460px){.brainatlas-label-disclosure>summary>span{display:block;margin-left:16px;}}',
     '.brainatlas-detail-takeaways[data-brainatlas-authored-plain] strong{font-size:12px;text-transform:none;}.brainatlas-detail-takeaways[data-brainatlas-authored-plain] span{font-size:14px;line-height:1.55;}.brainatlas-plain-lesson{border:1px solid var(--ba-border);border-radius:12px;padding:14px;background:var(--ba-panel);color:var(--ba-text);}.brainatlas-plain-lesson h5{font-size:15px;font-weight:800;margin:0 0 8px;}.brainatlas-plain-lesson p{font-size:14px;line-height:1.6;margin:8px 0;overflow-wrap:anywhere;}.brainatlas-plain-explanation{margin:10px 0;border-block:1px solid var(--ba-border);}.brainatlas-plain-explanation summary{min-height:44px;box-sizing:border-box;padding:11px 0;cursor:pointer;font-size:14px;font-weight:700;}.brainatlas-plain-lesson .brainatlas-plain-network-note{font-size:13px;color:var(--ba-muted);}.brainatlas-plain-lesson-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;}.brainatlas-plain-lesson-actions button,.brainatlas-plain-lesson-actions a{min-height:44px;box-sizing:border-box;font-size:13px;line-height:1.5;overflow-wrap:anywhere;}.brainatlas-plain-lesson-actions button{border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:10px;max-width:100%;text-align:left;}.brainatlas-plain-lesson-actions a{display:inline-flex;align-items:center;text-decoration:underline;color:var(--ba-sky-ink);}',
     '.brainatlas-plain-check{margin-top:16px;padding:14px;border:1px solid var(--ba-border);border-radius:10px;background:var(--ba-surface);scroll-margin-top:80px;}.brainatlas-plain-check:focus{outline:3px solid var(--ba-focus);outline-offset:3px;}.brainatlas-plain-check .brainatlas-plain-check-support{font-size:13px;color:var(--ba-muted);}.brainatlas-plain-check-choices{display:grid;gap:8px;margin:12px 0;}.brainatlas-plain-check-choices button,.brainatlas-plain-check-reset{box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);font-size:14px;line-height:1.5;text-align:left;overflow-wrap:anywhere;}.brainatlas-plain-check-choices button[aria-pressed=true]{border:2px solid var(--ba-purple);font-weight:800;}.brainatlas-plain-check-feedback{border-left:4px solid var(--ba-amber);border-radius:6px;background:var(--ba-panel);padding:10px 12px;margin:12px 0;}.brainatlas-plain-check-feedback[data-correct=true]{border-left-color:var(--ba-teal);}.brainatlas-plain-check-feedback strong{font-size:14px;}.brainatlas-plain-check-feedback p{margin-bottom:0;}',
+    '.brainatlas-movement-lesson{max-width:960px;margin:16px auto;padding:20px;border:1px solid var(--ba-border);border-radius:14px;background:var(--ba-panel);color:var(--ba-text);scroll-margin-top:90px;}.brainatlas-movement-lesson:focus,.brainatlas-movement-lesson button:focus-visible,.brainatlas-movement-lesson summary:focus-visible,.brainatlas-movement-lesson textarea:focus-visible,.brainatlas-movement-lesson a:focus-visible{outline:3px solid var(--ba-focus);outline-offset:3px;}.brainatlas-lesson-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}.brainatlas-movement-lesson h3{font-size:20px;font-weight:750;margin:0;}.brainatlas-movement-lesson h4{font-size:18px;font-weight:700;margin:0 0 12px;}.brainatlas-movement-lesson h5{font-size:16px;font-weight:700;margin:0;}.brainatlas-movement-lesson p{font-size:15px;line-height:1.6;margin:10px 0;overflow-wrap:anywhere;}.brainatlas-movement-lesson .brainatlas-lesson-eyebrow,.brainatlas-movement-lesson .brainatlas-lesson-support{font-size:13px;color:var(--ba-muted);}.brainatlas-movement-lesson .brainatlas-lesson-eyebrow{margin:0 0 4px;}.brainatlas-movement-lesson button,.brainatlas-movement-lesson summary{min-height:44px;box-sizing:border-box;font-size:14px;line-height:1.5;cursor:pointer;}.brainatlas-movement-lesson button{padding:10px 12px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);text-align:left;overflow-wrap:anywhere;}.brainatlas-lesson-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:18px 0;}.brainatlas-lesson-steps button{padding:10px 6px;text-align:center;}.brainatlas-lesson-steps button[aria-current=step],.brainatlas-lesson-choices button[aria-pressed=true]{border:2px solid var(--ba-text);font-weight:700;}.brainatlas-lesson-body{padding:16px 0;border-block:1px solid var(--ba-border);}.brainatlas-lesson-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}.brainatlas-lesson-comparison article{min-width:0;}.brainatlas-lesson-choices{display:grid;gap:8px;margin:14px 0;}.brainatlas-lesson-feedback{padding:12px 16px;border-left:3px solid var(--ba-text);background:var(--ba-surface);margin:14px 0;font-size:15px;line-height:1.6;}.brainatlas-lesson-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;}.brainatlas-movement-lesson .brainatlas-lesson-primary{font-weight:700;border-width:2px;}.brainatlas-lesson-hint summary{padding:10px 0;}.brainatlas-lesson-reflection-label{display:block;font-size:15px;font-weight:650;margin-top:18px;}.brainatlas-movement-lesson textarea{box-sizing:border-box;width:100%;min-height:90px;padding:12px;font-size:16px;line-height:1.6;background:var(--ba-surface);color:var(--ba-text);border:1px solid var(--ba-border);border-radius:8px;resize:vertical;}.brainatlas-movement-lesson a{display:inline-flex;align-items:center;min-height:44px;color:var(--ba-sky-ink);text-decoration:underline;font-size:14px;}.brainatlas-lesson-saved-reflection{white-space:pre-wrap;}@media(max-width:540px){.brainatlas-movement-lesson{padding:14px;}.brainatlas-lesson-comparison{grid-template-columns:1fr;}.brainatlas-lesson-comparison article+article{padding-top:16px;border-top:1px solid var(--ba-border);}.brainatlas-lesson-steps{gap:4px;}.brainatlas-lesson-steps button{font-size:13px;}}',
+    '.brainatlas-section-nav[data-brainatlas-lesson-nav=true]{display:flex;position:sticky;top:6px;z-index:40;align-items:center;gap:6px;padding:6px;border:1px solid var(--ba-border);border-radius:10px;background:var(--ba-panel);}.brainatlas-section-nav[data-brainatlas-lesson-nav=true] .brainatlas-section-nav-actions{flex:1;}.brainatlas-section-nav[data-brainatlas-lesson-nav=true] .brainatlas-section-nav-label{display:none;}.brainatlas-section-nav[data-brainatlas-lesson-nav=true] button{font-size:12px;min-height:44px;white-space:normal;padding:6px;}',
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -8563,6 +8565,133 @@ var d = labToolData.brainAtlas || {};
             focusBrainAtlasPlainCheck();
           }
 
+
+          // A self-contained, ungraded lesson. Keep its progress separate from quiz scores.
+          var movementSaved = d.movementLesson && typeof d.movementLesson === 'object' && !Array.isArray(d.movementLesson) ? d.movementLesson : {};
+          var movementLesson = {
+            step: [0, 1, 2, 3, 4].indexOf(movementSaved.step) >= 0 ? movementSaved.step : 0,
+            prediction: [0, 1, 2].indexOf(movementSaved.prediction) >= 0 ? movementSaved.prediction : null,
+            checkpoint: [0, 1, 2].indexOf(movementSaved.checkpoint) >= 0 ? movementSaved.checkpoint : null,
+            reflection: typeof movementSaved.reflection === 'string' ? movementSaved.reflection.slice(0, 2000) : ''
+          };
+          var movementOpen = d.movementLessonOpen === true;
+          var movementTitle = t('stem.brainatlas.movement_lesson_title', 'Planning and movement');
+          var movementSteps = [t('stem.brainatlas.movement_notice', 'Notice'), t('stem.brainatlas.movement_predict', 'Predict'), t('stem.brainatlas.movement_inspect', 'Inspect'), t('stem.brainatlas.movement_explain', 'Explain')];
+          var movementPredictionChoices = [
+            t('stem.brainatlas.movement_predict_0', 'Sending movement signals alone explains choosing the order.'),
+            t('stem.brainatlas.movement_predict_1', 'Organizing the order and sending movement signals are different contributions.'),
+            t('stem.brainatlas.movement_predict_2', 'Planning and moving are the same contribution because both involve the frontal lobe.')
+          ];
+          var movementCheckpointChoices = [
+            t('stem.brainatlas.movement_checkpoint_0', 'The primary motor cortex plans every part of the dance by itself.'),
+            t('stem.brainatlas.movement_checkpoint_1', 'The frontal lobe only plans; it has no role in movement signals.'),
+            t('stem.brainatlas.movement_checkpoint_2', 'Planning helps organize the steps; motor signals help carry them out, with other regions contributing.')
+          ];
+          var movementFeedback = [
+            t('stem.brainatlas.movement_feedback_0', 'Movement signals are one contribution. Choosing and organizing the steps also draws on planning networks.'),
+            t('stem.brainatlas.movement_feedback_1', 'The primary motor cortex is part of the frontal lobe. Different areas within the lobe contribute to planning and movement.'),
+            t('stem.brainatlas.movement_feedback_2', 'This distinguishes organizing an action from signals for movement, while recognizing that brain regions work together.')
+          ];
+          function updateMovementLesson(patch) { upd('movementLesson', Object.assign({}, movementLesson, patch)); }
+          function focusMovementLesson() { window.setTimeout(function () { scrollToBrainAtlasSection('brainatlas-movement-lesson', ''); }, 40); }
+          function openMovementLesson() {
+            upd('movementLessonOpen', true);
+            updateMovementLesson({});
+            focusMovementLesson();
+          }
+          function moveMovementLesson(step) {
+            if ([0, 1, 2, 3, 4].indexOf(step) < 0) return;
+            updateMovementLesson({ step: step });
+            focusMovementLesson();
+          }
+          function closeMovementLesson() {
+            upd('movementLessonOpen', false);
+            window.setTimeout(function () { scrollToBrainAtlasSection('brainatlas-movement-launch', ''); }, 40);
+          }
+          function inspectMovementRegion(id) {
+            if (['frontal', 'motor_cortex'].indexOf(id) < 0) return;
+            upd('view', 'lateral'); upd('viewGroup', 'atlas'); upd('atlasDisplayMode', 'diagram');
+            upd('selectedRegion', id); upd('selected3DStructure', ''); upd('detailMode', 'plain');
+            upd('search', ''); upd('quizMode', false); upd('showNtInquiry', false); upd('overviewCollapsed', true);
+            window.setTimeout(scrollToBrainAtlasDiagram, 40);
+          }
+          function renderMovementLesson() {
+            if (!movementOpen) return null;
+            var step = movementLesson.step;
+            var R = React.createElement;
+            var button = function (id, label, action, extra) { return R('button', Object.assign({ type: 'button', 'data-brainatlas-lesson-action': id, onClick: action }, extra || {}), label); };
+            var regionCards = function (explain) {
+              return R('div', { className: 'brainatlas-lesson-comparison' }, ['frontal', 'motor_cortex'].map(function (id) {
+                return R('article', { key: id },
+                  R('h5', null, id === 'frontal' ? t('stem.brainatlas.movement_frontal_label', 'Frontal lobe') : t('stem.brainatlas.movement_motor_label', 'Primary motor cortex')),
+                  R('p', null, explain ? BRAIN_ATLAS_PLAIN_LESSONS[id].idea : (id === 'frontal' ? t('stem.brainatlas.movement_frontal_location', 'The front part of the cerebrum. It contains areas with several different contributions.') : t('stem.brainatlas.movement_motor_location', 'A strip near the back of the frontal lobe. It is part of that lobe.'))),
+                  button('inspect-' + id, t('stem.brainatlas.movement_show_atlas', 'Show in atlas'), function () { inspectMovementRegion(id); }, { 'aria-label': id === 'frontal' ? t('stem.brainatlas.movement_show_frontal', 'Show frontal lobe in atlas') : t('stem.brainatlas.movement_show_motor', 'Show primary motor cortex in atlas') })
+                );
+              }));
+            };
+            return R('section', { id: 'brainatlas-movement-lesson', className: 'brainatlas-movement-lesson', 'data-brainatlas-movement-step': step, tabIndex: -1, 'aria-labelledby': 'brainatlas-movement-stage' },
+              R('div', { className: 'brainatlas-lesson-heading' },
+                R('div', null, R('p', { className: 'brainatlas-lesson-eyebrow' }, t('stem.brainatlas.movement_guided_lesson', 'Guided lesson')), R('h3', null, movementTitle)),
+                button('pause', t('stem.brainatlas.movement_pause', 'Close and save'), closeMovementLesson)
+              ),
+              R('p', { className: 'brainatlas-lesson-objective' }, t('stem.brainatlas.movement_objective', 'Explore how organizing an action differs from sending signals for movement.')),
+              step < 4 && R('nav', { 'aria-label': t('stem.brainatlas.movement_steps_label', 'Lesson stages'), className: 'brainatlas-lesson-steps' }, movementSteps.map(function (label, index) {
+                return button('step-' + index, (index + 1) + '. ' + label, function () { moveMovementLesson(index); }, { key: index, 'aria-current': step === index ? 'step' : undefined });
+              })),
+              R('div', { className: 'brainatlas-lesson-body', key: step },
+                R('h4', { id: 'brainatlas-movement-stage' }, step < 4 ? movementSteps[step] : t('stem.brainatlas.movement_complete', 'Lesson complete')),
+                step === 0 && R(React.Fragment, null,
+                  R('p', null, t('stem.brainatlas.movement_notice_prompt', 'Compare the whole frontal lobe with the primary motor cortex inside it. Use the descriptions below, or highlight each one in the atlas.')),
+                  regionCards(false),
+                  R('p', { className: 'brainatlas-lesson-support' }, t('stem.brainatlas.movement_return_hint', 'After exploring the diagram or a region card, use Lesson in the navigation bar to return here.'))
+                ),
+                step === 1 && R(React.Fragment, null,
+                  R('p', { id: 'brainatlas-movement-prediction' }, t('stem.brainatlas.movement_prediction_prompt', 'A learner chooses the order of a tapping pattern, then taps it with one hand. What do you predict about these two parts of the task?')),
+                  R('div', { role: 'group', 'aria-labelledby': 'brainatlas-movement-prediction', className: 'brainatlas-lesson-choices' }, movementPredictionChoices.map(function (label, index) {
+                    return button('predict-' + index, label, function () { updateMovementLesson({ prediction: index }); }, { key: index, 'aria-pressed': movementLesson.prediction === index ? 'true' : 'false' });
+                  })),
+                  R('p', { role: 'status', className: 'brainatlas-lesson-support' }, movementLesson.prediction !== null ? t('stem.brainatlas.movement_prediction_saved', 'Prediction saved. You can change it, then inspect the comparison.') : t('stem.brainatlas.movement_prediction_optional', 'Choose a prediction or continue without one. This is practice, not a grade.'))
+                ),
+                step === 2 && R(React.Fragment, null,
+                  regionCards(true),
+                  R('p', null, t('stem.brainatlas.movement_inspect_explanation', 'Organizing the tapping order is a planning contribution. Signals for voluntary hand movement are a motor contribution. The primary motor cortex belongs to the frontal lobe; other brain regions also help with the task.')),
+                  movementLesson.prediction !== null && R('div', { className: 'brainatlas-lesson-feedback' },
+                    R('strong', null, t('stem.brainatlas.movement_your_prediction', 'Your prediction')),
+                    R('p', null, movementPredictionChoices[movementLesson.prediction]),
+                    R('p', null, movementLesson.prediction === 1 ? t('stem.brainatlas.movement_prediction_fits', 'Your prediction distinguishes the two contributions. Keep that distinction as you try the next example.') : (movementLesson.prediction === 0 ? t('stem.brainatlas.movement_prediction_signals', 'Revisit the distinction: movement signals alone do not explain choosing the order. Planning helps organize which actions to take.') : t('stem.brainatlas.movement_prediction_revisit', 'Revisit the distinction: belonging to the same lobe does not make planning and movement signals the same contribution.')))
+                  ),
+                  R('a', { href: 'https://www.ncbi.nlm.nih.gov/books/NBK554483/', target: '_blank', rel: 'noopener noreferrer' }, t('stem.brainatlas.read_background_source', 'Read background source'))
+                ),
+                step === 3 && R(React.Fragment, null,
+                  R('p', { id: 'brainatlas-movement-checkpoint' }, t('stem.brainatlas.movement_checkpoint_prompt', 'A learner decides the order of dance steps and then performs them. Which explanation best connects planning with movement?')),
+                  R('details', { className: 'brainatlas-lesson-hint' }, R('summary', null, t('stem.brainatlas.movement_hint_label', 'Show a hint')), R('p', null, t('stem.brainatlas.movement_hint', 'Separate organizing the steps from sending signals to move. Remember that the primary motor cortex is within the frontal lobe.'))),
+                  R('div', { role: 'group', 'aria-labelledby': 'brainatlas-movement-checkpoint', className: 'brainatlas-lesson-choices' }, movementCheckpointChoices.map(function (label, index) {
+                    return button('checkpoint-' + index, label, function () { if (movementLesson.checkpoint === null) updateMovementLesson({ checkpoint: index }); }, { key: index, 'aria-pressed': movementLesson.checkpoint === index ? 'true' : 'false', 'aria-disabled': movementLesson.checkpoint !== null ? 'true' : 'false' });
+                  })),
+                  R('div', { role: 'status', 'aria-atomic': 'true' }, movementLesson.checkpoint !== null && R('div', { className: 'brainatlas-lesson-feedback', 'data-brainatlas-lesson-feedback': movementLesson.checkpoint === 2 ? 'fits' : 'revisit' },
+                    R('strong', null, movementLesson.checkpoint === 2 ? t('stem.brainatlas.movement_checkpoint_fits', 'That connects the contributions.') : t('stem.brainatlas.movement_checkpoint_revisit', 'Revisit how the contributions differ.')),
+                    R('p', null, movementFeedback[movementLesson.checkpoint])
+                  )),
+                  movementLesson.checkpoint !== null && button('retry', t('stem.brainatlas.movement_retry', 'Try the checkpoint again'), function () { updateMovementLesson({ checkpoint: null }); focusMovementLesson(); }),
+                  R('label', { htmlFor: 'brainatlas-movement-reflection', className: 'brainatlas-lesson-reflection-label' }, t('stem.brainatlas.movement_reflection_label', 'What helped you explain the difference? (optional)')),
+                  R('p', { id: 'brainatlas-movement-reflection-help', className: 'brainatlas-lesson-support' }, t('stem.brainatlas.movement_reflection_help', 'Think, say, draw, or write your explanation. A starting point: Planning helps with …; movement signals help with … .')),
+                  R('textarea', { id: 'brainatlas-movement-reflection', rows: 3, maxLength: 2000, value: movementLesson.reflection, 'aria-describedby': 'brainatlas-movement-reflection-help', onChange: function (event) { updateMovementLesson({ reflection: event.target.value.slice(0, 2000) }); } })
+                ),
+                step === 4 && R(React.Fragment, null,
+                  R('p', null, t('stem.brainatlas.movement_recap', 'Planning helps organize an action. Motor signals help carry it out. These are connected contributions, and the primary motor cortex is part of the frontal lobe.')),
+                  R('p', { 'data-brainatlas-lesson-result': movementLesson.checkpoint === null ? 'skipped' : (movementLesson.checkpoint === 2 ? 'fits' : 'revisit') }, movementLesson.checkpoint === null ? t('stem.brainatlas.movement_finish_skipped', 'You finished without answering the checkpoint. You can return to it whenever you like.') : (movementLesson.checkpoint === 2 ? t('stem.brainatlas.movement_finish_fits', 'Your checkpoint explanation connected the contributions. Try explaining another everyday action in your own words.') : t('stem.brainatlas.movement_finish_revisit', 'Your checkpoint highlighted a distinction to revisit. Review the comparison, then try explaining another everyday action.'))),
+                  movementLesson.reflection && R('div', { className: 'brainatlas-lesson-feedback' }, R('strong', null, t('stem.brainatlas.movement_saved_reflection', 'Your reflection')), R('p', { className: 'brainatlas-lesson-saved-reflection' }, movementLesson.reflection)),
+                  R('div', { className: 'brainatlas-lesson-actions' }, button('review', t('stem.brainatlas.movement_review', 'Review comparison'), function () { moveMovementLesson(2); }), button('return-checkpoint', t('stem.brainatlas.movement_return_checkpoint', 'Return to checkpoint'), function () { moveMovementLesson(3); }))
+                )
+              ),
+              step < 4 && R('div', { className: 'brainatlas-lesson-actions' },
+                step > 0 && button('back', t('stem.brainatlas.movement_back', 'Back'), function () { moveMovementLesson(step - 1); }),
+                button('continue', step === 3 ? (movementLesson.checkpoint === null ? t('stem.brainatlas.movement_finish_without', 'Finish without answering') : t('stem.brainatlas.movement_finish', 'Finish lesson')) : (step === 1 && movementLesson.prediction === null ? t('stem.brainatlas.movement_continue_without', 'Continue without a prediction') : t('stem.brainatlas.movement_continue', 'Continue')), function () { moveMovementLesson(step + 1); }, { className: 'brainatlas-lesson-primary' })
+              ),
+              step < 4 && R('p', { className: 'brainatlas-lesson-support' }, t('stem.brainatlas.movement_flexible', 'Your place and answers are saved with this atlas. You can revisit or skip stages; no written response is required.'))
+            );
+          }
+
           function brainAtlasPlainTakeaway(region) {
             if (!region) return t('stem.brainatlas.pick_a_region_takeaway', 'Pick a region to see its student takeaway.');
             return brainAtlasShortText(region.fn, 210);
@@ -8724,10 +8853,12 @@ var d = labToolData.brainAtlas || {};
             React.createElement("nav", {
               className: "brainatlas-section-nav",
               "data-brainatlas-section-nav": "true",
+              "data-brainatlas-lesson-nav": movementOpen ? "true" : undefined,
               "aria-label": t('stem.brainatlas.section_navigation', 'Brain Atlas section navigation') || 'Brain Atlas section navigation'
             },
               React.createElement("span", { className: "brainatlas-section-nav-label" }, t('stem.brainatlas.jump_to', 'Jump to') || 'Jump to'),
               React.createElement("div", { className: "brainatlas-section-nav-actions" },
+                movementOpen && React.createElement("button", { type: "button", "data-brainatlas-nav-target": "lesson", onClick: focusMovementLesson }, t('stem.brainatlas.movement_nav', 'Lesson')),
                 React.createElement("button", {
                   type: "button",
                   "data-brainatlas-nav-target": "diagram",
@@ -8759,6 +8890,7 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("p", { className: "brainatlas-mission-kicker" }, t('stem.brainatlas.neural_systems_lab', 'Neural systems lab')),
                   React.createElement("div", { className: "brainatlas-mission-title-row" },
                     React.createElement("h2", { className: "brainatlas-mission-title" }, currentView.name),
+                    React.createElement("button", { id: "brainatlas-movement-launch", type: "button", className: "brainatlas-overview-toggle", "data-brainatlas-lesson-launch": "true", "aria-expanded": movementOpen ? "true" : "false", "aria-controls": movementOpen ? "brainatlas-movement-lesson" : undefined, onClick: openMovementLesson }, movementSaved.step === 4 ? t('stem.brainatlas.movement_review_lesson', 'Review guided lesson') : (d.movementLesson ? t('stem.brainatlas.movement_resume_lesson', 'Resume guided lesson') : t('stem.brainatlas.movement_start_lesson', 'Start guided lesson'))),
                     React.createElement("button", {
                       type: "button",
                       className: "brainatlas-overview-toggle",
@@ -8944,6 +9076,8 @@ var d = labToolData.brainAtlas || {};
                 )
               )
             ),
+
+            renderMovementLesson(),
 
             // \u2550\u2550 NEUROTRANSMITTER INQUIRY widget (H7b'') \u2550\u2550
             (function() {

@@ -25,3 +25,12 @@ Validation targets: all eight cards; Advanced/fallback behavior; related-region 
 Each of the eight cards now has one original application question with three contribution-based answers and feedback specific to each choice. The questions use the same background sources and functional distinctions as the cards above. They ask about the contribution highlighted in an example, rather than assigning a whole activity to one brain region.
 
 Checks are explicitly ungraded and allow reference to the card. Answer order is rotated by region but stays stable across rerenders. The selected answer is stored by region; correctness is derived from the authored question, never from a saved score. An answer locks until the learner resets or retries. Retry clears only that region's answer. There are no points, new mastery claims, AI calls, or external answer storage.
+
+
+## Planning and movement guided lesson
+
+A four-stage lesson connects the existing frontal-lobe and primary-motor-cortex cards: notice their anatomical relationship, predict contributions in a tapping example, inspect a comparison, and explain a new dance example. Primary motor cortex is explicitly described as part of the frontal lobe. The lesson uses the existing card scope plus the location/function distinctions in [Neuroanatomy, Frontal Cortex](https://www.ncbi.nlm.nih.gov/books/NBK554483/) (reviewed September 4, 2026). Everyday scenarios are original teaching examples, not an experimentally validated lesson or a diagnostic assessment.
+
+The lesson is optional. Its stages can be revisited or skipped, and its text descriptions work without precise diagram interaction. Show in atlas selects the requested structure in lateral 2D view; Lesson navigation returns to the saved stage. Prediction feedback appears in Inspect. The final checkpoint gives choice-specific feedback and permits retry; completion distinguishes a fitting answer, a concept to revisit, and an unanswered checkpoint. It does not award points or claim mastery.
+
+Stage, prediction, checkpoint answer, and optional reflection use the existing atlas state. Closing, inspecting a region, or reviewing the comparison preserves these fields. No AI or new external storage is introduced. Reflection is optional, limited to 2,000 characters, and rendered as text; learners may instead think, speak, or draw their explanation. Calm neutral surfaces, 44px controls, responsive comparison columns, explicit stage labels, and keyboard focus support the same journey on phones and desktop.
