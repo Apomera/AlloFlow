@@ -112,18 +112,20 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-route-grid::-webkit-scrollbar-track,.brainatlas-view-rail::-webkit-scrollbar-track,.brainatlas-prenatal-stage-list::-webkit-scrollbar-track,.brainatlas-3d-compare-presets::-webkit-scrollbar-track,.brainatlas-3d-section-items::-webkit-scrollbar-track,.brainatlas-3d-saved-list::-webkit-scrollbar-track,.brainatlas-3d-pathway-steps::-webkit-scrollbar-track{background:var(--ba-panel);}',
     '.brainatlas-route-grid::-webkit-scrollbar-thumb,.brainatlas-view-rail::-webkit-scrollbar-thumb,.brainatlas-prenatal-stage-list::-webkit-scrollbar-thumb,.brainatlas-3d-compare-presets::-webkit-scrollbar-thumb,.brainatlas-3d-section-items::-webkit-scrollbar-thumb,.brainatlas-3d-saved-list::-webkit-scrollbar-thumb,.brainatlas-3d-pathway-steps::-webkit-scrollbar-thumb{border:2px solid var(--ba-panel);border-radius:999px;background:var(--ba-purple);}',
     '.brainatlas-mode-card{border-radius:8px!important;}',
-    '.brainatlas-controls{display:grid;grid-template-columns:minmax(260px,1fr) auto;align-items:end;gap:12px;border:1px solid var(--ba-border);border-radius:12px;background:var(--ba-surface);color:var(--ba-text);padding:12px 13px;box-shadow:0 10px 26px rgba(15,23,42,.06);}',
+    '.brainatlas-controls{display:grid;grid-template-columns:minmax(260px,1fr) auto;align-items:center;gap:12px;border:1px solid var(--ba-border);border-radius:12px;background:var(--ba-surface);color:var(--ba-text);padding:12px 13px;box-shadow:0 10px 26px rgba(15,23,42,.06);}',
     '.brainatlas-controls-search{min-width:0;}',
-    '.brainatlas-controls-label{display:block;margin:0 0 5px;color:var(--ba-text);font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:.06em;}',
-    '.brainatlas-search-field{display:flex;align-items:center;gap:7px;min-height:42px;border:1px solid var(--ba-button-border);border-radius:10px;background:var(--ba-panel);padding:0 7px 0 10px;transition:border-color .15s ease,box-shadow .15s ease;}',
+    '.brainatlas-controls-label{display:block;margin:0 0 5px;color:var(--ba-text);font-size:14px;font-weight:750;}',
+    '.brainatlas-search-field{display:flex;align-items:center;gap:7px;min-height:46px;border:1px solid var(--ba-button-border);border-radius:10px;background:var(--ba-panel);padding:0 7px 0 10px;transition:border-color .15s ease,box-shadow .15s ease;}',
     '.brainatlas-search-field:focus-within{border-color:var(--ba-focus);box-shadow:0 0 0 3px var(--ba-focus);}',
     '.brainatlas-search-icon{flex:0 0 auto;color:var(--ba-purple-ink);font-size:14px;line-height:1;}',
-    '.brainatlas-tool-shell .brainatlas-search-input{flex:1;min-width:0!important;border:0!important;background:transparent!important;color:var(--ba-text)!important;padding:9px 2px!important;outline:none!important;box-shadow:none!important;}',
-    '.brainatlas-clear-search{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);font-size:13px;font-weight:900;}',
+    '.brainatlas-tool-shell .brainatlas-search-input{min-height:44px!important;font-size:16px!important;line-height:1.5!important;flex:1;min-width:0!important;border:0!important;background:transparent!important;color:var(--ba-text)!important;padding:9px 2px!important;outline:none!important;box-shadow:none!important;}',
+    '.brainatlas-clear-search{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);font-size:18px;font-weight:900;}',
     '.brainatlas-clear-search:hover{border-color:var(--ba-purple);}',
     '.brainatlas-controls-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;}',
-    '.brainatlas-quiz-button{min-height:42px;border-radius:9px!important;white-space:nowrap;}',
-    '.brainatlas-region-count-chip{display:inline-flex;align-items:center;min-height:42px;border:1px solid var(--ba-border);border-radius:9px;background:var(--ba-panel);color:var(--ba-muted);padding:7px 10px;font-size:10px;font-weight:900;white-space:nowrap;}',
+    '.brainatlas-quiz-button{min-height:44px;font-size:13px;border-radius:9px!important;white-space:nowrap;}',
+    '.brainatlas-region-count-chip{display:inline-flex;align-items:center;min-height:44px;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-panel);color:var(--ba-button-text);padding:7px 10px;font-size:13px;font-weight:750;white-space:nowrap;}',
+    '.brainatlas-region-count-chip:hover{border-color:var(--ba-purple);background:var(--ba-button);}',
+    '.brainatlas-search-help{margin:6px 0 0;font-size:12px;line-height:1.45;color:var(--ba-muted);overflow-wrap:anywhere;}',
     '.brainatlas-function-match{border-radius:8px!important;}',
     '.brainatlas-psych-guide{display:grid;gap:12px;scroll-margin-top:16px;border:1px solid var(--ba-border);border-radius:15px;background:linear-gradient(135deg,rgba(14,165,233,.08),rgba(124,58,237,.07)),var(--ba-surface);padding:14px;box-shadow:0 16px 38px rgba(15,23,42,.09);}',
     '.brainatlas-psych-guide:focus{outline:3px solid var(--ba-focus);outline-offset:3px;}',
@@ -424,27 +426,27 @@ function __alloBrainAtlasInk(color) {
     '.brainatlas-region-list-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}',
     '.brainatlas-region-list-title-group{min-width:0;}',
     '.brainatlas-region-list-eyebrow{margin:0 0 2px;color:var(--ba-teal-ink);font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.07em;}',
-    '.brainatlas-region-list-title{font-size:12px;font-weight:900;color:var(--ba-text);margin:0;}',
-    '.brainatlas-region-list-note{display:inline-flex;align-items:center;min-height:26px;border:1px solid var(--ba-border);border-radius:999px;background:var(--ba-panel);padding:4px 8px;font-size:9px;font-weight:900;color:var(--ba-muted);margin:0;white-space:nowrap;}',
+    '.brainatlas-region-list-title{font-size:16px;font-weight:750;color:var(--ba-text);margin:0;}',
+    '.brainatlas-region-list-note{display:inline-flex;align-items:center;min-height:26px;border:1px solid var(--ba-border);border-radius:999px;background:var(--ba-panel);padding:4px 8px;font-size:12px;font-weight:650;color:var(--ba-muted);margin:0;white-space:nowrap;}',
     '.brainatlas-study-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px;}',
     '.brainatlas-study-step{border:1px solid var(--ba-border);border-radius:8px;background:var(--ba-panel);padding:7px 8px;min-height:44px;}',
-    '.brainatlas-study-step strong{display:block;font-size:10px;color:var(--ba-text);}',
-    '.brainatlas-study-step span{display:block;font-size:9px;line-height:1.25;color:var(--ba-muted);margin-top:2px;}',
-    '.brainatlas-region-list{display:grid;gap:8px;max-height:460px;overflow:auto;padding:2px 6px 3px 2px;}',
+    '.brainatlas-study-step strong{display:block;font-size:12px;color:var(--ba-text);}',
+    '.brainatlas-study-step span{display:block;font-size:12px;line-height:1.45;color:var(--ba-muted);margin-top:2px;}',
+    '.brainatlas-region-list{display:grid;gap:8px;max-height:460px;overflow:auto;padding:6px 6px 12px 2px;}',
     '.brainatlas-region-item{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:64px;scroll-margin-block:6px;overflow:visible;overflow-wrap:anywhere;}',
     '.brainatlas-region-item:focus{outline:3px solid var(--ba-focus);outline-offset:-3px;}',
     '.brainatlas-region-item[aria-pressed="true"]{border-color:var(--ba-purple)!important;background:linear-gradient(100deg,rgba(124,58,237,.12),rgba(14,165,233,.06)),var(--ba-surface)!important;box-shadow:inset 4px 0 0 var(--ba-purple),0 8px 20px rgba(124,58,237,.12)!important;}',
     '.brainatlas-region-item[aria-pressed="true"] .brainatlas-region-index{border-color:var(--ba-purple);background:var(--ba-purple);color:#fff;}',
     '.brainatlas-region-item[aria-pressed="true"] .brainatlas-region-item-cue{transform:translateX(2px);}',
-    '.brainatlas-region-index{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-surface);color:var(--ba-purple-ink);font-size:10px;font-weight:950;}',
+    '.brainatlas-region-index{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 auto;border:1px solid var(--ba-button-border);border-radius:9px;background:var(--ba-surface);color:var(--ba-purple-ink);font-size:12px;font-weight:950;}',
     '.brainatlas-region-item-body{min-width:0;}',
-    '.brainatlas-region-item-name{font-size:12px;line-height:1.3;}',
-    '.brainatlas-region-item-copy{font-size:11px;line-height:1.4;color:var(--ba-muted);margin-top:3px;white-space:normal;}',
+    '.brainatlas-region-item-name{font-size:14px;line-height:1.4;}',
+    '.brainatlas-region-item-copy{font-size:14px;line-height:1.5;color:var(--ba-muted);margin-top:3px;white-space:normal;}',
     '.brainatlas-region-item-cue{align-self:center;color:var(--ba-purple-ink);font-size:16px;font-weight:950;line-height:1;}',
     '.brainatlas-empty-results{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:150px;border:1px dashed var(--ba-border);border-radius:11px;background:var(--ba-panel);color:var(--ba-muted);padding:18px;text-align:center;}',
-    '.brainatlas-empty-results strong{color:var(--ba-text);font-size:12px;}',
-    '.brainatlas-empty-results span{max-width:48ch;font-size:10px;line-height:1.45;}',
-    '.brainatlas-empty-results button{margin-top:5px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 9px;font-size:10px;font-weight:900;}',
+    '.brainatlas-empty-results strong{color:var(--ba-text);font-size:14px;}',
+    '.brainatlas-empty-results span{max-width:48ch;font-size:14px;line-height:1.5;}',
+    '.brainatlas-empty-results button{margin-top:5px;border:1px solid var(--ba-button-border);border-radius:8px;background:var(--ba-button);color:var(--ba-button-text);padding:6px 9px;font-size:14px;min-height:44px;font-weight:900;}',
     '.brainatlas-detail-panel{border-radius:14px!important;background:var(--ba-surface)!important;color:var(--ba-text)!important;border-color:var(--ba-border)!important;box-shadow:0 18px 42px rgba(15,23,42,.10);overflow:hidden;}',
     '.brainatlas-detail-focus-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:14px;border:1px solid var(--ba-border);border-radius:11px;background:radial-gradient(circle at 0 0,rgba(124,58,237,.16),transparent 42%),linear-gradient(135deg,var(--ba-panel),var(--ba-surface));padding:12px 13px;}',
     '.brainatlas-detail-focus-copy{min-width:0;}',
@@ -1234,9 +1236,14 @@ var d = labToolData.brainAtlas || {};
 
           var regions = Array.isArray(currentView.regions) ? currentView.regions : [];
 
-          var searchTerm = (d.search || '').toLowerCase();
-
-          var filtered = searchTerm ? regions.filter(function (r) { return r.name.toLowerCase().indexOf(searchTerm) >= 0 || r.fn.toLowerCase().indexOf(searchTerm) >= 0 || (r.conditions || '').toLowerCase().indexOf(searchTerm) >= 0; }) : regions;
+          function brainAtlasSearchText(value) {
+            var text = String(value || '').toLowerCase();
+            if (typeof text.normalize === 'function') text = text.normalize('NFKD');
+            return text.replace(/[\u0300-\u036f]/g, '').replace(/['\u2018\u2019\u02bc]/g, '').replace(/[_\-\u2010-\u2015]/g, ' ').replace(/\s+/g, ' ').trim();
+          }
+          var searchTerm = brainAtlasSearchText(d.search);
+          var searchTokens = searchTerm ? searchTerm.split(' ') : [];
+          // Results are resolved after the authored cards so their ideas and examples are searchable.
 
           var sel = d.selectedRegion ? regions.find(function (r) { return r.id === d.selectedRegion; }) : null;
           var BRAIN_3D_VIEW_KEYS = ['lateral', 'medial', 'superior', 'inferior'];
@@ -6474,9 +6481,9 @@ var d = labToolData.brainAtlas || {};
               scrollToBrainAtlasSection('brainatlas-region-detail', (t('stem.brainatlas.region_detail_in_view', 'Selected region detail is now in view.') || 'Selected region detail is now in view.') + ' ' + region.name + '.');
             }, 40);
           }
-          function scrollToBrainAtlasRegions() {
+          function scrollToBrainAtlasRegions(restoreRegion) {
             var announcement = t('stem.brainatlas.region_directory_in_view', 'Brain Atlas region directory is now in view.') || 'Brain Atlas region directory is now in view.';
-            var returnId = sel ? brainAtlasRegionButtonId(sel.id) : '';
+            var returnId = restoreRegion !== false && sel ? brainAtlasRegionButtonId(sel.id) : '';
             function focusDirectory() {
               var directory = document.getElementById('brainatlas-region-directory');
               if (!directory || directory.getAttribute('data-brainatlas-view') !== viewKey) return;
@@ -6492,6 +6499,16 @@ var d = labToolData.brainAtlas || {};
               return;
             }
             focusDirectory();
+          }
+          function showBrainAtlasSearchResults() {
+            scrollToBrainAtlasRegions(false);
+          }
+          function focusBrainAtlasSearch() {
+            scrollToBrainAtlasSection('brainatlas-region-search', '', 'center');
+          }
+          function clearBrainAtlasSearch() {
+            upd('search', '');
+            focusBrainAtlasSearch();
           }
           function scrollToBrainAtlasDetail() {
             if (!sel) return;
@@ -8719,8 +8736,30 @@ var d = labToolData.brainAtlas || {};
             },
 
           };
-          var selectedPlainLesson = sel ? BRAIN_ATLAS_PLAIN_LESSONS[sel.id] : null;
-          var plainLesson = !showAdvancedDetail && selectedPlainLesson && viewKey === (selectedPlainLesson.view || 'lateral') ? selectedPlainLesson : null;
+          function brainAtlasPlainLessonFor(region) {
+            var lesson = region ? BRAIN_ATLAS_PLAIN_LESSONS[region.id] : null;
+            return lesson && viewKey === (lesson.view || 'lateral') ? lesson : null;
+          }
+          function brainAtlasMatchesSearch(parts) {
+            var text = brainAtlasSearchText(parts.join(' '));
+            return searchTokens.every(function (token) { return text.indexOf(token) >= 0; });
+          }
+          var filtered = regions.filter(function (region) {
+            var lesson = brainAtlasPlainLessonFor(region);
+            return brainAtlasMatchesSearch([region.id, region.name, region.fn, region.conditions || '', lesson ? lesson.idea : '', lesson ? lesson.example : '', lesson ? lesson.connection : '']);
+          });
+          function brainAtlasDirectoryPreview(region) {
+            var lesson = !showAdvancedDetail ? brainAtlasPlainLessonFor(region) : null;
+            if (lesson) {
+              if (searchTokens.length && !brainAtlasMatchesSearch([region.id, region.name, lesson.idea]) && brainAtlasMatchesSearch([region.id, region.name, lesson.example])) {
+                return { kind: 'example', text: (t('stem.brainatlas.example_label', 'Example') || 'Example') + ': ' + lesson.example };
+              }
+              return { kind: 'idea', text: lesson.idea };
+            }
+            return { kind: 'function', text: showAdvancedDetail ? region.fn : brainAtlasShortText(region.fn, 190) };
+          }
+          var selectedPlainLesson = brainAtlasPlainLessonFor(sel);
+          var plainLesson = !showAdvancedDetail ? selectedPlainLesson : null;
           var plainCheck = plainLesson ? BRAIN_ATLAS_PLAIN_CHECKS[sel.id] : null;
           var plainCheckOpen = !!(plainCheck && d.plainCheckRegion === sel.id);
           var plainCheckAnswers = d.plainCheckAnswers && typeof d.plainCheckAnswers === 'object' && !Array.isArray(d.plainCheckAnswers) ? d.plainCheckAnswers : {};
@@ -8984,8 +9023,7 @@ var d = labToolData.brainAtlas || {};
               if (d.selectedRegion || d.quizMode) { e.preventDefault(); scrollToBrainAtlasRegions(); }
             } else if (k === '/') {
               e.preventDefault();
-              var searchInput = document.querySelector('input[placeholder*="Search regions"]');
-              if (searchInput) searchInput.focus();
+              focusBrainAtlasSearch();
             }
           }
 
@@ -10003,9 +10041,12 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("input", {
                     id: "brainatlas-region-search",
                     type: "text", placeholder: currentView.isPrenatal ? (t('stem.brainatlas.search_prenatal_milestones', 'Search prenatal milestones...') || 'Search prenatal milestones...') : t('stem.brainatlas.search_regions_functions_conditions', "Search regions, functions, conditions..."),
-                    'aria-label': currentView.isPrenatal ? (t('stem.brainatlas.search_prenatal_development', 'Search prenatal development milestones') || 'Search prenatal development milestones') : t('stem.brainatlas.search_brain_regions_functions_and_con', 'Search brain regions, functions, and conditions'),
+                    'aria-describedby': 'brainatlas-search-help',
+                    inputMode: 'search',
+                    enterKeyHint: 'search',
                     value: d.search || '',
                     onChange: function (e) { upd('search', e.target.value); },
+                    onKeyDown: function (e) { if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing)) { e.preventDefault(); showBrainAtlasSearchResults(); } },
                     className: "brainatlas-search-input text-xs"
                   }),
                   d.search && React.createElement("button", {
@@ -10014,9 +10055,10 @@ var d = labToolData.brainAtlas || {};
                     "data-brainatlas-clear-search": "true",
                     "aria-label": t('stem.brainatlas.clear_region_search', 'Clear region search') || 'Clear region search',
                     title: t('stem.brainatlas.clear_search', 'Clear search') || 'Clear search',
-                    onClick: function () { upd('search', ''); }
+                    onClick: clearBrainAtlasSearch
                   }, '\u00D7')
-                )
+                ),
+                React.createElement("p", { id: "brainatlas-search-help", className: "brainatlas-search-help" }, t('stem.brainatlas.search_view_help', 'Search this view by name, function, or example. Enter opens the results.'))
               ),
               React.createElement("div", { className: "brainatlas-controls-actions" },
                 React.createElement("button", {
@@ -10026,12 +10068,14 @@ var d = labToolData.brainAtlas || {};
                   onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                   className: "brainatlas-quiz-button px-3 py-1.5 text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'transition-colors bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 active:scale-[0.97]')
                 }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
-                React.createElement("span", {
+                React.createElement("button", {
+                  type: "button",
                   className: "brainatlas-region-count-chip",
-                  role: "status",
-                  "aria-live": "polite",
-                  "data-brainatlas-region-count": "true"
-                }, filtered.length + (currentView.isPrenatal ? ' milestones' : ' regions'))
+                  "data-brainatlas-region-count": "true",
+                  "data-brainatlas-search-results": "true",
+                  onClick: showBrainAtlasSearchResults
+                }, t('stem.brainatlas.view_search_results', 'View results'), ' (', filtered.length, ')'),
+                React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true", "data-brainatlas-search-status": "true" }, filtered.length + ' ' + t('stem.brainatlas.results_of', 'of') + ' ' + regions.length + ' ' + (currentView.isPrenatal ? t('stem.brainatlas.milestones_in_this_view', 'milestones in this view') : t('stem.brainatlas.regions_in_this_view', 'regions in this view')))
               )
             ),
 
@@ -12029,9 +12073,7 @@ var d = labToolData.brainAtlas || {};
                         React.createElement("h3", { id: "brainatlas-region-directory-title", className: "brainatlas-region-list-title" }, t('stem.brainatlas.region_directory', 'Region directory'))
                       ),
                       React.createElement("p", {
-                        className: "brainatlas-region-list-note",
-                        role: "status",
-                        "aria-live": "polite"
+                        className: "brainatlas-region-list-note"
                       }, filtered.length + " shown")
                     ),
 
@@ -12044,12 +12086,12 @@ var d = labToolData.brainAtlas || {};
 
                       React.createElement("div", { className: "brainatlas-study-step" },
                         React.createElement("strong", null, t('stem.brainatlas.study_step_connect', '2. Connect')),
-                        React.createElement("span", null, t('stem.brainatlas.study_step_connect_note', 'Read function, blood supply, and conditions.'))
+                        React.createElement("span", null, t('stem.brainatlas.study_step_connect_role', 'Read about its role and connections.'))
                       ),
 
                       React.createElement("div", { className: "brainatlas-study-step" },
                         React.createElement("strong", null, t('stem.brainatlas.study_step_practice', '3. Practice')),
-                        React.createElement("span", null, t('stem.brainatlas.study_step_practice_note', 'Use quiz or Function Match when ready.'))
+                        React.createElement("span", null, t('stem.brainatlas.study_step_practice_optional', 'Try a check or quiz when ready.'))
                       )
 
                     ),
@@ -12067,10 +12109,11 @@ var d = labToolData.brainAtlas || {};
                         React.createElement("button", {
                           type: "button",
                           "data-brainatlas-empty-clear": "true",
-                          onClick: function () { upd('search', ''); }
+                          onClick: clearBrainAtlasSearch
                         }, t('stem.brainatlas.clear_search', 'Clear search') || 'Clear search')
                       ),
                       filtered.map(function (r, regionIndex) {
+                        var preview = brainAtlasDirectoryPreview(r);
                         return React.createElement("button", { key: r.id,
                           type: "button",
                           "data-brainatlas-region-button": "true",
@@ -12089,7 +12132,7 @@ var d = labToolData.brainAtlas || {};
                           }, regionIndex + 1),
                           React.createElement("div", { className: "brainatlas-region-item-body" },
                             React.createElement("div", { className: "brainatlas-region-item-name font-bold text-slate-800" }, r.name),
-                            React.createElement("div", { className: "brainatlas-region-item-copy" }, r.fn)
+                            React.createElement("div", { className: "brainatlas-region-item-copy", "data-brainatlas-region-preview": preview.kind }, preview.text)
                           ),
                           React.createElement("span", { className: "brainatlas-region-item-cue", "aria-hidden": "true" }, '\u2192')
                         );

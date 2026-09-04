@@ -65,3 +65,11 @@ Added vocabulary: hemisphere, relay, homeostasis, hormone, event memory, emotion
 Opening a directory item moves focus to the named detail panel. Region list, the mobile Regions shortcut, and Escape return to that region's button, revealing it inside the scrollable directory. A visible focus outline and a 44px Back control make the return easier to find. Related-card navigation returns to the most recently read region.
 
 Search text and learning preferences remain intact. If a region selected on the diagram is outside the current search results, returning focuses the directory instead of clearing the search. Prenatal directory choices continue to update the timeline week. Returning clears the corresponding 3D selection and leaves quiz mode so the directory is available. Diagram clicks keep their existing focus behavior; opening a card from the directory is the explicit reading transition. Delayed focus requests are ignored when the intended view or region has changed.
+
+## Finding a region
+
+Plain directory previews reuse the fourteen authored big ideas. A matching everyday example is shown when it explains a search result better than the big idea. Other Plain entries show a bounded function overview; Advanced retains the full function text. Directory text, guidance, result controls, and search recovery use a larger reading scale and comfortable targets.
+
+Search stays within the current view and matches every query word across identifiers, translated names, functions, conditions, and the view-appropriate authored ideas/examples/connections. It tolerates extra spaces, case, common accents, apostrophe styles, and hyphen/underscore separators. Results keep their original anatomical order, and the 2D diagram uses the same filtered set. No new scientific content, AI calls, or external search service is introduced.
+
+Enter and View results reveal the directory even while a detail or quiz is open. The query and practice answers remain intact. Clear search returns focus to the input; the / shortcut uses the input ID so it also works with translated placeholders and prenatal milestones. Composition events are respected. A single live status announces the current-view result count.

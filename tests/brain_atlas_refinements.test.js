@@ -171,7 +171,7 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toContain('data-brainatlas-canvas-status="true"');
     expect(html).toContain('data-brainatlas-learning-footer="true"');
     expect(html).toContain('data-brainatlas-has-selection="false"');
-    expect(src).toContain('.brainatlas-region-item-copy{font-size:11px;line-height:1.4');
+    expect(src).toContain('.brainatlas-region-item-copy{font-size:14px;line-height:1.5');
     expect(src).not.toContain('line-clamp-1');
 
     const selected = render({ view: 'lateral', selectedRegion: 'frontal' });
