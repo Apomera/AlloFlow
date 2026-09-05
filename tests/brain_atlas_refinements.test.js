@@ -87,7 +87,11 @@ describe('brainAtlas refinement contracts', () => {
       expect(Number(canvasSize[2])).toBeGreaterThanOrEqual(640);
       expect(html).not.toContain('max-w-6xl');
     });
-  });
+    // This one renders every view in the atlas, so its cost grows each time a
+    // view is added (23 as of the Neuromyths view). It measured about 7.6s on a
+    // loaded machine and tripped vitest's 5s default, which reads as a failure
+    // when nothing is actually wrong. The assertions are unchanged.
+  }, 30000);
 
   it('keeps the dense neuron and synapse canvases roomy enough for labels', () => {
     loadTool(FILE, 'brainAtlas');

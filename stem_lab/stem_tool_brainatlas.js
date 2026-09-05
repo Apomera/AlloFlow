@@ -7018,6 +7018,58 @@ var d = labToolData.brainAtlas || {};
               try { panel.focus({ preventScroll: true }); } catch (e) {}
             }, 20);
           }
+          function brainAtlasMythCardText(card) {
+            if (!card) return '';
+            var verdictMeta = BRAIN_ATLAS_MYTH_VERDICTS[card.verdict] || BRAIN_ATLAS_MYTH_VERDICTS.debunked;
+            var lines = [
+              card.name + ' \u2014 ' + verdictMeta.label,
+              verdictMeta.meaning,
+              '',
+              (t('stem.brainatlas.the_claim', 'The claim') || 'The claim') + ': ' + (card.claim || ''),
+              '',
+              (t('stem.brainatlas.what_the_evidence_says', 'What the evidence says') || 'What the evidence says') + ': ' + (card.fn || ''),
+              '',
+              (t('stem.brainatlas.instead_try', 'Instead, try') || 'Instead, try') + ': ' + (card.instead || '')
+            ];
+            if (card.source) lines.push('', (t('stem.brainatlas.source', 'Source') || 'Source') + ': ' + card.source);
+            if (card.sourceUrl) lines.push(card.sourceUrl);
+            lines.push('', t('stem.brainatlas.copy_footer', 'From the AlloFlow Brain Atlas, Neuromyths and Neurodiversity. Research findings described at the group level. Not a diagnosis and not medical advice.'));
+            return lines.join('\n');
+          }
+          function copyBrainAtlasMythCard(card) {
+            var text = brainAtlasMythCardText(card);
+            if (!text) return;
+            var finish = function (ok) {
+              upd('mythCopyState', { id: card.id, ok: !!ok });
+              if (typeof announceToSR === 'function') {
+                announceToSR(ok
+                  ? (t('stem.brainatlas.card_copied', 'Card copied.') || 'Card copied.')
+                  : (t('stem.brainatlas.card_copy_failed', 'Copy failed. Select the card text and press Control C.') || 'Copy failed. Select the card text and press Control C.'));
+              }
+            };
+            // The shell publishes alloCopyText (clipboard, then execCommand) because
+            // Canvas blocks the Clipboard API outright. No await before this call.
+            try {
+              if (typeof window !== 'undefined' && typeof window.alloCopyText === 'function') {
+                var result = window.alloCopyText(text);
+                if (result && typeof result.then === 'function') { result.then(finish, function () { finish(false); }); }
+                else { finish(result !== false); }
+                return;
+              }
+            } catch (e) { /* fall through to the standalone path */ }
+            try {
+              var area = document.createElement('textarea');
+              area.value = text;
+              area.setAttribute('readonly', 'readonly');
+              area.style.position = 'fixed';
+              area.style.left = '-9999px';
+              document.body.appendChild(area);
+              area.select();
+              var copied = document.execCommand('copy');
+              document.body.removeChild(area);
+              finish(copied);
+            } catch (e2) { finish(false); }
+          }
           function brainAtlasMythFor(currentViewKey, regionId) {
             if (!regionId || currentViewKey === 'neuromyths') return null;
             var mythView = VIEWS.neuromyths;
@@ -12134,6 +12186,25 @@ var d = labToolData.brainAtlas || {};
                           className: "transition-colors w-full text-left py-2 px-3 rounded-lg text-xs font-bold border-2 border-sky-300 text-sky-800 hover:bg-sky-50 active:scale-[0.97]"
                         }, (t('stem.brainatlas.open_view_named', 'Open') || 'Open') + ': ' + (VIEWS[sel.seeView].name || sel.seeView))
                       ),
+                      currentView.isNeuromyths && sel.claim && (function () {
+                        var copyState = d.mythCopyState && d.mythCopyState.id === sel.id ? d.mythCopyState : null;
+                        return React.createElement("div", { "data-brainatlas-myth-copy": sel.id },
+                          React.createElement("p", { className: "text-[0.6875rem] font-bold text-slate-600 uppercase mb-0.5" }, t('stem.brainatlas.share_this_card', 'Share this card')),
+                          React.createElement("button", {
+                            type: "button",
+                            "data-brainatlas-copy-myth-card": sel.id,
+                            onClick: function () { copyBrainAtlasMythCard(sel); },
+                            className: "transition-colors w-full text-left py-2 px-3 rounded-lg text-xs font-bold border-2 border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-[0.97]"
+                          }, t('stem.brainatlas.copy_card_text', 'Copy the claim, the evidence and the source')),
+                          copyState && React.createElement("p", {
+                            className: "text-[0.6875rem] mt-1 " + (copyState.ok ? 'text-teal-700' : 'text-rose-700'),
+                            role: "status",
+                            "data-brainatlas-copy-status": copyState.ok ? 'copied' : 'failed'
+                          }, copyState.ok
+                            ? t('stem.brainatlas.card_copied', 'Card copied.')
+                            : t('stem.brainatlas.card_copy_failed', 'Copy failed. Select the card text and press Control C.'))
+                        );
+                      })(),
 
                       plainLesson ? React.createElement("section", { className: "brainatlas-plain-lesson", "data-brainatlas-plain-lesson": sel.id, "aria-labelledby": "brainatlas-plain-question" },
                         React.createElement("h5", { id: "brainatlas-plain-question" }, t('stem.brainatlas.think_it_through', 'Think it through')),

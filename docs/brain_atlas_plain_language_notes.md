@@ -137,3 +137,13 @@ The alternative section says starting, changing or stopping any medication is a 
 The chips now sit in three rows of three; only the three claims with a published survey figure carry a belief bar, and no number was invented for the rest.
 
 FOR REVIEW: the serotonin region's own "if damaged" text still reads "serotonin depletion contributes to depression", which is closer to the deficiency framing than the hedge in the same card's function field. That is a clinical wording call, so it is flagged here rather than changed.
+
+## Taking a card out of the tool
+
+September 5, 2026. Each myth card can be copied as plain text: the claim, what the evidence says, the alternative, the verdict with its meaning, and the source and link. The intended use is handing the evidence to a teacher or a family in an email or a report, which a screenshot cannot do.
+
+The copied text ends with a line stating that the findings are described at the group level and that it is not a diagnosis and not medical advice, so the limits travel with the words once they leave the tool.
+
+The copy goes through the shell's alloCopyText helper rather than the Clipboard API directly. Gemini Canvas refuses navigator.clipboard by permissions policy, so a direct call would fail on every click for a Canvas user while passing every jsdom and browser test. A standalone fallback creates a hidden textarea and uses execCommand, and because that needs the click's own activation the text is built synchronously with nothing awaited in between. A test asserts all of this, including that no await or fetch sits between the click and the copy.
+
+The result line is scoped to the card it belongs to, so a success message from one card does not appear on another.
