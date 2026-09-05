@@ -18,7 +18,7 @@
       "title": "Two Words People Mix Up Every Day",
       "timestamp": "2026-07-20T02:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Fill in the **Cornell Notes** page in your own words — that becomes your study sheet.\n6. Answer the two reflection questions.\n7. Lock the ideas in with **Remember Mood and Personality** — study the example aid, then make one your own.\n8. Finish with **Decision: Weather or Climate? Judge the Headline** — use what you learned on a real problem, and mark every guess as a guess.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
+        "body": "**Due:** (your teacher will tell you)\n\nAdults on TV mix these two words up constantly. By the end of today, you will catch the mistake faster than they make it.\n\n1. Read **Mood and Personality** — it gives you the one comparison that makes this stick.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Try **Weather or Climate?** — sort each headline into the right bucket. Some are sneaky.\n4. Take the quiz. Question 4 fools most people; slow down there.\n5. Fill in the **Cornell Notes** page in your own words — that becomes your study sheet.\n6. Answer the two reflection questions.\n7. Lock the ideas in with **Remember Mood and Personality** — study the example aid, then make one your own.\n8. Finish with **Decision: Weather or Climate? Judge the Headline** — use what you learned on a real problem, and mark every guess as a guess.\n9. Put the **Mood or Personality?** chart where you can see it — the sorting question on it settles most arguments.\n\nBonus challenge: catch a real adult using the wrong word this week and (politely!) explain the difference. 🌦️📊",
         "objectives": [
           {
             "id": "wx-goal-matching",
@@ -109,6 +109,55 @@
         }
       ],
       "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "wx-anchor",
+      "type": "anchor-chart",
+      "title": "Mood or Personality?",
+      "timestamp": "2026-09-05T21:40:04.000Z",
+      "meta": "4 parts • the time-scale question and the two mistakes",
+      "data": {
+        "chartType": "reference",
+        "title": "WHICH ONE ARE THEY TALKING ABOUT?",
+        "sections": [
+          {
+            "label": "WEATHER · the mood",
+            "bullets": [
+              "What the air is doing now, today, this week",
+              "Temperature, precipitation, wind, clouds",
+              "Changes hour by hour; hard to forecast past about a week"
+            ],
+            "iconPrompt": "a single day's sky with a rain shower over one house"
+          },
+          {
+            "label": "CLIMATE · the personality",
+            "bullets": [
+              "The pattern of weather in a region",
+              "Measured over thirty years or more",
+              "Why you know what to pack for Arizona in July"
+            ],
+            "iconPrompt": "thirty small sky squares arranged in a grid, mostly sunny"
+          },
+          {
+            "label": "THE QUESTION THAT SORTS IT",
+            "bullets": [
+              "Are they talking about a day, or about thirty years?",
+              "Ask it out loud before you argue",
+              "Most of the confusion disappears right there"
+            ],
+            "iconPrompt": "a balance scale with a clock on one side and a calendar on the other"
+          },
+          {
+            "label": "TWO MISTAKES TO AVOID",
+            "bullets": [
+              "A cold day does not disprove a warming climate",
+              "A single heat wave does not by itself prove one either",
+              "Scientists look for trends: more frequent, more intense, longer"
+            ],
+            "iconPrompt": "one snowflake beside a long rising line of many small marks"
+          }
+        ]
+      }
     },
     {
       "id": "wx-memory",

@@ -18,7 +18,7 @@
       "title": "Pull One Thread",
       "timestamp": "2026-07-21T08:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA century ago, people removed one animal from Yellowstone because they saw it as a pest. The whole landscape changed in ways nobody expected. Today you learn why pulling one thread moves the whole web.\n\n1. Read **Pull One Thread** — the wolf story at the end is true.\n2. Learn the words in the **Glossary**, then win the **Bingo** round.\n3. Study the **Web Roles** chart — every living thing has a job.\n4. Sort the organisms in **What's Your Job?**\n5. Take the quiz — question 4 asks you to predict a chain reaction.\n6. Use the **Sentence Frames** to explain a food web in your own words.\n7. Lock the ideas in with **Remember the Web** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Would Happen If…?** — use what you learned on a real problem, and mark every guess as a guess.\n\nBig idea to carry: in an ecosystem there is no such thing as doing only one thing. 🐺🌲",
+        "body": "**Due:** (your teacher will tell you)\n\nA century ago, people removed one animal from Yellowstone because they saw it as a pest. The whole landscape changed in ways nobody expected. Today you learn why pulling one thread moves the whole web.\n\n1. Read **Pull One Thread** — the wolf story at the end is true.\n2. Learn the words in the **Glossary**, then win the **Bingo** round.\n3. Study the **Web Roles** chart — every living thing has a job.\n4. Sort the organisms in **What's Your Job?**\n5. Take the quiz — question 4 asks you to predict a chain reaction.\n6. Use the **Sentence Frames** to explain a food web in your own words.\n7. Lock the ideas in with **Remember the Web** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Would Happen If…?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Follow the **Where the Energy Goes** map from the sun outward before you build anything of your own.\n\nBig idea to carry: in an ecosystem there is no such thing as doing only one thing. 🐺🌲",
         "objectives": [
           {
             "id": "ec-goal-bingo",
@@ -184,6 +184,69 @@
         ]
       },
       "meta": "5 sections • roles + the 10% rule"
+    },
+    {
+      "id": "ec-outline",
+      "type": "outline",
+      "title": "Where the Energy Goes",
+      "timestamp": "2026-09-05T21:40:08.000Z",
+      "meta": "6 branches • concept map • follow the energy, not the animals",
+      "data": {
+        "main": "Follow the energy back and it always ends at sunlight",
+        "branches": [
+          {
+            "title": "Producers — make their own food",
+            "items": [
+              "Plants, algae, and some bacteria",
+              "They capture sunlight and build sugar",
+              "Everything else on Earth is a customer"
+            ]
+          },
+          {
+            "title": "Consumers — eat other living things",
+            "items": [
+              "Herbivores eat producers: deer, grasshoppers",
+              "Carnivores eat other consumers: hawks, wolves",
+              "Omnivores do both: bears, humans",
+              "Each step up is a trophic level"
+            ]
+          },
+          {
+            "title": "Decomposers — put it back",
+            "items": [
+              "Fungi, bacteria, and worms",
+              "They break down dead plants, dead animals, and waste",
+              "Nutrients return to the soil where producers can use them again",
+              "Without them an ecosystem buries itself and starves"
+            ]
+          },
+          {
+            "title": "A chain is not a web",
+            "items": [
+              "A chain is one straight path: grass → grasshopper → mouse → hawk",
+              "Real nature is a web: a hawk eats mice, snakes, and rabbits",
+              "A web behaves very differently from a chain"
+            ]
+          },
+          {
+            "title": "Energy leaks — about ninety percent of it",
+            "items": [
+              "Only about a tenth reaches the next level",
+              "The rest is spent moving, breathing, and staying warm; much escapes as heat",
+              "That is why a meadow holds thousands of grasshoppers and only a couple of hawks"
+            ]
+          },
+          {
+            "title": "Pull one thread — Yellowstone",
+            "items": [
+              "Wolves were hunted out by the 1920s; elk grazed the young willows along rivers",
+              "Wolves were reintroduced in 1995, and willows and beavers recovered in places",
+              "Scientists still argue how much the wolves caused; weather and bears mattered too",
+              "Not in dispute: you cannot remove one species and change only one thing"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "ec-memory",

@@ -18,7 +18,7 @@
       "title": "Meet the Team Inside You",
       "timestamp": "2026-07-21T17:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nNo system in your body works alone. Take a single breath and eat a single bite, and at least four systems have to cooperate to turn them into energy for your cells. Today you learn the team, and how they pass the ball.\n\n1. Read **The Relay Race** — follow one oxygen molecule to a muscle cell.\n2. Learn the systems in the **Glossary**, then win the **Matching** game.\n3. Study the **Who Does What** chart.\n4. Sort the jobs in **Which System Handles This?**\n5. Take the quiz — the last two questions ask how systems WORK TOGETHER.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Relay Team** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Changes When You Move?** — use what you learned on a real problem, and mark every guess as a guess.\n\nBig idea to carry: your body is not a collection of parts. It is a system of systems, and the handoffs between them are the whole point. 🫀🫁",
+        "body": "**Due:** (your teacher will tell you)\n\nNo system in your body works alone. Take a single breath and eat a single bite, and at least four systems have to cooperate to turn them into energy for your cells. Today you learn the team, and how they pass the ball.\n\n1. Read **The Relay Race** — follow one oxygen molecule to a muscle cell.\n2. Learn the systems in the **Glossary**, then win the **Matching** game.\n3. Study the **Who Does What** chart.\n4. Sort the jobs in **Which System Handles This?**\n5. Take the quiz — the last two questions ask how systems WORK TOGETHER.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Relay Team** — study the example aid, then make one your own.\n8. Finish with **Investigation: What Changes When You Move?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Trace the **The Handoff Map** map before you take notes — read it along the handoffs, not system by system.\n\nBig idea to carry: your body is not a collection of parts. It is a system of systems, and the handoffs between them are the whole point. 🫀🫁",
         "objectives": [
           {
             "id": "bs-goal-matching",
@@ -175,6 +175,66 @@
         ]
       },
       "meta": "4 sections • systems-and-handoffs reference"
+    },
+    {
+      "id": "bs-outline",
+      "type": "outline",
+      "title": "The Handoff Map",
+      "timestamp": "2026-09-05T21:40:05.000Z",
+      "meta": "6 branches • concept map • follow one breath through the body",
+      "data": {
+        "main": "One muscle cell, kept alive by six systems",
+        "branches": [
+          {
+            "title": "Respiratory — where outside air meets inside",
+            "items": [
+              "Air travels to the lungs, into tiny sacs called alveoli",
+              "Oxygen slips out of the sacs into the blood",
+              "Carbon dioxide moves the other way, out to be exhaled"
+            ]
+          },
+          {
+            "title": "Circulatory — the delivery network",
+            "items": [
+              "The heart pumps oxygen-rich blood out through arteries",
+              "Veins bring it back",
+              "It carries two things to the cells: oxygen from the lungs, nutrients from the gut"
+            ]
+          },
+          {
+            "title": "Digestive — where the nutrients come from",
+            "items": [
+              "Food is broken down along a long journey: mouth, stomach, small intestine",
+              "Nutrients pass into the blood at the small intestine",
+              "Oxygen alone is not food"
+            ]
+          },
+          {
+            "title": "Nervous — the coordinator",
+            "items": [
+              "The brain sends electrical signals down nerves",
+              "Faster than you can think about it",
+              "It controls nearly everything, mostly without you noticing"
+            ]
+          },
+          {
+            "title": "Skeletal and muscular — structure and motion",
+            "items": [
+              "206 bones give structure and protect the organs",
+              "Bones anchor the muscles",
+              "The muscles do the pulling that moves you"
+            ]
+          },
+          {
+            "title": "The handoffs — the actual point",
+            "items": [
+              "Exercise: respiratory and circulatory speed up together, because the nervous system noticed the demand",
+              "Fear: the heart races before you decide anything",
+              "You can memorise every system alone and still miss this"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "bs-memory",

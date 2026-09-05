@@ -18,7 +18,7 @@
       "title": "Become a Plant Detective",
       "timestamp": "2026-07-20T01:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nEvery bite of food you have ever eaten traces back to a plant catching sunlight. Today you find out exactly how that trick works — and why you are breathing because of it.\n\n1. Read **The Sugar Factory in Every Leaf**. Notice the three ingredients and the two products.\n2. Open the **Glossary** and win the **Word Scramble** — these words show up in everything else.\n3. Walk through **Follow One Carbon Atom** to see the order things happen.\n4. Study the **Inputs and Outputs Map**, then try the sort: does each card go IN or OUT?\n5. Take the quiz. It hunts for the two ideas almost everyone gets backwards.\n6. Write your explanation with the **Sentence Frames**.\n7. Lock the ideas in with **Remember the Sugar Factory** — study the example aid, then make one your own.\n8. Finish with **Investigation: Which Light Grows a Plant?** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne warning: two of the quiz questions are traps that catch even adults. Read carefully. 🌱☀️",
+        "body": "**Due:** (your teacher will tell you)\n\nEvery bite of food you have ever eaten traces back to a plant catching sunlight. Today you find out exactly how that trick works — and why you are breathing because of it.\n\n1. Read **The Sugar Factory in Every Leaf**. Notice the three ingredients and the two products.\n2. Open the **Glossary** and win the **Word Scramble** — these words show up in everything else.\n3. Walk through **Follow One Carbon Atom** to see the order things happen.\n4. Study the **Inputs and Outputs Map**, then try the sort: does each card go IN or OUT?\n5. Take the quiz. It hunts for the two ideas almost everyone gets backwards.\n6. Write your explanation with the **Sentence Frames**.\n7. Lock the ideas in with **Remember the Sugar Factory** — study the example aid, then make one your own.\n8. Finish with **Investigation: Which Light Grows a Plant?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **Four Things People Get Wrong** chart before the quiz — every one of those four is a common wrong answer.\n\nOne warning: two of the quiz questions are traps that catch even adults. Read carefully. 🌱☀️",
         "objectives": [
           {
             "id": "ph-goal-scramble",
@@ -117,6 +117,64 @@
         }
       ],
       "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "ph-anchor",
+      "type": "anchor-chart",
+      "title": "Four Things People Get Wrong",
+      "timestamp": "2026-09-05T21:40:02.000Z",
+      "meta": "5 parts • misconceptions, not a summary • pairs with the Inputs and Outputs Map",
+      "data": {
+        "chartType": "reference",
+        "title": "WHAT PHOTOSYNTHESIS IS NOT",
+        "sections": [
+          {
+            "label": "NOT: \"a plant eats soil\"",
+            "bullets": [
+              "Van Helmont's willow gained about 74 kg in five years",
+              "The soil lost almost nothing",
+              "The mass came from air and water"
+            ],
+            "iconPrompt": "a young tree in a pot beside the same tree grown large, the soil level unchanged"
+          },
+          {
+            "label": "NOT: \"leaves are green because they use green light\"",
+            "bullets": [
+              "Chlorophyll absorbs red and blue",
+              "It reflects green",
+              "You are seeing the colour it refuses"
+            ],
+            "iconPrompt": "a leaf with red and blue arrows arriving and a green arrow bouncing away"
+          },
+          {
+            "label": "NOT: \"plants do not respire\"",
+            "bullets": [
+              "Plants perform cellular respiration day and night",
+              "Photosynthesis makes the fuel that respiration burns",
+              "They are not opposites"
+            ],
+            "iconPrompt": "a leaf shown twice, under a sun and under a moon"
+          },
+          {
+            "label": "NOT: \"the point is making oxygen\"",
+            "bullets": [
+              "Glucose is the product the plant is after",
+              "Oxygen leaves as a by-product through the stomata",
+              "In bright light output beats use, so oxygen flows out on balance"
+            ],
+            "iconPrompt": "a sugar molecule shape large in front, a small gas bubble behind"
+          },
+          {
+            "label": "THE ONE SENTENCE",
+            "bullets": [
+              "Light energy + carbon dioxide + water → glucose + oxygen",
+              "Inside the chloroplasts, in the leaf",
+              "Reactants on the left, products on the right"
+            ],
+            "iconPrompt": "a plain arrow with three shapes entering and two leaving"
+          }
+        ]
+      }
     },
     {
       "id": "ph-memory",

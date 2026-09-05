@@ -18,7 +18,7 @@
       "title": "Solve the Earth Puzzle",
       "timestamp": "2026-07-21T05:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA scientist noticed that South America and Africa look like puzzle pieces. Everyone laughed at him for fifty years. He was right — but for a reason he never figured out.\n\n1. Read **The Man Who Was Laughed At** and watch how EVIDENCE piles up.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Follow **How We Figured It Out** — the timeline of the argument.\n4. Sort the evidence in **What Kind of Boundary?**\n5. Take the quiz — two questions ask what counts as EVIDENCE, not just what happened.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Earth Puzzle** — study the example aid, then make one your own.\n8. Finish with **Explore: Reading a Coastline Like Wegener** — use what you learned on a real problem, and mark every guess as a guess.\n\nThe real lesson here is not about rocks. It is about how science changes its mind when the evidence finally forces it. 🌍",
+        "body": "**Due:** (your teacher will tell you)\n\nA scientist noticed that South America and Africa look like puzzle pieces. Everyone laughed at him for fifty years. He was right — but for a reason he never figured out.\n\n1. Read **The Man Who Was Laughed At** and watch how EVIDENCE piles up.\n2. Learn the terms in the **Glossary**, then win the **Word Scramble**.\n3. Follow **How We Figured It Out** — the timeline of the argument.\n4. Sort the evidence in **What Kind of Boundary?**\n5. Take the quiz — two questions ask what counts as EVIDENCE, not just what happened.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Earth Puzzle** — study the example aid, then make one your own.\n8. Finish with **Explore: Reading a Coastline Like Wegener** — use what you learned on a real problem, and mark every guess as a guess.\n9. Keep the **Three Ways Plates Meet** chart open while you sort — the three boundary types are the whole sort.\n\nThe real lesson here is not about rocks. It is about how science changes its mind when the evidence finally forces it. 🌍",
         "objectives": [
           {
             "id": "pt-goal-scramble",
@@ -126,6 +126,64 @@
         }
       ],
       "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "pt-anchor",
+      "type": "anchor-chart",
+      "title": "Three Ways Plates Meet",
+      "timestamp": "2026-09-05T21:40:03.000Z",
+      "meta": "5 parts • boundary types plus the mechanism lesson",
+      "data": {
+        "chartType": "reference",
+        "title": "WHAT HAPPENS AT A BOUNDARY",
+        "sections": [
+          {
+            "label": "DIVERGENT · pulling apart",
+            "bullets": [
+              "Magma rises and makes new crust",
+              "The Mid-Atlantic Ridge",
+              "Iceland is widening every year"
+            ],
+            "iconPrompt": "two blocks of crust separating with molten rock rising between them"
+          },
+          {
+            "label": "CONVERGENT · pushing together",
+            "bullets": [
+              "One plate dives beneath the other, or both crumple upward",
+              "The Himalayas, still growing",
+              "India is pressing into Asia"
+            ],
+            "iconPrompt": "two blocks meeting, one bending down, the surface buckling up"
+          },
+          {
+            "label": "TRANSFORM · grinding past",
+            "bullets": [
+              "They stick, stress builds, then they snap",
+              "The San Andreas Fault",
+              "That snap is an earthquake"
+            ],
+            "iconPrompt": "two blocks sliding in opposite directions along a jagged join"
+          },
+          {
+            "label": "HOW FAST",
+            "bullets": [
+              "A few centimetres a year — about as fast as fingernails grow",
+              "Over millions of years that builds the Andes",
+              "Slow is not the same as still"
+            ],
+            "iconPrompt": "a hand beside a ruler with a very small gap marked"
+          },
+          {
+            "label": "WHY WEGENER WAS DISMISSED",
+            "bullets": [
+              "His evidence was good: coastline fit, Mesosaurus fossils, matching rock layers, Antarctic coal",
+              "He could not say what force moved a continent",
+              "Sea-floor spreading supplied the mechanism decades later"
+            ],
+            "iconPrompt": "two continent outlines fitting together like puzzle pieces"
+          }
+        ]
+      }
     },
     {
       "id": "pt-memory",

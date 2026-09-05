@@ -18,7 +18,7 @@
       "title": "Your Fraction Quest",
       "timestamp": "2026-07-21T02:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nMost people learn fractions as pizza slices. Today you learn them as **places** — spots on a number line. This is the version that keeps working when the math gets bigger.\n\n1. Read **The Space Between 0 and 1**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Do the **Practice Problems** one at a time. Say each answer out loud before checking.\n4. Sort the cards in **Bigger, Smaller, or Equal to One-Half?**\n5. Take the quiz — question 3 catches almost everyone.\n6. Read **Fraction Questions Kids Actually Ask** if something still feels strange.\n7. Lock the ideas in with **Remember the Space Between** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: A Number Line for the Hallway** — use what you learned on a real problem, and mark every guess as a guess.\n\nTip: if a fraction confuses you, draw the number line. Every single time. Drawing is not cheating; it is what mathematicians actually do. ✏️📏",
+        "body": "**Due:** (your teacher will tell you)\n\nMost people learn fractions as pizza slices. Today you learn them as **places** — spots on a number line. This is the version that keeps working when the math gets bigger.\n\n1. Read **The Space Between 0 and 1**.\n2. Learn the words in the **Glossary**, then win the **Word Scramble**.\n3. Do the **Practice Problems** one at a time. Say each answer out loud before checking.\n4. Sort the cards in **Bigger, Smaller, or Equal to One-Half?**\n5. Take the quiz — question 3 catches almost everyone.\n6. Read **Fraction Questions Kids Actually Ask** if something still feels strange.\n7. Lock the ideas in with **Remember the Space Between** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: A Number Line for the Hallway** — use what you learned on a real problem, and mark every guess as a guess.\n9. Keep the **Fractions Are Places** chart beside you for the problems — it holds the two numbers and the one trap.\n\nTip: if a fraction confuses you, draw the number line. Every single time. Drawing is not cheating; it is what mathematicians actually do. ✏️📏",
         "objectives": [
           {
             "id": "fr-goal-scramble",
@@ -109,6 +109,64 @@
         }
       ],
       "meta": "10 terms • Tiered"
+    },
+    {
+      "id": "fr-anchor",
+      "type": "anchor-chart",
+      "title": "Fractions Are Places",
+      "timestamp": "2026-09-05T21:40:01.000Z",
+      "meta": "5 parts • reading a fraction off the line",
+      "data": {
+        "chartType": "reference",
+        "title": "A FRACTION IS A PLACE, NOT A SLICE",
+        "sections": [
+          {
+            "label": "THE BOTTOM NUMBER",
+            "bullets": [
+              "The denominator",
+              "How many equal pieces the whole was cut into",
+              "A bigger bottom number means smaller pieces"
+            ],
+            "iconPrompt": "a line from 0 to 1 with four evenly spaced tick marks"
+          },
+          {
+            "label": "THE TOP NUMBER",
+            "bullets": [
+              "The numerator",
+              "How many of those pieces you counted from 0",
+              "3/4 means take three of the four steps"
+            ],
+            "iconPrompt": "the same line with three steps traced from zero"
+          },
+          {
+            "label": "SAME SPOT, TWO NAMES",
+            "bullets": [
+              "2/4 and 1/2 land on exactly the same place",
+              "That is what equivalent means",
+              "Different words, one location"
+            ],
+            "iconPrompt": "one point on a line with two labels pointing at it"
+          },
+          {
+            "label": "THE TRAP",
+            "bullets": [
+              "1/8 is SMALLER than 1/4, even though 8 > 4",
+              "More pieces means smaller pieces",
+              "Check it on the line; the line never lies"
+            ],
+            "iconPrompt": "two lines stacked, one cut into 4 and one into 8"
+          },
+          {
+            "label": "IT DOES NOT STOP AT 1",
+            "bullets": [
+              "5/4 is one step past 1",
+              "The line keeps going in both directions",
+              "Fractions are ordinary numbers"
+            ],
+            "iconPrompt": "a number line running past 1 toward 2"
+          }
+        ]
+      }
     },
     {
       "id": "fr-memory",

@@ -18,7 +18,7 @@
       "title": "Tour the Factory",
       "timestamp": "2026-07-21T01:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nThere are about 30 trillion cells in your body, and every one of them is running a factory right now — without a manager, without instructions from you.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Careful: three of them fool people.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬",
+        "body": "**Due:** (your teacher will tell you)\n\nThere are about 30 trillion cells in your body, and every one of them is running a factory right now — without a manager, without instructions from you.\n\n1. Read **The Factory You Are Made Of**. Each part has a JOB — that is the whole idea.\n2. Learn the parts in the **Glossary**, then win the **Matching** game.\n3. Study the **Job Chart** — it pairs each part with what it actually does.\n4. Sort the cards in **Plant, Animal, or Both?** Careful: three of them fool people.\n5. Take the quiz. It asks WHY, not just WHAT.\n6. Fill in the **Cornell Notes** page in your own words — that page is your study sheet later.\n7. Lock the ideas in with **Remember the Factory Floor** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Build a Cell That Could Live Somewhere Else** — use what you learned on a real problem, and mark every guess as a guess.\n9. Read the **The Factory Floor Plan** map by department before you take notes — structure fits function every time.\n\nIf you finish everything, you will be able to explain a cell without a diagram in front of you. That is the real goal. 🔬",
         "objectives": [
           {
             "id": "cl-goal-matching",
@@ -181,6 +181,66 @@
         ]
       },
       "meta": "5 sections • structure-fits-function reference"
+    },
+    {
+      "id": "cl-outline",
+      "type": "outline",
+      "title": "The Factory Floor Plan",
+      "timestamp": "2026-09-05T21:40:09.000Z",
+      "meta": "6 branches • concept map • organelles grouped by the job they do",
+      "data": {
+        "main": "A cell is a factory with departments",
+        "branches": [
+          {
+            "title": "The gate",
+            "items": [
+              "Cell membrane — surrounds the cell and decides what enters and leaves",
+              "Food and oxygen in, waste out",
+              "Selectively permeable: some things through, others blocked"
+            ]
+          },
+          {
+            "title": "The office",
+            "items": [
+              "Nucleus — holds the DNA, the manual for building and running everything",
+              "Most cells carry a complete copy",
+              "A skin cell only ever reads the skin pages"
+            ]
+          },
+          {
+            "title": "The power plants",
+            "items": [
+              "Mitochondria — take sugar and oxygen, release usable energy",
+              "Muscle cells are packed with them"
+            ]
+          },
+          {
+            "title": "The floor and the production line",
+            "items": [
+              "Cytoplasm — the jelly-like fluid where the parts sit and most reactions happen",
+              "Ribosomes — the assembly machines that build proteins",
+              "Endoplasmic reticulum — the hallways that move the products around",
+              "Golgi apparatus — packages and labels them for delivery"
+            ]
+          },
+          {
+            "title": "Plant cells only",
+            "items": [
+              "Cell wall — rigid, outside the membrane; it is why celery snaps and you do not",
+              "Chloroplasts — capture sunlight for photosynthesis",
+              "Central vacuole — stores water; full and the plant stands firm, empty and it wilts"
+            ]
+          },
+          {
+            "title": "The pattern worth keeping",
+            "items": [
+              "Structure fits function at every level of biology",
+              "A wilted houseplant is a storage problem, not a broken stem",
+              "All of it runs in you about thirty trillion times over, unsupervised"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "cl-memory",

@@ -18,7 +18,7 @@
       "title": "The Deal Every Machine Makes",
       "timestamp": "2026-07-21T13:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA machine cannot give you something for nothing. Every one of them makes the same trade, and once you see it you cannot unsee it.\n\n1. Read **The Deal** — the last paragraph is the point of the whole lesson.\n2. Learn the six machines in the **Glossary**, then win the **Matching** game.\n3. Keep the **Six Machines** chart open while you look around the room.\n4. Sort the objects in **Which Machine Is It?** — two of them are arguments.\n5. Take the quiz. Question 4 asks about the trade, which is the real idea.\n6. Use the **Sentence Frames** to explain a machine you actually use.\n7. Lock the ideas in with **Remember the Six Machines** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Lift the Water Jug** — use what you learned on a real problem, and mark every guess as a guess.\n\nChallenge while you work: find five simple machines in the room you are sitting in right now. There are more than you think. ⚙️",
+        "body": "**Due:** (your teacher will tell you)\n\nA machine cannot give you something for nothing. Every one of them makes the same trade, and once you see it you cannot unsee it.\n\n1. Read **The Deal** — the last paragraph is the point of the whole lesson.\n2. Learn the six machines in the **Glossary**, then win the **Matching** game.\n3. Keep the **Six Machines** chart open while you look around the room.\n4. Sort the objects in **Which Machine Is It?** — two of them are arguments.\n5. Take the quiz. Question 4 asks about the trade, which is the real idea.\n6. Use the **Sentence Frames** to explain a machine you actually use.\n7. Lock the ideas in with **Remember the Six Machines** — study the example aid, then make one your own.\n8. Finish with **Design Challenge: Lift the Water Jug** — use what you learned on a real problem, and mark every guess as a guess.\n9. Study the **Six Machines, Two Families** before the sort — the six machines fall into just two families.\n\nChallenge while you work: find five simple machines in the room you are sitting in right now. There are more than you think. ⚙️",
         "objectives": [
           {
             "id": "sk-goal-matching",
@@ -193,6 +193,50 @@
         ]
       },
       "meta": "6 sections • the trade named explicitly"
+    },
+    {
+      "id": "sk-outline",
+      "type": "outline",
+      "title": "Six Machines, Two Families",
+      "timestamp": "2026-09-05T21:40:06.000Z",
+      "meta": "4 branches • concept map • the grouping engineers actually use",
+      "data": {
+        "main": "Six simple machines, one deal",
+        "branches": [
+          {
+            "title": "The inclined-plane family",
+            "items": [
+              "Inclined plane — a ramp; less force to the same height, but a longer trip",
+              "Wedge — an inclined plane that moves: an axe, a knife, a nail, your front teeth",
+              "Screw — an inclined plane wrapped around a post; the threads are a rolled-up ramp"
+            ]
+          },
+          {
+            "title": "The lever family",
+            "items": [
+              "Lever — a stiff bar turning on a fulcrum: a crowbar, a seesaw, a bottle opener, your arm",
+              "Wheel and axle — a lever that turns in a full circle: a doorknob, a steering wheel, a screwdriver",
+              "Pulley — a wheel and axle with a rope in its groove; one changes direction, more reduce force"
+            ]
+          },
+          {
+            "title": "The deal, in every case",
+            "items": [
+              "You trade distance for force",
+              "Half the force, twice the distance; a quarter of the force, four times the distance",
+              "A machine never reduces the total work — it spreads it into a form your body can manage"
+            ]
+          },
+          {
+            "title": "The fee",
+            "items": [
+              "Friction turns some of your effort into heat",
+              "That is why rubbing your hands warms them, and why machines need grease",
+              "It can be reduced; it cannot be removed"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "sk-memory",

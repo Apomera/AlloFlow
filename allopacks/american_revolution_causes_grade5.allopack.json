@@ -18,7 +18,7 @@
       "title": "How Does a Fight Become a War?",
       "timestamp": "2026-07-21T11:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nWars almost never start over one thing. They build. Today you trace ten years of small decisions that turned loyal British subjects into revolutionaries.\n\n1. Read **A Slow Build** — notice how each side thought it was being reasonable.\n2. Learn the terms in the **Glossary**, then win the **Matching** game.\n3. Walk the **Ten Years to Lexington** timeline and watch the pattern repeat.\n4. Sort the events in **Cause or Effect?**\n5. Take the quiz — the last two questions ask you to think like a historian.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Slow Build** — study the example aid, then make one your own.\n8. Finish with **Decision: Would You Sign the Boycott?** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne honest note before you start: the colonists who demanded liberty included people who enslaved others. Both facts are true at once, and good history holds them together. 🇺🇸",
+        "body": "**Due:** (your teacher will tell you)\n\nWars almost never start over one thing. They build. Today you trace ten years of small decisions that turned loyal British subjects into revolutionaries.\n\n1. Read **A Slow Build** — notice how each side thought it was being reasonable.\n2. Learn the terms in the **Glossary**, then win the **Matching** game.\n3. Walk the **Ten Years to Lexington** timeline and watch the pattern repeat.\n4. Sort the events in **Cause or Effect?**\n5. Take the quiz — the last two questions ask you to think like a historian.\n6. Fill in the **Cornell Notes** in your own words.\n7. Lock the ideas in with **Remember the Slow Build** — study the example aid, then make one your own.\n8. Finish with **Decision: Would You Sign the Boycott?** — use what you learned on a real problem, and mark every guess as a guess.\n9. Keep the **How a Fight Becomes a War** chart in front of you while you read — the reading is built on that one cycle.\n\nOne honest note before you start: the colonists who demanded liberty included people who enslaved others. Both facts are true at once, and good history holds them together. 🇺🇸",
         "objectives": [
           {
             "id": "ar-goal-matching",
@@ -119,6 +119,64 @@
         }
       ],
       "meta": "12 terms • Tiered"
+    },
+    {
+      "id": "ar-anchor",
+      "type": "anchor-chart",
+      "title": "How a Fight Becomes a War",
+      "timestamp": "2026-09-05T21:40:00.000Z",
+      "meta": "5 parts • the escalation cycle • for the wall",
+      "data": {
+        "chartType": "reference",
+        "title": "THE CYCLE THAT REPEATS",
+        "sections": [
+          {
+            "label": "1 · BRITAIN ACTS",
+            "bullets": [
+              "Stamp Act, 1765 — a tax on paper goods",
+              "Townshend Acts — taxes on glass, paper, tea",
+              "Intolerable Acts — Boston's port closed"
+            ],
+            "iconPrompt": "a formal seal pressed onto a document"
+          },
+          {
+            "label": "2 · COLONISTS PROTEST",
+            "bullets": [
+              "\"No taxation without representation\"",
+              "Boycotts — much of it organised by women",
+              "342 chests of tea into Boston Harbor"
+            ],
+            "iconPrompt": "a hand refusing a offered parcel"
+          },
+          {
+            "label": "3 · BRITAIN RESPONDS HARDER",
+            "bullets": [
+              "Repeal one tax, pass another",
+              "Soldiers stationed in Boston",
+              "Massachusetts loses its self-government"
+            ],
+            "iconPrompt": "a closed gate across a harbour"
+          },
+          {
+            "label": "4 · MORE COLONISTS JOIN",
+            "bullets": [
+              "Other colonies decide it is their fight too",
+              "First Continental Congress, twelve colonies, 1774",
+              "Lexington and Concord, April 1775"
+            ],
+            "iconPrompt": "several small flags gathering into one group"
+          },
+          {
+            "label": "WHO WAS ON WHICH SIDE",
+            "bullets": [
+              "Patriots wanted independence",
+              "Loyalists — about one in five — stayed with Britain",
+              "Both sides said they were defending liberty"
+            ],
+            "iconPrompt": "two hands pulling opposite ends of one rope"
+          }
+        ]
+      }
     },
     {
       "id": "ar-memory",
