@@ -119,6 +119,23 @@ describe('Prim3D.buildRefinePrompt (AI edits an existing recipe — canonical ho
   });
 });
 
+describe('Prim3D prompts: drawnShapes opt-in (Art Studio has a profile pad; Print Lab does not)', () => {
+  it('keeps the five-primitive whitelist unless a caller opts in', () => {
+    expect(P.buildRecipePrompt('a lighthouse')).not.toMatch(/lathe|extrude/);
+    expect(P.buildRefinePrompt({ name: 'x', parts: [] }, 'taller')).not.toMatch(/lathe|extrude/);
+  });
+  it('offers lathe and extrude, with size semantics and no hand-written profile, when opted in', () => {
+    const p = P.buildRecipePrompt('a lighthouse', { drawnShapes: true });
+    expect(p).toMatch(/box, sphere, cylinder, cone, torus, lathe, extrude\./);
+    expect(p).toMatch(/lathe=\[radius,height\]/);
+    expect(p).toMatch(/extrude=\[width,height,depth\]/);
+    expect(p).toMatch(/omit "profile"/);
+    const r = P.buildRefinePrompt({ name: 'x', parts: [] }, 'taller', { drawnShapes: true });
+    expect(r).toMatch(/torus, lathe, extrude/);
+    expect(r).toMatch(/keep any existing "profile" arrays/);
+  });
+});
+
 describe('Prim3D voice-directed sculpting (hands-free / accessible making)', () => {
   it('buildSculptCommandPrompt embeds the transcript, the sculpture state, the action set, and JSON-only', () => {
     const p = P.buildSculptCommandPrompt('make it a bit bigger', true);

@@ -128,7 +128,7 @@
   function buildRecipePrompt(subject, opts) {
     opts = opts || {};
     return [
-      'Design a simple, charming 3D object built ONLY from these primitive shapes: box, sphere, cylinder, cone, torus.',
+      'Design a simple, charming 3D object built ONLY from these primitive shapes: box, sphere, cylinder, cone, torus' + (opts.drawnShapes ? ', lathe, extrude.' : '.'),
       'Subject: "' + String(subject || 'a friendly mascot') + '"',
       (opts.style ? 'Style: ' + opts.style : 'Style: cheerful low-poly toy, bold colors'),
       'Return ONLY JSON of this exact shape:',
@@ -136,7 +136,7 @@
       'Rules:',
       '- 4 to ' + MAX_PARTS + ' parts. y is UP. The object STANDS ON the ground plane y=0 (no part below y=0).',
       '- Overall height about 1.0 unit; position is each part\'s CENTER; rotation in degrees.',
-      '- size semantics: box=[width,height,depth]; sphere=[radius]; cylinder=[radius,height]; cone=[radius,height]; torus=[ring radius,tube radius].',
+      '- size semantics: box=[width,height,depth]; sphere=[radius]; cylinder=[radius,height]; cone=[radius,height]; torus=[ring radius,tube radius]' + (opts.drawnShapes ? '; lathe=[radius,height] (a vase-like profile revolved around its vertical axis); extrude=[width,height,depth] (a star-like outline pushed out along depth). For lathe and extrude omit "profile"; the studio supplies the default profile.' : '.'),
       '- stretch is optional per-axis silhouette morphing [x,y,z], normally [1,1,1], each value 0.1 to 4.',
       '- deform is optional: taper -0.85 to 0.85, twist -180 to 180 degrees, bulge -0.75 to 1.5; normally all 0.',
       '- label is an optional short part name; finish is standard, matte, gloss, metal, or wire; opacity is 0.15 to 1.',
@@ -156,7 +156,7 @@
       json,
       'The student wants this change: "' + String(instruction || '') + '"',
       'Modify the JSON to make that change while keeping it a recognizable, charming low-poly object.',
-      'Use ONLY box, sphere, cylinder, cone, torus. Keep the SAME JSON shape:',
+      'Use ONLY box, sphere, cylinder, cone, torus' + (opts.drawnShapes ? ', lathe, extrude (keep any existing "profile" arrays exactly as given)' : '') + '. Keep the SAME JSON shape:',
       '{ "name": "...", "parts": [ { "shape": "box", "label": "body", "size": [w,h,d], "stretch": [sx,sy,sz], "deform": { "taper": 0, "twist": 0, "bulge": 0 }, "position": [x,y,z], "rotation": [rx,ry,rz], "color": "#rrggbb", "finish": "standard", "opacity": 1 } ] }',
       'Rules: 4-' + MAX_PARTS + ' parts; y is UP; the object STANDS ON y=0; sizes/positions in the same small range as the input; school-appropriate; no text.',
       'Return ONLY the updated JSON.'

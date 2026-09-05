@@ -8050,7 +8050,10 @@ const d = labToolData.artStudio || {};
                 if (typeof callGemini !== 'function' || window._artSculptBusy) return;
                 var subj = (d.sculptText || '').trim(); if (!subj) return;
                 window._artSculptBusy = true; upd('_sculptPing', (d._sculptPing || 0) + 1);
-                var prompt = recipe ? P3D.buildRefinePrompt(recipe, subj) : P3D.buildRecipePrompt(subj);
+                // drawnShapes: this studio renders lathe/extrude parts and has a
+                // profile pad for them, so the AI may use them here (other callers
+                // keep the five-primitive whitelist).
+                var prompt = recipe ? P3D.buildRefinePrompt(recipe, subj, { drawnShapes: true }) : P3D.buildRecipePrompt(subj, { drawnShapes: true });
                 callGemini(prompt, false, false, 0.85).then(function(resp) {
                   var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
                   window._artSculptBusy = false;
