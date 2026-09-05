@@ -3305,6 +3305,44 @@ window.StemLab = window.StemLab || {
     fill.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(-P.sunDir[0], 0.5, -P.sunDir[2]).normalize(), 200);
     fill.target.position.copy(fieldCentre);
     S.model.add(fill); S.model.add(fill.target);
+    if (!contrast && typeof THREE.Sprite === 'function') {
+      // A soft flare where the sun is, so looking toward it costs something.
+      var flareTex = makeCanvasTexture(THREE, 128, function (g2, n2) {
+        var rg = g2.createRadialGradient(n2 / 2, n2 / 2, 0, n2 / 2, n2 / 2, n2 / 2);
+        rg.addColorStop(0, 'rgba(255,250,230,0.95)'); rg.addColorStop(0.25, 'rgba(255,230,180,0.45)'); rg.addColorStop(1, 'rgba(255,200,140,0)');
+        g2.fillStyle = rg; g2.fillRect(0, 0, n2, n2);
+      });
+      if (flareTex) {
+        var flare = new THREE.Sprite(new THREE.SpriteMaterial({ map: flareTex, color: P.sun, transparent: true, opacity: 0.35 + 0.35 * P.glow, depthWrite: false, depthTest: false, fog: false }));
+        flare.position.copy(fieldCentre).addScaledVector(new THREE.Vector3(P.sunDir[0], P.sunDir[1], P.sunDir[2]).normalize(), 330);
+        flare.scale.set(P.stars ? 40 : 110, P.stars ? 40 : 110, 1);
+        S.model.add(flare);
+      }
+      // Clouds: a dozen soft sprites high over the valley, drifting with the
+      // wind. Tinted by the hour so a dusk cloud is lit from below.
+      var cloudTex = makeCanvasTexture(THREE, 256, function (g2, n2) {
+        g2.clearRect(0, 0, n2, n2);
+        for (var ci = 0; ci < 9; ci++) {
+          var cx = n2 * (0.25 + hash01(ci, 3, 51) * 0.5), cy = n2 * (0.35 + hash01(ci, 5, 52) * 0.3), cr = n2 * (0.12 + hash01(ci, 7, 53) * 0.16);
+          var rg2 = g2.createRadialGradient(cx, cy, 0, cx, cy, cr);
+          rg2.addColorStop(0, 'rgba(255,255,255,0.9)'); rg2.addColorStop(0.6, 'rgba(255,255,255,0.35)'); rg2.addColorStop(1, 'rgba(255,255,255,0)');
+          g2.fillStyle = rg2; g2.fillRect(0, 0, n2, n2);
+        }
+      });
+      if (cloudTex) {
+        var cloudTint = P.stars ? 0x3a4763 : (P.id === 'dusk' ? 0xf7b08a : (P.id === 'dawn' ? 0xfbd9c4 : 0xffffff));
+        var clouds = new THREE.Group();
+        for (var ck = 0; ck < 16; ck++) {
+          var cl = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, color: cloudTint, transparent: true, opacity: P.stars ? 0.45 : 0.75, depthWrite: false }));
+          var cs = 70 + hash01(ck, 11, 54) * 80;
+          cl.scale.set(cs, cs * 0.45, 1);
+          cl.position.set((hash01(ck, 13, 55) - 0.5) * 420, 38 + hash01(ck, 17, 56) * 34, -standoff * 0.5 + (hash01(ck, 19, 57) - 0.5) * 380);
+          cl.userData = { x0: cl.position.x, speed: 0.4 + hash01(ck, 23, 58) * 0.5 };
+          clouds.add(cl);
+        }
+        S.model.add(clouds); S.clouds = clouds;
+      }
+    }
 
     // ── Ground ──
     var ext = { minCol: 0, maxCol: 0, maxRow: 0 };
@@ -3343,7 +3381,18 @@ window.StemLab = window.StemLab || {
     }
     geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
     geo.computeVertexNormals();
-    var ground = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    // A fine, repeating noise over the vertex colours, so a flat lane at
+    // close range is not a flat colour.
+    var grassTex = contrast ? null : makeCanvasTexture(THREE, 128, function (g2, n2) {
+      g2.fillStyle = '#e6e6e6'; g2.fillRect(0, 0, n2, n2);
+      for (var gi3 = 0; gi3 < 2600; gi3++) {
+        var gx = hash01(gi3, 29, 61) * n2, gy = hash01(gi3, 31, 62) * n2, gl = hash01(gi3, 37, 63);
+        g2.fillStyle = gl > 0.5 ? 'rgba(255,255,255,' + (0.08 + gl * 0.2) + ')' : 'rgba(30,40,20,' + (0.06 + gl * 0.22) + ')';
+        g2.fillRect(gx, gy, 1 + gl * 2, 1 + (1 - gl) * 3);
+      }
+    });
+    if (grassTex) grassTex.repeat.set(groundSpan / 6, groundSpan / 6);
+    var ground = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, map: grassTex || null }));
     ground.receiveShadow = !contrast;
     S.model.add(ground);
 
@@ -3378,6 +3427,38 @@ window.StemLab = window.StemLab || {
         placed++;
       }
       foliage.count = placed; trunks.count = placed;
+      // Broadleaf trees: a round canopy on a taller trunk, a lighter green,
+      // scattered among the conifers so the woods read as woods.
+      var BROAD = 60;
+      var canopy = new THREE.InstancedMesh(new THREE.SphereGeometry(1.5, 8, 6), mat(0xffffff), BROAD);
+      var boles = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.14, 0.22, 2.2, 6), mat(0x6b4b2a), BROAD);
+      canopy.castShadow = true;
+      var bPlaced = 0, bTries = 0;
+      while (bPlaced < BROAD && bTries < BROAD * 6) {
+        bTries++;
+        var bx = (hash01(bTries, 67, 71) - 0.5) * (groundSpan * 0.8);
+        var bz = (hash01(bTries, 73, 72) - 0.5) * (groundSpan * 0.8) - standoff * 0.5;
+        if (Math.abs(bx) < laneHalf + 6 && bz < 14 && bz > -standoff - 20) continue;
+        if (Math.sqrt(bx * bx + (bz + standoff * 0.5) * (bz + standoff * 0.5)) > groundSpan * 0.44) continue;
+        var by = terrainHeight(bx, bz, standoff, laneHalf);
+        var bsc = 0.9 + hash01(bTries, 79, 73) * 1.1;
+        dummy.position.set(bx, by + 2.2 * bsc + 0.9, bz);
+        dummy.scale.set(bsc * (0.9 + hash01(bTries, 83, 74) * 0.4), bsc * 0.85, bsc);
+        dummy.rotation.set(0, 0, 0);
+        dummy.updateMatrix();
+        canopy.setMatrixAt(bPlaced, dummy.matrix);
+        leaf.setHex(0x5f9a3a).lerp(new THREE.Color(0xa7c94a), hash01(bTries, 89, 75));
+        canopy.setColorAt(bPlaced, leaf);
+        dummy.position.set(bx, by + 1.1 * bsc, bz);
+        dummy.scale.set(bsc, bsc, bsc);
+        dummy.updateMatrix();
+        boles.setMatrixAt(bPlaced, dummy.matrix);
+        bPlaced++;
+      }
+      canopy.count = bPlaced; boles.count = bPlaced;
+      canopy.instanceMatrix.needsUpdate = true; boles.instanceMatrix.needsUpdate = true;
+      if (canopy.instanceColor) canopy.instanceColor.needsUpdate = true;
+      S.model.add(canopy); S.model.add(boles);
       foliage.instanceMatrix.needsUpdate = true; trunks.instanceMatrix.needsUpdate = true;
       if (foliage.instanceColor) foliage.instanceColor.needsUpdate = true;
       S.model.add(foliage); S.model.add(trunks);
@@ -3409,7 +3490,7 @@ window.StemLab = window.StemLab || {
     function colourFor(b) {
       if (contrast) return b.state === 'breached' ? 0x888888 : 0xffffff;
       var v = 0.86 + hash01(b.col, b.row, 6) * 0.14;
-      if (b.state === 'cracked') return new THREE.Color(0xd08a4a).getHex();
+      if (b.state === 'cracked') return new THREE.Color(0xb8865e).getHex();
       if (b.state === 'breached') return new THREE.Color(0.66 * v, 0.62 * v, 0.56 * v).getHex();
       if (b.mat === 'granite') return new THREE.Color(0.62 * v, 0.64 * v, 0.68 * v).getHex();
       if (b.mat === 'earth') return new THREE.Color(0.55 * v, 0.42 * v, 0.28 * v).getHex();
@@ -3429,7 +3510,68 @@ window.StemLab = window.StemLab || {
         roof.position.set(tx, th + 1.1, 0);
         roof.castShadow = !contrast;
         S.model.add(roof);
+        if (!contrast) {
+          // Windows on the face toward the engine, lit after dark.
+          var lit = P.fire >= 0.9;
+          for (var wi2 = 0; wi2 < 3; wi2++) {
+            var win = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.6, 0.12), new THREE.MeshLambertMaterial({
+              color: lit ? 0xffc36b : 0x2a2420, emissive: lit ? 0xffa73a : 0x000000, emissiveIntensity: lit ? 0.9 : 0
+            }));
+            win.position.set(tx + (wi2 - 1) * 0.7 * 0.6, th * 0.35 + wi2 * (th * 0.22), -1.86);
+            S.model.add(win);
+          }
+          // A torch bracket on the rampart, burning at dusk and night.
+          if (P.fire > 0.5) {
+            var bracket = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 6), mat(0x2b2118));
+            bracket.position.set(tx - side * 2.15, th - 0.9, -1.2);
+            S.model.add(bracket);
+            var torchFlame = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.42, 7), new THREE.MeshLambertMaterial({ color: 0xff8a2a, emissive: 0xff5a00, emissiveIntensity: 1.1, transparent: true, opacity: 0.9 }));
+            torchFlame.position.set(tx - side * 2.15, th - 0.3, -1.2);
+            S.model.add(torchFlame);
+            var torchLight = new THREE.PointLight(0xff9a3a, P.fire * 0.7, 22, 2);
+            torchLight.position.copy(torchFlame.position).add(new THREE.Vector3(0, 0.4, -0.4));
+            S.model.add(torchLight);
+            S.torches = (S.torches || []).concat([{ flame: torchFlame, light: torchLight, base: P.fire * 0.7 }]);
+          }
+        }
       });
+      if (!contrast) {
+        // The moat: a strip of water in front of the wall, rippling, with a
+        // plank bridge across the middle. Rubble that falls forward lands in
+        // it, which is where a real siege put its rubble too.
+        var waterTex = makeCanvasTexture(THREE, 128, function (g2, n2) {
+          g2.fillStyle = '#cfe3ee'; g2.fillRect(0, 0, n2, n2);
+          g2.strokeStyle = 'rgba(255,255,255,0.55)'; g2.lineWidth = 2;
+          for (var wr = 0; wr < 9; wr++) {
+            g2.beginPath();
+            for (var wx = 0; wx <= n2; wx += 8) g2.lineTo(wx, wr * 14 + 6 + Math.sin(wx * 0.16 + wr) * 3.5);
+            g2.stroke();
+          }
+        });
+        if (waterTex) waterTex.repeat.set(Math.max(2, span / 4), 1.2);
+        var waterCol = new THREE.Color(P.horizon).lerp(new THREE.Color(0x2c6f9e), P.stars ? 0.85 : 0.55);
+        var water = new THREE.Mesh(new THREE.PlaneGeometry(span + 7, 4.2), new THREE.MeshLambertMaterial({
+          color: waterCol.getHex(), map: waterTex || null, transparent: true, opacity: 0.82
+        }));
+        water.rotation.x = -Math.PI / 2;
+        water.position.set(0, 0.06, 4.1);
+        water.receiveShadow = true;
+        S.model.add(water);
+        S.water = water;
+        var bank = new THREE.Mesh(new THREE.BoxGeometry(span + 9, 0.3, 0.6), mat(0x8a7452));
+        bank.position.set(0, 0.15, 6.5);
+        bank.receiveShadow = true;
+        S.model.add(bank);
+        var bridge = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.18, 5.4), mat(0x6b4b2a, tex.wood ? { map: tex.wood } : null));
+        bridge.position.set(0, 0.32, 4.1);
+        bridge.castShadow = true; bridge.receiveShadow = true;
+        S.model.add(bridge);
+        [-1.2, 1.2].forEach(function (bxr) {
+          var rail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 5.4), mat(0x5b3b1f));
+          rail.position.set(bxr, 0.66, 4.1);
+          S.model.add(rail);
+        });
+      }
       if (!contrast) {
         var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 3.2, 6), mat(0x3b2a1a));
         pole.position.set(span / 2 + 1.9, wallTop + 2.6 + 2.2 + 1.5, 0);
@@ -3908,6 +4050,24 @@ window.StemLab = window.StemLab || {
           bp.setY(bv, by - Math.max(0, 1 - windAbs / 3) * 0.35 * (bx / 2.4));
         }
         bp.needsUpdate = true;
+      }
+      if (S.clouds) {
+        S.clouds.children.forEach(function (cl, ci2) {
+          var u = cl.userData;
+          cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % 460 : 0);
+          if (cl.position.x > 230) cl.position.x -= 460; if (cl.position.x < -230) cl.position.x += 460;
+        });
+      }
+      if (S.water && S.water.material.map) {
+        S.water.material.map.offset.x = ambient ? (tSec * 0.03) % 1 : 0;
+        S.water.material.map.offset.y = ambient ? (tSec * 0.012) % 1 : 0;
+      }
+      if (S.torches) {
+        S.torches.forEach(function (tc, tI) {
+          var tf = ambient ? (0.8 + 0.2 * Math.sin(tSec * 19 + tI * 2.1) + 0.1 * Math.sin(tSec * 6.3 + tI)) : 1;
+          tc.light.intensity = tc.base * tf;
+          tc.flame.scale.set(1, tf, 1);
+        });
       }
       if (S.birds) {
         S.birds.children.forEach(function (bird) {

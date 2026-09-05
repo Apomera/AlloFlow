@@ -144,6 +144,19 @@ it the stone JUMPED to the end of its arc: a shot that looks like nothing happen
 - **Work record** gains "Best sieges: keep 4 shots (181 kJ), …".
 - **Quest** `breach_two_targets` (🌄), keyed on `siegeBests`.
 
+### Wave 5 (2026-09-05), dressing
+
+All procedural, all under `!contrast`, each texture guarded so a missing canvas is silent:
+sun flare sprite on the sun direction (depth test off, fog off); 16 cloud sprites at 38–72 m
+tinted by the hour, drifting with the wind, still with ambient off; a fine noise texture
+multiplied over the terrain's vertex colours (repeat span/6); 60 broadleaf trees (sphere
+canopies, taller boles, lighter greens) among the 110 conifers; a moat strip with a scrolling
+ripple texture, a bank and a plank drawbridge with rails in front of the wall, so forward
+rubble lands in water; tower windows lit (`P.fire >= 0.9`, night) and torches on brackets
+(`P.fire > 0.5`, dusk + night) with flickering point lights; cracked stone bruised
+(`0xb8865e`) instead of orange. ★Clouds at 75–120 m were out of every default frame; 38–72 m
+sits them over the hills.
+
 Tests: `tests/machinelab_scene.test.js` (25) pins reachability, the shared siege, the
 text alternatives, the pure terrain/sky helpers extracted by name from the source, and the
 motion preference. Screenshots: `ml_scene_shots.cjs` gained the field at dusk, the castle

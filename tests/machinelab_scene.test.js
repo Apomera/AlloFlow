@@ -392,3 +392,49 @@ describe('Siege Field wave 4: sound, crew, record, quest', () => {
     expect(src).toContain("var heave = (winding > 0 && !red) ? Math.sin(tSec * 7 * Math.PI / 1.0) : 0;");
   });
 });
+
+describe('Siege Field wave 5: dressing that follows the hour', () => {
+  it('lights the tower windows and torches only after dark, from the same preset the sky uses', () => {
+    const src = source();
+    expect(src).toContain('var lit = P.fire >= 0.9;');
+    expect(src).toContain('if (P.fire > 0.5) {');
+    // Dusk and night burn; dawn glows faintly; noon is out. The thresholds
+    // above sit between the presets' fire values.
+    const grab = (name) => {
+      const m = src.match(new RegExp('\\n  function ' + name + '\\(([^)]*)\\) \\{([\\s\\S]*?)\\n  \\}\\n'));
+      return new Function(m[1], m[2]);
+    };
+    const skyPreset = grab('skyPreset');
+    expect(skyPreset('noon', false).fire).toBe(0);
+    expect(skyPreset('dawn', false).fire).toBeLessThan(0.5);
+    expect(skyPreset('dusk', false).fire).toBeGreaterThan(0.5);
+    expect(skyPreset('night', false).fire).toBeGreaterThanOrEqual(0.9);
+  });
+
+  it('keeps every new texture procedural and guarded, so a missing canvas is silent', () => {
+    const src = source();
+    for (const name of ['flareTex', 'cloudTex', 'grassTex', 'waterTex']) {
+      expect(src, name).toMatch(new RegExp('var ' + name + ' = (contrast \\? null : )?makeCanvasTexture\\(THREE'));
+    }
+    expect(src).toContain('if (flareTex) {');
+    expect(src).toContain('if (cloudTex) {');
+    expect(src).toContain('if (grassTex) grassTex.repeat.set(groundSpan / 6, groundSpan / 6);');
+    expect(src).toContain('if (waterTex) waterTex.repeat.set(Math.max(2, span / 4), 1.2);');
+  });
+
+  it('drifts the clouds with the wind and stills them with ambient motion off', () => {
+    const src = source();
+    expect(src).toContain("cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % 460 : 0);");
+    expect(src).toContain("S.water.material.map.offset.x = ambient ? (tSec * 0.03) % 1 : 0;");
+  });
+
+  it('does not dress a high-contrast field with clouds, moat or windows', () => {
+    const src = source();
+    const start = src.indexOf('function buildFieldScene(');
+    const body = src.slice(start, src.indexOf('var SCENE_GL = '));
+    // Each dressing block sits under a !contrast guard.
+    expect(body).toContain("if (!contrast && typeof THREE.Sprite === 'function') {");
+    expect(body).toContain("var grassTex = contrast ? null : makeCanvasTexture(");
+    expect(body).toContain('if (!contrast) {\n        // The moat:');
+  });
+});
