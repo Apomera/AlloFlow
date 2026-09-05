@@ -48,10 +48,16 @@ Two host observations, both pre-existing and outside this pack: clicking "Load i
 
 Not done: a physical screen reader session (the accessibility tree was checked through DOM attributes only), Spanish whole-pack translation, Send home shelf reopen, and the seed plan's cross-set checks 8-10, which gate the catalog launch rather than a single pack.
 
-## Publication
+## Publication (what actually happened)
 
-Committed locally by pathspec (see the commit for the exact list): source and illustrated packs, WebP assets with `manifest.json` and `alt-text.json`, catalog entry, glossary source/module/mirror, contracts module/mirror, builder, both tests, this report and the handoff. The PNG masters (24 files, about 55 MB) are deliberately not committed: each pack of this kind would add tens of megabytes to a repository that also feeds the CDN deploy. They remain in `allopacks/media/water_cycle_grade6/` on disk and are reproducible from the prompts and hashes recorded in `manifest.json`.
+The pilot went live before this session could commit it. Another session ran a whole-tree deploy at 08:57 on September 5 (commit f238731dd, "Deploy everyone's work", 1,064 files) that swept every pilot file from the shared working tree, including the science-corrected packs, the WebP assets, the catalog entry, the glossary renderer, the contract depth change and both tests. That commit is on origin/main and the CDN deploy that followed (post-deploy commit 50c17c712, hash refs @8dbbc1d18) shipped the renderer.
 
-Publication to the live Community Library is a `git push origin main` (the catalog reads raw main). At the time of writing, main also carries ten unpushed commits from other sessions (Art Studio, Machine Lab, Brain Atlas, Fisher Lab), so the push was held for the user's decision rather than made here. Note also that the deployed app loads modules by CDN hash reference, so the glossary alt renderer goes live only with the next deploy, not with the catalog push; until then the pack loads and renders normally but glossary images announce as decorative, exactly as before this work.
+Verified live, with nothing intercepted:
 
-Rollback, if ever needed: remove only the `water_cycle_grade6_illustrated` entry from `catalog/index.json`; the original `water_cycle` entry and the source pack are untouched by that.
+- Raw manifest on main lists water_cycle_grade6_illustrated; the raw pack is 1,621,652 characters, contains the sea-spray FAQ wording (so it is today's corrected build) and 24 WebP data URLs.
+- The CDN view_glossary_module.js contains getGlossaryImageAlt, and the app shell references view_glossary_module.js?v=8dbbc1d18.
+- The deployed app, driven by Playwright with no routes: the Community Catalog shows both water-cycle entries; Load in AlloFlow loads all 12 resources; the glossary table shows 10 images with descriptive alt and no presentation role; the four-panel image group renders with alt, labels and caption; no page errors.
+
+Two consequences of the sweep to know about: the 24 PNG masters (about 55 MB) are now in git history, which this session had intended to keep out; and this session's own commit (35e9efcd9, this report plus the term-leak assertion) is local and unpushed alongside eleven other sessions' commits, so it was not pushed here.
+
+Rollback, if ever needed: remove only the water_cycle_grade6_illustrated entry from catalog/index.json; the original water_cycle entry and the source pack are untouched by that.
