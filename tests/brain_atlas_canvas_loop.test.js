@@ -38,7 +38,7 @@ describe('brain atlas canvas loops', () => {
       // Pin the BEHAVIOUR (a width cap proportional to the canvas), not the
       // tuning. The literals moved 260 -> 280 and 0.42 -> 0.44 and the exact
       // string went stale, though nothing about the wrapping had changed.
-      expect(source).toMatch(/var pillMaxWidth = Math\.min\(\d+, W \* [\d.]+\);/);
+      expect(source).toMatch(/var pillMaxWidth = Math\.min\([^,\n]+, W \* [\d.]+\);/);
       // The pill used to be clamped inline via pillX/pillY. Those locals now
       // live inside brainAtlasFindRegionLabelPlacement, which also does
       // collision avoidance — a strictly better implementation of the same
