@@ -24965,7 +24965,9 @@
       "verdict_promising_meaning": "An early result worth following, but not yet validated in new populations or real-world use.",
       "neuromyths_panel_title": "The brain science, honestly",
       "neuromyths_panel_intro": "Surveys of teachers in several countries find that most endorse at least a few neuromyths, and the myths tend to spread through well-meant training rather than bad intent. Each card here pairs a popular claim with the evidence and a classroom alternative.",
-      "neuromyths_panel_note": "Nothing here is a diagnosis or a treatment claim. Where a condition is discussed, differences are described at the group level only, and support decisions belong with the student, family, and clinical team."
+      "neuromyths_panel_note": "Nothing here is a diagnosis or a treatment claim. Where a condition is discussed, differences are described at the group level only, and support decisions belong with the student, family, and clinical team.",
+      "region_selected_generic": "Region selected. Details are below the diagram.",
+      "region_selected_suffix": "selected. Details are below the diagram."
     },
     "bridgelab": {
       "initializing_bridge_lab": "🌉 Initializing Bridge Lab...",
@@ -40176,6 +40178,7 @@
       "tour_return": "Return to the grand overview",
       "status_chip_focused": "Focused on {name} · drag or use arrow keys to orbit",
       "status_chip_help": "Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars",
+      "status_nebula_generic": "Nebula",
       "dur_forever": "Forever",
       "collapse_bd_title": "No sustained stellar fusion",
       "collapse_bd_badge": "Substellar",

@@ -97,3 +97,9 @@ Scope and safeguards:
 - Every ADHD and autism sentence is intended for Aaron's review before deployment.
 
 Validation targets: golden digests for all 23 views; the neuromyths content locks in tests/brain_atlas_neuromyths.test.js; the existing Brain Atlas suites; a pixel render of the belief-versus-evidence canvas.
+
+## Quiz distractors and diagram selection
+
+September 5, 2026. The damage-localization quiz now draws its three wrong answers from the same view as the correct region first, and reaches into other views only when that view has fewer than three other damage-bearing regions. Before this, a question about the frontal lobe could offer a sleep stage or a brain wave as a choice, which let students answer by elimination instead of by localization. Each option button carries the option's view and the answer's view as data attributes so the rule is testable.
+
+Picking a region on the 2D diagram, by its label or by its marker, now sends a short spoken confirmation naming the region and saying where the details are. Directory picks already announced through the detail-panel scroll; the canvas path had been silent. No science content changed.

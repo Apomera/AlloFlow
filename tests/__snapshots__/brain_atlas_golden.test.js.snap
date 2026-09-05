@@ -27,8 +27,8 @@ exports[`brainAtlas render goldens > quiz mode renders a question + options 1`] 
   "buttons": 62,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 144,
-  "sha": "0fb2d1dff8689e50",
+  "lengthBucket": 146,
+  "sha": "b97ad989a2372c5e",
   "svgs": 0,
 }
 `;

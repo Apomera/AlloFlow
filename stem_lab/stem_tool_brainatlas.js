@@ -1372,7 +1372,8 @@ var d = labToolData.brainAtlas || {};
 
           // Quiz logic — options memoized in state to prevent re-shuffle on render
 
-          var allRegions = []; Object.values(VIEWS).forEach(function (v) { v.regions.forEach(function (r) { if (!allRegions.find(function (a) { return a.id === r.id; })) allRegions.push(r); }); });
+          var allRegions = []; var brainAtlasRegionViewKey = {};
+          Object.keys(VIEWS).forEach(function (vk) { VIEWS[vk].regions.forEach(function (r) { if (!allRegions.find(function (a) { return a.id === r.id; })) { allRegions.push(r); brainAtlasRegionViewKey[r.id] = vk; } }); });
 
           var quizPool = allRegions.filter(function (r) { return r.damage; });
 
@@ -1382,7 +1383,10 @@ var d = labToolData.brainAtlas || {};
 
           if (quizQ && d._brainQuizOptsFor !== d.quizIdx) {
 
-            var wrong = quizPool.filter(function (r) { return r.id !== quizQ.id; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+            var quizAnswerView = brainAtlasRegionViewKey[quizQ.id];
+            var sameViewWrong = quizPool.filter(function (r) { return r.id !== quizQ.id && brainAtlasRegionViewKey[r.id] === quizAnswerView; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+            var otherViewWrong = quizPool.filter(function (r) { return r.id !== quizQ.id && brainAtlasRegionViewKey[r.id] !== quizAnswerView; }).sort(function () { return Math.random() - 0.5; }).slice(0, 3 - sameViewWrong.length);
+            var wrong = sameViewWrong.concat(otherViewWrong);
 
             brainQuizOpts = wrong.concat([quizQ]).sort(function () { return Math.random() - 0.5; });
 
@@ -6515,6 +6519,7 @@ var d = labToolData.brainAtlas || {};
                 var label = canvas._brainLabelTargets[labelIndex];
                 if (cx >= label.x && cx <= label.x + label.w && cy >= label.y && cy <= label.y + label.h && filtered.some(function (region) { return region.id === label.id; })) {
                   upd('selectedRegion', label.id);
+                  if (typeof announceToSR === 'function') announceToSR(brainAtlasRegionSelectedMessage(label.id));
                   return;
                 }
               }
@@ -6531,6 +6536,7 @@ var d = labToolData.brainAtlas || {};
 
             if (closest) {
               upd('selectedRegion', closest.id);
+              if (typeof announceToSR === 'function') announceToSR(brainAtlasRegionSelectedMessage(closest.id));
               if (currentView.isPrenatal && closest.week) upd('prenatalWeek', closest.week);
             }
 
@@ -6652,6 +6658,11 @@ var d = labToolData.brainAtlas || {};
           }
           function scrollToBrainAtlasDiagram() {
             scrollToBrainAtlasSection('brainatlas-canvas-fullscreen', t('stem.brainatlas.diagram_in_view', 'Brain Atlas diagram is now in view.') || 'Brain Atlas diagram is now in view.');
+          }
+          function brainAtlasRegionSelectedMessage(regionId) {
+            var picked = regions.find(function (region) { return region.id === regionId; });
+            if (!picked) return t('stem.brainatlas.region_selected_generic', 'Region selected. Details are below the diagram.');
+            return picked.name + ' ' + (t('stem.brainatlas.region_selected_suffix', 'selected. Details are below the diagram.') || 'selected. Details are below the diagram.');
           }
           function brainAtlasRegionButtonId(regionId) {
             return 'brainatlas-region-' + viewKey + '-' + regionId;
@@ -11466,7 +11477,7 @@ var d = labToolData.brainAtlas || {};
 
                       var showResult = fb !== null && fb !== undefined;
 
-                      return React.createElement("button", { key: opt.id, disabled: showResult,
+                      return React.createElement("button", { key: opt.id, disabled: showResult, "data-brainatlas-quiz-option": opt.id, "data-brainatlas-quiz-option-view": brainAtlasRegionViewKey[opt.id] || "", "data-brainatlas-quiz-answer-view": brainAtlasRegionViewKey[quizQ.id] || "",
 
                         onClick: function () {
 
