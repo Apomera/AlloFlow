@@ -221,7 +221,9 @@ function stageBundle(stagingDir) {
   return dest;
 }
 
-function main() {
+async function main() {
+  // EPUBCheck is not in git: fetch (or copy from a local install) and hash-verify it first.
+  await require('./fetch_epubcheck.cjs').ensureEpubcheck();
   stageBundle(STAGING);
 
   if (!LEAN) {
@@ -276,4 +278,4 @@ function main() {
 // building a bundle as a side effect (tests/mcp_remediation_stdio_smoke.test.js pins that parity).
 // Same require.main pattern as remediation_headless_driver.cjs's direct CLI.
 module.exports = { buildManifest, stageBundle, materializeAndVerifyVendorBundle };
-if (require.main === module) main();
+if (require.main === module) main().catch((error) => { console.error('[build-mcpb] ERROR: ' + (error && error.stack || error)); process.exitCode = 1; });

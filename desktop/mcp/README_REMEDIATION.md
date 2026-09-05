@@ -1,6 +1,10 @@
 # AlloFlow Document Remediation — local MCP connector (v1)
 
 Despite the historical `pdf_*` tool names, the connector remediates PDFs, Word documents, slides, spreadsheets, images, markdown/text and accessible HTML.
+It is host-agnostic: stdio for Claude Desktop, Claude Code, Codex CLI, Cursor, VS Code and Gemini CLI, plus an optional
+bearer-token Streamable HTTP transport (`--http=<port>`) for ChatGPT and other HTTP-only hosts. See `HOSTS.md`.
+From a checkout, run `node desktop/mcp/fetch_epubcheck.cjs` once: the EPUBCheck distribution is hash-pinned in
+`vendor/manifest.json` but not stored in git.
 
 Exposes the **real remediation pipeline** (`doc_pipeline_module.js`, the same bytes the app
 ships) as MCP tools. A self-contained **sibling** of `alloflow-mcp-stdio.cjs` (the Agent Core

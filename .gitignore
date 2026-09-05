@@ -267,3 +267,7 @@ desktop/web-app/firestore-debug.log
 # here from runtime/package.json + package-lock.json (both tracked). The
 # installed tree is build residue: 6,855 files.
 desktop/mcp/runtime/node_modules/
+
+# EPUBCheck distribution (35 MB): materialised by desktop/mcp/fetch_epubcheck.cjs and verified
+# against the committed desktop/mcp/vendor/manifest.json hashes; never stored in git.
+desktop/mcp/vendor/epubcheck/

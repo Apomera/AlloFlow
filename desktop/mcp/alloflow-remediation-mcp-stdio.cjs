@@ -84,6 +84,7 @@ const os = require('os');
 const path = require('path');
 const readline = require('readline');
 const crypto = require('crypto');
+const http = require('http');
 const zlib = require('zlib');
 
 const Driver = require(path.join(__dirname, 'remediation_headless_driver.cjs'));
@@ -4790,7 +4791,28 @@ const TOOL_HANDLERS = {
 
 // ── JSON-RPC plumbing (same NDJSON transport as alloflow-mcp-stdio.cjs) ────
 
-function send(message) { process.stdout.write(JSON.stringify(message) + '\n'); }
+// ---- Transport plumbing -------------------------------------------------------------------
+// stdio is the default transport (Claude Desktop, Claude Code, Codex CLI, Cursor, VS Code, Gemini
+// CLI, ...). The optional Streamable HTTP transport below exists for hosts that only speak HTTP
+// (ChatGPT developer mode needs a remote HTTPS URL). Both share one dispatcher: HTTP requests are
+// re-keyed to a private id so their responses can be routed back to the waiting HTTP response.
+const HTTP_ID_PREFIX = 'alloflow-http:';
+const HTTP_PENDING = new Map(); // private id -> { origId, resolve }
+const SSE_CLIENTS = new Set();
+let HTTP_SEQ = 0;
+let STDIO_KEEPALIVE = false; // HTTP mode: a closed stdin must not stop the process
+function send(message) {
+  if (message && typeof message.id === 'string' && message.id.startsWith(HTTP_ID_PREFIX)) {
+    const waiter = HTTP_PENDING.get(message.id);
+    if (waiter) { HTTP_PENDING.delete(message.id); waiter.resolve(Object.assign({}, message, { id: waiter.origId })); }
+    return;
+  }
+  const line = JSON.stringify(message);
+  if (message && (message.id === undefined || message.id === null) && SSE_CLIENTS.size) {
+    for (const client of SSE_CLIENTS) { try { client.write('event: message\ndata: ' + line + '\n\n'); } catch (_) {} }
+  }
+  if (!STDIO_KEEPALIVE || process.stdout.writable) { try { process.stdout.write(line + '\n'); } catch (_) {} }
+}
 function sendResult(id, result) { send({ jsonrpc: '2.0', id, result }); }
 function sendError(id, code, message) { send({ jsonrpc: '2.0', id, error: { code, message } }); }
 
@@ -4964,6 +4986,7 @@ rl.on('line', (line) => {
   Promise.resolve().then(() => handleMessage(line)).catch((e) => log('unexpected error: ' + (e && e.message ? e.message : 'unknown')));
 });
 rl.on('close', async () => {
+  if (STDIO_KEEPALIVE) { log('stdin closed; HTTP transport keeps the server alive'); return; }
   log('stdin closed; shutting down');
   try { if (driver) await driver.close(); } catch (_) {}
   process.exit(0);
@@ -4981,4 +5004,101 @@ for (const restoredJob of RESTORED_TO_REQUEUE.splice(0)) {
   enqueueJob(restoredJob, runnerForStoredJob);
 }
 if (ALLOWED_ROOTS.length) log('filesystem boundary active — only: ' + ALLOWED_ROOTS.join(', '));
-log('ready (stdio only; tools: ' + TOOLS.map((t) => t.name).join(', ') + ')');
+const HTTP_PORT = httpPortFromArgs();
+if (HTTP_PORT !== null) startHttpTransport(HTTP_PORT);
+log('ready (' + (HTTP_PORT === null ? 'stdio only' : 'stdio + http') + '; tools: ' + TOOLS.map((t) => t.name).join(', ') + ')');
+
+// ---- Optional Streamable HTTP transport (MCP 2025-03-26+) ---------------------------------------
+// Enable with `--http[=port]` or ALLOFLOW_MCP_HTTP_PORT. Binds 127.0.0.1 unless
+// ALLOFLOW_MCP_HTTP_HOST is set together with ALLOFLOW_MCP_HTTP_ALLOW_REMOTE=1. Every request must
+// carry the bearer token (ALLOFLOW_MCP_HTTP_TOKEN, generated and logged when absent) either as
+// `Authorization: Bearer <token>` or, for hosts that cannot set headers, in the path `/mcp/<token>`.
+// Exposing this port beyond the machine (a tunnel for ChatGPT) publishes every document the tools
+// read to whoever holds the token: see HOSTS.md before doing that.
+function httpPortFromArgs() {
+  const flag = process.argv.find((a) => a === '--http' || a.startsWith('--http='));
+  const raw = flag ? (flag.includes('=') ? flag.slice(flag.indexOf('=') + 1) : (process.env.ALLOFLOW_MCP_HTTP_PORT || '0')) : process.env.ALLOFLOW_MCP_HTTP_PORT;
+  if (raw === undefined || raw === '') return null;
+  const port = Number(raw);
+  if (!Number.isInteger(port) || port < 0 || port > 65535) { log('ignoring invalid HTTP port ' + JSON.stringify(raw)); return null; }
+  return port;
+}
+function startHttpTransport(port) {
+  const host = process.env.ALLOFLOW_MCP_HTTP_HOST || '127.0.0.1';
+  const loopback = /^(127\.0\.0\.1|localhost|::1)$/.test(host);
+  if (!loopback && process.env.ALLOFLOW_MCP_HTTP_ALLOW_REMOTE !== '1') {
+    log('refusing to bind HTTP transport to ' + host + ' without ALLOFLOW_MCP_HTTP_ALLOW_REMOTE=1');
+    return;
+  }
+  const generated = !process.env.ALLOFLOW_MCP_HTTP_TOKEN;
+  const token = process.env.ALLOFLOW_MCP_HTTP_TOKEN || crypto.randomBytes(24).toString('hex');
+  const sessionId = crypto.randomUUID();
+  STDIO_KEEPALIVE = true;
+  const tokenOk = (given) => typeof given === 'string' && given.length === token.length && crypto.timingSafeEqual(Buffer.from(given), Buffer.from(token));
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, 'http://' + host);
+    const pathToken = /^\/mcp\/([^/]+)$/.exec(url.pathname);
+    if (url.pathname !== '/mcp' && !pathToken) { res.writeHead(404); res.end('not found'); return; }
+    const origin = req.headers.origin;
+    if (origin && !/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin) && process.env.ALLOFLOW_MCP_HTTP_ALLOW_REMOTE !== '1') {
+      res.writeHead(403); res.end('forbidden origin'); return;
+    }
+    const auth = String(req.headers.authorization || '');
+    const bearer = auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
+    if (!tokenOk(bearer) && !(pathToken && tokenOk(decodeURIComponent(pathToken[1])))) {
+      res.writeHead(401, { 'WWW-Authenticate': 'Bearer' }); res.end('unauthorized'); return;
+    }
+    if (req.method === 'GET') {
+      if (!String(req.headers.accept || '').includes('text/event-stream')) { res.writeHead(405); res.end('GET requires Accept: text/event-stream'); return; }
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'Mcp-Session-Id': sessionId });
+      res.write(': alloflow-remediation notifications\n\n');
+      SSE_CLIENTS.add(res);
+      req.on('close', () => SSE_CLIENTS.delete(res));
+      return;
+    }
+    if (req.method === 'DELETE') { res.writeHead(200, { 'Mcp-Session-Id': sessionId }); res.end(); return; }
+    if (req.method !== 'POST') { res.writeHead(405); res.end('method not allowed'); return; }
+    let body = '';
+    let tooLarge = false;
+    req.on('data', (chunk) => { if (tooLarge) return; body += chunk; if (body.length > MAX_LINE_CHARS) { tooLarge = true; res.writeHead(413); res.end('payload too large'); req.destroy(); } });
+    req.on('end', async () => {
+      if (tooLarge) return;
+      let parsed;
+      try { parsed = JSON.parse(body); } catch (_) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } })); return; }
+      const batch = Array.isArray(parsed);
+      const messages = batch ? parsed : [parsed];
+      const replies = [];
+      for (const msg of messages) {
+        if (!msg || msg.jsonrpc !== '2.0') { replies.push({ jsonrpc: '2.0', id: msg && msg.id !== undefined ? msg.id : null, error: { code: -32600, message: 'Invalid request' } }); continue; }
+        if (msg.id === undefined || msg.id === null) {
+          // Notifications: translate a cancel aimed at an HTTP request id to its private id.
+          if (msg.method === 'notifications/cancelled' && msg.params && msg.params.requestId !== undefined) {
+            for (const [privateId, waiter] of HTTP_PENDING) if (String(waiter.origId) === String(msg.params.requestId)) { msg = Object.assign({}, msg, { params: Object.assign({}, msg.params, { requestId: privateId }) }); break; }
+          }
+          Promise.resolve().then(() => handleNotification(msg)).catch((e) => log('http notification error: ' + ((e && e.message) || e)));
+          continue;
+        }
+        const privateId = HTTP_ID_PREFIX + (++HTTP_SEQ);
+        replies.push(new Promise((resolve) => {
+          HTTP_PENDING.set(privateId, { origId: msg.id, resolve });
+          Promise.resolve().then(() => handleRequest(Object.assign({}, msg, { id: privateId }))).catch((e) => {
+            HTTP_PENDING.delete(privateId);
+            resolve({ jsonrpc: '2.0', id: msg.id, error: { code: -32603, message: (e && e.message) || 'internal error' } });
+          });
+        }));
+      }
+      const results = (await Promise.all(replies)).filter(Boolean);
+      const headers = { 'Mcp-Session-Id': sessionId };
+      if (!results.length) { res.writeHead(202, headers); res.end(); return; }
+      headers['Content-Type'] = 'application/json';
+      res.writeHead(200, headers);
+      res.end(JSON.stringify(batch ? results : results[0]));
+    });
+  });
+  server.on('error', (e) => log('http transport error: ' + ((e && e.message) || e)));
+  server.listen(port, host, () => {
+    const address = server.address();
+    log('http transport listening on http://' + host + ':' + address.port + '/mcp (bearer token required' + (generated ? '; generated token: ' + token : '') + ')');
+  });
+  return server;
+}

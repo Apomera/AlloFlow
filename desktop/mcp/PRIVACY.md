@@ -60,6 +60,15 @@ agreements cover the provider and account used for the selected path — or scru
   validator downloads CheerpJ/pdf-lib and is disabled unless a direct driver integration explicitly
   opts in with `ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS=1`; the MCP tool does not silently enable it.
 
+## Optional HTTP transport
+
+By default the connector speaks only over stdio to the host that launched it. Started with `--http`
+it also listens on 127.0.0.1 and requires a bearer token on every request. Nothing changes about
+where documents go until you publish that port beyond the machine (for example through a tunnel so
+ChatGPT can reach it): from then on anyone holding the token can call every tool, and keyless
+processing routes document text and page images through that host's model provider. HOSTS.md lists
+the precautions (fresh token, `ALLOFLOW_MCP_ALLOWED_ROOTS`, stop the tunnel afterwards).
+
 ## Optional local narration
 
 Kokoro and Piper narration use local inference. Public JavaScript libraries and model weights may be downloaded from jsDelivr, unpkg, cdnjs (ONNX Runtime), Hugging Face and its CDN. Document text is not intentionally included in those dependency requests. A private Chromium profile caches model assets under the MCP state directory. Generated section audio, which contains document content, is cached under narration-cache to support resume and remains until the owner removes it. Keyless run records under agent-runs contain local paths, settings, progress and results; no pending model prompts or replies are persisted. Completed narration is also written to the requested output directory. Both accessible and natural narration use the same boundary. Voice discovery reads the bundled catalog and returns model-card links without downloading anything. Saved-run discovery reads local run metadata only.

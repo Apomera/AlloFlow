@@ -91,6 +91,12 @@ io.github.Apomera/alloflow-remediation. Registry discovery installs these same c
 bytes; it does not route documents through an AlloFlow or Cloudflare server. Registry publication is
 a separate explicit maintainer action after the GitHub release has passed provenance verification.
 
+## Other hosts
+
+HOSTS.md covers Claude Code, OpenAI Codex CLI, Cursor, VS Code, Gemini CLI and, through the optional
+Streamable HTTP transport, ChatGPT developer mode. The .mcpb is a zip archive; any host that can run
+`node` can use the extracted `server/alloflow-remediation-mcp-stdio.cjs`.
+
 ## Pilot guide
 
 PILOT_GUIDE.md in the repository describes a supervised colleague pilot: setup, fixtures, example
