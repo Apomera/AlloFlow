@@ -5017,6 +5017,9 @@ for (const restoredJob of RESTORED_TO_REQUEUE.splice(0)) {
   enqueueJob(restoredJob, runnerForStoredJob);
 }
 if (ALLOWED_ROOTS.length) log('filesystem boundary active — only: ' + ALLOWED_ROOTS.join(', '));
+// Hash the large vendor binaries in a worker now, so the first remediation_capabilities call does
+// not pay for it inline (hosts enforce startup budgets; see Driver.prehashVendorBundle).
+if (typeof Driver.prehashVendorBundle === 'function') Driver.prehashVendorBundle();
 const HTTP_PORT = httpPortFromArgs();
 if (HTTP_PORT !== null) startHttpTransport(HTTP_PORT);
 log('ready (' + (HTTP_PORT === null ? 'stdio only' : 'stdio + http') + '; tools: ' + TOOLS.map((t) => t.name).join(', ') + ')');

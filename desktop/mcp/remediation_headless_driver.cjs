@@ -33,6 +33,7 @@ const os = require('os');       // self-test scratch dir
 const http = require('http');   // self-test loopback model (127.0.0.1, no listener beyond the run)
 const { zipFileMap } = require('./zip_writer.cjs'); // ePub/DAISY packaging, no CDN, works offline
 const crypto = require('crypto');
+const { Worker } = require('worker_threads'); // background vendor hashing at boot
 const NarrationPlanner = require('./remediation_narration_plan.cjs');
 const Verification = require('./remediation_verification.cjs');
 
@@ -275,6 +276,48 @@ function compactTerminalCheckpointSnapshot(snapshot) {
 const VENDOR_BOOT_PATH = '/__alloflow_mcp_vendor/';
 const VENDOR_BOOT_URL = 'http://127.0.0.1/__alloflow_mcp_boot__';
 let vendorBundleCache = null;
+// (2026-09-05) The vendor manifest now covers the 35 MB EPUBCheck distribution. Hashing it inline
+// made the FIRST tool call of every fresh server take 1-35 s (emulated or loaded hosts), which
+// tripped host startup budgets. prehashVendorBundle() streams the large binary entries through a
+// worker thread at boot; loadVendorBundle() reuses those digests when they match the manifest
+// and falls back to inline hashing for anything not yet done. Integrity is unchanged: every byte
+// is still hashed against the committed manifest before hashVerified can be true.
+let vendorPrehash = null;        // Map path -> { bytes, sha256 } computed by the worker
+let vendorPrehashPromise = null;
+function prehashVendorBundle() {
+  if (vendorPrehashPromise) return vendorPrehashPromise;
+  vendorPrehashPromise = new Promise((resolve) => {
+    let manifest;
+    const root = resolveVendorRoot();
+    try { manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8')); } catch (_) { return resolve(null); }
+    const entries = (manifest && Array.isArray(manifest.files) ? manifest.files : [])
+      .filter((e) => e && typeof e.path === 'string' && e.normalization === undefined && !e.path.includes('..'))
+      .map((e) => ({ path: e.path, absolute: path.resolve(root, e.path) }));
+    if (!entries.length) return resolve(null);
+    const source = `
+      const { parentPort, workerData } = require('worker_threads');
+      const fs = require('fs'); const crypto = require('crypto');
+      const out = {};
+      (async () => {
+        for (const e of workerData.entries) {
+          try {
+            const hash = crypto.createHash('sha256'); let bytes = 0;
+            await new Promise((res, rej) => { const st = fs.createReadStream(e.absolute); st.on('data', (c) => { bytes += c.length; hash.update(c); }); st.on('end', res); st.on('error', rej); });
+            out[e.path] = { bytes, sha256: hash.digest('hex') };
+          } catch (_) {}
+        }
+        parentPort.postMessage(out);
+      })();`;
+    let worker;
+    try { worker = new Worker(source, { eval: true, workerData: { entries } }); } catch (_) { return resolve(null); }
+    worker.once('message', (out) => { vendorPrehash = new Map(Object.entries(out || {})); resolve(vendorPrehash); });
+    worker.once('error', () => resolve(null));
+    worker.once('exit', () => resolve(vendorPrehash));
+    // Not unref'd: the worker lives a few seconds and callers may await it; the server's stdin/HTTP
+    // handles govern process lifetime, and process.exit on stdin close ends the worker too.
+  });
+  return vendorPrehashPromise;
+}
 const NORMALIZED_VENDOR_TEXT_PATHS = Object.freeze(['THIRD_PARTY_NOTICES.md']);
 const NORMALIZED_VENDOR_TEXT_PATH_SET = new Set(NORMALIZED_VENDOR_TEXT_PATHS);
 
@@ -338,6 +381,14 @@ function loadVendorBundle() {
     if (!absolute.startsWith(path.resolve(root) + path.sep) || files.has(entry.path)) {
       throw new Error('AlloFlow MCP vendor manifest contains a duplicate or out-of-root entry: ' + entry.path);
     }
+    // EPUBCheck's JARs are read from disk by Java, never served to the browser: verify their hashes
+    // but do not pin ~35 MB of bytecode in memory for the life of the server.
+    const browserAsset = !entry.path.startsWith('epubcheck/');
+    const pre = !browserAsset && entry.normalization === undefined && vendorPrehash ? vendorPrehash.get(entry.path) : null;
+    if (pre && pre.bytes === entry.bytes && pre.sha256 === entry.sha256 && fs.existsSync(absolute)) {
+      files.set(entry.path, { path: absolute, body: null, bytes: entry.bytes, sha256: pre.sha256 });
+      continue;
+    }
     let bytes;
     try { bytes = normalizeVendorAssetBytes(entry, fs.readFileSync(absolute)); } catch (error) {
       throw new Error('AlloFlow MCP vendor asset is missing: ' + entry.path + ' (' + error.message + ')');
@@ -346,9 +397,6 @@ function loadVendorBundle() {
     if (bytes.length !== entry.bytes || sha256 !== entry.sha256) {
       throw new Error('AlloFlow MCP vendor asset failed hash verification: ' + entry.path);
     }
-    // EPUBCheck's JARs are read from disk by Java, never served to the browser: verify their hashes
-    // but do not pin ~35 MB of bytecode in memory for the life of the server.
-    const browserAsset = !entry.path.startsWith('epubcheck/');
     files.set(entry.path, { path: absolute, body: browserAsset ? bytes : null, bytes: entry.bytes, sha256 });
   }
   vendorBundleCache = { root, files };
@@ -2925,6 +2973,7 @@ module.exports = {
   resolveChromium,
   installChromium,
   verifyVendorBundle,
+  prehashVendorBundle,
   normalizeVendorAssetBytes,
   NORMALIZED_VENDOR_TEXT_PATHS,
   REPO_ROOT,

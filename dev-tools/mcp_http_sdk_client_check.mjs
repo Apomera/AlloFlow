@@ -4,7 +4,7 @@
 // The SDK is deliberately NOT a repo dependency. Run from a scratch project that has it:
 //   mkdir /tmp/mcp-sdk && cd /tmp/mcp-sdk && npm init -y && npm i @modelcontextprotocol/sdk
 //   MCP_SDK_DIR=/tmp/mcp-sdk node /abs/path/dev-tools/mcp_http_sdk_client_check.mjs   (server path defaults to this checkout)
-// Prints SDK_HTTP_CHECK PASS when bearer auth, path-token auth, session ids, tools, prompts,
+// Prints SDK_STDIO_CHECK PASS for the reference stdio client, then SDK_HTTP_CHECK PASS when bearer auth, path-token auth, session ids, tools, prompts,
 // resources and a rejected bad token all behave. Evidence of the 2026-09-05 run:
 // scratch/mcp-v010-hosts/EVIDENCE.md.
 import { spawn } from 'node:child_process';
@@ -14,6 +14,7 @@ import { resolve } from 'node:path';
 const SDK_DIR = resolve(process.env.MCP_SDK_DIR || process.cwd(), 'node_modules', '@modelcontextprotocol', 'sdk');
 const { Client } = await import(pathToFileURL(resolve(SDK_DIR, 'dist', 'esm', 'client', 'index.js')).href);
 const { StreamableHTTPClientTransport } = await import(pathToFileURL(resolve(SDK_DIR, 'dist', 'esm', 'client', 'streamableHttp.js')).href);
+const { StdioClientTransport } = await import(pathToFileURL(resolve(SDK_DIR, 'dist', 'esm', 'client', 'stdio.js')).href);
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -21,6 +22,22 @@ import { join } from 'node:path';
 const SERVER = process.env.ALLOFLOW_MCP_SERVER || fileURLToPath(new URL('../desktop/mcp/alloflow-remediation-mcp-stdio.cjs', import.meta.url));
 const TOKEN = 'sdk-check-' + Math.random().toString(16).slice(2);
 const dir = mkdtempSync(join(tmpdir(), 'alloflow-sdk-http-'));
+// 0. stdio through the SDK's reference client (Claude Desktop, Claude Code, Codex, Cursor, VS Code, Gemini CLI path)
+{
+  const stdioEnv = { ...process.env, ALLOFLOW_MCP_NO_KEY_FILES: '1', ALLOFLOW_MCP_STATE_DIR: join(dir, 'stdio-state') };
+  delete stdioEnv.GEMINI_API_KEY;
+  const t0 = new StdioClientTransport({ command: process.execPath, args: [SERVER], env: stdioEnv, stderr: 'pipe' });
+  const c0 = new Client({ name: 'sdk-stdio-check', version: '1' });
+  const started = Date.now();
+  await c0.connect(t0);
+  const tools0 = await c0.listTools();
+  const caps0 = await c0.callTool({ name: 'remediation_capabilities', arguments: {} });
+  const firstCallMs = Date.now() - started;
+  console.log(JSON.stringify({ stdio: { serverInfo: c0.getServerVersion(), toolCount: tools0.tools.length, vendorHashVerified: caps0.structuredContent?.vendorAssets?.hashVerified, vendorFiles: caps0.structuredContent?.vendorAssets?.files, connectPlusFirstCallMs: firstCallMs } }, null, 1));
+  await c0.close();
+  if (tools0.tools.length < 30 || !caps0.structuredContent?.vendorAssets?.hashVerified) { console.log('SDK_STDIO_CHECK FAIL'); process.exit(1); }
+  console.log('SDK_STDIO_CHECK PASS');
+}
 const env = { ...process.env, ALLOFLOW_MCP_NO_KEY_FILES: '1', ALLOFLOW_MCP_STATE_DIR: join(dir, 'state'), ALLOFLOW_MCP_HTTP_PORT: '0', ALLOFLOW_MCP_HTTP_TOKEN: TOKEN };
 delete env.GEMINI_API_KEY;
 const child = spawn(process.execPath, [SERVER], { env, stdio: ['pipe', 'pipe', 'pipe'] });
