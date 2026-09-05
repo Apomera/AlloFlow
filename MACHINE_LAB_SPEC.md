@@ -183,6 +183,20 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 9 (2026-09-05)
+
+- **The apex, marked where it happens.** A ring, a dashed drop line to the ground and an
+  `apex NN m` label ride the summit of the predicted arc, shown and hidden with the arc.
+  Only a real summit is marked: an arc cut at the wall while still climbing has none.
+- **The landing flagged.** A stone that comes down on the ground plants a flag there with
+  its distance on it, blue for an over-shot and amber otherwise, cleared by the next shot.
+  A wall hit plants nothing: the wall is the marker.
+- **Chaff on the wind.** 150 soft motes drift down the valley at the wind's own speed and
+  direction and wrap rather than running out. Ambient life, so off under reduced motion,
+  with ambient off, and in high contrast.
+- `makeLabelSprite` reletters its own canvas in place, so a slider drag repaints a texture
+  instead of building one.
+
 ### Wave 8 (2026-09-05)
 
 - ★**Over and wide shots vanished in mid-air.** `loose()` cut every flight path at

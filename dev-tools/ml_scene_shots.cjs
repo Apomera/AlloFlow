@@ -157,6 +157,10 @@ const SHOTS = [
   ['11d-scene-dusk-field', S({ view: 'scene', sceneTime: 'dusk', sceneCam: 'field', sceneAmbient: false }), {}, 3200],
   ['11e-scene-castle', S({ view: 'scene', sceneTime: 'dawn', sceneCam: 'castle', sceneAmbient: false, wallPreset: 'gatehouse' }), {}, 3200],
   ['11f-scene-night', S({ view: 'scene', sceneTime: 'night', sceneCam: 'machine', sceneAmbient: false }), {}, 3200],
+  // Wave 9: the apex ring and its drop line on the previewed arc, and the
+  // chaff drifting downwind past the engine. Both need ambient on.
+  ['11g-scene-apex', S({ view: 'scene', sceneTime: 'noon', sceneCam: 'field', sceneAmbient: true, standoff: 90, releaseAngle: 50, windZ: 8 }), {}, 4000],
+  ['11h-scene-chaff', S({ view: 'scene', sceneTime: 'dusk', sceneCam: 'machine', sceneAmbient: true, standoff: 90, windZ: 14 }), {}, 4000],
   // Reduced motion in the range: the arc as a strobe, not a stone that
   // appears at the end. motionPref 'off' forces it regardless of the OS.
   ['08d-range-strobe', S({ view: 'range', animating: true, shotId: 1, motionPref: 'off', lastShotSig: '' }), {}, 1400],

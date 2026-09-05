@@ -3072,6 +3072,47 @@ window.StemLab = window.StemLab || {
     return tex;
   }
 
+  // A sprite whose text can be rewritten. makeCanvasTexture keeps no handle on
+  // its canvas, and these labels change with every slider drag, so this one
+  // owns its canvas and repaints in place instead of building a new texture.
+  function makeLabelSprite(THREE, scale, tint, through) {
+    if (typeof document === 'undefined' || !THREE || typeof THREE.Sprite !== 'function' || typeof THREE.CanvasTexture !== 'function') return null;
+    var c, g;
+    try {
+      c = document.createElement('canvas');
+      c.width = 256; c.height = 128;
+      g = c.getContext('2d');
+      if (!g) return null;
+    } catch (e) { return null; }
+    var tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.ClampToEdgeWrapping; tex.wrapT = THREE.ClampToEdgeWrapping;
+    var spr = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, depthWrite: false, depthTest: !through, fog: false
+    }));
+    spr.scale.set(scale * 2, scale, 1);
+    spr.visible = false;
+    spr.renderOrder = 6;
+    return {
+      sprite: spr,
+      text: null,
+      draw: function (text) {
+        if (this.text === text) return;
+        this.text = text;
+        try {
+          g.clearRect(0, 0, 256, 128);
+          g.font = 'bold 54px system-ui, sans-serif';
+          g.textAlign = 'center'; g.textBaseline = 'middle';
+          g.lineWidth = 11; g.lineJoin = 'round';
+          g.strokeStyle = 'rgba(12,9,5,0.94)';
+          g.strokeText(text, 128, 64);
+          g.fillStyle = tint || '#fff6dc';
+          g.fillText(text, 128, 64);
+          tex.needsUpdate = true;
+        } catch (e) {}
+      }
+    };
+  }
+
   function stoneTexture(THREE) {
     return makeCanvasTexture(THREE, 128, function (g, n) {
       g.fillStyle = '#a49e93'; g.fillRect(0, 0, n, n);
@@ -3754,6 +3795,78 @@ window.StemLab = window.StemLab || {
       }
     }
 
+    // ── The apex, marked where it happens. The readouts already carry the
+    // number; this puts it on the arc, with a drop line to the ground it is
+    // measured from, so "apex" is a place in the world and not a table row. ──
+    var apexTick = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.08, 6, 18), new THREE.MeshBasicMaterial({
+      color: contrast ? 0xffff00 : 0xfde68a, transparent: true, opacity: 0.9, fog: false
+    }));
+    apexTick.rotation.x = Math.PI / 2;
+    apexTick.visible = false;
+    S.model.add(apexTick);
+    var dropGeo = new THREE.BufferGeometry();
+    dropGeo.setFromPoints([new THREE.Vector3(0, 0, -standoff), new THREE.Vector3(0, 1, -standoff)]);
+    var dropMat = (typeof THREE.LineDashedMaterial === 'function')
+      ? new THREE.LineDashedMaterial({ color: contrast ? 0xffff00 : 0xfde68a, dashSize: 0.7, gapSize: 0.5, transparent: true, opacity: 0.5, fog: false })
+      : new THREE.LineBasicMaterial({ color: contrast ? 0xffff00 : 0xfde68a, transparent: true, opacity: 0.5, fog: false });
+    var dropLine = new THREE.Line(dropGeo, dropMat);
+    dropLine.frustumCulled = false;
+    dropLine.visible = false;
+    S.model.add(dropLine);
+    var apexLabel = makeLabelSprite(THREE, 4, contrast ? '#ffffff' : '#fde68a', true);
+    if (apexLabel) S.model.add(apexLabel.sprite);
+    S.apexMark = { tick: apexTick, drop: dropLine, label: apexLabel, sig: null };
+
+    // ── Where the last stone actually landed, flagged on the ground with the
+    // distance on it. The stakes say where 50 m is; this says where the shot
+    // went, and the two are meant to be read against each other. ──
+    var landGroup = new THREE.Group();
+    var landPole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 3.2, 6), mat(contrast ? 0xffffff : 0x4a3524));
+    landPole.position.y = 1.6;
+    landGroup.add(landPole);
+    var landPennant = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.62, 0.05), new THREE.MeshLambertMaterial({
+      color: contrast ? 0xffffff : 0xe4b23c, emissive: contrast ? 0x000000 : 0x6b4a0d, emissiveIntensity: 0.5
+    }));
+    landPennant.position.set(0.68, 2.85, 0);
+    landGroup.add(landPennant);
+    var landLabel = makeLabelSprite(THREE, 3.2, contrast ? '#ffffff' : '#ffe9b3', false);
+    if (landLabel) { landLabel.sprite.position.set(0, 4.8, 0); landGroup.add(landLabel.sprite); }
+    landGroup.visible = false;
+    S.model.add(landGroup);
+    S.landFlag = { group: landGroup, pennant: landPennant, label: landLabel };
+
+    // ── Chaff on the wind: seed heads and dust drifting down the valley at
+    // the wind's own speed and direction. The windsock says which way; this
+    // fills the air the stone has to fly through. Ambient life, so it is off
+    // under reduced motion and in high contrast with everything else. ──
+    if (!contrast && typeof THREE.Points === 'function') {
+      var moteN = 150;
+      var motePos = new Float32Array(moteN * 3);
+      var moteSpan = laneHalf * 3.2;
+      for (var mi = 0; mi < moteN; mi++) {
+        motePos[mi * 3] = (hash01(mi, 1, 71) - 0.5) * moteSpan;
+        motePos[mi * 3 + 1] = 0.5 + Math.pow(hash01(mi, 2, 72), 1.9) * 13;
+        motePos[mi * 3 + 2] = 10 - hash01(mi, 3, 73) * (standoff + 18);
+      }
+      var moteGeo = new THREE.BufferGeometry();
+      moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
+      var moteTex = makeCanvasTexture(THREE, 32, function (g2, n2) {
+        var rg = g2.createRadialGradient(n2 / 2, n2 / 2, 0, n2 / 2, n2 / 2, n2 / 2);
+        rg.addColorStop(0, 'rgba(255,255,255,1)');
+        rg.addColorStop(0.45, 'rgba(255,255,255,0.55)');
+        rg.addColorStop(1, 'rgba(255,255,255,0)');
+        g2.fillStyle = rg; g2.fillRect(0, 0, n2, n2);
+      });
+      if (moteTex) { moteTex.wrapS = THREE.ClampToEdgeWrapping; moteTex.wrapT = THREE.ClampToEdgeWrapping; }
+      var motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({
+        color: P.stars ? 0xc8d6ff : 0xfff0cd, size: 0.42, map: moteTex || null, alphaTest: 0.04,
+        transparent: true, opacity: P.rain ? 0.3 : 0.45, sizeAttenuation: true, depthWrite: false, fog: true
+      }));
+      motes.frustumCulled = false;
+      S.model.add(motes);
+      S.motes = { points: motes, span: moteSpan };
+    }
+
     // ── The predicted arc. Updated IN PLACE from each push (a slider drag
     // must not rebuild the valley), shown quiet until the stone is away. ──
     var arcGeo = new THREE.BufferGeometry();
@@ -3989,6 +4102,7 @@ window.StemLab = window.StemLab || {
         if (S.flightId !== data.flight.id) {
           S.flightId = data.flight.id; S.flightT0 = now; S.trailHist = []; S.impactAt = null; S.burstT0 = null;
           S.strobePath = data.flight.path;
+          if (S.landFlag) S.landFlag.group.visible = false;
           S.releasedId = null;
           if (data.sound && !red && (Number(data.flight.windup) || 0) > 0) SCENE_AUDIO.haul(Number(data.flight.windup));
         }
@@ -4100,6 +4214,24 @@ window.StemLab = window.StemLab || {
           if (arcPts.length > 1) {
             S.arc.line.geometry.setFromPoints(arcPts);
             if (typeof S.arc.line.computeLineDistances === 'function') S.arc.line.computeLineDistances();
+            // The summit of the arc as drawn, so the mark never claims an
+            // apex the learner cannot see on the line in front of them.
+            if (S.apexMark) {
+              var apI = 0;
+              for (var ax = 1; ax < arcPts.length; ax++) if (arcPts[ax].y > arcPts[apI].y) apI = ax;
+              var apPt = arcPts[apI];
+              var apOk = apPt.y > 3 && apI > 0 && apI < arcPts.length - 1;
+              S.apexMark.show = apOk;
+              if (apOk) {
+                S.apexMark.tick.position.copy(apPt);
+                S.apexMark.drop.geometry.setFromPoints([new THREE.Vector3(apPt.x, 0.06, apPt.z), new THREE.Vector3(apPt.x, apPt.y, apPt.z)]);
+                if (typeof S.apexMark.drop.computeLineDistances === 'function') S.apexMark.drop.computeLineDistances();
+                if (S.apexMark.label) {
+                  S.apexMark.label.draw((L.apexMark || 'apex ') + Math.round(apPt.y) + (L.metres || ' m'));
+                  S.apexMark.label.sprite.position.set(apPt.x, apPt.y + 3.2, apPt.z);
+                }
+              }
+            }
             var endPt = arcPts[arcPts.length - 1];
             var reaches = endPt.z >= -0.6 && endPt.y > 0.15;
             S.arc.ring.visible = reaches;
@@ -4108,6 +4240,12 @@ window.StemLab = window.StemLab || {
         }
         S.arc.line.visible = showArc;
         if (!showArc) S.arc.ring.visible = false;
+        if (S.apexMark) {
+          var apVis = showArc && !!S.apexMark.show;
+          S.apexMark.tick.visible = apVis;
+          S.apexMark.drop.visible = apVis;
+          if (S.apexMark.label) S.apexMark.label.sprite.visible = apVis;
+        }
         else if (S.arc.ring.visible && !red) S.arc.ring.scale.setScalar(1 + 0.1 * Math.sin(tSec * 4));
       }
 
@@ -4154,6 +4292,19 @@ window.StemLab = window.StemLab || {
           if (S.splash && S.water && data.outcomeKind !== 'hit' && S.impactPos.z > 2 && S.impactPos.z < 6.2 && Math.abs(S.impactPos.x) < span / 2 + 3.5) {
             S.splash.position.set(S.impactPos.x, 0.12, S.impactPos.z); S.splash.scale.setScalar(1); S.splash.visible = true; S.splashT0 = now;
             if (S.scorch) S.scorch.visible = false;   // no scorch on water
+          }
+          // A stone that came down on the ground gets its distance flagged
+          // where it landed. A wall hit does not: the wall is the marker.
+          if (S.landFlag && data.outcomeKind !== 'hit') {
+            var landM = Math.max(0, Number(last.x) || 0);
+            S.landFlag.group.position.set(S.impactPos.x, 0, -standoff + landM);
+            S.landFlag.group.rotation.y = S.impactPos.x > 0 ? Math.PI : 0;
+            if (S.landFlag.pennant && !contrast) S.landFlag.pennant.material.color.setHex(data.outcomeKind === 'over' ? 0x7fb3e8 : 0xe4b23c);
+            if (S.landFlag.label) {
+              S.landFlag.label.draw(Math.round(landM) + (L.metres || ' m'));
+              S.landFlag.label.sprite.visible = true;
+            }
+            S.landFlag.group.visible = true;
           }
           if (S.dusts && !red) {
             S.dusts.forEach(function (dsp, di) {
@@ -4326,6 +4477,23 @@ window.StemLab = window.StemLab || {
           cl.position.x = u.x0 + (ambient ? (tSec * (u.speed + windAbs * 0.25) * (wind < 0 ? -1 : 1)) % 460 : 0);
           if (cl.position.x > 230) cl.position.x -= 460; if (cl.position.x < -230) cl.position.x += 460;
         });
+      }
+      // Chaff drifts with the wind, and wraps rather than running out.
+      if (S.motes) {
+        S.motes.points.visible = ambient;
+        if (ambient) {
+          var mAttr = S.motes.points.geometry.attributes.position;
+          var mArr = mAttr.array;
+          var mvx = wind * 0.5 + 0.4;
+          var mHalf = S.motes.span / 2;
+          for (var mk = 0; mk < mArr.length; mk += 3) {
+            mArr[mk] += mvx * dt;
+            mArr[mk + 1] += Math.sin(tSec * 0.7 + mk) * dt * 0.4;
+            if (mArr[mk] > mHalf) mArr[mk] -= S.motes.span;
+            else if (mArr[mk] < -mHalf) mArr[mk] += S.motes.span;
+          }
+          mAttr.needsUpdate = true;
+        }
       }
       if (S.water && S.water.material.map) {
         S.water.material.map.offset.x = ambient ? (tSec * 0.03) % 1 : 0;
@@ -8263,6 +8431,8 @@ window.StemLab = window.StemLab || {
             ? (__alloT('stem.machinelab.scene_stored', 'Stored ') + fmt(preview.stored / 1000, 1) + ' kJ  →  ' +
                __alloT('stem.machinelab.scene_stone_gets', 'stone gets ') + fmt(preview.muzzleKE / 1000, 1) + ' kJ (' + fmt(100 * preview.eta, 0) + '%)')
             : __alloT('stem.machinelab.bad_machine', 'This machine cannot fire. Check the sliders.'),
+          apexMark: __alloT('stem.machinelab.scene_apex_mark', 'apex '),
+          metres: __alloT('stem.machinelab.scene_metres', ' m'),
           ke: __alloT('stem.machinelab.scene_ke', 'moving'),
           pe: __alloT('stem.machinelab.scene_pe', 'height'),
           sum: __alloT('stem.machinelab.scene_total', 'total')

@@ -583,3 +583,57 @@ describe('Siege Field wave 8: over-shots fly on, predict-then-loose, splash, hot
     expect(src).toContain('if (!contrast && stonePos) S.trail[tt].material.emissive.setRGB(0.85, 0.72 - hot * 0.42, 0.42 - hot * 0.35);');
   });
 });
+
+describe('Siege Field wave 9: the apex marked, the landing flagged, chaff on the wind', () => {
+  it('marks the summit of the arc it actually draws, with a drop line to the ground', () => {
+    const src = source();
+    expect(src).toContain('for (var ax = 1; ax < arcPts.length; ax++) if (arcPts[ax].y > arcPts[apI].y) apI = ax;');
+    // Only a real summit: a monotonic climb cut at the wall has no apex to mark.
+    expect(src).toContain('var apOk = apPt.y > 3 && apI > 0 && apI < arcPts.length - 1;');
+    expect(src).toContain('S.apexMark.drop.geometry.setFromPoints([new THREE.Vector3(apPt.x, 0.06, apPt.z), new THREE.Vector3(apPt.x, apPt.y, apPt.z)]);');
+  });
+
+  it('shows and hides the apex mark with the predicted arc, never on its own', () => {
+    const src = source();
+    expect(src).toContain('var apVis = showArc && !!S.apexMark.show;');
+    expect(src).toContain('if (S.apexMark.label) S.apexMark.label.sprite.visible = apVis;');
+  });
+
+  it('flags where a stone landed, with the distance on it, and never on a wall hit', () => {
+    const src = source();
+    expect(src).toContain("if (S.landFlag && data.outcomeKind !== 'hit') {");
+    expect(src).toContain("S.landFlag.label.draw(Math.round(landM) + (L.metres || ' m'));");
+    // A new flight clears the last flag, so two shots never both claim the ground.
+    expect(src).toContain('if (S.landFlag) S.landFlag.group.visible = false;');
+    expect(src.indexOf('if (S.landFlag) S.landFlag.group.visible = false;'))
+      .toBeLessThan(src.indexOf("if (S.landFlag && data.outcomeKind !== 'hit') {"));
+  });
+
+  it('reletters a label in place rather than building a texture per slider drag', () => {
+    const src = source();
+    expect(src).toContain('function makeLabelSprite(THREE, scale, tint, through) {');
+    expect(src).toContain('if (this.text === text) return;');
+    expect(src).toContain('tex.needsUpdate = true;');
+  });
+
+  it('drifts chaff at the wind\'s own speed, off in contrast and with ambient off', () => {
+    const src = source();
+    expect(src).toContain("if (!contrast && typeof THREE.Points === 'function') {");
+    expect(src).toContain('S.motes.points.visible = ambient;');
+    expect(src).toContain('var mvx = wind * 0.5 + 0.4;');
+    // It wraps rather than running out, so the air never empties.
+    expect(src).toContain('if (mArr[mk] > mHalf) mArr[mk] -= S.motes.span;');
+  });
+
+  it('says apex and metres through the label pipe, not as hard-coded English', () => {
+    const src = source();
+    expect(src).toContain("apexMark: __alloT('stem.machinelab.scene_apex_mark', 'apex '),");
+    expect(src).toContain("metres: __alloT('stem.machinelab.scene_metres', ' m'),");
+    expect(src).toContain("(L.apexMark || 'apex ') + Math.round(apPt.y) + (L.metres || ' m')");
+  });
+
+  it('still gives the apex and the range as text, for anyone who cannot see the marks', () => {
+    const html = renderTool('machineLab', state({ view: 'range' }));
+    expect(html).toContain('Apex');
+  });
+});
