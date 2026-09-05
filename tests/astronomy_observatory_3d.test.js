@@ -365,6 +365,62 @@ describe('Space motion and deep time', () => {
   });
 });
 
+describe('Star trails', () => {
+  it('traces a tight circle around the pole and a full sweep at the equator', () => {
+    // Polaris sits 0.74 degrees from the pole, so from Portland its altitude
+    // stays pinned near the observer's latitude all night while it circles.
+    const path = sky.diurnalPath(37.946, 89.264, 0, 43.66, 24, 97);
+    const alts = path.map(p => p.alt), azs = path.map(p => p.az);
+    expect(Math.min(...alts)).toBeGreaterThan(42.8);
+    expect(Math.max(...alts)).toBeLessThan(44.5);
+    expect(Math.max(...azs) - Math.min(...azs)).toBeGreaterThan(300);
+    // A star on the celestial equator seen from the equator passes through the
+    // zenith and reaches the horizon a quarter turn later.
+    const equator = sky.diurnalPath(0, 0, 0, 0, 6, 25);
+    expect(equator[0].alt).toBeCloseTo(90, 1);
+    expect(Math.abs(equator[equator.length - 1].alt)).toBeLessThan(1);
+    for (let i = 1; i < equator.length; i++) expect(equator[i].alt).toBeLessThan(equator[i - 1].alt);
+  });
+
+  it('advances on the sidereal clock, so a day later the star sits about a degree along', () => {
+    const start = sky.diurnalPath(90, 20, 3, 43.66, 0, 2)[0];
+    const dayLater = sky.diurnalPath(90, 20, 3, 43.66, 24, 2)[1];
+    const drift = sky.angularSep(0, start.alt, 0, dayLater.alt) + Math.abs(start.az - dayLater.az);
+    expect(drift).toBeGreaterThan(0.5);
+    expect(drift).toBeLessThan(1.6);
+    expect(sky.SIDEREAL_RATE).toBeCloseTo(1.00274, 4);
+  });
+
+  it('reports fractions across the span, honours the step count and lifts the horizon by refraction', () => {
+    const path = sky.diurnalPath(0, 0, 0, 0, 6, 13);
+    expect(path).toHaveLength(13);
+    expect(path[0].f).toBe(0);
+    expect(path[path.length - 1].f).toBe(1);
+    // Six hours of hour angle puts this star exactly on the geometric horizon;
+    // refraction still lifts it into view.
+    const setting = sky.diurnalPath(0, 0, 6, 0, 0, 2)[0];
+    expect(setting.alt).toBeCloseTo(sky.refractionDeg(0), 3);
+    expect(setting.alt).toBeGreaterThan(0.4);
+    expect(setting.alt).toBeLessThan(0.55);
+  });
+
+  it('normalizes the trail span and offers sensible choices', () => {
+    expect(sky.OBSERVATORY_TRAIL_HOURS).toEqual([1, 2, 4, 8]);
+    expect(sky.observatoryResolve({}, Date.now()).trailHours).toBe(4);
+    expect(sky.observatoryResolve({ obsTrailHours: '8' }, Date.now()).trailHours).toBe(8);
+    expect(sky.observatoryResolve({ obsTrailHours: 99 }, Date.now()).trailHours).toBe(4);
+    expect(sky.observatoryResolve({}, Date.now()).layers.trails).toBe(false);
+    expect(sky.observatoryResolve({ obsLayers: { trails: true } }, Date.now()).layers.trails).toBe(true);
+  });
+
+  it('orders the catalog by brightness so the trail layer never sorts per frame', () => {
+    const cat = sky.normalizeCatalog(JSON.parse(readFileSync(ASSET, 'utf8')));
+    expect(cat.byMag).toHaveLength(cat.count);
+    expect(cat.hip[cat.byMag[0]]).toBe(32349);            // Sirius leads
+    for (let i = 1; i < 400; i++) expect(cat.mag[cat.byMag[i]]).toBeGreaterThanOrEqual(cat.mag[cat.byMag[i - 1]]);
+  });
+});
+
 describe('Tour planning and pattern lookup', () => {
   it('maps pattern stars to their figure and plans a prioritised tour for a dark sky', () => {
     expect(sky.HIP_TO_PATTERN[27989]).toBe('orion');
@@ -416,7 +472,7 @@ describe('Observatory tab rendering', () => {
     const doc = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '21:00', obsLayers: { guides: true }, obsPicked: { kind: 'star', name: 'Sirius', hip: 32349, mag: -1.44, ci: 0.01, colorClass: 'blue-white', constellation: 'Canis Major', alt: 20, az: 150 } }), 'text/html');
     const text = doc.body.textContent;
     expect(doc.querySelector('[aria-label="Sky layers"] button[aria-pressed="true"]')).toBeTruthy();
-    expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(9);
+    expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(10);
     expect(text).toContain('◎ Sirius');
     expect(text).toContain('Canis Major');
     expect(text).toContain('HIP 32349');
@@ -453,6 +509,22 @@ describe('Observatory tab rendering', () => {
     expect(past.body.textContent).toContain('100,000 years ago');
   });
 
+  it('reveals the trail span control only when trails are on', () => {
+    const off = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30' }), 'text/html');
+    expect(off.body.textContent).toContain('Star trails');
+    expect(off.querySelector('[aria-label="Trail length"]')).toBeNull();
+    const on = new DOMParser().parseFromString(render({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30', obsLayers: { trails: true }, obsTrailHours: 8 }), 'text/html');
+    // A server-rendered select carries its choice on the option, not the select.
+    const span = on.querySelector('[aria-label="Trail length"]');
+    expect(span).toBeTruthy();
+    const options = Array.from(on.querySelectorAll('[aria-label="Trail length"] option'));
+    expect(options.map(o => o.getAttribute('value'))).toEqual(['1', '2', '4', '8']);
+    expect(options.filter(o => o.hasAttribute('selected')).map(o => o.getAttribute('value'))).toEqual(['8']);
+    expect(on.body.textContent).toContain('covering the next 8 hours');
+    expect(on.body.textContent).toContain('celestial pole trace short circles');
+    expect(on.body.textContent).not.toContain('NaN');
+  });
+
   it('shows the polar-day note instead of missing events, and ignores malformed picks', () => {
     const doc = new DOMParser().parseFromString(render({ obsSite: 'tromso', obsLive: false, obsDate: '2026-06-21', obsTime: '12:00', obsPicked: 'nonsense' }), 'text/html');
     expect(doc.body.textContent).toContain('Midnight sun');
@@ -470,7 +542,7 @@ describe('Observatory tab rendering', () => {
     expect(text).toContain('Simulated activity level 3');
     expect(text).toContain('Perseids Radiant');
     expect(doc.getElementById('astronomy-observatory-3d').getAttribute('tabindex')).toBe('0');
-    expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(9);
+    expect(doc.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(10);
     expect(doc.querySelector('[aria-label="Sky camera controls"]')).toBeTruthy();
     expect(text).toContain('labelled simulations');
     expect(text).not.toContain('NaN');

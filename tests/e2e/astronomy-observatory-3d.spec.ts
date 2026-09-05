@@ -442,6 +442,31 @@ test('deep time moves the real star field and withholds the solar system', async
   expect(errors).toEqual([]);
 });
 
+test('star trails draw computed arcs, lengthen with the span, and stay off in daylight', async ({ page }) => {
+  const { sky, errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
+  await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
+  expect((await debug(sky)).trails).toBe(false);
+  await page.getByRole('button', { name: 'Star trails', exact: true }).click();
+  await expect.poll(async () => (await debug(sky)).trails).toBe(true);
+  const four = await debug(sky);
+  expect(four.trailHours).toBe(4);
+  expect(four.trailStars).toBeGreaterThan(20);
+  // Face the pole: the arcs should be visibly concentric there.
+  await page.getByRole('button', { name: 'Face north', exact: true }).click();
+  await page.screenshot({ path: 'scratch/observatory-trails-pole.png', clip: (await sky.boundingBox())! });
+  await page.getByLabel('Trail length', { exact: true }).selectOption('8');
+  await expect.poll(async () => (await debug(sky)).trailHours).toBe(8);
+  expect((await debug(sky)).trailStars).toBeGreaterThan(20);
+  await sky.evaluate((el: any) => el.__observatoryLookAt(180, 35));
+  await page.screenshot({ path: 'scratch/observatory-trails-south.png', clip: (await sky.boundingBox())! });
+  // Daylight washes the trails out along with the stars.
+  await page.getByLabel('Local time', { exact: true }).fill('12:00');
+  await expect.poll(async () => (await debug(sky)).sun.alt).toBeGreaterThan(0);
+  expect((await debug(sky)).trails).toBe(false);
+  await expect(page.locator('#astronomy-observatory-summary')).toContainText('Star trails');
+  expect(errors).toEqual([]);
+});
+
 test('reduced motion keeps the scene still and disables time-lapse', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const { sky, errors } = await mountObservatory(page, { ...EVENING, obsShower: 'perseids', obsDate: '2026-08-12' });

@@ -93,6 +93,15 @@ node dev-tools/build_hyg_naked_eye_subset.cjs path\to\hygdata_v41.csv
   2. The Sun and Moon **labels** were gated on the bodies' raw altitude while their sprites were gated on visibility, so the Moon's name still floated in the deep-time sky after the sprite was hidden. Labels now follow `sprite.visible` so a hidden body can never be named.
   3. Hiding a body takes **three** things, not one: the sprite, its label, and its contribution to the sky shader. The deep-time sky still carried a bright lunar glow from `skyUniforms.moonGlow` after the Moon itself was gone. Found by comparing the two drift screenshots, not by any assertion; `skyMoonGlow` and `skySunAlt` are now in the debug payload and asserted.
 
+## Enhancement slice 5 (2026-09-05): star trails
+- **Computed arcs, not a smear.** A `Star trails` layer draws the path each bright star will take over the next 1, 2, 4 or 8 hours (`obsTrailHours`), sampled from the same `equToHorizon` maths as the star's current position, so the arcs are exact rather than an accumulation-buffer effect. Because they are geometry, they work under reduced motion, which is where a motion-based trail effect would have to be switched off.
+- `diurnalPath(raDeg, decDeg, lstHours, latDeg, hours, steps)` is pure and exposed. It advances local sidereal time at `SIDEREAL_RATE` (1.0027379 sidereal hours per solar hour), which is why a star sits about a degree further along after 24 solar hours; refraction is applied at every sample, so a star on the geometric horizon still shows above it.
+- Trails use the top 250 stars by brightness that are above the horizon, capped at magnitude 3.6, with the colour taken from each star's B-V index and the arc brightest at the star's present position. They are hidden in daylight along with the constellation lines.
+- Performance: `normalizeCatalog` now builds `byMag`, a brightness-ordered index, so the layer walks a few hundred entries per frame instead of sorting 8,920 during time-lapse.
+- Pairs with the time-lapse: turn trails on, press play, and the stars run along their own arcs. Near the celestial pole the arcs are short circles, near the celestial equator they are long sweeps, and the caption says so.
+- 7 more `ui_strings` keys. Unit suite 38; browser suite 13.
+- Test note: a server-rendered `<select>` carries its choice as `selected` on the matching `<option>`, not as a `value` attribute on the select, unlike `<input>`. Assert the option, not the select.
+
 ## Known gaps / next candidates
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.
 - Star trails during time-lapse (accumulation buffer) would be a striking addition but needs a render-target pipeline.

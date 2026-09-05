@@ -19835,7 +19835,14 @@
       "obs_drift_banner": "Deep-time view",
       "obs_drift_caveat": "Star positions and brightnesses come from each star's measured distance and 3D velocity, moved in a straight line. That is a good approximation over tens of thousands of years, not a galactic orbit model. The Sun, Moon, planets, meteors, aurora and deep-sky objects are hidden because they would be meaningless at this range, and Earth's slow axis wobble is not extrapolated either, so treat compass directions as approximate. The sky is drawn dark so the change is visible.",
       "obs_drift_summary": "Deep time",
-      "obs_drift_summary_note": "Star positions and brightnesses are extrapolated along measured space velocities; everything in the solar system is hidden."
+      "obs_drift_summary_note": "Star positions and brightnesses are extrapolated along measured space velocities; everything in the solar system is hidden.",
+      "obs_layer_trails": "Star trails",
+      "obs_trail_span": "Trail length",
+      "obs_hour_word": "hour",
+      "obs_hours_word": "hours",
+      "obs_trail_note": "Each arc is where that star will be over the next few hours as Earth turns, computed the same way as its position now. Stars near the celestial pole trace short circles; stars near the celestial equator sweep the longest arcs. Play the time-lapse and watch them follow their own trails.",
+      "obs_trails_summary": "Star trails",
+      "obs_trails_summary_note": "drawn for the brightest stars above the horizon, covering the next"
     },
     "atctower": {
       "first_landing": "First Landing",
@@ -25044,7 +25051,10 @@
       "headline_different": "The evidence points to a different verdict.",
       "headline_verdict_is": "The evidence verdict is",
       "headline_open_card": "Open the card",
-      "next_headline": "Next headline →"
+      "next_headline": "Next headline →",
+      "view_opened": "view opened.",
+      "see_it_in_the_atlas": "See it in the atlas",
+      "open_view_named": "Open"
     },
     "bridgelab": {
       "initializing_bridge_lab": "🌉 Initializing Bridge Lab...",
@@ -40257,6 +40267,13 @@
       "status_chip_help": "Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars",
       "status_nebula_generic": "Nebula",
       "canvas_description_age": "seen {age} billion years after the Big Bang.",
+      "dur_gyr": "~{n} Gyr",
+      "dur_myr": "~{n} Myr",
+      "dur_kyr": "~{n} kyr",
+      "dur_red_dwarf": "~100 Gyr+",
+      "lifespan_no_fusion": "No sustained hydrogen fusion",
+      "lifespan_red_dwarf": "Lifespan: hundreds of billions to trillions of years",
+      "lifespan_value": "Lifespan: {value}",
       "dur_forever": "Forever",
       "collapse_bd_title": "No sustained stellar fusion",
       "collapse_bd_badge": "Substellar",
