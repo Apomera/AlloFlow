@@ -108,6 +108,17 @@ const DEEP = args.includes('--deep');
 // own-ground failure: an unpainted tool inherits BLACK, so it is DARK ink that
 // disappears there, not light.
 const CONTRAST = args.includes('--contrast');
+// ★ Under --contrast the host's own `.theme-contrast` rules are injected too
+// (2026-09-05). app_styles_module.js recolours p/span/div/li/label/h1-h6/
+// summary/legend/... to #ffff00 and paints every bg-* utility black; a tool
+// whose dark utility ink lands on the black surface is rescued by those rules
+// in production. Measuring without them reported 148 dark-ink sites across
+// 50 tools on 2026-09-04, most of them phantom. What survives the host CSS is
+// the real class: !important pins, inline styles, dead `html:not(...)` guards.
+// --no-host-css reproduces the palette-only measurement.
+// Calibration: dev-tools/fixtures/contrast_ink_fixture.js must report ONE
+// finding with host CSS and FOUR without.
+const HOST_CSS = CONTRAST && !args.includes('--no-host-css');
 // One re-mount per control, so this is the runtime knob. 30 covers the Pets
 // Lab's 28 menu tiles; --all --deep is a long run by design.
 const DEEP_CAP = ALL ? 12 : 30;
@@ -116,7 +127,7 @@ const statesArg = (args.find((a) => a.startsWith('--states=')) || '').slice(9);
 const stateArg = (args.find((a) => a.startsWith('--state=')) || '').slice(8);
 
 if (!ALL && !toolArg) {
-  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast] [--deep] [--json] [--gate]');
+  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast [--no-host-css]] [--deep] [--json] [--gate]');
   process.exit(2);
 }
 
@@ -140,6 +151,38 @@ function extractStemPalette() {
   const end = src.indexOf('}', src.indexOf('--allo-stem-button-border', anchor));
   if (end === -1) throw new Error('could not find the end of the .theme-contrast block');
   return src.slice(start, end + 1);
+}
+
+// Every rule in app_styles_module.js whose selector mentions `.theme-<theme>`,
+// including its enclosing `@media screen { ... }` wrapper and multi-line
+// selector lists. Rules with `${...}` interpolations (typography props) are
+// skipped; none of the theme rules use them.
+function extractHostThemeRules(theme) {
+  const src = read('app_styles_module.js');
+  const needle = '.theme-' + theme;
+  const out = [];
+  let i = 0;
+  while ((i = src.indexOf(needle, i)) !== -1) {
+    let start = src.lastIndexOf('\n', i) + 1;
+    // A selector list may continue from previous lines that end with a comma.
+    for (;;) {
+      const prevStart = src.lastIndexOf('\n', start - 2) + 1;
+      const prevLine = src.slice(prevStart, start).trim();
+      if (start > 0 && prevLine.endsWith(',')) start = prevStart; else break;
+    }
+    let depth = 0, opened = false, j = start;
+    for (; j < src.length; j++) {
+      const c = src[j];
+      if (c === '{') { depth++; opened = true; }
+      else if (c === '}') { depth--; if (opened && depth === 0) { j++; break; } }
+      else if (c === '`' && !opened) { break; }
+    }
+    const rule = src.slice(start, j).trim();
+    // Skip needles inside JS or CSS comments and anything implausibly large.
+    if (opened && !/^(\/\/|\/\*|\*)/.test(rule) && !rule.includes('${') && rule.length < 20000) out.push(rule);
+    i = Math.max(j, i + needle.length);
+  }
+  return out.join('\n');
 }
 
 // ── Static lint: rx on a rect inside a non-uniformly scaled SVG ───────────
@@ -516,6 +559,7 @@ const PROBE = function (CONTRAST) {
 (async () => {
   const { chromium } = require(path.join(ROOT, 'node_modules', 'playwright'));
   const palette = extractStemPalette();
+  const hostCss = HOST_CSS ? extractHostThemeRules('contrast') : '';
   const tw = fs.readFileSync(TW, 'utf8');
   const runtime = [
     read('desktop/web-app/node_modules/react/umd/react.production.min.js'),
@@ -560,7 +604,7 @@ const PROBE = function (CONTRAST) {
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 160)));
     await page.setContent('<!doctype html><html><head><style>' + tw + '</style><style>' + palette +
-      '</style><style>body{margin:0;font-family:system-ui;background:' + (DARK ? '#0f172a' : '#ffffff') +
+      '</style><style>' + hostCss + '</style><style>body{margin:0;font-family:system-ui;background:' + (DARK ? '#0f172a' : '#ffffff') +
       '}</style></head><body><main id="slot" class="' + (CONTRAST ? 'theme-contrast' : (DARK ? 'theme-dark' : 'theme-default')) + '"></main></body></html>');
     try {
       for (const code of runtime) await page.addScriptTag({ content: code });
