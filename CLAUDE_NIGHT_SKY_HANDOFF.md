@@ -141,6 +141,16 @@ Slice 8 printed what the tool chose. This prints what the learner chose.
 - Circumpolar targets print "always up" and "never sets" rather than invented times; a target below the horizon all night prints "not visible tonight".
 - 15 more `ui_strings` keys. Unit suite 56; browser suite 14, including the whole loop: click a star in the real WebGL sky, save it, switch to Print, and find it in the timetable.
 
+## Enhancement slice 10 (2026-09-05): put the sky first
+Nine slices of features left the tab dense. Measured before changing anything: **65 buttons, 7 selects, 7 inputs**, and the canvas starting **829 px down** with **40 controls above it**, in a tool whose whole point is looking at the sky.
+
+- **One disclosure, `obsSettingsOpen`, default closed.** Landscape, sky darkness, the ten layer toggles, the trail span, and the highlight / shower / aurora / deep-time row now sit behind a single labelled button. Place, date, time, the jump-to-moment buttons, time-lapse and the sky itself stay in view.
+- **Measured after:** 56 buttons, 3 selects, 4 inputs at first contact. Within the tab's own card the pre-sky block fell by roughly a third. The remaining offset is the host's 17-tab bar and its header widget, which are not this tool's to move.
+- **Hiding controls does not disable features.** With trails saved on, the arcs still render and the summary still reports them while the control is out of sight. The text twin remains the complete account of the scene.
+- Nothing is merely styled away: the collapsed panel is absent from the DOM, so screen-reader and tab order match what is on screen. `aria-expanded` and `aria-controls` wire the button to the panel.
+- **Test churn was the honest cost.** The unit helper opens the disclosure because most tests drive those controls, and two new tests cover the collapsed default and the opened panel directly. Six browser tests gained an `openSettings()` step, which makes them mirror what a user actually does. One call site was missed on the first run and the suite caught it.
+- Unit suite 59; browser suite 14.
+
 ## Known gaps / next candidates
 - The generic theme-contrast scanner is miscalibrated for this file (it assumes a light ground). Either teach it about deliberately dark tools or exclude astronomy explicitly; right now its 417 findings would drown a real one.
 - Constellation figures exist for 15 patterns only. Stellarium's modern sky-culture line set (HIP pairs) would cover all 88, but its licence must be checked before bundling.

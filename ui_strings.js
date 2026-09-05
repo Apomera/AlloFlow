@@ -19890,7 +19890,8 @@
       "obs_print_where": "Where to look",
       "obs_print_always_up": "always up",
       "obs_print_never_sets": "never sets",
-      "obs_print_not_visible": "not visible tonight"
+      "obs_print_not_visible": "not visible tonight",
+      "obs_settings_toggle": "Sky settings: landscape, darkness, layers, guides, deep time"
     },
     "atctower": {
       "first_landing": "First Landing",

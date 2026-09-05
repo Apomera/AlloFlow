@@ -12,8 +12,10 @@ beforeEach(() => {
   loadTool('stem_lab/stem_tool_astronomy.js', 'astronomy');
   sky = window.__alloAstroPure;
 });
+// Most tests here drive the secondary controls, so this helper opens the sky-settings
+// disclosure. Its collapsed default is covered explicitly in "Sky settings disclosure".
 function render(state, overrides) {
-  return renderTool('astronomy', { astronomy: { tab: 'observatory', observingList: [], ...state } }, overrides);
+  return renderTool('astronomy', { astronomy: { tab: 'observatory', observingList: [], obsSettingsOpen: true, ...state } }, overrides);
 }
 
 // --- contrast probe --------------------------------------------------------
@@ -577,6 +579,43 @@ describe('When to look tonight', () => {
     const morning = sky.objectVisibility(starAt(101.287, -16.716, PORTLAND.lat, PORTLAND.lon), beforeDawn, PORTLAND.lat, PORTLAND.lon, PORTLAND.tz, 30);
     expect(sky.utcMsToWallTime(morning.windowStart, PORTLAND.tz).dateText).toBe('2026-12-21');
     expect(morning.windowStart).toBe(evening.windowStart);
+  });
+});
+
+describe('Sky settings disclosure', () => {
+  const bare = state => new DOMParser().parseFromString(
+    renderTool('astronomy', { astronomy: { tab: 'observatory', observingList: [], ...state } }), 'text/html');
+
+  it('starts collapsed so the sky is the first thing on the tab', () => {
+    const doc = bare({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30' });
+    const toggle = Array.from(doc.querySelectorAll('button')).find(b => /Sky settings/.test(b.textContent));
+    expect(toggle).toBeTruthy();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe('astronomy-observatory-settings');
+    expect(doc.getElementById('astronomy-observatory-settings')).toBeNull();
+    // The secondary controls are genuinely absent, not merely styled away.
+    expect(doc.querySelector('[aria-label="Sky layers"]')).toBeNull();
+    expect(doc.querySelector('[aria-label="Landscape (representative)"]')).toBeNull();
+    expect(doc.querySelector('input[type="range"][min="-100000"]')).toBeNull();
+    // Place, time and the sky itself stay put.
+    expect(doc.querySelector('[aria-label="Observing site"]')).toBeTruthy();
+    expect(doc.querySelector('[aria-label="Date"]')).toBeTruthy();
+    expect(doc.getElementById('astronomy-observatory-3d')).toBeTruthy();
+    expect(doc.getElementById('astronomy-observatory-summary')).toBeTruthy();
+  });
+
+  it('reveals every secondary control when opened', () => {
+    const doc = bare({ obsLive: false, obsDate: '2026-07-04', obsTime: '23:30', obsSettingsOpen: true });
+    const toggle = Array.from(doc.querySelectorAll('button')).find(b => /Sky settings/.test(b.textContent));
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    const panel = doc.getElementById('astronomy-observatory-settings');
+    expect(panel).toBeTruthy();
+    expect(panel.querySelector('[aria-label="Landscape (representative)"]')).toBeTruthy();
+    expect(panel.querySelector('[aria-label="Sky darkness (Bortle 1 dark to 9 city)"]')).toBeTruthy();
+    expect(panel.querySelectorAll('[aria-label="Sky layers"] button')).toHaveLength(10);
+    expect(panel.querySelector('[aria-label="Highlight a constellation"]')).toBeTruthy();
+    expect(panel.querySelector('[aria-label="Meteor shower layer (simulated timing)"]')).toBeTruthy();
+    expect(panel.querySelector('input[type="range"][min="-100000"]')).toBeTruthy();
   });
 });
 

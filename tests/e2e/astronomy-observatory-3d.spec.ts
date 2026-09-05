@@ -131,6 +131,13 @@ async function mountObservatory(page, state = {}) {
   return { sky, errors };
 }
 const debug = (sky) => sky.evaluate((el: any) => el.__observatoryDebug());
+// Secondary controls live behind a disclosure so the sky comes first; a user
+// opens it before changing layers, landscape, guides or deep time.
+async function openSettings(page) {
+  const toggle = page.getByRole('button', { name: /Sky settings/ });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+}
 test.afterEach(async ({ page }) => {
   await page.evaluate(() => (window as any).__destroy?.()).catch(() => {});
 });
@@ -190,6 +197,7 @@ test('landscapes swap without leaking GPU resources and aurora appears only wher
   expect(first.auroraVisible).toBe(true);
   expect(first.aurora.level).toBe(5);
   await page.screenshot({ path: 'scratch/observatory-arctic-aurora.png', clip: (await sky.boundingBox())! });
+  await openSettings(page);
   for (const env of ['coast', 'desert', 'forest', 'lake', 'arctic']) {
     await page.getByLabel('Landscape (representative)', { exact: true }).selectOption(env);
     await expect.poll(async () => (await debug(sky)).env).toContain(env);
@@ -271,6 +279,7 @@ test('keyboard, pointer, find and layer controls work at 320px', async ({ page }
     await page.getByRole('button', { name: '🔎 Moon', exact: true }).click();
     expect(Math.abs((await debug(sky)).camera.yaw - info.moon.az)).toBeLessThan(1);
   }
+  await openSettings(page);
   await page.getByRole('button', { name: 'Constellation lines', exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as any).__toolData.astronomy.obsLayers.lines)).toBe(false);
   await page.getByRole('button', { name: 'Compass points', exact: true }).click();
@@ -321,6 +330,7 @@ test('click-to-identify names a real star, guides and pole appear, deep-sky glow
   await page.getByRole('button', { name: 'Clear', exact: true }).click();
   await expect.poll(async () => (await debug(sky)).picked).toBeNull();
   // Guides: ecliptic, equator and the celestial pole at the site latitude.
+  await openSettings(page);
   await page.getByRole('button', { name: 'Ecliptic and equator', exact: true }).click();
   await expect.poll(async () => (await debug(sky)).guides).toBe(true);
   await page.getByRole('button', { name: '🔎 Celestial pole', exact: true }).click();
@@ -382,6 +392,7 @@ test('tour steps aim the camera, describe-view names what is in front of it, and
   await expect(described).toContainText(/^Facing [NESW]+, \d+° up/);
   await expect(described).toContainText('In view');
   // Identify Betelgeuse by clicking on it: the Orion figure gets highlighted.
+  await openSettings(page);
   await page.getByLabel('Highlight a constellation', { exact: true }).selectOption('orion');
   await page.getByRole('button', { name: '🔎 Orion', exact: true }).click();
   await page.getByLabel('Highlight a constellation', { exact: true }).selectOption('');
@@ -411,6 +422,7 @@ test('deep time moves the real star field and withholds the solar system', async
   expect(Object.keys(namedBefore).length).toBeGreaterThan(2);
   await page.screenshot({ path: 'scratch/observatory-drift-today.png', clip: (await sky.boundingBox())! });
 
+  await openSettings(page);
   await page.getByLabel(/Deep time: star motion/).fill('100000');
   await expect.poll(async () => (await debug(sky)).drift).toBe(100000);
   const after = await debug(sky);
@@ -446,6 +458,7 @@ test('star trails draw computed arcs, lengthen with the span, and stay off in da
   const { sky, errors } = await mountObservatory(page, { obsSite: 'portland', obsLive: false, obsDate: '2026-12-21', obsTime: '22:00' });
   await expect.poll(async () => (await debug(sky)).catalog).toBeGreaterThan(8000);
   expect((await debug(sky)).trails).toBe(false);
+  await openSettings(page);
   await page.getByRole('button', { name: 'Star trails', exact: true }).click();
   await expect.poll(async () => (await debug(sky)).trails).toBe(true);
   const four = await debug(sky);
