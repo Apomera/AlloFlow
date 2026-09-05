@@ -18,7 +18,7 @@ describe('brainAtlas headline check', () => {
   it('renders the first headline with four verdict choices and a position badge', () => {
     const html = render({ view: 'neuromyths' });
     expect(html).toMatch(/data-brainatlas-headline-check="hl_styles"/);
-    expect(html).toMatch(/data-brainatlas-headline-position="true">1 \/ 8</);
+    expect(html).toMatch(/data-brainatlas-headline-position="true">1 \/ 9</);
     VERDICTS.forEach((v) => expect(html).toMatch(new RegExp('data-brainatlas-headline-choice="' + v + '"')));
     expect(html).toMatch(/This is practice, not a grade/);
     expect(html).not.toMatch(/data-brainatlas-headline-feedback/);
@@ -63,12 +63,12 @@ describe('brainAtlas headline check', () => {
     const block = src.slice(src.indexOf('var MYTH_HEADLINES = ['), src.indexOf('var EEG_ACTIVITY_MODES = ['));
     const cards = [...block.matchAll(/card: '([a-z_]+)'/g)].map((m) => m[1]);
     const verdicts = [...block.matchAll(/verdict: '([a-z_]+)'/g)].map((m) => m[1]);
-    expect(cards.length).toBe(8);
+    expect(cards.length).toBe(9);
     cards.forEach((c) => expect(src, c).toContain("id: '" + c + "'"));
     verdicts.forEach((v) => expect(VERDICTS, v).toContain(v));
     // every verdict class is exercised at least once
     VERDICTS.forEach((v) => expect(verdicts, v).toContain(v));
-    // index 8 wraps to the first headline
-    expect(render({ view: 'neuromyths', mythHeadlineIdx: 8 })).toMatch(/data-brainatlas-headline-check="hl_styles"/);
+    // index 9 wraps to the first headline
+    expect(render({ view: 'neuromyths', mythHeadlineIdx: 9 })).toMatch(/data-brainatlas-headline-check="hl_styles"/);
   });
 });

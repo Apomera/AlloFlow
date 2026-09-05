@@ -9,7 +9,7 @@ import { resetStemLab, loadTool, renderTool } from './helpers/stem_widgets_smoke
 
 const FILE = 'stem_lab/stem_tool_brainatlas.js';
 const render = (state) => renderTool('brainAtlas', { brainAtlas: state || {} });
-const CARDS = ['myth_learning_styles', 'myth_left_right_brain', 'myth_ten_percent', 'myth_first_three_years', 'myth_brain_training', 'myth_adhd_brain', 'myth_autism_brain', 'myth_retina_screening'];
+const CARDS = ['myth_learning_styles', 'myth_left_right_brain', 'myth_ten_percent', 'myth_first_three_years', 'myth_brain_training', 'myth_chemical_imbalance', 'myth_adhd_brain', 'myth_autism_brain', 'myth_retina_screening'];
 
 describe('brainAtlas neuromyths view', () => {
   beforeAll(() => { resetStemLab(); vi.spyOn(Math, 'random').mockReturnValue(0.4242); });
@@ -25,7 +25,7 @@ describe('brainAtlas neuromyths view', () => {
     expect(html).toMatch(/<canvas/);
   });
 
-  it('lists all eight cards in the directory', () => {
+  it('lists all nine cards in the directory', () => {
     const html = render({ view: 'neuromyths' });
     CARDS.forEach((id) => expect(html).toMatch(new RegExp('brainatlas-region-neuromyths-' + id)));
   });

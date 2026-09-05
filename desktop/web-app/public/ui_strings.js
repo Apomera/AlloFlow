@@ -16385,6 +16385,12 @@
       "saved_scale": " rectangle. Saved models use the same size unit square."
     },
     "artstudio": {
+      "contrast_pass": "Pass",
+      "contrast_fail": "Fail",
+      "contrast_badge_aa_large": "AA Large",
+      "contrast_badge_aa_normal": "AA Normal",
+      "contrast_badge_aaa_normal": "AAA Normal",
+      "contrast_sample_sizes": "The bold line above is 24-pixel large text. The smaller line is 14-pixel normal text. That is why the checks below use two different targets.",
       "back_to_tools": "Back to tools",
       "art_design_studio": "🎨 Art & Design Studio",
       "launch_3d_architecture_studio": "Launch 3D Architecture Studio",
@@ -19869,7 +19875,22 @@
       "obs_print_sunrise": "Sunrise",
       "obs_print_log_target": "What I looked at",
       "obs_print_log_time": "Time",
-      "obs_print_log_saw": "What I actually saw"
+      "obs_print_log_saw": "What I actually saw",
+      "obs_targets_full": "Your list is full. Remove a target before adding another.",
+      "obs_target_saved": "On tonight's list",
+      "obs_target_add": "Add to tonight's list",
+      "obs_targets_title": "Tonight's list",
+      "obs_targets_print_hint": "These print with their times in the Print tab.",
+      "obs_target_remove": "Remove from tonight's list",
+      "obs_print_my_targets": "My targets tonight",
+      "obs_print_target": "Target",
+      "obs_print_rises": "Rises",
+      "obs_print_highest": "Highest",
+      "obs_print_sets": "Sets",
+      "obs_print_where": "Where to look",
+      "obs_print_always_up": "always up",
+      "obs_print_never_sets": "never sets",
+      "obs_print_not_visible": "not visible tonight"
     },
     "atctower": {
       "first_landing": "First Landing",
@@ -25084,7 +25105,8 @@
       "open_view_named": "Open",
       "honestly": "The claim you may have heard",
       "honestly_note": "Opens the evidence card: what the claim says, what the research supports, and what to do instead.",
-      "evidence_card_opened": "evidence card opened."
+      "evidence_card_opened": "evidence card opened.",
+      "myth_chemical_imbalance": "Depression is a chemical imbalance"
     },
     "bridgelab": {
       "initializing_bridge_lab": "🌉 Initializing Bridge Lab...",

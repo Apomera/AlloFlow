@@ -125,3 +125,15 @@ The jump was clicked in a browser against the deployed host. Opening the ADHD ca
 September 5, 2026. Four regions elsewhere in the atlas state a contested clinical association in their own text: theta waves and the theta/beta ADHD marker, synaptic pruning and the autism and schizophrenia findings, neuroplasticity and what brain training does not transfer to, and critical periods and the age-three claim. Those are the points where a reader can most easily over-read a finding, so each now offers the evidence card that gives the honest verdict, under the heading "The claim you may have heard".
 
 The pairing is derived from the myth cards' own view and region fields rather than kept as a second list, so the outbound jump and the return link cannot drift apart. The link appears only on those four regions, never inside the myths view, and never on a region with no paired card. A myth card cannot link to itself.
+
+## The chemical-imbalance card
+
+September 5, 2026. A ninth card covers the claim that depression is caused by a chemical imbalance, usually described as too little serotonin. This is the misconception most likely to come up in a medication conversation with a family, and the tool already hedged the theory in two places citing Moncrieff, so the card makes an existing position explicit rather than taking a new one.
+
+The verdict is oversimplified, not debunked. Depression does involve biology; it is the specific low-serotonin story that is unsupported. The card states that the 2022 umbrella review was itself contested by other researchers, and that the practical point survives that argument: whether a medicine helps is a separate question from whether the imbalance story explains why. It says plainly that antidepressants help some people, with modest average benefit over placebo and more in severe depression. It notes the phrase spread through 1990s advertising rather than scientific consensus, and that describing depression as a fixed chemical defect has been associated with more pessimism about recovery.
+
+The alternative section says starting, changing or stopping any medication is a decision with the prescriber and never something a lesson or an app should advise. The card links to the serotonin region in the neurotransmitter view, which puts the corrective one click from the existing monoamine text there. Sources: Moncrieff et al. 2022 in Molecular Psychiatry, and Deacon and Baird 2009.
+
+The chips now sit in three rows of three; only the three claims with a published survey figure carry a belief bar, and no number was invented for the rest.
+
+FOR REVIEW: the serotonin region's own "if damaged" text still reads "serotonin depletion contributes to depression", which is closer to the deficiency framing than the hedge in the same card's function field. That is a clinical wording call, so it is flagged here rather than changed.

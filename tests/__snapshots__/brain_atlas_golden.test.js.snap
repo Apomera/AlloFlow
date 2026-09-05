@@ -178,11 +178,11 @@ exports[`brainAtlas render goldens > view: medial renders + pins a digest 1`] = 
 
 exports[`brainAtlas render goldens > view: neuromyths renders + pins a digest 1`] = `
 {
-  "buttons": 58,
+  "buttons": 59,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 188,
-  "sha": "266cdef75374529b",
+  "lengthBucket": 194,
+  "sha": "ee997a614e775536",
   "svgs": 0,
 }
 `;
