@@ -48,6 +48,16 @@ describe('brainAtlas headline check', () => {
     expect(html).not.toMatch(/data-brainatlas-headline-feedback/);
   });
 
+  it('keeps the action row wrappable so the two buttons stack on phones', () => {
+    // Measured in a browser at 390px: min-w forces the wrap (both buttons full
+    // width, stacked); at 1280px they still share one row. Without the min-width
+    // the card button squeezed to three lines beside Next on a phone.
+    const html = render({ view: 'neuromyths', mythHeadlineIdx: 0, mythHeadlineFeedback: { id: 'hl_styles', chosen: 'promising', correct: false } });
+    const row = html.slice(html.indexOf('data-brainatlas-headline-open-card') - 400, html.indexOf('data-brainatlas-headline-next') + 400);
+    expect(row).toMatch(/flex flex-wrap gap-2/);
+    expect((row.match(/min-w-\[190px\]/g) || []).length).toBe(2);
+  });
+
   it('wraps the index and keeps every headline bound to a real card and verdict', () => {
     const src = readFileSync(FILE, 'utf8');
     const block = src.slice(src.indexOf('var MYTH_HEADLINES = ['), src.indexOf('var EEG_ACTIVITY_MODES = ['));

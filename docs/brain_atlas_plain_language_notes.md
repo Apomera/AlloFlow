@@ -107,3 +107,7 @@ Picking a region on the 2D diagram, by its label or by its marker, now sends a s
 ## Headline check
 
 September 5, 2026. The Neuromyths view has an ungraded practice panel. Eight headlines, invented for practice and paraphrased so that no outlet is named and none quotes a real article, are sorted one at a time into the four evidence verdicts. Feedback names the cue in the headline that points to the verdict (for example "match the lesson to the style", "reveal", "company reports") and links to the card that holds the evidence. Every verdict class appears at least once. The panel does not score, store answers beyond the current headline, or call AI.
+
+### Verified in a browser
+
+The Neuromyths view was driven in Chromium against the deployed host with the local tool file injected over the CDN copy. At 1280px in the light, dark, and high-contrast themes, and at 390px in light, the framing panel, the eight cards, the belief chart, and the headline check all rendered with no blank labels, no contrast failures below WCAG AA in the new panels, no horizontal page overflow, and no touch target under 24px. Answering a headline showed the red mark on the chosen wrong verdict, the green mark on the correct one, and the cue text. The two action buttons carry a minimum width so they share a row on desktop and stack full width on a phone.

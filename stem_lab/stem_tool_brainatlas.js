@@ -11420,10 +11420,10 @@ var d = labToolData.brainAtlas || {};
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     hlShow && hlCard && React.createElement("button", { type: "button", "data-brainatlas-headline-open-card": hl.card,
                       onClick: function () { openBrainAtlasRegion(hlCard); },
-                      className: "transition-colors flex-1 py-2 px-3 rounded-lg text-xs font-bold border-2 border-violet-300 text-violet-800 hover:bg-violet-50 active:scale-[0.97]" }, t('stem.brainatlas.headline_open_card', 'Open the card') + ': ' + hlCard.name),
+                      className: "transition-colors flex-1 min-w-[190px] py-2 px-3 rounded-lg text-xs font-bold border-2 border-violet-300 text-violet-800 hover:bg-violet-50 active:scale-[0.97]" }, t('stem.brainatlas.headline_open_card', 'Open the card') + ': ' + hlCard.name),
                     hlShow && React.createElement("button", { type: "button", "data-brainatlas-headline-next": "true",
                       onClick: function () { upd('mythHeadlineIdx', hlIdx + 1); upd('mythHeadlineFeedback', null); },
-                      className: "transition-colors flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-violet-700 text-white hover:bg-violet-800 active:scale-[0.97]" }, t('stem.brainatlas.next_headline', 'Next headline \u2192'))
+                      className: "transition-colors flex-1 min-w-[190px] py-2 px-3 rounded-lg text-xs font-bold bg-violet-700 text-white hover:bg-violet-800 active:scale-[0.97]" }, t('stem.brainatlas.next_headline', 'Next headline \u2192'))
                   )
                 );
               })(),
