@@ -80,6 +80,15 @@ describe('Art Studio headings choose one ink class per theme', () => {
     }
   });
 
+  it('ships a scoped contrast rule for element types the host theme never recolours', () => {
+    const html = renderTool('artStudio', { artStudio: { tab: 'watercolor', studioHome: false } });
+    const holder = document.createElement('div');
+    holder.innerHTML = html;
+    const css = holder.querySelector('style').textContent;
+    expect(css).toContain('.theme-contrast [data-artstudio-root] :is(h1,h2,h3,summary,legend,');
+    expect(css).toContain(':not(button *){color:var(--allo-stem-text,#ffff00) !important}');
+  });
+
   it('paints the coach heading white on the contrast surface', () => {
     const coach = { artStudio: { tab: 'watercolor', studioHome: false, showTour: true } };
     const contrast = headingClass(renderTool('artStudio', coach, { isContrast: true, theme: 'contrast' }), 'artstudio-coach-title');
